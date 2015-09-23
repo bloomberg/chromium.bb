@@ -1,0 +1,93 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+
+<script>
+function simpleTestFunction()
+{
+   return 0;
+}
+</script>
+
+<script>
+function simpleTestFunction2()
+{
+   return simpleTestFunction3();
+}
+
+function simpleTestFunction3()
+{
+   return 0;
+}
+</script>
+
+<script>
+var test = function()
+{
+    var currentSourceFrame;
+    InspectorTest.setQuiet(true);
+    InspectorTest.runDebuggerTestSuite([
+        function testSimpleMonitor(next)
+        {
+            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction();");
+        },
+
+        function testSimpleMonitorWith1Arg(next)
+        {
+            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction(1);");
+        },
+
+        function testSimpleMonitorWithManyArgs(next)
+        {
+            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction(1, 2, 3, 4 ,5);");
+        },
+
+        function testSimpleUnmonitor(next)
+        {
+            InspectorTest.evaluateInConsole("monitor(simpleTestFunction2)");
+            InspectorTest.evaluateInConsole("unmonitor(simpleTestFunction2)");
+            monitorAndRun(next, "simpleTestFunction3", "simpleTestFunction2();");
+        },
+
+        function testUnmonitorFuntionNotMonitored(next)
+        {
+            InspectorTest.evaluateInConsole("monitor(simpleTestFunction)", next);
+        }
+    ]);
+
+    function monitorAndRun(next, functionName, runCmd)
+    {
+        InspectorTest.evaluateInConsole("monitor(" + functionName + ")");
+        InspectorTest.addResult("Start monitoring function.");
+
+        InspectorTest.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
+        InspectorTest.addResult("Set timer for test function.");
+        InspectorTest.waitUntilMessageReceived(didReceive);
+
+        function didReceive(message)
+        {
+            if (message.type === WebInspector.ConsoleMessage.MessageType.Result) {
+                InspectorTest.waitUntilMessageReceived(didReceive);
+                return;
+            }
+
+            InspectorTest.addResult("Console message received: " + message.messageText);
+            InspectorTest.evaluateInConsole("unmonitor(" + functionName + ")");
+            InspectorTest.addResult("Stop monitoring.");
+            next();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests traceCalls(fn) console command.
+</p>
+
+</body>
+</html>

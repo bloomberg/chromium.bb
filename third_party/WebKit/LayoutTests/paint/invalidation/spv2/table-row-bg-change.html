@@ -1,0 +1,45 @@
+<!-- Based on fast/repaint/table-row-bg-change.html -->
+<html>
+<head>
+    <title>Test for crbug.com/357291</title>
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.expectedPaintInvalidationObjects = [
+            "LayoutTableCell TD",
+            "LayoutTableCell TD",
+            "LayoutTableCell TD",
+            "LayoutTableRow TR id='first'",
+        ];
+        function paintInvalidationTest()
+        {
+            var first = document.getElementById('first');
+            first.style.backgroundColor = 'green';
+        }
+    </script>
+    <style>
+      table {
+        height: 200px;
+        width: 200px;
+      }
+      #first {
+        background-color: red;
+      }
+    </style>
+
+</head>
+<body onload="runPaintInvalidationTest()">
+    <table>
+        <tr id="first">
+            <td>A</td>
+            <td>A</td>
+            <td>A</td>
+        </tr>
+        <tr>
+            <td>A</td>
+            <td>A</td>
+            <td>A</td>
+        </tr>
+    </table>
+</body>
+</html>
+

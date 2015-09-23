@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="../../resources/ahem.js"></script>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script src="resources/selection.js"></script>
+<script>
+// Selects two lines and expects a newline to *not* be represented as newline
+// highlight selection is currently only enabled for horizontal text.
+function repaintTest() {
+    selectRange(container, 0, container, 1);
+};
+window.onload = runRepaintTest;
+</script>
+<style>
+div {
+    font-family: Ahem;
+    height: 2em;
+    -webkit-writing-mode: vertical-lr;
+}
+</style>
+<div id="container">
+    xx y
+</div>

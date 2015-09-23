@@ -1,0 +1,12 @@
+Calling Object.observe on the global object should throw
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Object.observe(window) threw exception TypeError: observe cannot be called on the global proxy object.
+PASS Object.observe(this) threw exception TypeError: observe cannot be called on the global proxy object.
+PASS Object.observe(frames[0]) threw exception TypeError: observe cannot be called on the global proxy object.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

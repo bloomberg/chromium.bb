@@ -1,0 +1,12 @@
+CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+Invalidation sets should not apply across shadow roots if tree boundary crossing rules are not used.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.updateStyleAndReturnAffectedElementCount() is 10
+PASS internals.updateStyleAndReturnAffectedElementCount() is 30
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

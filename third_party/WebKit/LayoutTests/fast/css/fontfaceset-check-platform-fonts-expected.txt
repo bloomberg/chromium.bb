@@ -1,0 +1,14 @@
+Tests FontFaceSet#check() returns true for platform fonts
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.fonts.check('10px Arial'); is true
+PASS document.fonts.check('10px Nonexistent'); is false
+PASS document.fonts.check('10px sans-serif'); is true
+PASS document.fonts.check('10px Nonexistent, monospace'); is true
+PASS document.fonts.check('10px Nonexistent1, Nonexistent2'); is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

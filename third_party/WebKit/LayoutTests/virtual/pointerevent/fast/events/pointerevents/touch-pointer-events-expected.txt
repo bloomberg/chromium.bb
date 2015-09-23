@@ -1,0 +1,88 @@
+Verifies that tapping on an element fires appropriate pointer events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+--- test PE+TE event sequences without preventDefault ---
+green received pointerdown at phase=target
+lightgreen received pointerdown at phase=bubbling
+grey received pointerdown at phase=bubbling
+green received touchstart at phase=target
+lightgreen received touchstart at phase=bubbling
+grey received touchstart at phase=bubbling
+green received pointermove at phase=target
+lightgreen received pointermove at phase=bubbling
+grey received pointermove at phase=bubbling
+green received touchmove at phase=target
+lightgreen received touchmove at phase=bubbling
+grey received touchmove at phase=bubbling
+green received pointerup at phase=target
+lightgreen received pointerup at phase=bubbling
+grey received pointerup at phase=bubbling
+green received touchend at phase=target
+lightgreen received touchend at phase=bubbling
+grey received touchend at phase=bubbling
+
+--- test PE+TE event sequences with PE preventDefault ---
+green received pointerdown at phase=target
+lightgreen received pointerdown at phase=bubbling
+grey received pointerdown at phase=bubbling
+green received pointermove at phase=target
+lightgreen received pointermove at phase=bubbling
+grey received pointermove at phase=bubbling
+green received pointerup at phase=target
+lightgreen received pointerup at phase=bubbling
+grey received pointerup at phase=bubbling
+
+--- test PE params for single-touch ---
+green received pointerdown at phase=target
+PASS receivedPEsAtTarget[0].isPrimary is true
+PASS receivedPEsAtTarget[0].button is 0
+PASS receivedPEsAtTarget[0].buttons is 1
+PASS receivedPEsAtTarget[0].clientX is 148
+PASS receivedPEsAtTarget[0].clientY is 156
+green received pointermove at phase=target
+PASS receivedPEsAtTarget[1].isPrimary is true
+PASS receivedPEsAtTarget[1].button is 0
+PASS receivedPEsAtTarget[1].buttons is 1
+PASS receivedPEsAtTarget[1].clientX is 168
+PASS receivedPEsAtTarget[1].clientY is 176
+green received pointerup at phase=target
+PASS receivedPEsAtTarget[2].isPrimary is true
+PASS receivedPEsAtTarget[2].button is 0
+PASS receivedPEsAtTarget[2].buttons is 0
+PASS receivedPEsAtTarget.length is 3
+
+--- test PE isPrimary values ---
+green received pointerdown at phase=target
+PASS receivedPEsAtTarget[0].isPrimary is true
+receivedPEsAtTarget[0].pointerId=0
+green received pointerdown at phase=target
+PASS receivedPEsAtTarget[1].isPrimary is false
+receivedPEsAtTarget[1].pointerId=1
+green received pointermove at phase=target
+PASS receivedPEsAtTarget[2].isPrimary is false
+PASS receivedPEsAtTarget[2].pointerId is 1
+green received pointerup at phase=target
+PASS receivedPEsAtTarget[3].isPrimary is true
+PASS receivedPEsAtTarget[3].pointerId is 0
+green received pointermove at phase=target
+PASS receivedPEsAtTarget[4].isPrimary is false
+PASS receivedPEsAtTarget[4].pointerId is 1
+green received pointerdown at phase=target
+PASS receivedPEsAtTarget[5].isPrimary is false
+receivedPEsAtTarget[5].pointerId=2
+green received pointerup at phase=target
+PASS receivedPEsAtTarget[6].isPrimary is false
+PASS receivedPEsAtTarget[6].pointerId is 1
+green received pointerup at phase=target
+PASS receivedPEsAtTarget[7].isPrimary is false
+PASS receivedPEsAtTarget[7].pointerId is 2
+green received pointerdown at phase=target
+PASS receivedPEsAtTarget[8].isPrimary is true
+PASS receivedPEsAtTarget.length is 9
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

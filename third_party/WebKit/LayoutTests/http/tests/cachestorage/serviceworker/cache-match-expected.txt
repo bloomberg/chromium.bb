@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS Cache.match 
+PASS Cache.match with no matching entries 
+PASS Cache.match with URL 
+PASS Cache.match with Request 
+PASS Cache.match with new Request 
+PASS Cache.match with ignoreSearch option (request with no search parameters) 
+PASS Cache.match with ignoreSearch option (request with search parameter) 
+PASS Cache.match with URL containing fragment 
+PASS Cache.match with string fragment "http" as query 
+PASS Cache.match with URL containing credentials 
+FAIL Cache.match with responses containing "Vary" header assert_true: Cache.match should honor "Vary" header. expected true got false
+PASS Cache.match with Request and Response objects with different URLs 
+PASS Cache.match invoked multiple times for the same Request/Response 
+FAIL Cache.match with POST Request assert_equals: Cache.match should not find a match expected (undefined) undefined but got (object) object "[object Response]"
+PASS Cache.match with a non-2xx Response 
+PASS Cache.match with a network error Response 
+Harness: the test ran to completion.
+

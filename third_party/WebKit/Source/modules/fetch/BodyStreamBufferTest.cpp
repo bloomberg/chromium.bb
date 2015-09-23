@@ -1,0 +1,269 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "config.h"
+#include "modules/fetch/BodyStreamBuffer.h"
+
+#include "core/testing/DummyPageHolder.h"
+#include "modules/fetch/DataConsumerHandleTestUtil.h"
+#include "platform/testing/UnitTestHelpers.h"
+#include "wtf/OwnPtr.h"
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+
+namespace blink {
+
+namespace {
+
+using ::testing::InSequence;
+using ::testing::_;
+using ::testing::SaveArg;
+using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using Command = DataConsumerHandleTestUtil::Command;
+using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
+using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
+
+class BodyStreamBufferTest : public ::testing::Test {
+public:
+    BodyStreamBufferTest()
+    {
+        m_page = DummyPageHolder::create(IntSize(1, 1));
+    }
+    ~BodyStreamBufferTest() override {}
+
+protected:
+    ExecutionContext* executionContext() { return &m_page->document(); }
+
+    OwnPtr<DummyPageHolder> m_page;
+};
+
+TEST_F(BodyStreamBufferTest, LockBodyStreamBuffer)
+{
+    OwnPtr<FetchDataConsumerHandle> handle = createFetchDataConsumerHandleFromWebHandle(createWaitingDataConsumerHandle());
+    FetchDataConsumerHandle* rawHandle = handle.get();
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(handle.release());
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+
+    OwnPtr<FetchDataConsumerHandle> handle2 = buffer->lock(executionContext());
+
+    ASSERT_EQ(rawHandle, handle2.get());
+    EXPECT_TRUE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsArrayBuffer)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::create();
+    RefPtr<DOMArrayBuffer> arrayBuffer;
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didFetchDataLoadedArrayBufferMock(_)).WillOnce(SaveArg<0>(&arrayBuffer));
+    EXPECT_CALL(checkpoint, Call(2));
+
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Data, "hello"));
+    handle->add(Command(Command::Done));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsArrayBuffer(), client);
+
+    EXPECT_TRUE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    EXPECT_EQ("hello", String(static_cast<const char*>(arrayBuffer->data()), arrayBuffer->byteLength()));
+}
+
+TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::create();
+    RefPtr<BlobDataHandle> blobDataHandle;
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didFetchDataLoadedBlobHandleMock(_)).WillOnce(SaveArg<0>(&blobDataHandle));
+    EXPECT_CALL(checkpoint, Call(2));
+
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Data, "hello"));
+    handle->add(Command(Command::Done));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsBlobHandle("text/plain"), client);
+
+    EXPECT_TRUE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+    EXPECT_EQ(5u, blobDataHandle->size());
+}
+
+TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsString)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::create();
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
+    EXPECT_CALL(checkpoint, Call(2));
+
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Data, "hello"));
+    handle->add(Command(Command::Done));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client);
+
+    EXPECT_TRUE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LockClosedHandle)
+{
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
+
+    EXPECT_EQ(ReadableStream::Readable, buffer->stream()->stateInternal());
+    testing::runPendingTasks();
+    EXPECT_EQ(ReadableStream::Closed, buffer->stream()->stateInternal());
+
+    EXPECT_FALSE(buffer->isLocked());
+    OwnPtr<FetchDataConsumerHandle> handle = buffer->lock(executionContext());
+    EXPECT_TRUE(handle);
+    EXPECT_FALSE(buffer->isLocked());
+
+    OwnPtr<FetchDataConsumerHandle> handle2 = buffer->lock(executionContext());
+    EXPECT_TRUE(handle2);
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LoadClosedHandle)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client1 = MockFetchDataLoaderClient::create();
+    MockFetchDataLoaderClient* client2 = MockFetchDataLoaderClient::create();
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client1, didFetchDataLoadedString(String("")));
+    EXPECT_CALL(*client2, didFetchDataLoadedString(String("")));
+    EXPECT_CALL(checkpoint, Call(2));
+
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createDoneDataConsumerHandle()));
+
+    EXPECT_EQ(ReadableStream::Readable, buffer->stream()->stateInternal());
+    testing::runPendingTasks();
+    EXPECT_EQ(ReadableStream::Closed, buffer->stream()->stateInternal());
+
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client1);
+    EXPECT_FALSE(buffer->isLocked());
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LockErroredHandle)
+{
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
+
+    EXPECT_EQ(ReadableStream::Readable, buffer->stream()->stateInternal());
+    testing::runPendingTasks();
+    EXPECT_EQ(ReadableStream::Errored, buffer->stream()->stateInternal());
+
+    EXPECT_FALSE(buffer->isLocked());
+    OwnPtr<FetchDataConsumerHandle> handle = buffer->lock(executionContext());
+    EXPECT_TRUE(handle);
+    EXPECT_FALSE(buffer->isLocked());
+
+    OwnPtr<FetchDataConsumerHandle> handle2 = buffer->lock(executionContext());
+    EXPECT_TRUE(handle2);
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LoadErroredHandle)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client1 = MockFetchDataLoaderClient::create();
+    MockFetchDataLoaderClient* client2 = MockFetchDataLoaderClient::create();
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client1, didFetchDataLoadFailed());
+    EXPECT_CALL(*client2, didFetchDataLoadFailed());
+    EXPECT_CALL(checkpoint, Call(2));
+
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle()));
+
+    EXPECT_EQ(ReadableStream::Readable, buffer->stream()->stateInternal());
+    testing::runPendingTasks();
+    EXPECT_EQ(ReadableStream::Errored, buffer->stream()->stateInternal());
+
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client1);
+    EXPECT_FALSE(buffer->isLocked());
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client2);
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_TRUE(buffer->hasPendingActivity());
+
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+
+    EXPECT_FALSE(buffer->isLocked());
+    EXPECT_FALSE(buffer->hasPendingActivity());
+}
+
+TEST_F(BodyStreamBufferTest, LoaderShouldBeKeptAliveByBodyStreamBuffer)
+{
+    Checkpoint checkpoint;
+    MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::create();
+
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*client, didFetchDataLoadedString(String("hello")));
+    EXPECT_CALL(checkpoint, Call(2));
+
+    OwnPtr<ReplayingHandle> handle = ReplayingHandle::create();
+    handle->add(Command(Command::Data, "hello"));
+    handle->add(Command(Command::Done));
+    Persistent<BodyStreamBuffer> buffer = new BodyStreamBuffer(createFetchDataConsumerHandleFromWebHandle(handle.release()));
+    buffer->startLoading(executionContext(), FetchDataLoader::createLoaderAsString(), client);
+
+    Heap::collectAllGarbage();
+    checkpoint.Call(1);
+    testing::runPendingTasks();
+    checkpoint.Call(2);
+}
+
+} // namespace
+
+} // namespace blink

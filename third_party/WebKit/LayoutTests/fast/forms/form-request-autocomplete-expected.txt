@@ -1,0 +1,22 @@
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: form autocomplete attribute is set to off.
+CONSOLE MESSAGE: requestAutocomplete: must be called in response to a user gesture.
+HTMLFormElement#requestAutocomplete and associated events
+
+For this test to pass, you should see all PASSED below.
+
+PASS found enumerable properties on HTMLFormElement
+PASS found enumerable properties on HTMLFormElement
+PASS found enumerable properties on HTMLFormElement
+PASS event is an AutocompleteErrorEvent
+PASS got expected reason: disabled
+PASS event is an AutocompleteErrorEvent
+PASS got expected reason: disabled
+PASS events bubbled as expected
+PASS got expected number of error events (4)
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

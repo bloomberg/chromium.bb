@@ -1,0 +1,16 @@
+Spell check markers should be removed from the whole page when disabling spell checker but they should be restored in the focused editable if spell checker gets enabled. To test manually, turn spell checker off - misspelling markers should disappear. Having the editable focused, turn spell checker on. Misspellings in the editable should be marked.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS hasSpellingMarkerOnSetting(editableDiv, true) became true
+PASS hasSpellingMarkerOnSetting(editableBodyInFrame, true) became true
+PASS hasSpellingMarkerOnSetting(editableDiv, false) became false
+PASS hasSpellingMarkerOnSetting(editableBodyInFrame, false) became false
+PASS hasSpellingMarkerOnSetting(editableDiv, true) became true
+PASS hasSpellingMarkerOnSetting(editableBodyInFrame, true) became false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+zz.
+

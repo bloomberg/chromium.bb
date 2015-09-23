@@ -1,0 +1,101 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function forward(iter, step)
+{
+    while (step-- > 0)
+        iter.next();
+    return iter;
+}
+
+function* gen()
+{
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+var obj = {
+    generator: function*()
+    {
+        yield 11;
+        yield 12;
+        yield 13;
+    }
+};
+
+var iterNotStarted = gen();
+var iterSuspended = forward(gen(), 1);
+var iterClosed = forward(gen(), 5);
+
+var iterObjGenerator = forward(obj.generator(), 2);
+
+var anonymousGenIter = (function*() {
+    yield 21;
+    yield 22;
+    yield 23;
+})();
+forward(anonymousGenIter, 3);
+
+function test()
+{
+    function dumpGeneratorObjectDetails(details)
+    {
+        InspectorTest.addResult("functionName: \"" + details.functionName + "\"");
+        InspectorTest.addResult("lineNumber: " + (details.location.lineNumber + 1));
+        InspectorTest.addResult("columnNumber: " + details.location.columnNumber);
+        InspectorTest.addResult("scriptId is valid: " + !!details.location.scriptId);
+        InspectorTest.addResult("status: " + details.status);
+    }
+
+    function performStandardTestCase(pageExpression, next)
+    {
+        InspectorTest.evaluateInPage(pageExpression, didEvaluate);
+
+        function didEvaluate(remote)
+        {
+            InspectorTest.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
+            InspectorTest.DebuggerAgent.getGeneratorObjectDetails(remote.objectId, didGetDetails);
+        }
+
+        function didGetDetails(error, response)
+        {
+            InspectorTest.assertTrue(!error, "FAIL: " + error);
+            dumpGeneratorObjectDetails(response);
+            next();
+        }
+    }
+
+    var expressions = [
+        "iterNotStarted",
+        "iterSuspended",
+        "iterClosed",
+        "iterObjGenerator",
+        "anonymousGenIter",
+    ];
+
+    function createTestSuiteFunction(expression)
+    {
+        var functionName = "test" + expression.toTitleCase();
+        return eval("function " + functionName + "(next)\n" +
+            "{\n" +
+            "    performStandardTestCase('" + expression + "', next);\n" +
+            "}; " + functionName);
+    }
+
+    InspectorTest.runDebuggerTestSuite(expressions.map(createTestSuiteFunction));
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that Debugger.getGeneratorObjectDetails command returns correct result.
+</p>
+</body>
+</html>

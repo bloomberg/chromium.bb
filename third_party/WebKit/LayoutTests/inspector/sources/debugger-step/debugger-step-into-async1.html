@@ -1,0 +1,148 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+var dummy = function FAIL_should_not_pause_here() { return 0; };
+
+function testFunction()
+{
+    debugger; // <- will turn on async call stacks here.
+
+    setTimeout(dummy, 0);
+    setTimeout(dummy.bind(null), 10);
+
+    setTimeout(callback1, 20); // <- StepIntoAsync
+
+    setTimeout(dummy, 0);
+    setTimeout(dummy.bind(null), 10);
+}
+
+function callback1()
+{
+    var func = setTimeout.bind(null, callback2, 0);
+    func = setTimeout.bind(null, func, 0);
+    func = setTimeout.bind(null, func, 0);
+    debugger;
+    setTimeout(func); // <- StepIntoAsync
+    Promise.resolve().then(dummy).then(dummy).then(dummy);
+    return 1;
+}
+
+function callback2()
+{
+    var func = Framework.willSchedule(callback3);
+    func = Framework.willSchedule(func);
+    func = Framework.willSchedule(func);
+    debugger;
+    Framework.schedule(func); // <- StepIntoAsync
+    Promise.resolve().then(dummy).then(dummy).then(dummy);
+    setTimeout(dummy, 0);
+    return 2;
+}
+
+function callback3()
+{
+    var func = Framework.bind(Framework.safeRun, null, Framework.createButtonWithEventListenersAndClick, Framework.throwFrameworkException, callback4);
+    debugger;
+    Framework.schedule(func); // <- StepIntoAsync
+    return 3;
+}
+
+function callback4()
+{
+    var func = Framework.bind(Framework.createButtonWithEventListenersAndClick, null, callback5);
+    debugger;
+    Framework.schedule(func); // <- StepIntoAsync
+    return 4;
+}
+
+function callback5()
+{
+    var resolve;
+    var promise = new Promise(function(a, b) { resolve = a; });
+    promise
+        .then(JSON.stringify)
+        .then(JSON.parse)
+        .then(Framework.empty)
+        .then(Framework.createButtonWithEventListenersAndClick)
+        .then(callback6)
+        .then(dummy)
+        .catch(dummy);
+    debugger;
+    resolve({foo: 42}); // <- StepIntoAsync
+    setTimeout(dummy, 0);
+    return 5;
+}
+
+function callback6()
+{
+    var value = {foo: 43};
+    debugger;
+    Promise.resolve(value) // <- StepIntoAsync
+        .then(JSON.stringify)
+        .then(JSON.parse)
+        .then(Framework.empty)
+        .then(Framework.createButtonWithEventListenersAndClick)
+        .then(callback7)
+        .then(dummy)
+        .catch(dummy);
+    setTimeout(dummy, 0);
+    return 6;
+}
+
+function callback7()
+{
+    return 7;
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        var actions = [
+            "StepOver", "StepOver", "StepOver", "Print", // on setTimeout(callback1)
+            "StepIntoAsync", "Print", // at callback1
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback2
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback3
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback4
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback5
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback6
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback7
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests debugger StepIntoAsync action (part 1).
+</p>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    function dumpArgument(name, value)
+    {
+        InspectorTest.addResult(name + " result: " + (typeof value === "string" ? value : JSON.stringify(value)));
+    }
+
+    function processResult(name, promise)
+    {
+        return promise.then(dumpArgument.bind(null, name + ": then"), dumpArgument.bind(null, name + ": catch"));
+    }
+
+    function sendMessageToBackendLoopback(message)
+    {
+        var messageObject = JSON.parse(message);
+        messageObject.result = messageObject.params;
+        messageObject.error = messageObject.params && messageObject.params.error;
+        var response = JSON.stringify(messageObject);
+        setTimeout(InspectorFrontendAPI.dispatchMessage.bind(InspectorFrontendAPI, response), 0);
+    }
+
+    var inspectorJson = {"domains": [{
+        "domain": "Profiler",
+        "commands": [
+        {
+            "name": "commandArgs0"
+        },
+        {
+            "name": "commandArgs1Rets0",
+            "parameters": [
+                {"name": "arg1", "type": "number"}
+            ]
+        },
+        {
+            "name": "commandArgs1Rets1",
+            "parameters": [
+                {"name": "arg1", "type": "object"}
+            ],
+            "returns": [
+                {"name": "arg1", "type": "object"}
+            ]
+        },
+        {
+            "name": "commandArgs3Rets3",
+            "parameters": [
+                {"name": "arg1", "type": "object"},
+                {"name": "arg2", "type": "number", "optional": true},
+                {"name": "arg3", "type": "string", "optional": true}
+            ],
+            "returns": [
+                {"name": "arg1", "type": "object"},
+                {"name": "arg2", "type": "number"},
+                {"name": "arg3", "type": "string"}
+            ]
+        },
+        {
+            "name": "commandError",
+            "parameters": [
+                {"name": "error", "type": "object"}
+            ]
+        }]
+    }]};
+    var commands = InspectorBackendClass._generateCommands(inspectorJson);
+    eval(commands);
+
+    var sendMessageToBackendOriginal = InspectorFrontendHost.sendMessageToBackend;
+    InspectorFrontendHost.sendMessageToBackend = sendMessageToBackendLoopback;
+
+    function defaultHandler() {
+        return Array.prototype.slice.call(arguments);
+    }
+
+    var agent = WebInspector.targetManager.mainTarget().profilerAgent();
+    Promise.resolve()
+        .then(function() { return processResult("commandError", agent.commandError({"message": "this is the error message"}, defaultHandler)); }) // Error: error in the protocol response
+        .then(function() { return processResult("commandArgs0", agent.commandArgs0(defaultHandler)); })
+        .then(function() { return processResult("commandArgs0", agent.commandArgs0(1, defaultHandler)); }) // Error: extra arg
+        .then(function() { return processResult("commandArgs1Rets0", agent.commandArgs1Rets0(123, defaultHandler)); })
+        .then(function() { return processResult("commandArgs1Rets0", agent.commandArgs1Rets0(123, 456, defaultHandler)); }) // Error: extra arg
+        .then(function() { return processResult("commandArgs1Rets0", agent.commandArgs1Rets0("abc", defaultHandler)); }) // Error: wrong type
+        .then(function() { return processResult("commandArgs1Rets0", agent.commandArgs1Rets0(defaultHandler)); }) // Error: missing arg
+        .then(function() { return processResult("commandArgs1Rets1", agent.commandArgs1Rets1({"value1": 234}, defaultHandler)); })
+        .then(function() { return processResult("commandArgs1Rets1", agent.commandArgs1Rets1({"value1": 234}, defaultHandler)); })
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, 345, "alph", defaultHandler)); })
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, 345, defaultHandler)); })
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, undefined, "alph", defaultHandler)); })
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, "alph", defaultHandler)); }) // Error: wrong type
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, defaultHandler)); })
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3(defaultHandler)); })  // Error: missing arg
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, "alph", 345, defaultHandler)); }) // Error: wrong types
+        .then(function() { return processResult("commandArgs3Rets3", agent.commandArgs3Rets3({}, "alph", 345, 678, defaultHandler)); }) // Error: extra arg
+        .then(finishTest);
+
+    function finishTest()
+    {
+        InspectorFrontendHost.sendMessageToBackend = sendMessageToBackendOriginal;
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests correctness of promisified protocol commands.</p>
+</body>
+</html>

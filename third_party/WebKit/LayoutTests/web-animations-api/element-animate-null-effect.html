@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var element = document.documentElement;
+test(function() {
+  assert_true(element.animate(null) != null);
+  assert_true(element.animate(null, 1) != null);
+  assert_true(element.animate(null, {duration: 1}) != null);
+}, 'Animate should accept a null effect.');
+</script>

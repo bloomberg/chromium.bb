@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<title>
+  Tests the ServicePortConnectEvent API.
+</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script>
+service_worker_test('resources/connect-event-worker.js',
+                    'Verifies the ServicePortConnectEvent API.');
+</script>

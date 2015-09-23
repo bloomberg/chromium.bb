@@ -1,0 +1,119 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../isolated-filesystem-test.js"></script>
+<script src="../../workspace-test.js"></script>
+<script>
+function test()
+{
+    var target = InspectorTest.createWorkspaceWithTarget();
+    var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
+
+    var fileSystem;
+    var liveLocation;
+    var mockStyleSheetId = 1;
+    var fileSystemPath = "/var/www";
+    var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+
+    function addMockHeader(sourceURL, sourceMapURL)
+    {
+        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded({
+            styleSheetId: mockStyleSheetId,
+            frameId: 1000,
+            sourceURL: sourceURL,
+            sourceMapURL: sourceMapURL,
+            origin: "regular",
+            title: "",
+            disabled: false,
+            isInline: false,
+            startLine: 0,
+            startColumn: 0
+        });
+    }
+
+    function uiSourceCodeAdded(uiSourceCode) { }
+
+    function dumpFileSystemUISourceCodesMappings()
+    {
+        var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
+        InspectorTest.addResult("UISourceCode uri to url mappings:");
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
+        }
+    }
+
+    function fileSystemAdded(event)
+    {
+        fileSystem = event.data;
+    }
+
+    function updateDelegate()
+    {
+        InspectorTest.addResult("LiveLocation updated:");
+    }
+
+    function dumpLiveLocation()
+    {
+        var uiLocation = liveLocation.uiLocation();
+        if (!uiLocation) {
+            InspectorTest.addResult("Null uiLocation");
+            return;
+        }
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
+        InspectorTest.addResult(networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
+    }
+
+    var resourcesURL = WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/");
+    var namePrefix = "update-locations-on-filesystem-scss-load."
+    var cssURL = resourcesURL + namePrefix + "css";
+    var scssURL = resourcesURL + namePrefix + "scss";
+    var cssLocation = new WebInspector.CSSLocation(WebInspector.CSSStyleModel.fromTarget(target), mockStyleSheetId, cssURL, 0, 1);
+    var scssContent =
+        ["a {",
+        "  foo: bar;",
+        "/* COMMENT */",
+        "  font-size: 12px;",
+        "}"].join("\n");
+    var cssContent =
+        ["a {",
+        "  foo: bar;",
+        "  /* COMMENT */",
+        "  font-size: 12px; }"].join("\n");
+
+    var files = {};
+    files["/" + namePrefix + "css"] = cssContent;
+    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 4);
+    InspectorTest.addResult("Adding file system.");
+    manager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, fileSystemAdded, this);
+    manager.addMockFileSystem(fileSystemPath);
+    InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, resourcesURL, "/");
+    manager.addFiles(fileSystemPath, files);
+
+    InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", afterBind);
+
+    InspectorTest.addResult("Adding stylesheet header.");
+    addMockHeader(cssURL, cssURL + ".map");
+    InspectorTest.addResult("Adding network resource.");
+    InspectorTest.addMockUISourceCodeToWorkspace(cssURL, WebInspector.resourceTypes.Stylesheet, cssContent);
+    liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, updateDelegate);
+    dumpLiveLocation();
+
+    InspectorTest.addResult("Adding filesystem SCSS.");
+    var scssPath = namePrefix + "scss";
+    fileSystem.setFileContent(scssPath, scssContent, function() {});
+    InspectorTest.addMockUISourceCodeToWorkspace(scssURL, WebInspector.resourceTypes.Stylesheet, scssContent);
+    manager.fileSystemWorkspaceBinding._boundFileSystems.get(fileSystemPath)._addFile(scssPath);
+
+    function afterBind()
+    {
+        dumpLiveLocation();
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that stylesheet LiveLocations are updated when an SCSS file is added from the filesystem.</p>
+</body>
+</html>

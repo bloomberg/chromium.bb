@@ -1,0 +1,19 @@
+Tests AsyncOperation breakpoints.
+
+Set timer for test function.
+Executing Resume...
+Executing Resume...
+Call stack:
+    0) callback1 (async-operation-breakpoints.html:24)
+Pause reason: AsyncOperation
+Executing Resume...
+Executing Resume...
+Call stack:
+    0) callback2 (async-operation-breakpoints.html:34)
+Pause reason: AsyncOperation
+Executing Resume...
+Executing Resume...
+Call stack:
+    0) callback3 (async-operation-breakpoints.html:46)
+Pause reason: AsyncOperation
+

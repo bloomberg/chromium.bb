@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+description("Tests to ensure that ShadowRoot.getElementById can get an element in ShadowRoot by its id. Can only run within DRT");
+
+function prepareDomTree(parent)
+{
+    parent.appendChild(
+        createDOM('div', {'id': 'divA'},
+                  createShadowRoot(
+                      createDOM('input', {'id': 'inputB'}),
+                      createDOM('div', {'id': 'divC'},
+                                createShadowRoot(
+                                    createDOM('input', {'id': 'inputD'})),
+                                createShadowRoot(
+                                    createDOM('input', {'id': 'inputE'})),
+                                createShadowRoot(
+                                    createDOM('input', {'id': 'inputF'}))))));
+}
+
+function test()
+{
+    prepareDomTree(document.body);
+    shouldBeEqualToString("getNodeInTreeOfTrees('divA/inputB').id", 'inputB');
+    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC').id", 'divC');
+    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC/inputD').id", 'inputD');
+    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC//inputE').id", 'inputE');
+    shouldBeEqualToString("getNodeInTreeOfTrees('divA/divC///inputF').id", 'inputF');
+}
+
+test();
+</script>
+</body>
+</html>

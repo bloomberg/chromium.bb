@@ -1,0 +1,6 @@
+Correct progress event sequencing on abort(), bug 315488.
+This is a testharness.js-based test.
+PASS Progress event delivery on abort(), post-send() (async) 
+PASS Progress event delivery on abort(), post-send() (sync) 
+Harness: the test ran to completion.
+

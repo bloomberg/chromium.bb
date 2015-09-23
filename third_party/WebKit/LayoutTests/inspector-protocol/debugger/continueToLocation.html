@@ -1,0 +1,100 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="resources/statements.js"></script>
+<script>
+
+function test()
+{
+    var scenario = [
+        // requested line number, insterstatement location, expected control parameter 'step', expected line number
+        [ 8, false, 1, 8 ],
+        [ 8, true, 1, 8 ],
+        [ 12, true, 3, 12 ],
+        [ 13, true, 4, 13 ],
+        [ 12, false, 6, 17 ],
+        [ 17, false, 6, 17 ],
+        [ 17, true, 6, 17 ],
+    ];
+
+    InspectorTest.sendCommand("Debugger.enable", {});
+
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "statementsExample" }, callbackEvalFunctionObject);
+
+    function callbackEvalFunctionObject(response)
+    {
+        var functionObjectId = response.result.result.objectId;
+        InspectorTest.sendCommand("Debugger.getFunctionDetails", { functionId: functionObjectId }, callbackFunctionDetails);
+    }
+
+    function callbackFunctionDetails(response)
+    {
+        var result = response.result;
+        var scriptId = result.details.location.scriptId;
+
+        nextScenarioStep(0);
+
+        function nextScenarioStep(pos)
+        {
+            if (pos < scenario.length)
+                gotoSinglePassChain(scriptId, scenario[pos][0], scenario[pos][1], scenario[pos][2], scenario[pos][3], nextScenarioStep.bind(this, pos + 1));
+            else
+                InspectorTest.completeTest();
+        }
+    }
+
+    function gotoSinglePassChain(scriptId, lineNumber, interstatement, expectedResult, expectedLineNumber, next)
+    {
+        InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedOne;
+
+        InspectorTest.sendCommand("Runtime.evaluate", { "expression": "setTimeout(statementsExample, 0)" });
+
+        function handleDebuggerPausedOne(messageObject)
+        {
+            InspectorTest.log("Paused on debugger statement");
+
+            InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedTwo;
+
+            InspectorTest.sendCommand("Debugger.continueToLocation", { location: { scriptId: scriptId, lineNumber: lineNumber, columnNumber: 0}, interstatementLocation: interstatement }, logContinueToLocation);
+
+            function logContinueToLocation(response)
+            {
+                if (response.error) {
+                    InspectorTest.log("Failed to execute continueToLocation " + JSON.stringify(response.error));
+                    InspectorTest.completeTest();
+                }
+            }
+        }
+        function handleDebuggerPausedTwo(messageObject)
+        {
+            InspectorTest.log("Paused after continueToLocation (insterstatement=" + interstatement + ")");
+            var actualLineNumber = messageObject.params.callFrames[0].location.lineNumber;
+
+            InspectorTest.log("Stopped on line " + actualLineNumber + ", expected " + expectedLineNumber + ", requested " + lineNumber + ", (0-based numbers).");
+
+            InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedUnexpected;
+
+            InspectorTest.sendCommand("Runtime.evaluate", { "expression": "statementsExample.step" }, callbackStepEvaluate);
+        }
+
+        function callbackStepEvaluate(response)
+        {
+            var resultValue = response.result.result.value;
+            InspectorTest.log("Control parameter 'step' calculation result: " + resultValue + ", expected: " + expectedResult);
+            InspectorTest.log(resultValue == expectedResult ? "SUCCESS" : "FAIL");
+            InspectorTest.sendCommand("Debugger.resume", { });
+            next();
+        }
+
+        function handleDebuggerPausedUnexpected(messageObject)
+        {
+            InspectorTest.log("Unexpected debugger pause");
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

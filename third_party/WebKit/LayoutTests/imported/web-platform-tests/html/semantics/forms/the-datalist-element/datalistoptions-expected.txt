@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL options label/value assert_equals: expected 5 but got 3
+PASS If an element has a datalist element ancestor, it is barred from constraint validation 
+Harness: the test ran to completion.
+

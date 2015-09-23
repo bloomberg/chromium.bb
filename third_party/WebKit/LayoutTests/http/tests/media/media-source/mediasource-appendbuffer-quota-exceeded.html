@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          // Fill up a given SourceBuffer by appending data repeatedly via doAppendDataFunc until
+          // an exception is thrown. The thrown exception is passed to onCaughtExceptionCallback.
+          function fillUpSourceBuffer(test, sourceBuffer, doAppendDataFunc, onCaughtExceptionCallback) {
+              // We are appending data repeatedly in sequence mode, there should be no gaps.
+              assert_false(sourceBuffer.buffered.length > 1, "unexpected gap in buffered ranges.");
+              try {
+                  doAppendDataFunc();
+              } catch(ex) {
+                  onCaughtExceptionCallback(ex);
+              }
+              test.expectEvent(sourceBuffer, 'updateend', 'append ended.');
+              test.waitForExpectedEvents(function() { fillUpSourceBuffer(test, sourceBuffer, doAppendDataFunc, onCaughtExceptionCallback); });
+          }
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              MediaSourceUtil.fetchManifestAndData(test, 'webm/test-a-5min-44100Hz-1ch-manifest.json', function(type, mediaData)
+              {
+                  var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
+                  sourceBuffer.mode = 'sequence';
+
+                  fillUpSourceBuffer(test, sourceBuffer,
+                      function () { // doAppendDataFunc
+                          sourceBuffer.appendBuffer(mediaData);
+                      },
+                      function (ex) { // onCaughtExceptionCallback
+                          assert_equals(ex.name, 'QuotaExceededError');
+                          test.done();
+                      });
+              });
+          }, 'Appending data repeatedly should fill up the buffer and throw a QuotaExceededError when buffer is full.');
+        </script>
+    </body>
+</html>

@@ -1,0 +1,49 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
+          text run at (0,0) width 55: "Test for "
+        LayoutInline {I} at (0,0) size 780x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
+              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=13500"
+          LayoutText {#text} at (359,0) size 780x36
+            text run at (359,0) width 5: " "
+            text run at (363,0) width 417: "REGRESSION: Listbox scrollbar does not reflect actual scrolled"
+            text run at (0,18) width 326: "position when selected option is added after layout"
+        LayoutText {#text} at (325,18) size 5x18
+          text run at (325,18) width 5: "."
+      LayoutBlockFlow {P} at (0,52) size 784x36
+        LayoutText {#text} at (0,0) size 744x36
+          text run at (0,0) width 501: "The list box should be scrolled all the way down, showing the selected option "
+          text run at (500,0) width 244: "\x{201C}Seven\x{201D}. The scroller should be at the"
+          text run at (0,18) width 155: "bottom of the scroll bar "
+          text run at (154,18) width 89: "to reflect this."
+      LayoutBlockFlow (anonymous) at (0,104) size 784x58
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,112) size 50x59 clip at (9,113) size 37x57 scrollY 43.00 scrollHeight 99
+  LayoutListBox {SELECT} at (0,0.25) size 49.58x58.75 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 22x13
+        text run at (2,0) width 22: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 30x13
+        text run at (2,0) width 30: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 24x13
+        text run at (2,0) width 24: "Four"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 22x13
+        text run at (2,0) width 22: "Five"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 36.58x14.19
+      LayoutText {#text} at (2,0) size 17x13
+        text run at (2,0) width 17: "Six"
+    LayoutBlockFlow {OPTION} at (1,86.13) size 36.58x14.19 [bgcolor=#D4D4D4]
+      LayoutText {#text} at (2,0) size 33x13
+        text run at (2,0) width 33: "Seven"

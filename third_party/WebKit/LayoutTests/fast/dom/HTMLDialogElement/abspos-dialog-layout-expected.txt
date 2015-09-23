@@ -1,0 +1,53 @@
+Tests layout of absolutely positioned modal dialogs.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+showModal() should center in the viewport.
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+The computed top and bottom of a centered dialog should still have position auto.
+PASS window.getComputedStyle(dialog).top is "auto"
+PASS window.getComputedStyle(dialog).bottom is "auto"
+
+Dialog should be recentered if showModal() is called after close().
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+Dialog should not recenter on relayout.
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+A tall dialog should be positioned at the top of the viewport.
+PASS dialog.getBoundingClientRect().top is 0
+
+The dialog should be centered regardless of the presence of a horizontal scrollbar.
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+Centering should work when dialog is inside positioned containers.
+PASS dialog.getBoundingClientRect().top is centeredTop
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+A centered dialog's position should survive becoming display:none temporarily.
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog should lose centering when removed from the document.
+PASS dialog.getBoundingClientRect().top is relativeContainer.getBoundingClientRect().top
+
+Dialog's specified position should survive after close() and showModal().
+PASS dialog.getBoundingClientRect().top is expectedTop
+
+Dialog should be recentered if showModal() is called after removing 'open'.
+PASS dialog.getBoundingClientRect().top is centeredTop
+
+Dialog should not be centered if showModal() was called when an ancestor had display 'none'.
+PASS dialog.getBoundingClientRect().top is document.body.getBoundingClientRect().bottom
+
+A dialog with specified 'top' should be positioned as usual
+PASS dialog.getBoundingClientRect().top + window.scrollY is offset
+
+A dialog with specified 'bottom' should be positioned as usual
+PASS dialog.getBoundingClientRect().bottom + window.scrollY is window.innerHeight - offset
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

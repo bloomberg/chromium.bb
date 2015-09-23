@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function loadData()
+{
+    var link = document.createElement("link");
+    link.rel = "import";
+    link.href = "resources/imported.html";
+    document.head.appendChild(link);
+}
+
+function test()
+{
+    InspectorTest.recordNetwork();
+    InspectorTest.evaluateInPage("loadData()", step2);
+
+    function step2()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult(request.url);
+        InspectorTest.addResult("resource.type: " + request.resourceType());
+        InspectorTest.addResult("resource.content before requesting content: " + request.content);
+        InspectorTest.assertTrue(!request.failed, "Resource loading failed.");
+        request.requestContent(step3);
+    }
+
+    function step3()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("resource.content after requesting content: " + request.content);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests content is available for imported resource request.</p>
+</body>
+</html>

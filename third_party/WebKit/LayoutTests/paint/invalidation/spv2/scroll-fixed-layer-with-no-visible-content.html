@@ -1,0 +1,32 @@
+<!-- Based on fast/repaint/scroll-fixed-layer-with-no-visible-content.html -->
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css"></style>
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.onload = function() {
+            window.scrollTo(1000, 1000);
+            runPaintInvalidationTest();
+        };
+
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
+            "LayoutBlockFlow (positioned) DIV class='absolute green'",
+        ];
+        function paintInvalidationTest()
+        {
+            var moveMeElement = document.getElementById('moveMe');
+            moveMeElement.style.visibility = "visible";
+            moveMeElement.scrollTop = 100;
+            moveMeElement.scrollLeft = 150;
+        }
+    </script>
+</head>
+<body style="height:2000px;">
+    <!-- You should see 1 green rectangle in the output and no red. -->
+    <div id="moveMe" style="top: 150px; left: 100px; visibility: hidden" class="fixed clipped"><div class="absolute green" style="top: 100px; left: 150px;"></div></div>
+    <!-- Make sure we are scrolled -->
+    <div style="top: 0px; left: 0px;" class="absolute red"></div>
+</body>
+</html>

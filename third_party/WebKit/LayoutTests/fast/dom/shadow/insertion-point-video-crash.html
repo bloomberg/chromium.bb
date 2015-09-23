@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+jsTestIsAsync = true;
+function boom() {
+    divNode = document.createElement('div');
+    document.documentElement.appendChild(divNode);
+    divShadow1 = divNode.createShadowRoot();
+    divShadow2 = divNode.createShadowRoot();
+    
+    videoNode = document.createElement('video');
+    divShadow2.appendChild(videoNode);
+    
+    shadowNode = document.createElement('shadow');
+    videoNode.appendChild(shadowNode);
+    
+    text = document.createTextNode('Hello');
+    divShadow1.appendChild(text);
+
+    testPassed("unless crash");
+    finishJSTest();    
+}
+
+window.onload = boom;
+</script>
+</body>
+</html>

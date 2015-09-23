@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrix</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_equals(matrix.m11, 1);
+  assert_equals(matrix.m12, 0);
+  assert_equals(matrix.m13, 0);
+  assert_equals(matrix.m14, 0);
+  assert_equals(matrix.m21, 0);
+  assert_equals(matrix.m22, 1);
+  assert_equals(matrix.m23, 0);
+  assert_equals(matrix.m24, 0);
+  assert_equals(matrix.m31, 0);
+  assert_equals(matrix.m32, 0);
+  assert_equals(matrix.m33, 1);
+  assert_equals(matrix.m34, 0);
+  assert_equals(matrix.m41, 0);
+  assert_equals(matrix.m42, 0);
+  assert_equals(matrix.m43, 0);
+  assert_equals(matrix.m44, 1);
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+}, "DOMMatrix() constructor");
+
+test(function() {
+  var other = new DOMMatrix();
+  other.m11 = 10;
+  other.m12 = 20;
+  other.m24 = 2;
+  other.m33 = 3;
+  other.m42 = 3;
+  other.m44 = 9;
+
+  var matrix = new DOMMatrix(other);
+  assert_equals(matrix.m11, 10);
+  assert_equals(matrix.m12, 20);
+  assert_equals(matrix.m13, 0);
+  assert_equals(matrix.m14, 0);
+  assert_equals(matrix.m21, 0);
+  assert_equals(matrix.m22, 1);
+  assert_equals(matrix.m23, 0);
+  assert_equals(matrix.m24, 2);
+  assert_equals(matrix.m31, 0);
+  assert_equals(matrix.m32, 0);
+  assert_equals(matrix.m33, 3);
+  assert_equals(matrix.m34, 0);
+  assert_equals(matrix.m41, 0);
+  assert_equals(matrix.m42, 3);
+  assert_equals(matrix.m43, 0);
+  assert_equals(matrix.m44, 9);
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+}, "DOMMatrix(other) constructor");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  matrix.a = 10;
+  matrix.b = 20;
+  matrix.m24 = 2;
+  matrix.m33 = 3;
+  matrix.m42 = 3;
+  matrix.m44 = 9;
+  assert_equals(matrix.a, matrix.m11);
+  assert_equals(matrix.b, matrix.m12);
+  assert_equals(matrix.c, matrix.m21);
+  assert_equals(matrix.d, matrix.m22);
+  assert_equals(matrix.e, matrix.m41);
+  assert_equals(matrix.f, matrix.m42);
+  assert_equals(matrix.m11, 10);
+  assert_equals(matrix.m12, 20);
+  assert_equals(matrix.m13, 0);
+  assert_equals(matrix.m14, 0);
+  assert_equals(matrix.m21, 0);
+  assert_equals(matrix.m22, 1);
+  assert_equals(matrix.m23, 0);
+  assert_equals(matrix.m24, 2);
+  assert_equals(matrix.m31, 0);
+  assert_equals(matrix.m32, 0);
+  assert_equals(matrix.m33, 3);
+  assert_equals(matrix.m34, 0);
+  assert_equals(matrix.m41, 0);
+  assert_equals(matrix.m42, 3);
+  assert_equals(matrix.m43, 0);
+  assert_equals(matrix.m44, 9);
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+}, "DOMMatrix attributes");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  matrix.m31 = 1;
+  matrix.m33 = 0;
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  matrix.m31 = 0;
+  matrix.m33 = 1;
+  assert_false(matrix.is2D);
+  assert_true(matrix.isIdentity);
+}, "DOMMatrix.is2D can never be set to 'true' when it was set to 'false' before calling setMatrixValue().");
+
+</script>
+</body>
+</html>

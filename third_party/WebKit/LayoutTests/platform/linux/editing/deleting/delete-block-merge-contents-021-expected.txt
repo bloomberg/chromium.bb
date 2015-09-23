@@ -1,0 +1,28 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x84 [border: (2px solid #0000FF)]
+        LayoutText {#text} at (14,14) size 730x55
+          text run at (14,14) width 724: "Should see \"XX\" in a top red box, and another \"XX\" in a red box inside the"
+          text run at (738,14) width 6: " "
+          text run at (14,42) width 44: "first."
+      LayoutBlockFlow {DIV} at (0,108) size 784x112
+        LayoutBlockFlow {DIV} at (0,0) size 784x112 [border: (2px solid #FF0000)]
+          LayoutBlockFlow (anonymous) at (14,14) size 756x28
+            LayoutText {#text} at (0,0) size 34x27
+              text run at (0,0) width 34: "XX"
+          LayoutBlockFlow {DIV} at (14,42) size 756x56 [border: (2px solid #FF0000)]
+            LayoutText {#text} at (14,14) size 34x27
+              text run at (14,14) width 34: "XX"
+caret: position 2 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

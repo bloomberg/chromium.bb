@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: spacing from [auto] to [exact] was [auto] at 0
+PASS: spacing from [auto] to [exact] was [auto] at 0.2
+PASS: spacing from [auto] to [exact] was [exact] at 0.6
+PASS: spacing from [auto] to [exact] was [exact] at 1
+
+Web Animations API:
+PASS: spacing from [auto] to [exact] was [auto] at -2.4
+PASS: spacing from [auto] to [exact] was [auto] at 0
+PASS: spacing from [auto] to [exact] was [auto] at 0.2
+PASS: spacing from [auto] to [exact] was [exact] at 0.6
+PASS: spacing from [auto] to [exact] was [exact] at 1
+PASS: spacing from [auto] to [exact] was [exact] at 3.4
+

@@ -1,0 +1,20 @@
+CONSOLE MESSAGE: line 6: message from page!
+CONSOLE MESSAGE: line 2: message from iframe!
+Tests that console shows messages only from specific context when show all checkbox is unchecked.
+
+
+
+Running: testInitialState
+message from page!
+message from iframe!
+
+Running: testPageOnlyMessages
+message from page!
+
+Running: testFrameOnlyMessages
+message from iframe!
+
+Running: testAllMessagesWithFrameContext
+message from page!
+message from iframe!
+

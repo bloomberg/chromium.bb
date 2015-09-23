@@ -1,0 +1,20 @@
+This test performs an animation of the left property with direction reverse and four different fill modes. It animates over 0.1 seconds with a 0.1 second delay. It takes snapshots at document load and the end of the animation.
+None
+Backwards
+Forwards
+Both
+Both iterating
+Both iterating reverse
+PASS - start of animation - id: none expected: 100px actual: 100px
+PASS - start of animation - id: backwards expected: 300px actual: 300px
+PASS - start of animation - id: forwards expected: 100px actual: 100px
+PASS - start of animation - id: both expected: 300px actual: 300px
+PASS - start of animation - id: both_iterating expected: 200px actual: 200px
+PASS - start of animation - id: both_iterating_reverse expected: 300px actual: 300px
+PASS - end of animation - id: none expected: 100px actual: 100px
+PASS - end of animation - id: backwards expected: 100px actual: 100px
+PASS - end of animation - id: forwards expected: 200px actual: 200px
+PASS - end of animation - id: both expected: 200px actual: 200px
+PASS - end of animation - id: both_iterating expected: 200px actual: 200px
+PASS - end of animation - id: both_iterating_reverse expected: 300px actual: 300px
+

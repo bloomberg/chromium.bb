@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<div id='sandbox'>
+  <div id='target5' class='bar'>Should have blue background.</div>
+</div>
+<pre id='console'></pre>
+</body>
+<script>
+var sandbox = document.getElementById('sandbox');
+sandbox.appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'target1', 'class': 'foo'},
+                    document.createTextNode('Should have green background')),
+                createDOM('div', {'id': 'target2'},
+                    document.createTextNode('Should have green background')),
+                createDOM('div', {'id': 'target3', 'class': 'bar'},
+                    document.createTextNode('Should have blue background')),
+                createDOM('div', {'id': 'target4'},
+                    document.createTextNode('Should have blue background')))));
+document.body.offsetLeft;
+
+var style = document.createElement('style');
+style.innerHTML = 'div::shadow .foo { background: green; }'
+    + 'div::shadow #target2 { background: green; }'
+    + 'div /deep/ .bar { background: blue; }'
+    + 'div /deep/ #target4 { background: blue; }';
+document.body.appendChild(style);
+
+backgroundColorShouldBe('host/target1', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host/target2', 'rgb(0, 128, 0)');
+backgroundColorShouldBe('host/target3', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('host/target4', 'rgb(0, 0, 255)');
+backgroundColorShouldBe('target5', 'rgb(0, 0, 255)');
+</script>
+</html>

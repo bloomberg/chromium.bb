@@ -1,0 +1,20 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [138, 8, 100, 100],
+        [8, 8, 100, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV class='hitregion'",
+        "LayoutBlockFlow (positioned) \u003Cpseudo:after\u003E",
+        "LayoutTextFragment (anonymous)"
+      ]
+    }
+  ]
+}
+

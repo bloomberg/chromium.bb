@@ -1,0 +1,15 @@
+This test checks that the context menu is shown on long press gesture.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+showContextMenuOnMouseUp = true
+Event sequence: mouseover mouseenter mousemove mousedown contextmenu
+PASS: Context Menu event seen.
+
+showContextMenuOnMouseUp = false
+Event sequence: mousemove mousedown contextmenu
+PASS: Context Menu event seen.
+
+

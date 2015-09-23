@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("This tests the constructor for the ServiceWorkerMessageEvent DOM class.");
+
+var test_object = {nyannyan: 123};
+
+// No initializer is passed.
+shouldBe("new ServiceWorkerMessageEvent('eventType').bubbles", "false");
+shouldBe("new ServiceWorkerMessageEvent('eventType').cancelable", "false");
+shouldBe("new ServiceWorkerMessageEvent('eventType').data", "null");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType').origin", "");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType').lastEventId", "");
+shouldBe("new ServiceWorkerMessageEvent('eventType').source", "null");
+shouldBe("new ServiceWorkerMessageEvent('eventType').ports", "null");
+
+// bubbles is passed.
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: false }).bubbles", "false");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true }).bubbles", "true");
+
+// cancelable is passed.
+shouldBe("new ServiceWorkerMessageEvent('eventType', { cancelable: false }).cancelable", "false");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { cancelable: true }).cancelable", "true");
+
+// data is passed.
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: test_object }).data", "test_object");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: document }).data", "document");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: undefined }).data", "null");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: null }).data", "null");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: false }).data", "false");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: true }).data", "true");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { data: '' }).data", "");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { data: 'chocolate' }).data", "chocolate");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: 12345 }).data", "12345");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: 18446744073709551615 }).data", "18446744073709552000");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { data: NaN }).data", "NaN");
+// Note that valueOf() is not called, when the left hand side is evaluated.
+shouldBeFalse("new ServiceWorkerMessageEvent('eventType', { data: {valueOf: function () { return test_object; } } }).data == test_object");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { get data() { return 123; } }).data", "123");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { get data() { throw 'ServiceWorkerMessageEvent Error'; } })");
+
+// origin or lastEventId is passed.
+["origin", "lastEventId"].forEach(function (attr) {
+    // Strings.
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": 'melancholy' })." + attr, "melancholy");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": '' })." + attr, "");
+
+    // Non-strings.
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": undefined })." + attr, "");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": null })." + attr, "null");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": false })." + attr, "false");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": true })." + attr, "true");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": 12345 })." + attr, "12345");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": 18446744073709551615 })." + attr, "18446744073709552000");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": NaN })." + attr, "NaN");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": [] })." + attr, "");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": [1, 2, 3] })." + attr, "1,2,3");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": {melancholy: 12345} })." + attr, "[object Object]");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { " + attr + ": {valueOf: function () { return 'melancholy'; } } })." + attr, "[object Object]");
+    shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { get " + attr + "() { return 123; } })." + attr, "123");
+    shouldThrow("new ServiceWorkerMessageEvent('eventType', { get " + attr + "() { throw 'ServiceWorkerMessageEvent Error'; } })");
+});
+
+// MessagePort objects.
+var channel = new MessageChannel();
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source", "channel.port1");
+
+// Unacceptable source objects (not a ServiceWorker or a MessagePort).
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: window }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: this }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: test_object }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: document }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: document.body }).source");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { source: undefined }).source", "null");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { source: null }).source", "null");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: false }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: true }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: '' }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: 'chocolate' }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: 12345 }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: 18446744073709551615 }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: NaN }).source");
+// Note that valueOf() is not called, when the left hand side is evaluated.
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { get source() { return channel.port1; } }).source", "channel.port1");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { get source() { return 123; } }).source");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { get source() { throw 'ServiceWorkerMessageEvent Error'; } })");
+
+// ports is passed.
+// Valid message ports.
+var channel2 = new MessageChannel();
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[0]", "channel.port1");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1]", "channel.port2");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[2]", "channel2.port1");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: [] }).ports", "[]");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { ports: undefined }).ports", "null");
+
+// Invalid message ports.
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: null }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: [1, 2, 3] }).ports[2]");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: test_object }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: document }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: false }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: true }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: '' }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: 'chocolate' }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: 12345 }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: 18446744073709551615 }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: NaN }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { get ports() { return 123; } }).ports");
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { get ports() { throw 'ServiceWorkerMessageEvent Error'; } })");
+// Note that valueOf() is not called, when the left hand side is evaluated.
+shouldThrow("new ServiceWorkerMessageEvent('eventType', { ports: {valueOf: function () { return [channel.port1, channel.port2, channel.port2]; } } }).ports[0]");
+
+// All initializers are passed.
+
+var port = new MessageChannel().port1;
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).bubbles", "true");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).cancelable", "true");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).data", "test_object");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).origin", "wonderful");
+shouldBeEqualToString("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).lastEventId", "excellent");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).source", "port");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[0]", "channel.port1");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[1]", "channel.port2");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[2]", "channel2.port1");
+shouldBe("new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: {length: 3, 0: channel.port1, 1: channel.port2, 2: channel2.port1} }).ports[2]", "channel2.port1");
+
+</script>
+</body>
+</html>

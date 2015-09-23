@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test battery status API with multiple windows.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+// Clean-up any unused battery manager objects from previous tests.
+gc();
+jsTestIsAsync = true;
+testRunner.waitUntilDone();
+testRunner.setCanOpenWindows();
+testRunner.setCloseRemainingWindowsWhenComplete(true);
+
+var mockBatteryInfo;
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    mockBatteryInfo = { charging: charging,
+                        chargingTime: chargingTime,
+                        dischargingTime: dischargingTime,
+                        level: level };
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+// compare obtained battery values with the mock values
+function checkBatteryInfo(batteryManager) {
+    batteryInfo = batteryManager;
+    shouldBeDefined("batteryInfo");
+    shouldBeDefined("mockBatteryInfo");
+    shouldBe('batteryInfo.charging', 'mockBatteryInfo.charging');
+    shouldBe('batteryInfo.chargingTime', 'mockBatteryInfo.chargingTime');
+    shouldBe('batteryInfo.dischargingTime', 'mockBatteryInfo.dischargingTime');
+    shouldBe('batteryInfo.level', 'mockBatteryInfo.level');
+}
+
+function batteryStatusFailure() {
+    testFailed('failed to successfully resolve the promise');
+    setTimeout(finishJSTest, 0);
+}
+
+function batteryStatusSuccess(battery) {
+    debug('resolution in window');
+    checkBatteryInfo(battery);
+
+    secondWindow = window.open("");
+    secondWindow.navigator.getBattery().then(
+        function(battery2) {
+            debug('resolution in secondWindow');
+            checkBatteryInfo(battery2);
+            setTimeout(finishJSTest, 0);
+        }, batteryStatusFailure);
+}
+
+navigator.getBattery().then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+</script>
+</body>
+</html>

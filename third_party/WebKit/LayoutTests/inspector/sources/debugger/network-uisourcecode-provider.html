@@ -1,0 +1,146 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script>
+function test()
+{
+    var mockContentsMap = {};
+    var target;
+    var lastResourceId = 0;
+    var lastStyleSheetId = 0;
+
+    InspectorTest._defaultWorkspaceEventHandler = function() {}
+
+    function createMockStyleSheetHeader(url)
+    {
+        return {
+            styleSheetId: (++lastStyleSheetId) + "",
+            sourceURL: url,
+            sourceMapURL: "",
+            origin: "regular",
+            title: "",
+            disabled: false
+        };
+    }
+
+    function createResourceMock(type, content)
+    {
+        var documentURL = "http://fake.url";
+        var resourceId = ++lastResourceId + "";
+        var url = documentURL + "/" + resourceId;
+        var frameId = "frame-id";
+        var loaderId = "loader-id";
+        var mimeType;
+        switch (type) {
+        case WebInspector.resourceTypes.Document:
+            mimeType = "text/html";
+            break;
+        case WebInspector.resourceTypes.Script:
+            mimeType = "text/javascript";
+            break;
+        case WebInspector.resourceTypes.Stylesheet:
+            mimeType = "text/css";
+            break;
+        }
+
+        var resource = new WebInspector.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
+        resource._content = content;
+        target.resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, resource);
+
+        return resource;
+    }
+
+    function createScriptMock(content)
+    {
+        var documentURL = "http://fake.url";
+        var resourceId = ++lastResourceId + "";
+        var url = documentURL + "/" + resourceId;
+        var script = InspectorTest.createScriptMock(url, 0, 0, false, content, target);
+        target.debuggerModel.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ParsedScriptSource, script);
+    }
+
+    function finishResource(resource)
+    {
+        resource.request.finished = true;
+        resource.request.dispatchEventToListeners(WebInspector.NetworkRequest.Events.FinishedLoading, resource.request);
+    }
+
+    function createNetworkUISourceCodeProvider()
+    {
+        target = InspectorTest.createWorkspaceWithTarget(true);
+    }
+
+    InspectorTest.runTestSuite([
+        function testDocumentResource(next)
+        {
+            createNetworkUISourceCodeProvider();
+            InspectorTest.addResult("Creating resource.");
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+            createResourceMock(WebInspector.resourceTypes.Document, "<document resource content>");
+
+            function uiSourceCodeAdded(uiSourceCode)
+            {
+                // setTimeouts are necessary since same event finalizes uiSourceCode creation.
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
+            }
+        },
+
+        function testScriptResourceAndVMScript(next)
+        {
+            createNetworkUISourceCodeProvider();
+            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+            InspectorTest.addResult("Creating script resource.");
+            createResourceMock(WebInspector.resourceTypes.Script, "<script resource content>");
+            InspectorTest.addResult("Creating script.");
+            createScriptMock("<script content>");
+
+            function uiSourceCodeAdded(uiSourceCode)
+            {
+                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
+            }
+        },
+
+        function testRemoveStyleSheetFromModelWithComplexURL(next)
+        {
+            var mockStyleSheetHeader = createMockStyleSheetHeader("http://example.com/foo.css");
+            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
+        },
+
+        function testRemoveStyleSheetFromModelWithSimpleURL(next)
+        {
+            var mockStyleSheetHeader = createMockStyleSheetHeader("foo.css");
+            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
+        }
+    ]);
+
+    function testRemoveStyleSheetFromModel(mockStyleSheetHeader, callback)
+    {
+        createNetworkUISourceCodeProvider();
+        InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
+        InspectorTest.addResult("Creating stylesheet resource.");
+        createResourceMock(WebInspector.resourceTypes.Stylesheet, "<stylesheet resource content>");
+
+        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
+
+        function uiSourceCodeAdded(uiSourceCode)
+        {
+            InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
+            InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
+            WebInspector.CSSStyleModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
+        }
+
+        function uiSourceCodeRemoved(uiSourceCode)
+        {
+            InspectorTest.addResult("Removed uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
+            callback();
+        }
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests NetworkUISourceCodeProvider class.</p>
+</body>
+</html>

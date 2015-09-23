@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<title>controls of a non-blocked and a blocked media element slaved to a media controller</title>
+<script src="media-file.js"></script>
+<video mediagroup="x" controls></video>
+<!-- This video will stay in readyState HAVE_NOTHING, which before
+     https://www.w3.org/Bugs/Public/show_bug.cgi?id=25429 would cause the media
+     controller to *not* be a restrained media controller, which would make the
+     activation behavior (toggle play/pause) do the wrong thing. -->
+<video mediagroup="x" hidden></video>
+<script>
+var video = document.querySelector('video[controls]');
+video.src = findMediaFile('video', 'content/test');
+
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  video.addEventListener('canplay', function() {
+    testRunner.notifyDone();
+  });
+}
+</script>

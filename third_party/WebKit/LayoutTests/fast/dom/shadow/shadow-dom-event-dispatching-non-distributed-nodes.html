@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../resources/js-test.js"></script>
+    <script src="resources/shadow-dom.js"></script>
+    <script src="resources/event-dispatching.js"></script>
+</head>
+<body>
+    <p id="description"></p>
+    <div id="sandbox"></div>
+    <pre id="console"></pre>
+    <script>
+        var sandbox = document.getElementById('sandbox');
+
+        sandbox.appendChild(
+            createDOM('div', {'id': 'top'},
+                      createDOM('div', {'id': 'A'},
+                                createShadowRoot({'id': 'orphaned-shadow-root'},
+                                                 createDOM('div', {'id': 'B'},
+                                                           createDOM('div', {'id': 'C'}))),
+                                createShadowRoot({'id': 'youngest-shadow-root'},
+                                                 createDOM('div', {'id': 'D'})),
+                                createDOM('div', {'id': 'non-distributed-node'}))));
+
+        addEventListeners(['top', 'A', 'A/', 'A/B', 'A/C', 'A//', 'A//D', 'non-distributed-node']);
+        parent.offsetLeft;
+        showSandboxTree();
+
+        clearEventRecords();
+        debug('\nClick C');
+        getNodeInTreeOfTrees('A/C').click();
+        debugDispatchedEvent('click');
+
+        clearEventRecords();
+        debug('\nClick non-distributed-node');
+        document.getElementById('non-distributed-node').click();
+        debugDispatchedEvent('click');
+    </script>
+</body>
+</html>

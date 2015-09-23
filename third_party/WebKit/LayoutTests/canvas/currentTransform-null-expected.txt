@@ -1,0 +1,11 @@
+Check that assigning |null| and |undefined| to currentTransform do not cause crashes, but do throw exceptions.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context.currentTransform = null; threw exception TypeError: Failed to set the 'currentTransform' property on 'CanvasRenderingContext2D': The provided value is not of type 'SVGMatrix'..
+PASS context.currentTransform = undef; threw exception TypeError: Failed to set the 'currentTransform' property on 'CanvasRenderingContext2D': The provided value is not of type 'SVGMatrix'..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

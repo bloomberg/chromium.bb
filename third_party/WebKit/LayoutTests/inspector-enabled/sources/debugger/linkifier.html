@@ -1,0 +1,104 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>// It is important that script starts on line 5 (zero-based 4)
+
+function nonFormattedFunction() { var  i = 2 + 2; var a = 4; return a + i; }
+
+function dummyScript()
+{
+    console.log("dummy string");
+}
+
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    runTest();
+}
+
+function test()
+{
+    var scriptFormatter;
+    var linkifier;
+    var link;
+    var script;
+    var uiSourceCode;
+
+    InspectorTest.scriptFormatter().then(startDebuggerTest);
+
+    function startDebuggerTest(sf)
+    {
+        scriptFormatter = sf;
+        InspectorTest.startDebuggerTest(waitForScripts);
+    }
+
+    function waitForScripts()
+    {
+        InspectorTest.showScriptSource("linkifier.html", debuggerTest);
+    }
+
+    function debuggerTest()
+    {
+        var scripts = InspectorTest.debuggerModel.scripts;
+        for (var scriptId in scripts) {
+            var scriptCandidate = scripts[scriptId];
+            if (scriptCandidate.sourceURL === InspectorTest.resourceTreeModel.inspectedPageURL() && scriptCandidate.lineOffset === 4) {
+                script = scriptCandidate;
+                break;
+            }
+        }
+        
+        uiSourceCode = WebInspector.workspace.uiSourceCodeForOriginURL(InspectorTest.resourceTreeModel.inspectedPageURL());
+        var linkifyMe = "at triggerError (http://localhost/show/:22:11)";
+        var fragment = WebInspector.linkifyStringAsFragment(linkifyMe);
+        var anchor = fragment.querySelector('a');
+        InspectorTest.addResult("The string \"" + linkifyMe + " \" linkifies to url: " + anchor.href);
+        InspectorTest.addResult("The lineNumber is " + anchor.lineNumber + " with type " + (typeof anchor.lineNumber));
+        InspectorTest.addResult("The columnNumber is " + anchor.columnNumber + " with type " + (typeof anchor.columnNumber));
+
+        linkifier = new WebInspector.Linkifier();
+        var count1 = liveLocationsCount();
+        link = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, InspectorTest.resourceTreeModel.inspectedPageURL(), 8, 0, "dummy-class");
+        var count2 = liveLocationsCount();
+
+        InspectorTest.addResult("listeners added on raw source code: " + (count2 - count1));
+        InspectorTest.addResult("original location: " + link.textContent);
+        InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+        scriptFormatter._toggleFormatScriptSource();
+    }
+
+    function uiSourceCodeScriptFormatted()
+    {
+        InspectorTest.addResult("pretty printed location: " + link.textContent);
+        scriptFormatter._discardFormattedUISourceCodeScript(WebInspector.panels.sources.visibleView.uiSourceCode());
+        InspectorTest.addResult("reverted location: " + link.textContent);
+
+        var count1 = liveLocationsCount();
+        linkifier.reset();
+        var count2 = liveLocationsCount();
+
+        InspectorTest.addResult("listeners removed from raw source code: " + (count1 - count2));
+
+        InspectorTest.completeDebuggerTest();
+    }
+
+    function liveLocationsCount()
+    {
+        return WebInspector.debuggerWorkspaceBinding._ensureInfoForScript(script)._locations.size;
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests that Linkifier works correctly.
+<p>
+
+</body>
+</html>

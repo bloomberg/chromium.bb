@@ -1,0 +1,42 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.settingForTest("enableAsyncStackTraces").set(true);
+    var messages = [];
+    function collectMessages(message)
+    {
+        messages.push(message);
+    }
+    InspectorBackendClass.Connection.prototype._dumpProtocolMessage = collectMessages;
+    InspectorBackendClass.Options.dumpInspectorProtocolMessages = 1;
+    messages.push("--> WebInspector.targetManager.suspendAllTargets();");
+    WebInspector.targetManager.suspendAllTargets();
+    messages.push("");
+    messages.push("--> WebInspector.targetManager.resumeAllTargets();");
+    WebInspector.targetManager.resumeAllTargets();
+    messages.push("");
+    messages.push("--> done");
+    InspectorBackendClass.Options.dumpInspectorProtocolMessages = 0;
+    for (var i = 0; i < messages.length; ++i) {
+        var message = messages[i];
+        message = message.replace(/"id":\d+,/, '"id":<number>,');
+        InspectorTest.addResult(message);
+    }
+    WebInspector.settingForTest("enableAsyncStackTraces").set(false);
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that if a profiler is working all the agents are disabled.
+</p>
+
+</body>
+</html>

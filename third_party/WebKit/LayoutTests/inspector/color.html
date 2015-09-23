@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+
+var test = function()
+{
+    function dumpColor(colorText)
+    {
+        var color = WebInspector.Color.parse(colorText);
+        InspectorTest.addResult("Dumping '" + colorText + "' in different formats:");
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.RGB));
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.RGBA));
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HSL));
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HSLA));
+
+        var hsv = color.hsva();
+        var hsvString = String.sprintf("hsv(%d, %d%, %d%)", Math.round(hsv[0] * 360), Math.round(hsv[1] * 100), Math.round(hsv[2] * 100));
+        InspectorTest.addResult(" - " + hsvString);
+        var hsva = color.hsva();
+        var hsvaString = String.sprintf("hsva(%d, %d%, %d%, %f)", Math.round(hsva[0] * 360), Math.round(hsva[1] * 100), Math.round(hsva[2] * 100), hsva[3]);
+        InspectorTest.addResult(" - " + hsvaString);
+
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.HEX));
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.ShortHEX));
+        InspectorTest.addResult(" - " + color.asString(WebInspector.Color.Format.Nickname));
+        InspectorTest.addResult(" - default: " + color.asString());
+
+        InspectorTest.addResult(" - inverse color: " + color.invert().asString());
+        InspectorTest.addResult(" - setAlpha(0.42): " + color.setAlpha(0.42).asString());
+    }
+
+    dumpColor("red");
+    dumpColor("green");
+    dumpColor("blue");
+    dumpColor("cyan");
+    dumpColor("magenta");
+    dumpColor("yellow");
+    dumpColor("white");
+    dumpColor("black");
+
+    dumpColor("rgb(94, 126, 91)");
+    dumpColor("rgba(94, 126, 91, 0.5)");
+
+    dumpColor("hsl(212, 55%, 32%)");
+    dumpColor("hsla(212, 55%, 32%, 0.5)");
+
+    dumpColor("#00FFFF");
+    dumpColor("#0FF");
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests WebInspector.Color</p>
+</body>
+</html>

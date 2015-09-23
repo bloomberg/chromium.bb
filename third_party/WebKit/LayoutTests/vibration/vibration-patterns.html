@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="vibration-utils.js"></script>
+</head>
+<body>
+<script>
+description('Tests for how patterns are handled in the Vibration API.');
+
+// A trailing pause is discarded from a pattern i.e. patterns of even
+// non-zero length are truncated by 1.
+shouldBeTrue("navigator.vibrate(newPattern(1, 4))");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), newPattern(1, 3))");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+// Maximum pattern length.
+shouldBeTrue("navigator.vibrate(newPattern(1, 99))");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), newPattern(1, 99))");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+// The pattern is longer than supported. It is truncated and execution proceeds.
+shouldBeTrue("navigator.vibrate(newPattern(1, 200))");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), newPattern(1, 99))");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+</script>
+</body>
+</html>

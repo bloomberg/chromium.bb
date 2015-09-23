@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../resources/js-test.js"></script>
+    <script>
+        var div;
+        var pixelsPerWheelTick = 40;
+
+        function tryScroll() {
+            eventSender.mouseMoveTo(div.offsetLeft + 5, div.offsetTop + 5);
+            eventSender.mouseScrollBy(0,-1);
+            eventSender.mouseScrollBy(-1,0);
+        }
+
+        function checkOffsets() {
+            div = document.getElementById("overflow-1");
+            debug("===overflow:scroll with overflow");
+            shouldBe('div.scrollTop', 'window.pixelsPerWheelTick');
+            shouldBe('div.scrollLeft', 'window.pixelsPerWheelTick');
+
+            div = document.getElementById("overflow-2");
+            debug("===overflow:auto with overflow");
+            shouldBe('div.scrollTop', 'window.pixelsPerWheelTick');
+            shouldBe('div.scrollLeft', 'window.pixelsPerWheelTick');
+
+            div = document.getElementById("overflow-3");
+            debug("===overflow:hidden with overflow");
+            shouldBe('div.scrollTop', '0');
+            shouldBe('div.scrollLeft', '0');
+
+            div = document.getElementById("overflow-4");
+            debug("===overflow:overlay with overflow");
+            shouldBe('div.scrollTop', 'window.pixelsPerWheelTick');
+            shouldBe('div.scrollLeft', 'window.pixelsPerWheelTick');
+
+            div = document.getElementById("no-overflow-1");
+            debug("===overflow:scroll without overflow");
+            shouldBe('div.scrollTop', '0');
+            shouldBe('div.scrollLeft', '0');
+
+            div = document.getElementById("no-overflow-2");
+            debug("===overflow:auto without overflow");
+            shouldBe('div.scrollTop', '0');
+            shouldBe('div.scrollLeft', '0');
+
+            div = document.getElementById("no-overflow-3");
+            debug("===overflow:hidden without overflow");
+            shouldBe('div.scrollTop', '0');
+            shouldBe('div.scrollLeft', '0');
+
+            div = document.getElementById("no-overflow-4");
+            debug("===overflow:overlay without overflow");
+            shouldBe('div.scrollTop', '0');
+            shouldBe('div.scrollLeft', '0');
+
+            testRunner.notifyDone();
+        }
+
+        function test() {
+            if (window.eventSender && window.testRunner) {
+                testRunner.waitUntilDone();
+
+                description('This tests that scrollable areas with the appropriate overflow mode set'
+                        + ' are in fact scrollable by the user.');
+
+                div = document.getElementById("overflow-1");
+                tryScroll();
+                div = document.getElementById("overflow-2");
+                tryScroll();
+                div = document.getElementById("overflow-3");
+                tryScroll();
+                div = document.getElementById("overflow-4");
+                tryScroll();
+                div = document.getElementById("no-overflow-1");
+                tryScroll();
+                div = document.getElementById("no-overflow-2");
+                tryScroll();
+                div = document.getElementById("no-overflow-3");
+                tryScroll();
+                div = document.getElementById("no-overflow-4");
+                tryScroll();
+
+                setTimeout('checkOffsets();', 100);
+            } else {
+                debug("FAIL: This test requires window.eventSender.");
+            }
+        }
+
+    </script>
+</head>
+<body style="margin: 0" onload="test()">
+    scroll with overflow
+    <div id="overflow-1" style="width: 100px; height: 100px; overflow-x: scroll; overflow-y: scroll">
+      <div style="width: 200px; height: 200px;">Content</div>
+    </div>
+    auto with overflow
+    <div id="overflow-2" style="width: 100px; height: 100px; overflow-x: auto; overflow-y: auto">
+      <div style="width: 200px; height: 200px;">Content</div>
+    </div>
+    hidden with overflow
+    <div id="overflow-3" style="width: 100px; height: 100px; overflow-x: hidden; overflow-y: hidden">
+      <div style="width: 200px; height: 200px;">Content</div>
+    </div>
+    overlay with overflow
+    <div id="overflow-4" style="width: 100px; height: 100px; overflow-x: overlay; overflow-y: overlay">
+      <div style="width: 200px; height: 200px;">Content</div>
+    </div>
+
+    scroll without overflow
+    <div id="no-overflow-1" style="width: 100px; height: 100px; overflow-x: scroll; overflow-y: scroll">
+      <div style="width: 20px; height: 20px;">Content</div>
+    </div>
+    auto without overflow
+    <div id="no-overflow-2" style="width: 100px; height: 100px; overflow-x: auto; overflow-y: auto">
+      <div style="width: 20px; height: 20px;">Content</div>
+    </div>
+    hidden without overflow
+    <div id="no-overflow-3" style="width: 100px; height: 100px; overflow-x: hidden; overflow-y: hidden">
+      <div style="width: 20px; height: 20px;">Content</div>
+    </div>
+    overlay without overflow
+    <div id="no-overflow-4" style="width: 100px; height: 100px; overflow-x: overlay; overflow-y: overlay">
+      <div style="width: 20px; height: 20px;">Content</div>
+    </div>
+</body>
+</html>

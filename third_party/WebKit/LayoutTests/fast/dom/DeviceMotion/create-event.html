@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("Tests that document.createEvent() works with DeviceMotionEvent.");
+
+var event = document.createEvent('DeviceMotionEvent');
+var newEvent = new CustomEvent("devicemotion", {
+    bubbles: false, cancelable: false,
+    acceleration: {x:1.5,y:2.5,z:3.5},
+    accelerationIncludingGravity: {x:4.5,y:5.5,z:6.5},
+    rotationRate: {alpha:7.5,beta:8.5,gamma:9.5},
+    interval: 0.5
+});
+
+shouldBeTrue("typeof event == 'object'");
+shouldBe("event.__proto__", "DeviceMotionEvent.prototype");
+
+shouldBeTrue("'type' in event");
+shouldBeTrue("'bubbles' in event");
+shouldBeTrue("'cancelable' in event");
+shouldBeTrue("'acceleration' in event");
+shouldBeTrue("'accelerationIncludingGravity' in event");
+shouldBeTrue("'rotationRate' in event");
+shouldBeTrue("'interval' in event");
+
+shouldBeTrue("typeof newEvent.type == 'string'");
+shouldBeEqualToString("newEvent.type", "devicemotion");
+shouldBeTrue("typeof newEvent.bubbles == 'boolean'");
+shouldBeFalse("event.bubbles");
+shouldBeFalse("newEvent.bubbles");
+shouldBeTrue("typeof newEvent.cancelable == 'boolean'");
+shouldBeFalse("event.cancelable");
+shouldBeFalse("newEvent.cancelable");
+shouldBeTrue("typeof event.acceleration == 'object'");
+shouldBeTrue("typeof event.accelerationIncludingGravity == 'object'");
+shouldBeTrue("typeof event.rotationRate == 'object'");
+shouldBeTrue("typeof event.interval == 'object'");
+
+</script>
+</body>
+</html>

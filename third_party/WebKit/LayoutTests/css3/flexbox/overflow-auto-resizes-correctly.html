@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+.vflex {
+  display: flex;
+  flex-direction: column;
+  max-width: 200px;
+  margin: 10px 0 10px 0;
+}
+.hflex {
+  display: flex;
+  flex-direction: box;
+  max-height: 200px;
+  margin: 10px 0 10px 0;
+}
+.hbox {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.vbox {
+  overflow-y: auto;
+}
+.intrinsic-height-box {
+  min-height: -webkit-min-content;
+  overflow: auto;
+  flex-basis: 0;
+}
+.rect {
+  min-height: 100px;
+  min-width: 100px;
+  background-color: green;
+  display: inline-block;
+}
+</style>
+<div class="vflex">
+  <div class="hbox">
+    <div class="rect"></div>
+    <div class="rect"></div>
+  </div>
+</div>
+
+<div class="vflex">
+  <div class="intrinsic-height-box">
+    <div class="rect" style="min-width: 300px"></div>
+  </div>
+</div>
+
+<div class="hflex">
+  <div class="vbox">
+    <div class="rect" style="min-height: 300px;"></div>
+  </div>
+</div>
+
+<script>
+  description("When a block inside a flexbox adds scrollbars due to overflow, the parent flexbox should re-flex based on the child size including scrollbars.");
+
+  var hbox = document.querySelector('.hbox');
+  shouldBe("hbox.clientHeight", "hbox.scrollHeight");
+
+  var intrinsicHeightBox = document.querySelector('.intrinsic-height-box');
+  shouldBe("intrinsicHeightBox.clientHeight", "intrinsicHeightBox.scrollHeight");
+
+  // This is expected to fail; see:
+  //   https://codereview.chromium.org/1295933003/#msg1
+  var vbox = document.querySelector('.vbox');
+  shouldBe("vbox.clientWidth", "vbox.scrollWidth");
+</script>

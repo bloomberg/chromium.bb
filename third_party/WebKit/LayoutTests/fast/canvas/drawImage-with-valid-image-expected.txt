@@ -1,0 +1,51 @@
+This test checks behavior of valid arguments to Canvas::drawImage that use a valid source image.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ctx.drawImage() threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 0 present..
+PASS ctx.drawImage(myImage) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 1 present..
+PASS ctx.drawImage(myImage, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 2 present..
+PASS ctx.drawImage(myImage, 0, 0) did not throw exception.
+PASS ctx.drawImage(myImage, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 0, 0, 0, 0) did not throw exception.
+PASS ctx.drawImage(myImage, 0, 0, 20, 20, 0, 0, 0, 0) did not throw exception.
+PASS ctx.drawImage(myImage, -10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 0, -10, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 0, 10, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, -10, -10, 72, 84, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 42, 64, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 62, 64, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 52, 54, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 52, 74, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(myImage, 62, 74, -72, -84, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0, 20, 20, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0, 0, 20) did not throw exception.
+PASS ctx.drawImage(new Image(), 0, 0, 0, 20, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 0, 0) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 20, 20, 0, 0, 0, 0) did not throw exception.
+PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 0, 20, 0, 20, 20, -20, -20) did not throw exception.
+PASS ctx.drawImage(bitmap, 20, 20, -20, 0, 20, 20, -20, -20) did not throw exception.
+PASS ctx.drawImage(bitmap, -10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 10, 0, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, -10, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 0, 10, 52, 64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, -10, -10, 72, 84, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 42, 64, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 62, 64, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 52, 54, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 52, 74, -52, -64, 0, 0, 20, 20) did not throw exception.
+PASS ctx.drawImage(bitmap, 62, 74, -72, -84, 0, 0, 20, 20) did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

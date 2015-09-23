@@ -1,0 +1,87 @@
+
+Test that sections representing scopes are expandable and contain correct data for async call frames.
+
+Set timer for test function.
+Dumping call frames with scope chains:
+
+1) innerTimeout2 async-callstack-scopes.html:51
+Scope variables sidebar pane:
+Local
+    localInInnerTimeout2: "innerTimeout2"
+    this: Window
+WindowGlobal
+    <section collapsed>
+
+2) innerFunction async-callstack-scopes.html:18
+Scope variables sidebar pane:
+ObjectWith Block
+    foo: "bar2"
+Catch
+    e: Error: An exception
+    at innerFunction (...)
+    at timeout2 (...)
+Local
+    arguments: Arguments[1]
+    innerFunctionLocalVar: 202
+    this: Window
+    x: 200
+Closure
+    callback: innerTimeout2()
+    makeClosureLocalVar: "local.2"
+    n: 2
+    withScope: Object
+WindowGlobal
+    <section collapsed>
+
+3) timeout2 async-callstack-scopes.html:53
+Scope variables sidebar pane:
+Local
+    innerTimeout2: innerTimeout2()
+    localInTimeout2: "timeout2"
+    this: Window
+WindowGlobal
+    <section collapsed>
+
+4) innerTimeout1 async-callstack-scopes.html:40
+Scope variables sidebar pane:
+Local
+    localInInnerTimeout1: "innerTimeout1"
+    this: Window
+Closure
+    localInTimeout1: "timeout1"
+WindowGlobal
+    <section collapsed>
+
+5) innerFunction async-callstack-scopes.html:18
+Scope variables sidebar pane:
+Local
+    arguments: Arguments[1]
+    innerFunctionLocalVar: 102
+    this: Window
+    x: 100
+Closure
+    callback: innerTimeout1()
+    makeClosureLocalVar: "local.1"
+    n: 1
+    withScope: Object
+WindowGlobal
+    <section collapsed>
+
+6) timeout1 async-callstack-scopes.html:42
+Scope variables sidebar pane:
+Local
+    innerTimeout1: innerTimeout1()
+    localInTimeout1: "timeout1"
+    this: Window
+WindowGlobal
+    <section collapsed>
+
+7) testFunction async-callstack-scopes.html:31
+Scope variables sidebar pane:
+Local
+    delay1: 0
+    this: Window
+WindowGlobal
+    <section collapsed>
+
+

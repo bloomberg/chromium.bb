@@ -1,0 +1,9 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+When a user puts the caret at the very beginning a list and hits delete into an empty line, the list should just move up.
+| <ul>
+|   <li>
+|     <span>
+|       id="test"
+|       "<#selection-caret>foo"

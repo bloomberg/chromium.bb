@@ -1,0 +1,291 @@
+Tests the Timeline API instrumentation of style recalc events with invalidations.
+
+PASS
+PASS
+PASS
+
+
+Running: testLocalFrame
+first recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:10}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:11}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: multipleStyleRecalcs
+first recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:24}
+        changedAttribute : undefined
+        changedClass : "green"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='green'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:24}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='green'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+second recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:26}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:26}
+        changedAttribute : undefined
+        changedClass : "green"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:27}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:27}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+third recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:29}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:29}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:30}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:30}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:31}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementThree' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testSubframe
+first recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:45}
+        changedAttribute : undefined
+        changedClass : "green"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='green'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+second recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:47}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:47}
+        changedAttribute : undefined
+        changedClass : "green"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:48}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='blue'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+third recalculate styles[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:50}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:50}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:51}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:51}
+        changedAttribute : undefined
+        changedClass : "blue"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-with-invalidator-invalidations.html:52}
+        changedAttribute : undefined
+        changedClass : "snow"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementThree' class='snow'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+

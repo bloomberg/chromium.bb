@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("This test ensure that the multiple shadow root is available.");
+
+var div = document.createElement('div');
+shouldBe("internals.shadowRoot(div)", "null");
+var shadowRoot1 = div.createShadowRoot();
+shouldBe("internals.shadowRoot(div)", "shadowRoot1");
+shouldBe("shadowRoot1.olderShadowRoot", "null");
+
+var shadowRoot2 = div.createShadowRoot()
+shouldBe("internals.shadowRoot(div)", "shadowRoot2");
+shouldBe("shadowRoot2.olderShadowRoot", "shadowRoot1");
+
+var shadowRoot3 = div.createShadowRoot();
+shouldBe("internals.shadowRoot(div)", "shadowRoot3");
+shouldBe("shadowRoot3.olderShadowRoot", "shadowRoot2");
+
+var successfullyParsed = true;
+</script>
+</body>
+</html>

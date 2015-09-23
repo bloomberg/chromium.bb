@@ -1,0 +1,421 @@
+# This file controls which subdirectories of the w3c test repos we do (or don't) import.
+#
+# This file acts as a blacklist; directories and files not listed here will automatically
+# be found and imported. The only exception is that the manual tests (i.e. those with a
+# filename ending with "-manual.html" or "-manual.htm") are never imported.
+
+# When removing blacklist entries:
+# * Comment out the line rather than deleting it, to show it is intentional
+# * Change [ Skip ] to [ Pass ]
+# * Add a leading comment: ## Owners: user@example.com
+
+imported/csswg-test/compositing-1 [ Skip ]
+imported/csswg-test/css-align-3 [ Skip ]
+imported/csswg-test/css-animations-1 [ Skip ]
+imported/csswg-test/css-backgrounds-3 [ Skip ]
+imported/csswg-test/css-box-3 [ Skip ]
+imported/csswg-test/css-break-3 [ Skip ]
+imported/csswg-test/css-color-3 [ Skip ]
+imported/csswg-test/css-color-4 [ Skip ]
+imported/csswg-test/css-conditional-3 [ Skip ]
+imported/csswg-test/css-counter-styles-3 [ Skip ]
+imported/csswg-test/css-exclusions-1 [ Skip ]
+imported/csswg-test/css-flexbox-1 [ Skip ]
+imported/csswg-test/css-fonts-3 [ Skip ]
+imported/csswg-test/css-gcpm-3 [ Skip ]
+imported/csswg-test/css-grid-1 [ Skip ]
+imported/csswg-test/css-images-3 [ Skip ]
+imported/csswg-test/css-lists-3 [ Skip ]
+imported/csswg-test/css-masking-1 [ Skip ]
+imported/csswg-test/css-multicol-1 [ Skip ]
+imported/csswg-test/css-namespaces-1 [ Skip ]
+imported/csswg-test/css-page-3 [ Skip ]
+imported/csswg-test/css-regions-1 [ Skip ]
+imported/csswg-test/css-ruby-1 [ Skip ]
+## Owners: bjonesbe@adobe.com
+# imported/csswg-test/css-shapes-1 [ Pass ]
+imported/csswg-test/css-speech-1 [ Skip ]
+imported/csswg-test/css-style-attr-1 [ Skip ]
+imported/csswg-test/css-syntax-3 [ Skip ]
+imported/csswg-test/css-tables-3 [ Skip ]
+imported/csswg-test/css-text-3 [ Skip ]
+imported/csswg-test/css-text-decor-3 [ Skip ]
+imported/csswg-test/css-transforms-1 [ Skip ]
+imported/csswg-test/css-transitions-1 [ Skip ]
+imported/csswg-test/css-ui-3 [ Skip ]
+imported/csswg-test/css-values-3 [ Skip ]
+imported/csswg-test/css-variables-1 [ Skip ]
+## Owners: kojii@chromium.org
+# imported/csswg-test/css-writing-modes-3 [ Pass ]
+imported/csswg-test/css1 [ Skip ]
+imported/csswg-test/css21 [ Skip ]
+imported/csswg-test/cssom-1 [ Skip ]
+imported/csswg-test/cssom-view-1 [ Skip ]
+imported/csswg-test/filters-1 [ Skip ]
+imported/csswg-test/fonts [ Skip ]
+imported/csswg-test/geometry-1 [ Skip ]
+imported/csswg-test/mediaqueries-3 [ Skip ]
+imported/csswg-test/resources [ Skip ]
+imported/csswg-test/selectors-3 [ Skip ]
+imported/csswg-test/selectors-4 [ Skip ]
+imported/csswg-test/support [ Skip ]
+imported/csswg-test/tools [ Skip ]
+imported/csswg-test/vendor-imports [ Skip ]
+imported/csswg-test/work-in-progress [ Skip ]
+imported/csswg-test/.gitmodules [ Skip ]
+imported/csswg-test/.hgsubstate [ Skip ]
+imported/csswg-test/.htaccess [ Skip ]
+
+imported/web-platform-tests/2dcontext [ Skip ]
+imported/web-platform-tests/DOMEvents [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/FileAPI [ Pass ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/IndexedDB [ Pass ]
+imported/web-platform-tests/WebCryptoAPI [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/WebIDL [ Pass ]
+imported/web-platform-tests/WebIDL/invalid [ Skip ]
+imported/web-platform-tests/WebIDL/readme.txt [ Skip ]
+imported/web-platform-tests/WebIDL/testable_assertions.txt [ Skip ]
+imported/web-platform-tests/WebIDL/valid [ Skip ]
+imported/web-platform-tests/XMLHttpRequest [ Skip ]
+imported/web-platform-tests/ambient-light [ Skip ]
+imported/web-platform-tests/animation-timing [ Skip ]
+imported/web-platform-tests/app-uri [ Skip ]
+imported/web-platform-tests/battery-status [ Skip ]
+imported/web-platform-tests/common [ Skip ]
+imported/web-platform-tests/config.default.json [ Skip ]
+imported/web-platform-tests/conformance-checkers [ Skip ]
+imported/web-platform-tests/content-security-policy [ Skip ]
+imported/web-platform-tests/cors [ Skip ]
+imported/web-platform-tests/csp [ Skip ]
+## Owners: TBD
+# imported/web-platform-tests/custom-elements [ Pass ]
+imported/web-platform-tests/custom-elements/registering-custom-elements/unresolved-element-pseudoclass [ Skip ]
+imported/web-platform-tests/docs [ Skip ]
+imported/web-platform-tests/dom [ Skip ]
+imported/web-platform-tests/domparsing [ Skip ]
+imported/web-platform-tests/domxpath [ Skip ]
+imported/web-platform-tests/editing [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/encoding [ Pass ]
+imported/web-platform-tests/eventsource [ Skip ]
+imported/web-platform-tests/ext-xhtml-pubid [ Skip ]
+imported/web-platform-tests/fetch [ Skip ]
+imported/web-platform-tests/fonts [ Skip ]
+## Owners: bajones@chromium.org
+# imported/web-platform-tests/gamepad [ Pass ]
+imported/web-platform-tests/geolocation-API [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/hr-time [ Pass ]
+## Owners: tkent@chromium.org
+# imported/web-platform-tests/html [ Pass ]
+## Owners: TBD
+# imported/web-platform-tests/html-imports [ Pass ]
+imported/web-platform-tests/html-longdesc [ Skip ]
+imported/web-platform-tests/html-media-capture [ Skip ]
+imported/web-platform-tests/http [ Skip ]
+imported/web-platform-tests/images [ Skip ]
+imported/web-platform-tests/infrastructure [ Skip ]
+imported/web-platform-tests/js [ Skip ]
+imported/web-platform-tests/lint [ Skip ]
+imported/web-platform-tests/lint.whitelist [ Skip ]
+imported/web-platform-tests/manifest [ Skip ]
+imported/web-platform-tests/media [ Skip ]
+imported/web-platform-tests/media-source [ Skip ]
+## Owners: phoglund@chromium.org
+# imported/web-platform-tests/mediacapture-streams [ Pass ]
+imported/web-platform-tests/microdata [ Skip ]
+imported/web-platform-tests/mixed-content [ Skip ]
+imported/web-platform-tests/navigation-timing [ Skip ]
+imported/web-platform-tests/notifications [ Skip ]
+imported/web-platform-tests/old-tests [ Skip ]
+imported/web-platform-tests/page-visibility [ Skip ]
+imported/web-platform-tests/performance-timeline [ Skip ]
+## Owners: mustaq@chromium.org
+# imported/web-platform-tests/pointerevents [ Pass ]
+imported/web-platform-tests/pointerlock [ Skip ]
+imported/web-platform-tests/progress-events [ Skip ]
+imported/web-platform-tests/proximity [ Skip ]
+imported/web-platform-tests/quirks-mode [ Skip ]
+## Owners: mkwst@chromium.org
+# http://crbug.com/360762: Requires HTTPS server with python.
+imported/web-platform-tests/referrer-policy [ Skip ]
+imported/web-platform-tests/resource-timing [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/resources [ Pass ]
+imported/web-platform-tests/resources/docs [ Skip ]
+imported/web-platform-tests/resources/examples [ Skip ]
+imported/web-platform-tests/resources/webidl2/README.md [ Skip ]
+imported/web-platform-tests/resources/webidl2/test [ Skip ]
+imported/web-platform-tests/selection [ Skip ]
+imported/web-platform-tests/selectors [ Skip ]
+imported/web-platform-tests/selectors-api [ Skip ]
+imported/web-platform-tests/serve [ Skip ]
+imported/web-platform-tests/serve.py [ Skip ]
+imported/web-platform-tests/server-side.md [ Skip ]
+imported/web-platform-tests/service-workers [ Skip ]
+## Owners: kochi@chromium.org crbug.com/505364
+# imported/web-platform-tests/shadow-dom [ Pass ]
+## Owners: mkwst@chromium.org
+# imported/web-platform-tests/subresource-integrity [ Pass ]
+imported/web-platform-tests/svg [ Skip ]
+imported/web-platform-tests/tools [ Skip ]
+imported/web-platform-tests/touch-events [ Skip ]
+imported/web-platform-tests/typedarrays [ Skip ]
+imported/web-platform-tests/url [ Skip ]
+## Owners: jsbell@chromium.org
+# imported/web-platform-tests/user-timing [ Pass ]
+imported/web-platform-tests/vibration [ Skip ]
+imported/web-platform-tests/web-animations [ Skip ]
+imported/web-platform-tests/webaudio [ Skip ]
+imported/web-platform-tests/webdriver [ Skip ]
+imported/web-platform-tests/webgl [ Skip ]
+imported/web-platform-tests/webmessaging [ Skip ]
+## Owners: hta@chromium.org
+# imported/web-platform-tests/webrtc [ Pass ]
+imported/web-platform-tests/websockets [ Skip ]
+## Owners: michaeln@chromium.org,jsbell@chromium.org
+# imported/web-platform-tests/webstorage [ Pass ]
+imported/web-platform-tests/webvtt [ Skip ]
+imported/web-platform-tests/workers [ Skip ]
+
+# Exceptions for individual files that fail due to bugs in the
+# upstream tests that we shouldn't bother importing until they are
+# fixed. Please include an explanation, ideally with a crbug reference
+# (if it's a blink/test tooling issue) or an upstream bug reference
+# (if the test itself is buggy).
+
+# crbug.com/490694: Needs to support *.headers.
+imported/web-platform-tests/html/dom/documents/resource-metadata-management/document-lastModified.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-001.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-007.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-009.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-015.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-016.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-018.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-030.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-034.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-037.html [ Skip ]
+imported/web-platform-tests/html/syntax/parsing-html-fragments/the-input-byte-stream-038.html [ Skip ]
+
+# crbug.com/490939: The following tests are too large.  They cause time out frequently.
+imported/web-platform-tests/html/dom/interfaces.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-embedded.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-forms.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-grouping.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-metadata.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-misc.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-obsolete.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-sections.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-tabular.html [ Skip ]
+imported/web-platform-tests/html/dom/reflection-text.html [ Skip ]
+
+# Depends on unimported directories of web-platform-tests/.
+imported/web-platform-tests/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
+
+# crbug.com/498120: Using absolute URL links.
+imported/web-platform-tests/html/browsers/history/the-location-interface/location-stringifier.html [ Skip ]
+imported/web-platform-tests/html/dom/documents/dom-tree-accessors/document.title-07.html [ Skip ]
+imported/web-platform-tests/html/dom/documents/dom-tree-accessors/Document.currentScript.sub.html [ Skip ]
+imported/web-platform-tests/html/editing/dnd/the-draggable-attribute/draggable_attribute.html [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/terminology-0/document-base-url.html [ Skip ]
+imported/web-platform-tests/html/rendering/non-replaced-elements/the-page/body_text_00ffff-expected.html [ Skip ]
+imported/web-platform-tests/html/rendering/non-replaced-elements/the-page/body_text_00ffff.xhtml [ Skip ]
+imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_href_empty.html [ Skip ]
+imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_href_unspecified.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/audio_loop_base.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/error-codes/error.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_canplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_canplay_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_canplaythrough.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_canplaythrough_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadeddata.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadeddata_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadedmetadata.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadedmetadata_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadstart.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_loadstart_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_order_canplay_canplaythrough.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_order_canplay_playing.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_order_loadedmetadata_loadeddata.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_order_loadstart_progress.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_pause.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_pause_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_play.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_play_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_playing.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_playing_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_progress.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_progress_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_timeupdate.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/event_timeupdate_noautoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/TextTrack/activeCues.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/autoplay-overrides-preload.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/load-events-networkState.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/networkState_during_loadstart.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/networkState_during_progress.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/offsets-into-the-media-resource/currentTime.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/paused_false_during_play.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/paused_true_during_pause.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-move-to-other-document.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-move-within-document.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/play-in-detached-document.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/ready-states/autoplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/readyState_during_canplay.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/readyState_during_canplaythrough.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/readyState_during_loadeddata.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/readyState_during_loadedmetadata.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/readyState_during_playing.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/seeking/seek-to-currentTime.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/seeking/seek-to-max-value.htm [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/seeking/seek-to-negative-time.htm [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/track-api-texttracks.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/user-interface/muted.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/video_loop_base.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-area-element/area-stringifier.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-canvas-element [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-dimension.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-02.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-03.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-04.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-img-element/current-pixel-density/basic.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-img-element/environment-changes/viewport-change.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-img-element/relevant-mutations.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-events.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-fallback.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_dynamic_poster_absolute.htm [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_dynamic_poster_relative.htm [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-video-element/video_initially_paused.html [ Skip ]
+imported/web-platform-tests/html/semantics/forms/the-input-element/image01.html [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-template-element [ Skip ]
+imported/web-platform-tests/html/semantics/text-level-semantics/the-a-element/a-stringifier.html [ Skip ]
+imported/web-platform-tests/html/webappapis/system-state-and-capabilities/the-navigator-object/NavigatorID.html [ Skip ]
+
+# crbug.com/490940: Needs to load extra HTML resources.
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/001.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/002.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/003.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/004.html [ Skip ]
+imported/web-platform-tests/html/browsers/browsing-the-web/unloading-documents/005.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/001.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/002.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/009.html [ Skip ]
+imported/web-platform-tests/html/browsers/history/the-history-interface/010.html [ Skip ]
+imported/web-platform-tests/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-01.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-02.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/accessing-other-browsing-contexts/indexed-browsing-contexts-03.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/named-access-on-the-window-object/named-objects.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-existing.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-parent.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-self-1.html [ Skip ]
+imported/web-platform-tests/html/browsers/windows/browsing-context-names/browsing-context-choose-self-2.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/009.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/011.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/012.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/013.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/014.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/015.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/016.html [ Skip ]
+imported/web-platform-tests/html/dom/dynamic-markup-insertion/opening-the-input-stream/document.open-03.html [ Skip ]
+imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_multiple.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/the-object-element/object-handler.html [ Skip ]
+imported/web-platform-tests/html/semantics/forms/attributes-common-to-form-controls/dirname-ltr.html [ Skip ]
+
+# crbug.com/493537: Need to support SVG reference tests
+imported/web-platform-tests/html/editing/the-hidden-attribute/hidden-2.svg [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1861: A function can be
+# called before it's defined.
+# crbug.com/493465: Requires the pipe feature of wptserve
+imported/web-platform-tests/html/browsers/the-window-object/security-window/window-security.sub.html [ Skip ]
+
+# crbug.com/493465: Requires the pipe feature of wptserve
+imported/web-platform-tests/html/browsers/windows/nested-browsing-contexts/frameElement.sub.html [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/dynamic-changes-to-base-urls/dynamic-urls.sub.xhtml [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/resolving-urls [ Skip ]
+imported/web-platform-tests/html/infrastructure/urls/terminology-0/multiple-base.sub.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/track/track-element/cors [ Skip ]
+imported/web-platform-tests/html/semantics/document-metadata/the-base-element/base_href_specified.sub.html [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1862:
+# The test doesn't handle ':' after a drive letter in file: URL on Windows.
+imported/web-platform-tests/html/browsers/history/the-location-interface/location_hostname.html [ Skip ]
+
+# It contains only manual SVG tests.
+imported/web-platform-tests/html/editing/dnd/svg [ Skip ]
+
+# crbug.com/496467: "hxml" files have CR (not CR+LF) and any patches fail.
+imported/web-platform-tests/html/editing/dnd/platform/plugin/swfsources [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1881: Tests refer
+# non-existing .js file.
+imported/web-platform-tests/html/syntax/parsing/template [ Skip ]
+
+# these contain an extraneous debug log div ..
+imported/web-platform-tests/html-imports/link-import-null.html [ Skip ]
+imported/web-platform-tests/html-imports/link-import.html [ Skip ]
+imported/web-platform-tests/html-imports/loading-import.html [ Skip ]
+
+# We'll never be able to test WebRTC deny tests since we always auto-allow
+# user media.
+imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/deny.html [ Skip ]
+
+# Requires http server.
+imported/web-platform-tests/html/browsers/history/the-history-interface/008.html [ Skip ]
+imported/web-platform-tests/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/creating_browsing_context_test_01.html [ Skip ]
+
+# Requires http server. Moved the following test to http/tests/custom-elements/.
+imported/web-platform-tests/custom-elements/creating-and-passing-registries/no-registry-test.html [ Skip ]
+
+# crbug.com/404303: Was broken as of 2014-07-06.
+imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/unknownkey-option-param.html
+imported/web-platform-tests/mediacapture-streams/obtaining-local-multimedia-content/navigatorusermedia/empty-option-param.html
+
+# Uses custom request handler
+imported/web-platform-tests/encoding/single-byte-decoder.html [ Skip ]
+imported/web-platform-tests/encoding/resources/single-byte-raw.py [ Skip ]
+imported/web-platform-tests/encoding/resources/text-plain-charset.py [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-moved.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-addEventListener.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-no-listener.html [ Skip ]
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-remove-onerror.html [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_003.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_004.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_005.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_006.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_007.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_008.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_009.htm [ Skip ]
+imported/web-platform-tests/html/semantics/scripting-1/the-script-element/async_010.htm [ Skip ]
+
+# https://github.com/w3c/web-platform-tests/issues/1875  The test has a syntax error.
+imported/web-platform-tests/html/semantics/forms/the-input-element/email.html [ Skip ]
+
+# CSS Writing Modes Level 3: Following tests require applying writing-mode to table-cell, which we do not support today. crbug.com/409155
+imported/csswg-test/css-writing-modes-3/block-flow-direction-017.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/block-flow-direction-018.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/line-box-direction-015.xht [ Skip ]
+imported/csswg-test/css-writing-modes-3/line-box-direction-016.xht [ Skip ]
+
+# CSS Writing Modes Level 3: Following tests require part of text-combine-upright we do not plan to support.
+imported/csswg-test/css-writing-modes-3/full-width-001.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/full-width-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/full-width-003.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-parsing-digits-001.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-parsing-digits-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits2-001.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits2-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits2-003.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits3-001.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits3-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits3-003.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-001.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-002.html [ Skip ]
+imported/csswg-test/css-writing-modes-3/text-combine-upright-value-digits4-003.html [ Skip ]
+
+# References /images/ directory. crbug.com/360762
+imported/web-platform-tests/FileAPI/url/url_xmlhttprequest_img.html [ Skip ]

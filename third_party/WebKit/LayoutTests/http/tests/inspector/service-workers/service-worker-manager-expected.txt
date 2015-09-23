@@ -1,0 +1,8 @@
+Tests the way service worker manager manages targets.
+
+Target added: Main type: 1
+Target added: ⚙ service-worker-empty.js type: 4
+Target added: ⚙ service-worker-empty.js type: 2
+Target removed: ⚙ service-worker-empty.js type: 2
+Target removed: ⚙ service-worker-empty.js type: 4
+

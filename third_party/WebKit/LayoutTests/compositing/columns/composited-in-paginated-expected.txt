@@ -1,0 +1,20 @@
+{
+  "bounds": [1600, 585],
+  "children": [
+    {
+      "bounds": [1600, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [818, 145],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

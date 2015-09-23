@@ -1,0 +1,23 @@
+Test 'volume' attribute
+
+EXPECTED (video.volume == '1') OK
+RUN(video.volume = 0.5)
+EXPECTED (video.volume == '0.5') OK
+RUN(video.volume = Number.MIN_VALUE)
+EXPECTED (video.volume == '5e-324') OK
+RUN(video.volume = 0)
+EXPECTED (video.volume == '0') OK
+TEST(video.volume = 1.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (1.5) is outside the range [0, 1].) OK
+TEST(video.volume = -0.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (-0.5) is outside the range [0, 1].) OK
+TEST(video.volume = -Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.") OK
+TEST(video.volume = Infinity) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.") OK
+TEST(video.volume = NaN) THROWS("TypeError: Failed to set the 'volume' property on 'HTMLMediaElement': The provided double value is non-finite.") OK
+RUN(video.load())
+EVENT(canplaythrough)
+EXPECTED (video.volume == '0') OK
+RUN(video.volume = 0.5)
+EXPECTED (video.volume == '0.5') OK
+TEST(video.volume = 1.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (1.5) is outside the range [0, 1].) OK
+TEST(video.volume = -0.5) THROWS(DOMException.INDEX_SIZE_ERR: Failed to set the 'volume' property on 'HTMLMediaElement': The volume provided (-0.5) is outside the range [0, 1].) OK
+END OF TEST
+

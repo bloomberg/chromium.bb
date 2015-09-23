@@ -1,0 +1,46 @@
+<!-- Based on fast/repaint/remove-inline-block-descendant-of-flex.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "InlineTextBox '\n'",
+    "LayoutBR BR",
+    "RootInlineBox",
+    "LayoutBlockFlow DIV id='inline-block-1' class='item'",
+    "InlineBox",
+    "LayoutText #text",
+    "RootInlineBox",
+    "InlineBox",
+    "RootInlineBox",
+    "InlineBox",
+    "RootInlineBox",
+    "LayoutBlockFlow DIV",
+    "LayoutBlockFlow DIV id='inline-block-2' class='item'",
+    "LayoutBR BR",
+    "InlineTextBox '\n'",
+];
+function paintInvalidationTest() {
+  document.getElementById('inline-block-1').style.display = 'none';
+}
+onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+  margin : 0;
+}
+.item {
+  display: inline-block;
+  height: 100px;
+  width: 100px;
+}
+</style>
+Tests paint invalidation of inline blocks following an inline-block that is removed.
+Passes if there is only one green square at the top-left corner of the window.
+<div style="display: flex; height: 300px; position: absolute; top: 100px">
+  <div style="display: flex">
+    <div style="width: 100px">
+      <div id="inline-block-1" class="item" style="background-color: red"><br></div>
+      <div id="inline-block-2" class="item" style="background-color: green"><br></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+
+crbug.com/469678: We should fire an image load event even if the image is the last one we loaded successfully.
+
+In this test we load an image then we immediately launch an other request for the same image - only one load event should be fired.
+
+Then we do the same again: another load event should be fired.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Image onload event fired for green.jpg
+Image onload event fired for green.jpg
+PASS

@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/resources-test.js"></script>
+<script src="../../inspector/resource-tree/resource-tree-test.js"></script>
+<script>
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.runAfterResourcesAreFinished(["main-resource-content-frame-utf8.php", "main-resource-content-frame.html"], step2)
+
+    var resource;
+    function step2()
+    {
+        InspectorTest.addResult("Requesting content: ");
+        resource = InspectorTest.resourceMatchingURL("main-resource-content-frame.html");
+        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step3);
+    }
+
+    function step3(error, content)
+    {
+        InspectorTest.assertTrue(!!content, "No content available.");
+        InspectorTest.addResult("Resource url: " + resource.url);
+        InspectorTest.addResult("Resource content: " + content);
+
+        InspectorTest.addResult("Requesting utf8 content: ");
+        resource = InspectorTest.resourceMatchingURL("main-resource-content-frame-utf8.php");
+        InspectorTest.PageAgent.getResourceContent(resource.frameId, resource.url, step4);
+    }
+
+    function step4(error, content)
+    {
+        InspectorTest.assertTrue(!!content, "No content available.");
+        InspectorTest.addResult("Resource url: " + resource.url);
+        InspectorTest.addResult("Resource content: " + content);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="onload()">
+<iframe src="resources/main-resource-content-frame.html"></iframe>
+<iframe src="resources/main-resource-content-frame-utf8.php"></iframe>
+<p>
+Tests main resource content is correctly loaded and decoded using correct encoding.
+</p>
+</body>
+</html>

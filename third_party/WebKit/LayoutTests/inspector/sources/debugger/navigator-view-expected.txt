@@ -1,0 +1,147 @@
+Tests scripts panel file selectors.
+
+Adding first resource:
+  Dumping ScriptsNavigator sources tab:
+    localhost:8080
+  Dumping ScriptsNavigator contentScripts tab:
+Expanding domains:
+  Dumping ScriptsNavigator sources tab:
+    localhost:8080
+      LayoutTests/inspector/debugger/foo/bar
+  Dumping ScriptsNavigator contentScripts tab:
+Adding second resource:
+  Dumping ScriptsNavigator sources tab:
+    localhost:8080
+      LayoutTests/inspector/debugger/foo/bar
+  Dumping ScriptsNavigator contentScripts tab:
+Adding other resources:
+  Dumping ScriptsNavigator sources tab:
+    localhost:8080
+      LayoutTests/inspector/debugger/foo
+  Dumping ScriptsNavigator contentScripts tab:
+Adding content scripts and some random resources:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector/debugger/foo
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+Revealing first resource:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector/debugger/foo
+        bar
+          script.js
+          script.js?a=1
+          script.js?a=2
+        baz
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+Adding some resources to change the way debugger folder looks like, first:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+        debugger2/foo/bar
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+Second:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+        debugger2/foo/bar
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+Others:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+        debugger2/foo
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+    example.com
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+        debugger2/foo
+        debugger3/hasOwnProperty
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+Revealing all resources:
+  Dumping ScriptsNavigator sources tab:
+    (no domain)
+      ?a=b
+      very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
+    example.com
+      path with spaces
+        white space.html
+      the%2fdir
+        foo?bar=100%&baz=a%20%2fb
+        foo?bar=100&baz=a %2fb
+      (index)
+      ?a=b
+    localhost:8080
+      LayoutTests/inspector
+        debugger/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+            script.js
+        debugger2/foo
+          bar
+            script.js
+            script.js?a=1
+            script.js?a=2
+          baz
+            script.js
+        debugger3/hasOwnProperty
+          __proto__
+            constructor
+              foo.js
+            foo.js
+          foo.js
+  Dumping ScriptsNavigator contentScripts tab:
+    localhost:8080
+      LayoutTests/inspector/debugger/foo/bar
+        contentScript.js?a=1
+        contentScript.js?a=2
+        contentScript2.js?a=1
+Removing all resources:
+  Dumping ScriptsNavigator sources tab:
+  Dumping ScriptsNavigator contentScripts tab:
+

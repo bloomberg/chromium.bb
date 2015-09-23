@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<style>
+    .spacer {
+        position: relative;
+        width: 300px;
+        height: 300px;
+    }
+
+    .clipping-container {
+        position: absolute;
+        height: 300px;
+        transform: translateZ(0);
+        width: 100%;
+        clip: rect(100px, 200px, 200px, 100px);
+    }
+
+    .clipped-composited-child {
+        width: 250px;
+        height: 250px;
+        background-color: yellow;
+        border: 1px solid black;
+        transform: translateZ(0);
+    }
+</style>
+<div class="spacer">
+    <div class="clipping-container">
+        <div class="clipped-composited-child"></div>
+    </div>
+</div>
+<div class="spacer">
+    <div class="clipping-container">
+        <div class="clipped-composited-child"></div>
+    </div>
+</div>

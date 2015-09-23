@@ -1,0 +1,7 @@
+Test that seeking video with no 'src' attribute sets default playback start position to that time.
+
+EXPECTED (video.networkState == '0') OK
+EXPECTED (video.readyState == '0') OK
+EXPECTED (video.currentTime == '1.1') OK
+END OF TEST
+

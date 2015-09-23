@@ -1,0 +1,21 @@
+Tests that dialog.returnValue is settable and returns the last value set.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS dialog.returnValue is ''
+PASS dialog.returnValue is 'Setting value directly'
+PASS dialog.returnValue is 'null'
+PASS dialog.returnValue is ''
+PASS dialog.returnValue is '7'
+PASS dialog.returnValue is 'Return value set from close()'
+PASS dialog.returnValue is ''
+PASS dialog.returnValue is 'null'
+PASS dialog.returnValue is 'Should not change because no argument to close()'
+PASS dialog.returnValue is 'Should not change because of undefined argument to close()'
+PASS dialog.close('blah') threw exception InvalidStateError: Failed to execute 'close' on 'HTMLDialogElement': The element does not have an 'open' attribute, and therefore cannot be closed..
+PASS dialog.returnValue is 'Should not change because close() is invalid'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

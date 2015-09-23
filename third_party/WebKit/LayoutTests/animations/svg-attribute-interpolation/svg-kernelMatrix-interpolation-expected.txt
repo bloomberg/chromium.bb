@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [1, 2, 3] at 0
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [2, 4, 6] at 0.2
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [4, 8, 12] at 0.6
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [6, 12, 18] at 1
+
+Web Animations API:
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [-1, -2, -3] at -0.4
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [1, 2, 3] at 0
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [2, 4, 6] at 0.2
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [4, 8, 12] at 0.6
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [6, 12, 18] at 1
+PASS: kernelMatrix from [1, 2, 3] to [6, 12, 18] was [8, 16, 24] at 1.4
+

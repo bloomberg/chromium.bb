@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+    img = new Image();
+    var onloadCounter = 0;
+    var testImage = 'resources/green.jpg';
+    var resetImage = 'resources/green.jpg';
+    img.onload = function(){
+        onloadCounter++;
+        debug("Image onload event fired for " + img.src.substring(img.src.lastIndexOf('/') + 1));
+        if (onloadCounter == 2) {
+            document.getElementById('result').textContent = "PASS";
+            if (window.testRunner)
+                testRunner.notifyDone();
+            return;
+        }
+        if (onloadCounter == 1) {
+            setTimeout(function() {
+                img.src= resetImage;
+                img.src = testImage;
+                }, 0);
+            return;
+        }
+        document.getElementById('result').textContent = "FAIL";
+    };
+    setTimeout(function() {
+        img.src= resetImage;
+        img.src = testImage;
+        }, 0);
+</script>
+<div id="console">
+crbug.com/469678: We should fire an image load event even if the image is the last one we loaded successfully.<br>
+In this test we load an image then we immediately launch an other request for the same image - only one load event should be fired.<br>
+Then we do the same again: another load event should be fired.<br>
+</div>
+<div id="result">FAIL</div>

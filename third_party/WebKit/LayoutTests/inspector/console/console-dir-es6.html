@@ -1,0 +1,73 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function onload()
+{
+    var obj = new Object();
+    obj["a"] = 1;
+    obj[Symbol()] = 2;
+    obj[Symbol("a")] = 3;
+    obj[Symbol("a")] = Symbol.iterator;
+    obj[Symbol.iterator] = Symbol("foo");
+    console.dir(obj);
+
+    // This used to crash in debug build.
+    console.dir(Symbol());
+
+    [new Map(), new WeakMap()].forEach(function(m) {
+        m.set(obj, {foo: 1});
+        console.dir(m);
+    });
+    [new Set(), new WeakSet()].forEach(function(s) {
+        s.add(obj);
+        console.dir(s);
+    });
+
+    // Test circular dependency by entries.
+    var s1 = new Set();
+    var s2 = new Set();
+    s1.add(s2);
+    s2.add(s1);
+    console.dir(s1);
+
+    // Test "No Entries" placeholder.
+    console.dir(new WeakMap());
+
+    // Test Map/Set iterators.
+    var m = new Map();
+    m.set(obj, {foo: 1});
+    var s = new Set();
+    s.add(obj);
+    [m, s].forEach(function(c) {
+        console.dir(c.keys());
+        console.dir(c.values());
+        console.dir(c.entries());
+    });
+
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests that console logging dumps proper messages.
+</p>
+
+</body>
+</html>

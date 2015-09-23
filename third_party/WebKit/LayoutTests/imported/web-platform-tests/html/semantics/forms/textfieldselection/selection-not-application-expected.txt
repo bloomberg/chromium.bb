@@ -1,0 +1,27 @@
+This is a testharness.js-based test.
+PASS text field selection for the input hidden 
+PASS text field selection for the input email 
+FAIL text field selection for the input datetime assert_throws: function "function (){
+        el.selectionStart;
+      }" did not throw
+PASS text field selection for the input date 
+PASS text field selection for the input month 
+PASS text field selection for the input week 
+PASS text field selection for the input time 
+PASS text field selection for the input number 
+PASS text field selection for the input range 
+PASS text field selection for the input color 
+PASS text field selection for the input checkbox 
+PASS text field selection for the input radio 
+PASS text field selection for the input file 
+PASS text field selection for the input submit 
+PASS text field selection for the input image 
+PASS text field selection for the input reset 
+PASS text field selection for the input button 
+PASS text field selection for the input text 
+PASS text field selection for the input search 
+PASS text field selection for the input tel 
+PASS text field selection for the input url 
+PASS text field selection for the input password 
+Harness: the test ran to completion.
+

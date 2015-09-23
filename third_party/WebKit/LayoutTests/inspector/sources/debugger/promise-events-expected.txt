@@ -1,0 +1,37 @@
+Tests promise tracker events in debugger.
+
+Set timer for test function.
+gc:
+    id: 0
+gc:
+    id: 1
+new:
+    id: 0
+    testFunction promise-events.html:9
+new:
+    id: 1
+    testFunction promise-events.html:15
+new:
+    id: 2
+    testFunction promise-events.html:22
+new:
+    id: 3
+    testFunction promise-events.html:23
+update:
+    id: 0
+    status: resolved
+    promiseConstructor1 promise-events.html:12
+update:
+    id: 1
+    status: rejected
+    promiseConstructor2 promise-events.html:18
+update:
+    id: 2
+    parent id: 1
+update:
+    id: 2
+    status: resolved
+update:
+    id: 3
+    parent id: 2
+

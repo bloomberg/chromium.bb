@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test asynchronous setServerCertificate while running garbage collection</title>
+        <script src="encrypted-media-utils.js"></script>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            // Run garbage collection continuously.
+            setInterval(asyncGC, 0);
+
+            promise_test(function(test)
+            {
+                return navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+                    return access.createMediaKeys();
+                }).then(function(mediaKeys) {
+                    var cert = new Uint8Array(200);
+                    return mediaKeys.setServerCertificate(cert);
+                }).then(function() {
+                    assert_unreached('setServerCertificate() did not fail');
+                }, function(e) {
+                    assert_equals(e.name, 'NotSupportedError');
+                    return Promise.resolve();
+                });
+            }, 'Test asynchronous setServerCertificate while running garbage collection.');
+        </script>
+    </body>
+</html>

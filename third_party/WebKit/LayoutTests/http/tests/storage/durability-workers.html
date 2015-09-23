@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<title>navigator.storage methods work from workers</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+var worker = new Worker('resources/durability-worker.js');
+fetch_tests_from_worker(worker);
+</script>

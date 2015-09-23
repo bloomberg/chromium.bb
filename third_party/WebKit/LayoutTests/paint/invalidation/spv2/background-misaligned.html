@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/background-misaligned.html -->
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow (positioned) DIV id='target'",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").style.display = "none";
+    }
+</script>
+<body onload="runPaintInvalidationTest()">
+    <div style="
+        width: 267px;
+        height: 270px;
+        border: solid black;
+        background-image: url(../../../fast/backgrounds/size/resources/bikes.bmp);
+        -webkit-background-size: 500% 500%;
+        position: relative;
+    ">
+        <div id="target" style="
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        "></div>
+    </div>
+</body>

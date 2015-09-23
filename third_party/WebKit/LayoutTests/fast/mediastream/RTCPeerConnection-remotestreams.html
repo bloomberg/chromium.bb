@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests that an RTCPeerConnection can signal that remote streams are added and removed.");
+
+var pc = null;
+var local_stream = null;
+
+function error() {
+    testFailed('Stream generation failed.');
+    finishJSTest();
+}
+
+function getUserMedia(dictionary, callback) {
+    try {
+        navigator.webkitGetUserMedia(dictionary, callback, error);
+    } catch (e) {
+        testFailed('webkitGetUserMedia threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+function requestSucceeded2()
+{
+    testPassed('requestSucceeded was called.');
+    shouldBeEqualToNumber('pc.getRemoteStreams().length', 0);
+    finishJSTest();    
+}
+
+function requestSucceeded1()
+{
+    testPassed('requestSucceeded was called.');
+    shouldBeEqualToNumber('pc.getRemoteStreams().length', 1);
+
+    sessionDescription = new RTCSessionDescription({type:"offer", sdp:"remote"});
+    shouldNotThrow('pc.setRemoteDescription(sessionDescription, requestSucceeded2, requestFailedUnexpectedly);');
+}
+
+function requestFailedUnexpectedly()
+{
+    testFailed('requestFailed was called.');
+    finishJSTest();
+}
+
+function gotStream(stream) {
+    local_stream = stream;
+    pc.addStream(local_stream);
+
+    sessionDescription = new RTCSessionDescription({type:"answer", sdp:"remote"});
+    shouldNotThrow('pc.setRemoteDescription(sessionDescription, requestSucceeded1, requestFailedUnexpectedly);');
+}
+
+function onAddStream(event) {
+    testPassed('remote stream was added');
+    shouldBeEqualToNumber('event.stream.getVideoTracks().length', 1);
+    shouldBeEqualToNumber('event.stream.getAudioTracks().length', 1);
+    shouldBeTrue('event.stream.active')
+    pc.removeStream(local_stream);
+}
+
+function onRemoveStream(event) {
+    testPassed('remote stream was removed');
+    shouldBeEqualToNumber('event.stream.getVideoTracks().length', 0);
+    shouldBeEqualToNumber('event.stream.getAudioTracks().length', 0);
+    shouldBeFalse('event.stream.active')
+}
+
+pc = new webkitRTCPeerConnection(null, null);
+pc.onaddstream = onAddStream;
+pc.onremovestream = onRemoveStream;
+getUserMedia({audio:true, video:true}, gotStream);
+
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+var p1, p2, p3;
+
+function testFunction()
+{
+    debugger; // <- will turn on async call stacks here.
+    setTimeout(func1, 0);
+}
+
+function func1()
+{
+    p1 = Promise.reject(new Error("EXPECTED"));
+    setTimeout(func2, 0);
+}
+
+function func2()
+{
+    var resolve;
+    var reject;
+    p2 = new Promise(
+        function (a, b)
+        {
+            resolve = a;
+            reject = b;
+        }
+    );
+    setTimeout(func3.bind(null, resolve, reject), 50);
+}
+
+function func3(resolve, reject)
+{
+    p3 = p1.catch(function() {});
+    var x = 42;
+    resolve(x);
+    setTimeout(func4, 0);
+}
+
+function func4()
+{
+    debugger; // <- will stop the test here.
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    var promisePane;
+
+    InspectorTest.addSniffer(WebInspector.TabbedPane.prototype, "changeTabView", onChangeTabView, true);
+    WebInspector.inspectorView.showViewInDrawer("promises", true);
+
+    function onChangeTabView(id, view)
+    {
+        if (!promisePane && id === "promises") {
+            promisePane = view;
+            InspectorTest.assertTrue(promisePane instanceof WebInspector.PromisePane);
+            InspectorTest.startDebuggerTest(step1, true);
+        }
+    }
+
+    function dumpPromiseDataGrid(callback)
+    {
+        promisePane._dataGrid._update();
+        var result = InspectorTest.dumpDataGridIntoString(promisePane._dataGrid);
+        result = result.replace(/\|\s+\d+\s+\w*\s*\|/g, "| <number> ms |");
+        InspectorTest.addResult(result);
+        if (callback)
+            callback();
+    }
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("Is drawer visible: " + WebInspector.inspectorView.drawerVisible());
+        InspectorTest.addResult("Selected view in drawer: " + WebInspector.inspectorView.selectedViewInDrawer());
+        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, dumpPromiseDataGrid.bind(null, step4)));
+    }
+
+    var searchValues = [
+        "func3",
+        "func",
+        "promise-pane.html",
+        "promise-pane.html:38",
+    ];
+
+    function step4()
+    {
+        var text = searchValues.shift();
+        if (!text) {
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
+        InspectorTest.addResult("\nSetting search value: " + text);
+        promisePane._textFilterUI.setValue(text);
+        promisePane._refresh();
+        dumpPromiseDataGrid(step4);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests promise pane view.
+</p>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+var initialize_AdditionalPreload = function() {
+    InspectorTest.preloadModule("source_frame");
+}
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", onRevisionAdded);
+
+    var treeElement;
+    var hasResourceChanged;
+
+    var testFinished = false;
+    var revisionAdded = false;
+    var displayName = "";
+
+    function step1()
+    {
+        // Click "Add new rule".
+        InspectorTest.addNewRule("foo, div#inspected, bar", step2);
+    }
+
+    function step2()
+    {
+        var section = InspectorTest.firstMatchedStyleSection();
+        var newProperty = section.addNewBlankProperty();
+        newProperty.startEditing();
+        textInputController.insertText("color");
+        newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
+        textInputController.insertText("maroon");
+        newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009")); // Tab
+        InspectorTest.selectNodeAndWaitForStyles("other", step3);
+    }
+
+    function step3()
+    {
+        // Click "Add new rule".
+        InspectorTest.addNewRule(null, onRuleAdded);
+
+        function onRuleAdded()
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", step4);
+        }
+    }
+
+    function step4()
+    {
+        InspectorTest.addResult("After adding new rule (inspected):");
+        InspectorTest.dumpSelectedElementStyles(true, false, true, true);
+        InspectorTest.selectNodeAndWaitForStyles("other", step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult("After adding new rule (other):");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        testFinished = true;
+        maybeCompleteTest();
+    }
+
+    function maybeCompleteTest()
+    {
+        if (!testFinished || !revisionAdded)
+            return;
+        InspectorTest.addResult("Revision added: " + displayName);
+        InspectorTest.completeTest();
+    }
+
+    function onRevisionAdded(revision)
+    {
+        displayName = this.displayName();
+        revisionAdded = true;
+        maybeCompleteTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that adding a new rule works after switching nodes.
+</p>
+
+<div id="inspected" style="font-size: 12px">Text</div>
+<div id="other" style="color:red"></div>
+
+</body>
+</html>

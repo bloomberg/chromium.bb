@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<!-- This tests that players get updated even if they have previously had their effect removed or go out of effect. -->
+
+<div id='element'></div>
+
+<script>
+var element = document.getElementById('element');
+var keyframeEffect = new KeyframeEffect(element, [{left: '0px'}, {left: '100px'}], 10);
+test(function() {
+    var player = document.timeline.play(keyframeEffect);
+    player.finish();
+    assert_equals(getComputedStyle(element).left, 'auto');
+
+    player.play();
+    assert_equals(getComputedStyle(element).left, '0px');
+
+    player.finish();
+}, 'Player updated after finish and play');
+
+test(function() {
+    var player = document.timeline.play(keyframeEffect);
+    assert_equals(getComputedStyle(element).left, '0px');
+    var effect = player.effect
+    player.effect = null;
+    assert_equals(getComputedStyle(element).left, 'auto');
+
+    player.effect = effect;
+    assert_equals(getComputedStyle(element).left, '0px');
+
+    player.finish();
+}, 'Player updated after clear and set effect');
+</script>

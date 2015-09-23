@@ -1,0 +1,47 @@
+
+Tests asynchronous call stacks for Web SQL.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) onCreateTableSQLTransactionCallback (async-callstack-web-sql.html:39)
+    [SQLTransaction]
+    0) openDB (async-callstack-web-sql.html:27)
+    [setTimeout]
+    0) testFunction (async-callstack-web-sql.html:9)
+
+Call stack:
+    0) onDropTable (async-callstack-web-sql.html:47)
+    [SQLStatement]
+    0) onCreateTableSQLTransactionCallback (async-callstack-web-sql.html:42)
+    [SQLTransaction]
+    0) openDB (async-callstack-web-sql.html:27)
+    [setTimeout]
+    0) testFunction (async-callstack-web-sql.html:9)
+
+Call stack:
+    0) onSuccess (async-callstack-web-sql.html:14)
+    [SQLStatement]
+    0) onCreateTableSQLTransactionCallback (async-callstack-web-sql.html:40)
+    [SQLTransaction]
+    0) openDB (async-callstack-web-sql.html:27)
+    [setTimeout]
+    0) testFunction (async-callstack-web-sql.html:9)
+
+Call stack:
+    0) onSuccess (async-callstack-web-sql.html:14)
+    [SQLStatement]
+    0) onCreateTableSQLTransactionCallback (async-callstack-web-sql.html:41)
+    [SQLTransaction]
+    0) openDB (async-callstack-web-sql.html:27)
+    [setTimeout]
+    0) testFunction (async-callstack-web-sql.html:9)
+
+Call stack:
+    0) onSuccess (async-callstack-web-sql.html:14)
+    [SQLTransaction]
+    0) openDB (async-callstack-web-sql.html:27)
+    [setTimeout]
+    0) testFunction (async-callstack-web-sql.html:9)
+
+

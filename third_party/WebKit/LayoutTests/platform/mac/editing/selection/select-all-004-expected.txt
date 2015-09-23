@@ -1,0 +1,19 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600 scrollWidth 812
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (64,64) size 748x472 [border: (50px solid #FF0000)]
+      LayoutBlockFlow {DIV} at (74,74) size 600x0
+      LayoutBlockFlow (anonymous) at (74,74) size 600x48
+        LayoutText {#text} at (0,10) size 54x28
+          text run at (0,10) width 54: "Hello"
+      LayoutTable {TABLE} at (74,122) size 6x6
+        LayoutTableSection {TBODY} at (0,0) size 6x6
+          LayoutTableRow {TR} at (0,2) size 6x2
+            LayoutTableCell {TD} at (2,2) size 2x2 [r=0 c=0 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (74,128) size 600x48
+        LayoutBR {BR} at (0,10) size 0x28
+selection start: position 1 of child 2 {#text} of body
+selection end:   position 0 of child 5 {BR} of body

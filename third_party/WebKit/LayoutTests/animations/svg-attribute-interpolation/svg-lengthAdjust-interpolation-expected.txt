@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacing] at 0
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacing] at 0.2
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacingAndGlyphs] at 0.6
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacingAndGlyphs] at 1
+
+Web Animations API:
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacing] at -0.4
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacing] at 0
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacing] at 0.2
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacingAndGlyphs] at 0.6
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacingAndGlyphs] at 1
+PASS: lengthAdjust from [spacing] to [spacingAndGlyphs] was [spacingAndGlyphs] at 1.4
+

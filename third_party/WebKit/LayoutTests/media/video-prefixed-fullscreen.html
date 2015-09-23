@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Test the prefixed HTMLVideoElement fullscreen API</title>
+        <script src="media-file.js"></script>
+        <script src="video-test.js"></script>
+        <script>
+            function start()
+            {
+                findMediaElement();
+                testExpected("video.webkitSupportsFullscreen", true);
+                testExpected("video.webkitDisplayingFullscreen", false);
+                video.src = findMediaFile("video", "content/test");
+                waitForEvent("loadeddata", loadeddata);
+            }
+
+            function loadeddata()
+            {
+                testExpected("video.webkitSupportsFullscreen", true);
+                testExpected("video.webkitDisplayingFullscreen", false);
+                run("video.webkitEnterFullscreen()");
+                waitForEvent("webkitfullscreenerror", fullscreenerror);
+            }
+
+            function fullscreenerror()
+            {
+                testExpected("video.webkitSupportsFullscreen", true);
+                testExpected("video.webkitDisplayingFullscreen", false);
+                document.onclick = function()
+                {
+                    run("video.webkitEnterFullscreen()");
+                    waitForEventOnce("webkitfullscreenchange", fullscreenenter);
+                };
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+            }
+
+            function fullscreenenter()
+            {
+                testExpected("video.webkitSupportsFullscreen", true);
+                testExpected("video.webkitDisplayingFullscreen", true);
+                run("video.webkitExitFullscreen()");
+                waitForEvent("webkitfullscreenchange", fullscreenexit);
+            }
+
+            function fullscreenexit()
+            {
+                testExpected("video.webkitSupportsFullscreen", true);
+                testExpected("video.webkitDisplayingFullscreen", false);
+                endTest();
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <p>Test the prefixed HTMLVideoElement fullscreen API</p>
+        <video></video>
+    </body>
+</html>

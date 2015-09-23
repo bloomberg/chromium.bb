@@ -1,0 +1,29 @@
+Event.path should include only unclosed nodes.
+
+Dispaching a click event on #target_open, listening on #target_open.
+PASS eventPath.length is 9
+
+event.path for #target_open:
+#target_open, #open_shadow_in_open_shadow, #inner_open, #open_shadow, #host_open, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 9
+
+Dispaching a click event on #target_closed, listening on #target_closed.
+PASS eventPath.length is 9
+
+event.path for #target_closed:
+#target_closed, #open_shadow_in_closed_shadow, #inner_closed, #closed_shadow, #host_closed, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 9
+
+Dispaching a click event on #target_open, listening on document.body.
+PASS eventPath.length is 9
+
+event.path for #target_open:
+#target_open, #open_shadow_in_open_shadow, #inner_open, #open_shadow, #host_open, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 9
+
+Dispaching a click event on #target_closed, listening on document.body.
+PASS eventPath.length is 5
+
+event.path for #target_closed:
+#host_closed, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 5
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

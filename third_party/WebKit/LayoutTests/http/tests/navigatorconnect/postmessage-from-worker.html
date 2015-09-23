@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<title>
+  Tests posting messages over a navigator.connect initiated channel from a web
+  worker.
+</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script src="resources/postmessage-tests.js"></script>
+<body>
+<script>
+var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
+
+run_postmessage_tests(location.origin, connect_from_worker);
+</script>
+</body>

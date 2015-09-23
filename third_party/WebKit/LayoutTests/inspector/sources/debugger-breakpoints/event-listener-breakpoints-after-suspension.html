@@ -1,0 +1,78 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testElementClicked()
+{
+    return 0;
+}
+
+function addListenerAndClick()
+{
+    var element = document.getElementById("test");
+    element.addEventListener("click", testElementClicked, true);
+    element.click();
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(start);
+
+    function start()
+    {
+        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        pane._setBreakpoint("listener:click");
+        InspectorTest.waitUntilPaused(paused);
+        InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+    }
+
+    function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+    {
+        printEventTargetName(auxData);
+        InspectorTest.resumeExecution(suspendAll);
+    }
+
+    function suspendAll()
+    {
+        InspectorTest.addResult("Suspend all targets");
+        WebInspector.targetManager.suspendAllTargets();
+        InspectorTest.runAfterPendingDispatches(resumeAll);
+    }
+
+    function resumeAll()
+    {
+        InspectorTest.addResult("Resume all targets");
+        WebInspector.targetManager.resumeAllTargets();
+        InspectorTest.waitUntilPaused(finish);
+        InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+    }
+
+    function finish()
+    {
+        InspectorTest.addResult("Successfully paused after suspension and resuming all targets");
+        InspectorTest.completeDebuggerTest();
+    }
+
+    function printEventTargetName(auxData)
+    {
+        var targetName = auxData && auxData.targetName;
+        if (targetName)
+            InspectorTest.addResult("Event target: " + targetName);
+        else
+            InspectorTest.addResult("FAIL: No event target name received!");
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests event listener breakpoints.
+</p>
+
+<input type=button id="test"></input>
+</body>
+</html>

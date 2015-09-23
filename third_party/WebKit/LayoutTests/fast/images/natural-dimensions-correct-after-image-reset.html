@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+    img = new Image();
+    var testImage = 'resources/green.jpg';
+    img.onload = function(){
+        img.removeAttribute('src');
+        if (img.naturalWidth > 0) {
+            debug("Natural width is : " + img.naturalWidth + " and should be 0.");
+            if (window.testRunner)
+                testRunner.notifyDone();
+            return;
+        }
+        document.getElementById('result').textContent = "PASS";
+        if (window.testRunner)
+            testRunner.notifyDone();
+    };
+    setTimeout(function() {
+        img.src = testImage;
+        }, 0);
+</script>
+<div id="console">
+    crbug.com/468915: Resetting or removing the src attribute should reset the image immediately, rather than waiting for an asynchronous load to do it.<br>
+</div>
+<div id="result">FAIL</div>
+

@@ -1,0 +1,25 @@
+<!doctype HTML>
+<style>
+  #plugin {
+    width: 150px;
+    height: 150px;
+    border: 1px solid black;
+  }
+</style>
+<embed id="plugin"></embed>
+<script>
+onload = function() {
+    document.getElementById("plugin").setAttribute('type', 'application/x-webkit-test-netscape');
+
+    if (window.testRunner) {
+        window.testRunner.waitUntilDone();
+        // Need to paint two frames in order to allow the plugin to propery load.
+        // TODO(chrishtr): find out why and fix.
+        window.testRunner.layoutAndPaintAsyncThen(function() {
+            window.testRunner.layoutAndPaintAsyncThen(function() {
+                window.testRunner.notifyDone();
+            });
+        });
+    }
+}
+</script>

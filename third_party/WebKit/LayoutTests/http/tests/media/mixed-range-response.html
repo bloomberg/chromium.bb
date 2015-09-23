@@ -1,0 +1,73 @@
+<title>Mixed range responses must be handled as an error.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/get-host-info.js"></script>
+<script src="../../media-resources/media-file.js"></script>
+<body>
+<script>
+// This file tests the following behavior:
+// 1. The audio element sends the first request.
+// 2. mixed-range-response.php returns the first 3 bytes ("Ogg").
+// 3. The element sends the second request with "Range: bytes=3-" header.
+// 4. mixed-range-response.php returns 206 response.
+// 5. The element sends the third request to load-video.php.
+// 6. load-video.php returns the audio file from the fourth byte.
+//
+// If the origin of 2. (mixed-range-response.php) and 6. (load-video.php) are
+// different, an error should occur.
+
+function create_failure_audio_test(url) {
+  return new Promise(function(resolve, reject) {
+      var audio = document.createElement('audio');
+      audio.oncanplay = function() {
+        reject('canplay event should not be fired. url: ' + url);
+      };
+      audio.onerror = resolve;
+      audio.src = url;
+      document.body.appendChild(audio);
+    });
+}
+
+function create_success_audio_test(url) {
+  return new Promise(function(resolve, reject) {
+      var audio = document.createElement('audio');
+      audio.oncanplay = resolve;
+      audio.onerror = function(e) {
+        reject('error event should not be fired. url: ' + url);
+      };
+      audio.src = url;
+      document.body.appendChild(audio);
+    });
+}
+
+var HOST_INFO = get_host_info();
+var MIX_RESPONSE_PHP_PATH = '/media/resources/mixed-range-response.php';
+var AUDIO_PATH = '/media/resources/load-video.php?' +
+                 'name=../../../../media/content/silence.oga&type=audio/ogg';
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_ORIGIN'] + AUDIO_PATH));
+  }, 'Mixing same-origin responses must succeed.');
+
+promise_test(function(t) {
+    return create_failure_audio_test(
+        HOST_INFO['HTTP_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH));
+  }, 'Mixing same-origin response and remote-origin response must fail.');
+
+promise_test(function(t) {
+    return create_failure_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_ORIGIN'] + AUDIO_PATH));
+  }, 'Mixing remote-origin response and same-origin response must fail.');
+
+promise_test(function(t) {
+    return create_success_audio_test(
+        HOST_INFO['HTTP_REMOTE_ORIGIN'] + MIX_RESPONSE_PHP_PATH + '?location=' +
+        encodeURIComponent(HOST_INFO['HTTP_REMOTE_ORIGIN'] + AUDIO_PATH));
+  }, 'Mixing same remote-origin responses must succeed.');
+
+</script>
+</body>

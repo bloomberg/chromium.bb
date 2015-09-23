@@ -1,0 +1,31 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [146, 11, 125, 13],
+        [146, 11, 46, 13],
+        [146, 11, 40, 13],
+        [11, 11, 125, 13],
+        [11, 11, 46, 13],
+        [11, 11, 40, 13]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "LayoutText #text",
+        "InlineTextBox 'PASSED'",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "LayoutText #text",
+        "InlineTextBox 'PASSED'"
+      ]
+    }
+  ]
+}
+

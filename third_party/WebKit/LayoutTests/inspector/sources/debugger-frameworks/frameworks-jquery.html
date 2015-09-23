@@ -1,0 +1,85 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/jquery-1.11.1.min.js"></script>
+<script>
+
+function testFunction()
+{
+    var pp = $("p");
+    var scripts = $("script");
+    pp.on("testevent", onTestEvent1);
+    pp.on("testevent", onTestEvent2);
+    pp.on("testevent", onTestEvent3);
+
+    debugger;
+
+    scripts.each(onEachScript);
+    pp.trigger("testevent");
+}
+
+function onTestEvent1()
+{
+    output("onTestEvent1");
+}
+
+function onTestEvent2()
+{
+    output("onTestEvent2");
+}
+
+function onTestEvent3()
+{
+    output("onTestEvent3");
+}
+
+function onEachScript(index, script)
+{
+    return script.textContent;
+}
+
+function test()
+{
+    var frameworkRegexString = "/jquery-1\\.11\\.1\\.min\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        var actions = [
+            "Print", // "debugger" in testFunction()
+            "StepInto", "StepInto", "Print", // entered onEachScript()
+            "StepInto", "StepInto", "Print", // again in onEachScript()
+            "StepOver", "StepOver", "Print", // again in onEachScript()
+            "StepOut", "Print",              // last time in onEachScript()
+            "StepOut", "Print",              // about to execute jQuery.trigger()
+            "StepInto", "Print",             // onTestEvent1
+            "StepOut", "Print",              // onTestEvent2
+            "StepOver", "StepOver", "Print", // onTestEvent3
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests framework blackboxing feature on jQuery.
+</p>
+</body>
+</html>

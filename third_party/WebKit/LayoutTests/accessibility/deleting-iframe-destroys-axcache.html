@@ -1,0 +1,77 @@
+<html>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/accessibility-helper.js"></script>
+<body>
+
+<p id="before">Before</p>
+
+<iframe id="iframe" src="data:text/html,<body><button>Click me</button></body>"></iframe>
+
+<p id="after">After</p>
+
+<p>End of test</p>
+
+<p id="description"></p>
+<div id="console"></div>
+<script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+
+    function runTest()
+    {
+        description("This tests that deleting an iframe doesn't cause the accessibility cache to be destroyed and recreated.");
+
+        if (window.accessibilityController) {
+            window.before = accessibilityController.accessibleElementById('before');
+            window.iframe = accessibilityController.accessibleElementById('iframe');
+            window.after = accessibilityController.accessibleElementById('after');
+            window.root = before.parentElement();
+
+            window.frameBody = iframe.childAtIndex(0);
+            window.frameBodyRole = frameBody.role;
+            window.frameGroup = frameBody.childAtIndex(0);
+            window.frameGroupRole = frameGroup.role;
+            window.frameButton = frameGroup.childAtIndex(0);
+            window.frameButtonRole = frameButton.role;
+
+            document.getElementById("console").innerText += "\nBefore:\n";
+            buildAccessibilityTree(root, 0, 1);
+
+            // Remove the iframe.
+            document.body.removeChild(document.getElementById("iframe"));
+
+            // Force layout now so that the childAtIndex calls below
+            // reflect the new render tree.
+            document.body.offsetTop;
+
+            window.newBefore = accessibilityController.accessibleElementById('before');
+            window.newAfter = accessibilityController.accessibleElementById('after');
+            window.newRoot = newBefore.parentElement();
+
+            document.getElementById("console").innerText += "\nAfter:\n";
+            buildAccessibilityTree(newRoot, 0, 1);
+            document.getElementById("console").innerText += "\n";
+
+            // Make sure that the accessibility objects from the iframe's nodes
+            // are now invalid by checking that their role is changed - this
+            // is because they've been deleted.
+            shouldBeFalse("frameBodyRole == frameBody.role");
+            shouldBeFalse("frameGroupRole == frameGroup.role");
+            shouldBeFalse("frameButtonRole == frameButton.role");
+
+            // Make sure that the other nodes are unchanged.
+            shouldBeTrue("before.isEqual(newBefore)");
+            shouldBeTrue("after.isEqual(newAfter)");
+        }
+
+        debug('<br /><span class="pass">TEST COMPLETE</span>');
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+
+    window.addEventListener('load', function() {
+        setTimeout(runTest, 10);
+    }, false);
+</script>
+</body>
+</html>

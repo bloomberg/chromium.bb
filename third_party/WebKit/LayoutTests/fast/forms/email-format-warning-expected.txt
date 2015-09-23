@@ -1,0 +1,13 @@
+CONSOLE WARNING: line 8: The specified value "parsing\u263A" is not a valid email address.
+CONSOLE WARNING: line 9: The specified value "value-before-type\u263A" is not a valid email address.
+CONSOLE WARNING: line 10: The specified value "invalid-in-multiple\u263A" is not a valid email address.
+CONSOLE WARNING: The specified value "Invalid attribute value" is not a valid email address.
+CONSOLE WARNING: The specified value "Invalid attribute value" is not a valid email address.
+CONSOLE WARNING: The specified value "Invalid IDL value" is not a valid email address.
+Invisible INPUT element should not show a format warning.
+
+Visible INPUT element should show a format warning. We'll see three warnings.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

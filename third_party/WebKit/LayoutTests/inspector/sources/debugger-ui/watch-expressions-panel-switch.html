@@ -1,0 +1,77 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/network-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function testFunction()
+{
+    var x = Math.sqrt(10);
+    return x;
+}
+
+var test = function()
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    var currentSourceFrame;
+    var watchExpressionsPane;
+    //callback per each watchExpression called twice: in constructor and when actual evaluation result is available
+    var updateCount = 4;
+
+    function step1()
+    {
+        watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
+        watchExpressionsPane.expand();
+        watchExpressionsPane.addExpression("window.document");
+        watchExpressionsPane.addExpression("windowa.document");
+
+        var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
+        testName = testName.substring(testName.lastIndexOf('/') + 1);
+        InspectorTest.showScriptSource(testName, didShowScriptSource);
+    }
+
+    function didShowScriptSource(sourceFrame)
+    {
+        currentSourceFrame = sourceFrame;
+        InspectorTest.addResult("Script source was shown.");
+        InspectorTest.setBreakpoint(currentSourceFrame, 9, "", true);
+        InspectorTest.addSniffer(WebInspector.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
+        // Switch to another panel to test how watch expressions evaluation together with panel switching.
+        WebInspector.NetworkPanel.show();
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames)
+    {
+    }
+
+    function watchExpressionsUpdated()
+    {
+        updateCount--;
+        if (updateCount)
+            return;
+
+        InspectorTest.addResult("Watch expressions updated.");
+
+        for (var i = 0; i < watchExpressionsPane._watchExpressions.length; i++) {
+            var watch = watchExpressionsPane._watchExpressions[i];
+            var nameElement = watch._objectPresentationElement.querySelector(".name");
+            var valueElement = watch._objectPresentationElement.querySelector(".value");
+            InspectorTest.addResult("'" + nameElement.textContent + "'" + " => " + "'" + valueElement.textContent + "'");
+        }
+
+        watchExpressionsPane._deleteAllButtonClicked();
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests debugger does not fail when stopped while a panel other than scripts was opened. Both valid and invalid expressions are added to watch expressions.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=70718">Bug 70718</a>
+</body>
+</html>

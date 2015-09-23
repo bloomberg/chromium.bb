@@ -1,0 +1,10 @@
+Test that removing invalid event listeners from image documents doesn't crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS No crash.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

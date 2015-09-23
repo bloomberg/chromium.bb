@@ -1,0 +1,78 @@
+Test the behavior of isPointInStroke in Canvas with path object
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Initial behavior: lineWidth = 1.0
+PASS ctx.isPointInStroke(path,20,20) is true
+PASS ctx.isPointInStroke(path,120,20) is true
+PASS ctx.isPointInStroke(path,20,120) is true
+PASS ctx.isPointInStroke(path,120,120) is true
+PASS ctx.isPointInStroke(path,70,20) is true
+PASS ctx.isPointInStroke(path,20,70) is true
+PASS ctx.isPointInStroke(path,120,70) is true
+PASS ctx.isPointInStroke(path,70,120) is true
+PASS ctx.isPointInStroke(path,22,22) is false
+PASS ctx.isPointInStroke(path,118,22) is false
+PASS ctx.isPointInStroke(path,22,118) is false
+PASS ctx.isPointInStroke(path,118,118) is false
+PASS ctx.isPointInStroke(path,70,18) is false
+PASS ctx.isPointInStroke(path,122,70) is false
+PASS ctx.isPointInStroke(path,70,122) is false
+PASS ctx.isPointInStroke(path,18,70) is false
+PASS ctx.isPointInStroke(path,NaN,122) is false
+PASS ctx.isPointInStroke(path,18,NaN) is false
+
+Check invalid type
+PASS ctx.isPointInStroke(null,70,20) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInStroke(undefined,70,20) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInStroke([],20,70) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInStroke({},120,70) threw exception TypeError: Failed to execute 'isPointInStroke' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+
+Set lineWidth = 10.0
+PASS ctx.isPointInStroke(path,22,22) is true
+PASS ctx.isPointInStroke(path,118,22) is true
+PASS ctx.isPointInStroke(path,22,118) is true
+PASS ctx.isPointInStroke(path,118,118) is true
+PASS ctx.isPointInStroke(path,70,18) is true
+PASS ctx.isPointInStroke(path,122,70) is true
+PASS ctx.isPointInStroke(path,70,122) is true
+PASS ctx.isPointInStroke(path,18,70) is true
+PASS ctx.isPointInStroke(path,26,70) is false
+PASS ctx.isPointInStroke(path,70,26) is false
+PASS ctx.isPointInStroke(path,70,114) is false
+PASS ctx.isPointInStroke(path,114,70) is false
+
+Check lineJoin = 'bevel'
+PASS ctx.isPointInStroke(path,113,20) is false
+
+Check lineJoin = 'miter'
+PASS ctx.isPointInStroke(path,113,20) is true
+
+Check miterLimit = 2.0
+PASS ctx.isPointInStroke(path,113,20) is false
+
+Check lineCap = 'butt'
+PASS ctx.isPointInStroke(path,112,10) is false
+
+Check lineCap = 'round'
+PASS ctx.isPointInStroke(path,112,10) is true
+PASS ctx.isPointInStroke(path,117,10) is false
+
+Check lineCap = 'square'
+PASS ctx.isPointInStroke(path,112,10) is true
+PASS ctx.isPointInStroke(path,117,10) is false
+
+Check setLineDash([10,10])
+PASS ctx.isPointInStroke(path,15,10) is true
+PASS ctx.isPointInStroke(path,25,10) is false
+PASS ctx.isPointInStroke(path,35,10) is true
+
+Check dashOffset = 10
+PASS ctx.isPointInStroke(path,15,10) is false
+PASS ctx.isPointInStroke(path,25,10) is true
+PASS ctx.isPointInStroke(path,35,10) is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

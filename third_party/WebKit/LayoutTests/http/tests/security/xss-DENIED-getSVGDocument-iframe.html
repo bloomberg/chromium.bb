@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+function runTest() {
+    try {
+        var svgDoc = document.getElementById("svgobject").getSVGDocument();
+        console.log("FAIL: got SVGDocument: " + svgDoc);
+    } catch (e) {
+        console.log("PASS: SVGDocument access threw: '" + e.toString() + "'.");
+    }
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+</script>
+</head>
+<body onload="runTest()">
+<iframe id="svgobject" src="http://localhost:8080/security/resources/empty-svg.php"
+        width="400" height="300"></iframe> 
+<div id="output"></div>
+</body>
+</html>

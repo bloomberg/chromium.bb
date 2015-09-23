@@ -1,0 +1,32 @@
+-----Event-----
+type: mousedown
+button: 0
+x: 100
+y: 200
+-----Event-----
+type: mouseup
+button: 0
+x: 100
+y: 200
+-----Event-----
+type: mousemove
+button: 0
+shiftKey
+x: 50
+y: 150
+-----Event-----
+type: mousedown
+button: 2
+x: 100
+y: 200
+-----Event-----
+type: contextmenu
+button: 2
+x: 100
+y: 200
+-----Event-----
+type: mouseup
+button: 2
+x: 100
+y: 200
+

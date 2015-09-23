@@ -1,0 +1,65 @@
+Unittests for private scripts.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS privateScriptTest.return123() is 123
+PASS privateScriptTest.echoInteger(111) is 111
+PASS privateScriptTest.echoString("foo") is "foo"
+PASS privateScriptTest.addInteger(111, 222) is 333
+PASS privateScriptTest.addString("foo", "bar") is "foobar"
+PASS privateScriptTest.getIntegerFromPrototype() is 0
+PASS privateScriptTest.getIntegerFromPrototype() is 123
+PASS privateScriptTest.getIntegerFromDocument(document) is 0
+PASS privateScriptTest.getIntegerFromDocument(document) is 123
+PASS privateScriptTest.firstChild(node1) is node2
+PASS privateScriptTest.nextSibling(node2) is node3
+PASS privateScriptTest.nextSibling(node3) is node4
+PASS privateScriptTest.nextSibling(node4) is null
+PASS privateScriptTest.innerHTML(node5) is ""
+PASS privateScriptTest.innerHTML(node5) is "<div>foo</div>"
+PASS privateScriptTest.innerHTML(node6) is "foo"
+PASS privateScriptTest.innerHTML(node7) is ""
+PASS privateScriptTest.innerHTML(node7) is "clicked"
+PASS privateScriptTest.readonlyShortAttribute is 123
+PASS privateScriptTest.shortAttribute is -1
+PASS privateScriptTest.shortAttribute is 111
+PASS privateScriptTest.stringAttribute is "xxx"
+PASS privateScriptTest.stringAttribute is "foo"
+PASS privateScriptTest.nodeAttribute is null
+PASS privateScriptTest.nodeAttribute is node8
+PASS privateScriptTest.nodeAttributeThrowsIndexSizeError threw exception IndexSizeError: Failed to read the 'nodeAttributeThrowsIndexSizeError' property from 'PrivateScriptTest': getter threw error.
+PASS privateScriptTest.nodeAttributeThrowsIndexSizeError = null threw exception IndexSizeError: Failed to set the 'nodeAttributeThrowsIndexSizeError' property on 'PrivateScriptTest': setter threw error.
+PASS privateScriptTest.voidMethodThrowsDOMSyntaxError() threw exception SyntaxError: Failed to execute 'voidMethodThrowsDOMSyntaxError' on 'PrivateScriptTest': method threw error.
+PASS privateScriptTest.voidMethodThrowsError() threw exception Error: Failed to execute 'voidMethodThrowsError' on 'PrivateScriptTest': method threw Error.
+PASS privateScriptTest.voidMethodThrowsTypeError() threw exception TypeError: Failed to execute 'voidMethodThrowsTypeError' on 'PrivateScriptTest': method threw TypeError.
+PASS privateScriptTest.voidMethodThrowsRangeError() threw exception RangeError: Failed to execute 'voidMethodThrowsRangeError' on 'PrivateScriptTest': method threw RangeError.
+PASS privateScriptTest.voidMethodThrowsSyntaxError() threw exception SyntaxError: Failed to execute 'voidMethodThrowsSyntaxError' on 'PrivateScriptTest': method threw SyntaxError.
+PASS privateScriptTest.voidMethodThrowsReferenceError() threw exception ReferenceError: Failed to execute 'voidMethodThrowsReferenceError' on 'PrivateScriptTest': method threw ReferenceError.
+PASS privateScriptTest.voidMethodThrowsStackOverflowError() threw exception RangeError: Failed to execute 'voidMethodThrowsStackOverflowError' on 'PrivateScriptTest': Maximum call stack size exceeded.
+PASS privateScriptTest.addIntegerImplementedInCPP(111, 222) is 333
+PASS privateScriptTest.stringAttributeImplementedInCPP is "undefined"
+PASS privateScriptTest.stringAttributeImplementedInCPP is "foo"
+PASS privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly is undefined.
+PASS privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly is undefined.
+PASS privateScriptTest.addIntegerInPartial(111, 222) is 333
+PASS privateScriptTest.addInteger2InPartial(111, 222) is 333
+PASS privateScriptTest.stringAttributeInPartial is "foo"
+PASS event.bubbles is true
+PASS event.cancelable is true
+PASS event.valueInPrivateScript is undefined.
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 1
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 1
+PASS exception is an instance of function DOMException() { [native code] }
+PASS exception.code is 12
+PASS exception is an instance of function Error() { [native code] }
+PASS exception is an instance of function TypeError() { [native code] }
+PASS exception is an instance of function RangeError() { [native code] }
+PASS exception is an instance of function SyntaxError() { [native code] }
+PASS exception is an instance of function ReferenceError() { [native code] }
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

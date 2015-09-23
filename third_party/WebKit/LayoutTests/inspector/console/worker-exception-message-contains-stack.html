@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+var worker1;
+var worker2;
+
+function startWorker1()
+{
+    worker1 = new Worker("resources/worker-with-throw.js");
+}
+
+function startWorker2()
+{
+    worker2 = new Worker("resources/worker-with-throw.js");
+    worker2.onerror = function(e) {
+        console.log(e.message);
+        e.preventDefault();
+    }
+}
+
+function postMessageToWorker(worker)
+{
+    worker.postMessage("ping");
+}
+
+function test()
+{
+    startWorkerAndPostMessage(step2, "worker1", "startWorker1");
+
+    function step2()
+    {
+        InspectorTest.waitUntilMessageReceived(step3);
+        startWorkerAndPostMessage(undefined, "worker2", "startWorker2");
+    }
+
+    function step3()
+    {
+        InspectorTest.expandConsoleMessages(step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+
+    function contextCreated(next, workerName)
+    {
+        InspectorTest.evaluateInPage("postMessageToWorker(" + workerName + ")", next);
+    }
+
+    function startWorkerAndPostMessage(next, workerName, workerStartFunction)
+    {
+        InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated.bind(this, next, workerName));
+        InspectorTest.evaluateInPage(workerStartFunction + "()");
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests exception message from worker contains stack trace.</p>
+</body>
+</html>

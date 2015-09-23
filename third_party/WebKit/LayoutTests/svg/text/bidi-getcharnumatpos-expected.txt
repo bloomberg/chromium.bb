@@ -1,0 +1,7 @@
+Foo הפוך
+Foo הפוך
+ This is a testharness.js-based test.
+PASS BiDi getCharNumAtPosition(), direction=ltr. 
+PASS BiDi getCharNumAtPosition(), direction=rtl. 
+Harness: the test ran to completion.
+

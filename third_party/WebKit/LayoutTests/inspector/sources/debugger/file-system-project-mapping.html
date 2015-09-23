@@ -1,0 +1,389 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script src="../../../http/tests/inspector/isolated-filesystem-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script src="resources/edit-me.js"></script>
+<script>
+function test()
+{
+    var target;
+    var manager;
+    var resourceScriptMapping;
+    var defaultScriptMapping;
+
+    function createObjects()
+    {
+        if (target)
+            InspectorTest.testTargetManager.removeTarget(target);
+        target = InspectorTest.createWorkspaceWithTarget();
+        manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
+        var entry = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target);
+        resourceScriptMapping = entry._resourceMapping;
+        defaultScriptMapping = entry._defaultMapping;
+    }
+
+    InspectorTest.runTestSuite([
+        function testAutomaticMapping(next)
+        {
+            function dumpFileSystemUISourceCodesMappings()
+            {
+                var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
+                InspectorTest.addResult("UISourceCode uri to url mappings:");
+                for (var i = 0; i < uiSourceCodes.length; ++i) {
+                    var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
+                    InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
+                }
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>"};
+            var uiSourceCode;
+            var networkUISourceCode;
+            var setting;
+
+            createObjects();
+
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            manager.addFiles(fileSystemPath, files);
+            InspectorTest.addResult("Adding network resource.");
+            InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>");
+            InspectorTest.addMockUISourceCodeToWorkspace("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>");
+            dumpFileSystemUISourceCodesMappings();
+            uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+            networkUISourceCode = InspectorTest.testWorkspace.uiSourceCode(WebInspector.NetworkProject.projectId(target, "http://localhost"), "html/foo.js");
+            console.error("networkUISourceCode: " + networkUISourceCode);
+            InspectorTest.override(WebInspector.SourcesPanel.prototype, "_suggestReload", function() { });
+            InspectorTest.addResult("Adding mapping between network and file system resources.");
+            InspectorTest.testNetworkMapping.addMapping(networkUISourceCode, uiSourceCode, manager.fileSystemWorkspaceBinding);
+            setting = InspectorTest.testFileSystemMapping._fileSystemMappingSetting;
+            InspectorTest.addResult("Emulate reloading inspector.");
+
+            createObjects();
+
+            InspectorTest.testFileSystemMapping._fileSystemMappingSetting = setting;
+            InspectorTest.testFileSystemMapping._loadFromSettings();
+            manager.addMockFileSystem(fileSystemPath, true);
+            manager.addFiles(fileSystemPath, files);
+            dumpFileSystemUISourceCodesMappings();
+            InspectorTest.addResult("Removing mapping between network and file system resources.");
+            uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+            InspectorTest.testNetworkMapping.removeMapping(uiSourceCode);
+
+            InspectorTest.addResult("Emulate reloading inspector.");
+
+            createObjects();
+
+            manager.addMockFileSystem(fileSystemPath);
+            manager.addFiles(fileSystemPath, files);
+            dumpFileSystemUISourceCodesMappings();
+
+            var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
+            InspectorTest.testFileSystemMapping.removeMappingForURL(networkURL);
+            next();
+        },
+
+        function testScriptFileOnReloadWithDirtyFile(next)
+        {
+            var originalFileContent = "<foo content>";
+            var scriptURL = "http://localhost/html/foo.js";
+            var scriptContent = originalFileContent + "\n  //# sourceURL=" + scriptURL + "  \n ";
+            function unloadScript()
+            {
+                resourceScriptMapping._debuggerReset();
+                defaultScriptMapping._debuggerReset();
+            }
+
+            function loadScript()
+            {
+                script = InspectorTest.createScriptMock(scriptURL, 0, 0, false, scriptContent, InspectorTest.testTargetManager.targets()[0]);
+                defaultScriptMapping.addScript(script);
+                resourceScriptMapping.addScript(script);
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/html/foo.js": originalFileContent, "/bar.js": "<bar content>"};
+            var uiSourceCode;
+            var target;
+
+            createObjects();
+
+            InspectorTest._originalDebuggerBinding = WebInspector.debuggerWorkspaceBinding;
+            WebInspector.debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
+            target = InspectorTest.testTargetManager.targets()[0];
+            WebInspector._originalTargetManager = WebInspector.targetManager;
+            WebInspector.targetManager = InspectorTest.testTargetManager;
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding file system mapping.");
+            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
+            manager.addFiles(fileSystemPath, files);
+
+            loadScript();
+
+            uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "html/foo.js");
+            InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
+
+            function dumpUISourceCodeAndScriptContents()
+            {
+                InspectorTest.addResult("Dumping uiSourceCode and script content:");
+                InspectorTest.addResult("    uiSourceCode: " + uiSourceCode.workingCopy());
+                InspectorTest.addResult("    script: " + scriptContent);
+            }
+
+            function didShowScriptSource(sourceFrame)
+            {
+                dumpUISourceCodeAndScriptContents();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                InspectorTest.addResult("Editing uiSourceCode:");
+                uiSourceCode.setWorkingCopy("<foo content edited>");
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                function setScriptSourceOverrideFailure(scriptId, newContent, callback)
+                {
+                    callback("error");
+                }
+                InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideFailure);
+
+                InspectorTest.addResult("Committing uiSourceCode with live edit failure:");
+                uiSourceCode.commitWorkingCopy(function() { });
+                dumpUISourceCodeAndScriptContents();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                InspectorTest.addResult("Reloading with saved but diverged uiSourceCode:");
+                unloadScript();
+                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(!sourceFrame._muted, "Saved but diverged source frame should not be muted");
+
+                InspectorTest.addResult("Loading script.");
+                loadScript();
+                dumpUISourceCodeAndScriptContents();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                InspectorTest.addResult("Editing uiSourceCode again:");
+                uiSourceCode.setWorkingCopy("<foo content edited again>");
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                function setScriptSourceOverrideSuccess(scriptId, newContent, callback)
+                {
+                    scriptContent = newContent;
+                    callback();
+                }
+                InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideSuccess);
+
+                InspectorTest.addResult("Committing uiSourceCode again (with live edit success now):");
+                uiSourceCode.commitWorkingCopy(function() { });
+                dumpUISourceCodeAndScriptContents();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                InspectorTest.addResult("Reloading page:");
+                unloadScript();
+                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(!sourceFrame._muted, "Saved and merged source frame should not be muted");
+                InspectorTest.addResult("Loading script.");
+                loadScript();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                InspectorTest.addResult("Editing uiSourceCode again and reloading while it is dirty:");
+                uiSourceCode.setWorkingCopy("<foo content edited and dirty>");
+                unloadScript();
+                InspectorTest.assertTrue(!resourceScriptMapping.scriptFile(uiSourceCode), "UISourceCode should not have script file after unloading scripts.");
+                InspectorTest.assertTrue(sourceFrame._muted, "Dirty source frame should be muted");
+                InspectorTest.addResult("Loading script.");
+                loadScript();
+                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
+                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
+
+                unloadScript();
+                loadScript;
+
+                InspectorTest.testFileSystemMapping.removeFileMapping(fileSystemPath, "http://localhost/", "/");
+                WebInspector.debuggerWorkspaceBinding = InspectorTest._originalDebuggerBinding;
+                next();
+            }
+        },
+
+        function testLiveEditReload(next)
+        {
+            InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+            
+            function didShowScriptSource(sourceFrame)
+            {
+                var scriptURL = InspectorTest.testNetworkMapping.networkURL(sourceFrame._uiSourceCode);
+
+                var fileContent = "function f()\n{\n    return 0;\n}\n";
+                var fileSystemPath = "/var/www";
+                var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+                var filePath = "/html/edit-me.js"; 
+                var files = {};
+                files[filePath] = fileContent;
+                InspectorTest.addResult("Adding file system.");
+                InspectorTest.addMockFileSystem(fileSystemPath)
+                InspectorTest.addResult("Adding file system mapping.");
+                WebInspector.isolatedFileSystemManager.mapping().addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
+                InspectorTest.addFilesToMockFileSystem(fileSystemPath, files);
+                // Now that we've set everything up, we need to reload a page to remove all network resources.
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
+                InspectorTest.reloadPage(pageReloaded);
+            }
+
+            function pageReloaded()
+            {
+                // Now reload again as part of test.
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);
+                InspectorTest.reloadPage(pageReloadedAgain);
+            }
+
+            function pageReloadedAgain()
+            {
+                WebInspector.targetManager = WebInspector._originalTargetManager;
+                InspectorTest.showScriptSource("edit-me.js", didShowFile);
+            }
+
+            function didShowFile(sourceFrame)
+            {
+                replaceInSource(sourceFrame, "return 0;", "return \"live-edited string\";", didEditScriptSource);
+            }
+
+            function didEditScriptSource()
+            {
+                InspectorTest.evaluateInPage("f()", didEvaluateInPage)
+            }
+
+            function didEvaluateInPage(result)
+            {
+                InspectorTest.assertEquals("live-edited string", result.description, "edited function returns wrong result");
+                var panel = WebInspector.panels.sources;
+                InspectorTest.dumpSourceFrameContents(panel.visibleView);
+                next();
+            }
+
+            function replaceInSource(sourceFrame, string, replacement, callback)
+            {
+                InspectorTest.addSniffer(WebInspector.DebuggerModel.prototype, "_didEditScriptSource", callback);
+                InspectorTest.replaceInSource(sourceFrame, string, replacement);
+                InspectorTest.commitSource(sourceFrame);
+            }
+        },
+
+        function testExcludingFolders(next)
+        {
+            function dumpWorkspaceUISourceCodes()
+            {
+                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
+                var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+                for (var i = 0; i < uiSourceCodes.length; ++i)
+                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/html/foo.js": "", "/.git/foogit.js": "", "/bar.js": "", "/html2/foo.js": ""};
+
+            createObjects();
+
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding exclusion pattern and excluded folder.");
+            InspectorTest.testExcludedFolderManager.addExcludedFolder(fileSystemPath, "/html/");
+            manager.addFiles(fileSystemPath, files);
+            dumpWorkspaceUISourceCodes();
+            InspectorTest.addResult("Excluding html2 folder:");
+            InspectorTest.testWorkspace.uiSourceCodes()[0].project().excludeFolder("/html2/");
+            dumpWorkspaceUISourceCodes();
+            InspectorTest.testExcludedFolderManager.removeExcludedFolder(fileSystemPath, "/html/");
+            next();
+        },
+
+        function testRemoveProject(next)
+        {
+            function dumpWorkspaceUISourceCodes()
+            {
+                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
+                var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+                for (var i = 0; i < uiSourceCodes.length; ++i)
+                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+            }
+
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/foo.js": ""};
+            createObjects();
+
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            manager.addFiles(fileSystemPath, files);
+            dumpWorkspaceUISourceCodes();
+            InspectorTest.addResult("Removing project:");
+            InspectorTest.testWorkspace.addEventListener(WebInspector.Workspace.Events.ProjectRemoved, projectRemoved);
+            InspectorTest.testTargetManager.removeTarget(target);
+            target = null;
+
+            function projectRemoved()
+            {
+                InspectorTest.addResult("Received project removed event.");
+                setImmediate(next);
+            }
+        },
+
+        function testURLAfterRenaming(next)
+        {
+            var fileSystemPath = "/var/www";
+            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
+            var files = {"/html/foo.js": "<foo content>", "/bar.js": "<bar content>", "/foo/bar/baz.js": "<baz content>"};
+            var uiSourceCodes;
+            var index = 0;
+            var oldURL;
+
+            createObjects();
+
+            InspectorTest.addResult("Adding file system.");
+            manager.addMockFileSystem(fileSystemPath);
+            InspectorTest.addResult("Adding file system mapping.");
+            InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, "http://localhost/", "/");
+            manager.addFiles(fileSystemPath, files);
+
+            InspectorTest.addResult("Renaming files:");
+            uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
+            renameNextFile();
+
+            function renameNextFile()
+            {
+                var uiSourceCode = uiSourceCodes[index];
+                oldURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                uiSourceCodes[index].rename("newName.js", fileRenamed);
+            }
+
+            function fileRenamed()
+            {
+                var uiSourceCode = uiSourceCodes[index];
+                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
+                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + networkURL);
+                ++index;
+                if (index < uiSourceCodes.length)
+                    renameNextFile();
+                else
+                    next();
+            }
+        },
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests file system project mappings.</p>
+</body>
+</html>

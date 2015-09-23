@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+    <head>
+        <title>AudioTrackList &amp; VideoTrackList.getTrackById</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+        <script src="../media-file.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            async_test(function(t)
+            {
+                var e = document.createElement('video');
+
+                assert_equals(e.audioTracks.length, 0);
+                assert_equals(e.audioTracks.getTrackById(''), null);
+
+                assert_equals(e.videoTracks.length, 0);
+                assert_equals(e.videoTracks.getTrackById(''), null);
+
+                e.src = findMediaFile('video', '../content/test');
+
+                e.addEventListener('loadedmetadata', t.step_func(function()
+                {
+                    assert_equals(e.audioTracks.length, 1);
+                    assert_equals(e.audioTracks.getTrackById(e.audioTracks[0].id), e.audioTracks[0]);
+                    assert_equals(e.audioTracks.getTrackById('fake-id'), null);
+
+                    assert_equals(e.videoTracks.length, 1);
+                    assert_equals(e.videoTracks.getTrackById(e.videoTracks[0].id), e.videoTracks[0]);
+                    assert_equals(e.videoTracks.getTrackById('fake-id'), null);
+
+                    t.done();
+                }));
+            });
+        </script>
+    </body>
+</html>

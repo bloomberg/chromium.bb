@@ -1,0 +1,72 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/elements-test.js"></script>
+<script>
+
+function reopenWebInspector(objectId)
+{
+    window.didReopen = 1;
+    testRunner.closeWebInspector();
+    setTimeout(function() {
+      testRunner.showWebInspector();
+      runTest();
+    }, 0);
+}
+
+function createShadowRoot()
+{
+    delete window.didReopen;
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    var template = document.querySelector('#tmpl');
+    var root = document.querySelector('#host').createShadowRoot();
+    root.appendChild(template.content.cloneNode(true));
+    if (window.testRunner)
+        testRunner.showWebInspector();
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
+
+    function dispatch(error, result, wasThrown)
+    {
+        if (result.type !== "number") {
+            InspectorTest.evaluateInPage("console.log('Opening front-end for the first time')");
+            runTests(reopenInspector);
+        } else {
+            InspectorTest.evaluateInPage("console.log('Opening front-end second time')");
+            runTests(InspectorTest.completeTest);
+        }
+    }
+
+    function reopenInspector()
+    {
+        InspectorTest.evaluateInPage("reopenWebInspector()");
+    }
+
+    function runTests(callback)
+    {
+        InspectorTest.selectNodeAndWaitForStyles("inner", step2);
+        
+        function step2()
+        {
+            InspectorTest.dumpSelectedElementStyles(true);
+            callback();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="createShadowRoot()">
+<p>This test checks that style sheets hosted inside shadow roots could be inspected if inspector is reopened.</p>
+<div id="host"></div>
+<template id="tmpl">
+    <style> .red { color: red; } </style>
+    <div id="inner" class="red">hi!</div>
+</template>
+</body>
+</html>

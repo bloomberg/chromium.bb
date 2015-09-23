@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<style>
+div {
+    width: 100px;
+    height: 100px;
+    background-color: blue;
+}
+.container {
+    translate: 100px 100px;
+    background-color: red;
+    perspective-origin: 150% 150%;
+    perspective: 500px;
+}
+#box1 {
+    translate: inherit;
+}
+#box2 {
+    translate: 100% -200% -500px;
+}
+#box3 {
+    translate: 300px;
+}
+</style>
+
+<div class="container">
+    <div id="box1">1</div>
+    <div id="box2">2</div>
+</div>
+<div id="box3">3</div>

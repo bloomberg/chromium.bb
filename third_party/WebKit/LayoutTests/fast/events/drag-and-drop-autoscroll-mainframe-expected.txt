@@ -1,0 +1,17 @@
+state=START
+state=NE
+PASS document.scrollingElement.scrollLeft > 0 is true
+PASS !document.scrollingElement.scrollTop is true
+state=SE
+PASS document.scrollingElement.scrollLeft > 0 is true
+PASS document.scrollingElement.scrollTop > 0 is true
+state=SW
+PASS document.scrollingElement.scrollLeft < lastScrollLeft is true
+PASS document.scrollingElement.scrollTop > 0 is true
+state=NW
+PASS document.scrollingElement.scrollLeft <= lastScrollLeft is true
+PASS document.scrollingElement.scrollTop < lastScrollTop is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,48 @@
+<html>
+<head>
+<style>
+</style>
+<script src="../../inspector-test.js"></script>
+<script src="../../elements-test.js"></script>
+<script>
+
+function addImportRule()
+{
+    document.styleSheets[0].insertRule("@import url(resources/import-added-through-js-crash.css)", 0);
+}
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function selectNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function addImportRules(next)
+        {
+            InspectorTest.waitForStyles("inspected", callback);
+            InspectorTest.evaluateInPage("addImportRule()");
+
+            function callback()
+            {
+                InspectorTest.waitForStyles("inspected", next);
+                InspectorTest.evaluateInPage("addImportRule()");
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that adding @import rules into a stylesheet through JavaScript does not crash the inspected page.
+</p>
+
+<div>
+    <p id="inspected"></p>
+</div>
+</body>
+</html>

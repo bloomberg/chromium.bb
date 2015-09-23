@@ -1,0 +1,134 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script src="resources/edit-me-when-paused-no-reveal.js"></script>
+
+<script>
+
+function test()
+{
+    var panel = WebInspector.panels.sources;
+    var sourceFrame;
+
+    function didStepInto()
+    {
+        InspectorTest.addResult("Did step into");
+    }
+
+    InspectorTest.addSniffer(InspectorTest.debuggerModel, "stepInto", didStepInto, true);
+
+    function testLiveEditWhenPausedDoesNotCauseCursorMove(oldText, newText, next)
+    {
+        InspectorTest.showScriptSource("edit-me-when-paused-no-reveal.js", didShowScriptSource);
+
+        function didShowScriptSource(sourceFrame)
+        {
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
+            InspectorTest.evaluateInPage("f1()", didEvaluateInPage);
+        }
+
+        function paused(callFrames)
+        {
+            sourceFrame = panel.visibleView;
+            InspectorTest.removeBreakpoint(sourceFrame, 8);
+            InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", didEditScriptSource);
+            InspectorTest.replaceInSource(sourceFrame, oldText, newText);
+            InspectorTest.addResult("Moving cursor to (0, 0).");
+            sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+            InspectorTest.addResult("Committing live edit.");
+            InspectorTest.commitSource(sourceFrame);
+        }
+
+        function didEditScriptSource()
+        {
+            InspectorTest.resumeExecution();
+        }
+
+        function didEvaluateInPage(result)
+        {
+            var selection = sourceFrame.textEditor.selection();
+            InspectorTest.addResult("Cursor position is: (" + selection.startLine + ", " +selection.startColumn + ").");
+            InspectorTest.assertEquals(sourceFrame, panel.visibleView, "Another file editor is open.");
+            next();
+        }
+    }
+
+    function testLiveEditWhenPausedThenStepIntoCausesCursorMove(oldText, newText, next)
+    {
+        InspectorTest.showScriptSource("edit-me-when-paused-no-reveal.js", didShowScriptSource);
+
+        function didShowScriptSource(sourceFrame)
+        {
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.setBreakpoint(sourceFrame, 8, "", true);
+            InspectorTest.evaluateInPage("f1()", didEvaluateInPage);
+        }
+
+        function paused(callFrames)
+        {
+            sourceFrame = panel.visibleView;
+            InspectorTest.removeBreakpoint(sourceFrame, 8);
+            InspectorTest.addSniffer(InspectorTest.debuggerModel, "_didEditScriptSource", didEditScriptSource);
+            InspectorTest.replaceInSource(sourceFrame, oldText, newText);
+            InspectorTest.addResult("Moving cursor to (0, 0).");
+            sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+            InspectorTest.addResult("Committing live edit.");
+            InspectorTest.commitSource(sourceFrame);
+        }
+
+        function didEditScriptSource()
+        {
+            InspectorTest.addResult("Stepping into...");
+            InspectorTest.addSniffer(WebInspector.SourcesView.prototype, "showSourceLocation", didRevealAfterStepInto);
+            WebInspector.panels.sources._stepIntoButton.element.click();
+        }
+
+        function didRevealAfterStepInto()
+        {
+            InspectorTest.resumeExecution();
+        }
+
+        function didEvaluateInPage(result)
+        {
+            var selection = sourceFrame.textEditor.selection();
+            InspectorTest.addResult("Cursor position is: (" + selection.startLine + ", " +selection.startColumn + ").");
+            InspectorTest.assertEquals(sourceFrame, panel.visibleView, "Another file editor is open.");
+            next();
+        }
+    }
+
+    InspectorTest.runDebuggerTestSuite([
+        function testLiveEditWithoutStepInWhenPausedDoesNotCauseCursorMove(next)
+        {
+            testLiveEditWhenPausedDoesNotCauseCursorMove("function f2()", " function f2()", next);
+        },
+
+        function testLiveEditWithStepInWhenPausedDoesNotCauseCursorMove(next)
+        {
+            testLiveEditWhenPausedDoesNotCauseCursorMove("return x + f2();", "return x + f2(); ", next);
+        },
+
+        function testLiveEditWithoutStepInWhenPausedThenStepIntoCausesCursorMove(next)
+        {
+            testLiveEditWhenPausedThenStepIntoCausesCursorMove("function f2()", " function f2()", next);
+        },
+
+        function testLiveEditWithStepInWhenPausedThenStepIntoCausesCursorMove(next)
+        {
+            testLiveEditWhenPausedThenStepIntoCausesCursorMove("return x + f2();", "return x + f2(); ", next);
+        }
+    ]);
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests live edit feature.</p>
+
+</body>
+</html>

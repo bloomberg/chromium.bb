@@ -1,0 +1,11 @@
+Tests that debugger StepOut will stop inside next timeout handler.
+
+Set timer for test function.
+Call stack:
+    0) callback1 (debugger-step-out-across-timeouts.html:15)
+
+Executing StepOut...
+Call stack:
+    0) callback2 (debugger-step-out-across-timeouts.html:19)
+
+

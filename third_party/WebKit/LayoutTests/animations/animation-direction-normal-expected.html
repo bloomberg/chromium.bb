@@ -1,0 +1,43 @@
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Test of -webkit-animation-direction</title>
+  <style type="text/css" media="screen">
+    body {
+      margin: 0;
+    }
+
+    #box {
+      position: absolute;
+      left: 0px;
+      top: 100px;
+      height: 100px;
+      width: 100px;
+      background-color: red;
+      margin: 0;
+      transform: translateX(50px);
+    }
+    #safezone {
+      position: absolute;
+      top: 100px;
+      height: 100px;
+      width: 130px;
+      left: 30px;
+      background-color: green;
+    }
+  </style>
+  </script>
+</head>
+<body>
+<!-- This tests the operation of -webkit-animation-direction. After 1 second the red boxes should be hidden by the green boxes. You should see no red boxes. -->
+<div id="box"></div>
+<div id="safezone"></div>
+<div id="result">
+Warning this test is running in real-time and may be flaky.<br>
+PASS - "webkitTransform" property for "box" element at 0.5s saw something close to: 1,0,0,1,50,0<br>
+PASS - "webkitTransform" property for "box" element at 1s saw something close to: 1,0,0,1,100,0<br>
+PASS - "webkitTransform" property for "box" element at 2.5s saw something close to: 1,0,0,1,50,0
+</div>
+</div>
+</body>
+</html>

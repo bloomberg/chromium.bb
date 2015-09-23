@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Validate that a frame can't change it's document.domain and enter the suborigin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<script>
+document.domain = '127.0.0.1';
+window.secret = 'Unchanged';
+window.onmessage = function(event) {
+    assert_equals(secret, 'Unchanged', 'secret should not be touchable by the child in a suborigin.');
+    assert_equals(event.data, 'SecurityError: Blocked a frame with origin \"http://foobar_127.0.0.1:8000\" from accessing a cross-origin frame.');
+    done();
+};
+</script>
+<iframe src="resources/child-changes-document-domain.php?suborigin=foobar"></iframe>
+</html>

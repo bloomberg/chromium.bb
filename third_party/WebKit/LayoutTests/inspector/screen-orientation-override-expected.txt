@@ -1,0 +1,32 @@
+
+Running: initial
+angle: 90; type: landscape-primary
+
+Running: setWrongAngle1
+Angle should be in [0; 360) interval
+
+Running: setWrongAngle2
+Angle should be in [0; 360) interval
+
+Running: setWrongType
+Wrong type value
+
+Running: setPortraitPrimary
+angle: 0; type: portrait-primary
+
+Running: setPortraitSecondary
+angle: 180; type: portrait-secondary
+
+Running: setLandscapePrimary
+angle: 90; type: landscape-primary
+
+Running: restoresAfterReload
+Page reloaded.
+angle: 90; type: landscape-primary
+
+Running: setLandscapeSecondary
+angle: 270; type: landscape-secondary
+
+Running: clearOverride
+angle: 90; type: landscape-primary
+

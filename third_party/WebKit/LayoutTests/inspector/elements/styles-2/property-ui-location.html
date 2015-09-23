@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<link rel="stylesheet" href="../styles/resources/empty-background-url.css">
+<style>
+#inspected {
+    color: blue;
+}
+</style>
+<style>#inspected { margin: 10px; }
+#inspected {
+    font-family: arial;
+}
+/*# sourceURL=source-url.css */
+</style>
+<script>
+function test()
+{
+    InspectorTest.waitForScriptSource("source-url.css", onUISourceCodeCreated);
+
+    function onUISourceCodeCreated()
+    {
+        InspectorTest.nodeWithId("inspected", onNodeFound);
+    }
+
+    function onNodeFound(node)
+    {
+        InspectorTest.cssModel.matchedStylesPromise(node.id, true, false).then(onMatchedStyles);
+    }
+
+    function onMatchedStyles(styles)
+    {
+        var rules = styles.matchedCSSRules;
+        for (var rule of rules) {
+            var properties = rule.style.allProperties;
+            for (var property of properties) {
+                if (!property.range)
+                    continue;
+                var uiLocation = WebInspector.cssWorkspaceBinding.propertyUILocation(property, true);
+                InspectorTest.addResult(String.sprintf("%s -> %s:%d:%d", property.text, uiLocation.uiSourceCode.name(), uiLocation.lineNumber, uiLocation.columnNumber));
+            }
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verifies WebInspector.cssWorkspaceBinding.propertyUILocation functionality</p>
+<div id="inspected"></div>
+</body>
+</html>

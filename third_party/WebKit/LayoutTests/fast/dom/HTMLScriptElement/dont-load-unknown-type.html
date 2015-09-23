@@ -1,0 +1,25 @@
+<div id="console"></div>
+<script>
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+
+    // FIXME: Fetch test is disabled for now.
+    // In the current Blink implementation, HTMLPreloadScanner may fetch srcs even though they are invalid.
+    // The current HTMLPreloadScanner does not check if the script tag has valid type/language attribute.
+    // See crbug.com/329531 for the current status.
+    // testRunner.dumpResourceResponseMIMETypes();
+  }
+
+  function fail(str) {
+    var element = document.createElement("p");
+    element.innerHTML = str;
+    document.getElementById("console").appendChild(element);
+  }
+
+  var bogus_script = document.createElement("script");
+  bogus_script.type = "bogus";
+  bogus_script.src = "shouldnotexecute.js";
+  document.getElementsByTagName("head")[0].appendChild(bogus_script);
+</script>
+<script type="fake" src="shouldnotexecute.js"></script>
+Unknown script types should not be loaded nor executed. If this test fails, an extra line will appear in the output with the script's MIME type.<br>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("This tests checks that the sticky value for position parses correctly.");
+
+if (window.internals) {
+    internals.settings.setCSSStickyPositionEnabled(true);
+}
+
+function test(value)
+{
+    var div = document.createElement("div");
+    div.setAttribute("style", value);
+    document.body.appendChild(div);
+
+    var result = div.style.getPropertyValue("position");
+    document.body.removeChild(div);
+    return result;
+}
+
+shouldBe('test("position: sticky;")', '"sticky"');
+</script>
+</body>

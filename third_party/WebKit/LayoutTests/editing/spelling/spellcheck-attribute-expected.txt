@@ -1,0 +1,49 @@
+This tests if the "spellcheck" attribute is implemented as written in its specification. If this test succeeds, you can see forms filled with an invalid word "zz". Nevertheless, the "zz" is not marked as misspelled in all of them.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+id=test1_1 type=text spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test1_2 type=text spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test1_3 type=text spellcheck=false parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test1_4 type=text spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test1_5 type=text spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test2_1 type=text spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test2_2 type=text spellcheck=true parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test2_3 type=text spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test2_4 type=text spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test2_5 type=text spellcheck=true parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test3_1 type=search spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test3_2 type=search spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test3_3 type=search spellcheck=false parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test3_4 type=search spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test3_5 type=search spellcheck=true parent's spellcheck=true
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test4_1 type=search spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test4_2 type=search spellcheck=true parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test4_3 type=search spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test4_4 type=search spellcheck=false parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+id=test4_5 type=search spellcheck=true parent's spellcheck=false
+PASS internals.hasSpellingMarker(document, 0, 2) became shouldBeMarked
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

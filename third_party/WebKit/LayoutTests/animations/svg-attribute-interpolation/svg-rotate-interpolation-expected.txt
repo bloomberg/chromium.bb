@@ -1,0 +1,26 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [20, 30, 40, 500] at 0
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [40, 50, 60, 700] at 0.2
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [80, 90, 100, 1100] at 0.6
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [120, 130, 140, 1500] at 1
+PASS: rotate from [60] to [70, 80] was [60] at 0
+PASS: rotate from [60] to [70, 80] was [60] at 0.2
+PASS: rotate from [60] to [70, 80] was [70, 80] at 0.6
+PASS: rotate from [60] to [70, 80] was [70, 80] at 1
+
+Web Animations API:
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [-20, -10, 0, 100] at -0.4
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [20, 30, 40, 500] at 0
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [40, 50, 60, 700] at 0.2
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [80, 90, 100, 1100] at 0.6
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [120, 130, 140, 1500] at 1
+PASS: rotate from [20, 30, 40, 500] to [120, 130, 140, 1500] was [160, 170, 180, 1900] at 1.4
+PASS: rotate from [60] to [70, 80] was [60] at -0.4
+PASS: rotate from [60] to [70, 80] was [60] at 0
+PASS: rotate from [60] to [70, 80] was [60] at 0.2
+PASS: rotate from [60] to [70, 80] was [70, 80] at 0.6
+PASS: rotate from [60] to [70, 80] was [70, 80] at 1
+PASS: rotate from [60] to [70, 80] was [70, 80] at 1.4
+

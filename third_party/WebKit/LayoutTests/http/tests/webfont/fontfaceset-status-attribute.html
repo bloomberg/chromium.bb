@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../js-test-resources/js-test.js"></script>
+<style>
+  @font-face {
+    font-family: 'TestFont';
+    src: url(slow-ahem-loading.cgi);
+  }
+</style>
+<script>
+description('Test for FontFaceSet.status attribute');
+
+window.jsTestIsAsync = true;
+
+function runTests() {
+    shouldBeFalse("document.fonts.check('10px TestFont')");
+    shouldBeEqualToString("document.fonts.status", "loaded");
+    document.fonts.load('10px TestFont').then(onsuccess);
+    shouldBeEqualToString("document.fonts.status", "loading");
+}
+
+function onsuccess() {
+    shouldBeTrue("document.fonts.check('10px TestFont')");
+    document.fonts.ready.then(onFontsReady);
+}
+
+function onFontsReady() {
+    shouldBeEqualToString("document.fonts.status", "loaded");
+    finishJSTest();
+}
+
+if (document.fonts)
+    runTests();
+else {
+    testFailed('document.fonts does not exist');
+    finishJSTest();
+}
+</script>
+</head>
+<body>
+</body>
+</html>

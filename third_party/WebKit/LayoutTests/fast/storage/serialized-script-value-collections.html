@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    // Serialized version of Map([[1, 2], [3, 4]])
+    var versionNineSerialization = new Uint8Array([
+        0xff, 0x09, 0x3f, 0x00,
+        0x3b, 0x3f, 0x01, 0x49,
+        0x02, 0x3f, 0x01, 0x49,
+        0x04, 0x3f, 0x01, 0x49,
+        0x06, 0x3f, 0x01, 0x49,
+        0x08, 0x3a, 0x04, 0x00]);
+    var map = internals.deserializeBuffer(versionNineSerialization.buffer);
+    assert_true(map instanceof Map, 'Should be an instance of Map');
+    assert_equals(map.size, 2, 'Should have two elements');
+    assert_equals(map.get(1), 2, 'Should contain the pair [1, 2]');
+    assert_equals(map.get(3), 4, 'Should contain the number [3, 4]');
+}, 'Should be able to deserialize a Map in version 9 format');
+
+test(function() {
+    // Serialized version of Set([1, 2])
+    var versionNineSerialization = new Uint8Array([
+        0xff, 0x09, 0x3f, 0x00, 0x27,
+        0x3f, 0x01, 0x49, 0x02, 0x3f,
+        0x01, 0x49, 0x04, 0x2c, 0x02,
+        0x00]);
+    var set = internals.deserializeBuffer(versionNineSerialization.buffer);
+    assert_true(set instanceof Set, 'Should be an instance of Set');
+    assert_equals(set.size, 2, 'Should have two elements');
+    assert_true(set.has(1), 'Should contain the number 1');
+    assert_true(set.has(2), 'Should contain the number 2');
+}, 'Should be able to deserialize a Set in version 9 format');
+</script>

@@ -1,0 +1,32 @@
+Tests resource tree model for imports.
+
+Resources:
+script http://127.0.0.1:8000/inspector/inspector-test.js
+document http://127.0.0.1:8000/inspector/resource-tree/resource-tree-htmlimports.html
+script http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
+document http://127.0.0.1:8000/inspector/resource-tree/resources/import-child.html
+document http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.html
+script http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.js
+script http://127.0.0.1:8000/inspector/resources-test.js
+
+Resources URL Map:
+http://127.0.0.1:8000/inspector/inspector-test.js == http://127.0.0.1:8000/inspector/inspector-test.js
+http://127.0.0.1:8000/inspector/resource-tree/resource-tree-htmlimports.html == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-htmlimports.html
+http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js == http://127.0.0.1:8000/inspector/resource-tree/resource-tree-test.js
+http://127.0.0.1:8000/inspector/resource-tree/resources/import-child.html == http://127.0.0.1:8000/inspector/resource-tree/resources/import-child.html
+http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.html == http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.html
+http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.js == http://127.0.0.1:8000/inspector/resource-tree/resources/import-hello.js
+http://127.0.0.1:8000/inspector/resources-test.js == http://127.0.0.1:8000/inspector/resources-test.js
+
+Resources Tree:
+Frames
+    (resource-tree-htmlimports.html)
+        Scripts
+            import-hello.js
+            inspector-test.js
+            resource-tree-test.js
+            resources-test.js
+        import-child.html
+        import-hello.html
+        resource-tree-htmlimports.html
+

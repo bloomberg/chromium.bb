@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/util.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="destination" contentEditable></div>
+</div>
+
+<script>
+
+description("Spell check selects the misspelled word on context menu key. " +
+            "To test manually, type 'wellcome home.' place the cursor on 'wellcome', and press the context menu key. " +
+            "The test succeeds when 'wellcome' is selected after the context menu key.");
+
+initSpellTest("destination", "wellcome home.", function(textNode) {
+    var behaviors = ["win", "mac"];
+    for (var i = 0; i < behaviors.length; i++) {
+        internals.settings.setEditingBehavior(behaviors[i]);
+
+        // Place cursor on "wellcome".
+        window.getSelection().removeAllRanges();
+        var range = document.createRange();
+        range.setStart(textNode, 2);
+        range.setEnd(textNode, 2);
+        window.getSelection().addRange(range);
+
+        // Context menu key to show the context menu.
+        eventSender.keyDown("menu");
+
+        // Esc to close the context menu.
+        eventSender.keyDown("escape");
+
+        shouldBeEqualToString("window.getSelection().toString()", "wellcome");
+    }
+});
+
+</script>
+</body>
+</html>

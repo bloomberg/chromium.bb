@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Null frame access tests</title>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("This tests access to a window with a null frame. You should see \"PASS\" for each of the three tests below.");
+
+window.jsTestIsAsync = true;
+window.onload = function() {
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    var tag = document.getElementById('subframe');
+    var win = tag.contentWindow;
+    // remove the element so the window has a null frame
+    tag.parentNode.removeChild(tag);
+
+    // schedule to run after the frame is null
+    asyncGC(function() {
+        debug("missing property: " + (win.test || 'PASS'))
+        debug("missing array index: " + (win[20] || 'PASS'));
+        debug("missing interface object: " + (win.Comment || 'PASS'));
+        finishJSTest();
+    });
+};
+</script>
+</head>
+<body>
+<iframe id="subframe" src="data:text/html,&lt;script&gt;window.test='FAIL ... ';window[20]='FAIL ... ';&lt;/script&gt;" />
+</body>
+</html>

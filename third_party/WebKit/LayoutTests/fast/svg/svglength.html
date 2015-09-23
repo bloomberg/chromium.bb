@@ -1,0 +1,193 @@
+<!doctype html> 
+<title>SVGlength tests</title>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<div id="testcontainer">
+<svg width="1" height="1" visibility="hidden">
+</svg>
+</div>
+<div id=log></div>
+<script>
+var svg = document.querySelector("svg");
+var EPSILON = Math.pow(2, -8);
+var lengths = [ 10, 0, 360, 500, 90, 180, 45, 25.9];
+
+var units = { 
+    "" : 1, 
+    "%": 2, 
+    "em": 3, 
+    "ex": 4,
+    "px": 5,
+    "cm": 6,
+    "mm": 7,
+    "in": 8,
+    "pt": 9,
+    "pc": 10,
+    "rem": 11,
+    "ch":12
+};
+var highestExposedUnit = 10; // SVG_LENGTHTYPE_PC
+var unitconstants = {
+    "UNKNOWN" : 0,
+    "NUMBER": 1,
+    "PERCENTAGE": 2,
+    "EMS": 3,
+    "EXS": 4,
+    "PX": 5,
+    "CM": 6,
+    "MM": 7,
+    "IN": 8,
+    "PT": 9,
+    "PC": 10,
+};
+var nonexposedunitconstants = {
+    "REMS": 11,
+    "CHS":12
+};
+
+function convertTo(value, unit, outunit) {
+    var userUnits;
+    var cssPixelsPerInch = 96;
+    var cssPixelsPerCentimeter = cssPixelsPerInch / 2.54; //2.54 cm/in
+    var cssPixelsPerMillimeter = cssPixelsPerCentimeter / 10;
+    var cssPixelsPerPoint = cssPixelsPerInch / 72;
+    var cssPixelsPerPica = cssPixelsPerInch / 6;
+
+    switch(unit) {
+        case "":
+        case "px":
+            userUnits = value;
+            break;
+        case "%":
+        case "em":
+        case "ex":
+        case "rem":
+        case "ch":
+            return value;
+        case "cm":
+            userUnits = value * cssPixelsPerCentimeter;
+            break;
+        case "mm":
+            userUnits = value * cssPixelsPerMillimeter;
+            break;
+        case "in":
+            userUnits = value * cssPixelsPerInch;
+            break;
+        case "pt":
+            userUnits = value * cssPixelsPerPoint;
+            break;
+        case "pc":
+            userUnits = value * cssPixelsPerPica;
+            break;
+    }
+
+    switch(outunit) {
+        case "":
+        case "px":
+            return userUnits;
+        case "%":
+        case "em":
+        case "ex":
+        case "rem":
+        case "ch":
+            return value;
+        case "cm":
+            return userUnits / cssPixelsPerCentimeter;
+        case "mm":
+            return userUnits / cssPixelsPerMillimeter;
+        case "in":
+            return userUnits / cssPixelsPerInch;
+        case "pt":
+            return userUnits / cssPixelsPerPoint;
+        case "pc":
+            return userUnits / cssPixelsPerPica;
+    }
+}
+
+function createLength(valuestr) {
+    var length = svg.createSVGLength();
+    length.valueAsString = valuestr;
+    return length;
+}
+
+for(var unit in units) {
+    test(function() {
+        var result = undefined;
+        try {
+            var a = createLength(10 + unit);
+            result = a.unitType;
+        }
+        catch(e) {}
+            if (units[unit] > highestExposedUnit)
+                assert_equals(result, undefined);
+            else
+                assert_equals(result, units[unit]);
+    }, "SVGLength(10" + unit + ").unitType");
+}
+
+for(var constant in unitconstants) {
+    var str = "SVG_LENGTHTYPE_" + constant;
+    test(function() {
+        assert_exists(SVGLength, str, "");
+    }, "SVGLength." + str);
+}
+for(var constant in nonexposedunitconstants) {
+    var str = "SVG_LENGTHTYPE_" + constant;
+    test(function() {
+        assert_not_exists(SVGLength, str, "");
+    }, "SVGLength." + str);
+}
+
+lengths.forEach(function(length) {
+    for(var unit in units) {
+        var lengthstr = length + unit;
+        var ref;
+        try {
+            ref = createLength(lengthstr);
+        }
+        catch(e) {
+            continue;
+        }
+        
+        test(function() {
+            assert_approx_equals(length, ref.valueInSpecifiedUnits, EPSILON);
+        }, "SVGLength(" + lengthstr + ").valueInSpecifiedUnits");
+
+        for (var otherunit in units) {
+            test(function() {
+                var a = createLength(lengthstr);
+                try {
+                    a.convertToSpecifiedUnits(units[otherunit]);
+                }
+                catch(e) {}
+
+                // unknown unit
+                if (units[otherunit] > highestExposedUnit)
+                    assert_approx_equals(a.valueInSpecifiedUnits, length, EPSILON);        
+                else
+                    assert_approx_equals(a.valueInSpecifiedUnits, convertTo(length, unit, otherunit), EPSILON);
+            }, "SVGLength(" + lengthstr + ").convertToSpecifiedUnits(" + units[otherunit] + " /*" + (otherunit ? otherunit : "unspecified") + "*/)");
+            
+            test(function() {
+                var result = "";
+                try {
+                    var a = createLength(47 + otherunit);
+                    a.newValueSpecifiedUnits(units[unit], length);
+                    result = a.valueAsString;
+                }
+                catch(e) {
+                }
+
+                // unknown unit
+                if (units[unit] > highestExposedUnit || units[otherunit] > highestExposedUnit)
+                    assert_equals(result, "");
+                else
+                    assert_equals(result, ref.valueAsString);
+            }, "newValueSpecifiedUnits(" + units[unit] + ", " + length + ")" );
+        };
+
+    }
+});
+
+
+</script>

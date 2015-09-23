@@ -1,0 +1,66 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../sources/debugger/resources/edit-me.js"></script>
+<script src="resources/search-me.js"></script>
+<script>
+
+function test()
+{
+    var textEditor;
+    var searchString = "FINDME";
+    var searchableView = WebInspector.panels.sources.searchableView();
+    var sourceFrame;
+    InspectorTest.showScriptSource("search-me.js", didShowScriptSource);
+
+    function didShowScriptSource(shownSourceFrame)
+    {
+        sourceFrame = shownSourceFrame;
+        textEditor = sourceFrame._textEditor;
+        // We are probably still updating the editor in current callstack, so postponing the test execution.
+        setImmediate(textEditorUpdated);
+    }
+
+    function textEditorUpdated(sourceFrame)
+    {
+        searchableView.showSearchField();
+
+        InspectorTest.addResult("Performing search...");
+        searchableView._searchInputElement.value = searchString;
+        searchableView._performSearch(true, true);
+        InspectorTest.addResult("Recording editor viewport after searching...");
+
+        var originalViewport = { from: textEditor.firstVisibleLine(), to: textEditor.lastVisibleLine() };
+        var originalSelectionRange = textEditor.selection();
+
+        InspectorTest.showScriptSource("edit-me.js", didShowAnotherSource);
+
+        function didShowAnotherSource(anotherSourceFrame)
+        {
+            InspectorTest.showScriptSource("search-me.js", didShowScriptSourceAgain);
+        }
+
+        function didShowScriptSourceAgain(sourceFrame)
+        {
+            InspectorTest.addResult("Recording editor viewport after switching tabs...");
+            var newViewport = { from: textEditor.firstVisibleLine(), to: textEditor.lastVisibleLine() };
+            var newSelectionRange = textEditor.selection();
+            InspectorTest.addResult("Comparing viewports...");
+            if (originalViewport.from === newViewport.from && originalViewport.to === newViewport.to)
+                InspectorTest.addResult("  viewports match, SUCCESS");
+            else
+                InspectorTest.addResult("  viewports do not match, FAIL");
+            InspectorTest.addResult("Comparing selection ranges...");
+            InspectorTest.addResult("  original selection range: " + originalSelectionRange.toString());
+            InspectorTest.addResult("  current selection range: " + newSelectionRange.toString());
+            InspectorTest.completeTest();
+        }
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that switching editor tabs after searching does not affect editor selection and viewport.</p>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function rightPadding(str, minLength)
+{
+    str += Array(minLength).join(" ");
+    return str.substr(0, minLength) + str.substr(minLength).trim();
+}
+
+function test()
+{
+    function printCommandLineAPI()
+    {
+        var properties = [];
+        for (var p in __commandLineAPI) {
+            if (/^\$(_|\d+)$/.test(p))
+                continue;
+            properties.push(p);
+        }
+        properties.sort();
+        var msgs = [];
+        properties.forEach(function(p) {
+            msgs.push(rightPadding(p, 20) + ": " + eval(p));
+        });
+        output("CommandLineAPI\n\n"+ msgs.join("\n"));
+    }
+
+    InspectorTest.evaluateInConsole("(" + printCommandLineAPI + ")()");
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+    <p>Tests that command-line API methods behave similarly to native code by returning '[Command Line API]' via toString().</p>
+</body>
+</html>

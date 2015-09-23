@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+description('Tests to check that devicelight events are not fired when the page is not visible.');
+window.jsTestIsAsync = true;
+
+function succeedAndFinish()
+{
+    testPassed("Received a devicelight event");
+    setTimeout(finishJSTest, 0);
+}
+
+function testWithPageVisible()
+{
+    testPassed("Did not receive a devicelight event");
+    window.removeEventListener('devicelight', failAndFinish);
+    testRunner.setPageVisibility("visible");
+    debug("* Page is visible");
+    window.addEventListener('devicelight', succeedAndFinish);
+}
+
+function failAndFinish()
+{
+    testFailed('Should not have received a devicelight event while the page was hidden');
+    setTimeout(finishJSTest, 0);
+}
+
+function deviceLightListener(event)
+{
+    testPassed("Received a devicelight event");
+    window.removeEventListener('devicelight', deviceLightListener);
+    testRunner.setPageVisibility("hidden");
+    debug("* Page is hidden");
+    window.addEventListener('devicelight', failAndFinish);
+
+    setTimeout(testWithPageVisible, 0);
+}
+
+if (window.testRunner)
+    testRunner.setMockDeviceLight(100);
+else
+    debug('This test can not be run without the TestRunner');
+
+debug("* Page is visible");
+window.addEventListener('devicelight', deviceLightListener);
+</script>
+</body>
+</html>

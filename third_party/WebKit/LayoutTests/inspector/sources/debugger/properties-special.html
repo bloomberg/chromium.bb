@@ -1,0 +1,32 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function onload()
+{
+    console.dir(Object(true));
+    console.dir((function(a,b) { return a + b; }));
+    console.dir((function(a,b) { return a + b; }).bind({}, 2));
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onload="onload()">
+<p>Tests how debugger presents special properties of closures, bound functions and object wrappers.</p>
+</body>
+</html>

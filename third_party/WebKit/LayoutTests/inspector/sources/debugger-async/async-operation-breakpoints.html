@@ -1,0 +1,114 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+var dummy = function FAIL_should_not_pause_here() { return 0; };
+
+function testFunction()
+{
+    debugger;
+
+    setTimeout(dummy, 0);
+    setTimeout(dummy, 30);
+    (function setAsyncBreakpointForMe() { setTimeout(callback1, 20); })();
+    setTimeout(dummy, 0);
+    Promise.resolve(42)
+        .then(dummy);
+
+    debugger; // Stop the debugger to receive pending AsyncOperation events.
+}
+
+function callback1()
+{
+    var func = setTimeout.bind(null, callback2, 0);
+    func = setTimeout.bind(null, func, 0);
+    func = setTimeout.bind(null, func, 0);
+    (function setAsyncBreakpointForMe() { setTimeout(func); })();
+    debugger;
+    return 1;
+}
+
+function callback2()
+{
+    var func = Framework.willSchedule(callback3);
+    func = Framework.willSchedule(func);
+    func = Framework.willSchedule(func);
+    (function setAsyncBreakpointForMe() { Framework.schedule(func); })();
+    debugger;
+    Promise.resolve().then(dummy).then(dummy).then(dummy);
+    setTimeout(dummy, 0);
+    return 2;
+}
+
+function callback3()
+{
+    return 3;
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationStarted, onAsyncOperationStarted);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        var callbackFuncCount = 3;
+        iterate();
+
+        function iterate()
+        {
+            if (!callbackFuncCount--) {
+                InspectorTest.completeDebuggerTest();
+                return;
+            }
+            InspectorTest.waitUntilPausedAndPerformSteppingActions(["Resume", "Resume"], InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+        }
+
+        function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+        {
+            InspectorTest.captureStackTrace(callFrames);
+            InspectorTest.addResult("Pause reason: " + reason);
+            iterate();
+        }
+    }
+
+    function onAsyncOperationStarted(event)
+    {
+        var operation = event.data;
+        var callFrames = operation.stackTrace || [];
+        for (var callFrame of callFrames) {
+            var functionName = callFrame && callFrame.functionName;
+            if (functionName === "setAsyncBreakpointForMe") {
+                InspectorTest.DebuggerAgent.setAsyncOperationBreakpoint(operation.id);
+                break;
+            }
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests AsyncOperation breakpoints.
+</p>
+</body>
+</html>

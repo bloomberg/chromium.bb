@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [402, 207],
+          "drawsContent": true,
+          "repaintRects": [
+            [2, 155, 398, 50],
+            [2, 104, 398, 50],
+            [0, 105, 402, 102],
+            [0, 104, 402, 103]
+          ],
+          "paintInvalidationClients": [
+            "LayoutBlockFlow DIV id='resizing'",
+            "LayoutBlockFlow DIV",
+            "LayoutBlockFlow DIV"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script src="../resources/common.js"></script>
+<div id="host" tabindex="1">
+  <input id="target" type="color" value="#000000">
+</div>
+<script>
+
+if (window.eventSender) {
+   window.jsTestIsAsync = true
+
+   clickElement(target);
+   shouldBeTrue("testRunner.isChooserShown()");
+
+   target.style.display = "none";
+
+   var nwait = 5;
+   function testClosed()
+   {
+        nwait--;
+        if (0 < nwait)
+            return window.setTimeout(testClosed, 0);
+        // Let an Oilpan GC finalize the popup controller and bring about closure of color chooser.
+        gc();
+        shouldBeFalse("testRunner.isChooserShown()");
+        finishJSTest();
+   }
+
+   window.setTimeout(testClosed, 0);
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+EVENT(seeked)
+EVENT(seeking)
+This is a testharness.js-based test.
+PASS video is not paused while looping 
+Harness: the test ran to completion.
+

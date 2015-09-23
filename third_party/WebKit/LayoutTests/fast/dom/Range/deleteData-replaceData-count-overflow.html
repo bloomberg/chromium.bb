@@ -1,0 +1,37 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Test deleteData() + replaceData() overflow handling.");
+
+var textNode;
+var range;
+
+shouldBeNonNull("textNode = new Text('chopped off and then some'); textNode");
+document.body.appendChild(textNode);
+document.getSelection().extend(textNode, textNode.length);
+range = document.getSelection().getRangeAt(0);
+
+shouldBeEqualToString("textNode.deleteData(11, 0xfffffff7); textNode.data", "chopped off");
+shouldBe("range.endOffset", "11");
+document.body.removeChild(textNode);
+
+shouldBeNonNull("textNode = new Text('hello world'); textNode");
+document.body.appendChild(textNode);
+document.getSelection().extend(textNode, textNode.length);
+range = document.getSelection().getRangeAt(0);
+
+shouldBeEqualToString("textNode.replaceData(6, 0xfffffffe, 'bob'); textNode.data", "hello bob");
+shouldBe("range.endOffset", "6");
+document.body.removeChild(textNode);
+
+shouldBeNonNull("textNode = new Text('hello world'); textNode");
+shouldBeEqualToString("textNode.replaceData(6, -1, 'bob'); textNode.data", "hello bob");
+shouldBeNonNull("textNode = new Text('hello world'); textNode");
+shouldBeEqualToString("textNode.replaceData(6, -2, 'bob'); textNode.data", "hello bob");
+</script>
+</body>
+</html>

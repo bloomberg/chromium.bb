@@ -1,0 +1,20 @@
+Test PeriodicWave Normalization
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS amplitude is 1 within a relative error of 0.00001.
+PASS null: amplitude is 1 within a relative error of 0.00001.
+PASS {"disableNormalization":false}: amplitude is 1 within a relative error of 0.00001.
+PASS {"disableNormalization":true}: amplitude is 10 within a relative error of 0.00001.
+PASS {"disableNormalization":"foo"}: amplitude is 10 within a relative error of 0.00001.
+PASS {"disableNormalization":null}: amplitude is 1 within a relative error of 0.00001.
+PASS {"randomKey":true}: amplitude is 1 within a relative error of 0.00001.
+PASS {"key1":"value1","key2":42}: amplitude is 1 within a relative error of 0.00001.
+PASS {"key1":"value1","disableNormalization":true}: amplitude is 10 within a relative error of 0.00001.
+PASS {"key1":"value1","disableNormalization":false}: amplitude is 1 within a relative error of 0.00001.
+PASS [1,2,3]: amplitude is 1 within a relative error of 0.00001.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

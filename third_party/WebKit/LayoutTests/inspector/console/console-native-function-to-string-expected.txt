@@ -1,0 +1,25 @@
+Tests that command-line API methods behave similarly to native code by returning '[Command Line API]' via toString().
+
+[page] CommandLineAPI
+
+$                   : function $(selector, [startNode]) { [Command Line API] }
+$$                  : function $$(selector, [startNode]) { [Command Line API] }
+$x                  : function $x(xpath, [startNode]) { [Command Line API] }
+clear               : function clear() { [Command Line API] }
+copy                : function copy(object) { [Command Line API] }
+debug               : function debug(fn) { [Command Line API] }
+dir                 : function dir(var_args) { [Command Line API] }
+dirxml              : function dirxml(var_args) { [Command Line API] }
+getEventListeners   : function getEventListeners(node) { [Command Line API] }
+inspect             : function inspect(object) { [Command Line API] }
+keys                : function keys(object) { [Command Line API] }
+monitor             : function monitor(fn) { [Command Line API] }
+monitorEvents       : function monitorEvents(object, [types]) { [Command Line API] }
+profile             : function profile([title]) { [Command Line API] }
+profileEnd          : function profileEnd([title]) { [Command Line API] }
+table               : function table(data, [columns]) { [Command Line API] }
+undebug             : function undebug(fn) { [Command Line API] }
+unmonitor           : function unmonitor(fn) { [Command Line API] }
+unmonitorEvents     : function unmonitorEvents(object, [types]) { [Command Line API] }
+values              : function values(object) { [Command Line API] }
+

@@ -1,0 +1,7 @@
+ValidationMessageClient: main-message=Please fill out this field. sub-message=
+ 
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS Not crashed.
+

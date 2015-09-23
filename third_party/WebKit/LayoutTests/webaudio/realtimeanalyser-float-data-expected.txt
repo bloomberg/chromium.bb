@@ -1,0 +1,9 @@
+Test AnalyserNode getFloatTimeDomainData
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Received expected float time domain data.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

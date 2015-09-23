@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<title>
+  Tests accepting and rejecting connections calling navigator.connect from
+  a same origin page.
+</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script src="resources/connect-tests.js"></script>
+<script>
+var sw_scope = 'resources/service-worker-scope' + window.location.pathname;
+
+run_connect_tests(function(t, service, options) {
+    return navigator.services.connect(service, options);
+  });
+</script>

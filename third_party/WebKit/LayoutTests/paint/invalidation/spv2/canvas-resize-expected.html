@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<style>
+canvas {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  top: 50px;
+  left: 50px;
+}
+</style>
+Tests paint invalidation of canvas when it's resized. Passes if there is a whole green circle.
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script>
+var ctx = document.getElementById('canvas').getContext('2d');
+ctx.beginPath();
+ctx.arc(250, 250, 250, 0, 2 * Math.PI);
+ctx.fillStyle = 'green';
+ctx.fill();
+</script>

@@ -1,0 +1,63 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [117, 8, 2, 153],
+        [115, 8, 4, 153],
+        [63, 109, 54, 51],
+        [63, 108, 56, 53],
+        [63, 60, 56, 52],
+        [63, 59, 54, 51],
+        [62, 8, 57, 53],
+        [62, 8, 55, 52],
+        [10, 110, 107, 50],
+        [10, 110, 107, 50],
+        [10, 60, 107, 50],
+        [10, 10, 107, 100],
+        [10, 10, 107, 50],
+        [9, 109, 107, 50],
+        [9, 109, 107, 50],
+        [9, 109, 54, 51],
+        [9, 59, 107, 50],
+        [9, 9, 107, 100],
+        [9, 9, 107, 50],
+        [8, 160, 111, 1],
+        [8, 159, 111, 2],
+        [8, 108, 55, 53],
+        [8, 59, 56, 53],
+        [8, 58, 56, 52],
+        [8, 8, 56, 53],
+        [8, 8, 56, 52]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTable TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY id='tbody'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableSection TBODY",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD"
+      ]
+    }
+  ]
+}
+

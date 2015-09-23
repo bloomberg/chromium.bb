@@ -1,0 +1,23 @@
+{
+  "bounds": [1566, 1781],
+  "children": [
+    {
+      "bounds": [1566, 1781],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [1114, 1764, 435, 15],
+        [1114, 1314, 450, 450],
+        [1112, 1314, 437, 450],
+        [1112, 1312, 454, 469]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "LayoutTableCell (relative positioned) TD id='cellToScroll' class='relative'",
+        "LayoutBlockFlow (relative positioned) DIV class='relative red'",
+        "LayoutBlockFlow (positioned) DIV class='absolute green'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: Requesting notification permission in a detached context should not crash.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that notifications created in a different context do not crash when said
+      // context gets detached, and events are still being fired on it.
+      if (window.testRunner) {
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+          testRunner.setCanOpenWindows();
+      }
+
+      async_test(function (test) {
+          var win = window.open('resources/window-permission-detached-context.html'),
+              notificationObj = null;
+
+          window.addEventListener('message', function (event) {
+              if (event.data == 'opened') {
+                  assert_own_property(win, 'Notification');
+                  notificationObj = win.Notification;
+                  win.close();
+
+              } else if (event.data == 'closed') {
+                  assert_equals(notificationObj.permission, 'granted');
+                  notificationObj.requestPermission(function () {});
+
+                  test.done();
+              } else {
+                  assert_unreached('Unrecognized message from the opened window.');
+              }
+          });
+
+      }, 'Requesting notification permission in a detached context should not crash.');
+    </script>
+  </body>
+</html>

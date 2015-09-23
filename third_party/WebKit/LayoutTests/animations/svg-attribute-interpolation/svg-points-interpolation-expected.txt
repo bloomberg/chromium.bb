@@ -1,0 +1,26 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [10 20, 80 20, 80 70, 10 70] at 0
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [11 18, 79 18, 79 72, 11 72] at 0.2
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [13 14, 77 14, 77 76, 13 76] at 0.6
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [15 10, 75 10, 75 80, 15 80] at 1
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [0 0, 10 0, 20 0, 30 0, 40 0] at 0
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [0 0, 10 0, 20 0, 30 0, 40 0] at 0.2
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [50 0, 60 0, 70 0] at 0.6
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [50 0, 60 0, 70 0] at 1
+
+Web Animations API:
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [8 24, 82 24, 82 66, 8 66] at -0.4
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [10 20, 80 20, 80 70, 10 70] at 0
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [11 18, 79 18, 79 72, 11 72] at 0.2
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [13 14, 77 14, 77 76, 13 76] at 0.6
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [15 10, 75 10, 75 80, 15 80] at 1
+PASS: points from [10 20, 80 20, 80 70, 10 70] to [15 10, 75 10, 75 80, 15 80] was [17 6, 73 6, 73 84, 17 84] at 1.4
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [0 0, 10 0, 20 0, 30 0, 40 0] at -0.4
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [0 0, 10 0, 20 0, 30 0, 40 0] at 0
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [0 0, 10 0, 20 0, 30 0, 40 0] at 0.2
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [50 0, 60 0, 70 0] at 0.6
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [50 0, 60 0, 70 0] at 1
+PASS: points from [0 0, 10 0, 20 0, 30 0, 40 0] to [50 0, 60 0, 70 0] was [50 0, 60 0, 70 0] at 1.4
+

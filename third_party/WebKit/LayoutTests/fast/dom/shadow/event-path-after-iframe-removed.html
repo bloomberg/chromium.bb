@@ -1,0 +1,29 @@
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+var innerEvent = null;
+
+function setInnerEvent(event)
+{
+    parent.innerEvent = event;
+}
+</script>
+
+<iframe src="resources/set-event.html" id="child"></iframe>
+
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        child.parentNode.removeChild(child);
+        delete child;
+        parent.innerEvent.path;
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }, 200);
+}, false);
+</script>
+<div>Pass when no crash observed.</div>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            var audio, sourceA, sourceB;
+            
+            function canplaythrough(e)
+            {
+                testExpected("audio.currentSrc == sourceA.src", true);
+                endTest();
+            }
+            
+            function loadedMetadataA()
+            {
+                consoleWrite("loadedMetadataA");
+                audio.removeChild(sourceA);
+                audio.appendChild(sourceB);
+                waitForEventAndFail("loadedmetadata");
+            }
+            
+            function onWindowLoad(e)
+            {
+                audio = document.getElementById('a');
+                waitForEvent("loadstart");
+                waitForEvent("progress");
+                waitForEvent("emptied");
+                waitForEvent("suspend");
+                waitForEvent("loadeddata");
+                waitForEvent("canplay");
+                waitForEventOnce('canplaythrough', canplaythrough);
+                
+                sourceA = document.createElement("source");
+                var audioFile = findMediaFile("audio", "content/test");
+                sourceA.setAttribute("src", audioFile);
+                sourceB = document.createElement("source");
+                audioFile = findMediaFile("audio", "content/silence");
+                sourceB.setAttribute("src", audioFile);
+                
+                waitForEventOnce("loadedmetadata", loadedMetadataA);
+                audio.appendChild(sourceA);
+            }
+            
+            window.addEventListener('load', onWindowLoad, false);
+        </script>
+    </head>
+    <body>
+        <audio id="a"></audio>
+    </body>
+</html>

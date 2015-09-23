@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+</script>
+Test deprecation messages in SVGSVGElement.
+<svg/>
+<script>
+var svg = document.querySelector("svg");
+svg.forceRedraw();
+svg.suspendRedraw(6000);
+svg.unsuspendRedraw(47);
+svg.unsuspendRedrawAll();
+</script>

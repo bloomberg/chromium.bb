@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<title>Canvas test: 2d.text.draw.text.metrics</title>
+<script src="../tests.js"></script>
+<link rel="stylesheet" href="../tests.css">
+<style>
+@font-face {
+  font-family: Libertine;
+  src: url("../../../third_party/Libertine/LinLibertine_R.woff");
+}
+</style>
+<body>
+<p id="passtext">Pass</p>
+<p id="failtext">Fail</p>
+<p class="output">These images should be identical:</p>
+<canvas id="c" class="output" width="100" height="50"><p class="fallback">FAIL (fallback content)</p></canvas>
+<p class="output expectedtext">Expected output:<p><img src="green-100x50.png" class="output expected" id="expected" alt="">
+<ul id="d"></ul>
+<script>
+function _printTextMetrics(ctx) {
+    var someText = "Some Text";
+    var highText = "M";
+    var lowText = "q";
+    var textMetrics = ctx.measureText(someText);
+    var highTextMetrics = ctx.measureText(highText);
+    var lowTextMetrics = ctx.measureText(lowText);
+    var w  = textMetrics.width;
+    var ab = textMetrics.alphabeticBaseline;
+    var hb = textMetrics.hangingBaseline;
+    var ib = textMetrics.ideographicBaseline;
+    var fa = textMetrics.fontBoundingBoxAscent;
+    var fd = textMetrics.fontBoundingBoxDescent;
+    var ea = textMetrics.emHeightAscent;
+    var ed = textMetrics.emHeightDescent;
+    var lb = textMetrics.actualBoundingBoxLeft;
+    var rb = textMetrics.actualBoundingBoxRight;
+
+    var ah = highTextMetrics.actualBoundingBoxAscent;
+    var al = lowTextMetrics.actualBoundingBoxAscent;
+    var dh = highTextMetrics.actualBoundingBoxDescent;
+    var dl = lowTextMetrics.actualBoundingBoxDescent;
+
+    _warn("Width: " + w);
+    _warn("Alphabetic Baseline: " + ab);
+    _warn("Hanging Baseline: " + hb);
+    _warn("Ideographic Baseline: " + ib);
+    _warn("Font Bounding Box Ascent: " + fa);
+    _warn("Font Bounding Box Descent: " + fd);
+    _warn("eM Height Ascent: " + ea);
+    _warn("eM Height Descent: " + ed);
+    _warn("Actual Bounding Box Left: " + lb);
+    _warn("Actual Bounding Box Right: " + rb);
+    _warn("Actual Bounding Box Ascent (high): " + ah);
+    _warn("Actual Bounding Box Ascent (low): " + al);
+    _warn("Actual Bounding Box Descent (high): " + dh);
+    _warn("Actual Bounding Box Descent (low): " + dl);
+}
+
+
+function measureMetrics(ctx) {
+    ctx.fillStyle = '#f00';
+    ctx.fillRect(0, 0, 100, 50);
+    ctx.fillStyle = '#0f0';
+
+    ctx.textBaseline="top";
+    _warn("Baseline: top");
+    _printTextMetrics(ctx);
+
+    ctx.textBaseline="hanging";
+    _warn("Baseline: hanging");
+    _printTextMetrics(ctx);
+
+    ctx.textBaseline="middle";
+    _warn("Baseline: middle");
+    _printTextMetrics(ctx);
+
+    ctx.textBaseline="alphabetic";
+    _warn("Baseline: alphabetic");
+    _printTextMetrics(ctx);
+
+    ctx.textBaseline="ideographic";
+    _warn("Baseline: ideographic");
+    _printTextMetrics(ctx);
+
+    ctx.textBaseline="bottom";
+    _warn("Baseline: bottom");
+    _printTextMetrics(ctx);
+
+    endTest();
+}
+
+function handleError() {
+    _warn("Unable to load required test font.");
+    endTest();
+}
+
+_addTest(function(canvas, ctx) {
+    ctx.font = '50px Libertine';
+    deferTest();
+    document.fonts.load(ctx.font)
+        .then(function() { measureMetrics(ctx) }, handleError);
+});
+</script>
+

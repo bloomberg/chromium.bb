@@ -1,0 +1,81 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x241
+  LayoutBlockFlow {HTML} at (0,0) size 800x241
+    LayoutBlockFlow {BODY} at (8,8) size 784x225
+      LayoutTextControl {INPUT} at (4,4) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (162,5) size 4x19
+        text run at (162,5) width 4: " "
+      LayoutBR {BR} at (166,5) size 0x19
+      LayoutTextControl {INPUT} at (4,34) size 156x24 [bgcolor=#FFFFFF] [border: (3px solid #00FF00)]
+      LayoutText {#text} at (164,36) size 4x19
+        text run at (164,36) width 4: " "
+      LayoutTextControl {INPUT} at (172,35) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (330,36) size 4x19
+        text run at (330,36) width 4: " "
+      LayoutBR {BR} at (334,36) size 0x19
+      LayoutTextControl {INPUT} at (4,66) size 154x22 [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (162,67) size 4x19
+        text run at (162,67) width 4: " "
+      LayoutBR {BR} at (166,67) size 0x19
+      LayoutTextControl {INPUT} at (4,96) size 154x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (162,97) size 4x19
+        text run at (162,97) width 4: " "
+      LayoutBR {BR} at (166,97) size 0x19
+      LayoutTextControl {INPUT} at (4,132) size 180x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (188,135) size 4x19
+        text run at (188,135) width 4: " "
+      LayoutTextControl {INPUT} at (196,128) size 229x30 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (429,135) size 4x19
+        text run at (429,135) width 4: " "
+      LayoutTextControl {INPUT} at (437,126) size 278x34 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutText {#text} at (719,135) size 4x19
+        text run at (719,135) width 4: " "
+      LayoutBR {BR} at (723,135) size 0x19
+      LayoutTextControl {INPUT} at (6,181) size 231x33 [bgcolor=#FFFFFF] [border: (3px inset #EEEEEE)]
+      LayoutText {#text} at (243,189) size 4x19
+        text run at (243,189) width 4: " "
+      LayoutTextControl {INPUT} at (255,172) size 308x45 [bgcolor=#FFFFFF] [border: (4px inset #EEEEEE)]
+      LayoutText {#text} at (571,189) size 4x19
+        text run at (571,189) width 4: " "
+      LayoutBR {BR} at (575,189) size 0x19
+layer at (14,15) size 150x16
+  LayoutBlockFlow {DIV} at (2,3) size 150x16
+    LayoutText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (15,46) size 150x16
+  LayoutBlockFlow {DIV} at (3,4) size 150x16
+    LayoutText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (182,46) size 150x16
+  LayoutBlockFlow {DIV} at (2,3) size 150x16
+    LayoutText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (14,77) size 150x16
+  LayoutBlockFlow {DIV} at (2,3) size 150x16
+    LayoutText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (14,107) size 150x16
+  LayoutBlockFlow {DIV} at (2,3) size 150x16
+    LayoutText {#text} at (0,0) size 17x16
+      text run at (0,0) width 17: "foo"
+layer at (14,143) size 176x19
+  LayoutBlockFlow {DIV} at (2,3) size 176x19
+    LayoutText {#text} at (0,0) size 22x18
+      text run at (0,0) width 22: "foo"
+layer at (206,139) size 225x24
+  LayoutBlockFlow {DIV} at (2,3) size 225x24
+    LayoutText {#text} at (0,0) size 28x23
+      text run at (0,0) width 28: "foo"
+layer at (447,137) size 274x28
+  LayoutBlockFlow {DIV} at (2,3) size 274x28
+    LayoutText {#text} at (0,0) size 33x27
+      text run at (0,0) width 33: "foo"
+layer at (17,194) size 225x24
+  LayoutBlockFlow {DIV} at (3,4.50) size 225x24
+    LayoutText {#text} at (0,0) size 28x23
+      text run at (0,0) width 28: "foo"
+layer at (267,186) size 300x33
+  LayoutBlockFlow {DIV} at (4,6) size 300x33
+    LayoutText {#text} at (0,0) size 37x32
+      text run at (0,0) width 37: "foo"

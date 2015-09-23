@@ -1,0 +1,12 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: <shadow> doesn't work for VIDEO element host.
+CONSOLE WARNING: <shadow> doesn't work for VIDEO element host.
+ 
+PASS shadowRootForVideoWithControls is youngerShadowRootForVideoWithControls
+PASS shadowRootForVideoWithControls is not oldestShadowRootForVideoWithControls
+PASS shadowRootForVideoWithoutControls is youngerShadowRootForVideoWithoutControls
+PASS shadowRootForVideoWithoutControls is not oldestShadowRootForVideoWithoutControls
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

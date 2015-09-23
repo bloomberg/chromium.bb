@@ -1,0 +1,75 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+var object1 = { foo: 1 };
+var symbol1 = Symbol("a");
+object1[symbol1] = 2;
+
+function dumpSymbolProperty(label)
+{
+    console.log("===== " + label + " =====");
+    console.log(object1[symbol1]);
+    console.log("");
+}
+
+function test()
+{
+    var obj1, name;
+
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.evaluateInPage("dumpSymbolProperty('Initial')", step0);
+
+            function step0()
+            {
+                InspectorTest.RuntimeAgent.evaluate("object1", step1);
+            }
+
+            function step1(error, result, wasThrown)
+            {
+                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
+                InspectorTest.RuntimeAgent.evaluate("symbol1", step2);
+            }
+
+            function step2(error, result, wasThrown)
+            {
+                name = WebInspector.RemoteObject.toCallArgument(InspectorTest.runtimeModel.createRemoteObject(result));
+                next();
+            }
+        },
+
+        function testSetSymbolPropertyValue(next)
+        {
+            obj1.setPropertyValue(name, "3", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpSymbolProperty('Set property')", next);
+            }
+        },
+
+        function testDeleteSymbolProperty(next)
+        {
+            obj1.deleteProperty(name, step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpSymbolProperty('Delete property')", next);
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests editing Symbol properties.
+</p>
+
+</body>
+</html>

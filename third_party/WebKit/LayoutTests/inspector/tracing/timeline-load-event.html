@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function display(callback)
+{
+    if (window.testRunner)
+        testRunner.setCanOpenWindows(true);
+    var popup = window.open("data:text/html,<b>Hello, world</b>");
+    popup.onload = function()
+    {
+        requestAnimationFrame(testRunner.capturePixelsAsyncThen.bind(testRunner, callback));
+    }
+}
+
+function test()
+{
+    InspectorTest.startTimeline(function() { InspectorTest.reloadPage(pageReloaded); });
+
+    function pageReloaded()
+    {
+        InspectorTest.invokePageFunctionAsync("display", displayDone);
+    }
+
+    function displayDone()
+    {
+        InspectorTest.stopTimeline(InspectorTest.safeWrap(finish))
+    }
+
+    function finish()
+    {
+        InspectorTest.addResult("Model records:");
+        InspectorTest.printTimelineRecords("MarkDOMContent");
+        InspectorTest.printTimelineRecords("MarkLoad");
+        InspectorTest.addResult("Timestamp records:");
+        InspectorTest.printTimestampRecords("MarkDOMContent");
+        InspectorTest.printTimestampRecords("MarkLoad");
+        InspectorTest.printTimestampRecords("MarkFirstPaint");
+
+        var eventDividers = InspectorTest.timelineModel().eventDividerRecords();
+        for (var i = 1; i < eventDividers.length; ++i)
+            InspectorTest.assertGreaterOrEqual(eventDividers[i], eventDividers[i - 1], "Event divider timestamps should be monotonically non-decreasing");
+
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the load event.
+</p>
+
+</body>
+</html>

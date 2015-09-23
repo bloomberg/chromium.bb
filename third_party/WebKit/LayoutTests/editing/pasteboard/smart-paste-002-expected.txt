@@ -1,0 +1,15 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+Tests: 
+Smart paste when pasting at the beginning of a line before a word.
+Expected Results: 
+A space should be added after the pasted word before the preexising word. It should like this: 
+test test
+test test
+execCopyCommand: <div id="test" class="editing"> test </div>
+execPasteCommand: <div id="test" class="editing">test test </div>

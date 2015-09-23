@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<title>navigator.storage methods return promises that are fulfilled</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+
+test(function() { assert_true(!!navigator.storage); },
+    "These tests requires navigator.storage");
+
+promise_test(function() {
+    var promise = navigator.storage.requestPersistent();
+    assert_true(promise instanceof Promise,
+        "navigator.storage.requestPersistent() returned a Promise.")
+    return promise.then(function (result) {
+        // Layout tests get canned results, not the value per spec. So testing
+        // their values here would only be testing our test plumbing. But we can
+        // test that the type of the returned value is correct.
+        assert_equals(typeof result, "boolean", result + " should be boolean");
+    });
+}, "navigator.storage.requestPersistent returns a promise that resolves.");
+
+promise_test(function() {
+    var promise = navigator.storage.persistentPermission();
+    assert_true(promise instanceof Promise,
+        "navigator.storage.persistentPermission() returned a Promise.")
+    return promise.then(function (result) {
+        // See comment above about why the result value isn't being tested here.
+        assert_equals(typeof result, "string", result + " should be a string");
+        assert_greater_than(result.length, 0, "result should have length >0");
+    });
+}, "navigator.storage.persistentPermission returns a promise that resolves.");
+
+</script>

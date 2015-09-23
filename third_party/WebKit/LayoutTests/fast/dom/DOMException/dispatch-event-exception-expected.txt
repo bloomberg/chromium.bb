@@ -1,0 +1,14 @@
+Tests the properties of the exception thrown by dispatchEvent.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS e.toString() is "InvalidStateError: Failed to execute 'dispatchEvent' on 'EventTarget': The event provided is null."
+PASS Object.prototype.toString.call(e) is "[object DOMException]"
+FAIL Object.prototype.toString.call(e.__proto__) should be [object DOMExceptionPrototype]. Was [object Object].
+PASS e.constructor.toString() is "function DOMException() { [native code] }"
+PASS e.constructor is window.DOMException
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

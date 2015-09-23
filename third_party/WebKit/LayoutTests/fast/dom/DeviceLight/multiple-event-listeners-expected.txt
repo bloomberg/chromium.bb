@@ -1,0 +1,13 @@
+Tests using multiple event handlers for the Device Light API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS deviceLightEvent.value is expectedEvent.value
+PASS deviceLightEvent.value is expectedEvent.value
+PASS deviceLightEvent.value is expectedEvent.value
+PASS deviceLightEvent.value is expectedEvent.value
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,10 @@
+There was a bug that HTMLTextFormControlElement::setSelectionRange crashed. This test requires ASAN or something.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS if not crash.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

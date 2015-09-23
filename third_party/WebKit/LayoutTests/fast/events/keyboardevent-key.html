@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent-key" />
+<script src="../../resources/js-test.js"></script>-
+<textarea id="textarea"></textarea>
+<script>
+description('Tests KeyboardEvent.key attribute');
+var textarea = document.getElementById('textarea');
+textarea.addEventListener('keydown', recordKeyEvent, false);
+textarea.addEventListener('keyup', recordKeyEvent, false);
+textarea.addEventListener('keypress', recordKeyEvent, false);
+textarea.focus();
+
+var lastKeyboardDownEvent, lastKeyboardPressEvent, lastKeyboardUpEvent;
+
+function recordKeyEvent(ev) {
+    if (window.eventSender) {
+        if (ev.type === "keydown")
+            lastKeyboardDownEvent = ev;
+        else if (ev.type === "keyup")
+            lastKeyboardUpEvent = ev;
+        else if (ev.type === "keypress")
+            lastKeyboardPressEvent = ev;
+    } else {
+        debug('Type=' + ev.type + ',' + 'key=' + ev.key);
+    }
+}
+
+if (window.eventSender) {
+    debug('Modifier Keys');
+    eventSender.keyDown('leftControl');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Control\'');
+    eventSender.keyDown('rightControl');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Control\'');
+    eventSender.keyDown('leftShift');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Shift\'');
+    eventSender.keyDown('rightShift');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Shift\'');
+    eventSender.keyDown('leftAlt');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Alt\'');
+    eventSender.keyDown('rightAlt');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'AltGraph\'');
+    eventSender.keyDown('numLock');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'NumLock\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'NumLock\'');
+
+    debug('Whitespace Keys');
+    eventSender.keyDown('\n');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Enter\'');
+    eventSender.keyDown('\t');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Tab\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Tab\'');
+    
+    debug('Navigation keys');
+    eventSender.keyDown('rightArrow');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowRight\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'ArrowRight\'');
+    eventSender.keyDown('downArrow');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowDown\'');
+    eventSender.keyDown('leftArrow');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowLeft\'');
+    eventSender.keyDown('upArrow');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'ArrowUp\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'ArrowUp\'');
+    eventSender.keyDown('home');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Home\'');
+    eventSender.keyDown('end');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'End\'');
+    eventSender.keyDown('pageUp');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PageUp\'');
+    eventSender.keyDown('pageDown');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PageDown\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'PageDown\'');
+    
+    debug('Editing Keys');
+    eventSender.keyDown('backspace');
+    shouldEvaluateTo('lastKeyboardDownEvent.code', '\'Backspace\'');
+    eventSender.keyDown('insert');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Insert\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Insert\'');
+    eventSender.keyDown('delete');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Delete\'');
+      
+    debug('Device Keys');
+    eventSender.keyDown('printScreen');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'PrintScreen\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'PrintScreen\'');
+    
+    debug('General Purpose Function Section');
+    eventSender.keyDown('F1');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F1\'');
+    eventSender.keyDown('F6');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F6\'');
+    eventSender.keyDown('F12');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'F12\'');
+    
+    debug('UI Keys');
+    eventSender.keyDown('escape');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'Escape\'');
+    shouldEvaluateTo('lastKeyboardUpEvent.key', '\'Escape\'');
+    eventSender.keyDown('menu');
+    shouldEvaluateTo('lastKeyboardDownEvent.key', '\'MediaApps\'');    
+}
+</script>

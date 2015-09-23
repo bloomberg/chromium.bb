@@ -1,0 +1,30 @@
+This tests the constructor for the AutocompleteErrorEvent DOM class.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS new AutocompleteErrorEvent('eventType').bubbles is false
+PASS new AutocompleteErrorEvent('eventType').cancelable is false
+PASS new AutocompleteErrorEvent('eventType').reason is ""
+PASS new AutocompleteErrorEvent('eventType', { bubbles: false }).bubbles is false
+PASS new AutocompleteErrorEvent('eventType', { bubbles: true }).bubbles is true
+PASS new AutocompleteErrorEvent('eventType', { cancelable: false }).cancelable is false
+PASS new AutocompleteErrorEvent('eventType', { cancelable: true }).cancelable is true
+PASS new AutocompleteErrorEvent('eventType', { reason: 'cancel' }).reason is "cancel"
+PASS new AutocompleteErrorEvent('eventType', { reason: '' }).reason is ""
+PASS new AutocompleteErrorEvent('eventType', { reason: 'disabled' }).reason is "disabled"
+PASS new AutocompleteErrorEvent('eventType', { reason: 'invalid' }).reason is "invalid"
+PASS new AutocompleteErrorEvent('eventType', { reason: undefined }).reason is ""
+PASS new AutocompleteErrorEvent('eventType', { reason: 'doremi' }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value 'doremi' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { reason: null }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value 'null' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { reason: false }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value 'false' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { reason: true }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value 'true' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { reason: 12345 }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value '12345' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { reason: NaN }) threw exception TypeError: Failed to construct 'AutocompleteErrorEvent': The provided value 'NaN' is not a valid enum value of type AutocompleteErrorReason..
+PASS new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: '' }).bubbles is true
+PASS new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'cancel' }).cancelable is true
+PASS new AutocompleteErrorEvent('eventType', { bubbles: true, cancelable: true, reason: 'disabled' }).reason is "disabled"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

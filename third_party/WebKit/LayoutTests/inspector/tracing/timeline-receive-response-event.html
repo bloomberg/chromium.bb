@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function performActions(callback)
+{
+    var image = new Image();
+    image.onload = bar;
+    image.src = "resources/anImage.png";
+
+    function bar()
+    {
+        var image = new Image();
+        image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
+        image.src = "resources/anotherImage.png";
+    }
+}
+
+function test()
+{
+    WebInspector.TimelinePanel.show();
+    WebInspector.panels.timeline._model._currentTarget = WebInspector.targetManager.mainTarget();
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+
+    function finish()
+    {
+        function dumpFormattedRecord(presentationRecord, prefix)
+        {
+            var record = presentationRecord.record();
+            prefix = prefix || "";
+            // Ignore stray paint & rendering events for better stability.
+            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
+               if (categoryName !== "loading" && categoryName !== "scripting")
+                return;
+            var childPrefix = prefix;
+            // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
+            // Filter out InjectedScript function call because they happen out of sync.
+            if (!presentationRecord.coalesced()
+                && record.type() !== "GCEvent"
+                && (record.type() !== "FunctionCall" || record.traceEvent().args["data"].scriptName)) {
+                InspectorTest.addResult(prefix + record.type());
+                childPrefix = childPrefix + "    ";
+            }
+            if (presentationRecord.presentationChildren()) {
+                for (var i = 0; i < presentationRecord.presentationChildren().length; ++i)
+                    dumpFormattedRecord(presentationRecord.presentationChildren()[i], childPrefix);
+            }
+        }
+        var records = InspectorTest.timelinePresentationModel().rootRecord().presentationChildren();
+        for (var i = 0; i < records.length; ++i)
+            dumpFormattedRecord(records[i]);
+        InspectorTest.completeTest();
+    }
+}
+
+if (!window.testRunner)
+    setTimeout(performActions, 3000);
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline API instrumentation of a SendRequest, ReceiveResponse etc.
+</p>
+
+</body>
+</html>

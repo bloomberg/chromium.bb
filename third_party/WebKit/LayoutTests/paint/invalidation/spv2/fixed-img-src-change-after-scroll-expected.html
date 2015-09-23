@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script>
+onload = function() {
+  window.scrollTo(0, 1000);
+}
+</script>
+<body style="height: 2000px">
+Checks correct paint invalidation on image src change after a pending scroll.
+Passes if there is no assert failure about pending scroll offsets in a debug build
+(http://crbug.com/434950), and both the old location and new location of the img are
+correctly invalidated.
+  <img id='img' src='../../../fast/images/resources/green.jpg' style="width: 100px; height: 100px; position: fixed; top: 50px; left: 0">
+</body>

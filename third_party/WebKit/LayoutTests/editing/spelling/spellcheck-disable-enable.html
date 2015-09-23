@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body onload="test(document.getElementById('destination'), document.getElementById('frame').contentWindow.document);">
+<div id="container">
+  <div id="destination" contentEditable></div>
+  <iframe id="frame" src="data:text/html,<body contenteditable></body>"></iframe>
+</div>
+
+<script>
+description("Spell check markers should be removed from the whole page when disabling spell checker "
+    + "but they should be restored in the focused editable if spell checker gets enabled. "
+    + "To test manually, turn spell checker off - misspelling markers should disappear. "
+    + "Having the editable focused, turn spell checker on. Misspellings in the editable should be marked.");
+
+jsTestIsAsync = true;
+
+function hasSpellingMarkerOnSetting(element, enableSpellChecking)
+{
+    internals.setContinuousSpellCheckingEnabled(enableSpellChecking);
+    return !!internals.markerCountForNode(element.firstChild, "spelling");
+}
+
+var editableDiv = null;
+var editableBodyInFrame = null;
+
+function test(div, frameDocument)
+{
+    editableDiv = div;
+    editableBodyInFrame = frameDocument.body;
+
+    // Type misspellings to trigger spellchecking on editable fields.
+    editableDiv.focus();
+    document.execCommand("InsertText", false, "zz.");
+    editableBodyInFrame.focus();
+    frameDocument.execCommand("InsertText", false, "zz.");
+
+    if (!window.internals) {
+        debug("Automatic testing impossible. Test manually.");
+        return;
+    }
+
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+
+    shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {
+        shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, true)', 'true', function() {
+            // Turn off spellchecking, all misspellings should disappear.
+            shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, false)', 'false', function() {
+                shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, false)', 'false', function() {
+                    // Focus element and turn on spellchecking.
+                    // Only misspellings of the focused element should be restored.
+                    editableDiv.focus();
+                    shouldBecomeEqual('hasSpellingMarkerOnSetting(editableDiv, true)', 'true', function() {
+                        shouldBecomeEqual('hasSpellingMarkerOnSetting(editableBodyInFrame, true)', 'false', finishJSTest);
+                    });
+                });
+            });
+        });
+    });
+}
+
+</script>
+</body>
+</html>

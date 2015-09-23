@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+var foo = 123
+
+var test = function()
+{
+    var watchExpressionsPane = WebInspector.panels.sources.sidebarPanes.watchExpressions;
+    watchExpressionsPane.expand();
+    watchExpressionsPane.addExpression("#$%");
+
+    InspectorTest.runAfterPendingDispatches(step1);
+
+    function step1()
+    {
+        InspectorTest.addResult(watchExpressionsPane.element.textContent.indexOf("<not available>") !== -1 ? "SUCCESS" : "FAILED");
+
+        // Clear watch expressions after execution.
+        watchExpressionsPane._deleteAllButtonClicked();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that watches pane renders errors in red.
+</p>
+
+</body>
+</html>

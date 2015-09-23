@@ -1,0 +1,17 @@
+{
+  "bounds": [5008, 5016],
+  "children": [
+    {
+      "bounds": [5008, 5016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 8, 5000, 5000]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='content'"
+      ]
+    }
+  ]
+}
+

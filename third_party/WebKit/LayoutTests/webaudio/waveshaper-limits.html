@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+  </head>
+
+  <body>
+    <div id="description"></div>
+    <div id="console"></div>
+
+    <script>
+      description("Test WaveShaperNode including values outside the range of [-1,1]");
+
+      var context;
+      var bufferData;
+      var outputData;
+      var reference;
+
+      var sampleRate = 48000;
+      // Must be odd so we have an exact middle point.
+      var testFrames = 23;
+      var scale = 1 / ((testFrames - 1) / 2 - 1);
+      // Number of decimal digits to print
+      var decimals = 6;
+      // Required accuracy
+      var diffThreshold = Math.pow(10, -decimals);
+
+      // Generate reference data
+      function generateReference() {
+        // The curve data is 0, 1, 0, and the input data is a ramp from -1+eps to 1+eps.  Then the
+        // output is a ramp from 0 to 1 back to 0.
+        var ref = new Float32Array(testFrames);
+        var midPoint = (testFrames - 1) / 2;
+        // First sample is below -1 at -1-scale.
+        ref[0] = 0;
+        // Generate ramp up to the mid-point
+        for (var k = 0; k < midPoint; ++k) {
+          ref[k + 1] = k * scale;
+        }
+        // The value at the mid-point must be 1, from the curve
+        ref[midPoint] = 1;
+        // Generate a ramp from 1 down to 0
+        for (var k = midPoint; k < testFrames - 1; ++k) {
+           ref[k + 1] = 2 - k * scale;
+        }
+        // The last sample is out of range at 1+scale
+        ref[testFrames - 1] = 0;
+        return ref;
+      }
+
+      function checkResult (event) {
+        outputData = event.renderedBuffer.getChannelData(0);
+        reference = generateReference();
+        var success = true;
+        // Verify that every output value matches our expected reference value.
+        for (var k = 0; k < outputData.length; ++k) {
+           var diff = outputData[k] - reference[k];
+           if (Math.abs(diff) <= diffThreshold) {
+              testPassed(bufferData[k].toFixed(decimals) + " -> " + outputData[k].toFixed(decimals) + ".");
+           } else {
+              testFailed(bufferData[k].toFixed(decimals) + " -> " + outputData[k].toFixed(decimals) + ", but expected " + reference[k].toFixed(decimals) + ".");
+              success = false;
+           }
+        }
+
+        if (success)
+          testPassed("All outputs matched expected results.");
+        else
+          testFailed("Some outputs did not match expected results.");
+
+        finishJSTest();
+      }
+
+      function runTest () {
+        if (window.testRunner) {
+          testRunner.dumpAsText();
+          testRunner.waitUntilDone();
+        }
+
+        window.jsTestIsAsync = true;
+
+        context = new OfflineAudioContext(1, testFrames, sampleRate);
+        // Create input values between -1.1 and 1.1
+        var buffer = context.createBuffer(1, testFrames, context.sampleRate);
+        bufferData = buffer.getChannelData(0);
+        var start = -1 - scale;
+        for (var k = 0; k < testFrames; ++k) {
+          bufferData[k] = k * scale + start;
+        }
+
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+
+        // Create simple waveshaper. It should map -1 to 0, 0 to 1, and +1 to 0 and interpolate
+        // all points in between using a simple linear interpolator.
+        var shaper = context.createWaveShaper();
+        var curve = new Float32Array(3);
+        curve[0] = 0;
+        curve[1] = 1;
+        curve[2] = 0;
+        shaper.curve = curve;
+        source.connect(shaper);
+        shaper.connect(context.destination);
+
+        source.start();
+        context.oncomplete = checkResult;
+        context.startRendering();
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

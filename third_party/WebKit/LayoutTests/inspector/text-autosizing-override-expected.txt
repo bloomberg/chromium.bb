@@ -1,0 +1,16 @@
+
+Running: checkNotAutosizedWithoutPageAgent
+Text was not autosized. PASS
+
+Running: checkNotAutosizedWithPageAgent
+Text was not autosized. PASS
+
+Running: checkNotAutosizedWithZeroDeviceMetrics
+Text was not autosized. PASS
+
+Running: checkAutosizedWhenDeviceMetrics
+Text was autosized. PASS
+
+Running: checkCleanupOverrides
+Text was not autosized. PASS
+

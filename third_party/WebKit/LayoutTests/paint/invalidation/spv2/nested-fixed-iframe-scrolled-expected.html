@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script>
+onload = function() {
+  window.scrollTo(0, 400);
+};
+</script>
+<body style="height: 2000px">
+  Tests paint invalidation of contents of fixed-position iframe in another iframe after main frame is scrolled.
+  Passes if there is a 100x100 green rectangle and no red in the inner-most iframe.
+  <iframe style="position: absolute; top: 500px; left: 0" srcdoc="
+    <iframe style='position: fixed; top: 10px; left: 10px; width: 150px; height: 150px'
+      srcdoc='<div id=&quot;div&quot; style=&quot;width: 100px; height: 100px; background-color: green&quot;></div>'></iframe>">
+  </iframe>
+</body>

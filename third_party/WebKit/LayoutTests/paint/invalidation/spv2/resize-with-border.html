@@ -1,0 +1,32 @@
+<!-- Based on fast/repaint/resize-with-border.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='div'",
+];
+function paintInvalidationTest()
+{
+    document.getElementById('div').style.width = '400px';
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+#div {
+    position: absolute;
+    top: 100px;
+    left: 100px;
+    width: 200px;
+    height: 200px;
+    border: green 10px solid;
+}
+</style>
+<div>
+Tests repaint when a box with border is resized.
+Passes if the result paint rects cover all changed part,
+the new border is correctly drawn and there is no residue of the old border.
+</div>
+<div id="div"></div>

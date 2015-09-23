@@ -1,0 +1,74 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function collectProfiles()
+{
+    console.profile("outer");
+    console.profile("inner");
+    console.profileEnd("outer");
+    console.profileEnd("inner");
+}
+
+function test()
+{
+    InspectorTest.fail = function(message)
+    {
+        InspectorTest.log("FAIL: " + message);
+        InspectorTest.completeTest();
+    }
+
+    InspectorTest.sendCommand("Profiler.enable", {});
+    InspectorTest.sendCommand("Runtime.evaluate", { expression: "collectProfiles()"}, didCollectProfiles);
+
+    var headers = [];
+    InspectorTest.eventHandler["Profiler.consoleProfileFinished"] = function(messageObject)
+    {
+        headers.push({
+            profile: messageObject["params"]["profile"],
+            title: messageObject["params"]["title"]
+        });
+    }
+
+    function didCollectProfiles(messageObject)
+    {
+        if (headers.length !== 2)
+            return InspectorTest.fail("Cannot retrive headers: " + JSON.stringify(messageObject, null, 4));
+        for (var i = 0; i < headers.length; i++) {
+            if (headers[i].title === "inner") {
+                checkInnerProfile(headers[i].profile);
+                return;
+            }
+        }
+        InspectorTest.fail("Cannot find 'inner' profile header");
+    }
+
+    function checkInnerProfile(profile)
+    {
+        InspectorTest.log("SUCCESS: retrieved 'inner' profile");
+        var root = profile.head;
+        if (!findFunctionInProfile(root, "collectProfiles"))
+            return InspectorTest.fail("collectProfiles function not found in the profile: " + JSON.stringify(profile, null, 4));
+        InspectorTest.log("SUCCESS: found 'collectProfiles' function in the profile");
+        InspectorTest.completeTest();
+    }
+
+    function findFunctionInProfile(node, functionName)
+    {
+        if (node.functionName === functionName)
+            return true;
+        var children = node.children;
+        for (var i = 0; i < children.length; ++i)
+            if (findFunctionInProfile(children[i], functionName))
+                return true;
+        return false;
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that console.profile/profileEnd will record CPU profile when inspector front-end is connected.<br>
+</p>
+</body>
+</html>

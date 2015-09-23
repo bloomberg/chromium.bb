@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="/w3c/resources/testharness.js"></script>
+        <script src="/w3c/resources/testharnessreport.js"></script>
+        <script src="mediasource-util.js"></script>
+        <link rel='stylesheet' href='/w3c/resources/testharness.css'>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+          function createMediaXHR(test, onFinished) {
+              var mediaURL = "/media/resources/media-source/webm/test-a-5min-44100Hz-1ch.webm";
+              var xhr = new XMLHttpRequest();
+              xhr.open('GET', mediaURL, true);
+              xhr.responseType = 'legacystream';
+              test.failOnEvent(xhr, 'error');
+              xhr.onreadystatechange = function() {
+                  if (xhr.readyState == 4 && xhr.status == 200) {
+                      onFinished();
+                  }
+              };
+              return xhr;
+          }
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
+              sourceBuffer.mode = 'sequence';
+
+              function onUpdateEnd() {
+                  var xhr = createMediaXHR(test, function()
+                  {
+                      // We are appending data repeatedly in sequence mode, there should be no gaps.
+                      assert_false(sourceBuffer.buffered.length > 1, "unexpected gap in buffered ranges.");
+                      try {
+                          sourceBuffer.appendStream(xhr.response, 551 * 1024);
+                      } catch(ex) {
+                          assert_equals(ex.name, 'QuotaExceededError');
+                          test.done();
+                      }
+                      test.expectEvent(sourceBuffer, "updateend", "Append ended.");
+                      test.waitForExpectedEvents(onUpdateEnd);
+                  });
+                  xhr.send();
+              }
+              // Start appending data
+              onUpdateEnd();
+          }, 'Calling appendStream repeatedly (with size parameter) should fill up the buffer and throw a QuotaExceededError when buffer is full.');
+
+          mediasource_test(function(test, mediaElement, mediaSource)
+          {
+              var sourceBuffer = mediaSource.addSourceBuffer(MediaSourceUtil.AUDIO_ONLY_TYPE);
+              sourceBuffer.mode = 'sequence';
+
+              sourceBuffer.addEventListener('error',  function() {
+                  // Ok, we got error message as expected. This error notifies us that the async
+                  // appendStream has failed due to buffer being full.
+                  test.done();
+              });
+
+              function onUpdateEnd() {
+                  var xhr = createMediaXHR(test, function()
+                  {
+                      // We are appending data repeatedly in sequence mode, there should be no gaps.
+                      assert_false(sourceBuffer.buffered.length > 1, "unexpected gap in buffered ranges.");
+                      sourceBuffer.appendStream(xhr.response);
+                      test.expectEvent(sourceBuffer, "updateend", "Append ended.");
+                      test.waitForExpectedEvents(onUpdateEnd);
+                  });
+                  xhr.send();
+              }
+              // Start appending data
+              onUpdateEnd();
+          }, 'Calling appendStream repeatedly (without size parameter) should fill up the buffer and send an error event when buffer is full.');
+        </script>
+    </body>
+</html>

@@ -1,0 +1,16 @@
+The test suites in this directory are imported from third parties.
+
+In particular the tests in web-platform-tests and csswg-test are imported
+from the W3C's test suite repositories on GitHub.
+
+Use Tools/Scripts/update-w3c-deps to update the tests from the tip of tree
+in those repositories.
+
+Any modifications made directly to the tests in these directories will be
+overwritten on the next import, so, don't modify the tests :).
+
+It is safe and okay to check in generic baselines for any tests that fail.
+The baselines will not be overwritten.
+
+For more information on this process and Blink's handling of the W3C's
+test suites, see http://www.chromium.org/blink/importing-the-w3c-tests .

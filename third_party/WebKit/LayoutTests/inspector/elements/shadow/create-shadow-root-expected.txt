@@ -1,0 +1,28 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests that elements panel updates dom tree structure upon shadow root creation.
+
+
+Running: testDumpInitial
+========= Original ========
+- <div id="container">
+      <div id="child"></div>
+  </div>
+
+Running: testCreateShadowRoot
+===== After createShadowRoot =====
+- <div id="container">
+    - #shadow-root (open)
+          <div id="shadow-1"></div>
+      <div id="child"></div>
+  </div>
+
+Running: testCreateSecondShadowRoot
+===== After second createShadowRoot =====
+- <div id="container">
+    - #shadow-root (open)
+          <div id="shadow-2"></div>
+    - #shadow-root (open)
+          <div id="shadow-1"></div>
+      <div id="child"></div>
+  </div>
+

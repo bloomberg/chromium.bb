@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<title>EventHandlers on SVGAnimationElement test</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="script-tests/animation-events.js"></script>
+<script>
+var attributeToEventMap = {
+    "onbegin" : "beginEvent",
+    "onend" : "endEvent",
+    "onrepeat" : "repeatEvent"
+};
+
+for (var attribute in attributeToEventMap) {
+	[
+		"SVGAnimateElement",
+		"SVGAnimateMotionElement",
+		"SVGAnimateTransformElement",
+		"SVGSetElement"
+	].forEach(function(interface) {
+		testSet(interface, attribute);
+		testEnumerate(interface, attribute);
+		testReflect(interface, attribute);
+	});
+
+	testEventHandlerMapping(attribute, attributeToEventMap[attribute]);
+};
+</script>
+<div id="log"></div>

@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/window-property-collector.js"></script>
+<script>
+var jsTestIsAsync = true;
+
+var oldChildWindow;
+var newChildWindow;
+var propertiesToVerify = [];
+
+function insertExpectedResult(path, expected)
+{
+    var propertyPath = path.join('.');
+    propertiesToVerify.push({'property': "oldChildWindow." + propertyPath, 'expected': "newChildWindow." + propertyPath});
+}
+
+function runTest()
+{
+    var frame = document.getElementById("frame");
+    if (frame.src != 'about:blank') {
+        description("Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.");
+        oldChildWindow = frame.contentWindow;
+        // Have expected results assume that the frame hasn't been closed (=> window.closed = false.)
+        collectProperties(false);
+        frame.src = 'about:blank';
+        return;
+    }
+    newChildWindow = frame.contentWindow;
+    for (var i = 0; i < propertiesToVerify.length; ++i)
+        shouldBe(propertiesToVerify[i].property, propertiesToVerify[i].expected);
+    finishJSTest();
+}
+</script>
+</head>
+<body>
+<iframe id="frame" src="resources/blank.html" onload="runTest()"></iframe>
+</body>
+</html>

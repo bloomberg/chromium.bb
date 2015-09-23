@@ -1,0 +1,10 @@
+Test receiving cookies in a WebSocket handshake which were set by another WebSocket handshake.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS cookie is "WK-WebSocket-test-domain-pass=1; WK-WebSocket-test-path-pass=1; WK-WebSocket-test=1"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

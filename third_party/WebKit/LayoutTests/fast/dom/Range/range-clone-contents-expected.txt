@@ -1,0 +1,50 @@
+test contents:
+| <div>
+|   <a>
+|     href="#"
+|     "link"
+| <div>
+| <div>
+|   <br>
+|   <br>
+|   <img>
+|     id="img-tag"
+|     src=""
+|     <shadow:root>
+|       <div>
+|         id="alttext-container"
+|         style="overflow: hidden; border: 1px solid silver; display: inline-block; box-sizing: border-box; padding: 1px;"
+|         <img>
+|           align="left"
+|           height="16"
+|           id="alttext-image"
+|           style="margin: 0px;"
+|           width="16"
+|         <div>
+|           id="alttext"
+|           style="overflow: hidden; display: block;"
+|           ""
+| <div>
+|   <br>
+|   <br>
+|   "text"
+
+PASS: Cloning right complex subtree yields:
+| <div>
+|   <a>
+|     href="#"
+|     "link"
+| <div>
+| <div>
+|   <br>
+|   <br>
+
+PASS: Cloning left complex subtree yields:
+| <div>
+| <div>
+|   <br>
+|   <br>
+|   "text"
+
+DONE
+

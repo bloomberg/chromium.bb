@@ -1,0 +1,14 @@
+Test trace-specific implementation of timeline model
+
+Program: 
+----> FunctionCall: 
+--------> ResourceSendRequest: example.com
+--------> RecalculateStyles: 
+--------> Layout: 
+Program: 
+----> FunctionCall: 
+--------> ResourceSendRequest: example.com
+--------> RecalculateStyles: 
+--------> Layout: 
+--------> ParseHTML: http://example.com
+

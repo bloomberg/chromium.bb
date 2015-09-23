@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.parent {
+  border-color: white;
+}
+.target {
+  width: 50px;
+  height: 50px;
+  background-color: blue;
+  display: inline-block;
+  border: 12px solid;
+  border-color: darkblue;
+}
+.expected {
+  background-color: green;
+  margin-right: 2px;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'border-color',
+  from: '',
+  to: 'orange',
+}, [
+  {at: -0.3, is: 'rgb(0, 0, 181)'},
+  {at: 0, is: 'rgb(0, 0, 139)'},
+  {at: 0.3, is: 'rgb(77, 50, 97)'},
+  {at: 0.6, is: 'rgb(153, 99, 56)'},
+  {at: 1, is: 'rgb(255, 165, 0)'},
+  {at: 1.5, is: 'rgb(255, 248, 0)'},
+]);
+
+assertInterpolation({
+  property: 'border-color',
+  from: 'initial',
+  to: 'orange',
+}, [
+  {at: -0.3, is: 'rgb(0, 0, 0)'},
+  {at: 0, is: 'rgb(0, 0, 0)'},
+  {at: 0.3, is: 'rgb(77, 50, 0)'},
+  {at: 0.6, is: 'rgb(153, 99, 0)'},
+  {at: 1, is: 'rgb(255, 165, 0)'},
+  {at: 1.5, is: 'rgb(255, 248, 0)'},
+]);
+
+assertInterpolation({
+  property: 'border-color',
+  from: 'inherit',
+  to: 'orange',
+}, [
+  {at: -0.3, is: 'rgb(255, 255, 255)'},
+  {at: 0, is: 'rgb(255, 255, 255)'},
+  {at: 0.3, is: 'rgb(255, 228, 179)'},
+  {at: 0.6, is: 'rgb(255, 201, 102)'},
+  {at: 1, is: 'rgb(255, 165, 0)'},
+  {at: 1.5, is: 'rgb(255, 120, 0)'},
+]);
+
+assertInterpolation({
+  property: 'border-color',
+  from: 'unset',
+  to: 'orange',
+}, [
+  {at: -0.3, is: 'rgb(0, 0, 0)'},
+  {at: 0, is: 'rgb(0, 0, 0)'},
+  {at: 0.3, is: 'rgb(77, 50, 0)'},
+  {at: 0.6, is: 'rgb(153, 99, 0)'},
+  {at: 1, is: 'rgb(255, 165, 0)'},
+  {at: 1.5, is: 'rgb(255, 248, 0)'},
+]);
+
+assertInterpolation({
+  property: 'border-color',
+  from: 'white',
+  to: 'orange'
+}, [
+  {at: -0.3, is: 'white'},
+  {at: 0, is: 'white'},
+  {at: 0.3, is: 'rgb(255, 228, 179)'},
+  {at: 0.6, is: 'rgb(255, 201, 102)'},
+  {at: 1, is: 'orange'},
+  {at: 1.5, is: 'rgb(255, 120, 0)'},
+]);
+</script>
+</body>

@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../console-test.js"></script>
+<script>
+
+function loadScript()
+{
+    var script = document.createElement('script');
+    script.type = "text/javascript";
+    script.src = "../resources/source2.js";
+    document.body.appendChild(script);
+}
+
+function test()
+{
+    var mainTarget = WebInspector.targetManager.mainTarget();
+    var debuggerModel = WebInspector.DebuggerModel.fromTarget(mainTarget);
+    var message = new WebInspector.ConsoleMessage(mainTarget, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageLevel.Log, "hello?", null, " http://127.0.0.1:8000/inspector/resources/source2.js");
+    mainTarget.consoleModel.addMessage(message);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+
+    InspectorTest.dumpConsoleMessages();
+    InspectorTest.evaluateInPage("loadScript()");
+
+    function onScriptAdded(event)
+    {
+        if (!event.data.contentURL().endsWith("source2.js"))
+            return;
+
+        InspectorTest.addResult("script was added");
+        var message = WebInspector.ConsolePanel._view()._visibleViewMessages[0];
+        message._anchorElement.click();
+    }
+
+    InspectorFrontendHost.openInNewTab = function()
+    {
+        InspectorTest.addResult("Failure: Open link in new tab!!");
+        InspectorTest.completeTest();
+    };
+
+    WebInspector.inspectorView._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, panelChanged);
+
+    function panelChanged()
+    {
+        InspectorTest.addResult("Panel " + WebInspector.inspectorView.currentPanel().name + " was opened");
+        InspectorTest.completeTest();
+    }
+
+
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests a handling of a click on the link in a message, which had been shown before its originating script was added.
+</p>
+</body>
+</html>

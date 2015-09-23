@@ -1,0 +1,9 @@
+Test that progress events are generated during loading of media resource.
+
+EVENT(loadstart)
+EXPECTED (progressCount == '0') OK
+Interval 1 has elapsed. Checking progress event count delta.
+Interval 2 has elapsed. Checking progress event count delta.
+Interval 3 has elapsed. Checking progress event count delta.
+END OF TEST
+

@@ -1,0 +1,72 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script src="../debugger/resources/load-dynamic-script.js"></script>
+<script>
+function foobar()
+{
+    var i = 0;
+    var j = 0;
+    var k = i + j;
+}
+
+foobar();
+</script>
+<script>
+function test()
+{
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.panels.sources;
+
+    InspectorTest.startDebuggerTest();
+
+    InspectorTest.showScriptSource("dynamic-scripts-breakpoints.html", didShowScriptSource);
+
+    function pathToFileName(path)
+    {
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+
+    function dumpBreakpointStorage()
+    {
+        var breakpointManager = WebInspector.breakpointManager;
+        var breakpoints = breakpointManager._storage._setting.get();
+        InspectorTest.addResult("    Dumping breakpoint storage");
+        for (var i = 0; i < breakpoints.length; ++i)
+            InspectorTest.addResult("        " + pathToFileName(breakpoints[i].sourceFileId) + ":" + breakpoints[i].lineNumber);
+    }
+
+    function didShowScriptSource(sourceFrame)
+    {
+        InspectorTest.addResult("Setting breakpoint:");
+        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
+        InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+    }
+
+    function breakpointResolved(location)
+    {
+        InspectorTest.waitUntilPaused(paused);
+        InspectorTest.addResult("Reloading page.");
+        InspectorTest.reloadPage(onPageReloaded);
+    }
+
+    function paused()
+    {
+        dumpBreakpointStorage();
+        InspectorTest.resumeExecution();
+    }
+
+    function onPageReloaded()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that there is no exception in front-end on page reload when breakpoint is set in HTML document and some dynamic scripts are loaded before the script with the breakpoint is loaded.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=99598">Bug 99598</a>
+</body>
+</html>

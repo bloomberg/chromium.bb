@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<style>
+div#host:focus { display: none; }
+</style>
+<div id="sandbox"></div>
+<div id="host"></div>
+<script>
+description('Check if shadow host with display:none CSS rule for :focus works.  crbug.com/482830');
+
+var host;
+var root;
+var input;
+
+function setupShadowDOM(delegatesFocus) {
+    sandbox.innerHTML = '';
+    host = sandbox.appendChild(document.createElement('div'));
+    host.id = 'host';
+
+    root = host.createShadowRoot({ 'delegatesFocus': delegatesFocus });
+    input = document.createElement('input');
+    root.appendChild(input);
+
+    host.tabIndex = 0;
+}
+
+function testFocusShadowHost() {
+    debug('when shadow host itself is focused, it should match display:none, lose focus then becomes display:block again.');
+    setupShadowDOM(false);
+    return new Promise(
+        function(resolve) {
+            host.focus();
+            shouldBeEqualToString('window.getComputedStyle(host).display', 'none');
+            shouldBe('document.activeElement', 'host');
+            shouldBeNull('root.activeElement');
+
+            function onBlur() {
+                shouldBeEqualToString('window.getComputedStyle(host).display', 'block');
+                shouldBe('document.activeElement', 'document.body');
+                shouldBeNull('root.activeElement');
+                host.removeEventListener('blur', onBlur);
+                resolve();
+            }
+            host.addEventListener('blur', onBlur);
+        });
+}
+
+function testFocusInsideShadowRoot() {
+    debug('when shadow host with delegatesFocus=true has focused element inside the shadow, it should also match display:none, then lose focus and become display:block again.');
+    setupShadowDOM(true);
+    return new Promise(
+        function(resolve) {
+            input.focus();
+            shouldBeEqualToString('window.getComputedStyle(host).display', 'none');
+            shouldBe('document.activeElement', 'host');
+            shouldBe('root.activeElement', 'input');
+
+            function onBlur() {
+                shouldBeEqualToString('window.getComputedStyle(host).display', 'block');
+                shouldBe('document.activeElement', 'document.body');
+                shouldBeNull('root.activeElement');
+                input.removeEventListener('blur', onBlur);
+                resolve();
+            }
+            input.addEventListener('blur', onBlur);
+        });
+}
+
+if (window.testRunner) {
+    testFocusShadowHost().then(testFocusInsideShadowRoot).then(function(){ testRunner.notifyDone(); });
+    testRunner.waitUntilDone();
+}
+</script>

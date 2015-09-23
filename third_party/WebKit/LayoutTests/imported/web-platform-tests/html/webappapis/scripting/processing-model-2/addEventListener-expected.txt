@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 20: Uncaught ReferenceError: undefined_variable is not defined
+CONSOLE ERROR: line 23: Uncaught SyntaxError: Unexpected token )
+This is a testharness.js-based test.
+FAIL window.onerror - addEventListener assert_false: ran expected false got true
+Harness: the test ran to completion.
+

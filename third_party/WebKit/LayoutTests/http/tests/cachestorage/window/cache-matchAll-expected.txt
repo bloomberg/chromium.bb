@@ -1,0 +1,17 @@
+CONSOLE WARNING: Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784
+CONSOLE WARNING: Cache.match() does not support 'ignoreSearch' option yet. See http://crbug.com/520784
+CONSOLE WARNING: Cache.match() does not support 'ignoreVary' option yet. See http://crbug.com/499216
+This is a testharness.js-based test.
+PASS Cache.matchAll with no matching entries 
+PASS Cache.matchAll with URL 
+PASS Cache.matchAll with Request 
+PASS Cache.matchAll with new Request 
+FAIL Cache.matchAll with ignoreSearch option (request with no search parameters) assert_equals: Cache.matchAll with ignoreSearch should ignore the search parameters of cached request. expected 2 but got 1
+FAIL Cache.matchAll with ignoreSearch option (request with search parameter) assert_equals: Cache.matchAll with ignoreSearch should ignore the search parameters of request. expected 2 but got 1
+PASS Cache.matchAll with URL containing fragment 
+PASS Cache.matchAll with string fragment "http" as query 
+PASS Cache.matchAll with URL containing credentials 
+FAIL Cache.matchAll with responses containing "Vary" header assert_equals: Cache.matchAll should exclude matches if a vary header is missing in the query request, but is present in the cached request. expected 2 but got 0
+FAIL Cache.matchAll with "ignoreVary" parameter assert_equals: Cache.matchAll should honor "ignoreVary" parameter. expected 4 but got 0
+Harness: the test ran to completion.
+

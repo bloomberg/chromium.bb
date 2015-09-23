@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<style>
+    @import url(resources/matched-rules-import-stylesheet.css);
+    @supports (display: block) {
+        @media (min-width: 1px) {
+            div {
+                color: blue;
+            }
+        }
+    }
+</style>
+<script src="../../../resources/js-test.js"></script>
+<p>Test getMatchedCSSRules to output deeply nested CSSRules.</p>
+<div>All this text should be blue.</div>
+<span class="test-element">This span should have border.</span>
+<script>
+description("getMatchedCSSRules with nested CSS rules");
+
+var expectedResult1 = "div { color: blue; }";
+shouldBeEqualToString("getMatchedCSSRules(document.querySelector('div'))[0].cssText", expectedResult1);
+
+var expectedResult2 = ".test-element { border: 2px solid black; }";
+shouldBeEqualToString("getMatchedCSSRules(document.querySelector('.test-element'))[0].cssText", expectedResult2);
+
+successfullyParsed = true;
+</script>
+

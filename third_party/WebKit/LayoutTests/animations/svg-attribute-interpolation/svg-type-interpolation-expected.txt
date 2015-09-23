@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: type from [saturate] to [hueRotate] was [saturate] at 0
+PASS: type from [saturate] to [hueRotate] was [saturate] at 0.2
+PASS: type from [saturate] to [hueRotate] was [hueRotate] at 0.6
+PASS: type from [saturate] to [hueRotate] was [hueRotate] at 1
+
+Web Animations API:
+PASS: type from [saturate] to [hueRotate] was [saturate] at -0.4
+PASS: type from [saturate] to [hueRotate] was [saturate] at 0
+PASS: type from [saturate] to [hueRotate] was [saturate] at 0.2
+PASS: type from [saturate] to [hueRotate] was [hueRotate] at 0.6
+PASS: type from [saturate] to [hueRotate] was [hueRotate] at 1
+PASS: type from [saturate] to [hueRotate] was [hueRotate] at 1.4
+

@@ -1,0 +1,21 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests pasting a table into a position that would normally result in an end merge.
+
+Before insertion:
+| "xx"
+
+After insertion:
+| "x"
+| <table>
+|   border="1"
+|   <tbody>
+|     <tr>
+|       <td>
+|         "1"
+|       <td>
+|         "2<#selection-caret>"
+| "x"

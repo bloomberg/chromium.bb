@@ -1,0 +1,86 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+var globalObj = {
+    func: function()
+    {
+        throw new Error("globalObj.func");
+    }
+};
+
+function testFunction()
+{
+    var localObj = {
+        func: function()
+        {
+            throw new Error("localObj.func");
+        }
+    };
+    debugger;
+}
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function injectedFunction()
+    {
+        var injectedObj = {
+            func: function()
+            {
+                throw new Error("injectedObj.func");
+            }
+        };
+        return injectedObj.func();
+    }
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage(String(injectedFunction), step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.evaluateInConsole("injectedFunction()", step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.evaluateInConsole("localObj.func()", step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.evaluateInConsole("globalObj.func()", dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.addResult("Dumping console messages:\n");
+        InspectorTest.dumpConsoleMessages(false, false, formatter);
+        InspectorTest.completeDebuggerTest();
+    }
+
+    function formatter(element, message) {
+        return message.messageText;
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that evaluation in console that throws works fine when script is paused.
+</p>
+</body>
+</html>

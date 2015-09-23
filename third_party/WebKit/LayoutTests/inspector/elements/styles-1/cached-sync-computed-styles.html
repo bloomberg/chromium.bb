@@ -1,0 +1,68 @@
+<html>
+<head>
+<style id="style">
+#inspected {
+    background-color: green;
+}
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function updateStyle()
+{
+    document.getElementById("style").textContent = "#inspected { color: red }";
+}
+
+function test()
+{
+    InspectorTest.nodeWithId("inspected", step1);
+    var backendCallCount = 0;
+    var nodeId;
+
+    function onBackendCall(domain, method, params)
+    {
+        if (method === "CSS.getComputedStyleForNode" && params.nodeId === nodeId)
+            ++backendCallCount;
+    }
+
+    function step1(node)
+    {
+        var callsLeft = 2;
+        nodeId = node.id;
+        InspectorTest.addSniffer(InspectorTest.connection, "_wrapCallbackAndSendMessageObject", onBackendCall, true);
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(styleCallback);
+        function styleCallback()
+        {
+            if (--callsLeft)
+                return;
+            InspectorTest.addResult("# of backend calls sent [2 requests]: " + backendCallCount);
+            InspectorTest.evaluateInPage("updateStyle()", step2);
+        }
+    }
+
+    function step2()
+    {
+        InspectorTest.cssModel.computedStylePromise(nodeId).then(callback);
+        function callback()
+        {
+            InspectorTest.addResult("# of backend calls sent [style update + another request]: " + backendCallCount);
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that computed styles are cached across synchronous requests.
+</p>
+
+<div>
+  <div id="inspected">Test</div>
+</div>
+
+</body>
+</html>

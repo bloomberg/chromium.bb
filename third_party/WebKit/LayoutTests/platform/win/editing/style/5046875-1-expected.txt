@@ -1,0 +1,23 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 736x35
+          text run at (0,0) width 485: "This tests for a bug where centering two paragraphs would center the third. "
+          text run at (484,0) width 252: "Only the selected paragraphs should be"
+          text run at (0,18) width 56: "selected."
+      LayoutBlockFlow {DIV} at (0,52) size 784x54
+        LayoutBlockFlow {DIV} at (0,0) size 784x18
+          LayoutText {#text} at (381,0) size 22x17
+            text run at (381,0) width 22: "foo"
+        LayoutBlockFlow {DIV} at (0,18) size 784x36
+          LayoutBlockFlow {DIV} at (0,0) size 784x18
+            LayoutText {#text} at (381,0) size 22x17
+              text run at (381,0) width 22: "bar"
+          LayoutBlockFlow (anonymous) at (0,18) size 784x18
+            LayoutText {#text} at (0,0) size 23x17
+              text run at (0,0) width 23: "baz"
+selection start: position 0 of child 0 {#text} of child 0 {DIV} of child 2 {DIV} of body
+selection end:   position 3 of child 0 {#text} of child 0 {DIV} of child 1 {DIV} of child 2 {DIV} of body

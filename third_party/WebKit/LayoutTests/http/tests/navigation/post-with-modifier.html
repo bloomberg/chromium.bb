@@ -1,0 +1,39 @@
+<div id="container">
+<p>You should run this test in Test Runner</p>
+<form method="post" action="resources/post-with-modifier.php">
+    <input type="hidden" name="a" value="b">
+    <input type="submit">
+</form>
+</div>
+<div id="console"></div>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+var results;
+function concludeTest(data)
+{
+    results = data;
+    shouldBeEqualToString('results["method"]', 'POST');
+    shouldBeEqualToString('results["formValue"]', 'b');
+
+    document.getElementById('container').outerHTML = '';
+    finishJSTest();
+}
+
+if (window.testRunner) {
+    window.jsTestIsAsync = true;
+    testRunner.setCanOpenWindows(true);
+    testRunner.setCloseRemainingWindowsWhenComplete(true);
+
+    window.onload = function() {
+        var submit = document.querySelector('input[type="submit"]');
+        eventSender.dragMode = false;
+        eventSender.mouseMoveTo(submit.offsetLeft + 3, submit.offsetTop + 3);
+        eventSender.mouseDown(0);
+        eventSender.mouseUp(0, ['shiftKey']);
+    };
+
+    window.addEventListener('message', function(e) {
+        concludeTest(e.data);
+    });
+}
+</script>

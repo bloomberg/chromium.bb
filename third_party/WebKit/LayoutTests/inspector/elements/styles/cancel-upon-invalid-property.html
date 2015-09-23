@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>
+#inspected {
+    color: blue;
+}
+</style>
+<script>
+
+function test()
+{
+    var treeElement;
+    InspectorTest.selectNodeAndWaitForStyles("inspected", editProperty);
+
+    function editProperty()
+    {
+        treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        treeElement.startEditing();
+        treeElement.nameElement.textContent = "color";
+        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        treeElement.valueElement.textContent = "red";
+        InspectorTest.waitForStyleApplied(commitInvalidProperty);
+        treeElement.kickFreeFlowStyleEditForTest();
+    }
+
+    function commitInvalidProperty()
+    {
+        treeElement.valueElement.textContent = "red/*";
+        treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        InspectorTest.waitForStyleApplied(invalidCommitted);
+    }
+
+    function invalidCommitted()
+    {
+        InspectorTest.waitForStyleApplied(dumpAndExit);
+    }
+
+    function dumpAndExit()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that entering poor property value restores original text.
+</p>
+
+<div id="inspected">Text</div>
+
+</body>
+</html>

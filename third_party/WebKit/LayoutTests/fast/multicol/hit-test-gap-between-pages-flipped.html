@@ -1,0 +1,17 @@
+<html>
+    <body style="margin: 0;">
+        <div style="-webkit-writing-mode: horizontal-bt; overflow: -webkit-paged-x; -webkit-column-gap: 20px; height: 600px; width: 100px;">
+            <div style="height: 50%;"></div>
+            <div style="height: 50%;"></div>
+            <div style="height: 50%;"></div>
+            <div id="target" style="height: 50%;"></div>
+            <div id="result"></div>
+        </div>
+        <script>
+            if (window.testRunner)
+                testRunner.dumpAsText();
+            // FIXME: This is incorrect. The startContainer should be the 3rd div, not the 4th.
+            document.getElementById("result").innerText = document.caretRangeFromPoint(115, 550).startContainer === document.getElementById("target") ? "PASS" : "FAIL";
+        </script>
+    </body>
+</html>

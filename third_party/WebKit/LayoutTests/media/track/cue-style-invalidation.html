@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<script src="../media-file.js"></script>
+<script src="../video-test.js"></script>
+<script src="../media-controls.js"></script>
+<style>
+video::cue,
+video::cue(c),
+video::cue(i:past),
+video::cue(.b:future) { background-color: red }
+
+.cue video::cue,
+.cuefunc video::cue(c),
+.past video::cue(i:past),
+.future video::cue(.b:future) { background-color: green }
+
+// This selector would have triggered sibling subtree recalc if we didn't
+// support descendant invalidation for ::cue/::cue().
+#ascendant + div { color: pink }
+</style>
+<script>
+function seeked() {
+    var red = "rgb(255, 0, 0)";
+    var green = "rgb(0, 128, 0)";
+
+    cueNode = textTrackDisplayElement(video, "cue");
+    iNode = cueNode.firstElementChild;
+    cNode = iNode.nextSibling.nextSibling;
+    bNode = cNode.nextSibling.nextSibling;
+
+    testExpected("getComputedStyle(cueNode).backgroundColor", red);
+    ascendant.offsetTop;
+    ascendant.classList.add("cue");
+    if (window.internals)
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 8);
+    testExpected("getComputedStyle(cueNode).backgroundColor", green);
+
+    testExpected("getComputedStyle(cNode).backgroundColor", red);
+    ascendant.offsetTop;
+    ascendant.classList.add("cuefunc");
+    if (window.internals)
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
+    testExpected("getComputedStyle(cNode).backgroundColor", green);
+
+    testExpected("getComputedStyle(iNode).backgroundColor", red);
+    ascendant.offsetTop;
+    ascendant.classList.add("past");
+    if (window.internals)
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
+    testExpected("getComputedStyle(iNode).backgroundColor", green);
+
+    testExpected("getComputedStyle(bNode).backgroundColor", red);
+    ascendant.offsetTop;
+    ascendant.classList.add("future");
+    if (window.internals)
+        testExpected("internals.updateStyleAndReturnAffectedElementCount()", 1);
+    testExpected("getComputedStyle(bNode).backgroundColor", green);
+
+    endTest();
+}
+
+window.onload = function() {
+    consoleWrite("Check that descendant style invalidation works with ::cue selectors.");
+    findMediaElement();
+    video.src = findMediaFile("video", "../content/test");
+    waitForEvent("seeked", seeked);
+    waitForEvent("canplaythrough", function() { video.currentTime = 0.1; });
+};
+</script>
+<div id="ascendant">
+    <video>
+        <track src="captions-webvtt/invalidation.vtt" kind="captions" default>
+    </video>
+    <div></div>
+    <div></div>
+</div>
+<div>
+    <div></div>
+</div>

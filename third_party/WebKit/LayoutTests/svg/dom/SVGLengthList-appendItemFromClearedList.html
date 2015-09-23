@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <text id="text1" x="1 2 3">ABC</text>
+    <text id="text2" x="10 20">ABC</text>
+</svg>
+
+<script>
+    description("This is a test of the SVGLengthList::appendItem() API.");
+
+    var list1 = document.getElementById("text1").x.baseVal;
+    var list2 = document.getElementById("text2").x.baseVal;
+
+    var itemFromClearedList = list2.getItem(0); 
+    list2.clear();
+    shouldBe("list2.numberOfItems", "0");
+
+    list1.appendItem(itemFromClearedList);
+    
+    shouldBe("list1.numberOfItems", "4");
+    shouldBe("list1.getItem(0).value", "1");
+    shouldBe("list1.getItem(1).value", "2");
+    shouldBe("list1.getItem(2).value", "3");
+    shouldBe("list1.getItem(3).value", "10");
+
+    shouldBe("list2.numberOfItems", "0");
+
+    debug("The test passes if you only see 'PASS' messages, and test doesn't crash");
+
+    gc();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: The Notification object exposes the expected properties.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the Notification object exposes the properties per the
+      // semantics defined by the specification. When the test is being ran
+      // manually, grant Notification permission first.
+      test(function () {
+          assert_greater_than_equal(Notification.maxActions, 0);
+
+          var options = {
+                dir: "rtl",
+                lang: "nl-NL",
+                body: "Hallo, wereld!",
+                tag: "notification",
+                icon: "http://localhost/my_icon.png",
+                silent: true,
+                requireInteraction: true,
+                data: "my data",
+                actions: []
+            };
+            // Deliberately add more actions than are supported.
+            for (var i = 0; i < 2 * Notification.maxActions; i++) {
+                options.actions.push({
+                    action: "" + i,
+                    title: "Action " + i
+                });
+            }
+
+            var notification = new Notification("My Notification", options);
+
+            assert_equals(notification.title, "My Notification");
+            assert_equals(notification.dir, options.dir);
+            assert_equals(notification.lang, options.lang);
+            assert_equals(notification.body, options.body);
+            assert_equals(notification.tag, options.tag);
+            assert_equals(notification.icon, options.icon);
+            assert_true(notification.silent);
+            assert_true(notification.requireInteraction);
+            assert_equals(notification.data, options.data);
+            // Only the first maxActions actions should be reflected.
+            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
+
+            // Notification.actions should be immutable.
+            notification.actions.push({ title: "Foo" });
+            notification.actions.foo = "bar";
+            if (notification.actions.length) {
+                notification.actions[0].title = "Changed";
+                notification.actions[0].foo = "bar";
+            }
+            assert_object_equals(notification.actions, options.actions.slice(0, Notification.maxActions));
+
+            var emptyNotification = new Notification("My Notification");
+
+            assert_equals(emptyNotification.title, "My Notification");
+            assert_equals(emptyNotification.dir, "auto");
+            assert_equals(emptyNotification.lang, "");
+            assert_equals(emptyNotification.body, "");
+            assert_equals(emptyNotification.tag, "");
+            assert_equals(emptyNotification.icon, "");
+            assert_equals(notification.vibrate, null);
+            assert_false(emptyNotification.silent);
+            assert_false(emptyNotification.requireInteraction);
+            assert_equals(emptyNotification.data, null);
+            assert_array_equals(emptyNotification.actions, []);
+
+            var equalNotification = new Notification("My Notification", {
+                vibrate: [50, 10, 50, 10, 50],
+                data: { hello: "World!" },
+                actions: [
+                  { action: "foo", title: "Foo" },
+                  { action: "bar", title: "Bar" }
+                ]
+            });
+
+            // Test equality of the object attributes.
+            assert_true(equalNotification.data === equalNotification.data, '`data` object equality');
+
+            // TODO(peter): This should pass before shipping Notification.vibrate.
+            //assert_true(equalNotification.vibrate === equalNotification.vibrate, '`vibrate` object equality');
+
+            // TODO(johnme): This should pass before shipping Notification.actions.
+            //assert_true(equalNotification.actions === equalNotification.actions, '`actions` object equality');
+
+            var serializedUrlNotification = new Notification("My Notification", {
+                icon: "http://example.com"
+            });
+
+            // Icon URLs should be returned in serialized form.
+            assert_equals(serializedUrlNotification.icon, "http://example.com/");
+
+            var noTagNotification = new Notification("My Notification"),
+                emptyTagNotification = new Notification("My Notification", { tag: "" });
+
+            // Setting an empty string as the tag should be equal to not setting the tag at all.
+            assert_equals(noTagNotification.tag, emptyTagNotification.tag);
+
+            var vibrateNotification = new Notification("My Notification", {
+                vibrate: 1000
+            });
+
+            // vibrate pattern should be returned in serialized form.
+            assert_array_equals(vibrateNotification.vibrate, [1000]);
+
+            // Tests that it must be a valid vibration sequence.
+            var pattern = new Array(100, 200, 300);
+            var sequenceVibrateNotification = new Notification("My Notification", {
+                vibrate: pattern
+            });
+            assert_array_equals(sequenceVibrateNotification.vibrate, pattern);
+
+            // Invalid vibrate pattern should be reset to 0.
+            var invalidVibrateNotification = new Notification("My Notification", {
+                vibrate: [100, 200, "invalid"]
+            });
+            assert_array_equals(invalidVibrateNotification.vibrate, [100, 200, 0]);
+
+      }, 'Checks the properties exposed on the Notification object.');
+    </script>
+  </body>
+</html>

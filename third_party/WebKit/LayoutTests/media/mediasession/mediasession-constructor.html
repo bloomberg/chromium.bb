@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<title>MediaSession() constructor</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+  test(function() {
+      assert_true(!window.internals || window.internals.runtimeFlags.mediaSessionEnabled,
+          "Run either manually by passing the MediaSession flag or as part of the virtual mediasession testsuite.");
+      console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
+
+      var mediaSession = new MediaSession();
+      assert_true(mediaSession instanceof MediaSession);
+  });
+</script>

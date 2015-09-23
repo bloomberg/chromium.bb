@@ -1,0 +1,81 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function initialize_ChunkedFileReaderTest()
+{
+
+InspectorTest.TestOutputStreamDelegate = function(doneCallback)
+{
+    this._doneCallback = doneCallback;
+    this._chunkCount = 0;
+}
+
+InspectorTest.TestOutputStreamDelegate.prototype = {
+    onTransferStarted: function()
+    {
+        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onTransferStarted() called");
+    },
+
+    onTransferFinished: function()
+    {
+        InspectorTest.addResult("Chunks transferred: " + this._chunkCount);
+        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onTransferFinished() called");
+        this._doneCallback();
+    },
+
+    /**
+     * @param {!WebInspector.ChunkedReader} reader
+     */
+    onChunkTransferred: function(reader)
+    {
+        this._chunkCount++;
+    },
+
+    /**
+     * @param {!WebInspector.ChunkedReader} reader
+     * @param {!Event} event
+     */
+    onError: function(reader, event)
+    {
+        InspectorTest.addResult("WebInspector.OutputStreamDelegate.onError() called");
+        this._doneCallback();
+    }
+};
+
+}
+
+function test()
+{
+    var text = ["Латынь из моды вышла ныне:\n",
+        "Так, если правду вам сказать,\n",
+        "Он знал довольно по-латыне,\n",
+        "Чтоб эпиграфы разбирать\n"];
+
+    var blob = new Blob(text);
+    // Most of the characters above will be encoded as 2 bytes, so make sure we use odd
+    // chunk size to cause chunk boundaries sometimes to happen between chaacter bytes.
+    var chunkSize = 5;
+    var reader = new WebInspector.ChunkedFileReader(blob, chunkSize, new InspectorTest.TestOutputStreamDelegate(onTransferFinished));
+    var output = new WebInspector.StringOutputStream();
+    reader.start(output);
+    function onTransferFinished()
+    {
+        InspectorTest.assertEquals(text.join(""), output.data(), "Read text is different from written text");
+        InspectorTest.addResult("DONE");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This tests that ChunkedFileReader properly re-assembles chunks, especially in case these contain multibyte characters.
+</p>
+
+</body>
+</html>

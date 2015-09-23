@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+#f {
+  position: fixed;
+  background-color: #def;
+  width: 600px;
+  height: 400px;
+  right: -20px;
+  bottom: -20px;
+}
+body {
+  width: 1000px;
+  height: 1000px;
+}
+</style>
+Tests that the scrollbar can be clicked even when it clips a position:fixed
+element, and that the scrollbars are excluded from the viewport for determining
+the element's position.
+<div id="f"></div>
+<script>
+
+eventSender.mouseMoveTo(790, 500);
+eventSender.mouseDown();
+eventSender.mouseUp();
+
+var rect = document.querySelector("#f").getBoundingClientRect();
+
+shouldBeTrue(String(scrollY > 0));
+shouldBe(rect.left + "," + rect.top, "205,205");
+
+</script>

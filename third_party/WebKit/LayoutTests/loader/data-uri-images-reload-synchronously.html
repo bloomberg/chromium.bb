@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+Test for crbug.com/224317: data:uri images should reload synchronously.<br/>
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+
+    var image = new Image();
+    image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAIAAAD/gAIDAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAnklEQVR42u3QMQEAAAgDoGlyo1vBzwciUJlw1ApkyZIlS5YsBbJkyZIlS5YCWbJkyZIlS4EsWbJkyZKlQJYsWbJkyVIgS5YsWbJkKZAlS5YsWbIUyJIlS5YsWQpkyZIlS5YsBbJkyZIlS5YCWbJkyZIlS4EsWbJkyZKlQJYsWbJkyVIgS5YsWbJkKZAlS5YsWbIUyJIlS5YsWQpkyfq2MosBSIeKONMAAAAASUVORK5CYII=";
+
+    if (image.width != 100 || image.height != 100) {
+        document.write("FAIL");
+    } else {
+        if (location.hash == "#reloaded") {
+            document.write("PASS");
+            if (window.testRunner)
+                testRunner.notifyDone();
+        } else {
+            location.hash = "#reloaded";
+            location.reload();
+        }
+    }
+</script>
+</body>
+</html>

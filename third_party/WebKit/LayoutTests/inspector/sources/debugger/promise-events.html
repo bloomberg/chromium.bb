@@ -1,0 +1,112 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var promise1 = new Promise(
+        function promiseConstructor1(resolve, reject)
+        {
+            resolve("Resolved!");
+        }
+    );
+    var promise2 = new Promise(
+        function promiseConstructor2(resolve, reject)
+        {
+            reject("Rejected!");
+        }
+    );
+    promise2
+        .then(thenCallback1, thenCallback1)
+        .then(thenCallback2);
+}
+
+function thenCallback1()
+{
+    return 0;
+}
+
+function thenCallback2()
+{
+    if (window.GCController)
+        GCController.collectAll();
+    debugger;
+}
+
+function test()
+{
+    var events = [];
+    var minPromiseId;
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.enablePromiseTracker(true);
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.PromiseUpdated, promiseUpdated);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function promiseUpdated(event)
+    {
+        var promiseId = event.data.promise.id;
+        minPromiseId = Math.min(minPromiseId, promiseId) || promiseId;
+        events.push(event.data);
+    }
+
+    function step2()
+    {
+        outputResults();
+        InspectorTest.DebuggerAgent.disablePromiseTracker();
+        InspectorTest.completeDebuggerTest();
+    }
+
+    function outputResults()
+    {
+        var output = [];
+        for (var i = 0; i < events.length; i++) {
+            var eventType = events[i].eventType;
+            var promise = events[i].promise;
+            var outputItem = [
+                eventType + ":",
+                "id: " + (promise.id - minPromiseId)
+            ];
+            switch (eventType) {
+            case "new":
+                var callFrame = promise.callFrame;
+                if (callFrame) {
+                    var url = WebInspector.displayNameForURL(callFrame.url);
+                    outputItem.push(callFrame.functionName + " " + url + ":" + callFrame.lineNumber);
+                }
+                break;
+            case "update":
+                if (promise.status !== "pending") {
+                    outputItem.push("status: " + promise.status)
+                    var callFrame = promise.settlementStack && promise.settlementStack[0];
+                    if (callFrame) {
+                        var url = WebInspector.displayNameForURL(callFrame.url);
+                        outputItem.push(callFrame.functionName + " " + url + ":" + callFrame.lineNumber);
+                    }
+                } else {
+                    outputItem.push("parent id: " + (promise.parentId - minPromiseId));
+                }
+                break;
+            }
+            output.push(outputItem.join("\n    "));
+        }
+        output.sort();
+        InspectorTest.addResults(output);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests promise tracker events in debugger.
+</p>
+</body>
+</html>

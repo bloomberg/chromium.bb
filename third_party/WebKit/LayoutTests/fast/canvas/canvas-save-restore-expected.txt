@@ -1,0 +1,39 @@
+Test of save and restore on canvas graphics context.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS pixel() is black
+PASS pixel() is red
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is red
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is red
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is red
+PASS pixel() is black
+PASS pixel() is green
+PASS pixel() is green
+PASS pixel() is red
+PASS pixel() is green
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is black
+PASS pixel() is red
+PASS pixel() is red
+PASS pixel() is green
+PASS pixel() is red
+PASS pixel() is red
+PASS pixel() is green
+PASS pixel() is black
+PASS pixel() is black
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,71 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/sources-test.js"></script>
+<script>
+
+function onload()
+{
+    for (var i = 3; i < 8; ++i)
+        window["temp" + i] = "Reserved";
+
+    runTest();
+}
+
+function test()
+{
+    var expressions = [
+        "42",
+        "'foo string'",
+        "NaN",
+        "Infinity",
+        "-Infinity",
+        "-0",
+        "[1, 2, NaN, -0, null, undefined]",
+        "({ foo: 'bar' })",
+        "(function(){ return arguments; })(1,2,3,4)",
+        "(function func() {})",
+        "new Error('errr')"
+    ];
+
+    InspectorTest.addResult("Number of expressions: " + expressions.length);
+    InspectorTest.addResult("Names [temp3..temp7] are reserved\n");
+
+    function evaluateNext()
+    {
+        var expression = expressions.shift();
+        if (!expression) {
+            InspectorTest.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
+            return;
+        }
+
+        function didEvaluate(result, wasThrown)
+        {
+            InspectorTest.assertTrue(!wasThrown, "FAIL: was thrown. Expression: " + expression);
+            WebInspector.panels.sources._saveToTempVariable(result);
+            InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
+        }
+
+        WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, didEvaluate);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        InspectorTest.completeTest();
+    }
+
+    evaluateNext();
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests saving objects to temporary variables.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,88 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="resources/obfuscated.js"></script>
+
+<script id="outline">function first(x,y) { }
+ var second = function(y 
+ , 
+z) { }
+ Object = function(arg) {
+}
+ Object.prototype.functionOnPrototype = function  (  a,  b  ,  
+c,  d   ,  
+  e  ,  f )    { function innerFunction1() {
+ var innerFunction2 = function(arg1,arg2) {} } }
+/**
+ * @constructor
+ * @param {string} name
+ */
+window.Cat = function(name)
+{
+    this._name = name;
+}
+
+window.Cat.prototype = {
+    mew: function()
+    {
+        console.log("Mew!");
+    },
+
+    get name()
+    {
+        return this._name;
+    },
+
+    feed: function()
+    {
+        // noop
+    },
+
+    set name(newName)
+    {
+        this._name = newName;
+    }
+};
+</script>
+
+<script>
+
+function getScriptText()
+{
+    return document.querySelector("#outline").textContent;
+}
+
+function test()
+{
+
+    var worker = new WorkerRuntime.Worker("script_formatter_worker");
+
+    worker.onmessage = InspectorTest.safeWrap(function(event)
+    {
+        InspectorTest.addObject(event.data);
+        InspectorTest.completeTest();
+    });
+
+    worker.onerror = function(event)
+    {
+        InspectorTest.addResult("Error in worker: " + event.data);
+        InspectorTest.completeTest();
+    };
+
+    InspectorTest.evaluateInPage("getScriptText()", onScriptText);
+    function onScriptText(result)
+    {
+        worker.postMessage({ method: "javaScriptOutline", params: { content: result.value } });
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests the script outline extraction functionality.
+</p>
+
+</body>
+</html>

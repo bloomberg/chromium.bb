@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+var anim1 = document.body.animate([], 100000);
+var anim2 = document.body.animate([], 100000);
+var anim3 = document.body.animate([], 100000);
+
+var noFinish = async_test('Animation finish event should not fire when cancelled');
+
+anim1.onfinish = function() {
+  noFinish.step(function() {
+    anim3.finish();
+  });
+};
+
+anim2.onfinish = function() {
+  noFinish.step(function() {
+    assert_true(false);
+  });
+};
+
+anim3.onfinish = function() {
+  noFinish.done();
+};
+
+anim1.finish();
+anim2.cancel();
+</script>

@@ -1,0 +1,55 @@
+The test verifies autocomplete suggestions for CSS file.
+
+
+Running: testClassNameAutocomplete
+========= Selection In Editor =========
+.red { color: red }
+.blue { color: blue }
+.|
+======= Autocomplete Suggestions =======
+[.red, .blue]
+
+Running: testPropertyNameAutocomplete
+========= Selection In Editor =========
+.red { color: red }
+.blue { c|
+======= Autocomplete Suggestions =======
+[color]
+========= Selection In Editor =========
+.my-class { -|webkit-border: 1px solid black; -webkit-color: blue;
+text-align: }
+======= Autocomplete Suggestions =======
+[-webkit-color]
+
+Running: testPropertyValueAutocomplete
+========= Selection In Editor =========
+.red { border-style: |
+/* some other words to mess up */
+======= Autocomplete Suggestions =======
+[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, ridge, solid]
+========= Selection In Editor =========
+.red { border-style: d|
+/* dial drummer dig */
+======= Autocomplete Suggestions =======
+[dashed, dotted, double]
+========= Selection In Editor =========
+.red { border-style: z|
+/* zipper zorro zion */
+======= Autocomplete Suggestions =======
+[]
+========= Selection In Editor =========
+.red { border-style/* comment */: /* comment */|
+======= Autocomplete Suggestions =======
+[dashed, dotted, double, groove, hidden, inherit, initial, inset, none, outset, ridge, solid]
+========= Selection In Editor =========
+.my-class { -webkit-border: 1px solid black; -webkit-color: blue;
+text-align: |}
+======= Autocomplete Suggestions =======
+[-webkit-auto, -webkit-center, -webkit-left, -webkit-right, center, end, inherit, initial, justify, left, right, start]
+
+Running: verifySuggestionsOnColumnTypedIn
+.green {
+   display|
+Suggestions displayed on ':' symbol typed in:
+[-webkit-box, -webkit-inline-box, block, flex, grid, inherit, initial, inline, inline-block, inline-flex, inline-grid, inline-table, list-item, none, run-in, table, table-caption, table-cell, table-column, table-column-group, table-footer-group, table-header-group, table-row, table-row-group]
+

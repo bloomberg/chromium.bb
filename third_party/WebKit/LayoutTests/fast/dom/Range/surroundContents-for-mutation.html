@@ -1,0 +1,31 @@
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<div id='container'>
+    <p id='start'>start</p>
+    <iframe id='test'></iframe>
+    <p id='end'>end</p>
+</div>
+<script>
+var range = document.createRange();
+var start = document.getElementById('start');
+range.setStart(start.firstChild, 0);
+range.setEnd(start.firstChild, 0);
+
+function loaded(ev) {
+    var srcElement = ev.srcElement;
+    range.surroundContents(document.getElementById('end'));
+    srcElement.outerHTML = '';
+}
+document.addEventListener("load", loaded, true);
+
+var testFrame = document.getElementById('test');
+shouldThrow("range.surroundContents(testFrame)", '"HierarchyRequestError: Failed to execute \'surroundContents\' on \'Range\': This operation would set range\'s end to parent with new offset, but there\'s no parent into which to continue."');
+
+if (window.testRunner)
+    document.getElementById('container').outerHTML = '';
+</script>
+</body>
+</html>

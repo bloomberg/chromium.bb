@@ -1,0 +1,91 @@
+MouseEvent::dblclick doubleClickAction([leftButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+MouseEvent::click clickAction([leftButton,rightButton]) -> shouldBe([rightButton])
+PASS testSet[i].buttons is 2
+
+MouseEvent::mousedown clickAction([leftButton,middleButton,rightButton]) -> shouldBe([leftButton,middleButton,rightButton])
+PASS testSet[i].buttons is 7
+
+MouseEvent::mouseup clickAction([leftButton,middleButton,rightButton]) -> shouldBe([middleButton,rightButton])
+PASS testSet[i].buttons is 6
+
+MouseEvent::mousemove moveAction([]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+MouseEvent::mousemove moveAction([leftButton]) -> shouldBe([leftButton])
+PASS testSet[i].buttons is 1
+
+MouseEvent::mouseenter moveAction([rightButton,middleButton]) -> shouldBe([rightButton,middleButton])
+PASS testSet[i].buttons is 6
+
+MouseEvent::mouseleave moveAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+MouseEvent::mouseover moveAction([leftButton,middleButton]) -> shouldBe([leftButton,middleButton])
+PASS testSet[i].buttons is 5
+
+MouseEvent::mouseout moveAction([leftButton]) -> shouldBe([leftButton])
+PASS testSet[i].buttons is 1
+
+MouseEvent::contextmenu with |showContextMenuOnMouseUp=false| rightClickAction([rightButton]) -> shouldBe([rightButton])
+PASS testSet[i].buttons is 2
+
+MouseEvent::contextmenu with |showContextMenuOnMouseUp=true| rightClickAction([rightButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+WheelEvent::mousewheel wheelAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+GestureEvent::dblclick doubleTapAction([leftButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+GestureEvent::click tapAction([leftButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+GestureEvent::mousedown tapAction([leftButton]) -> shouldBe([leftButton])
+PASS testSet[i].buttons is 1
+
+GestureEvent::mouseup tapAction([leftButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+GestureEvent::mousemove tapAction([]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+GestureEvent::mousedown longPressAction([rightButton]) -> shouldBe([rightButton])
+PASS testSet[i].buttons is 2
+
+GestureEvent::contextmenu with |showContextMenuOnMouseUp=false| longPressAction([rightButton]) -> shouldBe([rightButton])
+PASS testSet[i].buttons is 2
+
+GestureEvent::contextmenu with |showContextMenuOnMouseUp=true| longPressAction([rightButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+GestureEvent::contextmenu with |showContextMenuOnMouseUp=false| longTapAction([rightButton]) -> shouldBe([rightButton])
+PASS testSet[i].buttons is 2
+
+GestureEvent::contextmenu with |showContextMenuOnMouseUp=true| longTapAction([rightButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+DragEvent::dragstart dragDropAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+DragEvent::drag dragDropAction([leftButton,middleButton,rightButton]) -> shouldBe([leftButton,middleButton,rightButton])
+PASS testSet[i].buttons is 7
+
+DragEvent::dragend dragDropAction([leftButton,rightButton]) -> shouldBe([])
+PASS testSet[i].buttons is 0
+
+DragEvent::dragenter dragDropAction([leftButton,middleButton]) -> shouldBe([leftButton,middleButton])
+PASS testSet[i].buttons is 5
+
+DragEvent::dragleave dragDropAction([leftButton,rightButton]) -> shouldBe([leftButton,rightButton])
+PASS testSet[i].buttons is 3
+
+DragEvent::dragover dragDropAction([leftButton,middleButton]) -> shouldBe([leftButton,middleButton])
+PASS testSet[i].buttons is 5
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

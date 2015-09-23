@@ -1,0 +1,198 @@
+Test overlap is rendered correctly when hovering over elements
+
+Case 1, original layer tree:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0]
+        },
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [180, 180],
+              "bounds": [260, 260],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+Case 2: hovering over the "middle" element (causes that div to become its own composited layer)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0]
+        },
+        {
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        },
+        {
+          "children": [
+            {
+              "position": [180, 180],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            },
+            {
+              "position": [260, 260],
+              "bounds": [180, 180],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+Case 3: hovering over the "middle2" element (causes that div to become its own composited layer)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0]
+        },
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [180, 180],
+              "bounds": [100, 100],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "children": [
+            {
+              "position": [260, 260],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#008000"
+            },
+            {
+              "position": [340, 340],
+              "bounds": [100, 100],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+Case 4: hovering over the "top" element (causes that div to become its own composited layer)
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0]
+        },
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [180, 180],
+              "bounds": [180, 180],
+              "drawsContent": true
+            }
+          ]
+        },
+        {
+          "position": [340, 340],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#008000"
+        }
+      ]
+    }
+  ]
+}
+Case 5: back to situation in case 1
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0]
+        },
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [180, 180],
+              "bounds": [260, 260],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

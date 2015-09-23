@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+function importStyle(onComplete)
+{
+    var link = document.createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.type = 'text/css';
+    link.href = 'resources/style.css';
+    document.head.appendChild(link);    
+    link.onload = onComplete.bind(this, null);
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("importStyle", processTracingEvents);
+
+    function processTracingEvents()
+    {
+        var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.ParseAuthorStyleSheet);
+        if (record)
+            InspectorTest.addResult("SUCCESS: found ParseAuthorStyleSheet record");
+        else
+            InspectorTest.addResult("FAIL: ParseAuthorStyleSheet record not found");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that ParseAuthorStyleSheet trace event is recorded.
+</p>
+</body>
+</html>

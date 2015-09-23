@@ -1,0 +1,32 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "bounds": [200, 200],
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [200, 200],
+              "children": [
+                {
+                  "bounds": [10, 10]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "bounds": [800, 16],
+          "opacity": 0,
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

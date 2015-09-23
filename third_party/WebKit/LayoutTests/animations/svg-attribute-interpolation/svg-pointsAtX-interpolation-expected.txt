@@ -1,0 +1,36 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: pointsAtX from [1] to [6] was [1] at 0
+PASS: pointsAtX from [1] to [6] was [2] at 0.2
+PASS: pointsAtX from [1] to [6] was [4] at 0.6
+PASS: pointsAtX from [1] to [6] was [6] at 1
+PASS: pointsAtY from [1] to [6] was [1] at 0
+PASS: pointsAtY from [1] to [6] was [2] at 0.2
+PASS: pointsAtY from [1] to [6] was [4] at 0.6
+PASS: pointsAtY from [1] to [6] was [6] at 1
+PASS: pointsAtZ from [1] to [6] was [1] at 0
+PASS: pointsAtZ from [1] to [6] was [2] at 0.2
+PASS: pointsAtZ from [1] to [6] was [4] at 0.6
+PASS: pointsAtZ from [1] to [6] was [6] at 1
+
+Web Animations API:
+PASS: pointsAtX from [1] to [6] was [-1] at -0.4
+PASS: pointsAtX from [1] to [6] was [1] at 0
+PASS: pointsAtX from [1] to [6] was [2] at 0.2
+PASS: pointsAtX from [1] to [6] was [4] at 0.6
+PASS: pointsAtX from [1] to [6] was [6] at 1
+PASS: pointsAtX from [1] to [6] was [8] at 1.4
+PASS: pointsAtY from [1] to [6] was [-1] at -0.4
+PASS: pointsAtY from [1] to [6] was [1] at 0
+PASS: pointsAtY from [1] to [6] was [2] at 0.2
+PASS: pointsAtY from [1] to [6] was [4] at 0.6
+PASS: pointsAtY from [1] to [6] was [6] at 1
+PASS: pointsAtY from [1] to [6] was [8] at 1.4
+PASS: pointsAtZ from [1] to [6] was [-1] at -0.4
+PASS: pointsAtZ from [1] to [6] was [1] at 0
+PASS: pointsAtZ from [1] to [6] was [2] at 0.2
+PASS: pointsAtZ from [1] to [6] was [4] at 0.6
+PASS: pointsAtZ from [1] to [6] was [6] at 1
+PASS: pointsAtZ from [1] to [6] was [8] at 1.4
+

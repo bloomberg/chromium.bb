@@ -1,0 +1,17 @@
+PASS picker._selectElement.value is "1"
+PASS menuElement.value is "bar"
+PASS picker._selectElement.value is "0"
+PASS picker._selectElement.value is "2"
+PASS window.internals.pagePopupWindow is null
+PASS menuElement.value is "baz"
+PASS picker._selectElement.value is "1"
+PASS menuElement2.value is "2"
+PASS picker._selectElement.value is "2"
+PASS picker._selectElement.value is "3"
+PASS picker._selectElement.value is "0"
+PASS window.internals.pagePopupWindow is not null
+PASS menuElement2.value is "2"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 

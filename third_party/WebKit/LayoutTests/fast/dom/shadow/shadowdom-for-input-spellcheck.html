@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+if (window.internals)
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+onload = function() {
+    var myShadowRoot = document.getElementById('sample').createShadowRoot();
+    var myShadowElement = document.createElement('defs');
+    myShadowElement.setAttribute('contenteditable', 'true');
+    myShadowRoot.appendChild(myShadowElement);
+    myShadowElement.focus();
+    document.body.innerHTML = 'PASS if this was not crashed.';
+}
+</script>
+<input id="sample">

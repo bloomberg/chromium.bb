@@ -1,0 +1,25 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [10, 71, 169, 16],
+        [8, 68, 784, 22],
+        [8, 68, 173, 22],
+        [8, 54, 11, 11]
+      ],
+      "paintInvalidationClients": [
+        "LayoutDetailsMarker DIV id='details-marker'",
+        "LayoutBlockFlow DIV id='details-content'",
+        "LayoutTextControl INPUT",
+        "LayoutBlockFlow DIV id='inner-editor'",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

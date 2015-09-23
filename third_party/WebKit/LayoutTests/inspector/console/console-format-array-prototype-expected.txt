@@ -1,0 +1,43 @@
+CONSOLE MESSAGE: line 9: 
+CONSOLE MESSAGE: line 9: 
+CONSOLE MESSAGE: line 9: ,,,,
+CONSOLE MESSAGE: line 9: ,2,3
+CONSOLE MESSAGE: line 9: ,,,,,,,,,,,,,,
+CONSOLE MESSAGE: line 9: ,,,,,,,,8,,,,,,
+CONSOLE MESSAGE: line 9: 0,,,,,,,,,,10,,,,
+CONSOLE MESSAGE: line 9: ,,,4,,,,,,,,,,,
+CONSOLE MESSAGE: line 9: 0,1,2,3,4,5,6,7,8,9
+CONSOLE MESSAGE: line 9: ,1,2,3,4,,6,7,8,9,
+Tests that console logging dumps array values defined on Array.prototype[].
+
+a0
+[]
+console-format-array-prototype.html:4 []
+a1
+[undefined × 1]
+console-format-array-prototype.html:4 []
+a2
+[undefined × 5]
+console-format-array-prototype.html:4 []
+a3
+[undefined × 1, 2, 3]
+console-format-array-prototype.html:4 [1: 2, 2: 3]
+a4
+[undefined × 15]
+console-format-array-prototype.html:4 []
+a5
+[undefined × 8, 8, undefined × 6]
+console-format-array-prototype.html:4 [8: 8]
+a6
+[0, undefined × 9, 10, undefined × 4]
+console-format-array-prototype.html:4 [0, 10: 10]
+a7
+[undefined × 3, 4, undefined × 11]
+console-format-array-prototype.html:4 [3: 4, index0: 0, index1: 1, index2: 2, index3: 3, index4: 4…]
+a8
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+console-format-array-prototype.html:4 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+a9
+[undefined × 1, 1, 2, 3, 4, undefined × 1, 6, 7, 8, 9, undefined × 1]
+console-format-array-prototype.html:4 [1: 1, 2: 2, 3: 3, 4: 4, 6: 6, 7: 7, 8: 8, 9: 9, foo: "bar"]
+

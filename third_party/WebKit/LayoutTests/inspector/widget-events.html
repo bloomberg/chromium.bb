@@ -1,0 +1,357 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    function TestWidget(widgetName)
+    {
+        WebInspector.Widget.call(this);
+
+        this._widgetName = widgetName;
+        this._processWillShowCount = 0;
+        this._processWasHiddenCount = 0;
+        InspectorTest.addResult(this._widgetName + "()");
+    }
+
+    TestWidget.prototype = {
+        _processWillShow: function()
+        {
+            InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
+            WebInspector.Widget.prototype._processWillShow.call(this);
+            ++this._processWillShowCount;
+        },
+
+        _processWasHidden: function()
+        {
+            WebInspector.Widget.prototype._processWasHidden.call(this);
+            ++this._processWasHiddenCount;
+            InspectorTest.assertEquals(this._processWillShowCount, this._processWasHiddenCount);
+        },
+
+        show: function(parentElement)
+        {
+            InspectorTest.addResult(this._widgetName + ".show()");
+            WebInspector.Widget.prototype.show.call(this, parentElement);
+        },
+
+        detach: function()
+        {
+            InspectorTest.addResult(this._widgetName + ".detach()");
+            WebInspector.Widget.prototype.detach.call(this);
+        },
+
+        doResize: function()
+        {
+            InspectorTest.addResult(this._widgetName + ".doResize()");
+            WebInspector.Widget.prototype.doResize.call(this);
+        },
+
+        wasShown: function()
+        {
+            InspectorTest.addResult("  " + this._widgetName + ".wasShown()");
+            if (this.showOnWasShown)
+                this.showOnWasShown.show(this.showRoot || this.element);
+            if (this.detachOnWasShown)
+                this.detachOnWasShown.detach();
+            if (this.resizeOnWasShown)
+                this.resizeOnWasShown.doResize();
+        },
+
+        willHide: function()
+        {
+            InspectorTest.addResult("  " + this._widgetName + ".willHide()");
+            if (this.showOnWillHide)
+                this.showOnWillHide.show(this.element);
+            if (this.detachOnWillHide)
+                this.detachOnWillHide.detach();
+        },
+
+        onResize: function()
+        {
+            InspectorTest.addResult("  " + this._widgetName + ".onResize()");
+        }
+    };
+
+    TestWidget.prototype.__proto__ = WebInspector.Widget.prototype;
+
+    InspectorTest.runTestSuite([
+        function testShowWidget(next)
+        {
+            var widget = new TestWidget("Widget");
+            widget.show(WebInspector.inspectorView.element);
+            widget.detach();
+            next();
+        },
+
+        function testAppendViaDOM(next)
+        {
+            try {
+                var widget = new TestWidget("Widget");
+                document.body.appendChild(widget.element);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testInsertViaDOM(next)
+        {
+            try {
+                var widget = new TestWidget("Widget");
+                document.body.insertBefore(widget.element, null);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testAttachToOrphanNode(next)
+        {
+            try {
+                var widget = new TestWidget("Widget");
+                var div = document.createElement("div");
+                widget.show(div);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testImmediateParent(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            if (childWidget._parentWidget === parentWidget)
+                InspectorTest.addResult("OK");
+            else
+                InspectorTest.addResult("FAILED");
+            next();
+        },
+
+        function testDistantParent(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var div = document.createElement("div");
+            parentWidget.element.appendChild(div);
+            var childWidget = new TestWidget("Child");
+            childWidget.show(div);
+
+            if (childWidget._parentWidget === parentWidget)
+                InspectorTest.addResult("OK");
+            else
+                InspectorTest.addResult("FAILED");
+            next();
+        },
+
+        function testEvents(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            parentWidget.markAsRoot();
+            var childWidget = new TestWidget("Child");
+            parentWidget.show(WebInspector.inspectorView.element);
+
+            parentWidget.doResize();
+            childWidget.show(parentWidget.element);
+            parentWidget.doResize();
+            parentWidget.detach();
+            parentWidget.show(WebInspector.inspectorView.element);
+            childWidget.detach();
+            parentWidget.detach();
+            next();
+        },
+
+        function testEventsHideOnDetach(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.setHideOnDetach();
+            parentWidget.show(WebInspector.inspectorView.element);
+
+            parentWidget.doResize();
+            childWidget.show(parentWidget.element);
+            parentWidget.doResize();
+            parentWidget.detach();
+            parentWidget.show(WebInspector.inspectorView.element);
+            childWidget.detach();
+            parentWidget.detach();
+            next();
+        },
+
+        function testWidgetCounter(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            parentWidget.show(WebInspector.inspectorView.element);
+
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            InspectorTest.addResult("  widget counter: " + parentWidget.element.__widgetCounter);
+
+            var childWidget2 = new TestWidget("Child 2");
+            childWidget2.show(parentWidget.element);
+            InspectorTest.addResult("  widget counter: " + parentWidget.element.__widgetCounter);
+
+            childWidget.detach();
+            InspectorTest.addResult("  widget counter: " + parentWidget.element.__widgetCounter);
+
+            childWidget2.detach();
+            InspectorTest.addResult("  widget counter: " + parentWidget.element.__widgetCounter);
+
+            next();
+        },
+
+        function testRemoveChild(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            parentWidget.show(WebInspector.inspectorView.element);
+
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            try {
+                parentWidget.element.removeChild(childWidget.element);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testImplicitRemoveChild(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var div = document.createElement("div");
+            parentWidget.element.appendChild(div);
+
+            var childWidget = new TestWidget("Child");
+            childWidget.show(div);
+
+            try {
+                parentWidget.element.removeChild(div);
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testRemoveChildren(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            parentWidget.element.appendChild(document.createElement("div"));
+            try {
+                parentWidget.element.removeChildren();
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testImplicitRemoveChildren(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var div = document.createElement("div");
+            parentWidget.element.appendChild(div);
+
+            var childWidget = new TestWidget("Child");
+            childWidget.show(div);
+
+            try {
+                parentWidget.element.removeChildren();
+            } catch (e) {
+                InspectorTest.addResult(e);
+            }
+            next();
+        },
+
+        function testShowOnWasShown(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            parentWidget.showOnWasShown = new TestWidget("Child");
+            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.detach();
+            next();
+        },
+
+        function testShowNestedOnWasShown(next)
+        {
+            var topWidget = new TestWidget("Top");
+            var middleWidget = new TestWidget("Middle");
+            var bottomWidget = new TestWidget("Bottom");
+            middleWidget.show(topWidget.element);
+            topWidget.showOnWasShown = bottomWidget;
+            topWidget.showRoot = middleWidget.element;
+            topWidget.show(WebInspector.inspectorView.element);
+            topWidget.detach();
+            next();
+        },
+
+        function testDetachOnWasShown(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            parentWidget.detachOnWasShown = childWidget;
+            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.detach();
+            next();
+        },
+
+        function testShowOnWillHide(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            parentWidget.show(WebInspector.inspectorView.element);
+            childWidget.show(parentWidget.element);
+            parentWidget.showOnWillHide = childWidget;
+            parentWidget.detach();
+            next();
+        },
+
+        function testDetachOnWillHide(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            parentWidget.show(WebInspector.inspectorView.element);
+            childWidget.show(parentWidget.element);
+            parentWidget.detachOnWillHide = childWidget;
+            parentWidget.detach();
+            next();
+        },
+
+        function testShowDetachesFromPrevious(next)
+        {
+            var parentWidget1 = new TestWidget("Parent1");
+            var parentWidget2 = new TestWidget("Parent2");
+            var childWidget = new TestWidget("Child");
+            parentWidget1.show(WebInspector.inspectorView.element);
+            parentWidget2.show(WebInspector.inspectorView.element);
+            childWidget.show(parentWidget1.element);
+            childWidget.show(parentWidget2.element);
+            next();
+        },
+
+        function testResizeOnWasShown(next)
+        {
+            var parentWidget = new TestWidget("Parent");
+            var childWidget = new TestWidget("Child");
+            childWidget.show(parentWidget.element);
+            parentWidget.resizeOnWasShown = childWidget;
+            parentWidget.show(WebInspector.inspectorView.element);
+            parentWidget.detach();
+            next();
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This tests that events are properly propagated through Widget hierarchy.
+</p>
+
+</body>
+</html>

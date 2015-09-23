@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script>
+jsTestIsAsync = true;
+
+var numErrors = 0;
+var numErrorsExpected = 4;
+var eventsBubbleToBody = false;
+var eventsBubbleToDocument = false;
+var eventsBubbleToWindow = false;
+
+function runTests()
+{
+    checkDynamicAttributes();
+    checkNonUserGesture();
+    checkParsedAttributes();
+    checkEventsBubble();
+}
+
+function checkForEnumerableProperties(form)
+{
+    var enumerable = {};
+    for (var field in form)
+        enumerable[field] = true;
+    if (!enumerable.onautocomplete)
+        testFailed('failed to enumerate HTMLFormElement.onautocomplete');
+    if (!enumerable.onautocompleteerror)
+        testFailed('failed to enumerate HTMLFormElement.onautocompleteerror');
+    testPassed('found enumerable properties on HTMLFormElement');
+}
+
+function checkDynamicAttributes()
+{
+    var form = document.createElement('form');
+    checkForEnumerableProperties(form);
+
+    form.autocomplete = 'off';
+    form.addEventListener('autocompleteerror', errorWithReason('disabled'));
+    form.requestAutocomplete();
+}
+
+function checkNonUserGesture()
+{
+    var form = document.createElement('form');
+    checkForEnumerableProperties(form);
+    form.onautocompleteerror = errorWithReason('disabled');
+
+    setTimeout(function()
+    {
+        form.requestAutocomplete();
+    }, 0);
+}
+
+function checkParsedAttributes()
+{
+    var form = document.forms[0];
+    if (!form || !form.onautocompleteerror || form.autocomplete != 'off')
+        testFailed('failed to pick up parsed DOM attributes correctly');
+    checkForEnumerableProperties(form);
+
+    form.requestAutocomplete();
+}
+
+function checkEventsBubble()
+{
+    var form = document.createElement('form');
+    form.autocomplete = 'off';
+
+    document.body.onautocompleteerror = function(event) {
+        eventsBubbleToBody = true;
+        if (event.target == form) {
+            event.stopPropagation();
+            setTimeout(onError);
+        }
+    };
+
+    document.onautocompleteerror = function(event) {
+        eventsBubbleToDocument = true;
+        if (event.target == form)
+            testFailed("event should've been cancelled");
+    };
+
+    window.onautocompleteerror = function(event) {
+        eventsBubbleToWindow = true;
+        if (event.target == form)
+            testFailed("event should've been cancelled");
+    };
+
+    document.body.appendChild(form);
+    form.requestAutocomplete();
+}
+
+function errorWithReason(reason)
+{
+    return function(event) {
+        if (event instanceof AutocompleteErrorEvent)
+            testPassed('event is an AutocompleteErrorEvent');
+        else
+            testFailed('expected an AutocompleteErrorEvent');
+
+        if (event.reason == reason)
+            testPassed('got expected reason: ' + reason);
+        else
+            testFailed('wrong reason, expected: ' + reason + ', got: ' + event.reason);
+
+        onError();
+    };
+}
+
+function onError()
+{
+    numErrors += 1;
+    if (numErrors > numErrorsExpected) {
+        testFailed('too many error events');
+    } else if (numErrors == numErrorsExpected) {
+        if (!eventsBubbleToBody)
+            testFailed('no events bubbled to body');
+        if (!eventsBubbleToDocument)
+            testFailed('no events bubbled to document');
+        if (!eventsBubbleToWindow)
+            testFailed('no events bubbled to window');
+        if (eventsBubbleToBody && eventsBubbleToDocument && eventsBubbleToWindow)
+            testPassed('events bubbled as expected');
+        testPassed('got expected number of error events (' + numErrorsExpected + ')');
+        finishJSTest();
+    }
+}
+
+window.addEventListener('load', runTests, true);
+</script>
+</head>
+<body>
+<p> <a href="https://code.google.com/p/chromium/issues/detail?id=159537">HTMLFormElement#requestAutocomplete and associated events</a> </p>
+<p> For this test to pass, you should see all PASSED below. </p>
+<form autocomplete="off" onautocompleteerror="onError();"></form>
+<p id="console"></p>
+</body>
+</html>

@@ -1,0 +1,13 @@
+polish
+
+Check whether languages are reported properly
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXLanguage: en
+AXLanguage: pl
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

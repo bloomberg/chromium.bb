@@ -1,0 +1,35 @@
+<!doctype html>
+<body>
+Test should log two "PASS" messages to the console.
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var frame = document.body.appendChild(document.createElement("iframe"));
+frame.src = "https://localhost:8443/security/resources/doc-with-iframe.html";
+frame.onload = function() {
+    frame.onload = null;
+    target = frame.contentWindow;
+    target[0].location = "data:text/html,<script>name='eval'</scr" + "ipt>";
+    setTimeout(function() {
+        try {
+            Object.getOwnPropertyDescriptor(target, "eval").value("console.log('FAIL: Access check bypassed.')");
+        } catch (e) {
+            console.log("PASS: Access check triggered");
+        }
+        target[0].location = "data:text/html,<script>name='myEval'</scr" + "ipt>";
+        setTimeout(function() {
+            try {
+                target.myEval("console.log('FAIL: Access check bypassed.')");
+            } catch (e) {
+                console.log("PASS: Access check triggered");
+            }
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }, 500);
+    }, 500);
+}
+</script>
+</body>

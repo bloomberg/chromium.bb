@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<pre id="console"></div>
+<script>
+description('Tests ShadowRoot.host property');
+
+function createRoots(host, n) {
+  var roots = [];
+  for (var i = 0; i < n; i++) {
+    roots.push(host.createShadowRoot());
+  }
+  return roots;
+}
+
+var host = document.createElement('table');
+var root = host.createShadowRoot();
+shouldBe('root.host', 'host');
+
+// For elements which has UA shadow root.
+host = document.createElement('details');
+root = host.createShadowRoot();
+shouldBe('root.host', 'host');
+
+// Multiple shadow roots.
+host = document.createElement('div');
+document.body.appendChild(host);
+roots = createRoots(host, 2);
+shouldBe('roots[0].host', 'host');
+shouldBe('roots[1].host', 'host');
+host.remove();
+
+// Out of document
+host = document.createElement('div');
+var roots = createRoots(host, 2);
+shouldBe('roots[0].host', 'host');
+shouldBe('roots[1].host', 'host');
+
+// Out of document, in nested shadow, accessed out of order
+host = document.createElement('span');
+roots[1].appendChild(host);
+roots = createRoots(host, 7);
+shouldBe('roots[1].host', 'host');
+shouldBe('roots[6].host', 'host');
+
+// Cannot set property
+host = document.createElement('span');
+root = host.createShadowRoot();
+var donor = document.createElement('div');
+donor.createShadowRoot();
+root.host = donor;
+shouldBe('root.host', 'host');
+
+successfullyParsed = true;
+</script>
+</body>
+</html>

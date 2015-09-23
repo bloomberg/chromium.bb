@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+.anim {
+    position: absolute;
+    left: 10px;
+    height: 90px;
+    width: 100px;
+    background-color: black;
+}
+</style>
+
+<body>
+    <div id='e1' class='anim'></div>
+    <div id='e2' class='anim'></div>
+    <div id='e3' class='anim'></div>
+</body>
+
+<script>
+var e1 = document.getElementById('e1');
+var e2 = document.getElementById('e2');
+var e3 = document.getElementById('e3');
+
+var e1Style = getComputedStyle(e1);
+var e2Style = getComputedStyle(e2);
+var e3Style = getComputedStyle(e3);
+
+var durationValue = 1;
+
+test(function() {
+    var player = e1.animate([
+        {left: '10px', opacity: '1', offset: 0},
+        {left: '100px', opacity: '0', offset: 1}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 2;
+    assert_equals(e1Style.left, '55px');
+    assert_equals(e1Style.opacity, '0.5');
+}, 'Calling animate() should start an animation.');
+
+test(function() {
+    var player = e2.animate([
+        {backgroundColor: 'green', offset: 0},
+        {backgroundColor: 'purple', offset: 1}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 2;
+    assert_equals(e2Style.backgroundColor, 'rgb(64, 64, 64)');
+}, 'Calling animate() should start an animation. CamelCase property names should be parsed.');
+
+test(function() {
+    var player = e1.animate([
+        {left: '10px', offset: '0'},
+        {left: '100px', offset: '1'}
+    ], durationValue);
+    player.pause();
+    player.currentTime = durationValue / 2;
+    assert_equals(e1Style.left, '55px');
+}, 'Offsets may be specified as strings.');
+
+test(function() {
+    var keyframes = [
+        {opacity: '0.5', offset: 0.5},
+        {opacity: '0.9', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes have unsorted offsets.');
+
+test(function() {
+    var keyframes = [
+        {opacity: '1', offset: -1},
+        {opacity: '1', offset: NaN},
+        {opacity: '1', offset: 2},
+        {opacity: '0.5', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes has offsets outside the range [0.0, 1.0].');
+
+test(function() {
+    var keyframes = [
+        {opacity: '0.5'},
+        {opacity: '1', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes are not loosely sorted and any have no offset.');
+
+test(function() {
+    var keyframes = [
+        {opacity: '0.5', offset: null},
+        {opacity: '1', offset: 1},
+        {opacity: '0', offset: 0}
+    ];
+    assert_throws('InvalidModificationError', function() { e1.animate(keyframes, durationValue); });
+}, 'Should throw when keyframes are not loosely sorted and any have null offset.');
+
+var keyframesWithInvalid = [
+        {width: '0px', backgroundColor: 'octarine', offset: 0},
+        {width: '1000px', foo: 'bar', offset: 1}];
+
+test(function() {
+    var player = e3.animate(keyframesWithInvalid, {duration: durationValue, fill: 'forwards'});
+    player.pause();
+    player.currentTime = durationValue;
+    assert_equals(e3Style.width, '1000px');
+    assert_equals(e3Style.backgroundColor, 'rgb(0, 0, 0)');
+    assert_equals(e3Style.foo, undefined);
+}, 'Calling animate() with a pre-constructed keyframes list should start an animation. Invalid style declarations should be ignored.');
+</script>

@@ -1,0 +1,27 @@
+Text here
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [129, 29],
+              "bounds": [100, 100]
+            },
+            {
+              "position": [-871, 8],
+              "bounds": [1221, 142],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

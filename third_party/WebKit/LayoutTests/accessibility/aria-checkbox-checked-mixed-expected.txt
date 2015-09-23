@@ -1,0 +1,17 @@
+Check whether mixed value is reported properly
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Role: AXRole: AXCheckBox
+Mixed: true
+Role: AXRole: AXMenuItemCheckBox
+Mixed: true
+Role: AXRole: AXRadioButton
+Mixed: false
+Role: AXRole: AXMenuItemRadio
+Mixed: false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

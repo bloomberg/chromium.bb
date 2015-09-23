@@ -1,0 +1,10 @@
+Text to check is divided into chunks to make sure checking some huge text does not freeze the page/UI. With the synchronous spell checker only one chunk is checked. To test manaully trigger spell checking of the editable (e.g. by copy+paste) with unified and synchronous checker on. Only 3 first misspellings should be marked.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS internals.markerCountForNode(testEditable.childNodes[0], "spelling") is 3
+

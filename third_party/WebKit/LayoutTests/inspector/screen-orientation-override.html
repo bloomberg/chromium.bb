@@ -1,0 +1,109 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+if (!window.testRunner)
+    debug("This test requires testRunner");
+
+function dump()
+{
+    return "angle: " + screen.orientation.angle + "; type: " + screen.orientation.type;
+}
+
+if (window.testRunner)
+    testRunner.setMockScreenOrientation("landscape-primary");
+
+function test()
+{
+    function addDumpResult(next)
+    {
+        InspectorTest.evaluateInPage("dump()", dumpCallback);
+
+        function dumpCallback(result)
+        {
+            InspectorTest.addResult(result.value);
+            next();
+        }
+    }
+
+    function testOverride(angle, orientation, next)
+    {
+        var protocolCallback = addDumpResult.bind(null, next);
+        if (orientation) {
+           InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
+        } else {
+            InspectorTest.ScreenOrientationAgent.clearScreenOrientationOverride(protocolCallback);
+        }
+    }
+
+    function testError(angle, orientation, next)
+    {
+        InspectorTest.ScreenOrientationAgent.setScreenOrientationOverride(angle, orientation, protocolCallback);
+
+        function protocolCallback(error)
+        {
+            InspectorTest.addResult(error);
+            next();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function initial(next)
+        {
+            addDumpResult(next);
+        },
+
+        function setWrongAngle1(next)
+        {
+            testError(-1, "portraitPrimary", next);
+        },
+
+        function setWrongAngle2(next)
+        {
+            testError(360, "portraitPrimary", next);
+        },
+
+        function setWrongType(next)
+        {
+            testError(120, "wrongType", next);
+        },
+
+        function setPortraitPrimary(next)
+        {
+            testOverride(0, "portraitPrimary", next);
+        },
+
+        function setPortraitSecondary(next)
+        {
+            testOverride(180, "portraitSecondary", next);
+        },
+
+        function setLandscapePrimary(next)
+        {
+            testOverride(90, "landscapePrimary", next);
+        },
+
+        function restoresAfterReload(next)
+        {
+            InspectorTest.reloadPage(addDumpResult.bind(null, next));
+        },
+
+        function setLandscapeSecondary(next)
+        {
+            testOverride(270, "landscapeSecondary", next);
+        },
+
+        function clearOverride(next)
+        {
+            testOverride(0, "", next);
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+</p>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    var paths = {
+        FOO: "/home/username/projects/foo",
+        BAR: "/home/username/projects/bar",
+        SITE1: "/www/site1"
+    };
+
+    function addFileSystem(fileSystemMapping, path)
+    {
+        InspectorTest.addResult("Adding file system " + path);
+        fileSystemMapping.addFileSystem(path);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function removeFileSystem(fileSystemMapping, path)
+    {
+        InspectorTest.addResult("Removing file system " + path);
+        fileSystemMapping.removeFileSystem(path);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function addFileMapping(fileSystemMapping, fileSystemPath, urlPrefix, pathPrefix)
+    {
+        InspectorTest.addResult("Adding file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
+        fileSystemMapping.addFileMapping(fileSystemPath, urlPrefix, pathPrefix);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function removeFileMapping(fileSystemMapping, fileSystemPath, urlPrefix, pathPrefix)
+    {
+        InspectorTest.addResult("Removing file mapping (" + fileSystemPath + ", " + urlPrefix + ", " + pathPrefix + ")");
+        fileSystemMapping.removeFileMapping(fileSystemPath, urlPrefix, pathPrefix);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function removeMappingForURL(fileSystemMapping, urlPrefix)
+    {
+        InspectorTest.addResult("Removing file mapping for url " + urlPrefix);
+        fileSystemMapping.removeMappingForURL(urlPrefix);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function addMappingForResource(fileSystemMapping, url, fileSystemPath, filePath)
+    {
+        InspectorTest.addResult("Adding file mapping for resource (" + url + ", " + fileSystemPath + ", " + filePath + ")");
+        fileSystemMapping.addMappingForResource(url, fileSystemPath, filePath);
+        checkAndDumpFileSystemMapping(fileSystemMapping);
+    }
+
+    function dumpFileForURL(fileSystemMapping, url)
+    {
+        var hasMappingForURL = fileSystemMapping.hasMappingForURL(url);
+        InspectorTest.addResult("    Has mapping for '" + url + "': " + hasMappingForURL);
+        var fileForURL = fileSystemMapping.fileForURL(url);
+        if (!fileForURL)
+            InspectorTest.addResult("    File for '" + url + "': null");
+        else
+            InspectorTest.addResult("    File for '" + url + "': " + fileForURL.fileSystemPath + " / " + fileForURL.filePath);
+    }
+
+    function dumpURLForPath(fileSystemMapping, fileSystemPath, filePath)
+    {
+        var url = fileSystemMapping.urlForPath(fileSystemPath, filePath);
+        InspectorTest.addResult("    URL for path '" + fileSystemPath + " / " + filePath + "': " + url);
+    }
+
+    function checkAndDumpFileSystemMapping(fileSystemMapping)
+    {
+        var fileSystemPaths = fileSystemMapping.fileSystemPaths();
+        InspectorTest.addResult("Testing file system mapping.");
+        InspectorTest.addResult("    file system paths:");
+        for (var i = 0; i < fileSystemPaths.length; ++i) {
+            InspectorTest.addResult("     - " + fileSystemPaths[i]);
+            var entries = fileSystemMapping.mappingEntries(fileSystemPaths[i]);
+            for (var j = 0; j < entries.length; ++j) {
+                var entry = entries[j];
+                    InspectorTest.addResult("         - " + JSON.stringify(entries[j]));
+            }
+        }
+        InspectorTest.addResult("");
+    }
+
+    // At first create file system mapping and clear it.
+    var fileSystemMapping = new WebInspector.FileSystemMapping();
+    var fileSystemPaths = fileSystemMapping.fileSystemPaths();
+    for (var i = 0; i < fileSystemPaths.length; ++i)
+        fileSystemMapping.removeFileSystem(fileSystemPaths[i]);
+    
+    // Now fill it with file systems.
+    checkAndDumpFileSystemMapping(fileSystemMapping);
+    addFileSystem(fileSystemMapping, paths.FOO)
+    addFileSystem(fileSystemMapping, paths.BAR)
+    addFileSystem(fileSystemMapping, paths.SITE1)
+
+    // Now fill it with file mappings.
+    addFileMapping(fileSystemMapping, paths.SITE1, "http://localhost/", "/");
+    addFileMapping(fileSystemMapping, paths.SITE1, "http://www.foo.com/", "/foo/");
+    addFileMapping(fileSystemMapping, paths.FOO, "http://www.example.com/bar/", "/foo/");
+    addMappingForResource(fileSystemMapping, "http://www.bar.com/foo/folder/42.js", paths.FOO, "baz/folder/42.js");
+
+    InspectorTest.addResult("Testing mappings for url:");
+    dumpFileForURL(fileSystemMapping, "http://www.bar.com/foo/folder/42.js");
+    dumpFileForURL(fileSystemMapping, "http://www.foo.com/bar/folder/42.js");
+    dumpFileForURL(fileSystemMapping, "http://localhost/index.html");
+    dumpFileForURL(fileSystemMapping, "https://localhost/index.html");
+    dumpFileForURL(fileSystemMapping, "http://localhost:8080/index.html");
+    dumpFileForURL(fileSystemMapping, "http://localhost/");
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("Testing mappings for path:");
+    dumpURLForPath(fileSystemMapping, paths.FOO, "baz/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, "baz/folder/43.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, "bar/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, "foo/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.FOO, "foo2/folder/42.js");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, "foo/index.html");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, "index.html");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, "foo");
+    dumpURLForPath(fileSystemMapping, paths.SITE1, "foo/");
+    InspectorTest.addResult("");
+
+    // Then create another file mapping to make sure it is correctly restored from the settings.
+    InspectorTest.addResult("Creating another file system mapping.");
+    var fileSystemMapping = new WebInspector.FileSystemMapping();
+    checkAndDumpFileSystemMapping(fileSystemMapping);
+
+    // Now remove file mappings.
+    removeMappingForURL(fileSystemMapping, "http://www.bar.com/foo/folder/42.js");
+    removeFileMapping(fileSystemMapping, paths.SITE1, "http://localhost/", "/");
+    removeFileMapping(fileSystemMapping, paths.SITE1, "http://www.foo.com/", "/foo/");
+    removeFileMapping(fileSystemMapping, paths.FOO, "http://www.example.com/bar/", "/foo/");
+
+    // Now remove file systems.
+    removeFileSystem(fileSystemMapping, paths.SITE1)
+    removeFileSystem(fileSystemMapping, paths.FOO)
+    removeFileSystem(fileSystemMapping, paths.BAR)
+
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests FileSystemMapping</p>
+</body>
+</html>

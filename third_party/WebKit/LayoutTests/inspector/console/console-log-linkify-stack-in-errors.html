@@ -1,0 +1,81 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/workspace-test.js"></script>
+<script src="resources/stack-with-sourceUrl.js"></script>
+<script src="resources/stack-with-sourceMap.js"></script>
+<script>
+function forStack()
+{
+    console.log(new Error("line\nbreak").stack);
+}
+
+forStack();
+
+function stack1(errorConstructor, text)
+{
+    function stack2()
+    {
+        console.log(new errorConstructor(text).stack);
+    }
+    stack2();
+}
+
+function domError()
+{
+    try {
+        document.body.removeChild(document.createElement("a"));
+    } catch (e) {
+        console.log(e.stack);
+    }
+}
+
+domError();
+
+console.log("Error message without stacks http://www.chromium.org/");
+
+console.log("Error valid stack #2\n    at http://www.chromium.org/boo.js:40:70\n    at foo(http://www.chromium.org/foo.js:10:50)");
+console.log("Error valid stack #3\n    at http://www.chromium.org/foo.js:40");
+
+stack1(ReferenceError, "valid stack");
+stack1(EvalError, "valid stack");
+stack1(SyntaxError, "valid stack");
+stack1(RangeError, "valid stack");
+stack1(TypeError, "valid stack");
+stack1(URIError, "valid stack");
+
+console.log("Error broken stack\n    at function_name(foob.js foob.js:30:1)\n at foob.js:40:70");
+console.log("Error broken stack #2\n    at function_name(foob.js:20:30");
+console.log("Error broken stack #3\n    at function_name(foob:20.js:30   bla");
+console.log("Error broken stack #4\n    at function_name)foob.js:20:30(");
+console.log("Error broken stack #5\n    at function_name foob.js:20:30)");
+console.log("Error broken stack #6\n    at foob.js foob.js:40:70");
+
+//# sourceURL=console-log-linkify-stack-in-errors.html
+</script>
+
+<script>
+function test()
+{
+    InspectorTest.evaluateInPageWithTimeout("failure()");
+    InspectorTest.waitUntilMessageReceived(waitForUISourceCode);
+    function waitForUISourceCode()
+    {
+        InspectorTest.waitForGivenUISourceCode("stack-with-sourceMap.coffee", dumpMessages);
+    }
+
+    function dumpMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, true);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Test that console.log(new Error().stack) would linkify links in stacks for sourceUrls and sourceMaps  <a href="http://crbug.com/424001">Bug 424001.</a>
+</p>
+</body>
+</html>

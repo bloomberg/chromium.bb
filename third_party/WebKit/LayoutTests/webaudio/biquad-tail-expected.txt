@@ -1,0 +1,11 @@
+Test Biquad Tail Output
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Biquad output has no glitch above the threshold of 0.0129.
+PASS Biquad tail output correctly completed.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

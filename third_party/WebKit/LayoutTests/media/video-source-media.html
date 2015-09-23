@@ -1,0 +1,14 @@
+<body>
+<script src=video-test.js></script>
+<script>
+    waitForEvent('loadstart', function () { 
+        video = mediaElement = document.getElementsByTagName('video')[0];
+        testExpected("relativeURL(video.currentSrc)", "content/test.mp4");
+        endTest();
+    } );
+</script>
+<video controls>
+    <!-- the media attribute should be ignored -->
+    <source src=content/test.mp4 media="print">
+    <source src=content/error.mpeg>
+</video>

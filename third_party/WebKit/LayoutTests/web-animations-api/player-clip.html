@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id="element" style="width: 50px;"></div>
+
+<script>
+var element = document.getElementById("element");
+
+function runTests(paused, reversed)
+{
+    function applyTestParameters(animation)
+    {
+        if (paused)
+            animation.pause();
+        if (reversed)
+            animation.playbackRate = -1;
+    }
+
+    function appendParametersToDescription(string)
+    {
+        if (paused)
+            string += "; running with paused";
+        if (reversed)
+            string += "; running with reverse";
+        return string;
+    }
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], 1000);
+        applyTestParameters(animation);
+        animation.startClip = 300;
+        animation.currentTime = 100;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '150px');
+        animation.cancel();
+    }, appendParametersToDescription('startClip after start time'));
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], 1000);
+        applyTestParameters(animation);
+        animation.endClip = -400;
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '150px');
+        animation.currentTime = 700;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.cancel();
+    }, appendParametersToDescription('endClip before end time'));
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], { duration: 1000, fill: 'backwards' });
+        applyTestParameters(animation);
+        animation.startClip = -500;
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '150px');
+        animation.currentTime = -200;
+        assert_equals(getComputedStyle(element).width, '100px');
+        animation.currentTime = -500;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.currentTime = -1000;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.cancel();
+    }, appendParametersToDescription('startClip, backwards fill'));
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], { duration: 1000, fill: 'forwards' });
+        applyTestParameters(animation);
+        animation.startClip = 1500;
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.currentTime = 1500;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.currentTime = 2000;
+        assert_equals(getComputedStyle(element).width, '200px');
+        animation.cancel();
+    }, appendParametersToDescription('startClip, forwards fill'));
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], { duration: 1000, fill: 'forwards' });
+        applyTestParameters(animation);
+        animation.endClip = 500;
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '150px');
+        animation.currentTime = 1000;
+        assert_equals(getComputedStyle(element).width, '200px');
+        animation.currentTime = 1200;
+        assert_equals(getComputedStyle(element).width, '200px');
+        animation.currentTime = 1500;
+        assert_equals(getComputedStyle(element).width, '200px');
+        animation.currentTime = 2000;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.cancel();
+    }, appendParametersToDescription('endClip, forwards fill'));
+
+    test(function() {
+        var animation = element.animate([{ width: '100px' }, { width: '200px' }], { duration: 1000, fill: 'backwards' });
+        applyTestParameters(animation);
+        animation.endClip = -1500;
+        animation.currentTime = 500;
+        assert_equals(getComputedStyle(element).width, '50px');
+        animation.currentTime = -500;
+        assert_equals(getComputedStyle(element).width, '100px');
+        animation.currentTime = -1000;
+        assert_equals(getComputedStyle(element).width, '100px');
+        animation.cancel();
+    }, appendParametersToDescription('endClip, backwards fill'));
+}
+
+runTests(false, false);
+runTests(false, true);
+runTests(true, false);
+runTests(true, true);
+
+</script>

@@ -1,0 +1,69 @@
+<!DOCTYPE HTML">
+<html>
+<head>
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<script src=video-played.js></script>
+<script src="../resources/js-test.js"></script>
+
+<script type="text/javascript">
+
+if (window.internals) 
+    window.internals.settings.setMediaPlaybackRequiresUserGesture(true);
+
+function gotStream(stream)
+{
+    consoleWrite("got a stream");
+    previewURL = URL.createObjectURL(stream);
+    video.src = previewURL;
+    consoleWrite("start preview");
+}
+
+function gotStreamFailed(error)
+{
+    consoleWrite("Failed to get access to local media. Error code was " + error.code);
+}
+
+function canplaythrough()
+{
+    width = canvas.width;
+    height = canvas.height;
+    ctx = canvas.getContext("2d");
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, width, height);
+
+    consoleWrite("paint to canvas");
+    ctx.drawImage(video, 0, 0, width, height);
+    shouldBeTrue("!!ctx.getImageData(0, 0, width, height)");
+
+    frame = ctx.getImageData(0, 0, width, height);
+    r = frame.data[0];
+    g = frame.data[1];
+    b = frame.data[2];
+    testExpected("r+g+b", 0, "!=");
+    endTest();
+}
+
+function playPreview()
+{
+    findMediaElement();
+    canvas = document.getElementsByTagName('canvas')[0];
+    try {
+        consoleWrite("request access to local media");
+        navigator.webkitGetUserMedia({video:true}, gotStream, gotStreamFailed);
+    } catch (e) {
+        consoleWrite("getUserMedia error " + "(" + e.name + " / " + e.message + ")");
+    }
+
+    waitForEvent('canplaythrough', canplaythrough);
+}
+
+</script>
+</head>
+
+<body onload="playPreview()">
+<video width="320" height="240" autoplay="autoplay"></video>
+<canvas width="1" height="1" ></canvas>
+</body> 
+</html> 
+

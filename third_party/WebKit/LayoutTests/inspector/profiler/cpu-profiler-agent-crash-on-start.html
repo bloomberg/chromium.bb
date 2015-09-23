@@ -1,0 +1,32 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.ProfilerAgent.start().then(onStart);
+
+    function onStart()
+    {
+        InspectorTest.addResult("ProfilerAgent started.");
+        InspectorTest.ProfilerAgent.stop().then(onStop);
+    }
+
+    function onStop()
+    {
+        InspectorTest.addResult("ProfilerAgent stopped.");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test that ProfilerAgent start/stop doesn't crash.
+</p>
+
+</body>
+</html>

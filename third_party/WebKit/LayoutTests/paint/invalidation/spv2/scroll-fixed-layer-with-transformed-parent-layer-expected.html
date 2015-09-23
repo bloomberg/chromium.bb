@@ -1,0 +1,19 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css"></style>
+</head>
+<body style="height:2000px;">
+    <!-- You should see 1 green rectangle rotated in the output and no red. -->
+    <div class="rotated">
+        <div id="moveMe" style="top: 100px; left: 250px;" class="fixed clipped">
+            <div class="absolute green" style="top: 250px; left: 150px;"></div>
+        </div>
+    </div>
+    <script>
+        window.scrollTo(100, 180);
+        var moveMeElement = document.getElementById('moveMe');
+        moveMeElement.scrollTop = 250;
+        moveMeElement.scrollLeft = 150;
+    </script>
+</body>
+</html>

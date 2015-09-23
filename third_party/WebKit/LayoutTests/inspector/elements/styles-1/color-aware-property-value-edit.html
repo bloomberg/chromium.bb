@@ -1,0 +1,114 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function init(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected1", next);
+        },
+
+        function editKeywordAsOriginal(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.Original, "border", next);
+        },
+
+        function editKeywordAsHex(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.HEX, "border", next);
+        },
+
+        function editKeywordAsHSL(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.HSL, "border", next);
+        },
+
+        function editKeywordAsRGB(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "border", onValueDumped);
+            function onValueDumped()
+            {
+                InspectorTest.selectNodeAndWaitForStyles("inspected2", next);
+            }
+        },
+
+        function editHexAsOriginal(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.Original, "color", next);
+        },
+
+        function editHexAsHex(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.HEX, "color", next);
+        },
+
+        function editHexAsHSL(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.HSL, "color", next);
+        },
+
+        function editHexAsRGB(next)
+        {
+            startEditingAndDumpValue(WebInspector.Color.Format.RGB, "color", next);
+        },
+
+        function editNewProperty(next)
+        {
+            var section = InspectorTest.inlineStyleSection();
+
+            treeElement = section.addNewBlankProperty(0);
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "border-color";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            treeElement.valueElement.textContent = "hsl(120, 100%, 25%)";
+            treeElement.kickFreeFlowStyleEditForTest();
+            InspectorTest.waitForStyleApplied(kicked);
+
+            function kicked()
+            {
+                treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009", false, false, true));
+                treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("U+0009"));
+                InspectorTest.addResult(treeElement.valueElement.textContent);
+                next();
+            }
+        }
+    ]);
+
+    function setFormat(newFormat, callback)
+    {
+        WebInspector.settingForTest("colorFormat").set(newFormat);
+        WebInspector.panels.elements.sidebarPanes.styles.doUpdate().then(callback);
+    }
+
+    function startEditingAndDumpValue(format, propertyName, next)
+    {
+        setFormat(format, onFormatSet);
+
+        function onFormatSet()
+        {
+            var treeElement = InspectorTest.getElementStylePropertyTreeItem(propertyName);
+            treeElement.startEditing(treeElement.valueElement);
+            InspectorTest.addResult(treeElement.valueElement.textContent);
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B"));
+            next();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that property value being edited uses the user-specified color format.
+</p>
+
+<div id="inspected1" style="border: 1px solid red">inspected1</div>
+<div id="inspected2" style="color: #ffffee">inspected2</div>
+
+</body>
+</html>

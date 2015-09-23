@@ -1,0 +1,50 @@
+<html> 
+<head>
+<script src="../../resources/js-test.js"></script>
+
+<style>
+.editing { 
+    border: 2px solid red; 
+    padding: 12px; 
+    font-size: 24px; 
+}
+</style>
+<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
+
+<script>
+function editingTest() {
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    document.getElementById("root").focus();
+    document.execCommand("InsertText", false, "I have a issue.");
+
+    if (window.internals) {
+        shouldBecomeEqual('internals.hasGrammarMarker(document, 7, 1)', 'true', function() {
+            document.getElementById("root").style.display = "none";
+            finishJSTest();
+        });
+    }
+}
+
+</script>
+
+<title>Editing Test</title> 
+</head> 
+<body>
+<div contenteditable id="root" class="editing"></div>
+<script>
+description("This tests whether the grammatically-incorrect phrase "
+    + "'I have a issue' has grammar marker on 'a'.");
+
+jsTestIsAsync = true;
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+}
+
+editingTest();
+</script>
+</body>
+</html>

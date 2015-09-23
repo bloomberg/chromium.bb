@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function test()
+{
+    Runtime.experiments.enableForTest("timelineTracingJSProfile");
+    var rawNames = [
+        "",
+        "Script:",
+        "Script:http://example.com/alina?",
+        "Script:http://example.com/:1",
+        "Script:http://example.com/:1:2",
+        "Script:http://example.com/:1:2:3",
+        "Script:http://example.com/:1:2:3x:4",
+        "Builtin:~foo1 http://url.com/foo.js",
+        "Builtin:~foo2 native http://url.com/foo.js:11",
+        "Builtin:*foo3 http://url.com/foo.js:11:22",
+        "Builtin:foo4 http://url.com/foo.js:11:22:33",
+        "Builtin:~ http://url.com/anonymous.js:123",
+        "Builtin:~ native http://url.com/anonymous.js:123",
+        "Builtin:~function name with spaces http://url.com/bar:123",
+        "Builtin:~native function name with spaces native http://url.com/bar.js:123",
+        "Builtin:~user_function_that_is_not_native http://url.com/bar.js:123",
+        "Builtin:~native http://url.com/bar.js:123"
+    ];
+
+    for (var name of rawNames) {
+        var frame = WebInspector.TimelineJSProfileProcessor._buildCallFrame(name, "456");
+        InspectorTest.addResult(name + " => " + [frame.functionName, frame.url, frame.scriptId, frame.lineNumber, frame.columnNumber, frame.isNative].join(","));
+    }
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

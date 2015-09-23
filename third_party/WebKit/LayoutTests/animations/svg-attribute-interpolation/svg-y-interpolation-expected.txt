@@ -1,0 +1,36 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: y from [0, -1, 2] to [5, -6, 7] was [0, -1, 2] at 0
+PASS: y from [0, -1, 2] to [5, -6, 7] was [1, -2, 3] at 0.2
+PASS: y from [0, -1, 2] to [5, -6, 7] was [3, -4, 5] at 0.6
+PASS: y from [0, -1, 2] to [5, -6, 7] was [5, -6, 7] at 1
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [0em, 1ex, 2rems] at 0
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [1em, 2ex, 3rems] at 0.2
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [3em, 4ex, 5rems] at 0.6
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [5em, 6ex, 7rems] at 1
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [550, 50, 0] at 0
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [450, 150, 0] at 0.2
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [250, 350, 0] at 0.6
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [50, 550, 0] at 1
+
+Web Animations API:
+PASS: y from [0, -1, 2] to [5, -6, 7] was [-2, 1, 0] at -0.4
+PASS: y from [0, -1, 2] to [5, -6, 7] was [0, -1, 2] at 0
+PASS: y from [0, -1, 2] to [5, -6, 7] was [1, -2, 3] at 0.2
+PASS: y from [0, -1, 2] to [5, -6, 7] was [3, -4, 5] at 0.6
+PASS: y from [0, -1, 2] to [5, -6, 7] was [5, -6, 7] at 1
+PASS: y from [0, -1, 2] to [5, -6, 7] was [7, -8, 9] at 1.4
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [-2em, -1ex, 0rems] at -0.4
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [0em, 1ex, 2rems] at 0
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [1em, 2ex, 3rems] at 0.2
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [3em, 4ex, 5rems] at 0.6
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [5em, 6ex, 7rems] at 1
+PASS: y from [0em, 1ex, 2rems] to [5em, 6ex, 7rems] was [7em, 8ex, 9rems] at 1.4
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [750, -150, 0] at -0.4
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [550, 50, 0] at 0
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [450, 150, 0] at 0.2
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [250, 350, 0] at 0.6
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [50, 550, 0] at 1
+PASS: y from [55%, 5em, 0] to [5em, 55%, 0] was [-150, 750, 0] at 1.4
+

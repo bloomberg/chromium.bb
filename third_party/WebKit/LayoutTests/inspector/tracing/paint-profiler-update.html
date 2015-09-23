@@ -1,0 +1,86 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function performActions(callback)
+{
+    var square = document.getElementById("square");
+    step1();
+
+    function step1()
+    {
+        square.style.backgroundColor = "red";
+        testRunner.layoutAndPaintAsyncThen(step2);
+    }
+
+    function step2()
+    {
+        square.style.backgroundColor = "black";
+        testRunner.layoutAndPaintAsyncThen(callback);
+    }
+}
+
+function test()
+{
+    var panel = WebInspector.panels.timeline;
+
+    panel._captureLayersAndPicturesSetting.set(true);
+    panel._flameChartEnabledSetting.set(true);
+    panel._onModeChanged();
+
+    InspectorTest.invokeAsyncWithTimeline("performActions", onRecordingDone);
+    var paintEvents = [];
+    function onRecordingDone()
+    {
+        var events = InspectorTest.tracingTimelineModel()._mainThreadEvents;
+        for (var event of events) {
+            if (event.name === WebInspector.TimelineModel.RecordType.Paint) {
+                paintEvents.push(event);
+                if (!event.picture) 
+                    InspectorTest.addResult("Event without picture at " + paintEvents.length);
+            }
+        }
+
+        if (paintEvents.length < 2)
+             throw new Error("FAIL: Expect at least two paint events");
+
+        InspectorTest.addSniffer(panel, "_appendDetailsTabsForTraceEventAndShowDetails", onRecordDetailsReady, false);
+        panel.select(WebInspector.TimelineSelection.fromTraceEvent(paintEvents[0]), WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
+    }
+
+    function onRecordDetailsReady()
+    {
+        var updateCount = 0;
+        var paintProfilerView = panel._lazyPaintProfilerView._paintProfilerView;
+        InspectorTest.addSniffer(paintProfilerView, "_update", onPaintProfilerUpdate, true);
+
+        function onPaintProfilerUpdate()
+        {
+            // No snapshot, not a real update yet -- wait for another update!
+            if (!paintProfilerView._snapshot)
+                return;
+            var logSize = paintProfilerView._log && paintProfilerView._log.length ? ">0" : "0";
+            InspectorTest.addResult("Paint " + updateCount + " log size: " + logSize);
+            if (updateCount++)
+                InspectorTest.completeTest();
+            else
+                panel.select(WebInspector.TimelineSelection.fromTraceEvent(paintEvents[1]), WebInspector.TimelinePanel.DetailsTab.PaintProfiler);
+        }
+   }
+
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that paint profiler is properly update when an event is selected in Flame Chart
+</p>
+
+<div id="square" style="width: 40px; height: 40px"></div>
+
+</body>
+</html>

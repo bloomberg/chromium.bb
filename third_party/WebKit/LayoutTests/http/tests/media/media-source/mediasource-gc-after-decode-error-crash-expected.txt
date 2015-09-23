@@ -1,0 +1,7 @@
+Verifies that a MediaSource decode error followed by a gc() and page reload does not trigger a crash.
+
+onSourceOpen
+onSourceClose
+Running gc().
+END OF TEST
+

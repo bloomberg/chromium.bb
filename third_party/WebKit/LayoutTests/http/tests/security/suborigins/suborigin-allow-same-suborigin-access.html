@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Allow suborigin in HTTP header</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+var tests;
+var nextTest = function() {
+    var test = tests.shift();
+    if (test)
+        test();
+}
+
+tests = [
+    function() {
+        async_test(function(t) {
+            window.onmessage = t.step_func(function(event) {
+                assert_equals(event.data, 'I am a secret');
+                t.done();
+                nextTest();
+            });
+            var iframe = document.createElement('iframe');
+            iframe.src = "resources/iframe-reaches-into-parent.php?suborigin=foobar&childsuborigin=foobar";
+            document.body.appendChild(iframe);
+        }, 'iframe reaches into parent')
+    },
+    function() {
+        async_test(function(t) {
+            window.onmessage = t.step_func(function(event) {
+                assert_equals(event.data, 'I am a secret');
+                t.done();
+                nextTest();
+            });
+            var iframe = document.createElement('iframe');
+            iframe.src = "resources/reach-into-iframe.php?suborigin=foobar&childsuborigin=foobar";
+            document.body.appendChild(iframe);
+        }, 'Parent reaches into iframe')
+    }
+];
+
+nextTest();
+</script>
+</body>
+</html>

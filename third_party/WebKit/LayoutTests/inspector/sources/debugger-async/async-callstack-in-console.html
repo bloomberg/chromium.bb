@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    console.clear();
+    setTimeout(timeout1, 0);
+}
+
+function timeout1()
+{
+    console.trace();
+    setTimeout(timeout2, 0);
+}
+
+function timeout2()
+{
+    setTimeout(timeout3, 0);
+    throw Error("foo");
+}
+
+function timeout3()
+{
+    console.trace();
+    var iframeWidnow = document.getElementById("iframe").contentWindow;
+    tryPostMessage(iframeWidnow, "http://www.example.com");
+}
+
+function tryPostMessage(win, origin)
+{
+    try {
+        win.postMessage("Trying origin=" + origin, origin);
+    } catch(ex) {
+        console.error("FAIL: Error sending message to " + origin + ". " + ex);
+    }
+}
+
+var test = function()
+{
+    var maxAsyncCallStackDepth = 4;
+    var numberOfConsoleMessages = 5;
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(0);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, didPause);
+    }
+
+    function didPause()
+    {
+        InspectorTest.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
+        InspectorTest.resumeExecution();
+    }
+
+    function expandAndDumpConsoleMessages()
+    {
+        InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous call stacks printed in console.
+</p>
+<div><iframe src="../debugger/resources/post-message-listener.html"
+    id="iframe" width="800" height="100" style="border: 1px solid black;">
+</iframe></div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<link media="all and (min-device-width: 20px)" rel="stylesheet" href="resources/matched-rules-import-stylesheet.css"/>
+<link media="all and (min-device-width: 120px)" rel="stylesheet" href="resources/matched-rules-import-stylesheet.css"/>
+<link media="all and (min-device-width: 220px)" rel="stylesheet" href="resources/matched-rules-import-stylesheet.css"/>
+<style>
+    .test-element {
+        color: red;
+    }
+</style>
+<script src="../../../resources/js-test.js"></script>
+<p>Test getMatchedCSSRules to correctly setup CSSStyleRule parent stylesheet.</p>
+<span class="test-element">This span should have border and be written in red.</span>
+<script>
+description("getMatchedCSSRules returns CSSStyleRules with correct parent stylesheet.");
+
+var cssStyleRules = getMatchedCSSRules(document.querySelector(".test-element"));
+var styleSheetsMedias = [];
+for (var i = 0; i < cssStyleRules.length; ++i) {
+    styleSheetsMedias.push("parentStyleSheet media: '" + cssStyleRules[i].parentStyleSheet.media.mediaText + "'");
+}
+
+styleSheetsMedias.sort();
+
+for (var i = 0; i < styleSheetsMedias.length; ++i)
+    debug(styleSheetsMedias[i]);
+
+successfullyParsed = true;
+</script>
+

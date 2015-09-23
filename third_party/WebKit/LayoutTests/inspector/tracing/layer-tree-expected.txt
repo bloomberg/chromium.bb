@@ -1,0 +1,8 @@
+Tests that LayerTreeModel successfully imports layers from a trace.
+#document
+    div#a 200x200
+        div#b1 100x150
+        div#b2 110x140
+            div#c 90x100
+        div#b3 110x140
+

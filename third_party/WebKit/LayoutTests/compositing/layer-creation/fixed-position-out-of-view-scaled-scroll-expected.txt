@@ -1,0 +1,145 @@
+Not scaled:
+{
+  "bounds": [4008, 4016],
+  "children": [
+    {
+      "bounds": [4008, 4016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 0],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [108, 1108],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [1100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [700, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        }
+      ]
+    }
+  ]
+}
+Scale=0.5:
+{
+  "bounds": [4008, 4016],
+  "children": [
+    {
+      "bounds": [4008, 4016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 0],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [108, 1108],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [1100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [700, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        }
+      ]
+    }
+  ]
+}
+Scale=1.5:
+{
+  "bounds": [4008, 4016],
+  "children": [
+    {
+      "bounds": [4008, 4016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 0],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [108, 1108],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [1100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [700, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        },
+        {
+          "position": [100, 100],
+          "bounds": [10, 10],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#C0C0C0"
+        }
+      ]
+    }
+  ]
+}
+

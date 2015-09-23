@@ -1,0 +1,10 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests indenting "three". You should see numbers 1 and 2 before "two" and "three" respectively.
+one
+two
+three
+four
+Before: <li>one</li> <ol><li>two</li></ol> <li id="test">three</li> <li>four</li>
+After: <li>one</li> <ol><li>two</li><li id="test">three</li></ol> <li>four</li>

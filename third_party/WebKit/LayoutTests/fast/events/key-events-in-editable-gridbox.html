@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+    #target {
+        display: grid;
+        display: -webkit-grid;
+    }
+</style>
+<div id="target" contentEditable>T</div>
+<script>
+    var targetDiv = document.getElementById('target');
+    targetDiv.focus();
+
+    // Move cursor to the end of line.
+    getSelection().modify('move', 'forward', 'lineboundary');
+
+    document.execCommand("insertText", false, "EST");
+    shouldBeEqualToString("targetDiv.innerText", "TEST");
+
+    document.execCommand("delete");
+    document.execCommand("delete");
+    document.execCommand("delete");
+    document.execCommand("delete");
+    shouldBeEmptyString("targetDiv.innerText");
+
+    document.execCommand("insertText", false, "TEST");
+    shouldBeEqualToString("targetDiv.innerText", "TEST");
+</script>

@@ -1,0 +1,65 @@
+<html>
+<head></head>
+<body>
+
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+description('Test XMLHttpRequest.responseURL');
+window.jsTestIsAsync = true;
+
+function get(url, type) {
+    return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        window.responseURL = xhr.responseURL;
+        shouldBeEqualToString('responseURL', '');
+
+        xhr.open('GET', url);
+        xhr.responseType = type;
+        window.responseURL = xhr.responseURL;
+        shouldBeEqualToString('responseURL', '');
+
+        xhr.onreadystatechange = function() {
+            debug('xhr.readyState = ' + xhr.readyState + ': responseURL = ' + xhr.responseURL);
+            if (xhr.readyState === 4) {
+                resolve(xhr);
+            }
+        }
+        xhr.send();
+    });
+}
+
+get('resources/reply2.txt', 'text').then(function(xhr) {
+    window.status = xhr.status;
+    shouldBeEqualToString('status', '200');
+    window.responseURL = xhr.responseURL;
+    shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/reply2.txt');
+
+    return get('resources/redirect.php?url=reply2.xml', 'document');
+}).then(function(xhr) {
+    window.status = xhr.status;
+    shouldBeEqualToString('status', '200');
+    window.responseURL = xhr.responseURL;
+    shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/reply2.xml');
+
+    return get('resources/navigation-target.html#foobar', 'text');
+}).then(function(xhr) {
+    window.status = xhr.status;
+    shouldBeEqualToString('status', '200');
+    window.responseURL = xhr.responseURL;
+    shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/navigation-target.html');
+
+    return get('resources/redirect.php?url=not-found.txt', 'text');
+}).then(function(xhr) {
+    window.status = xhr.status;
+    shouldBeEqualToString('status', '404');
+    window.responseURL = xhr.responseURL;
+    shouldBeEqualToString('responseURL', 'http://127.0.0.1:8000/xmlhttprequest/resources/not-found.txt');
+
+    xhr.open('GET', xhr.responseURL);
+}).catch(function(reason) {
+    testFailed(String(reason));
+}).then(finishJSTest, finishJSTest);
+
+</script>
+</body>
+</html>

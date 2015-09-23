@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<body>
+<iframe id="frame"></iframe>
+
+<script src="../../resources/js-test.js"></script>
+<script>
+if (!window.internals) {
+    debug("This test only runs on \"content_shell --run-layout-test\", as it requires existence of window.internals.");
+} else {
+    testRunner.waitUntilDone();
+    window.jsTestIsAsync = true;
+    var documentsBefore;
+    var documentsAfter;
+    asyncGC(function() {
+        documentsBefore = window.internals.numberOfLiveDocuments();
+
+        var frame = document.getElementById('frame');
+        frame.contentDocument.body.innerHTML = '<form></form>';
+        document.body.removeChild(frame);
+        frame = null;
+
+        asyncGC(function() {
+            documentsAfter = window.internals.numberOfLiveDocuments();
+
+            // -1 is from removing frame itself.
+            shouldBe('documentsBefore - 1', 'documentsAfter');
+            finishJSTest();
+        });
+    });
+}
+</script>
+</body>
+</html>

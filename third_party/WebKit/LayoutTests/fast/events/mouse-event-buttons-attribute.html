@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<div id="target" style="width:100px; height:100px; position:absolute; left:0px; top:0px;"></div>
+<img id="drag" src="resources/greenbox30.png" style="position:absolute; left:0px; top:100px;" draggable>
+<script src="../../resources/js-test.js"></script>
+<script>
+
+const L = 'leftButton';
+const R = 'rightButton';
+const M = 'middleButton';
+const TABLE = {
+  'leftButton': 1,
+  'rightButton': 2,
+  'middleButton': 4
+};
+const ME = 'MouseEvent';
+const WE = 'WheelEvent';
+const GE = 'GestureEvent';
+const DE = 'DragEvent';
+
+var target = document.getElementById('target');
+var drag = document.getElementById('drag');
+var buttons = -2;
+var testSet = [
+  { type: ME, name: 'dblclick', modifiers: [L], expectedModifiers: [], action: doubleClickAction },
+  { type: ME, name: 'click', modifiers: [L, R], expectedModifiers: [R], action: clickAction },
+  { type: ME, name: 'mousedown', modifiers: [L, M, R], action: clickAction },
+  { type: ME, name: 'mouseup', modifiers: [L, M, R], expectedModifiers: [M, R], action: clickAction },
+  { type: ME, name: 'mousemove', modifiers: [], action: moveAction },
+  { type: ME, name: 'mousemove', modifiers: [L], action: moveAction },
+  { type: ME, name: 'mouseenter', modifiers: [R, M], action: moveAction },
+  { type: ME, name: 'mouseleave', modifiers: [L, R], action: moveAction },
+  { type: ME, name: 'mouseover', modifiers: [L, M], action: moveAction },
+  { type: ME, name: 'mouseout', modifiers: [L], action: moveAction },
+  { type: ME, name: 'contextmenu', modifiers: [R], action: rightClickAction, showContextMenuOnMouseUp: false },
+  { type: ME, name: 'contextmenu', modifiers: [R], expectedModifiers: [], action: rightClickAction, showContextMenuOnMouseUp: true },
+  { type: WE, name: 'mousewheel', modifiers: [L, R], action: wheelAction },
+  { type: GE, name: 'dblclick', modifiers: [L], expectedModifiers: [], action: doubleTapAction },
+  { type: GE, name: 'click', modifiers: [L], expectedModifiers: [], action: tapAction },
+  { type: GE, name: 'mousedown', modifiers: [L], action: tapAction },
+  { type: GE, name: 'mouseup', modifiers: [L], expectedModifiers: [], action: tapAction },
+  { type: GE, name: 'mousemove', modifiers: [], action: tapAction },
+  { type: GE, name: 'mousedown', modifiers: [R], action: longPressAction },
+  { type: GE, name: 'contextmenu', modifiers: [R], action: longPressAction, showContextMenuOnMouseUp: false },
+  { type: GE, name: 'contextmenu', modifiers: [R], expectedModifiers: [], action: longPressAction, showContextMenuOnMouseUp: true },
+  { type: GE, name: 'contextmenu', modifiers: [R], action: longTapAction, showContextMenuOnMouseUp: false },
+  { type: GE, name: 'contextmenu', modifiers: [R], expectedModifiers: [], action: longTapAction, showContextMenuOnMouseUp: true },
+  { type: DE, name: 'dragstart', modifiers: [L, R], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'drag', modifiers: [L, M, R], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'dragend', modifiers: [L, R], expectedModifiers: [], action: dragDropAction, eventTarget: drag },
+  { type: DE, name: 'dragenter', modifiers: [L, M], action: dragDropAction },
+  { type: DE, name: 'dragleave', modifiers: [L, R], action: dragDropAction },
+  { type: DE, name: 'dragover', modifiers: [L, M], action: dragDropAction },
+];
+
+function eventHandler(e)
+{
+  buttons = e.buttons;
+}
+
+function moveAction(modifiers)
+{
+  eventSender.mouseMoveTo(-1, -1, modifiers);
+  eventSender.mouseMoveTo(50, 50, modifiers);
+}
+
+function clickAction(modifiers)
+{
+  moveAction(modifiers);
+  eventSender.mouseDown(0, modifiers);
+  eventSender.mouseUp(0, modifiers);
+}
+
+function rightClickAction(modifiers)
+{
+  moveAction(modifiers);
+  eventSender.mouseDown(2, modifiers);
+  eventSender.mouseUp(2, modifiers);
+}
+
+function doubleClickAction(modifiers)
+{
+  clickAction(modifiers);
+  clickAction(modifiers);
+}
+
+function wheelAction(modifiers)
+{
+  moveAction(modifiers);
+  eventSender.mouseScrollBy(0, 120, false, true, modifiers);
+}
+
+function tapAction(modifiers)
+{
+  eventSender.gestureTap(50, 50);
+}
+
+function longPressAction(modifiers)
+{
+  eventSender.gestureLongPress(50, 50);
+}
+
+function longTapAction(modifiers)
+{
+  eventSender.gestureLongPress(50, 50);
+  eventSender.gestureLongTap(50, 50);
+}
+
+function doubleTapAction(modifiers)
+{
+  eventSender.gestureTap(50, 50, 2);
+}
+
+function dragDropAction(modifiers)
+{
+  eventSender.mouseMoveTo(10, 110, modifiers);
+  eventSender.mouseDown(0, modifiers);
+  eventSender.mouseMoveTo(10, 80, modifiers);
+  eventSender.mouseMoveTo(10, 110, modifiers);
+  eventSender.mouseMoveTo(10, 80, modifiers);
+  eventSender.mouseUp(0, modifiers);
+}
+
+function raiseEvent(n)
+{
+  if (!window.eventSender)
+    return;
+
+  var eventTarget = testSet[n].eventTarget || target;
+
+  eventTarget.addEventListener(testSet[n].name, eventHandler, false);
+  testSet[n].action(testSet[n].modifiers);
+  testSet[n].buttons = buttons;
+  eventTarget.removeEventListener(testSet[n].name, eventHandler, false);
+  buttons = -1;
+}
+
+function expectedValue(testItem)
+{
+  var modifiers;
+  if (testItem.expectedModifiers != undefined)
+    modifiers = testItem.expectedModifiers;
+  else
+    modifiers = testItem.modifiers;
+
+  var value = 0;
+  for (var i = 0; i < modifiers.length; i++)
+    value |= TABLE[modifiers[i]];
+
+  return value;
+}
+
+function printTestInfo(testItem)
+{
+  var modifiers = testSet[i].expectedModifiers || testSet[i].modifiers;
+  var expectedModifiersString = ' -> shouldBe([' + modifiers +'])';
+
+  var showContextMenuOnMouseUp = "";
+  if (testSet[i].showContextMenuOnMouseUp != undefined)
+    showContextMenuOnMouseUp = " with |showContextMenuOnMouseUp=" +
+        testSet[i].showContextMenuOnMouseUp + "|";
+
+  debug(testSet[i].type + '::' + testSet[i].name + showContextMenuOnMouseUp + ' '
+      + testSet[i].action.name + '([' + testSet[i].modifiers + '])' + expectedModifiersString);
+}
+
+for (var i = 0; i < testSet.length; i++) {
+  internals.settings.setShowContextMenuOnMouseUp(testSet[i].showContextMenuOnMouseUp);
+  raiseEvent(i);
+  printTestInfo(testSet[i]);
+  shouldBeEqualToNumber('testSet[i].buttons', expectedValue(testSet[i]));
+  debug('');
+}
+
+</script>

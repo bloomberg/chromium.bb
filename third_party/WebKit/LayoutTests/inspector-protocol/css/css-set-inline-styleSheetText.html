@@ -1,0 +1,66 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    var inlineStyleSheetId;
+
+    InspectorTest.sendCommand("CSS.enable", {}, cssWasEnabled);
+
+    function cssWasEnabled()
+    {
+        InspectorTest.sendCommandOrDie("DOM.getDocument", {}, onGotDocument);
+    }
+
+    function onGotDocument(result)
+    {
+        var root = result.root;
+        InspectorTest.sendCommandOrDie("DOM.querySelector", {
+            nodeId: root.nodeId,
+            selector: "#inliner"
+        }, onGotNode);
+    }
+
+    function onGotNode(node)
+    {
+        InspectorTest.sendCommandOrDie("CSS.getInlineStylesForNode", { nodeId: node.nodeId }, onGotInlineStyles);
+    }
+
+    function onGotInlineStyles(result)
+    {
+        inlineStyleSheetId = result.inlineStyle.styleSheetId;
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onReceiveStyleSheetText);
+    }
+
+    function onReceiveStyleSheetText(result)
+    {
+        InspectorTest.log(result.text);
+        InspectorTest.sendCommandOrDie("CSS.setStyleSheetText", {
+            styleSheetId: inlineStyleSheetId,
+            text: "border: 1px solid black;"
+        }, onSetStyleSheetBody);
+    }
+
+    function onSetStyleSheetBody(result)
+    {
+        InspectorTest.sendCommandOrDie("CSS.getStyleSheetText", { styleSheetId: inlineStyleSheetId }, onCheckStyleSheetBody);
+    }
+
+    function onCheckStyleSheetBody(result)
+    {
+        InspectorTest.log(result.text);
+        InspectorTest.completeTest();
+    }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+
+<div id="inliner" style="color: red;">
+</div>
+
+</body>
+</html>

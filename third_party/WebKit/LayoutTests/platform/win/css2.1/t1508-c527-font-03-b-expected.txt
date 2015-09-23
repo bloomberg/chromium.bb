@@ -1,0 +1,24 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x182
+  LayoutBlockFlow {HTML} at (0,0) size 800x182
+    LayoutBlockFlow {BODY} at (8,13) size 784x156 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x156
+        LayoutText {#text} at (0,4) size 382x18
+          text run at (0,4) width 382: "This text should be small and cursive, with double line spacing. "
+        LayoutInline {SPAN} at (0,0) size 759x148 [color=#C0C0C0]
+          LayoutText {#text} at (381,4) size 759x148
+            text run at (381,4) width 378: "dummy text dummy text dummy text dummy text dummy text"
+            text run at (0,30) width 46: "dummy "
+            text run at (45,30) width 458: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (502,30) width 256: "text dummy text dummy text dummy text"
+            text run at (0,56) width 198: "dummy text dummy text dummy "
+            text run at (197,56) width 458: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (654,56) width 104: "text dummy text"
+            text run at (0,82) width 350: "dummy text dummy text dummy text dummy text dummy "
+            text run at (349,82) width 409: "text dummy text dummy text dummy text dummy text dummy text"
+            text run at (0,108) width 46: "dummy "
+            text run at (45,108) width 458: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (502,108) width 256: "text dummy text dummy text dummy text"
+            text run at (0,134) width 149: "dummy text dummy text"
+        LayoutText {#text} at (0,0) size 0x0

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../media/media-file.js"></script>
+        <script src="../media/video-test.js"></script>
+        <script>
+            var metaElement;
+            var standaloneMediaDocument;
+            var skipOnFirstEmptyLoad = 0;
+
+            function frameLoaded()
+            {
+                if (++skipOnFirstEmptyLoad == 1)
+                    return;
+
+                standaloneMediaDocument = document.getElementById("videoframe").contentDocument;
+                metaElement = standaloneMediaDocument.querySelector("meta");
+
+                testExpected("metaElement.name", "viewport");
+                testExpected("metaElement.content", "width=device-width");
+
+                endTest();
+            }
+        </script>
+    </head>
+    <body>
+        <p>
+            This tests that a standalone media document has viewport settings.
+        </p>
+        <iframe id="videoframe" onload="frameLoaded()"></iframe>
+        <script>
+            document.getElementById("videoframe").src = findMediaFile("video", "content/test");
+        </script>
+    </body>
+</html>

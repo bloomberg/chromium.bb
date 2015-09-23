@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script>
+
+var iframe;
+
+function loadIframe(scope)
+{
+    iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.src = scope;
+}
+
+function unloadIframe()
+{
+    iframe.remove();
+}
+
+function test()
+{
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/changing-worker.php";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-redundant-scope/";
+    var step = 0;
+    var firstVersionId = -1;
+    var secondVersionId = -1;
+
+    InspectorTest.evaluateInPage("frontendReopeningCount", function(result) {
+        if (result._description == "0") {
+            InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
+            function registrationUpdated(event)
+            {
+                var registration = event.data;
+                if (registration.scopeURL != scope)
+                    return;
+                for (var version of registration.versions.values()) {
+                    if (step == 0 && version.isRunning() && version.isActivated()) {
+                        ++step;
+                        firstVersionId = version.id;
+                        InspectorTest.addResult("The first ServiceWorker is activated.");
+                        InspectorTest.addResults(InspectorTest.dumpServiceWorkersView([scope]));
+                        InspectorTest.evaluateInPage("loadIframe(\"" + scope + "\");");
+                    } else if (step == 1 && version.isRunning() && version.isInstalled()) {
+                        ++step;
+                        secondVersionId = version.id;
+                        InspectorTest.addResult("The second Serviceworker is installed.");
+                        InspectorTest.addResults(InspectorTest.dumpServiceWorkersView([scope]));
+                        InspectorTest.evaluateInPage("unloadIframe();");
+                    }
+                }
+                if (step != 2)
+                    return;
+                var firstVersion = registration.versions.get(firstVersionId);
+                var secondVersion = registration.versions.get(secondVersionId);
+                if ((!firstVersion || (firstVersion.isStopped() && firstVersion.isRedundant())) && secondVersion.isActivated() && secondVersion.isRunning()) {
+                    ++step;
+                    InspectorTest.addResult("The first ServiceWorker worker became redundant and stopped.");
+                    InspectorTest.addResults(InspectorTest.dumpServiceWorkersView([scope]));
+                    InspectorTest.flushResults();
+                    InspectorTest.evaluateInPage("reopenFrontend()");
+                }
+            }
+            WebInspector.panels.resources.serviceWorkersTreeElement.select();
+            InspectorTest.registerServiceWorker(scriptURL, scope);
+        } else {
+            InspectorTest.addResult("DevTools frontend is reopened.");
+            WebInspector.panels.resources.serviceWorkersTreeElement.select();
+            InspectorTest.addResults(InspectorTest.dumpServiceWorkersView([scope]));
+            InspectorTest.deleteServiceWorkerRegistration(scope);
+            InspectorTest.completeTest();
+        }});
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>ServiceWorkers must be shown correctly even if there is a redundant worker.</p>
+</body>
+</html>

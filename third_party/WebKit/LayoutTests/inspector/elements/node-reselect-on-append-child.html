@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+
+<script>
+
+function appendNewNode()
+{
+    var element = document.querySelector("#first");
+    var second = document.createElement("div");
+    element.parentElement.appendChild(second);
+}
+
+function test()
+{
+    InspectorTest.selectNodeWithId("first", onNodeSelected);
+
+    function onNodeSelected()
+    {
+        InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectionChangedEvent);
+        InspectorTest.addSniffer(WebInspector.ElementsTreeOutline.prototype, "_updateChildren", onNodeAppended);
+        InspectorTest.evaluateInPage("appendNewNode()");
+    }
+
+    function onSelectionChangedEvent()
+    {
+        InspectorTest.addResult("ERROR: erroneous selection changed event received.");
+        InspectorTest.completeTest();
+    }
+
+    function onNodeAppended()
+    {
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>The test verifies that SelectedNodeChanged event is not fired whenever a child gets added to the node.</p>
+<div>
+    <div id="first">First Child</div>
+</div>
+
+</body>
+</html>

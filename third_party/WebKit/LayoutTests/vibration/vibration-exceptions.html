@@ -1,0 +1,16 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="vibration-utils.js"></script>
+</head>
+<body>
+<script>
+description('Tests that bad input throws exceptions in the Vibration API.');
+
+shouldThrow("navigator.vibrate()");
+shouldBe("navigator.vibrate(1, 2)", "true");
+shouldBe("navigator.vibrate([1], [2])", "true");
+
+</script>
+</body>
+</html>

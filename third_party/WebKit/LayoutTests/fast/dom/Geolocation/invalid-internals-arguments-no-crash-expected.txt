@@ -1,0 +1,19 @@
+Verify that using invalid or detached documents on internal test methods does not crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.setGeolocationClientMock(null); threw exception TypeError: Failed to execute 'setGeolocationClientMock' on 'Internals': parameter 1 is not of type 'Document'..
+PASS internals.setGeolocationPosition(null, 1, 2, 3); threw exception TypeError: Failed to execute 'setGeolocationPosition' on 'Internals': parameter 1 is not of type 'Document'..
+PASS internals.setGeolocationPermission(window.notThere, true); threw exception TypeError: Failed to execute 'setGeolocationPermission' on 'Internals': parameter 1 is not of type 'Document'..
+PASS internals.setGeolocationPositionUnavailableError(null, 'not available'); threw exception TypeError: Failed to execute 'setGeolocationPositionUnavailableError' on 'Internals': parameter 1 is not of type 'Document'..
+PASS internals.numberOfPendingGeolocationPermissionRequests(null) threw exception TypeError: Failed to execute 'numberOfPendingGeolocationPermissionRequests' on 'Internals': parameter 1 is not of type 'Document'..
+PASS iframeInternals.setGeolocationClientMock(iframe.document) is undefined.
+PASS iframeInternals.setGeolocationPosition(iframe.document, 1, 2, 3) is undefined.
+PASS iframeInternals.setGeolocationPermission(iframe.document, true) is undefined.
+PASS iframeInternals.setGeolocationPositionUnavailableError(iframe.document, 'not available') is undefined.
+PASS iframeInternals.numberOfPendingGeolocationPermissionRequests(iframe.document) is -1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

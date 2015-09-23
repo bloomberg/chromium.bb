@@ -1,0 +1,41 @@
+Test of various canvas graphics context calls for setting colors.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS testFillStyle('transparent') is transparent
+PASS testFillStyle('blue') is blue
+PASS testFillStyle('#FF0000') is red
+PASS testFillStyle('#f00') is red
+PASS testFillStyle('rgb(255, 0, 0)') is red
+PASS testFillStyle('rgba(255, 0, 0, 1)') is red
+PASS testFillStyle('rgba(255, 0, 0, 0.8)') is translucentRed
+PASS testFillStyle('rgba(255, 0, 0, 0)') is transparent
+PASS testFillGradient('transparent') is transparent
+PASS testFillGradient('blue') is blue
+PASS testFillGradient('#FF0000') is red
+PASS testFillGradient('#f00') is red
+PASS testFillGradient('rgb(255, 0, 0)') is red
+PASS testFillGradient('rgba(255, 0, 0, 1)') is red
+PASS testFillGradient('rgba(255, 0, 0, 0.8)') is translucentRed
+PASS testFillGradient('rgba(255, 0, 0, 0)') is transparent
+PASS testStrokeStyle('transparent') is transparent
+PASS testStrokeStyle('blue') is blue
+PASS testStrokeStyle('#FF0000') is red
+PASS testStrokeStyle('#f00') is red
+PASS testStrokeStyle('rgb(255, 0, 0)') is red
+PASS testStrokeStyle('rgba(255, 0, 0, 1)') is red
+PASS testStrokeStyle('rgba(255, 0, 0, 0.8)') is translucentRed
+PASS testStrokeStyle('rgba(255, 0, 0, 0)') is transparent
+PASS testStrokeGradient('transparent') is transparent
+PASS testStrokeGradient('blue') is blue
+PASS testStrokeGradient('#FF0000') is red
+PASS testStrokeGradient('#f00') is red
+PASS testStrokeGradient('rgb(255, 0, 0)') is red
+PASS testStrokeGradient('rgba(255, 0, 0, 1)') is red
+PASS testStrokeGradient('rgba(255, 0, 0, 0.8)') is translucentRed
+PASS testStrokeGradient('rgba(255, 0, 0, 0)') is transparent
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function createRejectedPromises()
+{
+    Promise.reject(new Error("err1"))
+        .then()
+        .then()
+        .then(); // Last is unhandled.
+
+    var reject;
+    var m0 = new Promise(function(res, rej) { reject = rej; });
+    var m1 = m0.then(function() {});
+    var m2 = m0.then(function() {});
+    var m3 = m0.then(function() {});
+    var m4 = 0;
+    m0.catch(function() {
+        m2.catch(function() {
+            m1.catch(function() {
+                m4 = m3.then(function() {}); // Unhandled.
+                setTimeout(rejectWithDOMException, 0);
+            });
+        });
+    });
+    reject(new Error("err2"));
+}
+
+function rejectWithDOMException()
+{
+    var reject;
+    var p = new Promise(function(res, rej) {
+        reject = rej;
+    });
+    p.then().catch(function catcher() {
+        throwDOMException();
+    });
+    reject(new Error("FAIL: Should not be printed to console"));
+
+    function throwDOMException()
+    {
+        setTimeout(showWebInspector, 0);
+        var a = document.createElement("div");
+        var b = document.createElement("div");
+        a.removeChild(b);
+    }
+}
+
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+    createRejectedPromises();
+}
+
+function showWebInspector()
+{
+    if (window.testRunner)
+        testRunner.showWebInspector();
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages(onExpanded);
+
+    function onExpanded()
+    {
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests that uncaught promise rejection messages have line numbers when the inspector is closed and stack traces are not collected.
+</p>
+
+</body>
+</html>

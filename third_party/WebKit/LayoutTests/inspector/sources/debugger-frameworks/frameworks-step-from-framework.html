@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+function testFunction()
+{
+    Framework.safeRun(Framework.breakInFramework, Framework.empty)
+    Framework.safeRun(Framework.empty); // should not step inside
+    Framework.empty(); // dummy call
+    Framework.sendXHR('/foo?a=b');
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    var xhrPane;
+
+    function step1()
+    {
+        xhrPane = WebInspector.panels.sources.sidebarPanes.xhrBreakpoints;
+        xhrPane._setBreakpoint("foo", true);
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        var actions = [
+            "Print", // debugger;
+            "StepInto", "Print",
+            "StepOver", "Print",
+            "StepOut", "Print",
+            "StepInto", "Print", // should not step inside
+            "Resume", "Print",   // should stop on XHR.send()
+            "StepInto", "Print", // should step inside framework
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    }
+
+    function step3()
+    {
+        xhrPane._removeBreakpoint("foo");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests stepping from framework call frames.
+</p>
+</body>
+</html>

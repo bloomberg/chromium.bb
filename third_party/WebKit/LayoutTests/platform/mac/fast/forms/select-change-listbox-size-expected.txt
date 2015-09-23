@@ -1,0 +1,44 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 55x18
+          text run at (0,0) width 55: "Test for "
+        LayoutInline {I} at (0,0) size 747x36
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
+              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12986"
+          LayoutText {#text} at (359,0) size 747x36
+            text run at (359,0) width 5: " "
+            text run at (363,0) width 384: "REGRESSION(NativeListBox): Listboxes not updated when"
+            text run at (0,18) width 128: "resized dynamically"
+        LayoutText {#text} at (127,18) size 5x18
+          text run at (127,18) width 5: "."
+      LayoutBlockFlow {P} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 324x18
+          text run at (0,0) width 324: "This list box should be tall enough to fit 6 options."
+      LayoutBlockFlow (anonymous) at (0,86) size 784x87
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,94) size 47x87 clip at (9,95) size 34x85
+  LayoutListBox {SELECT} at (0,-0.13) size 46.88x87.13 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
+    LayoutBlockFlow {OPTION} at (1,1) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 22x13
+        text run at (2,0) width 22: "One"
+    LayoutBlockFlow {OPTION} at (1,15.19) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 23x13
+        text run at (2,0) width 23: "Two"
+    LayoutBlockFlow {OPTION} at (1,29.38) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 30x13
+        text run at (2,0) width 30: "Three"
+    LayoutBlockFlow {OPTION} at (1,43.56) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 24x13
+        text run at (2,0) width 24: "Four"
+    LayoutBlockFlow {OPTION} at (1,57.75) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 22x13
+        text run at (2,0) width 22: "Five"
+    LayoutBlockFlow {OPTION} at (1,71.94) size 33.88x14.19
+      LayoutText {#text} at (2,0) size 17x13
+        text run at (2,0) width 17: "Six"

@@ -1,0 +1,20 @@
+This test checks behavior of Canvas::drawImage with a broken source image.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ctx.drawImage(null, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(null, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(undefined, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(undefined, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(undefined, 0, 0, 20, 20, 0, 0, 20, 20) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS ctx.drawImage(invalidImage, 0, 0) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
+PASS ctx.drawImage(invalidImage, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
+PASS ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
+PASS ctx.drawImage(invalidImage, 0, 0, 0, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
+PASS ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20) threw exception InvalidStateError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': The HTMLImageElement provided is in the 'broken' state..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

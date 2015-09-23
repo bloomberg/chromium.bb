@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+
+<input type="button" value="Button" style="padding:10px; -webkit-appearance:none;" onclick="++clickCount">
+<div id=console></div>
+
+<script>
+description('Make sure that mouse click on an input button with shadow nodes works.');
+var clickCount = 0;
+var input = document.querySelector('input');
+var root = input.createShadowRoot();
+root.innerHTML = '<span style="margin:8px;">Foo</span><shadow></shadow><span>Bar</span>';
+var inputRect = input.getBoundingClientRect();
+var shadowNodeRect = root.firstChild.getBoundingClientRect();
+
+debug('Click on the padding area of the button:');
+eventSender.mouseMoveTo(inputRect.left + 3, inputRect.top + inputRect.height / 2);
+eventSender.mouseDown();
+eventSender.mouseUp();
+shouldBe('clickCount', '1');
+
+debug('Click on the margin area of a shadow node:');
+clickCount = 0;
+eventSender.mouseMoveTo(shadowNodeRect.left - 3, shadowNodeRect.top + shadowNodeRect.height / 2);
+eventSender.mouseDown();
+eventSender.mouseUp();
+shouldBe('clickCount', '1');
+
+debug('Click on the middle of a shadow node:');
+clickCount = 0;
+eventSender.mouseMoveTo(shadowNodeRect.left + shadowNodeRect.width / 2, shadowNodeRect.top + shadowNodeRect.height / 2);
+eventSender.mouseDown();
+eventSender.mouseUp();
+shouldBe('clickCount', '1');
+
+debug('Click on the original value text:');
+clickCount = 0;
+eventSender.mouseMoveTo(shadowNodeRect.right + 10, shadowNodeRect.top + shadowNodeRect.height / 2);
+eventSender.mouseDown();
+eventSender.mouseUp();
+shouldBe('clickCount', '1');
+</script>
+
+</body>
+

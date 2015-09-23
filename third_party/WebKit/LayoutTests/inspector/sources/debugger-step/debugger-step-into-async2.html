@@ -1,0 +1,138 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+var dummy = function FAIL_should_not_pause_here() { return 0; };
+
+function testFunction()
+{
+    debugger; // <- will turn on async call stacks here.
+
+    setTimeout(dummy, 0);
+    setTimeout(callback7, 20); // <- StepIntoAsync
+}
+
+function callback7()
+{
+    Promise.resolve(42)
+        .then(
+            function inner()
+            {
+                var p = Promise.reject(new Error("my error"));
+                p.catch(function() {});
+                debugger;
+                return p; // <- StepIntoAsync
+            }
+        )
+        .then(dummy)
+        .catch(Framework.throwFrameworkException)
+        .catch(callback8);
+    return 7;
+}
+
+function callback8()
+{
+    var obj = {};
+    Object.observe(obj, callback9);
+    debugger;
+    obj.foo = 1; // <- StepIntoAsync
+    setTimeout(dummy);
+    return 8;
+}
+
+function callback9()
+{
+    var iframe = document.getElementById("iframe");
+    var win = iframe.contentWindow;
+    window.addEventListener("message", callback10, false);
+    debugger;
+    win.postMessage("skip debugger", "*"); // <- StepIntoAsync
+    setTimeout(dummy, 0);
+    Promise.resolve().then(dummy);
+    return 9;
+}
+
+function callback10()
+{
+    window.removeEventListener("message", callback10, false);
+    debugger;
+    Promise.resolve({foo: 44}) // <- StepIntoAsync
+        .then(
+            function inner1()  // <- StepIntoAsync when in inner1 should lead debugger to the
+            {                  // next promise handler in the chain, i.e. the one, which will
+            }                  // receive the result returned by inner1, that is inner2.
+        )
+        .then(Framework.empty)
+        .then(
+            function inner2()
+            {
+                return callback11();
+            }
+        )
+        .then(dummy);
+    setTimeout(dummy, 0);
+    return 10;
+}
+
+function callback11()
+{
+    return 11;
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        var actions = [
+            "StepOver", "StepOver", "Print", // on setTimeout(callback1)
+            "StepIntoAsync", "Print", // at callback7
+            "Resume", // now paused at debugger in inner()
+            "StepOver", "StepOver", "StepIntoAsync", "Print", // at callback8
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at callback9
+            "Resume", "StepOver", "StepIntoAsync", "Print", // at onmessage handler in iframe
+            "Resume", // now paused at debugger in callback10
+            "StepInto", "StepIntoAsync", "Print", // in inner1
+            "StepIntoAsync", "Print", // in inner2
+            // Test that StepIntoAsync is StepInto when there are no Async operations.
+            "StepIntoAsync", "StepIntoAsync", "Print", // in callback11
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
+    }
+
+    function step4()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests debugger StepIntoAsync action (part 2).
+</p>
+<div><iframe src="../debugger/resources/post-message-listener.html"
+    id="iframe" width="800" height="100" style="border: 1px solid black;">
+</iframe></div>
+</body>
+</html>

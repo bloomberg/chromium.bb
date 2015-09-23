@@ -1,0 +1,9 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+When modifying InsertionPoint's child, distribution should not cause crash.
+
+PASS unless crash.
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

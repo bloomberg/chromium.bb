@@ -1,0 +1,14 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests for ShadowAware.shadowRoot property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS host.shadowRoot is null
+PASS root1 is host.shadowRoot
+PASS root2 is host.shadowRoot
+PASS hostWithUAShadow.shadowRoot is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

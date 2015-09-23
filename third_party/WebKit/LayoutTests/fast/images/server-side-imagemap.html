@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Tests that server-side image maps with zooms and transforms produce the right click coordinates.');
+
+function testClick(x, y, expectedHash)
+{
+    location.hash = '#';
+    eventSender.mouseMoveTo(x, y);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    shouldBeEqualToString('location.hash', expectedHash);
+}
+
+onload = function()
+{
+    if (window.testRunner && window.eventSender && window.internals) {
+        internals.setPageScaleFactor(1.25); // pinch scale
+        eventSender.setPageZoomFactor(1.5, 0, 0); // browser zoom
+        testClick(402, 122, '#?0,0'); // top left border
+        testClick(407, 204, '#?0,0'); // top left padding
+        testClick(517, 562, '#?82,39'); // content area
+        testClick(539, 662, '#?105,54'); // lower right padding
+        testClick(540, 714, '#?115,63'); // lower right border
+        testClick(179, 350, '#?0,63'); // lower left border
+        testClick(248, 362, '#?0,52'); // lower left padding
+        testClick(695, 488, '#?102,0'); // upper right padding
+        testClick(759, 479, '#?112,0'); // upper right border
+    }
+};
+</script>
+
+<style>
+img {
+    position: absolute;
+    left: 50px;
+    top: 60px;
+    width: 100px;
+    height: 50px;
+    border-left: 13px solid;
+    border-top: 13px solid;
+    border-right: 10px solid;
+    border-bottom: 10px solid;
+    padding-left: 17px;
+    padding-top: 17px;
+    padding-right: 10px;
+    padding-bottom: 10px;
+    transform: rotate(45deg);
+}
+</style>
+
+<div style="zoom: 2;"><a href="#"><img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=" ismap></a></div>
+
+<div id="description"></div>
+<div id="console"></div>

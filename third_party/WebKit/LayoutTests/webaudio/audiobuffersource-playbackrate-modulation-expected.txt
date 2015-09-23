@@ -1,0 +1,12 @@
+AudioBufferSourceNode: oscillator-driven playbackRate modulation.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Exceeded SNR threshold of 92.72 dB.
+PASS Maximum difference below threshold of 0.985 ulp (16-bits).
+PASS Number of differences between results is 0 out of 11025.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var badNames = [];
+    for (var nickname in WebInspector.Color.Nicknames) {
+        if (nickname.toLowerCase() !== nickname)
+            badNames.push(nickname);
+    }
+
+    if (badNames.length === 0)
+        InspectorTest.addResult("PASSED");
+    else
+        InspectorTest.addResult("Non-lowercase color nicknames: " + badNames.join(", "));
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that all color nicknames are lowercase to facilitate lookup</p>
+</body>
+</html>

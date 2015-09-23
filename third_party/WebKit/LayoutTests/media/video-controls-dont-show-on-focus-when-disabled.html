@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<title>Test visibiblity of controls when focusing of &lt;video></title>
+<script src=video-test.js></script>
+<script src=media-controls.js></script>
+<p>
+Test that video controls don't appear when the media (&lt;video>) element is
+focused and the 'controls' attribute is not set.
+</p>
+<!-- 'tabindex' makes the video focusable despite it not having controls -->
+<video tabindex="0" autoplay src="content/test.ogv"></video>
+<script>
+var controls;
+var video = document.querySelector("video");
+
+video.addEventListener("playing", function()
+{
+    runAfterHideMediaControlsTimerFired(function()
+    {
+        controls = mediaControlsButton(video, "panel");
+
+        video.focus();
+        testExpected("getComputedStyle(controls).opacity", 0);
+
+        endTest();
+    }, video);
+});
+</script>

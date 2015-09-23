@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<keygen id="keys" />
+<script>
+description("This tests the keygen element");
+
+var keygen = document.getElementById('keys');
+shouldBe('keygen.options', 'undefined');  // keygen is not a select
+shouldBeEqualToString('keygen.type', 'keygen');
+shouldBeEqualToString('keygen.keytype', 'rsa');
+shouldBeNull('keygen.getAttribute("keytype")');
+shouldBeEqualToString('keygen.keytype = "foo"; keygen.keytype', '');
+shouldBeEqualToString('keygen.getAttribute("KEYtype")', 'foo');
+shouldBeEqualToString('keygen.setAttribute("keytype", "bar"); keygen.keytype', '');
+shouldBeEqualToString('keygen.getAttribute("KeyType")', 'bar');
+
+if (window.internals) {
+  var shadow = internals.shadowRoot(keygen);
+  shouldBe('shadow.firstChild.tagName', '"SELECT"');
+}
+</script>

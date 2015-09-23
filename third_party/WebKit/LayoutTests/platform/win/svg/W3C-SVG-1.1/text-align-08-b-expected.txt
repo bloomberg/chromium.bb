@@ -1,0 +1,22 @@
+layer at (0,0) size 480x360
+  LayoutView at (0,0) size 480x360
+layer at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
+    LayoutSVGContainer {g} at (50,66) size 430x166
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGText {text} at (50,66) size 573x166 contains 1 chunk(s)
+        LayoutSVGInlineText {#text} at (0,0) size 337x166
+          chunk 1 text run 1 at (50.00,200.00) startOffset 0 endOffset 3 width 336.69: "a\x{729C}\x{923}"
+        LayoutSVGTSpan {tspan} at (0,0) size 170x83
+          LayoutSVGInlineText {#text} at (336,67) size 169x83
+            chunk 1 text run 1 at (386.69,200.00) startOffset 0 endOffset 3 width 168.35: "a\x{729C}\x{923}"
+        LayoutSVGTSpan {tspan} at (0,0) size 68x33
+          LayoutSVGInlineText {#text} at (505,107) size 68x33
+            chunk 1 text run 1 at (555.04,200.00) startOffset 0 endOffset 3 width 67.34: "a\x{729C}\x{923}"
+      LayoutSVGPath {line} at (50,199) size 383x2 [stroke={[type=SOLID] [color=#0000FF]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=200.00] [x2=433.00] [y2=200.00]
+      LayoutSVGPath {line} at (50,229) size 383x2 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=230.00] [x2=433.00] [y2=230.00]
+      LayoutSVGPath {line} at (50,94) size 383x2 [stroke={[type=SOLID] [color=#008000]}] [fill={[type=SOLID] [color=#000000]}] [x1=50.00] [y1=95.00] [x2=433.00] [y2=95.00]
+    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 264x45
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.7 $"
+    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

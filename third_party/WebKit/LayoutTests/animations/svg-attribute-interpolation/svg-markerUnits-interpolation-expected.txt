@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [userSpaceOnUse] at 0
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [userSpaceOnUse] at 0.2
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [strokeWidth] at 0.6
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [strokeWidth] at 1
+
+Web Animations API:
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [userSpaceOnUse] at -2.4
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [userSpaceOnUse] at 0
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [userSpaceOnUse] at 0.2
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [strokeWidth] at 0.6
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [strokeWidth] at 1
+PASS: markerUnits from [userSpaceOnUse] to [strokeWidth] was [strokeWidth] at 3.4
+

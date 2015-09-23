@@ -1,0 +1,116 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Tests calling WebGL APIs with wrong argument types
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Program Compiled
+PASS Shader Compiled
+PASS getUniformLocation succeeded
+PASS context.compileShader(argument) threw exception TypeError: Failed to execute 'compileShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.linkProgram(argument) threw exception TypeError: Failed to execute 'linkProgram' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.attachShader(program, argument) threw exception TypeError: Failed to execute 'attachShader' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLShader'..
+PASS context.attachShader(argument, shader) threw exception TypeError: Failed to execute 'attachShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.detachShader(program, argument) threw exception TypeError: Failed to execute 'detachShader' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLShader'..
+PASS context.detachShader(argument, shader) threw exception TypeError: Failed to execute 'detachShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.useProgram(argument) threw exception TypeError: Failed to execute 'useProgram' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.shaderSource(argument, 'foo') threw exception TypeError: Failed to execute 'shaderSource' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.bindAttribLocation(argument, 0, 'foo') threw exception TypeError: Failed to execute 'bindAttribLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.bindBuffer(context.ARRAY_BUFFER, argument) threw exception TypeError: Failed to execute 'bindBuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLBuffer'..
+PASS context.bindFramebuffer(context.FRAMEBUFFER, argument) threw exception TypeError: Failed to execute 'bindFramebuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLFramebuffer'..
+PASS context.bindRenderbuffer(context.RENDERBUFFER, argument) threw exception TypeError: Failed to execute 'bindRenderbuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLRenderbuffer'..
+PASS context.bindTexture(context.TEXTURE_2D, argument) threw exception TypeError: Failed to execute 'bindTexture' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLTexture'..
+PASS context.framebufferRenderbuffer(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.RENDERBUFFER, argument) threw exception TypeError: Failed to execute 'framebufferRenderbuffer' on 'WebGLRenderingContext': parameter 4 is not of type 'WebGLRenderbuffer'..
+PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, argument, 0) threw exception TypeError: Failed to execute 'framebufferTexture2D' on 'WebGLRenderingContext': parameter 4 is not of type 'WebGLTexture'..
+PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) threw exception TypeError: Failed to execute 'uniform2fv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.uniform2iv(argument, new Int32Array([0, 0])) threw exception TypeError: Failed to execute 'uniform2iv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) threw exception TypeError: Failed to execute 'uniformMatrix2fv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.getProgramInfoLog(argument) threw exception TypeError: Failed to execute 'getProgramInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getShaderInfoLog(argument) threw exception TypeError: Failed to execute 'getShaderInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getShaderSource(argument) threw exception TypeError: Failed to execute 'getShaderSource' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLUniformLocation'..
+PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') threw exception TypeError: Failed to execute 'getUniformLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.compileShader(argument) threw exception TypeError: Failed to execute 'compileShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.linkProgram(argument) threw exception TypeError: Failed to execute 'linkProgram' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.attachShader(program, argument) threw exception TypeError: Failed to execute 'attachShader' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLShader'..
+PASS context.attachShader(argument, shader) threw exception TypeError: Failed to execute 'attachShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.detachShader(program, argument) threw exception TypeError: Failed to execute 'detachShader' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLShader'..
+PASS context.detachShader(argument, shader) threw exception TypeError: Failed to execute 'detachShader' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.useProgram(argument) threw exception TypeError: Failed to execute 'useProgram' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.shaderSource(argument, 'foo') threw exception TypeError: Failed to execute 'shaderSource' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.bindAttribLocation(argument, 0, 'foo') threw exception TypeError: Failed to execute 'bindAttribLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.bindBuffer(context.ARRAY_BUFFER, argument) threw exception TypeError: Failed to execute 'bindBuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLBuffer'..
+PASS context.bindFramebuffer(context.FRAMEBUFFER, argument) threw exception TypeError: Failed to execute 'bindFramebuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLFramebuffer'..
+PASS context.bindRenderbuffer(context.RENDERBUFFER, argument) threw exception TypeError: Failed to execute 'bindRenderbuffer' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLRenderbuffer'..
+PASS context.bindTexture(context.TEXTURE_2D, argument) threw exception TypeError: Failed to execute 'bindTexture' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLTexture'..
+PASS context.framebufferRenderbuffer(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.RENDERBUFFER, argument) threw exception TypeError: Failed to execute 'framebufferRenderbuffer' on 'WebGLRenderingContext': parameter 4 is not of type 'WebGLRenderbuffer'..
+PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, argument, 0) threw exception TypeError: Failed to execute 'framebufferTexture2D' on 'WebGLRenderingContext': parameter 4 is not of type 'WebGLTexture'..
+PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) threw exception TypeError: Failed to execute 'uniform2fv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.uniform2iv(argument, new Int32Array([0, 0])) threw exception TypeError: Failed to execute 'uniform2iv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) threw exception TypeError: Failed to execute 'uniformMatrix2fv' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLUniformLocation'..
+PASS context.getProgramInfoLog(argument) threw exception TypeError: Failed to execute 'getProgramInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getProgramParameter(argument, 0) threw exception TypeError: Failed to execute 'getProgramParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getShaderInfoLog(argument) threw exception TypeError: Failed to execute 'getShaderInfoLog' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getShaderParameter(argument, 0) threw exception TypeError: Failed to execute 'getShaderParameter' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getShaderSource(argument) threw exception TypeError: Failed to execute 'getShaderSource' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLShader'..
+PASS context.getUniform(argument, loc) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.getUniform(program, argument) threw exception TypeError: Failed to execute 'getUniform' on 'WebGLRenderingContext': parameter 2 is not of type 'WebGLUniformLocation'..
+PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') threw exception TypeError: Failed to execute 'getUniformLocation' on 'WebGLRenderingContext': parameter 1 is not of type 'WebGLProgram'..
+PASS context.compileShader(argument) is undefined.
+PASS context.linkProgram(argument) is undefined.
+PASS context.attachShader(program, argument) is undefined.
+PASS context.attachShader(argument, shader) is undefined.
+PASS context.detachShader(program, argument) is undefined.
+PASS context.detachShader(argument, shader) is undefined.
+PASS context.useProgram(argument) is undefined.
+PASS context.shaderSource(argument, 'foo') is undefined.
+PASS context.bindAttribLocation(argument, 0, 'foo') is undefined.
+PASS context.bindBuffer(context.ARRAY_BUFFER, argument) is undefined.
+PASS context.bindFramebuffer(context.FRAMEBUFFER, argument) is undefined.
+PASS context.bindRenderbuffer(context.RENDERBUFFER, argument) is undefined.
+PASS context.bindTexture(context.TEXTURE_2D, argument) is undefined.
+PASS context.framebufferRenderbuffer(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.RENDERBUFFER, argument) is undefined.
+PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, argument, 0) is undefined.
+PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) is undefined.
+PASS context.uniform2iv(argument, new Int32Array([0, 0])) is undefined.
+PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) is undefined.
+PASS context.getProgramInfoLog(argument) is null
+PASS context.getProgramParameter(argument, 0) is null
+PASS context.getShaderInfoLog(argument) is null
+PASS context.getShaderParameter(argument, 0) is null
+PASS context.getShaderSource(argument) is null
+PASS context.getUniform(argument, loc) is null
+PASS context.getUniform(program, argument) is null
+PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') is null
+PASS context.compileShader(argument) is undefined.
+PASS context.linkProgram(argument) is undefined.
+PASS context.attachShader(program, argument) is undefined.
+PASS context.attachShader(argument, shader) is undefined.
+PASS context.detachShader(program, argument) is undefined.
+PASS context.detachShader(argument, shader) is undefined.
+PASS context.useProgram(argument) is undefined.
+PASS context.shaderSource(argument, 'foo') is undefined.
+PASS context.bindAttribLocation(argument, 0, 'foo') is undefined.
+PASS context.bindBuffer(context.ARRAY_BUFFER, argument) is undefined.
+PASS context.bindFramebuffer(context.FRAMEBUFFER, argument) is undefined.
+PASS context.bindRenderbuffer(context.RENDERBUFFER, argument) is undefined.
+PASS context.bindTexture(context.TEXTURE_2D, argument) is undefined.
+PASS context.framebufferRenderbuffer(context.FRAMEBUFFER, context.DEPTH_ATTACHMENT, context.RENDERBUFFER, argument) is undefined.
+PASS context.framebufferTexture2D(context.FRAMEBUFFER, context.COLOR_ATTACHMENT0, context.TEXTURE_2D, argument, 0) is undefined.
+PASS context.uniform2fv(argument, new Float32Array([0.0, 0.0])) is undefined.
+PASS context.uniform2iv(argument, new Int32Array([0, 0])) is undefined.
+PASS context.uniformMatrix2fv(argument, false, new Float32Array([0.0, 0.0, 0.0, 0.0])) is undefined.
+PASS context.getProgramInfoLog(argument) is null
+PASS context.getProgramParameter(argument, 0) is null
+PASS context.getShaderInfoLog(argument) is null
+PASS context.getShaderParameter(argument, 0) is null
+PASS context.getShaderSource(argument) is null
+PASS context.getUniform(argument, loc) is null
+PASS context.getUniform(program, argument) is null
+PASS context.getUniformLocation(argument, 'u_modelViewProjMatrix') is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

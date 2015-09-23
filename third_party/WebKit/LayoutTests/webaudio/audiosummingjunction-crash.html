@@ -1,0 +1,10 @@
+<body>
+<script src="../resources/js-test.js">
+<script>
+description("This test passes if it doesn't crash.");
+var ac = new AudioContext();
+var node = ac.createChannelMerger(4);
+node.connect(ac.createMediaStreamDestination(), 0);
+gc();
+</script>
+</body>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+#parent {
+  overflow: scroll;
+  height: 400px;
+}
+#testarea {
+  height: 6000px;
+  background: red;
+}
+</style>
+<div id="parent"><div id="testarea"/></div>
+<br>
+<script src="../../resources/js-test.js"></script>
+<script>
+
+description("Ensure hit test cache works in correct scenarios of overlay scrollbars.");
+
+if (window.internals) {
+    window.internals.settings.setOverlayScrollbarsEnabled(true);
+
+    var parentDiv = document.getElementById("parent");
+    var rect = parentDiv.getBoundingClientRect();
+
+    // Only MacOSX > 10.6 has overlay scrollbars; so the result will be 1 on other platforms.
+    var expectedCount = window.internals.setScrollbarVisibilityInScrollableArea(parentDiv, true) ? 0 : 1;
+    window.internals.elementFromPoint(document, rect.left + rect.width - 2, rect.top + (rect.height/2), false, false);
+    window.internals.setScrollbarVisibilityInScrollableArea(parentDiv, false);
+    window.internals.elementFromPoint(document, rect.left + rect.width - 2, rect.top + (rect.height/2), false, false);
+    shouldBe("window.internals.hitTestCacheHits(document)", "expectedCount");
+}
+</script>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/util.js"></script>
+</head>
+<body>
+<div id="container">
+  <div id="destination" contentEditable></div>
+</div>
+<script>
+
+description("Spelling should work when the user inserts a newline between a multi word misspelling. " +
+            "To test manually, enable 'Ask Google for Suggestions' in Chrome, type 'It should be upper \ncase.'." +
+            "The test succeeds if there are no spelling markers under 'upper \ncase'.");
+
+function waitForMarkersToDisappear(firstNode, secondNode, numberOfTries)
+{
+    firstMarkerRange = internals.markerRangeForNode(firstNode, "spelling", 0);
+    secondMarkerRange = internals.markerRangeForNode(secondNode, "spelling", 0);
+
+    if ((firstMarkerRange || secondMarkerRange) && numberOfTries > 0) {
+
+        window.setTimeout(function() {
+            waitForMarkersToDisappear(firstNode, secondNode, numberOfTries - 1);
+        }, 0);
+
+        return;
+    }
+
+    shouldBeNull("firstMarkerRange");
+    shouldBeNull("secondMarkerRange");
+
+    finishJSTest();
+};
+
+initSpellTest("destination", "It should be upper case.", function(textNode) {
+
+    spellingMarkerRange = internals.markerRangeForNode(textNode, "spelling", 0);
+    shouldBeEqualToString("spellingMarkerRange.toString()", "upper case");
+
+    for(var i = 0; i < 5; ++i)
+        eventSender.keyDown("leftArrow");
+
+    document.execCommand("InsertText", false, "\n");
+
+    var destinationChildNodes =
+        document.getElementById("destination").childNodes;
+
+    var firstLine = destinationChildNodes[0];
+    var secondLine = destinationChildNodes[1].firstChild;
+
+    waitForMarkersToDisappear(firstLine, secondLine, 10);
+
+}, true);
+</script>
+</body>
+</html>

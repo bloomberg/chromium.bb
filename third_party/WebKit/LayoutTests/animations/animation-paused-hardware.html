@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+  <title>Test that paused composited animations do not animate</title>
+  <style>
+    #box {
+      background-color: coral;
+      height: 100px;
+      width: 100px;
+      opacity: 1.0;
+      -webkit-animation-play-state: paused;
+      -webkit-animation-duration: 0.2s;
+      -webkit-animation-timing-function: linear;
+      -webkit-animation-name: fade;
+      -webkit-animation-fill-mode: forwards;
+    }
+
+    @-webkit-keyframes fade {
+      to { opacity: 0.3; }
+    }
+  </style>
+  <script src="resources/animation-test-helpers.js" type="text/javascript"></script>
+  <script type="text/javascript">
+    const expectedValues = [
+      // [time, element-id, property, expected-value, tolerance]
+      [0.2, "box",  "opacity", 1, 0.002],
+    ];
+
+    const doPixelTest = true;
+    const disablePauseAnimationAPI = true;
+    runAnimationTest(expectedValues, null, null, disablePauseAnimationAPI, doPixelTest);
+  </script>
+</head>
+<body>
+  <div id="box"></div>
+  <div id="result"></div>
+</body>
+</html>

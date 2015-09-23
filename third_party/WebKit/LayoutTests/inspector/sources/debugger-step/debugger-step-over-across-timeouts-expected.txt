@@ -1,0 +1,12 @@
+Tests that debugger StepOver will stop inside next timeout handler.
+
+Set timer for test function.
+Call stack:
+    0) callback1 (debugger-step-over-across-timeouts.html:15)
+
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) callback2 (debugger-step-over-across-timeouts.html:18)
+
+

@@ -1,0 +1,72 @@
+<script src="../../../resources/js-test.js"></script>
+<menu type=popup>
+  <menuitem id=mi1 type=checkbox>
+  <menuitem id=mi2 type=radio radiogroup="g1" checked>
+  <menuitem id=mi3 type=radio radiogroup="g1">
+  <menuitem id=mi4 type=radio radiogroup="g1">
+  <menu label="Submenu">
+    <menuitem id=_mi1 type=radio radiogroup="g1">
+    <menuitem id=_mi2 type=radio radiogroup="g1">
+    <menuitem id=_mi3 type=radio radiogroup="g1">
+  </menu>
+  <menuitem id=mi5 type=radio radiogroup="g2" checked>
+  <menuitem id=mi6 type=radio radiogroup="G2">
+  <menuitem id=mi7 type=radio radiogroup=" g3 " checked>
+  <menuitem id=mi8 type=radio radiogroup=" g3">
+  <menuitem id=mi9 type=radio radiogroup="" checked>
+  <menuitem id=mi10 type=radio>
+  <menuitem id=mi11 type=radio radiogroup="g4">
+  <menuitem id=mi12 type=checkbox radiogroup="g4" checked>
+</menu>
+<script>
+
+description('Test that the "checked" attribute of menuitem is toggled with click.');
+
+var element = document.getElementById('mi1');
+element.click();
+shouldBeTrue('element.hasAttribute("checked")');
+element.click();
+shouldBeFalse('element.hasAttribute("checked")');
+var mi2 = document.getElementById('mi2');
+var mi3 = document.getElementById('mi3');
+var mi4 = document.getElementById('mi4');
+shouldBeTrue('mi2.hasAttribute("checked")');
+mi3.click();
+shouldBeFalse('mi2.hasAttribute("checked")');
+shouldBeTrue('mi3.hasAttribute("checked")');
+mi4.click();
+shouldBeFalse('mi3.hasAttribute("checked")');
+shouldBeTrue('mi4.hasAttribute("checked")');
+// Test clicking menuitem of type=radio which is already checked.
+mi4.click();
+shouldBeTrue('mi4.hasAttribute("checked")');
+// Test radiogroup in a submenu.
+var _mi1 = document.getElementById('_mi1');
+_mi1.click();
+shouldBeTrue('mi4.hasAttribute("checked")');
+shouldBeTrue('_mi1.hasAttribute("checked")');
+// Test radiogroup case matching.
+var mi5 = document.getElementById('mi5');
+var mi6 = document.getElementById('mi6');
+mi6.click();
+shouldBeTrue('mi5.hasAttribute("checked")');
+shouldBeTrue('mi6.hasAttribute("checked")');
+// Test radiogroup white space matching.
+var mi7 = document.getElementById('mi7');
+var mi8 = document.getElementById('mi8');
+mi8.click();
+shouldBeTrue('mi7.hasAttribute("checked")');
+shouldBeTrue('mi8.hasAttribute("checked")');
+// Test empty radiogroup.
+var mi9 = document.getElementById('mi9');
+var mi10 = document.getElementById('mi10');
+mi10.click();
+shouldBeFalse('mi9.hasAttribute("checked")');
+shouldBeTrue('mi10.hasAttribute("checked")');
+// Test that radiogroup attribute is ignored if type is not radio.
+var mi11 = document.getElementById('mi11');
+var mi12 = document.getElementById('mi12');
+mi11.click();
+shouldBeTrue('mi11.hasAttribute("checked")');
+shouldBeFalse('mi12.hasAttribute("checked")');
+</script>

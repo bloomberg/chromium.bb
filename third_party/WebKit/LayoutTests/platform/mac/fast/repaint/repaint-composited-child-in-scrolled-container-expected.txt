@@ -1,0 +1,43 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [230, 293, 63, 15],
+        [168, 293, 125, 15],
+        [8, 293, 222, 15]
+      ],
+      "paintInvalidationClients": [
+        "HorizontalScrollbar",
+        "HorizontalScrollbar",
+        "HorizontalScrollbar"
+      ],
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [285, 285],
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [-315, 0],
+              "bounds": [600, 600],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#FF0000",
+              "repaintRects": [
+                [0, 0, 600, 600]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow DIV id='inner'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

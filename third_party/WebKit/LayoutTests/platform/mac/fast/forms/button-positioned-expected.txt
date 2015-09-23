@@ -1,0 +1,15 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+layer at (8,8) size 150x18
+  LayoutButton (positioned) {BUTTON} at (8,8) size 149.97x18 [bgcolor=#C0C0C0] [border: none (2px outset #C0C0C0) none (2px outset #C0C0C0)]
+    LayoutBlockFlow (anonymous) at (8,2) size 133.97x13
+      LayoutText {#text} at (0,0) size 134x13
+        text run at (0,0) width 134: "This button is positioned."
+layer at (8,8) size 172x18
+  LayoutButton (positioned) {INPUT} at (8,8) size 171.66x18 [bgcolor=#C0C0C0]
+    LayoutBlockFlow (anonymous) at (8,2) size 155.66x13
+      LayoutText {#text} at (0,0) size 156x13
+        text run at (0,0) width 156: "This button is also positioned"

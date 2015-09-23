@@ -1,0 +1,27 @@
+CONSOLE ERROR: line 16: Uncaught (in promise) Error: EXPECTED
+CONSOLE MESSAGE: Handler added to rejected promise
+Tests promise pane view.
+
+Set timer for test function.
+Is drawer visible: true
+Selected view in drawer: promises
+Rejected  | func1   | promise-pane.html:16 | promise-pane.html:16 | <number> ms |
+Fulfilled |   func3 | promise-pane.html:36 |                      | <number> ms |
+Fulfilled | func2   | promise-pane.html:24 | promise-pane.html:38 | <number> ms |
+
+Setting search value: func3
+Fulfilled | func3 | promise-pane.html:36 |  | <number> ms |
+
+Setting search value: func
+Rejected  | func1   | promise-pane.html:16 | promise-pane.html:16 | <number> ms |
+Fulfilled |   func3 | promise-pane.html:36 |                      | <number> ms |
+Fulfilled | func2   | promise-pane.html:24 | promise-pane.html:38 | <number> ms |
+
+Setting search value: promise-pane.html
+Rejected  | func1   | promise-pane.html:16 | promise-pane.html:16 | <number> ms |
+Fulfilled |   func3 | promise-pane.html:36 |                      | <number> ms |
+Fulfilled | func2   | promise-pane.html:24 | promise-pane.html:38 | <number> ms |
+
+Setting search value: promise-pane.html:38
+Fulfilled | func2 | promise-pane.html:24 | promise-pane.html:38 | <number> ms |
+

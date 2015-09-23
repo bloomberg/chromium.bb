@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+var ws;
+function sendMessages() {
+    ws = new WebSocket("ws://localhost:8000/does_not_exist");
+    ws.onclose = function()
+    {
+        debug("Closed.");
+    };
+}
+
+function test() {
+    function onRequest(event)
+    {
+        var request = event.data;
+        if (request.resourceType().name() === "websocket") {
+            var websocketFrames = request.frames();
+            for (var i = 0; i < websocketFrames.length; i++) {
+                var frame = websocketFrames[i];
+                var result = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
+                InspectorTest.addResult(result);
+                if (frame.type == WebInspector.NetworkRequest.WebSocketFrameType.Error)
+                    InspectorTest.completeTest();
+            }
+        }
+    }
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
+    InspectorTest.evaluateInPage("sendMessages()");
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that WebSocketFrames errors are visible to Web Inspector.</p>
+</body>
+</html>

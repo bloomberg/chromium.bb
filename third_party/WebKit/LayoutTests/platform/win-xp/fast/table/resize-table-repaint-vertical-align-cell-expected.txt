@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [3, 280, 59, 19],
+        [3, 90, 59, 19],
+        [2, 52, 102, 476],
+        [2, 52, 102, 96],
+        [0, 150, 106, 380],
+        [0, 148, 106, 380]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'MIDDLE'",
+        "LayoutTable (positioned) TABLE id='table'",
+        "LayoutTableRow TR",
+        "LayoutTableCell TD",
+        "LayoutText #text",
+        "InlineTextBox 'MIDDLE'"
+      ]
+    }
+  ]
+}
+

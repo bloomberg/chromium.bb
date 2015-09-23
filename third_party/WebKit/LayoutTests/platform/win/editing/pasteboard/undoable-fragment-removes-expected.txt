@@ -1,0 +1,28 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 763x35
+          text run at (0,0) width 583: "This is a testcase for 8193, hitting an assert inside RemoveNodeCommand on Undo Paste. "
+          text run at (582,0) width 181: "Both editable regions below"
+          text run at (0,18) width 223: "should look the same after the test."
+      LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {DIV} at (0,62) size 784x38 [border: (1px solid #000000)]
+        LayoutBlockFlow {DIV} at (1,1) size 782x18
+          LayoutText {#text} at (0,0) size 22x17
+            text run at (0,0) width 22: "foo"
+        LayoutBlockFlow {DIV} at (1,19) size 782x18
+          LayoutText {#text} at (0,0) size 21x17
+            text run at (0,0) width 21: "bar"
+      LayoutBlockFlow {DIV} at (0,100) size 784x20 [border: (1px solid #000000)]
+        LayoutBR {BR} at (1,1) size 0x17
+caret: position 0 of child 0 {BR} of child 6 {DIV} of body

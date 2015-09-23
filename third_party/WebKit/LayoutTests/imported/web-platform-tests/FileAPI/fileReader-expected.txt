@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS FileReader interface object 
+PASS no-argument FileReader constructor 
+FAIL FileReader States -- abort assert_unreached: abort event should fire sync Reached unreachable code
+PASS FileReader States -- events 
+Harness: the test ran to completion.
+

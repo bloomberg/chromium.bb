@@ -1,0 +1,6 @@
+PASS childStyleLink.sheet.title is "Script Blocker"
+PASS importLink.import is non-null.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

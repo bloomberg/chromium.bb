@@ -1,0 +1,47 @@
+<html>
+<head>
+    <script src="../resources/cross-frame-access.js"></script>
+    <script>
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+            testRunner.setCanOpenWindows();
+        }
+
+        var openedWindow;
+
+        function loaded() {
+            var url = "data:text/html,<html>"
+                + "<head>"
+                +     "<scr" + "ipt>"
+                +         "function fireSentinel() {"
+                +             "window.opener.postMessage('done', '*');"
+                +         "}"
+                +     "</scr" + "ipt>"
+                + "</head>"
+                + "<body onload=\"fireSentinel();\">"
+                +     "<p>Opened Frame</p>"
+                +     "<p id='accessMe'>PASS: Cross frame access from an opener frame was denied</p>"
+                + "</body>"
+                + "</html>";
+    
+            window.addEventListener('message', performTest);
+            openedWindow = window.open(url);
+        }
+    
+        function performTest() {
+            try {
+                openedWindow.document.getElementById('accessMe').innerHTML = 'FAIL: Access to a window opened with a data: URL was allowed.';
+            } catch (e) {
+            }
+
+            if (window.testRunner)
+                closeWindowAndNotifyDone(openedWindow);
+        }    
+    </script>
+</head>
+<body onload="loaded();">
+    <p>Opener Frame</p>
+    <pre id="console"></pre>
+</body>
+</html>

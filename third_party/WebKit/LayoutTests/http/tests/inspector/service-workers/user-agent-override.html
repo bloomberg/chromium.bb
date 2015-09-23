@@ -1,0 +1,89 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script>
+function test()
+{
+    function waitForTarget()
+    {
+        return new Promise(function(resolve) {
+            var sniffer = {
+                targetAdded: function(target)
+                {
+                    if (target.isServiceWorker()) {
+                        resolve();
+                        WebInspector.targetManager.unobserveTargets(sniffer);
+                    }
+                },
+
+                targetRemoved: function(e)
+                {
+                }
+            };
+            WebInspector.targetManager.observeTargets(sniffer);
+        });
+    }
+
+    function waitForConsoleMessage(regex)
+    {
+        return new Promise(function(resolve) {
+            WebInspector.multitargetConsoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+
+            function sniff(e)
+            {
+                if (e.data && regex.test(e.data.messageText)) {
+                    resolve(e.data);
+                    WebInspector.multitargetConsoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, sniff);
+                }
+            }
+        });
+    }
+
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override-worker.js";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override/";
+    var userAgentString = "Mozilla/5.0 (Overridden User Agent)";
+    var originalUserAgent = navigator.userAgent;
+
+    InspectorTest.addResult("Enable emulation and set User-Agent override");
+    WebInspector.overridesSupport.setEmulationEnabled(true);
+    WebInspector.overridesSupport.settings.userAgent.set(userAgentString);
+
+    InspectorTest.registerServiceWorker(scriptURL, scope)
+        .then(waitForTarget)
+        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
+        .then(function(msg) {
+            InspectorTest.addResult("Overriden user agent: " + msg.messageText);
+            InspectorTest.addResult("Disable emulation");
+            WebInspector.overridesSupport.setEmulationEnabled(false);
+            return InspectorTest.unregisterServiceWorker(scope);
+        })
+        .then(function() {
+            return InspectorTest.registerServiceWorker(scriptURL + '?2', scope);
+        })
+        .then(waitForTarget)
+        .then(InspectorTest.postToServiceWorker.bind(InspectorTest, scope, "message"))
+        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
+        .then(function(msg) {
+            InspectorTest.addResult("User agent without override is correct: " + (msg.messageText != userAgentString));
+            return InspectorTest.unregisterServiceWorker(scope);
+        })
+        .then(function() {
+            InspectorTest.addResult("Test complete");
+            InspectorTest.completeTest();
+        })
+        .catch(function(err) {
+            console.log(err);
+            InspectorTest.completeTest();
+        });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that User-Agent override works for requests from Service Workers.</p>
+</body>
+</html>

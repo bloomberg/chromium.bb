@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: NotificationEvent exposure in a Service Worker.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the NotificationEvent object is exposed in a ServiceWorker
+      // and exposes the "notification" and "waitUntil" members, as well as the
+      // "notificationclick" and "notificationerror" events.
+      service_worker_test(
+          'resources/serviceworker-notification-event.js',
+          'Exposure of the NotificationEvent object in a ServiceWorker.');
+    </script>
+  </body>
+</html>

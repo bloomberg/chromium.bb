@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<title>IndexedDB: Verify deleteDatabase success event</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+(function() {
+    var t = async_test('deleteDatabase success event type, existing DB');
+    t.step(function() {
+        var dbName = 'db' + location.pathname;
+        var openRequest = indexedDB.open(dbName, 9);
+        openRequest.onsuccess = t.step_func(function(e) {
+            var db = openRequest.result;
+            db.close();
+
+            var deleteRequest = indexedDB.deleteDatabase(dbName);
+            deleteRequest.onsuccess = t.step_func(function(e) {
+                assert_equals(deleteRequest.result, undefined,
+                              '...the implementation must set the result of the request to undefined...');
+                assert_true(e instanceof IDBVersionChangeEvent,
+                            'The event must implement the IDBVersionChangeEvent interface ...');
+                assert_equals(e.oldVersion, 9,
+                              'and have oldVersion set to database version...');
+                assert_equals(e.newVersion, null,
+                              'and have the newVersion property set to null.');
+                t.done();
+            });
+        });
+    });
+}());
+
+(function() {
+    var t = async_test('deleteDatabase success event, non-existent DB');
+    t.step(function() {
+
+        var dbName = 'db' + location.pathname + '-does-not-exist';
+        var deleteRequest = indexedDB.deleteDatabase(dbName);
+        deleteRequest.onsuccess = t.step_func(function(e) {
+            assert_equals(deleteRequest.result, undefined,
+                          '...the implementation must set the result of the request to undefined...');
+            assert_true(e instanceof IDBVersionChangeEvent,
+                        'The event must implement the IDBVersionChangeEvent interface ...');
+            assert_equals(e.oldVersion, 0,
+                          'and have oldVersion set to database version...');
+            assert_equals(e.newVersion, null,
+                          'and have the newVersion property set to null.');
+            t.done();
+        });
+    });
+}());
+</script>

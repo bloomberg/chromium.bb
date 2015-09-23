@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0.2
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 0.6
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1
+
+Web Animations API:
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at -0.4
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0
+PASS: edgeMode from [duplicate] to [wrap] was [duplicate] at 0.2
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 0.6
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1
+PASS: edgeMode from [duplicate] to [wrap] was [wrap] at 1.4
+

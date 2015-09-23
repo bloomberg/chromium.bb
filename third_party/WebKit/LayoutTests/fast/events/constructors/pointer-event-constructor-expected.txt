@@ -1,0 +1,158 @@
+This tests the constructor for the PointerEvent DOM class.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+--- tests for intrinsic attributes ---
+-- no init --
+FAIL new PointerEvent('eventType').pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid long values --
+FAIL new PointerEvent('eventType', { pointerId: 123 }).pointerId should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: -123 }).pointerId should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: 2147483647 }).pointerId should be 2147483647. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: -2147483648 }).pointerId should be -2147483648. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-long values --
+FAIL new PointerEvent('eventType', { pointerId: 18446744073709551615 }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', {pointerId: 123.45 }).pointerId should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: '123abc' }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: 'dummy' }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: NaN }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: null }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: undefined }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: [] }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: [12] }).pointerId should be 12. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: [12, 34] }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: {} }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: {abc:1} }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: {} }).pointerId should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pointerId: {valueOf: function () { return 123; }} }).pointerId should be 123. Threw exception ReferenceError: PointerEvent is not defined
+-- no init --
+FAIL new PointerEvent('eventType').tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid long values --
+FAIL new PointerEvent('eventType', { tiltX: 123 }).tiltX should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: -123 }).tiltX should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: 2147483647 }).tiltX should be 2147483647. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: -2147483648 }).tiltX should be -2147483648. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-long values --
+FAIL new PointerEvent('eventType', { tiltX: 18446744073709551615 }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', {tiltX: 123.45 }).tiltX should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: '123abc' }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: 'dummy' }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: NaN }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: null }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: undefined }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: [] }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: [12] }).tiltX should be 12. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: [12, 34] }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: {} }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: {abc:1} }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: {} }).tiltX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltX: {valueOf: function () { return 123; }} }).tiltX should be 123. Threw exception ReferenceError: PointerEvent is not defined
+-- no init --
+FAIL new PointerEvent('eventType').tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid long values --
+FAIL new PointerEvent('eventType', { tiltY: 123 }).tiltY should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: -123 }).tiltY should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: 2147483647 }).tiltY should be 2147483647. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: -2147483648 }).tiltY should be -2147483648. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-long values --
+FAIL new PointerEvent('eventType', { tiltY: 18446744073709551615 }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', {tiltY: 123.45 }).tiltY should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: '123abc' }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: 'dummy' }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: NaN }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: null }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: undefined }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: [] }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: [12] }).tiltY should be 12. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: [12, 34] }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: {} }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: {abc:1} }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: {} }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { tiltY: {valueOf: function () { return 123; }} }).tiltY should be 123. Threw exception ReferenceError: PointerEvent is not defined
+-- no init --
+FAIL new PointerEvent('eventType').width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid float/double values --
+FAIL new PointerEvent('eventType', { width: 123 }).width should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: -123 }).width should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: 123.45 }).width should be within 0.00001 of 123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: -123.45 }).width should be within 0.00001 of -123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: 1.23e5 }).width should be within 0.00001 of 123000. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: -1.2e-3 }).width should be within 0.00001 of -0.0012. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { width: '123abc' }).width threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { width: 'dummy' }).width threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { width: NaN }).width threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { width: null }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: undefined }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: [] }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: [12] }).width should be 12. Threw exception ReferenceError: PointerEvent is not defined
+PASS new PointerEvent('eventType', { width: [12, 34] }).width threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { width: {} }).width threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { width: {abc:1} }).width threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { width: {} }).width threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { width: {valueOf: function () { return 123; }} }).width should be 123. Threw exception ReferenceError: PointerEvent is not defined
+-- no init --
+FAIL new PointerEvent('eventType').height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid float/double values --
+FAIL new PointerEvent('eventType', { height: 123 }).height should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: -123 }).height should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: 123.45 }).height should be within 0.00001 of 123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: -123.45 }).height should be within 0.00001 of -123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: 1.23e5 }).height should be within 0.00001 of 123000. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: -1.2e-3 }).height should be within 0.00001 of -0.0012. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { height: '123abc' }).height threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { height: 'dummy' }).height threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { height: NaN }).height threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { height: null }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: undefined }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: [] }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: [12] }).height should be 12. Threw exception ReferenceError: PointerEvent is not defined
+PASS new PointerEvent('eventType', { height: [12, 34] }).height threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { height: {} }).height threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { height: {abc:1} }).height threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { height: {} }).height threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { height: {valueOf: function () { return 123; }} }).height should be 123. Threw exception ReferenceError: PointerEvent is not defined
+-- no init --
+FAIL new PointerEvent('eventType').pressure should be 0. Threw exception ReferenceError: PointerEvent is not defined
+-- init with valid float/double values --
+FAIL new PointerEvent('eventType', { pressure: 123 }).pressure should be 123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: -123 }).pressure should be -123. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: 123.45 }).pressure should be within 0.00001 of 123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: -123.45 }).pressure should be within 0.00001 of -123.45. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: 1.23e5 }).pressure should be within 0.00001 of 123000. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: -1.2e-3 }).pressure should be within 0.00001 of -0.0012. Threw exception ReferenceError: PointerEvent is not defined
+-- init with non-float/double values --
+PASS new PointerEvent('eventType', { pressure: '123abc' }).pressure threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { pressure: 'dummy' }).pressure threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { pressure: NaN }).pressure threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { pressure: null }).pressure should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: undefined }).pressure should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: [] }).pressure should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { pressure: [12] }).pressure should be 12. Threw exception ReferenceError: PointerEvent is not defined
+PASS new PointerEvent('eventType', { pressure: [12, 34] }).pressure threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { pressure: {abc:1} }).pressure threw exception ReferenceError: PointerEvent is not defined.
+PASS new PointerEvent('eventType', { pressure: {} }).pressure threw exception ReferenceError: PointerEvent is not defined.
+FAIL new PointerEvent('eventType', { pressure: {valueOf: function () { return 123; }} }).pressure should be 123. Threw exception ReferenceError: PointerEvent is not defined
+--- tests for inherited attributes ---
+FAIL new PointerEvent('eventType').bubbles should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').cancelable should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').view should be null. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').detail should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').screenX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').screenY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').clientX should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').clientY should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').ctrlKey should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').shiftKey should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').altKey should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').metaKey should be false. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').button should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').buttons should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').relatedTarget should be null. Threw exception ReferenceError: PointerEvent is not defined
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

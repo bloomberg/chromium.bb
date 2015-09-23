@@ -1,0 +1,120 @@
+Test the parsing and application of the touch-action property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test case: default
+PASS style.touchAction is "auto"
+
+Test case: stylesheet-none
+PASS style.touchAction is "none"
+
+Test case: explicit-auto
+PASS style.touchAction is "auto"
+
+Test case: explicit-pan-x
+PASS style.touchAction is "pan-x"
+
+Test case: explicit-pan-left
+PASS style.touchAction is "pan-left"
+
+Test case: explicit-pan-right
+PASS style.touchAction is "pan-right"
+
+Test case: explicit-pan-y
+PASS style.touchAction is "pan-y"
+
+Test case: explicit-pan-up
+PASS style.touchAction is "pan-up"
+
+Test case: explicit-pan-down
+PASS style.touchAction is "pan-down"
+
+Test case: explicit-pan-x-pan-y
+PASS style.touchAction is "pan-x pan-y"
+
+Test case: explicit-pan-y-pan-x
+PASS style.touchAction is "pan-x pan-y"
+
+Test case: explicit-pan-left-pan-up
+PASS style.touchAction is "pan-left pan-up"
+
+Test case: explicit-pan-left-pan-down
+PASS style.touchAction is "pan-left pan-down"
+
+Test case: explicit-pan-right-pan-up
+PASS style.touchAction is "pan-right pan-up"
+
+Test case: explicit-pan-right-pan-down
+PASS style.touchAction is "pan-right pan-down"
+
+Test case: explicit-pan-up-pan-left
+PASS style.touchAction is "pan-left pan-up"
+
+Test case: explicit-pan-up-pan-right
+PASS style.touchAction is "pan-right pan-up"
+
+Test case: explicit-pan-down-pan-left
+PASS style.touchAction is "pan-left pan-down"
+
+Test case: explicit-pan-down-pan-right
+PASS style.touchAction is "pan-right pan-down"
+
+Test case: explicit-manipulation
+PASS style.touchAction is "manipulation"
+
+Test case: explicit-none
+PASS style.touchAction is "none"
+
+Test case: explicit-invalid-1
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-2
+PASS style.touchAction is "none"
+
+Test case: explicit-invalid-3
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-4
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-5
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-6
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-7
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-8
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-9
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-10
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-11
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-12
+PASS style.touchAction is "auto"
+
+Test case: explicit-invalid-13
+PASS style.touchAction is "auto"
+
+Test case: not-inherited
+PASS style.touchAction is "auto"
+
+Test case: inherit
+PASS style.touchAction is "none"
+
+Test case: initial
+PASS style.touchAction is "auto"
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<body>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+window.jsTestIsAsync = true;
+
+if (window.testRunner)
+    testRunner.dumpResourceRequestPriorities();
+
+// Load test target html inside an iframe to ensure that
+// resource request dumps always include preloader requests.
+var iframe = document.createElement("iframe");
+iframe.src = "resources/promote-img-in-viewport-priority-iframe.html";
+document.body.appendChild(iframe);
+window.onload = function() {
+    setTimeout(function() {
+        document.body.removeChild(iframe);
+        finishJSTest();
+    }, 0);
+};
+</script>

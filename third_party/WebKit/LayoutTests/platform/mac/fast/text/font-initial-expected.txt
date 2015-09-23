@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 55x18
+          text run at (0,0) width 55: "Test for "
+        LayoutInline {I} at (0,0) size 631x18
+          LayoutInline {A} at (0,0) size 306x18 [color=#0000EE]
+            LayoutText {#text} at (54,0) size 306x18
+              text run at (54,0) width 306: "http://bugs.webkit.org/show_bug.cgi?id=12039"
+          LayoutText {#text} at (359,0) size 326x18
+            text run at (359,0) width 5: " "
+            text run at (363,0) width 322: "Assertion failure in WebCore::Font::primaryFont"
+        LayoutText {#text} at (684,0) size 5x18
+          text run at (684,0) width 5: "."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x18
+        LayoutInline {SPAN} at (0,0) size 39x18
+          LayoutText {#text} at (0,0) size 39x18
+            text run at (0,0) width 39: "PASS"
+        LayoutText {#text} at (0,0) size 0x0

@@ -1,0 +1,32 @@
+Tests JSON parsing.
+
+
+Input: plain text
+Invalid JSON
+
+Input: {"x": 5, "y": false, "z":"foo"}
+Prefix: 
+Suffix: 
+Data: {"x":5,"y":false,"z":"foo"}
+
+Input: {"bar": [,,,1, 2, 3,,,], "baz": {"data": []}}
+Prefix: 
+Suffix: 
+Data: {"bar":[null,null,null,1,2,3,null,null],"baz":{"data":[]}}
+
+Input: [[],[],[]]
+Prefix: 
+Suffix: 
+Data: [[],[],[]]
+
+Input: /* GUARD */callback({"a": []]});
+Prefix: /* GUARD */callback(
+Suffix: );
+Data: {"a":[]}
+
+Input: foo({a = 5});
+Invalid JSON
+
+Input: (function(){return {"a": []}})()
+Invalid JSON
+

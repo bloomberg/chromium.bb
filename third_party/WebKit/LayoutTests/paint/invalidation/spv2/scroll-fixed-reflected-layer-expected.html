@@ -1,0 +1,16 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css"></style>
+    <script type="text/javascript">
+        window.onload = function() {
+            window.scrollTo(100, 180);
+        };
+    </script>
+</head>
+<body style="height:2000px;">
+    <!-- You should see 1 green rectangle rotated in the output and no red. -->
+    <div style="height: 50px; top: 100px; left: 250px;" class="reflected fixed">
+        <div class="absolute green reflected" style="height: 50px;"></div>
+    </div>
+</body>
+</html>

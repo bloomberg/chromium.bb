@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<input type="file">
+<script>
+description('Clicking on a file control should open a file chooser dialog even if it has author ShadowRoots. This test requires testRunner, and should open the file chooser dialog just once.');
+var file = document.querySelector('input');
+var root = file.createShadowRoot();
+root.innerHTML = '<span>Click to choose a file</span>';
+eventSender.mouseMoveTo(file.offsetLeft + 8, file.offsetTop + 8);
+eventSender.mouseDown();
+eventSender.mouseUp();
+
+file.addEventListener('DOMActivate', function(event) { event.preventDefault(); }, false);
+eventSender.mouseDown();
+eventSender.mouseUp();
+</script>
+</body>

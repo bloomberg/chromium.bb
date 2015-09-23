@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+    <script>
+        description("This test should trigger exceptions on HTMLTableElement, and verify that the messages are reasonably helpful.");
+
+        var t = document.createElement('table');
+
+        shouldThrow("t.insertRow(-2)");
+        shouldThrow("t.insertRow(1)");
+
+        t.insertRow();
+
+        shouldThrow("t.deleteRow(-2)");
+        shouldThrow("t.deleteRow(2)");
+        shouldThrow("t.deleteRow()");
+    </script>
+</body>
+</html>

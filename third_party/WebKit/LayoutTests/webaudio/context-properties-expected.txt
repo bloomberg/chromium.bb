@@ -1,0 +1,13 @@
+Tests audio context for offline attributes and methods.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS onlineContext.oncomplete is undefined.
+PASS onlineContext.startRendering is undefined.
+PASS offlineContext.oncomplete is defined.
+PASS offlineContext.startRendering is defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,34 @@
+<!-- Based on fast/images/do-not-paint-below-image-baseline.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+      window.expectedPaintInvalidationObjects = [
+          "LayoutImage IMG",
+      ];
+      function paintInvalidationTest()
+      {
+        var things = document.getElementsByClassName("before");
+        while (things.length)
+          things[0].classList.remove("before");
+      }
+    </script>
+    <style>
+      img {
+        margin: 50px;
+      }
+      body {
+          margin: 0px;
+      }
+      .before {
+        background-color: green;
+      }
+    </style>
+  </head>
+  <body onload="runPaintInvalidationTest()">
+    <img class="before" src="../../../fast/images/resources/59.jpg">
+    <p> When painting an inline image, do not paint below its baseline unless its selected.
+        The invalidation rect should not extend outside the content rect of the image. </p>
+  </body>
+</html>

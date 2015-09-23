@@ -1,0 +1,20 @@
+CONSOLE ERROR: Error: Invalid value for <svg> attribute width="auto"
+CONSOLE ERROR: Error: Invalid value for <foreignObject> attribute width="auto"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute width="initial"
+CONSOLE ERROR: Error: Invalid value for <foreignObject> attribute width="initial"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute width="inherit"
+CONSOLE ERROR: Error: Invalid value for <foreignObject> attribute width="inherit"
+CONSOLE ERROR: Error: Invalid value for <svg> attribute width="foo"
+CONSOLE ERROR: Error: Invalid value for <foreignObject> attribute width="foo"
+ 
+ This is a testharness.js-based test.
+PASS Test width 'auto' on SVGSVGElement 
+PASS Test width 'auto' on SVGForeignObject 
+PASS Test width 'initial' on SVGSVGElement 
+PASS Test width 'initial' on SVGForeignObject 
+PASS Test width 'inherit' on SVGSVGElement 
+PASS Test width 'inherit' on SVGForeignObject 
+PASS Test width 'foo' on SVGSVGElement 
+PASS Test width 'foo' on SVGForeignObject 
+Harness: the test ran to completion.
+

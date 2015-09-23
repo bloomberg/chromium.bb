@@ -1,0 +1,55 @@
+Tests WebInspector.Spectrum
+
+--- Testing colorString()
+Testing: red
+red
+Testing: #ABC
+#ABC
+Testing: #ABCDEF
+#ABCDEF
+Testing: rgb(1, 2, 3)
+rgb(1, 2, 3)
+Testing: rgba(1, 2, 3, 0.2)
+rgba(1, 2, 3, 0.2)
+Testing: hsl(1, 100%, 50%)
+hsl(1, 100%, 50%)
+Testing: hsla(1, 100%, 50%, 0.2)
+hsla(1, 100%, 50%, 0.2)
+--- Testing alpha changes
+Testing: red
+rgba(255, 0, 0, 0)
+Testing: #ABC
+rgba(170, 187, 204, 0)
+Testing: #ABCDEF
+rgba(171, 205, 239, 0)
+Testing: rgb(1, 2, 3)
+rgba(1, 2, 3, 0)
+Testing: rgba(1, 2, 3, 0.2)
+rgba(1, 2, 3, 0)
+Testing: hsl(1, 100%, 50%)
+hsla(1, 100%, 50%, 0)
+Testing: hsla(1, 100%, 50%, 0.2)
+hsla(1, 100%, 50%, 0)
+--- Testing _formatViewSwitch()
+Testing: red
+rgb
+hsl
+Testing: #ABC
+rgb
+hsl
+Testing: #ABCDEF
+rgb
+hsl
+Testing: rgb(1, 2, 3)
+hsl
+hex
+Testing: rgba(1, 2, 3, 0.2)
+hsl
+rgb
+Testing: hsl(1, 100%, 50%)
+hex
+rgb
+Testing: hsla(1, 100%, 50%, 0.2)
+rgb
+hsl
+

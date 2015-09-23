@@ -1,0 +1,32 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [200, 10],
+          "children": [
+            {
+              "bounds": [200, 10],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#F5F5F5"
+            }
+          ]
+        },
+        {
+          "position": [8, 0],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#90EE90"
+        }
+      ]
+    }
+  ]
+}
+

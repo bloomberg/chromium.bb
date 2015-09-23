@@ -1,0 +1,165 @@
+
+Canvas log:
+{
+    0 : {
+        method : "drawRect"
+        params : {
+            paint : {
+                color : "#FF0000FF"
+                filterLevel : "Low"
+                flags : "AntiAlias"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            rect : {
+                bottom : 100
+                left : 0
+                right : 100
+                top : 0
+            }
+        }
+    }
+    1 : {
+        method : "drawRect"
+        params : {
+            paint : {
+                color : "#FFFF0000"
+                filterLevel : "Low"
+                flags : "AntiAlias"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            rect : {
+                bottom : 50
+                left : 0
+                right : 50
+                top : 0
+            }
+        }
+    }
+    2 : {
+        method : "drawImageRect"
+        params : {
+            dst : {
+                bottom : 71
+                left : 0
+                right : 19
+                top : 50
+            }
+            image : {
+                height : 21
+                opaque : false
+                width : 19
+            }
+            paint : {
+                color : "#FF000000"
+                filterLevel : "High"
+                flags : "AntiAlias"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            src : {
+                bottom : 21
+                left : 0
+                right : 19
+                top : 0
+            }
+        }
+    }
+    3 : {
+        method : "save"
+    }
+    4 : {
+        method : "clipRect"
+        params : {
+            SkRegion::Op : "kIntersect_Op"
+            rect : {
+                bottom : 221
+                left : 0
+                right : 300
+                top : 71
+            }
+            softClipEdgeStyle : false
+        }
+    }
+    5 : {
+        method : "save"
+    }
+    6 : {
+        method : "setMatrix"
+        params : {
+            matrix : [
+                1
+                0
+                0
+                0
+                1
+                71
+                0
+                0
+                1
+            ]
+        }
+    }
+    7 : {
+        method : "drawRect"
+        params : {
+            paint : {
+                color : "#7F000000"
+                filterLevel : "Low"
+                flags : "AntiAlias"
+                hinting : "Normal"
+                strokeCap : "Butt"
+                strokeJoin : "Miter"
+                strokeMiter : 4
+                strokeWidth : 0
+                styleName : "Fill"
+                textAlign : "Left"
+                textEncoding : "UTF-8"
+                textScaleX : 1
+                textSize : 12
+                textSkewX : 0
+            }
+            rect : {
+                bottom : 10
+                left : 0
+                right : 10
+                top : 0
+            }
+        }
+    }
+    8 : {
+        method : "restore"
+    }
+    9 : {
+        method : "restore"
+    }
+}
+

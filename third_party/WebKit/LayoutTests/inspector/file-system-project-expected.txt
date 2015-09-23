@@ -1,0 +1,48 @@
+Tests file system project.
+
+
+Running: testFileSystems
+Adding first file system.
+Adding second file system.
+Adding file mappings.
+Adding files to file systems.
+
+UISourceCode: file:///var/www/localhost/foo.js
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: <foo content>
+modificationTime=1000000, size=13
+
+UISourceCode: file:///var/www/bar.js
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: <bark content>
+modificationTime=1000000, size=14
+
+UISourceCode: file:///foo/bar/baz.js
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: <bazzz content>
+modificationTime=1000000, size=15
+
+Dumping uiSourceCode location link texts:
+ - foo.js:6
+ - bar.js:6
+ - baz.js:6
+UISourceCode uri to url mappings:
+    filesystem:/var/www/localhost/foo.js -> http://localhost/foo.js
+    filesystem:/foo/bar/baz.js -> http://www.example.com/baz.js
+UISourceCode url to uri mappings:
+    http://localhost/foo.js -> filesystem:/var/www/localhost/foo.js
+    http://www.example.com/baz.js -> filesystem:/foo/bar/baz.js
+After revision added:
+UISourceCode: file:///var/www/localhost/foo.js
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: <Modified UISourceCode content>
+New modificationTime=1001000, size=31
+Removing second file system.
+    number of uiSourceCodes in workspace after removing second file system: 1
+Removing first file system.
+    number of uiSourceCodes in workspace after removing first file system: 0
+

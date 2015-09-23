@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<style>
+div { background-color: white; }
+div:focus { background-color: green; }
+</style>
+<body>
+<div id="sandbox"></div>
+</body>
+<script>
+description('Test if :focus matching state of shadow host is properly handled in case of DOM mutation.');
+
+function buildTree(parent, delegatesFocus)
+{
+    parent.innerHTML = '';
+    parent.appendChild(
+        createDOM('div', {id: 'host'},
+            createShadowRoot({delegatesFocus: delegatesFocus},
+                createDOM('input', {id: 'input'})),
+        createDOM('div', {id: 'dest'})));
+
+    parent.offsetTop;
+}
+
+var sandbox = document.getElementById('sandbox');
+
+debug('(1/2) DOM mutation across shadow boundary with delegatesFocus=false');
+buildTree(sandbox, false);
+var host = getNodeInTreeOfTrees('host');
+var input = getNodeInTreeOfTrees('host/input');
+var dest = getNodeInTreeOfTrees('dest');
+
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+input.focus();
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+dest.appendChild(input);
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+input.focus();
+host.shadowRoot.appendChild(input);
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+
+debug('(2/2) DOM mutation across shadow boundary with delegatesFocus=true');
+buildTree(sandbox, true);
+var host = getNodeInTreeOfTrees('host');
+var input = getNodeInTreeOfTrees('host/input');
+var dest = getNodeInTreeOfTrees('dest');
+
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+input.focus();
+backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
+dest.appendChild(input);
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+input.focus();
+host.shadowRoot.appendChild(input);
+// appendChild() will blur the focus from input element, thus input is no longer focused.
+backgroundColorShouldBe('host', 'rgb(255, 255, 255)');
+</script>

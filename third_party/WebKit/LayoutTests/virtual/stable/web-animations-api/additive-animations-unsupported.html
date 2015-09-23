@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='e'></div>
+</body>
+
+<script>
+var element = document.getElementById('e');
+
+test(function() {
+    var replaceReplaceKeyframes = [
+        {width: '0px', composite: 'replace'},
+        {width: '100px', composite: 'replace'}
+    ];
+
+    assert_not_equals(element.animate(replaceReplaceKeyframes), undefined);
+}, 'Calling element.animate() with a replace -> replace animation should create an animation.');
+
+test(function() {
+    var addAddKeyframes = [
+        {width: '0px', composite: 'add'},
+        {width: '100px', composite: 'add'}
+    ];
+
+    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(addAddKeyframes); });
+}, 'Calling element.animate() with an add -> add animation should throw a NotSupportedError.');
+
+test(function() {
+    var replaceAddKeyframes = [
+        {width: '0px', composite: 'replace'},
+        {width: '100px', composite: 'add'}
+    ];
+
+    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(replaceAddKeyframes); });
+}, 'Calling element.animate() with a replace -> add animation should throw a NotSupportedError.');
+
+test(function() {
+    var addReplaceKeyframes = [
+        {width: '0px', composite: 'add'},
+        {width: '100px', composite: 'replace'}
+    ];
+
+    assert_throws('NOT_SUPPORTED_ERR', function() { element.animate(addReplaceKeyframes); });
+}, 'Calling element.animate() with an add -> replace animation should throw a NotSupportedError.');
+</script>

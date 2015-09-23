@@ -1,0 +1,28 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [122, 127, 66, 66],
+        [122, 127, 66, 66],
+        [122, 127, 66, 66],
+        [90, 95, 98, 98],
+        [90, 95, 98, 98],
+        [90, 95, 98, 98],
+        [2, 0, 8, 10],
+        [0, 2, 10, 8]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGResourceMarker marker id='markerStart'",
+        "LayoutSVGRect rect",
+        "LayoutSVGContainer g",
+        "LayoutSVGPath path id='go'"
+      ]
+    }
+  ]
+}
+

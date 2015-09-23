@@ -1,0 +1,8 @@
+CONSOLE WARNING: 'SVGSVGElement.forceRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__forceRedraw).
+CONSOLE WARNING: 'SVGSVGElement.suspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__suspendRedraw).
+CONSOLE WARNING: 'SVGSVGElement.unsuspendRedraw()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedraw).
+CONSOLE WARNING: 'SVGSVGElement.unsuspendRedrawAll()' is deprecated, please do not use it. It is a no-op, as per SVG2 (https://svgwg.org/svg2-draft/struct.html#__svg__SVGSVGElement__unsuspendRedrawAll).
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Test deprecation messages in SVGSVGElement. 

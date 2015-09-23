@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#alignItemsBaseline {
+    align-items: baseline;
+}
+
+#alignItemsLastBaseline {
+    align-items: last-baseline;
+}
+
+#alignItemsStretch {
+    align-items: stretch;
+}
+
+#alignItemsStart {
+    align-items: start;
+}
+
+#alignItemsEnd {
+    align-items: end;
+}
+
+#alignItemsCenter {
+    align-items: center;
+}
+
+#alignItemsSelfStart {
+    align-items: self-start;
+}
+
+#alignItemsSelfEnd {
+    align-items: self-end;
+}
+
+#alignItemsLeft {
+    align-items: left;
+}
+
+#alignItemsRight {
+    align-items: right;
+}
+
+#alignItemsFlexStart {
+    align-items: flex-start;
+}
+
+#alignItemsFlexEnd {
+    align-items: flex-end;
+}
+
+#alignItemsEndTrue {
+    align-items: end true;
+}
+
+#alignItemsCenterTrue {
+    align-items: center true;
+}
+
+#alignItemsSelfEndSafe {
+    align-items: self-end safe;
+}
+
+#alignItemsSelfStartSafe {
+    align-items: self-start safe;
+}
+
+#alignItemsRightSafe {
+    align-items: right safe;
+}
+
+#alignItemsLeftTrue {
+    align-items: left true;
+}
+
+#alignItemsFlexStartTrue {
+    align-items: flex-start true;
+}
+
+#alignItemsFlexEndSafe {
+    align-items: flex-end safe;
+}
+
+</style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<div id="alignItemsBaseline"></div>
+<div id="alignItemsLastBaseline"></div>
+<div id="alignItemsStretch"></div>
+<div id="alignItemsStart"></div>
+<div id="alignItemsEnd"></div>
+<div id="alignItemsCenter"></div>
+<div id="alignItemsSelfStart"></div>
+<div id="alignItemsSelfEnd"></div>
+<div id="alignItemsLeft"></div>
+<div id="alignItemsRight"></div>
+<div id="alignItemsFlexStart"></div>
+<div id="alignItemsFlexEnd"></div>
+
+<div id="alignItemsEndTrue"></div>
+<div id="alignItemsCenterTrue"></div>
+<div id="alignItemsSelfEndSafe"></div>
+<div id="alignItemsSelfStartSafe"></div>
+<div id="alignItemsRightSafe"></div>
+<div id="alignItemsLeftTrue"></div>
+<div id="alignItemsFlexStartTrue"></div>
+<div id="alignItemsFlexEndSafe"></div>
+<script src="resources/alignment-parsing-utils.js"></script>
+<script>
+description('Test that setting and getting align-items works as expected');
+
+debug("Test getting align-items set through CSS");
+var alignItemsBaseline = document.getElementById("alignItemsBaseline");
+shouldBe("getComputedStyle(alignItemsBaseline, '').getPropertyValue('align-items')", "'baseline'");
+
+var alignItemsLastBaseline = document.getElementById("alignItemsLastBaseline");
+shouldBe("getComputedStyle(alignItemsLastBaseline, '').getPropertyValue('align-items')", "'last-baseline'");
+
+var alignItemsStretch = document.getElementById("alignItemsStretch");
+shouldBe("getComputedStyle(alignItemsStretch, '').getPropertyValue('align-items')", "'stretch'");
+
+var alignItemsStart = document.getElementById("alignItemsStart");
+shouldBe("getComputedStyle(alignItemsStart, '').getPropertyValue('align-items')", "'start'");
+
+var alignItemsEnd = document.getElementById("alignItemsEnd");
+shouldBe("getComputedStyle(alignItemsEnd, '').getPropertyValue('align-items')", "'end'");
+
+var alignItemsCenter = document.getElementById("alignItemsCenter");
+shouldBe("getComputedStyle(alignItemsCenter, '').getPropertyValue('align-items')", "'center'");
+
+var alignItemsSelfEnd = document.getElementById("alignItemsSelfEnd");
+shouldBe("getComputedStyle(alignItemsSelfEnd, '').getPropertyValue('align-items')", "'self-end'");
+
+var alignItemsSelfStart = document.getElementById("alignItemsSelfStart");
+shouldBe("getComputedStyle(alignItemsSelfStart, '').getPropertyValue('align-items')", "'self-start'");
+
+var alignItemsLeft = document.getElementById("alignItemsLeft");
+shouldBe("getComputedStyle(alignItemsLeft, '').getPropertyValue('align-items')", "'left'");
+
+var alignItemsRight = document.getElementById("alignItemsRight");
+shouldBe("getComputedStyle(alignItemsRight, '').getPropertyValue('align-items')", "'right'");
+
+var alignItemsFlexStart = document.getElementById("alignItemsFlexStart");
+shouldBe("getComputedStyle(alignItemsFlexStart, '').getPropertyValue('align-items')", "'flex-start'");
+
+var alignItemsFlexEnd = document.getElementById("alignItemsFlexEnd");
+shouldBe("getComputedStyle(alignItemsFlexEnd, '').getPropertyValue('align-items')", "'flex-end'");
+
+var alignItemsEndTrue = document.getElementById("alignItemsEndTrue");
+shouldBe("getComputedStyle(alignItemsEndTrue, '').getPropertyValue('align-items')", "'end true'");
+
+var alignItemsCenterTrue = document.getElementById("alignItemsCenterTrue");
+shouldBe("getComputedStyle(alignItemsCenterTrue, '').getPropertyValue('align-items')", "'center true'");
+
+var alignItemsSelfEndSafe = document.getElementById("alignItemsSelfEndSafe");
+shouldBe("getComputedStyle(alignItemsSelfEndSafe, '').getPropertyValue('align-items')", "'self-end safe'");
+
+var alignItemsSelfStartSafe = document.getElementById("alignItemsSelfStartSafe");
+shouldBe("getComputedStyle(alignItemsSelfStartSafe, '').getPropertyValue('align-items')", "'self-start safe'");
+
+var alignItemsRightSafe = document.getElementById("alignItemsRightSafe");
+shouldBe("getComputedStyle(alignItemsRightSafe, '').getPropertyValue('align-items')", "'right safe'");
+
+var alignItemsLeftTrue = document.getElementById("alignItemsLeftTrue");
+shouldBe("getComputedStyle(alignItemsLeftTrue, '').getPropertyValue('align-items')", "'left true'");
+
+var alignItemsFlexStartTrue = document.getElementById("alignItemsFlexStartTrue");
+shouldBe("getComputedStyle(alignItemsFlexStartTrue, '').getPropertyValue('align-items')", "'flex-start true'");
+
+var alignItemsFlexEndSafe = document.getElementById("alignItemsFlexEndSafe");
+shouldBe("getComputedStyle(alignItemsFlexEndSafe, '').getPropertyValue('align-items')", "'flex-end safe'");
+
+debug("");
+debug("Test initial value of align-items through JS");
+element = document.createElement("div");
+document.body.appendChild(element);
+shouldBe("getComputedStyle(element, '').getPropertyValue('align-items')", "'start'");
+
+debug("");
+debug("Test getting and setting align-items through JS");
+element = document.createElement("div");
+document.body.appendChild(element);
+element.style.alignItems = "center";
+checkValues(element, "alignItems", "align-items",  "center", "center");
+
+element.style.alignItems = "true start";
+checkValues(element, "alignItems", "align-items",  "start true", "start true");
+
+element.style.alignItems = "flex-end safe";
+checkValues(element, "alignItems", "align-items",  "flex-end safe", "flex-end safe");
+
+element.style.alignItems = "right";
+checkValues(element, "alignItems", "align-items",  "right", "right");
+
+element.style.alignItems = "center";
+checkValues(element, "alignItems", "align-items",  "center", "center");
+
+element.style.alignItems = "self-start";
+checkValues(element, "alignItems", "align-items",  "self-start", "self-start");
+
+element.style.alignItems = "auto";
+checkValues(element, "alignItems", "align-items",  "auto", "start");
+
+element.style.display = "flex";
+element.style.alignItems = "auto";
+checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+
+element.style.display = "grid";
+element.style.alignItems = "auto";
+checkValues(element, "alignItems", "align-items",  "auto", "stretch");
+
+element.style.alignItems = "self-end";
+checkValues(element, "alignItems", "align-items",  "self-end", "self-end");
+
+debug("");
+debug("Test bad combinations of align-items");
+element = document.createElement("div");
+document.body.appendChild(element);
+
+checkBadValues(element, "alignItems", "align-items",  "true auto");
+checkBadValues(element, "alignItems", "align-items",  "auto safe");
+checkBadValues(element, "alignItems", "align-items",  "auto left");
+checkBadValues(element, "alignItems", "align-items",  "baseline safe");
+checkBadValues(element, "alignItems", "align-items",  "baseline center");
+checkBadValues(element, "alignItems", "align-items",  "stretch true");
+checkBadValues(element, "alignItems", "align-items",  "stretch right");
+checkBadValues(element, "alignItems", "align-items",  "true true");
+checkBadValues(element, "alignItems", "align-items",  "true safe");
+checkBadValues(element, "alignItems", "align-items",  "center start");
+checkBadValues(element, "alignItems", "align-items",  "stretch true");
+checkBadValues(element, "alignItems", "align-items",  "safe stretch");
+checkBadValues(element, "alignItems", "align-items",  "baseline safe");
+checkBadValues(element, "alignItems", "align-items",  "true baseline");
+checkBadValues(element, "alignItems", "align-items",  "true safe left");
+checkBadValues(element, "alignItems", "align-items",  "true left safe");
+checkBadValues(element, "alignItems", "align-items",  "left safe true safe");
+checkBadValues(element, "alignItems", "align-items",  "legacy start");
+checkBadValues(element, "alignItems", "align-items",  "legacy end");
+checkBadValues(element, "alignItems", "align-items",  "legacy right true");
+checkBadValues(element, "alignItems", "align-items",  "legacy auto");
+checkBadValues(element, "alignItems", "align-items",  "legacy stretch");
+checkBadValues(element, "alignItems", "align-items",  "legacy");
+checkBadValues(element, "alignItems", "align-items",  "legacy left right");
+
+debug("");
+debug("Test the value 'initial'");
+element.style.display = "";
+checkInitialValues(element, "alignItems", "align-items", "center", "start");
+
+debug("");
+debug("Test the value 'initial' for grid containers");
+element.style.display = "grid";
+checkInitialValues(element, "alignItems", "align-items", "left safe", "stretch");
+
+debug("");
+debug("Test the value 'initial' for flex containers");
+element.style.display = "flex";
+checkInitialValues(element, "alignItems", "align-items", "right true", "stretch");
+
+debug("");
+debug("Test the value 'inherit'");
+checkInheritValues("alignItems", "align-items", "end");
+checkInheritValues("alignItems", "align-items", "left safe");
+checkInheritValues("alignItems", "align-items", "center true");
+
+</script>
+</body>
+</html>

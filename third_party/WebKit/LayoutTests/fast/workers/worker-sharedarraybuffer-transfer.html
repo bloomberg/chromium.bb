@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p>Test sharing SharedArrayBuffers between dedicated workers.</p>
+<div id="result"></div>
+<script type="text/javascript">
+function log(message)
+{
+    document.getElementById("result").innerHTML += message + "</br>";
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var testCases = [
+    {name: "SharedArrayBuffer"},
+    {name: "Int8Array"},
+    {name: "Uint8Array"},
+    {name: "Uint8ClampedArray"},
+    {name: "Int16Array"},
+    {name: "Uint16Array"},
+    {name: "Int32Array"},
+    {name: "Uint32Array"},
+    {name: "Float32Array"},
+    {name: "Float64Array"}
+];
+var currentTestCase = 0;
+
+function runTestCase(testCase) {
+    var length = 8;
+    var name = testCase.name;
+    var type = window[name];
+    var sab;
+    var ta;
+
+    log("Running " + name + " test case");
+
+    if (testCase.name == 'SharedArrayBuffer') {
+        sab = new SharedArrayBuffer(length);
+        ta = new Uint8Array(sab);
+    } else {
+        sab = new SharedArrayBuffer(length * type.BYTES_PER_ELEMENT);
+        ta = new type(sab);
+    }
+
+    var i;
+    for (i = 0; i < length; ++i)
+        ta[i] = i;
+
+    // Without Atomics, we can't safely test modifying the contents of the
+    // SharedArrayBuffer. All we can test for now is that the SharedArrayBuffer
+    // is not neutered when transferred to a Worker.
+    if (testCase.name == 'SharedArrayBuffer')
+        worker.postMessage({name: name, data: sab, length: length}, [sab]);
+    else
+        worker.postMessage({name: name, data: ta, length: length}, [sab]);
+
+    if (sab.length === 0)
+        log("FAIL: SharedArrayBuffer was neutered during transfer.");
+    else
+        log("PASS: SharedArrayBuffer not neutered during transfer.");
+
+    // Ensure the data wasn't changed.
+    for (i = 0; i < length; ++i) {
+        if (ta[i] != i) {
+            log("FAIL: Original data changed during transfer. Expected " + i +
+                " got " + ta[i]);
+            break;
+        }
+    }
+    if (i == length)
+        log("PASS: Original data not changed during transfer.");
+}
+
+if (window.internals && internals.runtimeFlags.sharedArrayBufferEnabled && window.SharedArrayBuffer) {
+    var worker = new Worker('resources/worker-sharedarraybuffer-transfer.js');
+
+    runTestCase(testCases[currentTestCase]);
+
+    worker.onmessage = function(e) {
+        if (e.data == 'DONE') {
+            // The current test case is finished.
+            if (++currentTestCase == testCases.length) {
+                log("DONE");
+                testRunner.notifyDone();
+            } else {
+                runTestCase(testCases[currentTestCase]);
+            }
+        } else {
+            // The worker sent a pass/fail message.
+            log(e.data);
+        }
+
+    };
+} else {
+    log("SharedArrayBuffers are not enabled -- skipping test.");
+    testRunner.notifyDone();
+}
+
+</script>
+</body>
+</html>

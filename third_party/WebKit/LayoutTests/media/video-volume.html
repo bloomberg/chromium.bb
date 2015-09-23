@@ -1,0 +1,28 @@
+<video controls></video>
+<p>Test 'volume' attribute<p>
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<script>
+    testExpected("video.volume", 1.0);
+    run("video.volume = 0.5");
+    testExpected("video.volume", 0.5);
+    run("video.volume = Number.MIN_VALUE");
+    testExpected("video.volume", Number.MIN_VALUE);
+    run("video.volume = 0");
+    testExpected("video.volume", 0);
+    testDOMException("video.volume = 1.5", "DOMException.INDEX_SIZE_ERR");
+    testDOMException("video.volume = -0.5", "DOMException.INDEX_SIZE_ERR");
+    testException("video.volume = -Infinity", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+    testException("video.volume = Infinity", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+    testException("video.volume = NaN", '"TypeError: Failed to set the \'volume\' property on \'HTMLMediaElement\': The provided double value is non-finite."');
+    video.src = findMediaFile("video", "content/test");
+    run("video.load()");
+    waitForEvent("canplaythrough", function () {
+        testExpected("video.volume", 0);
+        run("video.volume = 0.5");
+        testExpected("video.volume", 0.5);
+        testDOMException("video.volume = 1.5", "DOMException.INDEX_SIZE_ERR");
+        testDOMException("video.volume = -0.5", "DOMException.INDEX_SIZE_ERR");
+        endTest();
+    }); 
+</script>

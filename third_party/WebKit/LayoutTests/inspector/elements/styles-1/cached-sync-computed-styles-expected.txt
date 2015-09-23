@@ -1,0 +1,6 @@
+Tests that computed styles are cached across synchronous requests.
+
+Test
+# of backend calls sent [2 requests]: 1
+# of backend calls sent [style update + another request]: 2
+

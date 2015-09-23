@@ -1,0 +1,21 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/web-animations/#the-animationeffecttimingproperties-dictionary
+
+// TODO(dstockwell): Rename this to AnimationEffectTimingProperties.
+dictionary KeyframeEffectOptions {
+    double                             delay = 0;
+    double                             endDelay = 0;
+    // TODO(dstockwell): The fill type should be FillMode.
+    DOMString                          fill = "auto";
+    double                             iterationStart = 0.0;
+    unrestricted double                iterations = 1.0;
+    (unrestricted double or DOMString) duration = "auto";
+    // TODO(dstockwell): There is no playbackRate member in the spec.
+    double                             playbackRate = 1.0;
+    // TODO(dstockwell): The direction type should be PlaybackDirection.
+    DOMString                          direction = "normal";
+    DOMString                          easing = "linear";
+};

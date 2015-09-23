@@ -1,0 +1,36 @@
+<html>
+<head>
+<script>
+function notify()
+{
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+function runTest()
+{
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+        
+    // No need to let this point to a real file.
+
+    
+    var result = plg.getURL('file:///tmp.html', '_self');
+    if (result == 1)
+        document.getElementById('result').innerHTML = "SUCCESS";
+    else
+        document.getElementById('result').innerHTML = "FAILURE";
+
+    // Round-trip to the plugin once more, so errors can propagate.
+    plg.getURLNotify("resources/load-me-1.txt", null, "notify");
+}
+</script>
+</head>
+<body onload="runTest()">
+<div>This tests that a plugin in a remote document can't access local files using NPN_GetURL</div>
+<embed name="plg" type="application/x-webkit-test-netscape"></embed>
+<div id="result">FAILURE</div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+Tests "reload" from within inspector window while on pause.
+
+
+Breakpoint sidebar pane Breakpoints before reload:
+
+source1.js:15    var handler = new ClickHandler();
+source1.js:17}
+Page reloaded.
+Breakpoint sidebar pane Breakpoints after reload:
+
+source1.js:15    var handler = new ClickHandler();
+source1.js:17}
+

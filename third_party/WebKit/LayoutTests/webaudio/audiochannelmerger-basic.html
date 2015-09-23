@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description("Basic tests for ChannelMerger.");
+    window.jsTestIsAsync = true;
+
+    var audit = Audit.createTaskRunner();
+
+    // Task: Checking constraints in ChannelMergerNode.
+    audit.defineTask('exceptions-channels', function (done) {
+      var context = new OfflineAudioContext(2, 128, 44100);
+      var merger;
+
+      Should('context.createChannelMerger()', function () {
+        merger = context.createChannelMerger();
+      }).notThrow();
+
+      Should('context.createChannelMerger(0)', function () {
+        merger = context.createChannelMerger(0);
+      }).throw('IndexSizeError');
+
+      Should('context.createChannelMerger(32)', function () {
+        merger = context.createChannelMerger(32);
+      }).notThrow();
+
+      // Can't create a channel merger with 33 channels because the audio
+      // context has a 32-channel-limit in Chrome.
+      Should('context.createChannelMerger(33)', function () {
+        merger = context.createChannelMerger(33);
+      }).throw('IndexSizeError');
+
+      done();
+    });
+
+    // Task: checking the channel-related properties have the correct value and 
+    // can't be changed.
+    audit.defineTask('exceptions-properties', function (done) {
+      var context = new OfflineAudioContext(2, 128, 44100);
+      var merger = context.createChannelMerger();
+
+      Should('merger.channelCount', merger.channelCount).beEqualTo(1);
+
+      Should('merger.channelCount = 3', function () {
+        merger.channelCount = 3;
+      }).throw('InvalidStateError');
+
+      Should('merger.channelCountMode', merger.channelCountMode).beEqualTo('explicit');
+
+      Should('merger.channelCountMode = "max"', function () {
+        merger.channelCountMode = 'max';
+      }).throw('InvalidStateError');
+
+      done();
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks(
+      'exceptions-channels',
+      'exceptions-properties',
+      'finish'
+    );
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

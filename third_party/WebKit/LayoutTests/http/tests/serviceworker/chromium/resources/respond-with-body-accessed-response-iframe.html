@@ -1,0 +1,55 @@
+<script src="../../../../resources/testharness.js"></script>
+<script>
+var callback;
+
+function getJSONP(url) {
+  var sc = document.createElement('script');
+  sc.src = url;
+  var promise = new Promise(function(resolve, reject) {
+      // This callback function is called by appending a script element.
+      callback = resolve;
+      sc.addEventListener(
+          'error',
+          function() { reject('Failed to load url:' + url); });
+    });
+  document.body.appendChild(sc);
+  return promise;
+}
+
+var TEST_CASES = [
+  "type=basic",
+  "type=opaque",
+  "type=default",
+  "type=basic&clone=1",
+  "type=opaque&clone=1",
+  "type=default&clone=1",
+  "type=basic&clone=2",
+  "type=opaque&clone=2",
+  "type=default&clone=2",
+  "type=basic&passThroughCache=true",
+  "type=opaque&passThroughCache=true",
+  "type=default&passThroughCache=true",
+  "type=basic&clone=1&passThroughCache=true",
+  "type=opaque&clone=1&passThroughCache=true",
+  "type=default&clone=1&passThroughCache=true",
+  "type=basic&clone=2&passThroughCache=true",
+  "type=opaque&clone=2&passThroughCache=true",
+  "type=default&clone=2&passThroughCache=true",
+];
+
+function executeTest(url) {
+  return getJSONP(url)
+    .then(function(result) {
+        assert_equals(result, 'OK', 'The result must be OK url:' + url);
+      });
+}
+
+function do_test() {
+  var urls = TEST_CASES.map(function(param) { return 'TestRequest?' + param; });
+  var promise = Promise.resolve();
+  for (var i = 0; i < urls.length; ++i) {
+    promise = promise.then(executeTest.bind(undefined, urls[i]));
+  };
+  return promise;
+}
+</script>

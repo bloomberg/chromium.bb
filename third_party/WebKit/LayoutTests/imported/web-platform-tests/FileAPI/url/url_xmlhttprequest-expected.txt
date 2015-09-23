@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL FileAPI Test: Creating Blob URL via XMLHttpRequest assert_true: XMLHttpRequest returns instanceof Blob expected true got false
+Harness: the test ran to completion.
+

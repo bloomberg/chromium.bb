@@ -1,0 +1,3 @@
+Verify that XMLHttpRequest handles string overflows.
+You should see PASSED once.
+PASSED

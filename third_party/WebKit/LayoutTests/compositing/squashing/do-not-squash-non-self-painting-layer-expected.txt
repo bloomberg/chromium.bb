@@ -1,0 +1,20 @@
+Item 1
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [784, 0],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.createWorkspace(true);
+    var context = new WebInspector.Context();
+    context.addFlavorChangeListener(WebInspector.ExecutionContext, executionContextChanged, this);
+    context.addFlavorChangeListener(WebInspector.Target, targetChanged, this);
+    new WebInspector.ExecutionContextSelector(InspectorTest.testTargetManager, context);
+
+    function executionContextChanged(event)
+    {
+        var executionContext = event.data;
+        InspectorTest.addResult("Execution context selected: " + (executionContext.isMainWorldContext ? executionContext.target().name() + ":" + executionContext.frameId : ""));
+    }
+
+    function targetChanged(event)
+    {
+        InspectorTest.addResult("Target selected: " + event.data.name());
+    }
+
+
+    InspectorTest.addResult("Adding page target:");
+    var pageTarget = InspectorTest.createMockTarget("page-target");
+    pageTarget.runtimeModel._executionContextCreated({id: "p1", name: "pageContext1", origin: "origin", name: "pageContext1Name", frameId: "pageFrame1"});
+    InspectorTest.addResult("");
+
+    InspectorTest.addResult("Adding sw target:");
+    var swTarget = InspectorTest.createMockTarget("sw-target");
+    swTarget.runtimeModel._executionContextCreated({id: "sw1", name: "swContext1", origin: "origin", name: "swContext1Name", frameId: ""});
+
+    InspectorTest.addResult("");
+    InspectorTest.addResult("Removing page target:");
+    pageTarget.runtimeModel._executionContextDestroyed("p1");
+
+    InspectorTest.addResult("");
+    InspectorTest.addResult("Readding page target:");
+    pageTarget.runtimeModel._executionContextCreated({id: "p2", name: "", origin: "", name: "", frameId: "pageFrame1"});
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that re-adding a removed target restores the last selected execution context.
+</p>
+
+</body>
+</html>

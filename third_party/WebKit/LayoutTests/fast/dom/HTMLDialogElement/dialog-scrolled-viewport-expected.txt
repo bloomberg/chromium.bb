@@ -1,0 +1,10 @@
+This tests that a modal dialog's containing block is the initial containing block.
+The dialog should be onscreen with a width of 50% of the viewport. It is the child of a narrow element positioned off screen, but its containing block is the initial containing block, so its position and percent lengths are relative to that.
+PASS dialog.offsetParent is null
+PASS dialog.offsetTop is 1200
+PASS dialog.offsetLeft is 1200
+PASS dialog.clientWidth is expectedWidth
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

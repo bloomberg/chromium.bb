@@ -1,0 +1,5 @@
+CONSOLE ERROR: Blocked script execution in 'sandbox_allow_script.html' because the document's frame is sandboxed and the 'allow-scripts' permission is not set.
+This is a testharness.js-based test.
+PASS iframe_sandbox_allow_scripts 
+Harness: the test ran to completion.
+

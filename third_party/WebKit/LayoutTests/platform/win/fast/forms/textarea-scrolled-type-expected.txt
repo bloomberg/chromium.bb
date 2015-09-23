@@ -1,0 +1,78 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x138
+        LayoutText {#text} at (0,0) size 515x17
+          text run at (0,0) width 515: "This tests that typing in a scrolled textarea does not cause unnecessary scrolling."
+        LayoutBR {BR} at (514,14) size 1x0
+        LayoutText {#text} at (179,120) size 4x17
+          text run at (179,120) width 4: " "
+        LayoutBR {BR} at (183,134) size 0x0
+      LayoutBlockFlow {DIV} at (0,138) size 784x0
+layer at (8,26) size 179x116 clip at (9,27) size 162x114 scrollY 224.00 scrollHeight 338
+  LayoutTextControl {TEXTAREA} at (0,18) size 179x116 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 160x336
+      LayoutText {#text} at (0,0) size 8x16
+        text run at (0,0) width 8: "1"
+      LayoutBR {BR} at (8,12) size 0x0
+      LayoutText {#text} at (0,16) size 8x16
+        text run at (0,16) width 8: "2"
+      LayoutBR {BR} at (8,28) size 0x0
+      LayoutText {#text} at (0,32) size 8x16
+        text run at (0,32) width 8: "3"
+      LayoutBR {BR} at (8,44) size 0x0
+      LayoutText {#text} at (0,48) size 8x16
+        text run at (0,48) width 8: "4"
+      LayoutBR {BR} at (8,60) size 0x0
+      LayoutText {#text} at (0,64) size 8x16
+        text run at (0,64) width 8: "5"
+      LayoutBR {BR} at (8,76) size 0x0
+      LayoutText {#text} at (0,80) size 8x16
+        text run at (0,80) width 8: "6"
+      LayoutBR {BR} at (8,92) size 0x0
+      LayoutText {#text} at (0,96) size 8x16
+        text run at (0,96) width 8: "7"
+      LayoutBR {BR} at (8,108) size 0x0
+      LayoutText {#text} at (0,112) size 8x16
+        text run at (0,112) width 8: "8"
+      LayoutBR {BR} at (8,124) size 0x0
+      LayoutText {#text} at (0,128) size 8x16
+        text run at (0,128) width 8: "9"
+      LayoutBR {BR} at (8,140) size 0x0
+      LayoutText {#text} at (0,144) size 16x16
+        text run at (0,144) width 16: "10"
+      LayoutBR {BR} at (16,156) size 0x0
+      LayoutText {#text} at (0,160) size 16x16
+        text run at (0,160) width 16: "11"
+      LayoutBR {BR} at (16,172) size 0x0
+      LayoutText {#text} at (0,176) size 16x16
+        text run at (0,176) width 16: "12"
+      LayoutBR {BR} at (16,188) size 0x0
+      LayoutText {#text} at (0,192) size 16x16
+        text run at (0,192) width 16: "13"
+      LayoutBR {BR} at (16,204) size 0x0
+      LayoutText {#text} at (0,208) size 16x16
+        text run at (0,208) width 16: "14"
+      LayoutBR {BR} at (16,220) size 0x0
+      LayoutText {#text} at (0,224) size 16x16
+        text run at (0,224) width 16: "15"
+      LayoutBR {BR} at (16,236) size 0x0
+      LayoutText {#text} at (0,240) size 16x16
+        text run at (0,240) width 16: "16"
+      LayoutBR {BR} at (16,252) size 0x0
+      LayoutText {#text} at (0,256) size 16x16
+        text run at (0,256) width 16: "17"
+      LayoutBR {BR} at (16,268) size 0x0
+      LayoutText {#text} at (0,272) size 56x16
+        text run at (0,272) width 56: "18 Pass"
+      LayoutBR {BR} at (56,284) size 0x0
+      LayoutText {#text} at (0,288) size 16x16
+        text run at (0,288) width 16: "19"
+      LayoutBR {BR} at (16,300) size 0x0
+      LayoutText {#text} at (0,304) size 16x16
+        text run at (0,304) width 16: "20"
+      LayoutBR {BR} at (16,316) size 0x0
+      LayoutBR {BR} at (0,320) size 0x16
+caret: position 7 of child 34 {#text} of child 0 {DIV} of {#document-fragment} of child 3 {TEXTAREA} of body

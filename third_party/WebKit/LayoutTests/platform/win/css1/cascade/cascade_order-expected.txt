@@ -1,0 +1,142 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 801
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x801 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x801
+    LayoutBlockFlow {BODY} at (8,8) size 769x785 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 363x17
+          text run at (0,0) width 363: "The style declarations which apply to the text below are:"
+      LayoutBlockFlow {PRE} at (0,34) size 769x176
+        LayoutText {#text} at (0,0) size 576x176
+          text run at (0,0) width 576: "<LINK rel=\"stylesheet\" type=\"text/css\" HREF=\"../resources/linktest.css\">"
+          text run at (576,0) width 0: " "
+          text run at (0,16) width 152: "LI {color: purple;}"
+          text run at (152,16) width 0: " "
+          text run at (0,32) width 160: "UL LI {color: blue;}"
+          text run at (160,32) width 0: " "
+          text run at (0,48) width 184: "UL LI LI {color: gray;}"
+          text run at (184,48) width 0: " "
+          text run at (0,64) width 176: "LI.red {color: green;}"
+          text run at (176,64) width 0: " "
+          text run at (0,80) width 216: "UL LI.mar {color: #660000;}"
+          text run at (216,80) width 0: " "
+          text run at (0,96) width 200: "UL LI#gre {color: green;}"
+          text run at (200,96) width 0: " "
+          text run at (0,112) width 160: ".test {color: blue;}"
+          text run at (160,112) width 0: " "
+          text run at (0,128) width 176: ".test {color: purple;}"
+          text run at (176,128) width 0: " "
+          text run at (0,144) width 296: ".one {text-decoration: line-through;}"
+          text run at (296,144) width 0: " "
+          text run at (0,160) width 0: " "
+      LayoutBlockFlow {HR} at (0,223) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {UL} at (0,241) size 769x144
+        LayoutListItem {LI} at (40,0) size 729x18 [color=#0000FF]
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+          LayoutText {#text} at (0,0) size 194x17
+            text run at (0,0) width 194: "This list item should be blue..."
+        LayoutListItem {LI} at (40,18) size 729x72 [color=#0000FF]
+          LayoutBlockFlow (anonymous) at (0,0) size 729x18
+            LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+            LayoutText {#text} at (0,0) size 295x17
+              text run at (0,0) width 295: "...and so should this; neither should be purple."
+          LayoutBlockFlow {UL} at (0,18) size 729x54
+            LayoutListItem {LI} at (40,0) size 689x18 [color=#808080]
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 195x17
+                text run at (0,0) width 195: "This list item should be gray..."
+            LayoutListItem {LI} at (40,18) size 689x18 [color=#808080]
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 116x17
+                text run at (0,0) width 116: "...as should this...."
+            LayoutListItem {LI} at (40,36) size 689x18 [color=#008000]
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 196x17
+                text run at (0,0) width 196: "...but this one should be green."
+        LayoutListItem {LI} at (40,90) size 729x18 [color=#660000]
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+          LayoutText {#text} at (0,0) size 174x17
+            text run at (0,0) width 174: "This ought to be dark red..."
+        LayoutListItem {LI} at (40,108) size 729x18 [color=#008000]
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+          LayoutText {#text} at (0,0) size 87x17
+            text run at (0,0) width 87: "...this green..."
+        LayoutListItem {LI} at (40,126) size 729x18 [color=#0000FF]
+          LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+          LayoutText {#text} at (0,0) size 98x17
+            text run at (0,0) width 98: "...and this blue."
+      LayoutBlockFlow {P} at (0,401) size 769x18 [color=#0000FF]
+        LayoutText {#text} at (0,0) size 283x17
+          text run at (0,0) width 283: "This sentence should be blue (STYLE attr.)."
+      LayoutBlockFlow {P} at (0,435) size 769x18 [color=#800080]
+        LayoutText {#text} at (0,0) size 208x17
+          text run at (0,0) width 208: "This sentence should be purple ["
+        LayoutInline {CODE} at (0,0) size 97x16
+          LayoutText {#text} at (207,2) size 97x16
+            text run at (207,2) width 97: "class=\"test\""
+        LayoutText {#text} at (303,0) size 10x17
+          text run at (303,0) width 10: "]."
+      LayoutBlockFlow {P} at (0,469) size 769x18
+        LayoutText {#text} at (0,0) size 697x17
+          text run at (0,0) width 697: "This text should be stricken (overriding the imported underline; only works if LINKed sheets are supported)."
+      LayoutTable {TABLE} at (0,503) size 719x282 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 717x280
+          LayoutTableRow {TR} at (0,0) size 717x26
+            LayoutTableCell {TD} at (0,0) size 717x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
+                  text run at (4,4) width 163: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,26) size 717x254
+            LayoutTableCell {TD} at (0,140) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 4x17
+                text run at (4,4) width 4: " "
+            LayoutTableCell {TD} at (12,26) size 705x254 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {UL} at (4,4) size 697x144
+                LayoutListItem {LI} at (40,0) size 657x18 [color=#0000FF]
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+                  LayoutText {#text} at (0,0) size 194x17
+                    text run at (0,0) width 194: "This list item should be blue..."
+                LayoutListItem {LI} at (40,18) size 657x72 [color=#0000FF]
+                  LayoutBlockFlow (anonymous) at (0,0) size 657x18
+                    LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+                    LayoutText {#text} at (0,0) size 295x17
+                      text run at (0,0) width 295: "...and so should this; neither should be purple."
+                  LayoutBlockFlow {UL} at (0,18) size 657x54
+                    LayoutListItem {LI} at (40,0) size 617x18 [color=#808080]
+                      LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+                      LayoutText {#text} at (0,0) size 195x17
+                        text run at (0,0) width 195: "This list item should be gray..."
+                    LayoutListItem {LI} at (40,18) size 617x18 [color=#808080]
+                      LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+                      LayoutText {#text} at (0,0) size 116x17
+                        text run at (0,0) width 116: "...as should this...."
+                    LayoutListItem {LI} at (40,36) size 617x18 [color=#008000]
+                      LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+                      LayoutText {#text} at (0,0) size 196x17
+                        text run at (0,0) width 196: "...but this one should be green."
+                LayoutListItem {LI} at (40,90) size 657x18 [color=#660000]
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+                  LayoutText {#text} at (0,0) size 174x17
+                    text run at (0,0) width 174: "This ought to be dark red..."
+                LayoutListItem {LI} at (40,108) size 657x18 [color=#008000]
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+                  LayoutText {#text} at (0,0) size 87x17
+                    text run at (0,0) width 87: "...this green..."
+                LayoutListItem {LI} at (40,126) size 657x18 [color=#0000FF]
+                  LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+                  LayoutText {#text} at (0,0) size 98x17
+                    text run at (0,0) width 98: "...and this blue."
+              LayoutBlockFlow {P} at (4,164) size 697x18 [color=#0000FF]
+                LayoutText {#text} at (0,0) size 283x17
+                  text run at (0,0) width 283: "This sentence should be blue (STYLE attr.)."
+              LayoutBlockFlow {P} at (4,198) size 697x18 [color=#800080]
+                LayoutText {#text} at (0,0) size 208x17
+                  text run at (0,0) width 208: "This sentence should be purple ["
+                LayoutInline {CODE} at (0,0) size 97x16
+                  LayoutText {#text} at (207,2) size 97x16
+                    text run at (207,2) width 97: "class=\"test\""
+                LayoutText {#text} at (303,0) size 10x17
+                  text run at (303,0) width 10: "]."
+              LayoutBlockFlow {P} at (4,232) size 697x18
+                LayoutText {#text} at (0,0) size 697x17
+                  text run at (0,0) width 697: "This text should be stricken (overriding the imported underline; only works if LINKed sheets are supported)."

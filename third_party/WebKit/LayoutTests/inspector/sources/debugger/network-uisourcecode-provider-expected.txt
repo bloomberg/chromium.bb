@@ -1,0 +1,28 @@
+Tests NetworkUISourceCodeProvider class.
+
+
+Running: testDocumentResource
+Creating resource.
+UISourceCode: http://fake.url/1
+UISourceCode is content script: false
+Highlighter type: text/html
+UISourceCode content: <document resource content>
+
+Running: testScriptResourceAndVMScript
+Creating script resource.
+Creating script.
+UISourceCode: http://fake.url/3
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: <script content>
+
+Running: testRemoveStyleSheetFromModelWithComplexURL
+Creating stylesheet resource.
+Added uiSourceCode: http://example.com/foo.css
+Removed uiSourceCode: http://example.com/foo.css
+
+Running: testRemoveStyleSheetFromModelWithSimpleURL
+Creating stylesheet resource.
+Added uiSourceCode: foo.css
+Removed uiSourceCode: foo.css
+

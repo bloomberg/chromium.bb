@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style>
+#target::first-letter {}
+#target { visibility: hidden; }
+</style>
+<div id="target">text</div>
+<script>
+'use strict';
+
+var style;
+
+test(function() {
+  var styleRule = document.styleSheets[0].rules[0];
+  assert_equals(styleRule.selectorText, '#target::first-letter', 'make sure we have the correct style rule');
+  style = styleRule.style;
+}, 'pre test setup');
+
+async_test(function(testHandle) {
+  var testCases = {
+    backgroundAttachment: 'fixed',
+    backgroundBlendMode: 'hue',
+    backgroundClip: 'padding-box',
+    backgroundColor: 'rgb(10, 20, 30)',
+    backgroundImage: 'linear-gradient(black, white)',
+    backgroundOrigin: 'border-box',
+    backgroundPosition: 'left 10px top 20px',
+    backgroundRepeat: 'no-repeat',
+    backgroundSize: '10px 20px',
+    border: '40px dotted rgb(10, 20, 30)',
+    borderImage: 'linear-gradient(black, white) 10% / 20 / 30px repeat',
+    borderRadius: '10px 20px',
+    boxShadow: 'rgb(10, 20, 30) 10px 20px 30px 40px inset',
+    color: 'rgba(10, 20, 30, 0.4)',
+    float: 'right',
+    font: 'italic small-caps 900 normal 10px / 20px sans-serif',
+    fontKerning: 'none',
+    letterSpacing: '12px',
+    margin: '10px 20px 30px 40px',
+    padding: '10px 20px 30px 40px',
+    textDecoration: 'overline wavy rgb(10, 20, 30)',
+    textShadow: 'rgb(10, 20, 30) 10px 20px 30px',
+    textTransform: 'capitalize',
+    verticalAlign: '12%',
+    webkitBackgroundComposite: 'xor',
+    webkitBorderHorizontalSpacing: '12px',
+    webkitBorderVerticalSpacing: '12px',
+    webkitFontSmoothing: 'none',
+    wordSpacing: '12px',
+    visibility: 'collapse',
+  };
+
+  for (var property in testCases) {
+    style[property] = testCases[property];
+  }
+
+  requestAnimationFrame(function() {
+    testHandle.step(function() {
+      var computedStyle = getComputedStyle(target, 'first-letter');
+      for (var property in testCases) {
+        assert_equals(computedStyle[property], testCases[property], property + ' property');
+      }
+    });
+    testHandle.done();
+  });
+}, 'Whitelisted properties should get applied to first-letter pseudo elements.');
+
+async_test(function(testHandle) {
+  var testCases = {
+    transition: 'transform 1s',
+    transform: 'rotate(45deg)',
+    webkitFilter: 'url(#)',
+    wordBreak: 'break-all',
+  };
+
+  for (var property in testCases) {
+    style[property] = testCases[property];
+  }
+
+  requestAnimationFrame(function() {
+    testHandle.step(function() {
+      var computedStyle = getComputedStyle(target, 'first-letter');
+      var defaultComputedStyle = getComputedStyle(target);
+      for (var property in testCases) {
+        assert_equals(computedStyle[property], defaultComputedStyle[property], property + ' property');
+      }
+    });
+    testHandle.done();
+  });
+}, 'Non-whitelisted properties should not get applied to first-letter pseudo elements.');
+</script>

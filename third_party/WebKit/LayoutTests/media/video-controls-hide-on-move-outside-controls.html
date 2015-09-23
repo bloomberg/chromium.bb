@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<style>
+#no-video-media {
+  width: 320px;
+  height: 240px;
+}
+</style>
+<script src=video-test.js></script>
+<script src=media-file.js></script>
+<script src=media-controls.js></script>
+<script>
+var controls;
+
+function runTest()
+{
+    video = document.getElementById("no-video-media");
+
+    testExpected("video.paused", true);
+    if (!window.testRunner)
+        return;
+
+    // Click the play button.
+    var playCoords = mediaControlsButtonCoordinates(video, "play-button");
+    var clickX = playCoords[0];
+    var clickY = playCoords[1];
+    eventSender.mouseMoveTo(clickX, clickY);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+    testExpected("video.paused", false);
+
+    runAfterHideMediaControlsTimerFired(function()
+    {
+        controls = mediaControlsButton(video, "panel");
+        testExpected("getComputedStyle(controls).opacity", 0);
+
+        consoleWrite("");
+        endTest();
+    }, video);
+
+    // Move the mouse to the upper-left corner of the video.
+    eventSender.mouseMoveTo(video.offsetLeft + 4, video.offsetTop + 4);
+}
+</script>
+<body>
+    <p>Test video element control visibility when mouse is not over element.</p>
+    <p>This test only runs in DRT!</p>
+
+    <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>
+    <script>
+        setSrcById("no-video-media", findMediaFile("video", "content/test"));
+    </script>
+</body>
+</html>

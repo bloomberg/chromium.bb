@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description('Tests to check that deviceorientation events are not fired when the page is not visible.');
+window.jsTestIsAsync = true;
+
+function succeedAndFinish()
+{
+    testPassed("Received a deviceorientation event");
+    finishJSTest();
+}
+
+function testWithPageVisible()
+{
+    testPassed("Did not receive a deviceorientation event");
+    window.removeEventListener('deviceorientation', failAndFinish);
+    if (window.testRunner)
+        testRunner.setPageVisibility("visible");
+    debug("* Page is visible");
+    window.addEventListener('deviceorientation', succeedAndFinish);
+}
+
+function failAndFinish()
+{
+    testFailed('Should not have received a deviceorientation event while the page was hidden');
+    finishJSTest();
+}
+
+function testWithPageHidden()
+{
+    testPassed("Received a deviceorientation event");
+    window.removeEventListener('deviceorientation', deviceOrientationListener);
+    if (window.testRunner)
+        testRunner.setPageVisibility("hidden");
+    debug("* Page is hidden");
+    window.addEventListener('deviceorientation', failAndFinish);
+
+    setTimeout(testWithPageVisible, 100);
+}
+
+function deviceOrientationListener(event) {
+    setTimeout(testWithPageHidden, 0);
+}
+
+if (window.testRunner)
+   testRunner.setMockDeviceOrientation(true, 1, true, 2, true, 3, true, true);
+
+debug("* Page is visible");
+window.addEventListener('deviceorientation', deviceOrientationListener);
+</script>
+</body>
+</html>

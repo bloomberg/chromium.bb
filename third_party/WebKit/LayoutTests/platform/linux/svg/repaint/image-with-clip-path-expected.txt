@@ -1,0 +1,42 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [222, 0, 3, 75],
+        [175, 25, 50, 50],
+        [175, 25, 50, 50],
+        [175, 25, 50, 50],
+        [20, 20, 60, 60],
+        [20, 20, 60, 60],
+        [20, 20, 60, 60],
+        [20, 20, 60, 60],
+        [0, 75, 222, 5],
+        [0, 10, 222, 70],
+        [0, 0, 100, 100],
+        [0, 0, 100, 100],
+        [0, 0, 10, 10],
+        [0, 0, 10, 10],
+        [0, 0, 10, 10]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='g'",
+        "LayoutSVGHiddenContainer defs",
+        "LayoutSVGResourceClipper clipPath id='p'",
+        "LayoutSVGRect rect id='r'",
+        "LayoutSVGImage image",
+        "LayoutSVGRoot svg",
+        "LayoutSVGContainer g id='g'",
+        "LayoutSVGHiddenContainer defs",
+        "LayoutSVGResourceClipper clipPath id='p'",
+        "LayoutSVGRect rect id='r'",
+        "LayoutSVGImage image"
+      ]
+    }
+  ]
+}
+

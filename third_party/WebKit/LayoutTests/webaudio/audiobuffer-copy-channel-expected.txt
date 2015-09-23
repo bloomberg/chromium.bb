@@ -1,0 +1,48 @@
+Test Basic Functionality of copyFromChannel and AudioBuffer.copyToChannel
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS AudioBuffer.prototype.copyFromChannel is defined.
+PASS buffer = context.createBuffer(3, 16, context.sampleRate) did not throw an exception.
+PASS buffer.copyFromChannel(null, 0) threw TypeMismatchError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyFromChannel(context, 0) threw TypeMismatchError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyFromChannel(x, -1) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (-1) is outside the range [0, 2]..
+PASS buffer.copyFromChannel(x, 3) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
+PASS buffer.copyFromChannel(x, 0, -1) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The startInChannel provided (4294967295) is outside the range [0, 16)..
+PASS buffer.copyFromChannel(x, 0, 16) threw IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The startInChannel provided (16) is outside the range [0, 16)..
+PASS buffer.copyFromChannel(x, 3) threw exception IndexSizeError: Failed to execute 'copyFromChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
+PASS AudioBuffer.prototype.copyToChannel is defined.
+PASS buffer.copyToChannel(null, 0) threw TypeMismatchError: Failed to execute 'copyToChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyToChannel(context, 0) threw TypeMismatchError: Failed to execute 'copyToChannel' on 'AudioBuffer': The 1st argument provided is either null, or an invalid Float32Array object..
+PASS buffer.copyToChannel(x, -1) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The channelNumber provided (-1) is outside the range [0, 2]..
+PASS buffer.copyToChannel(x, 3) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
+PASS buffer.copyToChannel(x, 0, -1) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The startInChannel provided (4294967295) is outside the range [0, 16)..
+PASS buffer.copyToChannel(x, 0, 16) threw IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The startInChannel provided (16) is outside the range [0, 16)..
+PASS buffer.copyToChannel(x, 3) threw exception IndexSizeError: Failed to execute 'copyToChannel' on 'AudioBuffer': The channelNumber provided (3) is outside the range [0, 2]..
+PASS buffer.copyFromChannel(dst8, 0) is identical to the array [1,2,3,4,5,6,7,8].
+PASS buffer.copyFromChannel(dst8, 1) is identical to the array [2,3,4,5,6,7,8,9].
+PASS buffer.copyFromChannel(dst8, 2) is identical to the array [3,4,5,6,7,8,9,10].
+PASS buffer.copyFromChannel(dst8, 0, 1) is identical to the array [2,3,4,5,6,7,8,9].
+PASS buffer.copyFromChannel(dst8, 1, 1) is identical to the array [3,4,5,6,7,8,9,10].
+PASS buffer.copyFromChannel(dst8, 2, 1) is identical to the array [4,5,6,7,8,9,10,11].
+PASS buffer.copyFromChannel(dst8, 0, 11) is identical to the array [12,13,14,15,16,-1,-1,-1].
+PASS buffer.copyFromChannel(dst8, 1, 11) is identical to the array [13,14,15,16,17,-1,-1,-1].
+PASS buffer.copyFromChannel(dst8, 2, 11) is identical to the array [14,15,16,17,18,-1,-1,-1].
+PASS buffer.copyFromChannel(dst26, 0) is identical to the array [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1].
+PASS buffer.copyFromChannel(dst26, 1) is identical to the array [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1].
+PASS buffer.copyFromChannel(dst26, 2) is identical to the array [3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1].
+PASS buffer = createConstantBuffer(context, 16, [-1,-1,-1]) did not throw an exception.
+PASS buffer.copyToChannel(src, 0) is identical to the array [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].
+PASS buffer.copyToChannel(src, 1) is identical to the array [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].
+PASS buffer.copyToChannel(src, 2) is identical to the array [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16].
+PASS buffer.copyToChannel(src10, 0) is identical to the array [1,2,3,4,5,6,7,8,9,10,-1,-1,-1,-1,-1,-1].
+PASS buffer.copyToChannel(src10, 1) is identical to the array [1,2,3,4,5,6,7,8,9,10,-1,-1,-1,-1,-1,-1].
+PASS buffer.copyToChannel(src10, 2) is identical to the array [1,2,3,4,5,6,7,8,9,10,-1,-1,-1,-1,-1,-1].
+PASS buffer.copyToChannel(src10, 0, 5) is identical to the array [-1,-1,-1,-1,-1,1,2,3,4,5,6,7,8,9,10,-1].
+PASS buffer.copyToChannel(src10, 1, 5) is identical to the array [-1,-1,-1,-1,-1,1,2,3,4,5,6,7,8,9,10,-1].
+PASS buffer.copyToChannel(src10, 2, 5) is identical to the array [-1,-1,-1,-1,-1,1,2,3,4,5,6,7,8,9,10,-1].
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

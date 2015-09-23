@@ -1,0 +1,19 @@
+Test if :focus matching state of shadow host is properly handled in case of DOM mutation.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+(1/2) DOM mutation across shadow boundary with delegatesFocus=false
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+(2/2) DOM mutation across shadow boundary with delegatesFocus=true
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS backgroundColorOf('host') is "rgb(255, 255, 255)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

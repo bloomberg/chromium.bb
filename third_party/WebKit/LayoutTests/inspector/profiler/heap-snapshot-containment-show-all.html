@@ -1,0 +1,152 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var instanceCount = 25;
+    function createHeapSnapshot()
+    {
+        return InspectorTest.createHeapSnapshot(instanceCount);
+    }
+
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testShowAll(next)
+        {
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step1()
+            {
+                InspectorTest.switchToView("Containment", step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.findAndExpandWindow(step3);
+            }
+
+            function step3(row)
+            {
+                var buttonsNode = InspectorTest.findButtonsNode(row);
+                InspectorTest.assertEquals(true, !!buttonsNode, "buttons node");
+                var words = buttonsNode.showAll.textContent.split(" ");
+                for (var i = 0; i < words.length; ++i) {
+                    var maybeNumber = parseInt(words[i], 10);
+                    if (!isNaN(maybeNumber))
+                        InspectorTest.assertEquals(instanceCount - row._dataGrid.defaultPopulateCount(), maybeNumber, buttonsNode.showAll.textContent);
+                }
+                InspectorTest.clickShowMoreButton("showAll", buttonsNode, step4);
+            }
+
+            function step4(row)
+            {
+                var rowsShown = InspectorTest.countDataRows(row);
+                InspectorTest.assertEquals(instanceCount, rowsShown, "after showAll click");
+                var buttonsNode = InspectorTest.findButtonsNode(row);
+                InspectorTest.assertEquals(false, !!buttonsNode, "buttons node found when all instances are shown!");
+                setTimeout(next, 0);
+            }
+        },
+
+        function testDistances(next)
+        {
+            function createHeapSnapshot()
+            {
+                // Mocking results of running the following code:
+                //
+                // function Tail() {}
+                // next = new Tail();
+                // for (var i = 0; i < 5; ++i)
+                //   next = { next: next };
+
+                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var rootNode = builder.rootNode;
+
+                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)", 0, InspectorTest.HeapNode.Type.synthetic);
+                rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
+
+                var globalHandlesNode = new InspectorTest.HeapNode("(Global Handles)");
+                gcRootsNode.linkNode(globalHandlesNode, InspectorTest.HeapEdge.Type.element);
+
+                var nativeContextNode = new InspectorTest.HeapNode("system / NativeContext", 32);
+                globalHandlesNode.linkNode(nativeContextNode, InspectorTest.HeapEdge.Type.element);
+
+                var windowNode = new InspectorTest.HeapNode("Window", 20);
+                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
+                nativeContextNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
+                windowNode.linkNode(nativeContextNode, InspectorTest.HeapEdge.Type.internal, "native_context");
+
+                var headNode = new InspectorTest.HeapNode("Body", 32);
+                windowNode.linkNode(headNode, InspectorTest.HeapEdge.Type.property, "next");
+                for (var i = 1; i < 5; ++i) {
+                  var nextNode = new InspectorTest.HeapNode("Body", 32);
+                  headNode.linkNode(nextNode, InspectorTest.HeapEdge.Type.property, "next");
+                  headNode = nextNode;
+                }
+                var tailNode = new InspectorTest.HeapNode("Tail", 32);
+                headNode.linkNode(tailNode, InspectorTest.HeapEdge.Type.property, "next");
+                return builder.generateSnapshot();
+            }
+
+            var distance = 1;
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step1()
+            {
+                InspectorTest.switchToView("Containment", step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.findAndExpandGCRoots(step3);
+            }
+
+            function step3(row)
+            {
+                InspectorTest.assertEquals("(GC roots)", row._name, "(GC roots) object");
+                InspectorTest.assertEquals("\u2212", row.data.distance, "(GC roots) distance should be zero");
+                InspectorTest.findAndExpandWindow(step4);
+            }
+
+            function step4(row)
+            {
+                InspectorTest.assertEquals("Window", row._name, "Window object");
+                InspectorTest.assertEquals(distance, row._distance, "Window distance should be 1");
+                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
+                InspectorTest.assertEquals(true, !!child, "next found");
+                InspectorTest.expandRow(child, step5);
+            }
+
+            function step5(row)
+            {
+                ++distance;
+                InspectorTest.assertEquals(distance, row._distance, "Check distance of objects chain");
+                if (row._name === "Tail") {
+                    InspectorTest.assertEquals(7, distance, "Tail distance");
+                    setTimeout(next, 0);
+                    return;
+                }
+                InspectorTest.assertEquals("Body", row._name, "Body");
+                var child = InspectorTest.findMatchingRow(function (obj) { return obj._referenceName === "next"; }, row);
+                InspectorTest.assertEquals(true, !!child, "next found");
+                if (child._name !== "Tail")
+                    InspectorTest.expandRow(child, step5);
+                else
+                    step5(child);
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests Containment view of detailed heap snapshots.
+The &quot;Show All&quot; button must show all nodes.
+Test object distances calculation.
+</p>
+</body>
+</html>

@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutTable {TABLE} at (0,0) size 310x156
+        LayoutTableSection {TBODY} at (0,0) size 310x156
+          LayoutTableRow {TR} at (0,2) size 310x152
+            LayoutTableCell {TD} at (2,2) size 306x152 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 0x0
+layer at (11,11) size 308x150
+  LayoutIFrame {IFRAME} at (1,1) size 308x150 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 304x146
+      LayoutView at (0,0) size 304x146
+    layer at (0,0) size 304x146
+      LayoutBlockFlow {HTML} at (0,0) size 304x146
+        LayoutBlockFlow {BODY} at (8,8) size 288x130

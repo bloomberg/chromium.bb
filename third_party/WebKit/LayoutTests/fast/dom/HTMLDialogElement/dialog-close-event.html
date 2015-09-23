@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<dialog></dialog>
+<script>
+description("Test that dialog receives a close event upon closing.");
+
+document.addEventListener('close', function(event) {
+    testFailed("The 'close' event unexpectedly bubbled.");
+});
+
+closedCount = 0;
+dialog = document.querySelector('dialog');
+dialog.addEventListener('close', function(event) {
+    closedCount++;
+    self = this;
+    shouldBe('self', 'dialog');
+    shouldBeFalse('dialog.open');
+    shouldBeFalse('event.cancelable');
+    event.preventDefault();
+
+    if (closedCount < 2) {
+        dialog.show();
+        dialog.close();
+    };
+});
+
+dialog.show();
+dialog.close();
+
+// Verify that preventDefault() didn't cancel closing.
+shouldBeFalse('dialog.open');
+shouldBe('closedCount', '2');
+</script>
+</body>
+</html>

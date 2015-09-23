@@ -1,0 +1,47 @@
+<!-- Based on compositing/repaint/resize-repaint.html -->
+<!DOCTYPE html>
+
+<html>
+<head>
+    <style>
+        #resizing {
+            width: 400px;
+            border: 1px solid black;
+            transform: translateZ(0);
+        }
+
+        #resizing > div {
+            height: 50px;
+            margin: 1px;
+            background-color: silver;
+        }
+    </style>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow DIV id='resizing'",
+            "LayoutBlockFlow DIV",
+            "LayoutBlockFlow DIV",
+        ];
+        function paintInvalidationTest()
+        {
+            var resizingDiv = document.getElementById('resizing');
+            
+            for (var i = 0; i < 2; ++i) {
+                var newDiv = document.createElement('div');
+                resizingDiv.appendChild(newDiv);
+            }
+        }
+
+        window.onload = runPaintInvalidationTest;
+    </script>
+</head>
+<body>
+
+<div id="resizing">
+  <div></div>
+  <div></div>
+</div>
+
+</body>
+</html>

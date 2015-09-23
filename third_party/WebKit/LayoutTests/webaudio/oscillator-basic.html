@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<!--
+Create an oscillator of each type and verify that the type is set correctly.
+-->
+<html>
+<head>
+<script src="resources/compatibility.js"></script>
+<script type="text/javascript" src="resources/audio-testing.js"></script>
+<script type="text/javascript" src="../resources/js-test.js"></script>
+</head>
+
+<body>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+description("Basic test of setting Oscillator node types.");
+
+var sampleRate = 44100;
+var renderLengthSeconds = 0.25;
+
+var oscTypes = ["sine", "square", "sawtooth", "triangle", "custom"];
+
+function runTest() 
+{
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+    
+    window.jsTestIsAsync = true;
+        
+    // Create offline audio context.
+    var context = new OfflineAudioContext(2, sampleRate * renderLengthSeconds, sampleRate);
+    var osc = context.createOscillator();
+
+    // Set each possible oscillator type (except CUSTOM) and verify that the type is correct.
+    // Here we're setting the type using WebIDL enum values which are strings.
+    for (var k = 0; k < oscTypes.length - 1; ++k) {
+        osc.type = oscTypes[k];
+        Should("osc.type = '" + oscTypes[k] + "'", osc.type).beEqualTo(oscTypes[k]);
+    }
+
+    // Verify that setting a custom type directly does not set the custom type. This test has to be
+    // done before using setPeriodicWave.
+      
+    Should("osc.type = 'custom'", function () {
+      osc.type = "custom";
+    }).throw('InvalidStateError');
+
+    // Now set a custom oscillator
+    var coeffA = new Float32Array([0, 1, 0.5]);
+    var coeffB = new Float32Array([0, 0, 0]);        
+    var wave = context.createPeriodicWave(coeffA, coeffB);
+
+    Should("osc.setPeriodicWave(wave)", function () {
+      osc.setPeriodicWave(wave);
+    }).notThrow();
+    Should("osc.type", osc.type).beEqualTo("custom");
+     
+    // Check that numerical values are no longer supported
+    var oldType = osc.type;
+    osc.type = 0;
+    Should("osc.type = 0", osc.type).notBeEqualTo(0);
+    Should("osc.type", osc.type).beEqualTo(oldType);
+
+    finishJSTest();
+}
+
+runTest();
+successfullyParsed = true;
+
+</script>
+
+
+</body>
+</html>

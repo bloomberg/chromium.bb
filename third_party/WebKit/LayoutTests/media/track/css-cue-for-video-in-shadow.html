@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="../media-file.js"></script>
+<script src="../video-test.js"></script>
+<script src="../media-controls.js"></script>
+<style>
+video::cue(.red, .red2) { color:red }
+video::cue(.green) { color:green }
+</style>
+<script>
+var cueNode;
+var seekedCount = 0;
+var step = 0.4;
+var initialTime = 0.6;
+var endTime = 3.0
+
+function seeked()
+{
+    if (testEnded)
+        return;
+
+    cueNode = textTrackDisplayElement(video, 'cue').firstElementChild;
+    testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)", "!=");
+    cueNode = cueNode.nextElementSibling;
+    testExpected("getComputedStyle(cueNode).color", "rgb(0, 128, 0)", "!=");
+    cueNode = cueNode.nextElementSibling;
+    testExpected("getComputedStyle(cueNode).color", "rgb(255, 0, 0)", "!=");
+    endTest();
+}
+
+function loaded()
+{
+    consoleWrite("Test that the cue is not styled when video is in a shadow tree and style is in a document.");
+    var host = document.getElementById('host');
+    var shadowRoot = host.createShadowRoot();
+    shadowRoot.innerHTML = '<video controls ><track src="captions-webvtt/styling-lifetime.vtt" kind="captions" default></video>';
+    video = shadowRoot.querySelector('video');
+    video.src = findMediaFile('video', '../content/test');
+    video.id = "testvideo";
+    waitForEvent('seeked', seeked);
+    waitForEventOnce('canplaythrough', function() { video.currentTime = initialTime; });
+}
+</script>
+</head>
+<body onload="loaded()">
+<div id='host'>
+</div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+Test that hiding volume / mute buttons works as expected.
+
+RUN(video.load())
+EVENT(canplaythrough)
+RUN(window.internals.setAllowHiddenVolumeControls(video, true))
+RUN(window.internals.settings.setPreferHiddenVolumeControls(false))
+RUN(video.muted = false)
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
+EXPECTED (getComputedStyle(volumeSlider).display != 'none') OK
+RUN(video.muted = true)
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
+EXPECTED (getComputedStyle(volumeSlider).display != 'none') OK
+RUN(window.internals.settings.setPreferHiddenVolumeControls(true))
+RUN(video.muted = false)
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
+EXPECTED (getComputedStyle(volumeSlider).display == 'none') OK
+RUN(video.muted = true)
+EXPECTED (getComputedStyle(muteButton).display != 'none') OK
+EXPECTED (getComputedStyle(volumeSlider).display == 'none') OK
+END OF TEST
+

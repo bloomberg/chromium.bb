@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/unformatted2.js"></script>
+<script>
+var test = function()
+{
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.panels.sources;
+    var scriptFormatter;
+    var formattedSourceFrame;
+
+    InspectorTest.runDebuggerTestSuite([
+        function testSetup(next)
+        {
+            InspectorTest.scriptFormatter().then(function(sf) {
+                scriptFormatter = sf;
+                next();
+            });
+        },
+
+        function testBreakpointsSetAndRemoveInFormattedSource(next)
+        {
+            InspectorTest.showScriptSource("unformatted2.js", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
+            }
+                
+            function uiSourceCodeScriptFormatted()
+            {
+                formattedSourceFrame = panel.visibleView;
+                InspectorTest.setBreakpoint(formattedSourceFrame, 3, "", true);
+                InspectorTest.waitUntilPaused(pausedInF2);
+                InspectorTest.evaluateInPageWithTimeout("f2()");
+            }
+
+            function pausedInF2(callFrames)
+            {
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
+                InspectorTest.removeBreakpoint(formattedSourceFrame, 3);
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(next);
+            }
+        }
+    ]);
+
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the script formatting is working fine with breakpoints.
+</p>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="cache-storage-test.js"></script>
+<script>
+function test()
+{
+    var cacheStorageModel = WebInspector.ServiceWorkerCacheModel.fromTarget(WebInspector.targetManager.mainTarget());
+    cacheStorageModel.enable();
+
+    function errorAndExit(error)
+    {
+        if (error)
+            InspectorTest.addResult(error);
+        InspectorTest.completeTest();
+    }
+    
+    function main()
+    {
+        InspectorTest.clearAllCaches()
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.createCache.bind(this, "testCache1"))
+            .then(InspectorTest.createCache.bind(this, "testCache2"))
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.addCacheEntry.bind(this, "testCache1", "http://fake.request.com/1", "OK"))
+            .then(InspectorTest.addCacheEntry.bind(this, "testCache1", "http://fake.request.com/2", "Not Found"))
+            .then(InspectorTest.addCacheEntry.bind(this, "testCache2", "http://fake.request2.com/1", "OK"))
+            .then(InspectorTest.addCacheEntry.bind(this, "testCache2", "http://fake.request2.com/2", "Not Found"))
+            .then(InspectorTest.dumpCacheTree)
+            .then(InspectorTest.clearAllCaches)
+            .then(InspectorTest.completeTest)
+            .catch(errorAndExit);
+    }
+
+    InspectorTest.waitForCacheRefresh(main);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that cache data is correctly populated in the Inspector.</p>
+</body>
+</html>

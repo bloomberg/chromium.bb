@@ -1,0 +1,70 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x268
+  LayoutBlockFlow {HTML} at (0,0) size 800x267.88
+    LayoutBlockFlow {BODY} at (8,21.44) size 784x230.44
+      LayoutBlockFlow {H1} at (0,0) size 784x37
+        LayoutText {#text} at (0,0) size 529x36
+          text run at (0,0) width 529: "Letter spacing lost for emphasized text"
+      LayoutBlockFlow {P} at (0,58.44) size 784x36
+        LayoutText {#text} at (0,0) size 289x17
+          text run at (0,0) width 289: "This example demonstrates that text inside a "
+        LayoutInline {CODE} at (0,0) size 9x16
+          LayoutText {#text} at (288,2) size 9x16
+            text run at (288,2) width 9: "b"
+        LayoutText {#text} at (296,0) size 9x17
+          text run at (296,0) width 9: ", "
+        LayoutInline {CODE} at (0,0) size 9x16
+          LayoutText {#text} at (304,2) size 9x16
+            text run at (304,2) width 9: "i"
+        LayoutText {#text} at (312,0) size 9x17
+          text run at (312,0) width 9: ", "
+        LayoutInline {CODE} at (0,0) size 49x16
+          LayoutText {#text} at (320,2) size 49x16
+            text run at (320,2) width 49: "strong"
+        LayoutText {#text} at (368,0) size 22x17
+          text run at (368,0) width 22: " or "
+        LayoutInline {CODE} at (0,0) size 17x16
+          LayoutText {#text} at (389,2) size 17x16
+            text run at (389,2) width 17: "em"
+        LayoutText {#text} at (405,0) size 115x17
+          text run at (405,0) width 115: " element loses its "
+        LayoutInline {CODE} at (0,0) size 113x16
+          LayoutText {#text} at (519,2) size 113x16
+            text run at (519,2) width 113: "letter-spacing"
+        LayoutText {#text} at (631,0) size 750x35
+          text run at (631,0) width 119: " CSS attribute that"
+          text run at (0,18) width 348: "should be inherited. This was discovered in Safari 1.0."
+      LayoutBlockFlow {DIV} at (0,110.44) size 784x120
+        LayoutBlockFlow {P} at (0,0) size 784x18
+          LayoutText {#text} at (0,0) size 134x17
+            text run at (0,0) width 134: "Text inside "
+          LayoutInline {B} at (0,0) size 50x17
+            LayoutText {#text} at (133,0) size 50x17
+              text run at (133,0) width 50: "bold"
+          LayoutText {#text} at (182,0) size 103x17
+            text run at (182,0) width 103: " element."
+        LayoutBlockFlow {P} at (0,34) size 784x18
+          LayoutText {#text} at (0,0) size 134x17
+            text run at (0,0) width 134: "Text inside "
+          LayoutInline {STRONG} at (0,0) size 73x17
+            LayoutText {#text} at (133,0) size 73x17
+              text run at (133,0) width 73: "strong"
+          LayoutText {#text} at (205,0) size 103x17
+            text run at (205,0) width 103: " element."
+        LayoutBlockFlow {P} at (0,68) size 784x18
+          LayoutText {#text} at (0,0) size 134x17
+            text run at (0,0) width 134: "Text inside "
+          LayoutInline {I} at (0,0) size 62x17
+            LayoutText {#text} at (133,0) size 62x17
+              text run at (133,0) width 62: "italic"
+          LayoutText {#text} at (194,0) size 103x17
+            text run at (194,0) width 103: " element."
+        LayoutBlockFlow {P} at (0,102) size 784x18
+          LayoutText {#text} at (0,0) size 134x17
+            text run at (0,0) width 134: "Text inside "
+          LayoutInline {EM} at (0,0) size 99x17
+            LayoutText {#text} at (133,0) size 99x17
+              text run at (133,0) width 99: "emphasis"
+          LayoutText {#text} at (231,0) size 102x17
+            text run at (231,0) width 102: " element."

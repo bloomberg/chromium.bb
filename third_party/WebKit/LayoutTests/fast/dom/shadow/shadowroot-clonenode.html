@@ -1,0 +1,14 @@
+<!DOCTYPE>
+<html>
+<script src="../../../resources/js-test.js"></script>
+
+<pre id="console"></pre>
+
+<script>
+description('Calling ShadowRoot.cloneNode() should throw a DataCloneError exception.');
+
+var host = document.createElement('div');
+var shadowRoot = host.createShadowRoot();
+shouldThrow('shadowRoot.cloneNode()', '"DataCloneError: Failed to execute \'cloneNode\' on \'ShadowRoot\': ShadowRoot nodes are not clonable."');
+</script>
+</html>

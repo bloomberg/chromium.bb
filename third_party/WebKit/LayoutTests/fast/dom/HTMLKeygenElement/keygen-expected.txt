@@ -1,0 +1,18 @@
+This tests the keygen element
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS keygen.options is undefined
+PASS keygen.type is "keygen"
+PASS keygen.keytype is "rsa"
+PASS keygen.getAttribute("keytype") is null
+PASS keygen.keytype = "foo"; keygen.keytype is ""
+PASS keygen.getAttribute("KEYtype") is "foo"
+PASS keygen.setAttribute("keytype", "bar"); keygen.keytype is ""
+PASS keygen.getAttribute("KeyType") is "bar"
+PASS shadow.firstChild.tagName is "SELECT"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

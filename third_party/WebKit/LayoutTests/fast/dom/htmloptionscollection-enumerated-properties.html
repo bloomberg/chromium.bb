@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<select id="testSelect">
+  <option value="volvo" id="id1" name="name1a">Volvo</option>
+  <option value="saab" id="id1" name="name1b">Saab</option>
+  <option value="mercedes" id="id2" name="name2">Mercedes</option>
+  <option value="audi" id="id3" name="name3">Audi</option>
+  <option value="renault" id="id4" name="name3">Renault</option>
+</select>
+
+<script>
+description("This tests verifies the enumerated properties on HTMLOptionsCollection and their order.");
+
+var testSelect = document.getElementById("testSelect");
+var htmlOptionsCollection = testSelect.options;
+shouldBe("htmlOptionsCollection.__proto__", "HTMLOptionsCollection.prototype");
+shouldBe("htmlOptionsCollection.__proto__.__proto__", "HTMLCollection.prototype");
+shouldBe("htmlOptionsCollection.length", "5");
+
+// As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmloptionscollection:
+// - The object's supported property indices are as defined for HTMLCollection objects.
+// - The supported property names consist of the non-empty values of all the id and name attributes of all the elements
+//   represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its
+//   name if it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
+var expectedEnumeratedProperties = ["0", "1", "2", "3", "4", "length", "selectedIndex", "id1", "name1a", "name1b", "id2", "name2", "id3", "name3", "id4", "namedItem", "add", "remove", "item"].sort();
+
+var enumeratedProperties = [];
+for (var property in htmlOptionsCollection) {
+  enumeratedProperties[enumeratedProperties.length] = property;
+}
+enumeratedProperties.sort();
+shouldBe("enumeratedProperties", "expectedEnumeratedProperties");
+</script>
+</body>
+</html>

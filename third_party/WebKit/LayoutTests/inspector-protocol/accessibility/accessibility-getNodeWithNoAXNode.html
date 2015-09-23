@@ -1,0 +1,51 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.sendCommand("DOM.getDocument", {}, onGotDocument);
+
+    function onGotDocument(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        var rootNode = msg.result.root;
+        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "head" }, onQuerySelector);
+    }
+
+    function onQuerySelector(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+        var node = msg.result;
+        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, onGotAccessibilityNode);
+    }
+
+    function onGotAccessibilityNode(msg)
+    {
+        if (msg.error) {
+            InspectorTest.log(msg.error.message);
+            InspectorTest.completeTest();
+            return;
+        }
+
+        // nodeId isn't always the same, so set it to a known value if it's present
+        InspectorTest.log('result: ' + JSON.stringify(msg.result, null, "  "));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+<body onLoad="runTest();">
+  <input type="text"></input>
+</body>
+</html>

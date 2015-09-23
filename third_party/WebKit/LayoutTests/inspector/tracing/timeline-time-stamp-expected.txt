@@ -1,0 +1,28 @@
+Tests the Timeline API timeStamp feature
+
+TimeStamp Properties:
+{
+    data : {
+        frame : <string>
+        message : "TIME STAMP"
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "TimeStamp"
+}
+Timestamp records: 
+TimeStamp Properties:
+{
+    data : {
+        frame : <string>
+        message : "TIME STAMP"
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "TimeStamp"
+}
+

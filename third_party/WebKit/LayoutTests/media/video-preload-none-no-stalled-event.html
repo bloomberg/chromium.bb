@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<script>
+function runTest()
+{
+  findMediaElement();
+
+  waitForEventAndEnd("suspend");
+  waitForEventAndFail("stalled");
+  consoleWrite("");
+
+  video.src = findMediaFile("video", "content/test");
+}
+</script>
+<body onload="runTest()">
+  <p>Test to see if a media element with preload=none dispatches a 'stalled' event.</p>
+  <video preload=none></video>
+</body>

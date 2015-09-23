@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<input id="target" type="range">
+<script>
+var input = document.querySelector('#target');
+input.createShadowRoot();
+input.valueAsNumber = 1;
+testPassed('not crashed.');
+</script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<title>Text track cue layout after controls are removed</title>
+<style>
+::cue {
+  font-size: 50px;
+}
+</style>
+<video controls style="border:1px solid gray">
+  <source src="opera/track/webvtt/rendering/reftest/media/white.webm" type="video/webm">
+  <source src="opera/track/webvtt/rendering/reftest/media/white.mp4" type="video/mp4">
+</video>
+<script>
+// Without testRunner.layoutAndPaintAsyncThen there is no guarantee for when the first
+// cue layout is done, so make no attempt to work without testRunner.
+testRunner.waitUntilDone();
+
+// Add a cue that will overlap with the video controls.
+var video = document.querySelector("video");
+var track = video.addTextTrack("captions");
+track.addCue(new VTTCue(0, 1, "text"));
+track.mode = "showing";
+
+video.onloadeddata = function() {
+  testRunner.layoutAndPaintAsyncThen(function() {
+    // Remove the controls. The cue should not move.
+    video.controls = false;
+    testRunner.notifyDone();
+  });
+};
+</script>

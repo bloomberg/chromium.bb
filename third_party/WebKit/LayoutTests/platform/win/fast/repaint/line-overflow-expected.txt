@@ -1,0 +1,50 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [114, 114, 38, 18],
+        [114, 84, 38, 48],
+        [37, 132, 37, 18],
+        [37, 132, 37, 18],
+        [8, 132, 192, 71],
+        [8, 78, 200, 200],
+        [8, 16, 784, 262],
+        [7, 114, 202, 89],
+        [7, 78, 202, 200],
+        [7, 16, 785, 262]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'convallis,\n'",
+        "InlineTextBox 'augue'",
+        "RootInlineBox",
+        "InlineTextBox 'purus'",
+        "InlineFlowBox",
+        "InlineTextBox ' eleifend lacus,'",
+        "RootInlineBox",
+        "InlineTextBox 'at sagittis eros leo pulvinar'",
+        "RootInlineBox",
+        "InlineTextBox 'velit. Integer sollicitudin nisi'",
+        "RootInlineBox",
+        "InlineTextBox 'ut urna blandit convallis.'",
+        "RootInlineBox",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV",
+        "LayoutInline SPAN id='t'",
+        "InlineFlowBox",
+        "LayoutText #text",
+        "InlineTextBox 'purus'",
+        "LayoutText #text",
+        "InlineTextBox ' eleifend'",
+        "InlineTextBox 'lacus, at sagittis eros leo'",
+        "InlineTextBox 'pulvinar velit. Integer'",
+        "InlineTextBox 'sollicitudin nisi ut urna blandit'",
+        "InlineTextBox 'convallis.'"
+      ]
+    }
+  ]
+}
+

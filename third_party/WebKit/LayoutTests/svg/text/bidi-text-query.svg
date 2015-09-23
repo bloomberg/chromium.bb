@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="100%" height="100%"  viewBox="0 0 480 360" xmlns="http://www.w3.org/2000/svg">
+<g font-family="Arial" font-size="18">
+    <text x="10" y="50"><tspan direction="ltr" unicode-bidi="bidi-override">نشاط التدويل، W3C</tspan></text>
+    <text x="10" y="80"><tspan direction="ltr" unicode-bidi="normal">نشاط التدويل، W3C</tspan></text>
+    <text x="10" y="110" text-anchor="end" direction="rtl">W3C <tspan>نشاط التدويل،</tspan></text>
+    <g id="container"/>
+
+    <script type="text/javascript"><![CDATA[
+        function highlightGlyph(text, index, color) {
+            var extent = text.getExtentOfChar(index);
+
+            // Highlight rect that we've selected using the extent information
+            var rectElement = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rectElement.setAttribute("x", extent.x);
+            rectElement.setAttribute("y", extent.y);
+            rectElement.setAttribute("width", extent.width);
+            rectElement.setAttribute("height", extent.height);
+            rectElement.setAttribute("fill-opacity", "0.4");
+            rectElement.setAttribute("fill", color);
+            document.getElementById("container").appendChild(rectElement);
+            // Output the start offset
+            var textElement = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            textElement.setAttribute("x", extent.x + extent.width / 2);
+            textElement.setAttribute("y", extent.y + extent.height + 5);
+            textElement.setAttribute("text-anchor", "middle");
+            textElement.setAttribute("font-size", 4);
+            textElement.appendChild(document.createTextNode(index));
+            document.getElementById("container").appendChild(textElement);
+        }
+
+        var colors = [ "red", "orange", "yellow", "green", "blue", "indigo", "violet"];
+
+        // Highlight each glyph with a semi-transparent rectangle and
+        // a number corresponding to the queried character index.
+        var textElements = document.querySelectorAll("text");
+        for (var elemNum = 0; elemNum < textElements.length; ++elemNum) {
+          var text = textElements[elemNum];
+          var charCount = text.getNumberOfChars();
+          for (var index = 0; index < charCount; ++index)
+            highlightGlyph(text, index, colors[index % colors.length]);
+        }
+    ]]></script>
+</g>
+</svg>

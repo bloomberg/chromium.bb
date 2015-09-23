@@ -1,0 +1,118 @@
+<html>
+<head>
+<style>
+div {
+    display: inline-block;
+}
+
+div.img-container {
+    position: relative;
+    width: 99px;
+    height: 99px;
+    overflow: clip;
+}
+
+.background, .border {
+    width: 25px;
+    height: 25px;
+};
+
+.border {
+    border-width: 12px;
+}
+
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+var images = [
+    ["./resources/test.webp", "25", "25"],
+    ["./resources/test.bmp", "25", "25"],
+    ["./resources/test.gif", "25", "25"],
+    ["./resources/test.ico", "25", "25"],
+    ["./resources/test.jpg", "25", "25"],
+    ["./resources/test.png", "25", "25"],
+    ["./resources/big.png", "150", "150"]
+];
+
+function showImages(callback)
+{
+    var nextImageIndex = 0;
+
+    addImages();
+
+    function addImages()
+    {
+        if (nextImageIndex >= images.length) {
+            // Allow several frames for image decoding to complete on rasterizer threads.
+            generateFrames(3, callback);
+            return;
+        }
+
+        var imgContainer = document.createElement("div");
+        imgContainer.className = "img-container";
+        document.body.appendChild(imgContainer);
+
+        var imgElement = document.createElement("img");
+        imgElement.addEventListener("load", testRunner.layoutAndPaintAsyncThen.bind(testRunner, addImages));
+        imgContainer.appendChild(imgElement);
+
+        var backgroundElement = document.createElement("div");
+        backgroundElement.className = "background";
+        document.body.appendChild(backgroundElement);
+
+        var borderElement = document.createElement("div");
+        borderElement.className = "border";
+        document.body.appendChild(borderElement);
+
+        var image = images[nextImageIndex++];
+        imgElement.width = image[1];
+        imgElement.height = image[2];
+        imgElement.src = image[0];
+        backgroundElement.style.backgroundImage = "url(" + image[0] + "?background)";
+        borderElement.style.borderImage = "url(" + image[0] + "?border)";
+    }
+}
+
+
+function test()
+{
+    InspectorTest.invokeWithTracing("showImages", InspectorTest.safeWrap(onTracingComplete));
+    function onTracingComplete()
+    {
+        function isDecodeImageEvent(event)
+        {
+            return event.name === WebInspector.TimelineModel.RecordType.DecodeImage;
+        }
+        function compareImageURLs(a, b)
+        {
+            var urlA = InspectorTest.formatters.formatAsURL(a.url || "<missing>");
+            var urlB = InspectorTest.formatters.formatAsURL(b.url || "<missing>");
+            return urlA.localeCompare(urlB);
+        }
+        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
+        var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
+        for (var i = 0; i < sortedDecodeEvents.length; ++i) {
+            var event = sortedDecodeEvents[i];
+            // Skip duplicate events, as long as they have the imageURL
+            if (i && event.url && event.url === sortedDecodeEvents[i - 1].url)
+                continue;
+            InspectorTest.addResult("event: " + event.name);
+            InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.url));
+            InspectorTest.addResult("backendNodeId: " + (event.backendNodeId > 0 ? "present" : "absent"));
+        }
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the instrumentation of a DecodeImage and ResizeImage events
+</p>
+</body>
+</html>

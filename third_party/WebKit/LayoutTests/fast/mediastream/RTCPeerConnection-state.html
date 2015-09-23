@@ -1,0 +1,28 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests the RTCPeerConnection states.");
+
+var pc = null;
+
+function stateChanged()
+{
+    testPassed("stateChanged was called");
+    shouldBeEqualToString('pc.signalingState', 'closed');
+    finishJSTest();
+}
+
+shouldNotThrow('pc = new webkitRTCPeerConnection({iceServers:[]}, null);');
+shouldBeEqualToString('pc.signalingState', 'stable');
+pc.onsignalingstatechange = stateChanged;
+pc.close();
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

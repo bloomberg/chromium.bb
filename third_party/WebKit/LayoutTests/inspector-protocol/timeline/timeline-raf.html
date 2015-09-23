@@ -1,0 +1,54 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/tracing-test.js"></script>
+<script>
+
+function performActions(callback)
+{
+    var rafId1 = requestAnimationFrame(function()
+    {
+        evaluateInFrontend("InspectorTest.testFunctionRequestAnimationFrame(" + rafId1 + ", " + rafId2 + ")");
+        callback();
+    });
+
+    var rafId2 = requestAnimationFrame(function() { });
+    cancelAnimationFrame(rafId2);
+}
+
+function test()
+{
+    InspectorTest.invokeAsyncWithTracing("performActions", finish);
+
+    var firedRaf;
+    var canceledRaf;
+    InspectorTest.testFunctionRequestAnimationFrame = function(rafId1, rafId2)
+    {
+        firedRaf = rafId1;
+        canceledRaf = rafId2;
+        InspectorTest.log("SUCCESS: testFunctionRequestAnimationFrame");
+    }
+
+    function finish(devtoolsEvents)
+    {
+        function hasRafId(id, e) { return e.args.data.id === id}
+
+        var raf1 = InspectorTest.findEvent("RequestAnimationFrame", "I", hasRafId.bind(this, firedRaf));
+        var raf2 = InspectorTest.findEvent("RequestAnimationFrame", "I", hasRafId.bind(this, canceledRaf));
+
+        InspectorTest.log("RequestAnimationFrame has frame: " + !!raf1.args.data.frame);
+        InspectorTest.log("RequestAnimationFrame frames match: " + (raf1.args.data.frame === raf2.args.data.frame));
+
+        InspectorTest.findEvent("CancelAnimationFrame", "I", hasRafId.bind(this, canceledRaf));
+        InspectorTest.findEvent("FireAnimationFrame", "X", hasRafId.bind(this, firedRaf));
+
+        InspectorTest.log("SUCCESS: found all expected events.");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+<div id="myDiv">DIV</div>
+</body>
+</html>

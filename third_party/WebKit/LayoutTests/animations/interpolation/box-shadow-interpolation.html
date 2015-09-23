@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.parent {
+  box-shadow: 30px 10px 30px 10px black,
+}
+.target {
+  display: inline-block;
+  width: 60px;
+  height: 60px;
+  font-size: 3px;
+  border: 2px solid;
+  margin-right: 20px;
+  margin-bottom: 30px;
+  color: green;
+  box-shadow: 10px 30px 10px 30px black,
+}
+.expected {
+  margin-right: 40px;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'box-shadow',
+  from: '',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '7px 33px 7px 33px black'},
+  {at: 0, is: '10px 30px 10px 30px black'},
+  {at: 0.3, is: '13px 27px 13px 27px black'},
+  {at: 0.6, is: '16px 24px 16px 24px black'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '25px 15px 25px 15px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'initial',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
+  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '30px 30px 30px 30px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'inherit',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '33px 7px 33px 7px black'},
+  {at: 0, is: '30px 10px 30px 10px black'},
+  {at: 0.3, is: '27px 13px 27px 13px black'},
+  {at: 0.6, is: '24px 16px 24px 16px black'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '15px 25px 15px 25px black'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: 'unset',
+  to: '20px 20px 20px 20px black',
+}, [
+  {at: -0.3, is: '-6px -6px 0px -6px transparent'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: '6px 6px 6px 6px rgba(0, 0, 0, 0.3)'},
+  {at: 0.6, is: '12px 12px 12px 12px rgba(0, 0, 0, 0.6)'},
+  {at: 1, is: '20px 20px 20px 20px black'},
+  {at: 1.5, is: '30px 30px 30px 30px black'},
+]);
+
+
+// Test basic functionality, and clipping blur at 0
+assertInterpolation({
+  property: 'box-shadow',
+  from: '15px 10px 5px 6px black',
+  to: '-15px -10px 25px -4px orange'
+}, [
+  {at: -0.3, is: '24px 16px 0px 9px black'},
+  {at: 0, is: '15px 10px 5px 6px black'},
+  {at: 0.3, is: '6px 4px 11px 3px rgb(77, 50, 0)'},
+  {at: 0.6, is: '-3px -2px 17px 0px rgb(153, 99, 0)'},
+  {at: 1, is: '-15px -10px 25px -4px orange'},
+  {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0)'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: '15px 10px 5px 6px black inset',
+  to: '-15px -10px 25px -4px orange inset'
+}, [
+  {at: -0.3, is: '24px 16px 0px 9px black inset'},
+  {at: 0, is: '15px 10px 5px 6px black inset'},
+  {at: 0.3, is: '6px 4px 11px 3px rgb(77, 50, 0) inset'},
+  {at: 0.6, is: '-3px -2px 17px 0px rgb(153, 99, 0) inset'},
+  {at: 1, is: '-15px -10px 25px -4px orange inset'},
+  {at: 1.5, is: '-30px -20px 35px -9px rgb(255, 248, 0) inset'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: '15px 10px 5px 6px black',
+  to: '-15px -10px 25px -4px'
+}, [
+  {at: -0.3, is: '24px 16px 0px 9px black'},
+  {at: 0, is: '15px 10px 5px 6px black'},
+  {at: 0.3, is: '6px 4px 11px 3px rgb(0, 38, 0)'},
+  {at: 0.6, is: '-3px -2px 17px 0px rgb(0, 77, 0)'},
+  {at: 1, is: '-15px -10px 25px -4px green'},
+  {at: 1.5, is: '-30px -20px 35px -9px rgb(0, 192, 0)'},
+]);
+
+assertInterpolation({
+  property: 'box-shadow',
+  from: '10px 10px 10px 10px black',
+  to: '10px 10px 10px 10px currentColor',
+}, [
+  {at: -0.3, is: '10px 10px 10px 10px black'},
+  {at: 0, is: '10px 10px 10px 10px black'},
+  {at: 0.3, is: '10px 10px 10px 10px rgb(0, 38, 0)'},
+  {at: 0.6, is: '10px 10px 10px 10px rgb(0, 77, 0)'},
+  {at: 1, is: '10px 10px 10px 10px green'},
+  {at: 1.5, is: '10px 10px 10px 10px rgb(0, 192, 0)'},
+]);
+
+// Test padding shorter lists
+assertInterpolation({
+  property: 'box-shadow',
+  from: '10px 20px rgba(255, 255, 0, 0.5), inset 5px 10em #008000',
+  to: 'none'
+}, [
+  {at: -0.3, is: '13px 26px rgba(255, 255, 0, 0.65), inset 6.5px 39px rgb(0, 166, 0)'},
+  {at: 0, is: '10px 20px rgba(255, 255, 0, 0.5), inset 5px 30px #008000'},
+  {at: 0.3, is: '7px 14px rgba(255, 255, 0, 0.35), inset 3.5px 21px rgba(0, 128, 0, 0.7)'},
+  {at: 0.6, is: '4px 8px rgba(255, 255, 0, 0.2), inset 2px 12px rgba(0, 127, 0, 0.4)'},
+  {at: 1, is: 'none'},
+  {at: 1.5, is: '-5px -10px transparent, inset -2.5px -15px transparent'},
+]);
+
+// Test unmatched inset
+assertNoInterpolation({
+  property: 'box-shadow',
+  from: '10px 20px yellow, 5px 10px green',
+  to: 'inset 5px 10px green, 15px 20px blue'
+});
+</script>
+</body>

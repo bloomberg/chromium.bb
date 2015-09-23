@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  assert_true(player.finished instanceof Promise);
+}, 'The finished attribute should be a Promise');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.finished;
+  player.finish();
+  promise.then(function(p) {
+    t.step(function() {
+      assert_equals(promise, player.finished);
+    });
+    t.done();
+  });
+}, 'The finished promise should not be replaced when the player finishes');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  player.finish();
+  player.finished.then(function(p) {
+    t.step(function() {
+      assert_equals(p, player);
+    });
+    t.done();
+  });
+}, 'The finished promise should resolve when the player finishes');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  player.finished.then(function() {}, function(e) {
+    t.step(function() {
+      assert_equals(e.code, DOMException.ABORT_ERR);
+    });
+    t.done();
+  });
+  player.cancel();
+}, 'The finished promise should be rejected if the player is cancelled');
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  player.finish();
+  var promise = player.finished;
+  player.play();
+  assert_not_equals(player.finished, promise);
+}, 'A new finished promise should be created when a finished player is resumed');
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.finished;
+  player.cancel();
+  assert_not_equals(player.finished, promise);
+}, 'A new finished promise should be created when a running player is cancelled');
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.finished;
+  player.finish();
+  player.cancel();
+  assert_not_equals(player.finished, promise);
+}, 'A new finished promise should be created when a finished player is cancelled');
+</script>

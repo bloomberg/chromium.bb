@@ -1,0 +1,15 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests to ensure that ShadowRoot.getElementById can get an element in ShadowRoot by its id. Can only run within DRT
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getNodeInTreeOfTrees('divA/inputB').id is "inputB"
+PASS getNodeInTreeOfTrees('divA/divC').id is "divC"
+PASS getNodeInTreeOfTrees('divA/divC/inputD').id is "inputD"
+PASS getNodeInTreeOfTrees('divA/divC//inputE').id is "inputE"
+PASS getNodeInTreeOfTrees('divA/divC///inputF').id is "inputF"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

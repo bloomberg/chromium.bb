@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script>
+function sendScriptRequest() {
+    var script = document.createElement("script");
+    script.src = "resources/empty-script.js";
+    document.head.appendChild(script);
+}
+
+function sendXHRRequest() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "resources/empty.html?xhr");
+    xhr.send();
+}
+
+function createIFrame() {
+    var iframe = document.createElement("iframe");
+    iframe.src = "resources/empty.html?iframe";
+    document.head.appendChild(iframe);
+}
+
+function test() {
+    function step1()
+    {
+        requestName = "empty.html?xhr";
+        nextStep = step2;
+        InspectorTest.evaluateInPage("sendXHRRequest()");
+    }
+
+    function step2()
+    {
+        requestName = "empty.html?iframe";
+        nextStep = InspectorTest.completeTest;
+        InspectorTest.evaluateInPage("createIFrame()");
+    }
+
+    function onRequest(event)
+    {
+        var request = event.data;
+        if (request.name() !== requestName)
+            return;
+        requestName = undefined;
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Request: " + request.name());
+        InspectorTest.addResult("Type: " + request.resourceType().name());
+        nextStep();
+    }
+
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, onRequest);
+
+    var requestName = "empty-script.js";
+    var nextStep = step1;
+    InspectorTest.evaluateInPage("sendScriptRequest()");
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that XHR request type is detected on send.</p>
+</body>
+</html>

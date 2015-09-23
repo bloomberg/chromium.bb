@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <script>
+      function init() {
+          if (!window.testRunner || !window.internals)
+              debug('This test can not run without testRunner or internals');
+
+          internals.setGeolocationClientMock(document);
+          internals.setGeolocationPermission(document, false);
+          window.parent.onIframeReady()
+      }
+    </script>
+  </head>
+  <body onload="init()">
+  </body>
+</html>

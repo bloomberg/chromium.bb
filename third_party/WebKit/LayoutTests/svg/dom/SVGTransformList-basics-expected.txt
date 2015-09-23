@@ -1,0 +1,154 @@
+This is a test of the simple SVGTransformList API parts.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS circle1.transform.baseVal != circle1.transform.animVal is true
+PASS circle1.transform.baseVal.numberOfItems is 2
+PASS circle1.transform.animVal.numberOfItems is 2
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+
+Test uncommon arguments for initialize()
+PASS transformList.initialize(30) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.initialize('aString') threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.initialize(circle1) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.initialize(null) threw exception TypeError: Failed to execute 'initialize' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+
+Test uncommon arguments for getItem()
+PASS transformList.getItem(30) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGTransformList': The index provided (30) is greater than the maximum bound (2)..
+PASS transformList.getItem('aString').toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(circle1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(null).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+
+Test uncommon arguments for insertItemBefore()
+PASS transformList.insertItemBefore(30) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.insertItemBefore('aString') threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.insertItemBefore(circle1) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.insertItemBefore(null) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.insertItemBefore(transformList.getItem(1), 'aString').toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.numberOfItems is 3
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS circle1.getAttribute('transform') is "translate(10 10) scale(2 2) translate(10 10)"
+PASS transformList.insertItemBefore(transformList.getItem(1), circle1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.numberOfItems is 4
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS circle1.getAttribute('transform') is "scale(2 2) translate(10 10) scale(2 2) translate(10 10)"
+PASS transformList.insertItemBefore(transformList.getItem(1), null).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.numberOfItems is 5
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(4).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS circle1.getAttribute('transform') is "translate(10 10) scale(2 2) translate(10 10) scale(2 2) translate(10 10)"
+PASS transformList.insertItemBefore(transformList.getItem(1), 0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.numberOfItems is 6
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(4).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(5).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS circle1.getAttribute('transform') is "scale(2 2) translate(10 10) scale(2 2) translate(10 10) scale(2 2) translate(10 10)"
+PASS transformList.insertItemBefore(30, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.insertItemBefore('aString', 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.insertItemBefore(circle1, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.insertItemBefore(null, 0) threw exception TypeError: Failed to execute 'insertItemBefore' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+
+Set transform='rotate(90) scale(2 2) translate(10 10) skewX(45)' for circle1
+PASS circle1.setAttribute('transform', 'rotate(90) scale(2 2) translate(10 10) skewX(45)') is undefined.
+PASS transformList.numberOfItems is 4
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "rotate(90) scale(2 2) translate(10 10) skewX(45)"
+
+Test uncommon arguments for replaceItem()
+PASS transformList.replaceItem(30) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.replaceItem('aString') threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.replaceItem(circle1) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.replaceItem(null) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': 2 arguments required, but only 1 present..
+PASS transformList.replaceItem(30, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.replaceItem('aString', 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.replaceItem(circle1, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.replaceItem(null, 0) threw exception TypeError: Failed to execute 'replaceItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+
+Test uncommon values for indexed setter
+PASS transformList[0] = 30 threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS transformList[0] = 'aString' threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS transformList[0] = circle1 threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS transformList[0] = null threw exception TypeError: Failed to set an indexed property on 'SVGTransformList': The provided value is not of type 'SVGTransform'..
+PASS transformList.replaceItem(transformList.getItem(0), 0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.numberOfItems is 4
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "rotate(90) scale(2 2) translate(10 10) skewX(45)"
+PASS transformList.replaceItem(transformList.getItem(0), 'aString').toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.numberOfItems is 4
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "rotate(90) scale(2 2) translate(10 10) skewX(45)"
+PASS transformList.replaceItem(transformList.getItem(0), circle1).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.numberOfItems is 4
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(3).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "rotate(90) scale(2 2) translate(10 10) skewX(45)"
+PASS transformList.replaceItem(transformList.getItem(0), null).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.numberOfItems is 4
+PASS circle1.getAttribute('transform') is "rotate(90) scale(2 2) translate(10 10) skewX(45)"
+
+Set transform='rotate(90) scale(2 2) translate(10 10) skewX(45)' for circle1
+PASS circle1.setAttribute('transform', 'rotate(90) scale(2 2) translate(10 10) skewX(45)') is undefined.
+
+Test uncommon arguments for removeItem()
+PASS transformList.removeItem(30) threw exception IndexSizeError: Failed to execute 'removeItem' on 'SVGTransformList': The index provided (30) is greater than the maximum bound (4)..
+PASS transformList.removeItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.0 1.0 -1.0 0.0 0.0 0.0]"
+PASS transformList.numberOfItems is 3
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(2).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "scale(2 2) translate(10 10) skewX(45)"
+PASS transformList.removeItem('aString').toString() is "type=SVG_TRANSFORM_SCALE matrix=[2.0 0.0 0.0 2.0 0.0 0.0]"
+PASS transformList.numberOfItems is 2
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.getItem(1).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "translate(10 10) skewX(45)"
+PASS transformList.removeItem(circle1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 10.0 10.0]"
+PASS transformList.numberOfItems is 1
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_SKEWX matrix=[1.0 0.0 1.0 1.0 0.0 0.0]"
+PASS circle1.getAttribute('transform') is "skewX(45)"
+
+Test uncommon arguments for appendItem()
+PASS transformList.appendItem(30) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.appendItem('aString') threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.appendItem(circle1) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+PASS transformList.appendItem(null) threw exception TypeError: Failed to execute 'appendItem' on 'SVGTransformList': parameter 1 is not of type 'SVGTransform'..
+
+Testing animVal clear throws
+PASS circle1.transform.animVal.clear() threw exception NoModificationAllowedError: Failed to execute 'clear' on 'SVGTransformList': The object is read-only..
+PASS transformList.clear() is undefined.
+
+Creating new SVGTransform, with 45 deg rotation about x=50, y=100 and append it to the transform list
+PASS (transform = svg.createSVGTransform()).toString() is "type=SVG_TRANSFORM_MATRIX matrix=[1.0 0.0 0.0 1.0 0.0 0.0]"
+PASS transform.setRotate(45, 50, 100) is undefined.
+PASS transformList.appendItem(transform).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]"
+PASS transformList.numberOfItems is 1
+PASS transformList.getItem(0).toString() is "type=SVG_TRANSFORM_ROTATE matrix=[0.7 0.7 -0.7 0.7 85.4 -6.1]"
+PASS circle1.getAttribute('transform') is "rotate(45 50 100)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

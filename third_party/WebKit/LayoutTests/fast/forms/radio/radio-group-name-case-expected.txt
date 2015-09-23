@@ -1,0 +1,72 @@
+Case shouldn't matter when it comes to radio group names
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test 1
+form.elements[0].name = 'r';
+form.elements[1].name = 'r';
+form.elements[2].name = 'R';
+PASS form.elements[0].checked is false
+PASS form.elements[1].checked is false
+PASS form.elements[2].checked is true
+
+Test 2
+form.elements[0].name = 'radio';
+form.elements[1].name = 'rAdIO';
+form.elements[2].name = 'RADIO';
+PASS form.elements[0].checked is false
+PASS form.elements[1].checked is false
+PASS form.elements[2].checked is true
+
+Test 3 (LATIN SMALL LETTER N WITH TILDE / LATIN CAPITAL LETTER N WITH TILDE)
+form.elements[0].name = '\u00F1';
+form.elements[1].name = '\u00F1';
+form.elements[2].name = '\u00D1';
+PASS form.elements[0].checked is false
+PASS form.elements[1].checked is false
+PASS form.elements[2].checked is true
+
+Test 4 (LATIN SMALL LETTER SHARP S / SS)
+form.elements[0].name = '\u00DF';
+form.elements[1].name = '\u00DF';
+form.elements[2].name = 'SS';
+PASS form.elements[0].checked is false
+FAIL form.elements[1].checked should be false. Was true.
+PASS form.elements[2].checked is true
+
+Test 5 (DESERET SMALL LETTER LONG I / DESERET CAPITAL LETTER LONG I)
+form.elements[0].name = '\uD801\uDC28';
+form.elements[1].name = '\uD801\uDC28';
+form.elements[2].name = '\uD801\uDC00';
+PASS form.elements[0].checked is false
+FAIL form.elements[1].checked should be false. Was true.
+PASS form.elements[2].checked is true
+
+Test 6 (GREEK SMALL LETTER FINAL SIGMA / GREEK SMALL LETTER SIGMA / GREEK CAPITAL LETTER SIGMA)
+form.elements[0].name = '\u03C2';
+form.elements[1].name = '\u03C3';
+form.elements[2].name = '\u03A3';
+PASS form.elements[0].checked is false
+PASS form.elements[1].checked is false
+PASS form.elements[2].checked is true
+
+Test 7 (LATIN CAPITAL LETTER I WITH DOT ABOVE)
+form.elements[0].name = '\u0130';
+form.elements[1].name = '\u0069';
+form.elements[2].name = '\u0130';
+PASS form.elements[0].checked is false
+FAIL form.elements[1].checked should be false. Was true.
+PASS form.elements[2].checked is true
+
+Test 8 (LATIN SMALL LETTER DOTLESS I)
+form.elements[0].name = '\u0131';
+form.elements[1].name = '\u0049';
+form.elements[2].name = '\u0131';
+PASS form.elements[0].checked is false
+FAIL form.elements[1].checked should be false. Was true.
+PASS form.elements[2].checked is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+    

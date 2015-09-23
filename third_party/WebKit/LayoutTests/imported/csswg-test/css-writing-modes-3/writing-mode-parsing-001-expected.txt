@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL writing-mode initial value assert_equals: expected "horizontal-tb" but got "lr-tb"
+FAIL -webkit-writing-mode: vertical-rl assert_equals: expected "vertical-rl" but got "lr-tb"
+FAIL -webkit-writing-mode: vertical-lr assert_equals: expected "vertical-lr" but got "lr-tb"
+FAIL writing-mode should inherit assert_equals: expected "vertical-rl" but got "lr-tb"
+FAIL -webkit-writing-mode: horizontal-tb assert_equals: expected "horizontal-tb" but got "lr-tb"
+FAIL -webkit-writing-mode: initial assert_equals: expected "horizontal-tb" but got "lr-tb"
+FAIL -webkit-writing-mode: inherit assert_equals: expected "vertical-rl" but got "lr-tb"
+FAIL -webkit-writing-mode: foo assert_equals: expected "vertical-rl" but got "lr-tb"
+Harness: the test ran to completion.
+

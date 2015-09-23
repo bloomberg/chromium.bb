@@ -1,0 +1,12 @@
+Tests to ensure that default action does not occur for untrusted events.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+ 
+FAIL document.getElementById('radio1').checked should be true. Was false.
+FAIL document.getElementById('radio2').checked should be false. Was true.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

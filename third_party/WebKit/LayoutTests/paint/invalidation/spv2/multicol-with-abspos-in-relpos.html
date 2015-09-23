@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/multicol-with-abspos-in-relpos.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    onload = runPaintInvalidationTest;
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow (positioned) DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'",
+    ];
+    function paintInvalidationTest() {
+        var target = document.getElementById('target');
+        target.style.visibility = 'visible';
+    }
+</script>
+<div style="-webkit-columns:4; -webkit-column-gap:10px; column-fill:auto; width:630px; height:40px; color:green;">
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <div style="position:relative;">
+        <br>
+        <br>
+        <div id="target" style="position:absolute; left:20px; top:20px; visibility:hidden;">PASS</div>
+    </div>
+</div>
+<p>A green PASS should be seen above.</p>

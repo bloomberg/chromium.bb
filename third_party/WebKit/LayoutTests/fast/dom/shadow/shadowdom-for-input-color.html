@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script src="../../forms/resources/common.js"></script>
+<input id="target" type="color" value="#000000" onclick="this.createShadowRoot()">
+<script>
+if (window.eventSender) {
+    clickElement(target);
+    internals.selectColorInColorChooser(target, '#ffffff');
+    target.style.display = 'none';
+    testPassed('not crashed.');
+} else {
+    debug('Manual test instruction: Click the color input, and choose a color. PASS if the renderer was not crashed.');
+}
+</script>
+</body>
+</html>

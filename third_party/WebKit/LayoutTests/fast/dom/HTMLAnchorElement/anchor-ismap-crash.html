@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<body>
+<script src="../../../resources/js-test.js"></script> 
+<a href="javascript:">foo<img ismap style="content:'bar'; display:block;"></a>
+<script>
+document.getElementsByTagName('img')[0].click();
+testPassed('if not crashed.');
+</script>
+</body>

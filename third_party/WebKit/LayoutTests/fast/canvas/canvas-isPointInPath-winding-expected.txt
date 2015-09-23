@@ -1,0 +1,59 @@
+Series of tests to ensure correct results of the winding rule in isPointInPath.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Testing default isPointInPath
+PASS ctx.isPointInPath(50, 50) is true
+PASS ctx.isPointInPath(NaN, 50) is false
+PASS ctx.isPointInPath(50, NaN) is false
+
+Testing nonzero isPointInPath
+PASS ctx.isPointInPath(50, 50, 'nonzero') is true
+
+Testing evenodd isPointInPath
+PASS ctx.isPointInPath(50, 50, 'evenodd') is false
+
+Testing default isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50) is true
+PASS ctx.isPointInPath(path, NaN, 50) is false
+PASS ctx.isPointInPath(path, 50, NaN) is false
+
+Testing nonzero isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50, 'nonzero') is true
+
+Testing evenodd isPointInPath with Path object
+PASS ctx.isPointInPath(path, 50, 50, 'evenodd') is false
+
+Testing invalid enumeration isPointInPath (w/ and w/o Path object
+PASS ctx.isPointInPath(path, 50, 50, 'gazonk') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath(50, 50, 'gazonk') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
+
+Testing invalid type isPointInPath with Path object
+PASS ctx.isPointInPath(null, 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value '50' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath(null, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(null, 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(null, 50, 50, null) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(path, 50, 50, null) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value 'null' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath(undefined, 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value '50' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath(undefined, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(undefined, 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(undefined, 50, 50, undefined) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath(path, 50, 50, undefined) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value 'undefined' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath([], 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value '50' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath([], 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath([], 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath({}, 50, 50) threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value '50' is not a valid enum value of type CanvasFillRule..
+PASS ctx.isPointInPath({}, 50, 50, 'nonzero') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.isPointInPath({}, 50, 50, 'evenodd') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+
+Testing extremely large scale
+PASS ctx.isPointInPath(0, 0, 'nonzero') is true
+PASS ctx.isPointInPath(0, 0, 'evenodd') is true
+Check with non-invertible ctm.
+PASS ctx.isPointInPath(0, 0, 'nonzero') is false
+PASS ctx.isPointInPath(0, 0, 'evenodd') is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

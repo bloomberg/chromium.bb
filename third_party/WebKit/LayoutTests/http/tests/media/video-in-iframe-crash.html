@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <script src="../../media-resources/video-test.js"></script>
+    <script>
+        function getNextURL()
+        {
+            var url = location.href;
+            var queryIndex = url.indexOf("?");
+            var loadCount = 1;
+            if (queryIndex >= 0) {
+              loadCount = parseInt(url.substring(queryIndex + 1));
+
+              // Enforce an arbitrary reload limit that is high enough to trigger previosly observed crashes.
+              if (loadCount >= 10)
+                  return "";
+
+              url = url.substring(0, queryIndex);
+            }
+
+            return url + "?" + (loadCount + 1);
+        }
+
+        function reloadPage()
+        {
+            var url = getNextURL();
+            if (url.length == 0) {
+                endTest();
+                return;
+            }
+            location.href = url;
+        }
+
+        function start()
+        {
+            iframe = document.createElement("iframe");
+            iframe.src = "../../media-resources/resources/frame_size_change.webm";
+            document.getElementById("store_div").appendChild(iframe);
+            window.setTimeout(moveIframeBodyIntoDocumentBody, 20);
+        }
+
+        function moveIframeBodyIntoDocumentBody()
+        {
+            var iframeContentDocument = iframe.contentDocument;
+            var iframeDocumentElement = iframeContentDocument.documentElement;
+
+            iframeContentDocument.onreadystatechange = function(e)
+            {
+                // Attempts to move the document body back into the iframe document.
+                iframeContentDocument.appendChild(iframeDocumentElement);
+            }
+
+            // Moves the iframe body into the current document.
+            document.body.appendChild(iframeContentDocument.firstChild);
+            reloadPage();
+        }
+
+    </script>
+    <body onload="start()">
+        <p>Tests that moving a &lt;video&gt; in and out of an iframe does not trigger a crash.</p>
+        <div id="store_div"></div>
+    </body>
+</html>

@@ -1,0 +1,20 @@
+<!doctype html>
+<title>register</title>
+<script src="test-helpers.js"></script>
+<body>
+<script>
+navigator.serviceWorker.register('empty-worker.js', {scope: 'scope-register'})
+  .then(
+    registration => {
+        registration.unregister().then(() => {
+            window.parent.postMessage('OK', '*');
+          });
+      },
+    error => {
+        window.parent.postMessage('FAIL: ' + error.name, '*');
+      })
+  .catch(error => {
+      window.parent.postMessage('ERROR: ' + error.name, '*');
+    });
+</script>
+</body>

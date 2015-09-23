@@ -1,0 +1,5 @@
+This test checks that loading with emulation turned on by default selects the "Emulation" view in drawer.
+
+Drawer visible: true
+Selected view in drawer: emulation
+

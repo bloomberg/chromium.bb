@@ -1,0 +1,31 @@
+{
+  "bounds": [785, 2350],
+  "children": [
+    {
+      "bounds": [785, 2350],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 2197, 777, 106],
+        [8, 2197, 653, 106],
+        [8, 2047, 777, 106],
+        [8, 2047, 774, 106],
+        [8, 2000, 777, 350]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow (positioned) DIV id='absolute'",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "InlineTextBox 'This test checks that switching opacity'",
+        "InlineTextBox 'invalidates the full subtree.'",
+        "LayoutBlockFlow P",
+        "LayoutText #text",
+        "InlineTextBox 'This text should be visible in the'",
+        "InlineTextBox 'output.'",
+        "LayoutBlockFlow DIV id='container'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,3 @@
+CONSOLE MESSAGE: line 14: PASS: SVGDocument access threw: 'SecurityError: Failed to execute 'getSVGDocument' on 'HTMLObjectElement': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+
+

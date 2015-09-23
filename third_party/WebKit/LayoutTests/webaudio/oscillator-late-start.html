@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+  <script src="resources/late-start-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description('Test the late call of start(0) of Oscillator.');
+    window.jsTestIsAsync = true;
+
+    var audit = Audit.createTaskRunner();
+
+    var sampleRate = 44100;
+
+    // The long render length (20 seconds) is to make sure the |onstatechange|
+    // event gets fired to start the source, which can take quite a bit of time.
+    var renderLength = 20;
+    
+    var context = new OfflineAudioContext(1, sampleRate * renderLength, sampleRate);
+    var osc = context.createOscillator();
+
+    // Test the oscillator node is rendered correctly when the start time of start() 
+    // call is in the past in terms of the context time.
+    runLateStartTest(audit, context, osc);
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

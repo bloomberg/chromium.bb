@@ -1,0 +1,19 @@
+TEST
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [100, 30],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

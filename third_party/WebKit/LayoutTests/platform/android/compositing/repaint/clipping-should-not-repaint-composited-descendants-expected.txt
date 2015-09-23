@@ -1,0 +1,49 @@
+{
+  "bounds": [785, 616],
+  "children": [
+    {
+      "bounds": [785, 616],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [108, 108],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "position": [-100, -100],
+                  "bounds": [252, 252],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [108, 408],
+          "bounds": [100, 100],
+          "children": [
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "position": [-100, -100],
+                  "bounds": [252, 252],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#FFFF00"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

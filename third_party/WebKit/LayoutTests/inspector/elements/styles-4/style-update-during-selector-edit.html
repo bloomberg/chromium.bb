@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function addStyleClass()
+{
+    document.getElementById("inspected").className = "new-class";
+}
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
+    var seenRebuildUpdate;
+    var seenAttrModified;
+    var modifiedAttrNodes = [];
+
+    function attributeChanged(event)
+    {
+        if (event.data.node === treeOutline.selectedDOMNode())
+            seenAttrModified = true;
+    }
+
+    function rebuildUpdate()
+    {
+        if (WebInspector.panels.elements.sidebarPanes.styles.node === treeOutline.selectedDOMNode())
+            seenRebuildUpdate = true;
+    }
+
+    function step1()
+    {
+        InspectorTest.addSniffer(WebInspector.StylesSidebarPane.prototype, "doUpdate", rebuildUpdate);
+        InspectorTest.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, attributeChanged, this);
+        // Click "Add new rule".
+        document.querySelector(".styles-pane-toolbar").shadowRoot.querySelector(".add-toolbar-item").click();
+        InspectorTest.evaluateInPage("addStyleClass()", step2);
+    }
+
+    function step2()
+    {
+        if (!seenAttrModified)
+            InspectorTest.addResult("FAIL: AttrModified event not received.");
+        else if (seenRebuildUpdate)
+            InspectorTest.addResult("FAIL: Styles pane updated while a selector editor was active.");
+        else
+            InspectorTest.addResult("SUCCESS: Styles pane not updated.");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+<style>
+.new-class {
+    color: red;
+}
+</style>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that modification of element styles while editing a selector does not commit the editor.
+</p>
+
+<div id="inspected"></div>
+
+</body>
+</html>

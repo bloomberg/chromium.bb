@@ -1,0 +1,146 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 287x17
+          text run at (0,0) width 287: "border=\"0\" cellspacing=\"0\" cellpadding=\"0\""
+      LayoutTable {TABLE} at (0,18) size 784x36 [bgcolor=#DDDD33]
+        LayoutTableSection {TBODY} at (0,0) size 784x36
+          LayoutTableRow {TR} at (0,0) size 784x36
+            LayoutTableCell {TD} at (0,18) size 12x0 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,0) size 760x36 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (772,18) size 12x0 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,54) size 784x18
+        LayoutText {#text} at (0,0) size 211x17
+          text run at (0,0) width 211: "cellspacing=\"0\" cellpadding=\"0\""
+      LayoutTable {TABLE} at (0,72) size 784x36 [bgcolor=#CCCCFF]
+        LayoutTableSection {TBODY} at (0,0) size 784x36
+          LayoutTableRow {TR} at (0,0) size 784x36
+            LayoutTableCell {TD} at (0,18) size 12x0 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (12,0) size 760x36 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (772,18) size 12x0 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,108) size 784x18
+        LayoutText {#text} at (0,0) size 105x17
+          text run at (0,0) width 105: "cellpadding=\"0\""
+      LayoutTable {TABLE} at (0,126) size 784x40 [bgcolor=#FF9999]
+        LayoutTableSection {TBODY} at (0,0) size 784x40
+          LayoutTableRow {TR} at (0,2) size 784x36
+            LayoutTableCell {TD} at (2,20) size 12x0 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (16,2) size 752x36 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (770,20) size 12x0 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,166) size 784x18
+        LayoutText {#text} at (0,0) size 181x17
+          text run at (0,0) width 181: "border=\"0\" cellpadding=\"0\""
+      LayoutTable {TABLE} at (0,184) size 784x40 [bgcolor=#AAEEBB]
+        LayoutTableSection {TBODY} at (0,0) size 784x40
+          LayoutTableRow {TR} at (0,2) size 784x36
+            LayoutTableCell {TD} at (2,20) size 12x0 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (16,2) size 752x36 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (770,20) size 12x0 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,224) size 784x18
+        LayoutInline {FONT} at (0,0) size 31x17 [color=#0000FF]
+          LayoutText {#text} at (0,0) size 31x17
+            text run at (0,0) width 31: "right"
+        LayoutText {#text} at (30,0) size 77x17
+          text run at (30,0) width 77: " border=\"0\""
+      LayoutTable {TABLE} at (0,242) size 784x42 [bgcolor=#FFCCEE]
+        LayoutTableSection {TBODY} at (0,0) size 784x42
+          LayoutTableRow {TR} at (0,2) size 784x38
+            LayoutTableCell {TD} at (2,20) size 14x2 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (18,2) size 748x38 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (768,20) size 14x2 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,284) size 784x18
+        LayoutInline {FONT} at (0,0) size 31x17 [color=#0000FF]
+          LayoutText {#text} at (0,0) size 31x17
+            text run at (0,0) width 31: "right"
+        LayoutText {#text} at (30,0) size 109x17
+          text run at (30,0) width 109: " cellpadding=\"1\""
+      LayoutTable {TABLE} at (0,302) size 784x42 [bgcolor=#66DDFF]
+        LayoutTableSection {TBODY} at (0,0) size 784x42
+          LayoutTableRow {TR} at (0,2) size 784x38
+            LayoutTableCell {TD} at (2,20) size 14x2 [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (18,2) size 748x38 [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (768,20) size 14x2 [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,344) size 784x18
+        LayoutInline {FONT} at (0,0) size 31x17 [color=#0000FF]
+          LayoutText {#text} at (0,0) size 31x17
+            text run at (0,0) width 31: "right"
+        LayoutText {#text} at (30,0) size 291x17
+          text run at (30,0) width 291: " border=\"1\" cellspacing=\"0\" cellpadding=\"0\""
+      LayoutTable {TABLE} at (0,362) size 784x40 [bgcolor=#EEEEEE] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x38
+          LayoutTableRow {TR} at (0,0) size 782x38
+            LayoutTableCell {TD} at (0,18) size 14x2 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (14,0) size 754x38 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (768,18) size 14x2 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,402) size 784x18
+        LayoutInline {FONT} at (0,0) size 31x17 [color=#0000FF]
+          LayoutText {#text} at (0,0) size 31x17
+            text run at (0,0) width 31: "right"
+        LayoutText {#text} at (30,0) size 183x17
+          text run at (30,0) width 183: " border=\"1\" cellspacing=\"0\""
+      LayoutTable {TABLE} at (0,420) size 784x42 [bgcolor=#FFCC66] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x40
+          LayoutTableRow {TR} at (0,0) size 782x40
+            LayoutTableCell {TD} at (0,18) size 16x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (16,0) size 750x40 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (766,18) size 16x4 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+      LayoutBlockFlow (anonymous) at (0,462) size 784x18
+        LayoutInline {FONT} at (0,0) size 31x17 [color=#0000FF]
+          LayoutText {#text} at (0,0) size 31x17
+            text run at (0,0) width 31: "right"
+        LayoutText {#text} at (30,0) size 77x17
+          text run at (30,0) width 77: " border=\"1\""
+      LayoutTable {TABLE} at (0,480) size 784x46 [bgcolor=#CCFF33] [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 782x44
+          LayoutTableRow {TR} at (0,2) size 782x40
+            LayoutTableCell {TD} at (2,20) size 16x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (20,2) size 742x40 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (764,20) size 16x4 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+layer at (20,26) size 760x36 clip at (21,27) size 758x34
+  LayoutTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 756x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (20,80) size 760x36 clip at (21,81) size 758x34
+  LayoutTextControl {TEXTAREA} at (0,0) size 760x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 756x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (24,136) size 752x36 clip at (25,137) size 750x34
+  LayoutTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 748x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (24,194) size 752x36 clip at (25,195) size 750x34
+  LayoutTextControl {TEXTAREA} at (0,0) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 748x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (27,253) size 746x36 clip at (28,254) size 744x34
+  LayoutTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 742x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (27,313) size 746x36 clip at (28,314) size 744x34
+  LayoutTextControl {TEXTAREA} at (1,1) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 742x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (24,372) size 752x36 clip at (25,373) size 750x34
+  LayoutTextControl {TEXTAREA} at (1,1) size 752x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 748x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (27,431) size 746x36 clip at (28,432) size 744x34
+  LayoutTextControl {TEXTAREA} at (2,2) size 746x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 742x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"
+layer at (31,493) size 738x36 clip at (32,494) size 736x34
+  LayoutTextControl {TEXTAREA} at (2,2) size 738x36 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+    LayoutBlockFlow {DIV} at (3,3) size 734x16
+      LayoutText {#text} at (0,0) size 32x16
+        text run at (0,0) width 32: "test"

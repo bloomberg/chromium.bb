@@ -1,0 +1,31 @@
+<script src = "../../resources/js-test.js"></script>
+<script type = 'text/javascript'>
+description("Test that verifies whether the image data survives the toBlob process");
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var canvas = document.createElement("canvas");
+var ctx = canvas.getContext("2d");
+ctx.fillStyle = "#FF0000";
+ctx.fillRect(0, 0, 150, 75);
+var canvas2 = document.createElement("canvas");
+var ctx2 = canvas2.getContext("2d");
+
+var newImg = new Image();
+newImg.onload = function() {
+    ctx2.drawImage(newImg, 0, 0, 150, 75);
+    //Randomly pick a pixel to check whether they match
+    shouldBe('ctx.getImageData(0, 0, 150, 75).data[4]', 'ctx2.getImageData(0, 0, 150, 75).data[4]');
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+canvas.toBlob(function(blob) {
+    url = URL.createObjectURL(blob);
+    newImg.src = url;
+});
+
+</script>

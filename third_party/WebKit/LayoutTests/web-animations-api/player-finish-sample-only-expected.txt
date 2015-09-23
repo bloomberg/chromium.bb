@@ -1,0 +1,4 @@
+PASS: playerTop is target
+PASS: event currentTime equals player currentTime
+PASS: event timelineTime equals timeline currentTime
+

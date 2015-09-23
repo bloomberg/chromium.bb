@@ -1,0 +1,9 @@
+إعلانات
+إعلانات
+Fooإعلانات
+Fooإعلانات
+ This is a testharness.js-based test.
+PASS "direction" does not affect sub string lengths. 
+PASS "direction" does not affect sub string lengths across BiDi runs w/ different levels. 
+Harness: the test ran to completion.
+

@@ -1,0 +1,29 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests ShadowRoot.olderShadowRoot property
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+
+PASS roots[1].olderShadowRoot is roots[0]
+PASS roots[0].olderShadowRoot is null
+PASS roots[2].olderShadowRoot is roots[1]
+PASS roots[1].olderShadowRoot is roots[0]
+PASS roots[0].olderShadowRoot is null
+PASS roots[0].olderShadowRoot is null
+PASS roots[1].olderShadowRoot is roots[0]
+PASS roots[6].olderShadowRoot is roots[5]
+PASS root.olderShadowRoot is null
+PASS root.olderShadowRoot is null
+PASS root.olderShadowRoot is null
+PASS roots[1].olderShadowRoot is roots[0]
+PASS root.olderShadowRoot is null
+
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

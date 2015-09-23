@@ -398,7 +398,6 @@ v8.log
 /third_party/webdriver/python/selenium
 /third_party/webgl
 /third_party/webgl/src
-/third_party/WebKit
 /third_party/webpagereplay/
 /third_party/webrtc
 /third_party/widevine/cdm/chromeos

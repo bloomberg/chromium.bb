@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<title>video with a postive start time</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="log"></div>
+<video controls></video>
+<script>
+async_test(function(t) {
+  var video = document.querySelector('video');
+
+  video.onloadeddata = t.step_func(function() {
+    assert_equals(video.currentTime, 3, 'currentTime');
+
+    // FIXME: Once Chrome correctly exposes seekable ranges for media with
+    // positive start times, verify video.seekable.start(0) here.
+    t.done();
+  });
+
+  video.src = 'resources/test-positive-start-time.webm';
+});
+</script>

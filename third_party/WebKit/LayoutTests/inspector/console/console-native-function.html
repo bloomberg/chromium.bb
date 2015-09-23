@@ -1,0 +1,26 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.evaluateInConsole("Math.random", step1);
+
+    function step1(current, total)
+    {
+        InspectorTest.expandConsoleMessages(onExpanded);
+    }
+
+    function onExpanded()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that console dumps native function without exception.</p>
+</body>
+</html>

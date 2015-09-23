@@ -1,0 +1,36 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<script>
+    window.jsTestIsAsync = true;
+    description("This test checks behavior of Canvas::drawImage with a broken source image.");
+
+    // Create an image with invalid data.
+    var invalidImage = new Image();
+    invalidImage.src = 'resources/shadow-offset.js';
+    invalidImage.onerror = draw;
+
+    var ctx = document.createElement("canvas").getContext('2d');
+    function draw() {
+        // null and undefined images should throw TypeError
+        shouldThrow("ctx.drawImage(null, 0, 0)");
+        shouldThrow("ctx.drawImage(null, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(null, 0, 0, 20, 20, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(undefined, 0, 0, 20, 20, 0, 0, 20, 20)");
+
+        // broken images should not throw
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 20, 20, 0, 0, 20, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20)");
+        shouldThrow("ctx.drawImage(invalidImage, 0, 0, 0, 20, 0, 0, 20, 20)");
+
+        finishJSTest();
+    }
+</script>
+</body>
+</html>

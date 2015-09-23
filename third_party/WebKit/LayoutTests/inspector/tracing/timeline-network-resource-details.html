@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+
+function performActions(callback)
+{
+    function onRequestFinished()
+    {
+        if (!--requestsPending)
+            callback();
+    }
+
+    var requestsPending = 2;
+    var image = new Image();
+    image.onload = onRequestFinished;
+    image.src = "resources/anImage.png";
+
+    var script = document.createElement("script");
+    script.src = "timeline-network-resource.js";
+    document.body.appendChild(script);
+    window.timelineNetworkResourceEvaluated = onRequestFinished;
+}
+
+function test()
+{
+    var model = WebInspector.panels.timeline._model;
+
+    InspectorTest.invokeAsyncWithTimeline("performActions", finish);
+
+    function finish()
+    {
+        function printRequestDetails(request)
+        {
+            return WebInspector.TimelineUIUtils.buildNetworkRequestDetails(request, model, null).then(printElement);
+        }
+        function printElement(element)
+        {
+            var rows = element.querySelectorAll(".timeline-details-view-row");
+            for (var i = 0; i < rows.length; ++i) {
+                var title = rows[i].firstChild.firstChild.textContent;
+                var value = rows[i].lastChild.firstChild.textContent;
+                if (title === "Duration" || title === "Mime Type")
+                    value = typeof value;
+                if (title === "URL")
+                    value = /[^/]*$/.exec(value)[0];
+                InspectorTest.addResult(title + ": " + value);
+            }
+        }
+        Promise.all(model.networkRequests().map(printRequestDetails)).then(InspectorTest.completeTest);
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline UI API for network requests.
+</p>
+</body>
+</html>

@@ -1,0 +1,13 @@
+PASS colorOf(target1) is 'rgb(0, 128, 0)'
+PASS colorOf(target2) is 'rgb(255, 0, 0)'
+PASS colorOf(target3) is 'rgb(255, 0, 0)'
+PASS colorOf(target1) is 'rgb(0, 128, 0)'
+PASS colorOf(target2) is 'rgb(0, 0, 255)'
+PASS colorOf(target3) is 'rgb(255, 0, 0)'
+PASS colorOf(target1) is 'rgb(0, 128, 0)'
+PASS colorOf(target2) is 'rgb(0, 0, 255)'
+PASS colorOf(target3) is 'rgb(255, 0, 0)'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Hello! Hello! Hello!

@@ -1,0 +1,35 @@
+This tests the clickable property of various elements, and tests that a role of an anchor element changes to link when it has a click listener.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS isAXElementClickable('link') is true
+PASS isAXElementClickable('button') is true
+PASS isAXElementClickable('labeled-button') is true
+PASS isAXElementClickable('button-with-title') is true
+PASS isAXElementClickable('text') is true
+PASS isAXElementClickable('checkbox') is true
+PASS isAXElementClickable('number') is true
+PASS isAXElementClickable('radio') is true
+PASS isAXElementClickable('slider') is false
+PASS isAXElementClickable('submit') is true
+PASS isAXElementClickable('combobox') is true
+PASS isAXElementClickable('listbox') is false
+PASS isAXElementClickable('textarea') is true
+PASS isAXElementClickable('focusable') is false
+PASS isAXElementClickable('heading') is false
+PASS isAXElementClickable('aria-button') is true
+PASS isAXElementClickable('aria-link') is true
+PASS isAXElementClickable('div') is false
+PASS isAXElementClickable('onclick') is true
+PASS isAXElementClickable('keydown-listener') is false
+PASS isAXElementClickable('click-listener') is true
+PASS isAXElementClickable('mousedown-listener') is true
+PASS axRole('empty-anchor') is 'AXRole: AXUnknown'
+PASS axRole('href-anchor') is 'AXRole: AXLink'
+PASS axRole('onclick-anchor') is 'AXRole: AXLink'
+PASS axRole('click-listener-anchor') is 'AXRole: AXLink'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

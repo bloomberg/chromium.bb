@@ -1,0 +1,115 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+var promise;
+function testFunction()
+{
+    promise = new Promise(function promiseConstructor(resolve, reject) {
+        resolve("Resolved!");
+    });
+    promise
+        .then(thenCallback, errorCallback)
+        .then(thenCallback2, errorCallback);
+}
+
+function thenCallback() { }
+
+function thenCallback2()
+{
+    debugger;
+}
+
+function errorCallback() { }
+
+var test = function ()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    var minPromiseId;
+    WebInspector.targetManager.addModelListener(WebInspector.DebuggerModel, WebInspector.DebuggerModel.Events.PromiseUpdated, onPromiseUpdated, this);
+    function onPromiseUpdated(event)
+    {
+        var target = /** @type {!WebInspector.Target} */ (event.target.target());
+        var eventType = /** @type {string} */ (event.data.eventType);
+        var promise = /** @type {!DebuggerAgent.PromiseDetails} */ (event.data.promise);
+
+        if (typeof minPromiseId === "undefined")
+            minPromiseId = promise.id;
+
+        var parentId = promise.parentId ? promise.parentId - minPromiseId : undefined;
+        var promiseInfo = [];
+        promiseInfo.push("Promise (" + eventType + "):");
+        if (eventType !== "gc") {
+            promiseInfo.push("id: " + (promise.id - minPromiseId));
+            promiseInfo.push("status: " + promise.status);
+            if (parentId)
+                promiseInfo.push("parent id: " + parentId);
+            var callFrame = promise.callFrame;
+            if (callFrame) {
+                var url = WebInspector.displayNameForURL(callFrame.url);
+                promiseInfo.push(callFrame.functionName + " " + url + ":" + callFrame.lineNumber);
+            }
+            if (promise.creationTime)
+                promiseInfo.push("creationTime: " + (promise.creationTime > 0));
+            if (promise.settlementTime)
+                promiseInfo.push("settlementTime: " + (promise.settlementTime > 0));
+        }
+        InspectorTest.addResult(promiseInfo.join("\n    "));
+    }
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.enablePromiseTracker();
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.getPromiseById(minPromiseId, "console", didGetPromiseById);
+    }
+
+    function didGetPromiseById(error, response)
+    {
+        if (error) {
+            InspectorTest.addResult("Failed to get promise by id: " + error);
+            InspectorTest.DebuggerAgent.disablePromiseTracker();
+            InspectorTest.completeDebuggerTest();
+            return;
+        }
+        InspectorTest.addResult("Got promise by id: " + !error);
+        InspectorTest.addResult("Resolved object class: " + response.className);
+        InspectorTest.RuntimeAgent.getProperties(response.objectId, didGetProperties);
+    }
+
+    function didGetProperties(error, properties, internalProperties)
+    {
+        InspectorTest.assertTrue("Received internal properties of the first promise: " + (internalProperties && internalProperties.length > 0));
+
+        var status, value;
+        for (var i = 0; i < internalProperties.length; i++) {
+            var property = internalProperties[i];
+            if (property.name === "[[PromiseStatus]]")
+                status = property.value.value;
+            if (property.name === "[[PromiseValue]]")
+                value = property.value.value;
+        }
+
+        InspectorTest.addResult("Promise:\n    status: " + status + "\n    value: " + value);
+
+        InspectorTest.DebuggerAgent.disablePromiseTracker();
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests promise tracker in debugger.
+</p>
+</body>
+</html>

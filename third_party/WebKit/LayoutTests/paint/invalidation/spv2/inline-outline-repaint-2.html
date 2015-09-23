@@ -1,0 +1,32 @@
+<!-- Based on fast/repaint/inline-outline-repaint-2.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+}
+#container {
+  position: absolute;
+  width: 255px;
+  text-align: right;
+}
+#container > span {
+  outline: 5px solid blue;
+}
+</style>
+<div id=container>
+  <span>Test</span>
+</div>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutInline SPAN",
+    "InlineFlowBox",
+    "LayoutText #text",
+    "InlineTextBox 'Test'",
+];
+function paintInvalidationTest() {
+  document.getElementById('container').style.color = 'green';
+}
+onload = runPaintInvalidationTest;
+</script>

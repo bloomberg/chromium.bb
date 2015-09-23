@@ -1,0 +1,51 @@
+<html>
+<head>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+var ws;
+function sendMessages() {
+    ws = new WebSocket("ws://localhost:8880/echo");
+    ws.onopen = function()
+    {
+        debug("Connected.");
+        ws.send("test");
+        ws.send("exit");
+    };
+}
+
+function test() {
+    var frames = [];
+    function onRequest(event)
+    {
+        var request = event.data;
+        var done = false;
+        if (request.resourceType().name() !== "websocket")
+            return;
+        var previous_frames = frames;
+        frames = [];
+        var websocketFrames = request.frames();
+        for (var i = 0; i < websocketFrames.length; i++) {
+            var frame = websocketFrames[i];
+            frames[i] = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
+            if (frame.type !== WebInspector.NetworkRequest.WebSocketFrameType.Send && frame.text === "exit")
+                done = true;
+        }
+        if (JSON.stringify(frames) === JSON.stringify(previous_frames)) {
+            // There is no update.
+            return;
+        }
+        for (var i = 0; i < frames.length; ++i)
+            InspectorTest.addResult(frames[i]);
+        if (done)
+            InspectorTest.completeTest();
+    }
+    InspectorTest.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, onRequest);
+    InspectorTest.evaluateInPage("sendMessages()");
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that WebSocketFrames are being sent and received by Web Inspector.</p>
+</body>
+</html>

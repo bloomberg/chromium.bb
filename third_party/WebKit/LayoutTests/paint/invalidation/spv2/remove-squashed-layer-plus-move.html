@@ -1,0 +1,45 @@
+<!-- Based on compositing/squashing/remove-squashed-layer-plus-move.html -->
+<!DOCTYPE html>
+<style>
+.mv-tile{
+    display:inline-block;
+    height:50px;
+    position:relative;
+    width:100px;
+    margin-right:410px;
+}
+</style>
+<div style="position: absolute; width: 1000px; height: 1000px; transform: translateZ(0)"></div>
+<div id="container">
+    <div class="mv-tile" id="foo"></div>
+    <div class="mv-tile" style="background-color: lightblue;"></div>
+</div>
+<div class="mv-tile" style="width: 1000px"></div>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+// This test verifies that a paint invalidation is correctly issued for both the old and new location of
+// the mv-tile element which is *not* removed from the DOM, but nevertheless moves to the left as the other one
+// is removed.
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
+    "InlineBox",
+    "RootInlineBox",
+    "InlineBox",
+    "RootInlineBox",
+    "LayoutBlockFlow DIV id='container'",
+    "LayoutBlockFlow DIV id='container'",
+    "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+    "LayoutBlockFlow (anonymous)",
+    "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+    "LayoutText #text",
+    "LayoutText #text",
+    "LayoutText #text",
+];
+function paintInvalidationTest() {
+    document.querySelector("#foo").remove();
+}
+
+runPaintInvalidationTest();
+
+</script>

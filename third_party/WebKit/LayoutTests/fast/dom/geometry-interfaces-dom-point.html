@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMPoint</title>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+debug("# DOMPoint(2, 3)");
+var point = new DOMPoint(2, 3);
+shouldBe("point.x", "2");
+shouldBe("point.y", "3");
+shouldBe("point.z", "0");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint(5, 7, 9)");
+point = new DOMPoint(5, 7, 9);
+shouldBe("point.x", "5");
+shouldBe("point.y", "7");
+shouldBe("point.z", "9");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint(8, 2, 1, 6)");
+point = new DOMPoint(5, 7, 9);
+point = new DOMPoint(8, 2, 1, 6);
+shouldBe("point.x", "8");
+shouldBe("point.y", "2");
+shouldBe("point.z", "1");
+shouldBe("point.w", "6");
+debug("");
+
+debug("# DOMPoint({ x : 2 })");
+point = new DOMPoint({ x : 2 });
+shouldBe("point.x", "2");
+shouldBe("point.y", "0");
+shouldBe("point.z", "0");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint({ y : 2 })");
+point = new DOMPoint({ y : 2 });
+shouldBe("point.x", "0");
+shouldBe("point.y", "2");
+shouldBe("point.z", "0");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint({ z : 2 })");
+point = new DOMPoint({ z : 2 });
+shouldBe("point.x", "0");
+shouldBe("point.y", "0");
+shouldBe("point.z", "2");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint({ w : 2 })");
+point = new DOMPoint({ w : 2 });
+shouldBe("point.x", "0");
+shouldBe("point.y", "0");
+shouldBe("point.z", "0");
+shouldBe("point.w", "2");
+debug("");
+
+debug("# DOMPoint({ x : 2, y : 3, z : 4, w : 5 })");
+point = new DOMPoint({ x : 2, y : 3, z : 4, w : 5 });
+shouldBe("point.x", "2");
+shouldBe("point.y", "3");
+shouldBe("point.z", "4");
+shouldBe("point.w", "5");
+debug("");
+
+debug("# DOMPoint()");
+point = new DOMPoint();
+shouldBe("point.x", "0");
+shouldBe("point.y", "0");
+shouldBe("point.z", "0");
+shouldBe("point.w", "1");
+debug("");
+
+debug("# DOMPoint setter");
+point.x = 10;
+shouldBe("point.x", "10");
+point.y = 20;
+shouldBe("point.y", "20");
+point.z = 30;
+shouldBe("point.z", "30");
+point.w = 40;
+shouldBe("point.w", "40");
+debug("");
+
+debug("# DOMPointReadOnly(10, 20, 30, 40)");
+point = new DOMPointReadOnly(10, 20, 30, 40);
+shouldBe("point.x", "10");
+shouldBe("point.y", "20");
+shouldBe("point.z", "30");
+shouldBe("point.w", "40");
+debug("");
+
+debug("# DOMPointReadOnly readonly test");
+point.x = 100;
+shouldBe("point.x", "10");
+point.y = 100;
+shouldBe("point.y", "20");
+point.z = 100;
+shouldBe("point.z", "30");
+point.w = 100;
+shouldBe("point.w", "40");
+
+</script>
+</body>
+</html>

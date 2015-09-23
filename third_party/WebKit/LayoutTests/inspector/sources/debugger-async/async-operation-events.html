@@ -1,0 +1,157 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    setTimeout(callback1, 0);
+}
+
+function callback1()
+{
+    setTimeout(callback2, 0);
+    Promise.resolve(42)
+        .then(function() {});
+}
+
+function callback2()
+{
+    setTimeout(callback3, 0);
+    // Pressing RESUME here, thus the following async promise events should not be reported to the front-end.
+    Promise.resolve(43)
+        .then(function() {})
+        .then(function() {});
+}
+
+function callback3()
+{
+    Promise.resolve(44)
+        .then(function() {})
+        .then(
+            function()
+            {
+                setTimeout(callback4, 0);
+            }
+        );
+}
+
+function callback4()
+{
+    debugger;
+}
+
+function runIntervals()
+{
+    setInterval(function f1() {}, 50);
+    setInterval(function f2() {}, 60);
+    setInterval(function f3() {}, 70);
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationStarted, onAsyncOperationStarted);
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.AsyncOperationCompleted, onAsyncOperationCompleted);
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step3);
+    }
+
+    function step3()
+    {
+        var actions = [
+            "StepOver", "StepOver", "StepOver", "Print", // @ callback1
+            "StepOver", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // @ callback2
+            "StepOver", "StepOver", "Resume",
+            "Resume",
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step4);
+    }
+
+    var asyncOperations = {};
+    var setIntervalEventCount = 3;
+    var noAsyncOperationsCallback = null;
+
+    function onAsyncOperationStarted(event)
+    {
+        var operation = event.data;
+        var description = asyncOperationDescription(operation);
+        asyncOperations[operation.id] = description;
+        InspectorTest.addResult("==> AsyncOperationStarted: " + description);
+
+        if (description.indexOf("runIntervals") !== -1) {
+            if (!--setIntervalEventCount)
+                InspectorTest.completeDebuggerTest();
+        }
+    }
+
+    function onAsyncOperationCompleted(event)
+    {
+        var operationId = event.data;
+        InspectorTest.addResult("==> AsyncOperationCompleted: " + asyncOperations[operationId]);
+        delete asyncOperations[operationId];
+        maybeRunNoAsyncOperationsCallback();
+    }
+
+    function asyncOperationDescription(operation)
+    {
+        var link = "";
+        var callFrame = operation.stackTrace && operation.stackTrace[0];
+        if (callFrame) {
+            var url = WebInspector.displayNameForURL(callFrame.url);
+            link = " " + callFrame.functionName + " @ " + url + ":" + callFrame.lineNumber;
+        }
+        return ("[" + operation.description + "]" + link);
+    }
+
+    function maybeRunNoAsyncOperationsCallback()
+    {
+        if (!noAsyncOperationsCallback)
+            return;
+        for (var id in asyncOperations)
+            return;
+        var callback = noAsyncOperationsCallback;
+        noAsyncOperationsCallback = null;
+        callback();
+    }
+
+    function step4()
+    {
+        noAsyncOperationsCallback = step5;
+        maybeRunNoAsyncOperationsCallback();
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult("Scheduling few setInterval's...");
+        InspectorTest.evaluateInPage("runIntervals()", step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.addResult("All setInterval's were scheduled.");
+        InspectorTest.addResult("Requesting all pending AsyncOperation events from backend...");
+        InspectorTest.DebuggerAgent.flushAsyncOperationEvents();
+    }
+
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests debugger AsyncOperation events while in a debugger stepping session.
+</p>
+</body>
+</html>

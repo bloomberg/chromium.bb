@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="resource-tree-test.js"></script>
+
+<script>
+
+function createCraftedIframe()
+{
+    var fabricatedFrame = document.createElement("iframe");
+    fabricatedFrame.src = "#foo";
+    document.body.appendChild(fabricatedFrame);
+    fabricatedFrame.contentDocument.write("<div id='d'></div>");
+    fabricatedFrame.contentDocument.getElementById("d").innerHTML = "<iframe src='resources/dummy-iframe.html'></iframe>";
+}
+
+function test()
+{
+    for (var eventName in WebInspector.ResourceTreeModel.EventTypes)
+        InspectorTest.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes[eventName], eventHandler.bind(this, eventName));
+
+    var frames = [];
+    function frameId(frame) {
+        var frameId = frames.indexOf(frame) + 1;
+        if (!frameId) {
+            frames.push(frame);
+            frameId = frames.length;
+        }
+        return frameId;
+    }
+
+    function eventHandler(eventName, event)
+    {
+        switch (eventName) {
+        case "FrameAdded":
+        case "FrameNavigated":
+        case "FrameDetached":
+        case "MainFrameNavigated":
+            var frame = event.data;
+            var parentFrame = frame.parentFrame;
+            parentFrame = parentFrame ? (", parentFrameId: " + frameId(parentFrame)) : "";
+            InspectorTest.addResult("    " + eventName + " id: " + frameId(frame) + parentFrame + ", isMainFrame: " + frame.isMainFrame());
+            break;
+        default:
+        }
+    }
+
+    InspectorTest.evaluateInPage("createCraftedIframe()");
+    InspectorTest.runAfterResourcesAreFinished(["dummy-iframe.html", "resources-test.js", "resource-tree-test.js"], InspectorTest.completeTest);
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Tests that frame inside crafted frame doesn't cause 'MainFrameNavigated' event and correctly attaches to frame tree.
+<a href="https://code.google.com/p/chromium/issues/detail?id=259036">crbug/259036</a>
+</p>
+</body>
+</html>

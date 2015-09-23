@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<p id="p">
+The <b id="quick">quick</b> brown fox
+<br>
+jumps over the lazy <b id="dog">dog</b>.
+</p>
+
+<script>
+test(function(t)
+{
+    var axObj = accessibilityController.accessibleElementById("p");
+    while (axObj.childrenCount > 0)
+        axObj = axObj.childAtIndex(0);
+    assert_equals(axObj.role, "AXRole: AXInlineTextBox");
+
+    var line = [];
+    var lastObj = axObj;
+    while (axObj && axObj.isValid) {
+        assert_equals(axObj.role, "AXRole: AXInlineTextBox");
+        line.push(axObj.stringValue.replace("AXValue: ", ""));
+        lastObj = axObj;
+        axObj = axObj.nextOnLine();
+    }
+
+    assert_equals(JSON.stringify(line), JSON.stringify(["The ","quick"," brown fox ","\n"]));
+
+    // Now walk backwards.
+    var line2 = [];
+    axObj = lastObj;
+    while (axObj && axObj.isValid) {
+        assert_equals(axObj.role, "AXRole: AXInlineTextBox");
+        line2.unshift(axObj.stringValue.replace("AXValue: ", ""));
+        axObj = axObj.previousOnLine();
+    }
+
+    assert_equals(JSON.stringify(line2), JSON.stringify(["The ","quick"," brown fox ","\n"]));
+}, "Walk the inline text boxes on a line of text.");
+
+if (window.testRunner)
+    document.getElementById('p').style.display = 'none';
+</script>

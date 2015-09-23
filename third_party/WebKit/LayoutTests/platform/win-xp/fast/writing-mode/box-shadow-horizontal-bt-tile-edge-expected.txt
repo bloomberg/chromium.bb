@@ -1,0 +1,13 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,222) size 800x378
+  LayoutBlockFlow {HTML} at (0,0) size 800x378
+    LayoutBlockFlow {BODY} at (8,350) size 784x20
+      LayoutInline {SPAN} at (0,0) size 99x19
+        LayoutText {#text} at (0,0) size 99x19
+          text run at (0,0) width 99: "Something Fishy"
+      LayoutText {#text} at (0,0) size 0x0
+layer at (0,16) size 374x20
+  LayoutBlockFlow (positioned) {P} at (0,564) size 374x20
+    LayoutText {#text} at (0,0) size 374x19
+      text run at (0,0) width 374: "Test passes if the full 15px box-shadow beneath text is visible."

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("Tests that document.createEvent() works with DeviceLightEvent.");
+
+var event = document.createEvent('DeviceLightEvent');
+var newEvent = new DeviceLightEvent("devicelight", {
+    bubbles: true, cancelable: false,
+    value: 10
+});
+
+var defaultEvent = new DeviceLightEvent("devicelight");
+
+shouldBeTrue("typeof event == 'object'");
+shouldBe("event.__proto__", "DeviceLightEvent.prototype");
+
+shouldBeTrue("event instanceof window.DeviceLightEvent");
+shouldBeTrue("'type' in event");
+shouldBeTrue("'bubbles' in event");
+shouldBeTrue("'cancelable' in event");
+shouldBeTrue("'value' in event");
+
+shouldBeTrue("typeof newEvent.type == 'string'");
+shouldBeEqualToString("newEvent.type", "devicelight");
+shouldBeTrue("typeof newEvent.bubbles == 'boolean'");
+shouldBeTrue("newEvent.bubbles");
+shouldBeTrue("typeof newEvent.cancelable == 'boolean'");
+shouldBeFalse("newEvent.cancelable")
+shouldBeTrue("typeof newEvent.value == 'number'");
+shouldBeEqualToNumber('newEvent.value', 10);
+
+// FIXME: Consider making bubbles property configurable.
+shouldBeTrue("defaultEvent.bubbles");
+shouldBeFalse("defaultEvent.cancelable");
+</script>
+</body>
+</html>

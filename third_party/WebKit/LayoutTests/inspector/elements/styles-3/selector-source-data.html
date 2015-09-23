@@ -1,0 +1,46 @@
+<html>
+<head>
+
+<style>
+/* c1 */
+                         html
+  #inspected.bar /* c2 */,
+ /* c3 */ b
+  /* c4 */  {
+    text-decoration: none;
+}
+</style>
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.nodeWithId("inspected", nodeFound);
+
+    function nodeFound(node)
+    {
+        InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, stylesLoaded);
+    }
+
+    function stylesLoaded(error, inlineStyle, attributeStyle, rules)
+    {
+        if (error) {
+            InspectorTest.addResult("Failed to get styles: " + error);
+            return;
+        }
+        InspectorTest.dumpRuleMatchesArray(rules);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that WebInspector.CSSStyleSheet methods work as expected.
+</p>
+<h1 id="inspected" class="bar">Inspect Me</h1>
+</body>
+</html>

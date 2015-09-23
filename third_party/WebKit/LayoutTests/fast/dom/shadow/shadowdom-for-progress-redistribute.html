@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<style>
+progress {
+    display: block;
+    width: auto
+}
+</style>
+<progress id="host" min="0" max="100" value="50"></progress>
+<script>
+if (window.internals)
+    internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
+
+document.body.offsetTop; // Force rendering with UA Shadow DOM.
+
+var root = host.createShadowRoot();
+root.innerHTML = "<div>You should see no progress.</div>";
+</script>

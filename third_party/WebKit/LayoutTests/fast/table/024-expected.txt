@@ -1,0 +1,26 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutTable {TABLE} at (0,0) size 356x40
+        LayoutTableSection {TBODY} at (0,0) size 356x40
+          LayoutTableRow {TR} at (0,2) size 356x17
+            LayoutTableCell {TD} at (2,2) size 352x17 [bgcolor=#0000FF] [r=0 c=0 rs=1 cs=2]
+              LayoutImage {IMG} at (1,1) size 350x15 [bgcolor=#FFFF00]
+              LayoutText {#text} at (0,0) size 0x0
+          LayoutTableRow {TR} at (0,21) size 356x17
+            LayoutTableCell {TD} at (2,22) size 131x14 [bgcolor=#0000FF] [r=1 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (1,1) size 129x12
+                LayoutTableSection {TBODY} at (0,0) size 129x12
+                  LayoutTableRow {TR} at (0,2) size 129x8
+                    LayoutTableCell {TD} at (2,2) size 125x8 [bgcolor=#0000FF] [r=0 c=0 rs=1 cs=1]
+                      LayoutTable {TABLE} at (1,1) size 114x6
+                        LayoutTableSection {TBODY} at (0,0) size 114x6
+                          LayoutTableRow {TR} at (0,2) size 114x2
+                            LayoutTableCell {TD} at (2,2) size 52x2 [bgcolor=#0000FF] [r=0 c=0 rs=1 cs=1]
+                            LayoutTableCell {TD} at (56,2) size 2x2 [bgcolor=#0000FF] [r=0 c=1 rs=1 cs=1]
+                            LayoutTableCell {TD} at (60,2) size 52x2 [bgcolor=#0000FF] [r=0 c=2 rs=1 cs=1]
+            LayoutTableCell {TD} at (135,21) size 219x17 [bgcolor=#0000FF] [r=1 c=1 rs=1 cs=1]
+              LayoutImage {IMG} at (1,1) size 200x15 [bgcolor=#FFFF00]
+              LayoutText {#text} at (0,0) size 0x0

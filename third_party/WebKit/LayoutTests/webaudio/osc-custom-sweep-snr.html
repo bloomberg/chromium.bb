@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Oscillator Node: custom</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/buffer-loader.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/oscillator-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Custom Oscillator with Exponential Sweep");
+
+      var tester = OscillatorTestingUtils;
+
+      // The thresholds are experimentally determined.
+      tester.setThresholds({snr: 80.21, maxDiff: 4.88, diffCount: 15016});
+      tester.runTest("custom");
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

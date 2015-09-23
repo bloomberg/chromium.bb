@@ -1,0 +1,94 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x94
+  LayoutBlockFlow {HTML} at (0,0) size 800x94
+    LayoutBlockFlow {BODY} at (8,16) size 784x70
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 298x17
+          text run at (0,0) width 298: "The following two lines should look the same:"
+      LayoutBlockFlow {DIV} at (0,34) size 784x18
+        LayoutInline {SPAN} at (0,0) size 21x17
+          LayoutInline {<pseudo:before>} at (0,0) size 21x17
+            LayoutCounter (anonymous) at (0,0) size 21x17
+              text run at (0,0) width 21: "\x{3B1}.\x{3B1}"
+        LayoutText {#text} at (20,0) size 5x17
+          text run at (20,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 22x17
+          LayoutInline {<pseudo:before>} at (0,0) size 22x17
+            LayoutCounter (anonymous) at (24,0) size 22x17
+              text run at (24,0) width 22: "\x{3B1}.\x{3B2}"
+        LayoutText {#text} at (45,0) size 5x17
+          text run at (45,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 20x17
+          LayoutInline {<pseudo:before>} at (0,0) size 20x17
+            LayoutCounter (anonymous) at (49,0) size 20x17
+              text run at (49,0) width 20: "\x{3B1}.\x{3B3}"
+        LayoutText {#text} at (68,0) size 5x17
+          text run at (68,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 21x17
+          LayoutInline {<pseudo:before>} at (0,0) size 21x17
+            LayoutCounter (anonymous) at (72,0) size 21x17
+              text run at (72,0) width 21: "\x{3B1}.\x{3B4}"
+        LayoutText {#text} at (92,0) size 5x17
+          text run at (92,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 20x17
+          LayoutInline {<pseudo:before>} at (0,0) size 20x17
+            LayoutCounter (anonymous) at (96,0) size 20x17
+              text run at (96,0) width 20: "\x{3B1}.\x{3B5}"
+        LayoutText {#text} at (115,0) size 5x17
+          text run at (115,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 20x17
+          LayoutInline {<pseudo:before>} at (0,0) size 20x17
+            LayoutCounter (anonymous) at (119,0) size 20x17
+              text run at (119,0) width 20: "\x{3B1}.\x{3B6}"
+        LayoutText {#text} at (138,0) size 5x17
+          text run at (138,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 22x17
+          LayoutInline {<pseudo:before>} at (0,0) size 22x17
+            LayoutCounter (anonymous) at (142,0) size 22x17
+              text run at (142,0) width 22: "\x{3B1}.\x{3B7}"
+        LayoutText {#text} at (163,0) size 5x17
+          text run at (163,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 21x17
+          LayoutInline {<pseudo:before>} at (0,0) size 21x17
+            LayoutCounter (anonymous) at (167,0) size 21x17
+              text run at (167,0) width 21: "\x{3B1}.\x{3B8}"
+        LayoutText {#text} at (187,0) size 5x17
+          text run at (187,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 18x17
+          LayoutInline {<pseudo:before>} at (0,0) size 18x17
+            LayoutCounter (anonymous) at (191,0) size 18x17
+              text run at (191,0) width 18: "\x{3B1}.\x{3B9}"
+        LayoutText {#text} at (208,0) size 5x17
+          text run at (208,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 21x17
+          LayoutInline {<pseudo:before>} at (0,0) size 21x17
+            LayoutCounter (anonymous) at (212,0) size 21x17
+              text run at (212,0) width 21: "\x{3B1}.\x{3BA}"
+        LayoutText {#text} at (232,0) size 5x17
+          text run at (232,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 21x17
+          LayoutInline {<pseudo:before>} at (0,0) size 21x17
+            LayoutCounter (anonymous) at (236,0) size 21x17
+              text run at (236,0) width 21: "\x{3B1}.\x{3BB}"
+        LayoutText {#text} at (256,0) size 5x17
+          text run at (256,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 22x17
+          LayoutInline {<pseudo:before>} at (0,0) size 22x17
+            LayoutCounter (anonymous) at (260,0) size 22x17
+              text run at (260,0) width 22: "\x{3B1}.\x{3BC}"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 282x17
+          text run at (0,0) width 25: "\x{3B1}.\x{3B1} "
+          text run at (24,0) width 26: "\x{3B1}.\x{3B2} "
+          text run at (49,0) width 24: "\x{3B1}.\x{3B3} "
+          text run at (72,0) width 25: "\x{3B1}.\x{3B4} "
+          text run at (96,0) width 24: "\x{3B1}.\x{3B5} "
+          text run at (119,0) width 24: "\x{3B1}.\x{3B6} "
+          text run at (142,0) width 26: "\x{3B1}.\x{3B7} "
+          text run at (167,0) width 25: "\x{3B1}.\x{3B8} "
+          text run at (191,0) width 22: "\x{3B1}.\x{3B9} "
+          text run at (212,0) width 25: "\x{3B1}.\x{3BA} "
+          text run at (236,0) width 25: "\x{3B1}.\x{3BB} "
+          text run at (260,0) width 22: "\x{3B1}.\x{3BC}"

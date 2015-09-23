@@ -1,0 +1,46 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script>window.enablePixelTesting = true;</script>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <text id="text" x="500 50 100 900 150" y="50">ABC</text>
+    <text id="reference" x="50 100 150" y="100">ABC</text>
+</svg>
+
+<p id="description"></p>
+<div id="console"></div>
+<script type="text/javascript">
+<![CDATA[
+    description("This is a test of the SVGLengthList::removeItem() API.");
+
+    var svg = document.getElementById("svg");
+    var text = document.getElementById("text");
+    
+    debug("");
+    debug("Check initial list state of text1");
+    shouldBe("text.x.baseVal.numberOfItems", "5");
+    shouldBe("text.x.baseVal.getItem(0).value", "500");
+    shouldBe("text.x.baseVal.getItem(1).value", "50");
+    shouldBe("text.x.baseVal.getItem(2).value", "100");
+    shouldBe("text.x.baseVal.getItem(3).value", "900");
+    shouldBe("text.x.baseVal.getItem(4).value", "150");
+    shouldThrow("text.x.baseVal.getItem(5)");
+
+    debug("");
+    debug("Remove fourth item of text1");
+    shouldBe("text.x.baseVal.removeItem(0).value", "500");
+    
+    debug("");
+    debug("Remove third item of text1");
+    shouldBe("text.x.baseVal.removeItem(2).value", "900");
+
+    debug("");
+    debug("The test passes if you only see 'PASS' messages, and both text elements on top look the same");
+    debug("");
+
+]]>
+</script>
+</body>
+</html>

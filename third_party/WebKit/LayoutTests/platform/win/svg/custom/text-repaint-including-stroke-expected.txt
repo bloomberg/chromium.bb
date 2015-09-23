@@ -1,0 +1,27 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [80, 0, 551, 114],
+        [80, 0, 551, 114],
+        [80, 0, 551, 114],
+        [30, 0, 404, 57],
+        [30, 0, 404, 57],
+        [30, 0, 404, 57]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Repaint me!'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text id='bounce'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Repaint me!'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var ready = false;
+  player.ready.then(function() {
+    t.step(function() {
+      ready = true;
+    });
+  });
+  player.finished.then(function() {
+    t.step(function() {
+      assert_true(ready);
+    });
+    t.done();
+  });
+  player.finish();
+}, 'The ready promise should be resolved before the finished promise');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var ready = false;
+  player.ready.then(null, function() {
+    t.step(function() {
+      ready = true;
+    });
+  });
+  player.finished.then(null, function() {
+    t.step(function() {
+      assert_true(ready);
+    });
+    t.done();
+  });
+  player.cancel();
+}, 'The ready promise should be rejected before the finished promise');
+</script>

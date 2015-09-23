@@ -1,0 +1,27 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body id="body">
+
+<div id="console"></div>
+
+<script>
+
+    if (window.internals)
+        window.internals.enableMockSpeechSynthesizer(document);
+
+    description("This tests that passing an argument other than a SpeechSynthesisUtterance to speechSynthesis.speak throws a TypeError exception.");
+
+    shouldThrow("speechSynthesis.speak()", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': 1 argument required, but only 0 present."');
+    shouldThrow("speechSynthesis.speak(0)", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+    shouldThrow("speechSynthesis.speak('')", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+    shouldThrow("speechSynthesis.speak(document.body)", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+    shouldThrow("speechSynthesis.speak({})", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+    shouldThrow("speechSynthesis.speak((new SpeechSynthesisUtterance()).text = 'hello')", '"TypeError: Failed to execute \'speak\' on \'SpeechSynthesis\': Invalid utterance argument"');
+
+</script>
+
+</body>
+</html>

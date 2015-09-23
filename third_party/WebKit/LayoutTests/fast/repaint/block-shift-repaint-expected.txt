@@ -1,0 +1,47 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [48, 308, 10, 15],
+        [8, 353, 60, 38],
+        [8, 338, 60, 38],
+        [8, 323, 60, 30],
+        [8, 308, 60, 30],
+        [8, 248, 60, 30],
+        [8, 218, 60, 30],
+        [8, 218, 60, 30],
+        [8, 188, 60, 30],
+        [8, 188, 60, 30],
+        [8, 158, 60, 30],
+        [8, 128, 60, 30],
+        [8, 128, 60, 30],
+        [8, 98, 60, 30],
+        [8, 98, 60, 30],
+        [8, 68, 60, 30],
+        [8, 38, 60, 30],
+        [8, 38, 60, 30],
+        [8, 8, 60, 30],
+        [8, 8, 60, 30]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow DIV id='div1' class='blue half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV id='top' class='blue half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV id='div2' class='zero'",
+        "LayoutBlockFlow DIV class='green half'",
+        "LayoutBlockFlow DIV class='red half'",
+        "LayoutBlockFlow DIV id='innerDiv'",
+        "LayoutBlockFlow DIV class='half'",
+        "LayoutBlockFlow DIV class='half'"
+      ]
+    }
+  ]
+}
+

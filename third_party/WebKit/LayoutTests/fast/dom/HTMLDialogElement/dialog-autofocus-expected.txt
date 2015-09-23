@@ -1,0 +1,18 @@
+Tests autofocus when a modal dialog is opened.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.activeElement is document.getElementById("outer-button")
+PASS document.activeElement is autofocusButton
+PASS document.activeElement is anotherButton
+Test that reattaching does not give focus back to a previously autofocused element.
+PASS document.activeElement is anotherButton
+Test that reinserting does not give focus back to a previously autofocused element.
+PASS document.activeElement is anotherButton
+Test that autofocus runs again when a dialog is reopened.
+PASS document.activeElement is autofocusButton
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

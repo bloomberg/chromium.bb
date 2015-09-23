@@ -1,0 +1,92 @@
+[foo] bar baz
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 0
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 3
+PASS selection.toString() is "foo"
+
+foo [bar] baz
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 3
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 6
+PASS selection.toString() is "bar"
+
+foo bar [baz]
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 6
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 9
+PASS selection.toString() is "baz"
+
+f[oo ba]r baz
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 1
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 5
+PASS selection.toString() is "ooba"
+
+f[oo bar ba]z
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 1
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 8
+PASS selection.toString() is "oobarba"
+
+foo b[ar ba]z
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 4
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 8
+PASS selection.toString() is "arba"
+
+f[oo  ba]z
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 1
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 5
+PASS selection.toString() is "ooba"
+
+[foo ] baz
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 0
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 3
+PASS selection.toString() is "foo"
+
+[foo  baz]
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 0
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 6
+PASS selection.toString() is "foobaz"
+
+foo [ baz]
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 3
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 6
+PASS selection.toString() is "baz"
+
+foo [bar ]
+PASS selection.isCollapsed is false
+PASS selection.anchorNode is newText
+PASS selection.anchorOffset is 3
+PASS selection.focusNode is newText
+PASS selection.focusOffset is 6
+PASS selection.toString() is "bar"
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

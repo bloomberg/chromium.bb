@@ -1,0 +1,17 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+This test ensure that the multiple shadow root is available.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.shadowRoot(div) is null
+PASS internals.shadowRoot(div) is shadowRoot1
+PASS shadowRoot1.olderShadowRoot is null
+PASS internals.shadowRoot(div) is shadowRoot2
+PASS shadowRoot2.olderShadowRoot is shadowRoot1
+PASS internals.shadowRoot(div) is shadowRoot3
+PASS shadowRoot3.olderShadowRoot is shadowRoot2
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

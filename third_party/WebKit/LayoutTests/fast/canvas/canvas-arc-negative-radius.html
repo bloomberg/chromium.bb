@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests CanvasPathMethods arc and arcTo with negative radii.");
+
+var canvas = document.createElement("canvas");
+var ctx = canvas.getContext('2d');
+
+shouldNotThrow("ctx.arc(10, 10, 5, 0, 1, false)");
+shouldNotThrow("ctx.arc(10, 10, 0, 0, 1, false)");
+shouldThrow("ctx.arc(10, 10, -5, 0, 1, false)");
+
+shouldNotThrow("ctx.arcTo(10, 10, 20, 20, 5)")
+shouldNotThrow("ctx.arcTo(10, 10, 20, 20, 0)")
+shouldThrow("ctx.arcTo(10, 10, 20, 20, -5)")
+
+var path = new Path2D();
+
+shouldNotThrow("path.arc(10, 10, 5, 0, 1, false)");
+shouldNotThrow("path.arc(10, 10, 0, 0, 1, false)");
+shouldThrow("path.arc(10, 10, -5, 0, 1, false)");
+
+shouldNotThrow("path.arcTo(10, 10, 20, 20, 5)")
+shouldNotThrow("path.arcTo(10, 10, 20, 20, 0)")
+shouldThrow("path.arcTo(10, 10, 20, 20, -5)")
+</script>
+</body>
+</html>

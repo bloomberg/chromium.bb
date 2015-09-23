@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>navigator.serviceWorker should return null when frame is removed</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+  <iframe id="subframe" src="about:blank"></iframe>
+<script>
+test(function(t) {
+    var iframe = document.querySelector("#subframe");
+    var f = iframe.contentWindow.Function;
+    function get_navigator() {
+      return f("return navigator")();
+    }
+    iframe.remove();
+    assert_equals(get_navigator().serviceWorker, null);
+  });
+done();
+</script>
+
+</body>
+</html>

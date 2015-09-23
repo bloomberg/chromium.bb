@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+.div {
+  width: 300px;
+  height: 80px;
+  border: 1px solid black;
+  font-size: 50px;
+  font-weight: bold;
+  text-align:center;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-color: rgba(0, 255, 0, 0.5);
+  /* 300 x 100 image, left half filled with rgba(0, 0, 255, 0.5), right half transparent */
+  background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAARlJREFUeNrt1MEJACAQBLE7GxcrX2sQQRCSEuYxnaQAftBVmTJwI6mlAi8MCQDDAjAswLAADAvAsADDAjAsAMMCDAvAsAAMCzAsAMMCMCzAsAAMC8CwAMMCMCwAwwIMC8CwAAwLMCwAwwIwLMCwAAwLMCwAwwIwLMCwAAwLwLAAwwIwLADDAgwLwLAADAswLADDAjAswLAADAvAsADDAjAsAMMCDAvAsAAMCzAsAMMCMCzAsAAMCzAsAMMCMCzAsAAMC8CwAMMCMCwAwwIMC8CwAAwLMCwAwwIwLMCwAAwLwLAAwwIwLADDAgwLwLAADAswLADDAjAswLAADAswLADDAjAswLAADAvAsADDAjAsAMMCDAvAsACObZ9kB8Gc0I/yAAAAAElFTkSuQmCC);
+}
+
+.label {
+  font-size: 20px;
+  color: black;
+}
+    </style>
+  </head>
+  <body >
+    <div style="display: inline-block;">
+      <div class="div" style="-webkit-background-clip: border-box;">01234 56789
+        <div class="label">unclipped background</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: xor;">01234 56789
+        <div class="label">xor</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: plus-lighter;">01234 56789
+        <div class="label">plus-lighter</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: source-over;">01234 56789
+        <div class="label">source-over</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: source-atop;">01234 56789
+        <div class="label">source-atop</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: source-in;">01234 56789
+        <div class="label">source-in</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: source-out;">01234 56789
+        <div class="label">source-out</div>
+      </div>
+    </div>
+    <div style="display: inline-block;">
+      <div class="div" style="-webkit-background-composite: clear;">01234 56789
+        <div class="label">clear</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: copy;">01234 56789
+        <div class="label">copy</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: destination-over;">01234 56789
+        <div class="label">destination-over</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: destination-atop;">01234 56789
+        <div class="label">destination-atop</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: destination-in;">01234 56789
+        <div class="label">destination-in</div>
+      </div>
+      <div class="div" style="-webkit-background-composite: destination-out;">01234 56789
+        <div class="label">destination-out</div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    WebInspector.settingForTest("showUAShadowDOM").set(true);
+    InspectorTest.selectNodeWithId("shadow", step1);
+
+    function step1()
+    {
+        InspectorTest.evaluateInConsoleAndDump("'Author shadow element: ' + $0.id", step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.selectNodeWithId("user-agent-host", step4);
+    }
+
+    function step4(node)
+    {
+        WebInspector.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
+        InspectorTest.evaluateInConsoleAndDump("'User agent shadow host: ' + $0.id", step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that $0 works with shadow dom.
+</p>
+
+<div><div><div id="host"></div></div></div>
+<script>
+  var host = document.querySelector('#host');
+  var sr = host.createShadowRoot();
+  sr.innerHTML = "<div><div><div id='shadow'><input id='user-agent-host' type='range'></div></div></div>";
+</script>
+
+</body>
+</html>

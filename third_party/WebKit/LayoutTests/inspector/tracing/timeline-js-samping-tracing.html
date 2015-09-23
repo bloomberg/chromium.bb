@@ -1,0 +1,480 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+function test()
+{
+    var sessionId = "6.23";
+    var rawTraceEvents = [
+    {
+        "args": {
+          "name": "Renderer"
+        },
+        "cat": "__metadata",
+        "name": "process_name",
+        "ph": "M",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 0
+    },
+    {
+        "args": {
+            "name": "CrRendererMain"
+        },
+        "cat": "__metadata",
+        "name": "thread_name",
+        "ph": "M",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 0
+    },
+    {
+        "args": {
+            "sessionId": sessionId
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "TracingStartedInPage",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 100000,
+        "tts": 606543
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xa000",
+                "code_len": 100,
+                "name": "LazyCompile:~a file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xb000",
+                "code_len": 100,
+                "name": "LazyCompile:~b file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xc000",
+                "code_len": 100,
+                "name": "LazyCompile:~c file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xd000",
+                "code_len": 100,
+                "name": "LazyCompile:~d file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0x1e000",
+                "code_len": 100,
+                "name": "LazyCompile:~e file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0x1e000",
+                "new_code_start": "0xe000",
+                "code_len": 100
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeMoved",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xf000",
+                "code_len": 100,
+                "name": "LazyCompile:~f file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0xf200",
+                "code_len": 100,
+                "name": "LazyCompile:*f file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0x8000",
+                "code_len": 100,
+                "name": "LazyCompile:~g file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {
+            "data": {
+                "code_start": "0x1000",
+                "code_len": 100,
+                "name": "LazyCompile:~l file:///script1.js:12",
+                "script_id": 1
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "JitCodeAdded",
+        "ph": "I",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 190000,
+        "tts": 5610000
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "B",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 200000,
+        "tts": 5612442
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xc000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 208000,
+        "tts": 1758056
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "FunctionCall",
+        "ph": "X",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 210000,
+        "dur": 30000,
+        "tts": 5612442
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xc000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 211000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": []
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 212000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xc000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 220000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "frame": "0x2f7b63884000",
+            "data": {
+                "stackTrace": [
+                    { "functionName": "b", "callUID": "b", "scriptId": "1" },
+                    { "functionName": "a", "callUID": "a", "scriptId": "1" }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "InvalidateLayout",
+        "ph": "X",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 221000,
+        "dur": 7000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xc000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 221125,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "frame": "0x2f7b63884000",
+            "data": {
+                "stackTrace": [
+                    { "functionName": "e", "callUID": "e", "scriptId": "1" },
+                    { "functionName": "d", "callUID": "d", "scriptId": "1" },
+                    { "functionName": "b", "callUID": "b", "scriptId": "1" },
+                    { "functionName": "a", "callUID": "a", "scriptId": "1" }
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "InvalidateLayout",
+        "ph": "X",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 222000,
+        "dur": 3000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0x8000",
+                    "0xf000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 225500,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0x8000",
+                    "0xe000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 228125,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0x8000",
+                    "0xe000",
+                    "0xb000",
+                    "0xa000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 228250,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xa000",
+                    "0x1000",
+                    "0xf000"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 230000,
+        "tts": 1758056
+    },
+    {
+        "args": {
+            "data": {
+                "stack": [
+                    "0xa000",
+                    "0x1000",
+                    "0xf210"
+                ]
+            }
+        },
+        "cat": "disabled-by-default-v8.cpu_profile",
+        "name": "V8Sample",
+        "ph": "P",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 230125,
+        "tts": 1758056
+    },
+    {
+        "args": {},
+        "cat": "disabled-by-default-devtools.timeline",
+        "name": "Program",
+        "ph": "E",
+        "pid": 17851,
+        "tid": 23,
+        "ts": 500000,
+        "tts": 5612506
+    }
+    ];
+
+    Runtime.experiments.enableForTest("timelineTracingJSProfile");
+    var tracingTimelineModel = InspectorTest.tracingTimelineModel();
+    tracingTimelineModel.setEventsForTest(rawTraceEvents);
+    var events = tracingTimelineModel.mainThreadEvents();
+    events.filter(function(e) { return e.name === "JSFrame"; }).forEach(function(e) {
+        InspectorTest.addResult(e.name + ": " + e.startTime.toFixed(3) + " / " + (e.duration.toFixed(3) || 0) + " " + e.args.data.functionName);
+    });
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

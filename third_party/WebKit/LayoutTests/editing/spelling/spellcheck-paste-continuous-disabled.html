@@ -1,0 +1,41 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<div>
+<div id="src" contenteditable="true" spellcheck="true"></div>
+</div>
+<script language="javascript">
+description('Test if WebKit does not spellcheck text when pasting text and continuous spellcheck is turned off. ' +
+            'To test manually, disable continuous spellcheck, copy the text "zz apple" and paste it to the textarea. ' +
+            'When "zz" is not marked as misspelled, this test succeeds.');
+
+jsTestIsAsync = true;
+
+internals.settings.setAsynchronousSpellCheckingEnabled(true);
+
+// Insert a misspelled word to initialize a spellchecker.
+var srcNode = document.getElementById('src');
+srcNode.focus();
+document.execCommand("InsertText", false, 'z');
+document.execCommand("InsertText", false, 'z');
+document.execCommand("InsertText", false, ' ');
+document.execCommand("InsertText", false, 'a');
+document.execCommand("InsertText", false, 'p');
+document.execCommand("InsertText", false, 'p');
+document.execCommand("InsertText", false, 'l');
+document.execCommand("InsertText", false, 'e');
+shouldBecomeEqual('internals.hasSpellingMarker(document, 0, 2)', 'true', function() {});
+window.getSelection().selectAllChildren(srcNode);
+document.execCommand('Copy');
+
+internals.setContinuousSpellCheckingEnabled(false);
+
+document.execCommand('Paste');
+shouldBecomeDifferent('internals.hasSpellingMarker(document, 0, 2)', 'true', finishJSTest);
+
+</script>
+</body>
+</html>

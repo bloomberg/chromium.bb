@@ -1,0 +1,29 @@
+ABC
+ABC
+This is a test of the SVGLengthList::removeItem() API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+Check initial list state of text1
+PASS text.x.baseVal.numberOfItems is 5
+PASS text.x.baseVal.getItem(0).value is 500
+PASS text.x.baseVal.getItem(1).value is 50
+PASS text.x.baseVal.getItem(2).value is 100
+PASS text.x.baseVal.getItem(3).value is 900
+PASS text.x.baseVal.getItem(4).value is 150
+PASS text.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
+
+Remove fourth item of text1
+PASS text.x.baseVal.removeItem(0).value is 500
+
+Remove third item of text1
+PASS text.x.baseVal.removeItem(2).value is 900
+
+The test passes if you only see 'PASS' messages, and both text elements on top look the same
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

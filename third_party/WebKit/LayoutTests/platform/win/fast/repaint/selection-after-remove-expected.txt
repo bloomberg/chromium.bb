@@ -1,0 +1,60 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [112, 165, 43, 17],
+        [74, 75, 40, 17],
+        [39, 75, 119, 107],
+        [39, 75, 36, 17],
+        [38, 94, 152, 90],
+        [38, 93, 152, 91],
+        [38, 75, 152, 107],
+        [8, 75, 784, 107],
+        [8, 75, 784, 107]
+      ],
+      "paintInvalidationClients": [
+        "LayoutBlockFlow HTML",
+        "InlineTextBox 'world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello world'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'hello world hello'",
+        "InlineTextBox ' '",
+        "InlineTextBox 'world hello'",
+        "LayoutText #text",
+        "LayoutInline SPAN id='removeme'",
+        "InlineTextBox 'hello '",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox ' world'",
+        "InlineTextBox '\n'",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutBlockFlow DIV id='test'",
+        "LayoutText #text",
+        "InlineTextBox 'hello '",
+        "LayoutText #text",
+        "InlineTextBox 'world'",
+        "LayoutText #text",
+        "InlineTextBox 'world'",
+        "LayoutBR BR",
+        "InlineTextBox '\n'"
+      ]
+    }
+  ]
+}
+

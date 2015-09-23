@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<head>
+<style id="thestyle"></style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<div><!-- Extra divs so it's clear when we're doing a full document recalc -->
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+<div class="foo">foo</div>
+<div class="foo">foo</div>
+<div class="foo">foo</div>
+<div class="bar">bar</div>
+<div class="bar">bar</div>
+<div class="bar">bar</div>
+<div class="baz">baz</div>
+<div class="baz">baz</div>
+<div class="baz">baz</div>
+<script>
+var sheet = document.getElementById('thestyle');
+
+function forceRecalc()
+{
+    document.documentElement.offsetTop;
+}
+
+if (window.internals) {
+    // Add non-existant classname.
+    forceRecalc();
+    sheet.textContent = ".nonexistant { color: red; }";
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "0");
+
+    // Add two existing classnames.
+    forceRecalc();
+    sheet.textContent = ".bar { color: red; }\n.baz { color: red; }";
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+
+    // Remove the classnames from the previous step.
+    forceRecalc();
+    sheet.textContent = "";
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+
+    // Test innerHTML.
+    forceRecalc();
+    sheet.innerHTML = ".bar { color: red; }\n.baz { color: red; }";
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+
+    // Test deleteRule
+    forceRecalc();
+    sheet.sheet.deleteRule(0); // Deletes .bar rule.
+    // FIXME: Ideally we'd do StyleInvalidationAnalysis here and only recalc 3 bar's, 3 baz's + documentElement
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "43");
+
+    shouldBe("getComputedStyle(document.querySelector('.foo')).color", '"rgb(0, 0, 0)"');
+    shouldBe("getComputedStyle(document.querySelector('.baz')).color", '"rgb(255, 0, 0)"');
+    shouldBe("getComputedStyle(document.querySelector('.bar')).color", '"rgb(0, 0, 0)"');
+
+    // Test insertRule
+    forceRecalc();
+    sheet.sheet.insertRule(".foo { color: red; }", 0);
+    // FIXME: Ideally we'd do StyleInvalidationAnalysis here and only recalc 3 foo's, 3 baz's + documentElement
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "59");
+
+    shouldBe("getComputedStyle(document.querySelector('.foo')).color", '"rgb(255, 0, 0)"');
+    shouldBe("getComputedStyle(document.querySelector('.baz')).color", '"rgb(255, 0, 0)"');
+    shouldBe("getComputedStyle(document.querySelector('.bar')).color", '"rgb(0, 0, 0)"');
+
+}
+</script>

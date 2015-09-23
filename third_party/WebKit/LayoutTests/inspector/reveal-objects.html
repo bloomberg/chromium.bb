@@ -1,0 +1,133 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/elements-test.js"></script>
+<script src="../http/tests/inspector/network-test.js"></script>
+<script>
+
+var initialize_TestCustom = function() {
+
+InspectorTest.preloadPanel("elements");
+InspectorTest.preloadPanel("sources");
+InspectorTest.preloadPanel("resources");
+InspectorTest.preloadPanel("network");
+
+}
+
+function loadResource(url)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    xhr.send();
+}
+
+function test() {
+    var node;
+    var resource;
+    var uiLocation;
+    var requestWithResource;
+    var requestWithoutResource;
+
+    InspectorTest.runTestSuite([
+        function init(next)
+        {
+            installHooks();
+
+            InspectorTest.resourceTreeModel.forAllResources(function(r) {
+                if (r.url.indexOf("inspector-test.js") !== -1) {
+                    resource = r;
+                    return true;
+                }
+            });
+            uiLocation = WebInspector.workspace.uiSourceCodeForOriginURL(resource.url).uiLocation(2, 1);
+
+            InspectorTest.nodeWithId("div", nodeCallback);
+
+            function nodeCallback(foundNode)
+            {
+                node = foundNode;
+                InspectorTest.recordNetwork();
+                InspectorTest.evaluateInPage("loadResource('../http/tests/inspector/inspector-test.js')", firstXhrCallback);
+            }
+
+            function firstXhrCallback()
+            {
+                requestWithResource = InspectorTest.networkLog.requestForURL(resource.url);
+                InspectorTest.evaluateInPage("loadResource('missing.js')", secondXhrCallback);
+            }
+
+            function secondXhrCallback()
+            {
+                var requests = InspectorTest.networkRequests();
+                for (var i = 0; i < requests.length; ++i) {
+                    if (requests[i].url.indexOf("missing.js") !== -1) {
+                        requestWithoutResource = requests[i];
+                        break;
+                    }
+                }
+                next();
+            }
+        },
+
+        function revealNode(next)
+        {
+            WebInspector.Revealer.revealPromise(node).then(next);
+        },
+
+        function revealUILocation(next)
+        {
+            WebInspector.Revealer.revealPromise(uiLocation).then(next);
+        },
+
+        function revealResource(next)
+        {
+            WebInspector.Revealer.revealPromise(resource).then(next);
+        },
+
+        function revealRequestWithResource(next)
+        {
+            WebInspector.Revealer.revealPromise(requestWithResource).then(next);
+        },
+
+        function revealRequestWithoutResource(next)
+        {
+            WebInspector.Revealer.revealPromise(requestWithoutResource).then(next);
+        }
+    ]);
+
+    function installHooks()
+    {
+        InspectorTest.addSniffer(WebInspector.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
+        InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
+        InspectorTest.addSniffer(WebInspector.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
+        InspectorTest.addSniffer(WebInspector.NetworkPanel.prototype, "revealAndHighlightRequest", requestRevealed, true);
+    }
+
+    function nodeRevealed(node)
+    {
+        InspectorTest.addResult("Node revealed in the Elements panel");
+    }
+
+    function uiLocationRevealed(uiLocation)
+    {
+        InspectorTest.addResult("UILocation " + uiLocation.uiSourceCode.name() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber + " revealed in the Sources panel");
+    }
+
+    function resourceRevealed(resource, lineNumber)
+    {
+        InspectorTest.addResult("Resource " + resource.displayName + " revealed in the Resources panel");
+    }
+
+    function requestRevealed(request)
+    {
+        InspectorTest.addResult("Request " + new WebInspector.ParsedURL(request.url).lastPathComponent + " revealed in the Network panel");
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests object revelation in the UI.</p>
+<div id="div" />
+</body>
+</html>

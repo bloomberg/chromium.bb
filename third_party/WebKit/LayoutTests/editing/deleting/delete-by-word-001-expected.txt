@@ -1,0 +1,34 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+Tests: 
+Option-delete when a typing command is open.
+Expected Results: 
+Net result is a third "cha". It should like this: 
+one two cha cha cha three four cha cha cha
+one two cha cha cha three four cha cha cha
+execTypeCharacterCommand: <div id="test" class="editing"> one two &nbsp;cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two a cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two ab cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two abc cha cha three four cha cha cha </div>
+DeleteWord: <div id="test" class="editing"> one two &nbsp;cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two c cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two ch cha cha three four cha cha cha </div>
+execTypeCharacterCommand: <div id="test" class="editing"> one two cha cha cha three four cha cha cha </div>

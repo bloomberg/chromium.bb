@@ -1,0 +1,34 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x302
+  LayoutBlockFlow {HTML} at (0,0) size 800x302
+    LayoutBlockFlow {BODY} at (8,16) size 784x278
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 232x18
+          text run at (0,0) width 232: "Drawing the controls in strict mode."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x244
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,50) size 320x240
+  LayoutVideo {VIDEO} at (0,0) size 320x240
+layer at (8,50) size 320x240
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
+layer at (8,50) size 320x205
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205
+layer at (13,255) size 310x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 310x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
+    LayoutSlider {INPUT} at (48,11) size 91.08x8
+      LayoutFlexibleBox {DIV} at (0,0) size 91.08x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 103.08x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
+    LayoutFlexibleBox {DIV} at (154.08,0) size 26.03x30 [color=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
+          text run at (0,7) width 27: "0:00"
+    LayoutButton {INPUT} at (189.11,0) size 35x30
+    LayoutSlider {INPUT} at (230.11,11) size 30.89x8
+      LayoutFlexibleBox {DIV} at (0,0) size 30.89x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 42.89x24
+          LayoutBlockFlow {DIV} at (11.89,0) size 24x24
+    LayoutButton {INPUT} at (271,0) size 30x30

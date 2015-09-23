@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<div style="width: 1600px; height:100px; background-color: red;"></div>
+<iframe id="iframe" style="width:820px; height:820px;"
+  src="data:text/html,<body><div style='position: relative; width: 800px; height: 800px; background-color: green;'><div style='position:absolute; left: 400px; top: 400px;'> <input id='textbox' type='text'></div></div></body>"></iframe>
+
+<div id="console"></div>
+
+<script src="../../resources/js-test.js"></script>
+<script>
+  description('Tests that scrolling to rect works for an element inside an iframe.');
+
+  window.jsTestIsAsync = true;
+  if (window.testRunner)
+    testRunner.waitUntilDone();
+
+  onload = function() {
+    var iframe = document.getElementById('iframe');
+    var frameDoc = iframe.contentWindow.document;
+    var box = frameDoc.getElementById('textbox');
+
+    if (window.internals) {
+      window.internals.scrollElementToRect(box, 0, 100, 300, 300);
+      window.internals.scrollElementToRect(box, 0, 0, 300, 300);
+      debug('Scrolled element to rect.');
+    } else {
+      debug('This test requires window.internals API to be available.');
+    }
+
+    window.rect = window.internals.boundsInViewportSpace(box);
+    window.computedLeft = Math.floor((300 - rect.width) / 2);
+    window.computedTop = Math.floor((300 - rect.height) / 2);
+    shouldBe('rect.left', 'computedLeft');
+    shouldBe('rect.top', 'computedTop');
+
+    finishJSTest();
+  };
+</script>

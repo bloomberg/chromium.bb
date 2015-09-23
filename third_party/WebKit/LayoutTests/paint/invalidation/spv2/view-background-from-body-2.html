@@ -1,0 +1,17 @@
+<!-- Based on fast/repaint/view-background-from-body-2.html -->
+<head>
+    <!-- The entire viewport should be solid blue, with no white margin. -->
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+       window.expectedPaintInvalidationObjects = [
+           "LayoutView #document",
+           "LayoutBlockFlow BODY",
+       ];
+       function paintInvalidationTest()
+       {
+            document.body.style.removeProperty("display");
+       }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest();" style="margin: 50px; background-color: blue; display: none;">
+</body>

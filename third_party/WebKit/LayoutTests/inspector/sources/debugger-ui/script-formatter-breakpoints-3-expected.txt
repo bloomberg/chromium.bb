@@ -1,0 +1,14 @@
+Tests the script formatting is working fine with breakpoints.
+
+
+Running: testSetup
+
+Running: testBreakpointsSetInFormattedAndRemoveInOriginalSource
+Script execution paused.
+Breakpoint sidebar pane while paused in pretty printed
+
+unformatted3.js:formatted:4    var b = 1;
+Breakpoint sidebar pane while paused in raw
+
+Script execution resumed.
+

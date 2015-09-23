@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>window.performance.memory in dedicated workers</title>
+<script src="/w3c/resources/testharness.js"></script>
+<script src="/w3c/resources/testharnessreport.js"></script>
+<link rel="stylesheet" href="/w3c/resources/testharness.css" />
+<script>
+
+var tests = [
+  '"performance" in self;',
+  '"memory" in self.performance;',
+  ('JSON.stringify(' +
+   '{jsHeapSizeLimit: self.performance.memory.jsHeapSizeLimit,' +
+   ' totalJSHeapSize: self.performance.memory.totalJSHeapSize,' +
+   ' usedJSHeapSize: self.performance.memory.usedJSHeapSize});')
+];
+
+var t = async_test('window.performance.memory in dedicated workers');
+t.step(function() {
+    var worker = new Worker("/w3c/webperf/resources/worker.js");
+    worker.postMessage(tests);
+
+    worker.onmessage = t.step_func(function(event) {
+        var results = event.data;
+        assert_equals(results.length, 3);
+        assert_true(results[0], "self.performance is defined");
+        assert_true(results[1], "self.performance.memory is defined");
+        var jsHeap = JSON.parse(results[2]);
+        assert_greater_than_equal(jsHeap.jsHeapSizeLimit, jsHeap.totalJSHeapSize, "jsHeapSizeLimit should be no less than totalJSHeapSize", {});
+        assert_greater_than_equal(jsHeap.totalJSHeapSize, jsHeap.usedJSHeapSize, "totalJSHeapSize should be no less than usedJSHeapSize", {});
+        t.done();
+    });
+});
+
+</script>
+</head>
+<body>
+<h1>Description</h1>
+<p>This test validates that performance.memory exists in dedicated workers </p>
+
+<div id="log"></div>
+
+</body>
+</html>

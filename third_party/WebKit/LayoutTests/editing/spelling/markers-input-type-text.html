@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.editing {
+    border: 2px solid red;
+    padding: 12px;
+    font-size: 24px;
+}
+</style>
+<script src="../editing.js"></script>
+<script src="resources/util.js"></script>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<textarea id="testTextArea"></textarea><br/>
+<input type="text" id="testInput" /><br/>
+<br/>
+<textarea id="aux"></textarea>
+<script>
+description("Misspelling markers in text inputs should only be visible if an input is being edited "
+    + "but removing markers from the input must not touch other markers. "
+    + "To test manually, focus the text input, then focus the second text area. "
+    + "The test succeed if misspellings were removed from the input "
+    + "but not for the first textarea. Focus the input again - misspelling markers should be restored.");
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+}
+
+jsTestIsAsync = true;
+
+var testTextArea = document.getElementById("testTextArea");
+var testInput = document.getElementById("testInput");
+var auxTextArea = document.getElementById("aux");
+
+typeText(testTextArea, 'zz. ');
+typeText(testInput, 'zz. ');
+
+function verifyMisspellings(e, shouldBeMarked) {
+    if (!window.internals)
+        return;
+
+    element = e;
+    expectedMarkerCount = shouldBeMarked ? 1 : 0;
+    shouldBecomeEqual('internals.markerCountForNode(findFirstTextNode(element), "spelling")', 'expectedMarkerCount', done);
+}
+
+function setFocus(e) {
+    e.focus();
+    done();
+}
+
+var tests = [
+    function() { verifyMisspellings(testInput, true); },
+    function() { verifyMisspellings(testTextArea, true); },
+    function() { setFocus(auxTextArea);}, // Focusing text area should remove markers of input element.
+    function() { verifyMisspellings(testInput, false); },
+    function() { verifyMisspellings(testTextArea, true); },
+    function() { setFocus(testInput); }, // Focusing input element should preserve markers of text area.
+    function() { verifyMisspellings(testInput, true); },
+    function() { verifyMisspellings(testTextArea, true); }
+];
+
+function done()
+{
+    var next = tests.shift();
+    if (next)
+        return window.setTimeout(next, 0);
+
+    finishJSTest();
+}
+done();
+</script>
+</body>
+</html>

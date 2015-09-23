@@ -1,0 +1,21 @@
+<!-- Based on fast/repaint/fixed-position-transparency-with-overflow.html -->
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css">
+    <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (relative positioned) DIV id='container' class='relative blue'",
+            "LayoutBlockFlow (positioned) DIV class='absolute green'",
+        ];
+        function paintInvalidationTest()
+        {
+            document.getElementById('container').style.opacity = '0.4';
+        }
+    </script>
+</head>
+<body style="height:2000px;" onload="runPaintInvalidationTest()">
+    <!-- You should see 2 rectangles touching on one corner in the output: a green one (top left) and a green one. -->
+    <div id="container" style="top: 200px;" class="relative blue"><div style="top:100px; left:100px;" class="absolute green"></div></div>
+</body>
+</html>

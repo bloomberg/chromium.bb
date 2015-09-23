@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.domModel.requestDocument(next);
+        },
+
+        function testNoCrash(next)
+        {
+            InspectorTest.domModel.performSearch("FooBar", false, next);
+        }
+    ]);
+}
+</script>
+</head>
+
+<body>
+<p>
+Tests that elements panel search is not crashing on documentElement-less cases.
+</p>
+<iframe src="resources/dom-search-crash-iframe.html" onload="runTest()"></iframe>
+</body>
+</html>

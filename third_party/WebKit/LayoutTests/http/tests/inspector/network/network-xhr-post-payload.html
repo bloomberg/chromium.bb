@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    var payload = "\u201AFoo\u201B";
+
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
+
+    function step2()
+    {
+        var request = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult(request.url);
+        InspectorTest.assertEquals("foo", request.queryString(), "Unexpected resource query.");
+        InspectorTest.assertEquals(payload, request.requestFormData, "Payload corrupted.");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests XHR network resource payload is not corrupted by transcoding.</p>
+</body>
+</html>

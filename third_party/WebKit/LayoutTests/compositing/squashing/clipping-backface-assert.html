@@ -1,0 +1,21 @@
+<style>
+.container {
+  -webkit-backface-visibility:visible;
+}
+
+* {
+  overflow:hidden;
+  -webkit-backface-visibility:hidden;
+}
+</style>
+<div class="container">
+    <select></select>
+    <div></div>
+</div>
+This test passes if it doesn't crash.
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    window.internals.forceCompositingUpdate(document);
+}
+</script>

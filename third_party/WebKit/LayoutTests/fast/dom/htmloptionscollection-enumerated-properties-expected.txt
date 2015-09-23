@@ -1,0 +1,13 @@
+This tests verifies the enumerated properties on HTMLOptionsCollection and their order.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS htmlOptionsCollection.__proto__ is HTMLOptionsCollection.prototype
+PASS htmlOptionsCollection.__proto__.__proto__ is HTMLCollection.prototype
+PASS htmlOptionsCollection.length is 5
+PASS enumeratedProperties is expectedEnumeratedProperties
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

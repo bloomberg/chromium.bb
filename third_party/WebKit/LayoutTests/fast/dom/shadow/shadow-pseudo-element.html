@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+<body>
+  <div id='sandbox'></div>
+</body>
+<script>
+function colorOf(node)
+{
+    return document.defaultView.getComputedStyle(node, null).getPropertyValue('color');
+}
+
+function colorShouldBe(selector, color)
+{
+    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    shouldBeEqualToString(text, color);
+}
+
+function colorShouldNotBe(selector, color)
+{
+    var text = 'colorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+description('Test for ::shadow pseudo element, http://crbug.com/367266.');
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {'id': 'style-with-shadow'},
+            document.createTextNode('div::shadow { color: red; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'target'},
+                    document.createTextNode('not red color.'))))));
+
+colorShouldNotBe('host/target', 'rgb(255, 0, 0)');
+
+var styleWithShadow = document.getElementById('style-with-shadow');
+styleWithShadow.innerHTML = ':not(div::shadow) { color: red; }';
+
+colorShouldNotBe('host/target', 'rgb(255, 0, 0)');
+
+styleWithShadow.innerHTML = ':-webkit-any(div::shadow, div::shadow div) { color: red; }';
+
+colorShouldNotBe('host/target', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div::shadow + div { color: red; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'first-direct-child'},
+                    document.createTextNode('not red color.')),
+                createDOM('div', {'id': 'second-direct-child'},
+                    document.createTextNode('not red color.')))),
+        createDOM('div', {'id': 'host-sibling'},
+            document.createTextNode('not red color.'))));
+
+colorShouldNotBe('host/first-direct-child', 'rgb(255, 0, 0)');
+colorShouldNotBe('host/second-direct-child', 'rgb(255, 0, 0)');
+colorShouldNotBe('host-sibling', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div::shadow ~ div { color: red; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'first-direct-child'},
+                    document.createTextNode('not red color.')),
+                createDOM('div', {'id': 'second-direct-child'},
+                    document.createTextNode('not red color.')))),
+        createDOM('div', {'id': 'host-sibling'},
+            document.createTextNode('not red color.'))));
+
+colorShouldNotBe('host/first-direct-child', 'rgb(255, 0, 0)');
+colorShouldNotBe('host/second-direct-child', 'rgb(255, 0, 0)');
+colorShouldNotBe('host-sibling', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div::shadow > div { color: green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'direct-child'},
+                    document.createTextNode('green color.')),
+                createDOM('p', {},
+                    createDOM('div', {'id': 'not-direct-child'},
+                        document.createTextNode('not green color.'))))),
+            createDOM('div', {'id': 'host-child'},
+                document.createTextNode('not green color.'))));
+
+colorShouldBe('host/direct-child', 'rgb(0, 128, 0)');
+colorShouldNotBe('host/not-direct-child', 'rgb(0, 128, 0)');
+colorShouldNotBe('host-child', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+</script>
+
+

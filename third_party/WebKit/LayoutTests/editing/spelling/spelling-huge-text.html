@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body onload="test();">
+<div id="console"></div>
+<div id="editable" contenteditable></div>
+
+<script>
+description("Text to check is divided into chunks to make sure checking some huge text " +
+"does not freeze the page/UI. With the asynchronous spell checker the whole text is checked. " +
+"To test manaully trigger spell checking of the editable (e.g. by copy+paste) with unified " +
+"and asynchronous checker on. There should be 6 misspellings marked.");
+
+jsTestIsAsync = true;
+
+var testEditable = null;
+
+function test()
+{
+    testEditable = document.getElementById("editable");
+    var loopCount = 150;
+    var longText = "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good.";
+
+    var testLongText = "";
+    for (var i = 0; i < loopCount; ++i)
+        testLongText += longText;
+
+    testLongText = "zz zz zz. " + testLongText + " zz zz zz.";
+    testEditable.innerText = testLongText;
+
+    if (!window.internals) {
+        log("Test manually. See the description for steps");
+        return;
+    }
+
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+
+    internals.setContinuousSpellCheckingEnabled(false);
+    testEditable.focus();
+    internals.setContinuousSpellCheckingEnabled(true);
+    shouldBecomeEqual('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '6', function() {
+        testEditable.removeChild(testEditable.childNodes[0]);
+        finishJSTest();
+    }, 5000 /* huge text needs more time to be spell checked */);
+}
+</script>
+</body>
+</html>

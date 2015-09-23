@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<title>Editing a grammatically-incorrect word</title> 
+</head> 
+<body>
+<div id="src" contenteditable="true" spellcheck="true"></div><br/>
+<script language="javascript">
+description('Test if WebKit removes grammar markers when we edit a grammatically-incorrect word. '
+    + 'To test manually, type a grammatically-incorrect sentence "You has the right." and type '
+    + 'a backspace key to delete the last character of "has". '
+    + 'This test succeeds when "ha" does not have grammar markers.');
+
+jsTestIsAsync = true;
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(true);
+}
+
+function editAndCheckSentence()
+{
+    // Delete the end of this sentence until it becomes "You ha".
+    for (var i = 0; i < 12; ++i)
+        testRunner.execCommand("DeleteBackward");
+
+    shouldBecomeEqual('internals.hasGrammarMarker(document, 4, 2)', 'false', finishJSTest);
+}
+
+var target = document.getElementById('src');
+target.focus();
+document.execCommand("InsertText", false, "You has the right.");
+
+if (window.internals)
+    shouldBecomeEqual('internals.hasGrammarMarker(document, 4, 3)', 'true', editAndCheckSentence);
+</script>
+</body>
+</html>

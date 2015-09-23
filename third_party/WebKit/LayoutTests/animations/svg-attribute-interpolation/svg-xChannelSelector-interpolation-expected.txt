@@ -1,0 +1,26 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: xChannelSelector from [R] to [A] was [R] at 0
+PASS: xChannelSelector from [R] to [A] was [R] at 0.2
+PASS: xChannelSelector from [R] to [A] was [A] at 0.6
+PASS: xChannelSelector from [R] to [A] was [A] at 1
+PASS: yChannelSelector from [B] to [G] was [B] at 0
+PASS: yChannelSelector from [B] to [G] was [B] at 0.2
+PASS: yChannelSelector from [B] to [G] was [G] at 0.6
+PASS: yChannelSelector from [B] to [G] was [G] at 1
+
+Web Animations API:
+PASS: xChannelSelector from [R] to [A] was [R] at -2.4
+PASS: xChannelSelector from [R] to [A] was [R] at 0
+PASS: xChannelSelector from [R] to [A] was [R] at 0.2
+PASS: xChannelSelector from [R] to [A] was [A] at 0.6
+PASS: xChannelSelector from [R] to [A] was [A] at 1
+PASS: xChannelSelector from [R] to [A] was [A] at 3.4
+PASS: yChannelSelector from [B] to [G] was [B] at -2.4
+PASS: yChannelSelector from [B] to [G] was [B] at 0
+PASS: yChannelSelector from [B] to [G] was [B] at 0.2
+PASS: yChannelSelector from [B] to [G] was [G] at 0.6
+PASS: yChannelSelector from [B] to [G] was [G] at 1
+PASS: yChannelSelector from [B] to [G] was [G] at 3.4
+

@@ -1,0 +1,15 @@
+Basic tests for MediaElementAudioSourceNode API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS audioNode.numberOfInputs is 0
+PASS audioNode.numberOfOutputs is 1
+PASS audioNode.connect(0, 0, 0) threw exception TypeError: Failed to execute 'connect' on 'AudioNode': parameter 1 is not of type 'AudioNode'..
+PASS audioNode.connect(context.destination, 5, 0) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': output index (5) exceeds number of outputs (1)..
+PASS audioNode.connect(context.destination, 0, 5) threw exception IndexSizeError: Failed to execute 'connect' on 'AudioNode': input index (5) exceeds number of inputs (1)..
+PASS audioNode.connect(context.destination, 0, 0) did not throw exception.
+PASS context.createMediaElementSource(audioElement) threw exception InvalidStateError: Failed to execute 'createMediaElementSource' on 'AudioContext': HTMLMediaElement already connected previously to a different MediaElementSourceNode..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

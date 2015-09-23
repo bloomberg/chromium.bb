@@ -1,0 +1,12 @@
+Tests the console timestamp setting.
+
+Console messages with timestamps disabled:
+3<Before>
+Console messages with timestamps enabled:
+2014-05-13 16:53:20.123 <Before>
+2014-05-13 16:53:20.123 <Before>
+2014-05-13 16:53:20.456 <Before>
+2014-05-13 16:53:21.000 <After>
+2014-05-13 16:53:21.000 <After>
+2014-05-13 16:53:21.456 <After>
+

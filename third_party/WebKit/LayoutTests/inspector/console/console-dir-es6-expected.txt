@@ -1,0 +1,94 @@
+CONSOLE MESSAGE: line 15: [object Object]
+CONSOLE MESSAGE: line 18: Symbol()
+CONSOLE MESSAGE: line 22: [object Map]
+CONSOLE MESSAGE: line 22: [object WeakMap]
+CONSOLE MESSAGE: line 26: [object Set]
+CONSOLE MESSAGE: line 26: [object WeakSet]
+CONSOLE MESSAGE: line 34: [object Set]
+CONSOLE MESSAGE: line 37: [object WeakMap]
+CONSOLE MESSAGE: line 45: [object Map Iterator]
+CONSOLE MESSAGE: line 46: [object Map Iterator]
+CONSOLE MESSAGE: line 47: [object Map Iterator]
+CONSOLE MESSAGE: line 45: [object Set Iterator]
+CONSOLE MESSAGE: line 46: [object Set Iterator]
+CONSOLE MESSAGE: line 47: [object Set Iterator]
+Tests that console logging dumps proper messages.
+
+console-dir-es6.html:15 Object
+    a: 1
+    Symbol(): 2
+    Symbol(Symbol.iterator): Symbol(foo)
+    Symbol(a): 3
+    Symbol(a): Symbol(Symbol.iterator)
+    __proto__: Object
+console-dir-es6.html:18 Symbol()
+console-dir-es6.html:22 Map
+    size: (...)
+    __proto__: Map
+    <entries>[1]
+        0: {Object => Object}
+console-dir-es6.html:22 WeakMap
+    __proto__: WeakMap
+    <entries>[1]
+        0: {Object => Object}
+console-dir-es6.html:26 Set
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: Object
+console-dir-es6.html:26 WeakSet
+    __proto__: WeakSet
+    <entries>[1]
+        0: Object
+console-dir-es6.html:34 Set
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: Set
+console-dir-es6.html:37 WeakMap
+    __proto__: WeakMap
+    <entries>[0]
+        No Entries
+console-dir-es6.html:45 MapIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "keys"
+    <entries>[1]
+        0: Object
+console-dir-es6.html:46 MapIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "values"
+    <entries>[1]
+        0: Object
+console-dir-es6.html:47 MapIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "entries"
+    <entries>[1]
+        0: Array[2]
+console-dir-es6.html:45 SetIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "values"
+    <entries>[1]
+        0: Object
+console-dir-es6.html:46 SetIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "values"
+    <entries>[1]
+        0: Object
+console-dir-es6.html:47 SetIterator
+    __proto__: Object
+    [[IteratorHasMore]]: true
+    [[IteratorIndex]]: 0
+    [[IteratorKind]]: "entries"
+    <entries>[1]
+        0: Array[2]
+

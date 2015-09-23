@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.parent {
+  margin: 10px;
+  border: solid;
+  display: inline-block;
+}
+.target {
+  width: 40px;
+  height: 40px;
+  background-color: black;
+  display: inline-block;
+  margin: 30px;
+  opacity: 0.5;
+}
+.expected {
+  background-color: green;
+}
+</style>
+<body>
+<template id="target-template">
+  <div>
+    <div class="target"></div>
+  </div>
+</template>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: 'margin',
+  from: '',
+  to: '20px',
+}, [
+  {at: -0.3, is: '33px'},
+  {at: 0, is: '30px'},
+  {at: 0.3, is: '27px'},
+  {at: 0.6, is: '24px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '15px'},
+]);
+
+assertInterpolation({
+  property: 'margin',
+  from: 'initial',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-6px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'margin',
+  from: 'inherit',
+  to: '20px',
+}, [
+  {at: -0.3, is: '7px'},
+  {at: 0, is: '10px'},
+  {at: 0.3, is: '13px'},
+  {at: 0.6, is: '16px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '25px'},
+]);
+
+assertInterpolation({
+  property: 'margin',
+  from: 'unset',
+  to: '20px',
+}, [
+  {at: -0.3, is: '-6px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '6px'},
+  {at: 0.6, is: '12px'},
+  {at: 1, is: '20px'},
+  {at: 1.5, is: '30px'},
+]);
+
+assertInterpolation({
+  property: 'margin',
+  from: '0px',
+  to: '10px'
+}, [
+  {at: -0.3, is: '-3px'},
+  {at: 0, is: '0px'},
+  {at: 0.3, is: '3px'},
+  {at: 0.6, is: '6px'},
+  {at: 1, is: '10px'},
+  {at: 1.5, is: '15px'}
+]);
+</script>
+</body>

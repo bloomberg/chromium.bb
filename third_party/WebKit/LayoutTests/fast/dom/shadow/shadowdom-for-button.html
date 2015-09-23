@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<html>
+<body>
+
+<p>When a button element has a shadow dom having a shadow element, it should get the children of the button element.</p>
+
+<button id="host1">Kotori</button>
+<button id="host2">Kotori</button>
+
+<script>
+var shadowRoot1 = host1.createShadowRoot();
+shadowRoot1.innerHTML = "<shadow></shadow> Otonashi";
+
+var shadowRoot2 = host2.createShadowRoot();
+shadowRoot2.innerHTML = "foo <shadow></shadow> bar";
+var shadowRoot3 = host2.createShadowRoot();
+shadowRoot3.innerHTML = "FOO <shadow></shadow> BAR";
+</script>
+
+</body>
+</html>

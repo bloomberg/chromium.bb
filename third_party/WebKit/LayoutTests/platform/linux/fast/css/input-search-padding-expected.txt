@@ -1,0 +1,32 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutTextControl {INPUT} at (0,0) size 456x81 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (3,3) size 450x46
+          LayoutBlockFlow {DIV} at (0,17.50) size 1x11
+          LayoutBlockFlow {DIV} at (1,0) size 424x46
+      LayoutBR {BR} at (456,39) size 0x0
+      LayoutTextControl {INPUT} at (0,81) size 454x81 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+      LayoutBR {BR} at (454,120) size 0x0
+      LayoutTextControl {INPUT} at (0,162) size 237x25 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutFlexibleBox {DIV} at (6,0.50) size 225x24
+          LayoutBlockFlow {DIV} at (0,6.50) size 1x11
+          LayoutBlockFlow {DIV} at (1,0) size 206x24
+layer at (12,11) size 424x46
+  LayoutBlockFlow {DIV} at (0,0) size 424x46
+    LayoutText {#text} at (0,0) size 357x45
+      text run at (0,0) width 357: "value jgq not clipped"
+layer at (10,92) size 450x46
+  LayoutBlockFlow {DIV} at (2,3) size 450x46
+    LayoutText {#text} at (0,0) size 357x45
+      text run at (0,0) width 357: "value jgq not clipped"
+layer at (15,171) size 206x24
+  LayoutBlockFlow {DIV} at (0,0) size 206x24
+    LayoutText {#text} at (0,0) size 115x23
+      text run at (0,0) width 115: "Sample Input"
+layer at (437,24) size 21x21 transparent
+  LayoutBlockFlow {DIV} at (426,12.50) size 21x21
+layer at (222,176) size 14x14 transparent
+  LayoutBlockFlow {DIV} at (208,5) size 14x14

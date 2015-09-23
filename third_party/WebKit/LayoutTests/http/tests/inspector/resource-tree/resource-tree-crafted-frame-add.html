@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="resource-tree-test.js"></script>
+
+<script>
+
+function createCraftedIframe()
+{
+    var fabricatedFrame = document.createElement("iframe");
+    fabricatedFrame.src = "#foo";
+    document.body.appendChild(fabricatedFrame);
+    fabricatedFrame.contentDocument.write("<div>bar</div>");
+}
+
+function test()
+{
+    InspectorTest.runAfterResourcesAreFinished(["inspector-test.js", "resources-test.js", "resource-tree-test.js"], step1);
+
+    function step1()
+    {
+        InspectorTest.addSniffer(InspectorTest.resourceTreeModel, "_frameAttached", InspectorTest.completeTest);
+        InspectorTest.evaluateInPage("createCraftedIframe()");
+    }
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>Tests resource tree model on crafted iframe addition (will time out on failure).</p>
+</body>
+</html>

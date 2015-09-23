@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Can set up a basic WebRTC call with only data using promises. Failed to execute 'createOffer' on 'RTCPeerConnection': 1 argument required, but only 0 present.
+Harness: the test ran to completion.
+

@@ -1,0 +1,16 @@
+ 
+This tests that you can reach the links within an image map.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS body.childAtIndex(3).role is 'AXRole: AXLink'
+PASS body.childAtIndex(3).deprecatedTitle is 'AXTitle: Link1'
+PASS body.childAtIndex(4).role is 'AXRole: AXLink'
+PASS body.childAtIndex(4).deprecatedTitle is 'AXTitle: Link2'
+PASS body.childAtIndex(5).role is 'AXRole: AXLink'
+PASS body.childAtIndex(5).deprecatedTitle is 'AXTitle: Link3'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

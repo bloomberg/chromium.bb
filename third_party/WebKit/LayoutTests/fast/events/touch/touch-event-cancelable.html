@@ -1,0 +1,45 @@
+<script src="../../../resources/js-test.js"></script> 
+
+<p id="description"></p>
+<div id="console"></div>
+<script type="text/javascript">
+description('Test that touch events may or may not be marked cancelable. http://crbug.com/365681');
+
+var gotTouchMove = false;
+var touchEvent;
+
+document.addEventListener('touchmove', function(event) {
+    shouldBeFalse('gotTouchMove');
+    gotTouchMove = true;
+    touchEvent = event;
+    shouldBeFalse('touchEvent.defaultPrevented');
+    console.log('Calling preventDefault on TouchEvent with cancelable=' + event.cancelable);
+    touchEvent.preventDefault();
+}, false);
+
+if (window.eventSender) {
+    eventSender.addTouchPoint(152, 152);
+    eventSender.touchStart();
+
+    eventSender.updateTouchPoint(0, 155, 155);
+    eventSender.setTouchCancelable(true);
+    debug('Sending cancelable touchmove');
+    eventSender.touchMove();
+    shouldBeTrue('gotTouchMove');
+    shouldBeTrue('touchEvent.cancelable');
+    shouldBeTrue('touchEvent.defaultPrevented');
+    gotTouchMove = false;
+
+    debug('');
+    debug('Sending uncancelable touchmove');
+    eventSender.setTouchCancelable(false);
+    eventSender.updateTouchPoint(0, 160, 160);
+    eventSender.touchMove();
+    shouldBeTrue('gotTouchMove');
+    shouldBeFalse('touchEvent.cancelable');
+    shouldBeFalse('touchEvent.defaultPrevented');
+} else {
+   debug('This test requires --run-layout-test.');
+}
+
+</script>

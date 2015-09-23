@@ -1,0 +1,26 @@
+<!-- Based on fast/repaint/resize-scrollable-div.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "HorizontalScrollbar",
+    "VerticalScrollbar",
+    "VerticalScrollbar",
+    "VerticalScrollbar",
+    "HorizontalScrollbar",
+    "HorizontalScrollbar",
+    "LayoutBlockFlow DIV id='div'",
+];
+function paintInvalidationTest() {
+  document.getElementById('div').style.width='300px';
+  document.getElementById('div').style.height='300px';
+}
+onload = runPaintInvalidationTest;
+</script>
+<div style="height: 100px">
+Tests paint invalidation of scrollbars and scroll corner when a srollable div is resized.
+Passes if the scrollbars and scroll corner are repainted correctly, and no under-invalidation
+in slimming-paint mode (with slimmingPaintUnderInvalidationChecking enabled).
+</div>
+<div id="div" style="width: 100px; height: 100px; overflow: scroll"></div>
+

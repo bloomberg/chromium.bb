@@ -1,0 +1,57 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: markerWidth from [1] to [6] was [1] at 0
+PASS: markerWidth from [1] to [6] was [2] at 0.2
+PASS: markerWidth from [1] to [6] was [4] at 0.6
+PASS: markerWidth from [1] to [6] was [6] at 1
+PASS: markerWidth from [10pt] to [5pc] was [10pt] at 0
+PASS: markerWidth from [10pt] to [5pc] was [20pt] at 0.2
+PASS: markerWidth from [10pt] to [5pc] was [40pt] at 0.6
+PASS: markerWidth from [10pt] to [5pc] was [60pt] at 1
+PASS: markerWidth from [15%] to [23em] was [225] at 0
+PASS: markerWidth from [15%] to [23em] was [226] at 0.2
+PASS: markerWidth from [15%] to [23em] was [228] at 0.6
+PASS: markerWidth from [15%] to [23em] was [230] at 1
+PASS: markerWidth from [10rem] to [60rem] was [10rem] at 0
+PASS: markerWidth from [10rem] to [60rem] was [20rem] at 0.2
+PASS: markerWidth from [10rem] to [60rem] was [40rem] at 0.6
+PASS: markerWidth from [10rem] to [60rem] was [60rem] at 1
+PASS: markerWidth from [10ch] to [20rem] was [10ch] at 0
+PASS: markerWidth from [10ch] to [20rem] was [120] at 0.2
+PASS: markerWidth from [10ch] to [20rem] was [160] at 0.6
+PASS: markerWidth from [10ch] to [20rem] was [20rem] at 1
+
+Web Animations API:
+PASS: markerWidth from [1] to [6] was [0] at -0.4
+PASS: markerWidth from [1] to [6] was [1] at 0
+PASS: markerWidth from [1] to [6] was [2] at 0.2
+PASS: markerWidth from [1] to [6] was [4] at 0.6
+PASS: markerWidth from [1] to [6] was [6] at 1
+PASS: markerWidth from [1] to [6] was [8] at 1.4
+PASS: markerWidth from [10pt] to [5pc] was [0pt] at -0.4
+PASS: markerWidth from [10pt] to [5pc] was [10pt] at 0
+PASS: markerWidth from [10pt] to [5pc] was [20pt] at 0.2
+PASS: markerWidth from [10pt] to [5pc] was [40pt] at 0.6
+PASS: markerWidth from [10pt] to [5pc] was [60pt] at 1
+PASS: markerWidth from [10pt] to [5pc] was [80pt] at 1.4
+PASS: markerWidth from [15%] to [23em] was [0] at -1000
+PASS: markerWidth from [15%] to [23em] was [223] at -0.4
+PASS: markerWidth from [15%] to [23em] was [225] at 0
+PASS: markerWidth from [15%] to [23em] was [226] at 0.2
+PASS: markerWidth from [15%] to [23em] was [228] at 0.6
+PASS: markerWidth from [15%] to [23em] was [230] at 1
+PASS: markerWidth from [15%] to [23em] was [232] at 1.4
+PASS: markerWidth from [10rem] to [60rem] was [0rem] at -0.4
+PASS: markerWidth from [10rem] to [60rem] was [10rem] at 0
+PASS: markerWidth from [10rem] to [60rem] was [20rem] at 0.2
+PASS: markerWidth from [10rem] to [60rem] was [40rem] at 0.6
+PASS: markerWidth from [10rem] to [60rem] was [60rem] at 1
+PASS: markerWidth from [10rem] to [60rem] was [80rem] at 1.4
+PASS: markerWidth from [10ch] to [20rem] was [60] at -0.4
+PASS: markerWidth from [10ch] to [20rem] was [10ch] at 0
+PASS: markerWidth from [10ch] to [20rem] was [120] at 0.2
+PASS: markerWidth from [10ch] to [20rem] was [160] at 0.6
+PASS: markerWidth from [10ch] to [20rem] was [20rem] at 1
+PASS: markerWidth from [10ch] to [20rem] was [240] at 1.4
+

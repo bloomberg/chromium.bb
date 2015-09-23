@@ -1,0 +1,17 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/presentation-api/#interface-presentation
+
+[
+    GarbageCollected,
+    RuntimeEnabled=Presentation
+] interface Presentation : EventTarget {
+    [MeasureAs=PresentationDefaultRequest] attribute PresentationRequest? defaultRequest;
+
+    // This API used by presenting browsing context.
+    // TODO(avayvod): The spec has |getSession()| and |getSessions()| instead.
+    readonly attribute PresentationSession? session;
+    // TODO(avayvod): attribute EventHandler onsessionavailable;
+};

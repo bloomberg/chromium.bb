@@ -1,0 +1,40 @@
+<!-- Based on fast/repaint/negative-text-indent-with-overflow-hidden.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+    .container {
+        position: absolute;
+        left: 550px;
+        height: 200px;
+        width: 200px;
+        background-color: silver;
+    }
+    #target {
+        text-indent: -300px;
+        width: 200px;
+        height: 50px;
+        overflow: hidden;
+        background-color: green;
+    }
+
+    #target.changed, #target:hover {
+        background-color: blue;
+    }
+    </style>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='target' class='changed'",
+    ];
+    function paintInvalidationTest() {
+        document.getElementById('target').classList.add('changed');
+    }
+    </script>
+</head>
+<body onload="runPaintInvalidationTest();">
+    <div class="container">
+        <div id="target">Hidden Text</div>
+    </div>
+</body>
+</html>

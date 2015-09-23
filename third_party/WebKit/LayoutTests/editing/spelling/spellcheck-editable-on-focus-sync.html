@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../editing.js"></script>
+<script src="resources/util.js"></script>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<pre id="console"></pre>
+<div id="container">
+  <div id="test_editable" contentEditable>zz zz zz. </div>
+  <textarea id="test_textarea">zz zz zz.</textarea>
+  <input type="text" id="test_textfield" value="zz zz zz."></input>
+</div>
+<script>
+description("Spell checking should be triggered on focus of an editable. " +
+"To test manually type focus above editable and textarea. Misspellings in them " +
+"should be marked on focus.");
+
+var testEditable = document.getElementById('test_editable');
+var testTextArea = document.getElementById('test_textarea');
+var testTextField = document.getElementById('test_textfield');
+
+if (!window.internals) {
+    log("Automatic testing impossible. Test manually.");
+} else {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(false);
+    internals.setContinuousSpellCheckingEnabled(true);
+
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
+    testEditable.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
+    testTextArea.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
+    testTextField.focus();
+    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
+}
+</script>
+</body>
+</html>

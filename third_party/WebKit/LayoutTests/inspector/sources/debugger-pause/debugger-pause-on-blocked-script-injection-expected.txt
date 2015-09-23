@@ -1,0 +1,10 @@
+CONSOLE ERROR: Refused to execute inline script because it violates the following Content Security Policy directive: "script-src 'self'". Either the 'unsafe-inline' keyword, a hash ('sha256-nHVu6nggsoh0Xg7erdTs8Fo23plZcLWC+mnUoDHxja4='), or a nonce ('nonce-...') is required to enable inline execution.
+
+Tests that pause on exception works for inline scripts blocked by CSP.
+
+Script execution paused.
+Call stack:
+    0) testAction (pause-on-blocked-script-injection.js:5)
+Paused on a script blocked due to Content Security Policy directive: "script-src 'self'".
+Script execution resumed.
+

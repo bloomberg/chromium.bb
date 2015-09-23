@@ -1,0 +1,15 @@
+The right edges of the three black squares should follow the outer ellipse boundary and each square should appear on a subsequent line.
+
+X
+X
+X
+PASS elementRect('s1').top is 0
+FAIL elementRect('s1').right should be 152. Was 152.90625.
+PASS elementRect('s2').top is 20
+FAIL elementRect('s2').right should be 110. Was 110.015625.
+PASS elementRect('s3').top is 40
+FAIL elementRect('s3').right should be 82. Was 82.8125.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

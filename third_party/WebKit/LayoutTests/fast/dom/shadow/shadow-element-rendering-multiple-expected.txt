@@ -1,0 +1,21 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+renderingDoubleShadowRootDynamicallyAdded1
+PASS
+renderingDoubleShadowRootDynamicallyAdded2
+PASS
+renderingDoubleShadowRootDynamicallyAdded3
+PASS
+renderingDoubleShadowRootDynamicallyRemoved1
+PASS
+renderingDoubleShadowRootDynamicallyRemoved2
+PASS
+renderingLightChildrenDynamicallyAdded
+PASS
+renderingOlderShadowRootContentDynamicallyAdded
+PASS
+renderingLightChildrenDynamicallyRemoved
+PASS
+renderingOlderShadowRootContentDynamicallyRemoved
+PASS
+TEST COMPLETED
+

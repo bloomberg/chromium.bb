@@ -1,0 +1,134 @@
+<html>
+<head>
+<link rel="stylesheet" href="resources/style.css">
+<script src="../inspector/inspector-test.js"></script>
+<script src="../inspector/elements-test.js"></script>
+<style>
+#testDiv {
+    font-family: arial;
+}
+</style>
+<script>
+
+function reopenWebInspector(objectId)
+{
+    window.didReopen = 1;
+    testRunner.closeWebInspector();
+    setTimeout(function() {
+      testRunner.showWebInspector();
+      runTest();
+    }, 0);
+}
+
+function initTest()
+{
+    delete window.didReopen;
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    if (window.testRunner)
+        testRunner.showWebInspector();
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.RuntimeAgent.evaluate("window.didReopen", dispatch);
+
+    function dispatch(error, result, wasThrown)
+    {
+        if (result.type !== "number") {
+            InspectorTest.addResult("Opening front-end for the first time");
+            testFirstOpen();
+        } else {
+            InspectorTest.addResult("Opening front-end second time");
+            InspectorTest.addResult("Dump styles after inspector was reopened:");
+            dump(InspectorTest.completeTest);
+        }
+    }
+
+    function testFirstOpen()
+    {
+        InspectorTest.addResult("Dump initial styles:");
+        dump(onStylesDumped);
+
+        function onStylesDumped()
+        {
+            treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "color";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            // Commit editing.
+            treeElement.valueElement.textContent = "green";
+            treeElement.valueElement.firstChild.select();
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            InspectorTest.waitForStyleApplied(onStyleSheetPropertyEdited);
+        }
+
+        function onStyleSheetPropertyEdited()
+        {
+            treeElement = InspectorTest.getMatchedStylePropertyTreeItem("font-family");
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "font-family";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            // Commit editing.
+            treeElement.valueElement.textContent = "Helvetica";
+            treeElement.valueElement.firstChild.select();
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            InspectorTest.waitForStyleApplied(onStyleTagPropertyEdited);
+        }
+
+        function onStyleTagPropertyEdited()
+        {
+            InspectorTest.addNewRule("#testDiv, my-custom-tag", onFirstRuleAdded);
+        }
+
+        function onFirstRuleAdded()
+        {
+            InspectorTest.addNewRule("#testDiv, another-custom-tag", onSecondRuleAdded);
+        }
+
+        function onSecondRuleAdded()
+        {
+            InspectorTest.domModel.undo(onRuleRemoved);
+        }
+
+        function onRuleRemoved()
+        {
+            InspectorTest.selectNodeAndWaitForStyles("other", step4);
+        }
+
+        function step4()
+        {
+            InspectorTest.addResult("Dump styles after editing:");
+            dump(reopenInspector);
+        }
+    }
+
+    function reopenInspector()
+    {
+        InspectorTest.flushResults();
+        InspectorTest.evaluateInPage("reopenWebInspector()");
+    }
+
+    function dump(callback)
+    {
+        InspectorTest.selectNodeAndWaitForStyles("testDiv", step2);
+
+        function step2()
+        {
+            InspectorTest.dumpSelectedElementStyles(true);
+            callback();
+        }
+    }
+}
+</script>
+</head>
+
+<body onload="initTest()">
+<p>This test checks that styles edited through inspector are correctly shown upon reattach.</p>
+<div id="testDiv"></div>
+<div id="other"></div>
+</body>
+</html>

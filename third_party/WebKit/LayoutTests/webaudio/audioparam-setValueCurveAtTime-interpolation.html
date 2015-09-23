@@ -1,0 +1,251 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Interpolation for AudioParam.setValueCurveAtTime</title>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Interpolation for AudioParam.setValueCurveAtTime");
+      window.jsTestIsAsync = true;
+
+      // Play a constant signal through a gain node that is automated using setValueCurveAtTime with
+      // a 2-element curve.  The output should be a linear change.
+
+      // Choose a sample rate that is a multiple of 128, the rendering quantum size.  This makes the
+      // math work out to be nice numbers.
+      var sampleRate = 25600;
+      var testDurationSec = 1;
+      var testDurationFrames = testDurationSec * sampleRate;
+
+      // Where the curve starts and its duration.  This MUST be less than the total rendering time.
+      var curveStartTime = 256 / sampleRate;
+      var curveDuration = 300 / sampleRate;;
+      var curveValue = 0.75;
+
+      // At this time, the gain node goes to gain 1.  This is used to make sure the value curve is
+      // propagated correctly until the next event.
+      var fullGainTime = 0.75;
+      
+      // Thresholds use to determine if the test passes; these are experimentally determined.  The
+      // SNR between the actual and expected result should be at least |snrThreshold|.  The maximum
+      // difference betwen them should not exceed |maxErrorThreshold|.
+      var snrThreshold = 10000;
+      var maxErrorThreshold = 0;
+
+      var context;
+      var actualResult;
+      var expectedResult;
+
+      var audit = Audit.createTaskRunner();
+
+      // Array of test configs.  Each config must specify curveStartTime, curveDuration,
+      // curveLength, fullGainTime, maxErrorThreshold, and snrThreshold.
+      var testConfigs = [{
+        // The main test
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 300 / sampleRate,
+        curveLength: 2,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 172.068
+      }, {
+        // Increase the curve length
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 300 / sampleRate,
+        curveLength: 3,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 172.068
+      }, {
+        // Increase the curve length
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 300 / sampleRate,
+        curveLength: 16,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 170.012
+      }, {
+        // Increase the curve length
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 300 / sampleRate,
+        curveLength: 100,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 170.196
+      }, {
+        // Corner case with duration less than a frame!
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 0.25 / sampleRate,
+        curveLength: 2,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 0,
+        snrThreshold: 10000
+      }, {
+        // Short duration test
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 2 / sampleRate,
+        curveLength: 2,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 0,
+        snrThreshold: 10000
+      }, {
+        // Short duration test with many points.
+        curveStartTime: 256 / sampleRate,
+        curveDuration: 2 / sampleRate,
+        curveLength: 8,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 0,
+        snrThreshold: 10000
+      }, {
+        // Long duration, big curve
+        curveStartTime: 256 / sampleRate,
+        curveDuration: .5,
+        curveLength: 1000,
+        fullGainTime: 0.75,
+        maxErrorThreshold: 5.961e-8,
+        snrThreshold: 152.800
+      }];
+
+      // Creates a function based on the test config that is suitable for use by defineTask().
+      function createTaskFunction(config) {
+        return function (done) {
+          runTest(config).then(done);
+        };
+      }
+
+      // Define a task for each config, in the order listed in testConfigs.
+      for (var k = 0; k < testConfigs.length; ++k) {
+        var config = testConfigs[k];
+        var name = k + ":curve=" + config.curveLength + ",duration=" + (config.curveDuration * sampleRate);
+        audit.defineTask(name, createTaskFunction(config));
+      }
+
+      // Must be the last defined task.
+      audit.defineTask("end", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      function runTest(config) {
+        context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+
+        // A constant audio source of value 1.
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        // The value curve for testing.  Just to make things easy for testing, make the curve a
+        // simple ramp up to curveValue.
+        // TODO(rtoy): Maybe allow more complicated curves?
+        var curve = new Float32Array(config.curveLength);
+        for (var k = 0; k < config.curveLength; ++k) {
+          curve[k] = curveValue / (config.curveLength - 1) * k;
+        }
+
+        // A gain node that is to be automated using setValueCurveAtTime.
+        var gain = context.createGain();
+        gain.gain.value = 0;
+        gain.gain.setValueCurveAtTime(curve, config.curveStartTime, config.curveDuration);
+        // This is to verify that setValueCurveAtTime ends appropriately.
+        gain.gain.setValueAtTime(1, config.fullGainTime);
+
+        source.connect(gain);
+        gain.connect(context.destination);
+        source.start();
+
+        // Some consistency checks on the test parameters
+        Should("Check: Curve end time", config.curveStartTime + config.curveDuration)
+          .beLessThanOrEqualTo(testDurationSec);
+        Should("Check: Full gain start time", config.fullGainTime).beLessThanOrEqualTo(testDurationSec);
+        Should("Check: Full gain start time", config.fullGainTime).beGreaterThanOrEqualTo(config.curveStartTime + config.curveDuration);
+
+        // Rock and roll!
+        return context.startRendering().then(checkResult(config));
+      }
+
+      // Return a function to check that the rendered result matches the expected result.
+      function checkResult(config) {
+        return function (renderedBuffer) {
+          var success = true;
+
+          actualResult = renderedBuffer.getChannelData(0);
+          expectedResult = computeExpectedResult(config);
+
+          // Compute the SNR and max absolute difference between the actual and expected result.
+          var SNR = 10*Math.log10(computeSNR(actualResult, expectedResult));
+          var maxDiff = -1;
+          var posn = -1;
+
+          for (var k = 0; k < actualResult.length; ++k) {
+            var diff = Math.abs(actualResult[k] - expectedResult[k]);
+            if (maxDiff < diff) {
+              maxDiff = diff;
+              posn = k;
+            }
+          }
+
+          success = success && Should("SNR", SNR).beGreaterThanOrEqualTo(config.snrThreshold);
+
+          if (maxDiff <= config.maxErrorThreshold) {
+            testPassed("Max difference is less than or equal to " + config.maxErrorThreshold + ".");
+          } else {
+            testFailed("Max difference (" + maxDiff + ") NOT less than or equal to " +
+              config.maxErrorThreshold + " at frame " + posn + ".");
+            success = false;
+          }
+
+          var message = "Test: curve length = " + config.curveLength + "; duration frames = " +
+          config.curveDuration * sampleRate + ".\n";
+      
+          if (success)
+            testPassed(message);
+          else
+            testFailed(message);
+        }
+      }
+
+      // Compute the expected result based on the config settings.
+      function computeExpectedResult(config) {
+         // The automation curve starts at |curveStartTime| and has duration |curveDuration|.  So,
+         // the output should be zero until curveStartTime, linearly ramp up from there to
+         // |curveValue|, and then be constant 1 from then to the end of the buffer.
+
+         var expected = new Float32Array(testDurationFrames);
+
+         var curveStartFrame = config.curveStartTime * sampleRate;
+         var curveEndFrame = Math.floor((config.curveStartTime + config.curveDuration) * sampleRate);
+         var fullGainFrame = config.fullGainTime * sampleRate;
+
+         var k;
+
+         // Zero out the start.
+         for (k = 0; k < curveStartFrame; ++k)
+           expected[k] = 0;
+
+         // Linearly ramp now.  This assumes that the actual curve used is a linear ramp, even if
+         // there are many curve points.
+         var stepSize = curveValue / (config.curveDuration * sampleRate - 1);
+         for (; k < curveEndFrame; ++k)
+           expected[k] = stepSize * (k - curveStartFrame);
+
+         // Hold it constant until the next event
+         for (; k < fullGainFrame; ++k)
+           expected[k] = curveValue;
+
+         // Amplitude is one for the rest of the test.
+         for (; k < testDurationFrames; ++k)
+           expected[k] = 1;
+
+         return expected;
+      }
+
+      audit.runTasks();
+
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

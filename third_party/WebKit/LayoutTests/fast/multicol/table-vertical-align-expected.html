@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<style>
+    .mc { width:520px; height:80px; font-size:12px; line-height:20px; background:#ddd; }
+    .mc span { font-size:2em; line-height:30px; }
+</style>
+
+<p>The big text should be in the first column, and baseline-aligned with the line in its neighbor cell on the left:</p>
+<div class="mc">
+    <div style="float:left; padding-left:10px; padding-top:10px; width:270px;">
+        <div style="display:inline-block; width:30px;">
+            line<br>
+            <!-- The baseline of an inline-block is the baseline of the last in-flow line. So make
+                 sure the first line is also the last in-flow line :-P -->
+            <div style="position:absolute;">
+                line<br>
+                line
+            </div>
+        </div><span style="margin-left:15px;">1st column</span>
+    </div>
+    <div style="float:left;">
+        line<br>
+        line<br>
+        line<br>
+    </div>
+</div>
+
+<hr>
+
+<p>The big text should be near the top in the first column:</p>
+<div class="mc">
+    <div style="float:left; padding-left:10px; padding-top:10px; width:270px;">
+        <div style="float:left; width:30px;">line<br>line<br>line</div>
+        <span style="margin-left:15px;">1st column</span>
+    </div>
+    <div style="float:left;">
+        line<br>
+        line<br>
+        line<br>
+    </div>
+</div>
+
+<hr>
+
+<p>The big text should be at the top in the second column:</p>
+<div class="mc">
+    <div style="float:left; padding-left:10px; padding-top:10px; width:270px;">
+        line<br>
+        line<br>
+        line<br>
+    </div>
+    <div style="float:left; width:220px;">
+        <div style="float:left; width:30px;">line<br>line<br>line</div>
+        <span style="margin-left:15px;">2nd column</span>
+    </div>
+</div>
+
+<hr>
+
+<p>The big text should be near the bottom in the second column:</p>
+<div class="mc">
+    <div style="float:left; padding-left:10px; padding-top:10px; width:270px;">
+        line<br>
+        line<br>
+        line<br>
+    </div>
+    <div style="float:left; width:200px;">
+        <div style="float:left; width:30px;">line<br>line<br>line</div>
+        <div style="height:35px;"></div>
+        <span style="margin-left:15px;">2nd column</span>
+    </div>
+</div>

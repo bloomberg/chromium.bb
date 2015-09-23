@@ -1,0 +1,19 @@
+Tests spelling and grammar markers for misspellings.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS internals.markerCountForNode(element.firstChild, next.marker) became 1
+PASS range.toString() is next.issue
+PASS successfullyParsed is true
+
+TEST COMPLETE
+I have a issue.
+zz.
+orange,zz,apple.

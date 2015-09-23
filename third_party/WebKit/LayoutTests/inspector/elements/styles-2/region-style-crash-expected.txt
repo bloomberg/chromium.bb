@@ -1,0 +1,24 @@
+Tests that webkit css region styling can be parsed correctly. Test passes if it doesn't crash.
+
+P color styled in region: #008000.
+
+color: rgb(255, 0, 0)
+    #ff0000 - #p1 region-style-crash.html:6 -> region-style-crash.html:6:1
+display: block
+    block - p user agent stylesheet
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#p1  { (region-style-crash.html:6 -> region-style-crash.html:6:1)
+    color: #ff0000;
+
+[expanded] 
+p  { (user agent stylesheet)
+    display: block;
+    -webkit-margin-before: 1em;
+    -webkit-margin-after: 1em;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+
+

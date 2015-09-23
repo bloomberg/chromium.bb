@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Test closed caption button toggling.</title>
+    <script src=media-file.js></script>
+    <script src=media-controls.js></script>
+    <script src=video-test.js></script>
+    <script>
+        var displayElement;
+        var track;
+        var text = ["First", "Second", "Third"];
+
+        function addTextTrack()
+        {
+            track = video.addTextTrack('captions');
+
+            for(var i = 0; i < 3; i++) {
+                var cue = new VTTCue(0, 120, text[i]);
+                track.addCue(cue);
+            }
+        }
+
+        function checkCaptionsDisplay()
+        {
+            for (var i = 0; i < 3; i++) {
+                try {
+                    displayElement = textTrackDisplayElement(video, 'display', i);
+                    testExpected("displayElement.innerText", text[i]);
+                } catch(e) {
+                    consoleWrite(e);
+                }
+            }
+        }
+
+        function startTest()
+        {
+            if (!window.eventSender) {
+                consoleWrite("No eventSender found.");
+                failTest();
+            }
+
+            addTextTrack();
+
+            findMediaElement();
+            testClosedCaptionsButtonVisibility(true);
+
+            consoleWrite("");
+            consoleWrite("** The captions track should be listed in textTracks, but not yet loaded. **");
+            testExpected("video.textTracks.length", 1);
+            testExpected("video.textTracks[0].mode", "hidden");
+            checkCaptionsDisplay();
+
+            consoleWrite("");
+            consoleWrite("** Captions track should become visible after button is clicked **");
+            clickCCButton();
+            checkCaptionsDisplay();
+
+            consoleWrite("");
+            consoleWrite("** Captions should not be visible after button is clicked again **");
+            clickCCButton();
+            checkCaptionsDisplay();
+
+            consoleWrite("");
+            consoleWrite("** Captions should become visible after button is clicked again **");
+            clickCCButton();
+            checkCaptionsDisplay();
+
+            consoleWrite("");
+            endTest();
+        }
+
+        function loaded()
+        {
+            findMediaElement();
+            waitForEvent('canplaythrough', startTest);
+
+            video.src = findMediaFile('video', 'content/counting');
+        }
+    </script>
+</head>
+<body onload="loaded()">
+    <p>Tests that multiple toggles of the closed captions button still display captions</p>
+    <video controls></video>
+</body>
+</html>

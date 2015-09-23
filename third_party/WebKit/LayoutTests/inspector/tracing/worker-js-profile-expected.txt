@@ -1,0 +1,5 @@
+Tests js cpu profile in timeline.
+
+Main Thread
+DedicatedWorker Thread
+

@@ -1,0 +1,68 @@
+<!doctype html> 
+<title>Whitespace in attribute values tests</title>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<svg id="testcontainer">
+</svg>
+<div id=log></div>
+<script>
+var svg = document.querySelector("svg");
+
+// test length values
+var EPSILON = Math.pow(2, -24); // float epsilon
+var whitespace = [ "", " ", "   ", "\r\n\t ", "\f" ];
+var validunits = [ "", "em", "ex", "px", "in", "cm", "mm", "pt", "pc", "%" ];
+
+// This test was split out from whitespace-length.html because the trybots were too slow.
+
+/**
+ * Tests attribute parsing and handling of whitespace in attribute values.
+ *
+ * @param type Name of the type being tested (only for test output)
+ * @param target The element that should be tested
+ * @param attribute The name of the attribute that should be tested
+ * @param expected The fallback/default value that is the expectation for invalid values
+ * @param whitespace An array of strings that are valid whitespace characters
+ * @param valid An array of strings containing valid attribute values
+ * @param invalid An array of strings containing invalid attribute values
+ * @param garbage An array of strings containing values that would make a valid value invalid when concatenated
+ * @param assert_valid_custom A function for asserting validity of a valid value, arguments passed to this function: the element and the string from valid values array
+ * @param assert_invalid_custom A function for asserting that an invalid value results in the expected default value, arguments passed to this function: the element and the expected value
+ */
+function testTypeLocal(type, target, attribute, expected, whitespace, valid, invalid, validunits, garbage, assert_valid_custom, assert_invalid_custom) {
+    whitespace.forEach(function(leading) {
+        whitespace.forEach(function(trailing) {
+            // test invalid values
+            invalid.forEach(function(value) {
+                validunits.forEach(function(unit) {
+                    var valueStr = leading + value + unit + trailing;
+                    var escapedValueStr = valueStr.replace(/(\r)/g, '\\r').replace(/(\n)/g, '\\n').replace(/(\t)/g, '\\t').replace(/(\f)/g, '\\f');
+                    test(function() {
+                        try {
+                            target.setAttribute(attribute, valueStr);
+                            assert_equals(target.getAttribute(attribute), valueStr);
+                            assert_invalid_custom(target, expected);
+                        }
+                        finally {
+                            target.removeAttribute(attribute);
+                        }
+                    }, "Test " + type + " invalid value: " + escapedValueStr);
+                });
+            });
+        });
+    });
+}
+
+testTypeLocal("<length>",
+		 svg,
+		 "x",
+		 0, // expected default value
+		 whitespace,
+		 [], // valid
+		 [ "e+", "E-", "-", "+", "-.", ".-", ".", "+.", ".E0", "e1" ], // invalid
+		 validunits,
+		 [], // garbage
+		 function(elm, value) { assert_approx_equals(elm.x.baseVal.valueInSpecifiedUnits, parseFloat(value), EPSILON); },
+		 function(elm, expected) { assert_approx_equals(elm.x.baseVal.value, expected, EPSILON); } );
+
+</script>

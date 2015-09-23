@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+
+<p>Before</p>
+
+<iframe id="iframe" title="InnerFrame"></iframe>
+
+<p>After</p>
+
+<p>End of test</p>
+
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+    description("This tests that when an iframe finishes loading, it sends a notification.");
+
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    else
+        debug("This test requires window.accessibilityController and must be run in content_shell with --run-layout-test.")
+
+    window.jsTestIsAsync = true;
+
+    function runTest()
+    {
+        if (window.accessibilityController) {
+            // Initially, the iframe should not be loaded, so we shouldn't be able to find this button.
+            shouldBeUndefined("accessibilityController.accessibleElementById('innerbutton')");
+
+            window.accessibilityController.addNotificationListener(function (target, notification) {
+                if (!target.parentElement() || !target.parentElement().parentElement())
+                    return;
+
+                // Ignore this notification if it's not within the subtree of the iframe.
+                var frameTarget = target.parentElement().parentElement();
+                if (frameTarget.deprecatedDescription.indexOf("InnerFrame") == -1)
+                    return;
+
+                // Even still we'll get LayoutComplete notifications sooner than we want.
+                if (!accessibilityController.accessibleElementById('innerbutton'))
+                    return;
+
+                // Check that the button within the iframe is now reachable from the root.
+                shouldBeDefined("accessibilityController.accessibleElementById('innerbutton')");
+                if (window.accessibilityController)
+                    accessibilityController.removeNotificationListener();
+
+                finishJSTest();
+            });
+        }
+
+        // Load content into the iframe. This will trigger the event
+        // handler above, which will check that the accessibility tree
+        // was updated with new content.
+        document.getElementById("iframe").src = "data:text/html,<body><button id='innerbutton'>InnerButton</button></body>";
+    }
+    window.addEventListener('load', runTest);
+</script>
+
+</body>
+</html>

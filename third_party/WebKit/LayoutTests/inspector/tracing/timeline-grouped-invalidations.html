@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function display(callback)
+{
+    requestAnimationFrame(function() {
+        var testElements = document.body.getElementsByClassName("testElement");
+        for (var i = 0; i < testElements.length; i++) {
+            testElements[i].style.color = "red";
+            testElements[i].style.backgroundColor = "blue";
+        }
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function test()
+{
+    var currentPanel = WebInspector.inspectorView.currentPanel();
+    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
+    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+
+    InspectorTest.invokeAsyncWithTimeline("display", function() {
+        var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
+        InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
+
+        var linkifier = new WebInspector.Linkifier();
+        var target = InspectorTest.timelineModel().target();
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(target, linkifier, null, true);
+        WebInspector.TimelineUIUtils._generateCauses(record.traceEvent(), target, contentHelper);
+        var invalidationsTree = contentHelper.element.getElementsByClassName("invalidations-tree")[0];
+        var invalidations = invalidationsTree.shadowRoot.textContent;
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:12");
+        checkStringContains(invalidations, "Inline CSS style declaration was mutated for [ DIV class='testElement' ], [ DIV class='testElement' ], and 2 others. (anonymous function) @ timeline-grouped-invalidations.html:13");
+        InspectorTest.completeTest();
+    });
+
+    function checkStringContains(string, contains)
+    {
+        var doesContain = string.indexOf(contains) >= 0;
+        InspectorTest.check(doesContain, contains + " should be present in " + string);
+        InspectorTest.addResult("PASS - record contained " + contains);
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests grouped invalidations on the timeline.</p>
+<div class="testElement">P</div><div class="testElement">A</div>
+<div class="testElement">S</div><div class="testElement">S</div>
+</body>
+</html>

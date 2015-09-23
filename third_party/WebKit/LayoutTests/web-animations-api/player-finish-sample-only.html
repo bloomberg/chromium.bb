@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            .anim {
+                position: absolute;
+                left: 10px;
+                height: 90px;
+                width: 100px;
+                background-color: black;
+            }
+        </style>
+        <script type="text/javascript">
+
+function log(message) {
+    var results = document.getElementById('results');
+    results.innerHTML += message + '<br>';
+}
+
+function validateFinishEvent(player, event) {
+    if (event.target === player) {
+        log('PASS: ' + player.name + ' is target');
+    } else {
+        log('FAIL: expected target named ' + player.name + ', actual target is ' + event.target);
+    }
+    if (event.currentTime === player.currentTime) {
+        log('PASS: event currentTime equals player currentTime');
+    } else {
+        log('FAIL: event currentTime ' + event.currentTime + ' does not equal player currentTime ' + player.currentTime);
+    }
+    if (event.timelineTime === document.timeline.currentTime) {
+        log('PASS: event timelineTime equals timeline currentTime');
+    } else {
+        log('FAIL: event timelineTime ' + event.timelineTime +
+            ' does not equal timeline currentTime ' + document.timeline.currentTime);
+    }
+}
+
+var playerTop, playerMiddle, playerBottom;
+
+function onFinishTop(event) {
+    validateFinishEvent(playerTop, event);
+    if (window.testRunner) {
+        testRunner.notifyDone();
+    }
+}
+
+function onFinishMiddle(event) {
+    log('FAIL: seeking to finish should not queue event');
+}
+
+function onFinishBottom(event) {
+    log('FAIL: seeking past finish should not queue event');
+}
+
+function animate() {
+
+    var keyframes = [
+        {left: '10px', opacity: '1', offset: 0},
+        {left: '100px', opacity: '0', offset: 1}
+    ];
+
+    playerMiddle = document.getElementById('middle').animate(keyframes, 70.0);
+    playerMiddle.name = 'playerMiddle';
+    playerMiddle.onfinish = onFinishMiddle;
+    playerMiddle.finish();
+    playerMiddle.currentTime = 0;
+
+    playerBottom = document.getElementById('bottom').animate(keyframes, 70.0);
+    playerBottom.name = 'playerBottom';
+    playerBottom.onfinish = onFinishBottom;
+    playerBottom.currentTime = 80.0;
+    playerBottom.currentTime = 0;
+
+    playerTop = document.getElementById('top').animate(keyframes, 90.0);
+    playerTop.name = 'playerTop';
+    playerTop.onfinish = onFinishTop;
+    playerTop.finish();
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+}
+
+window.onload = animate;
+
+        </script>
+    </head>
+    <body>
+        <div class="anim" id="top"></div>
+        <div class="anim" id="middle"></div>
+        <div class="anim" id="bottom"></div>
+        <div id="results"></div>
+    </body>
+</html>
+

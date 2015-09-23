@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>navigator.serviceWorker should return null when frame is detached</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+  <iframe id="subframe" src="about:blank"></iframe>
+<script>
+promise_test(function(t) {
+    var iframe = document.querySelector("#subframe");
+    var f = iframe.contentWindow.Function;
+    function get_navigator() {
+      return f("return navigator")();
+    }
+    return new Promise(function(resolve) {
+        assert_equals(iframe.contentWindow.navigator, get_navigator());
+        iframe.src = "resources/a.html";
+        iframe.onload = resolve;
+      }).then(function() {
+        assert_equals(get_navigator().serviceWorker, null);
+      });
+  });
+</script>
+
+</body>
+</html>

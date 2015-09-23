@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/fixed-after-scroll.html -->
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css">
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.onload = function() {
+            window.scrollTo(0, 500);
+            runPaintInvalidationTest();
+        };
+
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+            "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
+        ];
+        function paintInvalidationTest()
+        {
+            document.getElementById('t').style.position = "fixed";
+        }
+    </script>
+</head>
+
+<body style="height:2000px;">
+    <!-- Repaint test for https://bugs.webkit.org/show_bug.cgi?id=64650: Layer fixed position logic needs more basic testing -->
+    <!-- You should see no red on this page. -->
+    <div style="top: 200px;" class="red fixed"></div>
+    <div id="t" style="top: 200px;" class="green absolute"></div>
+</body>
+</html>

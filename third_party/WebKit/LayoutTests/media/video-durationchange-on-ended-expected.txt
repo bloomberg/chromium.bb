@@ -1,0 +1,7 @@
+Verify there is a 'durationchange' event just before 'ended' event if the initially reported duration exceeds the actual data.
+
+EVENT(durationchange)
+EVENT(ended)
+EXPECTED (video.duration < initialReportedDuration == 'true'), OBSERVED 'false' FAIL
+END OF TEST
+

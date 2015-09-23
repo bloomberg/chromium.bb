@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../media-file.js"></script>
+<script>
+var mediaFile = findMediaFile('video', '../content/test');
+
+function addCue(track, cueData) {
+  var cue = new VTTCue(0, 10, 'XXX');
+  for (var prop in cueData)
+    cue[prop] = cueData[prop];
+  track.addCue(cue);
+}
+</script>
+<style>
+video::cue {
+  font-size: 120px;
+  color: green;
+  background-color: green;
+}
+</style>
+<video>
+  <script>
+  var video = document.currentScript.parentNode;
+  var track = video.addTextTrack('subtitles');
+  addCue(track, { line: 0, align: 'start', text: 'PAS' });
+  // This cue will not fit, and will not be displayed.
+  addCue(track, { line: 1, align: 'start', text: 'FAI' });
+  track.mode = 'showing';
+  video.src = mediaFile;
+  </script>
+</video>

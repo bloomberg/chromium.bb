@@ -1,0 +1,147 @@
+Tests FileSystemMapping
+
+Testing file system mapping.
+    file system paths:
+
+Adding file system /home/username/projects/foo
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+
+Adding file system /home/username/projects/bar
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+
+Adding file system /www/site1
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+     - /www/site1
+
+Adding file mapping (/www/site1, http://localhost/, /)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+
+Adding file mapping (/www/site1, http://www.foo.com/, /foo/)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Adding file mapping (/home/username/projects/foo, http://www.example.com/bar/, /foo/)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Adding file mapping for resource (http://www.bar.com/foo/folder/42.js, /home/username/projects/foo, baz/folder/42.js)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/"}
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Testing mappings for url:
+    Has mapping for 'http://www.bar.com/foo/folder/42.js': true
+    File for 'http://www.bar.com/foo/folder/42.js': /home/username/projects/foo / baz/folder/42.js
+    Has mapping for 'http://www.foo.com/bar/folder/42.js': true
+    File for 'http://www.foo.com/bar/folder/42.js': /www/site1 / foo/bar/folder/42.js
+    Has mapping for 'http://localhost/index.html': true
+    File for 'http://localhost/index.html': /www/site1 / index.html
+    Has mapping for 'https://localhost/index.html': false
+    File for 'https://localhost/index.html': null
+    Has mapping for 'http://localhost:8080/index.html': false
+    File for 'http://localhost:8080/index.html': null
+    Has mapping for 'http://localhost/': true
+    File for 'http://localhost/': /www/site1 / 
+
+Testing mappings for path:
+    URL for path '/home/username/projects/foo / baz/folder/42.js': http://www.bar.com/foo/folder/42.js
+    URL for path '/home/username/projects/foo / baz/folder/43.js': http://www.bar.com/foo/folder/43.js
+    URL for path '/home/username/projects/foo / bar/folder/42.js': 
+    URL for path '/home/username/projects/foo / foo/folder/42.js': http://www.example.com/bar/folder/42.js
+    URL for path '/home/username/projects/foo / foo2/folder/42.js': 
+    URL for path '/www/site1 / foo/index.html': http://www.foo.com/index.html
+    URL for path '/www/site1 / index.html': http://localhost/index.html
+    URL for path '/www/site1 / foo': http://localhost/foo
+    URL for path '/www/site1 / foo/': http://www.foo.com/
+
+Creating another file system mapping.
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.bar.com/foo/","pathPrefix":"/baz/"}
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Removing file mapping for url http://www.bar.com/foo/folder/42.js
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://localhost/","pathPrefix":"/"}
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Removing file mapping (/www/site1, http://localhost/, /)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+     - /home/username/projects/bar
+     - /www/site1
+         - {"fileSystemPath":"/www/site1","urlPrefix":"http://www.foo.com/","pathPrefix":"/foo/"}
+
+Removing file mapping (/www/site1, http://www.foo.com/, /foo/)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+         - {"fileSystemPath":"/home/username/projects/foo","urlPrefix":"http://www.example.com/bar/","pathPrefix":"/foo/"}
+     - /home/username/projects/bar
+     - /www/site1
+
+Removing file mapping (/home/username/projects/foo, http://www.example.com/bar/, /foo/)
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+     - /www/site1
+
+Removing file system /www/site1
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/foo
+     - /home/username/projects/bar
+
+Removing file system /home/username/projects/foo
+Testing file system mapping.
+    file system paths:
+     - /home/username/projects/bar
+
+Removing file system /home/username/projects/bar
+Testing file system mapping.
+    file system paths:
+
+

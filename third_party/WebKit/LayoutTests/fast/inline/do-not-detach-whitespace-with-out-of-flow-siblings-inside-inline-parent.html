@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<body>
+<span>
+    <span id="A">A</span>
+    <span>B</span>
+</span>
+<script>
+var a = document.getElementById('A');
+var d = document.createElement('div');
+d.style.position = "absolute";
+a.parentNode.insertBefore(d, a.nextSibling);
+</script>

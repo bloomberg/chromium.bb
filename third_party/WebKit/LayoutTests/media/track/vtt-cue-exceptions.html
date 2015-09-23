@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../resources/js-test.js"></script>
+</head>
+<body>
+    <script>
+        description("Verify that VTTCue exceptions are properly messaged to developers.");
+
+        var cue = new VTTCue(0, 0, "Test.");
+
+        function testPercentage(property) {
+            shouldThrow("cue." + property + " = -1;");
+            shouldThrow("cue." + property + " = 101;");
+        }
+
+        testPercentage("position");
+        testPercentage("size");
+    </script>
+</body>
+</html>

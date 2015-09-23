@@ -1,0 +1,4 @@
+Tests that network-loaded UISourceCodes are highlighted according to their HTTP header mime type instead of their extension. crbug.com/411863
+
+Highlight mimeType: text/html
+

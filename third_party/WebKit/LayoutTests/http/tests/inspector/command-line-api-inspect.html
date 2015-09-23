@@ -1,0 +1,65 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="console-test.js"></script>
+<script>
+
+function onload()
+{
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.addSniffer(WebInspector.Main.prototype, "inspect", sniffInspect, true);
+
+    function sniffInspect(objectId, hints)
+    {
+        InspectorTest.addResult("WebInspector.inspect called with: " + objectId.description);
+        InspectorTest.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
+    }
+
+    function evalAndDump(expression, next)
+    {
+        InspectorTest.addResult("\n");
+        InspectorTest.evaluateInConsole(expression, dumpCallback);
+        function dumpCallback(text)
+        {
+            InspectorTest.addResult(expression + " = " + text);
+            if (next)
+                next();
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testRevealElement(next)
+        {
+            InspectorTest.addSniffer(WebInspector.Revealer, "revealPromise", step2, true);
+            evalAndDump("inspect($('#p1'))");
+
+            function step2(node, revealPromise)
+            {
+                if (!(node instanceof WebInspector.RemoteObject))
+                    return;
+                revealPromise.then(step3);
+            }
+
+            function step3()
+            {
+                InspectorTest.addResult("Selected node id: '" + WebInspector.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
+                next();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p id="p1">
+Tests that inspect() command line api works.
+</p>
+
+</body>
+</html>

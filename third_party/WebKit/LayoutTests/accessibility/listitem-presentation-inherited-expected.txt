@@ -1,0 +1,38 @@
+Item 1
+Item 2
+Item 3
+Plain Text 1
+Plain Text 2
+Plain Text 3
+End of test
+
+This tests that the presentation role is inherited.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXListItem AXValue: 
+        AXRole: AXListMarker AXValue: •
+        AXRole: AXStaticText AXValue: Item 1
+            AXRole: AXInlineTextBox AXValue: Item 1
+    AXRole: AXListItem AXValue: 
+        AXRole: AXListMarker AXValue: •
+        AXRole: AXStaticText AXValue: Item 2
+            AXRole: AXInlineTextBox AXValue: Item 2
+    AXRole: AXListItem AXValue: 
+        AXRole: AXListMarker AXValue: •
+        AXRole: AXStaticText AXValue: Item 3
+            AXRole: AXInlineTextBox AXValue: Item 3
+    AXRole: AXStaticText AXValue: Plain Text 1
+        AXRole: AXInlineTextBox AXValue: Plain Text 1
+    AXRole: AXStaticText AXValue: Plain Text 2
+        AXRole: AXInlineTextBox AXValue: Plain Text 2
+    AXRole: AXStaticText AXValue: Plain Text 3
+        AXRole: AXInlineTextBox AXValue: Plain Text 3
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,11 @@
+Tests that 'initial' is handled correctly for the flex-flow shorthand.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS window.getComputedStyle(test1).flexDirection is "row"
+PASS window.getComputedStyle(test2).flexDirection is "row"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

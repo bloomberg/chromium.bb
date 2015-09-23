@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<script src=../media-file.js></script>
+<script src=../video-test.js></script>
+<script src=../media-controls.js></script>
+<style>
+/* Enforce a max width on the controls enclosure, so
+ * that it doesn't fill the entire player width.
+ */
+video::-webkit-media-controls-enclosure {
+    max-width: 800px;
+}
+</style>
+<script>
+var controlsContainer;
+var cueRoot;
+
+window.onload = function() {
+    consoleWrite("Test that the cue root is not constrained by the controls/overlay.");
+    findMediaElement();
+    video.src = findMediaFile('video', '../content/test');
+    waitForEvent('seeked', function() {
+        // The width of the controls depends on UA style, so verify that our assumption holds.
+        controlsContainer = mediaControlsButton(video, "panel");
+        testExpected("parseFloat(getComputedStyle(controlsContainer).width)", "800", "<=");
+
+        cueRoot = textTrackDisplayElement(video);
+        testExpected("parseFloat(getComputedStyle(cueRoot).width)", "800", ">");
+        endTest();
+    });
+    waitForEventOnce('canplaythrough', function() {
+        video.currentTime = 2;
+    });
+};
+</script>
+<style>
+video {
+    width: 2000px;
+    height: 750px;
+}
+</style>
+<video controls>
+  <track src="captions-webvtt/long-word.vtt" default>
+</video>

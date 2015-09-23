@@ -1,0 +1,86 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../sources-test.js"></script>
+<script src="resources/search.js"></script>
+<script>
+function test()
+{
+    function dumpSearchResultsForConfig(sourceFrame, searchConfig, callback)
+    {
+        var modifiers = [];
+        if (searchConfig.isRegex)
+            modifiers.push("regex");
+        if (searchConfig.caseSensitive)
+            modifiers.push("caseSensitive");
+        var modifiersString = modifiers.length ?  " (" + modifiers.join(", ") + ")" : "";
+
+        InspectorTest.addResult("Running search test for query = " + searchConfig.query + modifiersString + ":");
+        sourceFrame.performSearch(searchConfig, false, false, innerCallback);
+
+        function innerCallback()
+        {
+            var searchResults = sourceFrame._searchResults;
+            for (var i = 0; i < searchResults.length; ++i) {
+                var range = searchResults[i];
+                var prefixRange = new WebInspector.TextRange(range.startLine, 0, range.startLine, range.startColumn);
+                var postfixRange = new WebInspector.TextRange(range.endLine, range.endColumn, range.endLine, sourceFrame._textEditor.line(range.endLine).length);
+                var prefix = sourceFrame._textEditor.copyRange(prefixRange);
+                var result = sourceFrame._textEditor.copyRange(range);
+                var postfix = sourceFrame._textEditor.copyRange(postfixRange);
+                InspectorTest.addResult("  - " + prefix + "<" + result + ">" + postfix);
+            }
+            callback();
+        }
+    }
+
+    WebInspector.SourcesPanel.show();
+    InspectorTest.showScriptSource("search.js", didShowScriptSource);
+
+    function didShowScriptSource(sourceFrame)
+    {
+        InspectorTest.runTestSuite([
+            function testSearch(next)
+            {
+                var query = "searchTestUniqueString";
+                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, false);
+                dumpSearchResultsForConfig(sourceFrame, searchConfig, next);
+            },
+
+            function testSearchCaseSensitive(next)
+            {
+                var query = "SEARCHTestUniqueString";
+                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, true, false);
+                dumpSearchResultsForConfig(sourceFrame, searchConfig, next);
+            },
+
+            function testSearchRegex(next)
+            {
+                var query = "searchTestUnique.*";
+                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, true);
+                dumpSearchResultsForConfig(sourceFrame, searchConfig, next);
+            },
+
+            function testSearchCaseSensitiveRegex(next)
+            {
+                var query = "searchTestUnique.*";
+                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, true, true);
+                dumpSearchResultsForConfig(sourceFrame, searchConfig, next);
+            },
+
+            function testSearchConsequent(next)
+            {
+                var query = "AAAAA";
+                var searchConfig = new WebInspector.SearchableView.SearchConfig(query, false, false);
+                dumpSearchResultsForConfig(sourceFrame, searchConfig, next);
+            }
+        ]);
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests different types of search in SourceFrame</p>
+</body>
+</html>

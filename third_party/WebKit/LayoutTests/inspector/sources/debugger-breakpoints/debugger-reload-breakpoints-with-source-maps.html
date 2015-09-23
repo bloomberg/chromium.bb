@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/resources/compiled.js"></script>
+<script>
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.showScriptSource("source1.js", step2);
+    }
+
+    function step2(sourceFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_addResolvedLocation", didSetBreakpointInDebugger, true);
+
+        InspectorTest.setBreakpoint(sourceFrame, 14, "", true);
+        InspectorTest.setBreakpoint(sourceFrame, 15, "", true);
+
+        var counter = 2;
+
+        function didSetBreakpointInDebugger()
+        {
+            counter--;
+            if (!counter) {
+                //Both breakpoints are resolved before reload
+                InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
+                waitForBreakpoints();
+                InspectorTest.reloadPage(onPageReloaded);
+            }
+        }
+
+        function waitForBreakpoints()
+        {
+            var breakpointAddCounter = 2;
+            var jsBreakpoints = WebInspector.panels.sources.sidebarPanes.jsBreakpoints;
+            jsBreakpoints.didReceiveBreakpointLineForTest = function(uiSourceCode)
+            {
+                if (WebInspector.CompilerScriptMapping.StubProjectID === uiSourceCode.project().id())
+                    return;
+                --breakpointAddCounter;
+                if (breakpointAddCounter)
+                    return;
+                breakpointSourcesReceived = true;
+                maybeCompleteTest();
+            }
+        }
+
+    }
+
+    var breakpointSourcesReceived = false;
+    var pageReloaded = false;
+
+    function onPageReloaded()
+    {
+        pageReloaded = true;
+        maybeCompleteTest();
+    }
+
+    function maybeCompleteTest()
+    {
+        if (!pageReloaded || !breakpointSourcesReceived)
+            return;
+        InspectorTest.dumpBreakpointSidebarPane("Breakpoints after reload:");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests "reload" from within inspector window while on pause.
+</p>
+
+</body>
+</html>

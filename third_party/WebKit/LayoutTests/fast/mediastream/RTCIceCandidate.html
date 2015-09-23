@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Tests RTCIceCandidate.");
+
+var initializer = {candidate:"foo", sdpMid:"bar", sdpMLineIndex:6};
+var candidate;
+shouldNotThrow('candidate = new RTCIceCandidate(initializer);');
+shouldBeEqualToString('candidate.candidate', 'foo');
+shouldBeEqualToString('candidate.sdpMid', 'bar');
+shouldBe('candidate.sdpMLineIndex', '6');
+
+shouldNotThrow('initializer = JSON.parse(JSON.stringify(candidate));');
+
+shouldNotThrow('candidate = new RTCIceCandidate(initializer);');
+shouldBeEqualToString('candidate.candidate', 'foo');
+shouldBeEqualToString('candidate.sdpMid', 'bar');
+shouldBe('candidate.sdpMLineIndex', '6');
+
+shouldThrow('new RTCIceCandidate({});');
+shouldThrow('new RTCIceCandidate(5);');
+shouldThrow('new RTCIceCandidate("foobar");');
+shouldThrow('new RTCIceCandidate({candidate:""});');
+
+shouldNotThrow('new RTCIceCandidate({candidate:"x"});');
+
+candidate = new RTCIceCandidate(initializer);
+candidate.candidate = "bar";
+candidate.sdpMid = "foo";
+candidate.sdpMLineIndex = 0;
+shouldBeEqualToString('candidate.candidate', 'bar');
+shouldBeEqualToString('candidate.sdpMid', 'foo');
+shouldBe('candidate.sdpMLineIndex', '0');
+
+
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

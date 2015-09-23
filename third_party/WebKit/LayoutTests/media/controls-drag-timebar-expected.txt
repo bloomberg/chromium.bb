@@ -1,0 +1,15 @@
+Test that dragging the timebar thumb causes seeks.
+
+EVENT(playing)
+EXPECTED (video.paused == 'false') OK
+EXPECTED (video.paused == 'true') OK
+EVENT(seeked)
+EVENT(seeked)
+EVENT(seeked)
+EVENT(seeked)
+EVENT(seeked)
+EVENT(seeked)
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+END OF TEST
+

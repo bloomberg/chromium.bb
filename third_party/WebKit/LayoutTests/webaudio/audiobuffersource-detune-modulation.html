@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+  <script src="resources/audiobuffersource-testing.js"></script>
+  <script src="resources/buffer-loader.js"></script>
+</head>
+
+<body>
+  <script>
+    description('AudioBufferSourceNode: oscillator-driven detune modulation.');
+    window.jsTestIsAsync = true;
+
+    var sampleRate = 44100;
+    var duration = 0.25;
+
+    var context = new OfflineAudioContext(1, sampleRate * duration, sampleRate);
+    var referenceBuffer;
+
+    var audit = Audit.createTaskRunner();
+
+    // Task: Load the reference file asynchronously. In order to create a new
+    // reference file, use the task 'generate-reference' below.
+    audit.defineTask('load-reference', function (done) {
+      var loader = new BufferLoader(context, [
+        'audiobuffersource-detune-modulation-expected.wav'
+        ], function (bufferList) {
+          referenceBuffer = bufferList[0];
+          done();
+        });
+
+      loader.load();
+    });
+
+
+    // Task: Render the actual buffer and compare with the reference.
+    audit.defineTask('generate-verify', function (done) {
+
+      // With this setting, the detune will be changing continuously and
+      // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
+      // input from the oscillator.
+      createSawtoothWithModulation(context, 'detune', 440, 1200);
+
+      context.startRendering().then(function (renderedBuffer) {
+        var actual = renderedBuffer.getChannelData(0);
+        var expected = referenceBuffer.getChannelData(0);
+
+        // Compare two buffers with arbitrary (yet reasonable) constraints.
+        // There parameters are determined by try bot experiments.
+        compareBuffersWithConstraints(actual, expected, {
+          thresholdSNR: 93.31,
+          thresholdDiffULP: 1.01,
+          thresholdDiffCount: 0,
+          bitDepth: 16
+        });
+
+      }).then(done);
+    });
+
+    // Task: Create a new reference audio file. See .runTasks() below to run
+    // this task.
+    audit.defineTask('generate-reference', function (done) {
+      if (!window.testRunner) {
+        done();
+        return;
+      }
+
+      // With this setting, the detune will be changing continuously and
+      // repeatedly within the range of [-1200, 1200] around 440Hz, based on the
+      // input from the oscillator.
+      createSawtoothWithModulation(context, 'detune', 440, 1200);
+
+      // |finishAudioTest| will automatically create a reference audio file from
+      // the OAC rendering if the reference file does not exist.
+      context.oncomplete = finishAudioTest;
+      context.startRendering();
+      testRunner.waitUntilDone();
+
+      done();
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    window.onload = function () {
+      audit.runTasks(
+        'load-reference',
+        'generate-verify',
+        'finish'
+      );
+    };
+
+    // Use this task to generate a new reference audio file. Make sure to
+    // comment out .runTasks() above before use this.
+    // audit.runTasks('generate-reference');
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,106 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 889
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x889 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x888.56
+    LayoutBlockFlow {BODY} at (8,21.44) size 769x842.13
+      LayoutBlockFlow {H1} at (0,0) size 769x74
+        LayoutText {#text} at (0,0) size 748x73
+          text run at (0,0) width 748: "Problem: Safari improperly handles generated content"
+          text run at (0,37) width 717: "in certain cases when used with multiple class names"
+      LayoutBlockFlow {P} at (0,95.44) size 769x36
+        LayoutInline {EM} at (0,0) size 725x35
+          LayoutText {#text} at (0,0) size 725x35
+            text run at (0,0) width 725: "When referencing an element by two class names simultaneously, Safari won't generate content (using :before or"
+            text run at (0,18) width 167: ":after) within the element."
+      LayoutBlockFlow {P} at (0,147.44) size 769x36
+        LayoutText {#text} at (0,0) size 124x17
+          text run at (0,0) width 124: "Assume we have a "
+        LayoutInline {CODE} at (0,0) size 25x16
+          LayoutText {#text} at (123,2) size 25x16
+            text run at (123,2) width 25: "div"
+        LayoutText {#text} at (147,0) size 150x17
+          text run at (147,0) width 150: " with two class names: "
+        LayoutInline {CODE} at (0,0) size 25x16
+          LayoutText {#text} at (296,2) size 25x16
+            text run at (296,2) width 25: "box"
+        LayoutText {#text} at (320,0) size 32x17
+          text run at (320,0) width 32: " and "
+        LayoutInline {CODE} at (0,0) size 25x16
+          LayoutText {#text} at (351,2) size 25x16
+            text run at (351,2) width 25: "one"
+        LayoutText {#text} at (375,0) size 85x17
+          text run at (375,0) width 85: ". Within that "
+        LayoutInline {CODE} at (0,0) size 25x16
+          LayoutText {#text} at (459,2) size 25x16
+            text run at (459,2) width 25: "div"
+        LayoutText {#text} at (483,0) size 77x17
+          text run at (483,0) width 77: ", we have a "
+        LayoutInline {CODE} at (0,0) size 9x16
+          LayoutText {#text} at (559,2) size 9x16
+            text run at (559,2) width 9: "p"
+        LayoutText {#text} at (567,0) size 751x35
+          text run at (567,0) width 184: " (paragraph) tag, after which"
+          text run at (0,18) width 509: "we'd like to insert generated content. One way to do so would be the following:"
+      LayoutBlockFlow {PRE} at (20,199.44) size 749x16 [color=#FF0000]
+        LayoutInline {CODE} at (0,0) size 456x16
+          LayoutText {#text} at (0,0) size 456x16
+            text run at (0,0) width 456: "div.box.one p:after{ content:'generated content here!'; }"
+      LayoutBlockFlow {P} at (0,231.44) size 769x18
+        LayoutText {#text} at (0,0) size 742x17
+          text run at (0,0) width 742: "But that doesn't work in Safari. However, if you drop one of the class names, as shown below, it works as expected:"
+      LayoutBlockFlow {PRE} at (20,265.44) size 749x16 [color=#008000]
+        LayoutInline {CODE} at (0,0) size 424x16
+          LayoutText {#text} at (0,0) size 424x16
+            text run at (0,0) width 424: "div.box p:after{ content:'generated content here!'; }"
+      LayoutBlockFlow {P} at (0,297.44) size 769x36
+        LayoutText {#text} at (0,0) size 294x17
+          text run at (0,0) width 294: "Note also that the bug only applies to content "
+        LayoutInline {EM} at (0,0) size 41x17
+          LayoutText {#text} at (293,0) size 41x17
+            text run at (293,0) width 41: "within"
+        LayoutText {#text} at (333,0) size 276x17
+          text run at (333,0) width 276: " the classed element \x{2014} generating content "
+        LayoutInline {EM} at (0,0) size 726x35
+          LayoutText {#text} at (608,0) size 726x35
+            text run at (608,0) width 118: "before or after the"
+            text run at (0,18) width 85: "element itself"
+        LayoutText {#text} at (84,18) size 78x17
+          text run at (84,18) width 78: " works fine:"
+      LayoutBlockFlow {PRE} at (20,349.44) size 749x16 [color=#008000]
+        LayoutInline {CODE} at (0,0) size 440x16
+          LayoutText {#text} at (0,0) size 440x16
+            text run at (0,0) width 440: "div.box.one:after{ content:'generated content here!'; }"
+      LayoutBlockFlow {HR} at (0,378.44) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {H2} at (0,400.34) size 769x27
+        LayoutText {#text} at (0,0) size 477x26
+          text run at (0,0) width 477: "Example (view source to see CSS and HTML):"
+      LayoutBlockFlow {P} at (0,447.25) size 769x18
+        LayoutText {#text} at (0,0) size 340x17
+          text run at (0,0) width 340: "Both boxes below should contain generated content ("
+        LayoutInline {SPAN} at (0,0) size 53x17 [color=#008000]
+          LayoutText {#text} at (339,0) size 53x17
+            text run at (339,0) width 53: "in green"
+        LayoutText {#text} at (391,0) size 11x17
+          text run at (391,0) width 11: "):"
+      LayoutBlockFlow {DIV} at (0,490.25) size 769x163.44 [border: (1px solid #000000)]
+        LayoutBlockFlow {H3} at (26,44.72) size 717x22
+          LayoutText {#text} at (0,0) size 46x21
+            text run at (0,0) width 46: "Box 1"
+        LayoutBlockFlow {P} at (26,85.44) size 717x36
+          LayoutBlockFlow (anonymous) at (0,0) size 717x18
+            LayoutText {#text} at (0,0) size 661x17
+              text run at (0,0) width 661: "This box should contain the text \"generated content\" in CSS2-compliant browsers (but won't in Safari)."
+          LayoutBlockFlow {<pseudo:after>} at (0,18) size 717x18 [color=#008000]
+            LayoutTextFragment (anonymous) at (0,0) size 114x17
+              text run at (0,0) width 114: "generated content"
+      LayoutBlockFlow {DIV} at (0,678.69) size 769x163.44 [border: (1px solid #000000)]
+        LayoutBlockFlow {H3} at (26,44.72) size 717x22
+          LayoutText {#text} at (0,0) size 46x21
+            text run at (0,0) width 46: "Box 2"
+        LayoutBlockFlow {P} at (26,85.44) size 717x36
+          LayoutBlockFlow (anonymous) at (0,0) size 717x18
+            LayoutText {#text} at (0,0) size 639x17
+              text run at (0,0) width 639: "This box should contain the text \"generated content\" in CSS2-compliant browsers, including Safari."
+          LayoutBlockFlow {<pseudo:after>} at (0,18) size 717x18 [color=#008000]
+            LayoutTextFragment (anonymous) at (0,0) size 114x17
+              text run at (0,0) width 114: "generated content"

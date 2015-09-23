@@ -1,0 +1,83 @@
+
+Tests framework blackboxing feature on jQuery.
+
+[page] onTestEvent1
+[page] onTestEvent2
+[page] onTestEvent3
+Set timer for test function.
+Call stack:
+    0) testFunction (frameworks-jquery.html:16)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) onEachScript (frameworks-jquery.html:39)
+  * 1) m.extend.each (jquery-1.11.1.min.js:2)
+  * 2) m.fn.m.each (jquery-1.11.1.min.js:2)
+    3) testFunction (frameworks-jquery.html:18)
+
+Executing StepInto...
+Executing StepInto...
+Call stack:
+    0) onEachScript (frameworks-jquery.html:39)
+  * 1) m.extend.each (jquery-1.11.1.min.js:2)
+  * 2) m.fn.m.each (jquery-1.11.1.min.js:2)
+    3) testFunction (frameworks-jquery.html:18)
+
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) onEachScript (frameworks-jquery.html:39)
+  * 1) m.extend.each (jquery-1.11.1.min.js:2)
+  * 2) m.fn.m.each (jquery-1.11.1.min.js:2)
+    3) testFunction (frameworks-jquery.html:18)
+
+Executing StepOut...
+Call stack:
+    0) onEachScript (frameworks-jquery.html:39)
+  * 1) m.extend.each (jquery-1.11.1.min.js:2)
+  * 2) m.fn.m.each (jquery-1.11.1.min.js:2)
+    3) testFunction (frameworks-jquery.html:18)
+
+Executing StepOut...
+Call stack:
+    0) testFunction (frameworks-jquery.html:19)
+
+Executing StepInto...
+Call stack:
+    0) onTestEvent1 (frameworks-jquery.html:24)
+  * 1) m.event.dispatch (jquery-1.11.1.min.js:3)
+  * 2) r.handle (jquery-1.11.1.min.js:3)
+  * 3) m.event.trigger (jquery-1.11.1.min.js:3)
+  * 4)  (jquery-1.11.1.min.js:3)
+  * 5) m.extend.each (jquery-1.11.1.min.js:2)
+  * 6) m.fn.m.each (jquery-1.11.1.min.js:2)
+  * 7) m.fn.extend.trigger (jquery-1.11.1.min.js:3)
+    8) testFunction (frameworks-jquery.html:19)
+
+Executing StepOut...
+Call stack:
+    0) onTestEvent2 (frameworks-jquery.html:29)
+  * 1) m.event.dispatch (jquery-1.11.1.min.js:3)
+  * 2) r.handle (jquery-1.11.1.min.js:3)
+  * 3) m.event.trigger (jquery-1.11.1.min.js:3)
+  * 4)  (jquery-1.11.1.min.js:3)
+  * 5) m.extend.each (jquery-1.11.1.min.js:2)
+  * 6) m.fn.m.each (jquery-1.11.1.min.js:2)
+  * 7) m.fn.extend.trigger (jquery-1.11.1.min.js:3)
+    8) testFunction (frameworks-jquery.html:19)
+
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) onTestEvent3 (frameworks-jquery.html:34)
+  * 1) m.event.dispatch (jquery-1.11.1.min.js:3)
+  * 2) r.handle (jquery-1.11.1.min.js:3)
+  * 3) m.event.trigger (jquery-1.11.1.min.js:3)
+  * 4)  (jquery-1.11.1.min.js:3)
+  * 5) m.extend.each (jquery-1.11.1.min.js:2)
+  * 6) m.fn.m.each (jquery-1.11.1.min.js:2)
+  * 7) m.fn.extend.trigger (jquery-1.11.1.min.js:3)
+    8) testFunction (frameworks-jquery.html:19)
+
+

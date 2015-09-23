@@ -1,0 +1,9 @@
+Tests that OscillatorNode calls its onended EventListener.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS osc.onended called.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

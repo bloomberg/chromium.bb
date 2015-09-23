@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/runner.js"></script>
+<script>
+
+var canvas = document.createElement("canvas");
+var ctx = canvas.getContext("2d");
+var font1 = "bold 15px Arial";
+var font2 = "italic 20pt Calibri";
+
+function doTest() {
+    ctx.font = font1;
+    ctx.measureText("a");
+    ctx.font = font2;
+    ctx.measureText("b");
+}
+
+// Warm up the caches
+doTest();
+
+PerfTestRunner.measureRunsPerSecond({
+    description: "Measures performance of setting the current font and measuring text on a canvas.",
+    run: doTest
+});
+</script>
+</body>
+</html>

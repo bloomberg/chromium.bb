@@ -1,0 +1,41 @@
+This tests that 'insertText' and friends match IE's behavior on certain element types.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS document.createElement('area').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'area' element does not support text insertion..
+PASS document.createElement('area').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'area' element does not support text insertion..
+PASS document.createElement('base').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'base' element does not support text insertion..
+PASS document.createElement('base').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'base' element does not support text insertion..
+PASS document.createElement('basefont').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'basefont' element does not support text insertion..
+PASS document.createElement('basefont').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'basefont' element does not support text insertion..
+PASS document.createElement('br').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'br' element does not support text insertion..
+PASS document.createElement('br').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'br' element does not support text insertion..
+PASS document.createElement('col').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'col' element does not support text insertion..
+PASS document.createElement('col').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'col' element does not support text insertion..
+PASS document.createElement('embed').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'embed' element does not support text insertion..
+PASS document.createElement('embed').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'embed' element does not support text insertion..
+PASS document.createElement('frame').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'frame' element does not support text insertion..
+PASS document.createElement('frame').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'frame' element does not support text insertion..
+PASS document.createElement('hr').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'hr' element does not support text insertion..
+PASS document.createElement('hr').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'hr' element does not support text insertion..
+PASS document.createElement('image').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'image' element does not support text insertion..
+PASS document.createElement('image').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'image' element does not support text insertion..
+PASS document.createElement('img').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'img' element does not support text insertion..
+PASS document.createElement('img').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'img' element does not support text insertion..
+PASS document.createElement('input').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'input' element does not support text insertion..
+PASS document.createElement('input').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'input' element does not support text insertion..
+PASS document.createElement('link').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'link' element does not support text insertion..
+PASS document.createElement('link').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'link' element does not support text insertion..
+PASS document.createElement('meta').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'meta' element does not support text insertion..
+PASS document.createElement('meta').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'meta' element does not support text insertion..
+PASS document.createElement('param').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'param' element does not support text insertion..
+PASS document.createElement('param').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'param' element does not support text insertion..
+PASS document.createElement('source').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'source' element does not support text insertion..
+PASS document.createElement('source').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'source' element does not support text insertion..
+PASS document.createElement('wbr').innerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'innerText' property on 'HTMLElement': The 'wbr' element does not support text insertion..
+PASS document.createElement('wbr').outerText = 'Throw!'; threw exception NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The 'wbr' element does not support text insertion..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

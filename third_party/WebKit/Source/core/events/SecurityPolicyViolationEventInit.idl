@@ -1,0 +1,21 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://w3c.github.io/webappsec/specs/content-security-policy/#securitypolicyviolationevent-interface
+
+dictionary SecurityPolicyViolationEventInit : EventInit {
+    // TODO(philipj): The spec says "documentURL".
+    DOMString documentURI;
+    DOMString referrer;
+    // TODO(philipj): The spec says "blockedURL".
+    DOMString blockedURI;
+    DOMString violatedDirective;
+    DOMString effectiveDirective;
+    DOMString originalPolicy;
+    DOMString sourceFile;
+    // FIXME: The spec says "statusCode" is a DOMString.
+    long      statusCode;
+    long      lineNumber;
+    long      columnNumber;
+};

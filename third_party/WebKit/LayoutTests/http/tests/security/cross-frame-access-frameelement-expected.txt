@@ -1,0 +1,13 @@
+This test checks if frameElement is accessible from the same or cross origin iframe.
+
+ 
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+[object HTMLIFrameElement]
+
+--------
+Frame: '<!--framePath //<!--frame1-->-->'
+--------
+'window.frameElement' access threw: 'SecurityError: Failed to read the 'frame' property from 'Window': Blocked a frame with origin "http://127.0.0.1:8080" from accessing a cross-origin frame.'.

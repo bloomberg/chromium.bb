@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+function assert_unresolved(value) {
+  assert_equals(value, null);
+}
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+}, "unresolved startTime and currentTime");
+
+</script>

@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<svg id="svg" xmlns="http://www.w3.org/2000/svg" width="200" height="200">
+    <text></text>
+</svg>
+<script src="../../resources/js-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+var text = document.querySelector('text');
+text.setAttribute("x", "1 2 3");
+shouldBe("text.x.baseVal.numberOfItems", "3");
+text.setAttribute("x", "");
+shouldBe("text.x.baseVal.numberOfItems", "0");
+
+text.setAttribute("x", "1 2 3");
+shouldBe("text.x.baseVal.numberOfItems", "3");
+text.removeAttribute("x");
+shouldBe("text.x.baseVal.numberOfItems", "0");
+</script>

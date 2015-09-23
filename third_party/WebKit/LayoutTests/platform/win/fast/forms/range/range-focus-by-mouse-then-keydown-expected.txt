@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [9, 9, 131, 23]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSlider INPUT",
+        "LayoutFlexibleBox DIV",
+        "LayoutBlockFlow DIV id='track'",
+        "LayoutBlockFlow DIV id='thumb'",
+        "LayoutSlider INPUT"
+      ]
+    }
+  ]
+}
+

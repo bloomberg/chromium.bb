@@ -1,0 +1,31 @@
+<!doctype HTML>
+<body>
+<div style="height: 2000px; width: 2000px;">
+<div id="targetImage" style="width: 50px; height: 50px">
+</div>
+<img id="testTarget" style="visibility: hidden">
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+function repaintTest() {
+    window.internals.advanceImageAnimation(testTarget);
+    requestAnimationFrame(function() {
+        finishRepaintTest();
+    });
+}
+
+function targetImageOnload() {
+    window.internals.startTrackingRepaints(document);
+    runRepaintTest();
+}
+
+onload = function() {
+    targetImage.style.background = "url(../../fast/backgrounds/resources/red-green-animated.gif)";
+
+    // Use a parallel image element has a hack to detect whether the image has loaded, and therefore
+    // we'll get a frame.
+    testTarget.onload = targetImageOnload;
+    testTarget.src = "../../fast/backgrounds/resources/red-green-animated.gif";
+}
+</script>

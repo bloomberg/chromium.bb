@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/DOM-Level-3-Events/#events-KeyboardEvent-getModifierState" />
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests KeyboardEvent.getModifierState()");
+
+var lastKeyboardEvent;
+
+function recordKeyEvent(ev) {
+    ev = ev || event;
+    ev.keyCode = (ev.which || ev.keyCode);
+    if (window.eventSender) {
+        lastKeyboardEvent = ev;
+    } else {
+        debug("Type=" + ev.type + "," +
+              "keyCode=" + ev.keyCode + ',' +
+              "ctrlKey=" + ev.getModifierState("Control") + "," +
+              "shiftKey=" + ev.getModifierState("Shift") + "," +
+              "altKey=" + ev.getModifierState("Alt") + "," +
+              "metaKey=" + ev.getModifierState("Meta"));
+    }
+}
+
+var allEventModifiers = ["ctrlKey", "shiftKey", "metaKey", "altKey"];
+var allKeyModifiers = ["Control", "Shift", "Meta", "Alt"];
+
+function testKeyEventWithModifiers(evString, eventModifiers, expectedKeyCode) {
+    eventSender.keyDown(evString, eventModifiers);
+    shouldBe("lastKeyboardEvent.type", '"keydown"');
+    shouldEvaluateTo("lastKeyboardEvent.keyCode", expectedKeyCode);
+    for (var i = 0; i < allEventModifiers.length; ++i) {
+        var expectedModifierState = eventModifiers.indexOf(allEventModifiers[i]) >= 0;
+        shouldEvaluateTo("lastKeyboardEvent.getModifierState('" + allKeyModifiers[i] + "')", expectedModifierState);
+        shouldEvaluateTo("lastKeyboardEvent." + allEventModifiers[i], expectedModifierState);
+    }
+}
+
+var textarea = document.createElement("textarea");
+textarea.addEventListener("keydown", recordKeyEvent, false);
+document.body.insertBefore(textarea, document.body.firstChild);
+textarea.focus();
+
+if (window.eventSender) {
+    testKeyEventWithModifiers("pageUp", ["ctrlKey"], 33);
+    testKeyEventWithModifiers("pageDown", ["shiftKey"], 34);
+    testKeyEventWithModifiers("home", ["altKey"], 36);
+    testKeyEventWithModifiers("end", ["metaKey"], 35);
+    testKeyEventWithModifiers("leftArrow", ["ctrlKey", "shiftKey"], 37);
+    testKeyEventWithModifiers("rightArrow", ["ctrlKey", "shiftKey", "altKey"], 39);
+    testKeyEventWithModifiers("upArrow", ["ctrlKey", "shiftKey", "altKey", "metaKey"], 38);
+} else {
+    debug("This test requires DumpRenderTree.  To manually test, 1) focus on the textarea above and press keys while holding modifiers 2) see if the ctrlKey/shiftKey/altKey/metaKey= values are correctly reported.");
+}
+</script>
+</body>
+</html>

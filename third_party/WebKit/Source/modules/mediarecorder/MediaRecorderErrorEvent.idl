@@ -1,0 +1,23 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/mediacapture-record/MediaRecorder.html#MediaRecorderErrorEvent
+// https://w3c.github.io/mediacapture-record/MediaRecorder.html#idl-def-RecordingErrorNameEnum
+
+// TODO(mcasas): Remove completely MediaRecorderErrorEvent.* and use generic DOMException instead, see https://github.com/w3c/mediacapture-record/issues/14.
+enum RecordingErrorNameEnum {
+    "InvalidState",
+    "OutOfMemory",
+    "IllegalStreamModification",
+    "SecurityError",
+    "OtherRecordingError"
+};
+
+// TODO(mcasas): This object should not be a NoInterfaceObject, https://github.com/w3c/mediacapture-record/issues/15.
+[
+    NoInterfaceObject
+] interface MediaRecorderErrorEvent : Event {
+    readonly attribute RecordingErrorNameEnum name;
+    readonly attribute DOMString? message;
+};

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/SVGAnimationTestCase.js"></script>
+<script>
+  function load() {
+    if (window.testRunner) {
+      testRunner.dumpAsText();
+      testRunner.waitUntilDone();
+    }
+    
+    svg = document.getElementById("svg");
+    rect = document.getElementById("rect");
+    
+    svg.pauseAnimations();
+    
+    setTimeout(function() {
+      svg.setCurrentTime(0.5);
+      shouldBeCloseEnough("svg.getCurrentTime()", "0.5", 0.01);
+      svg.unpauseAnimations();
+      setTimeout(function() {
+        svg.setCurrentTime(1);
+        shouldBeCloseEnough("svg.getCurrentTime()", "1", 0.01);
+        svg.pauseAnimations();
+        setTimeout(function() {
+          svg.setCurrentTime(2);
+          shouldBeCloseEnough("svg.getCurrentTime()", "2", 0.01);
+          svg.unpauseAnimations();
+          setTimeout(function() {
+            svg.setCurrentTime(3.5);
+            shouldBeCloseEnough("svg.getCurrentTime()", "3.5", 0.01);
+            if (window.testRunner)
+              testRunner.notifyDone();
+          }, 20);
+        }, 20);
+      }, 0);
+    }, 0);
+  }
+</script>
+<head><title>svg.getCurrentTime() with setCurrentTime() when SVG animation is paused and unpaused</title></head>
+<body onload="load()">
+  <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+    <rect id="rect" fill="green" width="20" height="20">
+      <animate attributeName="x" from="0" to="200" begin="0s" dur="3s"></animate>
+    </rect>
+  </svg>
+</body>
+</html>
+

@@ -1,0 +1,19 @@
+Tests that server-side image maps with zooms and transforms produce the right click coordinates.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS location.hash is "#?0,0"
+PASS location.hash is "#?0,0"
+PASS location.hash is "#?82,39"
+PASS location.hash is "#?105,54"
+PASS location.hash is "#?115,63"
+PASS location.hash is "#?0,63"
+PASS location.hash is "#?0,52"
+PASS location.hash is "#?102,0"
+PASS location.hash is "#?112,0"
+
+

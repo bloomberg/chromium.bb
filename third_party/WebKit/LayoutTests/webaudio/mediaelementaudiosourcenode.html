@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
+<script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+description("Basic tests for MediaElementAudioSourceNode API.");
+
+var context = 0;
+var audioElement = 0;
+var audioNode = 0;
+
+function runTest() {
+    window.jsTestIsAsync = true;
+
+    context = new AudioContext();
+
+    audioElement = new Audio();
+    mediaSource = context.createMediaElementSource(audioElement);
+    audioNode = mediaSource;
+
+    // Check number of inputs and outputs.
+    shouldBeEqualToNumber("audioNode.numberOfInputs", 0);
+    shouldBeEqualToNumber("audioNode.numberOfOutputs", 1);
+
+    // Try calling connect() method with illegal values: illegal destination, illegal output index,
+    // and illegal input index.
+    shouldThrow("audioNode.connect(0, 0, 0)");
+    shouldThrow("audioNode.connect(context.destination, 5, 0)");
+    shouldThrow("audioNode.connect(context.destination, 0, 5)");
+
+    // Try calling connect() with proper values.
+    shouldNotThrow("audioNode.connect(context.destination, 0, 0)");
+    
+    // Try creating another MediaElementAudioSourceNode using the same audio element.
+    shouldThrow("context.createMediaElementSource(audioElement)");
+
+    finishJSTest();
+}
+
+runTest();
+
+</script>
+
+</body>
+</html>

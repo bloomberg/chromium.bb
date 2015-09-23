@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests for ShadowAware.shadowRoot property.");
+
+var host = document.createElement('div');
+shouldBeNull("host.shadowRoot");
+var root1 = host.createShadowRoot();
+shouldBe("root1", "host.shadowRoot");
+var root2 = host.createShadowRoot();
+shouldBe("root2", "host.shadowRoot");
+
+var hostWithUAShadow = document.createElement('input');
+shouldBeNull("hostWithUAShadow.shadowRoot");
+
+</script>
+</body>
+</html>

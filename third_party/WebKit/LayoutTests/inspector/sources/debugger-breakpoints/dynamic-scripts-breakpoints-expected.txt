@@ -1,0 +1,15 @@
+CONSOLE MESSAGE: line 2: DYNAMIC document.write()
+CONSOLE MESSAGE: line 2: DYNAMIC <script>
+CONSOLE MESSAGE: line 2: DYNAMIC document.write()
+CONSOLE MESSAGE: line 2: DYNAMIC <script>
+Tests that there is no exception in front-end on page reload when breakpoint is set in HTML document and some dynamic scripts are loaded before the script with the breakpoint is loaded.
+
+Bug 99598
+Setting breakpoint:
+Reloading page.
+Script execution paused.
+    Dumping breakpoint storage
+        dynamic-scripts-breakpoints.html:11
+Script execution resumed.
+Page reloaded.
+

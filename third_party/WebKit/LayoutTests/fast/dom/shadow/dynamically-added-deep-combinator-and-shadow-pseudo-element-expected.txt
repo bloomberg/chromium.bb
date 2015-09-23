@@ -1,0 +1,12 @@
+CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+CONSOLE WARNING: ::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+Should have blue background.
+PASS backgroundColorOf('host/target1') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host/target2') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host/target3') is "rgb(0, 0, 255)"
+PASS backgroundColorOf('host/target4') is "rgb(0, 0, 255)"
+PASS backgroundColorOf('target5') is "rgb(0, 0, 255)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

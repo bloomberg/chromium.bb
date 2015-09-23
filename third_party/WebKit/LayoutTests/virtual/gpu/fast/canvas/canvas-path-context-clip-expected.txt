@@ -1,0 +1,60 @@
+Series of tests to ensure clip() works with path and winding rule parameters.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Testing clip()
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing clip(path)
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing clip("nonzero")
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing clip(path, "nonzero")
+PASS pixelDataAtPoint()[0] is within 5 of 0
+PASS pixelDataAtPoint()[1] is within 5 of 255
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing clip("evenodd")
+PASS pixelDataAtPoint()[0] is within 5 of 255
+PASS pixelDataAtPoint()[1] is within 5 of 0
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+Testing clip(path, "evenodd")
+PASS pixelDataAtPoint()[0] is within 5 of 255
+PASS pixelDataAtPoint()[1] is within 5 of 0
+PASS pixelDataAtPoint()[2] is within 5 of 0
+PASS pixelDataAtPoint()[3] is within 5 of 255
+
+PASS ctx.clip(null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'null' is not a valid enum value of type CanvasFillRule..
+PASS ctx.clip(null, null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(null, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(path, null) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'null' is not a valid enum value of type CanvasFillRule..
+PASS ctx.clip([], 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip({}, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(null, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip([], 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip({}, 'evenodd') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip('gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
+PASS ctx.clip(path, 'gazonk') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'gazonk' is not a valid enum value of type CanvasFillRule..
+PASS ctx.clip(undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'undefined' is not a valid enum value of type CanvasFillRule..
+PASS ctx.clip(undefined, undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(undefined, 'nonzero') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': parameter 1 is not of type 'Path2D'..
+PASS ctx.clip(path, undefined) threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'undefined' is not a valid enum value of type CanvasFillRule..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,31 @@
+In all iframes, the green fixed-position element should not be composited.
+{
+  "bounds": [785, 4016],
+  "children": [
+    {
+      "bounds": [785, 4016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [50, 360],
+          "bounds": [300, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#00FFFF"
+        },
+        {
+          "position": [10, 200],
+          "bounds": [154, 154],
+          "drawsContent": true
+        },
+        {
+          "position": [10, 380],
+          "bounds": [154, 154],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+Composited box underneath iframe. 

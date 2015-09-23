@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.recordNetwork();
+    InspectorTest.makeSimpleXHR("GET", "resources/resource.php", true, step2);
+
+    function step2()
+    {
+        InspectorTest.NetworkAgent.disable(step3);
+    }
+
+    function step3()
+    {
+        var request1 = InspectorTest.networkRequests().pop();
+        request1.requestContent(step4);
+    }
+
+    function step4()
+    {
+        var request1 = InspectorTest.networkRequests().pop();
+        InspectorTest.addResult("resource.content after disabling network domain: " + request1.content);
+        InspectorTest.NetworkAgent.enable(step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+ <p>
+ Tests that after disabling network domain, content saved on backend is removed.
+<a href="https://bugs.webkit.org/show_bug.cgi?id=67995">Bug 67995</a>
+</p>
+</body>
+</html>

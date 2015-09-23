@@ -1,0 +1,13 @@
+The test verifies that extension names are resolved properly in navigator view.
+
+
+Running: testAddFileBeforeExecutionContext
+  Dumping ScriptsNavigator contentScripts tab:
+    113581321345589144
+  Dumping ScriptsNavigator contentScripts tab:
+    FibExtension
+
+Running: testAddExecutionContextBeforeFile
+  Dumping ScriptsNavigator contentScripts tab:
+    FibExtension
+

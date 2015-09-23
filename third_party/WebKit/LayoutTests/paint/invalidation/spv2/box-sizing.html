@@ -1,0 +1,35 @@
+<!-- Based on fast/repaint/box-sizing.html -->
+<!DOCTYPE HTML>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='target1' class='content-box'",
+    "LayoutBlockFlow (positioned) DIV id='target2' class='border-box'",
+];
+function paintInvalidationTest()
+{
+    document.getElementById('target1').className = 'content-box';
+    document.getElementById('target2').className = 'border-box';
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+div {
+    width: 50%;
+    height: 100px;
+    position: absolute;
+    background-color: green;
+    border: blue solid 20px;
+}
+.border-box {
+    box-sizing: border-box;
+}
+.content-box {
+    box-sizing: content-box;
+}
+</style>
+<div id="target1" class="border-box" style="top: 0px"></div>
+<div id="target2" class="content-box" style="top: 200px"></div>

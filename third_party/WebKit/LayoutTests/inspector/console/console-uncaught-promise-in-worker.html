@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+var worker;
+
+function startWorker()
+{
+    worker = new Worker("resources/worker-with-unhandled-promises.js");
+    worker.postMessage("");
+}
+
+function test()
+{
+    InspectorTest.addConsoleViewSniffer(checkConsoleMessages, true);
+    InspectorTest.evaluateInPage("setTimeout(startWorker, 0)");
+
+    function checkConsoleMessages()
+    {
+        var count = InspectorTest.consoleMessagesCount();
+        if (count === 2)
+            WebInspector.console.showPromise().then(expand);
+    }
+
+    function expand()
+    {
+        InspectorTest.expandConsoleMessages(dump);
+    }
+
+    function dump()
+    {
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that uncaught promise rejections happenned in workers are logged into console.
+</p>
+
+</body>
+</html>

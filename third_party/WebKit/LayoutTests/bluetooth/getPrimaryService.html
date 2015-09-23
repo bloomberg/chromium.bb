@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict'
+
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => {
+      testRunner.setBluetoothMockDataSet('EmptyAdapter');
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryService('generic_access'), {
+          name: 'NetworkError',
+          message: 'Bluetooth Device is no longer in range.'
+        }, 'Device went out of range.');
+    });
+}, 'Device goes out of range. Reject with NetworkError.');
+
+promise_test(function() {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => Promise.all(
+      [gattServer.getPrimaryService(heart_rate.alias),
+       gattServer.getPrimaryService(heart_rate.name),
+       gattServer.getPrimaryService(heart_rate.uuid)]))
+    .then(services => {
+      services.forEach(service => {
+        assert_equals(service, null,
+                      'Non existent services should return null.');
+      });
+    });
+}, 'Request for wrong service. Should return null.');
+
+promise_test(function() {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => Promise.all(
+      [gattServer.getPrimaryService(generic_access.alias),
+       gattServer.getPrimaryService(generic_access.name),
+       gattServer.getPrimaryService(generic_access.uuid)]))
+    .then(services => {
+      services.forEach(service => {
+        assert_equals(service.uuid, generic_access.uuid,
+                      'Service UUID should be the same as requested UUID.');
+        assert_true(service.isPrimary,
+                    'getPrimaryService should return a primary service.');
+      });
+    });
+}, 'Request for service. Should return right service');
+
+promise_test(function() {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => Promise.all(
+      [gattServer.getPrimaryService(generic_access.alias),
+       gattServer.getPrimaryService(generic_access.alias),
+       gattServer.getPrimaryService(generic_access.name),
+       gattServer.getPrimaryService(generic_access.name),
+       gattServer.getPrimaryService(generic_access.uuid),
+       gattServer.getPrimaryService(generic_access.uuid)]))
+    .then(services => {
+      // getPrimaryService should return the same object if it was created
+      // earlier. https://crbug.com/495270
+      // TODO(ortuno): Change to assert_equals.
+      for (let i = 1; i < services.length; i++) {
+        assert_not_equals(services[0], services[i],
+                          'Should return the same service as the first call.');
+      }
+    });
+}, 'Calls to get the same service should return the same object.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => {
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryService('wrong_name'), {
+          name: 'SyntaxError',
+          message: 'Failed to execute \'getPrimaryService\' on ' +
+                   '\'BluetoothGATTRemoteServer\': Invalid Service name: ' +
+                   '\'wrong_name\'. ' +
+                   'It must be a valid UUID alias (e.g. 0x1234), ' +
+                   'UUID (lowercase hex characters e.g. ' +
+                   '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
+                   'or recognized standard name from ' +
+                   'https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx' +
+                   ' e.g. \'alert_notification\'.'
+        }, 'Wrong Service name passed.');
+    });
+}, 'Wrong Service name. Reject with SyntaxError.');
+</script>

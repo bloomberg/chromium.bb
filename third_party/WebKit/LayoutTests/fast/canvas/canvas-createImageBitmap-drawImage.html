@@ -1,0 +1,412 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+description("Ensure correct behavior of drawImage with ImageBitmaps.");
+window.jsTestIsAsync = true;
+
+function jsWrapperClass(node)
+{
+    // returns the ClassName of node
+    if (!node)
+        return "[null]";
+    var string = Object.prototype.toString.apply(node);
+
+    // string will be of the form [object ClassName]
+    return string.substr(8, string.length - 9);
+}
+
+function shouldBeType(expression, className)
+{
+    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
+}
+
+function shouldNotBeCalled() {
+    testFailed("createImageBitmap promise rejected.");
+    finishJSTest();
+}
+
+function shouldBeRed(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 255");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeGreen(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 255");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeBlue(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 255");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeBlack(x, y) {
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 255");
+}
+
+function shouldBeClear(x, y) {
+    // should be transparent black pixels
+    d = ctx.getImageData(x, y, 1, 1).data;
+    shouldBeTrue("d[0] == 0");
+    shouldBeTrue("d[1] == 0");
+    shouldBeTrue("d[2] == 0");
+    shouldBeTrue("d[3] == 0");
+}
+
+function drawPattern(ctx) {
+    // Draw a four-color pattern
+    ctx.beginPath();
+    ctx.fillStyle = "rgb(255, 0, 0)";
+    ctx.fillRect(0, 0, 10, 10);
+    ctx.fillStyle = "rgb(0, 255, 0)";
+    ctx.fillRect(10, 0, 10, 10);
+    ctx.fillStyle = "rgb(0, 0, 255)";
+    ctx.fillRect(0, 10, 10, 10);
+    ctx.fillStyle = "rgb(0, 0, 0)";
+    ctx.fillRect(10, 10, 10, 10);
+}
+
+function clearContext(context) {
+    context.clearRect(0, 0, 50, 50);
+}
+
+var bitmap;
+var image;
+var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
+var d;          // image.imageData
+var elements;
+
+var imageWidth = 20;
+var imageHeight = 20;
+
+// Draw to an auxillary canvas.
+var aCanvas = document.createElement("canvas");
+aCanvas.width = imageWidth;
+aCanvas.height = imageHeight;
+var aCtx = aCanvas.getContext("2d");
+drawPattern(aCtx);
+
+var canvas = document.createElement("canvas");
+canvas.setAttribute("width", "50");
+canvas.setAttribute("height", "50");
+var ctx = canvas.getContext("2d");
+
+image = new Image();
+image.onload = imageLoaded;
+image.src = aCanvas.toDataURL();
+
+var imageLoaded = false;
+var imageBitmapLoaded = false;
+var blobLoaded = false;
+
+function imageLoaded() {
+    createImageBitmap(image).then(imageBitmapLoadedCallback, shouldNotBeCalled);
+    d = aCtx.getImageData(0, 0, 20, 20);
+    imageLoaded = true;
+    loaded();
+}
+
+function imageBitmapLoadedCallback(imageBitmap) {
+    testBitmap = imageBitmap;
+
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
+    // width and height are readonly
+    testBitmap.width = 42;
+    testBitmap.height = 42;
+    shouldBe("testBitmap.width", "imageWidth");
+    shouldBe("testBitmap.height", "imageHeight");
+
+    imageBitmapLoaded = true;
+    loaded();
+}
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/pattern.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    blob = xhr.response;
+    blobLoaded = true;
+    loaded();
+}
+
+function loaded() {
+    if (imageLoaded && imageBitmapLoaded && blobLoaded) {
+        // check all of these elements
+        elements = [image, aCanvas, d, aCtx, testBitmap, blob];
+
+        // wait for callback to finish before each check to ensure synchronous behavior
+        nextCheck(0);
+    }
+}
+
+function nextCheck(elementIndex) {
+    if (elementIndex == elements.length) {
+        finishJSTest();
+        return;
+    }
+    var element = elements[elementIndex];
+    imageBitmaps = {};
+    debug("Checking " + jsWrapperClass(element) + ".");
+    var p1 = createImageBitmap(element).then(function (image) { imageBitmaps.noCrop = image });
+    var p2 = createImageBitmap(element, 0, 0, 10, 10).then(function (image) { imageBitmaps.crop = image });
+    var p3 = createImageBitmap(element, 5, 5, 10, 10).then(function (image) { imageBitmaps.cropCenter = image });
+    var p4 = createImageBitmap(element, 10, 10, 10, 10).then(function (image) { imageBitmaps.cropRight = image });
+    var p5 = createImageBitmap(element, -10, -10, 60, 60).then(function (image) { imageBitmaps.overCrop = image });
+    var p6 = createImageBitmap(element, 10, 10, 50, 50).then(function (image) { imageBitmaps.overCropRight = image });
+    var p7 = createImageBitmap(element, 10, 10, -10, -10).then(function (image) { imageBitmaps.negativeCrop = image });
+    var p8 = createImageBitmap(element, -30, -30, 30, 30).then(function (image) { imageBitmaps.empty = image });
+    var p9 = createImageBitmap(element, 40, 30, 30, 30).then(function (image) { imageBitmaps.emptyTwo = image });
+    Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]).then(function() {
+        checkNoCrop(imageBitmaps.noCrop);
+        checkCrop(imageBitmaps.crop);
+        checkCropCenter(imageBitmaps.cropCenter);
+        checkCropRight(imageBitmaps.cropRight);
+        checkOverCrop(imageBitmaps.overCrop);
+        checkOverCropRight(imageBitmaps.overCropRight);
+        checkCrop(imageBitmaps.negativeCrop);
+        checkEmpty(imageBitmaps.empty);
+        checkEmpty(imageBitmaps.emptyTwo);
+        nextCheck(elementIndex + 1);
+    }, shouldNotBeCalled);
+}
+
+function checkNoCrop(imageBitmap) {
+    debug("Check no crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "imageWidth");
+    shouldBe("bitmap.height", "imageHeight");
+
+    // should be drawn to (0, 0), (20, 20)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(9, 9);
+    shouldBeGreen(11, 9);
+    shouldBeBlue(9, 11);
+    shouldBeBlack(11, 11);
+    shouldBeBlack(19, 19);
+    shouldBeClear(1, 21);
+    shouldBeClear(21, 1);
+    shouldBeClear(21, 21);
+
+    // shrunk to (0, 0), (10, 10)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 10, 10);
+    shouldBeRed(4, 4);
+    shouldBeGreen(6, 4);
+    shouldBeBlue(4, 6);
+    shouldBeBlack(6, 6);
+    shouldBeBlack(9, 9);
+    shouldBeClear(1, 11);
+    shouldBeClear(11, 1);
+    shouldBeClear(11, 11);
+
+    // shrunk to (10, 10), (20, 20)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 10, 10);
+    shouldBeRed(14, 14);
+    shouldBeGreen(16, 14);
+    shouldBeBlue(14, 16);
+    shouldBeBlack(16, 16);
+    shouldBeBlack(19, 19);
+    shouldBeClear(11, 21);
+    shouldBeClear(21, 11);
+    shouldBeClear(21, 21);
+
+    // black should be drawn to (10, 10), (20, 20)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 10, 10, 10, 10, 10, 10);
+    shouldBeClear(9, 9);
+    shouldBeBlack(11, 11);
+    shouldBeBlack(19, 19);
+    shouldBeClear(1, 21);
+    shouldBeClear(21, 1);
+    shouldBeClear(21, 21);
+}
+
+function checkCrop(imageBitmap) {
+    debug("Check crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    // red should be drawn to (0, 0), (10, 10)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(1, 1);
+    shouldBeRed(9, 9);
+    shouldBeClear(12, 12);
+    shouldBeClear(1, 12);
+    shouldBeClear(12, 1);
+
+    // red should be drawn to (0, 0), (20, 20)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    shouldBeRed(1, 1);
+    shouldBeRed(18, 18);
+    shouldBeClear(22, 22);
+    shouldBeClear(1, 22);
+    shouldBeClear(22, 1);
+}
+
+function checkCropCenter(imageBitmap) {
+    debug("Check crop center.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    // should be drawn to (0, 0), (10, 10) with all four colors
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(4, 4);
+    shouldBeGreen(6, 4);
+    shouldBeBlue(4, 6);
+    shouldBeBlack(6, 6);
+    shouldBeBlack(9, 9);
+    shouldBeClear(11, 11);
+    shouldBeClear(1, 11);
+    shouldBeClear(11, 1);
+
+    // should be drawn to (0, 0), (20, 20) with all four colors
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    shouldBeRed(8, 8);
+    shouldBeGreen(11, 8);
+    shouldBeBlue(8, 11);
+    shouldBeBlack(11, 11);
+    shouldBeBlack(18, 18);
+    shouldBeClear(22, 22);
+    shouldBeClear(1, 21);
+    shouldBeClear(21, 1);
+}
+
+function checkCropRight(imageBitmap) {
+    debug("Check crop right.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
+
+    // black should be drawn to (0, 0), (10, 10)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeBlack(1, 1);
+    shouldBeBlack(9, 9);
+    shouldBeClear(11, 11);
+    shouldBeClear(1, 11);
+    shouldBeClear(11, 1);
+}
+
+function checkOverCrop(imageBitmap) {
+    debug("Check over crop.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "60");
+    shouldBe("bitmap.height", "60");
+
+    // should be drawn to (10, 10), (30, 30)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(1, 1);
+    shouldBeClear(9, 9);
+    shouldBeRed(11, 11);
+    shouldBeRed(19, 19);
+    shouldBeGreen(21, 19);
+    shouldBeBlue(19, 21);
+    shouldBeBlack(21, 21);
+    shouldBeBlack(29, 29);
+    shouldBeClear(32, 1);
+    shouldBeClear(1, 32);
+    shouldBeClear(32, 32);
+
+    // should be drawn to (5, 5), (15, 15)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 30, 30);
+    shouldBeClear(1, 1);
+    shouldBeClear(4, 4);
+    shouldBeRed(6, 6);
+    shouldBeRed(9, 9);
+    shouldBeGreen(11, 9);
+    shouldBeBlue(9, 11);
+    shouldBeBlack(11, 11);
+    shouldBeBlack(14, 14);
+    shouldBeClear(16, 1);
+    shouldBeClear(1, 16);
+    shouldBeClear(16, 16);
+}
+
+function checkOverCropRight(imageBitmap) {
+    debug("Check over crop right.");
+    bitmap = imageBitmap;
+    shouldBe("bitmap.width", "50");
+    shouldBe("bitmap.height", "50");
+
+    // black should be drawn to (0, 0), (10, 10)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeBlack(1, 1);
+    shouldBeBlack(9, 9);
+    shouldBeClear(11, 11);
+    shouldBeClear(1, 11);
+    shouldBeClear(11, 1);
+
+    // black should be drawn to (0, 0), (4, 4)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    shouldBeBlack(1, 1);
+    shouldBeBlack(3, 3);
+    shouldBeClear(5, 5);
+    shouldBeClear(1, 5);
+    shouldBeClear(5, 1);
+
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 10, 10, 20, 20, 0, 0, 20, 20);
+    shouldBeClear(1, 1);
+    shouldBeClear(3, 3);
+    shouldBeClear(5, 5);
+    shouldBeClear(1, 5);
+    shouldBeClear(5, 1);
+}
+
+function checkEmpty(imageBitmap) {
+    debug("Check empty.");
+    bitmap = imageBitmap;
+    shouldBeType("bitmap", "ImageBitmap");
+    shouldBe("bitmap.width", "30");
+    shouldBe("bitmap.height", "30");
+
+    // nothing should be drawn
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeClear(1, 1);
+    shouldBeClear(9, 9);
+    shouldBeClear(11, 11);
+    shouldBeClear(22, 22);
+}
+</script>
+</body>
+</html>

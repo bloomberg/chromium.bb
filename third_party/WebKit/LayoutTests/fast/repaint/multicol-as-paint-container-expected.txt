@@ -1,0 +1,44 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [630, 180],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "repaintRects": [
+            [0, 0, 630, 180],
+            [0, 0, 625, 180]
+          ],
+          "paintInvalidationClients": [
+            "LayoutText #text",
+            "InlineTextBox 'Lorem ipsum'",
+            "InlineTextBox 'dolor sit amet,'",
+            "InlineTextBox 'consectetur'",
+            "InlineTextBox 'adipiscing'",
+            "InlineTextBox 'elit. Fusce'",
+            "InlineTextBox 'varius, metus'",
+            "InlineTextBox 'eu fringilla'",
+            "InlineTextBox 'pulvinar, ipsum'",
+            "InlineTextBox 'sapien'",
+            "InlineTextBox 'ultricies arcu,'",
+            "InlineTextBox 'non condimentum'",
+            "InlineTextBox 'quam est eu'",
+            "InlineTextBox 'purus. Ut nisl'",
+            "InlineTextBox 'libero,'",
+            "InlineTextBox 'suscipit ut leo'",
+            "InlineTextBox 'eget, dapibus'",
+            "InlineTextBox 'ultrices dolor.'",
+            "LayoutMultiColumnSet (anonymous)"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <script src="resources/compatibility.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test exceptional arguments for AudioParam timeline events");
+
+      var context;
+      var gain;
+
+      // For these values, AudioParam methods should throw an error because they are invalid; only
+      // finite values are allowed.
+      var targetValues = [Infinity, -Infinity, NaN];
+
+      // For these time values, AudioParam methods should throw an error because they are
+      // invalid. Only finite non-negative values are allowed for any time or time-like parameter.
+      var timeValues = [-1, Infinity, -Infinity, NaN];
+
+      // For these duration values, AudioParam methods should throw an error because they are
+      // invalid. Only finite values are allowed for any duration parameter.
+      var durationValues = [-1, Infinity, -Infinity, NaN, 0];
+
+      // Just an array for use by setValueCurveAtTime. The length and contents of the array are not
+      // important.
+      var curve = new Float32Array(10);
+
+      function runTest() {
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
+        window.jsTestIsAsync = true;
+
+        context = new AudioContext();
+        gain = context.createGain();
+
+        // Test the value parameter
+        for (value of targetValues) {
+          shouldThrow("gain.gain.setValueAtTime(" + value + ", 1)");
+          shouldThrow("gain.gain.linearRampToValueAtTime(" + value + ", 1)");
+          shouldThrow("gain.gain.exponentialRampToValueAtTime(" + value + ", 1)");
+          shouldThrow("gain.gain.setTargetAtTime(" + value + ", 1, 1)");
+        }
+
+        // Test the time parameter
+        for (startTime of timeValues) {
+          shouldThrow("gain.gain.setValueAtTime(1, " + startTime + ")");
+          shouldThrow("gain.gain.linearRampToValueAtTime(1, " + startTime + ")");
+          shouldThrow("gain.gain.exponentialRampToValueAtTime(1, " + startTime + ")");
+          shouldThrow("gain.gain.setTargetAtTime(1, " + startTime + ", 1)");
+        }
+
+        // Test time constant
+        for (value of targetValues) {
+          shouldThrow("gain.gain.setTargetAtTime(1, 1, " + value + ")");
+        }
+
+        // Test startTime and duration for setValueCurveAtTime
+        for (startTime of timeValues) {
+          shouldThrow("gain.gain.setValueCurveAtTime(curve, " + startTime + ", 1)");
+        }
+        for (duration of durationValues) {
+          shouldThrow("gain.gain.setValueCurveAtTime(curve, 1, " + duration + ")");
+        }
+
+        finishJSTest();
+      }
+
+      runTest();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

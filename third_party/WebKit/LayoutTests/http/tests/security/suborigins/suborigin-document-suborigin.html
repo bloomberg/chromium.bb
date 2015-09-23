@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Validate presence and value of document.suborigin</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<script>
+window.onmessage = function(event) {
+    assert_equals(event.data, undefined, "document.suborigin should exist when page has a suborigin.");
+    done();
+}
+</script>
+<iframe src="resources/post-document-to-parent.php?suborigin=foobar"></iframe>
+</html>

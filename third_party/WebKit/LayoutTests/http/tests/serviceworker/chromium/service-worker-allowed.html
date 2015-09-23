@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- FIXME: Move this test out of chromium/ when PHP is no longer needed
+     to set the Service-Worker-Allowed header (crbug.com/347864).
+-->
+<title>Service Worker: Service-Worker-Allowed header</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharness-helpers.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/get-host-info.js"></script>
+<script src="../resources/test-helpers.js"></script>
+<script>
+
+var host_info = get_host_info();
+
+promise_test(function(t) {
+    var script = 'resources/service-worker-allowed-worker.php' +
+      '?ServiceWorkerAllowed=/allowed-path';
+    var scope = '/allowed-path';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_true(
+            registration instanceof ServiceWorkerRegistration,
+            'Successfully registered.');
+          assert_equals(
+            registration.scope,
+            normalizeURL(scope),
+            'Registering within Service-Worker-Allowed path should pass');
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'Registering within Service-Worker-Allowed path');
+
+promise_test(function(t) {
+    var script = 'resources/service-worker-allowed-worker.php' +
+      '?ServiceWorkerAllowed=../allowed-path-with-parent';
+    var scope = 'allowed-path-with-parent';
+    return navigator.serviceWorker.register(script, {scope: scope})
+      .then(function(registration) {
+          assert_true(
+            registration instanceof ServiceWorkerRegistration,
+            'Successfully registered.');
+          assert_equals(
+            registration.scope,
+            normalizeURL(scope),
+            'Registering within Service-Worker-Allowed path with parent ' +
+            'reference should pass');
+          service_worker_unregister_and_done(t, scope);
+        })
+  }, 'Registering within Service-Worker-Allowed path with parent reference');
+
+promise_test(function(t) {
+    var script = 'resources/service-worker-allowed-worker.php' +
+      '?ServiceWorkerAllowed=/allowed-path';
+    var scope = '/disallowed-path';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering outside Service-Worker-Allowed path should fail');
+  }, 'Registering outside Service-Worker-Allowed path');
+
+promise_test(function(t) {
+    var script = 'resources/service-worker-allowed-worker.php' +
+      '?ServiceWorkerAllowed=../allowed-path-with-parent';
+    var scope = '/allowed-path-with-parent';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering outside Service-Worker-Allowed path with parent ' +
+          'reference should fail');
+  }, 'Registering outside Service-Worker-Allowed path with parent reference');
+
+promise_test(function(t) {
+    var script = host_info.HTTPS_REMOTE_ORIGIN +
+      '/serviceworker/chromium/resources/' +
+      'service-worker-allowed-worker.php' +
+      '?ServiceWorkerAllowed=' +
+      host_info.HTTP_REMOTE_ORIGIN + '/cross-origin/';
+    var scope = '/cross-origin/';
+    return assert_promise_rejects(
+        navigator.serviceWorker.register(script, {scope: scope}),
+        'SecurityError',
+        'Registering cross-origin Service-Worker-Allowed should fail');
+  }, 'Registering cross-origin Service-Worker-Allowed');
+
+</script>

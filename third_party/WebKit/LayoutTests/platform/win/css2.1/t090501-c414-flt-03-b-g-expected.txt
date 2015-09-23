@@ -1,0 +1,25 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x240
+  LayoutBlockFlow {HTML} at (0,0) size 800x240
+    LayoutBlockFlow {BODY} at (8,16) size 784x126
+      LayoutBlockFlow {P} at (0,0) size 784x40 [color=#000080]
+        LayoutText {#text} at (0,2) size 406x17
+          text run at (0,2) width 252: "In the following test, the purple square "
+          text run at (251,2) width 155: "should be on the left (\x{21E6}"
+        LayoutImage {IMG} at (405.20,0) size 19x19.19
+        LayoutText {#text} at (424,2) size 221x17
+          text run at (424,2) width 221: "), and the teal square on the right ("
+        LayoutImage {IMG} at (644.13,0) size 19x19.19
+        LayoutText {#text} at (663,2) size 755x37
+          text run at (663,2) width 92: "\x{21E8}) of the blue"
+          text run at (0,22) width 63: "rectangle."
+      LayoutBlockFlow {DIV} at (0,56) size 784x70
+        LayoutBlockFlow {DIV} at (16,0) size 752x70 [color=#0000FF] [bgcolor=#000080]
+          LayoutImage (floating) {IMG} at (8,8) size 160x160
+          LayoutImage (floating) {IMG} at (584,8) size 160x160
+          LayoutText {#text} at (168,8) size 400x53
+            text run at (168,8) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."
+            text run at (168,26) width 202: "Blue rectangle. Blue rectangle. "
+            text run at (369,26) width 199: "Blue rectangle. Blue rectangle."
+            text run at (168,44) width 400: "Blue rectangle. Blue rectangle. Blue rectangle. Blue rectangle."

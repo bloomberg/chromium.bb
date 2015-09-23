@@ -1,0 +1,6 @@
+PASS 250 is 250
+PASS width < origWidth is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="sandbox"></div>
+<pre id="console"></pre>
+<script>
+var sandbox = document.getElementById('sandbox');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'A'},
+              createDOM('div', {'id': 'B'},
+                        createDOM('div', {'id': 'C'})),
+              createShadowRoot({'id': 'D'},
+                               createDOM('div', {'id': 'E'},
+                                         createDOM('content', {'id': 'F'}))),
+              createShadowRoot({'id': 'G'},
+                               createDOM('div', {'id': 'H'},
+                                         createDOM('shadow', {'id': 'I'}))),
+              createShadowRoot({'id': 'J'},
+                               createDOM('shadow', {'id': 'K'}))));
+
+['A', 'B', 'C', 'A/', 'A/E', 'A/F', 'A//', 'A//H', 'A//I', 'A///', 'A///K'].forEach(function(path) {
+    getNodeInTreeOfTrees(path).addEventListener('click', function(event) {
+        debug('\nevent.path on node ' + dumpNode(event.currentTarget));
+        debug(dumpNodeList(event.path));
+    });
+});
+var clickEvent = document.createEvent("MouseEvents");
+clickEvent.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+document.getElementById('C').dispatchEvent(clickEvent);
+</script>
+</body>
+</html>

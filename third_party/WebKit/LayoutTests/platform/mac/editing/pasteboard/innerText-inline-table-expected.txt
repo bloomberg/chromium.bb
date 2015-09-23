@@ -1,0 +1,36 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {DIV} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 504x18
+          text run at (0,0) width 504: "Checks that the text iterator is emitting a space before and after an inline table."
+      LayoutBlockFlow {DIV} at (0,18) size 784x25
+        LayoutText {#text} at (0,7) size 32x18
+          text run at (0,7) width 32: "hello"
+        LayoutTable {TABLE} at (31.98,0) size 14x24
+          LayoutTableSection {TBODY} at (0,0) size 14x24
+            LayoutTableRow {TR} at (0,2) size 14x20
+              LayoutTableCell {TD} at (2,2) size 10x20 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 8x18
+                  text run at (1,1) width 8: "1"
+        LayoutText {#text} at (45,7) size 39x18
+          text run at (45,7) width 39: "world"
+      LayoutBlockFlow {DIV} at (0,43) size 784x25
+        LayoutText {#text} at (0,7) size 26x18
+          text run at (0,7) width 26: "foo "
+        LayoutTable {TABLE} at (25.33,0) size 14x24
+          LayoutTableSection {TBODY} at (0,0) size 14x24
+            LayoutTableRow {TR} at (0,2) size 14x20
+              LayoutTableCell {TD} at (2,2) size 10x20 [r=0 c=0 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 8x18
+                  text run at (1,1) width 8: "2"
+        LayoutText {#text} at (39,7) size 25x18
+          text run at (39,7) width 25: " bar"
+      LayoutBlockFlow {UL} at (0,84) size 784x18
+        LayoutListItem {LI} at (40,0) size 744x18
+          LayoutBlockFlow {PRE} at (0,0) size 744x18
+            LayoutListMarker (anonymous) at (-17,0) size 7x18: bullet
+            LayoutText {#text} at (0,2) size 63x15
+              text run at (0,2) width 63: "Success!"

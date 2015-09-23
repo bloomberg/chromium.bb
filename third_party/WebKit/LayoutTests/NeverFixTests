@@ -1,0 +1,201 @@
+# This file should only include tests that we never intend to fix.
+# There should only be 4 categories of tests here:
+#   1. Test harness tests.
+#   2. Tests enabled by chromium embedders (e.g. Opera).
+#   3. Tests that apply to some platforms but not others.
+#   4. Tests that are too slow in Debug and so we only want to skip them in Debug.
+
+# FIXME: Remove the WontFix keyword and have that be implied. That way, people won't abuse
+# WontFix outside of this file.
+
+# Perf tests are really slow in debug builds and there are few benefits in running them.
+[ Debug ] http/tests/perf [ WontFix ]
+
+# This test verifies that a mismatch reftest will fail if both results are the
+# same.  Because the whole point is that this test should fail when run, it's
+# not SKIP, just WONTFIX.
+fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
+
+# Platform specific virtual test suites.
+[ Win Mac Android ] virtual/linux-subpixel [ WontFix ]
+
+# Chrome Win/Linux doesn't support emacs key-bindings.
+[ Win Linux ] editing/pasteboard/emacs-cntl-y-001.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-a-k-y.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-k-with-move.html [ WontFix ]
+[ Win Linux ] editing/pasteboard/emacs-ctrl-k-y-001.html [ WontFix ]
+[ Win Linux ] editing/input/emacs-ctrl-o.html [ WontFix ]
+
+# Chrome Mac doesn't support Ctrl+Up/Down key-bindings.
+[ Mac ] editing/input/ctrl-up-down.html [ WontFix ]
+
+# Chrome uses different keyboard accelerators from those used by Safari, so
+# this test will always fail.
+[ Linux Win ] fast/events/option-tab.html [ WontFix ]
+[ Linux Win ] virtual/pointerevent/fast/events/option-tab.html [ WontFix ]
+[ Linux Win ] virtual/trustedeventsdefaultaction/fast/events/option-tab.html [ WontFix ]
+
+# This test only applies to overlay scrollbar platforms.
+[ SnowLeopard Win Linux ] fast/dom/partial-layout-overlay-scrollbars.html [ WontFix ]
+
+# These tests are only valid on platforms with overlay scrollbars support.
+[ SnowLeopard ] inspector/device-emulation [ WontFix ]
+
+# <progress> on Mac is always animated. So it's hard to get a reliable pixel result.
+[ Mac ] fast/dom/HTMLProgressElement/progress-element.html [ WontFix ]
+
+# This requires usp10.dll version 1.600 or greater on Windows and
+# it isn't installed on XP by default.
+[ XP ] css3/font-feature-settings-rendering.html [ WontFix ]
+
+# These test the CoreAnimation plugin model which we never intend to support on
+# Windows and Linux.
+[ Win Linux ] compositing/plugins/1x1-composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/large-to-small-composited-plugin.html [ WontFix ]
+[ Win Linux ] compositing/plugins/small-to-large-composited-plugin.html [ WontFix ]
+
+# Mac's popup behavior is different.
+[ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
+[ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ WontFix ]
+
+# Chromium does not support PDF content in <img> tags.
+[ Win Linux ] compositing/images/direct-pdf-image.html [ WontFix ]
+
+# Pan-scroll tests are Windows-specific.
+[ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-click-hyperlink.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-drag.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-event-fired.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-in-iframe.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-nested-divs.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-panIcon.html [ WontFix ]
+[ Linux Mac ] fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-click.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-click-hyperlink.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-drag.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-event-fired.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-in-iframe.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-panIcon.html [ WontFix ]
+[ Linux Mac ] virtual/pointerevent/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-click.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-click-hyperlink.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-drag.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-event-fired.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-in-iframe.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-nested-divs.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-panIcon.html [ WontFix ]
+[ Linux Mac ] virtual/trustedeventsdefaultaction/fast/events/panScroll-nested-divs-forbidden.html [ WontFix ]
+
+# These tests are specific to Windows and Linux.
+[ Mac ] fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ WontFix ]
+[ Mac ] fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ WontFix ]
+[ Mac ] fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ WontFix ]
+[ Mac ] fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ WontFix ]
+
+# Mac does not have menu key.
+[ Mac ] editing/spelling/spelling-on-context-menu-key.html [ WontFix ]
+[ Mac ] fast/events/menu-key-context-menu-document.html [ WontFix ]
+[ Mac ] fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] fast/events/menu-key-context-menu-position.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-document.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] virtual/pointerevent/fast/events/menu-key-context-menu-position.html [ WontFix ]
+[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu-document.html [ WontFix ]
+[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu.html [ WontFix ]
+[ Mac ] virtual/trustedeventsdefaultaction/fast/events/menu-key-context-menu-position.html [ WontFix ]
+
+# Link Highlighting is only supported on Windows and Linux
+[ Mac ] compositing/gestures [ WontFix ]
+
+# These tests are specific to Linux.
+[ Mac Win ] editing/selection/linux_selection_color.html [ WontFix ]
+[ Mac Win ] fast/text/chromium-linux-fontconfig-renderstyle.html [ WontFix ]
+[ Mac Win ] fast/text/international/arabic-vertical-offset.html [ WontFix ]
+[ Mac Win ] fast/text/international/complex-joining-using-gpos.html [ WontFix ]
+[ Mac Win ] fast/text/international/draw-complex-text-from-to.html [ WontFix ]
+[ Mac Win ] svg/text/text-with-geometric-precision.svg [ WontFix ]
+
+# Mac has different fallback behavior so that this test won't work there
+[ Mac ] fast/text/font-cachekey.html [ WontFix ]
+
+# These tests are specific to Android. Because long pressing on disabled/readonly input/textarea
+# won't trigger text selection on Linux/Mac/Windows platforms, hence we need to skip it.
+[ Linux Mac Win ] editing/selection/readonly-disabled-text-selection.html [ WontFix ]
+[ Linux Mac Win ] editing/selection/android-longtap-not-select-empty.html [ WontFix ]
+
+# AAT/mortx shaping not supported on platforms other than Mac
+[ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
+
+# This test crashes occasionally on Windows and we can't seem to repro locally.
+# See comments in crbug.com/239077
+[ Win ] fast/canvas/webgl/index-validation-with-resized-buffer.html [ WontFix ]
+
+# Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
+media/stable [ WontFix ]
+
+# Only run fake-Android tests on Linux
+[ Mac Win ] virtual/android [ WontFix ]
+
+# We only run it through the virtual gpu test suite.
+fast/canvas/canvas-lost-gpu-context.html [ WontFix ]
+
+# Chrome Linux doesn't support NPAPI plugins anymore.
+[ Linux ] http/tests/plugins/interrupted-get-url.html [ WontFix ]
+[ Linux ] http/tests/plugins/third-party-cookie-accept-policy.html [ WontFix ]
+[ Linux ] plugins/mouse-click-plugin-clears-selection.html [ WontFix ]
+
+# Missing Chrome Mac support, will start working when we move to harfbuzz on mac.
+[ Mac ] fast/text/international/zerowidthjoiner.html [ WontFix ]
+
+# Hits an assert on Snow-leopard Debug but not on any other platforms.
+[ Snowleopard Debug ] inspector/sources/debugger-async/async-callstack-mutation-observer.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger-async/async-callstack.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger-async/async-callstack-scopes.html [ WontFix ]
+[ Snowleopard Debug ] inspector/console/console-format.html [ WontFix ]
+[ Snowleopard Debug ] inspector/elements/styles-2/pseudo-elements.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ WontFix ]
+[ Snowleopard Debug ] inspector/sources/debugger-breakpoints/event-listener-breakpoints.html [ WontFix ]
+[ SnowLeopard Debug ] fast/text/trailing_whitespace_wrapping.html [ WontFix ]
+
+
+# Subpixel font scaling requires DirectWrite on windows (which isn't supported
+# on XP) and antialiasing on mac (which isn't enabled tests).
+[ XP Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-pixel.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-rtl.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-vertical.html [ WontFix ]
+[ XP Mac ] fast/text/sub-pixel/text-scaling-webfont.html [ WontFix ]
+[ Mac ] fast/text/mixed-direction-bidi-wrap.html [ WontFix ]
+
+# Mac 10.6 only due to slight changes in text rendering
+[ SnowLeopard ] fast/text/international/text-shaping-arabic.html [ WontFix ]
+
+# Mac 10.6 debug only, and the tests are very artificial to test orientation of all code points.
+[ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ WontFix ]
+[ SnowLeopard Debug ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ WontFix ]
+
+# We don't have the necessary fonts for these tests on XP.
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ WontFix ]
+[ XP ] imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ WontFix ]
+
+# Relies on precise timing which isn't reliable on XP.
+[ XP ] imported/web-platform-tests/user-timing/test_user_timing_mark.html [ WontFix ]
+
+# We don't have full plane2 support on XP.
+[ XP ] fast/text/international/plane2.html [ WontFix ]
+
+# These two printing tests fail with the threaded compositor but they
+# aren't critical to run in this mode.
+virtual/threaded/printing/setPrinting.html [ WontFix ]
+virtual/threaded/printing/width-overflow.html [ WontFix ]
+
+# This test only fails with an ASSERT in Debug build.
+[ Release ] editing/input/orphan-set-selection-range.html [ WontFix ]
+
+# See crbug.com/522326
+imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]

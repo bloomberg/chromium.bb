@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL unicode-bidi: -webkit-isolate assert_equals: expected "isolate" but got "-webkit-isolate"
+FAIL unicode-bidi: -webkit-isolate-override assert_equals: expected "isolate-override" but got "-webkit-isolate-override"
+FAIL unicode-bidi: -webkit-plaintext assert_equals: expected "plaintext" but got "-webkit-plaintext"
+Harness: the test ran to completion.
+

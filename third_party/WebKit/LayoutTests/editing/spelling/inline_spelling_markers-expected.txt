@@ -1,0 +1,40 @@
+This tests the correct placement of inline spelling and grammar markers in text. Spelling markers should line up exactly under misspelled words in all cases.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+testLTR:
+PASS internals.hasSpellingMarker(document, 8, 4) became true
+PASS internals.hasSpellingMarker(document, 13, 6) became true
+PASS internals.hasSpellingMarker(document, 20, 5) became true
+PASS internals.hasGrammarMarker(document, 4, 3) became true
+PASS internals.hasGrammarMarker(document, 33, 5) became true
+testRTL:
+PASS internals.hasSpellingMarker(document, 8, 4) became true
+PASS internals.hasSpellingMarker(document, 13, 6) became true
+PASS internals.hasSpellingMarker(document, 20, 5) became true
+PASS internals.hasGrammarMarker(document, 4, 3) became true
+PASS internals.hasGrammarMarker(document, 33, 5) became true
+testLTREllipses:
+PASS internals.hasSpellingMarker(document, 8, 4) became true
+PASS internals.hasSpellingMarker(document, 13, 6) became true
+PASS internals.hasSpellingMarker(document, 20, 5) became true
+PASS internals.hasGrammarMarker(document, 4, 3) became true
+PASS internals.hasGrammarMarker(document, 33, 5) became true
+testRTLEllipses:
+PASS internals.hasSpellingMarker(document, 8, 4) became true
+PASS internals.hasSpellingMarker(document, 13, 6) became true
+PASS internals.hasSpellingMarker(document, 20, 5) became true
+PASS internals.hasGrammarMarker(document, 4, 3) became true
+PASS internals.hasGrammarMarker(document, 33, 5) became true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+LTR
+the the adlj adaasj sdklj. there there
+RTL
+the the adlj adaasj sdklj. there there
+LTR (text-overflow:ellipses):
+the the adlj adaasj sdklj. there there
+RTL (text-overflow:ellipses):
+the the adlj adaasj sdklj. there there

@@ -1,0 +1,20 @@
+<!DOCTYPE HTML>
+<script>
+onload = function() {
+  window.scrollTo(2000, 2000);
+}
+window.onload = runRepaintTest;
+</script>
+<style>
+#content {
+  width: 5000px;
+  height: 5000px;
+  background-color: green;
+}
+</style>
+<div id="content">
+Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,
+and there is no red when the scrolling container is scrolled.<br>
+Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text
+on non-high-dpi machines to enable composited scrolling.
+</div>

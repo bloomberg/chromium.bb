@@ -1,0 +1,8 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600 layerType: background only
+layer at (0,0) size 800x600
+  LayoutBlockFlow (relative positioned) zI: -1 {DIV} at (0,0) size 800x600 [bgcolor=#FF0000]
+layer at (0,0) size 800x600 layerType: foreground only
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (0,0) size 800x600 [bgcolor=#008000]

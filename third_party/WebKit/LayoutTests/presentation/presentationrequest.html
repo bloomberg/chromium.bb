@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/gc.js"></script>
+<script>
+
+async_test(function(t) {
+  var request = new PresentationRequest("http://example.com");
+  request.start().catch(t.step_func(function(e) {
+    assert_true(e instanceof DOMException);
+    assert_equals(e.name, "InvalidAccessError");
+    assert_equals(e.message, "PresentationRequest::start() requires user gesture.");
+    t.done();
+  }));
+}, "Test that the PresentationRequest.start() requires user gesture.")
+
+test(function() {
+  navigator.presentation.defaultRequest = new PresentationRequest("http://example.com");
+  navigator.presentation.defaultRequest.onsessionconnect = function() {  };
+  gc();
+  assert_not_equals(navigator.presentation.defaultRequest.onsessionconnect, undefined);
+}, "Test that navigator.presentation.defaultRequest.onsessionconnect isn't reset after gc()");
+
+</script>
+</body>
+</html>

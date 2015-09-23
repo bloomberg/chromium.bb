@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+function assert_unresolved(value) {
+  assert_equals(value, null);
+}
+
+function idlePlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.cancel();
+  return player;
+}
+
+function runningPlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.startTime = document.timeline.currentTime;
+  return player;
+}
+
+function pendingStartTimePlayer() {
+  var player = document.documentElement.animate([], 100000);
+  return player;
+}
+
+function pendingStartTimeAndCurrentTimePlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.pause();
+  player.play();
+  return player;
+}
+
+function pausedPlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.pause();
+  player.currentTime = 0;
+  return player;
+}
+
+function finishedPlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.finish();
+  return player;
+}
+
+test(function() {
+  var player = idlePlayer();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime and currentTime");
+
+test(function() {
+  var player = runningPlayer();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'running');
+}, "running");
+
+test(function() {
+  var player = pausedPlayer();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'paused');
+}, "paused");
+
+test(function() {
+  var player = finishedPlayer();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'finished');
+}, "finished");
+
+test(function() {
+  var player = idlePlayer();
+  player.play();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'pending');
+}, "idle -> play()");
+
+test(function() {
+  var player = idlePlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle -> pause()");
+
+test(function() {
+  var player = idlePlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle -> cancel()");
+
+test(function() {
+  var player = idlePlayer();
+  player.finish();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle -> finish()");
+
+test(function() {
+  var player = idlePlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'pending');
+}, "idle -> reverse()");
+
+test(function() {
+  var player = idlePlayer();
+  player.currentTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle -> set currentTime");
+
+test(function() {
+  var player = idlePlayer();
+  player.startTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "idle -> set startTime");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.play();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime -> play()");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime -> pause()");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "pending startTime -> cancel()");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.finish();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'finished');
+}, "pending startTime -> finish()");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime -> reverse()");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.currentTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime -> set currentTime");
+
+test(function() {
+  var player = pendingStartTimePlayer();
+  player.startTime = document.timeline.currentTime - 1000;
+  assert_equals(player.startTime, document.timeline.currentTime - 1000);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'running');
+}, "pending startTime -> set startTime");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.play();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime & currentTime -> play()");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime & currentTime -> pause()");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "pending startTime & currentTime -> cancel()");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.finish();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'finished');
+}, "pending startTime & currentTime -> finish()");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime & currentTime -> reverse()");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.currentTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'pending');
+}, "pending startTime & currentTime -> set currentTime");
+
+test(function() {
+  var player = pendingStartTimeAndCurrentTimePlayer();
+  player.startTime = document.timeline.currentTime;
+  assert_equals(player.startTime, document.timeline.currentTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'running');
+}, "pending startTime & currentTime -> set startTime");
+
+test(function() {
+  var player = runningPlayer();
+  var startTime = player.startTime;
+  var currentTime = player.currentTime;
+  player.play();
+  assert_equals(player.startTime, startTime);
+  assert_equals(player.currentTime, currentTime);
+  assert_equals(player.playState, 'running');
+}, "running -> play()");
+
+test(function() {
+  var player = runningPlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "running -> pause()");
+
+test(function() {
+  var player = runningPlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "running -> cancel()");
+
+test(function() {
+  var player = runningPlayer();
+  player.finish();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'finished');
+}, "running -> finish()");
+
+test(function() {
+  var player = runningPlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'pending');
+}, "running -> reverse()");
+
+test(function() {
+  var player = runningPlayer();
+  player.currentTime = 1000;
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'running');
+}, "running -> set currentTime");
+
+test(function() {
+  var player = runningPlayer();
+  player.startTime = document.timeline.currentTime - 1000;
+  assert_equals(player.startTime, document.timeline.currentTime - 1000);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'running');
+}, "running -> set startTime");
+
+test(function() {
+  var player = pausedPlayer();
+  player.play();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'pending');
+}, "paused -> play()");
+
+test(function() {
+  var player = pausedPlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'paused');
+}, "paused -> pause()");
+
+test(function() {
+  var player = pausedPlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "paused -> cancel()");
+
+test(function() {
+  var player = pausedPlayer();
+  player.finish();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'paused');
+}, "paused -> finish()");
+
+test(function() {
+  var player = pausedPlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'pending');
+}, "paused -> reverse()");
+
+test(function() {
+  var player = pausedPlayer();
+  player.currentTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'paused');
+}, "paused -> set currentTime");
+
+test(function() {
+  var player = pausedPlayer();
+  player.startTime = 1000;
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'paused');
+}, "paused -> set startTime");
+
+test(function() {
+  var player = finishedPlayer();
+  player.play();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 0);
+  assert_equals(player.playState, 'pending');
+}, "finished -> play()");
+
+test(function() {
+  var player = finishedPlayer();
+  player.pause();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'paused');
+}, "finished -> pause()");
+
+test(function() {
+  var player = finishedPlayer();
+  player.cancel();
+  assert_unresolved(player.startTime);
+  assert_unresolved(player.currentTime);
+  assert_equals(player.playState, 'idle');
+}, "finished -> cancel()");
+
+test(function() {
+  var player = finishedPlayer();
+  player.finish();
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'finished');
+}, "finished -> finish()");
+
+test(function() {
+  var player = finishedPlayer();
+  player.reverse();
+  assert_unresolved(player.startTime);
+  assert_equals(player.currentTime, 100000);
+  assert_equals(player.playState, 'pending');
+}, "finished -> reverse()");
+
+test(function() {
+  var player = finishedPlayer();
+  player.currentTime = 1000;
+  assert_equals(player.startTime, document.timeline.currentTime - player.currentTime);
+  assert_equals(player.currentTime, 1000);
+  assert_equals(player.playState, 'running');
+}, "finished -> set currentTime");
+</script>

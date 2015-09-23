@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<img id="a" width="25" height="25" src="resources/green-red-blue-yellow-animated.gif?a">
+<img id="b" width="25" height="25" src="resources/green-red-blue-yellow-animated.gif?b">
+<img id="c" width="25" height="25" src="resources/green-red-blue-yellow-animated.gif?c">
+<img id="d" width="25" height="25" src="resources/green-red-blue-yellow-animated.gif?d">
+<img id="e" width="25" height="25" src="resources/green-red-blue-yellow-animated.gif?e">
+<script>
+if (window.testRunner)
+  testRunner.waitUntilDone();
+
+window.onload = function() {
+  // Jump to the 2nd frame.
+  window.internals.advanceImageAnimation(b);
+
+  // Jump to the 3rd frame.
+  for (var i = 0; i < 2; i++)
+    window.internals.advanceImageAnimation(c);
+
+  // Jump to the 4th frame.
+  for (var i = 0; i < 3; i++)
+    window.internals.advanceImageAnimation(d);
+
+  // Ensure the animation can loop and get back to the first frame.
+  for (var i = 0; i < 4; i++)
+    window.internals.advanceImageAnimation(e);
+
+  requestAnimationFrame(function() {
+    if (window.testRunner)
+      testRunner.notifyDone();
+  });
+}
+</script>

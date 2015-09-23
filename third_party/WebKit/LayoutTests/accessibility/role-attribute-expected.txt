@@ -1,0 +1,51 @@
+Explicit Item 1
+Explicit Item 2
+Explicit Item 3
+Implicit Item 1
+Implicit Item 2
+Implicit Item 3
+     
+End of test
+
+This tests that the role attribute is not missed.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXRadioGroup AXValue: 
+        AXRole: AXRadioButton AXValue: 
+        AXRole: AXRadioButton AXValue: 
+        AXRole: AXRadioButton AXValue: 
+    AXRole: AXList AXValue: 
+        AXRole: AXListItem AXValue: 
+            AXRole: AXListMarker AXValue: 1
+            AXRole: AXStaticText AXValue: Implicit Item 1
+                AXRole: AXInlineTextBox AXValue: Implicit Item 1
+        AXRole: AXListItem AXValue: 
+            AXRole: AXListMarker AXValue: 2
+            AXRole: AXStaticText AXValue: Implicit Item 2
+                AXRole: AXInlineTextBox AXValue: Implicit Item 2
+        AXRole: AXListItem AXValue: 
+            AXRole: AXListMarker AXValue: 3
+            AXRole: AXStaticText AXValue: Implicit Item 3
+                AXRole: AXInlineTextBox AXValue: Implicit Item 3
+    AXRole: AXGroup AXValue: 
+        AXRole: AXGroup AXValue: 
+            AXRole: AXTextField AXValue: Explicit Option 1
+            AXRole: AXTextField AXValue: Explicit Option 2
+        AXRole: AXListBox AXValue: 
+            AXRole: AXListBoxOption AXValue: Implicit Option 1
+            AXRole: AXListBoxOption AXValue: Implicit Option 2
+        AXRole: AXStatus AXValue: 
+        AXRole: AXProgressIndicator AXValue: 
+        AXRole: AXStatus AXValue: 5
+            AXRole: AXSliderThumb AXValue: 
+        AXRole: AXSlider AXValue: 5
+            AXRole: AXSliderThumb AXValue: 
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

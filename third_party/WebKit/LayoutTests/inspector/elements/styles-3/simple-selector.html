@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.expandElementsTree(onElementsTreeExpanded);
+
+    function onElementsTreeExpanded()
+    {
+        var container = InspectorTest.expandedNodeWithId("container");
+        var children = container.children();
+        for (var i = 0; i < children.length; ++i)
+            InspectorTest.addResult(WebInspector.DOMPresentationUtils.simpleSelector(children[i]));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Verifies simple selector behavior.</p>
+<div id="container" style="display: none">
+    <div id="foo"></div>
+    <div id="bar" class="foo"></div>
+    <div class="title"></div>
+    <input></input>
+    <input type="text"></input>
+    <input type="text" class="text-input"></input>
+    <input type="text" id="text-input"></input>
+    <p class="article"></p>
+    <span></span>
+    <b></b>
+</div>
+
+</body>
+</html>

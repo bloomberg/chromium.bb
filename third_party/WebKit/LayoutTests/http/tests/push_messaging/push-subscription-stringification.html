@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Stringifying a PushSubscription object includes all object members</title>
+<link rel="manifest" href="resources/push_manifest.json">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+</head>
+<body>
+<script>
+async_test(function(test) {
+    var workerUrl = 'resources/empty_worker.js';
+    var workerScope = 'resources/scope/' + location.pathname;
+    var swRegistration;
+    service_worker_unregister_and_register(test, workerUrl, workerScope)
+        .then(function(serviceWorkerRegistration) {
+            swRegistration = serviceWorkerRegistration;
+            return wait_for_state(test, swRegistration.installing, 'activated');
+        })
+        .then(function() {
+            // If running manually, grant permission when prompted.
+            if (window.testRunner)
+                testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
+            return swRegistration.pushManager.subscribe();
+        })
+        .then(function(pushSubscription) {
+            var reflectedObject = JSON.parse(JSON.stringify(pushSubscription));
+            var expectedProperties = ['endpoint'];
+
+            assert_equals(expectedProperties.length,
+                          Object.getOwnPropertyNames(reflectedObject).length);
+
+            for (var key of expectedProperties)
+                assert_equals(reflectedObject[key], pushSubscription[key]);
+
+            return service_worker_unregister_and_done(test, workerScope);
+        })
+        .catch(unreached_rejection(test));
+}, 'Stringifying a PushSubscription object includes all object members');
+</script>
+</body>
+</html>

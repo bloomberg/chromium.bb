@@ -1,0 +1,10 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests outdenting "one". You see 1 before "one" but 1 and 2 before "two" and "three" respectively.
+one
+two
+three
+four
+Before: <ol><li id="test">one</li> <li>two</li> <li>three</li></ol> <li>four</li>
+After: <li>one</li><ol> <li>two</li> <li>three</li></ol> <li>four</li>

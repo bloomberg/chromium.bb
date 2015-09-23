@@ -1,0 +1,21 @@
+<!DOCTYPE HTML>
+<body>
+This test passes if it does not crash.
+<script>
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  testRunner.dumpAsText();
+
+  internals.settings.setCaretBrowsingEnabled(false);
+  testRunner.layoutAndPaintAsyncThen(function() {
+    internals.settings.setCaretBrowsingEnabled(true);
+    document.body.innerHTML += 'PASS';
+    testRunner.layoutAndPaintAsyncThen(function() {
+      testRunner.notifyDone();
+    });
+  });
+} else {
+  document.body.textContent = 'This test needs DumpRenderTree.';
+} 
+</script>
+</body>

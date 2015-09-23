@@ -1,0 +1,17 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests indenting "three" then undoing the indent. You should see one, two and three numbered 1 through 3 then four as a sublist with number 1.
+Bugzilla bug 
+Radar bug
+
+one
+two
+three
+four
+Before indent: <li>one</li> <li>two</li> <li id="test">three</li> <ol><li>four</li></ol>
+After indent: <li>one</li> <li>two</li> <ol><li id="test">three</li><li>four</li></ol>
+After undoing: <li>one</li> <li>two</li> <li id="test">three</li> <ol><li>four</li></ol>
+The test passed

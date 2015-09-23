@@ -1,0 +1,29 @@
+<html>
+    <head>
+        <title>Test webkitRequestFullscreen() without any user gesture.</title>
+        <script src=media-file.js></script>
+        <script src=video-test.js></script>
+        <script>
+            function canplaythrough()
+            {
+                consoleWrite("");
+                consoleWrite("* No user gesture initiated");
+                testExpected("video.paused", true);
+                run("video.webkitRequestFullscreen()");
+                waitForEvent('webkitfullscreenerror', endTest);
+            }
+
+            function start()
+            {
+                 findMediaElement();
+                 waitForEvent('canplaythrough', canplaythrough);
+                 video.src = findMediaFile("video", "content/test");
+            }
+        </script>
+    </head>
+
+    <body onload="start()">
+    <p>Test webkitRequestFullscreen() without any user gesture.</p>
+    <video controls></video>
+    </body>
+</html>

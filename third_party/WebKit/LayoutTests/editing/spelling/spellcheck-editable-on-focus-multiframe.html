@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/util.js"></script>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<pre id="console"></pre>
+<iframe id="frame1" src="data:text/html,<body></body>"></iframe>
+<iframe id="frame2" src="data:text/html,<body></body>"></iframe>
+
+<script>
+
+description("Spell checking should be triggered on focus of an editable. " +
+"Also after retarting spell checker. It applies to all frames." +
+"To test manually type focus above editable. Misspellings in them " +
+"should be marked on focus.Turn spell checker off and on again and again focus editables. " +
+"Mispelling should be marked again");
+
+var frame1 = document.getElementById("frame1");
+var testEditable1 = frame1.contentWindow.document.createElement("div");
+testEditable1.setAttribute("contentEditable", "true");
+frame1.contentWindow.document.body.appendChild(testEditable1);
+var frame2 = document.getElementById("frame2");
+var testEditable2 = frame1.contentWindow.document.createElement("div");
+testEditable2.setAttribute("contentEditable", "true");
+frame2.contentWindow.document.body.appendChild(testEditable2);
+testEditable1.innerText = "zz zz zz.";
+testEditable2.innerText = "zz zz zz.";
+
+if (window.internals) {
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(false);
+    internals.setContinuousSpellCheckingEnabled(true);
+
+    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');
+    shouldBe('internals.markerCountForNode(testEditable2.childNodes[0], "spelling")', '0');
+    testEditable1.focus();
+    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');
+    testEditable2.focus();
+    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');
+    internals.setContinuousSpellCheckingEnabled(false);
+    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '0');
+    shouldBe('internals.markerCountForNode(testEditable2.childNodes[0], "spelling")', '0');
+    internals.setContinuousSpellCheckingEnabled(true);
+    testEditable1.focus();
+    testEditable2.focus();
+    shouldBe('internals.markerCountForNode(testEditable1.childNodes[0], "spelling")', '3');
+    shouldBe('internals.markerCountForNode(testEditable2.childNodes[0], "spelling")', '3');
+} else {
+    log("Automatic testing impossible. Test manually. See steps in the description.");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+description("Tests for getDestinationInsertionPoints() which involves a shadow insertion point.");
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'child'})),
+                        createShadowRoot(
+                            createDOM('shadow', {'id': 'shadow'})))));
+
+shouldBeEqualAsArray(getNodeInTreeOfTrees('host/child').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host//shadow')]);
+</script>
+</body>
+</html>

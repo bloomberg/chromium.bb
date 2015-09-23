@@ -1,0 +1,99 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x94
+  LayoutBlockFlow {HTML} at (0,0) size 800x94
+    LayoutBlockFlow {BODY} at (8,16) size 784x70
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 237x17
+          text run at (0,0) width 237: "The following two lines should look "
+        LayoutInline {EM} at (0,0) size 93x17
+          LayoutText {#text} at (236,0) size 93x17
+            text run at (236,0) width 93: "approximately"
+        LayoutText {#text} at (328,0) size 66x17
+          text run at (328,0) width 66: " the same:"
+      LayoutBlockFlow {DIV} at (0,34) size 784x18
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (0,0) size 16x17
+              text run at (0,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (15,0) size 5x17
+          text run at (15,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (19,0) size 16x17
+              text run at (19,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (34,0) size 5x17
+          text run at (34,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 17x17
+          LayoutInline {<pseudo:before>} at (0,0) size 17x17
+            LayoutCounter (anonymous) at (38,0) size 17x17
+              text run at (38,0) width 17: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (54,0) size 5x17
+          text run at (54,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (58,0) size 16x17
+              text run at (58,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (73,0) size 5x17
+          text run at (73,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (77,0) size 16x17
+              text run at (77,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (92,0) size 5x17
+          text run at (92,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 17x17
+          LayoutInline {<pseudo:before>} at (0,0) size 17x17
+            LayoutCounter (anonymous) at (96,0) size 17x17
+              text run at (96,0) width 17: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (112,0) size 5x17
+          text run at (112,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (116,0) size 16x17
+              text run at (116,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (131,0) size 5x17
+          text run at (131,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (135,0) size 16x17
+              text run at (135,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (150,0) size 5x17
+          text run at (150,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 17x17
+          LayoutInline {<pseudo:before>} at (0,0) size 17x17
+            LayoutCounter (anonymous) at (154,0) size 17x17
+              text run at (154,0) width 17: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (170,0) size 5x17
+          text run at (170,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (174,0) size 16x17
+              text run at (174,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (189,0) size 5x17
+          text run at (189,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 16x17
+          LayoutInline {<pseudo:before>} at (0,0) size 16x17
+            LayoutCounter (anonymous) at (193,0) size 16x17
+              text run at (193,0) width 16: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (208,0) size 5x17
+          text run at (208,0) width 5: " "
+        LayoutInline {SPAN} at (0,0) size 17x17
+          LayoutInline {<pseudo:before>} at (0,0) size 17x17
+            LayoutCounter (anonymous) at (212,0) size 17x17
+              text run at (212,0) width 17: "\x{25E6}.\x{25E6}"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,52) size 784x18
+        LayoutText {#text} at (0,0) size 229x17
+          text run at (0,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (19,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (38,0) width 21: "\x{25E6}.\x{25E6} "
+          text run at (58,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (77,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (96,0) width 21: "\x{25E6}.\x{25E6} "
+          text run at (116,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (135,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (154,0) width 21: "\x{25E6}.\x{25E6} "
+          text run at (174,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (193,0) width 20: "\x{25E6}.\x{25E6} "
+          text run at (212,0) width 17: "\x{25E6}.\x{25E6}"

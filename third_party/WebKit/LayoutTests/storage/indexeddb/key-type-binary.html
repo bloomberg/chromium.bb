@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<title>IndexedDB: Verify transaction activation behavior around microtasks</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
+<script>
+var sample = [0x44, 0x33, 0x22, 0x11, 0xFF, 0xEE, 0xDD, 0xCC];
+var buffer = new Uint8Array(sample).buffer;
+
+function assert_key_valid(a, message) {
+    assert_equals(indexedDB.cmp(a, a), 0, message);
+}
+
+function assert_buffer_equals(a, b, message) {
+    assert_array_equals(
+        [].slice.call(new Uint8Array(a)),
+        [].slice.call(new Uint8Array(b)),
+        message);
+}
+
+function check_key(t, db, key) {
+    var tx = db.transaction('store', 'readwrite');
+    var store = tx.objectStore('store');
+
+    // Verify put with key
+    var req = store.put('value', key);
+    req.onerror = t.unreached_func('put should succeed');
+
+    // Verify get with key
+    req = store.get(key);
+    req.onerror = t.unreached_func('get should succeed');
+    req.onsuccess = t.step_func(function() {
+        assert_equals(req.result, 'value', 'get with key should succeed');
+
+        // Verify iteration returning key
+        req = store.openCursor();
+        req.onerror = t.unreached_func('openCursor should succeed');
+        req.onsuccess = t.step_func(function() {
+            assert_not_equals(req.result, null, 'cursor should be present');
+            var found_key = req.result.key;
+            assert_true(found_key instanceof ArrayBuffer,
+                        'Key should be an ArrayBuffer');
+            assert_key_equals(found_key, key,
+                              'Key should be equal to put key');
+            assert_buffer_equals(
+                found_key, buffer, 'Buffers should be equal to put buffer');
+
+            t.done();
+        });
+    });
+}
+
+function type_test(type) {
+    indexeddb_test(
+        function(t, db) {
+            db.createObjectStore('store');
+        },
+        function(t, db) {
+            var key = new self[type](buffer);
+            assert_key_valid(key, type + ' should be a valid key');
+            assert_key_equals(key, buffer,
+                              'Keys should be equal regardless of type');
+            check_key(t, db, key);
+        },
+        'Binary key: ' + type
+    );
+}
+
+[
+    'Uint8Array',
+    'Uint8ClampedArray',
+    'Int8Array',
+    'Uint16Array',
+    'Int16Array',
+    'Uint32Array',
+    'Int32Array',
+    'Float32Array',
+    'Float64Array'
+].forEach(function(type) { type_test(type); });
+
+function value_test(type, value) {
+    indexeddb_test(
+        function(t, db) {
+            db.createObjectStore('store');
+        },
+        function(t, db) {
+            assert_key_valid(value, type + ' should be a valid key');
+            check_key(t, db, value);
+            t.done();
+        },
+        'Value test: ' + type
+    );
+}
+
+value_test('ArrayBuffer', buffer);
+value_test('DataView', new DataView(buffer));
+value_test('Offset DataView', new DataView(buffer), 3, 3);
+value_test('Offset Uint8Array', new Uint8Array(buffer), 3, 3);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        var store = tx.objectStore('store');
+
+        var b = new Uint8Array([1,2,3,4]).buffer;
+        assert_equals(b.byteLength, 4);
+
+        // Neuter the ArrayBuffer by transferring it to a worker.
+        var w = new Worker(URL.createObjectURL(new Blob([])));
+        w.postMessage('', [b]);
+        assert_equals(b.byteLength, 0);
+
+        assert_throws(new TypeError, function() { store.put('', b); });
+        t.done();
+    },
+    'Neutered ArrayBuffer'
+);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        var store = tx.objectStore('store');
+
+        var a = new Uint8Array([1,2,3,4]);
+        assert_equals(a.length, 4);
+
+        // Neuter the ArrayBuffer by transferring it to a worker.
+        var w = new Worker(URL.createObjectURL(new Blob([])));
+        w.postMessage('', [a.buffer]);
+        assert_equals(a.length, 0);
+
+        assert_throws(new TypeError, function() { store.put('', a); });
+        t.done();
+    },
+    'Neutered ArrayBufferView'
+);
+
+</script>

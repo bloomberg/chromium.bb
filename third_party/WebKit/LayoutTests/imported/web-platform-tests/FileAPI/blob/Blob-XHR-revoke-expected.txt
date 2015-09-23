@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Revoking blob URL used with XMLHttpRequest assert_equals: expected "test" but got ""
+Harness: the test ran to completion.
+

@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+var intervalId;
+var count = 0;
+
+function testFunction()
+{
+    intervalId = setInterval(callback, 0);
+}
+
+function callback()
+{
+    if (count === 0) {
+        debugger;
+    } else if (count === 1) {
+        debugger;
+    } else {
+        clearInterval(intervalId);
+        debugger;
+    }
+    ++count;
+}
+
+function test()
+{
+    var totalDebuggerStatements = 3;
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.runAsyncCallStacksTest(totalDebuggerStatements, maxAsyncCallStackDepth);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests asynchronous call stacks for setInterval.
+</p>
+</body>
+</html>

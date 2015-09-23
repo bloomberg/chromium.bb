@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<script src="../resources/js-test.js"></script>
+<style>
+#scroller {
+    overflow: scroll;
+    height: 300px;
+    width: 300px;
+    background-color: red;
+}
+
+#scrolled {
+    height: 1000px;
+    width: 250px;
+    background-color: green;
+}
+</style>
+
+<script>
+jsTestIsAsync = true;
+
+description('This test checks that changes to the compositor\'s settings are applied correctly.');
+
+function isUsingCompositedScrolling(layer) {
+    layer = layer || JSON.parse(window.internals.layerTreeAsText(document));
+    if (layer.bounds[1] == 1000)
+        return true;
+    if (layer.children) {
+        for (var i = 0; i < layer.children.length; i++) {
+            if (isUsingCompositedScrolling(layer.children[i]))
+                return true;
+        }
+    }
+    return false;
+}
+
+window.onload = function() {
+    if (!window.internals) {
+        testFailed('This test requires window.internals');
+        return;
+    }
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+    var stateBefore = isUsingCompositedScrolling();
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    var stateAfter = isUsingCompositedScrolling();
+
+    if (!stateBefore && stateAfter) {
+        testPassed('Composited scrolling became enabled.');
+    } else {
+        testFailed('Composited scrolling did not become enabled: ' + stateBefore + ", " + stateAfter);
+    }
+    finishJSTest();
+};
+</script>
+
+<div id="scroller">
+    <div id="scrolled"></div>
+</div>

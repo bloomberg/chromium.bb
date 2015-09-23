@@ -1,0 +1,26 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: dx from [1] to [6] was [1] at 0
+PASS: dx from [1] to [6] was [2] at 0.2
+PASS: dx from [1] to [6] was [4] at 0.6
+PASS: dx from [1] to [6] was [6] at 1
+PASS: dy from [1 -2] to [6 -12] was [1 -2] at 0
+PASS: dy from [1 -2] to [6 -12] was [2 -4] at 0.2
+PASS: dy from [1 -2] to [6 -12] was [4 -8] at 0.6
+PASS: dy from [1 -2] to [6 -12] was [6 -12] at 1
+
+Web Animations API:
+PASS: dx from [1] to [6] was [-1] at -0.4
+PASS: dx from [1] to [6] was [1] at 0
+PASS: dx from [1] to [6] was [2] at 0.2
+PASS: dx from [1] to [6] was [4] at 0.6
+PASS: dx from [1] to [6] was [6] at 1
+PASS: dx from [1] to [6] was [8] at 1.4
+PASS: dy from [1 -2] to [6 -12] was [-1 2] at -0.4
+PASS: dy from [1 -2] to [6 -12] was [1 -2] at 0
+PASS: dy from [1 -2] to [6 -12] was [2 -4] at 0.2
+PASS: dy from [1 -2] to [6 -12] was [4 -8] at 0.6
+PASS: dy from [1 -2] to [6 -12] was [6 -12] at 1
+PASS: dy from [1 -2] to [6 -12] was [8 -16] at 1.4
+

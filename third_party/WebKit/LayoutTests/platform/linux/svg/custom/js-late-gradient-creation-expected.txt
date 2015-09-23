@@ -1,0 +1,22 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [33, 23, 697, 194]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Gradient on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
+        "LayoutSVGGradientStop stop",
+        "LayoutSVGGradientStop stop"
+      ]
+    }
+  ]
+}
+

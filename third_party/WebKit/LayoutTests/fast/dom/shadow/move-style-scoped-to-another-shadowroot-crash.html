@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<script>
+description("Test for crbug.com/321495: if no crash occurs, this test passes. Otherwise, fails.");
+
+var youngerShadowRoot, olderShadowRoot, style;
+
+function runTest() {
+    document.getElementById('sandbox').appendChild(
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(),
+            createShadowRoot(
+                createDOM('div', {'id': 'child'},
+                    createDOM('style', {'id': 'style', 'scoped': 'scoped'},
+                        document.createTextNode('.c3 { display: inherit; transform: rotate3d(0, 1, 1, 45deg); }'))))));
+
+    olderShadowRoot = getNodeInTreeOfTrees("host/");
+    youngerShadowRoot = getNodeInTreeOfTrees("host//");
+    style = youngerShadowRoot.getElementById('style');
+
+    olderShadowRoot.appendChild(youngerShadowRoot.getElementById('child'));
+    setTimeout('youngerShadowRoot.appendChild(style);', 0);
+}
+</script>
+</head>
+<body onload="runTest()">
+  <div class="c3"></div>
+  <div id="sandbox"></div>
+  <pre id="console"></pre>
+</body>
+</html>

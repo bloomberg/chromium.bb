@@ -1,0 +1,2 @@
+PERMISSION CLIENT: allowScriptFromSource((file test):permissionclient/resources/script.js): false
+

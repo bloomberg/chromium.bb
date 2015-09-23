@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/resource-tree/resource-tree-test.js"></script>
+<link rel="stylesheet" href="../../inspector/resource-tree/resources/styles-initial.css">
+<script>
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    // This test enumerates all resources currently registered, potentially
+    // including ones no longer reachable, but not yet garbage collected
+    // and finalized.
+    //
+    // To ensure stable test output, perform a GC right here to flush out
+    // the finalizable resources.
+    gc();
+    runTest();
+}
+
+function test()
+{
+    function format(resource)
+    {
+        return resource.resourceType().name() + " " + resource.mimeType + " " + resource.url;
+    }
+
+    InspectorTest.dumpResources(format);
+    InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="onload()">
+<p>Tests that resources panel correctly shows mime type when it loads data from memory cache.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=63701">Bug 63701</a>
+<img src="../../inspector/resource-tree/resources/empty.png">
+</body>
+</html>

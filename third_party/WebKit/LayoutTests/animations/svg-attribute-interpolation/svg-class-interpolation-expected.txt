@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: class from [old] to [new] was [old] at 0
+PASS: class from [old] to [new] was [old] at 0.2
+PASS: class from [old] to [new] was [new] at 0.6
+PASS: class from [old] to [new] was [new] at 1
+
+Web Animations API:
+PASS: class from [old] to [new] was [old] at -0.4
+PASS: class from [old] to [new] was [old] at 0
+PASS: class from [old] to [new] was [old] at 0.2
+PASS: class from [old] to [new] was [new] at 0.6
+PASS: class from [old] to [new] was [new] at 1
+PASS: class from [old] to [new] was [new] at 1.4
+

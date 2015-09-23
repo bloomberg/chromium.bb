@@ -1,0 +1,16 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Test if changing input type keeps author ShadowRoot content.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS initialWidth is not 0
+PASS widthWithShadow is not initialWidth
+PASS input1.type = "hidden"; input1.offsetWidth is 0
+PASS input1.type = "datetime-local"; input1.offsetWidth is widthWithShadow
+PASS input1.type = "range"; input1.value is "50"
+PASS eventSender.keyDown("rightArrow"); input1.value is "50"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

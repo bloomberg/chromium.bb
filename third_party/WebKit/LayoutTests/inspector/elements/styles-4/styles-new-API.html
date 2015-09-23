@@ -1,0 +1,276 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/styles-new-API.css">
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../styles/styles-test.js"></script>
+<script>
+
+function test()
+{
+    var bodyId;
+    InspectorTest.runTestSuite([
+        function test_styles(next)
+        {
+            function callback(styles)
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Computed style property count for body ===");
+                var propCount = styles.computedStyle.length;
+                InspectorTest.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
+
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Matched rules for body ===");
+                InspectorTest.dumpRuleMatchesArray(styles.matchedCSSRules);
+
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Pseudo rules for body ===");
+                for (var i = 0; i < styles.pseudoElements.length; ++i) {
+                    InspectorTest.addResult("PseudoId=" + styles.pseudoElements[i].pseudoId);
+                    InspectorTest.dumpRuleMatchesArray(styles.pseudoElements[i].matches);
+                }
+
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Inherited styles for body ===");
+                for (var i = 0; i < styles.inherited.length; ++i) {
+                    InspectorTest.addResult("Level=" + (i + 1));
+                    InspectorTest.dumpStyle(styles.inherited[i].inlineStyle);
+                    InspectorTest.dumpRuleMatchesArray(styles.inherited[i].matchedCSSRules);
+                }
+
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Inline style for body ===");
+                InspectorTest.dumpStyle(styles.inlineStyle);
+                next();
+            }
+
+            var resultStyles = {};
+
+            function computedCallback(error, computedStyle)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
+                    return;
+                }
+                resultStyles.computedStyle = computedStyle;
+            }
+
+            function matchedCallback(error, inlineStyle, attributeStyle, matchedCSSRules, pseudoElements, inherited)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
+                    return;
+                }
+
+                resultStyles.inlineStyle = inlineStyle;
+                resultStyles.matchedCSSRules = matchedCSSRules;
+                resultStyles.pseudoElements = pseudoElements;
+                resultStyles.inherited = inherited;
+            }
+
+            function nodeCallback(node)
+            {
+                bodyId = node.id;
+                var promises = [
+                    InspectorTest.CSSAgent.getComputedStyleForNode(node.id, computedCallback),
+                    InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, matchedCallback)
+                ];
+                Promise.all(promises).then(callback.bind(null, resultStyles));
+            }
+            InspectorTest.selectNodeWithId("mainBody", nodeCallback);
+        },
+
+        function test_forcedState(next)
+        {
+            InspectorTest.CSSAgent.forcePseudoState(bodyId, ["hover"]);
+            InspectorTest.CSSAgent.getMatchedStylesForNode(bodyId, matchedCallback);
+
+            function matchedCallback(error, inlineStyle, attributeStyle, matchedRules)
+            {
+                InspectorTest.addResult("=== BODY with forced :hover ===");
+                InspectorTest.dumpRuleMatchesArray(matchedRules);
+                InspectorTest.CSSAgent.forcePseudoState(bodyId, ["hover"], next);
+            }
+        },
+
+        function test_textNodeComputedStyles(next)
+        {
+            function callback(error, computedStyle)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    return;
+                }
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Computed style property count for TextNode ===");
+                var propCount = computedStyle.length;
+                InspectorTest.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
+                next();
+            }
+
+            function nodeCallback(node)
+            {
+                var textNode = node.children()[0];
+                if (textNode.nodeType() !== Node.TEXT_NODE) {
+                    InspectorTest.addResult("Failed to retrieve TextNode.");
+                    InspectorTest.completeTest();
+                    return;
+                }
+                InspectorTest.CSSAgent.getComputedStyleForNode(textNode.id, callback);
+            }
+            InspectorTest.nodeWithId("toggle", nodeCallback);
+        },
+
+        function test_tableStyles(next)
+        {
+            function setTextCallback(error, result)
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Stylesheet-for-inline-style modification result ===");
+                InspectorTest.addResult(error || null);
+                next();
+            }
+
+            function textCallback(inlineStyle, error, result)
+            {
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Stylesheet-for-inline-style text ===");
+                InspectorTest.addResult(result);
+                InspectorTest.CSSAgent.setStyleSheetText(inlineStyle.styleSheetId, "").then(setTextCallback);
+            }
+
+            function callback(error, inlineStyle, attributesStyle)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    return;
+                }
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Attributes style for table ===");
+                InspectorTest.dumpStyle(attributesStyle);
+                InspectorTest.CSSAgent.getStyleSheetText(inlineStyle.styleSheetId, textCallback.bind(this, inlineStyle));
+            }
+
+            function nodeCallback(node)
+            {
+                InspectorTest.CSSAgent.getInlineStylesForNode(node.id, callback);
+            }
+            InspectorTest.nodeWithId("thetable", nodeCallback);
+        },
+
+        function test_addRule(next)
+        {
+            function didGetStyles(error, inlineStyle, attributeStyle, matchedCSSRules)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    return;
+                }
+                InspectorTest.addResult("");
+                InspectorTest.addResult("=== Matched rules after rule added ===");
+                InspectorTest.dumpRuleMatchesArray(matchedCSSRules);
+                next();
+            }
+
+            function didSetStyleText(error, style)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    return;
+                }
+                InspectorTest.CSSAgent.getMatchedStylesForNode(bodyId, didGetStyles);
+            }
+
+            function ruleAdded(error, rule)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    return;
+                }
+                InspectorTest.CSSAgent.setStyleText(rule.style.styleSheetId, {
+                    startLine: rule.style.range.startLine,
+                    startColumn: rule.style.range.startColumn,
+                    endLine: rule.style.range.startLine,
+                    endColumn: rule.style.range.startColumn
+                }, "font-family: serif;", didSetStyleText);
+            }
+
+            function viaInspectorStyleSheetCreated(error, styleSheetId)
+            {
+                if (error) {
+                    InspectorTest.addResult("error: " + error);
+                    InspectorTest.completeTest();
+                    return;
+                }
+                var range = {
+                    startLine: 0,
+                    startColumn: 0,
+                    endLine: 0,
+                    endColumn: 0
+                };
+                InspectorTest.CSSAgent.addRule(styleSheetId, "body {}", range, ruleAdded);
+            }
+
+            var frameId = InspectorTest.resourceTreeModel.mainFrame.id;
+            InspectorTest.CSSAgent.createStyleSheet(frameId, viaInspectorStyleSheetCreated.bind(this));
+        },
+    ]);
+
+    function loadAndDumpStyleSheet(styleSheetId, continuation, error)
+    {
+        if (error) {
+            InspectorTest.addResult("error: " + error);
+            InspectorTest.completeTest();
+            return;
+        }
+
+        function styleSheetLoaded(error, text)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                return;
+            }
+            InspectorTest.addResult("");
+            InspectorTest.addResult("StyleSheet: '" + text + "'");
+            if (continuation)
+                continuation(styleSheetId);
+        }
+
+        InspectorTest.CSSAgent.getStyleSheetText(styleSheetId, styleSheetLoaded);
+    }
+}
+
+</script>
+
+<style>
+
+/* An inline stylesheet */
+body.mainpage {
+    text-decoration: none; /* at least one valid property is necessary for WebCore to match a rule */
+    ;badproperty: 1badvalue1;
+}
+
+body.mainpage {
+    prop1: val1;
+    prop2: val2;
+}
+
+body:hover {
+  color: #CDE;
+}
+</style>
+</head>
+
+<body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
+<p>
+Tests that InspectorCSSAgent API methods work as expected.
+</p>
+<table width="50%" id="thetable">
+</table>
+<h1 id="toggle">H1</h1>
+</body>
+</html>

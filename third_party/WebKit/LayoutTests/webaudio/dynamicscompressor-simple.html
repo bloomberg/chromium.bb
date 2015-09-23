@@ -1,0 +1,82 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script type="text/javascript" src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <div id="description"></div>
+    <div id="console"></div>
+    
+    <script>
+      description("Test pre-emphasis in DynamicsCompressor is removed");
+      var context;
+      var sampleRate = 44100;
+      var lengthInSeconds = 1;
+      var renderedData;
+      // This threshold experimentally determined. It depends on the the gain value of the gain node
+      // below and the dynamics compressor.  When the DynamicsCompressor had the pre-emphasis
+      // filters, the peak value is about 0.21.  Without it, the peak is about 0.84.
+      var peakThreshold = 0.83;
+
+      function checkResult(event) {
+        var renderedBuffer = event.renderedBuffer;
+        renderedData = renderedBuffer.getChannelData(0);
+        // Search for a peak in the last part of the data.
+        var startSample = sampleRate * (lengthInSeconds - .1);
+        var endSample = renderedData.length;
+        var k;
+        var peak = -1;
+
+        for (k = startSample; k < endSample; ++k) {
+          var sample = Math.abs(renderedData[k]);
+          if (peak < sample)
+             peak = sample;
+        }
+
+        if (peak >= peakThreshold) {
+          testPassed("Pre-emphasis effect not applied as expected..");
+        } else {
+          testFailed("Pre-emphasis caused output to be decreased to " + peak
+                     + " (expected >= " + peakThreshold + ")");
+        }
+
+        finishJSTest();
+      }
+
+      function runTest() {
+        if (!window.testRunner) {
+          testRunner.dumpAsTest();
+          testRunner.waitUntilDone();
+        }
+
+        window.jsTestIsAsync = true;
+      
+        context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+        // Connect an oscillator to a gain node to the compressor.  The
+        // oscillator frequency is set to a high value for the (original)
+        // emphasis to kick in. The gain is a little extra boost to get the
+        // compressor enabled.
+        //
+        var osc = context.createOscillator();
+        osc.frequency.value = 15000;
+        var gain = context.createGain();
+        gain.gain.value = 1.5;
+        var compressor = context.createDynamicsCompressor();
+        osc.connect(gain);
+        gain.connect(compressor);
+        compressor.connect(context.destination);
+        osc.start();
+        context.oncomplete = checkResult;
+        context.startRendering();
+      }
+      
+      runTest();
+      successfullyParsed = true;
+
+    </script>
+    
+  </body>
+</html>

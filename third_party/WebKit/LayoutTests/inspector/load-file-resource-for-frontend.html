@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+function test()
+{
+    function testLoadForURL(url, next)
+    {
+        var documentURL = InspectorTest.resourceTreeModel.mainFrame.url;
+        var lastIndexOfSlash = documentURL.lastIndexOf("/");
+        var urlPrefix = documentURL.substr(0, lastIndexOfSlash + 1);
+        var fullURL = urlPrefix + url;
+        InspectorTest.addResult("Loading resource from " + url);
+
+        WebInspector.ResourceLoader.load(fullURL, null, callback);
+
+        function callback(statusCode, headers, content)
+        {
+            if (!content)
+                InspectorTest.addResult("Failed: " + statusCode);
+            else {
+                InspectorTest.addResult("Content: " + content);
+            }
+            InspectorTest.runAfterPendingDispatches(next);
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testResourceFromFileScheme(next)
+        {
+            testLoadForURL("resources/file-resource-to-load-for-frontend.txt", next);
+        },
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

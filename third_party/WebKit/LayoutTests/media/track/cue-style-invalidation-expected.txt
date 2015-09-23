@@ -1,0 +1,17 @@
+Check that descendant style invalidation works with ::cue selectors.
+EVENT(canplaythrough)
+EVENT(seeked)
+EXPECTED (getComputedStyle(cueNode).backgroundColor == 'rgb(255, 0, 0)') OK
+EXPECTED (internals.updateStyleAndReturnAffectedElementCount() == '8') OK
+EXPECTED (getComputedStyle(cueNode).backgroundColor == 'rgb(0, 128, 0)') OK
+EXPECTED (getComputedStyle(cNode).backgroundColor == 'rgb(255, 0, 0)') OK
+EXPECTED (internals.updateStyleAndReturnAffectedElementCount() == '1') OK
+EXPECTED (getComputedStyle(cNode).backgroundColor == 'rgb(0, 128, 0)') OK
+EXPECTED (getComputedStyle(iNode).backgroundColor == 'rgb(255, 0, 0)') OK
+EXPECTED (internals.updateStyleAndReturnAffectedElementCount() == '1') OK
+EXPECTED (getComputedStyle(iNode).backgroundColor == 'rgb(0, 128, 0)') OK
+EXPECTED (getComputedStyle(bNode).backgroundColor == 'rgb(255, 0, 0)') OK
+EXPECTED (internals.updateStyleAndReturnAffectedElementCount() == '1') OK
+EXPECTED (getComputedStyle(bNode).backgroundColor == 'rgb(0, 128, 0)') OK
+END OF TEST
+

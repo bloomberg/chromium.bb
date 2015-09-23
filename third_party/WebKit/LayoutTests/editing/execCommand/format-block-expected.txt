@@ -1,0 +1,69 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This test uses FormatBlock to modify three of the paragraphs below
+
+Before FormatBlock:
+| "
+"
+| <p>
+|   id="item1"
+|   "Make Pre"
+| "
+"
+| <br>
+| "
+"
+| <div>
+|   "Foo"
+|   <br>
+|   <span>
+|     id="item2"
+|     "Make h1"
+|   <br>
+|   "baz"
+| "
+"
+| <br>
+| "
+"
+| <address>
+|   id="item3"
+|   "Attempt to apply the current formatting here"
+| "
+"
+
+After FormatBlock:
+| "
+"
+| <pre>
+|   "Make Pre"
+| "
+"
+| <br>
+| "
+"
+| <div>
+|   "Foo"
+|   <br>
+|   <h1>
+|     <span>
+|       id="item2"
+|       "Make h1"
+|   "baz"
+| "
+"
+| <br>
+| "
+"
+| <address>
+|   id="item3"
+|   "<#selection-caret>Attempt to apply the current formatting here"
+| "
+"

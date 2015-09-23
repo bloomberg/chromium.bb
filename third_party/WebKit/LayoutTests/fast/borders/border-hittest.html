@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<style>
+img{
+    background-color:red;
+    border-radius: 50px;
+}
+</style>
+</head>
+<body>
+<img src="./resources/mask.png" width="100px" height="100px" />
+<div id="console"></div>
+</body>
+<script>
+description('If this test passes, area outside is body element.');
+var element = document.elementFromPoint(100, 100);
+shouldBe('element.nodeName', '"BODY"');
+</script>
+</html>

@@ -1,0 +1,10 @@
+Text to check is divided into chunks to make sure checking some huge text does not freeze the page/UI. With the asynchronous spell checker the whole text is checked. To test manaully trigger spell checking of the editable (e.g. by copy+paste) with unified and asynchronous checker on. There should be 6 misspellings marked.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.markerCountForNode(testEditable.childNodes[0], "spelling") became 6
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

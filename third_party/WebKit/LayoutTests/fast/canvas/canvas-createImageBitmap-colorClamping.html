@@ -1,0 +1,32 @@
+<html>
+<body>
+<canvas id="c"></canvas>
+<script>
+if (window.testRunner)
+      testRunner.waitUntilDone();
+
+var aCanvas = document.createElement("canvas");
+aCanvas.setAttribute("width", "300");
+aCanvas.setAttribute("height", "300");
+var aCtx = aCanvas.getContext("2d");
+aCtx.fillStyle = 'red';
+aCtx.fillRect(0, 0, 300, 300);
+aCtx.fillStyle = 'green';
+aCtx.fillRect(100, 100, 100, 100);
+
+var canvas = document.getElementById("c");
+canvas.setAttribute("width", "250");
+canvas.setAttribute("height", "200");
+var ctx = canvas.getContext("2d");
+
+createImageBitmap(aCtx, 100, 100, 100, 100).then(function (imageBitmap) {
+    ctx.drawImage(imageBitmap, 0, 0);
+    ctx.drawImage(imageBitmap, 120, 0, 150, 150);
+    if (window.testRunner)
+         testRunner.notifyDone();
+});
+
+</script>
+<p>Two green squares with no color bleeding should be visible.</p>
+</body>
+</html>

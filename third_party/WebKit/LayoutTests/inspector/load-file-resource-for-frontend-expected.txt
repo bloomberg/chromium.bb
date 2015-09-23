@@ -1,0 +1,6 @@
+
+Running: testResourceFromFileScheme
+Loading resource from resources/file-resource-to-load-for-frontend.txt
+Content: SUCCESS
+
+

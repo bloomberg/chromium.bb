@@ -1,0 +1,20 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (10,9) size 240x28
+    LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+      LayoutSVGResourceFilter {filter} [id="filter"] [filterUnits=objectBoundingBox] [primitiveUnits=userSpaceOnUse]
+        [feGaussianBlur stdDeviation="1.00, 1.00"]
+          [SourceGraphic]
+    LayoutSVGText {text} at (30,12) size 200x22 contains 1 chunk(s)
+      [filter="filter"] LayoutSVGResourceFilter {filter} at (10,9.80) size 239.93x26.40
+      LayoutSVGInlineText {#text} at (0,0) size 132x22
+        [filter="filter"] LayoutSVGResourceFilter {filter} at (16.89,9.80) size 157.29x26.40
+        chunk 1 text run 1 at (30.00,30.00) startOffset 0 endOffset 19 width 131.08: "This is for filter "
+      LayoutSVGTSpan {tspan} at (0,0) size 64x22
+        LayoutSVGInlineText {#text} at (131,0) size 64x22
+          [filter="filter"] LayoutSVGResourceFilter {filter} at (154.69,9.80) size 76.63x26.40
+          chunk 1 text run 1 at (161.08,30.00) startOffset 0 endOffset 9 width 63.87: "on filter"
+      LayoutSVGInlineText {#text} at (194,0) size 5x22
+        [filter="filter"] LayoutSVGResourceFilter {filter} at (224.44,9.80) size 6x26.40
+        chunk 1 text run 1 at (224.95,30.00) startOffset 0 endOffset 1 width 5.00: "."

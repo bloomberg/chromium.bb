@@ -1,0 +1,63 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x332
+  LayoutBlockFlow {HTML} at (0,0) size 800x332
+    LayoutBlockFlow {BODY} at (8,8) size 784x316
+      LayoutBlockFlow (anonymous) at (0,0) size 784x244
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,244) size 784x72
+        LayoutInline {SPAN} at (0,0) size 377x17
+          LayoutText {#text} at (0,0) size 377x17
+            text run at (0,0) width 377: "Rendering vertical line-positioned cues with Japanese text."
+          LayoutBR {BR} at (376,0) size 1x17
+        LayoutInline {SPAN} at (0,0) size 163x17
+          LayoutText {#text} at (0,18) size 163x17
+            text run at (0,18) width 163: "EVENT(canplaythrough)"
+          LayoutBR {BR} at (162,18) size 1x17
+        LayoutInline {SPAN} at (0,0) size 107x17
+          LayoutText {#text} at (0,36) size 107x17
+            text run at (0,36) width 107: "EVENT(seeked)"
+          LayoutBR {BR} at (106,36) size 1x17
+        LayoutInline {SPAN} at (0,0) size 100x17
+          LayoutText {#text} at (0,54) size 100x17
+            text run at (0,54) width 100: "END OF TEST"
+          LayoutBR {BR} at (99,54) size 1x17
+layer at (8,8) size 320x240
+  LayoutVideo {VIDEO} at (0,0) size 320x240
+layer at (8,8) size 320x240
+  LayoutBlockFlow (relative positioned) {DIV} at (0,0) size 320x240 [color=#FFFFFF]
+layer at (12,8) size 15x240 scrollX 2.00 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (4,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 1: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (31,8) size 15x240 scrollX 2.00 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (23,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 2: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (256,8) size 15x240 scrollX 2.00 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (248,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 3: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (237,8) size 15x240 scrollX 2.00 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (229,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 4: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (309,8) size 15x240 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (301,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 5: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (290,8) size 15x240 scrollWidth 17
+  LayoutBlockFlow (positioned) {DIV} at (282,0) size 15x240
+    LayoutInline {DIV} at (0,0) size 19x116 [bgcolor=#000000CC]
+      LayoutText {#text} at (0,64) size 15x112
+        text run at (0,64) width 111: "Cue 6: \x{79C1}\x{306F}\x{7ACB}\x{6D3E}\x{306A}\x{4EBA}"
+layer at (8,8) size 320x240
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x240
+    LayoutBlockFlow {DIV} at (0,205) size 320x35
+layer at (8,8) size 320x205
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 320x205

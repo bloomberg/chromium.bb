@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: numOctaves from [1] to [7] was [1] at 0
+PASS: numOctaves from [1] to [7] was [2] at 0.2
+PASS: numOctaves from [1] to [7] was [5] at 0.6
+PASS: numOctaves from [1] to [7] was [7] at 1
+
+Web Animations API:
+PASS: numOctaves from [1] to [7] was [-1] at -0.4
+PASS: numOctaves from [1] to [7] was [1] at 0
+PASS: numOctaves from [1] to [7] was [2] at 0.2
+PASS: numOctaves from [1] to [7] was [5] at 0.6
+PASS: numOctaves from [1] to [7] was [7] at 1
+PASS: numOctaves from [1] to [7] was [9] at 1.4
+

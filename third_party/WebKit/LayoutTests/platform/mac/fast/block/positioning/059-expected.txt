@@ -1,0 +1,30 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x0
+  LayoutBlockFlow {HTML} at (0,0) size 800x0
+layer at (8,8) size 784x54
+  LayoutBlockFlow (positioned) {BODY} at (8,8) size 784x54
+    LayoutBlockFlow {DIV} at (0,0) size 784x54
+      LayoutText {#text} at (0,0) size 131x18
+        text run at (0,0) width 131: "You should see two "
+      LayoutInline {I} at (0,0) size 114x18
+        LayoutText {#text} at (130,0) size 114x18
+          text run at (130,0) width 114: "vertically stacked"
+      LayoutText {#text} at (243,0) size 781x54
+        text run at (243,0) width 160: " green rectangles below. "
+        text run at (402,0) width 184: "Each one is 100 pixels wide "
+        text run at (585,0) width 119: "and 50 pixels tall. "
+        text run at (703,0) width 63: "If the two"
+        text run at (0,18) width 396: "green rectangles are on the same line, then the test has failed. "
+        text run at (395,18) width 269: "This is a test of section 10.3.7 in CSS2.1. "
+        text run at (663,18) width 118: "In particular it is a"
+        text run at (0,36) width 224: "test of the shrink-to-fit algorithm's "
+        text run at (223,36) width 254: "preferred minimum width computation."
+layer at (8,62) size 0x0
+  LayoutBlockFlow (positioned) {DIV} at (0,54) size 0x0
+layer at (8,62) size 100x108
+  LayoutBlockFlow (positioned) {DIV} at (0,0) size 100x108
+    LayoutBlockFlow {SPAN} at (0,0) size 100x50 [bgcolor=#008000]
+    LayoutText {#text} at (0,0) size 0x0
+    LayoutBlockFlow {SPAN} at (0,54) size 100x50 [bgcolor=#008000]
+    LayoutText {#text} at (0,0) size 0x0

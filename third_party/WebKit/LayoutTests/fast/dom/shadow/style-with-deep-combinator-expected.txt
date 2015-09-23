@@ -1,0 +1,34 @@
+CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Test for /deep/ combinator, http://crbug.com/309504.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("target2")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("target2")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/host3/target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/host3/target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/host2/host3/target")) is "rgb(0, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("child")) is not "rgb(255, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("inner/target")) is not "rgb(255, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host//target")) is "rgb(0, 128, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/x-bar-host/x-bar-target")) is not "rgb(255, 0, 0)"
+PASS borderColorOf(getNodeInTreeOfTrees("host/x-bar-host/x-zot-host/x-zot-target")) is not "rgb(255, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

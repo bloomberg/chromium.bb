@@ -1,0 +1,60 @@
+Tests asynchronous call stacks in debugger.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) animFrame1 (async-callstack.html:30)
+    [requestAnimationFrame]
+    0) timeout1 (async-callstack.html:19)
+    1) innerTestFunction (async-callstack.html:11)
+    [setTimeout]
+    0) testFunction (async-callstack.html:13)
+
+Call stack:
+    0) animFrame2 (async-callstack.html:47)
+    [requestAnimationFrame]
+    0) animFrame1 (async-callstack.html:32)
+    [requestAnimationFrame]
+    0) timeout1 (async-callstack.html:19)
+    1) innerTestFunction (async-callstack.html:11)
+    [setTimeout]
+    0) testFunction (async-callstack.html:13)
+
+Call stack:
+    0) interval1 (async-callstack.html:37)
+    1) innerInterval1 (async-callstack.html:24)
+    [setInterval]
+    0) timeout1 (async-callstack.html:20)
+    1) innerTestFunction (async-callstack.html:11)
+    [setTimeout]
+    0) testFunction (async-callstack.html:13)
+
+Call stack:
+    0) timeout1 (async-callstack.html:18)
+    1) innerTestFunction (async-callstack.html:11)
+    [setTimeout]
+    0) testFunction (async-callstack.html:13)
+
+Call stack:
+    0) timeout2 (async-callstack.html:42)
+    [setTimeout]
+    0) animFrame1 (async-callstack.html:31)
+    [requestAnimationFrame]
+    0) timeout1 (async-callstack.html:19)
+    1) innerTestFunction (async-callstack.html:11)
+    [setTimeout]
+    0) testFunction (async-callstack.html:13)
+
+Call stack:
+    0) timeout3 (async-callstack.html:61)
+    1) longTail0 (async-callstack.html:50)
+    [setTimeout]
+    0) longTail1 (:1)
+    [setTimeout]
+    0) longTail2 (:2)
+    [setTimeout]
+    0) longTail3 (:3)
+    [setTimeout]
+    0) longTail4 (:4)
+
+

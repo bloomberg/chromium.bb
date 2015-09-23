@@ -1,0 +1,35 @@
+<!doctype html>
+<style>
+.start {
+    -webkit-animation: anim 1ms;
+}
+
+@-webkit-keyframes anim {
+    0% {
+        transform: translate3d(0, 0, 1px);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+</style>
+<body>
+<script>
+if (window.testRunner) {
+  testRunner.dumpAsText();
+  testRunner.waitUntilDone();
+  document.body.addEventListener('webkitAnimationEnd', function() {
+    testRunner.notifyDone();
+  });
+}
+document.body.textContent = 'FAIL (expected if outside the virtual/threaded suite)';
+requestAnimationFrame(function() {
+  document.body.classList.add('start');
+  document.body.offsetTop;
+  setTimeout(function() {
+    document.body.addEventListener('webkitAnimationStart', function() {
+      document.body.textContent = 'PASS';
+    });
+  }, 0);
+});
+</script>

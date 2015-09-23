@@ -1,0 +1,64 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+
+click #B
+
+event.path on node #B (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #H (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #SR-MIDDLE (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #F (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #SR-YOUNGEST (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #A (target: #B)
+#B, #H, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+click #A/E
+
+event.path on node #E (target: #E)
+#E, #SR-OLDEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #SR-OLDEST (target: #E)
+#E, #SR-OLDEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #A (target: #A)
+#E, #SR-OLDEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+click #A//I
+
+event.path on node #I (target: #I)
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 10
+
+event.path on node #SR-MIDDLE (target: #I)
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 10
+
+event.path on node #F (target: #I)
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 10
+
+event.path on node #SR-YOUNGEST (target: #I)
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 10
+
+event.path on node #A (target: #A)
+#I, #SR-MIDDLE, #F, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 10
+
+click #A///G
+
+event.path on node #G (target: #G)
+#G, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #SR-YOUNGEST (target: #G)
+#G, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #A (target: #A)
+#G, #SR-YOUNGEST, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

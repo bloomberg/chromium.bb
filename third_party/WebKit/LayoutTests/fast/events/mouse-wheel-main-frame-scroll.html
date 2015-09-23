@@ -1,0 +1,17 @@
+<!DOCTYPE HTML>
+<html style="height:100%; overflow:scroll;">
+<head>
+<script>
+function test() {
+    if (window.eventSender) {
+        eventSender.mouseMoveTo(50, 50);
+        eventSender.continuousMouseScrollBy(0, -100);
+    }
+}
+</script>
+</head>
+<body onload="test()">
+<div style="height:1000px;">
+</div>
+</body>
+</html>

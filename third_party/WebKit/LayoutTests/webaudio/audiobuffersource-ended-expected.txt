@@ -1,0 +1,6 @@
+Tests that AudioBufferSourceNode calls its onended EventListener.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS source.onended called.
+

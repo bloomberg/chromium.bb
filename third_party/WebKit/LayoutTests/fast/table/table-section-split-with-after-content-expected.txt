@@ -1,0 +1,14 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x16
+  LayoutBlockFlow {HTML} at (0,0) size 800x16
+    LayoutBlockFlow {BODY} at (8,8) size 784x0
+      LayoutBlockFlow {DIV} at (0,0) size 784x0
+        LayoutTable (anonymous) at (0,0) size 0x0
+          LayoutTableSection {THEAD} at (0,0) size 0x0
+        LayoutBlockFlow {DIV} at (0,0) size 784x0
+        LayoutTable (anonymous) at (0,0) size 0x0
+          LayoutTableSection (anonymous) at (0,0) size 0x0
+            LayoutTableRow {<pseudo:after>} at (0,0) size 0x0
+              LayoutTableCell (anonymous) at (0,0) size 0x0 [r=0 c=0 rs=1 cs=1]
+                LayoutTextFragment (anonymous) at (0,0) size 0x0

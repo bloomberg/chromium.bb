@@ -1,0 +1,37 @@
+<!-- Based on fast/repaint/add-table-overpaint.html -->
+
+<!DOCTYPE html>
+<html>
+<body onload="runPaintInvalidationTest()" style="margin: 0px">
+<script src="resources/paint-invalidation-test.js"></script>
+<style>
+td {
+  height: 150px;
+  width: 150px;
+  background-color: blue;
+}
+</style>
+<!-- This test adds 3 tables do the document.  Adding the 3rd table should not cause the first table to repaint. -->
+<div id="container"></div>
+<script>
+function addTable() {
+	var div = document.createElement('div');
+	document.getElementById('container').appendChild(div);
+  div.innerHTML = '<table><td></td></table>';
+}
+addTable();
+addTable();
+window.expectedPaintInvalidationObjects = [
+  "LayoutBlockFlow DIV",
+  "LayoutTable TABLE",
+  "LayoutTableCell TD",
+  "LayoutTableSection TBODY",
+  "LayoutTableRow TR",
+  "LayoutTableCell TD",
+];
+function paintInvalidationTest() {
+  addTable();
+}
+</script>
+</body>
+</html>

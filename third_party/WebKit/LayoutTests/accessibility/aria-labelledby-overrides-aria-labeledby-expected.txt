@@ -1,0 +1,10 @@
+This tests that if both aria-labeledby and aria-labelledby are used (for reasons best known to the page author), then aria-labelledby is preferred.
+
+Delta Eta Eta Using aria-labelledby Using aria-labeledby
+usingLabelledby.deprecatedTitle: [AXTitle: Delta]
+usingLabelledby.deprecatedDescription: [AXDescription: Using aria-labelledby]
+usingLabeledby.deprecatedTitle: [AXTitle: Eta]
+usingLabeledby.deprecatedDescription: [AXDescription: Using aria-labeledby]
+usingLabeledbyAndLabelledby.deprecatedTitle: [AXTitle: Eta]
+usingLabeledbyAndLabelledby.deprecatedDescription: [AXDescription: Using aria-labelledby]
+

@@ -1,0 +1,25 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+When we modify host children and get distributed nodes in nested ShadowDOM, distribution should occur from the host.
+
+Adds a div to ShadowRoot.
+PASS content.getDistributedNodes().length is 2
+PASS content.getDistributedNodes().item(0) is div1
+PASS content.getDistributedNodes().item(1) is addedDiv
+
+Adds a div as fallback content, which should not be used.
+PASS content.getDistributedNodes().length is 2
+PASS content.getDistributedNodes().item(0) is div1
+PASS content.getDistributedNodes().item(1) is addedDiv
+
+Removes the first added div
+PASS content.getDistributedNodes().length is 1
+PASS content.getDistributedNodes().item(0) is div1
+
+Removes the second added div
+PASS content.getDistributedNodes().length is 1
+PASS content.getDistributedNodes().item(0) is div1
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

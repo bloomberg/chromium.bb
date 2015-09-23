@@ -1,0 +1,8 @@
+Test passes if it does not induce a crash.
+This is a testharness.js-based test.
+PASS , creating the cue 
+FAIL , > assert_false: hasChildNodes() expected false got true
+PASS ,  
+PASS , x\0 
+Harness: the test ran to completion.
+

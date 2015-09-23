@@ -1,0 +1,69 @@
+Test getting and setting nonstable css properties to non-default values
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+el.style.setProperty('shape-margin', '10px')
+el.style.getPropertyValue('shape-margin') is 10px
+getComputedStyle(el).getPropertyValue('shape-margin') is 10px
+
+el.style.setProperty('shape-outside', 'circle(10px at 10px 10px)')
+el.style.getPropertyValue('shape-outside') is circle(10px at 10px 10px)
+getComputedStyle(el).getPropertyValue('shape-outside') is circle(10px at 10px 10px)
+
+el.style.setProperty('grid-auto-columns', 'auto')
+el.style.getPropertyValue('grid-auto-columns') is 
+getComputedStyle(el).getPropertyValue('grid-auto-columns') is 
+
+el.style.setProperty('grid-auto-rows', 'auto')
+el.style.getPropertyValue('grid-auto-rows') is 
+getComputedStyle(el).getPropertyValue('grid-auto-rows') is 
+
+el.style.setProperty('grid-template-columns', 'min-content')
+el.style.getPropertyValue('grid-template-columns') is 
+getComputedStyle(el).getPropertyValue('grid-template-columns') is 
+
+el.style.setProperty('grid-template-rows', 'max-content')
+el.style.getPropertyValue('grid-template-rows') is 
+getComputedStyle(el).getPropertyValue('grid-template-rows') is 
+
+el.style.setProperty('grid-column-start', 'auto')
+el.style.getPropertyValue('grid-column-start') is 
+getComputedStyle(el).getPropertyValue('grid-column-start') is 
+
+el.style.setProperty('grid-column-end', '2')
+el.style.getPropertyValue('grid-column-end') is 
+getComputedStyle(el).getPropertyValue('grid-column-end') is 
+
+el.style.setProperty('grid-row-start', '1')
+el.style.getPropertyValue('grid-row-start') is 
+getComputedStyle(el).getPropertyValue('grid-row-start') is 
+
+el.style.setProperty('grid-column', 'auto')
+el.style.getPropertyValue('grid-column') is 
+getComputedStyle(el).getPropertyValue('grid-column') is 
+
+el.style.setProperty('grid-row', '1')
+el.style.getPropertyValue('grid-row') is 
+getComputedStyle(el).getPropertyValue('grid-row') is 
+
+el.style.setProperty('grid-area', '2')
+el.style.getPropertyValue('grid-area') is 
+getComputedStyle(el).getPropertyValue('grid-area') is 
+
+el.style.setProperty('grid-auto-flow', 'column')
+el.style.getPropertyValue('grid-auto-flow') is 
+getComputedStyle(el).getPropertyValue('grid-auto-flow') is 
+
+el.style.setProperty('grid-template-areas', '"test"')
+el.style.getPropertyValue('grid-template-areas') is 
+getComputedStyle(el).getPropertyValue('grid-template-areas') is 
+
+el.style.setProperty('text-justify', 'distribute')
+el.style.getPropertyValue('text-justify') is 
+getComputedStyle(el).getPropertyValue('text-justify') is 
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

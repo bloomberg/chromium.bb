@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+<head>
+<title>Repaint test for crbug.com/222851</title>
+<script>
+if (window.internals) {
+    // Avoid the noise caused by change of scrollbar existence.
+    internals.settings.setOverlayScrollbarsEnabled(true);
+    internals.settings.setMockScrollbarsEnabled(true);
+}
+</script>
+</head>
+<body style="background-color: #3F3F3F;">
+  <div style="border-radius: 150px; background-color: #EFEFEF; width: 90%; padding: 5em; margin: 0 auto;">
+	<div style="border-radius: 5px; border: solid 3px #367CAF; width: 85%; margin: 0 auto;">
+	  <div class="notARealClass" style="background-color: #367CAF; height: 3em; cursor: pointer;">		
+	  </div>
+	  <div id="target" style="width: 100%; height: 2px;">
+	  </div>
+	</div>
+  </div>
+</body>
+</html>

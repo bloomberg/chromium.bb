@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#multicolumn
+{
+    display: block;
+    -moz-column-width: 0;
+    -o-column-width: 0;
+    -webkit-column-width: 0;
+    column-width: 0;
+}
+</style>
+<script src="../../resources/js-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+</script>
+</head>
+<body>
+<div id="multicolumn"></div>
+</body>
+<script>
+description("Test for column-width property with zero value");
+var divElement = document.getElementById("multicolumn");
+shouldBe('getComputedStyle(divElement).webkitColumnWidth', '"auto"');
+</script>
+</html>

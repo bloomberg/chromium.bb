@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../debugger-test.js"></script>
+<script src="../../console-test.js"></script>
+
+<script>
+
+function installWorker()
+{
+    new Worker("resources/worker-compiled.js");
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.evaluateInPage("installWorker()");
+        InspectorTest.waitUntilPaused(paused);
+        InspectorTest.addSniffer(WebInspector.CompilerScriptMapping.prototype, "_sourceMapLoaded", sourceMapLoaded);
+    }
+
+    var callFrames;
+    var callbacksLeft = 2;
+
+    function paused(callFramesParam)
+    {
+        callFrames = callFramesParam;
+        maybeFinishTest();
+    }
+
+    function sourceMapLoaded()
+    {
+        maybeFinishTest();
+    }
+
+    function maybeFinishTest()
+    {
+        if (--callbacksLeft)
+            return;
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.completeDebuggerTest();
+    }
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests stopping in debugger in the worker with source mapping.</p>
+</body>
+</html>

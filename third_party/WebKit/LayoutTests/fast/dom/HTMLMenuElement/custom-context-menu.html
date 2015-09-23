@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<button id="button" style="height: 100px; width: 100px;">
+</button>
+<button id="button_with_contextmenu" contextmenu="menu_id" style="height: 100px; width: 100px;">
+    <menu id="menu_id" type="PopUp">
+        <!-- Test removal of separator at the start. -->
+        <hr>
+        <menuitem label="Item1"></menuitem>
+        <!-- Test disabled menuitem. -->
+        <menuitem label="Item2" disabled></menuitem>
+        <!-- Test addition of separator for <hr>. -->
+        <hr>
+        <menuitem label="Item3"></menuitem>
+        <!-- Test child menu with label. -->
+        <menu label="Submenu">
+            <menuitem label="Item4"></menuitem>
+            <menu label="Deeper submenu">
+                <!-- Test removal of separator at the start inside submenu. -->
+                <hr>
+                <menuitem label="Item5"></menuitem>
+                <hr>
+                <menuitem label="Item6"></menuitem>
+                <!-- Test removal of separator at the end inside submenu. -->
+                <hr>
+            </menu>
+        </menu>
+        <menuitem label="Item7"></menuitem>
+        <!-- Test child menu without label. -->
+        <menu>
+            <menuitem label="Item8"></menuitem>
+            <!-- Test child menu with empty label. -->
+            <menu label="">
+                <menuitem label="Item9"></menuitem>
+                <menuitem label="Item10"></menuitem>
+            </menu>
+            <menuitem label="Item11"></menuitem>
+            <menuitem label="Item12"></menuitem>
+        </menu>
+        <!-- Test collapsing two or more adjacent separators. -->
+        <hr>
+        <hr>
+        <hr>
+        <hr>
+        <!-- Test menuitem menu without label. -->
+        <menuitem></menuitem>
+        <!-- Test menuitem menu with empty label. -->
+        <menuitem label=""></menuitem>
+        <menuitem label="Item13"></menuitem>
+        <!-- Test menuitem of type "checkbox" without "checked" attribute. -->
+        <menuitem type="checkbox" label="Item14"></menuitem>
+        <!-- Test menuitem of type "checkbox" with "checked" attribute. -->
+        <menuitem type="checkbox" label="Item15" checked></menuitem>
+        <!-- Test default menuitem with "checked" attribute. -->
+        <menuitem label="Item16" checked></menuitem>
+        <!-- Test menuitem of type "radio" with "checked" attribute. -->
+        <menuitem type="radio" radiogroup="group" label="Item17"></menuitem>
+        <menuitem type="radio" radiogroup="group" label="Item18" checked></menuitem>
+        <menuitem type="radio" radiogroup="group" label="Item19"></menuitem>
+        <!-- Test removal of separator at the end. -->
+        <hr>
+    </menu>
+</button>
+<!-- Test with menu element without type attribute specified. -->
+<button id="button_1" contextmenu="menu_without_type" style="height: 100px; width: 100px;">
+    <menu id="menu_without_type">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test cancelling show event. -->
+<button id="button_2" contextmenu="menu_2" style="height: 100px; width: 100px;">
+    <menu id="menu_2" type="popup">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test removing menu element inside show event handler. -->
+<button id="button_3" contextmenu="menu_3" style="height: 100px; width: 100px;">
+    <menu id="menu_3" type="popup">
+        <menuitem label="Item1"></menuitem>
+        <menuitem label="Item2"></menuitem>
+        <menuitem label="Item3"></menuitem>
+    </menu>
+</button>
+<!-- Test with menu element without any children. -->
+<button id="button_4" contextmenu="menu_4" style="height: 100px; width: 100px;">
+    <menu id="menu_4" type="popup">
+    </menu>
+</button>
+<!-- Test if an element A has a parent element, then A's assigned context menu is the assigned context menu of its parent element. -->
+<div contextmenu="menu_5">
+    <div>
+        <button id="button_5" style="height: 100px; width: 100px;"></button>
+    </div>
+    <menu id="menu_5" type="popup">
+        <menuitem label="Item1">
+        <menuitem label="Item2">
+        <menuitem label="Item3">
+    </menu>
+</div>
+<script>
+if (!window.eventSender)
+    debug("This test requires window.eventSender.")
+
+function contextClickAndGetMenuItems(element) {
+    var x = element.offsetParent.offsetLeft + element.offsetLeft + 4;
+    var y = element.offsetParent.offsetTop + element.offsetTop + element.offsetHeight / 2;
+    eventSender.mouseMoveTo(x, y);
+    return eventSender.contextClick();
+}
+
+function cancel(event) {
+    event.preventDefault();
+}
+
+function removeMenu(event) {
+    event.target.remove();
+}
+
+description("Tests the custom context menu items.");
+var button = document.getElementById("button");
+var items = contextClickAndGetMenuItems(button);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var buttonWithContextMenu = document.getElementById("button_with_contextmenu");
+var itemsWithCustomContextMenu = contextClickAndGetMenuItems(buttonWithContextMenu);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button1 = document.getElementById("button_1");
+var items1 = contextClickAndGetMenuItems(button1);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button2 = document.getElementById("button_2");
+document.getElementById("menu_2").addEventListener("show", cancel, false);
+var items2 = contextClickAndGetMenuItems(button2);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button3 = document.getElementById("button_3");
+document.getElementById("menu_3").addEventListener("show", removeMenu, false);
+var items3 = contextClickAndGetMenuItems(button3);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button4 = document.getElementById("button_4");
+var items4 = contextClickAndGetMenuItems(button4);
+
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button5 = document.getElementById("button_5");
+var items5 = contextClickAndGetMenuItems(button5);
+
+shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 23);
+shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
+shouldBeEqualToString("itemsWithCustomContextMenu[1]", "#Item2");
+shouldBeEqualToString("itemsWithCustomContextMenu[2]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[3]", "Item3");
+shouldBeEqualToString("itemsWithCustomContextMenu[4]", "Submenu >");
+shouldBeEqualToString("itemsWithCustomContextMenu[5]", "_Item4");
+shouldBeEqualToString("itemsWithCustomContextMenu[6]", "_Deeper submenu >");
+shouldBeEqualToString("itemsWithCustomContextMenu[7]", "__Item5");
+shouldBeEqualToString("itemsWithCustomContextMenu[8]", "__---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[9]", "__Item6");
+shouldBeEqualToString("itemsWithCustomContextMenu[10]", "Item7");
+shouldBeEqualToString("itemsWithCustomContextMenu[11]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[12]", "Item8");
+shouldBeEqualToString("itemsWithCustomContextMenu[13]", "Item11");
+shouldBeEqualToString("itemsWithCustomContextMenu[14]", "Item12");
+shouldBeEqualToString("itemsWithCustomContextMenu[15]", "---------");
+shouldBeEqualToString("itemsWithCustomContextMenu[16]", "Item13");
+shouldBeEqualToString("itemsWithCustomContextMenu[17]", "Item14");
+shouldBeEqualToString("itemsWithCustomContextMenu[18]", "*Item15");
+shouldBeEqualToString("itemsWithCustomContextMenu[19]", "Item16");
+shouldBeEqualToString("itemsWithCustomContextMenu[20]", "Item17");
+shouldBeEqualToString("itemsWithCustomContextMenu[21]", "*Item18");
+shouldBeEqualToString("itemsWithCustomContextMenu[22]", "Item19");
+shouldBeEqualToNumber("items1.length - items.length", 0);
+shouldBeEqualToNumber("items2.length - items.length", 0);
+shouldBeEqualToNumber("items3.length - items.length", 0);
+shouldBeEqualToNumber("items4.length - items.length", 0);
+shouldBeEqualToNumber("items5.length - items.length", 3);
+shouldBeEqualToString("items5[0]", "Item1");
+shouldBeEqualToString("items5[1]", "Item2");
+shouldBeEqualToString("items5[2]", "Item3");
+
+</script>

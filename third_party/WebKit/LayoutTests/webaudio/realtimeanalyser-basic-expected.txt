@@ -1,0 +1,15 @@
+Basic tests for AnalyserNode.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS AnalyserNode has one input.
+PASS AnalyserNode has one output.
+PASS minDecibels default value is -100.
+PASS maxDecibels default value is -30.
+PASS smoothingTimeConstant default value is 0.8.
+PASS minDecibels value is set to -50.333333333333336.
+PASS maxDecibels value is set to -40.333333333333336.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

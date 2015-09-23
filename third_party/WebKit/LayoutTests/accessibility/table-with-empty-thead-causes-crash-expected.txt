@@ -1,0 +1,23 @@
+1	2
+End of test
+
+Construct accessibility objects for a table with an empty thread tag. This can cause a crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXTable AXValue: 
+        AXRole: AXRow AXValue: 
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: 1
+                    AXRole: AXInlineTextBox AXValue: 1
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: 2
+                    AXRole: AXInlineTextBox AXValue: 2
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

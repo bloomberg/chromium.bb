@@ -1,0 +1,38 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [63, 28, 9, 19],
+        [61, 28, 8, 19],
+        [17, 28, 46, 19],
+        [15, 28, 46, 19],
+        [8, 28, 784, 19],
+        [8, 28, 9, 19],
+        [8, 28, 7, 19]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineTextBox ''",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV",
+        "LayoutInline Q id='q2' class='q-changed'",
+        "LayoutInline \u003Cpseudo:before\u003E",
+        "LayoutQuote (anonymous)",
+        "LayoutTextFragment (anonymous)",
+        "InlineTextBox '{'",
+        "LayoutText #text",
+        "InlineTextBox 'quote 2'",
+        "LayoutInline \u003Cpseudo:after\u003E",
+        "LayoutQuote (anonymous)",
+        "LayoutTextFragment (anonymous)",
+        "InlineTextBox '}'"
+      ]
+    }
+  ]
+}
+

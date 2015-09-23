@@ -1,0 +1,215 @@
+This is a Header for this page
+Heading
+
+Division
+Paragraph
+
+éŸ“åœ‹í•œêµ­
+Coffee
+- black hot drink
+Milk
+- white cold drink
+x + a / b
+Most important heading here
+
+Google Chrome
+
+Google Chrome is a free, open-source web browser developed by Google, released in 2008.
+
+Footer in article
+
+HTML | CSS | JavaScript |
+Text that appears under aside
+
+Text in a    pre
+element
+Most important heading here
+
+Section
+
+Footer in section
+
+Written by Julie
+Visit us at:www.chromium.org
+January This is an open dialog window
+
+ 
+Caption
+Cell1	Cell2
+
+Fig1. - Blue Box
+
+This is a footer.
+
+End of test
+
+This test make sure that unfocuasable elements are mapped implicitly to AX roles.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXBanner AXValue: 
+        AXRole: AXStaticText AXValue: This is a Header for this page
+            AXRole: AXInlineTextBox AXValue: This is a Header for this page
+    AXRole: AXHeading AXValue: 
+        AXRole: AXStaticText AXValue: Heading
+            AXRole: AXInlineTextBox AXValue: Heading
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: Division
+            AXRole: AXInlineTextBox AXValue: Division
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: Paragraph
+            AXRole: AXInlineTextBox AXValue: Paragraph
+    AXRole: AXGroup AXValue: 
+        AXRole: AXRuby AXValue: 
+            AXRole: AXAnnotation AXValue: 
+                AXRole: AXStaticText AXValue: í•œêµ­
+                    AXRole: AXInlineTextBox AXValue: í•œêµ­
+            AXRole: AXGroup AXValue: 
+                AXRole: AXStaticText AXValue: éŸ“åœ‹
+                    AXRole: AXInlineTextBox AXValue: éŸ“åœ‹
+    AXRole: AXDescriptionList AXValue: 
+        AXRole: AXDescriptionListTerm AXValue: 
+            AXRole: AXStaticText AXValue: Coffee
+                AXRole: AXInlineTextBox AXValue: Coffee
+        AXRole: AXDescriptionListDetail AXValue: 
+            AXRole: AXStaticText AXValue: - black hot drink
+                AXRole: AXInlineTextBox AXValue: - black hot drink
+        AXRole: AXDescriptionListTerm AXValue: 
+            AXRole: AXStaticText AXValue: Milk
+                AXRole: AXInlineTextBox AXValue: Milk
+        AXRole: AXDescriptionListDetail AXValue: 
+            AXRole: AXStaticText AXValue: - white cold drink
+                AXRole: AXInlineTextBox AXValue: - white cold drink
+    AXRole: AXGroup AXValue: 
+        AXRole: AXMath AXValue: 
+            AXRole: AXStaticText AXValue: x 
+                AXRole: AXInlineTextBox AXValue: x 
+            AXRole: AXStaticText AXValue: + 
+                AXRole: AXInlineTextBox AXValue: + 
+            AXRole: AXStaticText AXValue: a 
+                AXRole: AXInlineTextBox AXValue: a 
+            AXRole: AXStaticText AXValue: / 
+                AXRole: AXInlineTextBox AXValue: / 
+            AXRole: AXStaticText AXValue: b
+                AXRole: AXInlineTextBox AXValue: b
+    AXRole: AXMain AXValue: 
+        AXRole: AXArticle AXValue: 
+            AXRole: AXHeading AXValue: 
+                AXRole: AXStaticText AXValue: Most important heading here
+                    AXRole: AXInlineTextBox AXValue: Most important heading here
+            AXRole: AXHeading AXValue: 
+                AXRole: AXStaticText AXValue: Google Chrome
+                    AXRole: AXInlineTextBox AXValue: Google Chrome
+            AXRole: AXParagraph AXValue: 
+                AXRole: AXStaticText AXValue: Google Chrome is a free, open-source web browser developed by Google, released in 2008.
+                    AXRole: AXInlineTextBox AXValue: Google Chrome is a free, open-source web browser developed by Google, 
+                    AXRole: AXInlineTextBox AXValue: released in 2008.
+            AXRole: AXParagraph AXValue: 
+                AXRole: AXStaticText AXValue: Footer in article
+                    AXRole: AXInlineTextBox AXValue: Footer in article
+    AXRole: AXNavigation AXValue: 
+        AXRole: AXLink AXValue: 
+            AXRole: AXStaticText AXValue: HTML
+                AXRole: AXInlineTextBox AXValue: HTML
+        AXRole: AXStaticText AXValue:  | 
+            AXRole: AXInlineTextBox AXValue:  | 
+        AXRole: AXLink AXValue: 
+            AXRole: AXStaticText AXValue: CSS
+                AXRole: AXInlineTextBox AXValue: CSS
+        AXRole: AXStaticText AXValue:  | 
+            AXRole: AXInlineTextBox AXValue:  | 
+        AXRole: AXLink AXValue: 
+            AXRole: AXStaticText AXValue: JavaScript
+                AXRole: AXInlineTextBox AXValue: JavaScript
+        AXRole: AXStaticText AXValue:  |
+            AXRole: AXInlineTextBox AXValue:  |
+    AXRole: AXComplementary AXValue: 
+        AXRole: AXParagraph AXValue: 
+            AXRole: AXStaticText AXValue: Text that appears under aside
+                AXRole: AXInlineTextBox AXValue: Text that appears under aside
+    AXRole: AXPre AXValue: 
+        AXRole: AXStaticText AXValue: Text in a    pre
+element
+
+            AXRole: AXInlineTextBox AXValue: Text in a    pre
+            AXRole: AXInlineTextBox AXValue: 
+
+            AXRole: AXInlineTextBox AXValue: element
+            AXRole: AXInlineTextBox AXValue: 
+
+    AXRole: AXRegion AXValue: 
+        AXRole: AXHeading AXValue: 
+            AXRole: AXStaticText AXValue: Most important heading here
+                AXRole: AXInlineTextBox AXValue: Most important heading here
+        AXRole: AXParagraph AXValue: 
+            AXRole: AXStaticText AXValue: Section
+                AXRole: AXInlineTextBox AXValue: Section
+        AXRole: AXParagraph AXValue: 
+            AXRole: AXStaticText AXValue: Footer in section
+                AXRole: AXInlineTextBox AXValue: Footer in section
+    AXRole: AXContentInfo AXValue: 
+        AXRole: AXStaticText AXValue: Written by Julie
+            AXRole: AXInlineTextBox AXValue: Written by Julie
+        AXRole: AXUnknown AXValue: 
+
+            AXRole: AXInlineTextBox AXValue: 
+
+        AXRole: AXStaticText AXValue: Visit us at:www.chromium.org
+            AXRole: AXInlineTextBox AXValue: Visit us at:www.chromium.org
+        AXRole: AXUnknown AXValue: 
+
+            AXRole: AXInlineTextBox AXValue: 
+
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: January
+            AXRole: AXInlineTextBox AXValue: January
+        AXRole: AXDialog AXValue: 
+            AXRole: AXStaticText AXValue: This is an open dialog window
+                AXRole: AXInlineTextBox AXValue: This is an open dialog window
+    AXRole: AXGroup AXValue: 
+        AXRole: AXUnknown AXValue: 
+            AXRole: AXScrollArea AXValue: 
+                AXRole: AXWebArea AXValue: 
+        AXRole: AXUnknown AXValue: 
+            AXRole: AXScrollArea AXValue: 
+                AXRole: AXWebArea AXValue: 
+    AXRole: AXTable AXValue: 
+        AXRole: AXCaption AXValue: 
+            AXRole: AXStaticText AXValue: Caption
+                AXRole: AXInlineTextBox AXValue: Caption
+        AXRole: AXRow AXValue: 
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: Cell1
+                    AXRole: AXInlineTextBox AXValue: Cell1
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: Cell2
+                    AXRole: AXInlineTextBox AXValue: Cell2
+        AXRole: AXColumn AXValue: 
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: Cell1
+                    AXRole: AXInlineTextBox AXValue: Cell1
+        AXRole: AXColumn AXValue: 
+            AXRole: AXCell AXValue: 
+                AXRole: AXStaticText AXValue: Cell2
+                    AXRole: AXInlineTextBox AXValue: Cell2
+        AXRole: AXTableHeaderContainer AXValue: 
+    AXRole: AXFigure AXValue: 
+        AXRole: AXGroup AXValue: 
+            AXRole: AXImage AXValue: 
+        AXRole: AXFigcaption AXValue: 
+            AXRole: AXStaticText AXValue: Fig1. - Blue Box
+                AXRole: AXInlineTextBox AXValue: Fig1. - Blue Box
+    AXRole: AXGroup AXValue: 
+        AXRole: AXEmbeddedObject AXValue: 
+    AXRole: AXFooter AXValue: 
+        AXRole: AXParagraph AXValue: 
+            AXRole: AXStaticText AXValue: This is a footer.
+                AXRole: AXInlineTextBox AXValue: This is a footer.
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

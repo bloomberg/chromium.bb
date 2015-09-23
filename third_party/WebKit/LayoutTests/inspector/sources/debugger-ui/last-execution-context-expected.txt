@@ -1,0 +1,16 @@
+Tests that re-adding a removed target restores the last selected execution context.
+
+Adding page target:
+Execution context selected: mock-target-page-target:pageFrame1
+Target selected: mock-target-page-target
+
+Adding sw target:
+
+Removing page target:
+Execution context selected: mock-target-sw-target:
+Target selected: mock-target-sw-target
+
+Readding page target:
+Execution context selected: mock-target-page-target:pageFrame1
+Target selected: mock-target-page-target
+

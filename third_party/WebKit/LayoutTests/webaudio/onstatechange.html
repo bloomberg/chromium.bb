@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test statechange event</title>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/audio-testing.js"/>
+    <script src="resources/compatibility.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test statechange event is properly signaled")
+
+      window.jsTestIsAsync = true;
+
+      var secondsToRender = 2;
+      var sampleRate = 48000;
+
+      var stateChangeCount = 0;
+      var context;
+      var contextState;
+
+      function checkStateChange (e) {
+        contextState = e.currentTarget.state;
+
+        switch (stateChangeCount) {
+        case 0:
+          shouldBeEqualToString("contextState", "running");
+          break;
+        case 1:
+          shouldBeEqualToString("contextState", "closed");
+          break;
+        default:
+          testFailed("Expected only two state changes but got " + stateChangeCount);
+        }
+        ++stateChangeCount;
+      }
+
+      function finalCheck() {
+        // Final check that we got the right number of state changes and the correct final state.
+        shouldBeEqualToNumber("stateChangeCount", 2);
+        shouldBeEqualToString("context.state", "closed");
+        finishJSTest();
+      }
+
+      function runTest() {
+        // Create an offline context with a source passing through a convolver.  The convolver is
+        // just to waste some time.
+        context = new OfflineAudioContext(1, secondsToRender * sampleRate, sampleRate);
+        var buffer = createImpulseBuffer(context, sampleRate);
+        var source = context.createBufferSource();
+        var conv = context.createConvolver();
+
+        source.buffer = buffer;
+        conv.normalize = false;
+        conv.buffer = buffer;
+
+        source.connect(conv);
+        conv.connect(context.destination);
+
+        source.start();
+
+        context.onstatechange = checkStateChange;
+
+        context.startRendering().then(function () {
+          testPassed("context finished rendering")
+        });
+
+        // Don't want to set an oncomplete for the context and don't want to use the promise because
+        // the order of the state change event and resolving the promise is not specified.  Thus,
+        // just wait for a bit and then finish the test.  We assume the offline context runs faster
+        // than realtime.
+        setTimeout(finalCheck, secondsToRender * 1000);
+      }
+
+      runTest();
+    </script>
+  </body>
+</html>

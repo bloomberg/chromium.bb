@@ -1,0 +1,18 @@
+<!-- Based on fast/repaint/float-in-new-block-with-layout-delta.html -->
+<script src="resources/paint-invalidation-test.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='target'",
+        "LayoutBlockFlow (floating) DIV",
+    ];
+    function paintInvalidationTest()
+    {
+        document.getElementById("target").style.removeProperty("display");
+    }
+</script>
+<body onload="runPaintInvalidationTest()">
+    <div style="height: 100px;"></div>
+    <div id="target" style="display: none">
+        <div style="float: left; width: 100px; height: 100px; background-color: green;"></div>
+    </div>
+</body>

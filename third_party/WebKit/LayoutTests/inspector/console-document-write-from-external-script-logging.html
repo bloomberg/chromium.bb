@@ -1,0 +1,29 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/console-test.js"></script>
+<script>
+function loadExternalScript()
+{
+    var scriptElement = document.createElement("script");
+    scriptElement.src = "resources/external-script-with-document-write.js";
+    document.body.appendChild(scriptElement);
+}
+
+function test()
+{
+    InspectorTest.addConsoleSniffer(step1);
+    InspectorTest.evaluateInPage("loadExternalScript()", function(){});
+
+    function step1()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that ignored document.write() called from an external asynchronously loaded script is reported to console as a warning</p>
+</body>
+</html>

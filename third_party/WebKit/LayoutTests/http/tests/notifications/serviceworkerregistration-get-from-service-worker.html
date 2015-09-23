@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: ServiceWorkerRegistration.getNotifications() when created by the Service Worker.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+    <script src="resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the getNotifications() function when used in a document returns
+      // an array of the notifications which were previously displayed by the
+      // Service Worker.
+      async_test(function(test) {
+          var scope = 'resources/scope/' + location.pathname,
+              script = 'resources/instrumentation-service-worker.js';
+
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+
+          var info = null;
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(workerInfo) {
+              info = workerInfo;
+
+              // (1) Tell the Service Worker to display a new Notification and wait for it
+              // to have been displayed to the user.
+              info.port.postMessage({
+                  command: 'show',
+
+                  title: scope,
+                  options: { body: 'Hello, world!' }
+              });
+
+              return new Promise(function(resolve) {
+                  info.port.addEventListener('message', function(event) {
+                      if (typeof event.data != 'object' || !event.data.command) {
+                          assert_unreached('Invalid message from the Service Worker.');
+                          return;
+                      }
+
+                      assert_equals(event.data.command, 'show');
+                      resolve();
+                  });
+              });
+          }).then(function() {
+              // (2) Get a list of all notifications in the document.
+              return info.registration.getNotifications();
+          }).then(function(notifications) {
+              // (3) Verify that there's only one notification: the one we just showed.
+              assert_equals(notifications.length, 1);
+
+              assert_equals(notifications[0].title, scope);
+              assert_equals(notifications[0].body, 'Hello, world!');
+
+              test.done();
+
+          }).catch(unreached_rejection(test));
+
+      }, 'ServiceWorkerRegistration.getNotifications() when created by a Service Worker.');
+    </script>
+  </body>
+</html>

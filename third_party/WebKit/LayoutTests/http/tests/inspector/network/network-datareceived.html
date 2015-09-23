@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function loadIFrame()
+{
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("src", "resources/resource.php?size=50000");
+    document.body.appendChild(iframe);
+}
+
+function test()
+{
+    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "responseReceived", responseReceived);
+    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
+    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
+    InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+    InspectorTest.evaluateInPage("loadIFrame()");
+
+    var encodedBytesReceived = 0;
+    function responseReceived(requestId, time, resourceType, response)
+    {
+        var request = InspectorTest.networkLog.requestForId(requestId);
+        if (/resource\.php/.exec(request.url))
+            InspectorTest.addResult("Received response.");
+    }
+
+    function loadingFinished(requestId, finishTime, encodedDataLength)
+    {
+        var request = InspectorTest.networkLog.requestForId(requestId);
+        if (/resource\.php/.exec(request.url)) {
+            InspectorTest.assertEquals(encodedBytesReceived, encodedDataLength, "Data length mismatch");
+            InspectorTest.addResult("SUCCESS");
+            InspectorTest.completeTest();
+        }
+    }
+
+    function loadingFailed(requestId, time, localizedDescription, canceled)
+    {
+        var request = InspectorTest.networkLog.requestForId(requestId);
+        if (/resource\.php/.exec(request.url)) {
+            InspectorTest.addResult("Loading failed!");
+            InspectorTest.completeTest();
+        }
+    }
+
+    function dataReceived(requestId, time, dataLength, encodedDataLength)
+    {
+        InspectorTest.addSniffer(WebInspector.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+        var request = InspectorTest.networkLog.requestForId(requestId);
+        if (/resource\.php/.exec(request.url))
+            encodedBytesReceived += encodedDataLength;
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that dataReceived is called on NetworkDispatcher for all incoming data.</p>
+</body>
+</html>

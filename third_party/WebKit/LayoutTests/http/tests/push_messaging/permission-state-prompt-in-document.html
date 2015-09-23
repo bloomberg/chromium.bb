@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Push API: permissionState resolves with prompt when no permission is set</title>
+<link rel="manifest" href="resources/push_manifest.json">
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+</head>
+<body>
+<script>
+async_test(function(test) {
+    if (window.testRunner)
+        testRunner.setPermission('push-messaging', 'prompt', location.origin, location.origin);
+
+    var workerUrl = 'resources/empty_worker.js';
+    var workerScope = 'resources/scope/' + location.pathname;
+    service_worker_unregister_and_register(test, workerUrl, workerScope)
+        .then(function(serviceWorkerRegistration) {
+            // If running manually, clear permissions before running this test.
+            return serviceWorkerRegistration.pushManager.permissionState({userVisibleOnly: true});
+        })
+        .then(function(permissionStatus) {
+            assert_equals(permissionStatus, 'prompt');
+            return service_worker_unregister_and_done(test, workerScope);
+        })
+        .catch(unreached_rejection(test));
+}, 'Push API: permissionState() resolves with prompt when permission is not set');
+</script>
+</body>
+</html>

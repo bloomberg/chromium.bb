@@ -1,0 +1,44 @@
+
+Initial layer tree
+#document (5)
+    iframe#frame (6)
+        iframe#frame 0x0 (7)
+            iframe#frame 200x200 (8)
+                iframe#frame 200x200 (9)
+                    iframe#frame 200x200 (10)
+                        #document 200x200 (11)
+                            div#subframe1 80x80 (12)
+    div#a 200x200 (6)
+        div#b1 100x150 (7)
+        div#b2 110x140 (7)
+            div#c 90x100 (8)
+        div#b3 110x140 (7)
+Updated layer tree
+#document (5)
+    iframe#frame (6)
+        iframe#frame 0x0 (7)
+            iframe#frame 200x200 (8)
+                iframe#frame 200x200 (9)
+                    iframe#frame 200x200 (10)
+                        #document 200x200 (11)
+                            div#subframe1 80x80 (12)
+    div#a 200x200 (6)
+        div#b2 110x140 (7)
+            div#c 90x100 (8)
+                div#b1 100x150
+        div#b4 0x200
+Updated layer geometry
+#document (5)
+    iframe#frame (6)
+        iframe#frame 0x0 (7)
+            iframe#frame 200x200 (8)
+                iframe#frame 200x200 (9)
+                    iframe#frame 200x200 (10)
+                        #document 200x200 (11)
+                            div#subframe1 80x80 (12)
+    div#a 200x200 (6)
+        div#b2 110x140 (7)
+            div#c 90x80 (8)
+                div#b1 100x150
+        div#b4 0x200
+

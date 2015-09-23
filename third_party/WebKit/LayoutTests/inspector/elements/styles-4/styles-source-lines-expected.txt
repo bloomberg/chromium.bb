@@ -1,0 +1,33 @@
+Tests that proper source lines are reported for the parsed styles.
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+media="screen" (styles-source-lines.html)
+#main, .at_line_49  { (styles-source-lines.html:49 -> styles-source-lines.html:49:1)
+    border: 1px solid
+    red;
+
+[expanded] 
+media="screen" (styles-source-lines.html)
+#main, .at_line_41  { (styles-source-lines.html:40 -> styles-source-lines.html:40:3)
+    font-size: 10px;
+
+[expanded] 
+media="screen" (styles-source-lines.html)
+#main, .at_line_26  { (styles-source-lines.html:26 -> styles-source-lines.html:26:1)
+    font-family: /*  Comment in 
+                      value  */courier;
+
+[expanded] 
+media="screen" (styles-source-lines.html)
+#main, .at_line_11::before  { (styles-source-lines.html:11 -> styles-source-lines.html:11:1)
+    color: red;
+    content: "Before";
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+

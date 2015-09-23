@@ -1,0 +1,7 @@
+ 
+EXPECTED (video.currentTime == '2') OK
+EXPECTED (video2.currentTime == '0') OK
+EXPECTED (video.currentTime == '2') OK
+EXPECTED (video2.currentTime == '2') OK
+END OF TEST
+

@@ -1,0 +1,19 @@
+End of test
+This can cause a crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Before:
+AXRole: AXWebArea AXValue: 
+    AXRole: AXLink AXValue: 
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+After:
+AXRole: AXWebArea AXValue: 
+    AXRole: AXDiv AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

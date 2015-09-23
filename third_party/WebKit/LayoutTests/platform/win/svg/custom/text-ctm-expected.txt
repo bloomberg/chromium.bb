@@ -1,0 +1,9 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutSVGRoot {svg} at (100,72) size 88x34
+    LayoutSVGContainer {g} at (100,72) size 88x34 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,10.00)}]
+      LayoutSVGViewportContainer {svg} at (100,72) size 88x34
+        LayoutSVGText {text} at (70,56) size 44x17 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (0,0) size 44x17
+            chunk 1 text run 1 at (70.00,70.00) startOffset 0 endOffset 6 width 43.55: "Passed"

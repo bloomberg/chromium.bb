@@ -1,0 +1,66 @@
+{
+  "bounds": [785, 1016],
+  "children": [
+    {
+      "bounds": [785, 1016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [200, 1000],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3"
+            },
+            {
+              "position": [8, 0],
+              "bounds": [300, 653],
+              "drawsContent": true,
+              "repaintRects": [
+                [285, 515, 15, 135],
+                [285, 500, 15, 150],
+                [285, 500, 15, 150],
+                [285, 500, 15, 150],
+                [8, 508, 284, 18],
+                [8, 508, 269, 142],
+                [0, 500, 300, 150],
+                [0, 500, 300, 34],
+                [0, 500, 285, 150],
+                [0, 500, 285, 150],
+                [0, 500, 285, 150],
+                [0, 500, 15, 15],
+                [0, 500, 15, 15]
+              ],
+              "paintInvalidationClients": [
+                "RootInlineBox",
+                "InlineTextBox 'test1'",
+                "VerticalScrollbar",
+                "LayoutIFrame IFRAME id='subframe'",
+                "LayoutIFrame IFRAME id='subframe'",
+                "RootInlineBox",
+                "InlineTextBox 'test1'",
+                "VerticalScrollbar",
+                "LayoutIFrame IFRAME id='subframe'",
+                "VerticalScrollbar",
+                "LayoutIFrame IFRAME id='subframe'",
+                "VerticalScrollbar",
+                "LayoutIFrame IFRAME id='subframe'",
+                "VerticalScrollbar",
+                "LayoutIFrame IFRAME id='subframe'",
+                "LayoutView #document",
+                "LayoutView #document",
+                "LayoutBlockFlow HTML",
+                "LayoutBlockFlow BODY"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

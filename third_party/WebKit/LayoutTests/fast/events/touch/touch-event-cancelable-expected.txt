@@ -1,0 +1,25 @@
+CONSOLE MESSAGE: line 16: Calling preventDefault on TouchEvent with cancelable=true
+CONSOLE MESSAGE: line 16: Calling preventDefault on TouchEvent with cancelable=false
+CONSOLE WARNING: Ignored attempt to cancel a touchmove event with cancelable=false, for example because scrolling is in progress and cannot be interrupted.
+Test that touch events may or may not be marked cancelable. http://crbug.com/365681
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Sending cancelable touchmove
+PASS gotTouchMove is false
+PASS touchEvent.defaultPrevented is false
+PASS gotTouchMove is true
+PASS touchEvent.cancelable is true
+PASS touchEvent.defaultPrevented is true
+
+Sending uncancelable touchmove
+PASS gotTouchMove is false
+PASS touchEvent.defaultPrevented is false
+PASS gotTouchMove is true
+PASS touchEvent.cancelable is false
+PASS touchEvent.defaultPrevented is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

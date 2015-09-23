@@ -1,0 +1,23 @@
+Tests that media query stack is computed correctly when several stylesheets share the same URL.
+
+Main style:
+[expanded] 
+element.style  { ()
+
+[expanded] 
+media="screen" (media-using-same-url.html)
+@media not print (media-using-same-url.html:13 -> media-using-same-url.html:13:8)
+#main  { (media-using-same-url.html:14 -> media-using-same-url.html:14:1)
+    color: white;
+
+[expanded] 
+media="screen" (media-using-same-url.html)
+@media not print (media-using-same-url.html:5 -> media-using-same-url.html:5:8)
+#main  { (media-using-same-url.html:6 -> media-using-same-url.html:6:1)
+    background: blue;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+

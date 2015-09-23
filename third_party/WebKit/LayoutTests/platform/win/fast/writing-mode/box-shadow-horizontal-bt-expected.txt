@@ -1,0 +1,17 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 600x144
+        LayoutInline {SPAN} at (0,0) size 548x135 [bgcolor=#FFFFE0] [border: (5px solid #008000)]
+          LayoutText {#text} at (46,9) size 528x125
+            text run at (46,9) width 528: "This sentence is too long to"
+            text run at (110,81) width 360: "fit on a single line."
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,194) size 600x144
+        LayoutInline {SPAN} at (0,0) size 548x135 [bgcolor=#FFFFE0] [border: (5px solid #008000)]
+          LayoutText {#text} at (46,9) size 528x125
+            text run at (46,9) width 528: "This sentence is too long to"
+            text run at (110,81) width 360: "fit on a single line."
+        LayoutText {#text} at (0,0) size 0x0

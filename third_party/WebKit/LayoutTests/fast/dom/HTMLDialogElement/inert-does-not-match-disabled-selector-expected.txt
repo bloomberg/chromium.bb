@@ -1,0 +1,10 @@
+Tests that inert elements do not match the :disabled selector.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS color is 'rgb(0, 128, 0)'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+The test passes if this is in green.

@@ -1,0 +1,90 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../inspector/sources/debugger/resources/unformatted.js"></script>
+
+<script>
+
+function f1()
+{
+    var a=0;var b=1;var c=3;var d=4;var e=5;
+    var f=0;
+    return 0;
+}
+
+function onload()
+{
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.showWebInspector();
+    }
+    runTest();
+}
+
+var test = function()
+{
+    WebInspector.breakpointManager._storage._breakpoints = {};
+    var panel = WebInspector.panels.sources;
+    var scriptFormatter;
+    var sourceFrame;
+
+    InspectorTest.runDebuggerTestSuite([
+        function testSetup(next)
+        {
+            InspectorTest.scriptFormatter().then(function(sf) {
+                scriptFormatter = sf;
+                next();
+            });
+        },
+
+        function testBreakpointsInOriginalAndFormattedSource(next)
+        {
+            InspectorTest.showScriptSource("script-formatter-breakpoints-1.html", didShowScriptSource);
+
+            function didShowScriptSource(frame)
+            {
+                sourceFrame = frame;
+                InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+                InspectorTest.waitUntilPaused(pausedInF1);
+                InspectorTest.evaluateInPageWithTimeout("f1()");
+            }
+
+            function pausedInF1(callFrames)
+            {
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                InspectorTest.addSniffer(WebInspector.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
+                scriptFormatter._toggleFormatScriptSource();
+            }
+
+            function uiSourceCodeScriptFormatted()
+            {
+                // There should be a breakpoint in f1 although script is pretty-printed.
+                InspectorTest.waitUntilPaused(pausedInF1Again);
+                InspectorTest.evaluateInPageWithTimeout("f1()");
+            }
+
+            function pausedInF1Again(callFrames)
+            {
+                InspectorTest.dumpBreakpointSidebarPane("while paused in pretty printed");
+                scriptFormatter._discardFormattedUISourceCodeScript(panel.visibleView.uiSourceCode());
+                InspectorTest.dumpBreakpointSidebarPane("while paused in raw");
+                InspectorTest.removeBreakpoint(sourceFrame, 11);
+                InspectorTest.resumeExecution(next);
+            }
+        }
+    ]);
+
+}
+</script>
+</head>
+<body onload="onload()">
+<p>Tests the script formatting is working fine with breakpoints.
+</p>
+</body>
+</html>

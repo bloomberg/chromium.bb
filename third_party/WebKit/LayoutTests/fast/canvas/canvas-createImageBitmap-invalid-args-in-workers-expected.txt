@@ -1,0 +1,19 @@
+[Worker] Test createImageBitmap with invalid arguments in workers.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Starting worker: ./resources/canvas-createImageBitmap-invalid-args-in-workers.js
+PASS [Worker] Rejected as expected: null
+PASS [Worker] reason instanceof Error is true
+[Worker] TypeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': No function was found that matched the signature provided.
+PASS [Worker] Rejected as expected: invalid area
+PASS [Worker] reason instanceof Error is true
+[Worker] IndexSizeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The source height provided is 0.
+PASS [Worker] Rejected as expected: invalid area
+PASS [Worker] reason instanceof Error is true
+[Worker] IndexSizeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The source width provided is 0.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,38 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Tests MouseEvent.getModifierState()");
+
+var lastMouseEvent;
+
+function recordMouseEvent(ev) {
+    lastMouseEvent = ev;
+}
+
+var allEventModifiers = ["ctrlKey", "shiftKey", "metaKey", "altKey"];
+var allKeyModifiers = ["Control", "Shift", "Meta", "Alt"];
+
+function testMouseEventWithModifiers(button, eventModifiers) {
+    eventSender.mouseDown(button, eventModifiers);
+    shouldBe("lastMouseEvent.type", '"mousedown"');
+    shouldEvaluateTo("lastMouseEvent.button", button);
+    for (var i = 0; i < allEventModifiers.length; ++i) {
+        var expectedModifierState = eventModifiers.indexOf(allEventModifiers[i]) >= 0;
+        shouldEvaluateTo("lastMouseEvent.getModifierState('" + allKeyModifiers[i] + "')", expectedModifierState);
+        shouldEvaluateTo("lastMouseEvent." + allEventModifiers[i], expectedModifierState);
+    }
+}
+
+if (window.eventSender) {
+    document.addEventListener("mousedown", recordMouseEvent, false);
+    testMouseEventWithModifiers(0, ["ctrlKey"]);
+    testMouseEventWithModifiers(1, ["shiftKey"]);
+    testMouseEventWithModifiers(2, ["altKey"]);
+    testMouseEventWithModifiers(0, ["metaKey"]);
+    testMouseEventWithModifiers(1, ["ctrlKey", "shiftKey"]);
+    testMouseEventWithModifiers(2, ["ctrlKey", "shiftKey", "altKey"]);
+    testMouseEventWithModifiers(1, ["ctrlKey", "shiftKey", "altKey", "metaKey"]);
+} else {
+    debug("This test requires DumpRenderTree.");
+}
+</script>

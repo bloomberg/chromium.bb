@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Loop AudioBufferSourceNode, with buffer set after start</title>
+    <script>
+      var context = new AudioContext() || new webkitAudioContext();
+      var normalSource;
+      var delayedSource
+      var buffer;
+      var request = new XMLHttpRequest();
+      request.open("GET", "../../LayoutTests/webaudio/resources/media/128kbps-44khz.mp3", true);
+      request.responseType = "arraybuffer";
+      request.onload = function() {
+        context.decodeAudioData(request.response,
+          function(b) {
+            buffer = b;
+            document.getElementById("Start").disabled = false;
+            document.getElementById("StartDelayed").disabled = false;
+          },
+          function () {
+            alert("Could not load file");
+          });
+       };
+       request.send();
+
+      function normalStart() {
+         console.log("normalStart");
+         normalSource = context.createBufferSource();
+         normalSource.loop = true;
+         normalSource.buffer = buffer;
+         normalSource.connect(context.destination);
+         normalSource.start(context.currentTime + 2, 0);
+      }
+      function delayedStart() {
+         console.log("delayedStart");
+         delayedSource = context.createBufferSource();
+         delayedSource.loop = true;
+         delayedSource.connect(context.destination);
+         delayedSource.start(context.currentTime + 2, 0);
+         setTimeout(function () {
+                     delayedSource.buffer = buffer;
+                    }, 1000);
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Loop AudioBufferSourceNode, with buffer set after start</h1>
+
+    <p>Test that looping an AudioBufferSource works correctly if the source is started and the
+    buffer is assigned later, but before the source would start.  This can't be easily tested in an
+    offline context because we can't precisely control when the assignment of the buffer to the
+    source is done.</p>
+
+    <p>Press the "Start" button for the normal case where the buffer is assigned before start.</p>
+
+    <p>Press the "Start delayed" button for the case where the source is started and the buffer
+    assigned later.</p>
+
+    <p>You should hear audio about 2 sec after pressing the button.  It should continue until you
+    press the corresponding Stop button.</p>
+
+    <button id="Start" disabled onclick='normalStart()'>Start</button>
+    <button id="Stop" onclick="normalSource.stop()">Stop</button>
+    <br>
+    <button id="StartDelayed" disabled onclick='delayedStart()'>Start Delayed</button>
+    <button id="StopDelayed" onclick='delayedSource.stop()'>Stop Delayed Source</button>
+
+  </body>
+</html>

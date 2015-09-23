@@ -1,0 +1,80 @@
+/*
+ * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2011, 2012 Apple Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+// https://notifications.spec.whatwg.org/#enumdef-notificationpermission
+
+enum NotificationPermission {
+    "default",
+    "denied",
+    "granted"
+};
+
+// https://notifications.spec.whatwg.org/#api
+
+[
+    GarbageCollected,
+    ActiveDOMObject,
+    Constructor(DOMString title, optional NotificationOptions options),
+    ConstructorCallWith=ExecutionContext,
+    Exposed=(Window,Worker),
+    MeasureAs=NotificationCreated,
+    RaisesException=Constructor,
+    RuntimeEnabled=Notifications,
+] interface Notification : EventTarget {
+    [CallWith=ExecutionContext, MeasureAs=NotificationPermission] static readonly attribute NotificationPermission permission;
+
+    // TODO(peter): Only expose requestPermission() on the Window object. See https://crbug.com/442139.
+    [CallWith=ScriptState, Exposed=Window, MeasureAs=NotificationPermissionRequested] static Promise<NotificationPermission> requestPermission(optional NotificationPermissionCallback deprecatedCallback);
+
+    [RuntimeEnabled=NotificationExperimental] static readonly attribute unsigned long maxActions;
+
+    attribute EventHandler onclick;
+    [MeasureAs=NotificationShowEvent] attribute EventHandler onshow;
+    attribute EventHandler onerror;
+    [MeasureAs=NotificationCloseEvent] attribute EventHandler onclose;
+
+    readonly attribute DOMString title;
+    readonly attribute DOMString dir;
+    readonly attribute DOMString lang;
+    readonly attribute DOMString body;
+    readonly attribute DOMString tag;
+    readonly attribute DOMString icon;
+
+    [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<unsigned long>? vibrate;
+    readonly attribute boolean silent;
+    readonly attribute boolean requireInteraction;
+    [CallWith=ScriptState, SameObject] readonly attribute any data;
+
+    // TODO(johnme): The spec requires a FrozenArray, but sequence seems to behave like one already?! https://crbug.com/515920
+    [RuntimeEnabled=NotificationExperimental] readonly attribute sequence<NotificationAction> actions;
+
+    [MeasureAs=NotificationClosed] void close();
+};

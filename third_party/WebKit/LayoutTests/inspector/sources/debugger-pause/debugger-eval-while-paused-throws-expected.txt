@@ -1,0 +1,12 @@
+Tests that evaluation in console that throws works fine when script is paused.
+
+Set timer for test function.
+Dumping console messages:
+
+injectedFunction()
+Uncaught Error: injectedObj.func
+localObj.func()
+Uncaught Error: localObj.func
+globalObj.func()
+Uncaught Error: globalObj.func
+

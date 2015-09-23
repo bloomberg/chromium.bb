@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test AudioBufferSourceNode looping without explicit duration</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioBufferSourceNode looping without explicit duration");
+
+      var context;
+      var buffer;
+      var output;
+      var expected;
+      var sampleRate = 44100;
+      var sourceFrames = 8;
+      // How many loops of the source we want to render.  Any whole number greater than 1 will work.
+      var loopCount = 4;
+      var renderFrames = sourceFrames * loopCount;
+      
+
+      function checkResult(renderedBuffer) {
+        var badIndex = -1;
+        var success = true;
+
+        expected = buffer.getChannelData(0);
+        output = renderedBuffer.getChannelData(0);
+
+        // Verify the output has the expected data.  The actual output should be a loopCount copies
+        // of the source buffer.
+        for (var k = 0; k < loopCount; ++k) {
+          // Check that this current subset is a linear ramp matching the original source.
+          for (var n = 0; n < sourceFrames; ++n) {
+            if (expected[n] != output[n + k * sourceFrames]) {
+              // Remember the first bad sample and exit all loops now.
+              badIndex = n + k * sourceFrames;
+              success = false;
+              break;
+            }
+          }
+          if (!success)
+            break;
+        }
+
+        if (success) {
+          testPassed("Source looped correctly");
+        } else {
+          testFailed("First incorrect sample at index " + badIndex);
+        }
+      }
+
+      function runTest() {
+        window.jsTestIsAsync = true;
+
+        // Create a short linear ramp and enable looping.  The test will verify that the ramp was
+        // looped the appropriate number of times.
+        context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        buffer = createLinearRampBuffer(context, sourceFrames);
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+
+        // Loop the source, and start the source with an offset, but without a duration. In this
+        // case, the source should loop "forever".  See crbug.com/457009.  The case where the
+        // duration is given is covered in other tests.
+        source.loop = true;
+        source.start(0, 0);
+        context.startRendering()
+               .then(checkResult)
+               .then(finishJSTest);
+      }
+
+      runTest();
+    </script>
+  </body>
+</html>

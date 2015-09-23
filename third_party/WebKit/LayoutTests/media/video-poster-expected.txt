@@ -1,0 +1,59 @@
+Test <video> element with and without a poster.
+
+Testing poster null, with 'width' and 'height' attributes.
+EXPECTED (video.getAttribute('poster') == 'null') OK
+EXPECTED (relativeURL(video.poster) == '') OK
+EXPECTED (video.clientWidth == '320') OK
+EXPECTED (video.clientHeight == '240') OK
+
+Setting poster to "content/greenbox.png"
+Testing 25x25 poster 'content/greenbox.png', size should equal image size.
+EXPECTED (video.getAttribute('poster') == 'content/greenbox.png') OK
+EXPECTED (relativeURL(video.poster) == 'content/greenbox.png') OK
+EXPECTED (video.clientWidth == '25') OK
+EXPECTED (video.clientHeight == '25') OK
+
+Setting poster to ""
+Testing poster '', with NO 'width' or 'height' attributes so size should be <video> default.
+EXPECTED (video.getAttribute('poster') == '') OK
+EXPECTED (relativeURL(video.poster) == 'video-poster.html') OK
+EXPECTED (video.clientWidth == '300') OK
+EXPECTED (video.clientHeight == '150') OK
+
+Setting poster to "content/abe.png"
+Testing 76x103 poster 'content/abe.png', size should equal image size.
+EXPECTED (video.getAttribute('poster') == 'content/abe.png') OK
+EXPECTED (relativeURL(video.poster) == 'content/abe.png') OK
+EXPECTED (video.clientWidth == '76') OK
+EXPECTED (video.clientHeight == '103') OK
+
+Setting poster to "content/bogus.png"
+Testing 300x150 poster 'content/bogus.png', invalid url so size should revert to <video> default.
+EXPECTED (video.getAttribute('poster') == 'content/bogus.png') OK
+EXPECTED (relativeURL(video.poster) == 'content/bogus.png') OK
+EXPECTED (video.clientWidth == '300') OK
+EXPECTED (video.clientHeight == '150') OK
+
+Setting poster to ""
+Testing poster '', with only a 'width' attribute so size should have the same aspect ratio as <video> default.
+EXPECTED (video.getAttribute('poster') == '') OK
+EXPECTED (relativeURL(video.poster) == 'video-poster.html') OK
+EXPECTED (video.clientWidth == '600') OK
+EXPECTED (video.clientHeight == '300') OK
+
+Setting poster to "content/abe.png"
+Testing 152x206 poster 'content/abe.png', with only a 'width' attribute so size should equal a scaled up image size with the same aspect ratio as the original image.
+EXPECTED (video.getAttribute('poster') == 'content/abe.png') OK
+EXPECTED (relativeURL(video.poster) == 'content/abe.png') OK
+EXPECTED (video.clientWidth == '152') OK
+EXPECTED (video.clientHeight == '206') OK
+
+Setting poster to "content/bogus.png"
+Testing 600x300 poster 'content/bogus.png', invalid url w/ width attribute so size should have the same aspect ratio as <video> default.
+EXPECTED (video.getAttribute('poster') == 'content/bogus.png') OK
+EXPECTED (relativeURL(video.poster) == 'content/bogus.png') OK
+EXPECTED (video.clientWidth == '600') OK
+EXPECTED (video.clientHeight == '300') OK
+
+END OF TEST
+

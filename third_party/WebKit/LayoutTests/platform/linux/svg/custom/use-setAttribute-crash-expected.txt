@@ -1,0 +1,38 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [53, 53, 10, 10],
+        [53, 53, 10, 10],
+        [53, 53, 10, 10],
+        [53, 53, 10, 10],
+        [33, 33, 50, 50],
+        [33, 33, 50, 50],
+        [33, 33, 50, 50],
+        [33, 33, 50, 50],
+        [8, 113, 784, 100],
+        [8, 8, 784, 204],
+        [8, 8, 25, 25],
+        [8, 8, 5, 5]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGEllipse svg:circle id='circle'",
+        "LayoutSVGViewportContainer svg id='symbol'",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow body",
+        "LayoutBlockFlow body",
+        "LayoutSVGRoot svg:svg id='svg'",
+        "LayoutSVGEllipse svg:circle id='circle'",
+        "LayoutSVGContainer svg:use id='use'",
+        "LayoutSVGViewportContainer svg id='symbol'",
+        "LayoutSVGEllipse svg:circle id='circle'"
+      ]
+    }
+  ]
+}
+

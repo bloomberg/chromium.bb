@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="resources/replaced-element-styles.css">
+</head>
+<body>
+<style>
+div#wrapper {
+    display: block;
+    margin: 0;
+    padding: 0;
+    width: auto;
+    height: 3em;
+    vertical-align: 0;
+}
+
+progress#with-style {
+    display: block;
+    width: 15em;
+    height: 3em;
+}
+</style>
+
+<div id="container">
+    <div id="wrapper" class="progress-like">
+        <div style="margin-left: 100px;">
+            <span>(after)</span>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

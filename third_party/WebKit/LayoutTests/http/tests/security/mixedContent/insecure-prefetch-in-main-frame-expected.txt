@@ -1,0 +1,2 @@
+CONSOLE WARNING: line 8: Mixed Content: The page at 'https://127.0.0.1:8443/security/mixedContent/insecure-prefetch-in-main-frame.html' was loaded over HTTPS, but requested an insecure prefetch resource 'http://127.0.0.1:8080/resources/square.png'. This content should also be served over HTTPS.
+Prefetching from insecure source must trigger a mixed content callback.

@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    setInterval(callback, 0);
+    debugger;
+}
+
+function callback()
+{
+    return window.__foo;
+}
+
+function test()
+{
+    var maxAsyncCallStackDepth = 4;
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause()
+    {
+        InspectorTest.addResult("Reloading the page...");
+        InspectorTest.reloadPage(afterReload);
+    }
+
+    function afterReload()
+    {
+        InspectorTest.addResult("PASS: Reloaded successfully.");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that page reload with async stacks turned on does not crash.
+<a href="https://code.google.com/p/chromium/issues/detail?id=441223">Bug 441223.</a>
+</p>
+</body>
+</html>

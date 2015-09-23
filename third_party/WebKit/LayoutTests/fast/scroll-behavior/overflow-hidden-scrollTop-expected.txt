@@ -1,0 +1,11 @@
+Test that setting scrollTop on an overflow:hidden element works with both scroll behaviors
+
+This is a testharness.js-based test.
+PASS Scroll x:0, y:2, smooth:false 
+PASS Scroll x:0, y:4, smooth:false 
+PASS Scroll x:0, y:25, smooth:true 
+PASS Scroll x:0, y:45, smooth:true 
+PASS Scroll x:0, y:4100, smooth:true 
+PASS Scroll x:0, y:20, smooth:true 
+Harness: the test ran to completion.
+

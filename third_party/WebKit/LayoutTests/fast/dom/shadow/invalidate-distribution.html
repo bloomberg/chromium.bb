@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="host"></div>
+
+<script>
+if (window.testRunner)
+    testRunner.waitUntilDone();
+
+var shadowRoot = host.createShadowRoot();
+shadowRoot.innerHTML = "<p>oldest shadow</p>"
+
+setTimeout(function() {
+    var shadowRoot2 = host.createShadowRoot();
+    shadowRoot2.innerHTML = "<p>younger shadow</p>";
+
+    if (window.testRunner)
+        testRunner.notifyDone();
+}, 0);
+</script>
+</body>
+</html>

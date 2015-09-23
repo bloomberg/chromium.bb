@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<title>Test for crbug.com/190880</title>
+<script src="resources/text-based-repaint.js"></script>
+<style>
+    video { width: 700px; }
+</style>
+
+<video id="v" controls autoload src="../../media/content/test.ogv">
+</video>
+
+<script>
+    window.testIsAsync = true;
+
+    var video = document.getElementById("v");
+    video.addEventListener("canplaythrough", runRepaintTest, true);
+
+    function repaintTest() {
+        video.volume = 0;
+        finishRepaintTest();
+    }
+</script>

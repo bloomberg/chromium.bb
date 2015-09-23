@@ -1,0 +1,264 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../elements-test.js"></script>
+<link rel="stylesheet" href="../styles/resources/stylesheet-tracking.css" />
+
+<style>
+html {
+    font-size: 12px;
+}
+</style>
+
+<script>
+
+function addStyleSheet()
+{
+    var styleElement = document.createElement("style");
+    styleElement.id = "style";
+    styleElement.type = "text/css";
+    styleElement.textContent = "@import url(\"resources/stylesheet-tracking-import.css\");\na { color: green; }"
+    document.head.appendChild(styleElement);
+}
+
+function removeImport()
+{
+    document.getElementById("style").sheet.deleteRule(0);
+}
+
+function removeStyleSheet()
+{
+    document.head.removeChild(document.getElementById("style"));
+}
+
+function loadIframe()
+{
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("seamless", "seamless");
+    iframe.src = "resources/stylesheet-tracking-iframe.html";
+    document.body.appendChild(iframe);
+}
+
+function iframe()
+{
+    return document.getElementsByTagName("iframe")[0];
+}
+
+function addIframeStyleSheets()
+{
+    iframe().contentWindow.postMessage("addStyleSheets", "*");
+}
+
+function navigateIframe()
+{
+    iframe().src = iframe().src;
+}
+
+function removeIframeStyleSheets()
+{
+    iframe().contentWindow.postMessage("removeStyleSheets", "*");
+}
+
+function removeIframe()
+{
+    var element = iframe();
+    element.parentElement.removeChild(element);
+}
+
+function test()
+{
+    var inspectedNode;
+
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded, null);
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
+    var headers = InspectorTest.cssModel.styleSheetHeaders();
+    InspectorTest.addResult(headers.length + " headers known:");
+    sortAndDumpData(headers);
+
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step0);
+
+    function step0(node)
+    {
+        inspectedNode = node;
+        InspectorTest.addResult("=== Adding iframe... ===");
+        InspectorTest.evaluateInPage("loadIframe()");
+        waitStyleSheetAdded(1, iframeAdded);
+
+        function iframeAdded()
+        {
+            InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+            waitStyleSheetAdded(2, navigateIframe);
+            InspectorTest.evaluateInPage("addIframeStyleSheets()");
+        }
+
+        function navigateIframe()
+        {
+            InspectorTest.addResult("=== Navigating iframe... ===");
+            waitStyleSheetRemoved(3, frameNavigated);
+            InspectorTest.evaluateInPage("navigateIframe()");
+            
+            function frameNavigated()
+            {
+                waitStyleSheetAdded(1, styleSheetsAdded);
+            }
+
+            function styleSheetsAdded()
+            {
+                InspectorTest.addResult("=== Adding iframe stylesheet... ===");
+                waitStyleSheetAdded(2, removeIframeStyleSheets);
+                InspectorTest.evaluateInPage("addIframeStyleSheets()");
+            }
+        }
+
+        function removeIframeStyleSheets()
+        {
+            InspectorTest.addResult("=== Removing iframe stylesheet... ===");
+            waitStyleSheetRemoved(2, step1)
+            InspectorTest.evaluateInPage("removeIframeStyleSheets()");
+        }
+    }
+
+    function step1()
+    {
+        InspectorTest.addResult("=== Adding stylesheet... ===");
+        waitStyleSheetAdded(4, step2);
+        InspectorTest.evaluateInPage("addStyleSheet()");
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("=== Removing @import... ===");
+        waitStyleSheetRemoved(3, step3);
+        InspectorTest.evaluateInPage("removeImport()");
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("=== Removing stylesheet... ===");
+        waitStyleSheetRemoved(1, step4);
+        InspectorTest.evaluateInPage("removeStyleSheet()");
+    }
+
+    function step4()
+    {
+        InspectorTest.addResult("=== Adding rule... ===");
+        waitStyleSheetAdded(1);
+        InspectorTest.addNewRule("#inspected", successCallback);
+
+        function successCallback()
+        {
+            InspectorTest.addResult("Rule added");
+            step5();
+        }
+    }
+
+    function step5()
+    {
+        InspectorTest.addResult("=== Removing iframe... ===");
+        InspectorTest.evaluateInPage("removeIframe()");
+        waitStyleSheetRemoved(1, step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.completeTest();
+    }
+
+    var addedCallback;
+    var addedSheetCount;
+    var addedSheets = [];
+
+    function waitStyleSheetAdded(count, next)
+    {
+        addedSheetCount = count;
+        addedCallback = next;
+    }
+
+    function styleSheetAdded(event)
+    {
+        var header = event.data;
+        addedSheets.push(header);
+        --addedSheetCount;
+        if (addedSheetCount > 0)
+            return;
+        else if (addedSheetCount < 0)
+            InspectorTest.addResult("Unexpected styleSheetAdded()");
+
+        InspectorTest.addResult("Stylesheets added:");
+        sortAndDumpData(addedSheets);
+        addedSheets = [];
+        if (addedCallback) {
+            var callback = addedCallback;
+            addedCallback = null;
+            callback();
+        }
+    }
+
+    var removedCallback;
+    var removedSheetCount;
+    var removedSheets = [];
+
+    function waitStyleSheetRemoved(count, next)
+    {
+        removedSheetCount = count;
+        removedCallback = next;
+    }
+
+    function styleSheetRemoved(event)
+    {
+        var header = event.data;
+        removedSheets.push(header);
+        --removedSheetCount;
+        if (removedSheetCount > 0)
+            return;
+        else if (removedSheetCount < 0)
+            InspectorTest.addResult("Unexpected styleSheetRemoved()");
+
+        InspectorTest.addResult("Stylesheets removed:");
+        sortAndDumpData(removedSheets);
+        removedSheets = [];
+        if (removedCallback) {
+            var callback = removedCallback;
+            removedCallback = null;
+            callback();
+        }
+    }
+
+    function sortAndDumpData(sheets)
+    {
+        function sorter(a, b)
+        {
+            return a.sourceURL.localeCompare(b.sourceURL);
+        }
+        sheets = sheets.sort(sorter);
+        for (var i = 0; i < sheets.length; ++i) {
+            var header = sheets[i];
+            InspectorTest.addResult("    URL=" + trimURL(header.sourceURL));
+            InspectorTest.addResult("    origin=" + header.origin);
+            InspectorTest.addResult("    isInline=" + header.isInline);
+            InspectorTest.addResult("    hasSourceURL=" + header.hasSourceURL);
+        }
+    }
+
+    function trimURL(url)
+    {
+        if (!url)
+            return url;
+        var lastIndex = url.lastIndexOf("inspector/");
+        if (lastIndex < 0)
+            return url;
+        return ".../" + url.substr(lastIndex);
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that the styleSheetAdded and styleSheetRemoved events are reported into the frontend. <a href="https://bugs.webkit.org/show_bug.cgi?id=105828">Bug 105828</a>.
+</p>
+
+<div id="inspected">Text</div>
+
+</body>
+</html>

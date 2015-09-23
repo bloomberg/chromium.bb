@@ -1,0 +1,41 @@
+{
+  "bounds": [1250, 585],
+  "children": [
+    {
+      "bounds": [1250, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [1250, 0, 250, 585],
+        [704, 0, 700, 237],
+        [704, 0, 214, 232],
+        [700, 217, 4, 19],
+        [454, 0, 700, 237],
+        [454, 0, 214, 232],
+        [450, 217, 4, 19],
+        [0, 0, 1500, 237],
+        [0, 0, 800, 56],
+        [0, 0, 700, 237],
+        [0, 0, 214, 232],
+        [-250, 0, 1500, 237],
+        [-250, 0, 700, 237],
+        [-250, 0, 214, 232]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+        "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+        "LayoutImage IMG",
+        "LayoutText #text",
+        "LayoutText #text",
+        "InlineTextBox '\n'",
+        "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+        "LayoutImage IMG",
+        "LayoutText #text",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

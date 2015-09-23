@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/audio-testing.js"/>
+    <script src="resources/compatibility.js"></script>
+    <title>OfflineAudioContext.startRendering Promise</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test OfflineAudioContext.startRendering Promise")
+
+      window.jsTestIsAsync = true;
+
+      var context;
+      var promiseData;
+
+      var sampleRate = 48000;
+      var renderSeconds = 1;
+      var renderFrames = sampleRate * renderSeconds;
+      var contextChannels = 2;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask('reject-promise', function (done) {
+        // Create a context and verify that calling startRendering more than once causes a rejected
+        // promise.
+        var context = new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
+        context.startRendering();
+        context.startRendering()
+               .then(function () {
+                         testFailed("Promise not rejected when calling startRendering twice");
+                       }, function () {
+                         testPassed("Promise correctly rejected when calling startRendering twice");
+                       })
+               .then(done);
+      });
+
+      audit.defineTask('promise-results', function (done) {
+        // Create an offline context and verify that buffer returned by the promise matches the
+        // expected results.
+        context = new OfflineAudioContext(contextChannels, renderFrames, sampleRate);
+
+        var buffer = context.createBuffer(contextChannels, renderFrames, sampleRate);
+        for (var k = 0; k < renderFrames; ++k) {
+          buffer.getChannelData(0)[k] = 1;
+          buffer.getChannelData(1)[k] = 2;
+        }
+
+        var source = context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(context.destination);
+        source.start();
+
+        context.startRendering().then(handlePromise).then(done);
+      });
+      
+      audit.defineTask('finish', function (done) {
+        done();
+        finishJSTest();
+      });
+
+      audit.runTasks('reject-promise', 'promise-results', 'finish');
+      
+      function handlePromise(buffer)
+      {
+        renderedData = buffer;
+        var success = true;
+
+        shouldBeEqualToString("context.state", "closed");
+        shouldBeEqualToNumber("renderedData.numberOfChannels", contextChannels);
+        shouldBeEqualToNumber("renderedData.length", renderFrames);
+
+        for (var channel = 0; channel < contextChannels; ++channel) {
+          var data = renderedData.getChannelData(channel);
+          for (var k = 0; k < renderFrames; ++k) {
+            if (data[k] != channel + 1) {
+              success = false;
+              badChannel = channel;
+              badFrame = k;
+              break;
+            }
+          }
+          if (!success)
+            break;
+        }
+
+        if (success) {
+          testPassed("Rendered data matches expected results");
+          testPassed("OfflineAudioContext.startRendering promise succeeded");
+        } else {
+          testFailed("Rendered data does not match expected results for channel " +
+                     badChannel + ", frame " + badFrame);
+          testFailed("OfflineAudioContext.startRendering promise");
+        }
+      }
+
+      successfullyParsed = true;
+    </script>
+    
+  </body>
+</html>

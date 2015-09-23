@@ -1,0 +1,53 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+
+
+Tests: 
+
+Fix for this bug: 
+<rdar://problem/4039676> REGRESSION (Mail): in reply,  on pasted text (without trailing newline) is eaten when pasted above date
+
+
+Expected Results:
+
+Should see two lines of text below, self-documenting themselves as "line one" and "line two".
+
+
+
+After copy:
+| "
+"
+| <div>
+|   class="editing"
+|   id="test"
+|   <#selection-caret>
+|   <br>
+|   "line two
+"
+| "
+"
+
+After paste:
+| "
+"
+| <div>
+|   class="editing"
+|   id="test"
+|   "line one<#selection-caret>"
+|   <br>
+|   "line two
+"
+| "
+"

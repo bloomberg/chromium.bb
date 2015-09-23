@@ -1,0 +1,18 @@
+Before
+
+
+After
+
+End of test
+
+This tests that when an iframe finishes loading, it sends a notification.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS accessibilityController.accessibleElementById('innerbutton') is undefined.
+PASS accessibilityController.accessibleElementById('innerbutton') is defined.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

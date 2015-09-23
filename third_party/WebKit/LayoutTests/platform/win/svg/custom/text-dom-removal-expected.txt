@@ -1,0 +1,25 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [50, 111, 166, 17],
+        [50, 111, 166, 17],
+        [0, 0, 216, 128],
+        [0, 0, 20, 20]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect",
+        "InlineTextBox ''",
+        "LayoutSVGInlineText #text",
+        "RootInlineBox",
+        "LayoutSVGText text",
+        "LayoutSVGContainer g id='objectsToRemove'"
+      ]
+    }
+  ]
+}
+

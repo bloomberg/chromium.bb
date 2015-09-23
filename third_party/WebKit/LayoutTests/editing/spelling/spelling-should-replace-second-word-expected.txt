@@ -1,0 +1,12 @@
+SpellCheckEvent: FinishLastTextCheck
+SpellCheckEvent: FinishLastTextCheck
+Spell check replaces the second misspelled of two when a selection is made. To test manually, type 'Helllo wordl.' and context-click on 'wordl'. The test succeeds if the marker doesn't disappear from 'wordl'.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS spellingMarkerRange.toString() is "wordl"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Helllo wordl.

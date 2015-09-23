@@ -1,0 +1,100 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 885
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x885 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x885
+    LayoutBlockFlow {BODY} at (8,8) size 769x869 [bgcolor=#CCCCCC]
+      LayoutBlockFlow {P} at (0,0) size 769x18
+        LayoutText {#text} at (0,0) size 363x17
+          text run at (0,0) width 363: "The style declarations which apply to the text below are:"
+      LayoutBlockFlow {PRE} at (0,34) size 769x240
+        LayoutText {#text} at (0,0) size 336x240
+          text run at (0,0) width 232: "/* This is a CSS1 comment. */"
+          text run at (232,0) width 0: " "
+          text run at (0,16) width 336: ".one {color: green;} /* Another comment */"
+          text run at (336,16) width 0: " "
+          text run at (0,32) width 288: "/* The following should not be used:"
+          text run at (288,32) width 0: " "
+          text run at (0,48) width 168: ".two {color: red;} */"
+          text run at (168,48) width 0: " "
+          text run at (0,64) width 320: ".three {color: green; /* color: red; */}"
+          text run at (320,64) width 0: " "
+          text run at (0,80) width 24: "/**"
+          text run at (24,80) width 0: " "
+          text run at (0,96) width 176: ".four {color: red;} */"
+          text run at (176,96) width 0: " "
+          text run at (0,112) width 168: ".five {color: green;}"
+          text run at (168,112) width 0: " "
+          text run at (0,128) width 32: "/**/"
+          text run at (32,128) width 0: " "
+          text run at (0,144) width 160: ".six {color: green;}"
+          text run at (160,144) width 0: " "
+          text run at (0,160) width 88: "/*********/"
+          text run at (88,160) width 0: " "
+          text run at (0,176) width 176: ".seven {color: green;}"
+          text run at (176,176) width 0: " "
+          text run at (0,192) width 128: "/* a comment **/"
+          text run at (128,192) width 0: " "
+          text run at (0,208) width 176: ".eight {color: green;}"
+          text run at (176,208) width 0: " "
+          text run at (0,224) width 0: " "
+      LayoutBlockFlow {HR} at (0,287) size 769x2 [border: (1px inset #EEEEEE)]
+      LayoutBlockFlow {P} at (0,305) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutBlockFlow {P} at (0,339) size 769x18
+        LayoutText {#text} at (0,0) size 196x17
+          text run at (0,0) width 196: "This sentence should be black."
+      LayoutBlockFlow {P} at (0,373) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutBlockFlow {P} at (0,407) size 769x18
+        LayoutText {#text} at (0,0) size 196x17
+          text run at (0,0) width 196: "This sentence should be black."
+      LayoutBlockFlow {P} at (0,441) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutBlockFlow {P} at (0,475) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutBlockFlow {P} at (0,509) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutBlockFlow {P} at (0,543) size 769x18 [color=#008000]
+        LayoutText {#text} at (0,0) size 197x17
+          text run at (0,0) width 197: "This sentence should be green."
+      LayoutTable {TABLE} at (0,577) size 219x292 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 217x290
+          LayoutTableRow {TR} at (0,0) size 217x26
+            LayoutTableCell {TD} at (0,0) size 217x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=2]
+              LayoutInline {STRONG} at (0,0) size 163x17
+                LayoutText {#text} at (4,4) size 163x17
+                  text run at (4,4) width 163: "TABLE Testing Section"
+          LayoutTableRow {TR} at (0,26) size 217x264
+            LayoutTableCell {TD} at (0,145) size 12x26 [bgcolor=#C0C0C0] [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (4,4) size 4x17
+                text run at (4,4) width 4: " "
+            LayoutTableCell {TD} at (12,26) size 205x264 [border: (1px inset #808080)] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow {P} at (4,4) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."
+              LayoutBlockFlow {P} at (4,38) size 197x18
+                LayoutText {#text} at (0,0) size 196x17
+                  text run at (0,0) width 196: "This sentence should be black."
+              LayoutBlockFlow {P} at (4,72) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."
+              LayoutBlockFlow {P} at (4,106) size 197x18
+                LayoutText {#text} at (0,0) size 196x17
+                  text run at (0,0) width 196: "This sentence should be black."
+              LayoutBlockFlow {P} at (4,140) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."
+              LayoutBlockFlow {P} at (4,174) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."
+              LayoutBlockFlow {P} at (4,208) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."
+              LayoutBlockFlow {P} at (4,242) size 197x18 [color=#008000]
+                LayoutText {#text} at (0,0) size 197x17
+                  text run at (0,0) width 197: "This sentence should be green."

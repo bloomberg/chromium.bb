@@ -1,0 +1,119 @@
+CONSOLE MESSAGE: line 10: null
+CONSOLE MESSAGE: line 12: Array of arrays
+CONSOLE MESSAGE: line 13: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 15: Large array of arrays
+CONSOLE MESSAGE: line 16: 1,2,3,4,5,6,1,2,3,4,5,6,1,2,3,4,5,6,1,2,3,4,5,6
+CONSOLE MESSAGE: line 18: Array or array and object
+CONSOLE MESSAGE: line 19: 1,2,3,[object Object]
+CONSOLE MESSAGE: line 21: Object table
+CONSOLE MESSAGE: line 22: [object Object]
+CONSOLE MESSAGE: line 24: Null as columns
+CONSOLE MESSAGE: line 25: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 27: Digit as columns
+CONSOLE MESSAGE: line 28: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 30: String as columns
+CONSOLE MESSAGE: line 31: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 33: Random string as columns
+CONSOLE MESSAGE: line 34: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 36: Array of strings as columns
+CONSOLE MESSAGE: line 37: [object Object],[object Object]
+CONSOLE MESSAGE: line 39: Good and bad column names
+CONSOLE MESSAGE: line 40: [object Object],[object Object]
+CONSOLE MESSAGE: line 42: Missing column name
+CONSOLE MESSAGE: line 43: [object Object],[object Object]
+CONSOLE MESSAGE: line 10: null
+CONSOLE MESSAGE: line 12: Array of arrays
+CONSOLE MESSAGE: line 13: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 15: Large array of arrays
+CONSOLE MESSAGE: line 16: 1,2,3,4,5,6,1,2,3,4,5,6,1,2,3,4,5,6,1,2,3,4,5,6
+CONSOLE MESSAGE: line 18: Array or array and object
+CONSOLE MESSAGE: line 19: 1,2,3,[object Object]
+CONSOLE MESSAGE: line 21: Object table
+CONSOLE MESSAGE: line 22: [object Object]
+CONSOLE MESSAGE: line 24: Null as columns
+CONSOLE MESSAGE: line 25: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 27: Digit as columns
+CONSOLE MESSAGE: line 28: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 30: String as columns
+CONSOLE MESSAGE: line 31: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 33: Random string as columns
+CONSOLE MESSAGE: line 34: 1,2,3,4,5,6
+CONSOLE MESSAGE: line 36: Array of strings as columns
+CONSOLE MESSAGE: line 37: [object Object],[object Object]
+CONSOLE MESSAGE: line 39: Good and bad column names
+CONSOLE MESSAGE: line 40: [object Object],[object Object]
+CONSOLE MESSAGE: line 42: Missing column name
+CONSOLE MESSAGE: line 43: [object Object],[object Object]
+Tests console.table.
+
+console-format-table.html:10 
+console-format-table.html:12 Array of arrays
+console-format-table.html:13 
+console-format-table.html:15 Large array of arrays
+console-format-table.html:16 
+console-format-table.html:18 Array or array and object
+console-format-table.html:19 
+console-format-table.html:21 Object table
+console-format-table.html:22 
+console-format-table.html:24 Null as columns
+console-format-table.html:25 
+console-format-table.html:27 Digit as columns
+console-format-table.html:28 
+console-format-table.html:30 String as columns
+console-format-table.html:31 
+console-format-table.html:33 Random string as columns
+console-format-table.html:34 
+console-format-table.html:36 Array of strings as columns
+console-format-table.html:37 
+console-format-table.html:39 Good and bad column names
+console-format-table.html:40 
+console-format-table.html:42 Missing column name
+console-format-table.html:43 
+console-format-table.html:10 
+console-format-table.html:12 Array of arrays
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+console-format-table.html:15 Large array of arrays
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+console-format-table.html:18 Array or array and object
+HEADER (index) | 0 | 1 | 2 | a | b | c | 
+ROW 1 | 2 | 3 | 
+ROW 1 | 2 | 3 | 
+console-format-table.html:21 Object table
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW 3 | 4 | 
+console-format-table.html:24 Null as columns
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+console-format-table.html:27 Digit as columns
+HEADER (index) | 0 | 1 | 2 | 
+ROW 1 | 2 | 3 | 
+ROW 4 | 5 | 6 | 
+console-format-table.html:30 String as columns
+HEADER (index) | 0 | 
+ROW 1 | 
+ROW 4 | 
+console-format-table.html:33 Random string as columns
+HEADER (index) | 
+console-format-table.html:36 Array of strings as columns
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW "foo" | "bar" | 
+console-format-table.html:39 Good and bad column names
+HEADER (index) | a | b | 
+ROW 1 | 2 | 
+ROW "foo" | 
+console-format-table.html:42 Missing column name
+HEADER (index) | 
+

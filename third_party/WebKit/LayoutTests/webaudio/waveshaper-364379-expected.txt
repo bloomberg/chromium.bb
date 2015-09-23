@@ -1,0 +1,9 @@
+Test WaveShaperNode
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS WaveShaper successfully handled change in oversampling
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,8 @@
+EXPECTED (getComputedStyle(controls).opacity == '1') OK
+
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+
+This is a testharness.js-based test.
+PASS This tests that controls do not fade out when the video is playing remotely. 
+Harness: the test ran to completion.
+

@@ -1,0 +1,36 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [200, 200],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3"
+            },
+            {
+              "position": [50, 50],
+              "bounds": [251, 251],
+              "drawsContent": true,
+              "repaintRects": [
+                [50, 50, 201, 201]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (positioned) DIV id='target'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

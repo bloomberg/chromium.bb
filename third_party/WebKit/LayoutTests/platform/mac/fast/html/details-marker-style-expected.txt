@@ -1,0 +1,29 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x473
+  LayoutBlockFlow {HTML} at (0,0) size 800x472.70
+    LayoutBlockFlow {BODY} at (8,8) size 784x456.70
+      LayoutBlockFlow {DIV} at (0,0) size 784x85
+        LayoutBlockFlow {DETAILS} at (0,0) size 784x85
+          LayoutBlockFlow {SUMMARY} at (0,0) size 784x85
+            LayoutDetailsMarker {DIV} at (0,0) size 111.83x79.83 [border: (8px solid #00FF00) (16px solid #00FF00) (24px solid #00FF00) (32px solid #00FF00)]: right
+            LayoutText {#text} at (121,57) size 94x28
+              text run at (121,57) width 94: "Summary"
+      LayoutBlockFlow {DIV} at (0,85) size 117x182.77
+        LayoutBlockFlow {DETAILS} at (0,0) size 117x182.77
+          LayoutBlockFlow {SUMMARY} at (0,0) size 117x182.77
+            LayoutDetailsMarker {DIV} at (0,0) size 111.83x79.83 [border: (8px solid #00FF00) (16px solid #00FF00) (24px solid #00FF00) (32px solid #00FF00)]: down
+            LayoutText {#text} at (89,89) size 28x94
+              text run at (89,89) width 94: "Summary"
+      LayoutBlockFlow {DIV} at (0,267.77) size 784x46
+        LayoutBlockFlow {DETAILS} at (0,0) size 784x46
+          LayoutBlockFlow {SUMMARY} at (0,0) size 784x46
+            LayoutDetailsMarker {DIV} at (0,0) size 64x40 [border: (8px solid #00FF00)]: right
+            LayoutText {#text} at (73,18) size 94x28
+              text run at (73,18) width 94: "Summary"
+      LayoutBlockFlow {DIV} at (0,313.77) size 70x142.94
+        LayoutBlockFlow {DETAILS} at (0,0) size 70x142.94
+          LayoutBlockFlow {SUMMARY} at (0,0) size 70x142.94
+            LayoutDetailsMarker {DIV} at (0,0) size 64x40 [border: (8px solid #00FF00)]: down
+            LayoutText {#text} at (42,49) size 28x94
+              text run at (42,49) width 94: "Summary"

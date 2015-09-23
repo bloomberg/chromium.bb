@@ -1,0 +1,2 @@
+CONSOLE ERROR: XPathNSResolver does not have a lookupNamespaceURI method.
+SUCCESS

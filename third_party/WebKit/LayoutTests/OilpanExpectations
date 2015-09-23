@@ -1,0 +1,43 @@
+# This file is used by the Oilpan bots (and anyone building in that config)
+# to track Oilpan-specific failures.
+
+# With Oilpan, the parent pointer in the CSSRule hierarchy is
+# strong. This is the intended behavior.
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-rule.html [ Failure ]
+crbug.com/345630 fast/dom/StyleSheet/gc-parent-stylesheet.html [ Failure ]
+crbug.com/345655 fast/dom/StyleSheet/detached-parent-rule-without-wrapper.html [ Failure ]
+crbug.com/345655 fast/dom/StyleSheet/detached-stylesheet-without-wrapper.html [ Failure ]
+crbug.com/370906 fast/dom/StyleSheet/gc-declaration-parent-rule.html [ Failure ]
+
+# With Oilpan, parent pointers in the DOM tree do not
+# mysteriously disappear. This is the intended behavior.
+crbug.com/356658 fast/dom/gc-3.html [ Failure ]
+crbug.com/356658 fast/dom/gc-5.html [ Failure ]
+crbug.com/356658 fast/dom/gc-12.html [ Failure ]
+crbug.com/356658 fast/dom/gc-dom-tree-lifetime.html [ Failure ]
+
+crbug.com/410145 [ Win ] fast/text/decorations-with-text-combine.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/international/text-combine-image-test.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/international/vertical-text-glyph-test.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/justify-ideograph-vertical.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/text/orientation-sideways.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/css/font-weight-1.html [ ImageOnlyFailure ]
+crbug.com/410145 [ Win ] fast/writing-mode/english-lr-text.html [ ImageOnlyFailure ]
+
+crbug.com/377567 [ Debug ] editing/selection/extend-selection-character.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
+crbug.com/377567 [ Debug ] fast/css/large-list-of-rules-crash.html [ Timeout Pass ]
+crbug.com/243871 [ Win Debug ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Timeout Pass ]
+
+# Times out on the Mac Debug Oilpan bot.
+crbug.com/389648 [ Mac Debug ] fast/text-autosizing/table-inflation-crash.html [ Timeout ]
+crbug.com/515250 [ Mac Debug ] http/tests/plugins/geturlnotify-from-npp-destroystream.html [ Timeout ]
+crbug.com/515250 [ Mac Debug ] plugins/js-from-destroy.html [ Timeout ]
+crbug.com/515250 [ Mac Debug ] plugins/attach-during-destroy.html [ Timeout ]
+
+crbug.com/344239 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Slow ]
+
+crbug.com/501229 fast/forms/associatedFormControls-leak-nodes.html [ Failure ]
+
+crbug.com/506186 accessibility/axobjectcache-leaks-node.html [ Failure ]
+crbug.com/417181 http/tests/xmlhttprequest/abort-on-changestate-headers-received.html [ Failure Pass ]

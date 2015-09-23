@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: intercept from [-1] to [1.5] was [-1] at 0
+PASS: intercept from [-1] to [1.5] was [-0.5] at 0.2
+PASS: intercept from [-1] to [1.5] was [0.5] at 0.6
+PASS: intercept from [-1] to [1.5] was [1.5] at 1
+
+Web Animations API:
+PASS: intercept from [-1] to [1.5] was [-2] at -0.4
+PASS: intercept from [-1] to [1.5] was [-1] at 0
+PASS: intercept from [-1] to [1.5] was [-0.5] at 0.2
+PASS: intercept from [-1] to [1.5] was [0.5] at 0.6
+PASS: intercept from [-1] to [1.5] was [1.5] at 1
+PASS: intercept from [-1] to [1.5] was [2.5] at 1.4
+

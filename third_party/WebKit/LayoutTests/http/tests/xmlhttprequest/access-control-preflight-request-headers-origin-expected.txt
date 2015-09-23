@@ -1,0 +1,4 @@
+Test that 'Origin' is not included in Access-Control-Request-Headers in a preflight request. Should print PASS.
+
+PASS
+

@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+
+description("Test dynamic creation of WebKitTransitionEnd event.");
+
+if (document.createEvent)
+    testPassed("document.createEvent exists");
+else
+    testFailed("document.createEvent missing");
+
+debug("");
+debug("Test creation of WebKitTransitionEvent");
+
+var ev = document.createEvent("WebKitTransitionEvent");
+
+shouldBe("typeof(ev)", "'object'");
+shouldBe("ev.propertyName", "''");
+shouldBe("ev.elapsedTime", "0.0");
+
+debug("");
+debug("Create a MouseEvent and make sure it doesn't have the WebKitTransitionEnd event properties");
+
+ev = document.createEvent("MouseEvent");
+
+shouldBe("typeof(ev)", "'object'");
+shouldBe("ev.propertyName", "undefined");
+shouldBe("ev.elapsedTime", "undefined");
+
+debug("");
+
+</script>
+</body>
+</html>

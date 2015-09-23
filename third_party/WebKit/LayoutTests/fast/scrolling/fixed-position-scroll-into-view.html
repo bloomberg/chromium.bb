@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+.target {
+  position: fixed;
+  top: 100px;
+  left: 100px;
+  width: 100px;
+  height: 50px;
+  background-color: #ccc;
+}
+</style>
+<div style="height: 1000px"></div>
+<div class="target" id="t1"></div>
+<div style="position: absolute; top: 100px; transform: translateZ(0)">
+  <div class="target" id="t2"></div>
+</div>
+<script>
+</script>
+
+<script>
+
+description("Tests that scrolling to a fixed position element does not scroll the viewport.");
+
+location.hash = "#t1";
+shouldBe("scrollY", "0");
+
+location.hash = "#t2";
+shouldBe("scrollY", "200");
+
+location.hash = "#t1";
+shouldBe("scrollY", "200");
+
+location.hash = "#";
+shouldBe("scrollY", "0");
+
+</script>
+</body>
+<html>

@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="/js-test-resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Verifies the minimum resolution is 5 microseconds.");
+
+function testTimeResolution(highResTimeFunc) {
+    var t0 = highResTimeFunc();
+    var t1 = highResTimeFunc();
+    while (t0 == t1) {
+        t1 = highResTimeFunc();
+    }
+
+    var expectedResolutionMilliseconds = 0.005;
+    var integerMultipleOfResolution = (t1 - t0) / expectedResolutionMilliseconds;
+    shouldBeNearZeroOrOne = integerMultipleOfResolution % 1;
+    shouldBe("shouldBeNearZeroOrOne < 1e-10 || Math.abs(shouldBeNearZeroOrOne - 1) < 1e-10", "true");
+}
+
+function timeByPerformanceNow() {
+    return performance.now();
+}
+
+function timeByUserTiming() {
+    performance.mark('timer');
+    var t = performance.getEntriesByName('timer')[0].startTime;
+    performance.clearMarks('timer');
+    return t;
+}
+
+testTimeResolution(timeByPerformanceNow);
+testTimeResolution(timeByUserTiming);
+</script>
+</body>
+</html>

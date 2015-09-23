@@ -1,0 +1,21 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+SVG 1.1 dynamic animation tests
+
+
+This tests values animation with just a single entry
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS rect.width.animVal.value is 10
+PASS rect.width.baseVal.value is 10
+PASS rect.width.animVal.value is 100
+PASS rect.width.baseVal.value is 10
+PASS rect.width.animVal.value is 100
+PASS rect.width.baseVal.value is 10
+PASS rect.width.animVal.value is 100
+PASS rect.width.baseVal.value is 10
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

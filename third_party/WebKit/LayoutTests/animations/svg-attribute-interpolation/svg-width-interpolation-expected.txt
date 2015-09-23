@@ -1,0 +1,66 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: width from [10] to [60] was [10] at 0
+PASS: width from [10] to [60] was [20] at 0.2
+PASS: width from [10] to [60] was [40] at 0.6
+PASS: width from [10] to [60] was [60] at 1
+PASS: width from [10%] to [60%] was [10%] at 0
+PASS: width from [10%] to [60%] was [20%] at 0.2
+PASS: width from [10%] to [60%] was [40%] at 0.6
+PASS: width from [10%] to [60%] was [60%] at 1
+PASS: width from [10em] to [60em] was [10em] at 0
+PASS: width from [10em] to [60em] was [20em] at 0.2
+PASS: width from [10em] to [60em] was [40em] at 0.6
+PASS: width from [10em] to [60em] was [60em] at 1
+PASS: width from [10ex] to [60ex] was [10ex] at 0
+PASS: width from [10ex] to [60ex] was [20ex] at 0.2
+PASS: width from [10ex] to [60ex] was [40ex] at 0.6
+PASS: width from [10ex] to [60ex] was [60ex] at 1
+PASS: width from [10rem] to [60rem] was [10rem] at 0
+PASS: width from [10rem] to [60rem] was [20rem] at 0.2
+PASS: width from [10rem] to [60rem] was [40rem] at 0.6
+PASS: width from [10rem] to [60rem] was [60rem] at 1
+PASS: width from [10in] to [20rem] was [10in] at 0
+PASS: width from [10in] to [20rem] was [808] at 0.2
+PASS: width from [10in] to [20rem] was [504] at 0.6
+PASS: width from [10in] to [20rem] was [20rem] at 1
+
+Web Animations API:
+PASS: width from [10] to [60] was [0] at -0.4
+PASS: width from [10] to [60] was [10] at 0
+PASS: width from [10] to [60] was [20] at 0.2
+PASS: width from [10] to [60] was [40] at 0.6
+PASS: width from [10] to [60] was [60] at 1
+PASS: width from [10] to [60] was [80] at 1.4
+PASS: width from [10%] to [60%] was [0%] at -0.4
+PASS: width from [10%] to [60%] was [10%] at 0
+PASS: width from [10%] to [60%] was [20%] at 0.2
+PASS: width from [10%] to [60%] was [40%] at 0.6
+PASS: width from [10%] to [60%] was [60%] at 1
+PASS: width from [10%] to [60%] was [80%] at 1.4
+PASS: width from [10em] to [60em] was [0em] at -0.4
+PASS: width from [10em] to [60em] was [10em] at 0
+PASS: width from [10em] to [60em] was [20em] at 0.2
+PASS: width from [10em] to [60em] was [40em] at 0.6
+PASS: width from [10em] to [60em] was [60em] at 1
+PASS: width from [10em] to [60em] was [80em] at 1.4
+PASS: width from [10ex] to [60ex] was [0ex] at -0.4
+PASS: width from [10ex] to [60ex] was [10ex] at 0
+PASS: width from [10ex] to [60ex] was [20ex] at 0.2
+PASS: width from [10ex] to [60ex] was [40ex] at 0.6
+PASS: width from [10ex] to [60ex] was [60ex] at 1
+PASS: width from [10ex] to [60ex] was [80ex] at 1.4
+PASS: width from [10rem] to [60rem] was [0rem] at -0.4
+PASS: width from [10rem] to [60rem] was [10rem] at 0
+PASS: width from [10rem] to [60rem] was [20rem] at 0.2
+PASS: width from [10rem] to [60rem] was [40rem] at 0.6
+PASS: width from [10rem] to [60rem] was [60rem] at 1
+PASS: width from [10rem] to [60rem] was [80rem] at 1.4
+PASS: width from [10in] to [20rem] was [1264] at -0.4
+PASS: width from [10in] to [20rem] was [10in] at 0
+PASS: width from [10in] to [20rem] was [808] at 0.2
+PASS: width from [10in] to [20rem] was [504] at 0.6
+PASS: width from [10in] to [20rem] was [20rem] at 1
+PASS: width from [10in] to [20rem] was [0] at 1.4
+

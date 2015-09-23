@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 150, 784, 17],
+        [8, 150, 39, 17],
+        [8, 150, 36, 17]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow (relative positioned) DIV id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'PASS'"
+      ]
+    }
+  ]
+}
+

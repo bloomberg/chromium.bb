@@ -1,0 +1,11 @@
+webkitGetDatabaseNames should only return successfully created databases
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+dbname = "getdatabasenames-failed-open.html"
+PASS Database name was not present
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

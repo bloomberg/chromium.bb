@@ -1,0 +1,61 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 200, 200, 200],
+        [0, 0, 200, 200]
+      ],
+      "children": [
+        {
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#008000"
+        },
+        {
+          "position": [0, 200],
+          "bounds": [200, 200],
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#008000"
+            }
+          ]
+        },
+        {
+          "position": [150, 150],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#008000"
+        },
+        {
+          "position": [0, 200],
+          "bounds": [200, 200],
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [150, 150],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backfaceVisibility": "hidden",
+              "backgroundColor": "#008000"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

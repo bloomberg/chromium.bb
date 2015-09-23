@@ -1,0 +1,19 @@
+SUCCESS
+
+Rules from the stylesheet:
+
+#a:nth-child(1n-1) { color: green; }
+#b:nth-child(1n-10) { color: green; }
+#g:nth-child(-1n-1) { color: green; }
+#h:nth-child(-1n-10) { color: green; }
+#n:nth-child(-1n-1) { color: green; }
+#o:nth-child(-1n+13) { color: green; }
+Expected result:
+
+#a:nth-child(1n-1) { color: green; }
+#b:nth-child(1n-10) { color: green; }
+#g:nth-child(-1n-1) { color: green; }
+#h:nth-child(-1n-10) { color: green; }
+#n:nth-child(-1n-1) { color: green; }
+#o:nth-child(-1n+13) { color: green; }
+

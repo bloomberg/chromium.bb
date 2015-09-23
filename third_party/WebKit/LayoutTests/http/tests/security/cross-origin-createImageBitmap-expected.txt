@@ -1,0 +1,15 @@
+The image bitmap factories should throw exceptions on cross-origin access.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Rejected as expected: image
+PASS reason instanceof Error is true
+SecurityError: Failed to execute 'createImageBitmap' on 'Window': Cross-origin access to the source image is denied.
+PASS Rejected as expected: video
+PASS reason instanceof Error is true
+SecurityError: Failed to execute 'createImageBitmap' on 'Window': Cross-origin access to the source video is denied.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 

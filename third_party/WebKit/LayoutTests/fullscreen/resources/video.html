@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../media/media-file.js"></script>
+<script>
+function canplaythrough() {
+    parent.postMessage("Video loaded", "*");
+}
+
+function fullscreenChanged() {
+    parent.postMessage("SUCCEED - entered full screen!", "*");
+}
+
+onload = function() {
+    var video = document.getElementById('video');
+    var mediaFile = findMediaFile("video", "../../media/content/test");
+    video.src = mediaFile;
+    video.addEventListener('canplaythrough', canplaythrough);
+    video.addEventListener('webkitfullscreenchange', fullscreenChanged);
+    video.onclick = function(event) {
+        video.webkitRequestFullscreen();
+        // cancel the activation behavior (click to play/pause)
+        event.preventDefault();
+    };
+}
+</script>
+<video id="video" controls width="320" height="240"></video>

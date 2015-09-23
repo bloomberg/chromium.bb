@@ -1,0 +1,13 @@
+Test HTMLMediaElement canPlayType() method.
+
+TEST(video.canPlayType()) THROWS("TypeError: Failed to execute 'canPlayType' on 'HTMLMediaElement': 1 argument required, but only 0 present.") OK
+EXPECTED (video.canPlayType('video/') == '') OK
+EXPECTED (video.canPlayType('video/blahblah') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs="blah, , blah"') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs=blah') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs="blah"') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs="badcontent') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs=badcontent"') == '') OK
+EXPECTED (video.canPlayType('video/blahblah; codecs="badcontent"') == '') OK
+END OF TEST
+

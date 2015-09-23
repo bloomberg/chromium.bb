@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<title>controls of a non-blocked media element slaved to a media controller</title>
+<script src="media-file.js"></script>
+<video controls></video>
+<script>
+var video = document.querySelector('video[controls]');
+video.src = findMediaFile('video', 'content/test');
+
+if (window.testRunner) {
+  testRunner.waitUntilDone();
+  video.addEventListener('canplay', function() {
+    testRunner.notifyDone();
+  });
+}
+</script>

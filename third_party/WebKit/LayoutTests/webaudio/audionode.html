@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
+<script type="text/javascript" src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+description("Basic tests for AudioNode API.");
+
+var context = 0;
+var context2 = 0;
+var context3 = 0;
+
+function runTest() {
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+    
+    window.jsTestIsAsync = true;
+
+    context = new AudioContext();
+    window.audioNode = context.createBufferSource();
+
+    // Check input and output numbers of AudioSourceNode.
+    if (audioNode.numberOfInputs === 0)
+        testPassed("Source AudioNode has no inputs.");
+    else
+        testFailed("Source AudioNode should not have inputs.");
+    
+    if (audioNode.numberOfOutputs === 1)
+        testPassed("Source AudioNode has one output.");
+    else
+        testFailed("Source AudioNode should have one output.");
+
+    // Check input and output numbers of AudioDestinationNode
+    if (context.destination.numberOfInputs === 1)
+        testPassed("Destination AudioNode has one input.");
+    else
+        testFailed("Destination AudioNode should have one input.");
+
+    if (context.destination.numberOfOutputs === 0)
+        testPassed("Destination AudioNode has no outputs.");
+    else
+        testFailed("Destination AudioNode should have no outputs.");
+
+    // Try calling connect() method with illegal values.
+    shouldThrow('audioNode.connect(0, 0, 0)');
+    shouldThrow('audioNode.connect(null, 0, 0)');
+    shouldThrow('audioNode.connect(context.destination, 5, 0)');
+    shouldThrow('audioNode.connect(context.destination, 0, 5)');
+    
+    shouldNotThrow('audioNode.connect(context.destination, 0, 0)');
+    
+    // Create a new context and try to connect the other context's node to this one.
+    try {
+        context2 = new AudioContext();
+        window.audioNode.connect(context2.destination);
+        testFailed("exception should be thrown when connecting to other context's node.");
+    } catch(e) {
+        testPassed("exception thrown when connecting to other context's node.");
+    }
+
+    // 3-arg AudioContext doesn't create an offline context anymore.
+    shouldNotThrow("context3 = new AudioContext(1, 44100, 44100)");
+    if (context3 instanceof OfflineAudioContext)
+        testFailed("context3 should not be an OfflineAudioContext");
+    else
+        testPassed("context3 is not an OfflineAudioContext");
+
+    // Ensure it is an EventTarget
+    try {
+        audioNode.addEventListener('testEvent', function(){
+            testPassed("AudioNode is an EventTarget");
+        });
+        audioNode.dispatchEvent(new Event('testEvent'));
+    } catch(e) {
+        testFailed("exception shouldn't be thrown when testing whether audio node is an event target");
+    }
+
+    finishJSTest();
+}
+
+runTest();
+
+</script>
+
+</body>
+</html>

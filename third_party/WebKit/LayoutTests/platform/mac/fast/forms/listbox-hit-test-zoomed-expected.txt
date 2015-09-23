@@ -1,0 +1,69 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (9.59,9.59) size 780.81x580.81
+      LayoutBlockFlow (anonymous) at (0,0) size 780.81x162
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,162) size 780.81x66
+        LayoutText {#text} at (0,0) size 62x22
+          text run at (0,0) width 62: "Results:"
+        LayoutBR {BR} at (61,17) size 1x0
+        LayoutText {#text} at (0,22) size 105x22
+          text run at (0,22) width 105: "Test 1 Passed"
+        LayoutBR {BR} at (104,39) size 1x0
+        LayoutText {#text} at (0,44) size 105x22
+          text run at (0,44) width 105: "Test 2 Passed"
+layer at (10,10) size 127x162 clip at (22,22) size 92x138 scrollHeight 316
+  LayoutListBox {SELECT} at (0,0) size 127.33x162 [bgcolor=#FFFFFF] [border: (12px solid #000000)]
+    LayoutBlockFlow {OPTION} at (24,24) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "one"
+    LayoutBlockFlow {OPTION} at (24,41.19) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 24x16
+        text run at (2,0) width 24: "two"
+    LayoutBlockFlow {OPTION} at (24,58.38) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 33x16
+        text run at (2,0) width 33: "three"
+    LayoutBlockFlow {OPTION} at (24,75.56) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 25x16
+        text run at (2,0) width 25: "four"
+    LayoutBlockFlow {OPTION} at (24,92.75) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 23x16
+        text run at (2,0) width 23: "five"
+    LayoutBlockFlow {OPTION} at (24,109.94) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 18x16
+        text run at (2,0) width 18: "six"
+    LayoutBlockFlow {OPTION} at (24,127.13) size 68.33x17.19 [color=#FFFFFF] [bgcolor=#0069D9]
+      LayoutText {#text} at (2,0) size 37x16
+        text run at (2,0) width 37: "seven"
+    LayoutBlockFlow {OPTION} at (24,144.31) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 32x16
+        text run at (2,0) width 32: "eight"
+    LayoutBlockFlow {OPTION} at (24,161.50) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 27x16
+        text run at (2,0) width 27: "nine"
+    LayoutBlockFlow {OPTION} at (24,178.69) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 20x16
+        text run at (2,0) width 20: "ten"
+    LayoutBlockFlow {OPTION} at (24,195.88) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 41x16
+        text run at (2,0) width 41: "eleven"
+    LayoutBlockFlow {OPTION} at (24,213.06) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 41x16
+        text run at (2,0) width 41: "twelve"
+    LayoutBlockFlow {OPTION} at (24,230.25) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 48x16
+        text run at (2,0) width 48: "thirteen"
+    LayoutBlockFlow {OPTION} at (24,247.44) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 52x16
+        text run at (2,0) width 52: "fourteen"
+    LayoutBlockFlow {OPTION} at (24,264.63) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 40x16
+        text run at (2,0) width 40: "fifteen"
+    LayoutBlockFlow {OPTION} at (24,281.81) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 45x16
+        text run at (2,0) width 45: "sixteen"
+    LayoutBlockFlow {OPTION} at (24,299) size 68.33x17.19
+      LayoutText {#text} at (2,0) size 64x16
+        text run at (2,0) width 64: "seventeen"

@@ -1,0 +1,136 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+
+<script>
+function oneLineTestFunction() { return 0; }
+</script>
+
+<script>
+function oneLineTestFunction2() { return 0; }</script>
+
+<script>
+
+function testFunction()
+{
+    var x = Math.sqrt(10);
+    console.log("Done.");
+    return x;
+}
+
+var test = function()
+{
+    var currentSourceFrame;
+    InspectorTest.setQuiet(true);
+    InspectorTest.runDebuggerTestSuite([
+        function testSetConditionalBreakpointThatBreaks(next)
+        {
+            InspectorTest.showScriptSource("set-conditional-breakpoint.html", didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                currentSourceFrame = sourceFrame;
+                InspectorTest.addResult("Script source was shown.");
+                setBreakpointAndWaitUntilPaused(currentSourceFrame, 16, "true", didPause);
+                InspectorTest.runTestFunction();
+            }
+
+            function didPause(callFrames)
+            {
+                InspectorTest.addResult("Script execution paused.");
+                InspectorTest.captureStackTrace(callFrames);
+                InspectorTest.dumpBreakpointSidebarPane();
+                InspectorTest.addSniffer(currentSourceFrame, "_removeBreakpointDecoration", breakpointRemoved);
+                InspectorTest.removeBreakpoint(currentSourceFrame, 16);
+            }
+
+            function breakpointRemoved()
+            {
+                InspectorTest.resumeExecution(didResume);
+            }
+
+            function didResume()
+            {
+                InspectorTest.dumpBreakpointSidebarPane()
+                InspectorTest.addResult("Script execution resumed.");
+                next();
+            }
+        },
+
+        function testSetConditionalBreakpointThatDoesNotBreak(next)
+        {
+            InspectorTest.showScriptSource("set-conditional-breakpoint.html", didShowScriptSource);
+
+            function didShowScriptSource(sourceFrame)
+            {
+                currentSourceFrame = sourceFrame;
+                InspectorTest.addResult("Script source was shown.");
+                setBreakpoint(currentSourceFrame, 16, "false");
+                InspectorTest.runTestFunction();
+                InspectorTest.addConsoleSniffer(testFunctionFinished);
+                
+            }
+
+            function testFunctionFinished(callFrames)
+            {
+                InspectorTest.addResult("Test function finished.");
+                InspectorTest.dumpBreakpointSidebarPane();
+                InspectorTest.addSniffer(currentSourceFrame, "_removeBreakpointDecoration", breakpointRemoved);
+                InspectorTest.removeBreakpoint(currentSourceFrame, 16);
+            }
+
+            function breakpointRemoved()
+            {
+                InspectorTest.addResult("Breakpoints removed.");
+                InspectorTest.dumpBreakpointSidebarPane();
+                next();
+            }
+        },
+    ]);
+
+    function setBreakpoint(sourceFrame, lineNumber, condition, callback)
+    {
+        var expectedBreakpointId;
+        InspectorTest.addSniffer(WebInspector.BreakpointManager.TargetBreakpoint.prototype, "_didSetBreakpointInDebugger", didSetBreakpointInDebugger);
+        InspectorTest.setBreakpoint(sourceFrame, lineNumber, condition, true);
+
+        function didSetBreakpointInDebugger(breakpointManagerCallback, breakpointId)
+        {
+            if (callback)
+                callback(breakpointId);
+        }
+    }
+
+    function setBreakpointAndWaitUntilPaused(sourceFrame, lineNumber, condition, pausedCallback)
+    {
+        setBreakpoint(sourceFrame, lineNumber, condition, didSetBreakpointInDebugger);
+        var expectedBreakpointId;
+
+        function didSetBreakpointInDebugger(breakpointId)
+        {
+            expectedBreakpointId = breakpointId;
+            InspectorTest.waitUntilPaused(didPause);
+        }
+
+        function didPause(callFrames, reason, breakpointIds)
+        {
+            InspectorTest.assertEquals(breakpointIds.length, 1);
+            InspectorTest.assertEquals(breakpointIds[0], expectedBreakpointId);
+            InspectorTest.assertEquals(reason, "other");
+
+            pausedCallback(callFrames);
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests setting breakpoints.
+</p>
+
+</body>
+</html>

@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function startWorker()
+{
+    var worker = new Worker("resources/worker.js");
+}
+
+function test()
+{
+    InspectorTest.addSniffer(WebInspector.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
+    InspectorTest.evaluateInPage("startWorker()");
+
+    function contextCreated()
+    {
+        InspectorTest.changeExecutionContext("\u2699 worker.js");
+        InspectorTest.evaluateInConsole("\
+            function foo()\n\
+            {\n\
+                throw {a:239};\n\
+            }\n\
+            function boo()\n\
+            {\n\
+                foo();\n\
+            }\n\
+            boo();", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.expandConsoleMessages(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests exception message from eval on worker context in console contains stack trace.</p>
+</body>
+</html>

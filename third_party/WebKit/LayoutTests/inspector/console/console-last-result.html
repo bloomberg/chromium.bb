@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testLastResult(next)
+        {
+            InspectorTest.evaluateInConsole("1+1", step1);
+
+            function step1()
+            {
+                evaluateLastResultAndDump(next);
+            }
+        },
+
+        function testLastResultAfterConsoleClear(next)
+        {
+            InspectorTest.evaluateInConsole("1+1", step1);
+
+            function step1()
+            {
+                InspectorTest.consoleModel.requestClearMessages();
+                InspectorTest.runAfterPendingDispatches(step2);
+            }
+
+            function step2()
+            {
+                evaluateLastResultAndDump(next);
+            }
+        }
+    ]);
+
+    function evaluateLastResultAndDump(callback)
+    {
+        InspectorTest.evaluateInConsole("$_", didEvaluate);
+
+        function didEvaluate()
+        {
+            InspectorTest.dumpConsoleMessages();
+            if (callback)
+                callback();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests that console exposes last evaluation result as $_.
+</p>
+
+</body>
+</html>

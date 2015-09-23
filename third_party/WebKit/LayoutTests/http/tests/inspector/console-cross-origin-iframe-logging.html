@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="console-test.js"></script>
+<script>
+function accessFrame()
+{
+    // Should fail.
+    try {
+        var host = frames[0].location.host;
+    } catch (e) {}
+
+    // Should fail.
+    try {
+        frames[0].location.reload();
+    } catch (e) {}
+
+    // Should fail.
+    frames[0].postMessage("fail", "http://127.0.0.1:8000");
+}
+
+function test()
+{
+    var finishAttemptsLeft = 2;
+    InspectorTest.addConsoleSniffer(maybeFinish, true);
+    InspectorTest.NetworkAgent.setMonitoringXHREnabled(true, step1);
+
+    function step1()
+    {
+        InspectorTest.evaluateInPage("accessFrame()", maybeFinish);
+    }
+
+    function maybeFinish()
+    {
+        --finishAttemptsLeft;
+        if (finishAttemptsLeft)
+            return;
+
+        InspectorTest.NetworkAgent.setMonitoringXHREnabled(false, finish);
+    }
+
+    function finish()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that cross origin errors are logged with source url and line number.</p>
+<iframe src="http://localhost:8000/inspector/resources/cross-origin-iframe.html"></iframe>
+</body>
+</html>

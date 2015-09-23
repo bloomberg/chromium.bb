@@ -1,0 +1,43 @@
+Basic functionality test of closing an AudioContext
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context = new AudioContext() did not throw exception.
+PASS context.state is "running"
+PASS osc = context.createOscillator() did not throw exception.
+PASS gain = context.createGain() did not throw exception.
+PASS gain.connect(context.destination) did not throw exception.
+PASS context.close() was correctly resolved
+PASS gain.disconnect(destination) did not throw exception.
+PASS context.createAnalyser() threw exception InvalidStateError: Failed to execute 'createAnalyser' on 'AudioContext': AudioContext has been closed..
+PASS context.createBiquadFilter() threw exception InvalidStateError: Failed to execute 'createBiquadFilter' on 'AudioContext': AudioContext has been closed..
+PASS context.createBuffer(1, 1, 48000) did not throw exception.
+PASS context.createBufferSource() threw exception InvalidStateError: Failed to execute 'createBufferSource' on 'AudioContext': AudioContext has been closed..
+PASS context.createChannelMerger() threw exception InvalidStateError: Failed to execute 'createChannelMerger' on 'AudioContext': AudioContext has been closed..
+PASS context.createChannelSplitter() threw exception InvalidStateError: Failed to execute 'createChannelSplitter' on 'AudioContext': AudioContext has been closed..
+PASS context.createConvolver() threw exception InvalidStateError: Failed to execute 'createConvolver' on 'AudioContext': AudioContext has been closed..
+PASS context.createDelay() threw exception InvalidStateError: Failed to execute 'createDelay' on 'AudioContext': AudioContext has been closed..
+PASS context.createDynamicsCompressor() threw exception InvalidStateError: Failed to execute 'createDynamicsCompressor' on 'AudioContext': AudioContext has been closed..
+PASS context.createGain() threw exception InvalidStateError: Failed to execute 'createGain' on 'AudioContext': AudioContext has been closed..
+PASS context.createOscillator() threw exception InvalidStateError: Failed to execute 'createOscillator' on 'AudioContext': AudioContext has been closed..
+PASS context.createPanner() threw exception InvalidStateError: Failed to execute 'createPanner' on 'AudioContext': AudioContext has been closed..
+PASS context.createPeriodicWave(wave, wave) threw exception InvalidStateError: Failed to execute 'createPeriodicWave' on 'AudioContext': AudioContext has been closed..
+PASS context.createScriptProcessor() threw exception InvalidStateError: Failed to execute 'createScriptProcessor' on 'AudioContext': AudioContext has been closed..
+PASS context.createStereoPanner() threw exception InvalidStateError: Failed to execute 'createStereoPanner' on 'AudioContext': AudioContext has been closed..
+PASS context.createWaveShaper() threw exception InvalidStateError: Failed to execute 'createWaveShaper' on 'AudioContext': AudioContext has been closed..
+PASS osc.connect(gain) threw exception InvalidStateError: Failed to execute 'connect' on 'AudioNode': Cannot connect after the context has been closed..
+PASS gain.disconnect() did not throw exception.
+PASS Attempt to resume a closed context was correctly rejected
+PASS Closing context again correctly rejected promise.
+PASS context.destination is null
+PASS offline = new OfflineAudioContext(1, 1000, 48000) did not throw exception.
+PASS offline.state is "suspended"
+PASS Closing offline context correctly rejected: InvalidAccessError: cannot close an OfflineAudioContext.
+PASS Closing offline context again correctly rejected
+PASS offline.startRendering() did not throw exception.
+PASS event.target.state is "closed"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

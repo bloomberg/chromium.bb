@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+
+<script>
+function test()
+{
+    InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, step2);
+    // evaluateInConsole force InjectedScript.js loading and evaluate script with expression
+    InspectorTest.evaluateInConsole("console.log(42)");
+
+    var expectedScriptParsed = 2;
+    function step2(event)
+    {
+        var script = event.data;
+        InspectorTest.addResult(script._isInternalScript ? "Internal script" : "Not internal script");
+        --expectedScriptParsed;
+        if (!expectedScriptParsed)
+            InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that injected script has isInternalScript flag.
+</p>
+</body>
+</html>

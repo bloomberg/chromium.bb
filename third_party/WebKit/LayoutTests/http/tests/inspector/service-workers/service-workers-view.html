@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script>
+function test()
+{
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
+    var scope1 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
+    var scope2 = "http://127.0.0.1:8000/inspector/service-workers/resources/scope2/";
+    var scopes = [scope1, scope2];
+    var step = 0;
+
+    InspectorTest.addSniffer(WebInspector.ServiceWorkersView.prototype, "_registrationUpdated", registrationUpdated, true);
+    function registrationUpdated(event)
+    {
+        var registration = event.data;
+        for (var version of registration.versions.values()) {
+            if (step == 0 && registration.scopeURL == scope1 && version.isActivated() && version.isRunning()) {
+                ++step;
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult("Register ServiceWorker for scope2");
+                InspectorTest.registerServiceWorker(scriptURL, scope2);
+            } else if (step == 1 && registration.scopeURL == scope2 && version.isActivated() && version.isRunning()) {
+                ++step;
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult("Unegister ServiceWorker for scope1");
+                InspectorTest.unregisterServiceWorker(scope1);
+            } else if (step == 2 && registration.scopeURL == scope1 && version.isRedundant() && version.isRunning()) {
+                ++step;
+                InspectorTest.addResults(InspectorTest.dumpServiceWorkersView(scopes));
+                InspectorTest.addResult("Unegister ServiceWorker for scope1");
+                InspectorTest.unregisterServiceWorker(scope2);
+            } else if (step == 3 && registration.scopeURL == scope2 && version.isRedundant()) {
+                ++step;
+                InspectorTest.deleteServiceWorkerRegistration(scope1);
+                InspectorTest.deleteServiceWorkerRegistration(scope2);
+                InspectorTest.completeTest();
+            }
+        }
+    }
+
+    InspectorTest.addResult("Select ServiceWorkers tree element.");
+    WebInspector.panels.resources.serviceWorkersTreeElement.select();
+    InspectorTest.addResult("Register ServiceWorker for scope1");
+    InspectorTest.registerServiceWorker(scriptURL, scope1);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests ServiceWorkersView on resources panel.</p>
+</body>
+</html>

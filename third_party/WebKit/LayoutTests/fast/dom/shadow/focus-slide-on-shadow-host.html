@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<body>
+<pre id="console"></pre>
+<input id="defaultFocus">
+<div id="sandbox"></div>
+</body>
+<script>
+description('Click inside focusable shadow host should focus the host.');
+
+function prepareDOMTree(parent, delegatesFocus)
+{
+    parent.innerHTML = '';
+
+    parent.appendChild(
+        createDOM('div', {'id': 'shadowHost', 'tabindex': '0'},
+            createShadowRoot({'delegatesFocus': delegatesFocus},
+                createDOM('div', {'id': 'innerDiv'},
+                    document.createTextNode('Blink')),
+                createDOM('input', {'id': 'inputA'}),
+                createDOM('input', {'id': 'inputB'}))));
+
+    parent.offsetLeft;
+}
+
+var host;
+var innerDiv;
+var inputA;
+var inputB;
+
+function clickOn(el) {
+    eventSender.mouseMoveTo(el.offsetLeft + 8, el.offsetTop + 8);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+
+function resetFocus() {
+    document.querySelector('#defaultFocus').focus();
+}
+
+function checkInnermostActiveElement(id) {
+    if (isInnermostActiveElement(id))
+        debug('PASS innermost active element is ' + id);
+}
+
+function runTest() {
+    var sandbox = document.querySelector('#sandbox');
+    prepareDOMTree(sandbox, false);
+    resetFocus();
+
+    host = getNodeInTreeOfTrees('shadowHost');
+    innerDiv = getNodeInTreeOfTrees('shadowHost/innerDiv');
+    inputA = getNodeInTreeOfTrees('shadowHost/inputA');
+    inputB = getNodeInTreeOfTrees('shadowHost/inputB');
+
+    debug('click on inner div should focus shadow host');
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost');
+
+    inputA.focus();
+    checkInnermostActiveElement('shadowHost/inputA');
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost');
+
+    inputB.focus();
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost');
+
+    debug('click on inner div should focus inner focusable (with delegatesFocus = true)');
+    prepareDOMTree(sandbox, true);
+    resetFocus();
+
+    host = getNodeInTreeOfTrees('shadowHost');
+    innerDiv = getNodeInTreeOfTrees('shadowHost/innerDiv');
+    inputA = getNodeInTreeOfTrees('shadowHost/inputA');
+    inputB = getNodeInTreeOfTrees('shadowHost/inputB');
+
+    inputA.value = 'wonderful';  // len = 9
+    inputB.value = 'beautiful';
+
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost/inputA');
+
+    // If focus slides from shadow host, all the content will be selected.
+    shouldBe('inputA.selectionStart', '0');
+    shouldBe('inputA.selectionEnd', '9');
+
+    // Clicking on non-focusable area inside shadow should not change the focus state.
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost/inputA');
+    shouldBe('inputA.selectionStart', '0');
+    shouldBe('inputA.selectionEnd', '9');
+
+    // Clicking on focusable directly will cause the element to be focused.
+    clickOn(inputA);
+    checkInnermostActiveElement('shadowHost/inputA');
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost/inputA');
+    shouldBe('inputA.selectionStart', '1');
+    shouldBe('inputA.selectionEnd', '1');
+
+    clickOn(inputB);
+    checkInnermostActiveElement('shadowHost/inputB');
+    clickOn(innerDiv);
+    checkInnermostActiveElement('shadowHost/inputB');
+    shouldBe('inputB.selectionStart', '1');
+    shouldBe('inputB.selectionEnd', '1');
+}
+
+runTest();
+</script>

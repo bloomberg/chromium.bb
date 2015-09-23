@@ -1,0 +1,67 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+var p = [];
+
+function createPromises()
+{
+    for (var i = 0; i < 3; ++i)
+        p.push(Promise.reject(new Error("Handled error")));
+}
+
+function handleSomeRejections()
+{
+    p[0].catch(function() {});
+    p[2].catch(function() {});
+}
+
+function test()
+{
+    InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+
+    InspectorTest.addResult("Creating promise");
+    InspectorTest.evaluateInPageWithTimeout("createPromises()");
+
+    var messageNumber = 0;
+    function messageAdded(event)
+    {
+        InspectorTest.addResult("Message added: " + event.data.level + " " + event.data.type);
+        if (++messageNumber < 3)
+            return;
+        messageNumber = 0;
+
+        InspectorTest.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, messageAdded);
+        InspectorTest.addResult("");
+        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
+        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
+
+        // Process array as a batch.
+        InspectorTest.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageUpdated, messageUpdated);
+        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Handling promise");
+        InspectorTest.evaluateInPageWithTimeout("handleSomeRejections()");
+    }
+
+    function messageUpdated()
+    {
+        if (++messageNumber < 2)
+            return;
+        InspectorTest.dumpConsoleClassesBrief();
+        InspectorTest.addResult("errors: " + InspectorTest.consoleModel.errors());
+        InspectorTest.addResult("revokedErrors: " + InspectorTest.consoleModel.revokedErrors());
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that console revokes lazily handled promise rejections.</p>
+
+</body>
+</html>

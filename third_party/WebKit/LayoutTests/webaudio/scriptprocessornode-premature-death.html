@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="resources/compatibility.js"></script>
+<body>
+<script>
+description('Tests that a script processor node is not prematurely GCed');
+var jsTestIsAsync = true;
+
+if (!window.internals) {
+    testFailed('This test requires window.internals.');
+    finishJSTest();
+}
+
+var wasCalled, wasCollectedPrematurely, savedNode, savedCallback;
+
+function test(saveReference, nextStep) {
+    debug('Testing ' + (saveReference ? 'with' : 'without') + ' explicitly ' +
+          'keeping a reference to the script processor node alive.');
+
+    // Create an audio context
+    var context = new OfflineAudioContext(
+        2,        // channels
+        4096,     // length (frames)
+        44100.0); // sample rate
+
+    // Set up a source, reading from an empty buffer
+    var source = context.createBufferSource();
+    source.buffer = context.createBuffer(
+        2,        // source channels
+        4096,     // length (frames)
+        44100.0); // sample rate
+
+    // Set up a script processor node to generate something
+    var node = context.createScriptProcessor(
+        512, // buffer size
+        0,   // input channels
+        2);  // output channels
+
+    // source -> script processor node -> destination
+    source.connect(node);
+    node.connect(context.destination);
+
+    // Set up something which indicates whether we're called to
+    // generate anything
+
+    wasCalled = false;
+    var callback = function () { wasCalled = true; };
+    node.onaudioprocess = callback;
+
+    if (saveReference) {
+        savedNode = node;
+        savedCallback = callback;
+    }
+
+    // Watch the callback; if it dies, we're obviously not generating anything
+
+    var observation = internals.observeGC(callback);
+    node = callback = null;
+    gc();
+    wasCollectedPrematurely = observation.wasCollected;
+
+    // Make some noise!
+
+    source.start(0);
+    context.oncomplete = check(nextStep);
+    context.startRendering();
+}
+
+function check(nextStep) {
+    return function () {
+        shouldBeFalse('wasCollectedPrematurely');
+        shouldBeTrue('wasCalled');
+        nextStep();
+    };
+}
+
+function step1() {
+  test(true, step2);
+}
+
+function step2() {
+  test(false, finishJSTest);
+}
+
+step1();
+
+var successfullyParsed = true;
+</script>

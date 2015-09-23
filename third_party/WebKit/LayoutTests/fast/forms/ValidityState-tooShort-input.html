@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description('Tests for tooShort flag with &lt;input> elements.');
+
+var input = document.createElement('input');
+document.body.appendChild(input);
+
+debug('No minlength and no value');
+shouldBeFalse('input.validity.tooShort');
+
+debug('');
+debug('Non-dirty value');
+input.setAttribute('value', 'ab');
+input.minLength = 3;
+shouldBe('input.value.length', '2');
+shouldBeFalse('input.validity.tooShort');
+
+input.setAttribute('value', 'a');
+shouldBe('input.value.length', '1');
+shouldBeFalse('input.validity.tooShort');
+
+debug('');
+debug('Dirty value and longer than minLength');
+input = document.createElement('input');
+document.body.appendChild(input);
+input.setAttribute('value', 'ab');
+input.minLength = 3;
+input.focus();
+input.setSelectionRange(2, 2);  // Move the cursor at the end.
+document.execCommand('delete');
+shouldBe('input.value.length', '1');
+shouldBeTrue('input.validity.tooShort');
+// Make the value empty, which means valid.
+document.execCommand('delete');
+shouldBe('input.value.length', '0');
+shouldBeFalse('input.validity.tooShort');
+document.execCommand('InsertText', false, 'ab');
+shouldBe('input.value.length', '2');
+shouldBeTrue('input.validity.tooShort');
+// Make the value >=minLength.
+document.execCommand('InsertText', false, 'c');
+shouldBe('input.value.length', '3');
+shouldBeFalse('input.validity.tooShort');
+
+debug('');
+debug('Sets a value via DOM property');
+input.minLength = 3;
+input.value = 'ab';
+shouldBeFalse('input.validity.tooShort');
+
+debug('');
+debug('Disabling makes the control valid');
+input.focus();
+input.setSelectionRange(2, 2);
+document.execCommand('delete');
+shouldBeTrue('input.validity.tooShort');
+shouldBeFalse('input.disabled = true; input.validity.tooShort');
+shouldBeTrue('input.disabled = false; input.validity.tooShort');
+
+debug('');
+debug('Change the type with a too long value');
+input.minLength = 3;
+input.value = 'a';
+input.type = 'search';
+input.focus();
+input.setSelectionRange(1, 1);
+document.execCommand('InsertText', false, 'b');
+shouldBeTrue('input.validity.tooShort');
+shouldBeFalse('input.type = "number"; input.validity.tooShort');
+</script>
+</body>
+</html>

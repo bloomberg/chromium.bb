@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<title>IndexedDB: Verify bindings edge cases</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="resources/testharness-helpers.js"></script>
+<script>
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store');
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        var request = tx.objectStore('store').put('value', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'key']);
+
+        var setter_called = false;
+        Object.defineProperty(Object.prototype, '10', {
+            set: t.step_func(function(value) { setter_called = true; })
+        });
+        request.onerror = t.unreached_func('request should not fail');
+        request.onsuccess = t.step_func(function() {
+            var result = request.result;
+            assert_false(setter_called,
+                         'Setter should not be called for key result.');
+            assert_true(result.hasOwnProperty('10'),
+                        'Result should have own-property overriding prototype setter.');
+            assert_equals(result[10], 'key',
+                          'Result should have expected property.');
+            t.done();
+        });
+    },
+    'Returning keys to script should bypass prototype setters'
+);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store', {autoIncrement: true, keyPath: 'id'});
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        tx.objectStore('store').put({});
+        var request = tx.objectStore('store').get(1);
+
+        var setter_called = false;
+        Object.defineProperty(Object.prototype, 'id', {
+            set: t.step_func(function(value) { setter_called = true; })
+        });
+        request.onerror = t.unreached_func('request should not fail');
+        request.onsuccess = t.step_func(function() {
+            var result = request.result;
+            assert_false(setter_called,
+                         'Setter should not be called for key result.');
+            assert_true(result.hasOwnProperty('id'),
+                        'Result should have own-property overriding prototype setter.');
+            assert_equals(result.id, 1,
+                          'Own property should match primary key generator value');
+            t.done();
+        });
+    },
+    'Returning values to script should bypass prototype setters'
+);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store', {autoIncrement: true, keyPath: 'a.b.c'});
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        tx.objectStore('store').put({});
+        var request = tx.objectStore('store').get(1);
+
+        Object.prototype.a = {b: {c: 'on proto'}};
+
+        request.onerror = t.unreached_func('request should not fail');
+        request.onsuccess = t.step_func(function() {
+            var result = request.result;
+            assert_true(result.hasOwnProperty('a'),
+                        'Result should have own-properties overriding prototype.');
+            assert_true(result.a.hasOwnProperty('b'),
+                        'Result should have own-properties overriding prototype.');
+            assert_true(result.a.b.hasOwnProperty('c'),
+                        'Result should have own-properties overriding prototype.');
+            assert_equals(result.a.b.c, 1,
+                          'Own property should match primary key generator value');
+            assert_equals(Object.prototype.a.b.c, 'on proto',
+                        'Prototype should not be modified');
+            t.done();
+        });
+    },
+    'Returning values to script should bypass prototype chain'
+);
+
+indexeddb_test(
+    function(t, db) {
+        db.createObjectStore('store', {autoIncrement: true, keyPath: 'a.b.c'});
+    },
+    function(t, db) {
+        var tx = db.transaction('store', 'readwrite');
+        assert_throws({name: 'DataError'}, function() {
+            tx.objectStore('store').put({a: {b: "foo"}});
+        }, 'Put should throw if key can not be inserted at key path location.');
+        t.done();
+    },
+    'The last element of keypath is validated'
+);
+
+[
+    {
+        type: 'String',
+        property: 'length',
+        instance: 'abc'
+    },
+    {
+        type: 'Array',
+        property: 'length',
+        instance: ['a', 'b', 'c']
+    },
+    {
+        type: 'Blob',
+        property: 'size',
+        instance: new Blob(['abc'])
+    },
+    {
+        type: 'Blob',
+        property: 'type',
+        instance: new Blob([''], {type:'foo/bar'})
+    },
+    {
+        type: 'File',
+        property: 'name',
+        instance: new File([''], 'foo')
+    },
+    {
+        type: 'File',
+        property: 'lastModified',
+        instance: new File([''], '', {lastModified: 123})
+    },
+    {
+        type: 'File',
+        property: 'lastModifiedDate',
+        instance: new File([''], '', {lastModified: 123})
+    },
+].forEach(function(testcase) {
+    indexeddb_test(
+        function(t, db) {
+            db.createObjectStore('store', {autoIncrement: true, keyPath: testcase.property});
+        },
+        function(t, db) {
+            var key = testcase.instance[testcase.property];
+            var tx = db.transaction('store', 'readwrite');
+            tx.objectStore('store').put(testcase.instance);
+            var request = tx.objectStore('store').get(key);
+            request.onerror = t.unreached_func('request should not fail');
+            request.onsuccess = t.step_func(function() {
+                var result = request.result;
+                assert_key_equals(result[testcase.property], key,
+                                  'Property should be used as key');
+                t.done();
+            });
+        },
+        'Type: ' + testcase.type + ', implicit property: ' + testcase.property
+    );
+});
+
+function throws(name) {
+    return function() {
+        var err = Error();
+        err.name = name;
+        throw err;
+    }
+}
+
+indexeddb_test(
+    function(t, db) {
+        var o = {};
+        Object.defineProperty(o, 'throws', {get: throws('getter'),
+            enumerable: false, configurable: true});
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will fail.
+        var s1 = db.createObjectStore('s1',
+            {keyPath: 'throws'});
+        assert_throws('DataError', function() {
+            s1.put(o);
+        }, 'Key path failing to resolve should throw');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will fail.
+        var s2 = db.createObjectStore('s2',
+            {keyPath: 'throws.x'});
+        assert_throws('DataError', function() {
+            s2.put(o);
+        }, 'Key path failing to resolve should throw');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so generated key can be
+        // inserted.
+        var s3 = db.createObjectStore('s3',
+            {keyPath: 'throws', autoIncrement: true});
+        assert_class_string(s3.put(o), 'IDBRequest',
+            'Key injectability test at throwing getter should succeed');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so intermediate object
+        // and generated key can be inserted.
+        var s4 = db.createObjectStore('s4',
+            {keyPath: 'throws.x', autoIncrement: true});
+        assert_class_string(s4.put(o), 'IDBRequest',
+            'Key injectability test past throwing getter should succeed');
+    },
+    function(t, db) {
+        t.done();
+    },
+    'Key path evaluation: Exceptions from non-enumerable getters'
+);
+
+indexeddb_test(
+    function(t, db) {
+        var o = {};
+        Object.defineProperty(o, 'throws', {get: throws('getter'),
+            enumerable: true, configurable: true});
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s1 = db.createObjectStore('s1',
+            {keyPath: 'throws'});
+        assert_throws({name: 'getter'}, function() {
+            s1.put(o);
+        }, 'Key path resolving to throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s2 = db.createObjectStore('s2',
+            {keyPath: 'throws.x'});
+        assert_throws({name: 'getter'}, function() {
+            s2.put(o);
+        }, 'Key path resolving past throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s3 = db.createObjectStore('s3',
+            {keyPath: 'throws', autoIncrement: true});
+        assert_throws({name: 'getter'}, function() {
+            s3.put(o);
+        }, 'Key injectability test at throwing getter should rethrow');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s4 = db.createObjectStore('s4',
+            {keyPath: 'throws.x', autoIncrement: true});
+        assert_throws({name: 'getter'}, function() {
+            s4.put(o);
+        }, 'Key injectability test past throwing getter should rethrow');
+    },
+    function(t, db) {
+        t.done();
+    },
+    'Key path evaluation: Exceptions from enumerable getters'
+);
+
+indexeddb_test(
+    function(t, db) {
+        // Implemented as function wrapper to clean up
+        // immediately after use, otherwise it may
+        // interfere with the test harness.
+        function with_proto_getter(f) {
+            return function() {
+                Object.defineProperty(Object.prototype, 'throws', {
+                    get: throws('getter'),
+                    enumerable: false, configurable: true
+                });
+                try {
+                    f();
+                } finally {
+                    delete Object.prototype['throws'];
+                }
+            };
+        }
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will hit prototype property and rethrow.
+        var s1 = db.createObjectStore('s1',
+            {keyPath: 'throws'});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s1.put({});
+        }), 'Key path resolving to throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will hit prototype property and rethrow.
+        var s2 = db.createObjectStore('s2',
+            {keyPath: 'throws.x'});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s2.put({});
+        }), 'Key path resolving past throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will hit prototype property and rethrow.
+        var s3 = db.createObjectStore('s3',
+            {keyPath: 'throws', autoIncrement: true});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s3.put({});
+        }), 'Key injectability test at throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and non-enumerable getter will be ignored. The clone
+        // will have no such property, so key path evaluation
+        // will hit prototype property and rethrow.
+        var s4 = db.createObjectStore('s4',
+            {keyPath: 'throws.x', autoIncrement: true});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s4.put({});
+        }), 'Key injectability test past throwing getter rethrows');
+    },
+    function(t, db) {
+        t.done();
+    },
+    'Key path evaluation: Exceptions from non-enumerable getters on prototype'
+);
+
+indexeddb_test(
+    function(t, db) {
+        // Implemented as function wrapper to clean up
+        // immediately after use, otherwise it may
+        // interfere with the test harness.
+        function with_proto_getter(f) {
+            return function() {
+                Object.defineProperty(Object.prototype, 'throws', {
+                    get: throws('getter'),
+                    enumerable: true, configurable: true
+                });
+                try {
+                    f();
+                } finally {
+                    delete Object.prototype['throws'];
+                }
+            };
+        }
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s1 = db.createObjectStore('s1',
+            {keyPath: 'throws'});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s1.put({});
+        }), 'Key path resolving to throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s2 = db.createObjectStore('s2',
+            {keyPath: 'throws.x'});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s2.put({});
+        }), 'Key path resolving past throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s3 = db.createObjectStore('s3',
+            {keyPath: 'throws', autoIncrement: true});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s3.put({});
+        }), 'Key injectability test at throwing getter rethrows');
+
+        // Value should be cloned before key path is evaluated,
+        // and enumerable getter will rethrow.
+        var s4 = db.createObjectStore('s4',
+            {keyPath: 'throws.x', autoIncrement: true});
+        assert_throws({name: 'getter'}, with_proto_getter(function() {
+            s4.put({});
+        }), 'Key injectability test past throwing getter rethrows');
+    },
+    function(t, db) {
+        t.done();
+    },
+    'Key path evaluation: Exceptions from enumerable getters on prototype'
+);
+</script>

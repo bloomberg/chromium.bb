@@ -1,0 +1,9 @@
+Test that touches created with no target does not crash during dispatch. http://crbug.com/517962
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,22 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x119
+  LayoutBlockFlow {HTML} at (0,0) size 800x119.19
+    LayoutBlockFlow {BODY} at (8,9.59) size 784x100 [color=#000080]
+      LayoutBlockFlow {P} at (0,0) size 784x100
+        LayoutText {#text} at (0,7) size 430x10
+          text run at (0,7) width 430: "This test should be about 10px, sans-serif, and light. There should be about 15px between each line. "
+        LayoutInline {SPAN} at (0,0) size 782x85 [color=#C0C0C0]
+          LayoutText {#text} at (429,7) size 782x85
+            text run at (429,7) width 297: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (725,7) width 50: "text dummy"
+            text run at (0,32) width 262: "text dummy text dummy text dummy text dummy text dummy "
+            text run at (261,32) width 315: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (575,32) width 207: "text dummy text dummy text dummy text dummy"
+            text run at (0,57) width 105: "text dummy text dummy "
+            text run at (104,57) width 315: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (418,57) width 314: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (731,57) width 51: "text dummy"
+            text run at (0,82) width 262: "text dummy text dummy text dummy text dummy text dummy "
+            text run at (261,82) width 278: "text dummy text dummy text dummy text dummy text dummy text"
+        LayoutText {#text} at (0,0) size 0x0

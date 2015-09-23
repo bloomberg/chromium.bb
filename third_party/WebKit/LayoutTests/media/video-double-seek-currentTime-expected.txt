@@ -1,0 +1,17 @@
+Test currentTime values when setting from seeking event.
+
+
+loadedmetadata()
+doNextSeek() 0
+doNextSeek() seeking to 1.00
+seeking 1.00
+doNextSeek() 1
+doNextSeek() seeking to 1.50
+seeking 1.50
+doNextSeek() 2
+doNextSeek() seeking to 1.50
+seeking 1.50
+doNextSeek() 3
+seeked 1.50
+END OF TEST
+

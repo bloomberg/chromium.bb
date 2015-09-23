@@ -1,0 +1,15 @@
+Tests that styles sidebar pane does not leak any LiveLocations.
+
+First element to select
+Second element to select
+Second element to select
+
+Running: selectInitialNode
+
+Running: saveInitialLiveLocationsCount
+
+Running: rebuildStylesSidebarPaneMultipleTimes
+
+Running: compareLiveLocationsCount
+SUCCESS: LiveLocations count do not grow.
+

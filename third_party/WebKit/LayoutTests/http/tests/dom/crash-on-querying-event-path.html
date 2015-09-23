@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="/js-test-resources/js-test.js"></script>
+</head>
+<body>
+<script>
+var jsTestIsAsync = true;
+description('This is a regression test for crbug.com/400476. It should not crash and then brag about it.')
+
+var root = document.documentElement;
+var iframe = root.ownerDocument.createElement('iframe');
+var timeouts = [];
+iframe.onload = iframeOnload;
+root.appendChild(iframe);
+
+function iframeOnload() {
+    var defaultView = iframe.contentDocument.defaultView;
+    defaultView.onpageshow = onPageShow;
+    iframe.src = null;
+    timeouts[timeouts.length] = window.setTimeout(nextIframeLoaded, 100);
+}
+
+function onPageShow() {
+    eventObj = arguments[0];
+}
+
+function nextIframeLoaded() {
+    timeouts.forEach(window.clearTimeout);
+
+    // Access of eventObj.path caused the crash.
+    // The test is somewhat flaky, in that the test may pass as correct
+    // despite the bug being the code. The exact conditions
+    // are unclear, but 1, asan helps detect the crash and 2, the
+    // preceeding gc()s increase the likelihood of it occurring.
+    gc();
+    gc();
+    gc();
+    gc();
+    gc();
+    var path = eventObj.path;
+    debug(path);
+
+    testPassed('totally did not crash.');
+    finishJSTest();
+}
+</script>
+</body>
+</html>

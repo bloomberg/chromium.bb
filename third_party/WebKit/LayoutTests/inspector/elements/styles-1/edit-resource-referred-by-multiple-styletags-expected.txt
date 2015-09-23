@@ -1,0 +1,23 @@
+Tests that editing sourcecode which is referred by multiple stylesheets (via sourceURL comment) updates all stylesheets.
+
+Inspected node
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#inspected  { (stylesheet.css:2 -> stylesheet.css:2:1)
+    font-size: 2em;
+
+[expanded] 
+#inspected  { (stylesheet.css:2 -> stylesheet.css:2:1)
+/-- overloaded --/     font-size: 2em;
+
+[expanded] 
+#inspected  { (stylesheet.css:2 -> stylesheet.css:2:1)
+/-- overloaded --/     font-size: 2em;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+

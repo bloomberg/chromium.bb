@@ -1,0 +1,16 @@
+CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+getMatchedCSSRules returns CSSStyleRules with correct parent stylesheet.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+parentStyleSheet media: ''
+parentStyleSheet media: '(min-device-width: 120px)'
+parentStyleSheet media: '(min-device-width: 20px)'
+parentStyleSheet media: '(min-device-width: 220px)'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Test getMatchedCSSRules to correctly setup CSSStyleRule parent stylesheet.
+
+This span should have border and be written in red.

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='e'></div>
+</body>
+
+<script>
+var element = document.getElementById('e');
+var style = getComputedStyle(element);
+var duration = 1;
+
+var keyframeEffect = new KeyframeEffect(element,
+    [{opacity: '1', offset: 0},
+    {opacity: '0', offset: 1}],
+    duration);
+
+test(function() {
+    var player = document.timeline.play(keyframeEffect);
+    player.pause();
+    player.currentTime = duration / 2;
+    assert_equals(style.opacity, '0.5');
+}, 'Calling document.timeline.play() should start an animation.');
+</script>

@@ -1,0 +1,6 @@
+history.length = 1
+
+============== Back Forward List ==============
+curr->  (file test):fast/loader/frame-src-change-not-added-to-history.html
+            data:,hello (in frame "<!--framePath //<!--frame0-->-->")
+===============================================

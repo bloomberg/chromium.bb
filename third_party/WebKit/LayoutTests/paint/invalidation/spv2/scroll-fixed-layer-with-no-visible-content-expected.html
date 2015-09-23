@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title></title>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css"></style>
+    <script type="text/javascript">
+        window.onload = function() {
+            window.scrollTo(1000, 1000);
+            var moveMeElement = document.getElementById('moveMe');
+            moveMeElement.scrollTop = 100;
+            moveMeElement.scrollLeft = 150;
+        };
+    </script>
+</head>
+<body style="height:2000px;">
+    <!-- You should see 1 green rectangle in the output and no red. -->
+    <div id="moveMe" style="top: 150px; left: 100px" class="fixed clipped"><div class="absolute green" style="top: 100px; left: 150px;"></div></div>
+</body>
+</html>

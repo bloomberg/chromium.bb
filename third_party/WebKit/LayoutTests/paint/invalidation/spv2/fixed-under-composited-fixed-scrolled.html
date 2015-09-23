@@ -1,0 +1,44 @@
+<!-- Based on fast/repaint/fixed-under-composited-fixed-scrolled.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='fixed'",
+];
+function paintInvalidationTest() {
+  document.getElementById('fixed').style.display = 'none';
+}
+onload = function() {
+  // Scroll before repaint test to test correct scroll offset of invalidation rect
+  // for fixed-position element when it needs repaint.
+  window.scrollTo(0, 400);
+  runPaintInvalidationTest();
+};
+</script>
+<style>
+body {
+  height: 2000px;
+}
+#fixed-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: green;
+  backface-visibility: hidden;
+}
+#fixed {
+  position: fixed;
+  top: 100px;
+  left: 100px;
+  width: 200px;
+  height: 200px;
+  background-color: red;
+}
+</style>
+Tests paint invalidation of fixed elements under a composited fixed element after scrolled.
+Passes if there is only green background.
+<div id="fixed-container">
+  <div id="fixed"></div>
+</div>

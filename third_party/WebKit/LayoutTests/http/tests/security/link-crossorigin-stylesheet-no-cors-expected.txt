@@ -1,0 +1,16 @@
+CONSOLE ERROR: CSS stylesheet from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: CSS stylesheet from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: CSS stylesheet from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+CONSOLE ERROR: CSS stylesheet from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+PASS 
+PASS 
+PASS 
+PASS 
+PASS 
+PASS 
+PASS 
+PASS 
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Test that a linked stylesheet with a crossorigin attribute does not load a cross-origin resource that isn't CORS enabled.

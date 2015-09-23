@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  assert_throws(null, function() { new NFC(); },
+                'the constructor should not be callable with "new"');
+  assert_throws(null, function() { NFC(); },
+                'the constructor should not be callable');
+}, 'NFC IDL test');
+</script>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Canvas Hit Regions: clear test</title>
+  <script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  <button id="yellow"></button>
+</canvas>
+<script src="./resources/canvas-hit-region-event.js"></script>
+<script>
+
+  var canvas = document.getElementById("canvas");
+  var context = canvas.getContext("2d");
+
+  shouldBe("internals.countHitRegions(context)", "0");
+
+  context.fillStyle = "red";
+  context.rect(0, 0, 100, 100);
+  context.fill();
+  context.addHitRegion({ id : "red" });
+  shouldBe("internals.countHitRegions(context)", "1");
+
+  context.beginPath();
+  context.fillStyle = "yellow";
+  context.rect(100, 100, 50, 50);
+  context.fill();
+  context.addHitRegion({ id : "yellow", control : document.getElementById("yellow") });
+  shouldBe("internals.countHitRegions(context)", "2");
+
+  shouldBe("clickCanvas(60, 60)", "'red'");
+  shouldBe("clickCanvas(120, 120)", "'yellow'");
+
+  context.clearRect(50, 50, 50, 50);
+  shouldBe("internals.countHitRegions(context)", "2");
+  shouldBe("clickCanvas(60, 60)", "null");
+  shouldBe("clickCanvas(120, 120)", "'yellow'");
+
+  context.clearRect(100, 100, 50, 50);
+  shouldBe("internals.countHitRegions(context)", "1");
+  shouldBe("clickCanvas(120, 120)", "null");
+
+  context.beginPath();
+  context.fillStyle = "red";
+  context.rect(60, 60, 40, 40);
+  context.fill();
+  shouldBe("clickCanvas(40, 40)", "'red'");
+  context.addHitRegion({ id : "red" });
+  shouldBe("internals.countHitRegions(context)", "1");
+  shouldBe("clickCanvas(62, 62)", "'red'");
+  shouldBe("clickCanvas(40, 40)", "null");
+
+  context.beginPath();
+  context.fillStyle = "yellow";
+  context.rect(0, 0, 50, 50);
+  context.fill();
+  context.addHitRegion({ id : "yellow", control : document.getElementById("yellow") });
+  shouldBe("internals.countHitRegions(context)", "2");
+  shouldBe("clickCanvas(40, 40)", "'yellow'");
+
+  context.beginPath();
+  context.fillStyle = "yellow";
+  context.rect(100, 0, 50, 50);
+  context.fill();
+  context.addHitRegion({ control : document.getElementById("yellow") });
+  shouldBe("internals.countHitRegions(context)", "2");
+  shouldBe("clickCanvas(40, 40)", "null");
+  shouldBe("clickCanvas(101, 1)", "null");
+
+  context.beginPath();
+  context.fillStyle = "blue";
+  context.rect(100, 50, 20, 20);
+  context.fill();
+  context.addHitRegion({ id : "blue" });
+  shouldBe("internals.countHitRegions(context)", "3");
+  shouldBe("clickCanvas(101, 51)", "'blue'");
+
+  context.removeHitRegion("blue");
+  shouldBe("internals.countHitRegions(context)", "2");
+  shouldBe("clickCanvas(101, 51)", "null");
+
+  context.clearHitRegions();
+  shouldBe("internals.countHitRegions(context)", "0");
+  shouldBe("clickCanvas(62, 62)", "null");
+
+  context.clearRect(0, 0, 400, 400);
+  shouldBe("internals.countHitRegions(context)", "0");
+
+  debug("");
+
+</script>
+</body>
+</html>

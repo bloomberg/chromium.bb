@@ -1,0 +1,40 @@
+{
+  "bounds": [785, 1016],
+  "children": [
+    {
+      "bounds": [785, 1016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [200, 1000],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#D3D3D3"
+            },
+            {
+              "position": [8, 0],
+              "bounds": [300, 654],
+              "drawsContent": true,
+              "repaintRects": [
+                [285, 552, 15, 98],
+                [285, 500, 15, 150],
+                [285, 500, 15, 150],
+                [285, 500, 15, 104],
+                [285, 500, 15, 52],
+                [0, 500, 285, 150],
+                [0, 500, 15, 15],
+                [0, 500, 15, 15]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

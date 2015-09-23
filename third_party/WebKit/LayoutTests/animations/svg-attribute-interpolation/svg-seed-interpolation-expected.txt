@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: seed from [1] to [6] was [1] at 0
+PASS: seed from [1] to [6] was [2] at 0.2
+PASS: seed from [1] to [6] was [4] at 0.6
+PASS: seed from [1] to [6] was [6] at 1
+
+Web Animations API:
+PASS: seed from [1] to [6] was [-1] at -0.4
+PASS: seed from [1] to [6] was [1] at 0
+PASS: seed from [1] to [6] was [2] at 0.2
+PASS: seed from [1] to [6] was [4] at 0.6
+PASS: seed from [1] to [6] was [6] at 1
+PASS: seed from [1] to [6] was [8] at 1.4
+

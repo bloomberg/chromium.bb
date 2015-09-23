@@ -1,0 +1,64 @@
+<html>
+<head>
+<script src="console-test.js"></script>
+<script src="inspector-test.js"></script>
+<script>
+console.log("message from page!");
+
+function test()
+{
+    var checkbox = WebInspector.ConsolePanel._view()._showAllMessagesCheckbox.inputElement;
+
+    //we can't use usual InspectorTest.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
+    function dumpVisibleConsoleMessageText()
+    {
+        var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+        for (var i = 0; i < messageViews.length; ++i) {
+            InspectorTest.addResult(messageViews[i].consoleMessage().messageText);
+        }
+    }
+
+    InspectorTest.runTestSuite([
+
+            function testInitialState(next)
+            {
+                if (!checkbox.checked)
+                    InspectorTest.addResult("\"Show all messages\" checkbox should be checked by default");
+                dumpVisibleConsoleMessageText();
+                next();
+            },
+
+            function testPageOnlyMessages(next)
+            {
+                checkbox.click();
+                dumpVisibleConsoleMessageText();
+                next();
+            },
+
+            function testFrameOnlyMessages(next)
+            {
+                InspectorTest.changeExecutionContext("myIFrame");
+                dumpVisibleConsoleMessageText();
+                next();
+            },
+
+            function testAllMessagesWithFrameContext(next)
+            {
+                checkbox.click();
+                dumpVisibleConsoleMessageText();
+                next();
+            }
+    ]);
+}
+
+</script>
+</head>
+
+<body>
+<p>
+Tests that console shows messages only from specific context when show all checkbox is unchecked.</a>
+</p>
+<iframe name="myIFrame" src="resources/console-show-all-messages-iframe.html" onload="runTest()"></iframe>
+
+</body>
+</html>

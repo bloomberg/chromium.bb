@@ -1,0 +1,92 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testWeakReferencesDoNotAffectRetainedSize(next)
+        {
+            function createHeapSnapshot()
+            {
+                // Mocking results of running the following code:
+                // root = [new Uint8Array(1000), new Uint8Array(1000), new Uint8Array(1000)]
+                var builder = new InspectorTest.HeapSnapshotBuilder();
+                var rootNode = builder.rootNode;
+
+                var gcRootsNode = new InspectorTest.HeapNode("(GC roots)");
+                rootNode.linkNode(gcRootsNode, InspectorTest.HeapEdge.Type.element);
+
+                var windowNode = new InspectorTest.HeapNode("Window", 20);
+                rootNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.shortcut);
+                gcRootsNode.linkNode(windowNode, InspectorTest.HeapEdge.Type.element);
+
+                var arrayNode = new InspectorTest.HeapNode("Array", 10);
+                windowNode.linkNode(arrayNode, InspectorTest.HeapEdge.Type.property, "root");
+                var prevBufferNode = null;
+                for (var i = 0; i < 3; i++) {
+                    var typedArrayNode = new InspectorTest.HeapNode("Uint8Array", 100);
+                    arrayNode.linkNode(typedArrayNode, InspectorTest.HeapEdge.Type.element);
+
+                    var bufferNode = new InspectorTest.HeapNode("ArrayBuffer", 1000);
+                    typedArrayNode.linkNode(bufferNode, InspectorTest.HeapEdge.Type.internal);
+                    if (prevBufferNode)
+                        prevBufferNode.linkNode(bufferNode, InspectorTest.HeapEdge.Type.weak, "weak_next");
+                    prevBufferNode = bufferNode;
+                }
+
+                return builder.generateSnapshot();
+            }
+
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step1()
+            {
+                InspectorTest.switchToView("Summary", step2);
+            }
+
+            function step2()
+            {
+                var row = InspectorTest.findRow("Array");
+                InspectorTest.assertEquals(true, !!row, "\"Array\" row");
+                InspectorTest.expandRow(row, step3);
+            }
+
+            function step3(row)
+            {
+                InspectorTest.assertEquals(1, row._count);
+                InspectorTest.assertEquals(3310, row._retainedSize);
+                InspectorTest.assertEquals(10, row._shallowSize);
+                InspectorTest.expandRow(row.children[0], step4);
+            }
+
+            function step4(arrayInstanceRow)
+            {
+                InspectorTest.assertEquals(2, arrayInstanceRow._distance);
+                InspectorTest.assertEquals(3310, arrayInstanceRow._retainedSize);
+                InspectorTest.assertEquals(10, arrayInstanceRow._shallowSize);
+
+                var children = arrayInstanceRow.children;
+                InspectorTest.assertEquals(3, children.length);
+
+                for (var i = 0; i < children.length; i++) {
+                    InspectorTest.assertEquals("Uint8Array", children[i]._name);
+                    InspectorTest.assertEquals(100, children[i]._shallowSize);
+                    InspectorTest.assertEquals(1100, children[i]._retainedSize);
+                }
+                setTimeout(next, 0);
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<pre>
+Tests that weak references are ignored when dominators are calculated and that weak references won't affect object's retained size.
+</pre>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html> 
+    <body>
+        <p>
+            Test that only a single popup is allowed in response to a single
+            touch sequence. The test passes if only one popup is created when
+            you touch and move around on this page.
+        </p>
+        <div id="console"></div>
+        <script>
+            function log(msg)
+            {
+                document.querySelector("#console").innerHTML += msg + "<br>";
+            }
+
+            function popup()
+            {
+                window.open("about:blank");
+                if (window.testRunner) {
+                    if (testRunner.windowCount() > windowCount + 1)
+                        log("FAIL: too many popups");
+                    else if (testRunner.windowCount() == windowCount)
+                        log("FAIL: could not open popup at all");
+                }
+            }
+
+            function touchStart(e)
+            {
+                log("touchstart event");
+                e.preventDefault();
+                popup(); 
+            }
+
+            function touchMove(e)
+            {
+                log("touchmove event");
+                e.preventDefault();
+                popup(); 
+            }
+
+
+            function touchEnd(e)
+            {
+                log("touchend event");
+                e.preventDefault();
+                popup();
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            }
+
+            document.addEventListener("touchstart", touchStart);
+            document.addEventListener("touchmove", touchMove);
+            document.addEventListener("touchend", touchEnd);
+
+            if (window.testRunner) {
+                testRunner.dumpAsText();
+                testRunner.setCanOpenWindows();
+                testRunner.setPopupBlockingEnabled(true);
+                testRunner.setCloseRemainingWindowsWhenComplete(true);
+                testRunner.waitUntilDone();
+
+                gc();
+                windowCount = testRunner.windowCount();
+
+                if (window.eventSender) {
+                    eventSender.clearTouchPoints();
+                    eventSender.addTouchPoint(50, 50);
+                    eventSender.touchStart();
+                    eventSender.addTouchPoint(75, 50);
+                    eventSender.touchStart();
+                    eventSender.updateTouchPoint(0, 100, 100);
+                    eventSender.updateTouchPoint(1, 125, 100);
+                    eventSender.touchMove();
+                    eventSender.updateTouchPoint(0, 100, 50);
+                    eventSender.updateTouchPoint(1, 200, 50);
+                    eventSender.touchMove();
+                    eventSender.releaseTouchPoint(0);
+                    eventSender.releaseTouchPoint(1);
+                    eventSender.touchEnd();
+                }
+            }
+        </script>
+    </body>
+  </html>

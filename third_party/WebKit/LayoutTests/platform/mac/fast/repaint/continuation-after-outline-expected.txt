@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x92
+  LayoutBlockFlow {HTML} at (0,0) size 800x92
+    LayoutBlockFlow {BODY} at (8,8) size 784x76
+      LayoutBlockFlow {DIV} at (0,0) size 50x58
+        LayoutBlockFlow (anonymous) at (0,0) size 50x0
+          LayoutInline {SPAN} at (0,0) size 0x0
+        LayoutBlockFlow (anonymous) at (0,0) size 50x40
+          LayoutBlockFlow {DIV} at (10,0) size 30x40 [bgcolor=#C0C0C0]
+        LayoutBlockFlow (anonymous) at (0,40) size 50x18
+          LayoutInline {SPAN} at (0,0) size 8x18
+            LayoutText {#text} at (21,0) size 8x18
+              text run at (21,0) width 8: "x"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (anonymous) at (0,58) size 784x18
+        LayoutText {#text} at (0,0) size 0x18
+          text run at (0,0) width 0: "\x{19}"

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <style>
+        #target {
+            position: relative;
+            background-color: #933;
+            width: 50px;
+            height: 50px;
+            top: 0px;
+            left: 0px;
+        }
+        #target.transition-top {
+            top: 400px;
+            -webkit-transition: top 100ms linear;
+            transition: top 100ms linear;
+        }
+        #target.transition-left {
+            left: 400px;
+            -webkit-transition: left 100ms linear;
+            transition: left 100ms linear;
+        }
+    </style>
+    <script>
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
+
+        function isEqual(actual, desired, tolerance)
+        {
+            var diff = Math.abs(actual - desired);
+            return diff < tolerance;
+        }
+
+        function cancelTransition()
+        {
+            document.getElementById("target").classList.remove('transition-top');
+        }
+
+        function startNewTransition()
+        {
+            document.getElementById("target").classList.add('transition-left');
+            setTimeout(check, 50);
+        }
+
+        function check()
+        {
+            var left = parseFloat(window.getComputedStyle(document.getElementById('target')).left);
+            if (isEqual(left, 200, 50))
+                var result = "<span style='color:green'>PASS</span>";
+            else
+                var result = "<span style='color:red'>FAIL(was: " + left + ", expected: 200)</span>";
+            document.getElementById('result').innerHTML = result;
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+
+        function start()
+        {
+            document.getElementById("target").classList.add('transition-top');
+            setTimeout("cancelTransition()", 50);
+            setTimeout("startNewTransition()", 100);
+        }
+    </script>
+</head>
+<body onload="start()">
+<p>
+    Tests that having stopped a transition before it completes, a subsequent
+    transition starts correctly.
+</p>
+<div id="target"></div>
+<div id="result"></div>
+</body>
+</html>

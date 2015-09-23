@@ -1,0 +1,76 @@
+<!DOCTYPE HTML>
+<style>
+#scroller {
+    overflow: scroll;
+    height: 300px;
+    width: 300px;
+    background-color: red;
+}
+
+#scrolled {
+    height: 1000px;
+    width: 250px;
+    background-color: green;
+}
+
+#fixed {
+    position: fixed;
+    height: 100px;
+    width: 100px;
+    background-color: green;
+    top: 400px;
+    left: 100px;
+}
+</style>
+<div id="scroller">
+    <div id="scrolled"></div>
+    <div id="fixed"></div>
+</div>
+<script>
+function isUsingCompositedScrolling(layer) {
+    if (layer.bounds[1] == 1000)
+        return true;
+    if (layer.children) {
+        for (var i = 0; i < layer.children.length; i++) {
+            if (isUsingCompositedScrolling(layer.children[i]))
+                return true;
+        }
+    }
+    return false;
+}
+
+if (window.internals)
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+
+if (window.testRunner) {
+    window.testRunner.dumpAsText();
+    window.testRunner.waitUntilDone();
+}
+
+var result = "";
+
+onload = function() {
+    if (window.internals) {
+        result += "No border radius (should be using composited scrolling): ";
+        if (isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+            result += "Pass.\n";
+        else
+            result += "Fail.\n"
+    }
+    document.getElementById("scroller").style.borderRadius = '5px';
+    requestAnimationFrame(function() {
+        if (window.internals) {
+            result += "Has border radius (should not be using composited scrolling): ";
+            if (!isUsingCompositedScrolling(JSON.parse(window.internals.layerTreeAsText(document))))
+                result += "Pass.\n";
+            else
+                result += "Fail.\n"
+        }
+
+        if (window.testRunner) {
+            window.testRunner.setCustomTextOutput(result);
+            window.testRunner.notifyDone();
+        }
+    });
+};
+</script>

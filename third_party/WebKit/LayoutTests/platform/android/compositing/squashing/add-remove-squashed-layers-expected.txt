@@ -1,0 +1,199 @@
+Test that layers can be nicely added or removed from a squashed layer, without unnecessary repaints on any layer. Click anywhere to test interactively; keep clicking to proceed through the test.
+
+CASE 1, original layer tree with overlap1 and overlap2:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [140, 140],
+              "bounds": [180, 180],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 2, overlap3 gets added:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [140, 140],
+              "bounds": [260, 260],
+              "drawsContent": true,
+              "repaintRects": [
+                [160, 160, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 3, overlap2 gets removed. Since this does not resize the layer, there should only be a repaint of overlap2:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [140, 140],
+              "bounds": [260, 260],
+              "drawsContent": true,
+              "repaintRects": [
+                [80, 80, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 4, overlap1 gets removed:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [300, 300],
+              "bounds": [100, 100],
+              "drawsContent": true,
+              "repaintRects": [
+                [160, 160, 100, 100],
+                [0, 0, 100, 100],
+                [0, 0, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 5, overlap2 gets added back:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [220, 220],
+              "bounds": [180, 180],
+              "drawsContent": true,
+              "repaintRects": [
+                [80, 80, 100, 100],
+                [0, 0, 100, 100],
+                [0, 0, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 6, overlap1 gets added back, and overlap3 gets removed:
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [60, 60],
+              "bounds": [400, 400],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080"
+            },
+            {
+              "position": [140, 140],
+              "bounds": [180, 180],
+              "drawsContent": true,
+              "repaintRects": [
+                [80, 80, 100, 100],
+                [80, 80, 100, 100],
+                [0, 0, 100, 100],
+                [0, 0, 100, 100]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

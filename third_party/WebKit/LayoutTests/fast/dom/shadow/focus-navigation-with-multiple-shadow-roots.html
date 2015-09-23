@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<p>This tests that pressing Tab key should traverse into shadow DOM subtrees, and pressing Shift-Tab should reverse the order.</p>
+<pre id="console"></pre>
+<script>
+
+function prepareDOMTree(parent)
+{
+    parent.appendChild(
+        createDOM('div', {'id': 'top-div'},
+                  createDOM('input', {'id': 'A', 'tabindex': 0}),
+                  createDOM('div', {'id': 'host', 'tabindex': 0},
+                            createShadowRoot(
+                                createDOM('input', {'id': 'oldest--A', 'tabindex': 0}),
+                                createDOM('content', {'select': '#light-child-A'}),
+                                createDOM('input', {'id': 'oldest--B', 'tabindex': 0})),
+                            createShadowRoot(
+                                createDOM('input', {'id': 'older-A', 'tabindex': 0}),
+                                createDOM('content', {'select': '#light-child-B'}),
+                                createDOM('input', {'id': 'older-B', 'tabindex': 0})),
+                            createShadowRoot(
+                                createDOM('input', {'id': 'younger-A', 'tabindex': 0}),
+                                createDOM('shadow', {}),
+                                createDOM('input', {'id': 'younger-B', 'tabindex': 0})),
+                            createDOM('input', {'id': 'light-child-A', 'tabindex': 0}),
+                            createDOM('input', {'id': 'light-child-B', 'tabindex': 0})),
+                  createDOM('input', {'id': 'B', 'tabindex': 0})));
+    parent.offsetLeft;
+}
+
+function test() {
+    if (!window.eventSender) {
+        testFailed('');
+        return;
+    }
+
+    prepareDOMTree(document.body);
+
+    var elementsInFocusNavigationOrder = [
+        'A',
+        'host',
+        'host///younger-A',
+        'host//older-A',
+        'host//older-B',
+        'host///younger-B',
+        'B',
+    ];
+
+    testFocusNavigationForward(elementsInFocusNavigationOrder);
+    elementsInFocusNavigationOrder.reverse();
+    testFocusNavigationBackward(elementsInFocusNavigationOrder);
+
+    debug('Test finished.');
+}
+
+test();
+
+</script>
+</body>
+</html>

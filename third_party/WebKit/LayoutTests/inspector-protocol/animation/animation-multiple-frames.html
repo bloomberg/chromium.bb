@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+function appendIframe()
+{
+    var frame = document.createElement("iframe");
+    frame.src = "../resources/test-page-trigger-animation.html";
+    document.body.appendChild(frame);
+}
+
+function test()
+{
+    InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
+    InspectorTest.sendCommand("Animation.enable", {});
+    InspectorTest.evaluateInPage("appendIframe()", frameAttached);
+    var numberAnimationsCaptured = 0;
+    var lastStartTime = undefined;
+
+    function frameAttached()
+    {
+        InspectorTest.log("Frame appended");
+    }
+
+    function onCreated(data)
+    {
+        var player = data.params.player;
+
+        if (!lastStartTime || player.startTime > lastStartTime)
+            InspectorTest.log("Animation created: start time is valid");
+        lastStartTime = player.startTime;
+        numberAnimationsCaptured++;
+
+        if (numberAnimationsCaptured < 10)
+            InspectorTest.evaluateInPage("appendIframe()", frameAttached);
+        else
+            InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

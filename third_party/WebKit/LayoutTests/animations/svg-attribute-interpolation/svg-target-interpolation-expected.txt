@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: target from [_top] to [:A0.-_:] was [_top] at 0
+PASS: target from [_top] to [:A0.-_:] was [_top] at 0.2
+PASS: target from [_top] to [:A0.-_:] was [:A0.-_:] at 0.6
+PASS: target from [_top] to [:A0.-_:] was [:A0.-_:] at 1
+
+Web Animations API:
+PASS: target from [_top] to [:A0.-_:] was [_top] at -0.4
+PASS: target from [_top] to [:A0.-_:] was [_top] at 0
+PASS: target from [_top] to [:A0.-_:] was [_top] at 0.2
+PASS: target from [_top] to [:A0.-_:] was [:A0.-_:] at 0.6
+PASS: target from [_top] to [:A0.-_:] was [:A0.-_:] at 1
+PASS: target from [_top] to [:A0.-_:] was [:A0.-_:] at 1.4
+

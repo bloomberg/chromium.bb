@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.firstElementsTreeOutline().addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+
+    var nodeChangesRemaining = 2;
+    function selectedNodeChanged(event)
+    {
+        var node = event.data;
+        if (node.nodeName() === "BODY")
+            return;
+        InspectorTest.addResult("SelectedNodeChanged: " + node.localName() + " " + shadowDOMPart(node));
+        if (!--nodeChangesRemaining)
+            InspectorTest.completeTest();
+    }
+
+    function shadowDOMPart(node)
+    {
+        if (!node.isInShadowTree())
+            return "(not in shadow tree)";
+        return "(in " + (node.ancestorUserAgentShadowRoot() ? "user-agent" : "author") + " shadow DOM)";
+    }
+
+    InspectorTest.nodeWithId("nested-input", function(node) {
+        node.shadowRoots()[0].getChildNodes(childrenCallback);
+
+        function childrenCallback(children)
+        {
+            var shadowDiv = children[0];
+            InspectorTest.addResult("User-agent shadow DOM hidden:");
+            WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
+            WebInspector.settingForTest("showUAShadowDOM").set(true);
+            InspectorTest.addResult("User-agent shadow DOM shown:");
+            WebInspector.panels.elements.revealAndSelectNode(shadowDiv);
+        }
+    });
+}
+</script>
+</head>
+
+<body onload="runTest()">
+
+<p id="description">This test verifies that the correct node is revealed in the DOM tree when asked to reveal a user-agent shadow DOM node.</p>
+
+<p id="test1"></p>
+
+<script>
+var input = document.createElement("input");
+input.id = "nested-input";
+input.value = "test";
+test1.createShadowRoot().appendChild(input);
+</script>
+
+</body>
+</html>

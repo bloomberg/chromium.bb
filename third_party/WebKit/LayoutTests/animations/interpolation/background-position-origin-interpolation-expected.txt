@@ -1,0 +1,194 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js. 
+PASS CSS Transitions: property <background-position> from [] to [left 20px top 20px] at (0) is [10px 10px] 
+PASS CSS Transitions: property <background-position> from [] to [left 20px top 20px] at (0.25) is [12.5px 12.5px] 
+PASS CSS Transitions: property <background-position> from [] to [left 20px top 20px] at (0.5) is [15px 15px] 
+PASS CSS Transitions: property <background-position> from [] to [left 20px top 20px] at (0.75) is [17.5px 17.5px] 
+PASS CSS Transitions: property <background-position> from [] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Transitions: property <background-position> from [initial] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS CSS Transitions: property <background-position> from [initial] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS CSS Transitions: property <background-position> from [initial] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS CSS Transitions: property <background-position> from [initial] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS CSS Transitions: property <background-position> from [initial] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Transitions: property <background-position> from [inherit] to [left 20px top 20px] at (0) is [80px 80px] 
+PASS CSS Transitions: property <background-position> from [inherit] to [left 20px top 20px] at (0.25) is [65px 65px] 
+PASS CSS Transitions: property <background-position> from [inherit] to [left 20px top 20px] at (0.5) is [50px 50px] 
+PASS CSS Transitions: property <background-position> from [inherit] to [left 20px top 20px] at (0.75) is [35px 35px] 
+PASS CSS Transitions: property <background-position> from [inherit] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Transitions: property <background-position> from [unset] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS CSS Transitions: property <background-position> from [unset] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS CSS Transitions: property <background-position> from [unset] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS CSS Transitions: property <background-position> from [unset] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS CSS Transitions: property <background-position> from [unset] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px top 20px] at (0) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px top 20px] at (0.25) is [calc(5px + 37.5%) calc(5px + 37.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px top 20px] at (0.5) is [calc(10px + 25%) calc(10px + 25%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px top 20px] at (0.75) is [calc(15px + 12.5%) calc(15px + 12.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px top 20px] at (1) is [20px 20px] 
+FAIL CSS Transitions: property <background-position> from [center center] to [center top 20px] at (0) is [left 50% 50%] assert_equals: expected "left 50 % top 50 % " but got "left 50 % 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [center top 20px] at (0.25) is [left 50% calc(5px + 37.5%)] assert_equals: expected "left 50 % top calc ( 5px + 37.5 % ) " but got "left 50 % calc ( 5px + 37.5 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center top 20px] at (0.5) is [left 50% calc(10px + 25%)] assert_equals: expected "left 50 % top calc ( 10px + 25 % ) " but got "left 50 % calc ( 10px + 25 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center top 20px] at (0.75) is [left 50% calc(15px + 12.5%)] assert_equals: expected "left 50 % top calc ( 15px + 12.5 % ) " but got "left 50 % calc ( 15px + 12.5 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center top 20px] at (1) is [left 50% 20px] assert_equals: expected "left 50 % top 20px " but got "left 50 % 20px "
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px top 20px] at (0) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px top 20px] at (0.25) is [calc(-5px + 62.5%) calc(5px + 37.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px top 20px] at (0.5) is [calc(-10px + 75%) calc(10px + 25%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px top 20px] at (0.75) is [calc(-15px + 87.5%) calc(15px + 12.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px top 20px] at (1) is [calc(-20px + 100%) 20px] 
+FAIL CSS Transitions: property <background-position> from [center center] to [left 20px center] at (0) is [50% top 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [left 20px center] at (0.25) is [calc(5px + 37.5%) top 50%] assert_equals: expected "left calc ( 5px + 37.5 % ) top 50 % " but got "calc ( 5px + 37.5 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [left 20px center] at (0.5) is [calc(10px + 25%) top 50%] assert_equals: expected "left calc ( 10px + 25 % ) top 50 % " but got "calc ( 10px + 25 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [left 20px center] at (0.75) is [calc(15px + 12.5%) top 50%] assert_equals: expected "left calc ( 15px + 12.5 % ) top 50 % " but got "calc ( 15px + 12.5 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [left 20px center] at (1) is [20px top 50%] assert_equals: expected "left 20px top 50 % " but got "20px top 50 % "
+PASS CSS Transitions: property <background-position> from [center center] to [center center] at (0) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [center center] at (0.25) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [center center] at (0.5) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [center center] at (0.75) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [center center] at (1) is [50% 50%] 
+FAIL CSS Transitions: property <background-position> from [center center] to [right 20px center] at (0) is [50% top 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [right 20px center] at (0.25) is [calc(-5px + 62.5%) top 50%] assert_equals: expected "left calc ( - 5px + 62.5 % ) top 50 % " but got "calc ( - 5px + 62.5 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [right 20px center] at (0.5) is [calc(-10px + 75%) top 50%] assert_equals: expected "left calc ( - 10px + 75 % ) top 50 % " but got "calc ( - 10px + 75 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [right 20px center] at (0.75) is [calc(-15px + 87.5%) top 50%] assert_equals: expected "left calc ( - 15px + 87.5 % ) top 50 % " but got "calc ( - 15px + 87.5 % ) top 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [right 20px center] at (1) is [calc(-20px + 100%) top 50%] assert_equals: expected "left calc ( - 20px + 100 % ) top 50 % " but got "calc ( - 20px + 100 % ) top 50 % "
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px bottom 20px] at (0) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px bottom 20px] at (0.25) is [calc(5px + 37.5%) calc(-5px + 62.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px bottom 20px] at (0.5) is [calc(10px + 25%) calc(-10px + 75%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px bottom 20px] at (0.75) is [calc(15px + 12.5%) calc(-15px + 87.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [left 20px bottom 20px] at (1) is [20px calc(-20px + 100%)] 
+FAIL CSS Transitions: property <background-position> from [center center] to [center bottom 20px] at (0) is [left 50% 50%] assert_equals: expected "left 50 % top 50 % " but got "left 50 % 50 % "
+FAIL CSS Transitions: property <background-position> from [center center] to [center bottom 20px] at (0.25) is [left 50% calc(-5px + 62.5%)] assert_equals: expected "left 50 % top calc ( - 5px + 62.5 % ) " but got "left 50 % calc ( - 5px + 62.5 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center bottom 20px] at (0.5) is [left 50% calc(-10px + 75%)] assert_equals: expected "left 50 % top calc ( - 10px + 75 % ) " but got "left 50 % calc ( - 10px + 75 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center bottom 20px] at (0.75) is [left 50% calc(-15px + 87.5%)] assert_equals: expected "left 50 % top calc ( - 15px + 87.5 % ) " but got "left 50 % calc ( - 15px + 87.5 % ) "
+FAIL CSS Transitions: property <background-position> from [center center] to [center bottom 20px] at (1) is [left 50% calc(-20px + 100%)] assert_equals: expected "left 50 % top calc ( - 20px + 100 % ) " but got "left 50 % calc ( - 20px + 100 % ) "
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px bottom 20px] at (0) is [50% 50%] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px bottom 20px] at (0.25) is [calc(-5px + 62.5%) calc(-5px + 62.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px bottom 20px] at (0.5) is [calc(-10px + 75%) calc(-10px + 75%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px bottom 20px] at (0.75) is [calc(-15px + 87.5%) calc(-15px + 87.5%)] 
+PASS CSS Transitions: property <background-position> from [center center] to [right 20px bottom 20px] at (1) is [calc(-20px + 100%) calc(-20px + 100%)] 
+PASS CSS Animations: property <background-position> from [] to [left 20px top 20px] at (0) is [10px 10px] 
+PASS CSS Animations: property <background-position> from [] to [left 20px top 20px] at (0.25) is [12.5px 12.5px] 
+PASS CSS Animations: property <background-position> from [] to [left 20px top 20px] at (0.5) is [15px 15px] 
+PASS CSS Animations: property <background-position> from [] to [left 20px top 20px] at (0.75) is [17.5px 17.5px] 
+PASS CSS Animations: property <background-position> from [] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Animations: property <background-position> from [initial] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS CSS Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS CSS Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS CSS Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS CSS Animations: property <background-position> from [initial] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0) is [80px 80px] 
+PASS CSS Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.25) is [65px 65px] 
+PASS CSS Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.5) is [50px 50px] 
+PASS CSS Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.75) is [35px 35px] 
+PASS CSS Animations: property <background-position> from [inherit] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Animations: property <background-position> from [unset] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS CSS Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS CSS Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS CSS Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS CSS Animations: property <background-position> from [unset] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px top 20px] at (0) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.25) is [calc(5px + 37.5%) calc(5px + 37.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.5) is [calc(10px + 25%) calc(10px + 25%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.75) is [calc(15px + 12.5%) calc(15px + 12.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px top 20px] at (1) is [20px 20px] 
+FAIL CSS Animations: property <background-position> from [center center] to [center top 20px] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [center top 20px] at (0.25) is [50% calc(5px + 37.5%)] assert_equals: expected "left 50 % top calc ( 5px + 37.5 % ) " but got "50 % calc ( 5px + 37.5 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center top 20px] at (0.5) is [50% calc(10px + 25%)] assert_equals: expected "left 50 % top calc ( 10px + 25 % ) " but got "50 % calc ( 10px + 25 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center top 20px] at (0.75) is [50% calc(15px + 12.5%)] assert_equals: expected "left 50 % top calc ( 15px + 12.5 % ) " but got "50 % calc ( 15px + 12.5 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center top 20px] at (1) is [50% 20px] assert_equals: expected "left 50 % top 20px " but got "50 % 20px "
+PASS CSS Animations: property <background-position> from [center center] to [right 20px top 20px] at (0) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.25) is [calc(-5px + 62.5%) calc(5px + 37.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.5) is [calc(-10px + 75%) calc(10px + 25%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.75) is [calc(-15px + 87.5%) calc(15px + 12.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px top 20px] at (1) is [calc(-20px + 100%) 20px] 
+FAIL CSS Animations: property <background-position> from [center center] to [left 20px center] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [left 20px center] at (0.25) is [calc(5px + 37.5%) 50%] assert_equals: expected "left calc ( 5px + 37.5 % ) top 50 % " but got "calc ( 5px + 37.5 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [left 20px center] at (0.5) is [calc(10px + 25%) 50%] assert_equals: expected "left calc ( 10px + 25 % ) top 50 % " but got "calc ( 10px + 25 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [left 20px center] at (0.75) is [calc(15px + 12.5%) 50%] assert_equals: expected "left calc ( 15px + 12.5 % ) top 50 % " but got "calc ( 15px + 12.5 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [left 20px center] at (1) is [20px 50%] assert_equals: expected "left 20px top 50 % " but got "20px 50 % "
+PASS CSS Animations: property <background-position> from [center center] to [center center] at (0) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [center center] at (0.25) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [center center] at (0.5) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [center center] at (0.75) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [center center] at (1) is [50% 50%] 
+FAIL CSS Animations: property <background-position> from [center center] to [right 20px center] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [right 20px center] at (0.25) is [calc(-5px + 62.5%) 50%] assert_equals: expected "left calc ( - 5px + 62.5 % ) top 50 % " but got "calc ( - 5px + 62.5 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [right 20px center] at (0.5) is [calc(-10px + 75%) 50%] assert_equals: expected "left calc ( - 10px + 75 % ) top 50 % " but got "calc ( - 10px + 75 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [right 20px center] at (0.75) is [calc(-15px + 87.5%) 50%] assert_equals: expected "left calc ( - 15px + 87.5 % ) top 50 % " but got "calc ( - 15px + 87.5 % ) 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [right 20px center] at (1) is [calc(-20px + 100%) 50%] assert_equals: expected "left calc ( - 20px + 100 % ) top 50 % " but got "calc ( - 20px + 100 % ) 50 % "
+PASS CSS Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.25) is [calc(5px + 37.5%) calc(-5px + 62.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.5) is [calc(10px + 25%) calc(-10px + 75%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.75) is [calc(15px + 12.5%) calc(-15px + 87.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (1) is [20px calc(-20px + 100%)] 
+FAIL CSS Animations: property <background-position> from [center center] to [center bottom 20px] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL CSS Animations: property <background-position> from [center center] to [center bottom 20px] at (0.25) is [50% calc(-5px + 62.5%)] assert_equals: expected "left 50 % top calc ( - 5px + 62.5 % ) " but got "50 % calc ( - 5px + 62.5 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center bottom 20px] at (0.5) is [50% calc(-10px + 75%)] assert_equals: expected "left 50 % top calc ( - 10px + 75 % ) " but got "50 % calc ( - 10px + 75 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center bottom 20px] at (0.75) is [50% calc(-15px + 87.5%)] assert_equals: expected "left 50 % top calc ( - 15px + 87.5 % ) " but got "50 % calc ( - 15px + 87.5 % ) "
+FAIL CSS Animations: property <background-position> from [center center] to [center bottom 20px] at (1) is [50% calc(-20px + 100%)] assert_equals: expected "left 50 % top calc ( - 20px + 100 % ) " but got "50 % calc ( - 20px + 100 % ) "
+PASS CSS Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0) is [50% 50%] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.25) is [calc(-5px + 62.5%) calc(-5px + 62.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.5) is [calc(-10px + 75%) calc(-10px + 75%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.75) is [calc(-15px + 87.5%) calc(-15px + 87.5%)] 
+PASS CSS Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (1) is [calc(-20px + 100%) calc(-20px + 100%)] 
+PASS Web Animations: property <background-position> from [initial] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS Web Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS Web Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS Web Animations: property <background-position> from [initial] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS Web Animations: property <background-position> from [initial] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS Web Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0) is [80px 80px] 
+PASS Web Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.25) is [65px 65px] 
+PASS Web Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.5) is [50px 50px] 
+PASS Web Animations: property <background-position> from [inherit] to [left 20px top 20px] at (0.75) is [35px 35px] 
+PASS Web Animations: property <background-position> from [inherit] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS Web Animations: property <background-position> from [unset] to [left 20px top 20px] at (0) is [0% 0%] 
+PASS Web Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.25) is [5px 5px] 
+PASS Web Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.5) is [10px 10px] 
+PASS Web Animations: property <background-position> from [unset] to [left 20px top 20px] at (0.75) is [15px 15px] 
+PASS Web Animations: property <background-position> from [unset] to [left 20px top 20px] at (1) is [20px 20px] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px top 20px] at (0) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.25) is [calc(5px + 37.5%) calc(5px + 37.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.5) is [calc(10px + 25%) calc(10px + 25%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px top 20px] at (0.75) is [calc(15px + 12.5%) calc(15px + 12.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px top 20px] at (1) is [20px 20px] 
+FAIL Web Animations: property <background-position> from [center center] to [center top 20px] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [center top 20px] at (0.25) is [50% calc(5px + 37.5%)] assert_equals: expected "left 50 % top calc ( 5px + 37.5 % ) " but got "50 % calc ( 5px + 37.5 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center top 20px] at (0.5) is [50% calc(10px + 25%)] assert_equals: expected "left 50 % top calc ( 10px + 25 % ) " but got "50 % calc ( 10px + 25 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center top 20px] at (0.75) is [50% calc(15px + 12.5%)] assert_equals: expected "left 50 % top calc ( 15px + 12.5 % ) " but got "50 % calc ( 15px + 12.5 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center top 20px] at (1) is [50% 20px] assert_equals: expected "left 50 % top 20px " but got "50 % 20px "
+PASS Web Animations: property <background-position> from [center center] to [right 20px top 20px] at (0) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.25) is [calc(-5px + 62.5%) calc(5px + 37.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.5) is [calc(-10px + 75%) calc(10px + 25%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px top 20px] at (0.75) is [calc(-15px + 87.5%) calc(15px + 12.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px top 20px] at (1) is [calc(-20px + 100%) 20px] 
+FAIL Web Animations: property <background-position> from [center center] to [left 20px center] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [left 20px center] at (0.25) is [calc(5px + 37.5%) 50%] assert_equals: expected "left calc ( 5px + 37.5 % ) top 50 % " but got "calc ( 5px + 37.5 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [left 20px center] at (0.5) is [calc(10px + 25%) 50%] assert_equals: expected "left calc ( 10px + 25 % ) top 50 % " but got "calc ( 10px + 25 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [left 20px center] at (0.75) is [calc(15px + 12.5%) 50%] assert_equals: expected "left calc ( 15px + 12.5 % ) top 50 % " but got "calc ( 15px + 12.5 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [left 20px center] at (1) is [20px 50%] assert_equals: expected "left 20px top 50 % " but got "20px 50 % "
+PASS Web Animations: property <background-position> from [center center] to [center center] at (0) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [center center] at (0.25) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [center center] at (0.5) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [center center] at (0.75) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [center center] at (1) is [50% 50%] 
+FAIL Web Animations: property <background-position> from [center center] to [right 20px center] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [right 20px center] at (0.25) is [calc(-5px + 62.5%) 50%] assert_equals: expected "left calc ( - 5px + 62.5 % ) top 50 % " but got "calc ( - 5px + 62.5 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [right 20px center] at (0.5) is [calc(-10px + 75%) 50%] assert_equals: expected "left calc ( - 10px + 75 % ) top 50 % " but got "calc ( - 10px + 75 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [right 20px center] at (0.75) is [calc(-15px + 87.5%) 50%] assert_equals: expected "left calc ( - 15px + 87.5 % ) top 50 % " but got "calc ( - 15px + 87.5 % ) 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [right 20px center] at (1) is [calc(-20px + 100%) 50%] assert_equals: expected "left calc ( - 20px + 100 % ) top 50 % " but got "calc ( - 20px + 100 % ) 50 % "
+PASS Web Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.25) is [calc(5px + 37.5%) calc(-5px + 62.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.5) is [calc(10px + 25%) calc(-10px + 75%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (0.75) is [calc(15px + 12.5%) calc(-15px + 87.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [left 20px bottom 20px] at (1) is [20px calc(-20px + 100%)] 
+FAIL Web Animations: property <background-position> from [center center] to [center bottom 20px] at (0) is [50% 50%] assert_equals: expected "left 50 % top 50 % " but got "50 % 50 % "
+FAIL Web Animations: property <background-position> from [center center] to [center bottom 20px] at (0.25) is [50% calc(-5px + 62.5%)] assert_equals: expected "left 50 % top calc ( - 5px + 62.5 % ) " but got "50 % calc ( - 5px + 62.5 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center bottom 20px] at (0.5) is [50% calc(-10px + 75%)] assert_equals: expected "left 50 % top calc ( - 10px + 75 % ) " but got "50 % calc ( - 10px + 75 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center bottom 20px] at (0.75) is [50% calc(-15px + 87.5%)] assert_equals: expected "left 50 % top calc ( - 15px + 87.5 % ) " but got "50 % calc ( - 15px + 87.5 % ) "
+FAIL Web Animations: property <background-position> from [center center] to [center bottom 20px] at (1) is [50% calc(-20px + 100%)] assert_equals: expected "left 50 % top calc ( - 20px + 100 % ) " but got "50 % calc ( - 20px + 100 % ) "
+PASS Web Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0) is [50% 50%] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.25) is [calc(-5px + 62.5%) calc(-5px + 62.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.5) is [calc(-10px + 75%) calc(-10px + 75%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (0.75) is [calc(-15px + 87.5%) calc(-15px + 87.5%)] 
+PASS Web Animations: property <background-position> from [center center] to [right 20px bottom 20px] at (1) is [calc(-20px + 100%) calc(-20px + 100%)] 
+Harness: the test ran to completion.
+

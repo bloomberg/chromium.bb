@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+
+function test()
+{
+    function parseAndDumpURL(url)
+    {
+        var parsedURL = new WebInspector.ParsedURL(url);
+
+        InspectorTest.addResult("Parsing url: " + url);
+        InspectorTest.addResult("  isValid: " + parsedURL.isValid);
+        InspectorTest.addResult("  scheme: " + parsedURL.scheme);
+        InspectorTest.addResult("  host: " + parsedURL.host);
+        InspectorTest.addResult("  port: " + parsedURL.port);
+        InspectorTest.addResult("  path: " + parsedURL.path);
+        InspectorTest.addResult("  queryParams: " + parsedURL.queryParams);
+        InspectorTest.addResult("  fragment: " + parsedURL.fragment);
+        InspectorTest.addResult("  folderPathComponents: " + parsedURL.folderPathComponents);
+        InspectorTest.addResult("  lastPathComponent: " + parsedURL.lastPathComponent);
+        var splittedURL = WebInspector.ParsedURL.splitURLIntoPathComponents(url);
+        InspectorTest.addResult("  splittedURL: " + JSON.stringify(splittedURL));
+    }
+
+    parseAndDumpURL("http://example.com/?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://example.com/foo.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://example.com/foo/bar.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+    parseAndDumpURL("http://example.com/foo/bar/baz.html?queryParam1=value1&queryParam2=value2#fragmentWith/Many//Slashes");
+
+    // Test how double (and more than double) slashes are parsed.
+    parseAndDumpURL("http://example.com//?queryParam1=value1");
+    parseAndDumpURL("http://example.com//foo.html");
+    parseAndDumpURL("http://example.com//foo/bar.html");
+    parseAndDumpURL("http://example.com/foo//bar.html");
+    parseAndDumpURL("http://example.com//foo//bar.html");
+    parseAndDumpURL("http://example.com//foo/bar/baz.html");
+    parseAndDumpURL("http://example.com/foo//bar/baz.html");
+    parseAndDumpURL("http://example.com/foo/bar//baz.html");
+    parseAndDumpURL("http://example.com///foo/bar/baz.html");
+    parseAndDumpURL("http://example.com/foo////bar/baz.html");
+    parseAndDumpURL("http://example.com/foo/bar/////baz.html");
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests inspector ParsedURL class</p>
+</body>
+</html>

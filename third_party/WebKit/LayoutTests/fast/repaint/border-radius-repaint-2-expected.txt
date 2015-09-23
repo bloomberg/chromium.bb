@@ -1,0 +1,32 @@
+{
+  "bounds": [874, 600],
+  "children": [
+    {
+      "bounds": [874, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#3F3F3F",
+      "repaintRects": [
+        [140, 141, 601, 548],
+        [137, 144, 607, 548],
+        [137, 139, 607, 553],
+        [8, 224, 866, 548],
+        [8, 224, 784, 548],
+        [8, 8, 866, 764],
+        [8, 8, 866, 216],
+        [0, 600, 874, 180],
+        [0, 0, 874, 780],
+        [0, 0, 874, 232]
+      ],
+      "paintInvalidationClients": [
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV",
+        "LayoutBlockFlow DIV id='target'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,10 @@
+AudioBufferSourceNode: test the "zero" playbackRate.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The zero playbackRate held the sample value correctly.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

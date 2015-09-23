@@ -1,0 +1,318 @@
+
+{
+  "bounds": [785, 1500],
+  "children": [
+    {
+      "bounds": [785, 1500],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [20, 120],
+          "bounds": [284, 204],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "children": [
+                {
+                  "bounds": [280, 200],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [280, 200],
+                          "children": [
+                            {
+                              "bounds": [280, 200],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [8, 8],
+                                  "bounds": [252, 172],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [1, 1],
+                                      "children": [
+                                        {
+                                          "bounds": [250, 170],
+                                          "children": [
+                                            {
+                                              "children": [
+                                                {
+                                                  "bounds": [250, 230],
+                                                  "children": [
+                                                    {
+                                                      "bounds": [250, 230],
+                                                      "drawsContent": true,
+                                                      "children": [
+                                                        {
+                                                          "position": [18, 10],
+                                                          "bounds": [210, 210],
+                                                          "contentsOpaque": true,
+                                                          "drawsContent": true,
+                                                          "backgroundColor": "#0000FF"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [20, 344],
+          "bounds": [284, 204],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [2, 2],
+              "children": [
+                {
+                  "bounds": [280, 200],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [280, 200],
+                          "children": [
+                            {
+                              "bounds": [280, 200],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [8, 8],
+                                  "bounds": [252, 172],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [1, 1],
+                                      "children": [
+                                        {
+                                          "bounds": [250, 170],
+                                          "children": [
+                                            {
+                                              "children": [
+                                                {
+                                                  "bounds": [250, 230],
+                                                  "children": [
+                                                    {
+                                                      "bounds": [250, 230],
+                                                      "drawsContent": true,
+                                                      "children": [
+                                                        {
+                                                          "position": [18, 10],
+                                                          "bounds": [210, 210],
+                                                          "contentsOpaque": true,
+                                                          "drawsContent": true,
+                                                          "backgroundColor": "#0000FF"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "bounds": [100, 100],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [280, 200],
+  "children": [
+    {
+      "bounds": [280, 200],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [252, 172],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "children": [
+                {
+                  "bounds": [250, 170],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [250, 230],
+                          "children": [
+                            {
+                              "bounds": [250, 230],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '/-->'
+--------
+{
+  "bounds": [250, 230],
+  "children": [
+    {
+      "bounds": [250, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [280, 200],
+  "children": [
+    {
+      "bounds": [280, 200],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [252, 172],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "children": [
+                {
+                  "bounds": [250, 170],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [250, 230],
+                          "children": [
+                            {
+                              "bounds": [250, 230],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '/-->'
+--------
+{
+  "bounds": [250, 230],
+  "children": [
+    {
+      "bounds": [250, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

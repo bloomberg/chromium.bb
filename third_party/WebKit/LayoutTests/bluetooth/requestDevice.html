@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+
+test(function(t) { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects(requestDeviceWithKeyDown(),
+                                new TypeError());
+}, 'Requires an argument.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects(requestDeviceWithKeyDown({}),
+                                new TypeError());
+}, 'RequestDeviceOptions requires a |filters| member.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('FailStartDiscoveryAdapter');
+  testRunner.setBluetoothManualChooser();
+  let requestDevicePromise =
+      requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]});
+  return getBluetoothManualChooserEvents()
+    .then(events => {
+      assert_array_equals(events,
+                          ['chooser-opened(file:///)',
+                           'discovering',
+                           'discovery-failed-to-start']);
+      testRunner.sendBluetoothManualChooserEvent('cancelled', '');
+      return assert_promise_rejects_with_message(
+        requestDevicePromise,
+        {name: 'NotFoundError', message: 'User cancelled the requestDevice() chooser.'},
+        'The adapter failed to start a discovery session.');
+    });
+}, 'Discovery session fails to start.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('NotPresentAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'Bluetooth adapter not available.'},
+    'Bluetooth adapter is not present.');
+}, 'Reject with NotFoundError if the adapter is not present.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('NotPoweredAdapter');
+  testRunner.setBluetoothManualChooser();
+  let requestDevicePromise =
+      requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]});
+  return getBluetoothManualChooserEvents()
+    .then(events => {
+      assert_array_equals(events,
+                          ['chooser-opened(file:///)',
+                           'adapter-disabled']);
+      testRunner.sendBluetoothManualChooserEvent('cancelled', '');
+      return assert_promise_rejects_with_message(
+        requestDevicePromise,
+        {name: 'NotFoundError', message: 'User cancelled the requestDevice() chooser.'},
+        'Bluetooth adapter is not powered.');
+    });
+}, 'Reject with NotFoundError if the adapter is off.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('EmptyAdapter');
+  return assert_promise_rejects_with_message(
+    requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]}),
+    {name: 'NotFoundError', message: 'User cancelled the requestDevice() chooser.'},
+    'No Bluetooth devices in range.');
+}, 'Reject with NotFoundError if there are no devices around.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return Promise.all([
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
+  ]).then(devices => {
+    devices.forEach(device => {
+      assert_equals(device.constructor.name, 'BluetoothDevice');
+    });
+  });
+}, 'Mock will resolve.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return assert_promise_rejects(
+    navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]}),
+    'SecurityError');
+}, 'Requires a user gesture.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return callWithKeyDown(() => {
+    var first = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
+    var second = navigator.bluetooth.requestDevice({filters: [{services: ['generic_access']}]});
+    return Promise.all([
+      first.then(device => assert_equals(device.constructor.name, 'BluetoothDevice')),
+      assert_promise_rejects(second, 'SecurityError'),
+    ]);
+  });
+}, 'Consumes a user gesture.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return Promise.all([
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.alias]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.name]}]}),
+    requestDeviceWithKeyDown({filters: [{services: [generic_access.uuid]}]})
+  ]).then(devices => {
+    // requestDevice should return the same object if it was created
+    // earlier. https://crbug.com/495270
+    // TODO(ortuno): Change to assert_equals.
+    assert_not_equals(devices[0], devices[1]);
+    assert_not_equals(devices[1], devices[2]);
+  });
+}, 'Returned device should always be the same.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('ScanFilterCheckingAdapter');
+  // The work of this test is done in the ScanFilterCheckingAdapter. It asserts
+  // that this requestDevice() call tells the platform to scan for only devices
+  // that include the Battery, Glucose, or Heart Rate services.
+  return requestDeviceWithKeyDown({
+    filters: [
+      {services: ['battery_service']},
+      {services: ['glucose', 'heart_rate']}
+    ],
+    // The optionalServices shouldn't affect the platform's scan.
+    optionalServices: [generic_access.name]
+  });
+}, 'Filters restrict the platform\'s Bluetooth scan.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  testRunner.setBluetoothManualChooser();
+  let requestDevicePromise = requestDeviceWithKeyDown({
+    filters: [{services: ['glucose']},
+              {services: ['heart_rate']}]
+  });
+  return getBluetoothManualChooserEvents(5)
+    .then(events => {
+      assert_equals(events.length, 5, events);
+      assert_equals(events[0], 'chooser-opened(file:///)', 'events[0]');
+      let idsByName = new AddDeviceEventSet();
+      for (let addedDevice of [events[1], events[2]]) {
+        idsByName.assert_add_device_event(addedDevice);
+      }
+      assert_true(idsByName.has('Heart Rate Device'));
+      assert_true(idsByName.has('Glucose Device'));
+      assert_equals(events[3], 'discovering');
+      assert_equals(events[4], 'discovery-idle');
+      testRunner.sendBluetoothManualChooserEvent('selected',
+                                                 idsByName.get('Glucose Device'));
+      return requestDevicePromise;
+    }).then(device => assert_equals(device.name, 'Glucose Device'));
+}, 'The chooser includes all devices.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['glucose']}]})
+    .then(device => assert_equals(device.name, 'Glucose Device'));
+}, 'Simple filter selects matching device.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  return requestDeviceWithKeyDown({
+    filters: [{services: ['generic_access', 'heart_rate']}]
+  }).then(device => assert_equals(device.name, 'Heart Rate Device'));
+}, 'Filter with 2 services returns a matching device.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  return requestDeviceWithKeyDown({
+    filters: [{services: ['battery_service']},
+              {services: ['heart_rate']}]
+  }).then(device => assert_equals(device.name, 'Heart Rate Device'));
+}, 'An extra filter doesn\'t prevent matching.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  // Both devices support the Generic Access service, but things need to
+  // support both services to pass the filter, and neither has a Battery
+  // service.
+  return assert_promise_rejects(requestDeviceWithKeyDown({
+    filters: [{services: ['generic_access', 'battery_service']}]
+  }), 'NotFoundError');
+}, 'Too-strict filters do prevent matching.');
+</script>

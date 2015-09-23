@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrix scale</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+test(function() {
+  var matrix = new DOMMatrix();
+  matrix.a = 1;
+  matrix.b = 2;
+  matrix.c = 3;
+  matrix.d = 4;
+  matrix.e = 5;
+  matrix.f = 6;
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 1, 0, 5, 6, 0, 1 ]);
+  var other = new DOMMatrix();
+  other.m11 = 6;
+  other.m21 = 5;
+  other.m31 = 4;
+  other.m33 = 3;
+  other.m41 = 2;
+  other.m43 = 1;
+  assert_false(other.is2D);
+  assert_false(other.isIdentity);
+  assert_array_equals(other.toFloat64Array(), [ 6, 0, 0, 0, 5, 1, 0, 0, 4, 0, 3, 0, 2, 0, 1, 1 ]);
+  var result = matrix.multiply(other);
+  assert_false(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 6, 12, 0, 0, 8, 14, 0, 0, 4, 8, 3, 0, 7, 10, 1, 1 ]);
+  matrix.multiplySelf(other);
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), result.toFloat64Array());
+}, "DOMMatrix.multiply(other) and DOMMatrix.multiplySelf(other)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  matrix.a = 1;
+  matrix.b = 2;
+  matrix.c = 3;
+  matrix.d = 4;
+  matrix.e = 5;
+  matrix.f = 6;
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 2, 0, 0, 3, 4, 0, 0, 0, 0, 1, 0, 5, 6, 0, 1 ]);
+  var other = new DOMMatrix();
+  other.m11 = 6;
+  other.m21 = 5;
+  other.m31 = 4;
+  other.m33 = 3;
+  other.m41 = 2;
+  other.m43 = 1;
+  assert_false(other.is2D);
+  assert_false(other.isIdentity);
+  assert_array_equals(other.toFloat64Array(), [ 6, 0, 0, 0, 5, 1, 0, 0, 4, 0, 3, 0, 2, 0, 1, 1 ]);
+  var result = matrix.preMultiplySelf(other);
+  assert_false(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 16, 2, 0, 0, 38, 4, 0, 0, 4, 0, 3, 0, 62, 6, 1, 1 ]);
+  assert_array_equals(matrix.toFloat64Array(), result.toFloat64Array());
+}, "DOMMatrix.preMultiplySelf(other)");
+
+</script>
+</body>
+</html>

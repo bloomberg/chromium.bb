@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-10, 20, 80, 90] at 0
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-12, 22, 78, 88] at 0.2
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-16, 26, 74, 84] at 0.6
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-20, 30, 70, 80] at 1
+
+Web Animations API:
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-6, 16, 84, 94] at -0.4
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-10, 20, 80, 90] at 0
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-12, 22, 78, 88] at 0.2
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-16, 26, 74, 84] at 0.6
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-20, 30, 70, 80] at 1
+PASS: viewBox from [-10, 20, 80, 90] to [-20, 30, 70, 80] was [-24, 34, 66, 76] at 1.4
+

@@ -1,0 +1,138 @@
+<!-- Based on compositing/overflow/text-color-change.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutText #text",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+    "InlineTextBox '  Text'",
+    "InlineTextBox '\n'",
+];
+function paintInvalidationTest() {
+  document.getElementById('scroller').style.color = 'green';
+}
+onload = runPaintInvalidationTest;
+</script>
+Tests invalidation of scrolling text. On composited scrolling, the whole text should be invalidated when the 'color' property of the container changes.
+<pre id="scroller" style="width: 200px; height: 200px; overflow: scroll; color: red">
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+  Text
+</pre>

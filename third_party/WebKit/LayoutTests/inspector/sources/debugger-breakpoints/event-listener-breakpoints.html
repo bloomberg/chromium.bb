@@ -1,0 +1,157 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testElementClicked()
+{
+    return 0;
+}
+
+function addListenerAndClick()
+{
+    var element = document.getElementById("test");
+    element.addEventListener("click", testElementClicked, true);
+    element.click();
+}
+
+function timerFired()
+{
+    return 0;
+}
+
+function addLoadListeners()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.onload = loadCallback;
+    xhr.onerror = loadCallback;
+    xhr.open("GET", "http://localhost/", true);
+
+    var img = new Image();
+    img.onload = sendXHR;
+    img.onerror = sendXHR;
+    img.src = "foo/bar/dummy";
+
+    function sendXHR()
+    {
+        xhr.send();
+    }
+}
+
+function loadCallback()
+{
+    return 0;
+}
+
+function playVideo()
+{
+    var video = document.getElementById("video");
+    video.addEventListener("play", onVideoPlay, false);
+    video.play();
+}
+
+function onVideoPlay()
+{
+    return 0;
+}
+
+function test()
+{
+    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+    InspectorTest.runDebuggerTestSuite([
+        function testClickBreakpoint(next)
+        {
+            pane._setBreakpoint("listener:click");
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPageWithTimeout("addListenerAndClick()");
+
+            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                printEventTargetName(auxData);
+                pane._removeBreakpoint("listener:click");
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                InspectorTest.evaluateInPage("addListenerAndClick()", next);
+            }
+        },
+
+        function testTimerFiredBreakpoint(next)
+        {
+            pane._setBreakpoint("instrumentation:timerFired");
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPage("setTimeout(timerFired, 10)");
+
+            function paused(callFrames)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                pane._removeBreakpoint("instrumentation:timerFired");
+                InspectorTest.resumeExecution(next);
+            }
+        },
+
+        function testLoadBreakpointOnXHR(next)
+        {
+            pane._setBreakpoint("listener:load", ["xmlHTTPrequest"]); // test case-insensitive match
+            pane._setBreakpoint("listener:error", ["XMLHttpRequest"]);
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPageWithTimeout("addLoadListeners()");
+
+            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                printEventTargetName(auxData);
+                pane._removeBreakpoint("listener:load", ["XMLHttpRequest"]);
+                pane._removeBreakpoint("listener:error", ["xmlHTTPrequest"]);
+                InspectorTest.resumeExecution(resumed);
+            }
+
+            function resumed()
+            {
+                InspectorTest.evaluateInPage("addLoadListeners()", next);
+            }
+        },
+
+        function testMediaEventBreakpoint(next)
+        {
+            pane._setBreakpoint("listener:play", ["audio", "video"]);
+            InspectorTest.waitUntilPaused(paused);
+            InspectorTest.evaluateInPageWithTimeout("playVideo()");
+
+            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
+            {
+                InspectorTest.captureStackTrace(callFrames);
+                printEventTargetName(auxData);
+                pane._removeBreakpoint("listener:play", ["audio", "video"]);
+                InspectorTest.resumeExecution(next);
+            }
+        }
+    ]);
+
+    function printEventTargetName(auxData)
+    {
+        var targetName = auxData && auxData.targetName;
+        if (targetName)
+            InspectorTest.addResult("Event target: " + targetName);
+        else
+            InspectorTest.addResult("FAIL: No event target name received!");
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests event listener breakpoints.
+</p>
+
+<input type=button id="test"></input>
+<video id="video" src="../../../media/content/test.ogv"></video>
+
+</body>
+</html>

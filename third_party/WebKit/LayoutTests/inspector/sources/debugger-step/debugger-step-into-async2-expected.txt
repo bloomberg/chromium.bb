@@ -1,0 +1,96 @@
+Tests debugger StepIntoAsync action (part 2).
+
+
+Set timer for test function.
+Executing StepOver...
+Executing StepOver...
+Call stack:
+    0) testFunction (debugger-step-into-async2.html:15)
+
+Executing StepIntoAsync...
+Call stack:
+    0) callback7 (debugger-step-into-async2.html:18)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async2.html:15)
+
+Executing Resume...
+Executing StepOver...
+Executing StepOver...
+Executing StepIntoAsync...
+Call stack:
+    0) callback8 (debugger-step-into-async2.html:36)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async2.html:21)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async2.html:15)
+
+Executing Resume...
+Executing StepOver...
+Executing StepIntoAsync...
+Call stack:
+    0) callback9 (debugger-step-into-async2.html:46)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async2.html:41)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async2.html:21)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async2.html:15)
+
+Executing Resume...
+Executing StepOver...
+Executing StepIntoAsync...
+Call stack:
+    0) onMessageReceivedInFrame (post-message-listener.html:5)
+    [postMessage]
+    0) callback9 (debugger-step-into-async2.html:52)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async2.html:41)
+    [Promise.resolve]
+    0) callback7 (debugger-step-into-async2.html:21)
+    [setTimeout]
+    0) testFunction (debugger-step-into-async2.html:15)
+
+Executing Resume...
+Executing StepInto...
+Executing StepIntoAsync...
+Call stack:
+    0) inner1 (debugger-step-into-async2.html:64)
+    [Promise.resolve]
+    0) callback10 (debugger-step-into-async2.html:63)
+    [postMessage]
+    0) postMessageToParent (post-message-listener.html:13)
+    1) onMessageReceivedInFrame (post-message-listener.html:8)
+    [postMessage]
+    0) callback9 (debugger-step-into-async2.html:52)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async2.html:41)
+
+Executing StepIntoAsync...
+Call stack:
+    0) inner2 (debugger-step-into-async2.html:70)
+    [Promise.resolve]
+    0) callback10 (debugger-step-into-async2.html:63)
+    [postMessage]
+    0) postMessageToParent (post-message-listener.html:13)
+    1) onMessageReceivedInFrame (post-message-listener.html:8)
+    [postMessage]
+    0) callback9 (debugger-step-into-async2.html:52)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async2.html:41)
+
+Executing StepIntoAsync...
+Executing StepIntoAsync...
+Call stack:
+    0) callback11 (debugger-step-into-async2.html:82)
+    1) inner2 (debugger-step-into-async2.html:72)
+    [Promise.resolve]
+    0) callback10 (debugger-step-into-async2.html:63)
+    [postMessage]
+    0) postMessageToParent (post-message-listener.html:13)
+    1) onMessageReceivedInFrame (post-message-listener.html:8)
+    [postMessage]
+    0) callback9 (debugger-step-into-async2.html:52)
+    [Object.observe]
+    0) callback8 (debugger-step-into-async2.html:41)
+
+

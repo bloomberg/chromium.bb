@@ -1,0 +1,49 @@
+Test looping edge case to verify http://crbug.com/364442. Steps:
+
+Seek toward end of video (for faster testing).
+Play video to end with 'loop' set to false.
+Once ended, set 'loop' to true.
+Call play.
+Verify that 'seeked' event fires, seeking back to the beginning.
+Pause video and end test.
+
+++ Video is initially paused and 'loop' unset.
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.loop == 'false') OK
+
+++ Seek to just before the end of the video and play.
+RUN(video.currentTime = video.duration - .5)
+RUN(video.play())
+
+EVENT(play)
+EVENT(ended)
+
+++ Verify played to end and stopped.
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.currentTime == 'video.duration') OK
+
+++ With playback ended, set 'loop' attribute. This will cause ended == false; looping video cannot be 'ended', only paused.
+EXPECTED (video.loop == 'false') OK
+RUN(video.loop = true)
+EXPECTED (video.loop == 'true') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.paused == 'true') OK
+
+++ Play video with 'loop' set. Expect seek back to start.
+RUN(video.play())
+
+EVENT(play)
+EVENT(seeked)
+
+++ Observed seek. Verify current time decreased and still playing.
+EXPECTED (video.loop == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.currentTime < 'video.duration') OK
+
+++ Pausing now that test is over to prevent additional unwanted looping.
+RUN(video.pause())
+
+END OF TEST
+

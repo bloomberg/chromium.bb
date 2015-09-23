@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body onload="test();">
+<div id="console"></div>
+<div id="editable" contenteditable></div>
+
+<script>
+description("Text to check is divided into chunks to make sure checking some huge text " +
+"does not freeze the page/UI. With the synchronous spell checker only one chunk is checked. " +
+"To test manaully trigger spell checking of the editable (e.g. by copy+paste) with unified " +
+"and synchronous checker on. Only 3 first misspellings should be marked.");
+
+var testEditable = null;
+
+function test()
+{
+    testEditable = document.getElementById("editable");
+    var loopCount = 150;
+    var longText = "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good. " +
+    "Good good good good good good good good good good good good good.";
+
+    var testLongText = "";
+    for (var i = 0; i < loopCount; ++i)
+        testLongText += longText;
+
+    testLongText = "zz zz zz. " + testLongText + "zz zz zz.";
+    testEditable.innerText = testLongText;
+
+    if (!window.internals) {
+        log("Test manually. See the description for steps");
+        return;
+    }
+
+    internals.settings.setUnifiedTextCheckerEnabled(true);
+    internals.settings.setAsynchronousSpellCheckingEnabled(false);
+
+    function waitForMarkersToAppear(node, nretry)
+    {
+        if (nretry > 0 && !internals.markerCountForNode(node, "spelling")) {
+            window.setTimeout(function() { waitForMarkersToAppear(node, nretry - 1); }, 5);
+        } else {
+            shouldBe('internals.markerCountForNode(testEditable.childNodes[0], "spelling")', '3');
+            testEditable.removeChild(testEditable.childNodes[0]);
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+    }
+
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+    }
+
+    internals.setContinuousSpellCheckingEnabled(false);
+    testEditable.focus();
+    internals.setContinuousSpellCheckingEnabled(true);
+    waitForMarkersToAppear(testEditable.childNodes[0], 10);
+}
+</script>
+</body>
+</html>

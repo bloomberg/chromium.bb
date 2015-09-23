@@ -1,0 +1,35 @@
+<!-- Based on fast/table/border-collapsing/cached-cell-append.html -->
+<!--
+Calculating collapsed borders for big tables is expensive, so we cache them and recalculate when needed.
+Here we append new cell, expect that cache is invalidated and paint produces expected image.
+-->
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
+        <script src="resources/paint-invalidation-test.js"></script>
+        <script type="text/javascript">
+            window.expectedPaintInvalidationObjects = [
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTable TABLE",
+                "LayoutTableCell TD",
+            ];
+            function paintInvalidationTest() {
+                newCell = document.createElement("td");
+                newCell.style.borderLeftWidth = "6px";
+                newCell.style.borderLeftStyle = "solid";
+                newCell.style.borderLeftColor = "yellow";
+                document.getElementById("row").appendChild(newCell);
+            }
+        </script>
+    </head>
+    <body onload="runPaintInvalidationTest()">
+        <table style="border-collapse:collapse; border:2px solid blue">
+            <tr id="row">
+                <td style="border:4px solid lime"/>
+            </tr>
+        </table>
+    </body>
+</html>
+

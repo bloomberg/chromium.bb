@@ -1,0 +1,46 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: x1 from [10] to [60] was [10] at 0
+PASS: x1 from [10] to [60] was [20] at 0.2
+PASS: x1 from [10] to [60] was [40] at 0.6
+PASS: x1 from [10] to [60] was [60] at 1
+PASS: x2 from [10] to [60] was [10] at 0
+PASS: x2 from [10] to [60] was [20] at 0.2
+PASS: x2 from [10] to [60] was [40] at 0.6
+PASS: x2 from [10] to [60] was [60] at 1
+PASS: y1 from [10] to [60] was [10] at 0
+PASS: y1 from [10] to [60] was [20] at 0.2
+PASS: y1 from [10] to [60] was [40] at 0.6
+PASS: y1 from [10] to [60] was [60] at 1
+PASS: y2 from [10] to [60] was [10] at 0
+PASS: y2 from [10] to [60] was [20] at 0.2
+PASS: y2 from [10] to [60] was [40] at 0.6
+PASS: y2 from [10] to [60] was [60] at 1
+
+Web Animations API:
+PASS: x1 from [10] to [60] was [-10] at -0.4
+PASS: x1 from [10] to [60] was [10] at 0
+PASS: x1 from [10] to [60] was [20] at 0.2
+PASS: x1 from [10] to [60] was [40] at 0.6
+PASS: x1 from [10] to [60] was [60] at 1
+PASS: x1 from [10] to [60] was [80] at 1.4
+PASS: x2 from [10] to [60] was [-10] at -0.4
+PASS: x2 from [10] to [60] was [10] at 0
+PASS: x2 from [10] to [60] was [20] at 0.2
+PASS: x2 from [10] to [60] was [40] at 0.6
+PASS: x2 from [10] to [60] was [60] at 1
+PASS: x2 from [10] to [60] was [80] at 1.4
+PASS: y1 from [10] to [60] was [-10] at -0.4
+PASS: y1 from [10] to [60] was [10] at 0
+PASS: y1 from [10] to [60] was [20] at 0.2
+PASS: y1 from [10] to [60] was [40] at 0.6
+PASS: y1 from [10] to [60] was [60] at 1
+PASS: y1 from [10] to [60] was [80] at 1.4
+PASS: y2 from [10] to [60] was [-10] at -0.4
+PASS: y2 from [10] to [60] was [10] at 0
+PASS: y2 from [10] to [60] was [20] at 0.2
+PASS: y2 from [10] to [60] was [40] at 0.6
+PASS: y2 from [10] to [60] was [60] at 1
+PASS: y2 from [10] to [60] was [80] at 1.4
+

@@ -1,0 +1,52 @@
+<html>
+<body>
+<pre id='console'></pre>
+<script type="text/javascript">
+function log(message)
+{
+    document.getElementById('console').appendChild(document.createTextNode(message + "\n"));
+}
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+(function() {
+    var xhr = new XMLHttpRequest;
+    var error = false;
+    var errorCalled = false;
+
+    function testSuccess() {
+        if (!error)
+            log("PASS: Timeout override did not reactivate timer after failure");
+    }
+
+    function performAssertions() {
+        if (!errorCalled)
+            log("FAIL: error event not dispatched");
+        else
+            testSuccess();
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+
+    xhr.onerror = function() {
+        xhr.timeout = 1;
+        errorCalled = true;
+    };
+
+    xhr.ontimeout = function() {
+        error = true;
+        log("FAIL: Timeout override reactivated the timer");
+    }
+
+    xhr.open("GET", "http://localhost:8000/xmlhttprequest/resources/access-control-basic-denied.cgi");
+    xhr.timeout = 100;
+    xhr.send();
+
+    setTimeout(performAssertions, 200);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+# This file is used for tests that only need to be suppressed on
+# the Chromium Blink MSan bots.
+
+# Those stress V8's simulator, making them very slow under MSan.
+crbug.com/420198 [ Linux ] fast/js/regress [ Skip ]
+crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/js/regress [ Skip ]
+crbug.com/420198 [ Linux ] editing/selection/move-by-word-visually-crash-test-5.html [ Skip ]
+crbug.com/420198 [ Linux ] fast/canvas/webgl/uninitialized-test.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/gpu/fast/canvas/webgl/uninitialized-test.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/webgl/uninitialized-test.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/canvas/webgl/uninitialized-test.html [ Skip ]
+crbug.com/420198 [ Linux ] fast/canvas/webgl/webgl-large-texture.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/webgl/webgl-large-texture.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/canvas/webgl/webgl-large-texture.html [ Skip ]
+crbug.com/420198 [ Linux ] perf/array-nested-loop.html [ Skip ]
+crbug.com/420198 [ Linux ] fast/css/fontface-arraybuffer.html [ Skip ]
+crbug.com/420198 [ Linux ] virtual/slimmingpaint/fast/css/fontface-arraybuffer.html [ Skip ]
+
+# Deliberate infinite recursion. A JS exception is expected, but may crash with
+# a stack overflow due to bloated stack frames under MSan.
+crbug.com/420606 [ Linux ] fast/workers/shared-worker-constructor.html [ Skip ]
+crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/shared-worker-constructor.html [ Skip ]
+crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/shared-worker-constructor.html [ Skip ]
+crbug.com/420606 [ Linux ] fast/workers/worker-constructor.html [ Skip ]
+crbug.com/420606 [ Linux ] virtual/slimmingpaint/fast/workers/worker-constructor.html [ Skip ]
+crbug.com/420606 [ Linux ] virtual/sharedarraybuffer/fast/workers/worker-constructor.html [ Skip ]
+
+
+# Flaky under MSan (hang forever).
+crbug.com/422982 [ Linux ] virtual/threaded [ Skip ]
+crbug.com/487880 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-animates.html [ Skip ]
+
+crbug.com/450639 [ Linux ] inspector/tracing/animations.html [ Timeout ]
+crbug.com/450639 [ Linux ] virtual/deferred/inspector/tracing/animations.html [ Timeout ]
+
+crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-360-winding.html [ Crash ]
+crbug.com/454267 [ Linux ] virtual/gpu/fast/canvas/canvas-ellipse-360-winding.html [ Crash ]
+crbug.com/522315 [ Linux ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Crash ]
+crbug.com/522376 [ Linux ] compositing/culling/filter-occlusion-blur-large.html [ Crash ]
+crbug.com/522376 [ Linux ] compositing/culling/filter-occlusion-blur.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/blending/mix-blend-mode-with-filters.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-all-on-background-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-blur-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-brightness-clamping-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-drop-shadow-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-colorspace-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-composite-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-hidpi-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-ordering-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-subregion-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/effect-reference-zoom-hw.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/filter-change-repaint-composited.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/filter-change-repaint.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/filter-repaint-composited-fallback-crash.html [ Crash ]
+crbug.com/522376 [ Linux ] css3/filters/filter-repaint-composited-fallback.html [ Crash ]
+crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Crash ]
+crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Crash ]
+crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-shadow.html [ Crash ]
+crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Crash ]
+crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Crash ]
+
+# Flaky under MSAN (hang forever)
+crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
+
+crbug.com/243871 [ Linux ] virtual/threaded_animation_timelines/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Timeout Pass ]
+crbug.com/517704 [ Linux ] imported/web-platform-tests/encoding/api-invalid-label.html [ Timeout Pass ]
+
+# Times out on MSAN
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-samples-in-snapshot.html [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Timeout ]
+crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Timeout ]

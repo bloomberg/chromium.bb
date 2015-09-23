@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="target" style="width: 100px; height: 200px; display: inline-block"></div>
+<script src="resources/parsing-test-helper.js"></script>
+<script>
+expect = expect.bind(this, 'rotate', 'rotate');
+
+expect('initial').parsesAs('initial').isComputedTo('0deg');
+expect('inherit').parsesAs('inherit');
+
+expect('10deg').parsesAs('10deg').isComputedTo('10deg');
+expect('10deg 0 0 1').parsesAs('10deg 0 0 1').isComputedTo('10deg');
+expect('10deg -1.5 2 3').parsesAs('10deg -1.5 2 3').isComputedTo('10deg -1.5 2 3');
+
+expect('200grad').parsesAs('200grad').isComputedTo('180deg');
+expect('1rad').parsesAs('1rad').isComputedTo('57.2958deg');
+expect('0.25turn 0 2 0').parsesAs('0.25turn 0 2 0').isComputedTo('90deg 0 2 0');
+
+expect('calc(1turn - 270deg)').parsesAs('calc(90deg)').isComputedTo('90deg');
+expect('calc(1turn - 270deg + 400grad) 0 calc(0.5 + 0.5) 1').parsesAs('calc(450deg) 0 1 1').isComputedTo('450deg 0 1 1');
+
+expect('2').isInvalid();
+expect('none').isInvalid();
+expect('2deg 1').isInvalid();
+expect('45deg 1 2').isInvalid();
+expect('45deg 1 2 3 4').isInvalid();
+expect('1 2 3 45deg').isInvalid();
+expect('10%').isInvalid();
+expect('10% 0 0 1').isInvalid();
+expect('calc(1 + 2)').isInvalid();
+expect('20deg calc(20deg) 0 0').isInvalid()
+</script>

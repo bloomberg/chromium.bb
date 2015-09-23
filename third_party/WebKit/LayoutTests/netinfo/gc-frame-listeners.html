@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+
+description('Tests that listeners in closed frames are collected.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+var childFrame = document.createElement('iframe');
+var childFrameObserver = internals.observeGC(childFrame);
+
+document.body.appendChild(childFrame);
+
+var childConnection = childFrame.contentWindow.navigator.connection;
+var childConnectionObserver = internals.observeGC(childConnection);
+
+var callback = function(e) {
+	testFailed("Should not get here.");
+};
+var callbackObserver = internals.observeGC(callback);
+
+// Add the event listener and make sure it doesn't get collected.
+childConnection.addEventListener('typechange', callback);
+childConnection = null;
+callback = null;
+gc();
+childFrame.contentWindow.gc();
+shouldBeFalse('childFrameObserver.wasCollected');
+shouldBeFalse('childConnectionObserver.wasCollected');
+shouldBeFalse('callbackObserver.wasCollected');
+
+document.body.removeChild(childFrame);
+childFrame = null;
+gc();
+shouldBeTrue('childFrameObserver.wasCollected');
+shouldBeTrue('childConnectionObserver.wasCollected');
+shouldBeTrue('callbackObserver.wasCollected');
+
+finishJSTest();
+
+</script>
+</body>
+</html>

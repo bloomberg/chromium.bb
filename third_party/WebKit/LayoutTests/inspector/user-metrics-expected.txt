@@ -1,0 +1,39 @@
+Tests list of user metrics codes and invocations.
+
+recordActionTaken:
+{
+    AnimationsPlaybackRateChanged : 11
+    AuditsStarted : 7
+    CommandEvaluatedInConsolePanel : 15
+    ConsoleEvaluated : 8
+    DeviceModeEnabled : 10
+    FileSavedInWorkspace : 9
+    FileSystemDirectoryContentReceived : 13
+    ProfilesCPUProfileTaken : 5
+    ProfilesHeapProfileTaken : 6
+    RevisionApplied : 12
+    ScriptsBreakpointSet : 3
+    StyleRuleEdited : 14
+    TimelineStarted : 4
+    WindowDocked : 1
+    WindowUndocked : 2
+}
+Action taken: WindowDocked
+Action taken: WindowUndocked
+
+recordPanelShown:
+{
+    audits : 7
+    console : 8
+    elements : 1
+    layers : 9
+    network : 3
+    profiles : 6
+    resources : 2
+    sources : 4
+    timeline : 5
+}
+Panel shown: profiles
+Panel shown: timeline
+Panel shown: audits
+

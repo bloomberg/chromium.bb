@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+test(() => {
+  assert_throws(null, () => new BluetoothDevice(),
+                'the constructor should not be callable with "new"');
+  assert_throws(null, () => BluetoothDevice(),
+                'the constructor should not be callable');
+}, 'BluetoothDevice IDL test');
+
+test(t => { assert_true(window.testRunner instanceof Object); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GlucoseHeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(function(device) {
+      assert_equals(device.constructor.name, 'BluetoothDevice');
+
+      // Attempt (and fail) to overwrite all members, verifying they are
+      // readonly.
+      device.instanceID = 'overwritten';
+      device.name = 'overwritten';
+      device.deviceClass = 'overwritten';
+      device.vendorIDSource = 'overwritten';
+      device.vendorID = 'overwritten';
+      device.productID = 'overwritten';
+      device.productVersion = 'overwritten';
+      device.paired = 'overwritten';
+      device.uuids = 'overwritten';
+      assert_equals(device.instanceID, '00:00:00:00:00:03');
+      assert_equals(device.name, 'Heart Rate Device');
+      assert_equals(device.deviceClass, 0x1F00);
+      assert_equals(device.vendorIDSource, 'bluetooth');
+      assert_equals(device.vendorID, 0xFFFF);
+      assert_equals(device.productID, 1);
+      assert_equals(device.productVersion, 2);
+      assert_equals(device.paired, true);
+      assert_equals(device.uuids[0], generic_access.uuid);
+      assert_equals(device.uuids[1], heart_rate.uuid);
+    });
+}, 'BluetoothDevice attributes.');
+</script>

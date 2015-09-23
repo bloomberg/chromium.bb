@@ -1,0 +1,32 @@
+Test the behavior of CanvasRenderingContext2D.drawImage() when called with different numbers of arguments.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ctx.drawImage() threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 0 present..
+PASS ctx.drawImage(imageElement) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 1 present..
+PASS ctx.drawImage(imageElement, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 2 present..
+PASS ctx.drawImage(imageElement, 0, 0) is undefined
+PASS ctx.drawImage(imageElement, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 4 arguments provided..
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 6 arguments provided..
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 7 arguments provided..
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 8 arguments provided..
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(imageElement, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(canvasElement) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 1 present..
+PASS ctx.drawImage(canvasElement, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': 3 arguments required, but only 2 present..
+PASS ctx.drawImage(canvasElement, 0, 0) is undefined
+PASS ctx.drawImage(canvasElement, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 4 arguments provided..
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 6 arguments provided..
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 7 arguments provided..
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'drawImage' on 'CanvasRenderingContext2D': Valid arities are: [3, 5, 9], but 8 arguments provided..
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS ctx.drawImage(canvasElement, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) is undefined
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

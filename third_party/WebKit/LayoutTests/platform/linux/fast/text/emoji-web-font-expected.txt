@@ -1,0 +1,22 @@
+CONSOLE WARNING: Failed to decode downloaded font: FruityGirl.ttf
+CONSOLE WARNING: OTS parsing error: no supported glyph shapes table(s) present
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x567
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 469x19
+          text run at (0,0) width 469: "Following should show Asterisk with FruitGirl similar to Asterisk Image below"
+      LayoutBlockFlow {P} at (0,45) size 784x30
+        LayoutText {#text} at (0,0) size 13x29
+          text run at (0,0) width 13: "*"
+      LayoutBlockFlow (anonymous) at (0,100) size 784x25
+        LayoutImage {IMG} at (0,0) size 25x25
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {P} at (0,141) size 784x20
+        LayoutText {#text} at (0,0) size 276x19
+          text run at (0,0) width 276: "Normal rendering of Asterisk with default font"
+      LayoutBlockFlow {P} at (0,186) size 784x30
+        LayoutText {#text} at (0,0) size 13x29
+          text run at (0,0) width 13: "*"

@@ -1,0 +1,148 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="../styles/resources/styles-history.css">
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/resources-test.js"></script>
+<script src="../styles/styles-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runAfterCachedResourcesProcessed(runTestSuite);
+
+    var uiSourceCode;
+
+    function runTestSuite()
+    {
+        InspectorTest.runTestSuite([
+            function testSetUp(next)
+            {
+                function visitUISourceCodes(currentUISourceCode)
+                {
+                    if (currentUISourceCode.originURL().indexOf("styles-history.css") === -1)
+                        return;
+                    uiSourceCode = currentUISourceCode;
+                    next();
+                }
+                WebInspector.workspace.uiSourceCodes().forEach(visitUISourceCodes);
+            },
+
+            function testSetResourceContentMinor(next)
+            {
+                InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                uiSourceCode.setWorkingCopy("body {\n  margin: 15px;\n  padding: 10px;\n}");
+
+                function styleUpdatedMinor()
+                {
+                    dumpHistory(next)();
+                }
+            },
+
+            function testSetResourceContentMajor(next)
+            {
+                InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                uiSourceCode.setWorkingCopy("body {\n  margin: 20px;\n  padding: 10px;\n}");
+
+                function styleUpdatedMinor()
+                {
+                    InspectorTest.addSniffer(WebInspector.StyleFile.prototype, "_styleContentSet", styleUpdatedMajor);
+                    uiSourceCode.commitWorkingCopy(function() { });
+
+                    function styleUpdatedMajor()
+                    {
+                        dumpHistory(next)();
+                    }
+                }
+            },
+
+            function testSetContentViaModelMinor(next)
+            {
+                styleSheetForResource(step1);
+
+                function step1(style)
+                {
+                    var property = getLiveProperty(style, "margin");
+                    property.setText("margin:25px;", false, true).then(dumpHistory(next));
+                }
+            },
+
+            function testSetContentViaModelMajor(next)
+            {
+                styleSheetForResource(step1);
+
+                function step1(style)
+                {
+                    var property = getLiveProperty(style, "margin");
+                    InspectorTest.addSniffer(WebInspector.UISourceCode.prototype, "addRevision", dumpHistory(next));
+                    property.setText("margin:30px;", true, true);
+                }
+            }
+        ]);
+    }
+
+    function styleSheetForResource(callback)
+    {
+        InspectorTest.nodeWithId("mainBody", onNodeSelected);
+
+        function onNodeSelected(node)
+        {
+            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, onMatchedStylesForNode);
+        }
+
+        function onMatchedStylesForNode(error, inlineStyle, attributeStyle, matchedStyles)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                InspectorTest.completeTest();
+                return;
+            }
+            for (var i = 0; i < matchedStyles.length; ++i) {
+                var rule = matchedStyles[i].rule;
+                if (rule.origin !== "regular")
+                    continue;
+                callback(new WebInspector.CSSStyleDeclaration(InspectorTest.cssModel, null, rule.style));
+                return;
+            }
+            InspectorTest.addResult("error: did not find any regular rule");
+            InspectorTest.completeTest();
+        }
+    }
+
+    function dumpHistory(next)
+    {
+        function result()
+        {
+            InspectorTest.addResult("History length: " + uiSourceCode.history.length);
+            for (var i = 0; i < uiSourceCode.history.length; ++i) {
+                InspectorTest.addResult("Item " + i + ":");
+                InspectorTest.addResult(uiSourceCode.history[i].content);
+            }
+            next();
+        }
+        return result;
+    }
+
+    function getLiveProperty(style, name)
+    {
+        for (var property of style.allProperties) {
+            if (!property.activeInStyle())
+                continue;
+            if (property.name === name)
+                return property;
+        }
+        return null;
+    }
+}
+
+</script>
+</head>
+
+<body id="mainBody" onload="runTest()">
+<p>
+Tests resources panel history.
+</p>
+</body>
+</html>

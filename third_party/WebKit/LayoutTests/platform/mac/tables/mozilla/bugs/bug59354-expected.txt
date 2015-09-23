@@ -1,0 +1,60 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutTable {TABLE} at (0,0) size 471x142 [border: (1px outset #808080)]
+        LayoutTableSection {TBODY} at (1,1) size 469x140
+          LayoutTableRow {TR} at (0,0) size 469x140
+            LayoutTableCell {TD} at (0,0) size 469x140 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutTable {TABLE} at (1,1) size 467x138 [border: (1px outset #808080)]
+                LayoutTableSection {TBODY} at (1,1) size 465x136
+                  LayoutTableRow {TR} at (0,1) size 465x28
+                    LayoutTableCell {TD} at (1,1) size 140x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (5,5) size 130x18
+                        text run at (5,5) width 130: "General Preferences"
+                    LayoutTableCell {TD} at (142,1) size 147x28 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                      LayoutInline {A} at (0,0) size 137x18 [color=#0000EE]
+                        LayoutText {#text} at (5,5) size 137x18
+                          text run at (5,5) width 137: "Groups / Permissions"
+                    LayoutTableCell {TD} at (290,1) size 72x28 [border: (1px inset #808080)] [r=0 c=2 rs=1 cs=1]
+                      LayoutInline {A} at (0,0) size 62x18 [color=#0000EE]
+                        LayoutText {#text} at (5,5) size 62x18
+                          text run at (5,5) width 62: "Password"
+                    LayoutTableCell {TD} at (363,1) size 49x28 [border: (1px inset #808080)] [r=0 c=3 rs=1 cs=1]
+                      LayoutInline {A} at (0,0) size 39x18 [color=#0000EE]
+                        LayoutText {#text} at (5,5) size 39x18
+                          text run at (5,5) width 39: "Email"
+                    LayoutTableCell {TD} at (413,1) size 51x28 [border: (1px inset #808080)] [r=0 c=4 rs=1 cs=1]
+                      LayoutText {#text} at (5,5) size 41x18
+                        text run at (5,5) width 41: "Views"
+                  LayoutTableRow {TR} at (0,30) size 465x105
+                    LayoutTableCell {TD} at (1,30) size 463x105 [border: (1px inset #808080)] [r=1 c=0 rs=1 cs=5]
+                      LayoutBlockFlow (anonymous) at (5,5) size 453x18
+                        LayoutBR {BR} at (226,0) size 1x18
+                      LayoutTable {TABLE} at (93,23) size 277x77
+                        LayoutTableSection {TBODY} at (0,0) size 277x77
+                          LayoutTableRow {TR} at (0,2) size 277x73
+                            LayoutTableCell {TD} at (2,2) size 273x73 [r=0 c=0 rs=1 cs=1]
+                              LayoutBlockFlow {FORM} at (1,1) size 271x55
+                                LayoutTable {TABLE} at (0,0) size 271x55 [border: (1px outset #808080)]
+                                  LayoutTableSection {TBODY} at (1,1) size 269x53
+                                    LayoutTableRow {TR} at (0,0) size 269x53
+                                      LayoutTableCell {TD} at (0,0) size 269x53 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                                        LayoutBlockFlow (anonymous) at (1,1) size 267x18
+                                          LayoutText {#text} at (79,0) size 109x18
+                                            text run at (79,0) width 109: "User Preferences"
+                                        LayoutTable {TABLE} at (1,19) size 267x33 [border: (1px outset #808080)]
+                                          LayoutTableSection {TBODY} at (1,1) size 265x31
+                                            LayoutTableRow {TR} at (0,1) size 265x29
+                                              LayoutTableCell {TH} at (1,1) size 121x28 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+                                                LayoutInline {NOBR} at (0,0) size 111x18
+                                                  LayoutText {#text} at (5,5) size 111x18
+                                                    text run at (5,5) width 111: "Email Address :"
+                                              LayoutTableCell {TD} at (123,1) size 141x29 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+                                                LayoutTextControl {INPUT} at (5,5) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+                                                LayoutText {#text} at (0,0) size 0x0
+layer at (242,97) size 125x13 scrollWidth 191
+  LayoutBlockFlow {DIV} at (3,3) size 125x13
+    LayoutText {#text} at (0,0) size 191x13
+      text run at (0,0) width 191: "simon.king@pipinghotnetworks.com"

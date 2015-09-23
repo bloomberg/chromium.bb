@@ -1,0 +1,35 @@
+<body>
+<div style="height: 1000px"></div>
+<a id="a" href="#bottom">Link to bottom</a>
+<div style="height: 1000px"></div>
+<a name="bottom"></a>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+window.onload = function() {
+    if (window.eventSender) {
+        eventSender.mouseScrollBy(0, -20);
+        var a = document.getElementById("a");
+        eventSender.mouseMoveTo(a.offsetLeft + 2, a.offsetTop - 798);
+        eventSender.mouseDown();
+        eventSender.mouseUp();
+    }
+};
+
+var haveSeenHashChange = false;
+
+window.onhashchange = function() {
+    if (!haveSeenHashChange) {
+        haveSeenHashChange = true;
+        history.back();
+    } else {
+        document.body.appendChild(document.createTextNode("scrollY should be 800: " + (window.scrollY == 800 ? "PASS" : "FAIL")));
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+}
+</script>
+</body>

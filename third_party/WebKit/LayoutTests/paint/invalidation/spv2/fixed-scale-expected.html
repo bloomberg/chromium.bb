@@ -1,0 +1,15 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css">
+    <script>
+        window.onload = function() {
+            window.scrollTo(0, 200);
+        };
+    </script>
+</head>
+<body style="height:2000px;">
+    <!-- Repaint test for https://bugs.webkit.org/show_bug.cgi?id=64650: Layer fixed position logic needs more basic testing -->
+    <!-- You should see no red on this page. -->
+    <div id="t" style="position: absolute; top: 300px; left: 100px" class="green"></div>
+</body>
+</html>

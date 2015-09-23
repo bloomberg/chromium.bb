@@ -1,0 +1,1 @@
+Failed assertion: expected exception of type TYPE_MISMATCH_ERR, got: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'

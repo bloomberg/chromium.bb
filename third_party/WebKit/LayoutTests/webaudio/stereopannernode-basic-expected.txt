@@ -1,0 +1,17 @@
+Test attribute and basic functionality of StereoPannerNode.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS panner.numberOfInputs === 1 is true
+PASS panner.numberOfOutputs === 1 is true
+PASS panner.pan.defaultValue === 0.0 is true
+PASS panner.pan.value === 0.0 is true
+PASS panner.pan.value === 1.0 is true
+PASS panner.channelCount = 1 did not throw exception.
+PASS panner.channelCount = 3 threw exception NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channelCount provided (3) is outside the range [1, 2]..
+PASS panner.channelCountMode = "explicit" did not throw exception.
+PASS panner.channelCountMode = "max" threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': StereoPanner: 'max' is not allowed.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

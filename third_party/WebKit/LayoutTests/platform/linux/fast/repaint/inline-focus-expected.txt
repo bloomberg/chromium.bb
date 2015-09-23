@@ -1,0 +1,35 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 36, 800, 19],
+        [0, 0, 800, 232],
+        [0, 0, 800, 232],
+        [0, 0, 800, 232],
+        [-1, -1, 802, 234],
+        [-1, -1, 801, 233],
+        [-1, -1, 801, 233],
+        [-1, -1, 801, 233]
+      ],
+      "paintInvalidationClients": [
+        "InlineFlowBox",
+        "InlineTextBox 'Home'",
+        "InlineFlowBox",
+        "RootInlineBox",
+        "InlineTextBox 'crbug.com/424078: ensure inline elements get their outline painted'",
+        "RootInlineBox",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutInline A id='link'",
+        "InlineFlowBox",
+        "LayoutBlockFlow P"
+      ]
+    }
+  ]
+}
+

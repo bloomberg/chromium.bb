@@ -1,0 +1,24 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [45, 0, 60, 110],
+        [0, 0, 100, 100],
+        [0, 0, 55, 110],
+        [0, 0, 1, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRect rect id='rect'",
+        "LayoutSVGResourceFilterPrimitive feImage id='feimage1'",
+        "LayoutSVGResourceFilterPrimitive feImage id='feimage2'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,40 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow (anonymous) at (0,0) size 784x36
+        LayoutText {#text} at (0,0) size 369x17
+          text run at (0,0) width 369: "The selection range in the red box should look like this:   "
+        LayoutInline {SPAN} at (0,0) size 98x17 [bgcolor=#AFDAFF]
+          LayoutText {#text} at (368,0) size 98x17
+            text run at (368,0) width 27: "abc "
+            text run at (417,0) width 9: "1"
+            text run at (441,0) width 25 RTL: "\x{5D0}\x{5D1}\x{5D2} "
+        LayoutText {#text} at (394,0) size 101x17
+          text run at (394,0) width 24 RTL: " \x{5D3}\x{5D4}\x{5D5}"
+          text run at (425,0) width 17: "23"
+          text run at (465,0) width 30: " def "
+        LayoutBR {BR} at (494,14) size 1x0
+        LayoutBR {BR} at (0,18) size 0x17
+      LayoutBlockFlow {DIV} at (0,36) size 784x55 [border: (2px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 183x26
+          LayoutText {#text} at (14,14) size 183x26
+            text run at (14,14) width 40: "abc "
+            text run at (53,14) width 35 RTL: " \x{5D3}\x{5D4}\x{5D5}"
+            text run at (87,14) width 37: "123"
+            text run at (123,14) width 37 RTL: "\x{5D0}\x{5D1}\x{5D2} "
+            text run at (159,14) width 38: " def"
+        LayoutText {#text} at (0,0) size 0x0
+selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 6 {DIV} of body
+selection end:   position 9 of child 0 {#text} of child 1 {SPAN} of child 6 {DIV} of body

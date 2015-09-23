@@ -1,0 +1,54 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function test()
+{
+
+    var pane = WebInspector.domBreakpointsSidebarPane;
+    InspectorTest.runDebuggerTestSuite([
+        function testRemoveNode(next)
+        {
+            InspectorTest.addResult("Testing NodeRemoved DOM breakpoint.");
+            InspectorTest.nodeWithId("elementToRemove", step2);
+
+            function step2(node)
+            {
+                pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+                InspectorTest.addResult("Set NodeRemoved DOM breakpoint.");
+                node.removeNode(next);
+            }
+        },
+
+        function testModifyAttribute(next)
+        {
+            InspectorTest.addResult("Testing AttributeModified DOM breakpoint.");
+            InspectorTest.nodeWithId("rootElement", step2);
+
+            function step2(node)
+            {
+                pane._setBreakpoint(node, pane._breakpointTypes.AttributeModified, true);
+                InspectorTest.addResult("Set AttributeModified DOM breakpoint.");
+                node.setAttribute("title", "a title", next);
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that DOM debugger will not crash when editing DOM nodes from the Web Inspector. <a href="https://code.google.com/p/chromium/issues/detail?id=249655">Chromium bug 249655</a>
+</p>
+
+<div id="rootElement" style="color: red">
+<div id="elementToRemove"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,45 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x286
+  LayoutBlockFlow {HTML} at (0,0) size 800x286
+    LayoutBlockFlow {BODY} at (8,16) size 784x254
+      LayoutBlockFlow {P} at (0,0) size 784x254 [color=#000080]
+        LayoutImage (floating) {IMG} at (0,0) size 50x50
+        LayoutText {#text} at (50,0) size 332x17
+          text run at (50,0) width 332: "\x{21E6} This text should flow around the box on the left. "
+        LayoutInline {SPAN} at (0,0) size 782x253 [color=#C0C0C0]
+          LayoutText {#text} at (381,0) size 782x253
+            text run at (381,0) width 401: "dummy text dummy text dummy text dummy text dummy text"
+            text run at (50,20) width 53: "dummy "
+            text run at (102,20) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (588,20) width 186: "text dummy text dummy text"
+            text run at (50,38) width 296: "dummy text dummy text dummy text dummy "
+            text run at (345,38) width 429: "text dummy text dummy text dummy text dummy text dummy text"
+            text run at (0,56) width 53: "dummy "
+            text run at (52,56) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (538,56) width 239: "text dummy text dummy text dummy"
+            text run at (0,74) width 243: "text dummy text dummy text dummy "
+            text run at (242,74) width 486: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (727,74) width 25: "text"
+            text run at (0,92) width 458: "dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (457,92) width 320: "text dummy text dummy text dummy text dummy"
+            text run at (0,110) width 162: "text dummy text dummy "
+            text run at (161,110) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (647,110) width 105: "text dummy text"
+            text run at (0,128) width 377: "dummy text dummy text dummy text dummy text dummy "
+            text run at (376,128) width 401: "text dummy text dummy text dummy text dummy text dummy"
+            text run at (0,146) width 81: "text dummy "
+            text run at (80,146) width 487: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (566,146) width 186: "text dummy text dummy text"
+            text run at (0,164) width 296: "dummy text dummy text dummy text dummy "
+            text run at (295,164) width 482: "text dummy text dummy text dummy text dummy text dummy text dummy"
+            text run at (0,182) width 486: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (485,182) width 267: "text dummy text dummy text dummy text"
+            text run at (0,200) width 215: "dummy text dummy text dummy "
+            text run at (214,200) width 486: "text dummy text dummy text dummy text dummy text dummy text dummy "
+            text run at (699,200) width 78: "text dummy"
+            text run at (0,218) width 405: "text dummy text dummy text dummy text dummy text dummy "
+            text run at (404,218) width 348: "text dummy text dummy text dummy text dummy text"
+            text run at (0,236) width 134: "dummy text dummy "
+            text run at (133,236) width 430: "text dummy text dummy text dummy text dummy text dummy text"
+        LayoutText {#text} at (0,0) size 0x0

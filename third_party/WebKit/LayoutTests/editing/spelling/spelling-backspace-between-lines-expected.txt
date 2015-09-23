@@ -1,0 +1,18 @@
+Spelling markers should remain while merging two lines.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS firstLineText('two-lines') is "OK"
+PASS sel.anchorNode.data is "OK zz OK"
+PASS internals.hasSpellingMarker(document, 3, 2) became true
+PASS firstLineText('merged-lines-delete-command') is "OKOK zz OK"
+PASS sel.anchorNode.data is "OKOK zz OK"
+PASS internals.hasSpellingMarker(document, 5, 2) became true
+PASS firstLineText('merged-lines-forward-delete-command') is "OKOK zz OK"
+PASS sel.anchorNode.data is "OKOK zz OK"
+PASS internals.hasSpellingMarker(document, 5, 2) became true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

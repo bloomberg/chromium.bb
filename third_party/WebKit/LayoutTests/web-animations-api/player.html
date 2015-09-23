@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id='element'></div>
+
+<script>
+var element = document.getElementById('element');
+test(function() {
+    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], 10000);
+    var animation = player.source;
+    assert_equals(animation.player, player);
+    assert_equals(player.currentTime, 0);
+    player.currentTime = 5000;
+    assert_equals(player.currentTime, 5000);
+    assert_equals(player.timeLag, -5000);
+
+    player.startTime += 1000;
+
+    assert_equals(player.currentTime, 4000);
+
+    player.pause();
+    assert_true(player.paused);
+    player.play();
+    assert_false(player.paused);
+
+    player.finish();
+    assert_equals(player.currentTime, 10000);
+    assert_true(player.finished);
+
+    player.reverse();
+    assert_equals(player.playbackRate, -1);
+
+    player.playbackRate = -2;
+    assert_equals(player.playbackRate, -2);
+
+    player.cancel();
+    assert_equals(animation.player, null);
+}, 'Player sanity tests');
+
+test(function() {
+    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], {iterations: Infinity, duration: 10});
+    assert_throws('INVALID_STATE_ERR', function() { player.finish(); });
+}, 'Player.finish() raises exception if source content end is infinity');
+
+test(function() {
+    var player = element.animate([{left: '0px', offset: 0}, {left: '100px', offset: 1}], 10000);
+    for (var attr of ['startTime', 'currentTime', 'playbackRate']) {
+        assert_throws(new TypeError, function() { player[attr] = NaN; }, attr);
+        assert_throws(new TypeError, function() { player[attr] = Infinity; }, attr);
+    }
+}, 'Player.startTime/currentTime/playbackRate throw if passed non-finite numbers.');
+</script>

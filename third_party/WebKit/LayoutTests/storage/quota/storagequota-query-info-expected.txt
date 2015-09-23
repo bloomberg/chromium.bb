@@ -1,0 +1,20 @@
+This tests navigator.storageQuota.queryInfo.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+* Querying about temporary storage.
+PASS usage is >= 0
+PASS quota is >= usage
+* Querying about persistent storage.
+PASS usage is >= 0
+PASS quota is >= usage
+* Querying about unknown storage.
+PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': The provided value 'unknown' is not a valid enum value of type StorageType.
+* Querying with missing storage type.
+PASS rejected as expected: TypeError: Failed to execute 'queryInfo' on 'StorageQuota': 1 argument required, but only 0 present.
+Finished running tests.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

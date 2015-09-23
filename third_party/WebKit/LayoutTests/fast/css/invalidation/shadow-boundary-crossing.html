@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<script src="../../../resources/js-test.js"></script>
+
+<style>
+    .deep /deep/ .inside,
+    .shallow .inside {
+        padding: 0;
+    }
+</style>
+
+<div id="sandbox"></div>
+
+<script>
+description("Invalidation sets should not apply across shadow roots if tree boundary crossing rules are not used.");
+
+var sandbox = document.getElementById("sandbox");
+var sandboxRoot = sandbox.createShadowRoot();
+sandboxRoot.innerHTML = "<content></content>";
+
+for (var j = 0; j < 10; ++j) {
+    var childDiv = sandbox.appendChild(document.createElement("div"));
+    childDiv.className = "inside";
+    var shadowDiv = sandboxRoot.appendChild(document.createElement("div"));
+    shadowDiv.className = "inside";
+    shadowDiv.createShadowRoot().innerHTML = "<div class=inside><content></content></div>";
+}
+
+getComputedStyle(sandbox).color;
+sandbox.className = "shallow";
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "10");
+sandbox.className = "";
+
+getComputedStyle(sandbox).color;
+sandbox.className = "deep";
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "30");
+</script>

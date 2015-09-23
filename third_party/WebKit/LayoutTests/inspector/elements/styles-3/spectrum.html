@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script type="text/javascript">
+
+var test = function()
+{
+    function setColor(inputColor, format)
+    {
+        InspectorTest.addResult("Testing: " + inputColor);
+        var color = WebInspector.Color.parse(inputColor);
+        spectrum.setColor(color, format);
+    }
+    
+    function checkColorString(inputColor, format)
+    {
+        setColor(inputColor, format)
+        InspectorTest.addResult(spectrum.colorString());
+    }
+
+    function checkAlphaChange(inputColor, format)
+    {
+        setColor(inputColor, format)
+        spectrum._hsv[3] = 0;
+        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, WebInspector.Spectrum._ChangeSource.Other);
+        InspectorTest.addResult(spectrum.colorString());
+    }
+
+    function checkNextFormat(inputColor, format)
+    {
+        setColor(inputColor, format);
+        spectrum._formatViewSwitch();
+        InspectorTest.addResult(spectrum._colorFormat);
+        spectrum._formatViewSwitch();
+        InspectorTest.addResult(spectrum._colorFormat);
+    }
+
+    var spectrum = new WebInspector.Spectrum();
+    var cf = WebInspector.Color.Format;
+    var inputColors = [
+        { string: "red", format: cf.Nickname },
+        { string: "#ABC", format: cf.ShortHEX },
+        { string: "#ABCDEF", format: cf.HEX },
+        { string: "rgb(1, 2, 3)", format: cf.RGB },
+        { string: "rgba(1, 2, 3, 0.2)", format: cf.RGB },
+        { string: "hsl(1, 100%, 50%)", format: cf.HSL },
+        { string: "hsla(1, 100%, 50%, 0.2)", format: cf.HSLA }];
+
+    InspectorTest.addResult("--- Testing colorString()");
+    for (var color of inputColors)
+        checkColorString(color.string, color.format);
+
+    InspectorTest.addResult("--- Testing alpha changes");
+    for (var color of inputColors)
+        checkAlphaChange(color.string, color.format);
+
+    InspectorTest.addResult("--- Testing _formatViewSwitch()");
+    for (var color of inputColors)
+        checkNextFormat(color.string, color.format);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests WebInspector.Spectrum</p>
+</body>
+</html>

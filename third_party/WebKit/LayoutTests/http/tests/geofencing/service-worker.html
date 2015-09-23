@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<title>Tests that all geofencing methods always reject, in a service worker.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script>
+testRunner.setGeofencingMockProvider(false);
+
+service_worker_test(
+    'resources/worker-service-not-available.js',
+    'Verifies that all geofencing methods always reject.');
+</script>

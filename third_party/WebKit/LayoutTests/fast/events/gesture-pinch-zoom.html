@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div onwheel="wheel(event)" style="margin: 0px 0; width: 100px; height: 100px; background-color: blue;"></div>
+<script>
+var gotWheelEvent = false;
+var testX = 50;
+var testY = 40;
+var testScale = 1.5;
+var tolerance = 0.001;
+
+function wheel(event)
+{
+    shouldBeFalse('gotWheelEvent');
+    gotWheelEvent = true;
+    shouldBeTrue('event.ctrlKey');
+    shouldBeCloseTo('event.deltaX', 0, tolerance);
+    shouldBeCloseTo('event.deltaY', 100 * Math.log(1 / testScale), tolerance);
+    shouldBeCloseTo('event.x', testX, tolerance);
+    shouldBeCloseTo('event.y', testY, tolerance);
+    event.preventDefault()
+}
+
+if (window.eventSender) {
+  // Do a pinch in a region that prevents the event from propagating up to
+  // do a zoom.
+  shouldBe('window.innerWidth', '800');
+  shouldBe('window.innerHeight', '600');
+  eventSender.gesturePinchBegin('touchpad', testX, testY);
+  eventSender.gesturePinchUpdate('touchpad', testX, testY, testScale);
+  eventSender.gesturePinchEnd('touchpad', testX, testY);
+  shouldBe('window.innerWidth', '800');
+  shouldBe('window.innerHeight', '600');
+  shouldBe('window.scrollX', '0');
+  shouldBe('window.scrollY', '0');
+  shouldBeTrue('gotWheelEvent');
+  gotWheelEvent = false;
+
+  // Do a pinch outside of this region and ensure that a zoom occurs, and
+  // that it occurs around the pinch area.
+  eventSender.gesturePinchBegin('touchpad', 150, 100);
+  eventSender.gesturePinchUpdate('touchpad', 150, 100, 2.0);
+  eventSender.gesturePinchEnd('touchpad', 150, 100);
+  shouldBe('window.innerWidth', '400');
+  shouldBe('window.innerHeight', '300');
+  shouldBe('window.scrollX', '75');
+  shouldBe('window.scrollY', '50');
+
+  shouldBeFalse('gotWheelEvent');
+}
+</script>

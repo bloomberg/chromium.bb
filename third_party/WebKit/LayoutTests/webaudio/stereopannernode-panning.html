@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/stereopanner-testing.js"></script>
+</head>
+
+<body>
+  <div id="description"></div>
+  <div id="console"></div>
+  <script>
+    description('Test panning model of StereoPannerNode.');
+    window.jsTestIsAsync = true;
+
+    var audit = Audit.createTaskRunner();
+
+    audit.defineTask('mono-test', function (done) {
+      StereoPannerTest.create({ numberOfInputChannels: 1 }).run(done);
+    });
+
+    audit.defineTask('stereo-test', function (done) {
+      StereoPannerTest.create({ numberOfInputChannels: 2 }).run(done);
+    });
+
+    audit.defineTask('finish-test', function (done) {
+      done();
+      finishJSTest();
+    });
+
+    audit.runTasks('mono-test', 'stereo-test', 'finish-test');
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1 @@
+When hovered, the background should have the same color as this text.

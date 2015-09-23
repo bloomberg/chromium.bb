@@ -1,0 +1,34 @@
+<!-- Based on fast/css-grid-layout/grid-item-change-row-repaint.html -->
+<!DOCTYPE html>
+<html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow DIV class='sizedToGridArea'",
+];
+function paintInvalidationTest()
+{
+    var gridItem = document.getElementsByClassName("sizedToGridArea")[0];
+    gridItem.style.gridRow = "2";
+}
+window.addEventListener("load", runPaintInvalidationTest, false);
+</script>
+<link href="../../../fast/css-grid-layout/resources/grid.css" rel="stylesheet">
+<style>
+.grid {
+    grid-template-rows: 50px 100px;
+    grid-template-columns: 100px 50px;
+    /* Make the grid shrink to fit. */
+    position: absolute;
+}
+.sizedToGridArea {
+    background-color: purple;
+}
+</style>
+<body>
+<div>This test checks that changing the grid-row on a grid item properly repaint. The final grid item should be 100px * 100px. There should be no trace of the grid item at the old position.</div>
+<div class="grid">
+    <div class="sizedToGridArea"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <div id="description"></div>
+    <div id="console"></div>
+
+    <script>
+      description("Test AnalyserNode getFloatTimeDomainData");
+
+      var sampleRate = 44100;
+      // Render length and FFT length. Hence this must be a power of two.
+      var sampleFrameLength = 2048;
+
+      var src;
+      var analyser;
+      var renderedData;
+
+      function checkResult() {
+          var fftSize = analyser.fftSize;
+          renderedData = new Float32Array(fftSize);
+          analyser.getFloatTimeDomainData(renderedData);
+
+          var trueData = src.buffer.getChannelData(0);
+          var success = true;
+
+          // Verify that the received time domain data is exactly equal to the actual time domain
+          // data. This is true only because the render length and FFT size are the same.
+          for (k = 0; k < fftSize; ++k) {
+              if (trueData[k] != renderedData[k]) {
+                  testFailed("Data mismatch at index " + k
+                             + ".  Expected " + trueData[k]
+                             + " but got " + renderedData[k]
+                             + ".");
+                  success = false;
+                  break;
+              }
+          }
+          
+          if (success) {
+              testPassed("Received expected float time domain data.");
+          } else {
+              testFailed("Received float time domain data did not match expected result.");
+          }
+
+          finishJSTest();
+      }
+
+      function runTests() {
+          if (window.testRunner) {
+              testRunner.dumpAsText();
+              testRunner.waitUntilDone();
+          }
+
+          window.jsTestIsAsync = true;
+
+          context = new OfflineAudioContext(1, sampleFrameLength, sampleRate);
+
+          // Use a simple linear ramp as the source.
+          src = context.createBufferSource();
+          src.buffer = createLinearRampBuffer(context, sampleFrameLength);
+
+          analyser = context.createAnalyser();
+          analyser.fftSize = sampleFrameLength;
+      
+          src.connect(analyser);
+          analyser.connect(context.destination);
+          src.start();
+
+          context.oncomplete = checkResult;
+          context.startRendering();
+      }
+
+      runTests();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+description("This tests navigator.storageQuota.queryInfo.");
+
+var usage;
+var quota;
+
+function onrejected(error) {
+    testFailed(error.name + ": " + error.message);
+    finishJSTest();
+}
+
+// Test body functions ----------------------------------------------------
+
+function runQueryTemporaryTest() {
+    debug("* Querying about temporary storage.");
+    navigator.storageQuota.queryInfo("temporary").then(function(storageInfo) {
+        usage = storageInfo.usage;
+        quota = storageInfo.quota;
+
+        // Quota value would vary depending on the test environment.
+        shouldBeGreaterThanOrEqual("usage", "0");
+        shouldBeGreaterThanOrEqual("quota", "usage");
+
+        runNextTest();
+    }, onrejected);
+}
+
+function runQueryPersistentTest() {
+    debug("* Querying about persistent storage.");
+    navigator.storageQuota.queryInfo("persistent").then(function(storageInfo) {
+        usage = storageInfo.usage;
+        quota = storageInfo.quota;
+
+        // Quota value would vary depending on the test environment.
+        shouldBeGreaterThanOrEqual("usage", "0");
+        shouldBeGreaterThanOrEqual("quota", "usage");
+
+        runNextTest();
+    }, onrejected);
+}
+
+function runQueryUnknownTest() {
+    debug("* Querying about unknown storage.");
+    navigator.storageQuota.queryInfo('unknown').then(function() {
+        testFailed('resolved unexpectedly');
+    }, function(e) {
+        testPassed('rejected as expected: ' + e);
+    }).then(runNextTest);
+}
+
+function runQueryWithMissingArgumentTest() {
+    debug("* Querying with missing storage type.");
+    navigator.storageQuota.queryInfo().then(function() {
+        testFailed('resolved unexpectedly');
+    }, function(e) {
+        testPassed('rejected as expected: ' + e);
+    }).then(runNextTest);
+}
+
+// End of test body functions ---------------------------------------------
+
+var testsList = [
+    runQueryTemporaryTest,
+    runQueryPersistentTest,
+    runQueryUnknownTest,
+    runQueryWithMissingArgumentTest,
+];
+var testCounter = 0;
+
+function runNextTest() {
+    if (testCounter == testsList.length) {
+        debug("Finished running tests.");
+        finishJSTest();
+    } else {
+        testsList[testCounter++]();
+    }
+}
+
+if (navigator.storageQuota) {
+    window.jsTestIsAsync = true;
+    runNextTest();
+} else {
+    debug("This test requires navigator.storageQuota.");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+CONSOLE WARNING: Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.
+CONSOLE MESSAGE: line 6: XHR loaded: 1
+
+Running: testNetworkResourceNonCached
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php
+Success: 200
+Logged headers: cache-control, expires, pragma
+Content: "Hello world"
+
+Running: testNetworkResourceCached
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
+Success: 200
+Logged headers: cache-control, expires, last-modified
+Content: "Hello world"
+
+Running: testNetworkResourceIfModifiedSince
+Loading resource from http://localhost:8080/inspector/network/resources/resource.php?cached=1
+Success: 304
+Logged headers: 
+Content: ""
+
+Running: testResourceFromIncorrectURL
+Loading resource from resource.php
+Success: 404
+Logged headers: 
+Content: ""
+
+Running: testResourceWithCookie
+Loading resource from http://127.0.0.1:8000/inspector/network/resources/print-cookie.php
+Success: 200
+Logged headers: cache-control, expires, pragma
+Content: "Cookie value: TestCookieValue."
+

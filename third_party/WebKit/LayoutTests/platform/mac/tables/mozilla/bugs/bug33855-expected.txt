@@ -1,0 +1,38 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576 [bgcolor=#FFFFFF]
+      LayoutBlockFlow {FORM} at (0,0) size 784x24
+        LayoutTable {TABLE} at (0,0) size 784x24
+          LayoutTableSection {TBODY} at (0,0) size 784x24
+            LayoutTableRow {TR} at (0,2) size 784x20 [bgcolor=#FFFFFF]
+              LayoutTableCell {TD} at (2,2) size 67x20 [r=0 c=0 rs=1 cs=1]
+                LayoutButton {INPUT} at (1.31,1) size 64.36x18 [bgcolor=#C0C0C0]
+                  LayoutBlockFlow (anonymous) at (8,2) size 48.36x13
+                    LayoutText {#text} at (0,0) size 49x13
+                      text run at (0,0) width 49: "Select all"
+              LayoutTableCell {TD} at (71,2) size 52x20 [r=0 c=1 rs=1 cs=1]
+                LayoutButton {INPUT} at (1.14,1) size 49.70x18 [bgcolor=#C0C0C0]
+                  LayoutBlockFlow (anonymous) at (8,2) size 33.70x13
+                    LayoutText {#text} at (0,0) size 34x13
+                      text run at (0,0) width 34: "Delete"
+              LayoutTableCell {TD} at (125,2) size 82x20 [r=0 c=2 rs=1 cs=1]
+                LayoutButton {INPUT} at (1.20,1) size 79.59x18 [bgcolor=#C0C0C0]
+                  LayoutBlockFlow (anonymous) at (8,2) size 63.59x13
+                    LayoutText {#text} at (0,0) size 64x13
+                      text run at (0,0) width 64: "Empty trash"
+              LayoutTableCell {TD} at (209,2) size 393x20 [r=0 c=3 rs=1 cs=1]
+                LayoutText {#text} at (1,1) size 4x18
+                  text run at (1,1) width 4: " "
+              LayoutTableCell {TD} at (604,2) size 65x20 [r=0 c=4 rs=1 cs=1]
+                LayoutButton {INPUT} at (1.33,1) size 62.33x18 [bgcolor=#C0C0C0]
+                  LayoutBlockFlow (anonymous) at (8,2) size 46.33x13
+                    LayoutText {#text} at (0,0) size 47x13
+                      text run at (0,0) width 47: "Move to:"
+              LayoutTableCell {TD} at (671,2) size 111x20 [r=0 c=5 rs=1 cs=1]
+                LayoutMenuList {SELECT} at (1,1) size 109x18 [bgcolor=#F8F8F8]
+                  LayoutBlockFlow (anonymous) at (0,0) size 109x18
+                    LayoutText (anonymous) at (8,2) size 78x13
+                      text run at (8,2) width 78: "Choose folder "
+                LayoutText {#text} at (0,0) size 0x0

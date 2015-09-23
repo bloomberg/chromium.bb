@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<body>
+<script>
+description('EventTarget.addEventListener and EventTarget.removeEventLister should throw on invalid arguments.');
+
+function listener(event)
+{
+}
+
+debug('Signature:')
+debug('void addEventListener(DOMString type, EventListener listener, optional boolean useCapture)');
+// FIXME: should throw on missing arguments: http://crbug.com/353484
+// shouldThrow('document.addEventListener()');
+// shouldThrow('document.addEventListener("foo")');
+var AddEventListenerNoArguments = 656;
+shouldBeFalse('internals.isUseCounted(document, AddEventListenerNoArguments)');
+shouldBe('document.addEventListener()', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, AddEventListenerNoArguments)');
+var AddEventListenerOneArgument = 657;
+shouldBeFalse('internals.isUseCounted(document, AddEventListenerOneArgument)');
+shouldBe('document.addEventListener("foo")', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, AddEventListenerOneArgument)');
+shouldNotThrow('document.addEventListener("foo", listener)');
+shouldNotThrow('document.addEventListener("", listener)');
+shouldNotThrow('document.addEventListener("", function(){})');
+shouldNotThrow('document.addEventListener("bar", listener, false)');
+shouldNotThrow('document.addEventListener("bar", listener, true)');
+// null
+shouldBe('document.addEventListener(null)', 'undefined');
+shouldNotThrow('document.addEventListener(null, listener)'); // converted to "null"
+// FIXME: throw on |null|: http://crbug.com/249598
+// shouldThrow('document.addEventListener("foo", null)');
+shouldBe('document.addEventListener("foo", null)', 'undefined');
+shouldNotThrow('document.addEventListener("zork", listener, null)');
+// undefined
+// FIXME: behavior of undefined for mandatory arguments is unclear, but
+// probably should throw
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=23532
+shouldBe('document.addEventListener(undefined)', 'undefined');
+// shouldThrow('document.addEventListener(undefined, listener)');
+// shouldThrow('document.addEventListener("foo", undefined)');
+shouldBe('document.addEventListener(undefined, listener)', 'undefined');
+shouldBe('document.addEventListener("foo", undefined)', 'undefined');
+shouldNotThrow('document.addEventListener("zork", listener, undefined)');
+
+debug('');
+debug('Signature:');
+debug('void removeEventListener(DOMString type, EventListener listener, optional boolean useCapture)');
+// FIXME: should throw on missing arguments: http://crbug.com/353484
+// shouldThrow('document.removeEventListener()');
+// shouldThrow('document.removeEventListener("foo")');
+var RemoveEventListenerNoArguments = 658;
+shouldBeFalse('internals.isUseCounted(document, RemoveEventListenerNoArguments)');
+shouldBe('document.removeEventListener()', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, RemoveEventListenerNoArguments)');
+var RemoveEventListenerOneArgument = 659;
+shouldBeFalse('internals.isUseCounted(document, RemoveEventListenerOneArgument)');
+shouldBe('document.removeEventListener("foo")', 'undefined');
+shouldBeTrue('internals.isUseCounted(document, RemoveEventListenerOneArgument)');
+shouldNotThrow('document.removeEventListener("foo", listener)');
+shouldNotThrow('document.removeEventListener("foo", listener, true)');
+shouldNotThrow('document.removeEventListener("bar", listener, false)');
+shouldNotThrow('document.removeEventListener("bar", listener, false)');
+shouldNotThrow('document.removeEventListener("bar", listener, true)');
+// null
+shouldBe('document.removeEventListener(null)', 'undefined');
+shouldNotThrow('document.removeEventListener(null, listener)'); // converted to "null"
+// FIXME: throw on |null|: http://crbug.com/249598
+// shouldThrow('document.removeEventListener("foo", null)');
+shouldBe('document.removeEventListener("foo", null)', 'undefined');
+shouldNotThrow('document.removeEventListener("zork", listener, null)');
+// undefined
+// FIXME: behavior of undefined for mandatory arguments is unclear, but
+// probably should throw
+// https://www.w3.org/Bugs/Public/show_bug.cgi?id=23532
+shouldBe('document.removeEventListener(undefined)', 'undefined');
+// shouldthrow('document.removeeventlistener("foo", undefined)');
+// shouldthrow('document.removeeventlistener(undefined, listener)');
+shouldBe('document.removeEventListener(undefined, listener)', 'undefined');
+shouldBe('document.removeEventListener("foo", undefined)', 'undefined');
+shouldNotThrow('document.removeEventListener("zork", listener, undefined)');
+</script>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html><head>
+    <style>
+        .container {
+            margin: 20px;
+            width: 300px;
+            height: 200px;
+            border: 1px solid black;
+            overflow: scroll;
+        }
+        .horizontal-bt {
+            -webkit-writing-mode: horizontal-bt;
+        }
+        .offset {
+            width: 100px;
+            height: 2000px;
+        }
+        .target {
+            width: 100px;
+            height: 100px;
+            background-color: orange;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+    <div class="horizontal-bt">
+        <div class="target"></div>
+        <div class="offset"></div>
+    </div></div>
+    An orange rect should be painted.<br/>
+    In DumpRenderTree, there should be repaint logs of 100x100 rect. We don't care how many times is the log dumpped.
+    <script>
+        var container = document.getElementsByClassName("container")[0];
+        onload = function() {
+            container.scrollTop = 3000;
+        };
+    </script>
+</body></html>

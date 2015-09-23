@@ -1,0 +1,33 @@
+<script src="../../resources/js-test.js"></script>
+<div id="container">
+<p id="description"></p>
+<div id="sample1" contenteditable="true">editable</div>
+<div id="sample2" contenteditable="false">uneditable</div>
+</div>
+</div>
+<script>
+function $(id) { return document.getElementById(id); }
+description('Test setting CSSStyleDeclaration.webkitUserStyle');
+
+var selection = window.getSelection();
+function setSelection(node)
+{
+    var range = document.createRange();
+    range.selectNodeContents(node);
+    selection.empty();
+    selection.addRange(range);
+}
+
+// user-select:none in editable element
+$('sample1').style.webkitUserSelect = 'none';
+setSelection($('sample1'));
+shouldBeEqualToString('selection.type', 'Range');
+
+// user-select:none in uneditable element
+$('sample2').style.webkitUserSelect = 'none';
+setSelection($('sample2'));
+shouldBeEqualToString('selection.type', 'None');
+
+if (window.testRunner)
+    $('container').outerHTML = '';
+</script>

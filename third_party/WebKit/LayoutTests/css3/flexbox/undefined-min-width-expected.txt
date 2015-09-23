@@ -1,0 +1,2 @@
+Test to make sure that we do not assert on this code.
+PASS

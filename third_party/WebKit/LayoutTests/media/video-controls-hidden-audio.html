@@ -1,0 +1,44 @@
+<video controls></video>
+<p>Test that hiding volume / mute buttons works as expected.</p>
+<script src=media-file.js></script>
+<script src=video-test.js></script>
+<script src=media-controls.js></script>
+<script>
+    video.src = findMediaFile("video", "content/test");
+    run("video.load()");
+    waitForEvent("canplaythrough", function () {
+        // Enable hidden audio preferences to take effect.
+        run("window.internals.setAllowHiddenVolumeControls(video, true)");
+        // Request non-hidden audio controls.
+        run("window.internals.settings.setPreferHiddenVolumeControls(false)");
+        run("video.muted = false");
+        muteButton = mediaControlsButton(video, "mute-button");
+        volumeSlider = mediaControlsButton(video, "volume-slider");
+
+        // Make sure that both are visible.
+        testExpected("getComputedStyle(muteButton).display", "none", '!=');
+        testExpected("getComputedStyle(volumeSlider).display", "none", '!=');
+
+        // Switch to muted video.  Both should still be visible.
+        run("video.muted = true");
+        testExpected("getComputedStyle(muteButton).display", "none", '!=');
+        testExpected("getComputedStyle(volumeSlider).display", "none", '!=');
+
+        run("window.internals.settings.setPreferHiddenVolumeControls(true)");
+
+        // Switch back to unmuted video.
+        run("video.muted = false");
+
+        testExpected("getComputedStyle(muteButton).display", "none", '!=');
+        testExpected("getComputedStyle(volumeSlider).display", "none", '==');
+
+        // For muted video, the volume slider will hide but the mute
+        // button should stay, since we always have it present for media
+        // which have audio.
+        run("video.muted = true");
+        testExpected("getComputedStyle(muteButton).display", "none", '!=');
+        testExpected("getComputedStyle(volumeSlider).display", "none", '==');
+
+        endTest();
+    });
+</script>

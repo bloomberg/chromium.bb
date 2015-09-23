@@ -1,0 +1,97 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+
+    var treeElement;
+    var treeOutline;
+    var section;
+
+    InspectorTest.runTestSuite([
+        function selectInitialNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function testFreeFlowEdit(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true);
+            treeElement = InspectorTest.getElementStylePropertyTreeItem("color");
+            treeOutline = treeElement.treeOutline;
+
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "color";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            // Update incrementally, do not commit.
+            treeElement.valueElement.textContent = "rgb(/*";
+            InspectorTest.waitForStyleApplied(next);
+            treeElement.kickFreeFlowStyleEditForTest();
+        },
+
+        function testCommitEditing(next)
+        {
+            // Commit editing.
+            treeElement.valueElement.textContent = "green";
+            treeElement.valueElement.firstChild.select();
+            InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        },
+
+        function testNewPropertyEditorIsCreated(next)
+        {
+            var blankTreeElement = treeOutline.rootElement().childAt(1);
+            if (!WebInspector.isBeingEdited(blankTreeElement.nameElement)) {
+                InspectorTest.addResult("No new property editor active!");
+                InspectorTest.completeTest();
+                return;
+            }
+
+            // Test Styles pane editor looping.
+            InspectorTest.addSniffer(WebInspector.StylePropertiesSection.prototype, "_afterUpdateFinishedForTest", next);
+            blankTreeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        },
+
+        function testCycleThroughPropertyEditing(next)
+        {
+            if (!WebInspector.isBeingEdited(treeOutline.firstChild().nameElement)) {
+                InspectorTest.addResult("Original property name editor not active!");
+                InspectorTest.completeTest();
+                return;
+            }
+
+            InspectorTest.selectNodeWithId("other", next);
+        },
+
+        function testNodeStyles(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function dumpStyles(next)
+        {
+            InspectorTest.addResult("After append:");
+            InspectorTest.dumpSelectedElementStyles(true);
+            next();
+        }
+    ]);
+
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that editing is canceled properly after incremental editing.
+</p>
+
+<div id="inspected" style="color: red">Text</div>
+<div id="other"></div>
+
+</body>
+</html>

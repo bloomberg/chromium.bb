@@ -1,0 +1,197 @@
+layer at (0,0) size 800x600 clip at (0,0) size 785x600 scrollHeight 1071
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 785x1071 backgroundClip at (0,0) size 785x600 clip at (0,0) size 785x600
+  LayoutBlockFlow {HTML} at (0,0) size 785x1071
+    LayoutBlockFlow {BODY} at (8,8) size 769x1055
+      LayoutBlockFlow {CENTER} at (0,0) size 769x18
+        LayoutText {#text} at (320,0) size 129x17
+          text run at (320,0) width 129: "bottom caption tests"
+      LayoutBlockFlow (anonymous) at (0,18) size 769x18
+        LayoutText {#text} at (0,0) size 107x17
+          text run at (0,0) width 107: "table 1 - original"
+      LayoutTable {TABLE} at (5,46) size 92x94 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,68) size 82x26 [border: (3px solid #800080)]
+          LayoutText {#text} at (6,5) size 49x17
+            text run at (6,5) width 49: "caption"
+          LayoutBlockFlow {INPUT} at (59.05,6) size 13x13
+        LayoutTableSection {TBODY} at (10,10) size 72x46
+          LayoutTableRow {TR} at (0,2) size 72x20
+            LayoutTableCell {TD} at (2,2) size 33x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 72x20
+            LayoutTableCell {TD} at (2,24) size 33x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,145) size 769x18
+        LayoutText {#text} at (0,0) size 193x17
+          text run at (0,0) width 193: "table 2 - caption gains content"
+      LayoutTable {TABLE} at (5,173) size 92x112 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,68) size 82x44 [border: (3px solid #800080)]
+          LayoutText {#text} at (6,5) size 49x17
+            text run at (6,5) width 49: "caption"
+          LayoutBlockFlow {INPUT} at (59.05,6) size 13x13
+          LayoutText {#text} at (17,23) size 48x17
+            text run at (17,23) width 48: "foo foo"
+        LayoutTableSection {TBODY} at (10,10) size 72x46
+          LayoutTableRow {TR} at (0,2) size 72x20
+            LayoutTableCell {TD} at (2,2) size 33x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 72x20
+            LayoutTableCell {TD} at (2,24) size 33x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,290) size 769x18
+        LayoutText {#text} at (0,0) size 394x17
+          text run at (0,0) width 394: "table 3 - caption gains content extending its max element size"
+      LayoutTable {TABLE} at (5,318) size 150x112 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,68) size 140x44 [border: (3px solid #800080)]
+          LayoutText {#text} at (35,5) size 49x17
+            text run at (35,5) width 49: "caption"
+          LayoutBlockFlow {INPUT} at (88.05,6) size 13x13
+          LayoutText {#text} at (3,23) size 145x17
+            text run at (3,23) width 145: "very_large_very_large"
+        LayoutTableSection {TBODY} at (10,10) size 130x46
+          LayoutTableRow {TR} at (0,2) size 130x20
+            LayoutTableCell {TD} at (2,2) size 62x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (66,2) size 62x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 130x20
+            LayoutTableCell {TD} at (2,24) size 62x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (66,24) size 62x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,435) size 769x18
+        LayoutText {#text} at (0,0) size 191x17
+          text run at (0,0) width 191: "table 4 - caption loses content"
+      LayoutTable {TABLE} at (5,463) size 92x92 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,68) size 82x24 [border: (3px solid #800080)]
+          LayoutText {#text} at (17,3) size 48x17
+            text run at (17,3) width 48: "caption"
+        LayoutTableSection {TBODY} at (10,10) size 72x46
+          LayoutTableRow {TR} at (0,2) size 72x20
+            LayoutTableCell {TD} at (2,2) size 33x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 72x20
+            LayoutTableCell {TD} at (2,24) size 33x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,560) size 769x18
+        LayoutText {#text} at (0,0) size 158x17
+          text run at (0,0) width 158: "table 5 - table gets wider"
+      LayoutTable {TABLE} at (5,588) size 138x94 [border: (10px solid #008000)]
+        LayoutBlockFlow {CAPTION} at (10,68) size 128x26 [border: (3px solid #800080)]
+          LayoutText {#text} at (29,5) size 49x17
+            text run at (29,5) width 49: "caption"
+          LayoutBlockFlow {INPUT} at (82.05,6) size 13x13
+        LayoutTableSection {TBODY} at (10,10) size 118x46
+          LayoutTableRow {TR} at (0,2) size 118x20
+            LayoutTableCell {TD} at (2,2) size 79x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+              LayoutText {#text} at (31,1) size 47x17
+                text run at (31,1) width 47: "foo foo"
+            LayoutTableCell {TD} at (83,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 118x20
+            LayoutTableCell {TD} at (2,24) size 79x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (83,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,687) size 769x18
+        LayoutText {#text} at (0,0) size 155x17
+          text run at (0,0) width 155: "table 6 - table gets taller"
+      LayoutTable {TABLE} at (5,715) size 108x116 [border: (10px solid #008000)]
+        LayoutTableSection {TBODY} at (10,10) size 88x24
+          LayoutTableRow {TR} at (0,2) size 88x20
+            LayoutTableCell {TD} at (2,2) size 49x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 47x17
+                text run at (1,1) width 47: "foo foo"
+        LayoutBlockFlow {CAPTION} at (10,90) size 98x26 [border: (3px solid #800080)]
+          LayoutText {#text} at (14,5) size 49x17
+            text run at (14,5) width 49: "caption"
+          LayoutBlockFlow {INPUT} at (67.05,6) size 13x13
+        LayoutTableSection {TBODY} at (10,34) size 88x44
+          LayoutTableRow {TR} at (0,0) size 88x20
+            LayoutTableCell {TD} at (2,0) size 49x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (53,0) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,22) size 88x20
+            LayoutTableCell {TD} at (2,22) size 49x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (53,22) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+      LayoutBlockFlow (anonymous) at (0,836) size 769x18
+        LayoutText {#text} at (0,0) size 144x17
+          text run at (0,0) width 144: "table 7 - insert caption"
+      LayoutTable {TABLE} at (5,864) size 92x92 [border: (10px solid #008000)]
+        LayoutTableSection {TBODY} at (10,10) size 72x46
+          LayoutTableRow {TR} at (0,2) size 72x20
+            LayoutTableCell {TD} at (2,2) size 33x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 72x20
+            LayoutTableCell {TD} at (2,24) size 33x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+        LayoutBlockFlow {CAPTION} at (10,68) size 82x24 [border: (3px solid #800080)]
+          LayoutText {#text} at (14,3) size 54x17
+            text run at (14,3) width 54: "new cap"
+      LayoutBlockFlow (anonymous) at (0,961) size 769x18
+        LayoutText {#text} at (0,0) size 156x17
+          text run at (0,0) width 156: "table 8 - remove caption"
+      LayoutTable {TABLE} at (5,989) size 92x66 [border: (10px solid #008000)]
+        LayoutTableSection {TBODY} at (10,10) size 72x46
+          LayoutTableRow {TR} at (0,2) size 72x20
+            LayoutTableCell {TD} at (2,2) size 33x20 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,2) size 33x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+          LayoutTableRow {TR} at (0,24) size 72x20
+            LayoutTableCell {TD} at (2,24) size 33x20 [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"
+            LayoutTableCell {TD} at (37,24) size 33x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (1,1) size 31x17
+                text run at (1,1) width 31: "Data"

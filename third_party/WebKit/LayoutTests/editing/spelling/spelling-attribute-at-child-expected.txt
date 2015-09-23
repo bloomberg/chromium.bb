@@ -1,0 +1,44 @@
+Tests if the spellchecker behaves correctly when child has own spellcheck attribute.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+<div contenteditable="">Foo <span spellcheck="false" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became false
+
+<div contenteditable="">Foo <span id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became true
+
+<div contenteditable="">Foo <span spellcheck="true" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became true
+
+<div spellcheck="false" contenteditable="">Foo <span spellcheck="false" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became false
+
+<div spellcheck="false" contenteditable="">Foo <span id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became false
+
+<div spellcheck="false" contenteditable="">Foo <span spellcheck="true" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became true
+
+<div spellcheck="true" contenteditable="">Foo <span spellcheck="false" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became false
+
+<div spellcheck="true" contenteditable="">Foo <span id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became true
+
+<div spellcheck="true" contenteditable="">Foo <span spellcheck="true" id="child">[zz ]</span> Baz</div>
+PASS internals.hasSpellingMarker(document, 1, 2) became true
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz
+Foo [zz ] Baz

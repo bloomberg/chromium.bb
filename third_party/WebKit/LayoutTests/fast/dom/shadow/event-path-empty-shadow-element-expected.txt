@@ -1,0 +1,38 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+
+event.path on node #C
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #B
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #F
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #E
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #D
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #I
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #H
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #G
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #K
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #J
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+
+event.path on node #A
+#C, #B, #F, #E, #D, #I, #H, #G, #K, #J, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 16
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

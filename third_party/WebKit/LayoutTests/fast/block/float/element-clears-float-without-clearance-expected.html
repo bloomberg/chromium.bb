@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<style>
+.bfc {
+    overflow:hidden;
+    border:solid;
+    margin-top:1em;
+}
+
+.float {
+    background-color: aqua;
+    height: 30px;
+    display:inline-block;
+}
+
+.under {
+    height: 50px;
+    background-color: orange;
+}
+
+.clear {
+    margin-top:20px;
+    height: 50px;
+    background-color: orange;
+}
+</style>
+crbug.com/434048 : The orange boxes should sit right under the float.
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="under">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="under">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="under">clear</div>
+</div>
+
+crbug.com/434048 : There should be 30px between the orange box and the float.
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+
+<div class="bfc">
+    <div class="float">float</div>
+    <div class="clear">clear</div>
+</div>
+

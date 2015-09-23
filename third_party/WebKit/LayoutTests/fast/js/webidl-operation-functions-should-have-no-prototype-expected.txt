@@ -1,0 +1,10 @@
+WebIDL operation functions should not have a prototype property.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS "prototype" in document.appendChild is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

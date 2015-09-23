@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script>
+  window.onmessage = messageEvent => {
+    if (messageEvent.data === 'Go') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['generic_access']}]
+      }).then(device => {
+        if (device.constructor.name === "BluetoothDevice") {
+          parent.postMessage('Success', '*');
+        } else {
+          parent.postMessage('FAIL: requestDevice in iframe returned ' + device, '*');
+        }
+      }).catch(err => {
+        console.error(err);
+        parent.postMessage('FAIL: ' + err, '*');
+      });
+    }
+  };
+  parent.postMessage("Ready", "*");
+</script>

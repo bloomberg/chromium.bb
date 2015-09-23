@@ -1,0 +1,61 @@
+<html>
+    <head>
+        <script src=../../media-resources/media-file.js></script>
+        <script src=../../media-resources/video-test.js></script>
+        <script>
+            function testCommonAttributes(seekingExpected)
+            {
+                testExpected('video.seeking', seekingExpected, '==');
+                testExpected('video.ended', false, '==');
+                testExpected('video.currentTime == (video.duration / 2)', true, '==');
+                testExpected('video.paused', false, '==');
+            }
+
+            function start()
+            {
+                findMediaElement();
+
+                waitForEventAndFail('ended');
+
+                waitForEvent('durationchange');
+                waitForEvent('loadedmetadata');
+                waitForEventOnce('loadeddata', function ()
+                {
+                    waitForEvent('seeking', function ()
+                    {
+                        testCommonAttributes(true);
+                        waitForEventOnce('timeupdate', function()
+                        {
+                            testCommonAttributes(false);
+                        });
+                    });
+
+                    waitForEvent('seeked', function ()
+                    {
+                        testCommonAttributes(false);
+                        endTest();
+                    });
+
+                    // Seek to half the duration of the media
+                    testExpected('video.currentTime < video.duration', true, '==');
+                    testExpected('video.ended', false, '==');
+                    testExpected('video.seeking', false, '==');
+                    testExpected('video.paused', false, '==');
+                    consoleWrite('Starting seek to middle by setting video.currentTime to video.duration / 2');
+                    video.currentTime = video.duration / 2;
+                    testCommonAttributes(true);
+                    testExpected('video.currentTime < video.duration', true, '==');
+                    testExpected('video.currentTime > 0', true, '==');
+                });
+
+                var mediaFile = findMediaFile('video', 'resources/test');
+                video.src = '/' + mediaFile;
+                run('video.play()');
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <video></video>
+        <p>Test event dispatches and attribute changes for seek to middle</p>
+    </body>
+</html>

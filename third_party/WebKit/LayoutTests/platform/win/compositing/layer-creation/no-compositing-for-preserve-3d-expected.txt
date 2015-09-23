@@ -1,0 +1,39 @@
+This layer should not be composited.
+This layer should not be composited.
+This layer should be composited.
+{
+  "bounds": [785, 612],
+  "children": [
+    {
+      "bounds": [785, 612],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 390],
+          "bounds": [342, 180],
+          "shouldFlattenTransform": false,
+          "3dRenderingContext": 1,
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [31, 49],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "3dRenderingContext": 1,
+              "drawsContent": true,
+              "backgroundColor": "#C0C0C0",
+              "transform": [
+                [0.984807753012208, 0, -0.17364817766693, 0],
+                [0, 1, 0, 0],
+                [0.17364817766693, 0, 0.984807753012208, 0],
+                [0, 0, 0, 1]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

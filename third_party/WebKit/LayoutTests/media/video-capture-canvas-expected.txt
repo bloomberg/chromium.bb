@@ -1,0 +1,13 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS !!ctx.getImageData(0, 0, width, height) is true
+ 
+request access to local media
+got a stream
+start preview
+EVENT(canplaythrough)
+paint to canvas
+EXPECTED (r+g+b != '0') OK
+END OF TEST
+

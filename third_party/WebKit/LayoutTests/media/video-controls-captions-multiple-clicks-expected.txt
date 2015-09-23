@@ -1,0 +1,36 @@
+Tests that multiple toggles of the closed captions button still display captions
+
+EVENT(canplaythrough)
+
+** Caption button should be visible and enabled.
+EXPECTED (captionsButtonCoordinates[0] > '0') OK
+EXPECTED (captionsButtonCoordinates[1] > '0') OK
+EXPECTED (captionsButtonElement.disabled == 'false') OK
+
+** The captions track should be listed in textTracks, but not yet loaded. **
+EXPECTED (video.textTracks.length == '1') OK
+EXPECTED (video.textTracks[0].mode == 'hidden') OK
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+
+** Captions track should become visible after button is clicked **
+*** Click the CC button.
+EXPECTED (displayElement.innerText == 'First') OK
+EXPECTED (displayElement.innerText == 'Second') OK
+EXPECTED (displayElement.innerText == 'Third') OK
+
+** Captions should not be visible after button is clicked again **
+*** Click the CC button.
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+No text track cue with display id '-webkit-media-text-track-display' is currently visible
+
+** Captions should become visible after button is clicked again **
+*** Click the CC button.
+EXPECTED (displayElement.innerText == 'First') OK
+EXPECTED (displayElement.innerText == 'Second') OK
+EXPECTED (displayElement.innerText == 'Third') OK
+
+END OF TEST
+

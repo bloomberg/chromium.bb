@@ -1,0 +1,155 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    console.log("Begin");
+    debugger; // Reload follows, nothing below should break.
+    console.log("Middle: Breakpoint 1"); // Breakpoint
+    console.log("Middle: Breakpoint 2"); // Breakpoint
+    console.assert(false, "Assertion failed!");
+    console.error("Some console.error message");
+    debugger; // Should skip this also.
+    var element = document.getElementById("element");
+    var parent = element.parentElement;
+    var child = document.createElement("span");
+    element.setAttribute("foo", "bar"); // DOM breakpoint: AttributeModified
+    element.appendChild(child);         // DOM breakpoint: SubtreeModified
+    parent.removeChild(element);        // DOM breakpoint: NodeRemoved
+    parent.appendChild(element);
+    element.click(); // Event breakpoint
+    console.log("End");
+    // Should be last.
+    eval("throwException()");
+}
+
+function throwException()
+{
+    function inner()
+    {
+        try {
+            if (window.foo === 1)
+                throw new Error("error message");
+        } finally {
+            ++window.foo;
+        }
+    }
+    try {
+        window.foo = 1;
+        inner();
+    } finally {
+        ++window.foo;
+    }
+}
+
+function test() 
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    { 
+        InspectorTest.showScriptSource("skip-pauses-until-reload.html", didShowScriptSource);
+    } 
+
+    function didShowScriptSource(sourceFrame)
+    {
+        InspectorTest.addResult("Script source was shown.");
+        InspectorTest.addResult("Set up breakpoints.");
+        InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
+        InspectorTest.setBreakpoint(sourceFrame, 12, "", true);
+        InspectorTest.addResult("Set up to pause on all exceptions.");
+        // FIXME: Test is flaky with PauseOnAllExceptions due to races in debugger.
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.nodeWithId("element", didResolveNode);
+        testRunner.logToStderr("didShowScriptSource");
+    }
+
+    function didResolveNode(node)
+    {
+        testRunner.logToStderr("didResolveNode");
+        var pane = WebInspector.domBreakpointsSidebarPane;
+        InspectorTest.addResult("Set up DOM breakpoints.");
+        pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+        pane._setBreakpoint(node, pane._breakpointTypes.AttributeModified, true);
+        pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+        setUpEventBreakpoints();
+    }
+
+    function setUpEventBreakpoints()
+    {
+        testRunner.logToStderr("setUpEventBreakpoints");
+        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        InspectorTest.addResult("Set up Event breakpoints.");
+        pane._setBreakpoint("listener:click");
+        InspectorTest.runAfterPendingDispatches(didSetUp);
+    }
+
+    function didSetUp()
+    {
+        testRunner.logToStderr("didSetUp");
+        InspectorTest.addResult("Did set up.");
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames)
+    {
+        testRunner.logToStderr("didPause");
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.DebuggerAgent.setSkipAllPauses(true, didSetSkipAllPauses);
+    }
+
+    function didSetSkipAllPauses()
+    {
+        testRunner.logToStderr("didSetSkipAllPauses");
+        InspectorTest.addResult("Set up to skip all pauses.");
+        doReloadPage();
+    }
+
+    function doReloadPage()
+    {
+        testRunner.logToStderr("doReloadPage");
+        InspectorTest.addResult("Reloading the page...");
+        InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
+        InspectorTest.reloadPage(didReloadPage);
+    }
+
+    function didReloadPage()
+    {
+        testRunner.logToStderr("didReloadPage");
+        InspectorTest.addResult("PASS: Reloaded without hitting breakpoints.");
+        completeTest();
+    }
+
+    function didPauseAfterReload(callFrames)
+    {
+        testRunner.logToStderr("didPauseAfterReload");
+        InspectorTest.addResult("FAIL: Should not pause while reloading the page!");
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.waitUntilPausedNextTime(didPauseAfterReload);
+        InspectorTest.resumeExecution();
+    }
+
+    function completeTest()
+    {
+        testRunner.logToStderr("completeTest");
+        var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+        pane._removeBreakpoint("listener:click");
+        InspectorTest.completeDebuggerTest();
+    }
+}; 
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload.
+</p>
+
+<div id="element" onclick="return 0;"></div>
+</body>
+</html>

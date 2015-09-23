@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 3: Uncaught SyntaxError: Single function literal required
+Test passes if it doesn't crash.

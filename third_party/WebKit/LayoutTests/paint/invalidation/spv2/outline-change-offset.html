@@ -1,0 +1,37 @@
+<!-- Based on fast/repaint/outline-change-offset.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='indicator'",
+    "LayoutBlockFlow (positioned) DIV id='target'",
+];
+function paintInvalidationTest() {
+  document.getElementById('target').style.outlineOffset = '10px';
+}
+onload = runPaintInvalidationTest;
+</script>
+
+<style>
+div {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  width: 100px;
+  height: 100px;
+}
+
+#target {
+  outline: green solid 5px;
+  outline-offset: 5px;
+}
+
+#indicator {
+  outline: red solid 5px;
+  outline-offset: 10px;
+}
+</style>
+
+Box should be repainted when outline-offset style changes. Passes if no red.
+<div id="indicator"></div>
+<div id="target"></div>

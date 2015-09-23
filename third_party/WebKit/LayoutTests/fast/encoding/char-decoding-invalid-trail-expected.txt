@@ -1,0 +1,44 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Test encoding behavior for sequences with invalid trail bytes
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS decode('UTF-8', '%C3%22') is 'U+FFFD/U+0022'
+PASS decode('UTF-8', '%E2%22') is 'U+FFFD/U+0022'
+PASS decode('UTF-8', '%E2%A0%22') is 'U+FFFD/U+FFFD/U+0022'
+PASS decode('UTF-8', '%F0%90%80%22') is 'U+FFFD/U+FFFD/U+FFFD/U+0022'
+PASS decode('EUC-KR', '%C4%22') is 'U+FFFD/U+0022'
+PASS decode('EUC-KR', '%C4%5C') is 'U+FFFD/U+005C'
+PASS decode('EUC-KR', '%C4%7B') is 'U+FFFD/U+007B'
+PASS decode('EUC-KR', '%C6%53') is 'U+FFFD/U+0053'
+PASS decode('EUC-KR', '%C7%41') is 'U+FFFD/U+0041'
+PASS decode('EUC-KR', '%C7%81') is 'U+FFFD'
+PASS decode('EUC-KR', '%FE%A1') is 'U+FFFD'
+PASS decode('EUC-JP', '%8F%A1%A1') is 'U+FFFD'
+PASS decode('EUC-JP', '%8F%A1%81%22') is 'U+FFFD/U+FFFD/U+0022'
+PASS decode('EUC-JP', '%8F%A1%22') is 'U+FFFD/U+FFFD/U+0022'
+PASS decode('EUC-JP', '%8E%8E%A1') is 'U+FFFD/U+FF61'
+PASS decode('EUC-JP', '%8E%E0') is 'U+FFFD/U+FFFD'
+PASS decode('Big5', '%A1%22') is 'U+FFFD/U+0022'
+PASS decode('Big5', '%87%66') is 'U+FFFD/U+0066'
+PASS decode('Big5', '%89%44') is 'U+FFFD/U+0044'
+PASS decode('Big5', '%8A%63') is 'U+FFFD/U+0063'
+PASS decode('Big5', '%8B%54') is 'U+FFFD/U+0054'
+PASS decode('Big5', '%8D%41') is 'U+FFFD/U+0041'
+PASS decode('Big5', '%9B%61') is 'U+FFFD/U+0061'
+PASS decode('Big5', '%9F%4E') is 'U+FFFD/U+004E'
+PASS decode('Big5', '%A0%54') is 'U+FFFD/U+0054'
+PASS decode('Shift_JIS', '%82%23') is 'U+FFFD/U+0023'
+PASS decode('Shift_JIS', '%82%5C') is 'U+FFFD/U+005C'
+PASS decode('Shift_JIS', '%82%7A') is 'U+FFFD/U+007A'
+PASS decode('Shift_JIS', '%84%61') is 'U+FFFD/U+0061'
+PASS decode('Shift_JIS', '%85%7B') is 'U+FFFD/U+007B'
+PASS decode('Shift_JIS', '%87%7B') is 'U+FFFD/U+007B'
+PASS decode('Shift_JIS', '%98%7E') is 'U+FFFD/U+007E'
+PASS decode('Shift_JIS', '%FC%5B') is 'U+FFFD/U+005B'
+PASS decode('shift_jis', '%EB%9F') is 'U+FFFD'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

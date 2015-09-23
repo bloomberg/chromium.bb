@@ -1,0 +1,36 @@
+This is a test of more SVGTransformList API parts.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Test appendItem with SVGTransform that already exist in a list
+PASS transformList1.numberOfItems is 2
+PASS transformList2.numberOfItems is 2
+PASS transformList1.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 100.0 100.0]"
+PASS transformList2.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 100.0 100.0]"
+
+Test changing SVGTransform value
+PASS transformList1.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 200.0 200.0]"
+PASS transformList2.getItem(1).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 100.0 100.0]"
+
+Test insertItemBefore with SVGTransform that already exist in a list
+PASS transformList1.getItem(0).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 200.0 200.0]"
+PASS transformList2.getItem(0).toString() is "type=SVG_TRANSFORM_TRANSLATE matrix=[1.0 0.0 0.0 1.0 200.0 200.0]"
+PASS transformList1.numberOfItems is 3
+PASS transformList2.numberOfItems is 3
+
+Test replaceItem with SVGTransform that already exist in a list
+PASS transformList1.getItem(2).toString() is "type=SVG_TRANSFORM_SCALE matrix=[3.0 0.0 0.0 3.0 0.0 0.0]"
+PASS transformList2.getItem(2).toString() is "type=SVG_TRANSFORM_SCALE matrix=[3.0 0.0 0.0 3.0 0.0 0.0]"
+PASS transformList1.numberOfItems is 3
+PASS transformList2.numberOfItems is 3
+
+Test initialize with SVGTransform that already exist in a list
+PASS transformList1.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[3.0 0.0 0.0 3.0 0.0 0.0]"
+PASS transformList2.getItem(0).toString() is "type=SVG_TRANSFORM_SCALE matrix=[3.0 0.0 0.0 3.0 0.0 0.0]"
+PASS transformList1.numberOfItems is 1
+PASS transformList2.numberOfItems is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

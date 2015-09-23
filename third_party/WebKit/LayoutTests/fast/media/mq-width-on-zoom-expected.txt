@@ -1,0 +1,19 @@
+PASS window.matchMedia('(width: 960px)').matches is true
+PASS window.matchMedia('(width: 1152px)').matches is true
+PASS window.matchMedia('(width: 1382px)').matches is true
+PASS window.matchMedia('(width: 1658px)').matches is true
+PASS window.matchMedia('(width: 1990px)').matches is true
+PASS window.matchMedia('(width: 1658px)').matches is true
+PASS window.matchMedia('(width: 1382px)').matches is true
+PASS window.matchMedia('(width: 1152px)').matches is true
+PASS window.matchMedia('(width: 960px)').matches is true
+PASS window.matchMedia('(width: 800px)').matches is true
+PASS window.matchMedia('(width: 667px)').matches is true
+PASS window.matchMedia('(width: 555px)').matches is true
+PASS window.matchMedia('(width: 463px)').matches is true
+PASS window.matchMedia('(width: 386px)').matches is true
+PASS window.matchMedia('(width: 321px)').matches is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Tests that width MQ feature is correct on zoom.

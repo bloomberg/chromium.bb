@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests the RTCPeerConnection constructor.");
+
+shouldNotThrow("new webkitRTCPeerConnection(null);");
+shouldNotThrow("new webkitRTCPeerConnection(null, null);");
+shouldNotThrow("new webkitRTCPeerConnection(undefined);");
+shouldNotThrow("new webkitRTCPeerConnection(undefined, undefined);");
+shouldThrow("new webkitRTCPeerConnection();");
+shouldThrow("new webkitRTCPeerConnection('');");
+shouldThrow("new webkitRTCPeerConnection(null, '');");
+
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'stun:foo.com'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{url:'turn:foo.com', credential:'x'},{url:'stun:bar.com'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:'stun:foo.com'}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[{urls:['stun:foo.com', 'turn:foo.com']}]}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:undefined}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:null}, null);");
+
+shouldThrow("new webkitRTCPeerConnection({iceServers:true}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[1, 2, 3]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[{}]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[{url:'foo'}]}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[{urls:[1, 'turn:foo.com']}]}, null);");
+
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'none'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'relay'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'all'}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], iceTransports:'foo'}, null);");
+
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'balanced'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-bundle'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'max-compat'}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], bundlePolicy:'foo'}, null);");
+
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'negotiate'}, null);");
+shouldNotThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'require'}, null);");
+shouldThrow("new webkitRTCPeerConnection({iceServers:[], rtcpMuxPolicy:'foo'}, null);");
+
+shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1}});");
+shouldNotThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:1, valid_and_supported_2:1}});");
+shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0}]});");
+shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0},{valid_and_supported_2:0}]});");
+shouldNotThrow("new webkitRTCPeerConnection(null, {optional:[{valid_but_unsupported_1:0},{valid_but_unsupported_2:0}]});");
+shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_and_supported_1:66}});");
+shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{invalid:1}});");
+shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1}});");
+shouldThrow("new webkitRTCPeerConnection(null, {mandatory:{valid_but_unsupported_1:1, valid_and_supported_1:1}});");
+shouldThrow("new webkitRTCPeerConnection(null, {optional:{valid_and_supported_1:0}});");
+shouldThrow("new webkitRTCPeerConnection(null, {optional:[{valid_and_supported_1:0,valid_and_supported_2:0}]});");
+shouldThrow("new webkitRTCPeerConnection(null, {optional:[{invalid:0}]});");
+shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_1:1});");
+shouldThrow("new webkitRTCPeerConnection(null, {valid_but_unsupported_1:1});");
+shouldThrow("new webkitRTCPeerConnection(null, {valid_and_supported_2:1, mandatory:{valid_and_supported_1:1}});");
+</script>
+</body>
+</html>

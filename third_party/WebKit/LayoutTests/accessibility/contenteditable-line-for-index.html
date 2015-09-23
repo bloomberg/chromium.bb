@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+  </head>
+  <body>
+
+    <div id="editable-div" contenteditable>
+      <div>line 1</div>
+      <p>line 2<br>line 3</p>
+    </div>
+
+    <script>
+        description("This tests that the line number of a character offset is computed correctly for content editable elements.");
+
+        if (window.accessibilityController) {
+
+            var div = document.getElementById("editable-div");
+            div.focus();
+            var axEditable = accessibilityController.focusedElement;
+
+            for (var line = 0; line < 3; ++line) {
+                for (var character = 0; character < 7; ++character) {
+                    var index = line * 7 + character;
+                    shouldBeEqualToNumber("axEditable.lineForIndex(index)", line);
+                }
+            }
+
+            // Placing the caret after the last character should not change the line.
+            var textLength = div.innerText.length;
+            shouldBeEqualToNumber("textLength", 20);
+            shouldBeEqualToNumber("axEditable.lineForIndex(textLength)", 2);
+
+        }
+    </script>
+  </body>
+</html>

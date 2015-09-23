@@ -1,0 +1,17 @@
+<!-- Based on compositing/squashing/tricky-element-removal-crash.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<div style="width: 200px; height: 200px; transform: translateZ(0); background-color: salmon;"></div>
+<div style="position: absolute; z-index: 0; top: 8px; width: 100px; height: 100px">
+  <div id="target" style="width: 100px; height: 100px; transform: translateZ(0); background-color: blue">
+</div>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow DIV id='target'",
+];
+function paintInvalidationTest() {
+    document.querySelector('#target').remove();
+}
+
+runPaintInvalidationTest();
+</script>

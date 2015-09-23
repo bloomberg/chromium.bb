@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script>
+description('This tests multiple shadow roots creation with createShadowRoot and mode parameter.');
+
+function shouldBeOpenByDefaultShadowRoot(root) {
+    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'OpenByDefaultShadowRoot');
+}
+
+function shouldBeOpenShadowRoot(root) {
+    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'OpenShadowRoot');
+}
+
+function shouldBeClosedShadowRoot(root) {
+    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'ClosedShadowRoot');
+}
+
+function shouldBeUserAgentShadowRoot(root) {
+    shouldBeEqualToString('internals.shadowRootType(' + root + ')', 'UserAgentShadowRoot');
+}
+
+function youngestShadowRootShouldBe(host, root) {
+    shouldBe('internals.youngestShadowRoot(' + host + ')', root);
+}
+
+debug('(1/1) For compatibility, no parameter createShadowRoot() can still create multiple shadow roots.');
+var div = document.createElement('div');
+var shadow1 = div.createShadowRoot();
+shouldBeOpenByDefaultShadowRoot('shadow1');
+
+var shadow2 = div.createShadowRoot();
+shouldBeOpenByDefaultShadowRoot('shadow2');
+
+youngestShadowRootShouldBe('div', 'shadow2');
+shouldBe('shadow2.olderShadowRoot', 'shadow1');
+
+
+debug('(2/2) createShadowRoot({mode:"open"}) cannot create multiple shadow roots');
+div = document.createElement('div');
+shadow1 = div.createShadowRoot();
+shouldBeOpenByDefaultShadowRoot('shadow1');
+
+shouldThrow('div.createShadowRoot({mode: "open"})');
+youngestShadowRootShouldBe('div', 'shadow1');
+
+
+debug('(3/3) createShadowRoot() cannot create multiple shadow roots on shadow root with explicit open parameter.');
+div = document.createElement('div');
+shadow1 = div.createShadowRoot({mode: 'open'});
+shouldBeOpenShadowRoot('shadow1');
+
+shouldThrow('div.createShadowRoot()');
+youngestShadowRootShouldBe('div', 'shadow1');
+
+
+debug('(4/4) closed shadow root cannot be created on any open shadow roots');
+div = document.createElement('div');
+shadow1 = div.createShadowRoot();
+shouldBeOpenByDefaultShadowRoot('shadow1');
+
+shouldThrow('div.createShadowRoot({mode: "closed"})');
+youngestShadowRootShouldBe('div', 'shadow1');
+
+div = document.createElement('div');
+shadow1 = div.createShadowRoot({mode: 'open'});
+shouldBeOpenShadowRoot('shadow1');
+
+shouldThrow('div.createShadowRoot({mode: "closed"})');
+youngestShadowRootShouldBe('div', 'shadow1');
+
+
+debug('(5/5) any shadow root cannot be created on closed shadow root');
+div = document.createElement('div');
+shadow1 = div.createShadowRoot({mode: 'closed'});
+shouldBeClosedShadowRoot('shadow1');
+
+shouldThrow('div.createShadowRoot()');
+shouldThrow('div.createShadowRoot({mode: "open"})');
+shouldThrow('div.createShadowRoot({mode: "closed"})');
+
+
+debug('(6/6) explicitly open/closed shadow root cannot be created on UA shadow root');
+var input = document.createElement('input');
+shouldBeUserAgentShadowRoot('internals.shadowRoot(input)');
+shadow1 = input.createShadowRoot();
+youngestShadowRootShouldBe('input', 'shadow1');
+shouldBeOpenByDefaultShadowRoot('shadow1');
+
+input = document.createElement('input');
+shouldThrow('input.createShadowRoot({mode: "open"})');
+
+input = document.createElement('input');
+shouldThrow('input.createShadowRoot({mode: "closed"})');
+</script>

@@ -1,0 +1,36 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x270
+  LayoutBlockFlow {HTML} at (0,0) size 800x270
+    LayoutBlockFlow {BODY} at (8,16) size 784x238 [color=#0000FF]
+      LayoutBlockFlow {P} at (0,0) size 784x43
+        LayoutText {#text} at (0,21) size 498x17
+          text run at (0,21) width 498: "There should be a solid blue line to the right of every occurance of the word \""
+        LayoutInline {SPAN} at (0,0) size 146x36 [border: none (2px solid #0000FF) none]
+          LayoutText {#text} at (497,6) size 144x36
+            text run at (497,6) width 144: "THERE \x{2799}"
+        LayoutText {#text} at (642,21) size 11x17
+          text run at (642,21) width 11: "\"."
+      LayoutTable {TABLE} at (0,59) size 310x145
+        LayoutTableSection {TBODY} at (0,0) size 310x145
+          LayoutTableRow {TR} at (0,2) size 310x45
+            LayoutTableCell {TD} at (2,2) size 306x45 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (159,7) size 144x36
+                text run at (159,7) width 144: "THERE \x{2799}"
+          LayoutTableRow {TR} at (0,49) size 310x94
+            LayoutTableCell {TD} at (2,73) size 148x45 [border: none (2px solid #0000FF) none] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,7) size 144x36
+                text run at (1,7) width 144: "THERE \x{2799}"
+            LayoutTableCell {TD} at (152,49) size 156x94 [border: none (2px solid #0000FF) none] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (1,1) size 152x43
+                LayoutText {#text} at (16,6) size 136x36
+                  text run at (16,6) width 136: "THERE \x{2798}"
+              LayoutTable {TABLE} at (1,44) size 152x49
+                LayoutTableSection {TBODY} at (0,0) size 152x49
+                  LayoutTableRow {TR} at (0,2) size 152x45
+                    LayoutTableCell {TD} at (2,2) size 148x45 [border: none (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (1,7) size 144x36
+                        text run at (1,7) width 144: "THERE \x{2799}"
+      LayoutBlockFlow {P} at (0,220) size 784x18
+        LayoutText {#text} at (0,0) size 344x17
+          text run at (0,0) width 344: "There should be 3 short lines and 2 long lines in total."

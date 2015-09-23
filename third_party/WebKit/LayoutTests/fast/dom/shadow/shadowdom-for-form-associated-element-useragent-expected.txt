@@ -1,0 +1,12 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: <shadow> doesn't work for KEYGEN element host.
+When a OpenShadowRoot is added, UserAgentShadowRoot should exists as the oldest Shadow Root.
+
+PASS oldestShadowRoot is not shadowRoot
+PASS youngerShadowRoot is shadowRoot
+PASS oldestShadowRoot is not shadowRoot
+PASS youngerShadowRoot is shadowRoot
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

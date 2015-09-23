@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="import" href="resources/import-hello.html">
+<!-- import-hello.html shouldn't be shown twice as it shares same resource as above -->
+<link rel="import" href="resources/import-hello.html">
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="resource-tree-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runAfterResourcesAreFinished(["resource-tree-test.js"], step1);
+
+    function step1()
+    {
+        InspectorTest.dumpResourceTreeEverything();
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>
+Tests resource tree model for imports.
+</p>
+
+</body>
+</html>

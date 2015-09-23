@@ -1,0 +1,42 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [7, 57],
+          "bounds": [402, 542],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "backgroundColor": "#FFFF00",
+          "repaintRects": [
+            [1, 1, 200, 200],
+            [0, 0, 402, 542],
+            [0, 0, 200, 200]
+          ],
+          "paintInvalidationClients": [
+            "##ALL##",
+            "LayoutBlockFlow (positioned) DIV id='target'"
+          ]
+        },
+        {
+          "position": [108, 158],
+          "transformOrigin": [150, 150],
+          "bounds": [440, 300],
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [0, 1, 0, 0],
+            [-1, 0, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
+

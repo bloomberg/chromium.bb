@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<link rel="alternate stylesheet" title="not-preferred" href="resources/green.css">
+<div id="t"></div>
+<script>
+description("Check that alternate stylesheet load completion did not cause a synchronous style recalc.");
+
+window.onload = function(){
+    shouldNotBe("internals.updateStyleAndReturnAffectedElementCount()", "0");
+    shouldBe("getComputedStyle(document.getElementById('t'), null).color", "'rgb(0, 0, 0)'");
+};
+</script>

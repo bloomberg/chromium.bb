@@ -1,0 +1,99 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [48, 38],
+          "bounds": [60, 70],
+          "children": [
+            {
+              "position": [2, 12],
+              "bounds": [100, 150],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080",
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 1, 1]
+              ]
+            }
+          ]
+        },
+        {
+          "position": [240, 38],
+          "bounds": [60, 70],
+          "children": [
+            {
+              "position": [2, 12],
+              "bounds": [100, 150],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#808080",
+              "transform": [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 1, 1]
+              ]
+            }
+          ]
+        },
+        {
+          "position": [48, 230],
+          "bounds": [60, 70],
+          "children": [
+            {
+              "bounds": [60, 70],
+              "children": [
+                {
+                  "position": [2, 12],
+                  "bounds": [100, 150],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#808080",
+                  "transform": [
+                    [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 1, 1]
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [240, 230],
+          "bounds": [60, 70],
+          "children": [
+            {
+              "bounds": [60, 70],
+              "children": [
+                {
+                  "position": [2, 12],
+                  "bounds": [100, 150],
+                  "contentsOpaque": true,
+                  "drawsContent": true,
+                  "backgroundColor": "#808080",
+                  "transform": [
+                    [1, 0, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 1, 1]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

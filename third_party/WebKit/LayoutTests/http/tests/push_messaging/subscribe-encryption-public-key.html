@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Subscribing should provide a Curve25519 ECDH public key.</title>
+        <link rel="manifest" href="resources/push_manifest.json">
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="../resources/testharness-helpers.js"></script>
+        <script src="../serviceworker/resources/test-helpers.js"></script>
+    </head>
+    <body>
+        <script>
+            // Serializes |buffer| to a base64-encoded string.
+            function SerializeArrayBuffer(buffer) {
+                return btoa(String.fromCharCode.apply(null, new Uint8Array(buffer)));
+            }
+
+            // When running this test manually, grant permission when prompted.
+            // This test verifies that push subscriptions get an ECDH Curve25519
+            // key that can be used on the application server to encrypt payloads.
+            async_test(function(test) {
+                var workerUrl = 'resources/empty_worker.js';
+                var workerScope = 'resources/scope/' + location.pathname;
+                var swRegistration, encryptionKey;
+
+                // Size of an ECDH curve25519 public key, in bytes.
+                var EXPECTED_KEY_LENGTH = 32;
+
+                service_worker_unregister_and_register(test, workerUrl, workerScope)
+                    .then(function(serviceWorkerRegistration) {
+                        swRegistration = serviceWorkerRegistration;
+                        return wait_for_state(test, swRegistration.installing, 'activated');
+                    })
+                    .then(function() {
+                        if (window.testRunner)
+                            testRunner.setPermission('push-messaging', 'granted', location.origin, location.origin);
+
+                        return swRegistration.pushManager.subscribe();
+                    })
+                    .then(function(pushSubscription) {
+                        assert_own_property(PushSubscription.prototype, 'getKey');
+                        assert_not_equals(pushSubscription.getKey('curve25519dh'), null);
+                        assert_equals(pushSubscription.getKey('curve25519dh').byteLength, EXPECTED_KEY_LENGTH);
+
+                        // The returned ArrayBuffers are expected to be the same.
+                        assert_equals(pushSubscription.getKey('curve25519dh'), pushSubscription.getKey('curve25519dh'));
+
+                        // Getting a key with an unsupported algorithm should throw an exception.
+                        assert_throws(TypeError(), () => pushSubscription.getKey('petercurve9001'));
+
+                        encryptionKey = SerializeArrayBuffer(pushSubscription.getKey('curve25519dh'));
+
+                        return swRegistration.pushManager.getSubscription();
+                    })
+                    .then(function(pushSubscription) {
+                        assert_equals(SerializeArrayBuffer(pushSubscription.getKey('curve25519dh')), encryptionKey);
+
+                        return service_worker_unregister_and_done(test, workerScope);
+                    })
+                    .catch(unreached_rejection(test));
+
+            }, 'Subscribing should provide a Curve25519 ECDH public key');
+        </script>
+    </body>
+</html>

@@ -1,0 +1,59 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+
+
+Composed Shadow Tree will be:
+DIV	 id=sandbox
+	DIV	 id=top
+		DIV	 id=A
+			DIV	 id=C
+			DIV	 id=B
+			DIV	 id=F
+
+
+Moving mouse from B to A//F
+
+  mouseout
+     @B (target: B) (related: A)
+     @E (target: B) (related: F)
+     @younger-shadow-root (target: B) (related: F)
+     @A (target: B) (related: A)
+     @top (target: B) (related: A)
+
+  mouseover
+     @F (target: F) (related: B)
+     @younger-shadow-root (target: F) (related: B)
+     @A (target: A) (related: B)
+     @top (target: A) (related: B)
+
+Moving mouse from A/C to B
+
+  mouseout
+     @C (target: C) (related: B)
+     @older-shadow-root (target: C) (related: B)
+     @D (target: C) (related: B)
+     @younger-shadow-root (target: C) (related: B)
+     @A (target: A) (related: B)
+     @top (target: A) (related: B)
+
+  mouseover
+     @B (target: B) (related: A)
+     @E (target: B) (related: C)
+     @younger-shadow-root (target: B) (related: C)
+     @A (target: B) (related: A)
+     @top (target: B) (related: A)
+
+Moving mouse from A/C to A//F
+
+  mouseout
+     @C (target: C) (related: A)
+     @older-shadow-root (target: C) (related: A)
+     @D (target: C) (related: F)
+     @younger-shadow-root (target: C) (related: F)
+
+  mouseover
+     @F (target: F) (related: C)
+     @younger-shadow-root (target: F) (related: C)
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

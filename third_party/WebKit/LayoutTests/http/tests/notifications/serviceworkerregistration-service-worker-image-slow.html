@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: Showing a notification with an image that takes some time to load.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+    <script src="resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that showing a notification with an image that takes a non-trivial
+      // time to load still ends up resolving the promise.
+
+      async_test(function(test) {
+          var scope = 'resources/scope/' + location.pathname,
+              script = 'resources/instrumentation-service-worker.js';
+
+          testRunner.setPermission('notifications', 'granted', location.origin, location.origin);
+          getActiveServiceWorkerWithMessagePort(test, script, scope).then(function(info) {
+              // (1) Display a Web Notification through the Service Worker with
+              // an image that takes 200ms to load.
+              info.port.postMessage({
+                  command: 'show',
+
+                  title: 'My Notification',
+                  options: { body: 'Hello, world!',
+                             icon: '/resources/slow-image.php?redirect_name=square100.png&mimeType=image/png&sleep=200' }
+              });
+
+              info.port.addEventListener('message', function(event) {
+                  if (typeof event.data != 'object' || !event.data.command) {
+                      assert_unreached('Invalid message from the Service Worker.');
+                      return;
+                  }
+
+                  // (2) Listen for confirmation from the Service Worker that the
+                  // notification could be displayed as expected.
+                  assert_equals(event.data.command, 'show');
+                  assert_true(event.data.success);
+
+                  test.done();
+              });
+          }).catch(unreached_rejection(test));
+
+      }, 'Displaying a notification with an image that takes some time to load still resolves the promise.');
+    </script>
+  </body>
+</html>

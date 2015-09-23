@@ -1,0 +1,64 @@
+Tests that computed styles expand and allow tracing to style rules.
+
+==== Computed style for ID1 ====
+background-attachment: scroll
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-clip: border-box
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-color: rgb(128, 128, 128)
+    grey - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+    OVERLOADED black - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
+    OVERLOADED green - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
+background-image: none
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-origin: padding-box
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+background-size: auto
+    initial - #id1 styles-computed-trace.html:23 -> styles-computed-trace.html:23:1
+display: block
+    block - div user agent stylesheet
+font-family: Courier
+    Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
+    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
+    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
+text-decoration: underline solid rgb(0, 0, 0)
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-color: rgb(0, 0, 0)
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-line: underline
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-style: solid
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+[expanded] 
+element.style  { ()
+
+==== Computed style for ID2 ====
+background-color: rgb(0, 0, 255)
+    blue - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:1
+display: block
+    block - div user agent stylesheet
+font-family: Courier
+    Courier - #id2 styles-computed-trace.html:27 -> styles-computed-trace.html:27:1
+    OVERLOADED Courier - #id1 styles-computed-trace.html:18 -> styles-computed-trace.html:18:1
+    OVERLOADED Times - #id1 styles-computed-trace.html:13 -> styles-computed-trace.html:13:1
+    OVERLOADED Arial - body styles-computed-trace.html:4 -> styles-computed-trace.html:4:1
+text-decoration: underline solid rgb(0, 0, 0)
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-color: rgb(0, 0, 0)
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-line: underline
+    underline - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+text-decoration-style: solid
+    initial - div styles-computed-trace.html:9 -> styles-computed-trace.html:9:1
+[expanded] 
+element.style  { ()
+
+==== Style for ID3 ====
+[expanded] 
+element.style  { ()
+
+[expanded] 
+button[Attributes Style]  { ()
+    display: none;
+
+

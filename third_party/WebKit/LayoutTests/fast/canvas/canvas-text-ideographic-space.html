@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charcode="utf-16">
+  <script src="../../resources/js-test.js"></script>
+  <style>
+
+    span {
+      padding : 0px;
+      font-size : 12px;
+      font-family : Arial;
+      display : inline;
+    }
+
+  </style>
+</head>
+<body>
+  <div><span>a&#x3000;b&#x3000;c</span></div>
+  <div><canvas></canvas></div>
+  <script>
+
+    var canvas = document.querySelector("canvas");
+    var context = canvas.getContext("2d");
+    var span = document.querySelector("span");
+
+    var abc = 'a' + '\u3000' + 'b' + '\u3000' + 'c';
+    context.font = "12px Arial";
+    context.fillText(abc, 0, 20);
+
+    spanWidth = span.offsetWidth;
+    canvasWidth = context.measureText(abc).width;
+    shouldBeTrue("spanWidth == canvasWidth");
+
+  </script>
+</body>
+</html>

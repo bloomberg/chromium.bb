@@ -1,0 +1,23 @@
+<script src="../../resources/ahem.js"></script>
+<body style="font: 20px Ahem; margin: 0;">
+    <div id="result" style="outline: solid blue; height: 100px; width: 100px; transform: translatez(0)"></div>
+    <div style="height: 900px"></div>
+    <div style="height: 100px;">target</div>
+    <div style="height: 1000px;"></div>
+    <script>
+    onload = function() {
+        if (window.testRunner && window.internals) {
+            testRunner.dumpAsText();
+            window.internals.setPageScaleFactor(2);
+        }
+
+        window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+        document.execCommand("FindString", false, "target");
+        document.getElementById("result").innerText = document.scrollingElement.scrollTop === 860 ? "PASS" : "FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
+
+        window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+        document.execCommand("FindString", false, "target");
+        document.getElementById("result").innerText += document.scrollingElement.scrollTop === 860 ? " PASS" : " FAIL (scrollTop:" + document.scrollingElement.scrollTop + ")";
+    };
+    </script>
+</body>

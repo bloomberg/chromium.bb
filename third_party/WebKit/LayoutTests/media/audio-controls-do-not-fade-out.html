@@ -1,0 +1,29 @@
+<script src="video-test.js"></script>
+<script src="media-controls.js"></script>
+<body>
+<p>
+    This tests that audio controls do not fade out when the audio is playing.
+</p>
+<audio id="audio" controls autoplay src="content/test.oga"></audio>
+<script>
+    var controls;
+
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+
+    var audio = document.getElementById("audio");
+    audio.addEventListener("playing", function()
+    {
+        runAfterHideMediaControlsTimerFired(function()
+        {
+            controls = mediaControlsButton(audio, "panel");
+            testExpected("getComputedStyle(controls).opacity", 1);
+
+            consoleWrite("");
+            endTest();
+        }, audio);
+    });
+</script>
+</body>

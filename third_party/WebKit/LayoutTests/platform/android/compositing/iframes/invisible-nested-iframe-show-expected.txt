@@ -1,0 +1,181 @@
+
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [-12, -12],
+          "bounds": [370, 220],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [35, 35],
+              "children": [
+                {
+                  "bounds": [285, 150],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [285, 193],
+                          "children": [
+                            {
+                              "bounds": [285, 193],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [8, 8],
+                                  "bounds": [252, 172],
+                                  "drawsContent": true,
+                                  "children": [
+                                    {
+                                      "position": [1, 1],
+                                      "children": [
+                                        {
+                                          "bounds": [250, 170],
+                                          "children": [
+                                            {
+                                              "children": [
+                                                {
+                                                  "bounds": [250, 230],
+                                                  "children": [
+                                                    {
+                                                      "bounds": [250, 230],
+                                                      "drawsContent": true,
+                                                      "children": [
+                                                        {
+                                                          "position": [18, 10],
+                                                          "bounds": [210, 210],
+                                                          "contentsOpaque": true,
+                                                          "drawsContent": true,
+                                                          "backgroundColor": "#0000FF"
+                                                        }
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "position": [285, 0],
+                  "bounds": [15, 150],
+                  "drawsContent": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "position": [18, 203],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF",
+          "transform": [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 1, 1]
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '-->'
+--------
+{
+  "bounds": [285, 193],
+  "children": [
+    {
+      "bounds": [285, 193],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 8],
+          "bounds": [252, 172],
+          "drawsContent": true,
+          "children": [
+            {
+              "position": [1, 1],
+              "children": [
+                {
+                  "bounds": [250, 170],
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bounds": [250, 230],
+                          "children": [
+                            {
+                              "bounds": [250, 230],
+                              "drawsContent": true,
+                              "children": [
+                                {
+                                  "position": [18, 10],
+                                  "bounds": [210, 210],
+                                  "contentsOpaque": true,
+                                  "drawsContent": true,
+                                  "backgroundColor": "#0000FF"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+--------
+Frame: '/-->'
+--------
+{
+  "bounds": [250, 230],
+  "children": [
+    {
+      "bounds": [250, 230],
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [18, 10],
+          "bounds": [210, 210],
+          "contentsOpaque": true,
+          "drawsContent": true,
+          "backgroundColor": "#0000FF"
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,27 @@
+Test that inert nodes are not focusable. The test passses if only the topmost dialog and its button are focusable.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS "body"; focusedElement === theElement is false
+PASS "top-dialog"; focusedElement === theElement is true
+PASS "top-dialog-button"; focusedElement === theElement is true
+PASS "bottom-dialog"; focusedElement === theElement is false
+PASS "bottom-dialog-button"; focusedElement === theElement is false
+PASS "container"; focusedElement === theElement is false
+PASS "text"; focusedElement === theElement is false
+PASS "datetime"; focusedElement === theElement is false
+PASS "color"; focusedElement === theElement is false
+PASS "select"; focusedElement === theElement is false
+PASS "optgroup"; focusedElement === theElement is false
+PASS "option"; focusedElement === theElement is false
+PASS "contenteditable-div"; focusedElement === theElement is false
+PASS "tabindex-span"; focusedElement === theElement is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+I get focusI don't get focus.
+      
+I'm editable
+I'm tabindexed.
+ Link

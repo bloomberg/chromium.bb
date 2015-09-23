@@ -1,0 +1,123 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="debugger-test.js"></script>
+<script src="workspace-test.js"></script>
+
+<script>
+
+function test()
+{
+    var contentReceived;
+    var finalMappedLocation;
+    var target = InspectorTest.createWorkspaceWithTarget();
+    var cssModel = WebInspector.CSSStyleModel.fromTarget(target);
+    WebInspector.cssWorkspaceBinding = InspectorTest.testCSSWorkspaceBinding;
+
+    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(cssUISourceCodeAdded);
+    const styleSheetURL = "http://localhost:8000/inspector/resources/example.css";
+    const sourceMapURL = "example.css.map";
+    const styleSheetId = 1;
+    InspectorTest.addMockUISourceCodeToWorkspace(styleSheetURL, WebInspector.resourceTypes.Stylesheet, "");
+
+    InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "updateLocations", locationsUpdated, true);
+    cssModel._styleSheetAdded(createMockStyleSheetHeader(styleSheetURL, sourceMapURL));
+
+    function locationsUpdated()
+    {
+        var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, 2, 3));
+        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
+        if (networkURL.indexOf(".scss") === -1)
+            return;
+        finalMappedLocation = networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
+        join();
+    }
+
+
+    function createMockStyleSheetHeader(url, sourceMapURL)
+    {
+        const frame = InspectorTest.resourceTreeModel.mainFrame;
+        return {
+            styleSheetId: styleSheetId,
+            frameId: frame.id,
+            sourceURL: url,
+            sourceMapURL: sourceMapURL,
+            origin: "regular",
+            title: "",
+            disabled: false
+        };
+    }
+
+    function createMockStyleSheetResource(url, mimeType, content)
+    {
+        const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
+        const frame = InspectorTest.resourceTreeModel.mainFrame;
+        var resource = new WebInspector.Resource(target, null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
+        resource.requestContent = function(callback)
+        {
+            callback(content, false, mimeType);
+        }
+        return resource;
+    }
+
+
+    function cssUISourceCodeAdded(uiSourceCode)
+    {
+        InspectorTest.addResult("Added CSS uiSourceCode: " + uiSourceCode.uri());
+        InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(scssUISourceCodeAdded);
+    }
+
+    function scssUISourceCodeAdded(uiSourceCode)
+    {
+        InspectorTest.addResult("Added SCSS uiSourceCode: " + uiSourceCode.uri());
+        afterStyleSheetAdded();
+    }
+
+    function rawLocationToUILocation(line, column)
+    {
+        return InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(cssModel, styleSheetId, styleSheetURL, line, column));
+    }
+
+    function afterStyleSheetAdded()
+    {
+        var cssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL(styleSheetURL);
+        var scssUISourceCode = InspectorTest.testWorkspace.uiSourceCodeForOriginURL("http://localhost:8000/inspector/resources/example.scss");
+
+        InspectorTest.checkUILocation(cssUISourceCode, 0, 3, rawLocationToUILocation(0, 3));
+        InspectorTest.checkUILocation(scssUISourceCode, 1, 0, rawLocationToUILocation(1, 0));
+        InspectorTest.checkUILocation(scssUISourceCode, 2, 2, rawLocationToUILocation(2, 4));
+        InspectorTest.checkUILocation(scssUISourceCode, 2, 5, rawLocationToUILocation(2, 6));
+        InspectorTest.checkUILocation(scssUISourceCode, 2, 7, rawLocationToUILocation(2, 9));
+        InspectorTest.checkUILocation(scssUISourceCode, 2, 10, rawLocationToUILocation(3, 7));
+        InspectorTest.checkUILocation(scssUISourceCode, 4, 2, rawLocationToUILocation(4, 8));
+        InspectorTest.checkUILocation(scssUISourceCode, 4, 2, rawLocationToUILocation(4, 10));
+        InspectorTest.checkUILocation(scssUISourceCode, 4, 11, rawLocationToUILocation(4, 11));
+        InspectorTest.checkUILocation(scssUISourceCode, 4, 13, rawLocationToUILocation(4, 15));
+        InspectorTest.checkUILocation(scssUISourceCode, 4, 17, rawLocationToUILocation(4, 20));
+        scssUISourceCode.requestContent(didRequestContent);
+
+        function didRequestContent(content, contentEncoded, mimeType)
+        {
+            InspectorTest.assertEquals(0, content.indexOf("/* Comment */"));
+            contentReceived = true;
+            join();
+        }
+    }
+
+    function join()
+    {
+        if (!contentReceived || !finalMappedLocation)
+            return;
+        InspectorTest.addResult("UILocation upon LiveLocation update: " + finalMappedLocation);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests SourceMap and StyleSheetMapping.</p>
+</body>
+</html>

@@ -1,0 +1,20 @@
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://127.0.0.1:8000') does not match the recipient window's origin ('http://localhost:8000').
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://localhost:9090') does not match the recipient window's origin ('http://localhost:8000').
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://localhost') does not match the recipient window's origin ('http://localhost:8000').
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://localhost') does not match the recipient window's origin ('http://localhost:8000').
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('https://localhost:8000') does not match the recipient window's origin ('http://localhost:8000').
+CONSOLE ERROR: Failed to execute 'postMessage' on 'DOMWindow': The target origin provided ('http://www.example.com') does not match the recipient window's origin ('http://localhost:8000').
+window.location.href = http://127.0.0.1:8000/security/postMessage/target-origin.html
+
+waiting...
+Error sending message to null. SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '' in a call to 'postMessage'.
+Error sending message to undefined. SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '' in a call to 'postMessage'.
+Error sending message to //. SyntaxError: Failed to execute 'postMessage' on 'Window': Invalid target origin '//' in a call to 'postMessage'.
+Received message: data="Received message: data="Trying origin=*" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=/" origin="http://127.0.0.1:8000"" origin="http://127.0.0.1:8000"
+Received message: data="Received message: data="Trying origin=http://localhost:8000" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=http://localhost:8000/" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=http://localhost:8000/foo" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=http://localhost:8000/foo?bar" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=http://localhost:8000/foo?bar#baz" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
+Received message: data="Received message: data="Trying origin=http://user:pass@localhost:8000/foo?bar#baz" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"

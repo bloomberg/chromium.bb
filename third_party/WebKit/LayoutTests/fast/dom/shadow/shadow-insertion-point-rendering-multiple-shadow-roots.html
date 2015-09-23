@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+function description(text) {
+    return createDOM("div", {},
+                     document.createTextNode(text));
+}
+
+function createSpanWithText(text) {
+    return createDOM("span", {},
+                     document.createTextNode(text + " "));
+}
+
+var testcases = [
+    description('A shadow element without an element'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("shadow", {}),
+                  createSpanWithText("after1"))),
+
+    description('A shadow element with an element'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("shadow", {},
+                            createSpanWithText("shadow-child")),
+                  createSpanWithText("after1"))),
+
+    description('A shadow element with a content element and an element'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("shadow", {},
+                            createDOM("content", {}),
+                            createSpanWithText("shadow-child")),
+                  createSpanWithText("after1"))),
+
+    description('A shadow element as a descendant of a content element'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("content", {},
+                            createDOM("shadow", {})),
+                  createSpanWithText("after1"))),
+
+    description('A shadow element as a descendant of a shadow element'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("shadow", {},
+                            createDOM("shadow", {},
+                                      createSpanWithText("inactive-shadow-child"))),
+                  createSpanWithText("after1"))),
+
+    description('A complex case'),
+    createDOM('div', {},
+              createSpanWithText("host-child"),
+              createShadowRoot(
+                  createSpanWithText("before0"),
+                  createDOM("content", {}),
+                  createSpanWithText("after0")),
+              createShadowRoot(
+                  createSpanWithText("before1"),
+                  createDOM("shadow", {},
+                            createSpanWithText("shadow-1-child-1"),
+                            createDOM("content", {}),
+                            createSpanWithText("shadow-1-child-2")),
+                  createSpanWithText("after1")),
+              createShadowRoot(
+                  createSpanWithText("before2"),
+                  createDOM("shadow", {},
+                            createSpanWithText("shadow-2-child-1"),
+                            createDOM("content", {}),
+                            createSpanWithText("shadow-2-child-2")),
+                  createSpanWithText("after2"))),
+];
+
+testcases.forEach(function(element) {
+    document.body.appendChild(element);
+});
+</script>
+</body>
+</html>

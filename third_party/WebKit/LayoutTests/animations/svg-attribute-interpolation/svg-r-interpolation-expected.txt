@@ -1,0 +1,46 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: r from [10ch] to [60ch] was [10ch] at 0
+PASS: r from [10ch] to [60ch] was [20ch] at 0.2
+PASS: r from [10ch] to [60ch] was [40ch] at 0.6
+PASS: r from [10ch] to [60ch] was [60ch] at 1
+PASS: r from [10mm] to [6cm] was [10mm] at 0
+PASS: r from [10mm] to [6cm] was [20mm] at 0.2
+PASS: r from [10mm] to [6cm] was [40mm] at 0.6
+PASS: r from [10mm] to [6cm] was [60mm] at 1
+PASS: r from [50%] to [14em] was [130] at 0
+PASS: r from [50%] to [14em] was [132] at 0.2
+PASS: r from [50%] to [14em] was [136] at 0.6
+PASS: r from [50%] to [14em] was [140] at 1
+PASS: r from [10pc] to [20ch] was [10pc] at 0
+PASS: r from [10pc] to [20ch] was [168] at 0.2
+PASS: r from [10pc] to [20ch] was [184] at 0.6
+PASS: r from [10pc] to [20ch] was [20ch] at 1
+
+Web Animations API:
+PASS: r from [10ch] to [60ch] was [0ch] at -0.4
+PASS: r from [10ch] to [60ch] was [10ch] at 0
+PASS: r from [10ch] to [60ch] was [20ch] at 0.2
+PASS: r from [10ch] to [60ch] was [40ch] at 0.6
+PASS: r from [10ch] to [60ch] was [60ch] at 1
+PASS: r from [10ch] to [60ch] was [80ch] at 1.4
+PASS: r from [10mm] to [6cm] was [0mm] at -0.4
+PASS: r from [10mm] to [6cm] was [10mm] at 0
+PASS: r from [10mm] to [6cm] was [20mm] at 0.2
+PASS: r from [10mm] to [6cm] was [40mm] at 0.6
+PASS: r from [10mm] to [6cm] was [60mm] at 1
+PASS: r from [10mm] to [6cm] was [80mm] at 1.4
+PASS: r from [50%] to [14em] was [126] at -0.4
+PASS: r from [50%] to [14em] was [130] at 0
+PASS: r from [50%] to [14em] was [132] at 0.2
+PASS: r from [50%] to [14em] was [136] at 0.6
+PASS: r from [50%] to [14em] was [140] at 1
+PASS: r from [50%] to [14em] was [144] at 1.4
+PASS: r from [10pc] to [20ch] was [144] at -0.4
+PASS: r from [10pc] to [20ch] was [10pc] at 0
+PASS: r from [10pc] to [20ch] was [168] at 0.2
+PASS: r from [10pc] to [20ch] was [184] at 0.6
+PASS: r from [10pc] to [20ch] was [20ch] at 1
+PASS: r from [10pc] to [20ch] was [216] at 1.4
+

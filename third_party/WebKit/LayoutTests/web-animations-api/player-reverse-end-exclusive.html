@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+function finishedPlayer() {
+  var player = document.documentElement.animate([], 100000);
+  player.finish();
+  return player;
+}
+
+test(function() {
+  var initial = getComputedStyle(document.documentElement).background;
+  var player = document.documentElement.animate([{background: 'red'}, {background: 'red'}], 100000);
+  player.playbackRate = -1;
+  player.currentTime = 0;
+  assert_equals(getComputedStyle(document.documentElement).background, initial);
+}, "An animation which is not filling backwards should not be in effect at time 0 when playing backwards");
+</script>

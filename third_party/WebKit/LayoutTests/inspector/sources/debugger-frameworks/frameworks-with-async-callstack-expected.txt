@@ -1,0 +1,36 @@
+
+Tests the async call stacks and framework black-boxing features working together.
+
+Set timer for test function.
+Call stack:
+    0) callback2 (frameworks-with-async-callstack.html:30)
+  * 1) Framework_inner1 (framework.js:59)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    2) window.callbackFromFramework (frameworks-with-async-callstack.html:10)
+  * 3) Framework_inner2 (framework.js:63)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework_willSchedule (framework.js:51)
+    [setTimeout]
+  * 0) Framework.schedule (framework.js:45)
+  * 1) Framework.doSomeAsyncChainCalls (framework.js:67)
+    2) callback1 (frameworks-with-async-callstack.html:25)
+  * 3) Framework.safeRun (framework.js:8)
+  * 4) Framework.safeRun (framework.js:10)
+    5) timeout1 (frameworks-with-async-callstack.html:20)
+    [setTimeout]
+    0) testFunction (frameworks-with-async-callstack.html:15)
+
+Printing visible call stack:
+Call stack:
+    0) callback2 (frameworks-with-async-callstack.html:30)
+    [setTimeout]
+    0) window.callbackFromFramework (frameworks-with-async-callstack.html:10)
+    [setTimeout]
+    0) callback1 (frameworks-with-async-callstack.html:25)
+    1) timeout1 (frameworks-with-async-callstack.html:20)
+    [setTimeout]
+    0) testFunction (frameworks-with-async-callstack.html:15)
+

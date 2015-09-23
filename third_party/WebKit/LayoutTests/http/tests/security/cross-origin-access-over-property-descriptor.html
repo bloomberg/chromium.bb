@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="/js-test-resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Cross-origin access to 'window.location.pathname' over 'get' and 'set' in property descriptor should throw a SecurityError.");
+
+window.jsTestIsAsync = true;
+window.testRunner.setCanOpenWindows(true);
+
+var targetWindow = window.open("http://localhost:8080/");
+
+var pathnameDescriptor = Object.getOwnPropertyDescriptor(Location.prototype, "pathname");
+shouldBeNonNull("pathnameDescriptor");
+shouldBe("typeof pathnameDescriptor.get", '"function"');
+shouldBe("typeof pathnameDescriptor.set", '"function"');
+
+var count = 0;
+var timerId = window.setInterval(function() {
+    if (++count > 10) {
+        window.clearInterval(timerId);
+        finishJSTest();
+        return;
+    }
+    if (targetWindow) {
+        shouldThrow("pathnameDescriptor.get.call(targetWindow.location)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+        shouldThrow("pathnameDescriptor.set.call(targetWindow.location, 1)", '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+        window.clearInterval(timerId);
+        finishJSTest();
+    }
+}, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+7chars.
+Some line with 29 characters.
+
+
+Running test: testFirstLetterPseudoClass
+[{"familyName":"<Some-family-name-0>","glyphCount":29},{"familyName":"<Some-family-name-1>","glyphCount":7},{"familyName":"<Some-family-name-2>","glyphCount":1}]
+
+Running test: testSelectElementPlatformFonts
+[{"familyName":"<Some-family-name-0>","glyphCount":27}]
+

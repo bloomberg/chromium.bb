@@ -1,0 +1,26 @@
+Tests that FontFaceSet is correctly updated when added or removed a FontFace while loading.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS face1.status is "unloaded"
+PASS face1.status is "loading"
+PASS document.fonts.status is "loaded"
+PASS document.fonts.status is "loading"
+PASS face1.status is "loaded"
+PASS document.fonts.status is "loaded"
+PASS face2.status is "unloaded"
+PASS document.fonts.status is "loading"
+PASS document.fonts.status is "loading"
+PASS face2.status is "loading"
+PASS face2.status is "loaded"
+PASS document.fonts.status is "loaded"
+PASS face3.status is "unloaded"
+PASS document.fonts.status is "loading"
+PASS document.fonts.status is "loading"
+PASS face3.status is "loading"
+PASS document.fonts.status is "loaded"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

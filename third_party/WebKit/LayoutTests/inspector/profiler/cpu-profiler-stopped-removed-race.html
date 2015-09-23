@@ -1,0 +1,55 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="profiler-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runProfilerTestSuite([
+        function testProfiling(next)
+        {
+            var cpuProfiler = WebInspector.targetManager.mainTarget().cpuProfilerModel;
+            var targetManager = WebInspector.targetManager;
+            var profilesPanel = WebInspector.panels.profiles;
+            InspectorTest.addSniffer(cpuProfiler, "stopRecording", stopRecording);
+            InspectorTest.addSniffer(profilesPanel, "_addProfileHeader", onAddProfileHeader);
+            profilesPanel.toggleRecordButton();  // Start profiling.
+
+            function onAddProfileHeader()
+            {
+	        targetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, stateChanged);
+	        profilesPanel.toggleRecordButton();  // Stop profiling.
+	        profilesPanel._reset();  // ... and remove the profile before it actually stopped.
+            }
+
+            function stateChanged()
+            {
+                InspectorTest.addResult("resumed");
+            }
+
+            function stopRecording(resultPromise)
+            {
+                InspectorTest.addResult("Stop recording command issued.");
+                resultPromise.then(didStopRecording);
+            }
+
+            function didStopRecording(profile)
+            {
+                InspectorTest.addResult("Recording stopped. profile (should be null): " + profile);
+                InspectorTest.completeProfilerTest();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that profile removal right after stop profiling issued works.
+
+<a href="http://crbug.com/476430">Bug 476430.</a>
+</p>
+</body>
+</html>

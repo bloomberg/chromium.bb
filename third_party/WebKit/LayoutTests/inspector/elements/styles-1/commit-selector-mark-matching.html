@@ -1,0 +1,64 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    var nodeId;
+    var stylesPane;
+
+    InspectorTest.runTestSuite([
+        function setUp(next) {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function addRule(next)
+        {
+            InspectorTest.nodeWithId("inspected", nodeCallback);
+
+            function nodeCallback(node)
+            {
+                nodeId = node.id;
+                stylesPane = WebInspector.panels.elements.sidebarPanes.styles;
+                InspectorTest.addNewRule("foo, #inspected, .bar, #inspected", callback);
+            }
+
+            function callback()
+            {
+                InspectorTest.dumpSelectedElementStyles(true, false, false, true);
+                next();
+            }
+        },
+
+        function changeSelector(next)
+        {
+            var section = InspectorTest.firstMatchedStyleSection();
+            section.startEditingSelector();
+            var selectorElement = section._selectorElement;
+            selectorElement.textContent = "#inspected, a, hr";
+            InspectorTest.waitForSelectorCommitted(callback);
+            selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            function callback()
+            {
+                InspectorTest.dumpSelectedElementStyles(true, false, false, true);
+                next();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that matching selectors are marked properly after new rule creation and selector change.
+</p>
+
+<div id="inspected"></div>
+
+</body>
+</html>

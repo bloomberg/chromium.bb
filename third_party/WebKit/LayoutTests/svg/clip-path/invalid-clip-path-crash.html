@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<style>
+  path {
+    -webkit-animation: inset-anim 2s linear;
+  }
+  @-webkit-keyframes inset-anim {
+    from { -webkit-clip-path: inset(10%); }
+    to   { -webkit-clip-path: inset(20%); }
+  }
+</style>
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+  outputRepaintRects = false;
+  onload = runRepaintTest;
+  function repaintTest() {
+  };
+</script>
+Test for crbug.com/448227: This test passes if it does not crash.
+<svg>
+  <path d="M0 0"/>
+</svg>
+

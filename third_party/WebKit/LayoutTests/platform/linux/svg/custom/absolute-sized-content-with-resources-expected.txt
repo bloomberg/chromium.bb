@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [42, 119, 334, 268],
+        [17, 219, 84, 68],
+        [8, 52, 402, 405],
+        [8, 52, 102, 405]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "LayoutBlockFlow div id='contentBox'",
+        "LayoutSVGRoot svg"
+      ]
+    }
+  ]
+}
+

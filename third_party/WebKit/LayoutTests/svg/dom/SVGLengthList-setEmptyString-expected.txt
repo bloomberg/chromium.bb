@@ -1,0 +1,8 @@
+PASS text.x.baseVal.numberOfItems is 3
+PASS text.x.baseVal.numberOfItems is 0
+PASS text.x.baseVal.numberOfItems is 3
+PASS text.x.baseVal.numberOfItems is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

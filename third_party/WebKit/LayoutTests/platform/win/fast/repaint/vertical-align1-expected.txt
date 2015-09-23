@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [120, 80, 20, 20],
+        [120, 34, 20, 20],
+        [0, 100, 800, 4],
+        [0, 80, 20, 20],
+        [0, 34, 20, 20],
+        [0, 0, 800, 103]
+      ],
+      "paintInvalidationClients": [
+        "InlineBox",
+        "InlineBox",
+        "InlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow BODY",
+        "LayoutBlockFlow DIV class='other'",
+        "LayoutBlockFlow DIV class='other'"
+      ]
+    }
+  ]
+}
+

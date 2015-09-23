@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description("Tests RTCPeerConnection onnegotiationneeded.");
+
+var stream = null;
+var pc = null;
+
+function error() {
+    testFailed('Stream generation failed.');
+    finishJSTest();
+}
+
+function getUserMedia(dictionary, callback) {
+    try {
+        navigator.webkitGetUserMedia(dictionary, callback, error);
+    } catch (e) {
+        testFailed('webkitGetUserMedia threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+function onNegotiationNeeded(event) {
+    testPassed('onNegotiationNeeded was called.');
+
+    finishJSTest();
+}
+
+function gotStream(s) {
+    testPassed('Got a stream.');
+    stream = s;
+
+    pc = new webkitRTCPeerConnection(null, null);
+    pc.onnegotiationneeded = onNegotiationNeeded;
+
+    pc.addStream(stream);
+}
+
+getUserMedia({audio:true, video:true}, gotStream);
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<body>
+<script>
+description("Verify that TextTrackCue exceptions are properly messaged to developers.");
+
+var cue = new VTTCue(0, 0, "Test.");
+
+function testInfinityAndNaN(property) {
+    shouldThrow("cue." + property + " = Number.NaN;");
+    shouldThrow("cue." + property + " = Number.POSITIVE_INFINITY;");
+    shouldThrow("cue." + property + " = Number.NEGATIVE_INFINITY;");
+}
+
+testInfinityAndNaN("startTime");
+testInfinityAndNaN("endTime");
+</script>

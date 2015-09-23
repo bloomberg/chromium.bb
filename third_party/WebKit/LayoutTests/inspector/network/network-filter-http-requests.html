@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
+<script>
+function test() {
+    function checkURL(url)
+    {
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), url, url, "", "", "");
+        var result = WebInspector.NetworkLogView.HTTPRequestsFilter(request);
+        InspectorTest.addResult((result ? "" : "Non-") + "HTTP request URL: " + url);
+    }
+
+    checkURL("http://webkit.org");
+    checkURL("https://webkit.org");
+    checkURL("ws://webkit.org");
+    checkURL("wss://webkit.org");
+
+    InspectorTest.addResult("");
+
+    checkURL("data:text/plain,foo");
+    checkURL("file:///etc/passwd");
+    checkURL("javascript:void()");
+    checkURL("invalid");
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests filtering of requests suitable for HAR.</p>
+</body>
+</html>

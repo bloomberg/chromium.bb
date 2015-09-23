@@ -1,0 +1,9 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Resource requests:
+
+
+1st.jpg
+2nd.jpg
+3rd.jpg
+4th.jpg
+5th.jpg

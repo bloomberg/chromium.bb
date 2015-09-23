@@ -1,0 +1,10 @@
+Test the late call of start(0) of BufferSource.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS The rendered buffer contains non-zero values after the first sample.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

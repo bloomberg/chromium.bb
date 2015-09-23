@@ -1,0 +1,20 @@
+
+Tests asynchronous call stacks for DataTransferItem.getAsString.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) onGetAsString (async-callstack-get-as-string.html:38)
+    [DataTransferItem.getAsString]
+    0) onPaste (async-callstack-get-as-string.html:33)
+    1) timeout (async-callstack-get-as-string.html:24)
+    [setTimeout]
+    0) testFunction (async-callstack-get-as-string.html:9)
+
+Call stack:
+    0) onPaste (async-callstack-get-as-string.html:29)
+    1) timeout (async-callstack-get-as-string.html:24)
+    [setTimeout]
+    0) testFunction (async-callstack-get-as-string.html:9)
+
+

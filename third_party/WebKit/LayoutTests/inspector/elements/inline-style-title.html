@@ -1,0 +1,57 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<style id="inline-style">
+    div { color: red }
+</style>
+<script>
+
+function updateStyleText()
+{
+    document.querySelector("#inline-style").textContent = "span { border: 1px solid black }";
+}
+
+function test()
+{
+    // Save time on style updates.
+    WebInspector.StylesSidebarPane.prototype.update = function() {};
+    WebInspector.MetricsSidebarPane.prototype.update = function() {};
+
+    InspectorTest.nodeWithId("inline-style", onInlineStyleQueried);
+
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
+    var treeElement;
+
+    function onInlineStyleQueried(node)
+    {
+        if (!node) {
+            InspectorTest.addResult("Didn't find node with given ID");
+            InspectorTest.completeTest();
+            return;
+        }
+        treeElement = treeOutline.findTreeElement(node);
+        InspectorTest.addResult("=== initial inline style text ===");
+        InspectorTest.addResult(treeElement.title.textContent);
+        InspectorTest.evaluateInPage("updateStyleText()", onStyleUpdated);
+    }
+
+    function onStyleUpdated()
+    {
+        InspectorTest.firstElementsTreeOutline().runPendingUpdates();
+        InspectorTest.addResult("=== inline style text after change ===");
+        InspectorTest.addResult(treeElement.title.textContent);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that external change of inline style element updates its title.
+</p>
+</div>
+</body>
+</html>

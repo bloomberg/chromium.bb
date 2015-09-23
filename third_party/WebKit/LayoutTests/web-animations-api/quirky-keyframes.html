@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+body {
+  color: blue;
+}
+
+#target {
+  color: green;
+}
+</style>
+
+<body>
+  <div id="target"></div>
+</body>
+
+<script>
+test(function() {
+  var animation = target.animate([{
+    color: '-webkit-text',
+  }, {
+    color: '-webkit-text',
+  }], 1);
+  animation.pause();
+  animation.currentTime = 0;
+  assert_equals(getComputedStyle(target).color, 'rgb(0, 128, 0)');
+}, 'KeyframeEffects do not support quirky values.');
+</script>

@@ -1,0 +1,23 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This test ensures that createMarkup puts an interchange newline on the pasteboard for a selection ending at the end of a block.  Both regions below should be visually identical.
+
+first region (bar and baz are copied):
+| <div>
+|   <div>
+|     "foo"
+|   "bar"
+| "baz"
+
+second region (bar and baz are pasted):
+| "foo"
+| <div>
+|   <div>
+|     "bar"
+|   "baz<#selection-caret>"

@@ -1,0 +1,16 @@
+CONSOLE WARNING: Failed to execute 'play' on 'HTMLMediaElement': API can only be initiated by a user gesture.
+Test that video play() does not work unless a user clicked on the play button.
+
+EVENT(canplaythrough)
+
+* No user gesture initiated
+RUN(video.play())
+EXPECTED (video.paused == 'true') OK
+
+* User gesture initiated
+EVENT(playing)
+RUN(video.pause())
+EVENT(pause)
+EXPECTED (video.paused == 'true') OK
+END OF TEST
+

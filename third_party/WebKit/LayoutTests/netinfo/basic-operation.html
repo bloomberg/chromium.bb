@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+description('Tests the basic operation of NetInfo.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+shouldBeDefined("navigator.connection");
+shouldBeDefined("navigator.connection.type");
+shouldBeDefined("navigator.connection.downlinkMax");
+
+var typeChangeListener = function(e) {
+    shouldBe("typeof connection.type", '"string"');
+    shouldBe('connection.type', 'initialType');
+    shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+    finishJSTest();
+}
+
+var changeListener = function(e) {
+    shouldBe("typeof connection.type", '"string"');
+    shouldBe('connection.type', 'newConnectionType');
+    shouldBe('connection.downlinkMax', 'newDownlinkMax');
+    connection.removeEventListener('change', changeListener);
+    connection.addEventListener('typechange', typeChangeListener);
+	internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+}
+
+connection.addEventListener('change', changeListener);
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+
+</script>
+</body>
+</html>

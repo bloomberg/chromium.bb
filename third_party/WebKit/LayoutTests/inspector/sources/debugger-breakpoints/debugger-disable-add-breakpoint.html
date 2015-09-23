@@ -1,0 +1,92 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    return 0;
+}
+
+var test = function()
+{
+    var testName = InspectorTest.resourceTreeModel.inspectedPageURL();
+    testName = testName.substring(testName.lastIndexOf('/') + 1);
+    InspectorTest.startDebuggerTest(step1);
+    var testSourceFrame;
+    function step1()
+    {
+        InspectorTest.showScriptSource(testName, step2);
+    }
+
+    function step2(sourceFrame)
+    {
+        testSourceFrame = sourceFrame;
+        InspectorTest.addResult("Main resource was shown.");
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        InspectorTest.debuggerModel.disableDebugger();
+    }
+
+    function step3()
+    {
+        InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step3, this);
+        InspectorTest.addResult("Debugger disabled.");
+        InspectorTest.setBreakpoint(testSourceFrame, 8, "", true);
+        InspectorTest.addResult("Breakpoint added");
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        InspectorTest.debuggerModel.enableDebugger();
+    }
+
+    function step4()
+    {
+        InspectorTest.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step4, this);
+        InspectorTest.addResult("Debugger was enabled");
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.resumeExecution(step6);
+    }
+
+    function step6()
+    {
+        InspectorTest.addResult("Disable debugger again");
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, step7, this);
+        InspectorTest.debuggerModel.disableDebugger();
+    }
+
+    function step7()
+    {
+        InspectorTest.addResult("Debugger disabled");
+        var breakpoint = WebInspector.breakpointManager.findBreakpointOnLine(testSourceFrame.uiSourceCode(), 8);
+        breakpoint.remove();
+        InspectorTest.addResult("Breakpoint removed");
+        InspectorTest.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, step8, this);
+        InspectorTest.debuggerModel.enableDebugger();
+    }
+
+    function step8()
+    {
+        InspectorTest.addResult("Debugger enabled");
+        InspectorTest.addResult("Evaluating test function.");
+        InspectorTest.evaluateInPage("testFunction()", step9);
+    }
+
+    function step9()
+    {
+        InspectorTest.addResult("function evaluated without a pause on the breakpoint.")
+        InspectorTest.completeDebuggerTest();
+    }
+};
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that breakpoints are correctly handled while debugger is turned off</a>
+</p>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+
+description('Tests that web-workers have access to NetInfo.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+var worker = new Worker("resources/web-worker.js");
+
+var msg_count = 0;
+
+worker.addEventListener('message', function(e) {
+    if (msg_count == 0) {
+        if (e.data != connection.type + ',' + connection.downlinkMax) {
+            testFailed("Worker type disagrees with main frame.");
+        }
+       internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+    } else if (msg_count == 1) {
+        if (e.data != newConnectionType + ',' + newDownlinkMax)
+            testFailed("Worker switched to wrong connection type.");
+        internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+    } else if (msg_count == 2) {
+        if (e.data != initialType + ',' + initialDownlinkMax)
+            testFailed("Worker did not revert back to initial type.");
+        finishJSTest();
+    }
+    msg_count += 1;
+});
+
+worker.postMessage('kickoff');
+</script>
+</body>
+</html>

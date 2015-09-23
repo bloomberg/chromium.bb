@@ -1,0 +1,20 @@
+Tests the Timeline API instrumentation of a style recalculation event
+
+Test data
+UpdateLayoutTree Properties:
+{
+    data : {
+        beginData : {
+            frame : <string>
+            stackTrace : <object>
+        }
+        elementCount : 2
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "UpdateLayoutTree"
+}
+

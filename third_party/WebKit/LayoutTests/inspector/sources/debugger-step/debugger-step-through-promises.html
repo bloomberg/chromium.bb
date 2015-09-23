@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    Promise.resolve(42).then(
+        function p1()
+        {
+            debugger;
+        }
+    ).then(
+        function p2()
+        {
+            var dummy = window.foo || 1;
+            return dummy;
+        }
+    ).then(
+        function p3()
+        {
+            var dummy = window.foo || 2;
+            return dummy;
+        }
+    ).catch(function(e) {
+        console.error("FAIL: Unexpected exception: " + e);
+    });
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        var actions = [
+            "Print", // debugger; at p1
+            "StepInto", "Print",
+            "StepInto", "Print", // entered p2
+            "StepOver", "Print",
+            "StepOver", "Print",
+            "StepOver", "Print", // entered p3
+            "StepOver", "Print",
+        ];
+        InspectorTest.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests that debugger will step through Promise handlers while not stepping into V8 internal scripts.
+</p>
+</body>
+</html>

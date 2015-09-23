@@ -1,0 +1,16 @@
+Test that causes are correctly generated for various types of events.
+
+
+Running: testTimerInstall
+PASS - record contained Timer installedsetTimeoutFunction @ setTimeoutFunction.js:
+
+Running: testRequestAnimationFrame
+PASS - record contained Animation frame requestedrequestAnimationFrameFunction @ requestAnimationFrameFunction.js:
+
+Running: testStyleRecalc
+PASS - record contained First invalidatedstyleRecalcFunction @ styleRecalcFunction.js:
+
+Running: testLayout
+PASS - record contained Layout forcedlayoutFunction @ layoutFunction.js:
+PASS - record contained First layout invalidationlayoutFunction @ layoutFunction.js:
+

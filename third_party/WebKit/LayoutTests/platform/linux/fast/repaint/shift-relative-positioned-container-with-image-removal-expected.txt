@@ -1,0 +1,37 @@
+{
+  "bounds": [785, 742],
+  "children": [
+    {
+      "bounds": [785, 742],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [58, 241, 489, 537],
+        [58, 142, 489, 537],
+        [8, 191, 769, 642],
+        [8, 191, 769, 642],
+        [8, 92, 769, 642],
+        [8, 92, 769, 642],
+        [8, 92, 769, 99],
+        [8, 92, 732, 94],
+        [0, 742, 785, 99],
+        [0, 0, 785, 841],
+        [0, 0, 785, 742]
+      ],
+      "paintInvalidationClients": [
+        "LayoutIFrame IFRAME id='iframe'",
+        "InlineBox",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutView #document",
+        "LayoutBlockFlow HTML",
+        "LayoutBlockFlow (relative positioned) DIV class='relative'",
+        "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+        "LayoutImage IMG",
+        "LayoutText #text"
+      ]
+    }
+  ]
+}
+

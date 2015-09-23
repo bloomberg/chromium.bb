@@ -1,0 +1,118 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+| <!DOCTYPE html>
+| <html>
+|   <head>
+|     "
+"
+|     <script>
+|       src="../../resources/dump-as-markup.js"
+|     "
+"
+|     <style>
+|       "
+.editing { 
+    border: 2px solid red; 
+    font-size: 24px; 
+}
+.explanation { 
+    border: 2px solid blue; 
+    padding: 12px; 
+    font-size: 24px; 
+    margin-bottom: 24px;
+}
+.scenario { margin-bottom: 16px;}
+.scenario:first-line { font-weight: bold; margin-bottom: 16px;}
+.expected-results:first-line { font-weight: bold }
+"
+|     "
+"
+|   " 
+"
+|   <body>
+|     "
+"
+|     <div>
+|       class="explanation"
+|       "
+"
+|       <div>
+|         class="scenario"
+|         "
+Tests: 
+"
+|         <br>
+|         "
+Smart paste when pasting after a word and before a space and another word.
+"
+|       "
+"
+|       <div>
+|         class="expected-results"
+|         "
+Expected Results:
+"
+|         <br>
+|         "
+A space should be added between the preexisting word and the word that's pasted. No space should be added after the pasted word. It should like this:
+"
+|         <br>
+|         "
+test test test
+"
+|       "
+"
+|     "
+
+"
+|     <div>
+|       contenteditable=""
+|       id="root"
+|       style="word-wrap: break-word; -khtml-nbsp-mode: space; -khtml-line-break: after-white-space;"
+|       "
+"
+|       <div>
+|         class="editing"
+|         id="test"
+|         "
+test test<#selection-caret> test"
+|       "
+"
+|     "
+"
+|     <script>
+|       src="../editing.js"
+|     "
+"
+|     <script>
+|       "
+
+function editingTest() {
+    doubleClickAtSelectionStart();
+    copyCommand();
+    moveSelectionForwardByCharacterCommand();
+    pasteCommand();
+}
+
+runDumpAsTextEditingTest(true);
+"
+|     <ol>
+|       <li>
+|         "execCopyCommand: 
+<div id="test" class="editing">
+test test
+</div>
+"
+|       <li>
+|         "execPasteCommand: 
+<div id="test" class="editing">
+test test test</div>
+"
+|     "
+
+
+"

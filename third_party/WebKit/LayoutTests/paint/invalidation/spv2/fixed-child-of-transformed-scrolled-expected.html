@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script>
+onload = function() {
+  document.getElementById('transformed').scrollTop = 50;
+}
+</script>
+<style>
+#transformed {
+  position: absolute;
+  top: 50px;
+  left: 100px;
+  transform: translateX(0);
+  overflow: scroll;
+  width: 300px;
+  height: 300px;
+}
+#fixed {
+  position: fixed;
+  top: 150px;
+  left: 200px;
+  width: 100px;
+  height: 100px;
+  background-color: green;
+}
+/* to make the transformed container scrollable */
+#content {
+  width: 1000px;
+  height: 1000px;
+}
+</style>
+Tests invalidation of a fixed-position child of a transformed scrolled element.
+Passes if there is a green box at the center of the scrollable area.
+<div id="transformed">
+  <div id="content"></div>
+</div>
+<div id="fixed"></div>

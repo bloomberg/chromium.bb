@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#justifySelfBaseline {
+    justify-self: baseline;
+}
+
+#justifySelfLastBaseline {
+    justify-self: last-baseline;
+}
+
+#justifySelfStretch {
+    justify-self: stretch;
+}
+
+#justifySelfStart {
+    justify-self: start;
+}
+
+#justifySelfEnd {
+    justify-self: end;
+}
+
+#justifySelfCenter {
+    justify-self: center;
+}
+
+#justifySelfSelfStart {
+    justify-self: self-start;
+}
+
+#justifySelfSelfEnd {
+    justify-self: self-end;
+}
+
+#justifySelfLeft {
+    justify-self: left;
+}
+
+#justifySelfRight {
+    justify-self: right;
+}
+
+#justifySelfFlexStart {
+    justify-self: flex-start;
+}
+
+#justifySelfFlexEnd {
+    justify-self: flex-end;
+}
+
+#justifySelfEndTrue {
+    justify-self: end true;
+}
+
+#justifySelfCenterTrue {
+    justify-self: center true;
+}
+
+#justifySelfSelfEndSafe {
+    justify-self: self-end safe;
+}
+
+#justifySelfSelfStartSafe {
+    justify-self: self-start safe;
+}
+
+#justifySelfRightSafe {
+    justify-self: right safe;
+}
+
+#justifySelfLeftTrue {
+    justify-self: left true;
+}
+
+#justifySelfFlexStartTrue {
+    justify-self: flex-start true;
+}
+
+#justifySelfFlexEndSafe {
+    justify-self: flex-end safe;
+}
+</style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<div id="justifySelfBaseline"></div>
+<div id="justifySelfLastBaseline"></div>
+<div id="justifySelfStretch"></div>
+<div id="justifySelfStart"></div>
+<div id="justifySelfEnd"></div>
+<div id="justifySelfCenter"></div>
+<div id="justifySelfSelfStart"></div>
+<div id="justifySelfSelfEnd"></div>
+<div id="justifySelfLeft"></div>
+<div id="justifySelfRight"></div>
+<div id="justifySelfFlexStart"></div>
+<div id="justifySelfFlexEnd"></div>
+
+<div id="justifySelfEndTrue"></div>
+<div id="justifySelfCenterTrue"></div>
+<div id="justifySelfSelfEndSafe"></div>
+<div id="justifySelfSelfStartSafe"></div>
+<div id="justifySelfRightSafe"></div>
+<div id="justifySelfLeftTrue"></div>
+<div id="justifySelfFlexStartTrue"></div>
+<div id="justifySelfFlexEndSafe"></div>
+<script src="resources/alignment-parsing-utils.js"></script>
+<script>
+description('Test that setting and getting justify-self works as expected');
+
+debug("Test getting justify-self set through CSS");
+var justifySelfBaseline = document.getElementById("justifySelfBaseline");
+shouldBe("getComputedStyle(justifySelfBaseline, '').getPropertyValue('justify-self')", "'baseline'");
+
+var justifySelfLastBaseline = document.getElementById("justifySelfLastBaseline");
+shouldBe("getComputedStyle(justifySelfLastBaseline, '').getPropertyValue('justify-self')", "'last-baseline'");
+
+var justifySelfStretch = document.getElementById("justifySelfStretch");
+shouldBe("getComputedStyle(justifySelfStretch, '').getPropertyValue('justify-self')", "'stretch'");
+
+var justifySelfStart = document.getElementById("justifySelfStart");
+shouldBe("getComputedStyle(justifySelfStart, '').getPropertyValue('justify-self')", "'start'");
+
+var justifySelfEnd = document.getElementById("justifySelfEnd");
+shouldBe("getComputedStyle(justifySelfEnd, '').getPropertyValue('justify-self')", "'end'");
+
+var justifySelfCenter = document.getElementById("justifySelfCenter");
+shouldBe("getComputedStyle(justifySelfCenter, '').getPropertyValue('justify-self')", "'center'");
+
+var justifySelfSelfEnd = document.getElementById("justifySelfSelfEnd");
+shouldBe("getComputedStyle(justifySelfSelfEnd, '').getPropertyValue('justify-self')", "'self-end'");
+
+var justifySelfSelfStart = document.getElementById("justifySelfSelfStart");
+shouldBe("getComputedStyle(justifySelfSelfStart, '').getPropertyValue('justify-self')", "'self-start'");
+
+var justifySelfLeft = document.getElementById("justifySelfLeft");
+shouldBe("getComputedStyle(justifySelfLeft, '').getPropertyValue('justify-self')", "'left'");
+
+var justifySelfRight = document.getElementById("justifySelfRight");
+shouldBe("getComputedStyle(justifySelfRight, '').getPropertyValue('justify-self')", "'right'");
+
+var justifySelfFlexStart = document.getElementById("justifySelfFlexStart");
+shouldBe("getComputedStyle(justifySelfFlexStart, '').getPropertyValue('justify-self')", "'flex-start'");
+
+var justifySelfFlexEnd = document.getElementById("justifySelfFlexEnd");
+shouldBe("getComputedStyle(justifySelfFlexEnd, '').getPropertyValue('justify-self')", "'flex-end'");
+
+var justifySelfEndTrue = document.getElementById("justifySelfEndTrue");
+shouldBe("getComputedStyle(justifySelfEndTrue, '').getPropertyValue('justify-self')", "'end true'");
+
+var justifySelfCenterTrue = document.getElementById("justifySelfCenterTrue");
+shouldBe("getComputedStyle(justifySelfCenterTrue, '').getPropertyValue('justify-self')", "'center true'");
+
+var justifySelfSelfEndSafe = document.getElementById("justifySelfSelfEndSafe");
+shouldBe("getComputedStyle(justifySelfSelfEndSafe, '').getPropertyValue('justify-self')", "'self-end safe'");
+
+var justifySelfSelfStartSafe = document.getElementById("justifySelfSelfStartSafe");
+shouldBe("getComputedStyle(justifySelfSelfStartSafe, '').getPropertyValue('justify-self')", "'self-start safe'");
+
+var justifySelfRightSafe = document.getElementById("justifySelfRightSafe");
+shouldBe("getComputedStyle(justifySelfRightSafe, '').getPropertyValue('justify-self')", "'right safe'");
+
+var justifySelfLeftTrue = document.getElementById("justifySelfLeftTrue");
+shouldBe("getComputedStyle(justifySelfLeftTrue, '').getPropertyValue('justify-self')", "'left true'");
+
+var justifySelfFlexStartTrue = document.getElementById("justifySelfFlexStartTrue");
+shouldBe("getComputedStyle(justifySelfFlexStartTrue, '').getPropertyValue('justify-self')", "'flex-start true'");
+
+var justifySelfFlexEndSafe = document.getElementById("justifySelfFlexEndSafe");
+shouldBe("getComputedStyle(justifySelfFlexEndSafe, '').getPropertyValue('justify-self')", "'flex-end safe'");
+
+debug("");
+debug("Test initial value of justify-self through JS");
+element = document.createElement("div");
+document.body.appendChild(element);
+shouldBe("getComputedStyle(element, '').getPropertyValue('justify-self')", "'start'");
+
+debug("");
+debug("Test getting and setting justify-self through JS");
+container = document.createElement("div");
+element = document.createElement("div");
+container.appendChild(element);
+document.body.appendChild(container);
+element.style.justifySelf = "center";
+checkValues(element, "justifySelf", "justify-self",  "center", "center");
+
+element.style.justifySelf = "true start";
+checkValues(element, "justifySelf", "justify-self",  "start true", "start true");
+
+element.style.justifySelf = "flex-end safe";
+checkValues(element, "justifySelf", "justify-self",  "flex-end safe", "flex-end safe");
+
+element.style.justifySelf = "right";
+checkValues(element, "justifySelf", "justify-self",  "right", "right");
+
+element.style.justifySelf = "center";
+checkValues(element, "justifySelf", "justify-self",  "center", "center");
+
+element.style.justifySelf = "self-start";
+checkValues(element, "justifySelf", "justify-self",  "self-start", "self-start");
+
+element.style.justifySelf = "auto";
+checkValues(element, "justifySelf", "justify-self",  "auto", "start");
+
+container.style.display = "flex";
+element.style.justifySelf = "auto";
+checkValues(element, "justifySelf", "justify-self",  "auto", "stretch");
+
+container.style.display = "grid";
+element.style.justifySelf = "auto";
+checkValues(element, "justifySelf", "justify-self",  "auto", "stretch");
+
+element.style.justifySelf = "self-end";
+checkValues(element, "justifySelf", "justify-self",  "self-end", "self-end");
+
+debug("");
+debug("Test bad combinations of justify-self");
+container = document.createElement("div");
+element = document.createElement("div");
+container.appendChild(element);
+document.body.appendChild(container);
+
+checkBadValues(element, "justifySelf", "justify-self",  "true auto");
+checkBadValues(element, "justifySelf", "justify-self",  "auto safe");
+checkBadValues(element, "justifySelf", "justify-self",  "auto left");
+checkBadValues(element, "justifySelf", "justify-self",  "baseline safe");
+checkBadValues(element, "justifySelf", "justify-self",  "baseline center");
+checkBadValues(element, "justifySelf", "justify-self",  "stretch true");
+checkBadValues(element, "justifySelf", "justify-self",  "stretch right");
+checkBadValues(element, "justifySelf", "justify-self",  "true true");
+checkBadValues(element, "justifySelf", "justify-self",  "true safe");
+checkBadValues(element, "justifySelf", "justify-self",  "center start");
+checkBadValues(element, "justifySelf", "justify-self",  "stretch true");
+checkBadValues(element, "justifySelf", "justify-self",  "safe stretch");
+checkBadValues(element, "justifySelf", "justify-self",  "baseline safe");
+checkBadValues(element, "justifySelf", "justify-self",  "true baseline");
+checkBadValues(element, "justifySelf", "justify-self",  "true safe left");
+checkBadValues(element, "justifySelf", "justify-self",  "true left safe");
+checkBadValues(element, "justifySelf", "justify-self",  "left safe true safe");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy start");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy end");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy right true");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy auto");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy stretch");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy");
+checkBadValues(element, "justifySelf", "justify-self",  "legacy left right");
+
+debug("");
+debug("Test the value 'initial'");
+container.style.display = "";
+checkInitialValues(element, "justifySelf", "justify-self", "center", "start");
+
+debug("");
+debug("Test the value 'initial' for grid containers");
+container.style.display = "grid";
+checkInitialValues(element, "justifySelf", "justify-self", "left safe", "stretch");
+
+debug("");
+debug("Test the value 'initial' for flex containers");
+container.style.display = "flex";
+checkInitialValues(element, "justifySelf", "justify-self", "right true", "stretch");
+
+debug("");
+debug("Test the value 'initial' for positioned elements");
+container.style.display = "";
+element.style.position = "absolute";
+checkInitialValues(element, "justifySelf", "justify-self", "left", "stretch");
+
+debug("");
+debug("Test the value 'initial' for positioned elements in grid containers");
+container.style.display = "grid";
+element.style.position = "absolute";
+checkInitialValues(element, "justifySelf", "justify-self", "right", "stretch");
+
+debug("");
+debug("Test the value 'initial' for positioned elements in grid containers");
+container.style.display = "flex";
+element.style.position = "absolute";
+checkInitialValues(element, "justifySelf", "justify-self", "end", "stretch");
+
+debug("");
+debug("Test the value 'inherit'");
+checkInheritValues("justifySelf", "justify-self", "end");
+checkInheritValues("justifySelf", "justify-self", "left safe");
+checkInheritValues("justifySelf", "justify-self", "center true");
+
+</script>
+</body>
+</html>

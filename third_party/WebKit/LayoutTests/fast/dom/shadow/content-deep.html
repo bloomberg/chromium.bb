@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id="sandbox"></div>
+<script>
+description("::content /deep/ should match deep into distributed subtree.");
+
+var shadowStyle = document.createElement('style');
+shadowStyle.innerText = "::content /deep/ #target { color: green; }";
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createShadowRoot(
+            shadowStyle,
+            createDOM('content')),
+        createDOM('div', {'id': 'inner'},
+            createShadowRoot(
+                createDOM('div', {'id': 'target'},
+                    document.createTextNode('This text should be green'))))));
+
+var target = sandbox.querySelector("#inner").shadowRoot.querySelector("#target");
+
+shouldBeEqualToString("getComputedStyle(target).color", "rgb(0, 128, 0)");
+</script>

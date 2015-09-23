@@ -1,0 +1,128 @@
+This tests element.dataset.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS testGet('data-foo', 'foo') is true
+PASS testGet('data-foo-bar', 'fooBar') is true
+PASS testGet('data--', '-') is true
+PASS testGet('data--foo', 'Foo') is true
+PASS testGet('data---foo', '-Foo') is true
+PASS testGet('data---foo--bar', '-Foo-Bar') is true
+PASS testGet('data---foo---bar', '-Foo--Bar') is true
+PASS testGet('data-foo-', 'foo-') is true
+PASS testGet('data-foo--', 'foo--') is true
+PASS testGet('data-Foo', 'foo') is true
+PASS testGet('data-', '') is true
+PASS testGet('data-à', 'à') is true
+PASS testGet('data-1', '1') is true
+PASS testGet('data-01', '01') is true
+PASS testGet('data-zx81', 'zx81') is true
+PASS testGet('data-i4770k', 'i4770k') is true
+PASS testGet('data-r-7', 'r-7') is true
+PASS testGet('data-r-7-k', 'r-7K') is true
+PASS document.body.dataset.nonExisting is undefined.
+
+PASS testIsUndefined('data-022', '22') is true
+PASS testIsUndefined('data-22', '022') is true
+
+PASS matchesNothingInDataset('dataFoo') is true
+
+PASS testSet('foo', 'data-foo') is true
+PASS testSet('fooBar', 'data-foo-bar') is true
+PASS testSet('-', 'data--') is true
+PASS testSet('Foo', 'data--foo') is true
+PASS testSet('-Foo', 'data---foo') is true
+PASS testSet('', 'data-') is true
+PASS testSet('à', 'data-à') is true
+PASS testSet('32', 'data-32') is true
+PASS testSet('0032', 'data-0032') is true
+PASS testSet('i18n', 'data-i18n') is true
+PASS testSet('d2', 'data-d2') is true
+PASS testSet('2d', 'data-2d') is true
+PASS testSet('d-2', 'data-d-2') is true
+PASS testSet('A--S', 'data--a---s') is true
+
+PASS testIsNull('0123', 'data-123') is true
+PASS testIsNull('123', 'data-0123') is true
+
+PASS testSet('-foo', 'dummy') threw exception SyntaxError: Failed to set the '-foo' property on 'DOMStringMap': '-foo' is not a valid property name..
+PASS testSet('foo ', 'dummy') threw exception InvalidCharacterError: Failed to set the 'foo ' property on 'DOMStringMap': 'data-foo ' is not a valid attribute name..
+FAIL testSet('foo豈', 'dummy') should throw InvalidCharacterError: Failed to set the 'foo豈' property on 'DOMStringMap': 'data-foo豈' is not a valid attribute name.. Threw exception InvalidCharacterError: Failed to set the 'fooï¤' property on 'DOMStringMap': 'data-foo豈' is not a valid attribute name..
+
+PASS testDelete('data-foo', 'foo') is true
+PASS testDelete('data-foo-bar', 'fooBar') is true
+PASS testDelete('data--', '-') is true
+PASS testDelete('data--foo', 'Foo') is true
+PASS testDelete('data---foo', '-Foo') is true
+PASS testDelete('data-', '') is true
+PASS testDelete('data-à', 'à') is true
+PASS testDelete('data-33', '33') is true
+PASS testDelete('data-00033', '00033') is true
+PASS testDelete('data-r2', 'r2') is true
+PASS testDelete('data-2r', '2r') is true
+PASS testDelete('data-r-2', 'r-2') is true
+PASS testDelete('data--r-2-', 'R-2-') is true
+PASS testDelete('data--r-2r', 'R-2r') is true
+PASS testDelete('data--r-2-----r', 'R-2----R') is true
+PASS testNativeDelete('foo', true) is true
+
+PASS testDelete('dummy', '-foo') is false
+
+PASS testForIn(['data-foo', 'data-bar', 'data-baz']) is 3
+PASS testForIn(['data-foo', 'data-bar', 'dataFoo']) is 2
+PASS testForIn(['data-foo', 'data-bar', 'style']) is 2
+PASS testForIn(['data-foo', 'data-bar', 'data-']) is 3
+PASS testForIn(['data-foo', 'data-bar', 'data-43']) is 3
+PASS testForIn(['data-foo', 'data-oric1', 'data-bar']) is 3
+PASS testForIn(['data-foo', 'data-oric-1', 'data-bar']) is 3
+PASS testForIn(['data-foo', 'data-oric-1x', 'data-bar']) is 3
+
+Property override:
+PASS Object.prototype.foo = 'on Object'; div.dataset.foo is 'on Object'
+PASS div.dataset['foo'] = 'on dataset'; div.dataset.foo is 'on dataset'
+PASS div.hasAttribute('data-foo') is true
+PASS div.setAttribute('data-foo', 'attr'); div.dataset.foo is 'attr'
+Update the JavaScript property:
+PASS div.dataset.foo = 'updated'; div.dataset.foo is 'updated'
+PASS div.getAttribute('data-foo') is 'updated'
+PASS div.dataset.Bar = 'on dataset'; div.dataset.Bar is 'on dataset'
+PASS div.hasAttribute('data-Bar') is false
+Make the JavaScript property empty:
+PASS div.dataset.foo = ''; div.dataset.foo is ''
+PASS div.getAttribute('data-foo') is ''
+Remove the attribute:
+PASS div.removeAttribute('data-foo'); div.dataset.foo is 'on Object'
+Remove the JavaScript property:
+PASS div.setAttribute('data-foo', 'attr'); delete div.dataset.foo; div.dataset.foo is 'on Object'
+PASS div.hasAttribute('foo') is false
+PASS delete div.dataset.Bar; div.dataset.Bar is undefined.
+PASS Object.prototype[11] = 'on Object'; div.dataset[11] is 'on Object'
+PASS div.dataset['11'] = 'on dataset'; div.dataset[11] is 'on dataset'
+PASS div.hasAttribute('data-11') is true
+PASS div.setAttribute('data-11', 'attr'); div.dataset[11] is 'attr'
+Update the JavaScript property:
+PASS div.dataset[11] = 'updated'; div.dataset[11] is 'updated'
+PASS div.getAttribute('data-11') is 'updated'
+PASS Object.prototype['a500'] = 'on Object'; div.dataset['a500'] is 'on Object'
+PASS div.dataset['a500'] = 'on dataset'; div.dataset['a500'] is 'on dataset'
+PASS div.hasAttribute('data-a500') is true
+PASS div.setAttribute('data-a500', 'attr'); div.dataset['a500'] is 'attr'
+Update the JavaScript property:
+PASS div.dataset['a500'] = 'updated'; div.dataset['a500'] is 'updated'
+PASS div.getAttribute('data-a500') is 'updated'
+PASS Object.prototype['a-500k'] = 'on Object'; div.dataset['a-500k'] is 'on Object'
+PASS div.dataset['a-500k'] = 'on dataset'; div.dataset['a-500k'] is 'on dataset'
+PASS div.hasAttribute('data-a-500k') is true
+PASS div.setAttribute('data-a-500k', 'attr'); div.dataset['a-500k'] is 'attr'
+Update the JavaScript property:
+PASS div.dataset['a-500k'] = 'updated'; div.dataset['a-500k'] is 'updated'
+PASS div.getAttribute('data-a-500k') is 'updated'
+
+Set null:
+PASS d.dataset.foo is 'null'
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

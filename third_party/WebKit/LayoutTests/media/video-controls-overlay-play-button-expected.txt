@@ -1,0 +1,20 @@
+Test that the overlay play button respects the controls attribute
+
+EXPECTED (getComputedStyle(button).display == 'flex') OK
+EVENT(loadeddata)
+RUN(video.play())
+EVENT(play)
+EXPECTED (getComputedStyle(button).display == 'none') OK
+RUN(video.pause())
+EVENT(pause)
+EXPECTED (getComputedStyle(button).display == 'flex') OK
+EXPECTED (getComputedStyle(button).display == 'none') OK
+RUN(video.play())
+EVENT(play)
+EXPECTED (getComputedStyle(button).display == 'none') OK
+RUN(video.pause())
+EVENT(pause)
+EXPECTED (getComputedStyle(button).display == 'none') OK
+EXPECTED (getComputedStyle(button).display == 'flex') OK
+END OF TEST
+

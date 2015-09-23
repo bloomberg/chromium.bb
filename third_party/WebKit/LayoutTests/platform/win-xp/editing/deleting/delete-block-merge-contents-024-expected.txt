@@ -1,0 +1,22 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x56 [border: (2px solid #0000FF)]
+        LayoutText {#text} at (14,14) size 493x27
+          text run at (14,14) width 493: "Should see \"X\" in a yellow box nested in a red box."
+      LayoutBlockFlow {DIV} at (0,80) size 784x62
+        LayoutBlockFlow {DIV} at (0,0) size 784x62 [border: (2px solid #FF0000)]
+          LayoutBlockFlow {DIV} at (14,14) size 756x34 [border: (3px solid #FFFF00)]
+            LayoutBlockFlow {DIV} at (3,3) size 750x28
+              LayoutText {#text} at (0,0) size 17x27
+                text run at (0,0) width 17: "X"
+caret: position 0 of child 0 {#text} of child 0 {DIV} of child 0 {DIV} of child 1 {DIV} of child 3 {DIV} of body

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="./resources/source-map.php"></script>
+<script src="./resources/x-source-map.php"></script>
+<script src="/inspector/inspector-test.js"></script>
+<script src="/inspector/debugger-test.js"></script>
+<script src="/inspector/console-test.js"></script>
+<script>
+
+var test = function()
+{
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.addResult("Reloading...");
+
+        var mainTarget = WebInspector.targetManager.mainTarget();
+        var debuggerModel = WebInspector.DebuggerModel.fromTarget(mainTarget);
+        debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+        function onScriptAdded(event)
+        {
+            var script = event.data;
+            if (!event.data.contentURL().endsWith(".php"))
+                return;
+            InspectorTest.addResult("Added script:");
+            InspectorTest.addResult("  url: " + script.sourceURL);
+            InspectorTest.addResult("  sourceMapUrl: " + script.sourceMapURL);
+        }
+
+        InspectorTest.reloadPage(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.addResult("Finished reload.");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that SourceMap and X-SourceMap http headers are propagated to scripts in the front-end.
+</p>
+</body>
+</html>

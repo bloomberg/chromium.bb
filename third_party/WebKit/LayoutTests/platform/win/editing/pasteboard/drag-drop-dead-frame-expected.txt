@@ -1,0 +1,21 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 627x17
+          text run at (0,0) width 627: "Check you don't crash when your previous drag target frame is deleted <rdar://problem/5049842>"
+      LayoutBlockFlow {DIV} at (0,34) size 784x18
+        LayoutInline {SPAN} at (0,0) size 32x17
+          LayoutText {#text} at (0,0) size 32x17
+            text run at (0,0) width 32: "hello"
+      LayoutBlockFlow (anonymous) at (0,52) size 784x0
+        LayoutText {#text} at (0,0) size 0x0
+selection start: position 0 of child 0 {#text} of child 0 {SPAN} of child 3 {DIV} of body
+selection end:   position 5 of child 0 {#text} of child 0 {SPAN} of child 3 {DIV} of body

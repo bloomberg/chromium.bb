@@ -1,0 +1,1313 @@
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=". "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="NaN\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="fnord\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="E-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".E0\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="e1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+17E-1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="17e+2\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0.35\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1e-10\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=".1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="-47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="+32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" - "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" + "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" . "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" NaN\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" fnord\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" E-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .E0\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" e1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +17E-1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 17e+2\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0.35\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1e-10\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" .1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" -47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" +32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves=" 1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   - "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   + "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   . "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   NaN\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   fnord\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   E-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .E0\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   e1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +17E-1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   17e+2\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0.35\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1e-10\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   .1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   -47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   +32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="   1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t NaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t fnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t ."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t NaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t fnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t - "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t + "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t . "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t NaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t fnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t NaN\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t fnord\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .E0\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +17E-1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 17e+2\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0.35\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1e-10\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t NaN\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t fnord\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t E-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .E0\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t e1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +17E-1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 17e+2\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0.35\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1e-10\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t .1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t -47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t +32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\r\n\t 1241245)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fNaN"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fInfinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-Infinity"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\ffnord"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.-"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+."
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.E0"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+17E-1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f17e+2"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0.35"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1e-10"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.1"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fNaN "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fInfinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-Infinity "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\ffnord "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+ "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.- "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+. "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.E0 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+17E-1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f17e+2 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0.35 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1e-10 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.1 "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fNaN   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fInfinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-Infinity   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\ffnord   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.-   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+.   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.E0   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+17E-1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f17e+2   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0.35   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1e-10   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.1   "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fNaN\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fInfinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-Infinity\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\ffnord\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.-\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+.\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.E0\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+17E-1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f17e+2\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0.35\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1e-10\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.1\r\n\t "
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fNaN\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fInfinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-Infinity\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\ffnord\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fE-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.-\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+.\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.E0\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\fe1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+17E-1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f17e+2\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0.35\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1e-10\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f.1\f"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-47a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+32a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1241245a"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-47e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+32e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1241245e"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-47foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+32foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1241245foo"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f-47)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f0)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f+32)90"
+CONSOLE ERROR: Error: Invalid value for <feTurbulence> attribute numOctaves="\f1241245)90"
+This is a testharness.js-based test.
+PASS Test <integer> valid value: -47 
+PASS Test <integer> valid value: 0 
+PASS Test <integer> valid value: +32 
+PASS Test <integer> valid value: 1241245 
+PASS Test <integer> invalid value: NaN 
+PASS Test <integer> invalid value: Infinity 
+PASS Test <integer> invalid value: -Infinity 
+PASS Test <integer> invalid value: fnord 
+PASS Test <integer> invalid value: E 
+PASS Test <integer> invalid value: e 
+PASS Test <integer> invalid value: e+ 
+PASS Test <integer> invalid value: E- 
+PASS Test <integer> invalid value: - 
+PASS Test <integer> invalid value: + 
+PASS Test <integer> invalid value: -. 
+PASS Test <integer> invalid value: .- 
+PASS Test <integer> invalid value: . 
+PASS Test <integer> invalid value: +. 
+PASS Test <integer> invalid value: .E0 
+PASS Test <integer> invalid value: e1 
+PASS Test <integer> invalid value: +17E-1 
+PASS Test <integer> invalid value: 17e+2 
+PASS Test <integer> invalid value: 0.35 
+PASS Test <integer> invalid value: 1e-10 
+PASS Test <integer> invalid value: .1 
+PASS Test <integer> valid value: -47  
+PASS Test <integer> valid value: 0  
+PASS Test <integer> valid value: +32  
+PASS Test <integer> valid value: 1241245  
+PASS Test <integer> invalid value: NaN  
+PASS Test <integer> invalid value: Infinity  
+PASS Test <integer> invalid value: -Infinity  
+PASS Test <integer> invalid value: fnord  
+PASS Test <integer> invalid value: E  
+PASS Test <integer> invalid value: e  
+PASS Test <integer> invalid value: e+  
+PASS Test <integer> invalid value: E-  
+PASS Test <integer> invalid value: -  
+PASS Test <integer> invalid value: +  
+PASS Test <integer> invalid value: -.  
+PASS Test <integer> invalid value: .-  
+PASS Test <integer> invalid value: .  
+PASS Test <integer> invalid value: +.  
+PASS Test <integer> invalid value: .E0  
+PASS Test <integer> invalid value: e1  
+PASS Test <integer> invalid value: +17E-1  
+PASS Test <integer> invalid value: 17e+2  
+PASS Test <integer> invalid value: 0.35  
+PASS Test <integer> invalid value: 1e-10  
+PASS Test <integer> invalid value: .1  
+PASS Test <integer> valid value: -47    
+PASS Test <integer> valid value: 0    
+PASS Test <integer> valid value: +32    
+PASS Test <integer> valid value: 1241245    
+PASS Test <integer> invalid value: NaN    
+PASS Test <integer> invalid value: Infinity    
+PASS Test <integer> invalid value: -Infinity    
+PASS Test <integer> invalid value: fnord    
+PASS Test <integer> invalid value: E    
+PASS Test <integer> invalid value: e    
+PASS Test <integer> invalid value: e+    
+PASS Test <integer> invalid value: E-    
+PASS Test <integer> invalid value: -    
+PASS Test <integer> invalid value: +    
+PASS Test <integer> invalid value: -.    
+PASS Test <integer> invalid value: .-    
+PASS Test <integer> invalid value: .    
+PASS Test <integer> invalid value: +.    
+PASS Test <integer> invalid value: .E0    
+PASS Test <integer> invalid value: e1    
+PASS Test <integer> invalid value: +17E-1    
+PASS Test <integer> invalid value: 17e+2    
+PASS Test <integer> invalid value: 0.35    
+PASS Test <integer> invalid value: 1e-10    
+PASS Test <integer> invalid value: .1    
+PASS Test <integer> valid value: -47\r\n\t  
+PASS Test <integer> valid value: 0\r\n\t  
+PASS Test <integer> valid value: +32\r\n\t  
+PASS Test <integer> valid value: 1241245\r\n\t  
+PASS Test <integer> invalid value: NaN\r\n\t  
+PASS Test <integer> invalid value: Infinity\r\n\t  
+PASS Test <integer> invalid value: -Infinity\r\n\t  
+PASS Test <integer> invalid value: fnord\r\n\t  
+PASS Test <integer> invalid value: E\r\n\t  
+PASS Test <integer> invalid value: e\r\n\t  
+PASS Test <integer> invalid value: e+\r\n\t  
+PASS Test <integer> invalid value: E-\r\n\t  
+PASS Test <integer> invalid value: -\r\n\t  
+PASS Test <integer> invalid value: +\r\n\t  
+PASS Test <integer> invalid value: -.\r\n\t  
+PASS Test <integer> invalid value: .-\r\n\t  
+PASS Test <integer> invalid value: .\r\n\t  
+PASS Test <integer> invalid value: +.\r\n\t  
+PASS Test <integer> invalid value: .E0\r\n\t  
+PASS Test <integer> invalid value: e1\r\n\t  
+PASS Test <integer> invalid value: +17E-1\r\n\t  
+PASS Test <integer> invalid value: 17e+2\r\n\t  
+PASS Test <integer> invalid value: 0.35\r\n\t  
+PASS Test <integer> invalid value: 1e-10\r\n\t  
+PASS Test <integer> invalid value: .1\r\n\t  
+PASS Test <integer> valid value: -47\f 
+PASS Test <integer> valid value: 0\f 
+PASS Test <integer> valid value: +32\f 
+PASS Test <integer> valid value: 1241245\f 
+PASS Test <integer> invalid value: NaN\f 
+PASS Test <integer> invalid value: Infinity\f 
+PASS Test <integer> invalid value: -Infinity\f 
+PASS Test <integer> invalid value: fnord\f 
+PASS Test <integer> invalid value: E\f 
+PASS Test <integer> invalid value: e\f 
+PASS Test <integer> invalid value: e+\f 
+PASS Test <integer> invalid value: E-\f 
+PASS Test <integer> invalid value: -\f 
+PASS Test <integer> invalid value: +\f 
+PASS Test <integer> invalid value: -.\f 
+PASS Test <integer> invalid value: .-\f 
+PASS Test <integer> invalid value: .\f 
+PASS Test <integer> invalid value: +.\f 
+PASS Test <integer> invalid value: .E0\f 
+PASS Test <integer> invalid value: e1\f 
+PASS Test <integer> invalid value: +17E-1\f 
+PASS Test <integer> invalid value: 17e+2\f 
+PASS Test <integer> invalid value: 0.35\f 
+PASS Test <integer> invalid value: 1e-10\f 
+PASS Test <integer> invalid value: .1\f 
+PASS Test <integer> trailing garbage, value: -47a 
+PASS Test <integer> trailing garbage, value: 0a 
+PASS Test <integer> trailing garbage, value: +32a 
+PASS Test <integer> trailing garbage, value: 1241245a 
+PASS Test <integer> trailing garbage, value: -47e 
+PASS Test <integer> trailing garbage, value: 0e 
+PASS Test <integer> trailing garbage, value: +32e 
+PASS Test <integer> trailing garbage, value: 1241245e 
+PASS Test <integer> trailing garbage, value: -47foo 
+PASS Test <integer> trailing garbage, value: 0foo 
+PASS Test <integer> trailing garbage, value: +32foo 
+PASS Test <integer> trailing garbage, value: 1241245foo 
+PASS Test <integer> trailing garbage, value: -47)90 
+PASS Test <integer> trailing garbage, value: 0)90 
+PASS Test <integer> trailing garbage, value: +32)90 
+PASS Test <integer> trailing garbage, value: 1241245)90 
+PASS Test <integer> valid value:  -47 
+PASS Test <integer> valid value:  0 
+PASS Test <integer> valid value:  +32 
+PASS Test <integer> valid value:  1241245 
+PASS Test <integer> invalid value:  NaN 
+PASS Test <integer> invalid value:  Infinity 
+PASS Test <integer> invalid value:  -Infinity 
+PASS Test <integer> invalid value:  fnord 
+PASS Test <integer> invalid value:  E 
+PASS Test <integer> invalid value:  e 
+PASS Test <integer> invalid value:  e+ 
+PASS Test <integer> invalid value:  E- 
+PASS Test <integer> invalid value:  - 
+PASS Test <integer> invalid value:  + 
+PASS Test <integer> invalid value:  -. 
+PASS Test <integer> invalid value:  .- 
+PASS Test <integer> invalid value:  . 
+PASS Test <integer> invalid value:  +. 
+PASS Test <integer> invalid value:  .E0 
+PASS Test <integer> invalid value:  e1 
+PASS Test <integer> invalid value:  +17E-1 
+PASS Test <integer> invalid value:  17e+2 
+PASS Test <integer> invalid value:  0.35 
+PASS Test <integer> invalid value:  1e-10 
+PASS Test <integer> invalid value:  .1 
+PASS Test <integer> valid value:  -47  
+PASS Test <integer> valid value:  0  
+PASS Test <integer> valid value:  +32  
+PASS Test <integer> valid value:  1241245  
+PASS Test <integer> invalid value:  NaN  
+PASS Test <integer> invalid value:  Infinity  
+PASS Test <integer> invalid value:  -Infinity  
+PASS Test <integer> invalid value:  fnord  
+PASS Test <integer> invalid value:  E  
+PASS Test <integer> invalid value:  e  
+PASS Test <integer> invalid value:  e+  
+PASS Test <integer> invalid value:  E-  
+PASS Test <integer> invalid value:  -  
+PASS Test <integer> invalid value:  +  
+PASS Test <integer> invalid value:  -.  
+PASS Test <integer> invalid value:  .-  
+PASS Test <integer> invalid value:  .  
+PASS Test <integer> invalid value:  +.  
+PASS Test <integer> invalid value:  .E0  
+PASS Test <integer> invalid value:  e1  
+PASS Test <integer> invalid value:  +17E-1  
+PASS Test <integer> invalid value:  17e+2  
+PASS Test <integer> invalid value:  0.35  
+PASS Test <integer> invalid value:  1e-10  
+PASS Test <integer> invalid value:  .1  
+PASS Test <integer> valid value:  -47    
+PASS Test <integer> valid value:  0    
+PASS Test <integer> valid value:  +32    
+PASS Test <integer> valid value:  1241245    
+PASS Test <integer> invalid value:  NaN    
+PASS Test <integer> invalid value:  Infinity    
+PASS Test <integer> invalid value:  -Infinity    
+PASS Test <integer> invalid value:  fnord    
+PASS Test <integer> invalid value:  E    
+PASS Test <integer> invalid value:  e    
+PASS Test <integer> invalid value:  e+    
+PASS Test <integer> invalid value:  E-    
+PASS Test <integer> invalid value:  -    
+PASS Test <integer> invalid value:  +    
+PASS Test <integer> invalid value:  -.    
+PASS Test <integer> invalid value:  .-    
+PASS Test <integer> invalid value:  .    
+PASS Test <integer> invalid value:  +.    
+PASS Test <integer> invalid value:  .E0    
+PASS Test <integer> invalid value:  e1    
+PASS Test <integer> invalid value:  +17E-1    
+PASS Test <integer> invalid value:  17e+2    
+PASS Test <integer> invalid value:  0.35    
+PASS Test <integer> invalid value:  1e-10    
+PASS Test <integer> invalid value:  .1    
+PASS Test <integer> valid value:  -47\r\n\t  
+PASS Test <integer> valid value:  0\r\n\t  
+PASS Test <integer> valid value:  +32\r\n\t  
+PASS Test <integer> valid value:  1241245\r\n\t  
+PASS Test <integer> invalid value:  NaN\r\n\t  
+PASS Test <integer> invalid value:  Infinity\r\n\t  
+PASS Test <integer> invalid value:  -Infinity\r\n\t  
+PASS Test <integer> invalid value:  fnord\r\n\t  
+PASS Test <integer> invalid value:  E\r\n\t  
+PASS Test <integer> invalid value:  e\r\n\t  
+PASS Test <integer> invalid value:  e+\r\n\t  
+PASS Test <integer> invalid value:  E-\r\n\t  
+PASS Test <integer> invalid value:  -\r\n\t  
+PASS Test <integer> invalid value:  +\r\n\t  
+PASS Test <integer> invalid value:  -.\r\n\t  
+PASS Test <integer> invalid value:  .-\r\n\t  
+PASS Test <integer> invalid value:  .\r\n\t  
+PASS Test <integer> invalid value:  +.\r\n\t  
+PASS Test <integer> invalid value:  .E0\r\n\t  
+PASS Test <integer> invalid value:  e1\r\n\t  
+PASS Test <integer> invalid value:  +17E-1\r\n\t  
+PASS Test <integer> invalid value:  17e+2\r\n\t  
+PASS Test <integer> invalid value:  0.35\r\n\t  
+PASS Test <integer> invalid value:  1e-10\r\n\t  
+PASS Test <integer> invalid value:  .1\r\n\t  
+PASS Test <integer> valid value:  -47\f 
+PASS Test <integer> valid value:  0\f 
+PASS Test <integer> valid value:  +32\f 
+PASS Test <integer> valid value:  1241245\f 
+PASS Test <integer> invalid value:  NaN\f 
+PASS Test <integer> invalid value:  Infinity\f 
+PASS Test <integer> invalid value:  -Infinity\f 
+PASS Test <integer> invalid value:  fnord\f 
+PASS Test <integer> invalid value:  E\f 
+PASS Test <integer> invalid value:  e\f 
+PASS Test <integer> invalid value:  e+\f 
+PASS Test <integer> invalid value:  E-\f 
+PASS Test <integer> invalid value:  -\f 
+PASS Test <integer> invalid value:  +\f 
+PASS Test <integer> invalid value:  -.\f 
+PASS Test <integer> invalid value:  .-\f 
+PASS Test <integer> invalid value:  .\f 
+PASS Test <integer> invalid value:  +.\f 
+PASS Test <integer> invalid value:  .E0\f 
+PASS Test <integer> invalid value:  e1\f 
+PASS Test <integer> invalid value:  +17E-1\f 
+PASS Test <integer> invalid value:  17e+2\f 
+PASS Test <integer> invalid value:  0.35\f 
+PASS Test <integer> invalid value:  1e-10\f 
+PASS Test <integer> invalid value:  .1\f 
+PASS Test <integer> trailing garbage, value:  -47a 
+PASS Test <integer> trailing garbage, value:  0a 
+PASS Test <integer> trailing garbage, value:  +32a 
+PASS Test <integer> trailing garbage, value:  1241245a 
+PASS Test <integer> trailing garbage, value:  -47e 
+PASS Test <integer> trailing garbage, value:  0e 
+PASS Test <integer> trailing garbage, value:  +32e 
+PASS Test <integer> trailing garbage, value:  1241245e 
+PASS Test <integer> trailing garbage, value:  -47foo 
+PASS Test <integer> trailing garbage, value:  0foo 
+PASS Test <integer> trailing garbage, value:  +32foo 
+PASS Test <integer> trailing garbage, value:  1241245foo 
+PASS Test <integer> trailing garbage, value:  -47)90 
+PASS Test <integer> trailing garbage, value:  0)90 
+PASS Test <integer> trailing garbage, value:  +32)90 
+PASS Test <integer> trailing garbage, value:  1241245)90 
+PASS Test <integer> valid value:    -47 
+PASS Test <integer> valid value:    0 
+PASS Test <integer> valid value:    +32 
+PASS Test <integer> valid value:    1241245 
+PASS Test <integer> invalid value:    NaN 
+PASS Test <integer> invalid value:    Infinity 
+PASS Test <integer> invalid value:    -Infinity 
+PASS Test <integer> invalid value:    fnord 
+PASS Test <integer> invalid value:    E 
+PASS Test <integer> invalid value:    e 
+PASS Test <integer> invalid value:    e+ 
+PASS Test <integer> invalid value:    E- 
+PASS Test <integer> invalid value:    - 
+PASS Test <integer> invalid value:    + 
+PASS Test <integer> invalid value:    -. 
+PASS Test <integer> invalid value:    .- 
+PASS Test <integer> invalid value:    . 
+PASS Test <integer> invalid value:    +. 
+PASS Test <integer> invalid value:    .E0 
+PASS Test <integer> invalid value:    e1 
+PASS Test <integer> invalid value:    +17E-1 
+PASS Test <integer> invalid value:    17e+2 
+PASS Test <integer> invalid value:    0.35 
+PASS Test <integer> invalid value:    1e-10 
+PASS Test <integer> invalid value:    .1 
+PASS Test <integer> valid value:    -47  
+PASS Test <integer> valid value:    0  
+PASS Test <integer> valid value:    +32  
+PASS Test <integer> valid value:    1241245  
+PASS Test <integer> invalid value:    NaN  
+PASS Test <integer> invalid value:    Infinity  
+PASS Test <integer> invalid value:    -Infinity  
+PASS Test <integer> invalid value:    fnord  
+PASS Test <integer> invalid value:    E  
+PASS Test <integer> invalid value:    e  
+PASS Test <integer> invalid value:    e+  
+PASS Test <integer> invalid value:    E-  
+PASS Test <integer> invalid value:    -  
+PASS Test <integer> invalid value:    +  
+PASS Test <integer> invalid value:    -.  
+PASS Test <integer> invalid value:    .-  
+PASS Test <integer> invalid value:    .  
+PASS Test <integer> invalid value:    +.  
+PASS Test <integer> invalid value:    .E0  
+PASS Test <integer> invalid value:    e1  
+PASS Test <integer> invalid value:    +17E-1  
+PASS Test <integer> invalid value:    17e+2  
+PASS Test <integer> invalid value:    0.35  
+PASS Test <integer> invalid value:    1e-10  
+PASS Test <integer> invalid value:    .1  
+PASS Test <integer> valid value:    -47    
+PASS Test <integer> valid value:    0    
+PASS Test <integer> valid value:    +32    
+PASS Test <integer> valid value:    1241245    
+PASS Test <integer> invalid value:    NaN    
+PASS Test <integer> invalid value:    Infinity    
+PASS Test <integer> invalid value:    -Infinity    
+PASS Test <integer> invalid value:    fnord    
+PASS Test <integer> invalid value:    E    
+PASS Test <integer> invalid value:    e    
+PASS Test <integer> invalid value:    e+    
+PASS Test <integer> invalid value:    E-    
+PASS Test <integer> invalid value:    -    
+PASS Test <integer> invalid value:    +    
+PASS Test <integer> invalid value:    -.    
+PASS Test <integer> invalid value:    .-    
+PASS Test <integer> invalid value:    .    
+PASS Test <integer> invalid value:    +.    
+PASS Test <integer> invalid value:    .E0    
+PASS Test <integer> invalid value:    e1    
+PASS Test <integer> invalid value:    +17E-1    
+PASS Test <integer> invalid value:    17e+2    
+PASS Test <integer> invalid value:    0.35    
+PASS Test <integer> invalid value:    1e-10    
+PASS Test <integer> invalid value:    .1    
+PASS Test <integer> valid value:    -47\r\n\t  
+PASS Test <integer> valid value:    0\r\n\t  
+PASS Test <integer> valid value:    +32\r\n\t  
+PASS Test <integer> valid value:    1241245\r\n\t  
+PASS Test <integer> invalid value:    NaN\r\n\t  
+PASS Test <integer> invalid value:    Infinity\r\n\t  
+PASS Test <integer> invalid value:    -Infinity\r\n\t  
+PASS Test <integer> invalid value:    fnord\r\n\t  
+PASS Test <integer> invalid value:    E\r\n\t  
+PASS Test <integer> invalid value:    e\r\n\t  
+PASS Test <integer> invalid value:    e+\r\n\t  
+PASS Test <integer> invalid value:    E-\r\n\t  
+PASS Test <integer> invalid value:    -\r\n\t  
+PASS Test <integer> invalid value:    +\r\n\t  
+PASS Test <integer> invalid value:    -.\r\n\t  
+PASS Test <integer> invalid value:    .-\r\n\t  
+PASS Test <integer> invalid value:    .\r\n\t  
+PASS Test <integer> invalid value:    +.\r\n\t  
+PASS Test <integer> invalid value:    .E0\r\n\t  
+PASS Test <integer> invalid value:    e1\r\n\t  
+PASS Test <integer> invalid value:    +17E-1\r\n\t  
+PASS Test <integer> invalid value:    17e+2\r\n\t  
+PASS Test <integer> invalid value:    0.35\r\n\t  
+PASS Test <integer> invalid value:    1e-10\r\n\t  
+PASS Test <integer> invalid value:    .1\r\n\t  
+PASS Test <integer> valid value:    -47\f 
+PASS Test <integer> valid value:    0\f 
+PASS Test <integer> valid value:    +32\f 
+PASS Test <integer> valid value:    1241245\f 
+PASS Test <integer> invalid value:    NaN\f 
+PASS Test <integer> invalid value:    Infinity\f 
+PASS Test <integer> invalid value:    -Infinity\f 
+PASS Test <integer> invalid value:    fnord\f 
+PASS Test <integer> invalid value:    E\f 
+PASS Test <integer> invalid value:    e\f 
+PASS Test <integer> invalid value:    e+\f 
+PASS Test <integer> invalid value:    E-\f 
+PASS Test <integer> invalid value:    -\f 
+PASS Test <integer> invalid value:    +\f 
+PASS Test <integer> invalid value:    -.\f 
+PASS Test <integer> invalid value:    .-\f 
+PASS Test <integer> invalid value:    .\f 
+PASS Test <integer> invalid value:    +.\f 
+PASS Test <integer> invalid value:    .E0\f 
+PASS Test <integer> invalid value:    e1\f 
+PASS Test <integer> invalid value:    +17E-1\f 
+PASS Test <integer> invalid value:    17e+2\f 
+PASS Test <integer> invalid value:    0.35\f 
+PASS Test <integer> invalid value:    1e-10\f 
+PASS Test <integer> invalid value:    .1\f 
+PASS Test <integer> trailing garbage, value:    -47a 
+PASS Test <integer> trailing garbage, value:    0a 
+PASS Test <integer> trailing garbage, value:    +32a 
+PASS Test <integer> trailing garbage, value:    1241245a 
+PASS Test <integer> trailing garbage, value:    -47e 
+PASS Test <integer> trailing garbage, value:    0e 
+PASS Test <integer> trailing garbage, value:    +32e 
+PASS Test <integer> trailing garbage, value:    1241245e 
+PASS Test <integer> trailing garbage, value:    -47foo 
+PASS Test <integer> trailing garbage, value:    0foo 
+PASS Test <integer> trailing garbage, value:    +32foo 
+PASS Test <integer> trailing garbage, value:    1241245foo 
+PASS Test <integer> trailing garbage, value:    -47)90 
+PASS Test <integer> trailing garbage, value:    0)90 
+PASS Test <integer> trailing garbage, value:    +32)90 
+PASS Test <integer> trailing garbage, value:    1241245)90 
+PASS Test <integer> valid value: \r\n\t -47 
+PASS Test <integer> valid value: \r\n\t 0 
+PASS Test <integer> valid value: \r\n\t +32 
+PASS Test <integer> valid value: \r\n\t 1241245 
+PASS Test <integer> invalid value: \r\n\t NaN 
+PASS Test <integer> invalid value: \r\n\t Infinity 
+PASS Test <integer> invalid value: \r\n\t -Infinity 
+PASS Test <integer> invalid value: \r\n\t fnord 
+PASS Test <integer> invalid value: \r\n\t E 
+PASS Test <integer> invalid value: \r\n\t e 
+PASS Test <integer> invalid value: \r\n\t e+ 
+PASS Test <integer> invalid value: \r\n\t E- 
+PASS Test <integer> invalid value: \r\n\t - 
+PASS Test <integer> invalid value: \r\n\t + 
+PASS Test <integer> invalid value: \r\n\t -. 
+PASS Test <integer> invalid value: \r\n\t .- 
+PASS Test <integer> invalid value: \r\n\t . 
+PASS Test <integer> invalid value: \r\n\t +. 
+PASS Test <integer> invalid value: \r\n\t .E0 
+PASS Test <integer> invalid value: \r\n\t e1 
+PASS Test <integer> invalid value: \r\n\t +17E-1 
+PASS Test <integer> invalid value: \r\n\t 17e+2 
+PASS Test <integer> invalid value: \r\n\t 0.35 
+PASS Test <integer> invalid value: \r\n\t 1e-10 
+PASS Test <integer> invalid value: \r\n\t .1 
+PASS Test <integer> valid value: \r\n\t -47  
+PASS Test <integer> valid value: \r\n\t 0  
+PASS Test <integer> valid value: \r\n\t +32  
+PASS Test <integer> valid value: \r\n\t 1241245  
+PASS Test <integer> invalid value: \r\n\t NaN  
+PASS Test <integer> invalid value: \r\n\t Infinity  
+PASS Test <integer> invalid value: \r\n\t -Infinity  
+PASS Test <integer> invalid value: \r\n\t fnord  
+PASS Test <integer> invalid value: \r\n\t E  
+PASS Test <integer> invalid value: \r\n\t e  
+PASS Test <integer> invalid value: \r\n\t e+  
+PASS Test <integer> invalid value: \r\n\t E-  
+PASS Test <integer> invalid value: \r\n\t -  
+PASS Test <integer> invalid value: \r\n\t +  
+PASS Test <integer> invalid value: \r\n\t -.  
+PASS Test <integer> invalid value: \r\n\t .-  
+PASS Test <integer> invalid value: \r\n\t .  
+PASS Test <integer> invalid value: \r\n\t +.  
+PASS Test <integer> invalid value: \r\n\t .E0  
+PASS Test <integer> invalid value: \r\n\t e1  
+PASS Test <integer> invalid value: \r\n\t +17E-1  
+PASS Test <integer> invalid value: \r\n\t 17e+2  
+PASS Test <integer> invalid value: \r\n\t 0.35  
+PASS Test <integer> invalid value: \r\n\t 1e-10  
+PASS Test <integer> invalid value: \r\n\t .1  
+PASS Test <integer> valid value: \r\n\t -47    
+PASS Test <integer> valid value: \r\n\t 0    
+PASS Test <integer> valid value: \r\n\t +32    
+PASS Test <integer> valid value: \r\n\t 1241245    
+PASS Test <integer> invalid value: \r\n\t NaN    
+PASS Test <integer> invalid value: \r\n\t Infinity    
+PASS Test <integer> invalid value: \r\n\t -Infinity    
+PASS Test <integer> invalid value: \r\n\t fnord    
+PASS Test <integer> invalid value: \r\n\t E    
+PASS Test <integer> invalid value: \r\n\t e    
+PASS Test <integer> invalid value: \r\n\t e+    
+PASS Test <integer> invalid value: \r\n\t E-    
+PASS Test <integer> invalid value: \r\n\t -    
+PASS Test <integer> invalid value: \r\n\t +    
+PASS Test <integer> invalid value: \r\n\t -.    
+PASS Test <integer> invalid value: \r\n\t .-    
+PASS Test <integer> invalid value: \r\n\t .    
+PASS Test <integer> invalid value: \r\n\t +.    
+PASS Test <integer> invalid value: \r\n\t .E0    
+PASS Test <integer> invalid value: \r\n\t e1    
+PASS Test <integer> invalid value: \r\n\t +17E-1    
+PASS Test <integer> invalid value: \r\n\t 17e+2    
+PASS Test <integer> invalid value: \r\n\t 0.35    
+PASS Test <integer> invalid value: \r\n\t 1e-10    
+PASS Test <integer> invalid value: \r\n\t .1    
+PASS Test <integer> valid value: \r\n\t -47\r\n\t  
+PASS Test <integer> valid value: \r\n\t 0\r\n\t  
+PASS Test <integer> valid value: \r\n\t +32\r\n\t  
+PASS Test <integer> valid value: \r\n\t 1241245\r\n\t  
+PASS Test <integer> invalid value: \r\n\t NaN\r\n\t  
+PASS Test <integer> invalid value: \r\n\t Infinity\r\n\t  
+PASS Test <integer> invalid value: \r\n\t -Infinity\r\n\t  
+PASS Test <integer> invalid value: \r\n\t fnord\r\n\t  
+PASS Test <integer> invalid value: \r\n\t E\r\n\t  
+PASS Test <integer> invalid value: \r\n\t e\r\n\t  
+PASS Test <integer> invalid value: \r\n\t e+\r\n\t  
+PASS Test <integer> invalid value: \r\n\t E-\r\n\t  
+PASS Test <integer> invalid value: \r\n\t -\r\n\t  
+PASS Test <integer> invalid value: \r\n\t +\r\n\t  
+PASS Test <integer> invalid value: \r\n\t -.\r\n\t  
+PASS Test <integer> invalid value: \r\n\t .-\r\n\t  
+PASS Test <integer> invalid value: \r\n\t .\r\n\t  
+PASS Test <integer> invalid value: \r\n\t +.\r\n\t  
+PASS Test <integer> invalid value: \r\n\t .E0\r\n\t  
+PASS Test <integer> invalid value: \r\n\t e1\r\n\t  
+PASS Test <integer> invalid value: \r\n\t +17E-1\r\n\t  
+PASS Test <integer> invalid value: \r\n\t 17e+2\r\n\t  
+PASS Test <integer> invalid value: \r\n\t 0.35\r\n\t  
+PASS Test <integer> invalid value: \r\n\t 1e-10\r\n\t  
+PASS Test <integer> invalid value: \r\n\t .1\r\n\t  
+PASS Test <integer> valid value: \r\n\t -47\f 
+PASS Test <integer> valid value: \r\n\t 0\f 
+PASS Test <integer> valid value: \r\n\t +32\f 
+PASS Test <integer> valid value: \r\n\t 1241245\f 
+PASS Test <integer> invalid value: \r\n\t NaN\f 
+PASS Test <integer> invalid value: \r\n\t Infinity\f 
+PASS Test <integer> invalid value: \r\n\t -Infinity\f 
+PASS Test <integer> invalid value: \r\n\t fnord\f 
+PASS Test <integer> invalid value: \r\n\t E\f 
+PASS Test <integer> invalid value: \r\n\t e\f 
+PASS Test <integer> invalid value: \r\n\t e+\f 
+PASS Test <integer> invalid value: \r\n\t E-\f 
+PASS Test <integer> invalid value: \r\n\t -\f 
+PASS Test <integer> invalid value: \r\n\t +\f 
+PASS Test <integer> invalid value: \r\n\t -.\f 
+PASS Test <integer> invalid value: \r\n\t .-\f 
+PASS Test <integer> invalid value: \r\n\t .\f 
+PASS Test <integer> invalid value: \r\n\t +.\f 
+PASS Test <integer> invalid value: \r\n\t .E0\f 
+PASS Test <integer> invalid value: \r\n\t e1\f 
+PASS Test <integer> invalid value: \r\n\t +17E-1\f 
+PASS Test <integer> invalid value: \r\n\t 17e+2\f 
+PASS Test <integer> invalid value: \r\n\t 0.35\f 
+PASS Test <integer> invalid value: \r\n\t 1e-10\f 
+PASS Test <integer> invalid value: \r\n\t .1\f 
+PASS Test <integer> trailing garbage, value: \r\n\t -47a 
+PASS Test <integer> trailing garbage, value: \r\n\t 0a 
+PASS Test <integer> trailing garbage, value: \r\n\t +32a 
+PASS Test <integer> trailing garbage, value: \r\n\t 1241245a 
+PASS Test <integer> trailing garbage, value: \r\n\t -47e 
+PASS Test <integer> trailing garbage, value: \r\n\t 0e 
+PASS Test <integer> trailing garbage, value: \r\n\t +32e 
+PASS Test <integer> trailing garbage, value: \r\n\t 1241245e 
+PASS Test <integer> trailing garbage, value: \r\n\t -47foo 
+PASS Test <integer> trailing garbage, value: \r\n\t 0foo 
+PASS Test <integer> trailing garbage, value: \r\n\t +32foo 
+PASS Test <integer> trailing garbage, value: \r\n\t 1241245foo 
+PASS Test <integer> trailing garbage, value: \r\n\t -47)90 
+PASS Test <integer> trailing garbage, value: \r\n\t 0)90 
+PASS Test <integer> trailing garbage, value: \r\n\t +32)90 
+PASS Test <integer> trailing garbage, value: \r\n\t 1241245)90 
+PASS Test <integer> valid value: \f-47 
+PASS Test <integer> valid value: \f0 
+PASS Test <integer> valid value: \f+32 
+PASS Test <integer> valid value: \f1241245 
+PASS Test <integer> invalid value: \fNaN 
+PASS Test <integer> invalid value: \fInfinity 
+PASS Test <integer> invalid value: \f-Infinity 
+PASS Test <integer> invalid value: \ffnord 
+PASS Test <integer> invalid value: \fE 
+PASS Test <integer> invalid value: \fe 
+PASS Test <integer> invalid value: \fe+ 
+PASS Test <integer> invalid value: \fE- 
+PASS Test <integer> invalid value: \f- 
+PASS Test <integer> invalid value: \f+ 
+PASS Test <integer> invalid value: \f-. 
+PASS Test <integer> invalid value: \f.- 
+PASS Test <integer> invalid value: \f. 
+PASS Test <integer> invalid value: \f+. 
+PASS Test <integer> invalid value: \f.E0 
+PASS Test <integer> invalid value: \fe1 
+PASS Test <integer> invalid value: \f+17E-1 
+PASS Test <integer> invalid value: \f17e+2 
+PASS Test <integer> invalid value: \f0.35 
+PASS Test <integer> invalid value: \f1e-10 
+PASS Test <integer> invalid value: \f.1 
+PASS Test <integer> valid value: \f-47  
+PASS Test <integer> valid value: \f0  
+PASS Test <integer> valid value: \f+32  
+PASS Test <integer> valid value: \f1241245  
+PASS Test <integer> invalid value: \fNaN  
+PASS Test <integer> invalid value: \fInfinity  
+PASS Test <integer> invalid value: \f-Infinity  
+PASS Test <integer> invalid value: \ffnord  
+PASS Test <integer> invalid value: \fE  
+PASS Test <integer> invalid value: \fe  
+PASS Test <integer> invalid value: \fe+  
+PASS Test <integer> invalid value: \fE-  
+PASS Test <integer> invalid value: \f-  
+PASS Test <integer> invalid value: \f+  
+PASS Test <integer> invalid value: \f-.  
+PASS Test <integer> invalid value: \f.-  
+PASS Test <integer> invalid value: \f.  
+PASS Test <integer> invalid value: \f+.  
+PASS Test <integer> invalid value: \f.E0  
+PASS Test <integer> invalid value: \fe1  
+PASS Test <integer> invalid value: \f+17E-1  
+PASS Test <integer> invalid value: \f17e+2  
+PASS Test <integer> invalid value: \f0.35  
+PASS Test <integer> invalid value: \f1e-10  
+PASS Test <integer> invalid value: \f.1  
+PASS Test <integer> valid value: \f-47    
+PASS Test <integer> valid value: \f0    
+PASS Test <integer> valid value: \f+32    
+PASS Test <integer> valid value: \f1241245    
+PASS Test <integer> invalid value: \fNaN    
+PASS Test <integer> invalid value: \fInfinity    
+PASS Test <integer> invalid value: \f-Infinity    
+PASS Test <integer> invalid value: \ffnord    
+PASS Test <integer> invalid value: \fE    
+PASS Test <integer> invalid value: \fe    
+PASS Test <integer> invalid value: \fe+    
+PASS Test <integer> invalid value: \fE-    
+PASS Test <integer> invalid value: \f-    
+PASS Test <integer> invalid value: \f+    
+PASS Test <integer> invalid value: \f-.    
+PASS Test <integer> invalid value: \f.-    
+PASS Test <integer> invalid value: \f.    
+PASS Test <integer> invalid value: \f+.    
+PASS Test <integer> invalid value: \f.E0    
+PASS Test <integer> invalid value: \fe1    
+PASS Test <integer> invalid value: \f+17E-1    
+PASS Test <integer> invalid value: \f17e+2    
+PASS Test <integer> invalid value: \f0.35    
+PASS Test <integer> invalid value: \f1e-10    
+PASS Test <integer> invalid value: \f.1    
+PASS Test <integer> valid value: \f-47\r\n\t  
+PASS Test <integer> valid value: \f0\r\n\t  
+PASS Test <integer> valid value: \f+32\r\n\t  
+PASS Test <integer> valid value: \f1241245\r\n\t  
+PASS Test <integer> invalid value: \fNaN\r\n\t  
+PASS Test <integer> invalid value: \fInfinity\r\n\t  
+PASS Test <integer> invalid value: \f-Infinity\r\n\t  
+PASS Test <integer> invalid value: \ffnord\r\n\t  
+PASS Test <integer> invalid value: \fE\r\n\t  
+PASS Test <integer> invalid value: \fe\r\n\t  
+PASS Test <integer> invalid value: \fe+\r\n\t  
+PASS Test <integer> invalid value: \fE-\r\n\t  
+PASS Test <integer> invalid value: \f-\r\n\t  
+PASS Test <integer> invalid value: \f+\r\n\t  
+PASS Test <integer> invalid value: \f-.\r\n\t  
+PASS Test <integer> invalid value: \f.-\r\n\t  
+PASS Test <integer> invalid value: \f.\r\n\t  
+PASS Test <integer> invalid value: \f+.\r\n\t  
+PASS Test <integer> invalid value: \f.E0\r\n\t  
+PASS Test <integer> invalid value: \fe1\r\n\t  
+PASS Test <integer> invalid value: \f+17E-1\r\n\t  
+PASS Test <integer> invalid value: \f17e+2\r\n\t  
+PASS Test <integer> invalid value: \f0.35\r\n\t  
+PASS Test <integer> invalid value: \f1e-10\r\n\t  
+PASS Test <integer> invalid value: \f.1\r\n\t  
+PASS Test <integer> valid value: \f-47\f 
+PASS Test <integer> valid value: \f0\f 
+PASS Test <integer> valid value: \f+32\f 
+PASS Test <integer> valid value: \f1241245\f 
+PASS Test <integer> invalid value: \fNaN\f 
+PASS Test <integer> invalid value: \fInfinity\f 
+PASS Test <integer> invalid value: \f-Infinity\f 
+PASS Test <integer> invalid value: \ffnord\f 
+PASS Test <integer> invalid value: \fE\f 
+PASS Test <integer> invalid value: \fe\f 
+PASS Test <integer> invalid value: \fe+\f 
+PASS Test <integer> invalid value: \fE-\f 
+PASS Test <integer> invalid value: \f-\f 
+PASS Test <integer> invalid value: \f+\f 
+PASS Test <integer> invalid value: \f-.\f 
+PASS Test <integer> invalid value: \f.-\f 
+PASS Test <integer> invalid value: \f.\f 
+PASS Test <integer> invalid value: \f+.\f 
+PASS Test <integer> invalid value: \f.E0\f 
+PASS Test <integer> invalid value: \fe1\f 
+PASS Test <integer> invalid value: \f+17E-1\f 
+PASS Test <integer> invalid value: \f17e+2\f 
+PASS Test <integer> invalid value: \f0.35\f 
+PASS Test <integer> invalid value: \f1e-10\f 
+PASS Test <integer> invalid value: \f.1\f 
+PASS Test <integer> trailing garbage, value: \f-47a 
+PASS Test <integer> trailing garbage, value: \f0a 
+PASS Test <integer> trailing garbage, value: \f+32a 
+PASS Test <integer> trailing garbage, value: \f1241245a 
+PASS Test <integer> trailing garbage, value: \f-47e 
+PASS Test <integer> trailing garbage, value: \f0e 
+PASS Test <integer> trailing garbage, value: \f+32e 
+PASS Test <integer> trailing garbage, value: \f1241245e 
+PASS Test <integer> trailing garbage, value: \f-47foo 
+PASS Test <integer> trailing garbage, value: \f0foo 
+PASS Test <integer> trailing garbage, value: \f+32foo 
+PASS Test <integer> trailing garbage, value: \f1241245foo 
+PASS Test <integer> trailing garbage, value: \f-47)90 
+PASS Test <integer> trailing garbage, value: \f0)90 
+PASS Test <integer> trailing garbage, value: \f+32)90 
+PASS Test <integer> trailing garbage, value: \f1241245)90 
+Harness: the test ran to completion.
+

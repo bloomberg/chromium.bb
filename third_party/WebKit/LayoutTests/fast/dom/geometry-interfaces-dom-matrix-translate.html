@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMMatrix translate</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<script>
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  var result = matrix.translate(2, 3);
+  assert_true(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+}, "DOMMatrix.translate(tx, ty)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  matrix.translateSelf(2, 3);
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
+  var result = matrix.translate(4, 2);
+  assert_true(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 6, 5, 0, 1 ]);
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
+}, "DOMMatrix.translate(tx, ty) with non-identity");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  var result = matrix.translateSelf(4, 2);
+  assert_true(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 0, 1 ]);
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 0, 1 ]);
+}, "DOMMatrix.translateSelf(tx, ty)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  var result = matrix.translate(2, 3, 4);
+  assert_false(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 4, 1 ]);
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+}, "DOMMatrix.translate(tx, ty, tz)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  matrix.translateSelf(2, 3);
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
+  var result = matrix.translate(4, 2, 3);
+  assert_false(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 6, 5, 3, 1 ]);
+  assert_true(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 3, 0, 1 ]);
+}, "DOMMatrix.translate(tx, ty, tz) with non-identity");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 ]);
+  var result = matrix.translateSelf(4, 2, 3);
+  assert_false(result.is2D);
+  assert_false(result.isIdentity);
+  assert_array_equals(result.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 3, 1 ]);
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 4, 2, 3, 1 ]);
+}, "DOMMatrix.translateSelf(tx, ty, tz)");
+
+test(function() {
+  var matrix = new DOMMatrix();
+  assert_true(matrix.is2D);
+  assert_true(matrix.isIdentity);
+  matrix.m14 = 2;
+  matrix.m24 = 3;
+  matrix.m34 = 4;
+  matrix.m44 = 7;
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 4, 0, 0, 0, 7 ]);
+  matrix.translateSelf(7, -8, 2);
+  assert_false(matrix.is2D);
+  assert_false(matrix.isIdentity);
+  assert_array_equals(matrix.toFloat64Array(), [ 1, 0, 0, 2, 0, 1, 0, 3, 0, 0, 1, 4, 7, -8, 2, 5 ]);
+}, "DOMMatrix.translateSelf(tx, ty, tz) Homogeneous Coordinates");
+
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x125
+        LayoutBlockFlow {DIV} at (0,0) size 96x42 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,3) size 57x17
+            text run at (3,3) width 57: "a. b. "
+          LayoutInline {SPAN} at (0,0) size 5x17
+            LayoutText {#text} at (59,3) size 5x17
+              text run at (59,3) width 5: "i"
+          LayoutText {#text} at (63,3) size 90x35
+            text run at (63,3) width 30: "\x{306F}"
+            text run at (3,21) width 56: "xxxxxxx"
+        LayoutBlockFlow {DIV} at (0,50) size 96x42 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,3) size 90x35
+            text run at (3,3) width 90: "a. b. i\x{306F}"
+            text run at (3,21) width 56: "xxxxxxx"
+        LayoutBlockFlow {DIV} at (0,100) size 96x25 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,4) size 216x17
+            text run at (3,4) width 216: "xxxxxxxxxxxxxxxxxxxxx\x{FF08}\x{624B}\x{FF09}"
+      LayoutBlockFlow {DIV} at (0,133) size 784x125
+        LayoutBlockFlow {DIV} at (0,0) size 96x42 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,3) size 57x17
+            text run at (3,3) width 57: "a. b. "
+          LayoutInline {SPAN} at (0,0) size 5x17
+            LayoutText {#text} at (59,3) size 5x17
+              text run at (59,3) width 5: "i"
+          LayoutText {#text} at (63,3) size 90x35
+            text run at (63,3) width 30: "\x{306F}"
+            text run at (3,21) width 56: "xxxxxxx"
+        LayoutBlockFlow {DIV} at (0,50) size 96x42 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,3) size 90x35
+            text run at (3,3) width 90: "a. b. i\x{306F}"
+            text run at (3,21) width 56: "xxxxxxx"
+        LayoutBlockFlow {DIV} at (0,100) size 96x25 [border: (3px solid #000000)]
+          LayoutText {#text} at (3,4) size 216x17
+            text run at (3,4) width 216: "xxxxxxxxxxxxxxxxxxxxx\x{FF08}\x{624B}\x{FF09}"

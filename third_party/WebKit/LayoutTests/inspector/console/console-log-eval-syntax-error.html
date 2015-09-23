@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function foo()
+{
+    eval("}");
+}
+function boo()
+{
+    eval("\n}\n//# sourceURL=boo.js");
+}
+</script>
+<script>
+function test()
+{
+    InspectorTest.evaluateInPage("setTimeout(foo, 0);", InspectorTest.waitUntilMessageReceived.bind(this, step2));
+
+    function step2()
+    {
+        InspectorTest.evaluateInPage("setTimeout(boo, 0);", InspectorTest.waitUntilMessageReceived.bind(this, step3));
+    }
+
+    function step3()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that syntax errors in eval are logged into console, contains correct link and doesn't cause browser crash.
+</p>
+</body>
+</html>

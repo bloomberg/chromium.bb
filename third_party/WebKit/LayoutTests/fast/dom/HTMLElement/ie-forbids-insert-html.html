@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+    <script>
+        description("This tests that 'insertText' and friends match IE's behavior on certain element types.");
+
+        // List taken from HTMLElement::isForbidsInsertHTML. There's no spec for this, obviously.
+        var types = ['area', 'base', 'basefont', 'br', 'col', 'embed', 'frame', 'hr', 'image', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
+
+        types.forEach(function(type) {
+            shouldThrow("document.createElement('" + type + "').innerText = 'Throw!';");
+            shouldThrow("document.createElement('" + type + "').outerText = 'Throw!';");
+        });
+    </script>
+</body>
+</html>

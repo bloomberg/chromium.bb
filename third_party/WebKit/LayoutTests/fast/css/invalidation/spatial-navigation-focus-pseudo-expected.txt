@@ -1,0 +1,19 @@
+Use descendant invalidation set in the presence of an :-internal-spatial-navigation-focus pseudo class.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+This test relies on the bug (crbug.com/432436) that internal pseudo classes are being
+exposed to the extent that they are not dropped, but in the case of :-internal-spatial-navigation-focus,
+never matched. If the mentioned bug is fixed this test will start failing. When that happens,
+we need to either add the possibility to use internal css features in author style for tests,
+support injecting UA style for tests, or drop this test.
+
+PASS getComputedStyle(b).backgroundColor is transparent
+PASS internals.updateStyleAndReturnAffectedElementCount() is 1
+PASS getComputedStyle(b).backgroundColor is green
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+

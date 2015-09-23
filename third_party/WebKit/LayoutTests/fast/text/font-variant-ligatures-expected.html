@@ -1,0 +1,28 @@
+<style>
+    @font-face {
+        font-family: megalopolis;
+        src: url(../../third_party/MEgalopolis/MEgalopolisExtra.woff) format("woff");
+    }
+    @font-face {
+        font-family: libertine;
+        src: url(../../third_party/Libertine/LinLibertine_R.woff) format("woff");
+    }
+    body { font-size: 36px; font-family: megalopolis, 'DejaVu Sans', Times; font-kerning: none; }
+    .ligatures { text-rendering: optimizelegibility; }
+    .dlig { -webkit-font-feature-settings: "dlig" 1; }
+    .hlig { -webkit-font-feature-settings: "hlig" 1; }
+</style>
+<body>
+    <div>file</div>
+    <div>file</div>
+    <div class="ligatures">file</div>
+    <div>file</div>
+    <div class="ligatures">file</div>
+    <div class="ligatures">&#xfb01;le</div>
+    <div>ABRACADABRA</div>
+    <div class="ligatures dlig">ABRACADABRA</div>
+    <div style="font-family: libertine">
+        <div>activist</div>
+        <div class="hlig">activist</div>
+    </div>
+</body>

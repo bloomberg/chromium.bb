@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<style>
+body {
+    background-image: linear-gradient(red, blue);
+    background-attachment: fixed;
+    margin: 0;
+}
+</style>
+<script>
+if (window.testRunner)
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+
+window.onload = function() {
+    window.scrollTo(0, 1000);
+};
+</script>
+<div style="height: 5000px">
+Tests that scrolling a frame with background-attachment: fixed invalidates the entire viewport.
+</div>

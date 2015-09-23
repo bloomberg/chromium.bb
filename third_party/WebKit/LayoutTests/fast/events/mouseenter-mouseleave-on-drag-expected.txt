@@ -1,0 +1,19 @@
+Verifies that dragging mouse in/out of an element doesn't fire redundant mouseenter or mouseleave events (crbug.com/470258)
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+outer received mouseenter
+PASS wasInside['outer'] is false
+outer received mousedown
+inner received mouseenter
+PASS wasInside['inner'] is false
+inner received mouseleave
+PASS wasInside['inner'] is true
+outer received mouseup
+outer received mouseleave
+PASS wasInside['outer'] is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

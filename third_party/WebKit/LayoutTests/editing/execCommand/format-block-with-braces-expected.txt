@@ -1,0 +1,16 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This test uses FormatBlock with html brackets in the tag string passed to execCommand.
+
+Before FormatBlock with <h1>:
+| "
+Format Me
+"
+
+After FormatBlock with <h1>:
+| <h1>
+|   "
+<#selection-caret>Format Me
+"

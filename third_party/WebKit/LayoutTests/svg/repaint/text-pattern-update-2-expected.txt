@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 8, 300, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGResourcePattern pattern id='pat'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'X'",
+        "LayoutSVGTSpan tspan",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Y'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'Z'"
+      ]
+    }
+  ]
+}
+

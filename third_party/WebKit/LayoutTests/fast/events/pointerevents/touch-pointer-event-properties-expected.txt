@@ -1,0 +1,6 @@
+Test that pointer properties propagates from touches to PointerEvents
+
+This is a testharness.js-based test.
+FAIL Pointer property propagation from touches to PointerEvents assert_not_equals: window.PointerEvent got disallowed value undefined
+Harness: the test ran to completion.
+

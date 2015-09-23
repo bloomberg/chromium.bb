@@ -1,0 +1,24 @@
+<!-- Based on compositing/layer-creation/compositing-reason-removed.html -->
+<!DOCTYPE html>
+<style>
+  #square {
+    background-color: blue;
+    width: 30px;
+    height: 30px;
+    position: relative;
+    -webkit-backface-visibility: hidden;
+  }
+</style>
+
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+  window.expectedPaintInvalidationObjects = [
+  ];
+  function paintInvalidationTest() {
+    // Remove the div's only compositing reason. This should trigger a repaint.
+    document.getElementById("square").style.webkitBackfaceVisibility = "visible";
+  }
+  runPaintInvalidationTest();
+</script>
+
+<div id="square"></div>

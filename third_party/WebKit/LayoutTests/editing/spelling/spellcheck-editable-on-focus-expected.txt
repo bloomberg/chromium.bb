@@ -1,0 +1,16 @@
+Spell checking should be triggered on focus of an editable. To test manually, set focus on above elements. The test succeed if misspellings are marked.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.markerCountForNode(findFirstTextNode(testEditable), "spelling") became expectedNumberOfMarkers
+PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") became expectedNumberOfMarkers
+PASS internals.markerCountForNode(findFirstTextNode(testTextField), "spelling") became expectedNumberOfMarkers
+PASS internals.markerCountForNode(findFirstTextNode(testEditable), "spelling") became expectedNumberOfMarkers
+PASS internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling") became expectedNumberOfMarkers
+PASS internals.markerCountForNode(findFirstTextNode(testTextField), "spelling") became expectedNumberOfMarkers
+PASS successfullyParsed is true
+
+TEST COMPLETE
+zz zz zz.
+  

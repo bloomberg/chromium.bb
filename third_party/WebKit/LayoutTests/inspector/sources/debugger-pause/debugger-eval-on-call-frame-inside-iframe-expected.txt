@@ -1,0 +1,22 @@
+
+Test that evaluation on call frame works across all inspected windows in the call stack.
+
+Set timer for test function.
+Call stack:
+    0) pauseInsideIframe (:6)
+    1) testFunction (debugger-eval-on-call-frame-inside-iframe.html:34)
+
+=== Evaluating on iframe ===
+dir() = "overridden dir() in iframe"
+dirxml() = undefined
+table = "local in iframe"
+clear = 
+x: = VM:1 Uncaught SyntaxError {message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
+
+=== Evaluating on top frame ===
+dir() = undefined
+dirxml() = "overridden dirxml() in top frame"
+table = 
+clear = "local in top frame"
+x: = VM:1 Uncaught SyntaxError {message: "Unexpected end of input"}pauseInsideIframe @ VM:6testFunction @ debugger-eval-on-call-frame-inside-iframe.html:34
+

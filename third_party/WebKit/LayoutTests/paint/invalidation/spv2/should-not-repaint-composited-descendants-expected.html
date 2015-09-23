@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<style>
+#composited-box {
+    position: absolute;
+    background-color: green;
+    clip: rect(30px, 120px, 120px, 30px);
+}
+.child {
+    width: 50px;
+    height: 50px;
+    background-color: green;
+}
+</style>
+<div id="composited-box">
+    <div class="child"></div>
+    <div class="child"></div>
+</div>

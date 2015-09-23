@@ -1,0 +1,18 @@
+<!doctype html>
+<iframe id="iframe"></iframe>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script>
+test(function(test) {
+    var iframe = document.getElementById('iframe');
+    var w = iframe.contentWindow;
+    iframe.remove();
+
+    assert_not_equals(w.fetch, undefined,
+        'A discarded window should have |fetch| function.');
+    // NOTE: This is not explicitly specified as far as I know. This behavior
+    // may be Blink specific.
+    assert_equals(w.fetch('/fetch/resources/doctype.html'), undefined,
+        '|fetch| on a discarded window returns undefined, not a Promise.');
+  });
+</script>

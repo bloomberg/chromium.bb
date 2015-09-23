@@ -1,0 +1,13 @@
+PASS context.fill() did not throw exception.
+PASS context.fill('nonzero') did not throw exception.
+PASS context.fill('randomstring') threw exception TypeError: Failed to execute 'fill' on 'CanvasRenderingContext2D': The provided value 'randomstring' is not a valid enum value of type CanvasFillRule..
+PASS context.clip() did not throw exception.
+PASS context.clip('nonzero') did not throw exception.
+PASS context.clip('randomstring') threw exception TypeError: Failed to execute 'clip' on 'CanvasRenderingContext2D': The provided value 'randomstring' is not a valid enum value of type CanvasFillRule..
+PASS context.isPointInPath(0, 0) did not throw exception.
+PASS context.isPointInPath(0, 0, 'nonzero') did not throw exception.
+PASS context.isPointInPath(0, 0, 'randomstring') threw exception TypeError: Failed to execute 'isPointInPath' on 'CanvasRenderingContext2D': The provided value 'randomstring' is not a valid enum value of type CanvasFillRule..
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

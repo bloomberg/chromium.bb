@@ -1,0 +1,30 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [7, 132, 785, 35],
+        [7, 42, 776, 125]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox 'sagittis aliquam nunc. Nullam pharetra molestie eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris.'",
+        "RootInlineBox",
+        "InlineTextBox 'Curabitur a velit'",
+        "RootInlineBox",
+        "LayoutBlockFlow P id='target'",
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse placerat. Morbi tristique. Mauris eu lacus sed felis'",
+        "InlineTextBox 'pellentesque cursus. Proin vitae nulla. Vivamus in ipsum. Etiam mi. Nam malesuada purus in sem. Sed eget elit vel erat'",
+        "InlineTextBox 'laoreet feugiat. Phasellus mollis pulvinar mi. Etiam ut neque sed eros egestas laoreet. Vestibulum ullamcorper, nulla non'",
+        "InlineTextBox 'feugiat molestie, mi lorem bibendum leo, ac gravida orci nunc nec nulla. Nunc nunc lorem, rhoncus et, rutrum ac,'",
+        "InlineTextBox 'fermentum ut, tortor. Sed rhoncus. Quisque enim metus, luctus tincidunt, vestibulum eu, vestibulum eu, libero. Mauris'",
+        "InlineTextBox 'sagittis aliquam nunc. Nullam pharetra molestie eros. Donec tempus purus ut ligula. Phasellus non nisl. Etiam eu mauris.'",
+        "InlineTextBox 'Curabitur a velit.'"
+      ]
+    }
+  ]
+}
+

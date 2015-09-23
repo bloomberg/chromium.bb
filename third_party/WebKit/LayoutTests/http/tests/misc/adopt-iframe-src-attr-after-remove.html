@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+We pass if we don't crash under ASAN.
+<iframe id=iframe src="../navigation/resources/blank.txt"></iframe>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+window.onload = function()
+{
+    iframe.remove();
+    gc();
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+        document.adoptNode(iframe.attributes["src"]);
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }, 0);
+}, false);
+</script>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script type="text/javascript" src="resources/audio-testing.js"></script>
+<script src="resources/compatibility.js"></script>
+</head>
+
+<body>
+<div id="description"></div>
+<div id="console"></div>
+
+<script>
+description("Tests that AudioBufferSourceNode validates AudioBuffer in .buffer attribute setter.");
+
+var context;
+var source;
+
+function runTest() {
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+    
+    window.jsTestIsAsync = true;
+    
+    context = new AudioContext();
+    source = context.createBufferSource();
+
+    // Make sure we can't set to something which isn't an AudioBuffer.
+    shouldThrow("source.buffer = 57", '"TypeError: Failed to set the \'buffer\' property on \'AudioBufferSourceNode\': The provided value is not of type \'AudioBuffer\'."');
+    shouldThrow("source.buffer = null", '"TypeError: Failed to set the \'buffer\' property on \'AudioBufferSourceNode\': The provided value is not of type \'AudioBuffer\'."');
+
+    // Check that mono buffer can be set.
+    try {
+        var monoBuffer = context.createBuffer(1, 1024, context.sampleRate);
+        var testSource = context.createBufferSource();
+        testSource.buffer = monoBuffer;
+        testPassed("Mono buffer can be set.");
+    } catch(e) {
+        testFailed("Mono buffer can not be set.");
+    }
+
+    // Check that stereo buffer can be set.
+    try {
+        var stereoBuffer = context.createBuffer(2, 1024, context.sampleRate);
+        var testSource = context.createBufferSource();
+        testSource.buffer = stereoBuffer;
+        testPassed("Stereo buffer can be set.");
+    } catch(e) {
+        testFailed("Stereo buffer can not be set.");
+    }
+    
+    // Check buffers with more than two channels.
+    for (var i = 3; i < 10; ++i) {
+        try {
+            var buffer = context.createBuffer(i, 1024, context.sampleRate);
+            var testSource = context.createBufferSource();
+            testSource.buffer = buffer;
+            var message = i + " channels buffer can be set.";
+            testPassed(message);
+        } catch(e) {
+            var message = i + " channels buffer can not be set.";
+            testFailed(message);
+        }
+    }
+        
+    finishJSTest();
+}
+
+runTest();
+
+</script>
+
+</body>
+</html>

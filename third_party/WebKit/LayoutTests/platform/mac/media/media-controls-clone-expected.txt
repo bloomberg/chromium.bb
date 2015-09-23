@@ -1,0 +1,79 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x324
+  LayoutBlockFlow {HTML} at (0,0) size 800x324
+    LayoutBlockFlow {BODY} at (8,8) size 784x308
+      LayoutBlockFlow {DIV} at (0,0) size 784x154
+      LayoutBlockFlow {DIV} at (0,154) size 784x154
+layer at (8,8) size 300x150
+  LayoutVideo {VIDEO} at (0,0) size 300x150
+layer at (308,128) size 300x30
+  LayoutMedia {AUDIO} at (300,120) size 300x30
+layer at (8,162) size 300x150
+  LayoutVideo {VIDEO} at (0,0) size 300x150
+layer at (308,282) size 300x30
+  LayoutMedia {AUDIO} at (300,120) size 300x30
+layer at (8,8) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
+    LayoutBlockFlow {DIV} at (0,115) size 300x35
+layer at (8,8) size 300x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
+layer at (13,123) size 290x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
+    LayoutSlider {INPUT} at (48,11) size 150.97x8
+      LayoutFlexibleBox {DIV} at (0,0) size 150.97x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 162.97x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
+    LayoutFlexibleBox {DIV} at (213.97,0) size 26.03x30 [color=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
+          text run at (0,7) width 27: "0:00"
+    LayoutButton {INPUT} at (249,0) size 35x30
+layer at (308,128) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
+    LayoutBlockFlow {DIV} at (0,0) size 300x30
+layer at (308,128) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
+    LayoutSlider {INPUT} at (48,11) size 160.97x8
+      LayoutFlexibleBox {DIV} at (0,0) size 160.97x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 172.97x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
+    LayoutFlexibleBox {DIV} at (223.97,0) size 26.03x30 [color=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
+          text run at (0,7) width 27: "0:00"
+    LayoutButton {INPUT} at (259,0) size 35x30
+layer at (8,162) size 300x150
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x150
+    LayoutBlockFlow {DIV} at (0,115) size 300x35
+layer at (8,162) size 300x115
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x115
+layer at (13,277) size 290x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
+    LayoutSlider {INPUT} at (48,11) size 150.97x8
+      LayoutFlexibleBox {DIV} at (0,0) size 150.97x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 162.97x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
+    LayoutFlexibleBox {DIV} at (213.97,0) size 26.03x30 [color=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
+          text run at (0,7) width 27: "0:00"
+    LayoutButton {INPUT} at (249,0) size 35x30
+layer at (308,282) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30
+    LayoutBlockFlow {DIV} at (0,0) size 300x30
+layer at (308,282) size 300x30
+  LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x30 [bgcolor=#141414CC]
+    LayoutButton {INPUT} at (9,0) size 30x30
+    LayoutSlider {INPUT} at (48,11) size 160.97x8
+      LayoutFlexibleBox {DIV} at (0,0) size 160.97x8 [border: (1px solid #E6E6E659)]
+        LayoutBlockFlow {DIV} at (1,-8) size 172.97x24
+          LayoutBlockFlow {DIV} at (-7,0) size 32x24
+    LayoutFlexibleBox {DIV} at (223.97,0) size 26.03x30 [color=#FFFFFF]
+      LayoutBlockFlow (anonymous) at (0,0) size 26.03x30
+        LayoutText {#text} at (0,7) size 27x15
+          text run at (0,7) width 27: "0:00"
+    LayoutButton {INPUT} at (259,0) size 35x30

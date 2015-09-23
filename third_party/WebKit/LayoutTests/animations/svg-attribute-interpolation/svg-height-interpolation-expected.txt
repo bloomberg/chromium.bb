@@ -1,0 +1,66 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: height from [10] to [60] was [10] at 0
+PASS: height from [10] to [60] was [20] at 0.2
+PASS: height from [10] to [60] was [40] at 0.6
+PASS: height from [10] to [60] was [60] at 1
+PASS: height from [10%] to [60%] was [10%] at 0
+PASS: height from [10%] to [60%] was [20%] at 0.2
+PASS: height from [10%] to [60%] was [40%] at 0.6
+PASS: height from [10%] to [60%] was [60%] at 1
+PASS: height from [10em] to [60em] was [10em] at 0
+PASS: height from [10em] to [60em] was [20em] at 0.2
+PASS: height from [10em] to [60em] was [40em] at 0.6
+PASS: height from [10em] to [60em] was [60em] at 1
+PASS: height from [10ex] to [60ex] was [10ex] at 0
+PASS: height from [10ex] to [60ex] was [20ex] at 0.2
+PASS: height from [10ex] to [60ex] was [40ex] at 0.6
+PASS: height from [10ex] to [60ex] was [60ex] at 1
+PASS: height from [10rem] to [60rem] was [10rem] at 0
+PASS: height from [10rem] to [60rem] was [20rem] at 0.2
+PASS: height from [10rem] to [60rem] was [40rem] at 0.6
+PASS: height from [10rem] to [60rem] was [60rem] at 1
+PASS: height from [10mm] to [20px] was [10mm] at 0
+PASS: height from [10mm] to [20px] was [34.23622131347656] at 0.2
+PASS: height from [10mm] to [20px] was [27.11811065673828] at 0.6
+PASS: height from [10mm] to [20px] was [20px] at 1
+
+Web Animations API:
+PASS: height from [10] to [60] was [0] at -0.4
+PASS: height from [10] to [60] was [10] at 0
+PASS: height from [10] to [60] was [20] at 0.2
+PASS: height from [10] to [60] was [40] at 0.6
+PASS: height from [10] to [60] was [60] at 1
+PASS: height from [10] to [60] was [80] at 1.4
+PASS: height from [10%] to [60%] was [0%] at -0.4
+PASS: height from [10%] to [60%] was [10%] at 0
+PASS: height from [10%] to [60%] was [20%] at 0.2
+PASS: height from [10%] to [60%] was [40%] at 0.6
+PASS: height from [10%] to [60%] was [60%] at 1
+PASS: height from [10%] to [60%] was [80%] at 1.4
+PASS: height from [10em] to [60em] was [0em] at -0.4
+PASS: height from [10em] to [60em] was [10em] at 0
+PASS: height from [10em] to [60em] was [20em] at 0.2
+PASS: height from [10em] to [60em] was [40em] at 0.6
+PASS: height from [10em] to [60em] was [60em] at 1
+PASS: height from [10em] to [60em] was [80em] at 1.4
+PASS: height from [10ex] to [60ex] was [0ex] at -0.4
+PASS: height from [10ex] to [60ex] was [10ex] at 0
+PASS: height from [10ex] to [60ex] was [20ex] at 0.2
+PASS: height from [10ex] to [60ex] was [40ex] at 0.6
+PASS: height from [10ex] to [60ex] was [60ex] at 1
+PASS: height from [10ex] to [60ex] was [80ex] at 1.4
+PASS: height from [10rem] to [60rem] was [0rem] at -0.4
+PASS: height from [10rem] to [60rem] was [10rem] at 0
+PASS: height from [10rem] to [60rem] was [20rem] at 0.2
+PASS: height from [10rem] to [60rem] was [40rem] at 0.6
+PASS: height from [10rem] to [60rem] was [60rem] at 1
+PASS: height from [10rem] to [60rem] was [80rem] at 1.4
+PASS: height from [10mm] to [20px] was [44.913387298583984] at -0.4
+PASS: height from [10mm] to [20px] was [10mm] at 0
+PASS: height from [10mm] to [20px] was [34.23622131347656] at 0.2
+PASS: height from [10mm] to [20px] was [27.11811065673828] at 0.6
+PASS: height from [10mm] to [20px] was [20px] at 1
+PASS: height from [10mm] to [20px] was [12.881889343261719] at 1.4
+

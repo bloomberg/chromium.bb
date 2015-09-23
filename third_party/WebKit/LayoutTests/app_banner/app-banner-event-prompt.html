@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+
+var prompt_test_cases = [
+    {
+        name: 'prompt-accept',
+        cancel: true,
+        late: false,
+        platform: 'foo',
+        outcome: 'accepted'
+    }, {
+        name: 'prompt-dismiss',
+        cancel: true,
+        late: false,
+        platform: '',
+        outcome: 'dismissed'
+    }, {
+        name: 'prompt-before-preventDefault',
+        cancel: false,
+        late: false,
+        platform: 'foo',
+        outcome: 'accepted'
+    }, {
+        name: 'prompt-late-accept',
+        cancel: true,
+        late: true,
+        platform: 'foo',
+        outcome: 'accepted'
+    }, {
+        name: 'prompt-late-dismiss',
+        cancel: true,
+        late: true,
+        platform: '',
+        outcome: 'dismissed'
+    }, {
+        name: 'prompt-late-without-preventDefault',
+        cancel: false,
+        late: true,
+        platform: '',
+        outcome: 'dismissed'
+    }
+];
+
+function verify_prompt_resolve(e, t) {
+    e.prompt().then(function() { }, t.unreached_func("prompt() promise should resolve."));
+}
+
+function verify_prompt_reject(e, t) {
+    e.prompt().then(t.unreached_func("prompt() promise should reject."),
+        t.step_func(function(error) {
+            assert_true(
+                error instanceof DOMException,
+                "Rejected promise should throw a DOMException."
+            );
+            assert_equals(
+                error.message,
+                "The prompt() method may only be called once, following preventDefault().",
+                "Rejected promise does not provide expected message."
+            );
+        })
+    );
+}
+
+function verify_userChoice(e, t, test_case, index) {
+    e.userChoice.then(t.step_func(function(result) {
+        assert_equals(result.platform, test_case.platform, 'Resolved platform');
+        assert_equals(result.outcome, test_case.outcome, 'Outcome');
+    })).then(t.step_func(function() {
+        verify_prompt_reject(e, t);
+    })).then(t.step_func(function() {
+        prompt_test(index + 1);
+        t.done();
+    }), t.unreached_func("userChoice promise should resolve."));
+}
+
+function prompt_test(index) {
+    if (index >= prompt_test_cases.length)
+        return;
+
+    var test_case = prompt_test_cases[index];
+    async_test(function(t) {
+        var event = null;
+        var event_handler = t.step_func(function(e) {
+            // Remove the event handler to prevent it being used in subsequent
+            // invocations of prompt_test(). Save event object for call outside handler.
+            window.removeEventListener('beforeinstallprompt', event_handler);
+            event = e;
+
+            assert_equals(e.platforms.length, 2, 'Number of platforms');
+            assert_equals(e.platforms[0], 'foo', 'First platform');
+            assert_equals(e.platforms[1], 'bar', 'Second platform');
+
+            if (test_case.cancel) {
+                e.preventDefault();
+            }
+
+            if (test_case.late) {
+                return;
+            }
+
+            if (test_case.cancel) {
+                // Call prompt() to restart the pipeline.
+                verify_prompt_resolve(e, t);
+            } else {
+                // A call to prompt() before preventDefault should reject.
+                verify_prompt_reject(e, t);
+            }
+
+            // prompt() has been fired or the event has not been canceled, so check
+            // the userChoice promise and call the next test.
+            verify_userChoice(e, t, test_case, index);
+        });
+        window.addEventListener('beforeinstallprompt', event_handler);
+
+        testRunner.dispatchBeforeInstallPromptEvent(index, ['foo', 'bar'], t.step_func(function(result) {
+            testRunner.resolveBeforeInstallPromptPromise(index, test_case.platform);
+        }));
+
+        // Test that firing prompt() outside of the handler resolves or rejects correctly.
+        if (test_case.late) {
+            if (test_case.cancel) {
+                verify_prompt_resolve(event, t);
+            } else {
+                verify_prompt_reject(event, t);
+            }
+            // Check userChoice and call the next test.
+            verify_userChoice(event, t, test_case, index);
+        }
+    }, test_case.name);
+}
+
+prompt_test(0);
+</script>

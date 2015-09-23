@@ -1,0 +1,25 @@
+<div id="container">
+<p id="description"></p>
+<div id="sample">foobar</div>
+</div>
+<div id="console"></div>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Selection should be updated after set innerHTML.');
+
+function $(id) { return document.getElementById(id); }
+
+var selection = window.getSelection();
+document.addEventListener('DOMNodeRemovedFromDocument', function () {
+    selection.selectAllChildren($('sample'));
+}, true);
+
+selection.selectAllChildren($('sample'));
+$('sample').innerHTML = '';
+
+shouldBe('selection.anchorOffset', '0');
+shouldBe('selection.focusOffset', '0');
+
+if (window.testRunner)
+    $('container').outerHTML = '';
+</script>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<body></body>
+<script>
+description("Tests for getDestinationInsertionPoints().");
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-1'},
+                        createShadowRoot(
+                            createDOM('content', {'id': 'content-1'})),
+                        createDOM('div', {'id': 'child-1'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host-1/content-1')]);
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-2'},
+                        createShadowRoot(
+                            {'mode': 'open'},
+                            createDOM('content', {'id': 'content-2'})),
+                        createDOM('div', {'id': 'child-2'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-2').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host-2/content-2')]);
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-3'},
+                        createShadowRoot(
+                            {'mode': 'closed'},
+                            createDOM('content', {'id': 'content-3'})),
+                        createDOM('div', {'id': 'child-3'}))));
+
+debug('Only unclosed insertion points should be returned for getDestinationInsertionPoints().');
+shouldBe('document.getElementById("child-3").getDestinationInsertionPoints().length', '0');
+
+</script>

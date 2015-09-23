@@ -1,0 +1,134 @@
+# DOMRect()
+PASS rect.x is 0
+PASS rect.y is 0
+PASS rect.width is 0
+PASS rect.height is 0
+PASS rect.top is 0
+PASS rect.right is 0
+PASS rect.bottom is 0
+PASS rect.left is 0
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRect(10)
+PASS rect.x is 10
+PASS rect.y is 0
+PASS rect.width is 0
+PASS rect.height is 0
+PASS rect.top is 0
+PASS rect.right is 10
+PASS rect.bottom is 0
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRect(10, 20)
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is 0
+PASS rect.height is 0
+PASS rect.top is 20
+PASS rect.right is 10
+PASS rect.bottom is 20
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRect(10, 20, 80)
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is 80
+PASS rect.height is 0
+PASS rect.top is 20
+PASS rect.right is 90
+PASS rect.bottom is 20
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRect(10, 20, 80, 50)
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is 80
+PASS rect.height is 50
+PASS rect.top is 20
+PASS rect.right is 90
+PASS rect.bottom is 70
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRect setter
+PASS rect.x is 30
+PASS rect.left is 30
+PASS rect.width is 80
+PASS rect.right is 110
+PASS rect.y is -10
+PASS rect.top is -10
+PASS rect.height is 50
+PASS rect.bottom is 40
+PASS rect.x is 30
+PASS rect.left is 30
+PASS rect.width is 20
+PASS rect.right is 50
+PASS rect.y is -10
+PASS rect.top is -10
+PASS rect.height is 40
+PASS rect.bottom is 30
+
+# DOMRect(10, 20, -80, -50) negative width and height
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is -80
+PASS rect.height is -50
+PASS rect.top is -30
+PASS rect.right is 10
+PASS rect.bottom is 20
+PASS rect.left is -70
+PASS rect.top is rect.y + rect.height
+PASS rect.right is rect.x
+PASS rect.bottom is rect.y
+PASS rect.left is rect.x + rect.width
+
+# DOMRectReadOnly(10, 20, 80, 50)
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is 80
+PASS rect.height is 50
+PASS rect.top is 20
+PASS rect.right is 90
+PASS rect.bottom is 70
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+# DOMRectReadOnly readonly test
+PASS rect.x is 10
+PASS rect.y is 20
+PASS rect.width is 80
+PASS rect.height is 50
+PASS rect.top is 20
+PASS rect.right is 90
+PASS rect.bottom is 70
+PASS rect.left is 10
+PASS rect.top is rect.y
+PASS rect.right is rect.x + rect.width
+PASS rect.bottom is rect.y + rect.height
+PASS rect.left is rect.x
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,18 @@
+main frame - didStartProvisionalLoadForFrame
+main frame - didCommitLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didStartProvisionalLoadForFrame
+http://127.0.0.1:8000/loading/resources/promote-img-in-viewport-priority-iframe.html has priority VeryHigh
+main frame - didFinishDocumentLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
+http://127.0.0.1:8000/misc/resources/image-slow.pl has priority VeryLow
+http://127.0.0.1:8000/misc/resources/image-slow-out-of-viewport.pl has priority VeryLow
+http://127.0.0.1:8000/misc/resources/image-slow.pl changed priority to Low, intra_priority 300
+frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
+frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
+frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame
+main frame - didHandleOnloadEventsForFrame
+main frame - didFinishLoadForFrame
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

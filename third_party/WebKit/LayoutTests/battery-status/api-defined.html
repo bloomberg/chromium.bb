@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+<script>
+description("Test basic API definitions.");
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+// Clean-up any unused battery manager objects from previous tests.
+gc();
+jsTestIsAsync = true;
+testRunner.waitUntilDone();
+
+var mockBatteryInfo;
+function setAndFireMockBatteryInfo(charging, chargingTime, dischargingTime, level) {
+    mockBatteryInfo = { charging: charging,
+                        chargingTime: chargingTime,
+                        dischargingTime: dischargingTime,
+                        level: level };
+    testRunner.didChangeBatteryStatus(charging, chargingTime, dischargingTime, level);
+}
+
+var battery;
+function batteryStatusSuccess(batteryManager) {
+    debug('batteryStatusSuccess invoked');
+    battery = batteryManager;
+
+    shouldBeDefined("battery");
+    shouldBeNonNull("battery");
+    shouldBeDefined("battery.charging");
+    shouldBeDefined("battery.chargingTime");
+    shouldBeDefined("battery.dischargingTime");
+    shouldBeDefined("battery.level");
+
+    shouldBe('battery.charging', 'mockBatteryInfo.charging');
+    shouldBe('battery.chargingTime', 'mockBatteryInfo.chargingTime');
+    shouldBe('battery.dischargingTime', 'mockBatteryInfo.dischargingTime');
+    shouldBe('battery.level', 'mockBatteryInfo.level');
+
+    shouldBeTrue("typeof battery.onchargingchange == 'object'");
+    shouldBeTrue("typeof battery.onchargingtimechange == 'object'");
+    shouldBeTrue("typeof battery.ondischargingtimechange == 'object'");
+    shouldBeTrue("typeof battery.onlevelchange == 'object'");
+
+    shouldBeTrue("'onchargingchange' in battery");
+    shouldBeTrue("'onchargingtimechange' in battery");
+    shouldBeTrue("'ondischargingtimechange' in battery");
+    shouldBeTrue("'onlevelchange' in battery");
+
+    setTimeout(finishJSTest, 0);
+}
+
+function batteryStatusFailure() {
+    testFailed('failed to successfully resolve the promise');
+    setTimeout(finishJSTest, 0);
+}
+
+promise = navigator.getBattery();
+shouldBeDefined("promise");
+shouldBeDefined("promise.then");
+promise.then(batteryStatusSuccess, batteryStatusFailure);
+setAndFireMockBatteryInfo(false, 10, 20, 0.5);
+</script>
+</body>
+</html>

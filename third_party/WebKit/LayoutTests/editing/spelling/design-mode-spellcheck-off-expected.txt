@@ -1,0 +1,12 @@
+This tests whether WebKit does not spell check in 'designMode' when spellcheck='false'. To test manually, click 'asd' and move cursor until '.'. There should be no spelling marker for 'asd'.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS internals.hasSpellingMarker(document, 0, 3) became false
+document.body.setAttribute("spellcheck", "true")
+PASS internals.hasSpellingMarker(document, 0, 3) became different from false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+asd is misspelled.

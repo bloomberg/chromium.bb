@@ -1,0 +1,4 @@
+Tests that buffer usage update are sent when recording trace events.
+
+SUCCESS: Received buffer usage update.
+

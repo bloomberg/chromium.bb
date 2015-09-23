@@ -1,0 +1,25 @@
+Tests drawImage with self as source image, copy composite operation, and downsized destination rect. Regression test for issue crbug.com/330711
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS imgdata[0] is 0
+PASS imgdata[1] is 255
+PASS imgdata[2] is 0
+PASS imgdata[3] is 255
+PASS imgdata[0] is 0
+PASS imgdata[1] is 255
+PASS imgdata[2] is 0
+PASS imgdata[3] is 255
+PASS imgdata[0] is 0
+PASS imgdata[1] is 0
+PASS imgdata[2] is 0
+PASS imgdata[3] is 0
+PASS imgdata[0] is 0
+PASS imgdata[1] is 0
+PASS imgdata[2] is 0
+PASS imgdata[3] is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

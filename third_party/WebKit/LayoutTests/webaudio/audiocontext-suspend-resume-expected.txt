@@ -1,0 +1,22 @@
+Test suspend/resume for an (offline) AudioContext
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS offlineContext = new OfflineAudioContext(1, durationInSeconds * sampleRate, sampleRate) did not throw exception.
+PASS offlineContext.state is "suspended"
+PASS p1 = offlineContext.suspend() did not throw exception.
+PASS p1 is an instance of Promise
+PASS offlineContext.suspend() was correctly rejected: InvalidAccessError: cannot suspend an OfflineAudioContext
+PASS p2 = offlineContext.resume() did not throw exception.
+PASS p2 is an instance of Promise
+PASS offlineContext.state is "suspended"
+PASS offlineContext.resume() was correctly rejected: InvalidAccessError: cannot resume an OfflineAudioContext
+PASS p3 = offlineContext.startRendering() did not throw exception.
+PASS offlineContext.state is "closed"
+PASS offlineContext.suspend() on a closed context rejected: InvalidAccessError: cannot suspend an OfflineAudioContext
+PASS offlineContext.resume() on a closed context rejected: InvalidAccessError: cannot resume an OfflineAudioContext
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

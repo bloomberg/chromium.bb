@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script>
+onload = function() {
+  window.scrollTo(0, 400);
+};
+</script>
+<style>
+body {
+  height: 2000px;
+}
+#fixed-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: green;
+  backface-visibility: hidden;
+}
+</style>
+Tests paint invalidation of fixed elements under a composited fixed element after scrolled.
+Passes if there is only green background.
+<div id="fixed-container">
+</div>

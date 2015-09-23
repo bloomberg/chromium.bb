@@ -1,0 +1,13 @@
+Tests curl command generation
+
+curl 'http://example.org/path' --compressed
+curl 'http://example.org/path' --data-binary '123' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/x-www-form-urlencoded' --data '1&b' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/json' --data-binary '{"a":1}' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary $'1234\r\n00\x02\x03\x04\x05\'"!' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary $'1234\r\n\x0100\x02\x03\x04\x05\'"!' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary $'\x7f\x80\x90\xff\x09\u0700' --compressed
+curl 'http://labs.ft.com/?querystring=\[\]\{\}' --compressed
+curl 'http://example.org/path' -H 'Content-Type: application/binary' --data-binary '%PATH%$PATH' --compressed
+curl 'http://example.org/path' --compressed
+

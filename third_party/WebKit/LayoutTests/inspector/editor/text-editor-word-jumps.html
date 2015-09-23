@@ -1,0 +1,162 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="editor-test.js"></script>
+<script>
+function test()
+{
+function testFunction(foo, bar)
+{
+    someFunctionCall(bar);
+    var b = 42;
+    return a === 1 ? true : false;
+}
+
+function testMyCamelMove(foo, bar)
+{
+    /* HelloWorld.TestSTRIng */
+    
+    var a = e === 2;    
+{}
+}
+
+    var textEditor = InspectorTest.createTestEditor();
+    textEditor.setMimeType("text/javascript");
+    textEditor.setReadOnly(false);
+    textEditor.setText(testFunction.toString());
+    textEditor.element.focus();
+
+    InspectorTest.addResult(textEditor.text());
+    const wordJumpModifier = WebInspector.isMac() ? "altKey" : "ctrlKey";
+    const camelJumpModifier = WebInspector.isMac() ? "ctrlKey" : "altKey";
+
+    function dumpEditorSelection()
+    {
+        var selection = textEditor.selection();
+        if (selection.isEmpty()) {
+            var line = textEditor.line(selection.startLine);
+            InspectorTest.addResult(line.substring(0, selection.startColumn) + "|" + line.substring(selection.startColumn));
+        } else {
+            InspectorTest.addResult(">>" + textEditor.copyRange(selection.normalize()) + "<<");
+        }
+        return selection;
+    }
+
+    function setCursorAtBeginning()
+    {
+        textEditor.setSelection(WebInspector.TextRange.createFromLocation(0, 0));
+    }
+
+    function setCursorAtEnd()
+    {
+        var lastLine = textEditor.linesCount - 1;
+        var lastColumn = textEditor.line(lastLine).length;
+        textEditor.setSelection(WebInspector.TextRange.createFromLocation(lastLine, lastColumn));
+    }
+
+    function fireEventWhileSelectionChanges(eventType, modifiers, callback)
+    {
+        var oldSelection = textEditor.selection();
+
+        function eventCallback()
+        {
+            var selection = dumpEditorSelection();
+            if (selection.collapseToEnd().compareTo(oldSelection.collapseToEnd()) !== 0) {
+                oldSelection = selection;
+                InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+            } else {
+                callback();
+            }
+        }
+        InspectorTest.fakeKeyEvent(textEditor, eventType, modifiers, eventCallback);
+    }
+
+    InspectorTest.runTestSuite([
+        function testCtrlRightArrow(next)
+        {
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier], next);
+        },
+
+        function testCtrlLeftArrow(next)
+        {
+            setCursorAtEnd();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier], next);
+        },
+
+        function testCtrlShiftRightArrow(next)
+        {
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [wordJumpModifier, "shiftKey"], next);
+        },
+
+        function testCtrlShiftLeftArrow(next)
+        {
+            setCursorAtEnd();
+            var selection = dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [wordJumpModifier, "shiftKey"], next);
+        },
+
+        function testCtrlBackspace(next)
+        {
+            setCursorAtEnd();
+            InspectorTest.addResult("===============");
+            InspectorTest.addResult(textEditor.text());
+            function eventCallback()
+            {
+                InspectorTest.addResult("===============");
+                InspectorTest.addResult(textEditor.text() + "<<");
+                if (textEditor.text() !== "")
+                    InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+                else
+                    next();
+            }
+            InspectorTest.fakeKeyEvent(textEditor, "\b", [wordJumpModifier], eventCallback);
+        },
+
+        function testAltRight(next)
+        {
+            InspectorTest.addResult("====== CAMEL CASE MOVEMENTS ======");
+            textEditor.setText(testMyCamelMove.toString());
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier], next);
+        },
+
+        function testAltLeft(next)
+        {
+            setCursorAtEnd();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier], next);
+        },
+
+        function testAltShiftRight(next)
+        {
+            setCursorAtBeginning();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("rightArrow", [camelJumpModifier, "shiftKey"], next);
+        },
+
+        function testAltShiftLeft(next)
+        {
+            setCursorAtEnd();
+            dumpEditorSelection();
+            fireEventWhileSelectionChanges("leftArrow", [camelJumpModifier, "shiftKey"], next);
+        }
+    ]);
+
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test checks how text editor handles different movements: ctrl-left, ctrl-right, ctrl-shift-left, ctrl-backspace, alt-left, alt-right, alt-shift-left, alt-shift-right.
+</p>
+
+</body>
+</html>

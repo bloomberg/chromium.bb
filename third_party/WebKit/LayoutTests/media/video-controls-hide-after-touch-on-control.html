@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<style>
+#no-video-media {
+  width: 320px;
+  height: 240px;
+}
+</style>
+<script src=video-test.js></script>
+<script src=media-file.js></script>
+<script src=media-controls.js></script>
+<script>
+var controls;
+
+function runTest()
+{
+    video = document.getElementById("no-video-media");
+
+    testExpected("video.paused", true);
+    if (!window.testRunner)
+        return;
+
+    // Tap the play button
+    var coords = mediaControlsButtonCoordinates(video, "play-button");
+    eventSender.gestureTapDown(coords[0], coords[1]);
+    eventSender.gestureShowPress(coords[0], coords[1]);
+    eventSender.gestureTap(coords[0], coords[1]);
+    testExpected("video.paused", false);
+
+    runAfterHideMediaControlsTimerFired(function()
+    {
+        controls = mediaControlsButton(video, "panel");
+        testExpected("getComputedStyle(controls).opacity", 0);
+
+        consoleWrite("");
+        endTest();
+    }, video);
+}
+</script>
+<body>
+    <p>Test video element control visibility after touch on control. After a delay the
+       controls must be hidden.</p>
+    <p>This test only runs in DRT!</p>
+
+    <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>
+    <script>
+        setSrcById("no-video-media", findMediaFile("video", "content/test"));
+    </script>
+</body>
+</html>

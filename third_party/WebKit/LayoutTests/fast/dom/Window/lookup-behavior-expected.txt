@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 2405: Uncaught Error: assert_true: myOnClick should have been called. expected true got false
+
+This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_true: myOnClick should have been called. expected true got false
+Harness: the test ran to completion.
+

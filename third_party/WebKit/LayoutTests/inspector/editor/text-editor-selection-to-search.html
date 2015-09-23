@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../sources/debugger/resources/edit-me.js"></script>
+
+<script>
+
+function test()
+{
+    var panel = WebInspector.panels.sources;
+
+    InspectorTest.showScriptSource("edit-me.js", step1);
+
+    function step1(sourceFrame)
+    {
+        sourceFrame._textEditor.setSelection(findString(sourceFrame, "return"));
+        setTimeout(step2);
+    }
+
+    function step2()
+    {
+        panel.searchableView().showSearchField();
+        InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
+        var action = new WebInspector.AdvancedSearchView.ActionDelegate();
+        action.handleAction(undefined, "sources.search.toggle");
+        Promise.resolve().then(function() {
+            InspectorTest.addResult("Advanced search controller: '" + action._searchView._search.value + "'");
+            InspectorTest.completeTest();
+        });
+    }
+
+    function findString(sourceFrame, string)
+    {
+        for (var i = 0; i < sourceFrame._textEditor.linesCount; ++i) {
+            var line = sourceFrame._textEditor.line(i);
+            var column = line.indexOf(string);
+            if (column === -1)
+                continue;
+            return new WebInspector.TextRange(i, column, i, column + string.length);
+        }
+    }
+}
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests synchronizing the search input field to the editor selection.</p>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/sources-test.js"></script>
+<script>
+
+function test()
+{
+
+    var overridenInput = [];
+    var overridenQuery = "";
+    var overrideShowMatchingItems = true;
+
+    function StubDelegate()
+    {
+        WebInspector.SelectionDialogContentProvider.call(this);
+    }
+    StubDelegate.prototype = {
+        itemKeyAt: function(itemIndex) { return overridenInput[itemIndex]; },
+        itemScoreAt: function(itemIndex) { return 0; },
+        itemCount: function() { return overridenInput.length; },
+        selectItem: function(itemIndex, promptValue)
+        {
+            InspectorTest.addResult("Selected item index: " + itemIndex);
+        },
+        rewriteQuery: function(query) { return overridenQuery; },
+        shouldShowMatchingItems: function() { return overrideShowMatchingItems; },
+
+        __proto__: WebInspector.SelectionDialogContentProvider.prototype
+    }
+
+    var overridenInput = [];
+    var overridenQuery = "";
+    var delegate = new StubDelegate();
+
+    function checkQuery(title, query, input, hideMatchingItems)
+    {
+        overridenInput = input;
+        overridenQuery = query;
+        overrideShowMatchingItems = !hideMatchingItems;
+
+        InspectorTest.addResult("\n" + title);
+        InspectorTest.addResult("Query:" + JSON.stringify(query));
+        InspectorTest.addResult("Input:" + JSON.stringify(input));
+
+        var filteredSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
+        filteredSelectionDialog._updateAfterItemsLoaded();
+        var items = filteredSelectionDialog._filteredItems;
+        var output = [];
+        for (var i = 0; i < items.length; ++i)
+            output.push(delegate.itemKeyAt(items[i]));
+        InspectorTest.addResult("Output:" + JSON.stringify(output));
+        filteredSelectionDialog.onEnter();
+    }
+
+    checkQuery("Empty query matches everything", "", ["a", "bc"]);
+    checkQuery("Case sensitive matching", "aB", ["abc", "acB"]);
+    checkQuery("Case insensitive matching", "ab", ["abc", "bac", "a_B"]);
+    checkQuery("Duplicate symbols in query", "aab", ["abab", "abaa", "caab", "baac", "fooaab"]);
+    checkQuery("Dangerous input escaping", "^[]{}()\\.$*+?|", ["^[]{}()\\.$*+?|", "0123456789abcdef"]);
+    checkQuery("Item index is not reported in go-to line", ":1", [":1:2:3.js"], true);
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p> 
+Check to see that FilteredItemSelectionDialog uses proper regex to filter results.
+</p>
+
+</body>
+</html>

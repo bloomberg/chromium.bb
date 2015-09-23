@@ -1,0 +1,14 @@
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character ''' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Invalid character '@' in suborigin.
+ALERT: I am a secret
+CONSOLE ERROR: Error while parsing the 'suborigin' Content Security Policy directive: Whitespace is not allowed in suborigin names.
+ALERT: I am a secret
+

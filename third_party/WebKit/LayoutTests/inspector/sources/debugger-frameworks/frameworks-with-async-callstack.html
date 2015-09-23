@@ -1,0 +1,71 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+window.callbackFromFramework = function(next)
+{
+    return next();
+}
+
+function testFunction()
+{
+    setTimeout(timeout1, 0);
+}
+
+function timeout1()
+{
+    Framework.safeRun(Framework.empty, callback1);
+}
+
+function callback1()
+{
+    Framework.doSomeAsyncChainCalls(callback2);
+}
+
+function callback2()
+{
+    debugger;
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    var maxAsyncCallStackDepth = 4;
+
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth, step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace, { "dropFrameworkCallFrames": false });
+        InspectorTest.addResult("\nPrinting visible call stack:");
+        InspectorTest.captureStackTrace(callFrames, asyncStackTrace, { "dropFrameworkCallFrames": true });
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests the async call stacks and framework black-boxing features working together.
+</p>
+</body>
+</html>

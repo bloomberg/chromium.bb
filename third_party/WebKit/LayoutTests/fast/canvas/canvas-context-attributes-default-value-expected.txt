@@ -1,0 +1,13 @@
+Testing default value:
+PASS actualContextAttributes.alpha is true
+
+Testing undefined value:
+PASS actualContextAttributes.alpha is true
+
+Testing null value:
+PASS actualContextAttributes.alpha is false
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

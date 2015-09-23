@@ -1,0 +1,49 @@
+Tests using null values for some or all of the event properties.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS deviceMotionEvent.acceleration.x is mockEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is mockEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is mockEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is mockEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is mockEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is mockEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is mockEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is mockEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is mockEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is mockEvent.interval
+PASS deviceMotionEvent.acceleration.x is mockEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is mockEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is mockEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is mockEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is mockEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is mockEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is mockEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is mockEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is mockEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is mockEvent.interval
+PASS deviceMotionEvent.acceleration.x is mockEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is mockEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is mockEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is mockEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is mockEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is mockEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is mockEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is mockEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is mockEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is mockEvent.interval
+PASS deviceMotionEvent.acceleration.x is mockEvent.accelerationX
+PASS deviceMotionEvent.acceleration.y is mockEvent.accelerationY
+PASS deviceMotionEvent.acceleration.z is mockEvent.accelerationZ
+PASS deviceMotionEvent.accelerationIncludingGravity.x is mockEvent.accelerationIncludingGravityX
+PASS deviceMotionEvent.accelerationIncludingGravity.y is mockEvent.accelerationIncludingGravityY
+PASS deviceMotionEvent.accelerationIncludingGravity.z is mockEvent.accelerationIncludingGravityZ
+PASS deviceMotionEvent.rotationRate.alpha is mockEvent.rotationRateAlpha
+PASS deviceMotionEvent.rotationRate.beta is mockEvent.rotationRateBeta
+PASS deviceMotionEvent.rotationRate.gamma is mockEvent.rotationRateGamma
+PASS deviceMotionEvent.interval is mockEvent.interval
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

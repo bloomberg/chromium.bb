@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div onwheel="wheel(event)" style="margin: 0px 0; width: 100px; height: 100px; background-color: blue;"></div>
+<script>
+var gotWheelEvent = false;
+var testX = 40;
+var testY = 70;
+var testScale = 0.5;
+var tolerance = 0.001;
+
+function wheel(event)
+{
+    shouldBeFalse('gotWheelEvent');
+    gotWheelEvent = true;
+    shouldBeTrue('event.ctrlKey');
+    shouldBeCloseTo('event.deltaX', 0, tolerance);
+    shouldBeCloseTo('event.deltaY', 100 * Math.log(1 / testScale), tolerance);
+    shouldBeCloseTo('event.x', testX, tolerance);
+    shouldBeCloseTo('event.y', testY, tolerance);
+}
+
+if (window.eventSender) {
+  // Ensure that a touchpad pinch generates a synthetic event
+  eventSender.gesturePinchBegin('touchpad', testX, testY);
+  eventSender.gesturePinchUpdate('touchpad', testX, testY, testScale);
+  eventSender.gesturePinchEnd('touchpad', testX, testY);
+  shouldBeTrue('gotWheelEvent');
+}
+</script>

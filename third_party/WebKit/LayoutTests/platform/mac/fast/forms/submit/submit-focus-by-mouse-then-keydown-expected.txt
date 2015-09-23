@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [3, 4, 64, 29]
+      ],
+      "paintInvalidationClients": [
+        "LayoutButton INPUT",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
+        "InlineTextBox 'Submit'",
+        "LayoutButton INPUT"
+      ]
+    }
+  ]
+}
+

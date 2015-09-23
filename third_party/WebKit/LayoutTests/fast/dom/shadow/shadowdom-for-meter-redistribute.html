@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<style>
+meter {
+    display: block;
+    width: auto
+}
+</style>
+<meter id="host"></meter>
+<script>
+if (window.internals)
+    internals.settings.setAuthorShadowDOMForAnyElementEnabled(true);
+
+document.body.offsetTop; // Force rendering with UA Shadow DOM.
+
+var root = host.createShadowRoot();
+root.innerHTML = "<div>You should see no meter.</div>";
+</script>

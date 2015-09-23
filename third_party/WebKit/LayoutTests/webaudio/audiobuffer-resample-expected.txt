@@ -1,0 +1,11 @@
+Test resampling of an AudioBuffer at 3000 Hz
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Peak error between actual and reference data below threshold of 0.11.
+PASS SNR exceeds threshold of 22.35 dB.
+PASS AudioBuffer resampling is accurate for buffer rate of 3000 Hz.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<style>
+.composited {
+  transform: translateZ(0);
+}
+.scroller {
+  width: 300px;
+  height: 300px;
+  overflow: scroll;
+}
+.scroller > div {
+  height: 1000px;
+  width: 1000px;
+  background-color: green;
+}
+</style>
+
+<div id='scroller' class='composited scroller' style='pointer-events: none;'>
+  <div>It should be possible to scroll this div.</div>
+</div>
+
+<script src='../../resources/js-test.js'></script>
+<script src='../../resources/run-after-layout-and-paint.js'></script>
+
+<script type='text/javascript'>
+jsTestIsAsync = true;
+description('Verifies that toggling pointer-events correctly updates scrolling ' +
+            'layers in compositor.');
+
+if (window.internals)
+  internals.settings.setPreferCompositingToLCDTextEnabled(true);
+
+function isUsingCompositedScrolling(layer) {
+  if (layer.bounds[1] == 1000)
+    return true;
+  if (layer.children) {
+    for (var i = 0; i < layer.children.length; i++) {
+      if (isUsingCompositedScrolling(layer.children[i]))
+        return true;
+    }
+  }
+  return false;
+}
+
+onload = function() {
+  documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
+  shouldBe('isUsingCompositedScrolling(documentLayerTree)', 'false');
+
+  // removing 'pointer-events: none' should cause composited scrolling
+  document.getElementById('scroller').style.pointerEvents = '';
+  runAfterLayoutAndPaint(function() {
+    documentLayerTree = JSON.parse(window.internals.layerTreeAsText(document));
+    shouldBe('isUsingCompositedScrolling(documentLayerTree)', 'true');
+    finishJSTest();
+  });
+};
+</script>

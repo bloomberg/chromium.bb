@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<body>
+<style>
+input {
+    -webkit-appearance: none;
+    background-color: white;
+    border: none;
+    color: black;
+    margin: 2px;
+    padding: 2px;
+    outline-offset: 0;
+}
+</style>
+<div><input type="button" value="button"></div>
+<div><input type="checkbox" value="checkbox"></div>
+<div><input type="color" value="#ff0000"></div>
+<div><input type="date" value="2013-09-05"></div>
+<div><input type="file"></div>
+<div><input type="hidden" value="hidden"></div>
+<div><input type="number" value="3.141592"></div>
+<div><input type="radio"></div>
+<div><input type="range"></div>
+<div><input type="search" value="search"></div>
+<div><input type="text" value="text" placeholder="placeholder"></div>
+<script>
+window.onload = function() {
+    var inputs = document.querySelectorAll('input');
+    for (var i = 0; i < inputs.length; ++i) {
+        var contentSpan = document.createElement('span');
+        contentSpan.textContent = 'Content';
+        inputs[i].appendChild(contentSpan);
+        inputs[i].createShadowRoot().innerHTML = '<span>Shadow!</span><content select="*"></content>';
+    }
+    var text = document.querySelector('input[type=text]');
+    text.focus();
+    text.value = 'updated';
+    text.setRangeText('range', 0, 7);
+};
+</script>
+</body>

@@ -1,0 +1,17 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests pasting a list ('Item 1') into a position that would normally result in an end merge.
+
+Before insertion:
+| "xx"
+
+After insertion:
+| "x"
+| <ul>
+|   <li>
+|     <div>
+|       "Item 1<#selection-caret>"
+| "x"

@@ -1,0 +1,29 @@
+default fillRule(nonzero):
+PASS clickCanvas(1, 1) is 'nonzero'
+PASS clickCanvas(99, 98) is 'nonzero'
+PASS clickCanvas(21, 21) is 'nonzero'
+PASS clickCanvas(50, 50) is 'nonzero'
+
+fillRule = evenodd:
+PASS clickCanvas(1, 1) is 'evenodd'
+PASS clickCanvas(99, 98) is 'evenodd'
+PASS clickCanvas(21, 21) is null
+PASS clickCanvas(50, 50) is null
+
+fillRule = nonzero:
+PASS clickCanvas(1, 1) is 'nonzero'
+PASS clickCanvas(99, 98) is 'nonzero'
+PASS clickCanvas(21, 21) is 'nonzero'
+PASS clickCanvas(50, 50) is 'nonzero'
+
+PASS context.addHitRegion({id : "nonzero", fillRule : null }); threw exception TypeError: Failed to execute 'addHitRegion' on 'CanvasRenderingContext2D': The provided value 'null' is not a valid enum value of type CanvasFillRule..
+fillRule = undefined, falls back to default (nonzero):
+PASS clickCanvas(1, 1) is 'nonzero'
+PASS clickCanvas(99, 98) is 'nonzero'
+PASS clickCanvas(21, 21) is 'nonzero'
+PASS clickCanvas(50, 50) is 'nonzero'
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

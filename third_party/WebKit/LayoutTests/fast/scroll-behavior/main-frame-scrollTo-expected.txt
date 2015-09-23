@@ -1,0 +1,22 @@
+Test that calling scrollTo on the main frame works with both scroll behaviors
+
+This is a testharness.js-based test.
+PASS Scroll x:1, y:2, smooth:false 
+PASS Scroll x:2, y:3, smooth:false 
+PASS Scroll x:3, y:4, smooth:false 
+PASS Scroll x:4, y:5, smooth:false 
+PASS Scroll x:3, y:undefined, smooth:false 
+PASS Scroll x:undefined, y:4, smooth:false 
+PASS Scroll x:undefined, y:undefined, smooth:false 
+PASS Scroll x:10, y:15, smooth:true 
+PASS Scroll x:20, y:25, smooth:true 
+PASS Scroll x:30, y:35, smooth:true 
+PASS Scroll x:40, y:45, smooth:true 
+PASS Scroll x:45, y:undefined, smooth:true 
+PASS Scroll x:undefined, y:40, smooth:true 
+PASS Scroll x:4000, y:4100, smooth:true 
+PASS Scroll x:15, y:20, smooth:true 
+PASS Scroll x:4100, y:4000, smooth:true 
+PASS Scroll x:10, y:5, smooth:true 
+Harness: the test ran to completion.
+

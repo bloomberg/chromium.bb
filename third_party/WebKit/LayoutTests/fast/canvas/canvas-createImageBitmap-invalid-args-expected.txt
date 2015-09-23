@@ -1,0 +1,69 @@
+Ensure correct behavior of createImageBitmap for invalid inputs.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Rejected as expected: undefined
+PASS reason instanceof Error is true
+TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided.
+PASS Rejected as expected: null
+PASS reason instanceof Error is true
+TypeError: Failed to execute 'createImageBitmap' on 'Window': No function was found that matched the signature provided.
+PASS Rejected as expected: empty image
+PASS reason instanceof Error is true
+InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No image can be retrieved from the provided element.
+PASS Rejected as expected: empty video
+PASS reason instanceof Error is true
+InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': The provided element has not retrieved data.
+PASS Rejected as expected: image / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: image / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: video / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: video / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: canvas / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: canvas / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: canvas context / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: canvas context / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: canvas imagedata / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: canvas imagedata / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: image bitmap / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: image bitmap / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: blob / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source height provided is 0.
+PASS Rejected as expected: blob / invalid range
+PASS reason instanceof Error is true
+IndexSizeError: Failed to execute 'createImageBitmap' on 'Window': The source width provided is 0.
+PASS Rejected as expected: invalid blob
+FAIL reason instanceof Error should be true. Was false.
+null
+PASS Rejected as expected: invalid canvas
+FAIL reason instanceof Error should be true. Was false.
+null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

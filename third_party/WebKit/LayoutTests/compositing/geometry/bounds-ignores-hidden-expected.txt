@@ -1,0 +1,21 @@
+
+{
+  "bounds": [44990, 15063],
+  "children": [
+    {
+      "bounds": [44990, 15063],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 10],
+          "transformOrigin": [-10, -10],
+          "bounds": [50, 50],
+          "contentsOpaque": true,
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+<body>
+<script src="../resources/js-test.js"></script>
+
+<div id="wrapper">
+  <a id="link" href="#">Link</a>
+  <button id="button">Button</button>
+  <button id="labeled-button" aria-label="Label">Button</button>
+  <button id="button-with-title" title="Title">Button</button>
+  <input id="text" type="text" value="Value">
+  <input id="checkbox" type="checkbox" checked>
+  <input id="number" type="number" value="23">
+  <input id="radio" type="radio" checked>
+  <input id="slider" type="range" min="" max="0" value="5">
+  <input id="submit" type="submit">
+  <select id="combobox"><option><option selected>2</select>
+  <select multiple id="listbox"><option><option selected>2</select>
+  <textarea id="textarea">Textarea</textarea>
+  <div id="focusable" tabindex="0">Focusable</div>
+  <h5 id="heading" tabindex="0">Heading</h5>
+  <div id="aria-button" tabindex="0" role="button">ARIA button</div>
+  <div id="aria-link" tabindex="0" role="link">ARIA link</div>
+  <div id="div">Div</div>
+  <div id="onclick" onclick="foo()">Onclick</div>
+  <div id="keydown-listener">Key down listener</div>
+  <div id="click-listener">Click listener</div>
+  <div id="mousedown-listener">Mouse down listener</div>
+  <div>
+    <a id="empty-anchor" tabindex=0>Empty anchor</a>
+    <a id="href-anchor" href="#">Anchor with href</a>
+    <a id="onclick-anchor" onclick="foo()">Anchor with onclick</a>
+    <a id="click-listener-anchor">Anchor with click listener</a>
+  </div>
+  <script>
+    document.getElementById('keydown-listener').addEventListener('keydown', function() {}, false);
+    document.getElementById('click-listener').addEventListener('click', function() {}, false);
+    document.getElementById('mousedown-listener').addEventListener('mousedown', function() {}, false);
+    document.getElementById('click-listener-anchor').addEventListener('click', function() {}, false);
+  </script>
+</div>
+
+<div id="console"></div>
+<script>
+description("This tests the clickable property of various elements, and tests that a role of an anchor element changes to link when it has a click listener.");
+
+if (window.testRunner && window.accessibilityController) {
+    window.testRunner.dumpAsText();
+
+    function isAXElementClickable(id) {
+        return accessibilityController.accessibleElementById(id).isClickable;
+    }
+
+    function axRole(id) {
+        return accessibilityController.accessibleElementById(id).role;
+    }
+
+    shouldBe("isAXElementClickable('link')", "true");
+    shouldBe("isAXElementClickable('button')", "true");
+    shouldBe("isAXElementClickable('labeled-button')", "true");
+    shouldBe("isAXElementClickable('button-with-title')", "true");
+    shouldBe("isAXElementClickable('text')", "true");
+    shouldBe("isAXElementClickable('checkbox')", "true");
+    shouldBe("isAXElementClickable('number')", "true");
+    shouldBe("isAXElementClickable('radio')", "true");
+    shouldBe("isAXElementClickable('slider')", "false");
+    shouldBe("isAXElementClickable('submit')", "true");
+    shouldBe("isAXElementClickable('combobox')", "true");
+    shouldBe("isAXElementClickable('listbox')", "false");  // The items are clickable, not the listbox.
+    shouldBe("isAXElementClickable('textarea')", "true");
+    shouldBe("isAXElementClickable('focusable')", "false");
+    shouldBe("isAXElementClickable('heading')", "false");
+    shouldBe("isAXElementClickable('aria-button')", "true");
+    shouldBe("isAXElementClickable('aria-link')", "true");
+    shouldBe("isAXElementClickable('div')", "false");
+    shouldBe("isAXElementClickable('onclick')", "true");
+    shouldBe("isAXElementClickable('keydown-listener')", "false");
+    shouldBe("isAXElementClickable('click-listener')", "true");
+    shouldBe("isAXElementClickable('mousedown-listener')", "true");
+
+    shouldBe("axRole('empty-anchor')", "'AXRole: AXUnknown'");
+    shouldBe("axRole('href-anchor')", "'AXRole: AXLink'");
+    shouldBe("axRole('onclick-anchor')", "'AXRole: AXLink'");
+    shouldBe("axRole('click-listener-anchor')", "'AXRole: AXLink'");
+
+    document.getElementById("wrapper").hidden = true;
+}
+
+</script>
+
+</body>
+</html>

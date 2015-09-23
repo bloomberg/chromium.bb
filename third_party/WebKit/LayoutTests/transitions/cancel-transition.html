@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <style>
+        #container {
+            width: 700px;
+            background-color: #fcc;
+        }
+
+        #container div {
+            position: relative;
+            background-color: #933;
+            width: 200px;
+            height: 50px;
+            left: 50px;
+            margin-top: 10px;
+        }
+        #container.run #left {
+            left: 450px;
+            -webkit-transition-property: left;
+            -webkit-transition-duration: 1s;
+            -webkit-transition-timing-function: linear;
+        }
+        #container.run #translate {
+            transform: translate(400px, 0px);
+            -webkit-transition-property: transform;
+            -webkit-transition-duration: 1s;
+            -webkit-transition-timing-function: linear;
+        }
+    </style>
+    <script>
+        if (window.testRunner) {
+            testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
+
+        function isEqual(actual, desired, tolerance)
+        {
+            var diff = Math.abs(actual - desired);
+            return diff < tolerance;
+        }
+
+        function cancelTransition()
+        {
+            document.getElementById("container").className = "";
+            document.body.offsetHeight;
+        }
+
+        function restartTransition()
+        {
+            document.getElementById("container").className = "run";
+            document.body.offsetHeight;
+            // The transition should restart at the beginning here. After 250 it should be halfway done.
+            setTimeout(check, 500);
+        }
+
+        function check()
+        {
+            var left = parseFloat(window.getComputedStyle(document.getElementById('left')).left);
+            result = "left: ";
+            if (!isEqual(left, 250, 50))
+                result += "<span style='color:red'>FAIL (was: " + left + ", expected: 250)</span>";
+            else
+                result += "<span style='color:green'>PASS</span>";
+
+            result += ", webkitTransform: ";
+
+            var transform = window.getComputedStyle(document.getElementById('translate')).webkitTransform;
+            transform = transform.split("(");
+            transform = transform[1].split(",");
+            if (!isEqual(transform[4], 200, 50))
+                result += "<span style='color:red'>FAIL (was: " + transform[4] + ", expected: 200)</span>";
+            else
+                result += "<span style='color:green'>PASS</span>";
+
+            document.getElementById('result').innerHTML = result;
+            if (window.testRunner)
+                testRunner.notifyDone();
+        }
+
+        function start()
+        {
+            document.getElementById("container").className = "run";
+            document.body.offsetHeight;
+            setTimeout("cancelTransition()", 200);
+            setTimeout("restartTransition()", 400);
+        }
+    </script>
+</head>
+<body onload="start()">
+<p>
+    Test removes the transition properties while the transition is running, then adds them back in.
+    If working properly the transitions should start from the beginning. But there was a bug that
+    would cause the transition to continue to run (although with no visible effect). So when you
+    restarted, it would pick up where it left off.
+</p>
+<div id="container">
+    <div id="left">left</div>
+    <div id="translate">translate</div>
+</div>
+<div id="result"></div>
+</body>
+</html>

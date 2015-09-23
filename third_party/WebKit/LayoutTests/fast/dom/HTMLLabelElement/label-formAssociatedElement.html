@@ -1,0 +1,18 @@
+<!DOCTYPE HTML>
+<script src='../../../resources/js-test.js'></script>
+<script>
+description('As per spec labels must support form association by parser.');
+</script>
+
+<table>
+    <form id='form'>
+        <tr>
+            <td> <label id='lab'>
+        </tr>
+    </form>
+</table>
+
+<script>
+shouldBeEqualToString('document.getElementById("lab").form.id', 'form');
+</script>
+

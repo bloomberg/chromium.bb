@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<title>HTMLMediaElement set session</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+  test(function() {
+      assert_true(!window.internals || window.internals.runtimeFlags.mediaSessionEnabled,
+          "Run either manually by passing the MediaSession flag or as part of the virtual mediasession testsuite.");
+      console.warn("dummy log entry to avoid an empty -expected.txt in virtual/");
+
+      var mediaElement = document.createElement('audio');
+      assert_true(mediaElement instanceof HTMLMediaElement);
+
+      var mediaSession = new MediaSession();
+      mediaElement.session = mediaSession;
+      assert_equals(mediaElement.session, mediaSession);
+
+      assert_throws(new TypeError, function() { mediaElement.session = document; });
+      assert_throws(new TypeError, function() { mediaElement.session = "string"; });
+      assert_throws(new TypeError, function() { mediaElement.session = 42; });
+      assert_equals(mediaElement.session, mediaSession);
+
+      mediaElement.session = null;
+      assert_equals(mediaElement.session, null);
+  });
+</script>

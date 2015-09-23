@@ -1,0 +1,44 @@
+<html>
+<head>
+<style>
+#inspected
+{
+  color: green;
+}
+</style>
+<link rel="stylesheet" href="../styles/resources/selector-line.css" />
+<script src="../../inspector-test.js"></script>
+<script src="../../elements-test.js"></script>
+<script src="../../debugger-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.waitForScriptSource("selector-line.scss", onSourceMapLoaded);
+
+    function onSourceMapLoaded()
+    {
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+    }
+
+    function step1()
+    {
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that selector line is computed correctly regardless of its start column. <a href="https://bugs.webkit.org/show_bug.cgi?id=110732">Bug 110732</a>.
+</p>
+
+<div id="container">
+    <div id="inspected">Text</div>
+</div>
+
+</body>
+</html>

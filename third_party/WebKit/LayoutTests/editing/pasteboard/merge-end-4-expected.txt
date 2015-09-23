@@ -1,0 +1,13 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+Tests for a case where paste's end merge was failing. You should see xfoo
+bar
+bazx.
+| "xfoo"
+| <div>
+|   "bar"
+| "baz<#selection-caret>"
+| "x"

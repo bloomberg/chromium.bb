@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script>
+if (window.internals) {
+    internals.settings.setCSSStickyPositionEnabled(true);
+}
+</script>
+<style type="text/css">
+div {
+    height: 100px;
+    width: 100px;
+}
+.sticky {
+    background-color: green;
+    position: sticky;
+}
+.red {
+    background-color: red;
+    margin-top: -100px;
+}
+</style>
+<!--
+Tests that the sticky node will be popped out into a stacking context on top of the node which follows it. You should
+see no red boxes as the green sticky div should pop on top of the red div placed under it.
+-->
+<div class="sticky"></div>
+<div class="red"></div>

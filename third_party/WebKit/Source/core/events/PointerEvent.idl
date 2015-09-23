@@ -1,0 +1,19 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://w3c.github.io/pointerevents/#pointerevent-interface
+
+[
+    Constructor(DOMString type, optional PointerEventInit eventInitDict),
+    RuntimeEnabled=PointerEvent,
+] interface PointerEvent : MouseEvent {
+    readonly    attribute long      pointerId;
+    readonly    attribute double    width;
+    readonly    attribute double    height;
+    readonly    attribute float     pressure;
+    readonly    attribute long      tiltX;
+    readonly    attribute long      tiltY;
+    readonly    attribute DOMString pointerType;
+    readonly    attribute boolean   isPrimary;
+};

@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+
+<script>
+function doActions(callback)
+{
+    generateFrames(3, callback);
+}
+
+function test()
+{
+    WebInspector.panels.timeline._captureLayersAndPicturesSetting.set(true);
+    InspectorTest.invokeAsyncWithTimeline("doActions", InspectorTest.safeWrap(dumpLastFrame));
+    function dumpLastFrame()
+    {
+        var frames = InspectorTest.timelineFrameModel().frames();
+        var lastFrame = InspectorTest.timelineFrameModel().frames().peekLast();
+        if (lastFrame) {
+            InspectorTest.addResult("layerTree: " + typeof lastFrame.layerTree);
+            InspectorTest.addResult("mainFrameId: " + typeof lastFrame._mainFrameId);
+            InspectorTest.addResult("paints: " + (lastFrame.paints && lastFrame.paints.length ? "present" : "absent"));
+        } else {
+            InspectorTest.addResult("FAIL: there was no frame");
+        }
+        InspectorTest.completeTest();
+    }
+}
+</script>
+
+<body onload="runTestAfterDisplay()">
+</body>
+</html>

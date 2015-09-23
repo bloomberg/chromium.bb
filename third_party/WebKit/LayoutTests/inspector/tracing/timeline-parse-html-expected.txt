@@ -1,0 +1,44 @@
+Tests the Timeline API instrumentation of ParseHTML
+
+Test data
+ParseHTML Properties:
+{
+    data : {
+        beginData : {
+            frame : <string>
+            stackTrace : <object>
+            startLine : 0
+            url : .../inspector/tracing/timeline-parse-html.html
+        }
+        endData : {
+            endLine : -1
+        }
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "ParseHTML"
+}
+ParseHTML Properties:
+{
+    data : {
+        beginData : {
+            frame : <string>
+            stackTrace : <object>
+            startLine : 0
+            url : .../inspector/tracing/timeline-parse-html.html
+        }
+        endData : {
+            endLine : -1
+        }
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "ParseHTML"
+}
+

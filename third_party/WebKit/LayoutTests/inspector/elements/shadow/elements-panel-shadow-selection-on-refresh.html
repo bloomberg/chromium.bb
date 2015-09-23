@@ -1,0 +1,122 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+
+    InspectorTest.runTestSuite([
+        function setup(next)
+        {
+            WebInspector.settingForTest("showUAShadowDOM").set(true);
+            InspectorTest.expandElementsTree(next);
+        },
+
+        function testOpenShadowRoot(next)
+        {
+            InspectorTest.findNode(isOpenShadowRoot, selectReloadAndDump.bind(null, next));
+        },
+
+        function testClosedShadowRoot(next)
+        {
+            InspectorTest.findNode(isClosedShadowRoot, selectReloadAndDump.bind(null, next));
+        },
+
+        function testUserAgentShadowRoot(next)
+        {
+            InspectorTest.findNode(isUserAgentShadowRoot, selectReloadAndDump.bind(null, next));
+        },
+
+        function testOpenShadowRootChild(next)
+        {
+            InspectorTest.findNode(isOpenShadowRootChild, selectReloadAndDump.bind(null, next));
+        },
+
+        function testClosedShadowRootChild(next)
+        {
+            InspectorTest.findNode(isClosedShadowRootChild, selectReloadAndDump.bind(null, next));
+        },
+
+        function testUserAgentShadowRootChild(next)
+        {
+            InspectorTest.findNode(isUserAgentShadowRootChild, selectReloadAndDump.bind(null, next));
+        }
+    ]);
+
+    function isOpenShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Open;
+    }
+
+    function isClosedShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Closed;
+    }
+
+    function isUserAgentShadowRoot(node)
+    {
+        return node && node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent;
+    }
+
+    function isOpenShadowRootChild(node)
+    {
+        return isOpenShadowRoot(node.parentNode);
+    }
+
+    function isClosedShadowRootChild(node)
+    {
+        return isClosedShadowRoot(node.parentNode);
+    }
+
+    function isUserAgentShadowRootChild(node)
+    {
+        return isUserAgentShadowRoot(node.parentNode);
+    }
+
+    function selectReloadAndDump(next, node)
+    {
+        InspectorTest.selectNode(node).then(step0);
+
+        function step0()
+        {
+            InspectorTest.reloadPage(step1);
+        }
+
+        function step1()
+        {
+            InspectorTest.runAfterPendingDispatches(step2);
+        }
+
+        function step2()
+        {
+            dumpSelectedNode();
+            next();
+        }
+
+        function dumpSelectedNode()
+        {
+            var selectedElement = InspectorTest.firstElementsTreeOutline().selectedTreeElement;
+            var nodeName = selectedElement ? selectedElement.node().nodeNameInCorrectCase() : "null";
+            InspectorTest.addResult("Selected node: '" + nodeName + "'");
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that elements panel preserves selected shadow DOM node on page refresh.
+</p>
+<span id="hostElement"></span><span id="closedHostElement"></span>
+<script>
+var root = document.getElementById("hostElement").createShadowRoot();
+root.innerHTML = "<input type='text'>";
+var closedRoot = document.getElementById("closedHostElement").createShadowRoot({mode: 'closed'});
+closedRoot.innerHTML = "<button></button>";
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+Tests: 
+Smart paste when pasting after a word at the end of a line.
+Expected Results: 
+A space should be added between the preexisting word and the word that's pasted. It should like this: 
+test test
+test test
+execCopyCommand: <div id="test" class="editing"> test </div>
+execPasteCommand: <div id="test" class="editing"> test test</div>

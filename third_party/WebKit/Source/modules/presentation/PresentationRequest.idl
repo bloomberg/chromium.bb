@@ -1,0 +1,22 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(mlamouri): double-check link after spec changes have landed.
+// https://w3c.github.io/presentation-api/#interface-presentationrequest
+
+[
+    Constructor(DOMString url),
+    ConstructorCallWith=ExecutionContext,
+    RaisesException=Constructor,
+    ActiveDOMObject,
+    GarbageCollected,
+    RuntimeEnabled=Presentation,
+    MeasureAs=PresentationRequestConstructor
+] interface PresentationRequest : EventTarget {
+    [CallWith=ScriptState, MeasureAs=PresentationRequestStart] Promise<PresentationSession> start();
+    [CallWith=ScriptState, MeasureAs=PresentationRequestReconnect] Promise<PresentationSession> reconnect(DOMString id);
+    [CallWith=ScriptState, MeasureAs=PresentationRequestGetAvailability] Promise<PresentationAvailability> getAvailability();
+
+    attribute EventHandler onsessionconnect;
+};

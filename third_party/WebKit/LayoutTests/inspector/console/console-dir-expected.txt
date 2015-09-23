@@ -1,0 +1,66 @@
+CONSOLE MESSAGE: line 9: test1,test2
+CONSOLE MESSAGE: line 10: [object NodeList]
+CONSOLE MESSAGE: line 11: [object XPathResult]
+CONSOLE MESSAGE: line 21: [object Object]
+CONSOLE MESSAGE: line 24: function () {}
+CONSOLE MESSAGE: line 28: [object Object]
+CONSOLE MESSAGE: line 31: [object Object]
+CONSOLE MESSAGE: line 32: [object Object]
+CONSOLE MESSAGE: line 34: function get __proto__() { [native code] }
+CONSOLE MESSAGE: line 39: [object Uint8Array]
+Tests that console logging dumps proper messages.
+
+console-dir.html:4 Array[2]
+    0: "test1"
+    1: "test2"
+    length: 2
+    __proto__: Array[0]
+console-dir.html:5 NodeList[1]
+    0: html
+    length: 1
+    __proto__: NodeList
+console-dir.html:6 XPathResult
+    invalidIteratorState: false
+    resultType: 4
+    __proto__: XPathResult
+console-dir.html:16 Object
+    "": ""
+    "  ": "  "
+    " a b ": " a b "
+    $foo5_: 0
+    "a↵↵b↵c": "a↵↵b↵c"
+    c d: "c d"
+    negZero: -0
+    __proto__: Object
+console-dir.html:19 anonymous()
+    arguments: null
+    caller: null
+    length: 0
+    name: ""
+    prototype: Object
+    __proto__: ()
+    <function scope>
+        Global: Window
+console-dir.html:23 outer.inner
+    __proto__: outer.inner
+console-dir.html:26 Object
+    No Properties
+console-dir.html:27 Object
+    foo: Object
+        No Properties
+    __proto__: Object
+console-dir.html:29 get __proto__()
+    arguments: null
+    caller: null
+    length: 0
+    name: "get __proto__"
+    __proto__: ()
+    <function scope>
+        No Scopes
+console-dir.html:34 Uint8Array[400000000]
+    [0 … 99999999]
+    [100000000 … 199999999]
+    [200000000 … 299999999]
+    [300000000 … 399999999]
+    __proto__: Uint8Array
+

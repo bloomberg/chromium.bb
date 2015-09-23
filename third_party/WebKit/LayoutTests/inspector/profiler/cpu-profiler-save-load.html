@@ -1,0 +1,129 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="profiler-test.js"></script>
+<script>
+
+function pageFunction() {
+    console.profile("manual");
+    console.profileEnd("manual");
+}
+
+function test()
+{
+    MockedFile = function()
+    {
+        this._buffer = "";
+    }
+    MockedFile.prototype = {
+        _appendData: function(data)
+        {
+            this._buffer += data;
+        },
+
+        _data: function()
+        {
+            return this._buffer
+        },
+
+        get size()
+        {
+            return this._buffer.length;
+        },
+
+        slice: function(chunkStart, chunkEnd)
+        {
+            var blob = new Blob([this._buffer], {type: "text\/text"});
+            return blob;
+        }
+    };
+    var file = new MockedFile();
+
+    InspectorTest.runProfilerTestSuite([
+        function testSave(next)
+        {
+            function waitForTempFile(view)
+            {
+                InspectorTest.addSniffer(view._profileHeader, "_writeToTempFile", saveProfileToFile.bind(this, view._profileHeader));
+            }
+            function saveProfileToFile(profile)
+            {
+                WebInspector.FileOutputStream = function() { }
+                WebInspector.FileOutputStream.prototype = {
+                    open: function(fileName, callback)
+                    {
+                        file.name = fileName;
+                        if (fileName.endsWith(".cpuprofile")) {
+                            InspectorTest.addResult("PASS: open was called with extension '.cpuprofile'");
+                            callback(true);
+                        } else {
+                            InspectorTest.addResult("FAILED: open was called with wrong extension. fileName: '" + fileName + "'");
+                            next();
+                        }
+                    },
+
+                    write: function(data, callback)
+                    {
+                        file._appendData(data);
+                        if (data.length) {
+                            InspectorTest.addResult("PASS: write was called with data length more than zero");
+                            callback(this);
+                        } else {
+                            InspectorTest.addResult("FAILED: write was called with zero data length");
+                            next();
+                        }
+                    },
+
+                    close: function()
+                    {
+                        InspectorTest.addResult("PASS: close was called");
+                        next();
+                    }
+                }
+
+                profile.saveToFile();
+            }
+            InspectorTest.showProfileWhenAdded("manual");
+            InspectorTest.waitUntilProfileViewIsShown("manual", waitForTempFile.bind(this));
+            InspectorTest.evaluateInPage("pageFunction()", function done() {});
+        },
+
+        function testLoad(next)
+        {
+            var loadedProfileData;
+            function checkLoadedContent(profileView)
+            {
+                if (loadedProfileData === file._data())
+                    InspectorTest.addResult("PASS: the content of loaded profile matches with the original profile.");
+                else {
+                    InspectorTest.addResult("FAIL: the content of loaded profile doesn't match with the original profile.");
+                    InspectorTest.addResult("old: " + file._data());
+                    InspectorTest.addResult("new: " + loadedProfileData);
+                }
+                next();
+            }
+            var profilesPanel = WebInspector.panels.profiles;
+            var profileName = file.name.substr(0, file.name.length - ".cpuprofile".length);
+            InspectorTest.waitUntilProfileViewIsShown(profileName, checkLoadedContent);
+            profilesPanel._loadFromFile(file);
+            var onTransferFinished = WebInspector.CPUProfileHeader.prototype.onTransferFinished;
+            WebInspector.CPUProfileHeader.prototype.onTransferFinished = function()
+            {
+                loadedProfileData = this._jsonifiedProfile;
+                onTransferFinished.call(this);
+                WebInspector.panels.profiles.showProfile(this);
+            }
+        }
+
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that CPU profiling is able to save/load.
+
+</p>
+</body>
+</html>

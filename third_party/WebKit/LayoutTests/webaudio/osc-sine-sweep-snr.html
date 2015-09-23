@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Oscillator Node: sine</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/buffer-loader.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/oscillator-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Sine Oscillator with Exponential Sweep");
+      
+      var tester = OscillatorTestingUtils;
+
+      // The thresholds are experimentally determined.
+      tester.setThresholds({snr: 81.05, maxDiff: 6.78, diffCount: 17608});
+      tester.runTest("sine");
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

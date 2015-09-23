@@ -1,0 +1,60 @@
+<html>
+<head>
+
+<style type="text/css">
+/* Comment: value */
+
+@media /* Comment: value */ not /* Comment: value */print /* Comment: value */ {
+    /* Comment: value */
+    /* Comment: value */#main/* Comment: value */{/* Comment: value */ background /* Comment: value */ :/* Comment: value */blue/* Comment: value */;/* Comment: value */ }
+    /* Comment: value */
+}
+
+/* Comment: value */
+
+@font-face {
+  /* Comment: value */
+  /* Comment: value */font-family/* Comment: value */:/* Comment: value */ Example/* Comment: value */;/* Comment: value */
+  /* Comment: value */
+  /* Comment: value */src/* Comment: value */:/* Comment: value */ url(bogus-example-url)/* Comment: value */;/* Comment: value */
+  /* Comment: value */
+}
+
+/* Comment: value */
+
+#main /* Comment: value */{
+  /* Comment: value */color/* Comment: value */:/* Comment: value */ green/* Comment: value */;/* Comment: value */
+}
+/* Comment: value */
+@page /* Comment: value */:right /* Comment: value */{/* Comment: value */
+  /* Comment: value */margin-left/* Comment: value */:/* Comment: value */ 3cm/* Comment: value */;/* Comment: value */
+  /* Comment: value */margin-right /* Comment: value */: /* Comment: value */4cm /* Comment: value */
+}/*Comment: value*/
+</style>
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("main", step1);
+
+    function step1()
+    {
+        InspectorTest.addResult("Main style:");
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that comments in stylesheets are parsed correctly by the DevTools.
+</p>
+
+<div id="main"></div>
+</body>
+</html>

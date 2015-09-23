@@ -1,0 +1,98 @@
+CASE 1, original layer tree
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 2, hovering over the outer div
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true,
+              "repaintRects": [
+                [1, 1, 130, 130],
+                [1, 1, 130, 130]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+CASE 3, hovering over the inner div
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [100, 100],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#0000FF"
+            },
+            {
+              "position": [4, 4],
+              "bounds": [276, 276],
+              "drawsContent": true,
+              "repaintRects": [
+                [18, 21, 86, 86],
+                [18, 21, 86, 86],
+                [1, 1, 130, 130],
+                [1, 1, 130, 130]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

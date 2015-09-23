@@ -1,0 +1,15 @@
+This tests verifies the enumerated properties on HTMLAllCollection and their order.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS htmlAllCollection.__proto__ is HTMLAllCollection.prototype
+FAIL htmlAllCollection.__proto__.__proto__ should be [object Object]. Was [object Object].
+PASS htmlAllCollection.length is 34
+PASS enumeratedProperties is expectedEnumeratedProperties
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
+  
+   

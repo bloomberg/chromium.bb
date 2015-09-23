@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [102, 102, 66, 66],
+        [102, 102, 66, 66],
+        [2, 2, 66, 66],
+        [2, 2, 66, 66]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGRoot svg",
+        "LayoutSVGEllipse circle id='bounce'"
+      ]
+    }
+  ]
+}
+

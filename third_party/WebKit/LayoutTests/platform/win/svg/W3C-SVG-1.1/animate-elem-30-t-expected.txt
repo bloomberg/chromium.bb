@@ -1,0 +1,58 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+layer at (0,0) size 480x360
+  LayoutView at (0,0) size 480x360
+layer at (0,0) size 480x360
+  LayoutSVGRoot {svg} at (0,0) size 480x360
+    LayoutSVGContainer {g} at (31,1) size 407x276 [transform={m=((1.30,0.00)(0.00,1.30)) t=(20.00,0.00)}]
+      LayoutSVGPath {path} at (240,52) size 54x196 [stroke={[type=SOLID] [color=#B4B4B4]}] [data="M 210 40 C 210 40 210 100 170 190"]
+      LayoutSVGPath {path} at (242,226) size 14x19 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 171 188 L 181 178 L 171 174 Z"]
+      LayoutSVGPath {polyline} at (278,26) size 30x52 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=2.00]}] [points="200 20 200 40 220 40 220 60"]
+      LayoutSVGPath {polyline} at (211,216) size 51x61 [transform={m=((0.97,0.26)(-0.26,0.97)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=9.00]}] [points="200 120 200 140 220 140 220 160"]
+      LayoutSVGPath {line} at (44,12) size 30x54 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=3.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=40.00] [y1=50.00] [x2=20.00] [y2=10.00]
+      LayoutSVGPath {line} at (123,11) size 106x56 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=3.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=160.00] [y1=50.00] [x2=80.00] [y2=10.00]
+      LayoutSVGPath {line} at (59,38) size 117x2 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#000000]}] [x1=30.00] [y1=30.00] [x2=120.00] [y2=30.00]
+      LayoutSVGPath {path} at (163,35) size 13x8 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 120 30 L 110 33 L 110 27 Z"]
+      LayoutSVGPath {line} at (111,90) size 98x2 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#000000]}] [x1=70.00] [y1=70.00] [x2=145.00] [y2=70.00]
+      LayoutSVGRect {rect} at (31,76) size 82x30 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=2.00]}] [fill={[type=SOLID] [color=#B4B4B4]}] [x=10.00] [y=60.00] [width=60.00] [height=20.00]
+      LayoutSVGRect {rect} at (207,76) size 42x56 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=2.00]}] [fill={[type=SOLID] [color=#B4B4B4]}] [x=145.00] [y=60.00] [width=30.00] [height=40.00]
+      LayoutSVGPath {path} at (195,87) size 14x8 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 145 70 L 135 73 L 135 67 Z"]
+      LayoutSVGEllipse {circle} at (45,116) size 28x28 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#B4B4B4]}] [cx=30.00] [cy=100.00] [r=10.00]
+      LayoutSVGEllipse {circle} at (129,233) size 42x41 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#B4B4B4]}] [cx=100.00] [cy=195.00] [r=15.00]
+      LayoutSVGPath {line} at (67,138) size 70x102 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#000000]}] [x1=37.00] [y1=107.00] [x2=89.00] [y2=184.00]
+      LayoutSVGPath {path} at (125,224) size 12x17 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 90 185 L 87 173 L 81 178 Z"]
+      LayoutSVGRect {rect} at (408,11) size 30x30 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=2.00]}] [fill={[type=SOLID] [color=#B4B4B4]}] [x=300.00] [y=10.00] [width=20.00] [height=20.00]
+      LayoutSVGRect {rect} at (408,219) size 30x56 [stroke={[type=SOLID] [color=#B4B4B4] [stroke width=2.00]}] [fill={[type=SOLID] [color=#B4B4B4]}] [x=300.00] [y=170.00] [width=20.00] [height=40.00]
+      LayoutSVGPath {line} at (422,39) size 2x182 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#000000]}] [x1=310.00] [y1=30.00] [x2=310.00] [y2=170.00]
+      LayoutSVGPath {path} at (419,208) size 8x13 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 310 170 L 307 160 L 313 160 Z"]
+      LayoutSVGRect {rect} at (319,9) size 52x11 [fill={[type=SOLID] [color=#B4B4B4]}] [x=230.00] [y=7.50] [width=40.00] [height=7.50]
+      LayoutSVGRect {rect} at (319,220) size 52x40 [fill={[type=SOLID] [color=#B4B4B4]}] [x=230.00] [y=170.00] [width=40.00] [height=30.00]
+      LayoutSVGPath {line} at (344,13) size 2x208 [stroke={[type=SOLID] [color=#B4B4B4]}] [fill={[type=SOLID] [color=#000000]}] [x1=250.00] [y1=10.00] [x2=250.00] [y2=170.00]
+      LayoutSVGPath {path} at (341,208) size 8x13 [fill={[type=SOLID] [color=#B4B4B4]}] [data="M 250 170 L 247 160 L 253 160 Z"]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGPath {line} at (31,12) size 30x54 [stroke={[type=SOLID] [color=#105D8C] [stroke width=3.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=30.00] [y1=50.00] [x2=10.00] [y2=10.00]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGRect {rect} at (31,76) size 82x30 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=10.00] [y=60.00] [width=60.00] [height=20.00]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGEllipse {circle} at (32,116) size 28x28 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#105D8C]}] [cx=20.00] [cy=100.00] [r=10.00]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGPath {polyline} at (278,26) size 30x52 [stroke={[type=SOLID] [color=#105D8C] [stroke width=2.00]}] [points="200 20 200 40 220 40 220 60"]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGPath {polygon} at (330,24) size 30x30 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#FFFFFF]}] [points="240 20 240 40 260 40 260 20"]
+      LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
+        LayoutSVGImage {image} at (319,6) size 52x105
+      LayoutSVGContainer {use} at (44,12) size 30x54 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,0.00)}]
+        LayoutSVGPath {line} at (44,12) size 30x54 [stroke={[type=SOLID] [color=#105D8C] [stroke width=3.00]}] [fill={[type=SOLID] [color=#000000]}] [x1=30.00] [y1=50.00] [x2=10.00] [y2=10.00]
+      LayoutSVGContainer {use} at (31,76) size 82x30
+        LayoutSVGRect {rect} at (31,76) size 82x30 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#FFFFFF]}] [x=10.00] [y=60.00] [width=60.00] [height=20.00]
+      LayoutSVGContainer {use} at (45,116) size 28x28 [transform={m=((1.00,0.00)(0.00,1.00)) t=(10.00,0.00)}]
+        LayoutSVGEllipse {circle} at (45,116) size 28x28 [stroke={[type=SOLID] [color=#000000]}] [fill={[type=SOLID] [color=#105D8C]}] [cx=20.00] [cy=100.00] [r=10.00]
+      LayoutSVGContainer {use} at (278,26) size 30x52
+        LayoutSVGPath {polyline} at (278,26) size 30x52 [stroke={[type=SOLID] [color=#105D8C] [stroke width=2.00]}] [points="200 20 200 40 220 40 220 60"]
+      LayoutSVGContainer {use} at (408,11) size 30x30 [transform={m=((1.00,0.00)(0.00,1.00)) t=(60.00,-10.00)}]
+        LayoutSVGPath {polygon} at (408,11) size 30x30 [stroke={[type=SOLID] [color=#000000] [stroke width=2.00]}] [fill={[type=SOLID] [color=#FFFFFF]}] [points="240 20 240 40 260 40 260 20"]
+      LayoutSVGContainer {use} at (319,1) size 52x27 [transform={m=((1.00,0.00)(0.00,0.25)) t=(0.00,0.00)}]
+        LayoutSVGImage {image} at (319,1) size 52x27
+    LayoutSVGText {text} at (10,304) size 264x45 contains 1 chunk(s)
+      LayoutSVGInlineText {#text} at (0,0) size 264x45
+        chunk 1 text run 1 at (10.00,340.00) startOffset 0 endOffset 16 width 263.34: "$Revision: 1.6 $"
+    LayoutSVGRect {rect} at (0,0) size 480x360 [stroke={[type=SOLID] [color=#000000]}] [x=1.00] [y=1.00] [width=478.00] [height=358.00]

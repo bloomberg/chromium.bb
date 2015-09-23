@@ -1,0 +1,138 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests that distributed nodes and their updates are correctly shown in different shadow host display modes.
+
+youngest distributed text
+oldest distributed text
+oldest distributed text
+oldest distributed text
+========= Original ========
+- <div id="shadowHost">
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+  </div>
+========= After shadow root created ========
+- <div id="shadowHost">
+    - #shadow-root (open)
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+                  ↪ <div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+  </div>
+========= After adding distributed node ========
+- <div id="shadowHost">
+    - #shadow-root (open)
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+                  ↪ <div>
+                  ↪ <div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToOldest distributeMeAsWell_1"></div>
+  </div>
+========= After adding another distributed node ========
+- <div id="shadowHost">
+    - #shadow-root (open)
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+                  ↪ <div>
+                  ↪ <div>
+                  ↪ <div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToOldest distributeMeAsWell_1"></div>
+      <div class="distributeMeToOldest distributeMeAsWell_2"></div>
+  </div>
+========= After adding youngest shadow root ========
+- <div id="shadowHost">
+    - #shadow-root (open)
+        - <div class="youngestShadowMain">
+            - <shadow>
+                  ↪ <div>
+              </shadow>
+            - <content select=".distributeMeToYoungest">
+                  <div id="fallbackYoungest"></div>
+                  ↪ <div>
+              </content>
+            - <div class="innerShadowHost">
+                - <content in-youngest-shadow-root select=".distributeMeToInner">
+                      ↪ <div>
+                      ↪ <div>
+                  </content>
+              </div>
+          </div>
+    - #shadow-root (open)
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+                  ↪ <div>
+                  ↪ <div>
+                  ↪ <div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToOldest distributeMeAsWell_1"></div>
+      <div class="distributeMeToOldest distributeMeAsWell_2"></div>
+  </div>
+========= After adding inner shadow root node ========
+- <div id="shadowHost">
+    - #shadow-root (open)
+        - <div class="youngestShadowMain">
+            - <shadow>
+                  ↪ <div>
+              </shadow>
+            - <content select=".distributeMeToYoungest">
+                  <div id="fallbackYoungest"></div>
+                  ↪ <div>
+              </content>
+            - <div class="innerShadowHost" id="innerShadowHost">
+                - #shadow-root (open)
+                    - <div class="innerShadowMain">
+                        - <content in-inner-shadow-root select=".distributeMeToInner">
+                              ↪ <div>
+                              ↪ <div>
+                          </content>
+                      </div>
+                - <content in-youngest-shadow-root select=".distributeMeToInner">
+                      ↪ <div>
+                      ↪ <div>
+                  </content>
+              </div>
+          </div>
+    - #shadow-root (open)
+        - <div class="oldestShadowMain">
+            - <content select=".distributeMeToOldest">
+                  <div id="fallbackOldest"></div>
+                  ↪ <div>
+                  ↪ <div>
+                  ↪ <div>
+              </content>
+          </div>
+      <div class="distributeMeToYoungest original">\n        youngest distributed text\n    </div>
+      <div class="distributeMeToOldest original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToInner original2">\n        oldest distributed text\n    </div>
+      <div class="distributeMeToOldest distributeMeAsWell_1"></div>
+      <div class="distributeMeToOldest distributeMeAsWell_2"></div>
+  </div>
+

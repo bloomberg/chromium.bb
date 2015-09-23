@@ -1,0 +1,42 @@
+<script src=../resources/js-test.js></script>
+<body id=body>
+
+<input type=number id=number1>
+<input type=number id=number2>
+
+<p id=console</div>
+
+<script>
+
+    description("Tests that the incrementor control as part of input type=number is garbage-collected when the input is deleted or changed.");
+
+    if (window.accessibilityController) {
+
+        // If we delete an input type=number, the incrementor should be detached.
+        var axincrementor;
+        (function() {
+          var number = document.getElementById("number1");
+          number.focus();
+          var axnumber = accessibilityController.focusedElement;
+          axincrementor = axnumber.childAtIndex(0);
+          shouldBe("axincrementor.role", "\"AXRole: AXSpinButton\"");
+          number.parentElement.removeChild(number);
+        })();
+        gc();
+        shouldBe("axincrementor.role", "\"AXRole: AXUnknown\"");
+
+        // If change an input type=number to type=text, the incrementor should be detached.
+        var axincrementor;
+        (function() {
+          var number = document.getElementById("number2");
+          number.focus();
+          var axnumber = accessibilityController.focusedElement;
+          axincrementor = axnumber.childAtIndex(0);
+          shouldBe("axincrementor.role", "\"AXRole: AXSpinButton\"");
+          number.setAttribute('type', 'text');
+        })();
+        gc();
+        shouldBe("axincrementor.role", "\"AXRole: AXUnknown\"");
+    }
+
+</script>

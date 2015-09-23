@@ -1,0 +1,48 @@
+<!DOCTYPE HTML>
+<link rel="help" href="http://url.spec.whatwg.org/#dom-url">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+function assertThrows(func, expected) {
+    try {
+        func();
+    } catch (ex) {
+        assert_equals(String(ex), expected);
+        return;
+    }
+    assert_true(false, 'Expected an exception with string: ' + expected);
+}
+
+test(function() {
+    assert_equals(new URL('http://www.domain.com/a/b').toString(), 'http://www.domain.com/a/b');
+    assert_equals(new URL('/c/d', 'http://www.domain.com/a/b').toString(), 'http://www.domain.com/c/d');
+    assert_equals(new URL('b/c', 'http://www.domain.com/a/b').toString(), 'http://www.domain.com/a/b/c');
+
+    var base = new URL('http://www.domain.com/a/b');
+    assert_equals(new URL('b/c', base).toString(), 'http://www.domain.com/a/b/c');
+
+    // Unmatched surrogate handling
+    var encodedReplacementCharacter = encodeURIComponent('\ufffd');
+    assert_equals(new URL('b/c', 'http://www.domain.com/\ud801/b').toString(), 'http://www.domain.com/' + encodedReplacementCharacter + '/b/c');
+}, 'Valid URLs');
+
+test(function() {
+    assertThrows(function() {
+        new URL();
+    }, 'TypeError: Failed to construct \'URL\': 1 argument required, but only 0 present.');
+    assertThrows(function() {
+        new URL('abc');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
+    assertThrows(function() {
+        new URL('//abc');
+    }, 'TypeError: Failed to construct \'URL\': Invalid URL');
+    assertThrows(function() {
+        new URL('http:///www.domain.com/', 'abc');
+    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
+    assertThrows(function() {
+        new URL('http:///www.domain.com/', null);
+    }, 'TypeError: Failed to construct \'URL\': Invalid base URL');
+}, 'Invalid URL parameters');
+
+</script>

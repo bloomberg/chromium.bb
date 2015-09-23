@@ -1,0 +1,52 @@
+EventTarget.addEventListener and EventTarget.removeEventLister should throw on invalid arguments.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Signature:
+void addEventListener(DOMString type, EventListener listener, optional boolean useCapture)
+PASS internals.isUseCounted(document, AddEventListenerNoArguments) is false
+PASS document.addEventListener() is undefined
+PASS internals.isUseCounted(document, AddEventListenerNoArguments) is true
+PASS internals.isUseCounted(document, AddEventListenerOneArgument) is false
+PASS document.addEventListener("foo") is undefined
+PASS internals.isUseCounted(document, AddEventListenerOneArgument) is true
+PASS document.addEventListener("foo", listener) did not throw exception.
+PASS document.addEventListener("", listener) did not throw exception.
+PASS document.addEventListener("", function(){}) did not throw exception.
+PASS document.addEventListener("bar", listener, false) did not throw exception.
+PASS document.addEventListener("bar", listener, true) did not throw exception.
+PASS document.addEventListener(null) is undefined
+PASS document.addEventListener(null, listener) did not throw exception.
+PASS document.addEventListener("foo", null) is undefined
+PASS document.addEventListener("zork", listener, null) did not throw exception.
+PASS document.addEventListener(undefined) is undefined
+PASS document.addEventListener(undefined, listener) is undefined
+PASS document.addEventListener("foo", undefined) is undefined
+PASS document.addEventListener("zork", listener, undefined) did not throw exception.
+
+Signature:
+void removeEventListener(DOMString type, EventListener listener, optional boolean useCapture)
+PASS internals.isUseCounted(document, RemoveEventListenerNoArguments) is false
+PASS document.removeEventListener() is undefined
+PASS internals.isUseCounted(document, RemoveEventListenerNoArguments) is true
+PASS internals.isUseCounted(document, RemoveEventListenerOneArgument) is false
+PASS document.removeEventListener("foo") is undefined
+PASS internals.isUseCounted(document, RemoveEventListenerOneArgument) is true
+PASS document.removeEventListener("foo", listener) did not throw exception.
+PASS document.removeEventListener("foo", listener, true) did not throw exception.
+PASS document.removeEventListener("bar", listener, false) did not throw exception.
+PASS document.removeEventListener("bar", listener, false) did not throw exception.
+PASS document.removeEventListener("bar", listener, true) did not throw exception.
+PASS document.removeEventListener(null) is undefined
+PASS document.removeEventListener(null, listener) did not throw exception.
+PASS document.removeEventListener("foo", null) is undefined
+PASS document.removeEventListener("zork", listener, null) did not throw exception.
+PASS document.removeEventListener(undefined) is undefined
+PASS document.removeEventListener(undefined, listener) is undefined
+PASS document.removeEventListener("foo", undefined) is undefined
+PASS document.removeEventListener("zork", listener, undefined) did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

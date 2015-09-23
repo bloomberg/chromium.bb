@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<title>Encoding API: TextEncoder labels and whitespace</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="resources/encodings.js"></script>
+<script>
+var tests = [], failure_tests = [];
+setup(function() {
+  var whitespace = [' ', '\t', '\n', '\f', '\r'];
+  var bad_whitespace = ['\u000B', '\u00A0', '\u2028', '\u2029'];
+  encodings_table.forEach(function(section) {
+    section.encodings.filter(function(encoding) {
+      return utf_encodings.indexOf(encoding.name) !== -1;
+    }).forEach(function(encoding) {
+      var name = encoding.name;
+      encoding.labels.forEach(function(label) {
+        tests.push([label, encoding.name]);
+        whitespace.forEach(function(ws) {
+          tests.push([ws + label, encoding.name]);
+          tests.push([label + ws, encoding.name]);
+          tests.push([ws + label + ws, encoding.name]);
+        });
+        bad_whitespace.forEach(function(ws) {
+          failure_tests.push([ws + label, encoding.name]);
+          failure_tests.push([label + ws, encoding.name]);
+          failure_tests.push([ws + label + ws, encoding.name]);
+        });
+      });
+    });
+  });
+});
+
+tests.forEach(function(t) {
+  var input = t[0], output = t[1];
+  test(function() {
+    assert_equals(new TextEncoder(input).encoding, output,
+                  'label for encoding should match');
+    assert_equals(new TextEncoder(input.toUpperCase()).encoding, output,
+                  'label matching should be case-insensitive');
+  }, format_value(input) + " => " + format_value(output));
+});
+
+failure_tests.forEach(function(t) {
+  var input = t[0], output = t[1];
+  test(function() {
+    assert_throws({name:'RangeError'},
+                  function() { new TextEncoder(input); },
+                  'non-ASCII whitespace should not be stripped');
+  }, format_value(input) + " => " + format_value(output));
+});
+</script>

@@ -1,0 +1,26 @@
+<!-- Based on paint/selection/selection-within-composited-scroller.html -->
+<!doctype HTML>
+<div id="scroller" style="width: 200px; height: 200px; overflow: scroll; background: lightgray; will-change: transform">
+<div style="width: 100px; height: 600px; background: lightblue; margin-bottom: 10px"></div>
+<div id="target" style="width: 200px; height: 1000px; background: lightblue; margin-bottom: 10px">test</div>
+</div>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsTextWithPixelResults();
+scroller.scrollTop = 450;
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow HTML",
+    "LayoutBlockFlow BODY",
+    "LayoutBlockFlow DIV id='scroller'",
+    "LayoutBlockFlow DIV id='target'",
+    "LayoutText #text",
+    "InlineTextBox 'test'",
+];
+function paintInvalidationTest() {
+    var range = document.createRange();
+    range.selectNode(target);
+    window.getSelection().addRange(range);
+}
+onload = runPaintInvalidationTest;
+</script>

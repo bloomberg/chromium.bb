@@ -1,0 +1,358 @@
+Non-hidden div for comparison
+non-hidden treeitem
+hidden non-treeitem
+ Buttons are leaf nodes
+Descendant of aria-hidden node
+
+List item also presentational
+Div in list isn't presentational
+Content within label refers to label container   
+#_1: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "properties": []
+    }
+  }
+}
+#_2: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "treeitem"
+      },
+      "properties": [
+        {
+          "name": "level",
+          "value": {
+            "type": "integer",
+            "value": 1
+          }
+        },
+        {
+          "name": "checked",
+          "value": {
+            "type": "tristate",
+            "value": "false"
+          }
+        },
+        {
+          "name": "selected",
+          "value": {
+            "type": "boolean",
+            "value": false
+          }
+        }
+      ]
+    }
+  }
+}
+#_3: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "ignoredReasons": [
+        {
+          "name": "ancestorDisallowsChild",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_4: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "SVGRoot"
+      },
+      "ignoredReasons": [
+        {
+          "name": "ancestorDisallowsChild",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_5: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Unknown"
+      },
+      "ignoredReasons": [
+        {
+          "name": "ancestorIsLeafNode",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_6: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "ignoredReasons": [
+        {
+          "name": "ariaHidden",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ]
+    }
+  }
+}
+#_7: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "ignoredReasons": [
+        {
+          "name": "ariaHiddenRoot",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "_6"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_8: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "role",
+        "value": "img"
+      },
+      "properties": []
+    }
+  }
+}
+#_9: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "role",
+        "value": "none"
+      },
+      "ignoredReasons": [
+        {
+          "name": "presentationalRole",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ]
+    }
+  }
+}
+#_10: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "role",
+        "value": "listitem"
+      },
+      "ignoredReasons": [
+        {
+          "name": "inheritsPresentation",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "_9"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_11: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": false,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "properties": []
+    }
+  }
+}
+#_12: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Label"
+      },
+      "ignoredReasons": [
+        {
+          "name": "labelFor",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "checkbox"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_13: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Unknown"
+      },
+      "ignoredReasons": [
+        {
+          "name": "labelContainer",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "_12"
+            }
+          }
+        },
+        {
+          "name": "labelFor",
+          "value": {
+            "type": "idref",
+            "relatedNodeValue": {
+              "backendNodeId": "<string>",
+              "idref": "checkbox"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
+#_14: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Div"
+      },
+      "ignoredReasons": [
+        {
+          "name": "notRendered",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ]
+    }
+  }
+}
+#_15: {
+  "id": "<int>",
+  "result": {
+    "accessibilityNode": {
+      "nodeId": "<string>",
+      "ignored": true,
+      "role": {
+        "type": "internalRole",
+        "value": "Canvas"
+      },
+      "ignoredReasons": [
+        {
+          "name": "probablyPresentational",
+          "value": {
+            "type": "boolean",
+            "value": true
+          }
+        }
+      ]
+    }
+  }
+}
+

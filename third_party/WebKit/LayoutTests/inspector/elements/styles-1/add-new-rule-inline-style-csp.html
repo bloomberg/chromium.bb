@@ -1,0 +1,122 @@
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="style-src https://*:443 'unsafe-eval'">
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    var nodeId;
+    var rule;
+
+
+    InspectorTest.runTestSuite([
+        function testSetUp(next) {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function testAddRule(next)
+        {
+            InspectorTest.nodeWithId("inspected", nodeCallback);
+
+            function nodeCallback(node)
+            {
+                nodeId = node.id;
+                InspectorTest.addNewRule("#inspected", successCallback);
+            }
+
+            function successCallback(section)
+            {
+                rule = section.styleRule.rule();
+                InspectorTest.addResult("=== Rule added ===");
+                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
+                next();
+            }
+        },
+
+        function testAddProperty(next)
+        {
+            rule.style.appendProperty("width", "100%", callback);
+
+            function callback(success)
+            {
+                InspectorTest.addResult("=== Added rule modified ===");
+                if (!success) {
+                    InspectorTest.addResult("[!] No valid rule style received");
+                    InspectorTest.completeTest();
+                } else {
+                    dumpProperties(rule.style);
+                    InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
+                }
+            }
+
+            function successCallback(rule)
+            {
+                var doesAffectSelectedNode = rule.matchingSelectors.length > 0;
+                InspectorTest.addResult("=== Selector changed ===");
+                InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
+                InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
+
+                next();
+            }
+
+            function failureCallback()
+            {
+                InspectorTest.addResult("[!] Failed to change selector");
+                InspectorTest.completeTest();
+            }
+        },
+
+        function testModifyInlineStyle(next)
+        {
+            var inlineStyle;
+            InspectorTest.cssModel.inlineStylesPromise(nodeId).then(stylesCallback);
+
+            function stylesCallback(inlineStyleResult)
+            {
+                if (!inlineStyleResult || !inlineStyleResult.inlineStyle) {
+                    InspectorTest.completeTest();
+                    return;
+                }
+                inlineStyle = inlineStyleResult.inlineStyle;
+                inlineStyle.appendProperty("font-size", "14px", appendCallback);
+            }
+
+            function appendCallback(success)
+            {
+                InspectorTest.addResult("=== Inline style modified ===");
+                if (!success) {
+                    InspectorTest.addResult("No valid inline style received");
+                    InspectorTest.completeTest();
+                    return;
+                }
+
+                dumpProperties(inlineStyle);
+                next();
+            }
+        }
+    ]);
+
+    function dumpProperties(style)
+    {
+       if (!style)
+           return;
+       var allProperties = style.allProperties;
+       for (var i = 0; i < allProperties.length; ++i)
+           InspectorTest.addResult(allProperties[i].text);
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that adding a new rule does not crash the renderer and modifying an inline style does not report errors when forbidden by Content-Security-Policy.
+</p>
+
+<div id="inspected">Text</div>
+
+</body>
+</html>

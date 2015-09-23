@@ -1,0 +1,11 @@
+EVENT(loadstart)
+EVENT(loadedmetadata)
+loadedMetadataA
+EVENT(progress)
+EVENT(suspend)
+EVENT(loadeddata)
+EVENT(canplay)
+EVENT(canplaythrough)
+EXPECTED (audio.currentSrc == sourceA.src == 'true') OK
+END OF TEST
+

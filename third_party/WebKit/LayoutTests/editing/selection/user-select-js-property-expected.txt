@@ -1,0 +1,6 @@
+PASS selection.type is "Range"
+PASS selection.type is "None"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

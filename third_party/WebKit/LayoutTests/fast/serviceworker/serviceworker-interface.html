@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  assert_true('ServiceWorker' in window,
+              'the constructor should be defined');
+  assert_throws(null, function() { new ServiceWorker(); },
+                'the constructor should not be callable with "new"');
+  assert_throws(null, function() { ServiceWorker(); },
+                'the constructor should not be callable');
+  assert_equals(Object.getPrototypeOf(ServiceWorker.prototype),
+                Worker.prototype,
+                'ServiceWorker should extend Worker');
+}, 'ServiceWorker interface');
+</script>

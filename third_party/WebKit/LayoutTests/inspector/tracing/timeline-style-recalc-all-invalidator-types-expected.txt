@@ -1,0 +1,155 @@
+Tests the Timeline API instrumentation of style recalc invalidator invalidations.
+
+PASS
+PASS
+PASS
+
+Running: testClassName
+[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:10}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementOne' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:11}
+        changedAttribute : undefined
+        changedClass : "red"
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementTwo' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testIdWithoutStyleChange
+
+Running: testId
+[
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:32}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : "testElementFour"
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementFour' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:33}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : "testElementFive"
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementFive' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testStyleAttributeChange
+[
+    {
+        cause : {reason: StyleSheetChange, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:43}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ""
+        nodeName : "DIV id='testElementFour' class='red'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: StyleSheetChange, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:44}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ""
+        nodeName : "DIV id='testElementFive' class='red'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testAttributeChange
+[
+    {
+        cause : {reason: Attribute, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:54}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : "dir"
+        nodeName : "DIV id='testElementFour' class='red'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Attribute, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:55}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : "dir"
+        nodeName : "DIV id='testElementFive' class='red'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:54}
+        changedAttribute : "dir"
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementFour' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+    {
+        cause : {reason: Element has pending invalidation list, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:55}
+        changedAttribute : "dir"
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : undefined
+        nodeName : "DIV id='testElementFive' class='red'"
+        selectorPart : undefined
+        synthetic : true
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+
+Running: testPseudoChange
+[
+    {
+        cause : {reason: PseudoClass, stackTrace: .../inspector/tracing/timeline-style-recalc-all-invalidator-types.html:67}
+        changedAttribute : undefined
+        changedClass : undefined
+        changedId : undefined
+        changedPseudo : undefined
+        extraData : ":hover"
+        nodeName : "DIV id='testElementFive' class='red'"
+        selectorPart : undefined
+        type : "StyleRecalcInvalidationTracking"
+    }
+]
+

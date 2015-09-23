@@ -1,0 +1,7 @@
+CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected token }
+Tests that FailedToParseScriptSource event is raised after compile script with syntax error.
+
+
+Running: testScriptParsedEvent
+Event with script-failed-to-parse.js received
+

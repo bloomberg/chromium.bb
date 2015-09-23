@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/clipped-overflow-visible-subtree.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+  window.expectedPaintInvalidationObjects = [
+      "LayoutBlockFlow (floating) DIV id='node'",
+      "LayoutBlockFlow (floating) DIV",
+      "LayoutBlockFlow (floating) DIV",
+      "LayoutBlockFlow DIV",
+      "LayoutBlockFlow DIV",
+  ];
+  function paintInvalidationTest()
+  {
+    document.getElementById('node').remove();
+  }
+  onload = runPaintInvalidationTest;
+</script>
+
+<div style="visibility: hidden; opacity: 0.9; width: 600px;">
+ <div style="float:right">
+  <div style="float:left; width: 300px">
+    <div>
+      <div style="opacity: 0.9; visibility: visible; background-color: green; width: 100px; height: 100px;"> </div>
+    </div>
+  </div>
+
+  <div id='node' style="float:left; width: 300px;"> </div>
+ </div>
+</div>

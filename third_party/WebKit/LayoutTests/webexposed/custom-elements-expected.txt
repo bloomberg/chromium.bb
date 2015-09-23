@@ -1,0 +1,24 @@
+Tests basic web-exposure of Custom Elements
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Document.prototype.hasOwnProperty("registerElement")
+true
+
+typeof Document.prototype.registerElement
+function
+
+document.createElement("x-a") instanceof HTMLUnknownElement
+false
+
+document.querySelector(":unresolved")
+[object HTMLDivElement]
+
+span.getAttribute("is")
+type-extension
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

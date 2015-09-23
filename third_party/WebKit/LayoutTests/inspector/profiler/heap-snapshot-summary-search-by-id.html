@@ -1,0 +1,113 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var instanceCount = 200;
+    function createHeapSnapshot()
+    {
+        return InspectorTest.createHeapSnapshot(instanceCount, 100);
+    }
+
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testSearch(next)
+        {
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step0()
+            {
+                InspectorTest.switchToView("Summary", step1);
+            }
+
+            var view;
+            function addNodeSelectSniffer(constructorName, nodeId, onSuccess)
+            {
+                InspectorTest.addSniffer(view, "_selectRevealedNode", checkNodeIsSelected.bind(view, constructorName, nodeId, onSuccess));
+            }
+
+            function step1()
+            {
+                view = InspectorTest.currentProfileView();
+                InspectorTest.addSniffer(view, "_selectRevealedNode", step2);
+                view.performSearch({query: "@1", caseSensitive: false});
+            }
+
+            function step2(callback, node)
+            {
+                if (node) {
+                    InspectorTest.addResult("FAIL: hidden node @1 was found");
+                    return next();
+                }
+                InspectorTest.addResult("PASS: hidden node @1 was not found.")
+                view = InspectorTest.currentProfileView();
+                addNodeSelectSniffer("A", "101", step3);
+                view.performSearch({query:"@101", caseSensitive: false});
+            }
+
+            function step3()
+            {
+                view.performSearch({query: "@a", caseSensitive: false});
+                if (view._searchResults.length !== 0) {
+                    InspectorTest.addResult("FAIL: node @a found");
+                    return next();
+                }
+                InspectorTest.addResult("PASS: node @a was not found");
+                InspectorTest.addSniffer(view, "_selectRevealedNode", step5);
+                view.performSearch({query: "@999", caseSensitive: false}, step5);
+            }
+
+            function step5(node)
+            {
+                if (node) {
+                    InspectorTest.addResult("FAIL: found node @999");
+                    return next();
+                }
+                InspectorTest.addResult("PASS: node @999 was not found");
+                addNodeSelectSniffer("B", "100", step6);
+                view.performSearch({query: "@100", caseSensitive: false});
+            }
+
+            function step6()
+            {
+                addNodeSelectSniffer("B", "400", step7);
+                view.performSearch({query: "@400", caseSensitive: false});
+            }
+
+            function step7()
+            {
+                addNodeSelectSniffer("A", "401", next);
+                view.performSearch({query: "@401", caseSensitive: false});
+            }
+
+            function checkNodeIsSelected(constructorName, nodeId, onSuccess, node)
+            {
+                if (!node) {
+                    InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
+                    return next();
+                }
+                if (constructorName !== node.parent._name) {
+                    InspectorTest.addResult("FAIL: constructor name doesn't match. " + constructorName + " !== " + node.parent._name);
+                    next();
+                }
+                if (nodeId != node.snapshotNodeId) {
+                    InspectorTest.addResult("FAIL: snapshot node id doesn't match. " + nodeId + " !== " + node.snapshotNodeId);
+                    next();
+                }
+                InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
+                return onSuccess();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests search in Summary view of detailed heap snapshots.
+</p>
+</body>
+</html>

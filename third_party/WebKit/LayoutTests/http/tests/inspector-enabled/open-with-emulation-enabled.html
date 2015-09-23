@@ -1,0 +1,25 @@
+<html>
+<head>
+<script src="../inspector/inspector-test.js"></script>
+<script>
+
+function onload()
+{
+    testRunner.showWebInspector(JSON.stringify({lastActivePanel:"\"console\"", emulationEnabled: "true"}));
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.addResult("Drawer visible: " + WebInspector.inspectorView.drawerVisible());
+    InspectorTest.addResult("Selected view in drawer: " + WebInspector.inspectorView.selectedViewInDrawer());
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>This test checks that loading with emulation turned on by default selects the "Emulation" view in drawer.</p>
+</body>
+</html>

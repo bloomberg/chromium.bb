@@ -1,0 +1,29 @@
+{
+  "bounds": [800, 2016],
+  "children": [
+    {
+      "bounds": [800, 2016],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [100, 100, 100, 100],
+        [0, 100, 100, 100],
+        [0, 100, 100, 100],
+        [0, 0, 200, 200],
+        [0, 0, 200, 200]
+      ],
+      "paintInvalidationClients": [
+        "LayoutTableCell TD id='moveMe' class='fixed'",
+        "LayoutTable (positioned) TABLE",
+        "LayoutTableCell TD",
+        "LayoutTableCell TD",
+        "LayoutTableCell (anonymous)",
+        "LayoutTableCell TD class='red'",
+        "LayoutTableSection TBODY",
+        "LayoutTableCell (anonymous)",
+        "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'"
+      ]
+    }
+  ]
+}
+

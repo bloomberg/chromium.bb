@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.runTestSuite([
+        function selectInitialNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function editSelector(next)
+        {
+            var section = InspectorTest.firstMatchedStyleSection();
+            section.startEditingSelector();
+            section._selectorElement.textContent = "#inspected, .INSERTED-OTHER-SELECTOR";
+            InspectorTest.waitForSelectorCommitted(next);
+            section._selectorElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        },
+
+        function testDisableProperty(next)
+        {
+            var treeItem = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            InspectorTest.waitForStyleApplied(onPropertyDisabled);
+            treeItem._toggleEnabled({ target: { checked: false }, consume: function() { } });
+
+            function onPropertyDisabled()
+            {
+                InspectorTest.addResult("\n\n#### AFTER PROPERTY DISABLED ####\n\n");
+                InspectorTest.dumpSelectedElementStyles(true, false, true);
+                next();
+            }
+        }
+    ]);
+}
+</script>
+<style>
+#inspected {
+    color: red;
+}
+</style>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that sequence of setting selector and disabling property works.
+</p>
+
+<div id="inspected">Red text here.</div>
+
+</body>
+</html>

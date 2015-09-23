@@ -1,0 +1,26 @@
+CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+Note that background is buggy right now!
+Test
+background-image: initial
+background-repeat-x: initial
+background-repeat-y: initial
+background-attachment: initial
+background-position-x: initial
+background-position-y: initial
+background-origin: initial
+background-clip: initial
+background-color: purple
+background-size: initial
+margin-top: 1em
+margin-right: 1em
+margin-bottom: 1em
+margin-left: 1em
+color: white
+font-style: normal
+font-variant: normal
+font-weight: normal
+font-stretch: normal
+font-size: 24px
+line-height: normal
+font-family: 'Lucida Grande'
+

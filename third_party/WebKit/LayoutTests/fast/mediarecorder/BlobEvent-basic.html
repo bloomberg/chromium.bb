@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+
+test(function() {
+  var array = new Uint8Array([0x70, 0x71, 0x72, 0x73]);
+  var blob = new Blob([array]);
+  var blobEvent = new BlobEvent('BlobEvent', {data : blob});
+
+  var reader = new FileReader();
+  reader.addEventListener("loadend", function() {
+    // |reader.result| contains the contents of blob as an ArrayBuffer.
+    var outputArray = new Uint8Array(reader.result);
+    assert_equals(array.length, outputArray.length);
+    for (var index in outputArray) {
+      assert_equals(array[index], outputArray[index]);
+    }
+  });
+  reader.readAsArrayBuffer(blob);
+
+}, 'check BlobEvent creation and content management');
+
+
+</script>

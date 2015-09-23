@@ -1,0 +1,12 @@
+CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x576
+      LayoutBlockFlow {DIV} at (0,0) size 784x20 [color=#FF0000]
+        LayoutText {#text} at (0,0) size 71x19
+          text run at (0,0) width 71: "Hello world"
+      LayoutBlockFlow {P} at (0,36) size 784x20
+        LayoutText {#text} at (0,0) size 203x19
+          text run at (0,0) width 203: "The number of matched rules is: 1"

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<script src="../../resources/js-test.js"></script>
+
+<style>
+    img {
+        width: 200px;
+        height: 200px;
+    }
+</style>
+
+<img id="image" src="resources/test-load.jpg" width="100" height="100">
+
+<script>
+    description("Should used styled image dimensions if available.");
+    var image = document.getElementById("image");
+    shouldBe("image.width", "200");
+    shouldBe("image.height", "200");
+    var rect = image.getBoundingClientRect();
+    shouldBe("rect.width", "200");
+    shouldBe("rect.height", "200");
+</script>

@@ -1,0 +1,10 @@
+Test that closing a context releases the audio HW context
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Successfully created and closed 100 contexts
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

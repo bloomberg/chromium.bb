@@ -1,0 +1,10 @@
+Tests whether a repaint rect encompasses box-shadow with subpixel offset when the shadow changes.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Subpixel shadow was repainted.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

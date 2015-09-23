@@ -1,0 +1,25 @@
+Image map - test 2 - 2 Links (alt tags)
+----------------------
+
+------------
+AXTitle: 
+AXRole: AXDiv
+AXDescription: 
+------------
+AXTitle: 
+AXRole: AXLink
+AXDescription: 
+------------
+AXTitle: 
+AXRole: AXLink
+AXDescription: 
+------------
+AXTitle: 
+AXRole: AXLink
+AXDescription: Link1
+------------
+AXTitle: 
+AXRole: AXLink
+AXDescription: Link2
+
+ 

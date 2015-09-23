@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="video-test.js"></script>
+        <script>
+            var startTest = function() {
+                if (!window.eventSender) {
+                    logResult(false, "This test requires window.eventSender.");
+                    return;
+                }
+
+                findMediaElement();
+                var rect = video.getBoundingClientRect();
+                consoleWrite("Click on the center of the video element.");
+                var x = rect.left + rect.width / 2;
+                var y = rect.top + rect.height / 2;
+                eventSender.mouseMoveTo(x, y);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                testExpected("document.activeElement.id", "video", "!=");
+
+                consoleWrite("Click on the play button.");
+                eventSender.mouseMoveTo(rect.left + 20, rect.top + rect.height - 20);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                testExpected("document.activeElement.id", "video", "!=");
+
+                endTest();
+            };
+        </script>
+    </head>
+    <body onload="startTest();">
+        <p>This tests that a mouse click event will not cause a media element to gain focus.</p>
+        <video id="video" controls></video>
+    </body>
+</html>

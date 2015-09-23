@@ -1,0 +1,58 @@
+<html>
+<head>
+<style>
+#inspected
+{
+  color: green;
+}
+</style>
+<script src="../../inspector-test.js"></script>
+<script src="../../elements-test.js"></script>
+<script>
+
+function addStylesheet()
+{
+    var linkElement = document.createElement("link");
+    linkElement.rel = "stylesheet";
+    linkElement.href = "resources/selector-line-deprecated.css";
+    document.head.appendChild(linkElement);
+}
+
+function test()
+{
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, step1, this);
+    InspectorTest.evaluateInPage("addStylesheet()");
+
+    function step1()
+    {
+        InspectorTest.addSniffer(WebInspector.CSSWorkspaceBinding.prototype, "pushSourceMapping", sourceMappingSniffer, true);
+
+        function sourceMappingSniffer(header, sourceMapping)
+        {
+            if (sourceMapping instanceof WebInspector.SASSSourceMapping) {
+                InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+            }
+        }
+    }
+
+    function step2()
+    {
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that selector line is computed correctly regardless of its start column. <a href="https://bugs.webkit.org/show_bug.cgi?id=110732">Bug 110732</a>.
+</p>
+
+<div id="container">
+    <div id="inspected">Text</div>
+</div>
+
+</body>
+</html>

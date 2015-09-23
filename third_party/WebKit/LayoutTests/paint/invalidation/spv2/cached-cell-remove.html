@@ -1,0 +1,39 @@
+<!-- Based on fast/table/border-collapsing/cached-cell-remove.html -->
+<!--
+Calculating collapsed borders for big tables is expensive, so we cache them and recalculate when needed.
+Here we remove cell, expect that cache is invalidated and paint produces expected image.
+-->
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
+        <script src="resources/paint-invalidation-test.js"></script>
+        <script type="text/javascript">
+            window.expectedPaintInvalidationObjects = [
+                "LayoutTableCell TD id='bar'",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTable TABLE",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+                "LayoutTableSection TBODY",
+                "LayoutTableCell TD",
+                "LayoutTableCell TD",
+            ];
+            function paintInvalidationTest() {
+                barCell = document.getElementById("bar");
+                document.getElementById("row").removeChild(barCell);
+            }
+        </script>
+    </head>
+    <body onload="runPaintInvalidationTest()">
+        <table style="border-collapse:collapse; border:2px solid blue">
+            <tr id="row">
+                <td style="border:4px solid lime"/>
+                <td style="border-left:6px solid yellow" id="bar"/>
+                <td/>
+            </tr>
+        </table>
+    </body>
+</html>
+

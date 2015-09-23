@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<script>
+description("Tests for getDestinationInsertionPoints() which involves re-distribution.");
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-1'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'host-2'},
+                                      createShadowRoot(
+                                          createDOM('content', {'id': 'content-2'})),
+                                      createDOM('content', {'id': 'content-1'}))),
+                        createDOM('div', {'id': 'child-1'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-1').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host-1/content-1'), getNodeInTreeOfTrees('host-1/host-2/content-2')]);
+
+debug('adding explicit open mode should not change the behavior.');
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-10'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'host-20'},
+                                      createShadowRoot(
+                                          {'mode': 'open'},
+                                          createDOM('content', {'id': 'content-20'})),
+                                      createDOM('content', {'id': 'content-10'}))),
+                        createDOM('div', {'id': 'child-10'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-10').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host-10/content-10'), getNodeInTreeOfTrees('host-10/host-20/content-20')]);
+
+debug('Only unclosed insertion points should be returned for getDestinationInsertionPoints().');
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-11'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'host-21'},
+                                      createShadowRoot(
+                                          {'mode': 'closed'},
+                                          createDOM('content', {'id': 'content-21'})),
+                                      createDOM('content', {'id': 'content-11'}))),
+                        createDOM('div', {'id': 'child-11'}))));
+
+shouldBeEqualAsArray(document.getElementById('child-11').getDestinationInsertionPoints(),
+                     [getNodeInTreeOfTrees('host-11/content-11')]);
+
+document.body.appendChild(
+    createDOM('div', {},
+              createDOM('div', {'id': 'host-12'},
+                        createShadowRoot(
+                            {'mode': 'closed'},
+                            createDOM('div', {'id': 'host-22'},
+                                      createShadowRoot(
+                                          createDOM('content', {'id': 'content-22'})),
+                                      createDOM('content', {'id': 'content-12'}))),
+                        createDOM('div', {'id': 'child-12'}))));
+
+shouldBe('document.getElementById("child-12").getDestinationInsertionPoints().length', '0');
+</script>
+</body>
+</html>

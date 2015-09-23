@@ -1,0 +1,13 @@
+Tests exception message from eval on worker context in console contains stack trace.
+
+            function foo()
+            {
+                throw {a:239};
+            }
+            function boo()
+            {
+                foo();
+            }
+            boo();
+VM:4 Uncaught Object {a: 239}foo @ VM:4boo @ VM:8(anonymous function) @ VM:10
+

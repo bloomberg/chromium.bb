@@ -1,0 +1,13 @@
+Test that collapseToStart() and collapseToEnd() throw INVALID_STATE_ERR if no selection is made.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS sel.collapseToStart() threw exception InvalidStateError: Failed to execute 'collapseToStart' on 'Selection': there is no selection..
+PASS sel.collapseToEnd() threw exception InvalidStateError: Failed to execute 'collapseToEnd' on 'Selection': there is no selection..
+PASS sel.collapseToStart() is undefined
+PASS sel.collapseToEnd() is undefined
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

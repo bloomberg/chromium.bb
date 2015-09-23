@@ -1,0 +1,6 @@
+This tests that audio controls do not fade out when the audio is playing.
+
+EXPECTED (getComputedStyle(controls).opacity == '1') OK
+
+END OF TEST
+

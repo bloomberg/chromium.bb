@@ -1,0 +1,58 @@
+{
+  "bounds": [1418, 1008],
+  "children": [
+    {
+      "bounds": [1418, 1008],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 116, 1410, 54],
+        [8, 62, 1410, 54],
+        [8, 62, 769, 54],
+        [8, 8, 769, 107]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow DIV id='container'",
+        "LayoutBlockFlow (anonymous)",
+        "LayoutText #text",
+        "LayoutText #text"
+      ],
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [1000, 1000]
+            },
+            {
+              "position": [8, 8],
+              "bounds": [1000, 104],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 108, 1000, 50],
+                [0, 54, 1000, 50],
+                [0, 54, 100, 50],
+                [0, 0, 100, 50],
+                [0, 0, 100, 50]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
+                "InlineBox",
+                "InlineBox",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
+                "LayoutBlockFlow (relative positioned) DIV class='mv-tile'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description('Test if StereoPannerNode producing glitches by crossing zero.');
+    window.jsTestIsAsync = true;
+
+    var audit = Audit.createTaskRunner();
+
+    var sampleRate = 44100;
+
+    // Note that this layout test requires rather large render duration because
+    // we need enough time to do something useful in the |onstatechange| event
+    // before rendering finishes.
+    var renderDuration = 20;
+
+    // The threshold for glitch detection. This was experimentally determined.
+    var GLITCH_THRESHOLD = 0.0005;
+
+    // The maximum threshold for the error between the actual and the expected
+    // sample values. Experimentally determined.
+    var MAX_ERROR_ALLOWED = 0.0000001;
+
+    // Option for |Should| test util. The number of array elements to be printed
+    // out is arbitrary.
+    var SHOULD_OPTS = {
+      numberOfArrayLog: 2
+    };
+
+
+    // Extract a transitional region from the AudioBuffer. If no transition
+    // found, fail this test.
+    function extractPanningTransition(input) {
+      var chanL = input.getChannelData(0);
+      var chanR = input.getChannelData(1);
+      var start, end;
+      var index = 1;
+
+      // Find transition by comparing two consecutive samples. If two consecutive
+      // samples are identical, the transition has not started.
+      while (chanL[index-1] === chanL[index] || chanR[index-1] === chanR[index]) {
+        if (++index >= input.length) {
+          testFailed('No transition found in the channel data.');
+          return null;
+        }
+      }
+      start = index - 1;
+
+      // Find the end of transition. If two consecutive samples are not equal,
+      // the transition is still ongoing.
+      while (chanL[index-1] !== chanL[index] || chanR[index-1] !== chanR[index]) {
+        if (++index >= input.length) {
+          testFailed('A transition found but the buffer ended prematurely.');
+          return null;
+        }
+      }
+      end = index;
+
+      testPassed('Transition found. (length = ' + (end - start) + ')');
+
+      return {
+        left: chanL.subarray(start, end),
+        right: chanR.subarray(start, end),
+        length: end - start
+      };
+    }
+
+    // JS implementation of stereo equal power panning.
+    function panStereoEqualPower(pan, inputL, inputR) {
+      pan = Math.min(1.0, Math.max(-1.0, pan));
+      var output = [];
+      var panRadian;
+      if (!inputR) { // mono case.
+        panRadian = (pan * 0.5 + 0.5) * Math.PI / 2;
+        output[0] = inputL * Math.cos(panRadian);
+        output[1] = inputR * Math.sin(panRadian);
+      } else { // stereo case.
+        panRadian = (pan <= 0 ? pan + 1 : pan) * Math.PI / 2;
+        var gainL = Math.cos(panRadian);
+        var gainR = Math.sin(panRadian);
+        if (pan <= 0) {
+          output[0] = inputL + inputR * gainL;
+          output[1] = inputR * gainR;
+        } else {
+          output[0] = inputL * gainL;
+          output[1] = inputR + inputL * gainR;
+        }
+      }
+      return output;
+    }
+
+    // Generate the expected result of stereo equal panning. |input| is an
+    // AudioBuffer to be panned.
+    function generateStereoEqualPanningResult(input, startPan, endPan, length) {
+
+      // Smoothing constant time is 0.05 second.
+      var smoothingConstant = 1 - Math.exp(-1 / (sampleRate * 0.05));
+
+      var inputL = input.getChannelData(0);
+      var inputR = input.getChannelData(1);
+      var pan = startPan;
+      var outputL = [], outputR = [];
+
+      for (var i = 0; i < length; i++) {
+        var samples = panStereoEqualPower(pan, inputL[i], inputR[i]);
+        outputL[i] = samples[0];
+        outputR[i] = samples[1];
+        pan += (endPan - pan) * smoothingConstant;
+      }
+
+      return {
+        left: outputL,
+        right: outputR
+      };
+    }
+
+
+    function panAndVerify(options, done) {
+      var context = new OfflineAudioContext(2, 44100 * renderDuration, 44100);
+      var source = context.createBufferSource();
+      var panner = context.createStereoPanner();
+      var stereoBuffer = createConstantBuffer(context, 128, [1.0, 1.0]);
+
+      source.buffer = stereoBuffer;
+      source.loop = true;
+
+      panner.pan.value = options.startPanValue;
+
+      source.connect(panner);
+      panner.connect(context.destination);
+      source.start();
+
+      context.onstatechange = function () {
+        if (context.state === 'running')
+          panner.pan.value = options.endPanValue;
+      };
+
+      context.startRendering().then(function (buffer) {
+        var actual = extractPanningTransition(buffer);
+        var expected = generateStereoEqualPanningResult(stereoBuffer,
+          options.startPanValue, options.endPanValue, actual.length);
+
+        // |notGlitch| tests are redundant if the actual and expected results
+        // match and if the expected results themselves don't glitch.
+        Should('Channel #0', actual.left).notGlitch(GLITCH_THRESHOLD);
+        Should('Channel #1', actual.right).notGlitch(GLITCH_THRESHOLD);
+
+        Should('Channel #0', actual.left, SHOULD_OPTS)
+          .beCloseToArray(expected.left, MAX_ERROR_ALLOWED);
+        Should('Channel #1', actual.right, SHOULD_OPTS)
+          .beCloseToArray(expected.right, MAX_ERROR_ALLOWED);
+      }).then(done);
+    }
+
+    // Task: move pan from negative (-0.1) to positive (0.1) value to check if
+    // there is a glitch during the transition. See crbug.com/470559.
+    audit.defineTask('negative-to-positive', function (done) {
+      panAndVerify({ startPanValue: -0.1, endPanValue: 0.1 }, done);
+    });
+
+
+    // Task: move pan from positive (0.1) to negative (-0.1) value to check if
+    // there is a glitch during the transition.
+    audit.defineTask('positive-to-negative', function (done) {
+      panAndVerify({ startPanValue: 0.1, endPanValue: -0.1 }, done);
+    });
+
+    audit.defineTask('finish-test', function (done) {
+      done();
+      finishJSTest();
+    });
+
+    audit.runTasks(
+      'negative-to-positive',
+      'positive-to-negative',
+      'finish-test'
+    );
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+    <head>
+        <title>media controls cast button</title>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <video width="100" controls></video>
+        <script>
+        function castButton(element)
+        {
+            var controlID = "-internal-media-controls-cast-button";
+            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
+            if (!button)
+                throw "Failed to find cast button";
+            return button;
+        }
+        function overlayCastButton(element)
+        {
+            var controlID = "-internal-media-controls-overlay-cast-button";
+            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
+            if (!button)
+                throw "Failed to find cast button";
+            return button;
+        }
+        function castButtonDimensions(element)
+        {
+            var button = castButton(element);
+            var buttonBoundingRect = button.getBoundingClientRect();
+            return new Array(buttonBoundingRect.width, buttonBoundingRect.height);
+        }
+        function castButtonCoordinates(element, id)
+        {
+            var button = castButton(element);
+            var buttonBoundingRect = button.getBoundingClientRect();
+            var x = buttonBoundingRect.left + buttonBoundingRect.width / 2;
+            var y = buttonBoundingRect.top + buttonBoundingRect.height / 2;
+            return new Array(x, y);
+        }
+        async_test(function(t) 
+        {
+            findMediaElement();
+            video.src = findMediaFile("video", "content/test");
+            mediaElement.addEventListener("loadedmetadata", function()
+            {
+                // Pretend we have a cast device
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
+
+                // Video should not have a cast button since the video is too narrow
+                button = castButton(video);
+                assert_equals(button.style.display, "none", "button should not be visible with no cast devices");
+                
+                // It should, however, have an overlay cast button instead
+                button = overlayCastButton(video);
+                rect = button.getBoundingClientRect();
+                videoRect = video.getBoundingClientRect();
+                assert_greater_than_equal(rect.top, videoRect.top, "button should be at top left of video");
+                assert_greater_than_equal(rect.left, videoRect.left, "button should be at top left of video");
+                assert_less_than_equal(rect.bottom, videoRect.top + videoRect.height / 2, "button should be at top left of video");
+                assert_less_than_equal(rect.right, videoRect.left + videoRect.width / 2, "button should be at top left of video");
+
+                t.done();
+            })
+        });
+        </script>
+    </body>
+</html>

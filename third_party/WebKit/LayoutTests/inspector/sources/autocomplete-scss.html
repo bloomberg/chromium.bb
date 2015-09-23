@@ -1,0 +1,47 @@
+<html>
+<head>
+<link rel="stylesheet" href="./resources/empty.css">
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="./autocomplete-test.js"></script>
+<script src="../editor/editor-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.showScriptSource("empty.scss", onSourceFrame);
+
+    var dumpSuggestions;
+    function onSourceFrame(sourceFrame)
+    {
+        dumpSuggestions = InspectorTest.dumpSuggestions.bind(InspectorTest, sourceFrame.textEditor);
+        InspectorTest.runTestSuite(testSuite);
+    }
+
+
+    var testSuite = [
+        function testPropertyValueSuggestions(next)
+        {
+            dumpSuggestions([
+                "@mixin my-border-style($style) {",
+                "    border-style: |$;",
+                "}"
+            ]);
+            dumpSuggestions([
+                "@mixin my-border-style($style) {",
+                "    border-style: $|;",
+                "}"
+            ]);
+            next();
+        },
+    ];
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+The test verifies autocomplete suggestions for SCSS file.
+</p>
+</body>
+</html>

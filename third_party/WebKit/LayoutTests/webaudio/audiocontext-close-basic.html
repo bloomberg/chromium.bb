@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test AudioContext.close() closes many contexts</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="../resources/js-test.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test that closing a context releases the audio HW context");
+
+      var context = null;
+
+      // The number of contexts we want to create and close.
+      var MAX_ITERATION = 100;
+      var counter = 0;
+
+      function createContextAndClose() {
+        // Bypass the first iteration.
+        if (context) {
+          if (context.state != "closed") {
+            testFailed("Context " + counter + " was closed but state is not closed: " + context.state);
+          }
+          context = null;
+        }
+        // Create new context and close.
+        context = new AudioContext();
+        if (counter++ < MAX_ITERATION) {
+          // Recursive promise resolution.
+          context.close().then(createContextAndClose, onFailure);
+        } else {
+          context.close()
+                 .then(function () {
+                         testPassed("Successfully created and closed " + MAX_ITERATION + " contexts");
+                         finishJSTest();
+                       });
+        }
+      }
+
+      function onFailure(message) {
+         testFailed("Context " + counter + " failed to close");
+         finishJSTest();
+      }
+
+      // Initiate iteration.
+      function runTest() {
+        window.jsTestIsAsync = true;
+        createContextAndClose();
+      }
+
+      runTest();
+    </script>
+  </body>
+</html>

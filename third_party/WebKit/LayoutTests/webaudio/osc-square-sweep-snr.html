@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Oscillator Node: square</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/buffer-loader.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/oscillator-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Square Oscillator with Exponential Sweep");
+
+      // Thresholds for verifying the test passes.  The thresholds are experimentally determined.
+
+      var tester = OscillatorTestingUtils;
+      // The thresholds are experimentally determined.
+      tester.setThresholds({snr: 81.57, maxDiff: 7.26, diffCount: 18260});
+      tester.runTest("square");
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

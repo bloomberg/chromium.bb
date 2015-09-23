@@ -1,0 +1,14 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://html.spec.whatwg.org/#images
+
+[
+    // TODO(philipj): Exposed=(Window,Worker)
+    WillBeGarbageCollected,
+] interface ImageBitmap {
+    // TODO(philipj): width/height should be unsigned long.
+    readonly attribute long width;
+    readonly attribute long height;
+};

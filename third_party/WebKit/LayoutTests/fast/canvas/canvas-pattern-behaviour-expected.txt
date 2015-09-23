@@ -1,0 +1,36 @@
+This test covers the behaviour of pattern use and construction
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context.createPattern(green1x1, null) did not throw an exception
+PASS getPixel(1,1) is [0,128,0,255]
+PASS getPixel(98,1) is [0,128,0,255]
+PASS getPixel(1,48) is [0,128,0,255]
+PASS getPixel(98,48) is [0,128,0,255]
+PASS context.createPattern(green1x1, 'null') threw exception SyntaxError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided type ('null') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'..
+PASS context.createPattern(green1x1, undefined) threw exception SyntaxError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided type ('undefined') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'..
+PASS context.createPattern(green1x1, 'undefined') threw exception SyntaxError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided type ('undefined') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'..
+PASS context.createPattern(green1x1, {toString:function(){ return null;}}) threw exception SyntaxError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided type ('null') is not one of 'repeat', 'no-repeat', 'repeat-x', or 'repeat-y'..
+PASS context.createPattern(null, '') threw exception TypeError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS context.createPattern(undefined, '') threw exception TypeError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS context.createPattern({}, '') threw exception TypeError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS context.createPattern([], '') threw exception TypeError: Failed to execute 'createPattern' on 'CanvasRenderingContext2D': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or ImageBitmap)'.
+PASS context.createPattern(green1x1, '') did not throw an exception
+PASS getPixel(1,1) is [0,128,0,255]
+PASS getPixel(98,1) is [0,128,0,255]
+PASS getPixel(1,48) is [0,128,0,255]
+PASS getPixel(98,48) is [0,128,0,255]
+PASS context.createPattern(green1x1, {toString:function(){ return 'repeat';}}) did not throw an exception
+PASS getPixel(1,1) is [0,128,0,255]
+PASS getPixel(98,1) is [0,128,0,255]
+PASS getPixel(1,48) is [0,128,0,255]
+PASS getPixel(98,48) is [0,128,0,255]
+PASS getPixel(1,1) is [0,128,0,255]
+PASS getPixel(98,1) is [0,128,0,255]
+PASS getPixel(1,48) is [0,128,0,255]
+PASS getPixel(98,48) is [0,128,0,255]
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

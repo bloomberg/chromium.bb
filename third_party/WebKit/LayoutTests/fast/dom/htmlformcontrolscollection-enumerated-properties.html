@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/js-test.js"></script>
+<form id="testForm">
+<input id="id1" name="name1"></input>
+<input id="id2" name="name1"></input>
+<input id="id3"></input>
+<input id="id4" name="name4"></input>
+<input name="name5"></input>
+<input id="id4" name="name6"></input>
+</form>
+
+<script>
+description("This tests verifies the enumerated properties on HTMLFormControlsCollection and their order.");
+
+var testForm = document.getElementById("testForm");
+var htmlFormControlsCollection = testForm.elements;
+shouldBe("htmlFormControlsCollection.__proto__", "HTMLFormControlsCollection.prototype");
+shouldBe("htmlFormControlsCollection.__proto__.__proto__", "HTMLCollection.prototype");
+shouldBe("htmlFormControlsCollection.length", "6");
+
+// As per http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlformcontrolscollection-0:
+// - The object's supported property indices are as defined for HTMLCollection objects.
+// - The supported property names consist of the non-empty values of all the id and name attributes of all the elements
+//   represented by the collection, in tree order, ignoring later duplicates, with the id of an element preceding its name if
+//   it contributes both, they differ from each other, and neither is the duplicate of an earlier entry.
+var expectedEnumeratedProperties = ["0", "1" , "2", "3", "4", "5", "length", "id1", "name1", "id2", "id3", "id4", "name4", "name5", "name6", "namedItem", "item"].sort();
+
+var enumeratedProperties = [];
+for (var property in htmlFormControlsCollection) {
+  enumeratedProperties[enumeratedProperties.length] = property;
+}
+enumeratedProperties.sort();
+shouldBe("enumeratedProperties", "expectedEnumeratedProperties");
+</script>
+</body>
+</html>

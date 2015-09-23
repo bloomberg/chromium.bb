@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript">
+function test()
+{
+    var requestsSent = 0;
+    var responsesReceived = 0;
+
+    function finishWhenDone(agentName, action, errorString)
+    {
+        if (action === "enable")
+            InspectorTest.addResult("");
+        if (errorString)
+            InspectorTest.addResult(agentName + "." + action + " finished with error " + errorString);
+        else
+            InspectorTest.addResult(agentName + "." + action + " finished successfully");
+
+        ++responsesReceived;
+        if (responsesReceived === requestsSent)
+            InspectorTest.completeTest();
+    }
+
+    var targets = WebInspector.targetManager.targets();
+    targets.forEach(function(target) {
+        var agentNames = Object.keys(target._agentsMap).filter(function(agentName) {
+            var agent = target._agentsMap[agentName];
+            return agent["enable"] && agent["disable"] && agentName !== "ServiceWorker" && agentName !== "Security";  // async wrt others.
+        }).sort();
+
+        function disableAgent(agentName)
+        {
+            ++requestsSent;
+            var agent = target._agentsMap[agentName];
+            if (agent._promisified) {
+                agent.disable(finishWhenDone.bind(null, agentName, "disable"))
+                    .catch(finishWhenDone.bind(null, agentName, "disable"));
+            } else {
+                agent.disable(finishWhenDone.bind(null, agentName, "disable"));
+            }
+        }
+
+        function enableAgent(agentName)
+        {
+            ++requestsSent;
+            var agent = target._agentsMap[agentName];
+            if (agent._promisified) {
+                agent.enable(finishWhenDone.bind(null, agentName, "enable"))
+                    .catch(finishWhenDone.bind(null, agentName, "enable"));
+            } else {
+                agent.enable(finishWhenDone.bind(null, agentName, "enable"));
+            }
+        }
+
+        agentNames.forEach(disableAgent);
+
+        agentNames.forEach(function(agentName) {
+            enableAgent(agentName);
+            disableAgent(agentName);
+        });
+    });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that each agent could be enabled/disabled separately.</p>
+</body>
+</html>

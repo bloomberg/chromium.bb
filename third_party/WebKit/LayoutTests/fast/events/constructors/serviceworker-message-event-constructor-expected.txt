@@ -1,0 +1,112 @@
+This tests the constructor for the ServiceWorkerMessageEvent DOM class.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS new ServiceWorkerMessageEvent('eventType').bubbles is false
+PASS new ServiceWorkerMessageEvent('eventType').cancelable is false
+PASS new ServiceWorkerMessageEvent('eventType').data is null
+PASS new ServiceWorkerMessageEvent('eventType').origin is ""
+PASS new ServiceWorkerMessageEvent('eventType').lastEventId is ""
+PASS new ServiceWorkerMessageEvent('eventType').source is null
+PASS new ServiceWorkerMessageEvent('eventType').ports is null
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: false }).bubbles is false
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true }).bubbles is true
+PASS new ServiceWorkerMessageEvent('eventType', { cancelable: false }).cancelable is false
+PASS new ServiceWorkerMessageEvent('eventType', { cancelable: true }).cancelable is true
+PASS new ServiceWorkerMessageEvent('eventType', { data: test_object }).data is test_object
+PASS new ServiceWorkerMessageEvent('eventType', { data: document }).data is document
+PASS new ServiceWorkerMessageEvent('eventType', { data: undefined }).data is null
+PASS new ServiceWorkerMessageEvent('eventType', { data: null }).data is null
+PASS new ServiceWorkerMessageEvent('eventType', { data: false }).data is false
+PASS new ServiceWorkerMessageEvent('eventType', { data: true }).data is true
+PASS new ServiceWorkerMessageEvent('eventType', { data: '' }).data is ""
+PASS new ServiceWorkerMessageEvent('eventType', { data: 'chocolate' }).data is "chocolate"
+PASS new ServiceWorkerMessageEvent('eventType', { data: 12345 }).data is 12345
+PASS new ServiceWorkerMessageEvent('eventType', { data: 18446744073709551615 }).data is 18446744073709552000
+PASS new ServiceWorkerMessageEvent('eventType', { data: NaN }).data is NaN
+PASS new ServiceWorkerMessageEvent('eventType', { data: {valueOf: function () { return test_object; } } }).data == test_object is false
+PASS new ServiceWorkerMessageEvent('eventType', { get data() { return 123; } }).data is 123
+PASS new ServiceWorkerMessageEvent('eventType', { get data() { throw 'ServiceWorkerMessageEvent Error'; } }) threw exception ServiceWorkerMessageEvent Error.
+PASS new ServiceWorkerMessageEvent('eventType', { origin: 'melancholy' }).origin is "melancholy"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: '' }).origin is ""
+PASS new ServiceWorkerMessageEvent('eventType', { origin: undefined }).origin is ""
+PASS new ServiceWorkerMessageEvent('eventType', { origin: null }).origin is "null"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: false }).origin is "false"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: true }).origin is "true"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: 12345 }).origin is "12345"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: 18446744073709551615 }).origin is "18446744073709552000"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: NaN }).origin is "NaN"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: [] }).origin is ""
+PASS new ServiceWorkerMessageEvent('eventType', { origin: [1, 2, 3] }).origin is "1,2,3"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: {melancholy: 12345} }).origin is "[object Object]"
+PASS new ServiceWorkerMessageEvent('eventType', { origin: {valueOf: function () { return 'melancholy'; } } }).origin is "[object Object]"
+PASS new ServiceWorkerMessageEvent('eventType', { get origin() { return 123; } }).origin is "123"
+PASS new ServiceWorkerMessageEvent('eventType', { get origin() { throw 'ServiceWorkerMessageEvent Error'; } }) threw exception ServiceWorkerMessageEvent Error.
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: 'melancholy' }).lastEventId is "melancholy"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: '' }).lastEventId is ""
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: undefined }).lastEventId is ""
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: null }).lastEventId is "null"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: false }).lastEventId is "false"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: true }).lastEventId is "true"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: 12345 }).lastEventId is "12345"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: 18446744073709551615 }).lastEventId is "18446744073709552000"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: NaN }).lastEventId is "NaN"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: [] }).lastEventId is ""
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: [1, 2, 3] }).lastEventId is "1,2,3"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: {melancholy: 12345} }).lastEventId is "[object Object]"
+PASS new ServiceWorkerMessageEvent('eventType', { lastEventId: {valueOf: function () { return 'melancholy'; } } }).lastEventId is "[object Object]"
+PASS new ServiceWorkerMessageEvent('eventType', { get lastEventId() { return 123; } }).lastEventId is "123"
+PASS new ServiceWorkerMessageEvent('eventType', { get lastEventId() { throw 'ServiceWorkerMessageEvent Error'; } }) threw exception ServiceWorkerMessageEvent Error.
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source is channel.port1
+PASS new ServiceWorkerMessageEvent('eventType', { source: window }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: this }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: test_object }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: document }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: document.body }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: undefined }).source is null
+PASS new ServiceWorkerMessageEvent('eventType', { source: null }).source is null
+PASS new ServiceWorkerMessageEvent('eventType', { source: false }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: true }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: '' }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: 'chocolate' }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: 12345 }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: 18446744073709551615 }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: NaN }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { get source() { return channel.port1; } }).source is channel.port1
+PASS new ServiceWorkerMessageEvent('eventType', { get source() { return 123; } }).source threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The provided value is not of type '(ServiceWorker or MessagePort)'.
+PASS new ServiceWorkerMessageEvent('eventType', { get source() { throw 'ServiceWorkerMessageEvent Error'; } }) threw exception ServiceWorkerMessageEvent Error.
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[0] is channel.port1
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1] is channel.port2
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[2] is channel2.port1
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [] }).ports is []
+PASS new ServiceWorkerMessageEvent('eventType', { ports: undefined }).ports is null
+PASS new ServiceWorkerMessageEvent('eventType', { ports: null }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: [1, 2, 3] }).ports[2] threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': Invalid Array element type.
+PASS new ServiceWorkerMessageEvent('eventType', { ports: test_object }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: document }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: false }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: true }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: '' }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: 'chocolate' }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: 12345 }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: 18446744073709551615 }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { ports: NaN }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { get ports() { return 123; } }).ports threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { get ports() { throw 'ServiceWorkerMessageEvent Error'; } }) threw exception ServiceWorkerMessageEvent Error.
+PASS new ServiceWorkerMessageEvent('eventType', { ports: {valueOf: function () { return [channel.port1, channel.port2, channel.port2]; } } }).ports[0] threw exception TypeError: Failed to construct 'ServiceWorkerMessageEvent': The value provided is neither an array, nor does it have indexed properties..
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).bubbles is true
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).cancelable is true
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).data is test_object
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).origin is "wonderful"
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).lastEventId is "excellent"
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).source is port
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[0] is channel.port1
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[1] is channel.port2
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: [channel.port1, channel.port2, channel2.port1] }).ports[2] is channel2.port1
+PASS new ServiceWorkerMessageEvent('eventType', { bubbles: true, cancelable: true, data: test_object, origin: 'wonderful', lastEventId: 'excellent', source: port, ports: {length: 3, 0: channel.port1, 1: channel.port2, 2: channel2.port1} }).ports[2] is channel2.port1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,21 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [18, 153, 201, 47],
+        [18, 153, 132, 47]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox '\u1EA6\u1EA4\u1EAA\u1EA8\u1EB0'",
+        "LayoutText #text",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='stacked'"
+      ]
+    }
+  ]
+}
+

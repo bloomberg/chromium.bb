@@ -1,0 +1,49 @@
+<!doctype html>
+<script src="../../../resources/js-test.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<body>
+  <div id="parent"></div>
+</body>
+<script>
+function prepareShadowTree() {
+    var parent = document.getElementById('parent');
+    parent.appendChild(
+        createDOM('div', {id: 'toplevel'},
+            createDOM('div', {id: 'openhost'},
+                createShadowRoot({mode: 'open'},
+                    createDOM('div', {id: 'openhost_in_openshadow'},
+                        createShadowRoot({'mode': 'open'},
+                            createDOM('div', {id: 'div_open_in_open'}))),
+                    createDOM('div', {id: 'closedhost_in_openshadow'},
+                        createShadowRoot({'mode': 'closed'},
+                            createDOM('div', {id: 'div_closed_in_open'}))))),
+            createDOM('div', {id: 'closedhost'},
+                createShadowRoot({mode: 'closed'},
+                    createDOM('div', {id: 'openhost_in_closedshadow'},
+                        createShadowRoot({'mode': 'open'},
+                            createDOM('div', {id: 'div_open_in_closed'}))),
+                    createDOM('div', {id: 'closedhost_in_closedshadow'},
+                        createShadowRoot({'mode': 'closed'},
+                            createDOM('div', {id: 'div_closed_in_closed'})))))));
+}
+
+prepareShadowTree();
+
+var parent = document.getElementById('parent');
+var result = parent.querySelectorAll("div /deep/ div /deep/ div");
+shouldBe('result.length', '5');
+
+var expected = [
+    'openhost',
+    'openhost_in_openshadow',
+    'div_open_in_open',
+    'closedhost_in_openshadow',
+    'closedhost'
+];
+
+var node;
+for (var i = 0; i < result.length; ++i) {
+  node = result[i];
+  shouldBeEqualToString('node.id', expected[i]);
+}
+</script>

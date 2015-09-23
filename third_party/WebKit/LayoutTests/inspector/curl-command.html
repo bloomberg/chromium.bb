@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/network-test.js"></script>
+<script type="text/javascript">
+
+var test = function()
+{
+    var logView = WebInspector.panels.network._networkLogView;
+
+    function newRequest(headers, data, opt_url)
+    {
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), 0, opt_url || 'http://example.org/path', 0, 0, 0);
+        request.requestMethod = data ? "POST" : "GET";
+        var headerList = [];
+        if (headers) {
+            for (var i in headers)
+                headerList.push({name: i, value: headers[i]});
+        }
+        if (data) {
+            headerList.push({name: "Content-Length", value: data.length});
+            request.requestFormData = data;
+        }
+        request.setRequestHeaders(headerList);
+        return request;
+    }
+
+    function dumpRequest(headers, data, opt_url)
+    {
+        InspectorTest.addResult(logView._generateCurlCommand(newRequest(headers, data, opt_url), WebInspector.isWin() ? "win" : "unix"));
+    }
+
+    dumpRequest({})
+    dumpRequest({}, "123");
+    dumpRequest({"Content-Type": "application/x-www-form-urlencoded"}, "1&b");
+    dumpRequest({"Content-Type": "application/json"}, "{\"a\":1}");
+    dumpRequest({"Content-Type": "application/binary"}, "1234\r\n\x30\x30\2\3\4\5\'\"!");  // expected content length: 15
+    dumpRequest({"Content-Type": "application/binary"}, "1234\r\n\1\x30\x30\2\3\4\5\'\"!");  // expected content length: 16
+    dumpRequest({"Content-Type": "application/binary"}, "\x7F\x80\x90\xFF\u0009\u0700");
+    dumpRequest({}, "", "http://labs.ft.com/?querystring=[]{}");  // Character range symbols must be escaped (http://crbug.com/265449).
+    dumpRequest({"Content-Type": "application/binary"}, "%PATH%$PATH");
+    dumpRequest({":host": "h", "version": "v"});
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests curl command generation</p>
+</body>
+</html>

@@ -1,0 +1,17 @@
+CONSOLE ERROR: Unsafe JavaScript attempt to initiate navigation for frame with URL 'http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination.html' from frame with URL 'http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination-iframe.html'. The frame attempting navigation of the top-level window is sandboxed, but the 'allow-top-navigation' flag is not set.
+
+
+
+============== Back Forward List ==============
+curr->  http://127.0.0.1:8000/navigation/new-window-sandboxed-iframe.html
+            http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-iframe.html (in frame "<!--framePath //<!--frame0-->-->")
+===============================================
+
+============== Back Forward List ==============
+curr->  http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination.html
+            http://127.0.0.1:8000/navigation/resources/new-window-sandboxed-iframe-destination-iframe.html (in frame "<!--framePath //<!--frame0-->-->")
+===============================================
+
+============== Back Forward List ==============
+curr->  http://127.0.0.1:8000/navigation/resources/notify-done.html (in frame "_top")
+===============================================

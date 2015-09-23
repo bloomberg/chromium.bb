@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <script src="/js-test-resources/js-test.js"></script>
+        <script>
+            if (window.testRunner) {
+                testRunner.dumpResourceRequestPriorities();
+                testRunner.dumpAsText();
+            }
+        </script>
+    </head>
+    <body>
+        <script>
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "../resources/test.mp4", false);
+            xhr.send();
+        </script>
+    </body>
+</html>

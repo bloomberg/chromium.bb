@@ -1,0 +1,65 @@
+<!-- Based on fast/repaint/overflow-hidden-in-overflow-hidden-scrolled.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="../../../fast/repaint/resources/default.css">
+    <style>
+        #outer {
+            position: relative;
+            overflow: hidden;
+            height: 200px;
+        }
+
+        section {
+            padding: 192px 0 0 0;
+            width: 200px;
+        }
+
+        div {
+            height: 190px;
+        }
+
+        .innerWrapper {
+            overflow: hidden;
+        }
+
+        .red {
+            background-color: red;
+        }
+
+        .green {
+            background-color: green;
+        }
+    </style>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script>
+        window.expectedPaintInvalidationObjects = [
+            "LayoutBlockFlow DIV class='innerWrapper'",
+            "LayoutBlockFlow DIV class='red'",
+            "LayoutBlockFlow DIV id='ucp' class='green'",
+        ];
+        function paintInvalidationTest()
+        {
+            window.location.hash = "#ucp";
+        }
+
+        function runTest()
+        {
+            document.getElementById("outer").scrollTop = 1000;
+            runPaintInvalidationTest();
+        }
+    </script>
+</head>
+<body onload="runTest()">
+    <!-- Bug 71550 - REGRESSION (r93614): Content remains despite parent element being scrolled off page using javascript. -->
+    <!-- For the test to pass you should not see any RED, only green -->
+    <div id="outer">
+        <section>
+            <div class="innerWrapper">
+                <div class="red"></div>
+                <div id="ucp" class="green"></div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

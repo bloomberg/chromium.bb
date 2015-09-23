@@ -1,0 +1,54 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [59, 143, 98, 23],
+        [59, 143, 98, 23],
+        [59, 143, 98, 23],
+        [59, 43, 98, 123],
+        [59, 43, 98, 23],
+        [59, 43, 98, 23],
+        [59, 43, 98, 23],
+        [59, 43, 98, 23],
+        [59, 43, 98, 23],
+        [59, 43, 98, 23],
+        [0, 0, 157, 166],
+        [0, 0, 10, 1],
+        [0, 0, 10, 1],
+        [0, 0, 10, 1],
+        [0, 0, 10, 1],
+        [0, 0, 10, 1],
+        [0, 0, 10, 1]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'PASS '",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "RootInlineBox",
+        "InlineTextBox 'PASS '",
+        "InlineFlowBox",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGRoot (positioned) svg",
+        "LayoutSVGViewportContainer svg id='inner1'",
+        "LayoutSVGText text",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS '",
+        "LayoutSVGTSpan tspan",
+        "InlineFlowBox",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'PASS'",
+        "LayoutSVGInlineText #text",
+        "LayoutSVGViewportContainer svg id='inner2'",
+        "LayoutSVGText text",
+        "LayoutSVGTSpan tspan",
+        "InlineFlowBox"
+      ]
+    }
+  ]
+}
+

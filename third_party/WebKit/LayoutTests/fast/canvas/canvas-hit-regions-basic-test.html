@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Canvas Hit Regions: basic test</title>
+  <script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400">
+  <button id="face"></button>
+  <button id="eyes"></button>
+</canvas>
+<script src="./resources/canvas-hit-region-event.js"></script>
+<script>
+
+  var canvas = document.getElementById("canvas");
+  var context = canvas.getContext("2d");
+
+  context.fillStyle = "pink";
+  context.arc(200, 175, 150, 0, Math.PI * 2, true); 
+  context.fill();
+  context.addHitRegion({ id : "face", control : document.getElementById("face") });
+
+  context.beginPath();
+  context.fillStyle = "black";
+  context.globalAlpha = .5;
+  context.moveTo(200, 165);
+  context.lineTo(240, 205);
+  context.lineTo(160, 205);
+  context.closePath();
+  context.fill();
+  context.addHitRegion({ id : "nose" });
+
+  context.beginPath();
+  context.fillStyle = "red";
+  context.rect(125, 240, 150, 20); 
+  context.fill();
+  context.addHitRegion({ id : "mouth" });
+  
+  context.beginPath();
+  context.globalAlpha = 1;
+  context.fillStyle = "blue";
+  context.arc(150, 125, 25, 0, Math.PI * 2, true); 
+  context.arc(250, 125, 25, 0, Math.PI * 2, true);
+  context.fill();
+  context.addHitRegion({ id: "eye", control : document.getElementById("eyes") });
+
+  debug("Hit detection and mouse event tests");
+  shouldBe("clickCanvas(100, 100)", "'face'");
+  shouldBe("clickCanvas(200, 200)", "'nose'");
+  shouldBe("clickCanvas(127, 242)", "'mouth'");
+  shouldBe("clickCanvas(150, 125)", "'eye'");
+  shouldBe("clickCanvas(250, 125)", "'eye'");
+  shouldBe("clickCanvas(200, 125)", "'face'");
+  shouldBe("clickCanvas(20, 10)", "null");
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with CSS sizing");
+  canvas.style.width = "220px";
+  canvas.style.height = "220px";
+  shouldBe("clickCanvas(100, 100)", "'face'");
+  shouldBe("clickCanvas(200, 200)", "'nose'");
+  shouldBe("clickCanvas(127, 242)", "'no event sent to canvas'");
+  shouldBe("clickCanvas(150, 125)", "'eye'");
+  shouldBe("clickCanvas(250, 125)", "'no event sent to canvas'");
+  shouldBe("clickCanvas(200, 125)", "'face'");
+  shouldBe("clickCanvas(20, 10)", "null");
+  canvas.style.width = "400px";
+  canvas.style.height = "400px";
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with adjusted pixel ratio");
+  eventSender.setPageZoomFactor(0.5);
+  shouldBe("clickCanvas(50, 50)", "'face'");
+  shouldBe("clickCanvas(100, 100)", "'nose'");
+  shouldBe("clickCanvas(64, 121)", "'mouth'");
+  shouldBe("clickCanvas(75, 63)", "'eye'");
+  shouldBe("clickCanvas(125, 63)", "'eye'");
+  shouldBe("clickCanvas(100, 63)", "'face'");
+  shouldBe("clickCanvas(10, 5)", "null");
+  eventSender.setPageZoomFactor(1);
+  debug("");
+
+  debug("Hit detection and mouse/touch event tests with adjusted page scale factor");
+  window.internals.setPageScaleFactorLimits(0.5, 0.5);
+  window.internals.setPageScaleFactor(0.5);
+  shouldBe("clickCanvas(50, 50, 0.5)", "'face'");
+  shouldBe("clickCanvas(100, 100, 0.5)", "'nose'");
+  shouldBe("clickCanvas(64, 121, 0.5)", "'mouth'");
+  shouldBe("clickCanvas(75, 63, 0.5)", "'eye'");
+  shouldBe("clickCanvas(125, 63, 0.5)", "'eye'");
+  shouldBe("clickCanvas(100, 63, 0.5)", "'face'");
+  shouldBe("clickCanvas(10, 5, 0.5)", "null");
+  window.internals.setPageScaleFactorLimits(1, 1);
+  window.internals.setPageScaleFactor(1);
+  debug("");
+
+  debug("NotSupportedError exception tests");
+  shouldThrow("context.addHitRegion()");
+  shouldThrow("context.addHitRegion({ id : '' })");
+  shouldThrow("context.addHitRegion({ id : undefined })");
+  shouldThrow("context.addHitRegion({ control : {} })");
+  shouldThrow("context.addHitRegion({ control : null })");
+  shouldThrow("context.addHitRegion({ control : undefined })");
+  shouldThrow("context.addHitRegion({ id : '', control : {} })");
+  shouldThrow("context.addHitRegion({ id : undefined, control : {} })");
+  shouldThrow("context.addHitRegion({ id : '', control : null })");
+  shouldThrow("context.addHitRegion({ id : undefined, control : null })");
+  shouldThrow("context.addHitRegion({ id : '', control : undefined })");
+  shouldThrow("context.addHitRegion({ id : undefined, control : undefined })");
+  debug("");
+
+</script>
+</body>
+</html>

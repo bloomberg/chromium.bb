@@ -1,0 +1,42 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 759x17
+          text run at (0,0) width 667: "This tests that in a standalone media document with audio content, the media element repaints correctly "
+          text run at (666,0) width 93: "while playing."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x334
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+layer at (8,42) size 384x334
+  LayoutIFrame {IFRAME} at (0,0) size 384x334 [border: (2px inset #EEEEEE)]
+    layer at (0,0) size 380x330
+      LayoutView at (0,0) size 380x330
+    layer at (0,0) size 380x330
+      LayoutBlockFlow {HTML} at (0,0) size 380x330
+        LayoutBlockFlow {BODY} at (8,8) size 364x314 [bgcolor=#000000]
+    layer at (40,165) size 300x1
+      LayoutVideo (positioned) {VIDEO} at (40,164.50) size 300x1
+    layer at (40,165) size 300x1
+      LayoutFlexibleBox (relative positioned) {DIV} at (0,0) size 300x1
+        LayoutBlockFlow {DIV} at (0,-34) size 300x35
+    layer at (40,131) size 300x0
+      LayoutFlexibleBox (relative positioned) {DIV} at (0,-34) size 300x0
+    layer at (45,131) size 290x30
+      LayoutFlexibleBox (relative positioned) {DIV} at (5,0) size 290x30 [bgcolor=#141414CC]
+        LayoutButton {INPUT} at (9,0) size 30x30
+        LayoutSlider {INPUT} at (48,11) size 98.47x8
+          LayoutFlexibleBox {DIV} at (0,0) size 98.47x8 [border: (1px solid #E6E6E659)]
+            LayoutBlockFlow {DIV} at (1,-8) size 110.47x24
+              LayoutBlockFlow {DIV} at (32.22,0) size 32x24
+        LayoutFlexibleBox {DIV} at (161.47,0) size 25x30 [color=#FFFFFF]
+          LayoutBlockFlow (anonymous) at (0,0) size 25x30
+            LayoutText {#text} at (0,7) size 25x16
+              text run at (0,7) width 25: "0:00"
+        LayoutButton {INPUT} at (195.47,0) size 35x30
+        LayoutSlider {INPUT} at (236.47,11) size 38.53x8
+          LayoutFlexibleBox {DIV} at (0,0) size 38.53x8 [border: (1px solid #E6E6E659)]
+            LayoutBlockFlow {DIV} at (1,-8) size 50.53x24
+              LayoutBlockFlow {DIV} at (19.53,0) size 24x24

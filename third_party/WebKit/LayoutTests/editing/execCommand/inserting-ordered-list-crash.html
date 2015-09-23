@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<input>
+<hr>
+>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    document.designMode = 'on';
+    document.execCommand('SelectAll');
+    document.execCommand('Strikethrough');
+    document.execCommand('InsertOrderedList');
+    window.getSelection().deleteFromDocument();
+    document.execCommand('SelectAll');
+    document.execCommand('Strikethrough');
+    document.write('The test passes if the page does not crash.');
+</script>
+</body>
+</html>

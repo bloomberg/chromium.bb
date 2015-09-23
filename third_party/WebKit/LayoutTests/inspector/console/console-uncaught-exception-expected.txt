@@ -1,0 +1,10 @@
+CONSOLE ERROR: line 18: Uncaught Error: Exception in inline script.
+CONSOLE ERROR: line 11: Uncaught Error: Exception in 'load' event listener.
+CONSOLE ERROR: line 6: Uncaught Error: Exception in setTimeout callback.
+Tests that uncaught exceptions are logged into console.Bug 47250.
+
+
+uncaught-in-iframe.html:18 Uncaught Error: Exception in inline script.a @ uncaught-in-iframe.html:18b @ uncaught-in-iframe.html:23(anonymous function) @ uncaught-in-iframe.html:26
+uncaught-in-iframe.html:11 Uncaught Error: Exception in 'load' event listener.f @ uncaught-in-iframe.html:11(anonymous function) @ uncaught-in-iframe.html:13
+uncaught-in-iframe.html:6 Uncaught Error: Exception in setTimeout callback.bar @ uncaught-in-iframe.html:6(anonymous function) @ uncaught-in-iframe.html:8
+

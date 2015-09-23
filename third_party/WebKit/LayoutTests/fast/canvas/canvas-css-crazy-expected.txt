@@ -1,0 +1,3 @@
+CONSOLE WARNING: The -webkit-canvas CSS feature is deprecated. Please use a positioned <canvas> element instead.
+ALERT: PASS
+

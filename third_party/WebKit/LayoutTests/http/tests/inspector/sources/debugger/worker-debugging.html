@@ -1,0 +1,38 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../debugger-test.js"></script>
+<script src="../../console-test.js"></script>
+
+<script>
+
+function installWorker()
+{
+    new Worker("resources/worker-source.js");
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.evaluateInPage("installWorker()");
+        InspectorTest.waitUntilPaused(paused);
+    }
+
+    function paused(callFrames)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        InspectorTest.resumeExecution(InspectorTest.completeDebuggerTest);
+    }
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests stopping in debugger in the worker.</p>
+</body>
+</html>

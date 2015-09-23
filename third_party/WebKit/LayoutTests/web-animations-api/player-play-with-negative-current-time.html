@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="target"></div>
+<script>
+test(function() {
+  var keyframes = [
+      {left: '0px'},
+      {left: '100px'}
+  ];
+  var timing = {
+      duration: 1,
+      delay: -100,
+  };
+  var player = target.animate(keyframes, timing);
+  document.timeline.currentTime = 0;
+  var oldStartTime = player.startTime;
+  player.startTime += 2000;
+  assert_equals(player.startTime, oldStartTime + 2000);
+  player.play();
+  assert_equals(player.startTime, null);
+  assert_equals(player.currentTime, 0);
+}, 'Play() called with a large negative delay');
+</script>

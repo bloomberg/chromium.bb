@@ -1,0 +1,26 @@
+Tests that document.createEvent() works with DeviceLightEvent.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS typeof event == 'object' is true
+PASS event.__proto__ is DeviceLightEvent.prototype
+PASS event instanceof window.DeviceLightEvent is true
+PASS 'type' in event is true
+PASS 'bubbles' in event is true
+PASS 'cancelable' in event is true
+PASS 'value' in event is true
+PASS typeof newEvent.type == 'string' is true
+PASS newEvent.type is "devicelight"
+PASS typeof newEvent.bubbles == 'boolean' is true
+PASS newEvent.bubbles is true
+PASS typeof newEvent.cancelable == 'boolean' is true
+PASS newEvent.cancelable is false
+PASS typeof newEvent.value == 'number' is true
+PASS newEvent.value is 10
+PASS defaultEvent.bubbles is true
+PASS defaultEvent.cancelable is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

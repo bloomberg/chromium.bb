@@ -1,0 +1,40 @@
+<!-- Based on compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html -->
+<!DOCTYPE HTML>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.internals)
+  internals.settings.setPreferCompositingToLCDTextEnabled(true);
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow DIV id='content'",
+    "LayoutBlockFlow DIV id='content'",
+    "##ALL##",
+    "##ALL##",
+];
+function paintInvalidationTest() {
+  document.getElementById('content').style.backgroundColor = 'green';
+  var container = document.getElementById('container');
+  container.scrollLeft = 2000;
+  container.scrollTop = 2000;
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+#container {
+  width: 500px;
+  height: 500px;
+  overflow: scroll;
+}
+#content {
+  width: 5000px;
+  height: 5000px;
+  background-color: red;
+}
+</style>
+<div id="container">
+  <div id="content">
+  Tests invalidation of scrolling layer. Passes if the repaint rect is not clipped,
+  and there is no red when the scrolling container is scrolled.<br>
+  Note for manual testing: must run with --enable-prefer-compositing-to-lcd-text
+  on non-high-dpi machines to enable composited scrolling.
+  </div>
+</div>

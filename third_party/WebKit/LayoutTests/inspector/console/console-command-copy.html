@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function test()
+{
+    var testCases = [
+        "copy('qwerty')",
+        "copy(document.querySelector('p'))",
+        "copy({foo:'bar'})",
+        "var a = {}; a.b = a; copy(a)",
+        "copy(document.all)",
+        "copy(NaN)",
+        "copy(Infinity)",
+        "copy(null)",
+        "copy(undefined)",
+        "copy(1)",
+        "copy(true)",
+        "copy(false)"
+    ];
+
+    function copyText(text) {
+        InspectorTest.addResult("InspectorFrontendHost.copyText: " + text);
+    }
+
+    InspectorFrontendHost.copyText = copyText;
+
+    for (var i = 0; i < testCases.length; ++i)
+        InspectorTest.RuntimeAgent.evaluate(testCases[i], "", true);
+
+    InspectorTest.RuntimeAgent.evaluate("copy(null)", "", true, InspectorTest.completeTest.bind(InspectorTest));
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+    Tests that console's copy command is copying into front-end buffer.
+</p>
+
+</body>
+</html>

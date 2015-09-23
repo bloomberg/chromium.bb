@@ -1,0 +1,37 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [200, 200],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#ADD8E6"
+            },
+            {
+              "position": [50, 50],
+              "bounds": [50, 50],
+              "drawsContent": true,
+              "repaintRects": [
+                [0, 0, 50, 50],
+                [0, 0, 40, 40]
+              ],
+              "paintInvalidationClients": [
+                "LayoutBlockFlow (positioned) SPAN class='child embiggen'"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

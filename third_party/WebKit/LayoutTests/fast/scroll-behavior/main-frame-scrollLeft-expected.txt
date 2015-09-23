@@ -1,0 +1,11 @@
+Test that setting scrollLeft on the main frame works with both scroll behaviors
+
+This is a testharness.js-based test.
+PASS Scroll x:1, y:0, smooth:false 
+PASS Scroll x:4, y:0, smooth:false 
+PASS Scroll x:20, y:0, smooth:true 
+PASS Scroll x:40, y:0, smooth:true 
+PASS Scroll x:4000, y:0, smooth:true 
+PASS Scroll x:10, y:0, smooth:true 
+Harness: the test ran to completion.
+

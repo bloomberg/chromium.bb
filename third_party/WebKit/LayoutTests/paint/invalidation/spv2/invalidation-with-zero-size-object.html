@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/invalidation-with-zero-size-object.html -->
+<!doctype html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    window.expectedPaintInvalidationObjects = [
+        "LayoutBlockFlow DIV id='element'",
+    ];
+    function paintInvalidationTest()
+    {
+      document.getElementById('element').style.width = '0';
+      document.getElementById('element').style.height = '0';
+    }
+
+    onload = runPaintInvalidationTest;
+</script>
+<style>
+    #element {
+      width: 200px;
+      height: 200px;
+      background-color: red;
+    }
+    #inner {
+      width: 100%;
+      height: 100%;
+    }
+</style>
+<div id='element'>
+  <div id='inner'></div>
+</div>

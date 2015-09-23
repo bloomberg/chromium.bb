@@ -1,0 +1,22 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x55 [border: (2px solid #FF0000)]
+        LayoutBlockFlow {DIV} at (14,14) size 756x27
+          LayoutText {#text} at (0,0) size 32x26
+            text run at (0,0) width 32: "foo"
+          LayoutInline {SPAN} at (0,0) size 17x26
+            LayoutText {#text} at (31,0) size 17x26
+              text run at (31,0) width 17: "\x{9}"
+          LayoutText {#text} at (48,0) size 31x26
+            text run at (48,0) width 31: "bar"
+selection start: position 0 of child 2 {#text} of child 1 {DIV} of child 1 {DIV} of body
+selection end:   position 3 of child 2 {#text} of child 1 {DIV} of child 1 {DIV} of body

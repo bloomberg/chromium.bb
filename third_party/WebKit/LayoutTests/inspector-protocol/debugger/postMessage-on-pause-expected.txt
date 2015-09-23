@@ -1,0 +1,6 @@
+Paused on 'debugger;'
+PASS: message has not been dispatched yet.
+PASS: message has not been dispatched yet.
+Resumed, now waiting for pause in the event listener...
+PASS: pasued in the event listener.
+

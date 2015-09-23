@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<body>
+    <div id='e'></div>
+</body>
+
+<script>
+var element = document.getElementById('e');
+var keyframes = [{opacity: '1', offset: 0}, {opacity: '0', offset: 1}];
+
+var specifiedTiming = new KeyframeEffect(element, keyframes).timing;
+
+test(function() {
+    specifiedTiming.delay = 2;
+    assert_equals(specifiedTiming.delay, 2);
+
+    specifiedTiming.endDelay = 0.5;
+    assert_equals(specifiedTiming.endDelay, 0.5);
+
+    specifiedTiming.fill = 'backwards';
+    assert_equals(specifiedTiming.fill, 'backwards');
+
+    specifiedTiming.iterationStart = 2;
+    assert_equals(specifiedTiming.iterationStart, 2);
+
+    specifiedTiming.iterations = 10;
+    assert_equals(specifiedTiming.iterations, 10);
+
+    specifiedTiming.duration = 5;
+    assert_equals(specifiedTiming.duration, 5);
+    specifiedTiming.duration = '6';
+    assert_equals(specifiedTiming.duration, 'auto');
+    specifiedTiming.duration = 'auto';
+    assert_equals(specifiedTiming.duration, 'auto');
+    specifiedTiming.duration = 'a';
+    assert_equals(specifiedTiming.duration, 'auto');
+    specifiedTiming.duration = '-1';
+    assert_equals(specifiedTiming.duration, 'auto');
+
+    specifiedTiming.playbackRate = 2;
+    assert_equals(specifiedTiming.playbackRate, 2);
+
+    specifiedTiming.direction = 'reverse';
+    assert_equals(specifiedTiming.direction, 'reverse');
+
+    specifiedTiming.easing = "step-start";
+    assert_equals(specifiedTiming.easing, 'step-start');
+}, 'TimedItem.timing should have a setter for each member of the underlying Timing object.');
+</script>

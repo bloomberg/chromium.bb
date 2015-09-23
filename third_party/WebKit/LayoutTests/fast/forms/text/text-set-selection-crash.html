@@ -1,0 +1,13 @@
+<body>
+<script src="../../../resources/js-test.js"></script>
+<applet code=""><input><embed type="application/x-webkit-test-netscape" width="200"></embed></applet>
+<script>
+description('There was a bug that HTMLTextFormControlElement::setSelectionRange crashed. This test requires ASAN or something.');
+jsTestIsAsync = true;
+document.body.onload = function() {
+    document.getElementsByTagName('input')[0].focus();
+    testPassed('if not crash.');
+    finishJSTest();
+};
+</script>
+</body>

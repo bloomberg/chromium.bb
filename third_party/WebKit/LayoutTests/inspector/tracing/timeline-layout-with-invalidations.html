@@ -1,0 +1,72 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function display(callback)
+{
+    requestAnimationFrame(function() {
+        document.getElementById("testElement").style.width = "100px";
+        var forceLayout1 = document.body.offsetTop;
+        document.getElementById("testElement").style.width = "110px";
+        var forceLayout2 = document.body.offsetTop;
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function updateSubframeAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        frames[0].document.body.children[0].style.width = "10px";
+        var forceLayout1 = frames[0].document.body.offsetTop;
+        frames[0].document.body.children[0].style.width = "20px";
+        var forceLayout2 = frames[0].document.body.offsetTop;
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function test()
+{
+    var currentPanel = WebInspector.inspectorView.currentPanel();
+    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
+    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+
+    InspectorTest.runTestSuite([
+        function testLocalFrame(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("display", function() {
+                var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
+                InspectorTest.addArray(firstLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first layout invalidations");
+
+                var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
+                InspectorTest.addArray(secondLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second layout invalidations");
+
+                next();
+            });
+        },
+
+        function testSubframe(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
+                var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
+                InspectorTest.addArray(firstLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first layout invalidations");
+
+                var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
+                InspectorTest.addArray(secondLayoutRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second layout invalidations");
+
+                next();
+            });
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of layout events with invalidations.</p>
+<div id="outerTestElement" style="display: inline-block;"><div id="testElement">PASS</div></div>
+<iframe src="resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script>
+onload = function() {
+  document.getElementById('container').scrollTop = 50;
+};
+</script>
+<style>
+#container {
+  overflow: scroll;
+  width: 200px;
+  height: 200px;
+  color: green;
+}
+</style>
+<div style="height: 100px">
+Tests invalidation of scrolling container and contents on change of style which affects also the contents.
+Passes if the content text is green, and the whole content layer (if composited scrolling) is invalidated.
+</div>
+<div id="container">
+  CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT<br>CONTENT
+</div>

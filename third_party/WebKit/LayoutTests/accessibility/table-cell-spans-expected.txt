@@ -1,0 +1,49 @@
+Cell A
+COLSPAN="2"
+ROWSPAN="2"	Cell B
+COLSPAN="2"
+2,3	2,4
+Cell C
+ROWSPAN="2"	3,2	3,3	3,4
+4,2	4,3	4,4
+----------------------
+{ 0, 0 }
+AXTitle: 
+AXRole: AXCell
+AXDescription: 
+{0, 2}, {0, 2}
+
+----------------------
+{ 1, 1 }
+AXTitle: 
+AXRole: AXCell
+AXDescription: 
+{0, 2}, {0, 2}
+
+----------------------
+{ 3, 0 }
+AXTitle: 
+AXRole: AXCell
+AXDescription: 
+{2, 2}, {0, 1}
+
+----------------------
+{ 2, 0 }
+AXTitle: 
+AXRole: AXCell
+AXDescription: 
+{2, 2}, {0, 1}
+
+----------------------
+{ 2, 3 }
+AXTitle: 
+AXRole: AXCell
+AXDescription: 
+{2, 1}, {3, 1}
+
+----------------------
+{ 10, 10 }
+
+{0, 0}, {0, 0}
+
+

@@ -1,0 +1,7 @@
+CONSOLE MESSAGE: line 12: [object Object]
+Tests that console copies tree outline messages properly.
+
+
+Running: testSelectAll
+Selected text: console-copy-treeoutline.html:8 Object
+

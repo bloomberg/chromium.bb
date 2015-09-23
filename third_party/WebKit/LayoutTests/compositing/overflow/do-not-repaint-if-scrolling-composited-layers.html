@@ -1,0 +1,231 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+    if (window.testRunner)
+        window.testRunner.dumpAsText();
+
+    if (window.internals)
+        window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+
+    function hasScrollbarRepaint(layerTree)
+    {
+        return hasScrollbarRepaintHelper(JSON.parse(layerTree));
+    }
+
+    function hasScrollbarRepaintHelper(jsonLayerTree) {
+        var repaintRects = jsonLayerTree["repaintRects"];
+        if (repaintRects) {
+            for (var i = 0; i < repaintRects.length; ++i) {
+                var width = repaintRects[i][2];
+                var height = repaintRects[i][3];
+                if (width != 15 || height != 285)
+                    return true;
+            }
+        }
+        var children = jsonLayerTree["children"];
+        if (children) {
+            for (var i = 0; i < children.length; i++) {
+                if (hasScrollbarRepaintHelper(children[i]))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    function testRepaint() {
+        var result = "";
+        for (var testIteration = 0; testIteration < 3; ++testIteration) {
+            // In all but the marquee case, we should opt into composited scrolling
+            // and should not repaint.
+            var expected_results = [false, true, false];
+            var container = document.getElementById("container");
+            var marquee = document.getElementById("marquee");
+            var span = document.getElementById("span");
+
+            var toScroll = container;
+            if (testIteration == 0) {
+                var selection = getSelection();
+
+                var range = document.createRange();
+                range.selectNode(document.getElementById("selection-start"));
+                selection.addRange(range);
+
+                range = document.createRange();
+                range.selectNode(document.getElementById("selection-end"));
+                selection.addRange(range);
+            } else if (testIteration == 1) {
+                marquee.style.display = "block";
+                toScroll = marquee;
+            } else {
+                span.style.display = "inline";
+            }
+
+            document.body.offsetTop;
+
+            if (window.internals)
+                window.internals.startTrackingRepaints(document);
+
+            toScroll.scrollTop = 100;
+
+            if (window.internals) {
+                if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)) == expected_results[testIteration])
+                    result += "PASS repainted when expected\n";
+                else
+                    result += "FAIL did not repaint when expected\n";
+                window.internals.stopTrackingRepaints(document);
+            }
+
+            // Do all cleanup here (so as not to affect repaint rects).
+            toScroll.scrollTop = 0;
+            span.style.display = "none";
+            marquee.style.display = "none";
+            getSelection().removeAllRanges();
+        }
+
+        return result;
+    }
+
+    function testNoRepaint() {
+        var result = "";
+        var container = document.getElementById("container");
+
+        document.body.offsetTop;
+
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        container.scrollTop = 100;
+
+        if (window.internals) {
+            if (!hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)))
+                result += "PASS did not repaint as expected\n";
+            else
+                result += "FAIL repainted when unexpected\n";
+            window.internals.stopTrackingRepaints(document);
+        }
+
+        container.scrollTop = 0;
+
+        return result;
+    }
+
+    function testOverflowHidden() {
+        var result = "";
+        var container = document.getElementById("container");
+
+        container.style.overflow = "hidden";
+        document.body.offsetTop;
+
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
+
+        container.scrollTop = 100;
+
+        if (window.internals) {
+            if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_REPAINT_RECTS)))
+                result += "PASS repainted when expected\n";
+            else
+                result += "FAIL did not repaint when expected\n";
+
+            window.internals.stopTrackingRepaints(document);
+        }
+
+        container.scrollTop = 0;
+
+        return result;
+    }
+
+    function doTests() {
+        var marquee = document.getElementById("marquee");
+        marquee.stop();
+        var result = testRepaint();
+        result += testNoRepaint();
+        result += testOverflowHidden();
+        var pre = document.createElement('pre');
+        document.body.appendChild(pre);
+        pre.innerHTML = result;
+        if (!window.internals)
+            document.getElementById("description").style.display = "block";
+    }
+
+    window.onload = doTests;
+</script>
+<style>
+    #target::selection { background-color: green; }
+
+    #container {
+        width:100px;
+        height:300px;
+        border: 1px black solid;
+        overflow: scroll;
+        -webkit-backface-visibility: hidden;
+        position: relative;
+    }
+
+    #fixed {
+        width: 50px;
+        height: 50px;
+        position: fixed;
+        top: 200px;
+        left: 200px;
+        background-color: blue;
+        -webkit-backface-visibility: hidden;
+    }
+
+    .scrolled {
+        width: 50px;
+        height: 50px;
+        margin: 10px;
+        position: relative;
+        background-color: green;
+        -webkit-backface-visibility: hidden;
+    }
+
+    #span {
+        display: none;
+    }
+
+    #description {
+        display: none;
+    }
+
+    marquee {
+        width: 60px;
+        height: 60px;
+        -webkit-backface-visibility: hidden;
+        position: relative;
+    }
+</style>
+</head>
+<body>
+    <pre id="description">
+      This test ensures that if the only thing that scrolls is a composited layer,
+      we do not repaint. It passes if we repaint when we have to draw the selection
+      block gaps or if we have content that is not in a composited layer. It also
+      checks that we do not repaint when all the content is in a composited layer.
+    </pre>
+    <div id="container">
+        <span id="span">Hello!</span>
+        <div id="fixed"></div>
+        <div class="scrolled" id="selection-start"></div>
+        <div class="scrolled" id="selection-end"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+        <div class="scrolled"></div>
+    </div>
+    <marquee id="marquee" direction="up" scrollamount="1">
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+        <p>Lorem ipsum dolor amet</p>
+    </marquee>
+</body>
+</html>

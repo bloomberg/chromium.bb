@@ -1,0 +1,6 @@
+CONSOLE MESSAGE: line 1: [object DOMException]
+CONSOLE MESSAGE: line 1: PASS
+CONSOLE MESSAGE: line 1: PASS
+CONSOLE MESSAGE: line 1: PASS
+CONSOLE MESSAGE: line 1: [object DOMException]
+ 

@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Tests MediaStreamTrack::getSources.");
+
+var sources = null;
+var previousId;
+
+function error() {
+    testFailed('Stream generation failed.');
+    finishJSTest();
+}
+
+function getUserMedia(constraints, callback) {
+    try {
+        navigator.webkitGetUserMedia(constraints, callback, error);
+    } catch (e) {
+        testFailed('webkitGetUserMedia threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+function gotSources2(s) {
+    testPassed('gotSources2 was called.');
+    sources = s;
+    shouldBeTrue('sources.length > 0');
+    shouldBeTrue('sources[0].id === previousId');
+    shouldBeTrue('sources[0].label.length > 0');
+
+    finishJSTest();
+}
+
+function gotStream(s) {
+    testPassed('gotStream was called.');
+
+    shouldNotThrow('MediaStreamTrack.getSources(gotSources2);');
+}
+
+function gotSources1(s) {
+    testPassed('gotSources1 was called.');
+    sources = s;
+    shouldBeTrue('sources.length > 0');
+    previousId = sources[0].id;
+
+    getUserMedia({audio:true, video:true}, gotStream);
+}
+
+shouldNotThrow('MediaStreamTrack.getSources(gotSources1);');
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

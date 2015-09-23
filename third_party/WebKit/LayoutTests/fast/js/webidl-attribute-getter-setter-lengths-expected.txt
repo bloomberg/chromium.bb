@@ -1,0 +1,11 @@
+Verify WebIDL interface attribute getter/setter function lengths
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'title').get.length is 0
+PASS Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'title').set.length is 1
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

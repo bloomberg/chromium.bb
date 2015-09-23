@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+
+test(function(t) { assert_exists(window, 'testRunner'); t.done(); },
+     'window.testRunner is required for the following tests.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      testRunner.setBluetoothMockDataSet('EmptyAdapter');
+      return assert_promise_rejects_with_message(
+        characteristic.writeValue(new ArrayBuffer(1 /* length */)), {
+          name: 'NetworkError',
+          message: 'Bluetooth Device is no longer in range.'
+        }, 'Device went out of range.');
+    });
+}, 'Device goes out of range. Reject with NetworkError.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      testRunner.setBluetoothMockDataSet('MissingServiceGenericAccessAdapter');
+      return assert_promise_rejects_with_message(
+        characteristic.writeValue(new ArrayBuffer(1 /* length */)), {
+          name: 'InvalidStateError',
+          message: 'GATT Service no longer exists.'
+        }, 'Service got removed.');
+    });
+}, 'Service gets removed. Reject with InvalidStateError.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      testRunner.setBluetoothMockDataSet('MissingCharacteristicGenericAccessAdapter');
+      return assert_promise_rejects_with_message(
+        characteristic.writeValue(new ArrayBuffer(1 /* length */)), {
+          name: 'InvalidStateError',
+          message: 'GATT Characteristic no longer exists.'
+        }, 'Characteristic got removed.');
+    });
+}, 'Characteristic gets removed. Reject with InvalidStateError.');
+
+// The following tests make sure the Web Bluetooth implementation
+// responds correctly to the different types of errors the
+// underlying platform might return for GATT operations.
+
+// Each implementation maps these characteristics to specific code paths
+// that result in different errors thus increasing code coverage
+// when testing. Therefore some of these characteristics might not be useful
+// for all implementations.
+[{
+  testName: 'GATT Error: Unknown.',
+  uuid: errorUUID(0xA1),
+  error: {
+    name: 'NotSupportedError',
+    message: 'GATT Error Unknown.'
+  }
+}, {
+  testName: 'GATT Error: Failed.',
+  uuid: errorUUID(0xA2),
+  error: {
+    name: 'NotSupportedError',
+    message: 'GATT operation failed for unknown reason.'
+  }
+}, {
+  testName: 'GATT Error: In Progress.',
+  uuid: errorUUID(0xA3),
+  error: {
+    name: 'NetworkError',
+    message: 'GATT operation already in progress.'
+  }
+}, {
+  testName: 'GATT Error: Invalid Length.',
+  uuid: errorUUID(0xA4),
+  error: {
+    name: 'InvalidModificationError',
+    message: 'GATT Error: invalid attribute length.'
+  }
+}, {
+  testName: 'GATT Error: Not Permitted.',
+  uuid: errorUUID(0xA5),
+  error: {
+    name: 'NotSupportedError',
+    message: 'GATT operation not permitted.'
+  }
+}, {
+  testName: 'GATT Error: Not Authorized.',
+  uuid: errorUUID(0xA6),
+  error: {
+    name: 'SecurityError',
+    message: 'GATT operation not authorized.'
+  }
+}, {
+  testName: 'GATT Error: Not Paired.',
+  uuid: errorUUID(0xA7),
+  // TODO(ortuno): Change to InsufficientAuthenticationError or similiar
+  // once https://github.com/WebBluetoothCG/web-bluetooth/issues/137 is
+  // resolved.
+  error: {
+    name: 'NetworkError',
+    message: 'GATT Error: Not paired.'
+  }
+}, {
+  testName: 'GATT Error: Not Supported.',
+  uuid: errorUUID(0xA8),
+  error: {
+    name: 'NotSupportedError',
+    message: 'GATT Error: Not supported.'
+  }
+}].forEach(testSpec => {
+  promise_test(() => {
+    testRunner.setBluetoothMockDataSet('FailingGATTOperationsAdapter');
+    return requestDeviceWithKeyDown({filters: [{services: [errorUUID(0xA0)]}]})
+      .then(device => device.connectGATT())
+      .then(gattServer => gattServer.getPrimaryService(errorUUID(0xA0)))
+      .then(service => service.getCharacteristic(testSpec.uuid))
+      .then(characteristic => {
+        return assert_promise_rejects_with_message(
+          characteristic.writeValue(new Uint8Array([1])),
+          testSpec.error,
+          'Trying to write to a characteristic failed.');
+      });
+  }, testSpec.testName);
+});
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      return assert_promise_rejects_with_message(
+        characteristic.writeValue(new Uint8Array(513 /* length */)), {
+          name: 'InvalidModificationError',
+          message: 'Value can\'t exceed 512 bytes.'
+        }, 'Value passed was too long.');
+    });
+}, 'Trying to write more than 512 bytes should return an error.');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['generic_access']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => Promise.all(
+      [characteristic.writeValue(new Uint8Array(1 /* length */)),
+       characteristic.writeValue(new ArrayBuffer(1 /* length */)),
+       characteristic.writeValue(new DataView(new ArrayBuffer(1 /* length */)))]));
+}, 'A regular write request to a writable characteristic should succeed.');
+</script>

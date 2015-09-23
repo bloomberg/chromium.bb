@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<style>
+div {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    transform-origin: 0% 0%;
+}
+
+/* Note the order of the scaling operation affects the path coordinates */
+#target {
+    background-color: red;
+    translate: 200px 10px;
+    rotate: 90deg;
+    scale: 1 2;
+    motion: path("m 0 0 v -20 h 20") 0rad 100%;
+}
+#expected {
+    background-color: green;
+    transform: translate(240px, 30px) rotate(90deg) scale(1, 2);
+}
+</style>
+
+<p>There should be no red color boxes</p>
+<div id="target"></div>
+<div id="expected"></div>

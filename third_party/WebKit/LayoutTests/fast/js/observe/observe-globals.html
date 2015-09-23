@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<script>
+jsTestIsAsync = true;
+description("Calling Object.observe on the global object should throw");
+function runTest() {
+    shouldThrow("Object.observe(window)");
+    shouldThrow("Object.observe(this)");
+    shouldThrow("Object.observe(frames[0])");
+    finishJSTest();
+}
+</script>
+<iframe onload="runTest()"></iframe>

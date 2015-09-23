@@ -1,0 +1,9 @@
+PASS selection.type is "Range"
+PASS selection.anchorNode is $("test").querySelectorAll("li")[0].childNodes[0]
+PASS selection.anchorOffset is 0
+PASS selection.focusNode is $("test").querySelectorAll("li a")[3].firstChild
+PASS selection.focusOffset is 4
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

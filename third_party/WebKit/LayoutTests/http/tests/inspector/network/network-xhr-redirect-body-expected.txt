@@ -1,0 +1,22 @@
+CONSOLE MESSAGE: line 6: XHR loaded: 1
+CONSOLE MESSAGE: line 6: XHR loaded: 2
+5
+Tests that XHR redirects preserve request body.
+
+POST http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=1
+  actual http method was: POST
+  request body: [LOST]
+
+GET http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=301&ttl=0
+  actual http method was: GET
+  request body: []
+
+POST http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=307&ttl=1
+  actual http method was: POST
+  request body: [PRESERVED]
+
+POST http://127.0.0.1:8000/inspector/network/resources/redirect.cgi?status=307&ttl=0
+  actual http method was: POST
+  request body: [PRESERVED]
+
+

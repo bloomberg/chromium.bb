@@ -1,0 +1,21 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Tests object revelation in the UI.
+
+
+Running: init
+
+Running: revealNode
+Node revealed in the Elements panel
+
+Running: revealUILocation
+UILocation inspector-test.js:2:1 revealed in the Sources panel
+
+Running: revealResource
+Resource inspector-test.js revealed in the Resources panel
+
+Running: revealRequestWithResource
+Request inspector-test.js revealed in the Network panel
+
+Running: revealRequestWithoutResource
+Request missing.js revealed in the Network panel
+

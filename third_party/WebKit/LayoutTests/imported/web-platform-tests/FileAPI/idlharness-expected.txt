@@ -1,0 +1,95 @@
+CONSOLE MESSAGE: line 198: callback not yet supported
+This is a testharness.js-based test.
+PASS URL interface: operation createObjectURL(Blob) 
+FAIL URL interface: operation createFor(Blob) assert_own_property: interface object missing static operation expected property "createFor" missing
+PASS URL interface: operation revokeObjectURL(DOMString) 
+PASS Blob interface: existence and properties of interface object 
+PASS Blob interface object length 
+FAIL Blob interface: existence and properties of interface prototype object assert_equals: class string of Blob.prototype expected "[object BlobPrototype]" but got "[object Object]"
+PASS Blob interface: existence and properties of interface prototype object's "constructor" property 
+PASS Blob interface: attribute size 
+PASS Blob interface: attribute type 
+FAIL Blob interface: attribute isClosed assert_true: The prototype object must have a property "isClosed" expected true got false
+PASS Blob interface: operation slice(long long,long long,DOMString) 
+PASS Blob interface: operation close() 
+PASS Blob must be primary interface of new Blob(["TEST"]) 
+PASS Stringification of new Blob(["TEST"]) 
+PASS Blob interface: new Blob(["TEST"]) must inherit property "size" with the proper type (0) 
+PASS Blob interface: new Blob(["TEST"]) must inherit property "type" with the proper type (1) 
+FAIL Blob interface: new Blob(["TEST"]) must inherit property "isClosed" with the proper type (2) assert_inherits: property "isClosed" not found in prototype chain
+PASS Blob interface: new Blob(["TEST"]) must inherit property "slice" with the proper type (3) 
+PASS Blob interface: calling slice(long long,long long,DOMString) on new Blob(["TEST"]) with too few arguments must throw TypeError 
+PASS Blob interface: new Blob(["TEST"]) must inherit property "close" with the proper type (4) 
+PASS File interface: existence and properties of interface object 
+PASS File interface object length 
+FAIL File interface: existence and properties of interface prototype object assert_equals: class string of File.prototype expected "[object FilePrototype]" but got "[object Object]"
+PASS File interface: existence and properties of interface prototype object's "constructor" property 
+PASS File interface: attribute name 
+PASS File interface: attribute lastModified 
+PASS File must be primary interface of new File(["myFileBits"], "myFileName") 
+PASS Stringification of new File(["myFileBits"], "myFileName") 
+PASS File interface: new File(["myFileBits"], "myFileName") must inherit property "name" with the proper type (0) 
+PASS File interface: new File(["myFileBits"], "myFileName") must inherit property "lastModified" with the proper type (1) 
+PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "size" with the proper type (0) 
+PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "type" with the proper type (1) 
+FAIL Blob interface: new File(["myFileBits"], "myFileName") must inherit property "isClosed" with the proper type (2) assert_inherits: property "isClosed" not found in prototype chain
+PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "slice" with the proper type (3) 
+PASS Blob interface: calling slice(long long,long long,DOMString) on new File(["myFileBits"], "myFileName") with too few arguments must throw TypeError 
+PASS Blob interface: new File(["myFileBits"], "myFileName") must inherit property "close" with the proper type (4) 
+PASS FileList interface: existence and properties of interface object 
+PASS FileList interface object length 
+FAIL FileList interface: existence and properties of interface prototype object assert_equals: class string of FileList.prototype expected "[object FileListPrototype]" but got "[object Object]"
+PASS FileList interface: existence and properties of interface prototype object's "constructor" property 
+PASS FileList interface: operation item(unsigned long) 
+PASS FileList interface: attribute length 
+PASS FileList must be primary interface of file_input.files 
+PASS Stringification of file_input.files 
+PASS FileList interface: file_input.files must inherit property "item" with the proper type (0) 
+PASS FileList interface: calling item(unsigned long) on file_input.files with too few arguments must throw TypeError 
+PASS FileList interface: file_input.files must inherit property "length" with the proper type (1) 
+PASS FileReader interface: existence and properties of interface object 
+PASS FileReader interface object length 
+FAIL FileReader interface: existence and properties of interface prototype object assert_equals: class string of FileReader.prototype expected "[object FileReaderPrototype]" but got "[object Object]"
+PASS FileReader interface: existence and properties of interface prototype object's "constructor" property 
+PASS FileReader interface: operation readAsArrayBuffer(Blob) 
+PASS FileReader interface: operation readAsText(Blob,DOMString) 
+PASS FileReader interface: operation readAsDataURL(Blob) 
+PASS FileReader interface: operation abort() 
+PASS FileReader interface: constant EMPTY on interface object 
+PASS FileReader interface: constant EMPTY on interface prototype object 
+PASS FileReader interface: constant LOADING on interface object 
+PASS FileReader interface: constant LOADING on interface prototype object 
+PASS FileReader interface: constant DONE on interface object 
+PASS FileReader interface: constant DONE on interface prototype object 
+PASS FileReader interface: attribute readyState 
+PASS FileReader interface: attribute result 
+PASS FileReader interface: attribute error 
+PASS FileReader interface: attribute onloadstart 
+PASS FileReader interface: attribute onprogress 
+PASS FileReader interface: attribute onload 
+PASS FileReader interface: attribute onabort 
+PASS FileReader interface: attribute onerror 
+PASS FileReader interface: attribute onloadend 
+PASS FileReader must be primary interface of new FileReader() 
+PASS Stringification of new FileReader() 
+PASS FileReader interface: new FileReader() must inherit property "readAsArrayBuffer" with the proper type (0) 
+PASS FileReader interface: calling readAsArrayBuffer(Blob) on new FileReader() with too few arguments must throw TypeError 
+PASS FileReader interface: new FileReader() must inherit property "readAsText" with the proper type (1) 
+PASS FileReader interface: calling readAsText(Blob,DOMString) on new FileReader() with too few arguments must throw TypeError 
+PASS FileReader interface: new FileReader() must inherit property "readAsDataURL" with the proper type (2) 
+PASS FileReader interface: calling readAsDataURL(Blob) on new FileReader() with too few arguments must throw TypeError 
+PASS FileReader interface: new FileReader() must inherit property "abort" with the proper type (3) 
+PASS FileReader interface: new FileReader() must inherit property "EMPTY" with the proper type (4) 
+PASS FileReader interface: new FileReader() must inherit property "LOADING" with the proper type (5) 
+PASS FileReader interface: new FileReader() must inherit property "DONE" with the proper type (6) 
+PASS FileReader interface: new FileReader() must inherit property "readyState" with the proper type (7) 
+PASS FileReader interface: new FileReader() must inherit property "result" with the proper type (8) 
+PASS FileReader interface: new FileReader() must inherit property "error" with the proper type (9) 
+PASS FileReader interface: new FileReader() must inherit property "onloadstart" with the proper type (10) 
+PASS FileReader interface: new FileReader() must inherit property "onprogress" with the proper type (11) 
+PASS FileReader interface: new FileReader() must inherit property "onload" with the proper type (12) 
+PASS FileReader interface: new FileReader() must inherit property "onabort" with the proper type (13) 
+PASS FileReader interface: new FileReader() must inherit property "onerror" with the proper type (14) 
+PASS FileReader interface: new FileReader() must inherit property "onloadend" with the proper type (15) 
+Harness: the test ran to completion.
+

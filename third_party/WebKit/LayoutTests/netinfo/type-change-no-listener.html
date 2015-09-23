@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+description('Tests that the type changes without an active listener');
+
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+shouldBe('connection.type', 'newConnectionType');
+shouldBe('connection.downlinkMax', 'newDownlinkMax');
+
+finishJSTest();
+</script>
+</body>
+</html>

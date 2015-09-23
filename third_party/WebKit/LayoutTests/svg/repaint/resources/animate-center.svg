@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10">
+  <defs>
+    <style type="text/css"><![CDATA[
+      #square {
+        fill: red;
+        -webkit-animation: keyframes 0.01s;
+        -webkit-animation-fill-mode: forwards;
+        -webkit-animation-timing-function: step-end;
+      }
+      @-webkit-keyframes keyframes {
+        0% { fill: pink }
+        /* To prevent flakiness, rapidly switch to green */
+        1% { fill: green }
+        100% { fill: green }
+      }
+    ]]></style>
+  </defs>
+  <rect id="square" width="5" height="5" x="5" y="5"></rect>
+</svg>

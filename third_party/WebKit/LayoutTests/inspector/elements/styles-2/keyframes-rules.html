@@ -1,0 +1,41 @@
+<html>
+<head>
+<style>
+@-webkit-keyframes fadeout {
+    from { background-color: black; }
+    to { background-color: white; }
+}
+
+* {
+    background-color: papayawhip;
+}
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.runTestSuite([
+        function testInit(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function testDumpStyles(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true);
+            next();
+        }
+    ]);
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that source data is extracted correctly from stylesheets with @-webkit-keyframes rules.
+</p>
+
+<div id="inspected" style="background-color: white;">Content</div>
+</body>
+</html>

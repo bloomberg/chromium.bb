@@ -1,0 +1,10 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+      LayoutTable {TABLE} at (0,10) size 6x4
+        LayoutTableSection {TBODY} at (0,0) size 6x4
+          LayoutTableRow {TR} at (0,2) size 6x0
+            LayoutTableCell {TD} at (2,1) size 2x2 [r=0 c=0 rs=8190 cs=1]

@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [8, 70, 80, 36],
+        [8, 70, 74, 18],
+        [8, 70, 47, 36]
+      ],
+      "paintInvalidationClients": [
+        "InlineTextBox ''",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "InlineTextBox ''",
+        "RootInlineBox",
+        "LayoutBlockFlow DIV id='dv'",
+        "LayoutText #text",
+        "InlineTextBox 'Lorem ipsu'"
+      ]
+    }
+  ]
+}
+

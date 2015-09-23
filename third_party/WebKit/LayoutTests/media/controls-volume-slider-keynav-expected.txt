@@ -1,0 +1,9 @@
+EXPECTED (audio.volume == '1') OK
+EVENT(loadedmetadata)
+EXPECTED (audio.volume < '1') OK
+EXPECTED (audio.volume == '1') OK
+EXPECTED (audio.volume == '0') OK
+EXPECTED (audio.volume == '1') OK
+EVENT(volumechange)
+END OF TEST
+

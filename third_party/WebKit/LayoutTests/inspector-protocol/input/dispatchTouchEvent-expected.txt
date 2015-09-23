@@ -1,0 +1,45 @@
+-----Event-----
+type: touchstart
+----Touches----
+id: 0
+pageX: 100
+pageY: 200
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchmove
+----Touches----
+id: 0
+pageX: 100
+pageY: 200
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+-----Event-----
+type: touchend
+----Touches----
+-----Event-----
+type: touchstart
+shiftKey
+----Touches----
+id: 0
+pageX: 20
+pageY: 30
+radiusX: 1
+radiusY: 1
+rotationAngle: 0
+force: 1
+id: 1
+pageX: 100
+pageY: 200
+radiusX: 5
+radiusY: 6
+rotationAngle: 1
+force: 0
+-----Event-----
+type: touchend
+----Touches----
+

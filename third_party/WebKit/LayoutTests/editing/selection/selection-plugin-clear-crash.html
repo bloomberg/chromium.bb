@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+    
+function runTest()
+{
+    var obj = document.getElementById("test");
+    var s = window.getSelection();
+    // The cleardocumentduringnew attribute intends to clear document.body when the
+    // embed element is loaded and it is used for only tests. See:
+    //    https://code.google.com/p/chromium/codesearch#chromium/src/content/shell/tools/plugin/main.cpp&q=cleardocumentduringnew&type=cs&sq=package:chromium&l=247 
+    // It causes a timing issue that |obj| exists on Linux but not on Windows.
+    if (obj)
+        s.collapse(obj, 0);
+    else
+        s.removeAllRanges();
+    document.body.innerHTML = "PASS";
+}
+</script>
+<body onload="runTest()">
+<div>
+<object id="test"></object>
+<embed type="application/x-webkit-test-netscape" cleardocumentduringnew></embed>
+</div>
+</body>
+</html>

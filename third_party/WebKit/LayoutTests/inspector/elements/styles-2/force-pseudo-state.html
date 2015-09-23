@@ -1,0 +1,88 @@
+<html>
+<head>
+<style>
+div:hover, a:hover {
+    color: red;
+}
+
+div:focus, a:focus {
+    border: 1px solid green;
+}
+
+div:active, a:active {
+    font-weight: bold;
+}
+
+</style>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+
+    InspectorTest.nodeWithId("div", foundDiv);
+
+    var divNode;
+
+    function dumpData()
+    {
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.dumpElementsTree();
+    }
+
+    function foundDiv(node)
+    {
+        divNode = node;
+        InspectorTest.cssModel.forcePseudoState(divNode, "hover", true);
+        InspectorTest.cssModel.forcePseudoState(divNode, "active", true);
+        InspectorTest.selectNodeAndWaitForStyles("div", divSelected1);
+    }
+
+    function divSelected1()
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("DIV with :hover and :active");
+        dumpData();
+        InspectorTest.waitForStyles("div", hoverCallback, true);
+        InspectorTest.cssModel.forcePseudoState(divNode, "hover", false);
+
+        function hoverCallback()
+        {
+            InspectorTest.waitForStyles("div", divSelected2, true);
+            InspectorTest.cssModel.forcePseudoState(divNode, "focus", true);
+        }
+    }
+
+    function divSelected2()
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("DIV with :active and :focus");
+        dumpData();
+        InspectorTest.waitForStyles("div", focusCallback, true);
+        InspectorTest.cssModel.forcePseudoState(divNode, "focus", false);
+
+        function focusCallback()
+        {
+            InspectorTest.waitForStyles("div", divSelected3, true);
+            InspectorTest.cssModel.forcePseudoState(divNode, "active", false);
+        }
+    }
+
+    function divSelected3(node)
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult("DIV with no forced state");
+        dumpData();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body id="mainBody" class="main1 main2 mainpage" onload="runTest()" style="font-weight: normal; width: 85%; background-image: url(bar.png)">
+<p>
+Tests that forced element state is reflected in the DOM tree and Styles pane.
+</p>
+<div id="div">Test text</div>
+</body>
+</html>

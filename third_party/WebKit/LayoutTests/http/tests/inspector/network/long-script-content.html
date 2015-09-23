@@ -1,0 +1,78 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script>
+
+var scriptElement;
+function loadScript()
+{
+    scriptElement = document.createElement("script");
+    scriptElement.src = "resources/long_script.cgi";
+    document.head.appendChild(scriptElement);
+}
+
+function unloadScript()
+{
+    scriptElement.parentElement.removeChild(scriptElement);
+}
+
+function gc()
+{
+    if (window.internals)
+        window.internals.garbageCollectDocumentResources(document);
+    // In Oilpan, Resource objects are not destructed until GC.
+    if (window.GCController)
+        GCController.collectAll();
+}
+
+function test()
+{
+    InspectorTest.hardReloadPage(step1);
+
+    function step1()
+    {
+        InspectorTest.addConsoleSniffer(step2);
+        InspectorTest.evaluateInPage("loadScript()");
+    }
+
+    function step2(event)
+    {
+        InspectorTest.evaluateInPage("unloadScript()", step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.waitForScriptSource("long_script.cgi", step4);
+    }
+
+    function step4(uiSourceCode)
+    {
+        InspectorTest.evaluateInPage("gc()", step5.bind(null, uiSourceCode));
+    }
+
+    function step5(uiSourceCode)
+    {
+        uiSourceCode.requestContent(step6);
+    }
+
+    function step6(loadedScript)
+    {
+        var expected = "console.log('finished');\n";
+        InspectorTest.assertTrue(!!loadedScript, "No script content");
+        loadedScript = loadedScript.replace(/\r\n/g, '\n');  // on windows we receive additional symbol \r at line end.
+        InspectorTest.assertEquals(1024 * 10240 + expected.length, loadedScript.length, "Loaded script length mismatch");
+        var actual = loadedScript.substring(loadedScript.length - expected.length);
+        InspectorTest.assertEquals(expected, actual, "Loaded script is corrupted");
+
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+    <p> Tests long script content is correctly shown in source panel after page reload.</p>
+</body>
+</html>
+

@@ -1,0 +1,29 @@
+<!-- Based on fast/repaint/border-radius-without-border.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='target1'",
+    "LayoutBlockFlow (positioned) DIV id='target2'",
+];
+function paintInvalidationTest()
+{
+    document.getElementById('target1').style.width = '200px';
+    document.getElementById('target2').style.height = '200px';
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+    margin: 0;
+}
+div {
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    border-radius: 10px 15px 20px 25px;
+    position: absolute;
+}
+</style>
+<div id="target1" style="top: 0px"></div>
+<div id="target2" style="top: 200px"></div>

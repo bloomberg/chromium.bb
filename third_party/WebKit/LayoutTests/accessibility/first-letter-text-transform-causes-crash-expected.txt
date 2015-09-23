@@ -1,0 +1,20 @@
+Dt
+End of test
+
+First letter text transform causes assert and bad type cast. This can cause a crash.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+AXRole: AXWebArea AXValue: 
+    AXRole: AXDescriptionListTerm AXValue: 
+        AXRole: AXStaticText AXValue: D
+            AXRole: AXInlineTextBox AXValue: D
+        AXRole: AXStaticText AXValue: Dt
+            AXRole: AXInlineTextBox AXValue: Dt
+    AXRole: AXParagraph AXValue: 
+        AXRole: AXStaticText AXValue: End of test
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,16 @@
+CONSOLE MESSAGE: line 1: Opening front-end for the first time
+CONSOLE MESSAGE: line 1: Opening front-end second time
+This test checks that style sheets hosted inside shadow roots could be inspected if inspector is reopened.
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+.red  { (<style>…</style>)
+    color: red;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+

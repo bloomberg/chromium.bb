@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../../../resources/js-test.js"></script>
+<style>
+#empty {
+    width: 100px;
+    height: 50px;
+}
+</style>
+</head>
+<body onload="test()">
+<p>This test checks that the context menu is shown on long press gesture.</p>
+<div id="empty"></div>
+<div id="console"></div>
+<script>
+"use strict";
+
+var eventSequence = "";
+var testResult=""
+
+function runTest(x, y, mouseUpFlag) {
+    eventSequence = "Event sequence:";
+    testResult="FAIL";
+    internals.settings.setShowContextMenuOnMouseUp(mouseUpFlag);
+    eventSender.gestureLongPress(x, y);
+
+    debug("showContextMenuOnMouseUp = " + mouseUpFlag)
+    debug(eventSequence);
+    debug(testResult);
+    debug("");
+}
+
+function test()
+{
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    document.oncontextmenu = function() {
+      testResult = "PASS: Context Menu event seen.";
+    }
+    for (let evtType of ["contextmenu", "mouseover", "mousemove", "mouseout",
+            "mouseenter", "mouseleave", "mouseup", "mousedown"]) {
+        document.addEventListener(evtType, function(e) {
+            eventSequence += " " + e.type;
+        });
+    }
+
+    var empty = document.getElementById("empty");
+
+    var x = empty.offsetParent.offsetLeft + empty.offsetLeft + 4;
+    var y = empty.offsetParent.offsetTop + empty.offsetTop + empty.offsetHeight / 2;
+
+    if (!window.eventSender)
+        return;
+
+    if (!eventSender.gestureLongPress) {
+      debug("gestureLongPress not implemented by this platform");
+      return;
+    }
+
+   debug("");
+   runTest(x, y, true);
+   runTest(x, y, false);
+}
+</script>
+</body>
+</html>

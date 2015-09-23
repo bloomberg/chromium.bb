@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Push API: Verifies that the right Push API interfaces get exposed.</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the expected Push API interfaces are being exposed on both
+      // the Service Worker and Document global scopes.
+      service_worker_test(
+          'resources/interfaces-worker.js',
+          'Exposure of interfaces in a Service Worker.');
+
+      test(function() {
+          assert_own_property(self, 'PushManager', 'PushManager needs to be exposed as a global.');
+
+          assert_own_property(PushManager.prototype, 'subscribe');
+          assert_own_property(PushManager.prototype, 'getSubscription');
+          assert_own_property(PushManager.prototype, 'permissionState');
+
+      }, 'PushManager should be exposed and have the expected interface in a Document.');
+
+      test(function() {
+          assert_own_property(self, 'PushSubscription', 'PushSubscription needs to be exposed as a global.');
+
+          // FIXME: Assert existence of the attributes when they are properly
+          // exposed in the prototype chain. https://crbug.com/43394
+
+          assert_own_property(PushSubscription.prototype, 'unsubscribe');
+
+      }, 'PushSubscription should be exposed and have the expected interface in a Document.');
+    </script>
+  </body>
+</html>

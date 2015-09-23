@@ -1,0 +1,18 @@
+This is a testharness.js-based test.
+PASS Audio constructor 
+FAIL No arguments, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS No arguments, with new 
+FAIL Empty string argument, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS Empty string argument, with new 
+FAIL Non-empty string argument, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS Non-empty string argument, with new 
+FAIL Null argument, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS Null argument, with new 
+FAIL Undefined argument, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS Undefined argument, with new 
+FAIL Extra argument, without new Failed to construct 'Audio': Please use the 'new' operator, this DOM object constructor cannot be called as a function.
+PASS Extra argument, with new 
+PASS Calling HTMLAudioElement should throw 
+PASS Constructing HTMLAudioElement should throw 
+Harness: the test ran to completion.
+

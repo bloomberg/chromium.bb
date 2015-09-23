@@ -1,0 +1,42 @@
+
+result: {
+  "accessibilityNode": {
+    "nodeId": "3",
+    "ignored": false,
+    "role": {
+      "type": "role",
+      "value": "textbox"
+    },
+    "properties": [
+      {
+        "name": "invalid",
+        "value": {
+          "type": "token",
+          "value": "false"
+        }
+      },
+      {
+        "name": "multiline",
+        "value": {
+          "type": "boolean",
+          "value": false
+        }
+      },
+      {
+        "name": "readonly",
+        "value": {
+          "type": "boolean",
+          "value": false
+        }
+      },
+      {
+        "name": "required",
+        "value": {
+          "type": "boolean",
+          "value": false
+        }
+      }
+    ]
+  }
+}
+

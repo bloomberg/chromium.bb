@@ -1,0 +1,121 @@
+<html>
+<head>
+
+<style>
+
+/* An inline stylesheet */
+body.mainpage {
+    text-decoration: none;
+}
+</style>
+
+<link rel="stylesheet" href="../styles/resources/get-set-stylesheet-text.css">
+
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    var foundStyleSheetHeader;
+    var foundStyleSheetText;
+
+    findStyleSheet();
+
+    function findStyleSheet()
+    {
+        var styleSheetHeaders = InspectorTest.cssModel.styleSheetHeaders();
+        for (var i = 0; i < styleSheetHeaders.length; ++i) {
+            styleSheetHeader = styleSheetHeaders[i];
+            if (styleSheetHeader.sourceURL.indexOf("get-set-stylesheet-text.css") >= 0) {
+                foundStyleSheetHeader = styleSheetHeader;
+                foundStyleSheetHeader.requestContent(callback);
+            }
+            if (!foundStyleSheetHeader)
+                InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+        }
+
+        function callback(content)
+        {
+            foundStyleSheetText = content;
+            InspectorTest.runTestSuite([ testSetText, testNewElementStyles ]);
+        }
+
+        function styleSheetAdded()
+        {
+            InspectorTest.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+            findStyleSheet();
+        }
+    }
+
+    function testSetText(next)
+    {
+        function callback(error)
+        {
+            if (error) {
+                InspectorTest.addResult("Failed to set stylesheet text: " + error);
+                return;
+            }
+        }
+
+        InspectorTest.addResult("=== Original stylesheet text: ===");
+        InspectorTest.addResult(foundStyleSheetText);
+        InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, next, this);
+        InspectorTest.cssModel.setStyleSheetText(foundStyleSheetHeader.id, "h1 { COLOR: Red; }", true).then(callback);
+    }
+
+    function testNewElementStyles()
+    {
+        function callback(error, inlineStyle, attributeStyle, matchedCSSRules)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                return;
+            }
+
+            InspectorTest.addResult("=== Matched rules for h1 after setText() ===");
+            dumpMatchesArray(matchedCSSRules);
+            InspectorTest.completeTest();
+        }
+
+        function nodeCallback(node)
+        {
+            InspectorTest.CSSAgent.getMatchedStylesForNode(node.id, callback);
+        }
+
+        InspectorTest.selectNodeWithId("inspected", nodeCallback);
+    }
+
+
+    // Data dumping
+
+    function dumpMatchesArray(rules)
+    {
+        if (!rules)
+            return;
+        for (var i = 0; i < rules.length; ++i)
+            dumpRuleOrStyle(rules[i].rule);
+    }
+
+    function dumpRuleOrStyle(ruleOrStyle)
+    {
+        if (!ruleOrStyle)
+            return;
+        var isRule = !!(ruleOrStyle.style);
+        var style = isRule ? ruleOrStyle.style : ruleOrStyle;
+        InspectorTest.addResult("");
+        InspectorTest.addResult(isRule ? "rule" : "style");
+        InspectorTest.addResult((isRule ? (ruleOrStyle.selectorList.text + ": [" + ruleOrStyle.origin + "]") : "raw style"));
+        InspectorTest.dumpStyle(style);
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that WebInspector.CSSStyleSheet methods work as expected.
+</p>
+<h1 id="inspected">Inspect Me</h1>
+</body>
+</html>

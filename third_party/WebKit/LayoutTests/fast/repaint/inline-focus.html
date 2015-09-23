@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="resources/text-based-repaint.js"></script>
+<script>
+function repaintTest() {
+    document.body.offsetTop;
+    document.getElementById('link').focus();
+}
+onload = runRepaintTest;
+</script>
+<style>
+body {
+    margin: 0px;
+    padding: 0px;
+}
+a {
+    font: 10px/1 Ahem;
+}
+</style>
+</head>
+<body>
+<a href="#" target="_blank" id="link"><img src="resources/apple.jpg" border="0" align="right"></a>
+<a href="#">Home </a>
+<p> crbug.com/424078: ensure inline elements get their outline painted </p>

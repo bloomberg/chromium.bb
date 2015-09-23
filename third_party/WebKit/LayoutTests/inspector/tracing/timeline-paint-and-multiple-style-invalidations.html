@@ -1,0 +1,61 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function multipleStyleRecalcsAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        document.getElementById("testElementOne").className = "red";
+        var forceStyleRecalc1 = document.body.offsetTop;
+        document.getElementById("testElementOne").className = "snow";
+        var forceStyleRecalc2 = document.body.offsetTop;
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+
+function test()
+{
+    var currentPanel = WebInspector.inspectorView.currentPanel();
+    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
+    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+    InspectorTest.invokeAsyncWithTimeline("multipleStyleRecalcsAndDisplay", testMultipleStyleRecalcs);
+
+    function testMultipleStyleRecalcs()
+    {
+        var firstRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        InspectorTest.addArray(firstRecalc._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first style recalc");
+        var secondRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1);
+        InspectorTest.addArray(secondRecalc._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second style recalc");
+        var firstPaint = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 0);
+        InspectorTest.addArray(firstPaint._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first paint");
+
+        var thirdRecalc = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2);
+        InspectorTest.assertTrue(thirdRecalc === undefined, "There should be no additional style recalc records.");
+        var secondPaint = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
+        InspectorTest.assertTrue(secondPaint === undefined, "There should be no additional paint records.");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+<style>
+    .testHolder > .red { background-color: red; }
+    .testHolder > .green { background-color: green; }
+    .testHolder > .blue { background-color: blue; }
+    .testHolder > .snow { background-color: snow; }
+    .testHolder > .red .dummy { }
+    .testHolder > .green .dummy { }
+    .testHolder > .blue .dummy { }
+    .testHolder > .snow .dummy { }
+</style>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of multiple style recalc invalidations and ensures they are all collected on the paint event.</p>
+<div class="testHolder">
+<div id="testElementOne">PASS</div><div id="testElementTwo">PASS</div><div id="testElementThree">PASS</div>
+</div>
+</body>
+</html>

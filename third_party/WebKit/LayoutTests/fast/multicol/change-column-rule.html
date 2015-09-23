@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<p>The rules below should be green, and there should be no assertion failures.</p>
+<p>Click to test if testing manually.</p>
+<div id="mc" style="-webkit-columns:3; line-height:100px; -webkit-column-rule:solid yellow;">
+    <br>
+    <br>
+    <br>
+</div>
+<script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    function changeStyle() {
+        document.getElementById('mc').style.webkitColumnRuleColor = 'green';
+        if (window.testRunner)
+            testRunner.notifyDone();
+    }
+    onclick = changeStyle; // for testing manually.
+    onload = function() {
+        // Force painting, then change style, which in turn will trigger another repaint.
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(changeStyle);
+    }
+</script>

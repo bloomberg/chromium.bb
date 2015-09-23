@@ -1,0 +1,20 @@
+Tests that cache data is correctly deleted by the inspector.
+
+Dumping CacheStorage tree:
+    (empty)
+Dumping CacheStorage tree:
+    cache: testCache1 - http://127.0.0.1:8000
+        (cache empty)
+    cache: testCache2 - http://127.0.0.1:8000
+        (cache empty)
+Dumping CacheStorage tree:
+    cache: testCache1 - http://127.0.0.1:8000
+        0, http://fake.request.com/1, OK
+        1, http://fake.request.com/2, Not Found
+    cache: testCache2 - http://127.0.0.1:8000
+        0, http://fake.request2.com/1, OK
+        1, http://fake.request2.com/2, Not Found
+Deleting CacheStorage cache testCache2
+Dumping CacheStorage tree:
+    (empty)
+

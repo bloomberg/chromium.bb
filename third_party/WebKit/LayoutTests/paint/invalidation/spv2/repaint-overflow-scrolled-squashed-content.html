@@ -1,0 +1,21 @@
+<!-- Based on compositing/squashing/repaint-overflow-scrolled-squashed-content.html -->
+<!doctype html>
+<div style="position: absolute; overflow:scroll; width:200px; height:200px">
+  <div id="foo2" style="height: 1000px; width: 150px;  background: lightblue; transform: translateZ(0) "></div>
+  <div id="foo" style="height: 1000px; width: 100px; position: absolute; top: 0px; left: 0px; background: lightgray"></div>
+</div>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+// This test verifies that a repaint request for a squashed layer that is inside of a scrolling container and much taller
+// than the viewport does not receive an incorrect paint invalidation rect when it is invalidated. In particular, the invalidation
+// rect should not be clipped to the visible viewport.
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV id='foo'",
+];
+function paintInvalidationTest() {
+    document.querySelector("#foo").style.background = 'red';
+}
+
+runPaintInvalidationTest();
+</script>

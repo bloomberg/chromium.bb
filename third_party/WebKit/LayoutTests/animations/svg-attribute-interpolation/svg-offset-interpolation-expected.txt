@@ -1,0 +1,16 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: offset from [-2.5] to [7.5] was [-2.5] at 0
+PASS: offset from [-2.5] to [7.5] was [-0.5] at 0.2
+PASS: offset from [-2.5] to [7.5] was [3.5] at 0.6
+PASS: offset from [-2.5] to [7.5] was [7.5] at 1
+
+Web Animations API:
+PASS: offset from [-2.5] to [7.5] was [-6.5] at -0.4
+PASS: offset from [-2.5] to [7.5] was [-2.5] at 0
+PASS: offset from [-2.5] to [7.5] was [-0.5] at 0.2
+PASS: offset from [-2.5] to [7.5] was [3.5] at 0.6
+PASS: offset from [-2.5] to [7.5] was [7.5] at 1
+PASS: offset from [-2.5] to [7.5] was [11.5] at 1.4
+

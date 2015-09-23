@@ -1,0 +1,23 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 578x18
+          text run at (0,0) width 271: "This tests caret movement across buttons. "
+          text run at (270,0) width 308: "The caret should be just after the second button."
+      LayoutBlockFlow {DIV} at (0,34) size 784x18
+        LayoutButton {INPUT} at (0,0) size 35.42x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 19.42x13
+            LayoutText {#text} at (0,0) size 20x13
+              text run at (0,0) width 20: "Foo"
+        LayoutButton {INPUT} at (35.42,0) size 32.91x18 [bgcolor=#C0C0C0]
+          LayoutBlockFlow (anonymous) at (8,2) size 16.91x13
+            LayoutText {#text} at (0,0) size 17x13
+              text run at (0,0) width 17: "Bar"
+        LayoutText {#text} at (0,0) size 0x0
+caret: position 1 of child 2 {INPUT} of child 2 {DIV} of body

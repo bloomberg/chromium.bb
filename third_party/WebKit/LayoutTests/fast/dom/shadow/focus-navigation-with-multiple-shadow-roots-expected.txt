@@ -1,0 +1,36 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+This tests that pressing Tab key should traverse into shadow DOM subtrees, and pressing Shift-Tab should reverse the order.
+
+Should move from A to host in forward
+PASS
+Should move from host to host///younger-A in forward
+PASS
+Should move from host///younger-A to host//older-A in forward
+PASS
+Should move from host//older-A to host//older-B in forward
+PASS
+Should move from host//older-B to host///younger-B in forward
+PASS
+Should move from host///younger-B to B in forward
+Expected innermost activeElement is B, but actual innermost activeElement is #light-child-B
+FAIL
+Should move from B to host///younger-B in backward
+Expected innermost activeElement is host///younger-B, but actual innermost activeElement is #light-child-B
+FAIL
+Should move from host///younger-B to host//older-B in backward
+PASS
+Should move from host//older-B to host//older-A in backward
+PASS
+Should move from host//older-A to host///younger-A in backward
+PASS
+Should move from host///younger-A to host in backward
+PASS
+Should move from host to A in backward
+PASS
+Test finished.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
+
+

@@ -1,0 +1,37 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
+<script>
+function test() {
+    function check(jsonText)
+    {
+        var result = WebInspector.RequestJSONView.parseJSON(jsonText);
+        InspectorTest.addResult("");
+        InspectorTest.addResult("Input: " + jsonText);
+        if (!result) {
+            InspectorTest.addResult("Invalid JSON");
+        } else {
+            InspectorTest.addResult("Prefix: " + result.prefix);
+            InspectorTest.addResult("Suffix: " + result.suffix);
+            InspectorTest.addResult("Data: " + JSON.stringify(result.data));
+        }
+    }
+
+    check("plain text");
+    check("{\"x\": 5, \"y\": false, \"z\":\"foo\"}");
+    check("{\"bar\": [,,,1, 2, 3,,,], \"baz\": {\"data\": []}}");
+    check("[[],[],[]]");
+    check("/* GUARD */callback({\"a\": []]});");
+    check("foo({a = 5});");
+    check("(function(){return {\"a\": []}})()");
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests JSON parsing.</p>
+</body>
+</html>

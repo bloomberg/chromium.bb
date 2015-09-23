@@ -1,0 +1,102 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+var test = function()
+{
+    function printExceptionDetails(exceptionDetails)
+    {
+        InspectorTest.addResult("exceptionDetails:")
+        InspectorTest.addResult("   " + exceptionDetails.text);
+        InspectorTest.addResult("   line: " + exceptionDetails.line + ", column: " + exceptionDetails.column);
+
+        var stack = exceptionDetails.stackTrace;
+        if (!stack) {
+            InspectorTest.addResult("   no stack trace attached to exceptionDetails");
+        } else {
+            InspectorTest.addResult("   exceptionDetails stack trace:");
+            for (var i = 0; i < stack.length && i < 100; ++i) {
+                InspectorTest.addResult("       url: " + stack[i].url);
+                InspectorTest.addResult("       function: " + stack[i].functionName);
+                InspectorTest.addResult("       line: " + stack[i].lineNumber);            
+            }
+        }
+    }
+
+    InspectorTest.runDebuggerTestSuite([
+        function testSuccessfulCompileAndRun(next)
+        {
+            var expression = "var a = 1; var b = 2; a + b; ";
+            InspectorTest.addResult("Compiling script");
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", true, compileCallback.bind(this));
+
+            function compileCallback(error, scriptId, exceptionDetails)
+            {
+                InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(!exceptionDetails);
+                InspectorTest.assertTrue(!!scriptId);
+                InspectorTest.addResult("Running script");
+                InspectorTest.DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
+            }
+
+            function runCallback(error, result, exceptionDetails)
+            {
+                var wasThrown = !!exceptionDetails;
+                InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(!wasThrown);
+                InspectorTest.addResult("Script result: " + result.value);
+                next();
+            }
+        },
+
+        function testRunError(next)
+        {
+            var expression = "var a = 1; a + c; ";
+            InspectorTest.addResult("Compiling script");
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", true, compileCallback.bind(this));
+
+            function compileCallback(error, scriptId, exceptionDetails)
+            {
+                InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(!exceptionDetails);
+                InspectorTest.assertTrue(!!scriptId);
+                InspectorTest.addResult("Running script");
+                InspectorTest.DebuggerAgent.runScript(scriptId, undefined, "console", false, runCallback.bind(this));
+            }
+
+            function runCallback(error, result, exceptionDetails)
+            {
+                var wasThrown = !!exceptionDetails;
+                InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(wasThrown);
+                printExceptionDetails(exceptionDetails);
+                next();
+            }
+        },
+
+        function testCompileError(next)
+        {
+            var expression = "}";
+            InspectorTest.addResult("Compiling script");
+            var contextId = undefined;
+            InspectorTest.DebuggerAgent.compileScript(expression, "test.js", true, contextId, compileCallback.bind(this));
+
+            function compileCallback(error, scriptId, exceptionDetails)
+            {
+                InspectorTest.assertTrue(!error);
+                InspectorTest.assertTrue(!!exceptionDetails);
+                InspectorTest.assertTrue(!scriptId);
+                printExceptionDetails(exceptionDetails);
+                next();
+            }
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests separate compilation and run.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=89646">Bug 89646.</a>
+</body>
+</html>

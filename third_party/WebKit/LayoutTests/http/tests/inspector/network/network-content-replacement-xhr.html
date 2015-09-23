@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.recordNetwork();
+    InspectorTest.NetworkAgent.setDataSizeLimitsForTest(300, 200);
+    // Here we test replacement logic. We save first two resources content,
+    // discard third resource content once we see its size exceeds limit,
+    // and finally replace first resource content with the last resource content.
+
+    InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=200", false, xhrLoaded1);
+
+    function xhrLoaded1()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=100", false, xhrLoaded2);
+    }
+
+    function xhrLoaded2()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=201", false, xhrLoaded3);
+    }
+
+    function xhrLoaded3()
+    {
+        InspectorTest.makeSimpleXHR("GET", "resources/resource.php?size=100", false, step1);
+    }
+
+    function dumpRequest(request, callback)
+    {
+        if (!request)
+            return callback();
+        InspectorTest.addResult(request.url);
+
+        function contentLoaded()
+        {
+            InspectorTest.addResult("resource.content: " + request.content);
+            callback();
+        }
+
+        request.requestContent(contentLoaded);
+    }
+
+    function step1()
+    {
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 4], step2);
+    }
+
+    function step2()
+    {
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 3], step3);
+    }
+
+    function step3()
+    {
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 2], step4);
+    }
+
+    function step4()
+    {
+        var requests = InspectorTest.networkRequests();
+        dumpRequest(requests[requests.length - 1], step5);
+    }
+
+    function step5()
+    {
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+    <p> Tests NetworkResourcesData logic for XHR content replacement.</p>
+</body>
+</html>
+

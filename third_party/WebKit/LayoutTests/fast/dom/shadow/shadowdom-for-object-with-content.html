@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<body>
+<object type="invalid-type" data="invalid-data">
+<div>Fallback</div> <span>content</span>
+</object>
+
+<script>
+document.querySelector('object').createShadowRoot().innerHTML = 'Author Shadow <content select="span"></content>';
+</script>
+</body>

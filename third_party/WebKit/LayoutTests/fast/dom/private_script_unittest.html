@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Unittests for private scripts.');
+if (!internals || !internals.privateScriptTest())
+    debug('This test needs window.internals.privateScriptTest().');
+
+var privateScriptTest = internals.privateScriptTest();
+privateScriptTest.doNothing();
+shouldBe('privateScriptTest.return123()', '123');
+shouldBe('privateScriptTest.echoInteger(111)', '111');
+shouldBeEqualToString('privateScriptTest.echoString("foo")', 'foo')
+shouldBe('privateScriptTest.addInteger(111, 222)', '333');
+shouldBeEqualToString('privateScriptTest.addString("foo", "bar")', 'foobar')
+
+shouldBe('privateScriptTest.getIntegerFromPrototype()', '0');
+privateScriptTest.setIntegerToPrototype(123);
+shouldBe('privateScriptTest.getIntegerFromPrototype()', '123');
+
+shouldBe('privateScriptTest.getIntegerFromDocument(document)', '0');
+privateScriptTest.setIntegerToDocument(document, 123);
+shouldBe('privateScriptTest.getIntegerFromDocument(document)', '123');
+
+var node1 = privateScriptTest.createElement(document);
+var node2 = privateScriptTest.createElement(document);
+var node3 = privateScriptTest.createElement(document);
+var node4 = privateScriptTest.createElement(document);
+privateScriptTest.appendChild(node1, node2);
+privateScriptTest.appendChild(node1, node3);
+privateScriptTest.appendChild(node1, node4);
+shouldBe('privateScriptTest.firstChild(node1)', 'node2');
+shouldBe('privateScriptTest.nextSibling(node2)', 'node3');
+shouldBe('privateScriptTest.nextSibling(node3)', 'node4');
+shouldBe('privateScriptTest.nextSibling(node4)', 'null');
+
+var node5 = privateScriptTest.createElement(document);
+shouldBeEqualToString('privateScriptTest.innerHTML(node5)', '')
+privateScriptTest.setInnerHTML(node5, '<div>foo</div>');
+shouldBeEqualToString('privateScriptTest.innerHTML(node5)', '<div>foo</div>')
+var node6 = privateScriptTest.firstChild(node5);
+shouldBeEqualToString('privateScriptTest.innerHTML(node6)', 'foo');
+
+var node7 = privateScriptTest.createElement(document);
+shouldBeEqualToString('privateScriptTest.innerHTML(node7)', '')
+privateScriptTest.addClickListener(node7);
+privateScriptTest.clickNode(document, node7);
+shouldBeEqualToString('privateScriptTest.innerHTML(node7)', 'clicked')
+
+shouldBe('privateScriptTest.readonlyShortAttribute', '123');
+shouldBe('privateScriptTest.shortAttribute', '-1');
+privateScriptTest.shortAttribute = 111;
+shouldBe('privateScriptTest.shortAttribute', '111');
+shouldBeEqualToString('privateScriptTest.stringAttribute', 'xxx');
+privateScriptTest.stringAttribute = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttribute', 'foo');
+shouldBe('privateScriptTest.nodeAttribute', 'null');
+var node8 = privateScriptTest.createElement(document);
+privateScriptTest.nodeAttribute = node8;
+shouldBe('privateScriptTest.nodeAttribute', 'node8');
+
+shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError');
+shouldThrow('privateScriptTest.nodeAttributeThrowsIndexSizeError = null');
+shouldThrow('privateScriptTest.voidMethodThrowsDOMSyntaxError()');
+shouldThrow('privateScriptTest.voidMethodThrowsError()');
+shouldThrow('privateScriptTest.voidMethodThrowsTypeError()');
+shouldThrow('privateScriptTest.voidMethodThrowsRangeError()');
+shouldThrow('privateScriptTest.voidMethodThrowsSyntaxError()');
+shouldThrow('privateScriptTest.voidMethodThrowsReferenceError()');
+shouldThrow('privateScriptTest.voidMethodThrowsStackOverflowError()');
+
+shouldBe('privateScriptTest.addIntegerImplementedInCPP(111, 222)', '333');
+shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'undefined');
+privateScriptTest.stringAttributeImplementedInCPP = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttributeImplementedInCPP', 'foo');
+
+// These tests are important. [OnlyExposedToPrivateScript] APIs should not be visible to user's script.
+shouldBeUndefined('privateScriptTest.addIntegerImplementedInCPPForPrivateScriptOnly');
+shouldBeUndefined('privateScriptTest.stringAttributeImplementedInCPPForPrivateScriptOnly');
+
+shouldBe('privateScriptTest.addIntegerInPartial(111, 222)', '333');
+shouldBe('privateScriptTest.addInteger2InPartial(111, 222)', '333');
+privateScriptTest.stringAttributeInPartial = "foo";
+shouldBeEqualToString('privateScriptTest.stringAttributeInPartial', 'foo');
+
+document.onload = function (event) {
+    shouldBeTrue('event.bubbles');
+    shouldBeTrue('event.cancelable');
+    // Object properties set in private scripts should not be visible in user's script.
+    shouldBeUndefined('event.valueInPrivateScript');
+}
+privateScriptTest.dispatchDocumentOnload(document);
+
+var exception;
+function testThrows(expression, type, code)
+{
+    exception = undefined;
+    // Test that `expression` throws a userscript visible exception of `type`, optionally with 
+    // exception code `code`
+    try {
+        eval(expression);
+    } catch (e) {
+        exception = e;
+    }
+
+    if (type === DOMException && typeof code === "string" && code in DOMException)
+        code = DOMException[code];
+
+    if (exception === undefined) {
+        testFailed("`" + expression + "` should throw");
+    } else {
+        shouldBeType("exception", type);
+        if (code !== undefined)
+            shouldBeEqualToNumber("exception.code", code);
+    }
+}
+
+testThrows("privateScriptTest.nodeAttributeThrowsIndexSizeError", DOMException, "INDEX_SIZE_ERR");
+testThrows("privateScriptTest.nodeAttributeThrowsIndexSizeError = null", DOMException, "INDEX_SIZE_ERR");
+testThrows("privateScriptTest.voidMethodThrowsDOMSyntaxError()", DOMException, "SYNTAX_ERR");
+testThrows("privateScriptTest.voidMethodThrowsError()", Error);
+testThrows("privateScriptTest.voidMethodThrowsTypeError()", TypeError);
+testThrows("privateScriptTest.voidMethodThrowsRangeError()", RangeError);
+testThrows("privateScriptTest.voidMethodThrowsSyntaxError()", SyntaxError);
+testThrows("privateScriptTest.voidMethodThrowsReferenceError()", ReferenceError);
+
+</script>
+</body>
+</html>

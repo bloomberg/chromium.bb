@@ -1,0 +1,79 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+
+After copy:
+| "
+"
+| <table>
+|   <tbody>
+|     <tr>
+|       <td>
+|         id="test1"
+|         "<#selection-anchor>hello"
+|       <td>
+|         id="test2"
+|         "world<#selection-focus>"
+| "
+"
+| <div>
+|   id="target"
+|   "replaceme"
+| "
+
+
+"
+
+Before paste:
+| "
+"
+| <table>
+|   <tbody>
+|     <tr>
+|       <td>
+|         id="test1"
+|         "hello"
+|       <td>
+|         id="test2"
+|         "world"
+| "
+"
+| <div>
+|   id="target"
+|   "<#selection-anchor>replaceme<#selection-focus>"
+| "
+
+
+"
+
+After paste:
+| "
+"
+| <table>
+|   <tbody>
+|     <tr>
+|       <td>
+|         id="test1"
+|         "hello"
+|       <td>
+|         id="test2"
+|         "world"
+| "
+"
+| <div>
+|   id="target"
+|   <table>
+|     <tbody>
+|       <tr>
+|         <td>
+|           id="test1"
+|           "hello"
+|         <td>
+|           id="test2"
+|           "world<#selection-caret>"
+| "
+
+
+"

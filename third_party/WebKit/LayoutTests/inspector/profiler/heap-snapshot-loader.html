@@ -1,0 +1,143 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var source = InspectorTest.createHeapSnapshotMockRaw();
+    var sourceStringified = JSON.stringify(source);
+    var partSize = sourceStringified.length >> 3;
+
+    function injectMockProfile(callback) {
+        var dispatcher = InspectorTest.connection._dispatchers["HeapProfiler"]._dispatcher;
+        var panel = WebInspector.panels.profiles;
+        panel._reset();
+
+        var profileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+
+        InspectorTest.override(InspectorTest.HeapProfilerAgent, "takeHeapSnapshot", takeHeapSnapshotMock);
+        function takeHeapSnapshotMock(reportProgress, callback) {
+            if (reportProgress) {
+                profileType._reportHeapSnapshotProgress({data: {done: 50, total: 100, finished: false}});
+                profileType._reportHeapSnapshotProgress({data: {done: 100, total: 100, finished: true}});
+            }
+            for (var i = 0, l = sourceStringified.length; i < l; i += partSize)
+                dispatcher.addHeapSnapshotChunk(sourceStringified.slice(i, i + partSize));
+            setTimeout(callback, 0);
+        }
+
+        function tempFileReady()
+        {
+            callback(this);
+        }
+        InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_didWriteToTempFile", tempFileReady);
+        profileType._takeHeapSnapshot(function() {});
+    }
+
+    WebInspector.console.log = function(message) {
+        InspectorTest.addResult("InspectorTest.consoleModel.log: " + message);
+    }
+
+    InspectorTest.runTestSuite([
+        function heapSnapshotSaveToFileTest(next)
+        {
+            function snapshotLoaded(profileHeader)
+            {
+                var savedSnapshotData;
+                function saveMock(url, data)
+                {
+                    savedSnapshotData = data;
+                    WebInspector.fileManager._savedURL({data: url});
+                }
+                InspectorTest.override(InspectorFrontendHost, "save", saveMock);
+
+                var oldAppend = InspectorFrontendHost.append;
+                InspectorFrontendHost.append = function appendMock(url, data)
+                {
+                    savedSnapshotData += data;
+                    WebInspector.fileManager._appendedToURL({data: url});
+                }
+                function closeMock(url)
+                {
+                    InspectorTest.assertEquals(sourceStringified, savedSnapshotData, "Saved snapshot data");
+                    InspectorFrontendHost.append = oldAppend;
+                    next();
+                }
+                InspectorTest.override(WebInspector.FileManager.prototype, "close", closeMock);
+                profileHeader.saveToFile();
+            }
+
+            injectMockProfile(snapshotLoaded);
+        },
+
+        function heapSnapshotLoadFromFileTest(next)
+        {
+            var panel = WebInspector.panels.profiles;
+
+            var fileMock = {
+                name: "mock.heapsnapshot",
+                size: sourceStringified.length
+            };
+
+            InspectorTest.override(WebInspector.HeapProfileHeader.prototype, '_createFileReader', function(fileMock, delegate) {
+                return {
+                    start: function(receiver) {
+                        delegate.onTransferStarted(this);
+                        receiver.write(sourceStringified);
+                        delegate.onChunkTransferred(this);
+                        receiver.close();
+                        delegate.onTransferFinished(this);
+                    },
+
+                    loadedSize: function()
+                    {
+                        return fileMock.size;
+                    },
+
+                    fileSize: function()
+                    {
+                        return fileMock.size;
+                    },
+
+                    fileName: function()
+                    {
+                        return fileMock.name;
+                    }
+                };
+            });
+            InspectorTest.addSniffer(WebInspector.HeapProfileHeader.prototype, "_snapshotReceived", function() { next(); });
+            panel._loadFromFile(fileMock);
+        },
+
+        function heapSnapshotRejectToSaveToFileTest(next)
+        {
+            function snapshotLoaded(profileHeader)
+            {
+                if (profileHeader.canSaveToFile())
+                    next();
+                else
+                    profileHeader.addEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, onCanSaveProfile, this);
+                function onCanSaveProfile()
+                {
+                    InspectorTest.assertTrue(profileHeader.canSaveToFile());
+                    next();
+                }
+            }
+
+            injectMockProfile(snapshotLoaded);
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This test checks HeapSnapshots loader.
+</p>
+
+</body>
+</html>

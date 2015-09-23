@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/framework.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    Promise.resolve()
+        // Should not pause on console.assert() inside framework.
+        .then(Framework.bind(Framework.assert, null, false, "Assert from test"))
+        // Should not pause on setTimeout inside the framework.
+        .then(Framework.willSchedule(Framework.empty, 0))
+        .then(stop)
+        .catch(function FAIL_should_not_pause(e) { debugger; throw e; });
+}
+
+function stop()
+{
+    setTimeout(function() {}, 0); // Should pause here.
+}
+
+function test()
+{
+    var frameworkRegexString = "/framework\\.js$";
+    WebInspector.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+
+    var pane = WebInspector.panels.sources.sidebarPanes.eventListenerBreakpoints;
+
+    InspectorTest.startDebuggerTest(step1, true);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        pane._setBreakpoint("instrumentation:setTimer");
+        InspectorTest.resumeExecution(InspectorTest.waitUntilPaused.bind(InspectorTest, didPause));
+    }
+
+    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
+    {
+        InspectorTest.captureStackTrace(callFrames);
+        completeTest();
+    }
+
+    function completeTest()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        pane._removeBreakpoint("instrumentation:setTimer");
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests that framework blackboxing skips instant pauses (e.g. breakpoints on console.assert(), setTimeout(), etc.) if they happen entirely inside the framework.
+</p>
+</body>
+</html>

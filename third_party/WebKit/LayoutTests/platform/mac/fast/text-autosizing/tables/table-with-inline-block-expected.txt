@@ -1,0 +1,85 @@
+layer at (0,0) size 800x1163
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x1163
+  LayoutBlockFlow {HTML} at (0,0) size 800x1163
+    LayoutBlockFlow {BODY} at (0,0) size 800x1162
+      LayoutBlockFlow {DIV} at (0,0) size 600x48
+        LayoutText {#text} at (0,0) size 323x18
+          text run at (0,0) width 323: "Table autosizing tests - table-with-inline-block.html"
+        LayoutBR {BR} at (323,0) size 0x18
+        LayoutText {#text} at (0,18) size 373x18
+          text run at (0,18) width 373: "This test passes if there is not extra space in the pink boxes."
+      LayoutTable {TABLE} at (1,49) size 798x280 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 797x279
+          LayoutTableRow {TR} at (0,0) size 797x279
+            LayoutTableCell {TD} at (0,0) size 797x279 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 750x138
+                text run at (2,2) width 750: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,48) width 750: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,94) width 608: "Autosize Autosize Autosize Autosize "
+              LayoutBlockFlow {B} at (610,116) size 90x18 [bgcolor=#FFC0CB]
+                LayoutText {#text} at (0,0) size 90x18
+                  text run at (0,0) width 90: "wrapped text"
+              LayoutText {#text} at (2,140) size 750x138
+                text run at (2,140) width 750: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,186) width 750: "Autosize Autosize Autosize Autosize Autosize"
+                text run at (2,232) width 598: "Autosize Autosize Autosize Autosize"
+      LayoutTable {TABLE} at (1,330) size 147x832 [border: none]
+        LayoutTableSection {TBODY} at (0,0) size 146x831
+          LayoutTableRow {TR} at (0,0) size 146x831
+            LayoutTableCell {TD} at (0,0) size 146x831 [bgcolor=#F0FFF0] [border: (1px dotted #006400)] [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (2,2) size 142x46
+                text run at (2,2) width 142: "Autosize"
+              LayoutBR {BR} at (144,2) size 0x46
+              LayoutBlockFlow {B} at (2,70) size 94x18 [bgcolor=#FFC0CB]
+                LayoutText {#text} at (0,0) size 94x18
+                  text run at (0,0) width 94: "Wrapped text"
+              LayoutBR {BR} at (96,48) size 0x46
+              LayoutText {#text} at (2,94) size 142x46
+                text run at (2,94) width 142: "Autosize"
+              LayoutBR {BR} at (144,94) size 0x46
+              LayoutText {#text} at (2,140) size 143x46
+                text run at (2,140) width 143: "Autosize"
+              LayoutBR {BR} at (145,140) size 0x46
+              LayoutText {#text} at (2,186) size 143x46
+                text run at (2,186) width 143: "Autosize"
+              LayoutBR {BR} at (145,186) size 0x46
+              LayoutText {#text} at (2,232) size 143x46
+                text run at (2,232) width 143: "Autosize"
+              LayoutBR {BR} at (145,232) size 0x46
+              LayoutText {#text} at (2,278) size 143x46
+                text run at (2,278) width 143: "Autosize"
+              LayoutBR {BR} at (145,278) size 0x46
+              LayoutText {#text} at (2,324) size 143x46
+                text run at (2,324) width 143: "Autosize"
+              LayoutBR {BR} at (145,324) size 0x46
+              LayoutText {#text} at (2,370) size 143x46
+                text run at (2,370) width 143: "Autosize"
+              LayoutBR {BR} at (145,370) size 0x46
+              LayoutText {#text} at (2,416) size 143x46
+                text run at (2,416) width 143: "Autosize"
+              LayoutBR {BR} at (145,416) size 0x46
+              LayoutText {#text} at (2,462) size 142x46
+                text run at (2,462) width 142: "Autosize"
+              LayoutBR {BR} at (144,462) size 0x46
+              LayoutText {#text} at (2,508) size 143x46
+                text run at (2,508) width 143: "Autosize"
+              LayoutBR {BR} at (145,508) size 0x46
+              LayoutText {#text} at (2,554) size 143x46
+                text run at (2,554) width 143: "Autosize"
+              LayoutBR {BR} at (145,554) size 0x46
+              LayoutText {#text} at (2,600) size 143x46
+                text run at (2,600) width 143: "Autosize"
+              LayoutBR {BR} at (145,600) size 0x46
+              LayoutText {#text} at (2,646) size 143x46
+                text run at (2,646) width 143: "Autosize"
+              LayoutBR {BR} at (145,646) size 0x46
+              LayoutText {#text} at (2,692) size 143x46
+                text run at (2,692) width 143: "Autosize"
+              LayoutBR {BR} at (145,692) size 0x46
+              LayoutText {#text} at (2,738) size 143x46
+                text run at (2,738) width 143: "Autosize"
+              LayoutBR {BR} at (145,738) size 0x46
+              LayoutText {#text} at (2,784) size 143x46
+                text run at (2,784) width 143: "Autosize"
+              LayoutBR {BR} at (145,784) size 0x46

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<style>
+  #container {
+    height: 500px;
+    width: 300px;
+    overflow: scroll;
+  }
+
+  .scrolled {
+    height: 50px;
+    width: 100px;
+    background: orange;
+    margin: 15px;
+    transform: translateZ(0);
+  }
+</style>
+<script>
+  if (window.testRunner)
+    testRunner.dumpAsText();
+
+  if (window.internals)
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+
+  var iteration = 1;
+
+  function dumpLayerTree() {
+    var pre = document.getElementById("console");
+
+    if (window.internals) {
+      var layerTreeAsText = internals.layerTreeAsText(document);
+      pre.innerHTML += '\n\n*** iteration ' + iteration + ': ***\n\n';
+      pre.innerHTML += layerTreeAsText;
+    }
+
+    iteration++;
+  }
+
+  onload = function()
+  {
+    var container = document.getElementById('container');
+
+    dumpLayerTree();
+
+    container.style.backgroundColor = 'blue';
+
+    dumpLayerTree();
+
+    var selection = getSelection();
+    var range = document.createRange();
+    range.selectNode(document.getElementById("selection"));
+    selection.addRange(range);
+
+    dumpLayerTree();
+
+    container.style.backgroundColor = '';
+
+    dumpLayerTree();
+  }
+</script>
+
+This test passes if the container's scrolling contents layer (the first child of the GraphicsLayer with 4 children)
+draws content only on iterations 2 and 3, and its scrolling block selection layer (the child of the scrolling
+contents layer) draws content only on iteration 4. The scrolling block selection layer should also be much smaller
+than the scrolling contents layer.
+
+<div id="container">
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled" id="selection">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+  <div class="scrolled">Lorem Ipsum</div>
+</div>
+<pre id="console"></pre>

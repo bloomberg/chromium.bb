@@ -1,0 +1,125 @@
+{
+  "bounds": [785, 928],
+  "children": [
+    {
+      "bounds": [785, 928],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FFFFFF",
+      "repaintRects": [
+        [601, 563, 50, 40],
+        [601, 463, 50, 40],
+        [601, 363, 50, 40],
+        [601, 263, 50, 40],
+        [601, 213, 50, 40],
+        [601, 63, 50, 40],
+        [571, 513, 80, 40],
+        [571, 413, 80, 40],
+        [571, 313, 80, 40],
+        [571, 163, 80, 40],
+        [571, 113, 80, 40],
+        [459, 563, 50, 40],
+        [459, 463, 50, 40],
+        [459, 363, 50, 40],
+        [459, 263, 50, 40],
+        [459, 213, 50, 40],
+        [459, 63, 50, 40],
+        [429, 513, 80, 40],
+        [429, 413, 80, 40],
+        [429, 313, 80, 40],
+        [429, 163, 80, 40],
+        [429, 113, 80, 40],
+        [317, 563, 50, 40],
+        [317, 463, 50, 40],
+        [317, 363, 50, 40],
+        [317, 263, 50, 40],
+        [317, 213, 50, 40],
+        [317, 63, 50, 40],
+        [287, 513, 80, 40],
+        [287, 413, 80, 40],
+        [287, 313, 80, 40],
+        [287, 163, 80, 40],
+        [287, 113, 80, 40],
+        [175, 563, 50, 40],
+        [175, 463, 50, 40],
+        [175, 363, 50, 40],
+        [175, 263, 50, 40],
+        [175, 213, 50, 40],
+        [175, 63, 50, 40],
+        [145, 513, 80, 40],
+        [145, 413, 80, 40],
+        [145, 313, 80, 40],
+        [145, 163, 80, 40],
+        [145, 113, 80, 40]
+      ],
+      "paintInvalidationClients": [
+        "LayoutHTMLCanvas CANVAS id='source-oversolid color'",
+        "LayoutHTMLCanvas CANVAS id='source-overimage'",
+        "LayoutHTMLCanvas CANVAS id='source-overcanvas'",
+        "LayoutHTMLCanvas CANVAS id='source-overvideo'",
+        "LayoutHTMLCanvas CANVAS id='source-insolid color'",
+        "LayoutHTMLCanvas CANVAS id='source-inimage'",
+        "LayoutHTMLCanvas CANVAS id='source-incanvas'",
+        "LayoutHTMLCanvas CANVAS id='source-invideo'",
+        "LayoutHTMLCanvas CANVAS id='source-outsolid color'",
+        "LayoutHTMLCanvas CANVAS id='source-outimage'",
+        "LayoutHTMLCanvas CANVAS id='source-outcanvas'",
+        "LayoutHTMLCanvas CANVAS id='source-outvideo'",
+        "LayoutHTMLCanvas CANVAS id='source-atopsolid color'",
+        "LayoutHTMLCanvas CANVAS id='source-atopimage'",
+        "LayoutHTMLCanvas CANVAS id='source-atopcanvas'",
+        "LayoutHTMLCanvas CANVAS id='source-atopvideo'",
+        "LayoutHTMLCanvas CANVAS id='destination-oversolid color'",
+        "LayoutHTMLCanvas CANVAS id='destination-overimage'",
+        "LayoutHTMLCanvas CANVAS id='destination-overcanvas'",
+        "LayoutHTMLCanvas CANVAS id='destination-overvideo'",
+        "LayoutHTMLCanvas CANVAS id='destination-insolid color'",
+        "LayoutHTMLCanvas CANVAS id='destination-inimage'",
+        "LayoutHTMLCanvas CANVAS id='destination-incanvas'",
+        "LayoutHTMLCanvas CANVAS id='destination-invideo'",
+        "LayoutHTMLCanvas CANVAS id='destination-outsolid color'",
+        "LayoutHTMLCanvas CANVAS id='destination-outimage'",
+        "LayoutHTMLCanvas CANVAS id='destination-outcanvas'",
+        "LayoutHTMLCanvas CANVAS id='destination-outvideo'",
+        "LayoutHTMLCanvas CANVAS id='destination-atopsolid color'",
+        "LayoutHTMLCanvas CANVAS id='destination-atopimage'",
+        "LayoutHTMLCanvas CANVAS id='destination-atopcanvas'",
+        "LayoutHTMLCanvas CANVAS id='destination-atopvideo'",
+        "LayoutHTMLCanvas CANVAS id='lightersolid color'",
+        "LayoutHTMLCanvas CANVAS id='lighterimage'",
+        "LayoutHTMLCanvas CANVAS id='lightercanvas'",
+        "LayoutHTMLCanvas CANVAS id='lightervideo'",
+        "LayoutHTMLCanvas CANVAS id='copysolid color'",
+        "LayoutHTMLCanvas CANVAS id='copyimage'",
+        "LayoutHTMLCanvas CANVAS id='copycanvas'",
+        "LayoutHTMLCanvas CANVAS id='copyvideo'",
+        "LayoutHTMLCanvas CANVAS id='xorsolid color'",
+        "LayoutHTMLCanvas CANVAS id='xorimage'",
+        "LayoutHTMLCanvas CANVAS id='xorcanvas'",
+        "LayoutHTMLCanvas CANVAS id='xorvideo'"
+      ],
+      "children": [
+        {
+          "position": [15, 854],
+          "bounds": [150, 60]
+        },
+        {
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "position": [15, 854],
+              "bounds": [150, 60],
+              "drawsContent": true
+            },
+            {
+              "position": [15, 854],
+              "bounds": [150, 25],
+              "drawsContent": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

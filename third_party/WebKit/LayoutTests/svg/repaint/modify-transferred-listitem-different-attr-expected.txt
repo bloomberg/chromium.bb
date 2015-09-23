@@ -1,0 +1,36 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [103, 8, 5, 23],
+        [58, 61, 50, 10],
+        [58, 45, 50, 26],
+        [58, 45, 50, 16],
+        [23, 61, 85, 10],
+        [23, 8, 85, 23],
+        [23, 8, 80, 23]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'A'",
+        "InlineTextBox ' B C'",
+        "RootInlineBox",
+        "InlineTextBox 'X'",
+        "InlineTextBox ' Y Z'",
+        "LayoutSVGRoot svg",
+        "LayoutSVGText text id='target'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'A'",
+        "InlineTextBox ' B C'",
+        "LayoutSVGText text id='source'",
+        "LayoutSVGInlineText #text",
+        "InlineTextBox 'X Y Z'"
+      ]
+    }
+  ]
+}
+

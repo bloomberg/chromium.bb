@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<script src="../../../resources/js-test.js"></script>
+<style>
+.a .b:not(:-internal-spatial-navigation-focus) { background-color: green }
+</style>
+<div id="a">
+    <select id="sel" multiple>
+        <option id="b" class="b">1</option>
+        <option>2</option>
+    </select>
+    <div></div>
+    <div></div>
+</div>
+<div>
+    <div></div>
+    <div></div>
+</div>
+<script>
+description("Use descendant invalidation set in the presence of an :-internal-spatial-navigation-focus pseudo class.");
+
+debug("This test relies on the bug (crbug.com/432436) that internal pseudo classes are being\n\
+exposed to the extent that they are not dropped, but in the case of :-internal-spatial-navigation-focus,\n\
+never matched. If the mentioned bug is fixed this test will start failing. When that happens,\n\
+we need to either add the possibility to use internal css features in author style for tests,\n\
+support injecting UA style for tests, or drop this test.\n");
+
+var transparent = "rgba(0, 0, 0, 0)";
+var green = "rgb(0, 128, 0)";
+
+if (window.internals)
+    internals.settings.setSpatialNavigationEnabled(true);
+sel.focus();
+
+shouldBe("getComputedStyle(b).backgroundColor", "transparent");
+
+a.offsetTop; // Force recalc.
+a.className = "a";
+
+if (window.internals)
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1");
+
+shouldBe("getComputedStyle(b).backgroundColor", "green");
+</script>

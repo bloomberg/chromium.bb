@@ -1,0 +1,18 @@
+Test panning model of StereoPannerNode.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS Number of impulses matches the number of panner nodes.
+PASS All impulses at expected offsets.
+PASS Left channel gain values are correct.
+PASS Right channel gain values are correct.
+PASS Test for mono input: passed.
+PASS Number of impulses matches the number of panner nodes.
+PASS All impulses at expected offsets.
+PASS Left channel gain values are correct.
+PASS Right channel gain values are correct.
+PASS Test for stereo input: passed.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

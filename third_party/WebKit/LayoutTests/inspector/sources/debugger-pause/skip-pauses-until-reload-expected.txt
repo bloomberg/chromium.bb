@@ -1,0 +1,25 @@
+CONSOLE MESSAGE: line 10: Begin
+CONSOLE MESSAGE: line 12: Middle: Breakpoint 1
+CONSOLE MESSAGE: line 13: Middle: Breakpoint 2
+CONSOLE ERROR: line 14: Assertion failed!
+CONSOLE ERROR: line 15: Some console.error message
+CONSOLE MESSAGE: line 25: End
+CONSOLE ERROR: line 36: Uncaught Error: error message
+Tests that 'skip all pauses' mode blocks breakpoint and gets cancelled right at page reload.
+
+Script source was shown.
+Set up breakpoints.
+Set up to pause on all exceptions.
+Set up DOM breakpoints.
+Set up Event breakpoints.
+Did set up.
+Set timer for test function.
+Script execution paused.
+Call stack:
+    0) testFunction (skip-pauses-until-reload.html:11)
+Set up to skip all pauses.
+Reloading the page...
+Script execution resumed.
+Page reloaded.
+PASS: Reloaded without hitting breakpoints.
+

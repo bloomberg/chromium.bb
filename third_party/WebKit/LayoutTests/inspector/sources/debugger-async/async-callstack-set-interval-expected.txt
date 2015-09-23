@@ -1,0 +1,20 @@
+Tests asynchronous call stacks for setInterval.
+
+Set timer for test function.
+Captured call stacks in no particular order:
+Call stack:
+    0) callback (async-callstack-set-interval.html:17)
+    [setInterval]
+    0) testFunction (async-callstack-set-interval.html:11)
+
+Call stack:
+    0) callback (async-callstack-set-interval.html:19)
+    [setInterval]
+    0) testFunction (async-callstack-set-interval.html:11)
+
+Call stack:
+    0) callback (async-callstack-set-interval.html:22)
+    [setInterval]
+    0) testFunction (async-callstack-set-interval.html:11)
+
+

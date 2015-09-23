@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../resources/js-test.js"></script>
+  <script src="resources/compatibility.js"></script>
+  <script src="resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description('AudioBufferSourceNode: DC-driven playbackRate modulation.');
+    window.jsTestIsAsync = true;
+
+    var sampleRate = 44100;
+
+    // To get an observable change on playbackRate modulation, the minimum
+    // rendering length should greater than the rendering quantum.
+    var renderLength = 256;
+    var half = renderLength / 2;
+
+    // With the playbackRate of 1, the duration of impulse buffer should be 4 
+    // samples (which means the interval between impulses is 4). Doubling
+    // playback speed decrease the interval to 2 samples.
+    var impulseLength = 4;
+
+    var context = new OfflineAudioContext(1, renderLength, sampleRate);
+    var impulseBuffer, dcOffsetBuffer;
+
+    var audit = Audit.createTaskRunner();
+
+
+    // Task: build an impulse and DC-offset buffers for testing.
+    audit.defineTask('build-buffers', function (done) {
+      // 4-sample impulse sample.
+      impulseBuffer = createImpulseBuffer(context, impulseLength);
+
+      // Create a DC offset buffer with 2 values [0, 1] for modulating
+      // playbackRate. The first half of buffer is 0 and the rest is 1.
+      dcOffsetBuffer = context.createBuffer(1, renderLength, sampleRate);
+      var dcOffsetArray = dcOffsetBuffer.getChannelData(0);
+      for (i = 0; i < dcOffsetArray.length; i++) {
+
+        // Note that these values will be added to the playbackRate AudioParam
+        // value. For example, 0 DC offset value will result playbackRate of 1
+        // because the default playbackRate value is 1.
+        dcOffsetArray[i] = i < half ? 0 : 1;
+      }
+
+      done();
+    });
+
+
+    // Task: Render the actual buffer and compare with the reference.
+    audit.defineTask('synthesize-verify', function (done) {
+      var impulse = context.createBufferSource();
+      var dcOffset = context.createBufferSource();
+
+      impulse.buffer = impulseBuffer;
+      dcOffset.buffer = dcOffsetBuffer;
+      impulse.loop = true;
+
+      impulse.connect(context.destination);
+      dcOffset.connect(impulse.playbackRate);
+
+      impulse.start();
+      dcOffset.start();
+
+      context.startRendering().then(function (renderedBuffer) {
+        var data = renderedBuffer.getChannelData(0);
+        var passed = true, i = 0;
+        var nextImpulseIndex = 0;
+
+        while (i < renderLength) {
+          if (i === nextImpulseIndex && data[i] === 1) {
+            // From 0 to 127th element, the interval between impulses is 4. On the other
+            // hand, the interval is 2 between 128th and 255th element.
+            nextImpulseIndex += (i < half) ? impulseLength : impulseLength / 2;
+          } else if (data[i] !== 0) {           
+            // If a value is neither 0 or 1, break the loop and fail the test.
+            passed = false;
+            break;
+          }
+
+          i++;
+        }
+
+        if (passed) {
+          testPassed('Doubling playbackRate decreased the interval between impulses to half.');
+        } else {
+          testFailed('Doubling playbackRate produced the incorrect result' +
+            'at the index ' + i + '.');
+        }
+      }).then(done);
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks(
+      'build-buffers',
+      'synthesize-verify',
+      'finish'
+    );
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>

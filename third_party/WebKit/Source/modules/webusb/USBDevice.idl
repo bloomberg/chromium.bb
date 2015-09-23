@@ -1,0 +1,49 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// http://reillyeon.github.io/webusb/#idl-def-usbtransferstatus
+
+enum USBTransferStatus {
+    "ok",
+    "stall",
+    "babble"
+};
+
+// http://reillyeon.github.io/webusb/#device-usage
+
+[
+    GarbageCollected,
+    RuntimeEnabled=WebUSB,
+] interface USBDevice {
+    readonly attribute DOMString guid;
+    readonly attribute octet usbVersionMajor;
+    readonly attribute octet usbVersionMinor;
+    readonly attribute octet usbVersionSubminor;
+    readonly attribute octet deviceClass;
+    readonly attribute octet deviceSubclass;
+    readonly attribute octet deviceProtocol;
+    readonly attribute unsigned short vendorId;
+    readonly attribute unsigned short productId;
+    readonly attribute octet deviceVersionMajor;
+    readonly attribute octet deviceVersionMinor;
+    readonly attribute octet deviceVersionSubminor;
+    readonly attribute DOMString? manufacturerName;
+    readonly attribute DOMString? productName;
+    readonly attribute DOMString? serialNumber;
+    readonly attribute sequence<USBConfiguration> configurations;
+
+    [CallWith=ScriptState] Promise<void> open();
+    [CallWith=ScriptState] Promise<void> close();
+    [CallWith=ScriptState] Promise<void> getConfiguration();
+    [CallWith=ScriptState] Promise<void> setConfiguration(octet configurationValue);
+    [CallWith=ScriptState] Promise<void> claimInterface(octet interfaceNumber);
+    [CallWith=ScriptState] Promise<void> releaseInterface(octet interfaceNumber);
+    [CallWith=ScriptState] Promise<void> setInterface(octet interfaceNumber, octet alternateSetting);
+    [CallWith=ScriptState] Promise<USBInTransferResult> controlTransferIn(USBControlTransferParameters setup, unsigned short length);
+    [CallWith=ScriptState] Promise<USBOutTransferResult> controlTransferOut(USBControlTransferParameters setup, optional BufferSource data);
+    [CallWith=ScriptState] Promise<void> clearHalt(octet endpointNumber);
+    [CallWith=ScriptState] Promise<USBInTransferResult> transferIn(octet endpointNumber, unsigned long length);
+    [CallWith=ScriptState] Promise<USBOutTransferResult> transferOut(octet endpointNumber, BufferSource data);
+    [CallWith=ScriptState] Promise<void> reset();
+};

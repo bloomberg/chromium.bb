@@ -1,0 +1,18 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x164
+  LayoutBlockFlow {HTML} at (0,0) size 800x164
+    LayoutBlockFlow {BODY} at (8,16) size 784x140
+      LayoutBlockFlow {P} at (0,0) size 784x20
+        LayoutText {#text} at (0,0) size 445x19
+          text run at (0,0) width 445: "There should be a solid single uninterrupted smooth column of blue below."
+      LayoutBlockFlow {DIV} at (0,36) size 784x104 [color=#000080]
+        LayoutBlockFlow {DIV} at (0,0) size 784x32
+          LayoutText {#text} at (0,0) size 32x32
+            text run at (0,0) width 32: "x"
+        LayoutBlockFlow {DIV} at (0,32) size 784x40
+          LayoutText {#text} at (0,0) size 40x40
+            text run at (0,0) width 40: "x"
+        LayoutBlockFlow {DIV} at (0,72) size 784x32
+          LayoutText {#text} at (0,0) size 32x32
+            text run at (0,0) width 32: "x"

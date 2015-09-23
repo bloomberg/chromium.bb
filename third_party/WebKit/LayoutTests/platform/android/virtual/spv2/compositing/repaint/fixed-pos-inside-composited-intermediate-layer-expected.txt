@@ -1,0 +1,32 @@
+{
+  "bounds": [785, 30020],
+  "children": [
+    {
+      "bounds": [785, 30020],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "children": [
+            {
+              "position": [8, 8],
+              "bounds": [500, 500],
+              "contentsOpaque": true,
+              "drawsContent": true,
+              "backgroundColor": "#00FFFF"
+            },
+            {
+              "position": [20, 20],
+              "bounds": [100, 30000],
+              "drawsContent": true,
+              "repaintRects": [
+                [25, 25, 50, 50]
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+

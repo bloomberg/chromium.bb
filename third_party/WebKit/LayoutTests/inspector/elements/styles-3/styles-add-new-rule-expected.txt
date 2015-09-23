@@ -1,0 +1,50 @@
+Tests that adding a new rule works after switching nodes.
+
+Text
+After adding new rule (inspected):
+[expanded] 
+element.style  { ()
+    font-size: 12px;
+
+[expanded] 
+foo, [$div#inspected$], bar  { (inspector-stylesheet:1 -> inspector-stylesheet:1:6)
+    color: maroon;
+
+[expanded] 
+[$div$]  { (user agent stylesheet)
+    display: block;
+
+After adding new rule (other):
+[expanded] 
+element.style  { ()
+    color: red;
+
+[expanded] 
+div#other  { (inspector-stylesheet:5 -> inspector-stylesheet:5:1)
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+.my-class  { (inspector-stylesheet:7 -> inspector-stylesheet:7:1)
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+[expanded] 
+element.style  { ()
+
+[expanded] 
+.class-1.class-2.class-3  { (inspector-stylesheet:9 -> inspector-stylesheet:9:1)
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+Revision added: inspector-stylesheet
+

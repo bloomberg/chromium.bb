@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../elements-test.js"></script>
+<script>
+
+function addStylesheet()
+{
+    var linkElement = document.createElement("link");
+    linkElement.rel = "stylesheet";
+    linkElement.href = "resources/selector-line-sourcemap-header-deprecated.php";
+    document.head.appendChild(linkElement);
+}
+
+function test()
+{
+    WebInspector.settingForTest("cssSourceMapsEnabled").set(true);
+    InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", step1);
+    InspectorTest.evaluateInPage("addStylesheet()");
+
+    function step1()
+    {
+        InspectorTest.selectNodeAndWaitForStyles("inspected", step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.dumpSelectedElementStyles(true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that sourcemap is applied correctly when specified by the respective HTTP header.
+</p>
+
+<div id="container">
+    <div id="inspected">Text</div>
+</div>
+
+</body>
+</html>

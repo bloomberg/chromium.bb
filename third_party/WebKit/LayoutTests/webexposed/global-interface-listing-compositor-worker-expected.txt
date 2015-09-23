@@ -1,0 +1,173 @@
+CONSOLE WARNING: 'webkitIDBTransaction' is deprecated. Please use 'IDBTransaction' instead.
+CONSOLE WARNING: 'webkitIDBRequest' is deprecated. Please use 'IDBRequest' instead.
+CONSOLE WARNING: 'webkitIDBObjectStore' is deprecated. Please use 'IDBObjectStore' instead.
+CONSOLE WARNING: 'webkitIDBKeyRange' is deprecated. Please use 'IDBKeyRange' instead.
+CONSOLE WARNING: 'webkitIDBIndex' is deprecated. Please use 'IDBIndex' instead.
+CONSOLE WARNING: 'webkitIDBFactory' is deprecated. Please use 'IDBFactory' instead.
+CONSOLE WARNING: 'webkitIDBDatabase' is deprecated. Please use 'IDBDatabase' instead.
+CONSOLE WARNING: 'webkitIDBCursor' is deprecated. Please use 'IDBCursor' instead.
+This test documents all interface attributes and methods on CompositorWorkerGlobalScope.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Starting worker: resources/global-interface-listing.js
+[Worker] [INTERFACES]
+[Worker] interface CompositorProxy
+[Worker]     getter opacity
+[Worker]     getter scrollLeft
+[Worker]     getter scrollTop
+[Worker]     getter transform
+[Worker]     method constructor
+[Worker]     method disconnect
+[Worker]     method supports
+[Worker]     setter opacity
+[Worker]     setter scrollLeft
+[Worker]     setter scrollTop
+[Worker]     setter transform
+[Worker] interface CompositorWorkerGlobalScope
+[Worker]     getter onmessage
+[Worker]     method cancelAnimationFrame
+[Worker]     method constructor
+[Worker]     method postMessage
+[Worker]     method requestAnimationFrame
+[Worker]     setter onmessage
+[Worker] interface DataView
+[Worker]     getter buffer
+[Worker]     getter byteLength
+[Worker]     getter byteOffset
+[Worker]     method constructor
+[Worker]     method getFloat32
+[Worker]     method getFloat64
+[Worker]     method getInt16
+[Worker]     method getInt32
+[Worker]     method getInt8
+[Worker]     method getUint16
+[Worker]     method getUint32
+[Worker]     method getUint8
+[Worker]     method setFloat32
+[Worker]     method setFloat64
+[Worker]     method setInt16
+[Worker]     method setInt32
+[Worker]     method setInt8
+[Worker]     method setUint16
+[Worker]     method setUint32
+[Worker]     method setUint8
+[Worker] interface FileError
+[Worker]     attribute ABORT_ERR
+[Worker]     attribute ENCODING_ERR
+[Worker]     attribute INVALID_MODIFICATION_ERR
+[Worker]     attribute INVALID_STATE_ERR
+[Worker]     attribute NOT_FOUND_ERR
+[Worker]     attribute NOT_READABLE_ERR
+[Worker]     attribute NO_MODIFICATION_ALLOWED_ERR
+[Worker]     attribute PATH_EXISTS_ERR
+[Worker]     attribute QUOTA_EXCEEDED_ERR
+[Worker]     attribute SECURITY_ERR
+[Worker]     attribute SYNTAX_ERR
+[Worker]     attribute TYPE_MISMATCH_ERR
+[Worker]     getter code
+[Worker]     method constructor
+[Worker] interface webkitIDBCursor
+[Worker]     getter direction
+[Worker]     getter key
+[Worker]     getter primaryKey
+[Worker]     getter source
+[Worker]     method advance
+[Worker]     method constructor
+[Worker]     method continue
+[Worker]     method continuePrimaryKey
+[Worker]     method delete
+[Worker]     method update
+[Worker] interface webkitIDBDatabase
+[Worker]     getter name
+[Worker]     getter objectStoreNames
+[Worker]     getter onabort
+[Worker]     getter onclose
+[Worker]     getter onerror
+[Worker]     getter onversionchange
+[Worker]     getter version
+[Worker]     method close
+[Worker]     method constructor
+[Worker]     method createObjectStore
+[Worker]     method deleteObjectStore
+[Worker]     method transaction
+[Worker]     setter onabort
+[Worker]     setter onclose
+[Worker]     setter onerror
+[Worker]     setter onversionchange
+[Worker] interface webkitIDBFactory
+[Worker]     method cmp
+[Worker]     method constructor
+[Worker]     method deleteDatabase
+[Worker]     method open
+[Worker]     method webkitGetDatabaseNames
+[Worker] interface webkitIDBIndex
+[Worker]     getter keyPath
+[Worker]     getter multiEntry
+[Worker]     getter name
+[Worker]     getter objectStore
+[Worker]     getter unique
+[Worker]     method constructor
+[Worker]     method count
+[Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
+[Worker]     method getKey
+[Worker]     method openCursor
+[Worker]     method openKeyCursor
+[Worker] interface webkitIDBKeyRange
+[Worker]     getter lower
+[Worker]     getter lowerOpen
+[Worker]     getter upper
+[Worker]     getter upperOpen
+[Worker]     method constructor
+[Worker] interface webkitIDBObjectStore
+[Worker]     getter autoIncrement
+[Worker]     getter indexNames
+[Worker]     getter keyPath
+[Worker]     getter name
+[Worker]     getter transaction
+[Worker]     method add
+[Worker]     method clear
+[Worker]     method constructor
+[Worker]     method count
+[Worker]     method createIndex
+[Worker]     method delete
+[Worker]     method deleteIndex
+[Worker]     method get
+[Worker]     method getAll
+[Worker]     method getAllKeys
+[Worker]     method index
+[Worker]     method openCursor
+[Worker]     method openKeyCursor
+[Worker]     method put
+[Worker] interface webkitIDBRequest
+[Worker]     getter error
+[Worker]     getter onerror
+[Worker]     getter onsuccess
+[Worker]     getter readyState
+[Worker]     getter result
+[Worker]     getter source
+[Worker]     getter transaction
+[Worker]     method constructor
+[Worker]     setter onerror
+[Worker]     setter onsuccess
+[Worker] interface webkitIDBTransaction
+[Worker]     getter db
+[Worker]     getter error
+[Worker]     getter mode
+[Worker]     getter objectStoreNames
+[Worker]     getter onabort
+[Worker]     getter oncomplete
+[Worker]     getter onerror
+[Worker]     method abort
+[Worker]     method constructor
+[Worker]     method objectStore
+[Worker]     setter onabort
+[Worker]     setter oncomplete
+[Worker]     setter onerror
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

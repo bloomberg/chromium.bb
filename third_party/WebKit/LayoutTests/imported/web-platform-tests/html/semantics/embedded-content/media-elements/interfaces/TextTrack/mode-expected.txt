@@ -1,0 +1,18 @@
+CONSOLE WARNING: The provided value '1' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value '' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'null' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'undefined' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'DISABLED' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'dİsabled' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'dısabled' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'disabled ' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value ' disabled' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value '[object Object]' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'HIDDEN' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'hİdden' is not a valid enum value of type TextTrackMode.
+CONSOLE WARNING: The provided value 'hıdden' is not a valid enum value of type TextTrackMode.
+This is a testharness.js-based test.
+PASS TextTrack.mode, wrong value 
+PASS TextTrack.mode, correct value 
+Harness: the test ran to completion.
+

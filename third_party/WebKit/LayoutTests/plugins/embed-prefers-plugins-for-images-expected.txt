@@ -1,0 +1,4 @@
+Test that WebKit will load a plugin to render an image before rendering it natively.
+
+PASS
+

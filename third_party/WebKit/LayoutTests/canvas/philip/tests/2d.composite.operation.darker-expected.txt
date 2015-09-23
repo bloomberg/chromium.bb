@@ -1,0 +1,2 @@
+CONSOLE WARNING: 'darker' is deprecated. Please use 'darken' instead.
+Failed assertion ctx.globalCompositeOperation == 'xor' (got darken[string], expected xor[string])

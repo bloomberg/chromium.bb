@@ -1,0 +1,79 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+"use strict";
+
+let globalLet = 41;
+const globalConst = 42;
+
+function makeClosure(n)
+{
+    let makeClosureBlockVar = "block." + n;
+    var makeClosureLocalVar = "local." + n;
+    {
+        let makeClosureDeeperBlockVar = "block.deep." + n;
+        var makeClosureDeeperLocalVar = "local.deep." + n;
+        return function innerFunction(x)
+        {
+            let innerFunctionBlockVar = x + 102;
+            var innerFunctionLocalVar = x + 2;
+            var negInf = -Infinity;
+            var negZero = 1 / negInf;
+            {
+                let block1 = "block {...}";
+                const const1 = 1;
+                try {
+                    throw new Error("An exception");
+                } catch (e) {
+                    let block2 = "catch(e) {...}";
+                    const const2 = 2;
+                    e.toString();
+                    debugger;
+                }
+            }
+            return n + makeClosureLocalVar + x + innerFunctionLocalVar + innerFunctionBlockVar +
+                makeClosureBlockVar + makeClosureDeeperBlockVar + makeClosureDeeperLocalVar;
+        }
+    }
+}
+
+function testFunction()
+{
+    var f = makeClosure("TextParam");
+    f(2014);
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(step2);
+    }
+
+    function step2()
+    {
+        InspectorTest.expandScopeVariablesSidebarPane(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.addResult("");
+        InspectorTest.dumpScopeVariablesSidebarPane();
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type='button' onclick='testFunction()' value='Test'/>
+<p>
+Tests ES6 harmony scope sections.
+</p>
+</body>
+</html>

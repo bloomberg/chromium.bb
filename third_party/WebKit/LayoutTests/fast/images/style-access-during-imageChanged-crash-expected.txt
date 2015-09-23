@@ -1,0 +1,4 @@
+CONSOLE WARNING: Failed to decode downloaded font: data:text/plain,1
+This test passes if it does not cause an assertion failure or a crash.
+
+A 

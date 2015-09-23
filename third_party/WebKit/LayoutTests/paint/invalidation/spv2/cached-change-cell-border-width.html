@@ -1,0 +1,36 @@
+<!-- Based on fast/table/border-collapsing/cached-change-cell-border-width.html -->
+<!--
+Calculating collapsed borders for big tables is expensive, so we cache them and recalculate when needed.
+Here we change cell border width, expect that cache is invalidated and paint produces expected image.
+-->
+<html>
+    <head>
+        <title></title>
+        <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
+        <script src="resources/paint-invalidation-test.js"></script>
+        <script type="text/javascript">
+            window.expectedPaintInvalidationObjects = [
+                "LayoutTableCell TD id='foo'",
+                "LayoutTableCell TD",
+                "LayoutTable TABLE",
+                "LayoutTableSection TBODY",
+                "LayoutTableRow TR",
+                "LayoutTableCell TD id='foo'",
+                "LayoutTableCell TD",
+            ];
+            function paintInvalidationTest() {
+                document.getElementById("foo").style.borderWidth = "4px";
+                document.getElementById("foo").style.borderColor = "lime";
+            }
+        </script>
+    </head>
+    <body onload="runPaintInvalidationTest()">
+        <table style="border-collapse:collapse; border:2px solid blue">
+            <tr>
+                <td style="border:1px solid lime" id="foo"/>
+                <td style="border:1px solid black"/>
+            </tr>
+        </table>
+    </body>
+</html>
+

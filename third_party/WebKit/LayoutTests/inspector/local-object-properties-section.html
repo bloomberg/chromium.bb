@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    var d = [];
+    for (var i = 1000; i < 1256; ++i)
+        d.push(i);
+    var object = {a: "b", c: d};
+    var localObject = WebInspector.RemoteObject.fromLocalObject(object);
+
+    var propertiesSection = new WebInspector.ObjectPropertiesSection(localObject, "local object");
+    propertiesSection.expand();
+    propertiesSection.objectTreeElement().childAt(1).expand();
+
+    InspectorTest.addResult(InspectorTest.textContentWithLineBreaks(propertiesSection.element));
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test that ObjectPropertiesSection works with local remote objects.</p>
+</body>
+</html>

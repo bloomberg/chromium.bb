@@ -1,0 +1,10 @@
+Test currentTime values when setting while HAVE_NOTHING.
+
+
+EXPECTED (video.currentTime == '0') OK
+EXPECTED (video.currentTime == '1') OK
+EVENT(loadedmetadata)
+EXPECTED (video.currentTime == '1') OK
+EVENT(seeked)
+END OF TEST
+

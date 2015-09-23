@@ -1,0 +1,34 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 126x500
+        LayoutInline {SPAN} at (0,0) size 20x391
+          LayoutText {#text} at (0,0) size 20x391
+            text run at (0,0) width 391: "This text should be rotated 90 degrees and underlined."
+        LayoutText {#text} at (0,390) size 20x5
+          text run at (0,390) width 5: " "
+        LayoutBR {BR} at (4,394) size 0x1
+        LayoutInline {SPAN} at (0,0) size 20x382
+          LayoutText {#text} at (21,0) size 20x382
+            text run at (21,0) width 382: "This text should be rotated 90 degrees and overlined."
+        LayoutText {#text} at (21,381) size 20x5
+          text run at (21,381) width 5: " "
+        LayoutBR {BR} at (25,385) size 0x1
+        LayoutInline {SPAN} at (0,0) size 20x418
+          LayoutText {#text} at (42,0) size 20x418
+            text run at (42,0) width 418: "This text should be rotated 90 degrees and struck through."
+        LayoutText {#text} at (42,417) size 20x6
+          text run at (42,417) width 5: " "
+        LayoutBR {BR} at (46,422) size 0x1
+        LayoutInline {SPAN} at (0,0) size 20x442
+          LayoutText {#text} at (63,0) size 20x442
+            text run at (63,0) width 442: "This text should have a red shadow that is offset horizontally."
+        LayoutText {#text} at (63,441) size 20x6
+          text run at (63,441) width 5: " "
+        LayoutBR {BR} at (67,446) size 0x1
+        LayoutBR {BR} at (84,0) size 20x0
+        LayoutInline {SPAN} at (0,0) size 20x456
+          LayoutText {#text} at (105,0) size 20x456
+            text run at (105,0) width 456: "This text should have an overline plus horizontal green shadow"

@@ -1,0 +1,24 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: order from [1, 4] to [2] was [1 4] at 0
+PASS: order from [1, 4] to [2] was [2 2] at 1
+PASS: order from [2] to [2] was [2 2] at 0
+PASS: order from [2] to [2] was [2 2] at 0.2
+PASS: order from [2] to [2] was [2 2] at 0.6
+PASS: order from [2] to [2] was [2 2] at 1
+PASS: order from [2] to [4, 1] was [2 2] at 0
+PASS: order from [2] to [4, 1] was [4 1] at 1
+
+Web Animations API:
+PASS: order from [1, 4] to [2] was [1 4] at 0
+PASS: order from [1, 4] to [2] was [2 2] at 1
+PASS: order from [2] to [2] was [2 2] at -0.4
+PASS: order from [2] to [2] was [2 2] at 0
+PASS: order from [2] to [2] was [2 2] at 0.2
+PASS: order from [2] to [2] was [2 2] at 0.6
+PASS: order from [2] to [2] was [2 2] at 1
+PASS: order from [2] to [2] was [2 2] at 1.4
+PASS: order from [2] to [4, 1] was [2 2] at 0
+PASS: order from [2] to [4, 1] was [4 1] at 1
+

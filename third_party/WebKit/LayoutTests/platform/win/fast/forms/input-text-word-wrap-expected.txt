@@ -1,0 +1,20 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {P} at (0,0) size 784x18
+        LayoutText {#text} at (0,0) size 117x17
+          text run at (0,0) width 117: "This tests that the "
+        LayoutInline {CODE} at (0,0) size 73x16
+          LayoutText {#text} at (116,2) size 73x16
+            text run at (116,2) width 73: "word-wrap"
+        LayoutText {#text} at (188,0) size 308x17
+          text run at (188,0) width 308: " property is ignored for single-line text controls."
+      LayoutBlockFlow (anonymous) at (0,34) size 784x40
+        LayoutTextControl {INPUT} at (0,0) size 173x40 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
+        LayoutText {#text} at (0,0) size 0x0
+layer at (10,54) size 169x16 scrollWidth 280
+  LayoutBlockFlow {DIV} at (2,12) size 169x16
+    LayoutText {#text} at (0,0) size 280x16
+      text run at (0,0) width 280: "This sentence should not wrap into the next line."

@@ -1,0 +1,174 @@
+CONSOLE MESSAGE: line 11: [object Object]
+CONSOLE MESSAGE: line 12: [object Object]
+CONSOLE MESSAGE: line 11: Symbol()
+CONSOLE MESSAGE: line 12: Symbol()
+CONSOLE MESSAGE: line 11: Symbol(a)
+CONSOLE MESSAGE: line 12: Symbol(a)
+CONSOLE MESSAGE: line 11: [object Object]
+CONSOLE MESSAGE: line 12: [object Object]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object WeakMap]
+CONSOLE MESSAGE: line 12: [object WeakMap]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object WeakSet]
+CONSOLE MESSAGE: line 12: [object WeakSet]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object Set]
+CONSOLE MESSAGE: line 12: [object Set]
+CONSOLE MESSAGE: line 11: [object Map]
+CONSOLE MESSAGE: line 12: [object Map]
+Tests that console properly displays information about ES6 features.
+
+console-format-es6.html:11 Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
+console-format-es6.html:12 [Promise]
+    0: Promise
+    length: 1
+    __proto__: Array[0]
+globals[0]
+Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
+console-format-es6.html:11 Symbol()
+console-format-es6.html:12 [Symbol()]
+    0: Symbol()
+    length: 1
+    __proto__: Array[0]
+globals[1]
+Symbol()
+console-format-es6.html:11 Symbol(a)
+console-format-es6.html:12 [Symbol(a)]
+    0: Symbol(a)
+    length: 1
+    __proto__: Array[0]
+globals[2]
+Symbol(a)
+console-format-es6.html:11 Object {a: Symbol(), Symbol(a): 2}
+    a: Symbol()
+    getter: (...)
+    get getter: getter()
+    Symbol(a): 2
+    __proto__: Object
+console-format-es6.html:12 [Object]
+    0: Object
+    length: 1
+    __proto__: Array[0]
+globals[3]
+Object {a: Symbol(), Symbol(a): 2}
+    a: Symbol()
+    getter: (...)
+    get getter: getter()
+    Symbol(a): 2
+    __proto__: Object
+console-format-es6.html:11 Map {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
+    size: (...)
+    __proto__: Map
+    <entries>[1]
+        0: {Object => Object}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[4]
+Map {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
+    size: (...)
+    __proto__: Map
+    <entries>[1]
+        0: {Object => Object}
+console-format-es6.html:11 WeakMap {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
+    __proto__: WeakMap
+    <entries>[1]
+        0: {Object => Object}
+console-format-es6.html:12 [WeakMap]
+    0: WeakMap
+    length: 1
+    __proto__: Array[0]
+globals[5]
+WeakMap {Object {a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
+    __proto__: WeakMap
+    <entries>[1]
+        0: {Object => Object}
+console-format-es6.html:11 Set {Object {a: Symbol(), Symbol(a): 2}}
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: Object
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[6]
+Set {Object {a: Symbol(), Symbol(a): 2}}
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: Object
+console-format-es6.html:11 WeakSet {Object {a: Symbol(), Symbol(a): 2}}
+    __proto__: WeakSet
+    <entries>[1]
+        0: Object
+console-format-es6.html:12 [WeakSet]
+    0: WeakSet
+    length: 1
+    __proto__: Array[0]
+globals[7]
+WeakSet {Object {a: Symbol(), Symbol(a): 2}}
+    __proto__: WeakSet
+    <entries>[1]
+        0: Object
+console-format-es6.html:11 Map {Map {} => WeakMap {}}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[8]
+Map {Map {} => WeakMap {}}
+console-format-es6.html:11 Map {Map {…} => WeakMap {…}}
+    size: (...)
+    __proto__: Map
+    <entries>[1]
+        0: {Map => WeakMap}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[9]
+Map {Map {…} => WeakMap {…}}
+    size: (...)
+    __proto__: Map
+    <entries>[1]
+        0: {Map => WeakMap}
+console-format-es6.html:11 Set {WeakSet {}}
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[10]
+Set {WeakSet {}}
+console-format-es6.html:11 Set {WeakSet {…}}
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: WeakSet
+console-format-es6.html:12 [Set]
+    0: Set
+    length: 1
+    __proto__: Array[0]
+globals[11]
+Set {WeakSet {…}}
+    size: (...)
+    __proto__: Set
+    <entries>[1]
+        0: WeakSet
+console-format-es6.html:11 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
+console-format-es6.html:12 [Map]
+    0: Map
+    length: 1
+    __proto__: Array[0]
+globals[12]
+Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
+

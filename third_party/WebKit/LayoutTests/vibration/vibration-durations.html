@@ -1,0 +1,64 @@
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="vibration-utils.js"></script>
+</head>
+<body>
+<script>
+description('Tests for how durations are handled in the Vibration API.');
+
+// Empty pattern is empty. Does not start a vibration.
+shouldBeTrue("navigator.vibrate([])");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [])");
+shouldBeFalse("internals.isVibrating(document)");
+stopVibration();
+
+// An empty pattern is stored internally for a single 0.
+shouldBeTrue("navigator.vibrate(0)");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [])");
+shouldBeFalse("internals.isVibrating(document)");
+stopVibration();
+
+// An empty pattern is stored internally for a single 0.
+shouldBeTrue("navigator.vibrate([0])");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [])");
+shouldBeFalse("internals.isVibrating(document)");
+stopVibration();
+
+// The maximum vibration duration.
+shouldBeTrue("navigator.vibrate(10000)");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [10000])");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+// Overly long vibrations are truncated to the maximum duration.
+shouldBeTrue("navigator.vibrate(10001)");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [10000])");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+// All values in the sequence are truncated.
+shouldBeTrue("navigator.vibrate([10001, 10001, 10001])");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [10000, 10000, 10000])");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+// A negative integer is clamped to 0. This becomes an empty pattern.
+shouldBeTrue("navigator.vibrate(-1)");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [])");
+shouldBeFalse("internals.isVibrating(document)");
+stopVibration();
+
+// WebIDL cannot clamp values in sequences yet, so -1 first overflows to a huge
+// number, then it is truncated to the maximum duration.
+// All values in the sequence overflow and truncate in the same way.
+// This is a bug, and this test exposes the incorrect behavior.
+// FIXME: http://crbug.com/309700
+shouldBeTrue("navigator.vibrate([-1, -1, -1])");
+shouldBeTrue("areArraysEqual(internals.pendingVibrationPattern(document), [10000, 10000, 10000])");
+shouldBeTrue("internals.isVibrating(document)");
+stopVibration();
+
+</script>
+</body>
+</html>

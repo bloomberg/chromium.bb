@@ -1,0 +1,4 @@
+CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+ALERT: PASS
+DIV
+

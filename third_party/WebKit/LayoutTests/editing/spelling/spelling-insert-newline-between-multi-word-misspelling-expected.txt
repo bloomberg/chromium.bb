@@ -1,0 +1,13 @@
+Spelling should work when the user inserts a newline between a multi word misspelling. To test manually, enable 'Ask Google for Suggestions' in Chrome, type 'It should be upper case.'.The test succeeds if there are no spelling markers under 'upper case'.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS spellingMarkerRange.toString() is "upper case"
+PASS firstMarkerRange is null
+PASS secondMarkerRange is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+It should be upper 
+case.

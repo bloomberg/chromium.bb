@@ -1,0 +1,129 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="profiler-test.js"></script>
+<script>
+
+function test()
+{
+    var profile = {
+        "head": {
+            "functionName": "(root)",
+            "id": 1,
+            "scriptId": "0",
+            "url": "",
+            "lineNumber": 0,
+            "hitCount": 100000,
+            "children": [
+                {
+                    "functionName": "holder",
+                    "id": 10,
+                    "scriptId": "0",
+                    "url": "",
+                    "lineNumber": 0,
+                    "hitCount": 10000,
+                    "children": [
+                        {
+                            "functionName": "nativeA",
+                            "id": 2,
+                            "scriptId": "40",
+                            "url": "native 1.js",
+                            "lineNumber": 4642,
+                            "hitCount": 1000,
+                            "children": [
+                                {
+                                    "functionName": "nativeAaa",
+                                    "id": 3,
+                                    "scriptId": "40",
+                                    "url": "native 2.js",
+                                    "lineNumber": 5025,
+                                    "hitCount": 100,
+                                    "children": [
+                                        {
+                                            "functionName": "Aaa",
+                                            "id": 4,
+                                            "scriptId": "40",
+                                            "url": "native 3.js",
+                                            "lineNumber": 5025,
+                                            "hitCount": 10,
+                                            "children": [
+                                            ]
+                                        },
+                                        {
+                                            "functionName": "Aaaaaa",
+                                            "id": 5,
+                                            "scriptId": "40",
+                                            "url": "",
+                                            "lineNumber": 505,
+                                            "hitCount": 20,
+                                            "children": []
+                                        }
+                                    ]
+                                },
+                                {
+                                    "functionName": "Bbb",
+                                      "id": 6,
+                                    "scriptId": "40",
+                                    "url": "",
+                                    "lineNumber": 505,
+                                    "hitCount": 200,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "functionName": "C",
+                       "id": 7,
+                    "scriptId": "40",
+                    "url": "",
+                    "lineNumber": 4642,
+                    "hitCount": 20000,
+                    "children": [
+                        {
+                            "functionName": "nativeDdd",
+                            "id": 8,
+                            "scriptId": "41",
+                            "url": "native 3.js",
+                            "lineNumber": 55,
+                            "hitCount": 2000,
+                            "children": []
+                        },
+                        {
+                            "functionName": "Ccc",
+                            "id": 9,
+                            "scriptId": "40",
+                            "url": "",
+                            "lineNumber": 525,
+                            "hitCount": 1000,
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        "idleTime": 202.88199791684747,
+        "startTime": 1375445600.000847,
+        "endTime": 1375445601.070847,
+        "samples": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
+    };
+    var model = new WebInspector.CPUProfileDataModel(profile);
+    printTree("", model.profileHead);
+    function printTree(padding, node)
+    {
+        InspectorTest.addResult(padding + node.functionName + " id:" + node.id + " hits:" + node.hitCount + " depth:" + node.depth);
+        node.children.forEach(printTree.bind(null, padding + "  "));
+    }
+    InspectorTest.addResult(model.samples.join(", "));
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests filtering of native nodes.
+</p>
+</body>
+</html>

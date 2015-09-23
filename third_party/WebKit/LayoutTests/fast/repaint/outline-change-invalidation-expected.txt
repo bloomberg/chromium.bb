@@ -1,0 +1,27 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [31, 84, 761, 18],
+        [31, 84, 761, 18],
+        [31, 79, 766, 28],
+        [31, 79, 766, 28],
+        [8, 84, 784, 18],
+        [8, 79, 789, 28]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineBox",
+        "InlineTextBox 'Lorem Ipsum'",
+        "LayoutBlockFlow UL",
+        "LayoutListItem LI",
+        "LayoutBlockFlow A id='link'"
+      ]
+    }
+  ]
+}
+

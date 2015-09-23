@@ -1,0 +1,28 @@
+Tests AudioBufferSourceNode looping with a variety of loop points.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS loop whole buffer by default with loopStart == loopEnd == 0
+PASS loop whole buffer explicitly
+PASS loop from middle to end of buffer
+PASS loop from start to middle of buffer
+PASS loop from 4 -> 6
+PASS loop from 3 -> 7
+PASS loop from 4 -> 6 with playbackRate of 0.5
+PASS loop from 4 -> 6 with playbackRate of 1.5
+PASS loop from 2 -> 5 with offset 6
+PASS loop from 3 -> 6 with offset 1
+PASS loop from 3 -> 6 with offset 4
+PASS illegal playbackRate of 47 greater than loop length
+PASS illegal loop: loopStartFrame > loopEndFrame
+PASS illegal loop: loopStartFrame == loopEndFrame
+PASS illegal loop: loopStartFrame < 0
+PASS illegal loop: loopEndFrame > bufferLength
+PASS loop from 3 -> 6 with offset 1 for 20 frames
+PASS loop from 3 -> 8 with offset 1 for 3 frames
+PASS loop from 3 -> 8 with offset 7 for 3 frames
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

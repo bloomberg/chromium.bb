@@ -1,0 +1,143 @@
+# This file is used for tests that only need to be suppressed on the Chromium
+# WebKit Leak bots.
+#
+# This list isn't comprehensive yet, and Leak Detector bots are not tree closers atm.
+# Gardeners are welcome to touch this file, but you can ignore the failures
+# and wait for kouhei@ or hajimehoshi@ to maintain this file.
+
+# view-source:// tests are not supported by the leak detector
+crbug.com/364398 fast/frames/viewsource/viewsource-1.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-2.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-3.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-4.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-5.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-6.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-7.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
+crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
+crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
+crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
+
+# FIXME: The below tests fails when the leak detector is disabled.
+crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
+
+# FIXME: The below tests crashes when the leak detector is run on debug builds
+crbug.com/366043 [ Debug ] fast/history/history-traversal-is-asynchronous.html [ Crash ]
+
+# FIXME: html imports tests are flaky from extra navigation from leak detector
+crbug.com/366477 http/tests/htmlimports/redirect.html [ Failure Pass ]
+
+# crbug.com/371264 also includes inspector/sources/debugger/callstack-placards-discarded.html as a test which times out, but now this is listed as crbug.com/376188.
+
+# The leak detector doesn't wait for worker threads to completely clean up, so leaks are expected.
+crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
+
+# FIXME: scroll customization leaks memory. See
+# codereview.chromium.org/1236913004/ for context.
+crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Leak ]
+crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known real leaks.
+# -----------------------------------------------------------------
+
+crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
+crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
+crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks which may be false positives.
+# -----------------------------------------------------------------
+
+crbug.com/364411 fast/frames/location-observe-callback-crash.html [ Leak ]
+
+crbug.com/364417 editing/selection/selection-in-iframe-removed-crash.html [ Leak ]
+crbug.com/364417 editing/selection/user-select-js-property.html [ Leak ]
+crbug.com/364417 fast/events/touch/gesture/context-menu-on-long-tap.html [ Leak ]
+crbug.com/364417 fast/repaint/japanese-rl-selection-clear.html [ Leak ]
+crbug.com/364417 virtual/spv2/fast/repaint/japanese-rl-selection-clear.html [ Leak ]
+crbug.com/364417 fast/text/international/hebrew-selection.html [ Leak ]
+
+crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
+
+crbug.com/366042 fast/history/history-traversal-is-asynchronous.html [ Leak ]
+
+crbug.com/364391 http/tests/misc/acid3.html [ Leak Pass ]
+
+# Resource leak
+crbug.com/403987 fast/dom/element-attribute-js-null.html [ Leak ]
+crbug.com/403363 http/tests/security/mixedContent/insecure-audio-video-in-main-frame.html [ Leak ]
+crbug.com/405125 media/media-controls-clone-crash.html [ Leak Pass ]
+
+# leaks in newly added web-platform tests
+crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-004.html [ Leak Failure ]
+crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-001.html [ Leak Failure ]
+crbug.com/413731 imported/web-platform-tests/shadow-dom/untriaged/user-interaction/ranges-and-selections/test-002.html [ Leak Failure ]
+
+crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
+
+crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
+crbug.com/427628 inspector/sources/debugger-ui/debugger-save-to-temp-var.html [ Leak ]
+crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
+crbug.com/459576 webaudio/dom-exceptions.html [ Crash ]
+
+crbug.com/482050 fast/repaint/fixed-move-after-keyboard-scroll.html [ Leak ]
+crbug.com/482050 fast/repaint/repaint-tile-clipped.html [ Leak ]
+crbug.com/482050 svg/as-object/nested-embedded-svg-size-changes.html [ Leak ]
+crbug.com/482050 svg/custom/hit-test-unclosed-subpaths.svg [ Leak ]
+crbug.com/482050 svg/custom/hit-test-with-br.xhtml [ Leak ]
+crbug.com/482050 svg/custom/js-update-container2.svg [ Leak ]
+crbug.com/482050 svg/custom/prevent-default.svg [ Leak ]
+crbug.com/482050 svg/custom/repaint-shadow.svg [ Leak ]
+crbug.com/482050 svg/custom/scroll-hit-test.xhtml [ Leak ]
+crbug.com/482050 svg/custom/use-event-handler-on-referenced-element.svg [ Leak ]
+crbug.com/482050 svg/custom/use-event-handler-on-use-element.svg [ Leak ]
+crbug.com/482050 svg/dom/SVGPathSegList-xml-dom-synchronization.xhtml [ Leak ]
+crbug.com/482050 svg/zoom/text/absolute-sized-document-no-scrollbars.svg [ Leak ]
+crbug.com/482050 svg/zoom/text/absolute-sized-document-scrollbars.svg [ Leak ]
+crbug.com/482050 svg/zoom/text/relative-sized-document-scrollbars.svg [ Leak ]
+crbug.com/482050 svg/zoom/text/zoom-coords-viewattr-01-b.svg [ Leak ]
+crbug.com/482050 svg/zoom/text/zoom-foreignObject.svg [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks of ActiveDOMObject (fast).
+# -----------------------------------------------------------------
+crbug.com/506529 fast/mediastream/MediaStreamConstructor.html [ Leak ]
+crbug.com/506529 fast/speech/scripted/speechrecognition-basics.html [ Leak ]
+crbug.com/506529 fast/speech/scripted/speechrecognition-errors.html [ Leak ]
+crbug.com/506529 fast/speech/scripted/start-exception.html [ Leak ]
+crbug.com/506529 fast/events/constructors/media-stream-event-constructor.html [ Leak ]
+crbug.com/506529 fast/files/workers/worker-read-blob-async-crash.html [ Leak ]
+crbug.com/506529 virtual/pointerevent/fast/events/constructors/media-stream-event-constructor.html [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks of ActiveDOMObject (IndexedDB).
+# -----------------------------------------------------------------
+# The leak detector's result for ActiveDOMObject (especially IndexedDB) is
+# flaky and we need to fix the leak detector (crbug.com/507224). Until then,
+# the tests for IndexedDB are skipped.
+crbug.com/506752 imported/web-platform-tests/IndexedDB/ [ Skip ]
+crbug.com/506752 storage/indexeddb/ [ Skip ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks of ActiveDOMObject (http).
+# -----------------------------------------------------------------
+crbug.com/506754 http/tests/cachestorage/window/cache-put.html [ Leak ]
+crbug.com/506754 http/tests/inspector/filesystem/request-file-content.html [ Leak ]
+crbug.com/506754 http/tests/inspector/network/network-xhr-replay.html [ Leak ]
+crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
+crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
+crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
+crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks of ActiveDOMObject (inspector).
+# -----------------------------------------------------------------
+crbug.com/506756 inspector/console/console-log-side-effects.html [ Leak ]
+crbug.com/506756 inspector/console/only-one-deprecation-warning.html [ Leak ]
+
+# -----------------------------------------------------------------
+# Untriaged but known leaks of ActiveDOMObject (Web Audio).
+# -----------------------------------------------------------------
+crbug.com/506757 webaudio/mediastreamaudiodestinationnode.html [ Leak ]

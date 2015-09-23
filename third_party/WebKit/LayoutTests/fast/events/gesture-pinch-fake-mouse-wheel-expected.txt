@@ -1,0 +1,11 @@
+PASS gotWheelEvent is false
+PASS event.ctrlKey is true
+PASS event.deltaX is within 0.001 of 0
+PASS event.deltaY is within 0.001 of 69.31471805599453
+PASS event.x is within 0.001 of 40
+PASS event.y is within 0.001 of 70
+PASS gotWheelEvent is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

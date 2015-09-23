@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+description("WebSocket test that Origin is 'null' in a sandboxed iframe.");
+
+window.jsTestIsAsync = true;
+
+window.addEventListener("message", receiveMessage, false);
+
+var origin;
+
+function receiveMessage(event)
+{
+    origin = event.data;
+    shouldBeEqualToString("origin", "null");
+    finishJSTest();
+}
+</script>
+<iframe sandbox="allow-scripts" src="resources/iframe-sandbox-iframe.html">
+</iframe>

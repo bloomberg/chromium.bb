@@ -1,0 +1,100 @@
+<video controls></video>
+<p>Test that progress events are generated during loading of media resource.</p>
+<script src=../../media-resources/video-test.js></script>
+<script src=../../media-resources/media-file.js></script>
+<script>
+    waitForEventAndFail('error');
+
+    // Given long enough duration, We should not reach ended playback state.
+    waitForEventAndFail('ended');
+
+    // Tuned throttling should not induce player stall or suspended load.
+    waitForEventAndFail('stalled');
+    waitForEventAndFail('suspend');
+    waitForEventAndFail('waiting');
+
+    var progressCount = 0;
+    var lastProgressEventTime = 0;
+    function progressListener(event)
+    {
+        // Implementations can vary the frequency within tolerance, so we must protect against flaky logs.
+        // Remain silent here unless failure detected.
+        if (video.networkState != HTMLMediaElement.NETWORK_LOADING) {
+            failTest('Unexpected networkState ' + video.networkState +
+                     ' when handling \'progress\' event. Is fetch completed or suspending?');
+            return;
+        }
+
+        progressCount++;
+        lastProgressEventTime = window.performance.now();
+    };
+    video.addEventListener('progress', progressListener);
+
+    function canplayListener(event)
+    {
+        // Begin video playback to mitigate flakiness due to implementations suspending loads
+        // on limited buffer capacity.
+        video.play();
+        video.removeEventListener('canplay', canplayListener);
+    }
+    video.addEventListener('canplay', canplayListener);
+
+    var progressCountAtLastCheck = 0;
+    var checkCount = 0;
+    // Spec requires 350ms +/- 200ms minimum 'progress' event interval when loading.
+    var maxProgressFiringIntervalInMS = 550;
+    // Multiple 'progress' events may fire within spec's tolerance window.
+    var maxProgressCountIncrease = 3;
+    function checkProgressCount()
+    {
+        checkCount++;
+
+        // Implementations can vary the frequency within tolerance, so we must protect against flakiness.
+        // Keep progressCount values involved in checks here out of report unless failure detected.
+        consoleWrite('Interval ' + checkCount + ' has elapsed. Checking progress event count delta.');
+        var progressCountDelta = progressCount - progressCountAtLastCheck;
+        if (progressCountDelta <= 0) {
+            failTest('progressCount (' + progressCount + ') did not increase since the last check.');
+            return;
+        }
+
+        var surplusProgress = progressCountDelta - maxProgressCountIncrease;
+        if (surplusProgress > 0) {
+            failTest('Received at least ' + surplusProgress + ' too many progress event(s) since the last check.');
+            return;
+        }
+
+        if (checkCount == 3) {
+            endTest();
+            return;
+        }
+
+        progressCountAtLastCheck = progressCount;
+        var msSinceLastProgressEvent = window.performance.now() - lastProgressEventTime;
+        var msUntilNextCheck = maxProgressFiringIntervalInMS - msSinceLastProgressEvent;
+
+        if (msUntilNextCheck <= 0) {
+            failTest('ProgressCheck scheduling error: msUntilNextCheck is ' + msUntilNextCheck);
+            return;
+        }
+
+        setTimeout(checkProgressCount, msUntilNextCheck);
+    }
+
+    waitForEvent('loadstart', function()
+    {
+        // No 'progress' event should fire prior to 'loadstart'.
+        testExpected('progressCount', 0, '==');
+        setTimeout(checkProgressCount, maxProgressFiringIntervalInMS);
+    });
+
+    var mediaFile = findMediaFile('video', 'resources/test');
+    var mimeType = mimeTypeForFile(mediaFile);
+    // Assumes minimum file size selected is > 100 kB.
+    // At least 4*maxProgressFiringIntervalInMS is how long we want to stretch the full
+    // loading, because we perform checks after 3 of these intervals while still
+    // loading. 100 kB over 2.2 seconds is 45 kBps.
+    var kBps = 45;
+
+    video.src = 'video-throttled-load.cgi' + '?name=' + mediaFile + '&throttle=' + kBps + '&type=' + mimeType;
+</script>

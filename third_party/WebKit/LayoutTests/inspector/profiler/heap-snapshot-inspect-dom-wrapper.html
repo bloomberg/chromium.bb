@@ -1,0 +1,111 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="heap-snapshot-test.js"></script>
+<script>
+
+function handleLoad()
+{
+    // Make sure there is a body wrapper.
+    document.body.fieldOnDomWrapper = 2012;
+    runTest();
+}
+
+function test()
+{
+    var heapProfileType =  WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
+    heapProfileType.addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, finishHeapSnapshot);
+    InspectorTest.addSniffer(heapProfileType, "_snapshotReceived", snapshotReceived);
+    heapProfileType._takeHeapSnapshot(function() {});
+
+    function finishHeapSnapshot(uid)
+    {
+        InspectorTest.addResult("PASS: snapshot was taken");
+        var profiles = heapProfileType.getProfiles();
+
+        if (!profiles.length)
+            return clear("FAILED: no profiles found");
+
+        if (profiles.length > 1)
+            return clear("FAILED: wrong number of recorded profiles was found. profiles.length = " + profiles.length);
+
+        var profile = profiles[profiles.length - 1];
+        WebInspector.panels.profiles.showProfile(profile);
+    }
+
+    function snapshotReceived(profile)
+    {
+        InspectorTest.addResult("PASS: snapshot was received");
+        var snapshotProxy = profile._snapshotProxy;
+        snapshotProxy.callMethod(didGetBodyWrapperIds, "idsOfObjectsWithName", "HTMLBodyElement");
+    }
+
+    function didGetBodyWrapperIds(bodyWrapperIds)
+    {
+        if (bodyWrapperIds.length < 3)
+            return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
+
+        InspectorTest.addResult("PASS: more than 2 HTMLBodyElements were found");
+
+        for (var i = 0; i < bodyWrapperIds.length; i++)
+            InspectorTest.HeapProfilerAgent.getObjectByHeapObjectId("" + bodyWrapperIds[i], undefined, didGetObjectByHeapObjectId);
+
+        var resolvedObjectsCount = 0;
+        var remoteObjects = [];
+        function didGetObjectByHeapObjectId(error, object)
+        {
+            if (!error)
+                remoteObjects.push(InspectorTest.runtimeModel.createRemoteObject(object));
+
+            if (++resolvedObjectsCount  === bodyWrapperIds.length)
+                requestPropertiesOfResolvedObjects();
+        }
+
+        function requestPropertiesOfResolvedObjects()
+        {
+            if (!remoteObjects.length)
+                return clear("FAILED: no resolved objects were detected");
+
+            InspectorTest.addResult("PASS: got at least one HTMLBodyElement wrapper");
+
+            for (var i = 0; i < remoteObjects.length; i++)
+                remoteObjects[i].getOwnProperties(didGetOwnProperties);
+        }
+
+        var didGetOwnPropertiesCount = 0;
+        function didGetOwnProperties()
+        {
+            if (++didGetOwnPropertiesCount !== remoteObjects.length)
+                return;
+
+            clear();
+        }
+
+    }
+
+    function clear(errorMessage)
+    {
+        if (errorMessage)
+            InspectorTest.addResult(errorMessage);
+        setTimeout(done, 0);
+        WebInspector.panels.profiles._reset();
+        return !errorMessage;
+    }
+
+    function done()
+    {
+        InspectorTest.addResult("PASS: profile was deleted");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="handleLoad()">
+<p>
+Test that resolving heap snaphot object to a JS object will not crash on DOM wrapper boilerplate. Test passes if it doesn't crash.
+</p>
+
+</body>
+</html>

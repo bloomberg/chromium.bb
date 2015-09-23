@@ -1,0 +1,231 @@
+# See http://www.chromium.org/developers/testing/webkit-layout-tests/testexpectations for more information on this file.
+
+# This file should only mark tests as Slow. If they are failing in some other way, that listing should be in TestExpectations.
+# Lines listed in both files will have the *union* of the expectations.
+
+# In general, we should list tests in this file if they are slower than ~30% of the default timeout time, as we
+# can see a 3x variance or more in test times on the bots. In practice, this means that any test that takes longer
+# than 2 seconds in Release mode or 6 seconds in Debug mode should be listed here.
+
+crbug.com/24182 [ Debug ] storage/indexeddb/objectstore-cursor.html [ Slow ]
+crbug.com/24182 storage/indexeddb/mozilla/test_objectStore_openKeyCursor.html [ Slow ]
+crbug.com/24182 [ Linux Win Debug ] editing/selection/move-by-word-visually-mac.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-multi-line.html [ Slow ]
+crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/webgl/canvas-test.html [ Slow ]
+crbug.com/24182 [ Win ] virtual/gpu/fast/canvas/webgl/framebuffer-object-attachment.html [ Slow ]
+crbug.com/24182 compositing/culling/filter-occlusion-blur-large.html [ Slow ]
+crbug.com/24182 compositing/video-frame-size-change.html [ Slow ]
+crbug.com/24182 css3/filters/effect-reference-hidpi-hw.html [ Slow ]
+crbug.com/24182 css3/filters/filter-change-repaint-composited.html [ Slow ]
+crbug.com/24182 editing/selection/caret-at-bidi-boundary.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-single-space-inline-element.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-inline-block-positioned-element.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-multi-space.html [ Slow ]
+crbug.com/24182 editing/selection/move-by-word-visually-crash-test-5.html [ Slow ]
+crbug.com/24182 fast/canvas/webgl/read-pixels-test.html [ Slow ]
+crbug.com/24182 fast/dom/SelectorAPI/resig-SelectorsAPI-test.xhtml [ Slow ]
+crbug.com/24182 fast/forms/time-multiple-fields/time-multiple-fields-stepup-stepdown-from-renderer.html [ Slow ]
+crbug.com/24182 fast/frames/cached-frame-counter.html [ Slow ]
+crbug.com/24182 fast/frames/frame-limit.html [ Slow ]
+crbug.com/24182 fast/images/png-suite/test.html [ Slow ]
+crbug.com/24182 fast/overflow/lots-of-sibling-inline-boxes.html [ Slow ] # Particularly slow in Debug: >12x slower!
+crbug.com/24182 http/tests/accessibility/slow-document-load.html [ Slow ]
+crbug.com/24182 http/tests/cache/subresource-expiration-1.html [ Slow ]
+crbug.com/24182 http/tests/cache/subresource-expiration-2.html [ Slow ]
+crbug.com/24182 [ Release Win7 ] http/tests/media/media-source/mediasource-addsourcebuffer.html [ Slow ]
+crbug.com/24182 http/tests/misc/acid3.html [ Slow ]
+crbug.com/24182 http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Slow ]
+crbug.com/24182 http/tests/misc/uncacheable-script-repeated.html [ Slow ]
+crbug.com/24182 http/tests/navigation/slowmetaredirect-basic.html [ Slow ]
+crbug.com/24182 http/tests/navigation/slowtimerredirect-basic.html [ Slow ]
+crbug.com/24182 http/tests/storage/callbacks-are-called-in-correct-context.html [ Slow ]
+crbug.com/24182 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-aborted.html [ Slow ]
+crbug.com/24182 http/tests/notifications/close-dispatch-asynchronous.html [ Slow ]
+crbug.com/24182 jquery/attributes.html [ Slow ]
+crbug.com/24182 jquery/core.html [ Slow ]
+crbug.com/24182 jquery/css.html [ Slow ]
+crbug.com/24182 jquery/data.html [ Slow ]
+crbug.com/24182 jquery/dimensions.html [ Slow ]
+crbug.com/24182 jquery/event.html [ Slow ]
+crbug.com/24182 jquery/manipulation.html [ Slow ]
+crbug.com/24182 jquery/offset.html [ Slow ]
+crbug.com/24182 jquery/traversing.html [ Slow ]
+crbug.com/24182 media/track/track-cues-cuechange.html [ Slow ]
+crbug.com/24182 media/track/track-cues-enter-exit.html [ Slow ]
+crbug.com/24182 media/controls-cast-do-not-fade-out.html [ Slow ]
+crbug.com/24182 svg/filters/big-sized-filter.svg [ Slow ]
+crbug.com/24182 tables/mozilla/other/slashlogo.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-blend-image.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-blend-solid.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
+crbug.com/433711 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-composite-canvas.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-createImageBitmap-drawImage.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-drawImage-shadow.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-imageSmoothingEnabled-repaint.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-strokeRect-gradient-shadow.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/canvas-toDataURL-jpeg-crash.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Slow ]
+crbug.com/24182 virtual/gpu/fast/canvas/webgl/read-pixels-test.html [ Slow ]
+crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
+crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
+
+crbug.com/474121 editing/deleting/password-delete-performance.html [ Slow ]
+crbug.com/237245 [ Debug Win7 ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Slow ]
+
+# Most inspector tests are slow in Debug.
+webkit.org/b/90488 [ Debug ] inspector/ [ Slow ]
+webkit.org/b/90488 [ Debug ] http/tests/inspector/ [ Slow ]
+webkit.org/b/90488 [ Debug ] http/tests/inspector-enabled/ [ Slow ]
+webkit.org/b/90488 [ Debug ] inspector-protocol/ [ Slow ]
+crbug.com/451577 inspector/console [ Slow ]
+crbug.com/451577 [ Win ] http/tests/inspector/network/network-datareceived.html [ Slow ]
+
+# Debugger and profiler tests are slow in Release as well.
+crbug.com/450493 inspector/sources/ [ Slow ]
+crbug.com/450493 inspector-enabled/sources/ [ Slow ]
+crbug.com/450493 http/tests/inspector/sources/ [ Slow ]
+crbug.com/450493 http/tests/inspector/stacktraces/ [ Slow ]
+crbug.com/450493 inspector/profiler/ [ Slow ]
+crbug.com/420008 inspector/tracing/ [ Slow ]
+crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
+
+# Random slow tests
+webkit.org/b/90488 [ Release ] http/tests/inspector/compiler-source-mapping-debug.html [ Slow ]
+crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
+crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
+crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
+crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
+webkit.org/b/60109 inspector/elements/edit/edit-dom-actions.html [ Slow ]
+webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
+crbug.com/504565 [ Mac ] http/tests/inspector/search/sources-search-scope.html [ Slow ]
+
+# This test is intentionally SLOW as we're waiting for a connection timeout.
+crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
+
+# This test uses a throttled load to stay in NETWORK_LOADING.
+crbug.com/400659 http/tests/media/gc-while-network-loading.html [ Slow ]
+
+# This has been Slow in Debug since added in r164270.
+crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
+
+# Many of the virtual animations tests are slow.
+crbug.com/248938 [ Linux Win ] virtual/threaded/animations/combo-transform-rotate+scale.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/3d/change-transform-in-end-event.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/3d/state-at-end-event-transform.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/3d/transform-perspective.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-fill-mode.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/animation-direction-reverse-hardware.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/animation-on-inline-crash.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/cross-fade-background-image.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/cross-fade-border-image-source.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-box-image.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/cross-fade-webkit-mask-image.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/missing-values-last-keyframe.html [ Slow ]
+crbug.com/248938 virtual/threaded/animations/3d/replace-filling-transform.html [ Slow ]
+crbug.com/311482 virtual/threaded/animations/interpolation/filter-interpolation.html [ Slow ]
+crbug.com/311482 virtual/threaded/animations/keyframes-unprefixed-03.html [ Slow ]
+crbug.com/243871 virtual/threaded/fast/scroll-behavior/ [ Slow ]
+crbug.com/243871 virtual/threaded_animation_timelines/fast/scroll-behavior/ [ Slow ]
+
+crbug.com/258896 animations/animation-direction-reverse-fill-mode.html [ Slow ]
+
+# This test has to generate >250MB of data which takes ~6s in both release and debug.
+crbug.com/420240 http/tests/xmlhttprequest/xmlhttprequest-json-response-overflow.html [ Slow ]
+
+# These html5lib tests are generated tests that test a huge amount of permutations so they need a bit more time.
+crbug.com/453312 html5lib/generated/run-doctype01-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-domjs-unsafe-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-entities01-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-entities02-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-template-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests1-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests2-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests6-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests7-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests9-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests10-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests16-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests19-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-tests20-data.html [ Slow ]
+crbug.com/453312 html5lib/generated/run-webkit01-data.html [ Slow ]
+crbug.com/453312 html5lib/webkit-resumer.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_template.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests1.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests16.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests19.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Slow ]
+
+crbug.com/528421 [ Win ] fast/repaint/fixed-in-page-scale.html [ Slow ]
+
+# FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
+# Double-check the data after they've been running another week or so.
+webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]
+crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Slow ]
+crbug.com/9798 [ Win ] http/tests/cookies/multiple-cookies.html [ Slow ]
+crbug.com/9798 http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html [ Slow ]
+crbug.com/24182 http/tests/xmlhttprequest/simple-cross-origin-progress-events.html [ Slow ]
+crbug.com/231721 svg/custom/invisible-text-after-scrolling.xhtml [ Slow ]
+crbug.com/237270 [ Win7 ] fast/css/custom-font-xheight.html [ Slow ]
+crbug.com/241576 [ Win ] http/tests/appcache/404-manifest.html [ Slow ]
+crbug.com/241869 [ Debug ] css3/flexbox/multiline-justify-content.html [ Slow ]
+crbug.com/243249 http/tests/misc/submit-post-keygen.html [ Slow ]
+crbug.com/245154 editing/selection/move-by-character-brute-force.html [ Slow ]
+crbug.com/246749 inspector/extensions/extensions-panel.html [ Slow ]
+
+# This test takes 5+ seconds as intended because it tests connection throttling.
+crbug.com/459377 http/tests/websocket/multiple-connections-throttled.html [ Slow ]
+
+# These tests are slow to measure bounding box of every single Unicode character.
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001a.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001b.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001c.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001d.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001e.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001f.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001g.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001h.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001i.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001j.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001k.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001l.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001m.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001n.html [ Slow ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-orientation-script-001o.html [ Slow ]
+
+crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/rendering/replaced-elements/svg-embedded-sizing/ [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/playing-the-media-resource/pause-remove-from-document-networkState.html [ Slow ]
+crbug.com/490511 imported/web-platform-tests/html/semantics/forms/textfieldselection/selection.html [ Slow ]
+crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
+
+crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
+
+crbug.com/331186 [ Debug ] css3/flexbox/position-absolute-child.html [ Slow ]
+
+crbug.com/362509 [ Debug ] fast/parser/xml-error-adopted.xml [ Slow ]
+
+crbug.com/363029 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Slow ]
+
+crbug.com/372424 fast/dom/DOMImplementation/createDocument-with-used-doctype.html [ Slow ]
+
+crbug.com/372424 http/tests/serviceworker/chromium/registration-stress.html [ Slow ]
+crbug.com/448670 http/tests/serviceworker/chromium/register-different-script-many-times.html [ Slow ]
+crbug.com/516319 [ Win ] http/tests/fetch/ [ Slow ]
+
+# Most crypto/subtle tests are slow some or most of the time.
+crbug.com/459009 crypto/subtle/ [ Slow ]
+
+crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html [ Slow ]
+crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
+
+crbug.com/521857 [ Win Debug ] imported/web-platform-tests/IndexedDB/idbdatabase_createObjectStore10-1000ends.htm [ Slow ]
+
+crbug.com/528419 [ Linux ] inspector/elements/shadow/shadow-host-display-modes.html [ Slow ]
+crbug.com/528419 [ Linux ] inspector/elements/styles-2/pseudo-elements.html [ Slow ]
+
+crbug.com/529345 [ Win10 ] paint/masks/fieldset-mask.html [ Slow ]

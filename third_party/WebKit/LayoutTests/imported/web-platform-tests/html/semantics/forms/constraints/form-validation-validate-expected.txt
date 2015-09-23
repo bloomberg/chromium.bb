@@ -1,0 +1,16 @@
+CONSOLE WARNING: line 13: The specified value "abc" is not a valid email address.
+CONSOLE ERROR: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: An invalid form control with name='' is not focusable.
+CONSOLE ERROR: An invalid form control with name='' is not focusable.
+This is a testharness.js-based test.
+PASS If there is any invalid submittable element whose form owner is the form, the form.checkValidity must be false 
+PASS If there is any invalid submittable element whose form owner is the form, the form.reportValidity must be false 
+PASS If all of the submittable elements whose form owner is the form are valid, the form.checkValidity must be true 
+PASS If all of the submittable elements whose form owner is the form are valid, the form.reportValidity must be true 
+PASS Check the checkValidity method of the form element when it has a fieldset child 
+FAIL Check the reportValidity method of the form element when it has a fieldset child assert_true: The reportValidity method should be true. expected true got false
+PASS The invalid event must be fired at the invalid controls 
+PASS The invalid event must not be fired at the invalid controls 
+Harness: the test ran to completion.
+

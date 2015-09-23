@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [150, 100, 100, 50],
+        [100, 150, 50, 100],
+        [100, 0, 200, 300],
+        [100, 0, 200, 300],
+        [50, 150, 100, 100],
+        [0, 100, 300, 200],
+        [0, 0, 300, 100]
+      ],
+      "paintInvalidationClients": [
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect id='masker'",
+        "LayoutSVGContainer g",
+        "LayoutSVGRect rect id='clipper'"
+      ]
+    }
+  ]
+}
+

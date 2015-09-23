@@ -1,0 +1,8 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+This tests for a crash when deleting a selection that starts before the first child of a block and ends after the last child (which must be a link) of another block. There shouldn't be any content in the editable region below.
+
+
+

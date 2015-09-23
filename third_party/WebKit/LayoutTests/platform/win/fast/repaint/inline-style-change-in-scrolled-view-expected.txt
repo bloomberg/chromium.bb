@@ -1,0 +1,18 @@
+{
+  "bounds": [2000, 2000],
+  "children": [
+    {
+      "bounds": [2000, 2000],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [0, 288, 431, 17]
+      ],
+      "paintInvalidationClients": [
+        "LayoutText #text",
+        "InlineTextBox 'Text Text Text Text Text Text Text Text Text Text Text Text Text'"
+      ]
+    }
+  ]
+}
+

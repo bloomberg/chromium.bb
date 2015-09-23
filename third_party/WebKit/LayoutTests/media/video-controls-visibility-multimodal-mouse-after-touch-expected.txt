@@ -1,0 +1,9 @@
+Test video element control visibility with multimodal input. The controls should remain visible if the last input event was a mouse move over them.
+
+This test only runs in DRT!
+
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EXPECTED (getComputedStyle(controls).opacity == '1') OK
+END OF TEST
+

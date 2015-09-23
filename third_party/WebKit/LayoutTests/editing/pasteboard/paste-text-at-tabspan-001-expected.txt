@@ -1,0 +1,20 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+
+You should see aax\tz below:
+| "
+"
+| <span>
+|   id="test"
+|   "aax<#selection-caret>"
+|   <span>
+|     class="Apple-tab-span"
+|     style="white-space:pre"
+|     "			"
+|   "z"
+| "
+"

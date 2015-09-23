@@ -1,0 +1,28 @@
+<html>
+<head>
+
+<link rel="stylesheet" href="resources/empty.css">
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.showScriptSource("empty.scss", onSourceShown);
+    function onSourceShown(uiSourceCodeFrame)
+    {
+        var uiSourceCode = uiSourceCodeFrame.uiSourceCode();
+        InspectorTest.addResult(WebInspector.SourcesView.uiSourceCodeHighlighterType(uiSourceCode));
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verify that highlighter type for SCSS file loaded via sourceMap is correct.</p>
+</body>
+</html>

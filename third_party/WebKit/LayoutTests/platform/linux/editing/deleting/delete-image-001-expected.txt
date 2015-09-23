@@ -1,0 +1,27 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x248 [border: (2px solid #FF0000)]
+        LayoutInline {SPAN} at (0,0) size 203x137
+          LayoutText {#text} at (14,96) size 11x27
+            text run at (14,96) width 11: "a"
+          LayoutImage {IMG} at (25,14) size 76x103
+          LayoutText {#text} at (101,96) size 6x27
+            text run at (101,96) width 6: " "
+          LayoutText {#text} at (107,96) size 110x27
+            text run at (107,96) width 110: " conceived "
+          LayoutBR {BR} at (217,117) size 0x0
+          LayoutText {#text} at (14,206) size 60x27
+            text run at (14,206) width 60: "nation"
+          LayoutImage {IMG} at (74,124) size 76x103
+        LayoutText {#text} at (0,0) size 0x0
+caret: position 1 of child 2 {#text} of child 1 {SPAN} of child 1 {DIV} of body

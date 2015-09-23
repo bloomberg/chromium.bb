@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<style>
+#no-video-media {
+  width: 320px;
+  height: 240px;
+}
+</style>
+<script src=video-test.js></script>
+<script src=media-file.js></script>
+<script src=media-controls.js></script>
+<script>
+
+var controls;
+
+function dispatchActivateEvent(target) {
+    // Create a DOMActivate event and dispatch it
+    var event = document.createEvent('UIEvents');
+    event.initUIEvent('DOMActivate', true, true, window, 1)
+    target.dispatchEvent(event);                
+}
+
+
+function runTest()
+{
+    video = document.getElementById("no-video-media");
+    controls = mediaControlsButton(video, "panel");
+
+    testExpected("video.paused", true);
+    if (!window.testRunner)
+        return;
+
+    // Click the play button.
+    var playCoords = mediaControlsButtonCoordinates(video, "play-button");
+    var clickX = playCoords[0];
+    var clickY = playCoords[1];
+    eventSender.gestureTap(clickX, clickY);
+    eventSender.gestureTapDown(clickX, clickY);
+    dispatchActivateEvent(controls);
+              
+    testExpected("video.paused", false);
+
+    runAfterHideMediaControlsTimerFired(function()
+    {
+        testExpected("getComputedStyle(controls).opacity", 0);
+
+        consoleWrite("");
+        endTest();
+    }, video);
+}
+</script>
+<body>
+    <p>Test video control element visibility when play by touch.</p>
+    <p>This test only runs in DRT!</p>
+
+    <video id="no-video-media" controls loop oncanplaythrough="runTest()"></video>
+    <script>
+        setSrcById("no-video-media", findMediaFile("video", "content/test"));
+    </script>
+</body>
+</html>

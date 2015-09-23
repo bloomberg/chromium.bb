@@ -1,0 +1,62 @@
+<!doctype html>
+<html>
+    <head>
+        <title>media controls cast button</title>
+        <script src="../resources/testharness.js"></script>
+        <script src="../resources/testharnessreport.js"></script>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <video></video>
+        <script>
+        function overlayCastButton(element)
+        {
+            var controlID = "-internal-media-controls-overlay-cast-button";
+            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
+            if (!button)
+                throw "Failed to find cast button";
+            return button;
+        }
+        function overlayCastButtonDimensions(element)
+        {
+            var button = overlayCastButton(element);
+            var buttonBoundingRect = button.getBoundingClientRect();
+            return new Array(buttonBoundingRect.width, buttonBoundingRect.height);
+        }
+        async_test(function(t) 
+        {
+            findMediaElement();
+            video.src = findMediaFile("video", "content/test");
+            mediaElement.addEventListener("loadedmetadata", function()
+            {
+                // Should not have a cast button by default
+                button = overlayCastButton(video);
+                assert_equals(button.style.display, "none", "button should not be visible with no cast devices");
+
+                // Pretend we have a cast device
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
+                // Now should have cast button
+                assert_false(("display" in button.style) && (button.style.display == "none"), "button should exist");
+                dimensions = overlayCastButtonDimensions(video);
+                assert_not_equals(dimensions[0], 0, "button should exist");
+                assert_not_equals(dimensions[1], 0, "button should exist");
+
+                // Check position, should be in the top left corner of the video
+                rect = button.getBoundingClientRect();
+                videoRect = video.getBoundingClientRect();
+                assert_greater_than_equal(rect.top, videoRect.top, "button should be at top left of video");
+                assert_greater_than_equal(rect.left, videoRect.left, "button should be at top left of video");
+                assert_less_than_equal(rect.bottom, videoRect.top + videoRect.height / 2, "button should be at top left of video");
+                assert_less_than_equal(rect.right, videoRect.left + videoRect.width / 2, "button should be at top left of video");
+
+                // Remove cast device - cast button should go away
+                internals.mediaPlayerRemoteRouteAvailabilityChanged(video, false);
+                assert_equals(button.style.display, "none", "button should not be visible after cast device goes away");
+                t.done();
+            })
+        });
+        </script>
+    </body>
+</html>

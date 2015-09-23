@@ -1,0 +1,23 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [10, 10],
+          "bounds": [100, 100],
+          "drawsContent": true
+        },
+        {
+          "position": [10, 120],
+          "bounds": [100, 100],
+          "drawsContent": true
+        }
+      ]
+    }
+  ]
+}
+

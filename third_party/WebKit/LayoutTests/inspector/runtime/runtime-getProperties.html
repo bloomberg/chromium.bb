@@ -1,0 +1,82 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+var object1 = { get foo() { return 1; }, set foo(value) { } };
+var object2 = { get foo() { return 1; } };
+
+function test()
+{
+    var obj1, obj2;
+
+    function dumpProperties(next, properties)
+    {
+        for (var i = 0; i < properties.length; ++i)
+            dumpProperty(properties[i]);
+        next();
+    }
+
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.evaluateInPage("dumpObjects('Initial')", step0);
+
+            function step0()
+            {
+                InspectorTest.RuntimeAgent.evaluate("object1", step1);
+            }
+
+            function step1(error, result, wasThrown)
+            {
+                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
+                InspectorTest.RuntimeAgent.evaluate("object2", step2);
+            }
+
+            function step2(error, result, wasThrown)
+            {
+                obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
+                next();
+            }
+        },
+
+        function testGetterAndSetter(next)
+        {
+            obj1.getOwnProperties(dumpProperties.bind(this, next));
+        },
+
+        function testGetterOnly(next)
+        {
+            obj2.getOwnProperties(dumpProperties.bind(this, next));
+        }
+    ]);
+
+    function convertPropertyValueForTest(propertyObject, fieldName)
+    {
+        var value = propertyObject[fieldName];
+        if (value)
+            propertyObject[fieldName] = { type: value.type, description: value.description.replace("function foo", "function "), objectId: value.objectId };
+    }
+
+    function dumpProperty(property)
+    {
+        if (property.name === "__proto__")
+            return;
+
+        convertPropertyValueForTest(property, "value");
+        convertPropertyValueForTest(property, "getter");
+        convertPropertyValueForTest(property, "setter");
+        InspectorTest.dump(property, { objectId: "formatAsTypeName" });
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests RemoteObject.getProperties.
+</p>
+
+</body>
+</html>

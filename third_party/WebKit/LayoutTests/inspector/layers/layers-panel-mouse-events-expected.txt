@@ -1,0 +1,16 @@
+Hovering b1 in tree
+Layer b1 in tree: hovered
+Layer b3 in tree: 
+Hovering b3 in tree
+Layer b1 in tree: 
+Layer b3 in tree: hovered
+Hovering away from tree
+Layer b1 in tree: 
+Layer b3 in tree: 
+Selecting b1 in tree
+Layer b1 in tree: selected
+Layer b3 in tree: 
+Selecting b3 in tree
+Layer b1 in tree: 
+Layer b3 in tree: selected
+

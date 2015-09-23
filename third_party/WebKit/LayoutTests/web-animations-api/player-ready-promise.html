@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  assert_true(player.ready instanceof Promise);
+}, 'The ready attribute should be a Promise');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  player.cancel();
+  player.ready.then(function(p) {
+    t.step(function() {
+      assert_equals(p, player);
+    });
+    t.done();
+  });
+}, 'The ready promise should be resolved when a player is in the idle play state');
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.ready;
+  player.cancel();
+  assert_not_equals(player.ready, promise);
+}, 'The ready promise should be replaced when the player is cancelled');
+
+test(function() {
+  var player = document.documentElement.animate([], 100000);
+  player.cancel();
+  var promise = player.ready;
+  player.play();
+  assert_not_equals(player.ready, promise);
+}, 'The ready promise should be replaced when the player enters the pending state');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  player.ready.then(function() {
+    t.step(function() {
+      assert_unreached();
+    });
+  }, function(e) {
+    t.step(function() {
+      assert_equals(e.code, DOMException.ABORT_ERR);
+    });
+    t.done();
+  });
+  player.cancel();
+}, 'A pending ready promise should be rejected when the player is cancelled');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.ready;
+  promise.then(function(p) {
+    t.step(function() {
+      assert_equals(p, player);
+      assert_equals(player.ready, promise);
+    });
+    t.done();
+  });
+}, 'A pending ready promise should be resolved and not replaced when the player enters the running state');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.ready;
+  player.finish();
+  promise.then(function(p) {
+    t.step(function() {
+      assert_equals(p, player);
+      assert_equals(player.ready, promise);
+    });
+    t.done();
+  });
+}, 'A pending ready promise should be resolved and not replaced when the player enters the finished state');
+
+async_test(function(t) {
+  var player = document.documentElement.animate([], 100000);
+  var promise = player.ready;
+  player.pause();
+  promise.then(function(p) {
+    t.step(function() {
+      assert_equals(p, player);
+      assert_equals(player.ready, promise);
+    });
+    t.done();
+  });
+}, 'A pending ready promise should be resolved and not replaced when the player enters the paused state');
+</script>

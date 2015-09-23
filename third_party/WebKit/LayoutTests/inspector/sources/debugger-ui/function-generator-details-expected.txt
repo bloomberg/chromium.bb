@@ -1,0 +1,43 @@
+Tests that Debugger.getGeneratorObjectDetails command returns correct result.
+
+
+Running: testIterNotStarted
+iterNotStarted: type = object, subtype = generator
+functionName: "gen"
+lineNumber: 14
+columnNumber: 13
+scriptId is valid: true
+status: suspended
+
+Running: testIterSuspended
+iterSuspended: type = object, subtype = generator
+functionName: "gen"
+lineNumber: 16
+columnNumber: 4
+scriptId is valid: true
+status: suspended
+
+Running: testIterClosed
+iterClosed: type = object, subtype = generator
+functionName: "gen"
+lineNumber: 14
+columnNumber: 13
+scriptId is valid: true
+status: closed
+
+Running: testIterObjGenerator
+iterObjGenerator: type = object, subtype = generator
+functionName: "obj.generator"
+lineNumber: 25
+columnNumber: 8
+scriptId is valid: true
+status: suspended
+
+Running: testAnonymousGenIter
+anonymousGenIter: type = object, subtype = generator
+functionName: ""
+lineNumber: 39
+columnNumber: 4
+scriptId is valid: true
+status: suspended
+

@@ -1,0 +1,18 @@
+<html>
+<body>
+
+    <video loop controls></video>
+
+    <p>Test that seeking video with no 'src' attribute sets default playback start position to that time.</p>
+
+    <script src=video-test.js></script>
+    <script>
+        testExpected("video.networkState", HTMLMediaElement.NETWORK_EMPTY);
+        testExpected("video.readyState", HTMLMediaElement.HAVE_NOTHING);
+        video.currentTime = 1.1;
+        testExpected("video.currentTime", 1.1);
+        endTest();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Tests conversion of Inspector's resource representation into HAR format.
+
+Page reloaded.
+{
+    creator : {
+        name : "WebInspector"
+        version : <string>
+    }
+    entries : [
+        {
+            cache : {
+            }
+            connection : <string>
+            pageref : "page_1"
+            request : {
+                bodySize : <number>
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                method : "GET"
+                queryString : [
+                ]
+                url : "http://127.0.0.1:8000/inspector/resource-har-conversion.html"
+            }
+            response : {
+                _transferSize : <number>
+                bodySize : <number>
+                content : {
+                    mimeType : "text/html"
+                    size : <number>
+                }
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                redirectURL : ""
+                status : 304
+                statusText : "Not Modified"
+            }
+            startedDateTime : <plausible>
+            time : <number>
+            timings : <object>
+        }
+        {
+            cache : {
+            }
+            connection : <string>
+            pageref : "page_1"
+            request : {
+                bodySize : <number>
+                cookies : [
+                    {
+                        domain : "example.com"
+                        expires : null
+                        httpOnly : false
+                        name : "a"
+                        path : "/path"
+                        secure : false
+                        value : "b"
+                    }
+                    {
+                        domain : undefined
+                        expires : null
+                        httpOnly : false
+                        name : "a1"
+                        path : undefined
+                        secure : false
+                        value : "b1"
+                    }
+                    {
+                        domain : undefined
+                        expires : null
+                        httpOnly : false
+                        name : "c1"
+                        path : undefined
+                        secure : false
+                        value : "d1"
+                    }
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                method : "GET"
+                queryString : [
+                ]
+                url : "http://127.0.0.1:8000/inspector/inspector-test.js"
+            }
+            response : {
+                _transferSize : <number>
+                bodySize : <number>
+                content : {
+                    mimeType : "application/x-javascript"
+                    size : <number>
+                }
+                cookies : [
+                    {
+                        domain : "example.com"
+                        expires : null
+                        httpOnly : true
+                        name : "x"
+                        path : "/path"
+                        secure : true
+                        value : "y"
+                    }
+                    {
+                        domain : undefined
+                        expires : null
+                        httpOnly : false
+                        name : "x1"
+                        path : undefined
+                        secure : false
+                        value : "y1"
+                    }
+                    {
+                        domain : undefined
+                        expires : null
+                        httpOnly : false
+                        name : "z2"
+                        path : undefined
+                        secure : false
+                        value : "y2"
+                    }
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                redirectURL : ""
+                status : 304
+                statusText : "Not Modified"
+            }
+            startedDateTime : <plausible>
+            time : <number>
+            timings : <object>
+        }
+        {
+            cache : {
+            }
+            connection : <string>
+            pageref : "page_1"
+            request : {
+                bodySize : <number>
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                method : "GET"
+                queryString : [
+                ]
+                url : "http://127.0.0.1:8000/inspector/network-test.js"
+            }
+            response : {
+                _transferSize : <number>
+                bodySize : <number>
+                content : {
+                    mimeType : "application/x-javascript"
+                    size : <number>
+                }
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                redirectURL : ""
+                status : 304
+                statusText : "Not Modified"
+            }
+            startedDateTime : <plausible>
+            time : <number>
+            timings : <object>
+        }
+        {
+            cache : {
+            }
+            connection : <string>
+            pageref : "page_1"
+            request : {
+                bodySize : <number>
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                method : "POST"
+                postData : {
+                    mimeType : "text/xml"
+                    text : "<xml></xml>"
+                }
+                queryString : [
+                ]
+                url : "http://127.0.0.1:8000/inspector/resources/post-target.cgi"
+            }
+            response : {
+                _transferSize : <number>
+                bodySize : <number>
+                content : {
+                    compression : <number>
+                    mimeType : "application/xml"
+                    size : <number>
+                }
+                cookies : [
+                ]
+                headers : <object>
+                headersSize : <number>
+                httpVersion : "HTTP/1.1"
+                redirectURL : ""
+                status : 200
+                statusText : "OK"
+            }
+            startedDateTime : <plausible>
+            time : <number>
+            timings : <object>
+        }
+    ]
+    pages : [
+        {
+            id : <string>
+            pageTimings : {
+                onContentLoad : <number>
+                onLoad : <number>
+            }
+            startedDateTime : <plausible>
+            title : "http://127.0.0.1:8000/inspector/resource-har-conversion.html"
+        }
+    ]
+    version : <string>
+}
+

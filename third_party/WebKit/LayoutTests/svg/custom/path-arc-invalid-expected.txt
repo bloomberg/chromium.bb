@@ -1,0 +1,2 @@
+CONSOLE ERROR: line 6: Error: Invalid value for <path> attribute d="M0 0 A0 0 0 0 0 0 0 0 0 0"
+ If this text is visible the malformed SVG path is handled correctly.

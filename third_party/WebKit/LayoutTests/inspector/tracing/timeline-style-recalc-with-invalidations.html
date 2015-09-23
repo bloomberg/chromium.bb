@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function changeStylesAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        document.getElementById("testElementOne").style.color = "red";
+        document.getElementById("testElementTwo").style.color = "blue";
+        var forceLayout = document.body.offsetTop;
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function changeMultipleStylesAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        var elementOne = document.getElementById("testElementOne");
+        var elementTwo = document.getElementById("testElementTwo");
+        var elementThree = document.getElementById("testElementThree");
+
+        elementOne.style.backgroundColor = "orangered";
+        var forceStyleRecalc1 = document.body.offsetTop;
+        elementOne.style.color = "mediumvioletred";
+        elementTwo.style.color = "deepskyblue";
+        var forceStyleRecalc2 = document.body.offsetTop;
+        elementOne.style.color = "tomato";
+        elementTwo.style.color = "mediumslateblue";
+        elementThree.style.color = "mediumspringgreen";
+        var forceStyleRecalc3 = document.body.offsetTop;
+
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function changeSubframeStylesAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        frames[0].document.body.style.backgroundColor = "papayawhip";
+        frames[0].document.body.children[0].style.width = "200px";
+        var forceLayout = frames[0].document.body.offsetTop;
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function test()
+{
+    var currentPanel = WebInspector.inspectorView.currentPanel();
+    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
+    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+
+    InspectorTest.runTestSuite([
+        function testLocalFrame(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
+                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
+                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalc style invalidations");
+
+                next();
+            });
+        },
+
+        function multipleStyleRecalcs(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
+                var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 0);
+                InspectorTest.addArray(firstRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalc style invalidations");
+
+                var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 1);
+                InspectorTest.addArray(secondRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second recalc style invalidations");
+
+                var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree, 2);
+                InspectorTest.addArray(thirdRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "third recalc style invalidations");
+
+                next();
+            });
+        },
+
+        function testSubframe(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("changeSubframeStylesAndDisplay", function() {
+                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.UpdateLayoutTree);
+                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "first recalc style invalidations");
+
+                next();
+            });
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of style recalc events with invalidations.</p>
+<div id="testElementOne">PASS</div><div id="testElementTwo">PASS</div><div id="testElementThree">PASS</div>
+<iframe src="resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>

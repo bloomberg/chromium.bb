@@ -1,0 +1,90 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+// Save references to the worker objects to make sure they are not GC'ed.
+var worker1;
+var worker2;
+
+// The function ensures call stack for the current frame is captured.
+function makeDOMEvent()
+{
+    var e = document.createElement("div");
+    e.innerHTML = "<p>test</p>";
+    return e.lastChild.textContents;
+}
+
+function startWorkerAndRunTest()
+{
+    worker1 = new Worker("resources/worker.js");
+    worker1.postMessage("");
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    worker1.onmessage = function(event)
+    {
+        worker1.onmessage = null;
+        runTest();
+    }
+}
+
+function startSecondWorker(onActionComplete)
+{
+    worker2 = new Worker("resources/worker.js");
+    worker2.postMessage("");
+    makeDOMEvent();
+    worker2.onmessage = function(event)
+    {
+        worker2.onmessage = null;
+        makeDOMEvent();
+        onActionComplete();
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("startSecondWorker", processTracingEvents,
+        "disabled-by-default-devtools.timeline.stack", true);
+
+    function processTracingEvents()
+    {
+        var mainThread = { name: "Main Thread", events: InspectorTest.tracingTimelineModel()._mainThreadEvents };
+        processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
+        var workers = InspectorTest.tracingTimelineModel()._virtualThreads.filter(function(thread) { return thread.isWorker(); });
+        workers.forEach(processThread.bind(null, new Set(["onmessage"])));
+        InspectorTest.completeTest();
+    }
+
+    function processThread(expectedFunctions, thread)
+    {
+        InspectorTest.addResult(thread.name);
+        var missingFunctions = thread.events.reduce(processEvent, expectedFunctions);
+        if (missingFunctions.size) {
+            InspectorTest.addResult("FAIL: missing functions:");
+            missingFunctions.forEach(InspectorTest.addResult);
+        }
+    }
+
+    function processEvent(expectedFunctions, event)
+    {
+        if (event.name === WebInspector.TimelineModel.RecordType.JSFrame)
+            expectedFunctions.delete(event.args.data.functionName);
+        return expectedFunctions;
+    }
+}
+
+</script>
+</head>
+
+<body onload="startWorkerAndRunTest()">
+<p>
+Tests js cpu profile in timeline.
+</p>
+</body>
+</html>

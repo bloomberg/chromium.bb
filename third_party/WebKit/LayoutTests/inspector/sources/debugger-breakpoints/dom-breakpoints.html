@@ -1,0 +1,315 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function appendElement(parentId, childId)
+{
+    var child = document.createElement("div");
+    child.id = childId;
+    document.getElementById(parentId).appendChild(child);
+}
+
+function modifyAttribute(elementId, name, value)
+{
+    var element = document.getElementById(elementId);
+    element.setAttribute(name, value);
+}
+
+function modifyAttrNode(elementId, name, value)
+{
+    var element = document.getElementById(elementId);
+    element.attributes[name].value = value;
+}
+
+function setAttrNode(elementId, name, value)
+{
+    var element = document.getElementById(elementId);
+    var attr = document.createAttribute(name);
+    attr.value = value;
+    element.attributes.setNamedItem(attr);
+}
+
+function modifyStyleAttribute(elementId, name, value)
+{
+    var element = document.getElementById(elementId);
+    element.style.setProperty(name, value);
+}
+
+function removeElement(elementId)
+{
+    var element = document.getElementById(elementId);
+    element.parentNode.removeChild(element);
+}
+
+function setInnerHTML(elementId, html)
+{
+    var element = document.getElementById(elementId);
+    element.innerHTML = html;
+}
+
+function breakDebugger()
+{
+    debugger;
+}
+
+function authorShadowRoot()
+{
+    return document.getElementById("hostElement").shadowRoot;
+}
+
+function authorShadowElement(id)
+{
+    return authorShadowRoot().getElementById(id);
+}
+
+function appendElementToAuthorShadowTree(parentId, childId)
+{
+    var child = document.createElement("div");
+    child.id = childId;
+    authorShadowElement(parentId).appendChild(child);
+}
+
+function appendElementToOpenShadowRoot(childId)
+{
+    var child = document.createElement("div");
+    child.id = childId;
+    authorShadowRoot().appendChild(child);
+}
+
+function test()
+{
+
+    var pane = WebInspector.domBreakpointsSidebarPane;
+    var rootElement;
+    var outerElement;
+    var authorShadowRoot;
+    InspectorTest.runDebuggerTestSuite([
+        function testInsertChild(next)
+        {
+            InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when appending a child.");
+            InspectorTest.nodeWithId("rootElement", step2);
+
+            function step2(node)
+            {
+                rootElement = node;
+                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on rootElement.");
+                InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
+                InspectorTest.addResult("Append childElement to rootElement.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
+        function testInsertGrandchild(next)
+        {
+            InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when appending a grandchild.");
+            InspectorTest.evaluateInPageWithTimeout("appendElement('childElement', 'grandchildElement')");
+            InspectorTest.addResult("Append grandchildElement to childElement.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+        },
+
+        function testRemoveChild(next)
+        {
+            InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit when removing a child.");
+            InspectorTest.evaluateInPageWithTimeout("removeElement('grandchildElement')");
+            InspectorTest.addResult("Remove grandchildElement.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+        },
+
+        function testInnerHTML(next)
+        {
+            InspectorTest.addResult("Test that 'Subtree Modified' breakpoint is hit exactly once when setting innerHTML.");
+            InspectorTest.evaluateInPageWithTimeout("setInnerHTML('childElement', '<br><br>')");
+            InspectorTest.addResult("Set childElement.innerHTML.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+
+            function step2()
+            {
+                InspectorTest.waitUntilPaused(step3);
+                InspectorTest.evaluateInPageWithTimeout("breakDebugger()");
+                InspectorTest.addResult("Call breakDebugger, expect it to show up in next stack trace.");
+            }
+
+            function step3(frames)
+            {
+                InspectorTest.captureStackTrace(frames);
+                pane._removeBreakpoint(rootElement, pane._breakpointTypes.SubtreeModified);
+                InspectorTest.resumeExecution(next);
+            }
+        },
+
+        function testModifyAttribute(next)
+        {
+            InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying attribute.");
+            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
+            InspectorTest.evaluateInPageWithTimeout("modifyAttribute('rootElement', 'data-test', 'foo')");
+            InspectorTest.addResult("Modify rootElement data-test attribute.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+
+            function step2(callFrames)
+            {
+                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                next();
+            }
+        },
+
+        function testModifyAttrNode(next)
+        {
+            InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying Attr node.");
+            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
+            InspectorTest.evaluateInPageWithTimeout("modifyAttrNode('rootElement', 'data-test', 'bar')");
+            InspectorTest.addResult("Modify rootElement data-test attribute.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+
+            function step2(callFrames)
+            {
+                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                next();
+            }
+        },
+
+        function testSetAttrNode(next)
+        {
+            InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when adding a new Attr node.");
+            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
+            InspectorTest.evaluateInPageWithTimeout("setAttrNode('rootElement', 'data-foo', 'bar')");
+            InspectorTest.addResult("Modify rootElement data-foo attribute.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+
+            function step2(callFrames)
+            {
+                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                next();
+            }
+        },
+
+        function testModifyStyleAttribute(next)
+        {
+            InspectorTest.addResult("Test that 'Attribute Modified' breakpoint is hit when modifying style attribute.");
+            pane._setBreakpoint(rootElement, pane._breakpointTypes.AttributeModified, true);
+            InspectorTest.addResult("Set 'Attribute Modified' DOM breakpoint on rootElement.");
+            InspectorTest.evaluateInPageWithTimeout("modifyStyleAttribute('rootElement', 'color', 'green')");
+            InspectorTest.addResult("Modify rootElement style.color attribute.");
+            InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+
+            function step2(callFrames)
+            {
+                pane._removeBreakpoint(rootElement, pane._breakpointTypes.AttributeModified);
+                next();
+            }
+        },
+
+        function testRemoveNode(next)
+        {
+            InspectorTest.addResult("Test that 'Node Removed' breakpoint is hit when removing a node.");
+            InspectorTest.nodeWithId("elementToRemove", step2);
+
+            function step2(node)
+            {
+                pane._setBreakpoint(node, pane._breakpointTypes.NodeRemoved, true);
+                InspectorTest.addResult("Set 'Node Removed' DOM breakpoint on elementToRemove.");
+                InspectorTest.evaluateInPageWithTimeout("removeElement('elementToRemove')");
+                InspectorTest.addResult("Remove elementToRemove.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
+        function testReload(next)
+        {
+            InspectorTest.addResult("Test that DOM breakpoints are persisted between page reloads.");
+            InspectorTest.nodeWithId("rootElement", step2);
+
+            function step2(node)
+            {
+                pane._setBreakpoint(node, pane._breakpointTypes.SubtreeModified, true);
+                pane._saveBreakpoints();
+                InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on rootElement.");
+                InspectorTest.reloadPage(step3);
+            }
+
+            function step3()
+            {
+                InspectorTest.expandElementsTree(step4);
+            }
+
+            function step4()
+            {
+                InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
+                InspectorTest.addResult("Append childElement to rootElement.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
+        function testInsertChildIntoAuthorShadowTree(next)
+        {
+            InspectorTest.shadowRootByHostId("hostElement", callback);
+
+            function callback(node)
+            {
+                authorShadowRoot = node;
+                InspectorTest.addResult("Test that 'Subtree Modified' breakpoint on author shadow root is hit when appending a child.");
+                pane._setBreakpoint(authorShadowRoot, pane._breakpointTypes.SubtreeModified, true);
+                InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on author shadow root.");
+                InspectorTest.evaluateInPageWithTimeout("appendElementToOpenShadowRoot('childElement')");
+                InspectorTest.addResult("Append childElement to author shadow root.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        },
+
+        function testReloadWithShadowElementBreakpoint(next)
+        {
+            InspectorTest.nodeWithId("outerElement", step1);
+
+            function step1(node)
+            {
+                outerElement = node;
+
+                InspectorTest.addResult("Test that shadow DOM breakpoints are persisted between page reloads.");
+                pane._setBreakpoint(outerElement, pane._breakpointTypes.SubtreeModified, true);
+                pane._saveBreakpoints();
+                InspectorTest.addResult("Set 'Subtree Modified' DOM breakpoint on outerElement.");
+                InspectorTest.reloadPage(step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.expandElementsTree(step3);
+            }
+
+            function step3()
+            {
+                InspectorTest.evaluateInPageWithTimeout("appendElementToAuthorShadowTree('outerElement', 'childElement')");
+                InspectorTest.addResult("Append childElement to outerElement.");
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+            }
+        }
+
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests DOM breakpoints. <a href="https://bugs.webkit.org/show_bug.cgi?id=42886">Bug 42886</a>
+</p>
+
+<div id="rootElement" style="color: red">
+<div id="elementToRemove"></div>
+</div>
+
+<div id="hostElement"></div>
+<script>
+var root = document.getElementById("hostElement").createShadowRoot();
+root.innerHTML = "<div id='outerElement' style='red'><input id='input'/></div>";
+</script>
+
+</body>
+</html>

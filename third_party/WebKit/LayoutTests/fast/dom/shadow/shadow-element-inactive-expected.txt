@@ -1,0 +1,25 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+CONSOLE WARNING: <shadow> doesn't work for DETAILS element host.
+CONSOLE WARNING: <shadow> doesn't work for EMBED element host.
+CONSOLE WARNING: <shadow> doesn't work for INPUT element host.
+CONSOLE WARNING: <shadow> doesn't work for OBJECT element host.
+CONSOLE WARNING: <shadow> doesn't work for SUMMARY element host.
+We should not expose UA shadow nodes.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+details
+PASS root2.firstChild.getDistributedNodes().length is 0
+embed
+PASS root2.firstChild.getDistributedNodes().length is 0
+input
+PASS root2.firstChild.getDistributedNodes().length is 0
+object
+PASS root2.firstChild.getDistributedNodes().length is 0
+summary
+PASS root2.firstChild.getDistributedNodes().length is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

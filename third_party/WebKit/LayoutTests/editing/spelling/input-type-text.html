@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script src="resources/util.js"></script>
+</head>
+<body>
+<div id="container">
+  <input type="text" id="destination"/>
+</div>
+
+<script>
+
+description("Spell check selects the misspelled word on context click in an input field. " +
+            "To test manually, type 'wellcome home.' and context-click on 'wellcome'. " +
+            "The test succeeds when 'wellcome' is selected after the context click.");
+
+initSpellTest("destination", "wellcome home.", function(textNode) {
+    var behaviors = ["win", "mac"];
+    for (var i = 0; i < behaviors.length; i++) {
+        internals.settings.setEditingBehavior(behaviors[i]);
+
+        // Context click on "wellcome" to show the context menu.
+        var x = destination.offsetParent.offsetLeft + destination.offsetLeft + 40;
+        var y = destination.offsetParent.offsetTop + destination.offsetTop + destination.offsetHeight / 2;
+        eventSender.mouseMoveTo(x, y);
+        eventSender.contextClick();
+        // Esc key to hide the context menu.
+        eventSender.keyDown("escape", null);
+
+        shouldBeEqualToString("window.getSelection().toString()", "wellcome");
+        window.getSelection().removeAllRanges();
+
+        // Context click on "home" to show the context menu.
+        var x = destination.offsetParent.offsetLeft + destination.offsetLeft + 80;
+        var y = destination.offsetParent.offsetTop + destination.offsetTop + destination.offsetHeight / 2;
+        eventSender.mouseMoveTo(x, y);
+        eventSender.contextClick();
+        // Esc key to hide the context menu.
+        eventSender.keyDown("escape", null);
+
+        // Context click should select correctly spelled words only with "win" editing behavior.
+        if (behaviors[i] == "mac")
+            shouldBeEqualToString("window.getSelection().toString()", "home");
+        else
+            shouldBeEqualToString("window.getSelection().toString()", "");
+        window.getSelection().removeAllRanges();
+    }
+});
+
+</script>
+</body>
+</html>

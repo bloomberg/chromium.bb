@@ -1,0 +1,10 @@
+Test if ChannelMergerNode runs correctly in a cycle.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS ChannerMergerNode passed cyclic audio graph test.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

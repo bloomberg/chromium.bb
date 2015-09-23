@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<title>Test focus movement when controls fade out with a button focused</title>
+<script src=video-test.js></script>
+<script src=media-controls.js></script>
+<p>
+Test that focus moves to the &lt;body>/document when controls fade out with a button focused.
+</p>
+<video controls src="content/test.ogv"></video>
+<script>
+var controls;
+var video = document.querySelector("video");
+
+video.addEventListener("canplay", function()
+{
+    testExpected("document.activeElement", document.body);
+
+    var playButton = mediaControlsButton(video, "play-button");
+    playButton.focus();
+    playButton.click();
+
+    testExpected("document.activeElement", video);
+
+    runAfterHideMediaControlsTimerFired(function()
+    {
+        controls = mediaControlsButton(video, "panel");
+        testExpected("getComputedStyle(controls).opacity", 0);
+
+        testExpected("document.activeElement", document.body);
+
+        consoleWrite("");
+        endTest();
+    }, video);
+});
+
+</script>

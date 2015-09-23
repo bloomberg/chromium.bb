@@ -1,0 +1,77 @@
+CONSOLE WARNING: The specified value "a" is not a valid email address.
+CONSOLE WARNING: The specified value "abcde" is not a valid email address.
+CONSOLE WARNING: The specified value "AAAAA" is not a valid email address.
+CONSOLE WARNING: The specified value "a" is not a valid email address.
+CONSOLE WARNING: The specified value "AAAAA" is not a valid email address.
+CONSOLE WARNING: The specified value "abcd" is not a valid email address.
+CONSOLE WARNING: The specified value "a" is not a valid email address.
+CONSOLE WARNING: The specified value "abcd" is not a valid email address.
+CONSOLE WARNING: The specified value "abc" is not a valid email address.
+CONSOLE WARNING: The specified value "a" is not a valid email address.
+CONSOLE WARNING: The specified value "abc" is not a valid email address.
+This is a testharness.js-based test.
+PASS [INPUT in TEXT status] Non-dirty value - minLength is not set 
+PASS [INPUT in TEXT status] Non-dirty value - value is empty string 
+PASS [INPUT in TEXT status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in TEXT status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in TEXT status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in TEXT status] Dirty value - value is greater than minLength 
+PASS [INPUT in TEXT status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in TEXT status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in TEXT status] Dirty value - length of value is less than minLength 
+PASS [INPUT in SEARCH status] Non-dirty value - minLength is not set 
+PASS [INPUT in SEARCH status] Non-dirty value - value is empty string 
+PASS [INPUT in SEARCH status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in SEARCH status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in SEARCH status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in SEARCH status] Dirty value - value is greater than minLength 
+PASS [INPUT in SEARCH status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in SEARCH status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in SEARCH status] Dirty value - length of value is less than minLength 
+PASS [INPUT in TEL status] Non-dirty value - minLength is not set 
+PASS [INPUT in TEL status] Non-dirty value - value is empty string 
+PASS [INPUT in TEL status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in TEL status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in TEL status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in TEL status] Dirty value - value is greater than minLength 
+PASS [INPUT in TEL status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in TEL status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in TEL status] Dirty value - length of value is less than minLength 
+PASS [INPUT in URL status] Non-dirty value - minLength is not set 
+PASS [INPUT in URL status] Non-dirty value - value is empty string 
+PASS [INPUT in URL status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in URL status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in URL status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in URL status] Dirty value - value is greater than minLength 
+PASS [INPUT in URL status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in URL status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in URL status] Dirty value - length of value is less than minLength 
+PASS [INPUT in EMAIL status] Non-dirty value - minLength is not set 
+PASS [INPUT in EMAIL status] Non-dirty value - value is empty string 
+PASS [INPUT in EMAIL status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in EMAIL status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in EMAIL status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in EMAIL status] Dirty value - value is greater than minLength 
+PASS [INPUT in EMAIL status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in EMAIL status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in EMAIL status] Dirty value - length of value is less than minLength 
+PASS [INPUT in PASSWORD status] Non-dirty value - minLength is not set 
+PASS [INPUT in PASSWORD status] Non-dirty value - value is empty string 
+PASS [INPUT in PASSWORD status] Non-dirty value - length of value is greater than minLength 
+PASS [INPUT in PASSWORD status] Non-dirty value - length of value equals to minLength 
+PASS [INPUT in PASSWORD status] Non-dirty value - length of value is less than minLength 
+PASS [INPUT in PASSWORD status] Dirty value - value is greater than minLength 
+PASS [INPUT in PASSWORD status] Dirty value - length of value(AAAAA) in unicode is greater than minLength 
+FAIL [INPUT in PASSWORD status] Dirty value - value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [INPUT in PASSWORD status] Dirty value - length of value is less than minLength 
+PASS [textarea]  Non-dirty value - minLength is no set 
+PASS [textarea]  Non-dirty value - value is empty string 
+PASS [textarea]  Non-dirty value - length of value is greater than minLength 
+PASS [textarea]  Non-dirty value - length of value equals to minLength 
+PASS [textarea]  Non-dirty value - length of length of value is greater than minLength 
+PASS [textarea]  Dirty value - value is less than minLength 
+PASS [textarea]  Dirty value - length of value(LF, CRLF) in unicode is less than minLength 
+FAIL [textarea]  Dirty value - length of value equals to minLength assert_false: The validity.tooShort should be false. expected false got true
+PASS [textarea]  Dirty value - length of value is greater than minLength 
+Harness: the test ran to completion.
+

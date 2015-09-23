@@ -1,0 +1,59 @@
+Tests event listeners output in the Elements sidebar panel.
+
+Inspect Me
+
+======== click ========
+== normal
+[expanded] documentRemoveevent-listener-sidebar.html:6
+    useCapture: false
+    handler: function documentClickHandler(event) { console.log("click - document - attribute"); }
+== normal
+[expanded] documentRemoveevent-listener-sidebar.html:31
+    useCapture: true
+    handler: function () { console.log("click - document - handleEvent"); }
+== normal
+[expanded] documentRemoveevent-listener-sidebar.html:25
+    useCapture: true
+    handler: function ObjectHandler() { document.addEventListener("click", this, true); }
+== normal
+[expanded] documentRemoveevent-listener-sidebar.html:19
+    useCapture: true
+    handler: function (event) { console.log("click - document - capturing"); }
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar.html:17
+    useCapture: false
+    handler: function (event) { console.log("click - button - bubbling (registered after attribute)"); }
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar.html:16
+    useCapture: false
+    handler: function (event) { console.log("click - button - attribute"); }
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar.html:12
+    useCapture: false
+    handler: function clickHandler(event) { console.log("click - button - bubbling (registered before attribute)"); }
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar.html:15
+    useCapture: true
+    handler: function (event) { console.log("click - button - capturing"); }
+
+======== custom event ========
+== normal
+[expanded] bodyRemoveevent-listener-sidebar.html:10
+    useCapture: true
+    handler: function f() {}
+
+======== hover ========
+== normal
+[expanded] button#nodeRemoveevent-listener-sidebar.html:14
+    useCapture: false
+    handler: function hoverHandler(event) { console.log("hover - button - bubbling"); }
+
+======== load ========
+== normal
+[expanded] WindowRemoveevent-listener-sidebar.html:73
+    useCapture: false
+    handler: function onload(event) {
+  onloadHandler()
+}
+Listeners for selected node only(should be no listeners):
+

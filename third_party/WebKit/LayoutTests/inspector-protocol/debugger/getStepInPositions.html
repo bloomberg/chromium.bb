@@ -1,0 +1,54 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script>
+
+function TestFunction()
+{
+    debugger;
+    f(f1(2, 4),
+      f2(f3(), f4(5)));
+}
+
+function test()
+{
+    InspectorTest.sendCommand("Debugger.enable", {});
+
+    InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedOne;
+
+    InspectorTest.sendCommand("Runtime.evaluate", { "expression": "setTimeout(TestFunction, 0)" });
+    
+    function handleDebuggerPausedOne(messageObject)
+    {
+        InspectorTest.log("Paused on 'debugger;'");
+        
+        InspectorTest.eventHandler["Debugger.paused"] = handleDebuggerPausedTwo;
+        InspectorTest.sendCommand("Debugger.stepOver", { });
+    }
+    
+    function handleDebuggerPausedTwo(messageObject)
+    {
+        InspectorTest.log("Paused on the next statement");
+        var topFrame = messageObject.params.callFrames[0];
+        
+        InspectorTest.eventHandler["Debugger.paused"] = undefined;
+        
+        InspectorTest.sendCommand("Debugger.getStepInPositions", { callFrameId: topFrame.callFrameId }, callbackGetStepInPositions);
+    }
+    
+    function callbackGetStepInPositions(response)
+    {
+        var positions = response.result.stepInPositions;
+        if (positions.length >= 3)
+            InspectorTest.log("PASS");
+        else 
+            InspectorTest.log("FAIL");
+
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+</body>
+</html>

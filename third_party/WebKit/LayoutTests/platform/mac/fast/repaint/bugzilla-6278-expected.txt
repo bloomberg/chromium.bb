@@ -1,0 +1,56 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [304, 132, 2, 199],
+        [254, 132, 52, 235],
+        [252, 132, 50, 199],
+        [251, 132, 35, 144],
+        [10, 331, 242, 36],
+        [10, 317, 242, 50],
+        [10, 281, 292, 50],
+        [10, 276, 241, 36],
+        [10, 132, 292, 144],
+        [10, 132, 242, 180]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "RootInlineBox",
+        "InlineTextBox 'Curabitur pretium, quam quis semper'",
+        "InlineTextBox 'malesuada, est libero feugiat libero, vel'",
+        "InlineTextBox 'fringilla orci nibh sed neque. Quisque eu'",
+        "InlineTextBox 'nulla non nisi molestie accumsan. Etiam'",
+        "InlineTextBox 'tellus urna, laoreet ac, laoreet non, suscipit'",
+        "InlineTextBox 'sed, sapien. Phasellus vehicula, sem at'",
+        "InlineTextBox 'posuere vehicula, augue nibh molestie nisl,'",
+        "InlineTextBox 'nec ullamcorper lacus ante vulputate pede.'",
+        "LayoutTableCell TD id='col1'",
+        "LayoutBlockFlow DIV",
+        "LayoutText #text",
+        "InlineTextBox 'Curabitur pretium, quam quis semper'",
+        "InlineTextBox 'malesuada, est libero feugiat libero,'",
+        "InlineTextBox 'vel fringilla orci nibh sed neque.'",
+        "InlineTextBox 'Quisque eu nulla non nisi molestie'",
+        "InlineTextBox 'accumsan. Etiam tellus urna, laoreet'",
+        "InlineTextBox 'ac, laoreet non, suscipit sed, sapien.'",
+        "InlineTextBox 'Phasellus vehicula, sem at posuere'",
+        "InlineTextBox 'vehicula, augue nibh molestie nisl,'",
+        "InlineTextBox 'nec ullamcorper lacus ante vulputate'",
+        "InlineTextBox 'pede.'",
+        "LayoutBlockFlow DIV",
+        "LayoutTableCell TD id='target'"
+      ]
+    }
+  ]
+}
+

@@ -1,0 +1,71 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function createShadowRoot(id)
+{
+    var container = document.getElementById("container");
+    var root = container.createShadowRoot();
+    root.innerHTML = "<div id='" + id + "'></div>";
+}
+
+function test()
+{
+    var containerNode;
+
+    InspectorTest.runTestSuite([
+        function testDumpInitial(next)
+        {
+            function callback(node)
+            {
+                containerNode = InspectorTest.expandedNodeWithId("container");
+                expandAndDumpContainerNode("========= Original ========", next)();
+            }
+            InspectorTest.expandElementsTree(callback);
+        },
+
+        function testCreateShadowRoot(next)
+        {
+            InspectorTest.evaluateInPage(
+                "createShadowRoot('shadow-1')",
+                expandAndDumpContainerNode("===== After createShadowRoot =====", next));
+        },
+
+        function testCreateSecondShadowRoot(next)
+        {
+            InspectorTest.evaluateInPage(
+                "createShadowRoot('shadow-2')",
+                expandAndDumpContainerNode("===== After second createShadowRoot =====", next));
+        }
+    ]);
+
+    function expandAndDumpContainerNode(title, next)
+    {
+        return function()
+        {
+            InspectorTest.addResult(title);
+            InspectorTest.expandElementsTree(callback);
+
+            function callback()
+            {
+                InspectorTest.dumpElementsTree(containerNode);
+                next();
+            }
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that elements panel updates dom tree structure upon shadow root creation.
+</p>
+
+<div id="container"><div id="child"></div></div>
+
+</body>
+</html>

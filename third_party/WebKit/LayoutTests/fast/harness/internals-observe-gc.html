@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<body>
+<script>
+description('Tests that the window.internals.observeGC hook works.');
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+         'this test requires window.internals');
+
+// "Generic Kid's Movie III": ... where nobody dies.
+
+var valueA = {};
+observationA = internals.observeGC(valueA);
+gc();
+shouldBeFalse('observationA.wasCollected');
+// value ineligible for GC should not be flagged as collected
+valueA = null;
+observationA = null;
+
+// "Romeo and GCuliet": Romeo JavaScript finds G.uliet C.apulet and dies.
+
+var valueB = {};
+observationB = internals.observeGC(valueB);
+valueB = null;
+gc();
+shouldBeTrue('observationB.wasCollected');
+// value eligible for GC should be flagged as collected
+observationB = null;
+
+// "One DOM Tree Hill": A family struggles with the loss of
+// innocence. And a DOM node.
+
+var valueC = document.createElement('div');
+observationC = internals.observeGC(valueC);
+valueC = null;
+gc();
+shouldBeTrue('observationC.wasCollected');
+// DOM node eligible for GC should be flagged as collected
+observationC = null;
+
+// Now, movies that failed:
+
+shouldThrow('internals.observeGC(undefined)', '"TypeError: value to observe is null or undefined"');
+shouldThrow('internals.observeGC(null)', '"TypeError: value to observe is null or undefined"');
+
+// Try to create objects and observers that will die at once
+
+var valueD = {};
+var observerD = internals.observeGC(valueD);
+valueD.observer = observerD;
+observerD.observed = valueD;
+valueD = observerD = null;
+gc();
+testPassed('did not crash');
+
+var successfullyParsed = true;
+</script>

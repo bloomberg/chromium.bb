@@ -1,0 +1,48 @@
+<!doctype HTML>
+<body>
+<div style="height: 2000px; width: 2000px;">
+<div id="targetImage" style="width: 50px; height: 50px">
+</div>
+<img id="testTarget" style="visibility: hidden">
+
+<script src="../../fast/repaint/resources/text-based-repaint.js"></script>
+<script>
+window.testIsAsync = true;
+
+// The image should not show a paint invalidation if offscreen if Slimming Paint is on.
+// Otherwise it should.
+
+// Steps:
+// 1. Load the image
+// 2. Move the image offscreen
+// 3. Start tracking paint invalidation rects
+// 4. Call layoutAndPaintAsyncThen (via runRepaintTest, which does this for us) to draw a frame
+// 5. Wait longer than 100ms, so that the timer between the first and second animated GIF
+//    frame expires and a paint invalidation is issued on the animated GIF. (100ms is the
+//    length of the first frame of the animation in the GIF file.)
+// 6. Stop tracking paint invalidation rects (finishRepaintTest does this for us)
+
+// These steps differ from a standard repaint test in that step 3 precedes step 4.
+// This is critical because layoutAndPaintAsyncThen may take longer than the 100ms of the timer,
+// so we may miss it.
+
+function repaintTest() {
+  setTimeout(finishRepaintTest, 150);
+}
+
+function targetImageOnload() {
+    window.scrollTo(0, 1000);
+    if (window.internals)
+        window.internals.startTrackingRepaints(document);
+    runRepaintTest();
+}
+
+window.onload = function() {
+    targetImage.style.background = "url(../../fast/backgrounds/resources/red-green-animated.gif)";
+
+    // Use a parallel image element as a hack to detect whether the image has loaded, and therefore
+    // we'll get a frame.
+    testTarget.onload = targetImageOnload;
+    testTarget.src = "../../fast/backgrounds/resources/red-green-animated.gif";
+}
+</script>

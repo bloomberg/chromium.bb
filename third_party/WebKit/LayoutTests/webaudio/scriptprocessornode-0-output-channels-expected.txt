@@ -1,0 +1,15 @@
+Test Connecting 0-output channel ScriptProcessor to Another Node
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS context = new OfflineAudioContext(1, 1024, 44100) did not throw an exception.
+PASS analyzer = context.createAnalyser() did not throw an exception.
+PASS scriptNode1 = context.createScriptProcessor(1024, 11, 0) did not throw an exception.
+PASS scriptNode2 = context.createScriptProcessor(1024, 1, 1) did not throw an exception.
+PASS scriptNode1.connect(analyzer) threw InvalidAccessError: Failed to execute 'connect' on 'AudioNode': cannot connect a ScriptProcessorNode with 0 output channels to any destination node..
+PASS scriptNode2.connect(analyzer) did not throw an exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

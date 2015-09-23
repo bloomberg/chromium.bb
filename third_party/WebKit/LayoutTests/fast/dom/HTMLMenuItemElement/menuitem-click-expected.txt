@@ -1,0 +1,27 @@
+Test that the "checked" attribute of menuitem is toggled with click.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS element.hasAttribute("checked") is true
+PASS element.hasAttribute("checked") is false
+PASS mi2.hasAttribute("checked") is true
+PASS mi2.hasAttribute("checked") is false
+PASS mi3.hasAttribute("checked") is true
+PASS mi3.hasAttribute("checked") is false
+PASS mi4.hasAttribute("checked") is true
+PASS mi4.hasAttribute("checked") is true
+PASS mi4.hasAttribute("checked") is true
+PASS _mi1.hasAttribute("checked") is true
+PASS mi5.hasAttribute("checked") is true
+PASS mi6.hasAttribute("checked") is true
+PASS mi7.hasAttribute("checked") is true
+PASS mi8.hasAttribute("checked") is true
+PASS mi9.hasAttribute("checked") is false
+PASS mi10.hasAttribute("checked") is true
+PASS mi11.hasAttribute("checked") is true
+PASS mi12.hasAttribute("checked") is false
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

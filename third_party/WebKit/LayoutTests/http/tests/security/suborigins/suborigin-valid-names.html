@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Valid suborigin names</title>
+</head>
+
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function finish() {
+    if (window.testRunner)
+        testRunner.notifyDone();
+}
+
+var test_suborigin_names = [
+    "foobar",
+    "foob4r",
+    "Foobar",
+    "FOOBAR",
+    "42",
+];
+
+var iframe;
+var i = 0;
+function next() {
+    if (i >= test_suborigin_names.length)
+        finish();
+    document.getElementById('iframe').src = "resources/reach-into-iframe.php?childsuborigin=" + test_suborigin_names[i];
+    i++;
+}
+
+window.onmessage = function(event) {
+    alert(event.data);
+    next();
+};
+
+window.onload = function() {
+    next();
+};
+</script>
+<iframe id="iframe"></iframe>

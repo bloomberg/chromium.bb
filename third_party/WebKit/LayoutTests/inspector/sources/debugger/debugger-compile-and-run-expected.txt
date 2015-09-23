@@ -1,0 +1,27 @@
+Tests separate compilation and run.
+
+Bug 89646.
+
+Running: testSuccessfulCompileAndRun
+Compiling script
+Running script
+Script result: 3
+
+Running: testRunError
+Compiling script
+Running script
+exceptionDetails:
+   Uncaught ReferenceError: c is not defined
+   line: 1, column: 15
+   exceptionDetails stack trace:
+       url: test.js
+       function: 
+       line: 1
+
+Running: testCompileError
+Compiling script
+exceptionDetails:
+   Uncaught SyntaxError: Unexpected token }
+   line: 1, column: 0
+   no stack trace attached to exceptionDetails
+

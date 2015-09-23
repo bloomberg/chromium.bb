@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+function indexeddb_test(upgrade_func, body_func, description) {
+  async_test(function(t) {
+    var dbname = location.pathname + ' - ' + description;
+    var deleteRequest = indexedDB.deleteDatabase(dbname);
+    deleteRequest.onsuccess = t.step_func(function() {
+      var openRequest = indexedDB.open(dbname);
+      openRequest.onupgradeneeded = t.step_func(function() {
+        upgrade_func(t, openRequest.result);
+      });
+      openRequest.onsuccess = t.step_func(function() {
+        body_func(t, openRequest.result);
+      });
+      openRequest.onerror = t.unreached_func('open failed');
+    });
+  }, description);
+}
+
+function ProbeObject() {
+  this.id_count = 0;
+  this.invalid_id_count = 0;
+  this.prop_count = 0;
+  Object.defineProperties(this, {
+    id: {
+      enumerable: true,
+      get: function() {
+        ++this.id_count;
+        return 1000 + this.id_count;
+      }},
+    invalid_id: {
+      enumerable: true,
+      get: function() {
+        ++this.invalid_id_count;
+        return {};
+      }},
+    prop: {
+      enumerable: true,
+      get: function() {
+        ++this.prop_count;
+        return 2000 + this.prop_count;
+      }}
+  });
+}
+
+indexeddb_test(
+  function(t, connection) {
+    connection.createObjectStore(
+      'store', {keyPath: 'id', autoIncrement: true});
+  },
+  function(t, connection) {
+    var trans = connection.transaction('store', 'readwrite');
+    var store = trans.objectStore('store');
+    var obj = new ProbeObject();
+    store.put(obj);
+    assert_equals(
+      obj.id_count, 1,
+      'put() operation should access primary key property once');
+    assert_equals(
+      obj.prop_count, 1,
+      'put() operation should access other properties once');
+    t.done();
+  }, 'Key generator and key path validity check operates on a clone');
+
+indexeddb_test(
+  function(t, connection) {
+    connection.createObjectStore(
+      'store', {keyPath: 'invalid_id', autoIncrement: true});
+  },
+  function(t, connection) {
+    var trans = connection.transaction('store', 'readwrite');
+    var store = trans.objectStore('store');
+    var obj = new ProbeObject();
+    assert_throws('DataError', function() { store.put(obj); },
+                  'put() should throw if primary key cannot be injected');
+    assert_equals(
+      obj.invalid_id_count, 1,
+      'put() operation should access primary key property once');
+    assert_equals(
+      obj.prop_count, 1,
+      'put() operation should access other properties once');
+    t.done();
+  }, 'Failing key path validity check operates on a clone');
+
+indexeddb_test(
+  function(t, connection) {
+    var store = connection.createObjectStore('store');
+    store.createIndex('index', 'prop');
+  },
+  function(t, connection) {
+    var trans = connection.transaction('store', 'readwrite');
+    var store = trans.objectStore('store');
+    var obj = new ProbeObject();
+    store.put(obj, 'key');
+    assert_equals(
+      obj.prop_count, 1, 'put() should access index key property once');
+    assert_equals(
+      obj.id_count, 1,
+      'put() operation should access other properties once');
+    t.done();
+  }, 'Index key path evaluations operate on a clone');
+
+indexeddb_test(
+  function(t, connection) {
+    var store = connection.createObjectStore('store', {keyPath: 'id'});
+    store.createIndex('index', 'prop');
+  },
+  function(t, connection) {
+    var trans = connection.transaction('store', 'readwrite');
+    var store = trans.objectStore('store');
+    var obj = new ProbeObject();
+    store.put(obj);
+    assert_equals(
+      obj.id_count, 1, 'put() should access primary key property once');
+    assert_equals(
+      obj.prop_count, 1, 'put() should access index key property once');
+    t.done();
+  }, 'Store and index key path evaluations operate the same clone');
+
+indexeddb_test(
+  function(t, connection) {
+    var store = connection.createObjectStore('store', {keyPath: 'id'});
+    store.createIndex('index', 'prop');
+  },
+  function(t, connection) {
+    var trans = connection.transaction('store', 'readwrite');
+    var store = trans.objectStore('store');
+    store.put(new ProbeObject());
+
+    store.openCursor().onsuccess = t.step_func(function(event) {
+      var cursor = event.target.result;
+
+      var obj = new ProbeObject();
+      cursor.update(obj);
+      assert_equals(
+        obj.id_count, 1, 'put() should access primary key property once');
+      assert_equals(
+        obj.prop_count, 1, 'put() should access index key property once');
+
+      t.done();
+    });
+  }, 'Cursor update checks and keypath evaluations operate on a clone');
+</script>

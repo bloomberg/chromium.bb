@@ -1,0 +1,181 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Tests for Composed Shadow DOM Tree Traversal APIs. Can only run within DRT
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+Multiple shadow root without shadow element
+Composed Shadow Tree:
+#a
+	#c
+
+Traverse in forward.
+#a
+#c
+Traverse in backward.
+#c
+#a
+
+Multiple shadow root with shadow element
+Composed Shadow Tree:
+#a
+	#c
+	#b
+	#e
+
+Traverse in forward.
+#a
+#c
+#b
+#e
+Traverse in backward.
+#e
+#b
+#c
+#a
+
+Multiple shadow root with shadow element, case 2
+Composed Shadow Tree:
+#a
+	#f
+	#c
+	#b
+	#e
+	#h
+
+Traverse in forward.
+#a
+#f
+#c
+#b
+#e
+#h
+Traverse in backward.
+#h
+#e
+#b
+#c
+#f
+#a
+
+shadow reprojection
+Composed Shadow Tree:
+#a
+	#b
+		#d
+		#a-child
+		#f
+
+Traverse in forward.
+#a
+#b
+#d
+#a-child
+#f
+Traverse in backward.
+#f
+#a-child
+#d
+#b
+#a
+
+shadow reprojection, take 2
+Composed Shadow Tree:
+#a
+	#d
+		#f
+		#b
+		#h
+
+Traverse in forward.
+#a
+#d
+#f
+#b
+#h
+Traverse in backward.
+#h
+#b
+#f
+#d
+#a
+
+Ignore shadow fallback elements
+Composed Shadow Tree:
+#a
+	#i
+		#k
+		#c
+		#b
+		#f
+			#g
+		#h
+		#m
+
+Traverse in forward.
+#a
+#i
+#k
+#c
+#b
+#f
+#g
+#h
+#m
+Traverse in backward.
+#m
+#h
+#g
+#f
+#b
+#c
+#k
+#i
+#a
+
+with inactive insertion points
+Composed Shadow Tree:
+#a
+	#s
+		#u
+		#f
+		#b
+			#c
+		#d
+			#e
+		#l
+		#m
+		#n
+		#w
+
+Traverse in forward.
+#a
+#s
+#u
+#f
+#b
+#c
+#d
+#e
+#l
+#m
+#n
+#w
+Traverse in backward.
+#w
+#n
+#m
+#l
+#e
+#d
+#c
+#b
+#f
+#u
+#s
+#a
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

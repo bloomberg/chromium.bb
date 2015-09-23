@@ -1,0 +1,4 @@
+CONSOLE WARNING: 'Range.expand()' is deprecated. Please use 'Selection.modify()' instead.
+Test Chinese Segmentation.
+
+ALL PASS

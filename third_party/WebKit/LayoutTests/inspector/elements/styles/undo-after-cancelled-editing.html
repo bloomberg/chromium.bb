@@ -1,0 +1,79 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>
+#inspected {
+}
+</style>
+<script>
+
+function test()
+{
+    var treeElement;
+    InspectorTest.runTestSuite([
+        function selectNode(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", next);
+        },
+
+        function addNewProperty(next)
+        {
+            var section = InspectorTest.firstMatchedStyleSection();
+            var newProperty = section.addNewBlankProperty();
+            newProperty.startEditing();
+            newProperty.nameElement.textContent = "color";
+            newProperty.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            newProperty.valueElement.textContent = "blue";
+            newProperty.valueElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+            InspectorTest.waitForStyleApplied(next);
+        },
+
+        function editProperty(next)
+        {
+            treeElement = InspectorTest.getMatchedStylePropertyTreeItem("color");
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            treeElement.startEditing();
+            treeElement.nameElement.textContent = "color";
+            treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+
+            // Update incrementally, do not commit.
+            treeElement.valueElement.textContent = "red";
+            treeElement.kickFreeFlowStyleEditForTest();
+            InspectorTest.waitForStyleApplied(next);
+        },
+
+        function cancelEditing(next)
+        {
+            treeElement.valueElement.dispatchEvent(InspectorTest.createKeyEvent("U+001B")); // Escape
+            InspectorTest.waitForStyleApplied(next);
+        },
+
+        function undoStyles(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            InspectorTest.domModel.undo();
+            InspectorTest.waitForStyles("inspected", next, true);
+        },
+
+        function onUndoedProperty(next)
+        {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            next();
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verifies that cancelling property value editing doesn't affect
+undo stack.
+</p>
+
+<div id="inspected">Text</div>
+
+</body>
+</html>

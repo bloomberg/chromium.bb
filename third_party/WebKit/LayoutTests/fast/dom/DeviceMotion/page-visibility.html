@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+description('Tests to check that devicemotion events are not fired when the page is not visible.');
+window.jsTestIsAsync = true;
+
+function succeedAndFinish()
+{
+    testPassed("Received a devicemotion event");
+    finishJSTest();
+}
+
+function testWithPageVisible()
+{
+    testPassed("Did not receive a devicemotion event");
+    window.removeEventListener('devicemotion', failAndFinish);
+    if (window.testRunner)
+        testRunner.setPageVisibility("visible");
+    debug("* Page is visible");
+    window.addEventListener('devicemotion', succeedAndFinish);
+}
+
+function failAndFinish()
+{
+    testFailed('Should not have received a devicemotion event while the page was hidden');
+    finishJSTest();
+}
+
+function testWithPageHidden()
+{
+    testPassed("Received a devicemotion event");
+    window.removeEventListener('devicemotion', deviceMotionListener);
+    if (window.testRunner)
+        testRunner.setPageVisibility("hidden");
+    debug("* Page is hidden");
+    window.addEventListener('devicemotion', failAndFinish);
+
+    setTimeout(testWithPageVisible, 100);
+}
+
+function deviceMotionListener(event) {
+    setTimeout(testWithPageHidden, 0);
+}
+
+if (window.testRunner)
+    testRunner.setMockDeviceMotion(true, 0, true, 0, true, 0,
+                                   true, 0, true, 0, true, 0,
+                                   true, 0, true, 0, true, 0,
+                                   0);
+
+debug("* Page is visible");
+window.addEventListener('devicemotion', deviceMotionListener);
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+
+    function step1()
+    {
+        var treeElement = InspectorTest.getElementStylePropertyTreeItem("background");
+        InspectorTest.addResult("Viewing 'background' value in Styles:");
+        InspectorTest.addResult(treeElement.valueElement.textContent);
+
+        treeElement.startEditing(treeElement.nameElement);
+        treeElement.nameElement.textContent = "background-image";
+        treeElement.nameElement.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
+        InspectorTest.waitForStyleApplied(step2);
+    }
+
+    function step2()
+    {
+        var treeElement = InspectorTest.getElementStylePropertyTreeItem("background-image");
+        InspectorTest.addResult("Renamed 'background' to 'background-image' (edited value):");
+        InspectorTest.addResult(treeElement.valueElement.textContent);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that editing a CSS property name in the Styles pane retains its original, non-trimmed value text.
+</p>
+
+<div id="inspected" style="background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC)" />
+
+</body>
+</html>

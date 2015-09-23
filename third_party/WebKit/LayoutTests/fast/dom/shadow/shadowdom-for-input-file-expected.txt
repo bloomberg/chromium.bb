@@ -1,0 +1,11 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a user-agent shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+Mock: Opening a file chooser.
+Clicking on a file control should open a file chooser dialog even if it has author ShadowRoots. This test requires testRunner, and should open the file chooser dialog just once.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

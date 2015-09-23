@@ -1,0 +1,176 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+var object1 = { foo: 1 };
+var object2 = { bar: 2 };
+
+function dumpObject(label)
+{
+    console.log("===== " + label + " =====");
+    console.log(JSON.stringify(object1, replacer));
+    console.log("");
+
+    function replacer(key, value)
+    {
+        if (typeof value === "number" && !isFinite(value))
+            return String(value);
+        return value;
+    }
+}
+
+function checkNegativeZero()
+{
+    console.log("===== Checking negative zero =====");
+    console.log("1/-0 = " + (1 / object1.foo));
+}
+
+function test()
+{
+    var obj1, obj2;
+    var nameFoo = WebInspector.RemoteObject.toCallArgument("foo");
+
+    InspectorTest.runTestSuite([
+        function testSetUp(next)
+        {
+            InspectorTest.evaluateInPage("dumpObject('Initial')", step0);
+
+            function step0()
+            {
+                InspectorTest.RuntimeAgent.evaluate("object1", step1);
+            }
+
+            function step1(error, result, wasThrown)
+            {
+                obj1 = InspectorTest.runtimeModel.createRemoteObject(result);
+                InspectorTest.RuntimeAgent.evaluate("object2", step2);
+            }
+
+            function step2(error, result, wasThrown)
+            {
+                obj2 = InspectorTest.runtimeModel.createRemoteObject(result);
+                next();
+            }
+        },
+
+        function testSetPrimitive(next)
+        {
+            obj1.setPropertyValue(nameFoo, "2", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set primitive')", next);
+            }
+        },
+
+        function testSetHandle(next)
+        {
+            obj1.setPropertyValue(nameFoo, "object2", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set handle')", next);
+            }
+        },
+
+        function testSetUndefined(next)
+        {
+            obj1.setPropertyValue(nameFoo, "undefined", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set undefined')", next);
+            }
+        },
+
+        function testSetZero(next)
+        {
+            obj1.setPropertyValue(nameFoo, "0", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set zero')", next);
+            }
+        },
+
+        function testSetNull(next)
+        {
+            obj1.setPropertyValue(nameFoo, "null", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set null')", next);
+            }
+        },
+
+        function testSetEmptyString(next)
+        {
+            obj1.setPropertyValue(nameFoo, "\"\"", step1);
+
+            function step1()
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set empty string')", next);
+            }
+        },
+
+        function testSetException(next)
+        {
+            obj1.setPropertyValue(nameFoo, "throw 'exception'", step1);
+
+            function step1(error)
+            {
+                InspectorTest.addResult(error);
+                InspectorTest.evaluateInPage("dumpObject('Set exception')", next);
+            }
+        },
+
+        function testSetNonFiniteNumbers(next)
+        {
+            obj1.setPropertyValue(nameFoo, "NaN", step1);
+
+            function step1(error)
+            {
+                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo1"), "Infinity", step2);
+            }
+
+            function step2(error)
+            {
+                obj1.setPropertyValue(WebInspector.RemoteObject.toCallArgument("foo2"), "-Infinity", step3);
+            }
+
+            function step3(error)
+            {
+                InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
+            }
+        },
+
+        function testNegativeZero(next)
+        {
+            obj1.setPropertyValue(nameFoo, "1/-Infinity", step1);
+
+            function step1(error)
+            {
+                InspectorTest.evaluateInPage("checkNegativeZero()", next);
+            }
+        },
+
+        function testReleaseObjectIsCalled(next)
+        {
+            // If failed, this test will time out.
+            InspectorTest.addSniffer(InspectorTest.RuntimeAgent, "releaseObject", next);
+            obj1.setPropertyValue(nameFoo, "[1,2,3]", function(){});
+        }
+    ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests WebInspector.RemoveObject.setPropertyValue implementation.
+</p>
+
+</body>
+</html>

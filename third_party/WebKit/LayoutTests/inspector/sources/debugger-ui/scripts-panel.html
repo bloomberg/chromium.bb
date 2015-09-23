@@ -1,0 +1,116 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/workspace-test.js"></script>
+<script>
+function test()
+{
+    function dumpNavigator(sourcesNavigatorView)
+    {
+        InspectorTest.dumpNavigatorView(sourcesNavigatorView, "sources", "  ");
+    }
+
+    function createNavigatorView()
+    {
+        var navigatorView = new WebInspector.SourcesNavigatorView();
+        navigatorView.setWorkspace(InspectorTest.testWorkspace);
+        navigatorView.show(WebInspector.inspectorView.element);
+        return navigatorView;
+    }
+
+    function createContentProvider(url)
+    {
+        var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
+        contentProvider.requestContent = function(callback)
+        {
+            InspectorTest.addResult("Source requested for " + url);
+            callback("");
+        };
+        return contentProvider;
+    }
+
+    function createMockWorkspace()
+    {
+        InspectorTest.createWorkspaceWithTarget(true);
+        InspectorTest.testDebuggerProjectDelegate = new WebInspector.DebuggerProjectDelegate(InspectorTest.testWorkspace, "debugger:", WebInspector.projectTypes.Debugger);
+        return InspectorTest.testWorkspace;
+    }
+
+    function addNetworkFile(workspace, url)
+    {
+        return InspectorTest.testNetworkProject.addFileForURL(url, createContentProvider(url));
+    }
+
+    function addDebuggerFile(workspace, url)
+    {
+        var path = InspectorTest.testDebuggerProjectDelegate.addContentProvider("", url, url, url, createContentProvider(url));
+        return InspectorTest.testWorkspace.uiSourceCode("debugger:", path)
+    }
+
+    InspectorTest.runTestSuite([
+        function testInitialLoad(next)
+        {
+            var workspace = createMockWorkspace();
+
+            addNetworkFile(workspace, "foobar.js");
+
+            var sourcesNavigatorView = createNavigatorView();
+
+            addNetworkFile(workspace, "foo.js");
+            addNetworkFile(workspace, "bar.js");
+            var uiSourceCode = addNetworkFile(workspace, "baz.js");
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+
+            dumpNavigator(sourcesNavigatorView);
+            next();
+        },
+
+        function testReset(next)
+        {
+            var workspace = createMockWorkspace();
+            var sourcesNavigatorView = createNavigatorView();
+
+            var uiSourceCode = addNetworkFile(workspace, "foo.js");
+            addNetworkFile(workspace, "bar.js");
+            addNetworkFile(workspace, "baz.js");
+
+            dumpNavigator(sourcesNavigatorView);
+            InspectorTest.addResult("Revealing in navigator.");
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            dumpNavigator(sourcesNavigatorView);
+
+            InspectorTest.testNetworkProject._reset();
+            dumpNavigator(sourcesNavigatorView);
+            uiSourceCode = addNetworkFile(workspace, "bar.js");
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            dumpNavigator(sourcesNavigatorView);
+
+            next();
+        },
+
+        function testDebuggerUISourceCodeAddedAndRemoved(next)
+        {
+            var workspace = createMockWorkspace();
+            var sourcesNavigatorView = createNavigatorView();
+
+            var uiSourceCode = addNetworkFile(workspace, "foo.js");
+            var debuggerUISourceCode = addDebuggerFile(workspace, "compiled.js");
+            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+            sourcesNavigatorView.revealUISourceCode(debuggerUISourceCode);
+            dumpNavigator(sourcesNavigatorView);
+
+            // Plug compiler source mapping.
+            addNetworkFile(workspace, "source.js");
+
+            dumpNavigator(sourcesNavigatorView);
+            next();
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that scripts panel UI elements work as intended.</p>
+</body>
+</html>

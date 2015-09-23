@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<meta charset="UTF-8">
+<style>
+.parent {
+  -webkit-clip-path: inset(10px);
+  padding: 10px;
+}
+.target {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  background-color: black;
+  -webkit-clip-path: inset(10px);
+}
+.expected {
+  background-color: green;
+}
+</style>
+<body>
+<script src="resources/interpolation-test.js"></script>
+<script>
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: '',
+  to: 'inset(20px)',
+}, [
+  {at: -0.3, is: 'inset(7px)'},
+  {at: 0, is: 'inset(10px)'},
+  {at: 0.3, is: 'inset(13px)'},
+  {at: 0.6, is: 'inset(16px)'},
+  {at: 1, is: 'inset(20px)'},
+  {at: 1.5, is: 'inset(25px)'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-clip-path',
+  from: 'initial',
+  to: 'inset(20px)',
+});
+
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: 'inherit',
+  to: 'inset(20px)',
+}, [
+  {at: -0.3, is: 'inset(7px)'},
+  {at: 0, is: 'inset(10px)'},
+  {at: 0.3, is: 'inset(13px)'},
+  {at: 0.6, is: 'inset(16px)'},
+  {at: 1, is: 'inset(20px)'},
+  {at: 1.5, is: 'inset(25px)'},
+]);
+
+assertNoInterpolation({
+  property: '-webkit-clip-path',
+  from: 'unset',
+  to: 'inset(20px)',
+});
+
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: 'circle(10px at 25px 75px)',
+  to: 'circle(50px at 50px 50px)'
+}, [
+  {at: -0.3, is: 'circle(0px at 17.5px 82.5px)'}, // radius can't be negative
+  {at: 0, is: 'circle(10px at 25px 75px)'},
+  {at: 0.3, is: 'circle(22px at 32.5px 67.5px)'},
+  {at: 0.6, is: 'circle(34px at 40px 60px)'},
+  {at: 1, is: 'circle(50px at 50px 50px)'},
+  {at: 1.5, is: 'circle(70px at 62.5px 37.5px)'}
+]);
+
+assertNoInterpolation({
+  property: '-webkit-clip-path',
+  from: 'none',
+  to: 'circle(3px at 1px 2px)'
+});
+
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: 'inset(0%)',
+  to: 'inset(20%)',
+}, [
+  {at: -0.3, is: 'inset(-6%)'},
+  {at: 0, is: 'inset(0%)'},
+  {at: 0.3, is: 'inset(6%)'},
+  {at: 0.6, is: 'inset(12%)'},
+  {at: 1, is: 'inset(20%)'},
+  {at: 1.5, is: 'inset(30%)'},
+]);
+
+</script>
+</body>

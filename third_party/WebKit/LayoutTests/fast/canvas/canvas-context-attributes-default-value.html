@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script>
+
+  var trueAttributes = {
+    alpha : true,
+  };
+
+  var falseAttributes = {
+    alpha : false,
+  };
+
+  function testAttributes(expectedAttributes, checkValue) {
+
+    if (arguments.length != 1 && arguments.length != 2)
+      return;
+
+    var canvas = document.createElement("canvas");
+    var initialAttributes = {};
+    var isUndefinedOrNull = arguments.length == 2 &&
+        (checkValue == undefined || checkValue == null);
+
+    if (isUndefinedOrNull)
+      for (key in expectedAttributes)
+        initialAttributes[key] = checkValue;
+
+    var context = canvas.getContext("2d", initialAttributes);
+
+    window.actualContextAttributes = context.getContextAttributes();
+
+    for (key in expectedAttributes)
+      shouldBe("actualContextAttributes." + key,
+          expectedAttributes[key].toString());
+  }
+
+</script>
+</head>
+<body>
+<script>
+
+  debug("Testing default value:");
+  testAttributes(trueAttributes);
+  debug("")
+
+  debug("Testing undefined value:");
+  testAttributes(trueAttributes, undefined);
+  debug("")
+
+  debug("Testing null value:");
+  testAttributes(falseAttributes, null);
+  debug("")
+
+</script>
+</body>

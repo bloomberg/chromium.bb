@@ -1,0 +1,5 @@
+Test that the autoplay experiment doesn't play media once the media is no longer eligible for autoplay.
+
+First video should play OK
+Second video should not play OK
+

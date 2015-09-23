@@ -1,0 +1,9 @@
+Test that focus moves to the <body>/document when controls fade out with a button focused.
+
+EXPECTED (document.activeElement == '[object HTMLBodyElement]') OK
+EXPECTED (document.activeElement == '[object HTMLVideoElement]') OK
+EXPECTED (getComputedStyle(controls).opacity == '0') OK
+EXPECTED (document.activeElement == '[object HTMLBodyElement]') OK
+
+END OF TEST
+

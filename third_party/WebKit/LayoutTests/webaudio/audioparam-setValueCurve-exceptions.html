@@ -1,0 +1,201 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Exceptions from setValueCurveAtTime</title>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Exceptions from setValueCurveAtTime");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      // Some short duration because we don't need to run the test for very long.
+      var testDurationSec = 0.125;
+      var testDurationFrames = testDurationSec * sampleRate;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("setValueCurve", function(done) {
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var g = context.createGain();
+        var curve = new Float32Array(2);
+
+        // Start time and duration for setValueCurveAtTime
+        var curveStartTime = 0.1 * testDurationSec;
+        var duration = 0.1 * testDurationSec;
+
+        // Some time that is known to during the setValueCurveTime interval.
+        var automationTime = curveStartTime + duration / 2;
+
+        success = success && Should("setValueCurveAtTime(curve, " + curveStartTime + ", " + duration + ")", function() {
+          g.gain.setValueCurveAtTime(curve, curveStartTime, duration);
+        }).notThrow();
+
+        success = success && Should("setValueAtTime(1, " + automationTime + ")", function() {
+          g.gain.setValueAtTime(1, automationTime);
+        }).throw("NotSupportedError");
+
+        success = success && Should("linearRampToValueAtTime(1, " + automationTime + ")", function() {
+          g.gain.linearRampToValueAtTime(1, automationTime);
+        }).throw("NotSupportedError");
+
+        success = success && Should("exponentialRampToValueAtTime(1, " + automationTime + ")", function() {
+          g.gain.exponentialRampToValueAtTime(1, automationTime);
+        }).throw("NotSupportedError");
+
+        success = success && Should("setTargetAtTime(1, " + automationTime + ", 1)", function() {
+          g.gain.setTargetAtTime(1, automationTime, 1);
+        }).throw("NotSupportedError");
+
+        success = success && Should("setValueAtTime(1, " + (curveStartTime + 1.1 * duration) + ")", function() {
+          g.gain.setValueAtTime(1, curveStartTime + 1.1 * duration);
+        }).notThrow();
+
+        var prefix = "Automation functions overlapping an existing setValueCurveAtTime";
+        if (success)
+          testPassed(prefix + " correctly signaled errors.\n");
+        else
+          testFailed(prefix + " failed to signal errors.\n");
+
+        done();
+      });      
+
+      audit.defineTask("automations", function (done) {
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var g = context.createGain();
+
+        var curve = new Float32Array(2);
+        // Start time and duration for setValueCurveAtTime
+        var startTime = 0
+        var timeInterval = testDurationSec / 10;
+
+        startTime += timeInterval;
+        success = success && Should("linearRampToValueAtTime(1, " + startTime + ")", function () {
+          g.gain.linearRampToValueAtTime(1, startTime);
+        }).notThrow();
+      
+        startTime += timeInterval;
+        success = success && Should("exponentialRampToValueAtTime(1, " + startTime + ")", function () {
+          g.gain.exponentialRampToValueAtTime(1, startTime);
+        }).notThrow();
+      
+        startTime += timeInterval;
+        success = success && Should("setTargetAtTime(1, " + startTime + ", 0.1)", function () {
+          g.gain.setTargetAtTime(1, startTime, 0.1);
+        }).notThrow();
+      
+        startTime += timeInterval;
+        success = success && Should("setValueCurveAtTime(curve, " + startTime + ", 0.1)", function () {
+          g.gain.setValueCurveAtTime(curve, startTime, 0.1);
+        }).notThrow();
+
+        // Now try to setValueCurve that overlaps each of the above automations
+        startTime = timeInterval / 2;
+
+        for (var k = 0; k < 4; ++k) {
+          success = success && Should("setValueCurveAtTime(curve, " + startTime + ", 0.01)", function () {
+            g.gain.setValueCurveAtTime(curve, startTime, 0.01);
+          }).throw("NotSupportedError");
+          startTime += timeInterval;
+        }
+
+        var prefix = "setValueCurve overlapping existing automation functions";
+        if (success)
+          testPassed(prefix + " correctly signaled errors.\n");
+        else
+          testFailed(prefix + " failed to signal errors.\n");
+
+        done();
+      });
+
+      audit.defineTask("start-end", function (done) {
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var g = context.createGain();
+        var curve = new Float32Array(2);
+
+        // Verify that a setValueCurve can start at the end of an automation.
+        var time = 0;
+        var timeInterval = testDurationSec / 50;
+        success = Should("setValueAtTime(1, " + time + ")", function () {
+          g.gain.setValueAtTime(1, time);
+        }).notThrow();
+
+        time += timeInterval;
+        success = Should("linearRampToValueAtTime(0, " + time + ")", function () {
+          g.gain.linearRampToValueAtTime(0, time);
+        }).notThrow() && success;
+
+        // setValueCurve starts at the end of the linear ramp. This should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // exponentialRamp ending one interval past the setValueCurve should be fine.
+        time += 2*timeInterval;
+        success = Should("exponentialRampToValueAtTime(1, " + time + ")", function () {
+          g.gain.exponentialRampToValueAtTime(1, time);
+        }).notThrow() && success;
+
+        // setValueCurve starts at the end of the exponential ramp. This should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setValueCurve at the end of the setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setValueAtTime at the end of setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setValueAtTime(0, " + time + ")", function () {
+          g.gain.setValueAtTime(0, time);
+        }).notThrow() && success;
+
+        // setValueCurve at the end of setValueAtTime should be fine.
+        success = Should("setValueCurveAtTime(..., " + time + ", " + timeInterval + ")", function () {
+          g.gain.setValueCurveAtTime(curve, time, timeInterval);
+        }).notThrow() && success;
+
+        // setTarget starting at the end of setValueCurve should be fine.
+        time += timeInterval;
+        success = Should("setTargetAtTime(1, " + time + ", 1)", function () {
+          g.gain.setTargetAtTime(1, time, 1);
+        }).notThrow() && success;
+
+        var prefix = "setValueCurve with adjoining automation functions";
+        if (success)
+          testPassed(prefix + " allowed as expected.\n");
+        else
+          testFailed(prefix + " unexpectedly signaled errors.\n");
+
+        done();
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,27 @@
+Verifies that document scrolling supports fractional offset.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+set PreferCompositingToLCDTextEnabled true
+PASS document.scrollingElement.scrollTop is within 0.00001 of 0
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 0
+PASS document.scrollingElement.scrollTop is within 0.00001 of 10.2
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 20.5
+PASS document.scrollingElement.scrollTop is within 0.00001 of 31.1
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 9.6
+PASS document.scrollingElement.scrollTop is within 0.00001 of 0
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 0
+set PreferCompositingToLCDTextEnabled false
+PASS document.scrollingElement.scrollTop is within 0.00001 of 0
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 0
+PASS document.scrollingElement.scrollTop is within 0.00001 of 10
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 20
+PASS document.scrollingElement.scrollTop is within 0.00001 of 31
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 9
+PASS document.scrollingElement.scrollTop is within 0.00001 of 0
+PASS document.scrollingElement.scrollLeft is within 0.00001 of 0
+

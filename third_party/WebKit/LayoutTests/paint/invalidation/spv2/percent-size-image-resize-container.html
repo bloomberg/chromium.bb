@@ -1,0 +1,36 @@
+<!-- Based on fast/repaint/percent-size-image-resize-container.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+
+window.expectedPaintInvalidationObjects = [
+    "LayoutBlockFlow (positioned) DIV",
+    "LayoutImage (positioned) IMG",
+];
+function paintInvalidationTest() {
+  var div = document.getElementsByTagName('div')[0];
+  div.style.width = '100px';
+  div.style.height = '200px';
+}
+onload = runPaintInvalidationTest;
+</script>
+<style>
+div {
+  position: absolute;
+  top: 50px;
+  left: 0px;
+  width: 150px;
+  height: 150px;
+}
+img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+</style>
+The percent-sized image should be fully repainted on container's resize. Passes if there is a whole apple after resize.
+<div>
+  <img src="../../../fast/repaint/resources/apple.jpg">
+</div>

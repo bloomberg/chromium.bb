@@ -1,0 +1,59 @@
+This test checks that styles edited through inspector are correctly shown upon reattach.
+
+Opening front-end for the first time
+Dump initial styles:
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+    font-family: arial;
+
+[expanded] 
+#testDiv  { (style.css:1 -> style.css:1:1)
+    color: red;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+Dump styles after editing:
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#testDiv, my-custom-tag  { (inspector-stylesheet:1 -> inspector-stylesheet:1:1)
+
+[expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+    font-family: Helvetica;
+
+[expanded] 
+#testDiv  { (style.css:1 -> style.css:1:1)
+    color: green;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+Opening front-end second time
+Dump styles after inspector was reopened:
+[expanded] 
+element.style  { ()
+
+[expanded] 
+#testDiv, my-custom-tag  { (<style>…</style>)
+
+[expanded] 
+#testDiv  { (reattach-after-…-styles.html:7 -> reattach-after-editing-styles.html:7:1)
+    font-family: Helvetica;
+
+[expanded] 
+#testDiv  { (style.css:1 -> style.css:1:1)
+    color: green;
+
+[expanded] 
+div  { (user agent stylesheet)
+    display: block;
+
+

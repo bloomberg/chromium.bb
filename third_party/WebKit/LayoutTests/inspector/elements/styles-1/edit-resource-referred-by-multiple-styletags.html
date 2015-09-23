@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script>
+
+function prepareTest()
+{
+    var text = document.querySelector(".stylesheet-text").textContent;
+    for (var i = 0; i < 3; ++i) {
+        var style = document.createElement("style");
+        style.textContent = text;
+        document.head.appendChild(style);
+    }
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.showScriptSource("stylesheet.css", onEditorOpened);
+
+    function onEditorOpened(sourceFrame)
+    {
+        InspectorTest.addSniffer(WebInspector.CSSStyleModel.prototype, "_fireStyleSheetChanged", didEditStyleSheet);
+        InspectorTest.replaceInSource(sourceFrame, "100px", "2em");
+    }
+
+    function didEditStyleSheet()
+    {
+        InspectorTest.selectNodeAndWaitForStyles("inspected", didSelectNode);
+    }
+
+    function didSelectNode()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false);
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="prepareTest()">
+<p>
+Tests that editing sourcecode which is referred by multiple stylesheets (via sourceURL comment) updates all stylesheets.
+</p>
+
+<div id="inspected">Inspected node</div>
+
+<div class="stylesheet-text" hidden>
+#inspected {
+    font-size: 100px;
+}
+/*# sourceURL=stylesheet.css */
+</div>
+
+</body>
+</html>

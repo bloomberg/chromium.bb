@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="resources/text-based-repaint.js"></script>
+
+<style>
+#outer {
+    padding-top: 200px;
+    background: -webkit-gradient(
+        linear,
+        left top,
+        left bottom,
+        color-stop(0%, rgba(255,255,0,0)), color-stop(100%, rgba(0,0,0,1))
+    );
+    background-size: auto;
+}
+
+#inner {
+    height: 100px;
+}
+</style>
+
+<script>
+// This test verifies that gradient background gets repainted properly after child box height change.
+function repaintTest() {
+    document.getElementById('inner').style.height = '300px';
+}
+</script>
+</head>
+
+<body onload='runRepaintTest();'>
+<div id='outer'>
+    <div id='inner'>
+    </div>
+</div>
+</body>
+</html>

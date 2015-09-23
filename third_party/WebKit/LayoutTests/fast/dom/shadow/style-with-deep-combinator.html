@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/shadow-dom.js"></script>
+<script src="../../../resources/js-test.js"></script>
+</head>
+<body>
+  <div id='sandbox'></div>
+  <pre id='console'></pre>
+</body>
+<script>
+
+function borderColorOf(node)
+{
+    return document.defaultView.getComputedStyle(node, null).getPropertyValue('border-color');
+}
+
+function borderColorShouldBe(selector, color)
+{
+    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    shouldBeEqualToString(text, color);
+}
+
+function borderColorShouldNotBe(selector, color)
+{
+    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
+function cleanUp()
+{
+    document.getElementById('sandbox').innerHTML = '';
+}
+
+description('Test for /deep/ combinator, http://crbug.com/309504.');
+
+var sandbox = document.getElementById('sandbox');
+
+// div /deep/ span should match host/target.
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('span', {'id': 'target'},
+                    document.createTextNode('green border, because of hat.'))))));
+
+borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// div /deep/ span should match host/host2/target and target2.
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'host2'},
+                    createShadowRoot(
+                        createDOM('span', {'id': 'target'},
+                            document.createTextNode('green border, because of hat.')))))),
+        createDOM('span', {'id': 'target2'})));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
+borderColorShouldBe('target2', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div#sandbox > div > div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('content', {}),
+                createDOM('span', {'id': 'target'},
+                    document.createTextNode('green border, because of hat.'))),
+            createDOM('span', {'id': 'target2'}))));
+
+borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
+borderColorShouldBe('target2', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// Testing div /deep/ span in inner scope vs div /deep/ span in outer scope
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('div', {'id': 'host2'},
+                    createDOM('style', {},
+                        document.createTextNode('div /deep/ span { border: 1px solid red; }')),
+                    createShadowRoot(
+                        createDOM('span', {'id': 'target'},
+                            document.createTextNode('green border, because of hat.')))))),
+        createDOM('span', {'id': 'target2'})));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode('div > span { border: 1px solid red; }')),
+                createDOM('div', {},
+                    createDOM('span', {'id': 'target'},
+                        document.createTextNode('green border, because parent hat wins.')))))));
+
+borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+        createDOM('div', {'id': 'host'},
+            createShadowRoot(
+                createDOM('style', {},
+                    document.createTextNode(':host > span { border: 1px solid red; }')),
+                createDOM('span', {'id': 'target'},
+                    document.createTextNode('red border because of specificity.'))))));
+
+// Since :host's specificity is the same as *, div /deep/ span wins.
+borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /deep/ span { border: 1px solid green; }')),
+            createDOM('span', {},
+                document.createTextNode('some text'))),
+        createShadowRoot(
+            createDOM('shadow', {}),
+            createDOM('span', {'id': 'target'},
+                document.createTextNode('green border')))));
+
+borderColorShouldBe('host//target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// div /deep/ span cannot match, because div cannot match any shadow host.
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div /deep/ span { border: 1px solid green; }')),
+            createDOM('span', {},
+                document.createTextNode('some text'))),
+        createShadowRoot(
+            createDOM('shadow', {}),
+            createDOM('span', {'id': 'target'},
+                document.createTextNode('no border')))));
+
+borderColorShouldBe('host//target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// :host div /deep/ div should match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'},
+                        document.createTextNode('green border')))))));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// div :host div /deep/ div should not match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div :host div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'},
+                        document.createTextNode('green border')))))));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// :host /shadow/ :host /deep/ div should not match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /shadow/ :host /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'host3'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'target'},
+                                document.createTextNode('no border')))))))));
+
+borderColorShouldBe('host/host2/host3/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// div (=shadow host) div /deep/ div should not match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div > div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'},
+                        document.createTextNode('no border')))))));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// div + div /deep/ div should match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div + div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {},
+                document.createTextNode('sibling')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'},
+                        document.createTextNode('green border')))))));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('div + div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {},
+                document.createTextNode('sibling')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'host3'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'target'},
+                                document.createTextNode('green border')))))))));
+
+borderColorShouldBe('host/host2/host3/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// :host + div /deep/ div should not match.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host + div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {'id': 'siblingShadow'},
+                createShadowRoot(
+                    createDOM('div', {},
+                        document.createTextNode('sibling')))),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'target'},
+                        document.createTextNode('no border')))))));
+
+borderColorShouldBe('host/host2/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host + div /deep/ div { border: 1px solid green; }')),
+            createDOM('div', {},
+                document.createTextNode('sibling')),
+            createDOM('div', {'id': 'host2'},
+                createShadowRoot(
+                    createDOM('div', {'id': 'host3'},
+                        createShadowRoot(
+                            createDOM('div', {'id': 'target'},
+                                document.createTextNode('no border')))))))));
+
+borderColorShouldBe('host/host2/host3/target', 'rgb(0, 0, 0)');
+
+cleanUp();
+
+// :host /deep/ * should not match desendant nodes of div#host.
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /deep/ * { border: 1px solid red; }')),
+            createDOM('content', {})),
+        createDOM('div', {'id': 'child'},
+            document.createTextNode('show not red'))));
+
+borderColorShouldNotBe('child', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+// Test for crbug.com/331871. 'div#inner h1' should not cross TreeScope boundary.
+
+sandbox.appendChild(
+    createDOM('div', {},
+        createDOM('style', {},
+            document.createTextNode('div#outer /deep/ div#inner h1 { border: 1px solid red; }')),
+        createDOM('div', {'id': 'outer'},
+            createDOM('div', {'id': 'inner'},
+                createShadowRoot(
+                    createDOM('h1', {'id': 'target'},
+                        document.createTextNode('no red border')))))));
+
+borderColorShouldNotBe('inner/target', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+// :host /deep/ span is declared in a shadow tree, but the shadow root does not participate in composed tree.
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host /deep/ span { border: 1px solid green; }')),
+            createDOM('span', {},
+                document.createTextNode('some text'))),
+        createShadowRoot(
+            createDOM('span', {'id': 'target'},
+                document.createTextNode('green border')))));
+
+borderColorShouldBe('host//target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode('* /deep/ .x-bar div { border: 1px solid red; }')),
+            createDOM('div', {'id': 'x-foo'},
+                document.createTextNode('x-foo')),
+            createDOM('div', {},
+                createDOM('div', {'id': 'x-bar-host', 'class': 'x-bar'},
+                    createShadowRoot(
+                        createDOM('div', {'id': 'x-bar-target'},
+                            document.createTextNode('x-bar')),
+                        createDOM('div', {'id': 'x-zot-host', 'class': 'x-zot'},
+                            createShadowRoot(
+                                createDOM('div', {'id': 'x-zot-target'},
+                                    document.createTextNode('x-zot'))))))))));
+
+borderColorShouldNotBe('host/x-bar-host/x-bar-target', 'rgb(255, 0, 0)');
+borderColorShouldNotBe('host/x-bar-host/x-zot-host/x-zot-target', 'rgb(255, 0, 0)');
+cleanUp();
+
+</script>
+</html>

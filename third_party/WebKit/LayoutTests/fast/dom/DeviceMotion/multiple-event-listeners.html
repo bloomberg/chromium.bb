@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+
+description('Tests using multiple event handlers for the Device Motion API.');
+
+var mockEvent;
+var expectedEvent;
+function setMockMotion(accelerationX, accelerationY, accelerationZ,
+                       accelerationIncludingGravityX, accelerationIncludingGravityY, accelerationIncludingGravityZ,
+                       rotationRateAlpha, rotationRateBeta, rotationRateGamma,
+                       interval) {
+
+    mockEvent = {accelerationX: accelerationX, accelerationY: accelerationY, accelerationZ: accelerationZ,
+                 accelerationIncludingGravityX: accelerationIncludingGravityX, accelerationIncludingGravityY: accelerationIncludingGravityY, accelerationIncludingGravityZ: accelerationIncludingGravityZ,
+                 rotationRateAlpha: rotationRateAlpha, rotationRateBeta: rotationRateBeta, rotationRateGamma: rotationRateGamma,
+                 interval: interval};
+
+    if (window.testRunner)
+        testRunner.setMockDeviceMotion(true, mockEvent.accelerationX, true, mockEvent.accelerationY, true, mockEvent.accelerationZ,
+                                       true, mockEvent.accelerationIncludingGravityX, true, mockEvent.accelerationIncludingGravityY, true, mockEvent.accelerationIncludingGravityZ,
+                                       true, mockEvent.rotationRateAlpha, true, mockEvent.rotationRateBeta, true, mockEvent.rotationRateGamma,
+                                       interval);
+    else
+        debug('This test can not be run without the TestRunner');
+}
+
+var deviceMotionEvent;
+function checkMotion(event) {
+    deviceMotionEvent = event;
+    shouldBe('deviceMotionEvent.acceleration.x', 'expectedEvent.accelerationX');
+    shouldBe('deviceMotionEvent.acceleration.y', 'expectedEvent.accelerationY');
+    shouldBe('deviceMotionEvent.acceleration.z', 'expectedEvent.accelerationZ');
+
+    shouldBe('deviceMotionEvent.accelerationIncludingGravity.x', 'expectedEvent.accelerationIncludingGravityX');
+    shouldBe('deviceMotionEvent.accelerationIncludingGravity.y', 'expectedEvent.accelerationIncludingGravityY');
+    shouldBe('deviceMotionEvent.accelerationIncludingGravity.z', 'expectedEvent.accelerationIncludingGravityZ');
+
+    shouldBe('deviceMotionEvent.rotationRate.alpha', 'expectedEvent.rotationRateAlpha');
+    shouldBe('deviceMotionEvent.rotationRate.beta', 'expectedEvent.rotationRateBeta');
+    shouldBe('deviceMotionEvent.rotationRate.gamma', 'expectedEvent.rotationRateGamma');
+
+    shouldBe('deviceMotionEvent.interval', 'expectedEvent.interval');
+}
+
+var counter = 0;
+function firstListener(event) {
+    checkMotion(event);
+    counter++;
+    proceedIfNecessary();
+}
+
+function secondListener(event) {
+    checkMotion(event);
+    counter++;
+    proceedIfNecessary();
+}
+
+function proceedIfNecessary() {
+    if (counter == 2) {
+        setMockMotion(11, 12, 13,
+                      14, 15, 16,
+                      17, 18, 19,
+                      0);
+        // Note: this should not stop Device Motion updates,
+        // because there is still one listener active.
+        window.removeEventListener('devicemotion', secondListener);
+        setTimeout(function(){initThirdListener();}, 0);
+    }
+}
+
+var childFrame;
+function initThirdListener() {
+    childFrame = document.createElement('iframe');
+    document.body.appendChild(childFrame);
+    childFrame.contentWindow.addEventListener('devicemotion', thirdListener);
+}
+
+function thirdListener(event) {
+    // Expect the cached event because Device Motion was already active
+    // when third listener was added.
+    checkMotion(event);
+    window.removeEventListener('devicemotion', firstListener);
+    childFrame.contentWindow.removeEventListener('devicemotion', thirdListener);
+    setTimeout(function(){initFourthListener();}, 0);
+}
+
+function initFourthListener() {
+    expectedEvent = mockEvent;
+    window.addEventListener('devicemotion', fourthListener);
+}
+
+function fourthListener(event) {
+    checkMotion(event);
+    finishJSTest();
+}
+
+setMockMotion(1, 2, 3,
+              4, 5, 6,
+              7, 8, 9,
+              0);
+expectedEvent = mockEvent;
+window.addEventListener('devicemotion', firstListener);
+window.addEventListener('devicemotion', secondListener);
+
+window.jsTestIsAsync = true;
+
+</script>
+</body>
+</html>

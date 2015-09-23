@@ -1,0 +1,38 @@
+Test event dispatches and attribute changes for seek to duration
+
+RUN(video.play())
+EVENT(durationchange)
+EVENT(loadedmetadata)
+EVENT(loadeddata)
+EXPECTED (video.currentTime < video.duration == 'true') OK
+EXPECTED (video.ended == 'false') OK
+EXPECTED (video.paused == 'false') OK
+Starting seek to duration by setting video.currentTime to video.duration
+EXPECTED (video.currentTime == video.duration == 'true') OK
+EXPECTED (video.seeking == 'true') OK
+EXPECTED (video.ended == 'true') OK
+EVENT(seeking)
+EXPECTED (video.seeking == 'true') OK
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.currentTime == video.duration == 'true') OK
+EXPECTED (video.paused == 'false') OK
+EVENT(timeupdate)
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.currentTime == video.duration == 'true') OK
+EVENT(seeked)
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.currentTime == video.duration == 'true') OK
+EVENT(pause)
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.currentTime == video.duration == 'true') OK
+EVENT(ended)
+EXPECTED (video.seeking == 'false') OK
+EXPECTED (video.ended == 'true') OK
+EXPECTED (video.paused == 'true') OK
+EXPECTED (video.currentTime == video.duration == 'true') OK
+END OF TEST
+

@@ -1,0 +1,24 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "repaintRects": [
+        [33, 23, 622, 194],
+        [16, 25, 18, 25],
+        [8, 12, 17, 26]
+      ],
+      "paintInvalidationClients": [
+        "RootInlineBox",
+        "InlineTextBox 'Pattern on fill'",
+        "LayoutSVGText text",
+        "LayoutSVGResourcePattern pattern id='dynPattern'",
+        "LayoutSVGRect rect",
+        "LayoutSVGRect rect"
+      ]
+    }
+  ]
+}
+

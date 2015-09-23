@@ -1,0 +1,44 @@
+Tests promise tracker in debugger.
+
+Set timer for test function.
+Promise (new):
+    id: 0
+    status: pending
+    testFunction promise-tracker.html:10
+    creationTime: true
+Promise (update):
+    id: 0
+    status: resolved
+    settlementTime: true
+Promise (new):
+    id: 1
+    status: pending
+    testFunction promise-tracker.html:14
+    creationTime: true
+Promise (update):
+    id: 1
+    status: pending
+Promise (new):
+    id: 2
+    status: pending
+    testFunction promise-tracker.html:15
+    creationTime: true
+Promise (update):
+    id: 2
+    status: pending
+    parent id: 1
+Promise (update):
+    id: 1
+    status: resolved
+    settlementTime: true
+Script execution paused.
+Got promise by id: true
+Resolved object class: Promise
+Promise:
+    status: resolved
+    value: Resolved!
+Promise (gc):
+Promise (gc):
+Promise (gc):
+Script execution resumed.
+

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <p>Test that no timeupdate event fires during loading.</p>
+    <video></video>
+    <script src="media-file.js"></script>
+    <script src="video-test.js"></script>
+    <script>
+        waitForEvent("loadstart");
+        waitForEvent("loadedmetadata");
+        waitForEvent("loadeddata");
+        waitForEvent("canplay");
+        waitForEvent("canplaythrough", function()
+        {
+            // Let pending async events fire before ending the test.
+            window.setTimeout(function() { endTest(); }, 0);
+        });
+        waitForEventAndFail("timeupdate");
+
+        video.src = findMediaFile("video", "content/test");
+    </script>
+</body>
+</html>

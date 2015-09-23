@@ -1,0 +1,13 @@
+<body>
+This tests an isolated script's ability to XHR a blob that is in its security origin, which is not the same as the document's security origin.<br>
+We pass if there are no console errors.
+<script>
+if (!window.testRunner) {
+    document.body.appendChild(document.createTextNode("This test requires window.testRunner"));
+} else {
+    testRunner.dumpAsText();
+    testRunner.setIsolatedWorldSecurityOrigin(1, "chrome-extension://123");
+    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:chrome-extension%3A//123/456789', false); xhr.send();");
+}
+</script>
+</body>

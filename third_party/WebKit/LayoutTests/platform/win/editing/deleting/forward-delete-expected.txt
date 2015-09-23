@@ -1,0 +1,24 @@
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+EDITING DELEGATE: webViewDidChangeSelection:WebViewDidChangeSelectionNotification
+EDITING DELEGATE: webViewDidChange:WebViewDidChangeNotification
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x82 [border: (2px solid #0000FF)]
+        LayoutText {#text} at (14,14) size 725x53
+          text run at (14,14) width 719: "Should see \"bar\" in the red box. Insertion point should be at the start of the"
+          text run at (732,14) width 7: " "
+          text run at (14,41) width 101: "document."
+      LayoutBlockFlow {DIV} at (0,106) size 784x55
+        LayoutBlockFlow {DIV} at (0,0) size 784x55 [border: (2px solid #FF0000)]
+          LayoutText {#text} at (14,14) size 31x26
+            text run at (14,14) width 31: "bar"
+caret: position 0 of child 0 {#text} of child 1 {DIV} of child 3 {DIV} of body

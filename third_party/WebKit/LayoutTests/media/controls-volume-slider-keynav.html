@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+    <head>
+        <title>media controls volume slider keyboard navigation</title>
+        <script src="media-file.js"></script>
+        <script src="media-controls.js"></script>
+        <script src="video-test.js"></script>
+    </head>
+    <body>
+        <audio controls></audio>
+        <script>
+            findMediaElement();
+            audio.src = findMediaFile("audio", "content/test");
+            testExpected("audio.volume", 1);
+            waitForEvent("loadedmetadata", function()
+            {
+                // Focus the volume slider.
+                var button = mediaControlsButton(audio, "volume-slider");
+                button.focus();
+
+                // 'Left' reduces volume.
+                eventSender.keyDown('leftArrow');
+                testExpected("audio.volume", 1, '<');
+
+                // 'Right' reduces volume (same step as 'Left', but opposite sign).
+                eventSender.keyDown('rightArrow');
+                testExpected("audio.volume", 1);
+
+                // 'Home' sets minimum volume (0).
+                eventSender.keyDown('home');
+                testExpected("audio.volume", 0);
+
+                // 'End' sets maximum volume (1).
+                eventSender.keyDown('end');
+                testExpected("audio.volume", 1);
+
+                waitForEventAndEnd("volumechange");
+            });
+        </script>
+    </body>
+</html>

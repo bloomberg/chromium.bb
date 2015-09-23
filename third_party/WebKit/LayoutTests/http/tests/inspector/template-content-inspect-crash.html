@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="elements-test.js"></script>
+<script src="console-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.expandElementsTree(function() {
+        var contentNode = InspectorTest.expandedNodeWithId("tpl").templateContent();
+        WebInspector.panels.elements.selectDOMNode(contentNode, true);
+        InspectorTest.evaluateInConsole("$0", callback);
+    });
+
+    function callback(result)
+    {
+        InspectorTest.addResult("SUCCESS");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+
+<p id="description">This test verifies that template's content DocumentFragment is  accessible from DevTools.</p>
+
+<template id="tpl">
+    <div>Hello!</div>
+</template>
+
+</body>
+</html>

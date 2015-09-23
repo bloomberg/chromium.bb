@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../../resources/js-test.js"></script>
+<script>
+    var callbackWasTriggered = false;
+
+    var callback = function(node) {
+        callbackWasTriggered = true;
+        return NodeFilter.FILTER_ACCEPT;
+    };
+    var nodeIterator = document.createNodeIterator(document, NodeFilter.SHOW_ELEMENT, callback, false);
+
+    var callbackObservation = internals.observeGC(callback);
+    callback = null;
+    var nodeFilterObservation = internals.observeGC(nodeIterator.filter);
+    var nodeIteratorObservation = internals.observeGC(nodeIterator);
+
+    gc();
+    shouldBeFalse('nodeFilterObservation.wasCollected');
+    shouldBeFalse('callbackObservation.wasCollected');
+
+    nodeIterator.nextNode();
+    shouldBeTrue('callbackWasTriggered');
+
+    nodeIterator = null;
+    gc();
+    shouldBeTrue('nodeIteratorObservation.wasCollected');
+    shouldBeTrue('nodeFilterObservation.wasCollected');
+    shouldBeTrue('callbackObservation.wasCollected');
+</script>
+</body>
+</html>

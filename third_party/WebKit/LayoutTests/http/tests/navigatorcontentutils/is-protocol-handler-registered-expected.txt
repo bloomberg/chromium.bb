@@ -1,0 +1,20 @@
+This test makes sure that navigator.isProtocolHandlerRegistered throws the proper exceptions and returns the default state of handler.
+
+PASS window.navigator.isProtocolHandlerRegistered is defined.
+PASS Invalid url "%S" threw SyntaxError exception.
+PASS Invalid scheme "mailto:" falied.
+PASS Invalid scheme "ssh:/" falied.
+PASS Invalid scheme "magnet:+" falied.
+PASS Invalid scheme "tel:sip" falied.
+PASS URL with origin different than document origin threw SecurityError exception: "Failed to execute 'isProtocolHandlerRegistered' on 'Navigator': Can only register custom handler in the document's origin.".
+
+Check if isProtocolHandlerRegistered() works correctly. If isProtocolHandlerRegistered() returns 'new' state, it works well.
+'bitcoin' scheme will be registered, and then checks if the 'bitcoin' scheme is registered by isProtocolHandlerRegistered().
+
+PASS window.navigator.isProtocolHandlerRegistered returns 'registered' state. isProtocolHandlerRegistered() works correctly.
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

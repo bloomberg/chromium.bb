@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+test(function() {
+  var startTime = document.timeline.currentTime;
+  assert_greater_than_equal(startTime, 0);
+  var start = performance.now();
+  while (performance.now() < start + 250)
+    /* wait */;
+  assert_equals(document.timeline.currentTime, startTime);
+}, 'document.timeline.currentTime should not change within a script block.');
+
+(function() {
+  var timeoutTest = async_test('document.timeline.currentTime time should change after a script timeout');
+  var startTime = document.timeline.currentTime;
+
+  setTimeout(function() {
+    timeoutTest.step(function() {
+      assert_greater_than(document.timeline.currentTime, startTime);
+    });
+    timeoutTest.done();
+  }, 100);
+})();
+
+(function() {
+  var rafTest = async_test('document.timeline.currentTime time should be the same for all RAF callbacks in a frame');
+  var startTime = document.timeline.currentTime;
+  var firstRafTime;
+
+  requestAnimationFrame(function() {
+    rafTest.step(function() {
+      assert_greater_than_equal(document.timeline.currentTime, startTime);
+      firstRafTime = document.timeline.currentTime;
+    });
+  });
+
+  requestAnimationFrame(function() {
+    rafTest.step(function() {
+      assert_equals(document.timeline.currentTime, firstRafTime);
+    });
+    rafTest.done();
+  });
+})();
+
+(function() {
+  var timeoutTest = async_test('document.timeline.currentTime time should use the same reference as performance.now()');
+
+  setTimeout(function() {
+    timeoutTest.step(function() {
+      assert_less_than(Math.abs(document.timeline.currentTime - performance.now()), 1000);
+    });
+    timeoutTest.done();
+  }, 0);
+})();
+</script>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/netinfo_common.js"></script>
+</head>
+<body>
+<script>
+
+description("Tests that it's okay to unregister the event listener while handling the event.");
+
+shouldBe('typeof window.internals.observeGC', '"function"',
+'this test requires window.internals');
+
+var otherHandler = function(e) {
+    shouldBe('connection.type', 'initialType');
+    shouldBe('connection.downlinkMax', 'initialDownlinkMax');
+
+    finishJSTest();
+};
+
+var handler = function(e) {
+    shouldBe('connection.type', 'newConnectionType');
+    shouldBe('connection.downlinkMax', 'newDownlinkMax');
+    connection.removeEventListener('change', handler);
+    connection.addEventListener('change', otherHandler);
+    internals.setNetworkConnectionInfo(initialType, initialDownlinkMax);
+};
+
+connection.addEventListener('change', handler);
+internals.setNetworkConnectionInfo(newConnectionType, newDownlinkMax);
+
+</script>
+</body>
+</html>

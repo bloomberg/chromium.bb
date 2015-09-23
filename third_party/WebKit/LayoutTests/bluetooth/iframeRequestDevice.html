@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/bluetooth-helpers.js"></script>
+<body>
+  <script>
+  "use strict";
+
+  const numIframes = 5;
+
+  async_test(test => {
+    let readiesReceived = 0;
+    window.onmessage = messageEvent => test.step(() => {
+      if (messageEvent.data === 'Ready') {
+        readiesReceived++;
+      }
+      if (readiesReceived < numIframes) {
+        return;
+      }
+
+      let iframesFinished = 0;
+      window.onmessage = messageEvent => test.step(() => {
+        if (messageEvent.data !== 'Success') {
+          console.error(messageEvent.data);
+        }
+        iframesFinished++;
+        if (iframesFinished === numIframes) {
+          test.done();
+        }
+      });
+
+      Array.prototype.forEach.call(document.querySelectorAll('iframe'), iframe => {
+        callWithKeyDown(() => {
+          iframe.contentWindow.postMessage('Go', '*');
+        });
+      });
+    });
+
+    testRunner.setBluetoothMockDataSet('GenericAccessAdapter');
+    for (let i = 0; i < numIframes; i++) {
+      let iframe = document.createElement('iframe');
+      iframe.src = 'resources/requestDevice-in-iframe.html';
+      document.body.appendChild(iframe);
+    }
+  }, 'Concurrent requestDevice calls in iframes work.');
+  </script>
+</body>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Geometry Interfaces: DOMRect</title>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+
+debug("# DOMRect()");
+var rect = new DOMRect();
+shouldBe("rect.x", "0");
+shouldBe("rect.y", "0");
+shouldBe("rect.width", "0");
+shouldBe("rect.height", "0");
+shouldBe("rect.top", "0");
+shouldBe("rect.right", "0");
+shouldBe("rect.bottom", "0");
+shouldBe("rect.left", "0");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRect(10)");
+rect = new DOMRect(10);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "0");
+shouldBe("rect.width", "0");
+shouldBe("rect.height", "0");
+shouldBe("rect.top", "0");
+shouldBe("rect.right", "10");
+shouldBe("rect.bottom", "0");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRect(10, 20)");
+rect = new DOMRect(10, 20);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "0");
+shouldBe("rect.height", "0");
+shouldBe("rect.top", "20");
+shouldBe("rect.right", "10");
+shouldBe("rect.bottom", "20");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRect(10, 20, 80)");
+rect = new DOMRect(10, 20, 80);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "80");
+shouldBe("rect.height", "0");
+shouldBe("rect.top", "20");
+shouldBe("rect.right", "90");
+shouldBe("rect.bottom", "20");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRect(10, 20, 80, 50)");
+rect = new DOMRect(10, 20, 80, 50);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "80");
+shouldBe("rect.height", "50");
+shouldBe("rect.top", "20");
+shouldBe("rect.right", "90");
+shouldBe("rect.bottom", "70");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRect setter");
+rect.x = 30;
+shouldBe("rect.x", "30");
+shouldBe("rect.left", "30");
+shouldBe("rect.width", "80");
+shouldBe("rect.right", "110");
+rect.y = -10;
+shouldBe("rect.y", "-10");
+shouldBe("rect.top", "-10");
+shouldBe("rect.height", "50");
+shouldBe("rect.bottom", "40");
+rect.width = 20;
+shouldBe("rect.x", "30");
+shouldBe("rect.left", "30");
+shouldBe("rect.width", "20");
+shouldBe("rect.right", "50");
+rect.height = 40;
+shouldBe("rect.y", "-10");
+shouldBe("rect.top", "-10");
+shouldBe("rect.height", "40");
+shouldBe("rect.bottom", "30");
+debug("");
+
+debug("# DOMRect(10, 20, -80, -50) negative width and height");
+rect = new DOMRect(10, 20, -80, -50);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "-80");
+shouldBe("rect.height", "-50");
+shouldBe("rect.top", "-30");
+shouldBe("rect.right", "10");
+shouldBe("rect.bottom", "20");
+shouldBe("rect.left", "-70");
+shouldBe("rect.top", "rect.y + rect.height");
+shouldBe("rect.right", "rect.x");
+shouldBe("rect.bottom", "rect.y");
+shouldBe("rect.left", "rect.x + rect.width");
+debug("");
+
+debug("# DOMRectReadOnly(10, 20, 80, 50)");
+rect = new DOMRectReadOnly(10, 20, 80, 50);
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "80");
+shouldBe("rect.height", "50");
+shouldBe("rect.top", "20");
+shouldBe("rect.right", "90");
+shouldBe("rect.bottom", "70");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+debug("# DOMRectReadOnly readonly test");
+rect.x = 40;
+rect.y = 90;
+rect.width = 200;
+rect.height = 200;
+shouldBe("rect.x", "10");
+shouldBe("rect.y", "20");
+shouldBe("rect.width", "80");
+shouldBe("rect.height", "50");
+shouldBe("rect.top", "20");
+shouldBe("rect.right", "90");
+shouldBe("rect.bottom", "70");
+shouldBe("rect.left", "10");
+shouldBe("rect.top", "rect.y");
+shouldBe("rect.right", "rect.x + rect.width");
+shouldBe("rect.bottom", "rect.y + rect.height");
+shouldBe("rect.left", "rect.x");
+debug("");
+
+</script>
+</body>
+</html>

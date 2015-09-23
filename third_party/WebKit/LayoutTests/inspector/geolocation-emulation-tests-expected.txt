@@ -1,0 +1,22 @@
+CONSOLE MESSAGE: line 9: Permission granted.
+CONSOLE MESSAGE: line 44: Position unavailable
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 37: Latitude: 50 Longitude: 100
+CONSOLE MESSAGE: line 55: PASSED
+Tests that geolocation emulation with latitude and longitude works as expected.
+
+
+Running: testPermissionGranted
+
+Running: testGeolocationUnavailable
+
+Running: testOverridenGeolocation
+
+Running: testInvalidParam
+error: Protocol Error: Invalid type of argument 'latitude' for method 'Emulation.setGeolocationOverride' call. It must be 'number' but it is 'boolean'.
+
+Running: testInvalidGeolocation
+error: Request with id = ## failed. {"code":-32603,"message":"Invalid geolocation"}
+
+Running: testTimestampOfOverridenPosition
+

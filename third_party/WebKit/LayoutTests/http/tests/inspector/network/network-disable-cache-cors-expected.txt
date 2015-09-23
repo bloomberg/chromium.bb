@@ -1,0 +1,8 @@
+CONSOLE MESSAGE: line 32: Done.
+Tests that preflight OPTIONS is always sent if 'Disable cache' is checked.
+
+OPTIONS: http://localhost:8000/inspector/network/resources/cors.cgi
+POST: http://localhost:8000/inspector/network/resources/cors.cgi
+OPTIONS: http://localhost:8000/inspector/network/resources/cors.cgi
+POST: http://localhost:8000/inspector/network/resources/cors.cgi
+

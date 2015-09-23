@@ -1,0 +1,9 @@
+This tests verifies that canvas API calls on a canvas with no backing or no visibility do not crash or throw exceptions.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

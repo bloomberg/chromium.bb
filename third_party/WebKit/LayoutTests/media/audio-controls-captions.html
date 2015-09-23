@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Test closed caption button visbility.</title>
+    <script src=media-file.js></script>
+    <script src=media-controls.js></script>
+    <script src=video-test.js></script>
+</head>
+<body>
+    <p>Tests that the closed captions button is not visible.</p>
+    <audio controls>
+        <track src="track/captions-webvtt/captions-fast.vtt">
+    </audio>
+    <script>
+        findMediaElement();
+        audio.src = findMediaFile('audio', 'content/test');
+        audio.addEventListener('loadedmetadata', function()
+        {
+            testClosedCaptionsButtonVisibility(false);
+            endTest();
+        });
+    </script>
+</body>
+</html>

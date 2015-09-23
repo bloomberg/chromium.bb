@@ -1,0 +1,87 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Background Sync API: Verifies that the one-shot sync API works
+    correctly.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../serviceworker/resources/test-helpers.js"></script>
+<script src="resources/test-helpers.js"></script>
+<script>
+
+promise_test(function(t) {
+  var url = 'resources/empty_worker.js';
+  var scope = 'resources/scope/background_sync/oneshot.html';
+  var sync_manager;
+  var sync_registration;
+
+  // One-shot syncs can only be registered from a controlled document. This
+  // test creates a frame, after the service worker is active, in order to use
+  // its service worker registration.
+  return service_worker_unregister_and_register(t, url, scope)
+    .then(function(sw_registration_page) {
+        return wait_for_state(t, sw_registration_page.installing, 'activated');
+      })
+    .then(function() {
+        return with_iframe(scope)
+      })
+    .then(function(frame) {
+        var w = frame.contentWindow;
+        return w.navigator.serviceWorker.getRegistration(scope);
+      })
+    .then(function(sw_registration_frame) {
+        sync_manager = sw_registration_frame.sync;
+        return clear_registered_syncs(sync_manager);
+      })
+    .then(function() { return sync_manager.getRegistrations(); })
+    .then(function(registrations) {
+        assert_equals(registrations.length, 0, 'One-shot syncs should be ' +
+                      'cleared at the start of the test.');
+        return sync_manager.register({tag: 'abcde'});
+      })
+    .then(function(registration) {
+        sync_registration = registration;
+        assert_class_string(sync_registration, 'SyncRegistration', 'One-' +
+                            'shot sync registrations should have the correct ' +
+                            'class name.');
+        assert_equals('abcde', registration.tag, 'Sync registration tag ' +
+                      'returned should match the tag registered.');
+        return service_worker_unregister(t, scope);
+      });
+  }, 'Background Sync API should allow one-shot syncs to be registered from ' +
+     'the Document scope');
+
+promise_test(function(t) {
+  var url = 'resources/empty_worker.js';
+  var scope = 'resources/scope/background_sync/oneshot-uncontrolled.html';
+  var sync_manager;
+  var sync_registration;
+
+  // One-shot syncs can also be registered from uncontrolled documents. This
+  // test creates a frame, after the service worker is active, in order to use
+  // its service worker registration.
+  return service_worker_unregister_and_register(t, url, scope)
+    .then(function(sw_registration) {
+        sync_manager = sw_registration.sync;
+        return wait_for_state(t, sw_registration.installing, 'activated');
+      })
+    .then(function() { return clear_registered_syncs(sync_manager); })
+    .then(function() { return sync_manager.getRegistrations(); })
+    .then(function(registrations) {
+        assert_equals(registrations.length, 0, 'One-shot syncs should be ' +
+                      'cleared at the start of the test.');
+        return sync_manager.register({tag: 'abcde'});
+      })
+    .then(function(registration) {
+        sync_registration = registration;
+        assert_class_string(sync_registration, 'SyncRegistration', 'One-' +
+                            'shot sync registrations should have the correct ' +
+                            'class name.');
+        assert_equals('abcde', registration.tag, 'Sync registration tag ' +
+                      'returned should match the tag registered.');
+        return service_worker_unregister(t, scope);
+      })
+    .then(function() { return service_worker_unregister(t, scope); })
+  }, 'Background Sync API should allow one-shot syncs to be registered ' +
+     'with window clients not currently controlled by service worker');
+</script>

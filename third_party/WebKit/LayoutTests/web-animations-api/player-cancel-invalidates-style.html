@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<div id="target"></div>
+<script>
+test(function() {
+  var initial = getComputedStyle(target).background;
+  var player = target.animate([{background: 'blue'}, {background: 'green'}], 1000);
+  assert_not_equals(getComputedStyle(target).background, initial);
+  player.cancel();
+  assert_equals(getComputedStyle(target).background, initial);
+}, "cancel() should cause effect to be cleared");
+</script>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+/* relative positioning ensures underlying Layer */
+.container {
+    position: relative;
+}
+
+.span {
+    display: boxed-inline;
+    margin: 2px;
+    border: solid;
+}
+</style>
+<script src="../resources/shadow-test-driver.js"></script>
+<script>
+var testFuncs = [];
+
+function createShadowWithContent() {
+    var shadow = document.createElement('shadow');
+    var content = document.createElement('content');
+    shadow.appendChild(content);
+    return shadow;
+}
+
+testFuncs.push(function renderingDoubleShadowRootDynamicallyAdded1(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(root, callIfDone) { return function() {
+        var sr2 = root.createShadowRoot();
+        sr2.appendChild(createSpanWithText('BEFORE 2'));
+        sr2.appendChild(createShadowWithContent());
+        sr2.appendChild(createSpanWithText('AFTER 2'));
+
+        callIfDone();
+    };})(root, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingDoubleShadowRootDynamicallyAdded2(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr2, callIfDone) { return function() {
+        var shadow = createShadowWithContent();
+        sr2.insertBefore(shadow, sr2.lastChild);
+
+        callIfDone()
+    };})(sr2, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingDoubleShadowRootDynamicallyAdded3(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr1, callIfDone) { return function() {
+        var shadow = createShadowWithContent();
+        sr1.insertBefore(shadow, sr1.lastChild);
+
+        callIfDone()
+    };})(sr1, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingDoubleShadowRootDynamicallyRemoved1(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr2, callIfDone) { return function() {
+        sr2.removeChild(sr2.firstChild.nextSibling);
+        callIfDone();
+    };})(sr2, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingDoubleShadowRootDynamicallyRemoved2(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr1, callIfDone) { return function() {
+        sr1.removeChild(sr1.firstChild.nextSibling);
+        callIfDone();
+    };})(sr1, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingLightChildrenDynamicallyAdded(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(root, callIfDone) { return function() {
+        root.appendChild(createSpanWithText('MID'));
+        callIfDone();
+    };})(root, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingOlderShadowRootContentDynamicallyAdded(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr1, callIfDone) { return function() {
+        sr1.appendChild(createSpanWithText('AFTER 1'));
+        callIfDone();
+    };})(sr1, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingLightChildrenDynamicallyRemoved(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(root, callIfDone) { return function() {
+        root.removeChild(root.firstChild);
+        callIfDone();
+    };})(root, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+testFuncs.push(function renderingOlderShadowRootContentDynamicallyRemoved(callIfDone) {
+    document.getElementById('expect-container').innerHTML =
+        "<div><span>BEFORE 2</span><span>BEFORE 1</span><span>MID</span><span>AFTER 1</span><span>AFTER 2</span></div>";
+
+    var root = document.createElement('div');
+    root.appendChild(createSpanWithText('MID'));
+
+    var sr1 = root.createShadowRoot();
+    sr1.appendChild(createSpanWithText('BEFORE 1'));
+    sr1.appendChild(createShadowWithContent());
+    sr1.appendChild(createSpanWithText('AFTER 1'));
+    sr1.appendChild(createSpanWithText('SHOULD NOT BE RENDERED'));
+
+    var sr2 = root.createShadowRoot();
+    sr2.appendChild(createSpanWithText('BEFORE 2'));
+    sr2.appendChild(createShadowWithContent());
+    sr2.appendChild(createSpanWithText('AFTER 2'));
+
+    document.getElementById('actual-container').appendChild(root);
+
+    var f = (function(sr1, callIfDone) { return function() {
+        sr1.removeChild(sr1.lastChild);
+        callIfDone();
+    };})(sr1, callIfDone);
+
+    setTimeout(f, 0);
+});
+
+</script>
+</head>
+<body onload="doTest(testFuncs)">
+
+<div id="actual-container" class="container"></div>
+<div id="expect-container" class="container"></div>
+<pre id="console"></pre>
+
+</body>
+</html>

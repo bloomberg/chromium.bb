@@ -1,0 +1,15 @@
+CONSOLE WARNING: 'getMatchedCSSRules()' is deprecated. For more help, check https://code.google.com/p/chromium/issues/detail?id=437569#c2
+getMatchedCSSRules with nested CSS rules
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getMatchedCSSRules(document.querySelector('div'))[0].cssText is "div { color: blue; }"
+PASS getMatchedCSSRules(document.querySelector('.test-element'))[0].cssText is ".test-element { border: 2px solid black; }"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+Test getMatchedCSSRules to output deeply nested CSSRules.
+
+All this text should be blue.
+This span should have border.

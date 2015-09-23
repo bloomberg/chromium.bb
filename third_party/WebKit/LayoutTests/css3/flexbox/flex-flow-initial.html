@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<style>
+#test1 {
+  flex-flow: column;
+}
+#test1 {
+  flex-flow: initial;
+}
+#test2 {
+  flex-direction: column;
+}
+#test2 {
+  flex-direction: initial;
+}
+</style>
+<span id="test1"></span>
+<span id="test2"></span>
+<script src="../../resources/js-test.js"></script>
+<script>
+description("Tests that 'initial' is handled correctly for the flex-flow shorthand.");
+value1 = window.getComputedStyle(test1).flexDirection;
+value2 = window.getComputedStyle(test2).flexDirection;
+shouldBeEqualToString('window.getComputedStyle(test1).flexDirection', 'row');
+shouldBeEqualToString('window.getComputedStyle(test2).flexDirection', 'row');
+if (window.testRunner)
+   testRunner.dumpAsText();
+</script>

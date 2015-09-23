@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+    var a = { k: 1 };
+    var b = [1, 2, 3, 4, 5];
+    var c = new Array(100); c[10] = 1;
+    a.k = 2;
+    a.l = window;
+    b[1]++;
+    b[2] = document.body;
+}
+
+function test()
+{
+    InspectorTest.startDebuggerTest(runTestFunction);
+    InspectorTest.setQuiet(true);
+
+    var stepCount = 0;
+
+    function runTestFunction()
+    {
+        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        InspectorTest.evaluateInPage("setTimeout(testFunction, 0)");
+    }
+
+    function onSetExecutionLocation(uiLocation)
+    {
+        InspectorTest.runAfterPendingDispatches(dumpAndContinue.bind(null, this.textEditor, uiLocation.lineNumber));
+    }
+
+    function dumpAndContinue(textEditor, lineNumber)
+    {
+        InspectorTest.addResult("=========== 8< ==========");
+        for (var i = 8; i < 18; ++i) {
+            var output = ["[" + (i < 10 ? " " : "") + i + "]"];
+            output.push(i == lineNumber ? ">" : " ");
+            output.push(textEditor.line(i));
+            output.push("\t");
+            for (var element of textEditor._elementToWidget.keys()) {
+                if (i === element.__lineNumber)
+                    output.push(element.deepTextContent());
+            }
+            InspectorTest.addResult(output.join(" "));
+        }
+
+        InspectorTest.addSniffer(WebInspector.JavaScriptSourceFrame.prototype, "setExecutionLocation", onSetExecutionLocation);
+        if (++stepCount < 10)
+            WebInspector.panels.sources._stepOverButton.element.click();
+        else
+            InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests inline values rendering in the sources panel.
+</p>
+
+</body>
+</html>

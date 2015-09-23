@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <script src=../media-file.js></script>
+        <script src=../video-test.js></script>
+        <script>
+
+            function trackLoaded()
+            {
+                findMediaElement();
+                var expected =
+                {
+                    length : 1,
+                    tests:
+                    [
+                        {
+                            property : "id",
+                            values : [1],
+                        },
+                        {
+                            property : "startTime",
+                            values : [0.0],
+                        },
+                        {
+                            property : "endTime",
+                            values : [30.5],
+                        },
+                        {
+                            property : "text",
+                            values : ["Bear is Coming!!!!!"],
+                        },
+                    ],
+                };
+                testCues(0, expected);
+
+                endTest();
+            }
+        </script>
+    </head>
+    <body>
+        <p>Tests that a cue with no newline at eof is properly parsed.</p>
+        <video>
+            <track src="captions-webvtt/tc003-no-newline-at-eof.vtt" onload="trackLoaded()" default>
+        </video>
+    </body>
+</html>

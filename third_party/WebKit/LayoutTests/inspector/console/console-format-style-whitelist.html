@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+function onload()
+{
+    console.log('%cColors are awesome.', 'color: blue;');
+    console.log('%cSo are fonts!', 'font: 1em Helvetica;');
+    console.log('%cAnd borders and margins and paddings!', 'border: 1px solid red; margin: 20px; padding: 10px;');
+    console.log('%ctext-* is fine by us!', 'text-decoration: none;');
+
+    console.log('%cDisplay, on the other hand, is bad news.', 'display: none;');
+    console.log('%cAnd position too.', 'position: absolute;');
+    console.log('%cAnd URL is not allowed as a value .', 'background-image: url("http://example.com/cookies")');
+    runTest();
+}
+//# sourceURL=console-format-style-whitelist.html
+</script>
+
+<script>
+function test()
+{
+    InspectorTest.expandConsoleMessages(onExpanded);
+
+    function onExpanded()
+    {
+        InspectorTest.dumpConsoleMessagesWithStyles();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+
+<body onload="onload()">
+<p>Tests that console logging dumps properly styled messages, and that
+the whole message gets the same style, regardless of multiple %c
+settings.</p>
+</body>
+</html>

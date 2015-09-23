@@ -1,0 +1,53 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
+<script type="text/javascript" src="accessibility-ignoredNodesTest.js"></script>
+<script>
+
+function test()
+{
+    var nodeInfo = {};
+    InspectorTest.trackGetChildNodesEvents(nodeInfo);
+
+    var ids = ["_1", "_2", "_3", "_4", "_5", "_6", "_7", "_8", "_9", "_10", "_11", "_12", "_13", "_14", "_15"];
+    InspectorTest.sendCommand("DOM.getDocument", {}, InspectorTest.dumpAccessibilityNodesByIdrefAndCompleteTest.bind(null, ids));
+}
+</script>
+</head>
+<body onLoad="runTest();">
+    <div id="_1">Non-hidden div for comparison</div>
+    <div role="tree">
+        <div id="_2" role="treeitem">non-hidden treeitem</div>
+        <div id="_3">hidden non-treeitem</div>
+    </div>
+    <div role="img">
+        <svg id="_4">
+            <!-- Children of img role are presentational -->
+            <circle xmlns:svg="http://www.w3.org/2000/svg" cx="150px" cy="100px" r="50px" fill="#ff0000" stroke="#000000" stroke-width="5px"/>
+        </svg>
+    </div>
+    <button>
+        <span id="_5">Buttons are leaf nodes</span>
+    </button>
+    <div id="_6" aria-hidden="true">
+        <div id="_7">Descendant of aria-hidden node</div>
+    </div>
+<!-- Known failure: image isn't ignored due to:
+    if (m_layoutObject->isLayoutBlockFlow() && m_layoutObject->childrenInline() && !canSetFocusAttribute()) {
+        if (toLayoutBlockFlow(m_layoutObject)->firstLineBox() || mouseButtonListener()) {
+-->
+    <img id="_8" alt="" src="foo.png">
+    <ol role="none" id="_9"><!-- list is presentational -->
+      <li id="_10">List item also presentational</li>
+      <div id="_11">Div in list isn't presentational</div>
+    </ol>
+
+    <label for="checkbox" id="_12"><span id="_13">Content within label refers to label container</span></label>
+    <input type="checkbox" id="checkbox">
+
+    <div style="display: none" id="_14">Non-rendered div</div>
+
+    <canvas style="height: 1px; width: 1px;q" id="_15"></canvas>
+</body>
+</html>

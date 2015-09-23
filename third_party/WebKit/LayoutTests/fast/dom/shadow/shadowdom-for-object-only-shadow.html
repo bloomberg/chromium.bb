@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+
+<p>When an author ShadowRoot has only a shadow element, this should be rendered like no content.</p>
+<form>
+    <object id="host" data="../resources/apple.gif" type="image/gif"></object>
+    <input id="submit" type="submit" value="Submit">
+</form>
+
+<script>
+document.getElementById('host').createShadowRoot().innerHTML = "<shadow></shadow>";
+</script>

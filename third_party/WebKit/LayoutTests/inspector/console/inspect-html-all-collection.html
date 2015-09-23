@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.RuntimeAgent.evaluate("document.all", "console", false, didGetHTMLAllCollection.bind(this));
+    function didGetHTMLAllCollection(error, result, wasThrown)
+    {
+        if (error || wasThrown) {
+            InspectorTest.addResult("FAILED: " + error);
+            InspectorTest.completeTest();
+            return;
+        }
+        var htmlAllCollection = InspectorTest.runtimeModel.createRemoteObject(result);
+        htmlAllCollection.callFunctionJSON("function(collection) { return this.length + collection.length; }", [{objectId: htmlAllCollection.objectId}], didGetLength.bind(this));
+    }
+
+    function didGetLength(len)
+    {
+        if (!len || typeof len !== "number")
+            InspectorTest.addResult("FAILED: unexpected document.all.length: " + len);
+        else
+            InspectorTest.addResult("PASSED: retrieved length of document.all");
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that HTMLAllCollection properties can be inspected.
+</p>
+
+</body>
+</html>

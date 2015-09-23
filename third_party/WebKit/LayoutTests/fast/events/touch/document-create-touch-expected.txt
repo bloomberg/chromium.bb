@@ -1,0 +1,57 @@
+This tests support for the document.createTouch API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS "createTouch" in document is true
+PASS touch is non-null.
+PASS touch.target is box
+PASS touch.identifier is 1
+PASS touch.pageX is 100
+PASS touch.pageY is 101
+PASS touch.screenX is 102
+PASS touch.screenY is 103
+PASS touch.radiusX is 5
+PASS touch.radiusY is 3
+PASS touch.rotationAngle is 10
+PASS touch.force is 10
+PASS emptyTouch is non-null.
+PASS emptyTouch.target is null
+PASS emptyTouch.identifier is 0
+PASS emptyTouch.pageX is 0
+PASS emptyTouch.pageY is 0
+PASS emptyTouch.screenX is 0
+PASS emptyTouch.screenY is 0
+PASS emptyTouch.radiusX is 0
+PASS emptyTouch.radiusY is 0
+PASS emptyTouch.rotationAngle is 0
+PASS emptyTouch.force is 0
+PASS badParamsTouch is non-null.
+PASS badParamsTouch.target is null
+PASS badParamsTouch.identifier is 0
+PASS badParamsTouch.pageX is 0
+PASS badParamsTouch.pageY is 0
+PASS badParamsTouch.screenX is 0
+PASS badParamsTouch.screenY is 104
+PASS badParamsTouch.radiusX is 0
+PASS badParamsTouch.radiusY is 0
+PASS badParamsTouch.rotationAngle is 0
+PASS badParamsTouch.force is 0
+PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch() is non-null.
+PASS detachedTouch.target is null
+PASS detachedTouch.identifier is 0
+PASS detachedTouch.pageX is 0
+PASS detachedTouch.pageY is 0
+PASS detachedTouch.screenX is 0
+PASS detachedTouch.screenY is 0
+PASS detachedTouch.radiusX is 0
+PASS detachedTouch.radiusY is 0
+PASS detachedTouch.rotationAngle is 0
+PASS detachedTouch.force is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

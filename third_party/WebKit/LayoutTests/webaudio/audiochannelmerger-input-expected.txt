@@ -1,0 +1,29 @@
+Test input handling behavior of ChannelMergerNode.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS Channel #0 contains only the constant 0.
+PASS Channel #1 contains only the constant 0.
+PASS Channel #2 contains only the constant 0.
+PASS Channel #3 contains only the constant 1.
+PASS Channel #4 contains only the constant 0.
+PASS Channel #5 contains only the constant 0.
+PASS Channel #0 contains only the constant 1.5.
+PASS Channel #1 contains only the constant 0.
+PASS Channel #2 contains only the constant 0.
+PASS Channel #3 contains only the constant 0.
+PASS Channel #4 contains only the constant 0.
+PASS Channel #5 contains only the constant 0.
+PASS Channel #0 contains only the constant 1.
+PASS Channel #1 contains only the constant 0.
+PASS Channel #2 contains only the constant 0.
+PASS Channel #3 contains only the constant 0.
+PASS Channel #4 contains only the constant 0.
+PASS Channel #5 contains only the constant 0.
+PASS Channel #0 contains only the constant 1.
+PASS Channel #1 contains only the constant -1.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

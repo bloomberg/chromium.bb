@@ -1,0 +1,18 @@
+CONSOLE MESSAGE: line 12: ===== Initial =====
+CONSOLE MESSAGE: line 13: 2
+CONSOLE MESSAGE: line 14: 
+CONSOLE MESSAGE: line 12: ===== Set property =====
+CONSOLE MESSAGE: line 13: 3
+CONSOLE MESSAGE: line 14: 
+CONSOLE MESSAGE: line 12: ===== Delete property =====
+CONSOLE MESSAGE: line 13: undefined
+CONSOLE MESSAGE: line 14: 
+Tests editing Symbol properties.
+
+
+Running: testSetUp
+
+Running: testSetSymbolPropertyValue
+
+Running: testDeleteSymbolProperty
+

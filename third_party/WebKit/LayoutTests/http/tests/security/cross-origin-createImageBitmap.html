@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="/js-test-resources/js-test.js"></script>
+<script>
+description("The image bitmap factories should throw exceptions on cross-origin access.");
+
+window.jsTestIsAsync = true;
+var reason;
+
+function shouldBeRejected(promise, message) {
+    return promise.then(function() {
+        testFailed('Resolved unexpectedly: ' + message);
+    }, function(e) {
+        reason = e;
+        testPassed('Rejected as expected: ' + message);
+        shouldBeTrue('reason instanceof Error');
+        debug(e);
+    });
+}
+
+Promise.resolve().then(function() {
+    return new Promise(function(resolve, reject) {
+        var image = document.createElement('img');
+        image.addEventListener('load', resolve.bind(undefined, image));
+        image.src = 'http://localhost:8080/security/resources/abe.png';
+        document.body.appendChild(image);
+    }).then(function(image) {
+        return shouldBeRejected(createImageBitmap(image, 0, 0, 10, 10), 'image');
+    });
+}).then(function() {
+    return new Promise(function(resolve, reject) {
+        var video = document.createElement('video');
+        video.src = 'http://localhost:8080/media/resources/load-video.php?name=test.ogv&amp;type=video/ogv';
+        video.addEventListener('playing', resolve.bind(undefined, video));
+        document.body.appendChild(video);
+        video.play();
+    }).then(function(video) {
+        return shouldBeRejected(createImageBitmap(video, 0, 0, 10, 10), 'video');
+    });
+}).catch(function(e) {
+    testFailed('Unexpected rejection: ' + e);
+}).then(finishJSTest, finishJSTest);
+</script>
+</body>
+</html>

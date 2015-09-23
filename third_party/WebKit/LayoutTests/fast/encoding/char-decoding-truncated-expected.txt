@@ -1,0 +1,27 @@
+CONSOLE WARNING: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.
+Test encoding behavior for truncated sequences
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS decode('utf-8', '%E2%88%9A') is 'U+221A'
+PASS decode('utf-8', '%E2%88') is 'U+FFFD/U+FFFD'
+PASS decode('utf-8', '%E2') is 'U+FFFD'
+PASS decode('utf-16', '%69%D8%D6%DE') is 'U+D869/U+DED6'
+PASS decode('utf-16', '%69%D8%D6') is 'U+D869'
+PASS decode('utf-16', '%69%D8') is 'U+D869'
+PASS decode('utf-16', '%69') is ''
+PASS decode('utf-16be', '%D8%69%DE%D6') is 'U+D869/U+DED6'
+PASS decode('utf-16be', '%D8%69%DE') is 'U+D869'
+PASS decode('utf-16be', '%D8%69') is 'U+D869'
+PASS decode('utf-16be', '%D8') is ''
+PASS decode('gb2312', '%A3%A0') is 'U+3000'
+PASS decode('gb2312', '%A3') is 'U+FFFD'
+PASS decode('shift_jis', '%82%d0') is 'U+3072'
+PASS decode('shift_jis', '%82') is 'U+FFFD'
+PASS decode('windows-949', '%A2%E6') is 'U+20AC'
+PASS decode('windows-949', '%A2') is 'U+FFFD'
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

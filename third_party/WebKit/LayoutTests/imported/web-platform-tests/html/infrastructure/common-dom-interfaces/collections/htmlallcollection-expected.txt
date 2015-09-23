@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS Test for HTMLAllCollection size 
+PASS Test lookup by index using () 
+PASS Test lookup by index using [] 
+FAIL Test for multiple occurence 3 <script> found document.all.tags is not a function
+PASS Test lookup IMG by name 
+PASS Test lookup IMG by namedItem  
+PASS Test lookup IMG in collection using () 
+PASS Test lookup IMG in collection using [] 
+Harness: the test ran to completion.
+

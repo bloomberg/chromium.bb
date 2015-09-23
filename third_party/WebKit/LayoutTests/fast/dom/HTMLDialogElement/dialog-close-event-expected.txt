@@ -1,0 +1,14 @@
+Test that dialog receives a close event upon closing.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS self is dialog
+PASS dialog.open is false
+PASS event.cancelable is false
+PASS self is dialog
+PASS dialog.open is false
+PASS event.cancelable is false
+PASS dialog.open is false
+PASS closedCount is 2
+

@@ -1,0 +1,2 @@
+>
+The test passes if the page does not crash.

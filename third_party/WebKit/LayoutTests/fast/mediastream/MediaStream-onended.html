@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+<script>
+description("Tests MediaStream::onended callback.");
+
+function error() {
+    testFailed('Stream generation failed.');
+    finishJSTest();
+}
+
+function getUserMedia(dictionary, callback) {
+    try {
+        navigator.webkitGetUserMedia(dictionary, callback, error);
+    } catch (e) {
+        testFailed('webkitGetUserMedia threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+var stream;
+
+function streamEnded2() {
+    testPassed('streamEnded was called.');
+    shouldBeTrue('stream.ended');
+    finishJSTest();
+}
+
+function gotStream2(s) {
+    stream = new webkitMediaStream(s);
+    shouldBeFalse('stream.ended');
+    try {
+        stream.onended = streamEnded2;
+        s.stop();
+    } catch (e) {
+        testFailed('MediaStream threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+function streamEnded() {
+    testPassed('streamEnded was called.');
+    shouldBeTrue('stream.ended');
+
+    getUserMedia({audio:true, video:true}, gotStream2);
+}
+
+function gotStream(s) {
+    stream = s;
+    shouldBeFalse('stream.ended');
+    try {
+        stream.onended = streamEnded;
+        stream.stop();
+    } catch (e) {
+        testFailed('MediaStream threw exception :' + e);
+        finishJSTest();
+    }
+}
+
+getUserMedia({audio:true, video:true}, gotStream);
+
+window.jsTestIsAsync = true;
+window.successfullyParsed = true;
+</script>
+</body>
+</html>

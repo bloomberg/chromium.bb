@@ -1,0 +1,5 @@
+This tests that touch events on the controls will not be seen by the video element.
+
+EVENT(loadeddata)
+END OF TEST
+

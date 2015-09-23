@@ -1,0 +1,73 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function display(callback)
+{
+    requestAnimationFrame(function() {
+        document.body.style.backgroundColor = "blue";
+        var element = document.getElementById("testElement");
+        element.style.width = "100px";
+        var forceLayout = document.body.offsetTop;
+        element.parentElement.removeChild(element);
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function updateSubframeAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        var element = frames[0].document.body.children[0];
+        element.style.width = "200px";
+        var forceLayout = frames[0].document.body.offsetTop;
+        element.parentElement.removeChild(element);
+        if (window.testRunner)
+            testRunner.layoutAndPaintAsyncThen(callback);
+    });
+}
+
+function test()
+{
+    var currentPanel = WebInspector.inspectorView.currentPanel();
+    InspectorTest.assertEquals(currentPanel._panelName, "timeline", "Current panel should be the timeline.");
+    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+
+    InspectorTest.runTestSuite([
+        function testLocalFrame(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("display", function() {
+                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
+                InspectorTest.addArray(record._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "paint invalidations");
+
+                next();
+            });
+        },
+
+        function testSubframe(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
+                // The first paint corresponds to the local frame and should have no invalidations.
+                var firstPaintRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
+                var firstInvalidations = firstPaintRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(firstInvalidations, undefined);
+
+                // The second paint corresponds to the subframe and should have our layout/style invalidations.
+                var secondPaintRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
+                InspectorTest.addArray(secondPaintRecord._event.invalidationTrackingEvents, InspectorTest.InvalidationFormatters, "", "second paint invalidations");
+
+                next();
+            });
+        }
+    ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the Timeline API instrumentation of layout invalidations on a deleted node.</p>
+<div id="testElement">FAIL - this should not be present when the test finishes.</div>
+<iframe src="resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
+</body>
+</html>

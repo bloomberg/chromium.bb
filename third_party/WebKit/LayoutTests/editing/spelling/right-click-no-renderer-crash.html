@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../resources/js-test.js"></script>
+<script>
+window.onload = function() {
+  var element = document.getElementsByTagName('html')[0];
+  document.adoptNode(element);
+  var newElement = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+  document.appendChild(newElement);
+  document.execCommand('SelectAll', false)
+  document.designMode = 'on';
+
+  description('Page should not crash when a node does not have a renderer object associated with it. ' +
+              'To test manually, right-click anywhere on the page. ' +
+              'The test succeeds if the page does not crash. ');
+
+  if (window.eventSender) {
+    eventSender.mouseMoveTo(10, 10);
+    eventSender.contextClick();
+  }
+
+  finishJSTest();
+};
+</script>
+</head>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/runner.js"></script>
+<div id="container" style="-webkit-user-select:none;"></div>
+<textarea id="text"></textarea>
+<script>
+const NUMBER_OF_NODES = 10000;
+
+var shadowRoot = container.createShadowRoot();
+for (var i = 0; i < NUMBER_OF_NODES; i++) {
+    var child = document.createElement("div");
+    shadowRoot.appendChild(child);
+}
+var middle = shadowRoot.childNodes[NUMBER_OF_NODES / 2];
+middle.textContent = "textToClick";
+
+function clickNode(node) {
+    eventSender.mouseMoveTo(node.offsetLeft + 5, node.offsetTop+5);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
+}
+clickNode(text);
+
+PerfTestRunner.measureTime({
+    description: `Measures performance of clicking a -webkit-user-select:none DOM node which contains ${NUMBER_OF_NODES} children.`,
+    run: function () {
+        clickNode(text);
+        clickNode(middle);
+    }
+});
+</script>

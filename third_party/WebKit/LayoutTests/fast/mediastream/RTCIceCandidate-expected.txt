@@ -1,0 +1,26 @@
+Tests RTCIceCandidate.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS candidate = new RTCIceCandidate(initializer); did not throw exception.
+PASS candidate.candidate is "foo"
+PASS candidate.sdpMid is "bar"
+PASS candidate.sdpMLineIndex is 6
+PASS initializer = JSON.parse(JSON.stringify(candidate)); did not throw exception.
+PASS candidate = new RTCIceCandidate(initializer); did not throw exception.
+PASS candidate.candidate is "foo"
+PASS candidate.sdpMid is "bar"
+PASS candidate.sdpMLineIndex is 6
+PASS new RTCIceCandidate({}); threw exception TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty..
+PASS new RTCIceCandidate(5); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('candidateInitDict') is not an object..
+PASS new RTCIceCandidate("foobar"); threw exception TypeError: Failed to construct 'RTCIceCandidate': parameter 1 ('candidateInitDict') is not an object..
+PASS new RTCIceCandidate({candidate:""}); threw exception TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty..
+PASS new RTCIceCandidate({candidate:"x"}); did not throw exception.
+PASS candidate.candidate is "bar"
+PASS candidate.sdpMid is "foo"
+PASS candidate.sdpMLineIndex is 0
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

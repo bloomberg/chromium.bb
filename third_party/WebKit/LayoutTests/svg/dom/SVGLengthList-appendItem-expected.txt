@@ -1,0 +1,112 @@
+ABC
+ABC
+ABC
+This is a test of the SVGLengthList::appendItem() API.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+
+Create a new SVGLength object, with value=150
+PASS newLength1.value is 150
+
+Check initial list state of text1
+PASS text1.x.baseVal.numberOfItems is 5
+PASS text1.x.baseVal.getItem(0).value is 500
+PASS text1.x.baseVal.getItem(1).value is 50
+PASS text1.x.baseVal.getItem(2).value is 100
+PASS text1.x.baseVal.getItem(3).value is 900
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
+
+Check initial list state of text2
+PASS text2.x.baseVal.numberOfItems is 3
+PASS text2.x.baseVal.getItem(0).value is 50
+PASS text2.x.baseVal.getItem(1).value is 100
+PASS text2.x.baseVal.getItem(2).value is 1000
+PASS text2.x.baseVal.getItem(3) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (3) is greater than or equal to the maximum bound (3)..
+
+Append fourth item x=900 to the text1 x list
+PASS text1.x.baseVal.appendItem(text1.x.baseVal.getItem(3)) is text1.x.baseVal.getItem(5)
+PASS text1.x.baseVal.numberOfItems is 6
+PASS text1.x.baseVal.getItem(0).value is 500
+PASS text1.x.baseVal.getItem(1).value is 50
+PASS text1.x.baseVal.getItem(2).value is 100
+PASS text1.x.baseVal.getItem(3).value is 900
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5).value is 900
+PASS text1.x.baseVal.getItem(6) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (6) is greater than or equal to the maximum bound (6)..
+
+Append first item x=500 to the text1 x list
+PASS text1.x.baseVal.appendItem(text1.x.baseVal.getItem(0)) is text1.x.baseVal.getItem(6)
+PASS text1.x.baseVal.numberOfItems is 7
+PASS text1.x.baseVal.getItem(0).value is 500
+PASS text1.x.baseVal.getItem(1).value is 50
+PASS text1.x.baseVal.getItem(2).value is 100
+PASS text1.x.baseVal.getItem(3).value is 900
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5).value is 900
+PASS text1.x.baseVal.getItem(6).value is 500
+PASS text1.x.baseVal.getItem(7) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (7) is greater than or equal to the maximum bound (7)..
+
+Append 'newLength1' to the text1 x list
+PASS text1.x.baseVal.appendItem(newLength1) is text1.x.baseVal.getItem(7)
+PASS text1.x.baseVal.numberOfItems is 8
+PASS text1.x.baseVal.getItem(0).value is 500
+PASS text1.x.baseVal.getItem(1).value is 50
+PASS text1.x.baseVal.getItem(2).value is 100
+PASS text1.x.baseVal.getItem(3).value is 900
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5).value is 900
+PASS text1.x.baseVal.getItem(6).value is 500
+PASS text1.x.baseVal.getItem(7).value is 150
+PASS text1.x.baseVal.getItem(8) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (8) is greater than or equal to the maximum bound (8)..
+
+Append third and fourth item of the text1 x list to the text2 x list
+PASS text2.x.baseVal.appendItem(text1.x.baseVal.getItem(2)).value is 100
+PASS text2.x.baseVal.appendItem(text1.x.baseVal.getItem(3)).value is 900
+PASS text1.x.baseVal.numberOfItems is 8
+PASS text1.x.baseVal.getItem(0).value is 500
+PASS text1.x.baseVal.getItem(1).value is 50
+PASS text1.x.baseVal.getItem(2).value is 100
+PASS text1.x.baseVal.getItem(3).value is 900
+PASS text1.x.baseVal.getItem(4).value is 1000
+PASS text1.x.baseVal.getItem(5).value is 900
+PASS text1.x.baseVal.getItem(6).value is 500
+PASS text1.x.baseVal.getItem(7).value is 150
+PASS text1.x.baseVal.getItem(8) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (8) is greater than or equal to the maximum bound (8)..
+PASS text2.x.baseVal.numberOfItems is 5
+PASS text2.x.baseVal.getItem(0).value is 50
+PASS text2.x.baseVal.getItem(1).value is 100
+PASS text2.x.baseVal.getItem(2).value is 1000
+PASS text2.x.baseVal.getItem(3).value is 100
+PASS text2.x.baseVal.getItem(4).value is 900
+PASS text2.x.baseVal.getItem(5) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (5) is greater than or equal to the maximum bound (5)..
+PASS newLength2.value is 150
+PASS text1.x.baseVal.clear() is undefined.
+
+Shuffle around items in text1 and text2 list using appendItem, to get x=50,100,150,... in both lists
+PASS text1.x.baseVal.appendItem(text2.x.baseVal.getItem(0)).value is 50
+PASS text1.x.baseVal.appendItem(text2.x.baseVal.getItem(1)).value is 100
+PASS text1.x.baseVal.appendItem(newLength2).value is 150
+PASS text2.x.baseVal.clear() is undefined.
+PASS text2.x.baseVal.appendItem(text1.x.baseVal.getItem(0)).value is 50
+PASS text2.x.baseVal.appendItem(text1.x.baseVal.getItem(1)).value is 100
+PASS text2.x.baseVal.appendItem(text1.x.baseVal.getItem(2)).value is 150
+PASS text1.x.baseVal.numberOfItems is 3
+PASS text1.x.baseVal.getItem(0).value is 50
+PASS text1.x.baseVal.getItem(1).value is 100
+PASS text1.x.baseVal.getItem(2).value is 150
+PASS text1.x.baseVal.getItem(4) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (4) is greater than the maximum bound (3)..
+PASS text2.x.baseVal.numberOfItems is 3
+PASS text2.x.baseVal.getItem(0).value is 50
+PASS text2.x.baseVal.getItem(1).value is 100
+PASS text2.x.baseVal.getItem(2).value is 150
+PASS text2.x.baseVal.getItem(6) threw exception IndexSizeError: Failed to execute 'getItem' on 'SVGLengthList': The index provided (6) is greater than the maximum bound (3)..
+
+The test passes if you only see 'PASS' messages, and all three text elements on top look the same
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

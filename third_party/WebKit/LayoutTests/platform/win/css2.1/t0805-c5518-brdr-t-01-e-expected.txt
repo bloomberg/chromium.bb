@@ -1,0 +1,61 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x304
+  LayoutBlockFlow {HTML} at (0,0) size 800x304
+    LayoutBlockFlow {BODY} at (8,16) size 784x272 [color=#0000FF]
+      LayoutBlockFlow {P} at (0,0) size 784x38
+        LayoutText {#text} at (0,0) size 491x17
+          text run at (0,0) width 491: "There should be a solid blue line directly over every occurance of the word \""
+        LayoutInline {SPAN} at (0,0) size 57x19 [border: (2px solid #0000FF) none]
+          LayoutText {#text} at (490,0) size 57x17
+            text run at (490,0) width 57: "HERE \x{21E7}"
+        LayoutText {#text} at (546,0) size 783x37
+          text run at (546,0) width 237: "\". (So there should be 8 blue lines on"
+          text run at (0,20) width 67: "this page.)"
+      LayoutTable {TABLE} at (0,54) size 128x82
+        LayoutTableSection {TBODY} at (0,0) size 128x82
+          LayoutTableRow {TR} at (0,2) size 128x24
+            LayoutTableCell {TD} at (2,2) size 124x24 [border: (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=2]
+              LayoutText {#text} at (34,3) size 56x17
+                text run at (34,3) width 56: "HERE \x{21E7}"
+          LayoutTableRow {TR} at (0,28) size 128x52
+            LayoutTableCell {TD} at (2,42) size 58x24 [border: (2px solid #0000FF) none] [r=1 c=0 rs=1 cs=1]
+              LayoutText {#text} at (1,3) size 56x17
+                text run at (1,3) width 56: "HERE \x{21E7}"
+            LayoutTableCell {TD} at (62,28) size 64x52 [border: (2px solid #0000FF) none] [r=1 c=1 rs=1 cs=1]
+              LayoutBlockFlow (anonymous) at (1,3) size 62x20
+                LayoutText {#text} at (3,0) size 56x17
+                  text run at (3,0) width 56: "HERE \x{21E7}"
+              LayoutTable {TABLE} at (1,23) size 62x28
+                LayoutTableSection {TBODY} at (0,0) size 62x28
+                  LayoutTableRow {TR} at (0,2) size 62x24
+                    LayoutTableCell {TD} at (2,2) size 58x24 [border: (2px solid #0000FF) none] [r=0 c=0 rs=1 cs=1]
+                      LayoutText {#text} at (1,3) size 56x17
+                        text run at (1,3) width 56: "HERE \x{21E7}"
+      LayoutBlockFlow {UL} at (0,152) size 784x120
+        LayoutListItem {LI} at (40,0) size 744x76 [border: (2px solid #0000FF) none]
+          LayoutBlockFlow (anonymous) at (0,2) size 744x20
+            LayoutListMarker (anonymous) at (-17,0) size 7x17: bullet
+            LayoutText {#text} at (0,0) size 56x17
+              text run at (0,0) width 56: "HERE \x{21E7}"
+          LayoutBlockFlow {UL} at (0,22) size 744x54
+            LayoutListItem {LI} at (40,0) size 704x18
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 77x17
+                text run at (0,0) width 77: "dummy text"
+            LayoutListItem {LI} at (40,18) size 704x18
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 77x17
+                text run at (0,0) width 77: "dummy text"
+            LayoutListItem {LI} at (40,36) size 704x18
+              LayoutListMarker (anonymous) at (-17,0) size 7x17: white bullet
+              LayoutText {#text} at (0,0) size 77x17
+                text run at (0,0) width 77: "dummy text"
+        LayoutListItem {LI} at (40,76) size 744x22 [border: (2px solid #0000FF) none]
+          LayoutListMarker (anonymous) at (-17,2) size 7x17: bullet
+          LayoutText {#text} at (0,2) size 56x17
+            text run at (0,2) width 56: "HERE \x{21E7}"
+        LayoutListItem {LI} at (40,98) size 744x22 [border: (2px solid #0000FF) none]
+          LayoutListMarker (anonymous) at (-17,2) size 7x17: bullet
+          LayoutText {#text} at (0,2) size 56x17
+            text run at (0,2) width 56: "HERE \x{21E7}"

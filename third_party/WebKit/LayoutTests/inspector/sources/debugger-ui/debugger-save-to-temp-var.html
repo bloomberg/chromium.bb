@@ -1,0 +1,115 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/console-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+var thisObj;
+
+function testFunction()
+{
+    function inner()
+    {
+        debugger;
+    }
+
+    thisObj = { foo: 42, __proto__: null };
+    for (var i = 1; i < 6; ++i)
+        thisObj["temp" + i] = "FAIL";
+
+    inner.call(thisObj);
+}
+
+function checkThisObject()
+{
+    for (var key in thisObj) {
+        if (key === "foo")
+            console.assert(thisObj[key] === 42);
+        else if (key.substr(0, 4) === "temp")
+            console.assert(thisObj[key] === "FAIL");
+        else
+            console.error("FAIL: Unexpected property " + key);
+    }
+}
+
+function onload()
+{
+    for (var i = 3; i < 8; ++i)
+        window["temp" + i] = "Reserved";
+
+    runTest();
+}
+
+function test()
+{
+    var expressions = [
+        "42",
+        "'foo string'",
+        "NaN",
+        "Infinity",
+        "-Infinity",
+        "-0",
+        "[1, 2, NaN, -0, null, undefined]",
+        "({ foo: 'bar' })",
+        "(function(){ return arguments; })(1,2,3,4)",
+        "(function func() {})",
+        "new Error('errr')"
+    ];
+
+    InspectorTest.setQuiet(true);
+    InspectorTest.startDebuggerTest(step1);
+
+    InspectorTest.addResult("Number of expressions: " + expressions.length);
+    InspectorTest.addResult("Names [temp3..temp7] are reserved\n");
+
+    function step1()
+    {
+        InspectorTest.runTestFunctionAndWaitUntilPaused(didPause);
+    }
+
+    function didPause()
+    {
+        evaluateNext();
+    }
+
+    function evaluateNext()
+    {
+        var expression = expressions.shift();
+        if (!expression) {
+            InspectorTest.waitForRemoteObjectsConsoleMessages(tearDown);
+            return;
+        }
+
+        function didEvaluate(result, wasThrown)
+        {
+            InspectorTest.assertTrue(!wasThrown, "FAIL: was thrown. Expression: " + expression);
+            WebInspector.panels.sources._saveToTempVariable(result);
+            InspectorTest.waitUntilNthMessageReceived(2, evaluateNext);
+        }
+
+        WebInspector.context.flavor(WebInspector.ExecutionContext).evaluate(expression, "console", true, undefined, undefined, undefined, didEvaluate);
+    }
+
+    function tearDown()
+    {
+        InspectorTest.evaluateInPage("checkThisObject()", dumpConsoleMessages);
+    }
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames();
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests saving objects to temporary variables while paused.
+</p>
+
+</body>
+</html>

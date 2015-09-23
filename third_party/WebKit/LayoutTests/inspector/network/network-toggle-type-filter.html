@@ -1,0 +1,52 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/network-test.js"></script>
+<script>
+function test() {
+    InspectorTest.recordNetwork();
+    var target = WebInspector.panels.network._networkLogView;
+    var types = WebInspector.resourceTypes;
+
+    function toggleAndDump(buttonName, toggle)
+    {
+        InspectorTest.addResult("");
+        InspectorTest.addResult((toggle ? "Toggled '" : "Clicked '") + buttonName + "' button.");
+        target._resourceCategoryFilterUI._toggleTypeFilter(buttonName, toggle);
+        var results = [];
+        var request = new WebInspector.NetworkRequest(WebInspector.targetManager.mainTarget(), "", "", "", "", "");
+        for (var typeId in types) {
+            var type = WebInspector.resourceTypes[typeId];
+            results.push(type.name() + ": " + target._resourceCategoryFilterUI.accept(type.category().title));
+        }
+        InspectorTest.addResult("Filter: " + results.join(", "));
+    }
+
+    var allTypes = "all";
+
+    toggleAndDump(allTypes, false);
+    toggleAndDump(types.Document.category().title, false);
+    toggleAndDump(types.Document.category().title, false);
+    toggleAndDump(types.Script.category().title, false);
+
+    toggleAndDump(allTypes, true);
+    toggleAndDump(allTypes, true);
+    toggleAndDump(types.Stylesheet.category().title, true);
+    toggleAndDump(types.Image.category().title, true);
+    toggleAndDump(types.Stylesheet.category().title, true);
+    toggleAndDump(types.XHR.category().title, false);
+
+    toggleAndDump(types.Font.category().title, true);
+    toggleAndDump(types.WebSocket.category().title, true);
+    toggleAndDump(types.Media.category().title, true);
+    toggleAndDump(allTypes, false);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests toggling type filter on network panel.</p>
+</body>
+</html>

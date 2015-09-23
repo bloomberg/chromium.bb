@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="service-workers-test.js"></script>
+<script>
+
+function test()
+{
+    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-empty.js";
+    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/scope1/";
+    InspectorTest.registerServiceWorker(scriptURL, scope);
+
+    WebInspector.targetManager.observeTargets({
+        targetAdded: function(target)
+        {
+            InspectorTest.addResult("Target added: " + target.name() + " type: " + target._type);
+            if (target.isDedicatedWorker()) {
+                var serviceWorkerManager = WebInspector.targetManager.mainTarget().serviceWorkerManager;
+                // Allow agents to do rountrips.
+                InspectorTest.runAfterPendingDispatches(function() {
+                    for (var worker of serviceWorkerManager.workers())
+                        worker.stop();
+                });
+            }
+        },
+
+        targetRemoved: function(target)
+        {
+            InspectorTest.addResult("Target removed: " + target.name() + " type: " + target._type);
+            if (target.isServiceWorker())
+                setTimeout(InspectorTest.completeTest);
+        }
+    });
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests the way service worker manager manages targets.</p>
+</body>
+</html>

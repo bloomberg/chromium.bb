@@ -1,0 +1,75 @@
+<html>
+    <head>
+        <script src=../../media-resources/media-file.js></script>
+        <script src=../../media-resources/video-test.js></script>
+        <script>
+            function start()
+            {
+                findMediaElement();
+
+                waitForEvent('durationchange');
+                waitForEvent('loadedmetadata');
+                waitForEventOnce('loadeddata', function ()
+                {
+                    waitForEvent('seeking', function ()
+                    {
+                        testExpected('video.seeking', true, '==');
+                        testExpected('video.ended', true, '==');
+                        testExpected('video.currentTime == video.duration', true, '==');
+                        testExpected('video.paused', false, '==');
+
+                        waitForEventOnce('timeupdate', function()
+                        {
+                            testExpected('video.seeking', false, '==');
+                            testExpected('video.ended', true, '==');
+                            testExpected('video.currentTime == video.duration', true, '==');
+                        });
+                    });
+
+                    waitForEvent('seeked', function ()
+                    {
+                        testExpected('video.seeking', false, '==');
+                        testExpected('video.ended', true, '==');
+                        testExpected('video.currentTime == video.duration', true, '==');
+
+                    });
+
+                    waitForEvent('pause', function()
+                    {
+                        testExpected('video.paused', true, '==');
+                        testExpected('video.seeking', false, '==');
+                        testExpected('video.ended', true, '==');
+                        testExpected('video.currentTime == video.duration', true, '==');
+                    });
+
+                    waitForEvent('ended', function ()
+                    {
+                        testExpected('video.seeking', false, '==');
+                        testExpected('video.ended', true, '==');
+                        testExpected('video.paused', true, '==');
+                        testExpected('video.currentTime == video.duration', true, '==');
+                        endTest();
+                    });
+
+                    // Seek to the duration of the media
+                    testExpected('video.currentTime < video.duration', true, '==');
+                    testExpected('video.ended', false, '==');
+                    testExpected('video.paused', false, '==');
+                    consoleWrite('Starting seek to duration by setting video.currentTime to video.duration');
+                    video.currentTime = video.duration;
+                    testExpected('video.currentTime == video.duration', true, '==');
+                    testExpected('video.seeking', true, '==');
+                    testExpected('video.ended', true, '==');
+                });
+
+                var mediaFile = findMediaFile('video', 'resources/test');
+                video.src = '/' + mediaFile;
+                run('video.play()');
+            }
+        </script>
+    </head>
+    <body onload="start()">
+        <video></video>
+        <p>Test event dispatches and attribute changes for seek to duration</p>
+    </body>
+</html>

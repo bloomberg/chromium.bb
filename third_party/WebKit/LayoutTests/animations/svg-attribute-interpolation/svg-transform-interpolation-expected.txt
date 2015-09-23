@@ -1,0 +1,106 @@
+CONSOLE WARNING: SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.
+
+SVG SMIL:
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(10 20)] at 0
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(14,28)] at 0.2
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(22,44)] at 0.6
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(30 60)] at 1
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(10 20)] at 0
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(14 28)] at 0.2
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(22 44)] at 0.6
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(30 60)] at 1
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(10 20 30)] at 0
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(16 32 56)] at 0.2
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(28 56 108)] at 0.6
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(40 80 160)] at 1
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(10)] at 0
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(12)] at 0.2
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(16)] at 0.6
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(20)] at 1
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(10)] at 0
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(12)] at 0.2
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(16)] at 0.6
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(20)] at 1
+FAIL: transform from [translate(10 20)] to [rotate(30 40 50)] was [] at 0, expected [translate(10 20)] (parsed as [2,0,1,0,0,1,10,20])
+FAIL: transform from [translate(10 20)] to [rotate(30 40 50)] was [] at 0.2, expected [translate(10 20)] (parsed as [2,0,1,0,0,1,10,20])
+FAIL: transform from [translate(10 20)] to [rotate(30 40 50)] was [] at 0.6, expected [rotate(30 40 50)] (parsed as [4,30,0.87,0.5,-0.5,0.87,30.36,-13.3])
+FAIL: transform from [translate(10 20)] to [rotate(30 40 50)] was [] at 1, expected [rotate(30 40 50)] (parsed as [4,30,0.87,0.5,-0.5,0.87,30.36,-13.3])
+FAIL: transform from [skewX(10)] to [skewY(20)] was [] at 0, expected [skewX(10)] (parsed as [5,10,1,0,0.18,1,0,0])
+FAIL: transform from [skewX(10)] to [skewY(20)] was [] at 0.2, expected [skewX(10)] (parsed as [5,10,1,0,0.18,1,0,0])
+FAIL: transform from [skewX(10)] to [skewY(20)] was [] at 0.6, expected [skewY(20)] (parsed as [6,20,1,0.36,0,1,0,0])
+FAIL: transform from [skewX(10)] to [skewY(20)] was [] at 1, expected [skewY(20)] (parsed as [6,20,1,0.36,0,1,0,0])
+FAIL: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [] at 0, expected [translate(110 20) scale(10 20) rotate(10 20 30)] (parsed as [2,0,1,0,0,1,110,20,3,0,10,0,0,20,0,0,4,10,0.98,0.17,-0.17,0.98,5.51,-3.02])
+FAIL: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [] at 0.2, expected [translate(114,28) scale(14 28) rotate(16 32 56)] (parsed as [2,0,1,0,0,1,114,28,3,0,14,0,0,28,0,0,4,16,0.96,0.28,-0.28,0.96,16.68,-6.65])
+FAIL: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [] at 0.6, expected [translate(122,44) scale(22 44) rotate(28 56 108)] (parsed as [2,0,1,0,0,1,122,44,3,0,22,0,0,44,0,0,4,28,0.88,0.47,-0.47,0.88,57.26,-13.65])
+FAIL: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [] at 1, expected [translate(130 60) scale(30 60) rotate(40 80 160)] (parsed as [2,0,1,0,0,1,130,60,3,0,30,0,0,60,0,0,4,40,0.77,0.64,-0.64,0.77,121.56,-13.99])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [] at 0, expected [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] (parsed as [2,0,1,0,0,1,110,20,3,0,10,0,0,20,0,0,5,10,1,0,0.18,1,0,0,4,10,0.98,0.17,-0.17,0.98,5.51,-3.02])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [] at 0.2, expected [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] (parsed as [2,0,1,0,0,1,110,20,3,0,10,0,0,20,0,0,5,10,1,0,0.18,1,0,0,4,10,0.98,0.17,-0.17,0.98,5.51,-3.02])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [] at 0.6, expected [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] (parsed as [2,0,1,0,0,1,130,60,3,0,30,0,0,60,0,0,6,-30,1,-0.58,0,1,0,0,4,40,0.77,0.64,-0.64,0.77,121.56,-13.99])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [] at 1, expected [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] (parsed as [2,0,1,0,0,1,130,60,3,0,30,0,0,60,0,0,6,-30,1,-0.58,0,1,0,0,4,40,0.77,0.64,-0.64,0.77,121.56,-13.99])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [] at 0, expected [translate(110 20) scale(10 20) skewX(10)] (parsed as [2,0,1,0,0,1,110,20,3,0,10,0,0,20,0,0,5,10,1,0,0.18,1,0,0])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [] at 0.2, expected [translate(110 20) scale(10 20) skewX(10)] (parsed as [2,0,1,0,0,1,110,20,3,0,10,0,0,20,0,0,5,10,1,0,0.18,1,0,0])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [] at 0.6, expected [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] (parsed as [2,0,1,0,0,1,130,60,3,0,30,0,0,60,0,0,5,-30,1,0,-0.58,1,0,0,4,40,0.77,0.64,-0.64,0.77,121.56,-13.99])
+FAIL: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [] at 1, expected [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] (parsed as [2,0,1,0,0,1,130,60,3,0,30,0,0,60,0,0,5,-30,1,0,-0.58,1,0,0,4,40,0.77,0.64,-0.64,0.77,121.56,-13.99])
+
+Web Animations API:
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(2,4)] at -0.4
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(10 20)] at 0
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(14,28)] at 0.2
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(22,44)] at 0.6
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(30 60)] at 1
+PASS: transform from [translate(10 20)] to [translate(30 60)] was [translate(38,76)] at 1.4
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(2 4)] at -0.4
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(10 20)] at 0
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(14 28)] at 0.2
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(22 44)] at 0.6
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(30 60)] at 1
+PASS: transform from [scale(10 20)] to [scale(30 60)] was [scale(38 76)] at 1.4
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(-2 -4 -22)] at -0.4
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(10 20 30)] at 0
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(16 32 56)] at 0.2
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(28 56 108)] at 0.6
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(40 80 160)] at 1
+PASS: transform from [rotate(10 20 30)] to [rotate(40 80 160)] was [rotate(52 104 212)] at 1.4
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(6)] at -0.4
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(10)] at 0
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(12)] at 0.2
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(16)] at 0.6
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(20)] at 1
+PASS: transform from [skewX(10)] to [skewX(20)] was [skewX(24)] at 1.4
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(6)] at -0.4
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(10)] at 0
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(12)] at 0.2
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(16)] at 0.6
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(20)] at 1
+PASS: transform from [skewY(10)] to [skewY(20)] was [skewY(24)] at 1.4
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [translate(10 20)] at -0.4
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [translate(10 20)] at 0
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [translate(10 20)] at 0.2
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [rotate(30 40 50)] at 0.6
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [rotate(30 40 50)] at 1
+PASS: transform from [translate(10 20)] to [rotate(30 40 50)] was [rotate(30 40 50)] at 1.4
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewX(10)] at -0.4
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewX(10)] at 0
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewX(10)] at 0.2
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewY(20)] at 0.6
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewY(20)] at 1
+PASS: transform from [skewX(10)] to [skewY(20)] was [skewY(20)] at 1.4
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(102,4) scale(2 4) rotate(-2 -4 -22)] at -0.4
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(110 20) scale(10 20) rotate(10 20 30)] at 0
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(114,28) scale(14 28) rotate(16 32 56)] at 0.2
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(122,44) scale(22 44) rotate(28 56 108)] at 0.6
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(130 60) scale(30 60) rotate(40 80 160)] at 1
+PASS: transform from [translate(110 20) scale(10 20) rotate(10 20 30)] to [translate(130 60) scale(30 60) rotate(40 80 160)] was [translate(138,76) scale(38 76) rotate(52 104 212)] at 1.4
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] at -0.4
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] at 0
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] at 0.2
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] at 0.6
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] at 1
+PASS: transform from [translate(110 20) scale(10 20) skewX(10) rotate(10 20 30)] to [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewY(-30) rotate(40 80 160)] at 1.4
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10)] at -0.4
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10)] at 0
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(110 20) scale(10 20) skewX(10)] at 0.2
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] at 0.6
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] at 1
+PASS: transform from [translate(110 20) scale(10 20) skewX(10)] to [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] was [translate(130 60) scale(30 60) skewX(-30) rotate(40 80 160)] at 1.4
+

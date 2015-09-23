@@ -1,0 +1,35 @@
+<html>
+<head>
+<style>
+  body {
+    height: 2000px;
+  }
+  #plugin {
+    position: absolute;
+    top: 500px;
+    width: 150px;
+    height: 150px;
+  }
+</style>
+</head>
+
+<body>
+<div id="pluginContainer"></div>
+<div>To pass, the line above should say: TestPlugin: canCreateWithoutRenderer</div>
+<script>
+
+    if (!window.testRunner) {
+        document.write("This test does not work in manual mode.");
+    } else {
+        testRunner.dumpAsText();
+
+        var plugin = document.createElement("object");
+        plugin.setAttribute("width", 300);
+        plugin.setAttribute("height", 200);
+        plugin.setAttribute("type",
+            "application/x-webkit-test-webplugin-can-create-without-renderer");
+    }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+CONSOLE WARNING: 'MediaStream.ended' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.
+CONSOLE WARNING: 'MediaStream.stop()' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.
+Tests MediaStream::onended callback.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS stream.ended is false
+PASS streamEnded was called.
+PASS stream.ended is true
+PASS stream.ended is false
+PASS streamEnded was called.
+PASS stream.ended is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

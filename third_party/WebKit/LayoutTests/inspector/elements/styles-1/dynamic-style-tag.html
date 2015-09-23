@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/elements-test.js"></script>
+<style>
+/* comment */.inline-style-added-by-parser {
+   color: red;
+}
+</style>
+<style>
+.inline-style-added-by-parser-with-source-url {
+   color: green;
+}
+/*# sourceURL=inlineStyleAddedByParser.css*/
+</style>
+<script>
+document.write("<style>\n.inline-style-added-by-parser-in-document-write {\n   color: blue;\n}\n</style>");
+document.write("<style>\n.inline-style-added-by-document-write-with-source-url {\n   color: yellow;\n}\n/*# sourceURL=inlineStyleAddedByDocumentWrite.css*/\n</style>");
+addStyleElement(".inline-style-created-by-script {\n   color: orange;\n}");
+addStyleElement(".inline-style-created-by-script-with-source-url {\n   color: grey;\n}\n/*# sourceURL=inlineStyleCreatedByScript.css*/");
+
+function addStyleElement(styleContent)
+{
+    var styleElement = document.createElement("style");
+    styleElement.textContent = styleContent;
+    document.head.appendChild(styleElement);
+}
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("inspected", step1);
+
+    function step1()
+    {
+        var styleSheets = InspectorTest.cssModel.allStyleSheets();
+        styleSheets.sort();
+        for (var i = 0; i < styleSheets.length; ++i)
+            InspectorTest.CSSAgent.getStyleSheetText(styleSheets[i].id, dumpStyleSheet.bind(null, styleSheets[i], i === styleSheets.length - 1));
+    }
+
+    function dumpStyleSheet(header, isLast, error, content, callback)
+    {
+        InspectorTest.addResult("Stylesheet added:");
+        InspectorTest.addResult("  - isInline: " + header.isInline);
+        InspectorTest.addResult("  - sourceURL: " + header.sourceURL.substring(header.sourceURL.lastIndexOf("/") + 1));
+        InspectorTest.addResult("  - hasSourceURL: " + header.hasSourceURL);
+        InspectorTest.addResult("  - contents: " + content);
+        if (isLast) {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            InspectorTest.completeTest();
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that different types of inline styles are correctly disambiguated and their sourceURL is correct.
+<div id="inspected" style="color:red" class="inline-style-added-by-parser inline-style-added-by-parser-with-source-url inline-style-added-by-parser-in-document-write inline-style-added-by-document-write-with-source-url inline-style-created-by-script inline-style-created-by-script-with-source-url"></div>
+</body>
+</html>
+

@@ -1,0 +1,97 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x600
+  LayoutBlockFlow {HTML} at (0,0) size 800x600
+    LayoutBlockFlow {BODY} at (8,8) size 784x584
+      LayoutBlockFlow {DIV} at (0,0) size 784x64
+        LayoutText {#text} at (0,16) size 64x32
+          text run at (0,16) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,16) size 160x48
+            LayoutRubyText {RT} at (0,-16) size 160x16
+              LayoutText {#text} at (56,0) size 48x16
+                text run at (56,0) width 48: "678"
+            LayoutRubyBase (anonymous) at (0,0) size 160x48
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,0) size 96x32
+                  text run at (0,0) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,0) size 64x32
+                    text run at (96,0) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,72) size 784x48
+        LayoutText {#text} at (0,16) size 64x32
+          text run at (0,16) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,0) size 160x48
+            LayoutRubyText {RT} at (0,16) size 160x0
+            LayoutRubyBase (anonymous) at (0,0) size 160x48
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,16) size 96x32
+                  text run at (0,16) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,16) size 64x32
+                    text run at (96,16) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,128) size 784x48
+        LayoutText {#text} at (0,16) size 64x32
+          text run at (0,16) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,16) size 160x32
+            LayoutRubyText {RT} at (0,-16) size 160x16
+              LayoutText {#text} at (56,0) size 48x16
+                text run at (56,0) width 48: "678"
+            LayoutRubyBase (anonymous) at (0,0) size 160x32
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,0) size 96x32
+                  text run at (0,0) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,0) size 64x32
+                    text run at (96,0) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,184) size 784x64
+        LayoutText {#text} at (0,0) size 64x32
+          text run at (0,0) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,0) size 160x48
+            LayoutRubyText {RT} at (0,48) size 160x16
+              LayoutText {#text} at (56,0) size 48x16
+                text run at (56,0) width 48: "678"
+            LayoutRubyBase (anonymous) at (0,0) size 160x48
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,16) size 96x32
+                  text run at (0,16) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,16) size 64x32
+                    text run at (96,16) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,256) size 784x48
+        LayoutText {#text} at (0,16) size 64x32
+          text run at (0,16) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,0) size 160x48
+            LayoutRubyText {RT} at (0,32) size 160x0
+            LayoutRubyBase (anonymous) at (0,0) size 160x48
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,0) size 96x32
+                  text run at (0,0) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,0) size 64x32
+                    text run at (96,0) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow {DIV} at (0,312) size 784x48
+        LayoutText {#text} at (0,0) size 64x32
+          text run at (0,0) width 64: "1 "
+        LayoutRuby (inline) {RUBY} at (0,0) size 160x32
+          LayoutRubyRun (anonymous) at (64,0) size 160x32
+            LayoutRubyText {RT} at (0,32) size 160x16
+              LayoutText {#text} at (56,0) size 48x16
+                text run at (56,0) width 48: "678"
+            LayoutRubyBase (anonymous) at (0,0) size 160x32
+              LayoutInline {RB} at (0,0) size 160x32
+                LayoutText {#text} at (0,0) size 96x32
+                  text run at (0,0) width 96: "23 "
+                LayoutInline {SPAN} at (0,0) size 64x32
+                  LayoutText {#text} at (96,0) size 64x32
+                    text run at (96,0) width 64: "45"
+        LayoutText {#text} at (0,0) size 0x0

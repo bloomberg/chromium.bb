@@ -1,0 +1,65 @@
+CONSOLE WARNING: Calling Element.createShadowRoot() for an element which already hosts a shadow root is deprecated. See https://www.chromestatus.com/features/4668884095336448 for more details.
+
+click #C
+
+event.path on node #C (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #B (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #F (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #E (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #D (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #I (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #H (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #G (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+event.path on node #A (target: #C)
+#C, #B, #F, #E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 14
+
+click #A/E
+
+event.path on node #E (target: #E)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #D (target: #E)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #I (target: #E)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #H (target: #E)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #G (target: #E)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+event.path on node #A (target: #A)
+#E, #D, #I, #H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 11
+
+click #A//H
+
+event.path on node #H (target: #H)
+#H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #G (target: #H)
+#H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+
+event.path on node #A (target: #A)
+#H, #G, #A, #sandbox, [object HTMLBodyElement], [object HTMLHtmlElement], [object HTMLDocument], [object Window], length: 8
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

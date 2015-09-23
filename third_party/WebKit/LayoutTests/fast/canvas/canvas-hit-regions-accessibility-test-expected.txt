@@ -1,0 +1,52 @@
+Just one button tests.
+PASS axbutton1.x is 8
+PASS axbutton1.y is 8
+PASS axbutton1.width is 200
+PASS axbutton1.height is 200
+
+The container1 has two buttons.
+PASS axbutton2.x is 8
+PASS axbutton2.y is 8
+PASS axbutton2.width is 100
+PASS axbutton2.height is 50
+PASS axbutton3.x is 48
+PASS axbutton3.y is 28
+PASS axbutton3.width is 50
+PASS axbutton3.height is 70
+PASS axcontainer1.x is 8
+PASS axcontainer1.y is 8
+PASS axcontainer1.width is 100
+PASS axcontainer1.height is 90
+
+Remove the button2 from the container1.
+PASS axcontainer1.x is 48
+PASS axcontainer1.y is 28
+PASS axcontainer1.width is 50
+PASS axcontainer1.height is 70
+
+Depth-two container tests.
+PASS axbutton4.x is 8
+PASS axbutton4.y is 8
+PASS axbutton4.width is 100
+PASS axbutton4.height is 50
+PASS axbutton5.x is 48
+PASS axbutton5.y is 28
+PASS axbutton5.width is 50
+PASS axbutton5.height is 70
+PASS axbutton6.x is 28
+PASS axbutton6.y is 18
+PASS axbutton6.width is 140
+PASS axbutton6.height is 30
+PASS axcontainer2.x is 8
+PASS axcontainer2.y is 8
+PASS axcontainer2.width is 160
+PASS axcontainer2.height is 90
+PASS axcontainer3.x is 8
+PASS axcontainer3.y is 8
+PASS axcontainer3.width is 100
+PASS axcontainer3.height is 90
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
