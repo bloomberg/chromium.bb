@@ -554,13 +554,19 @@ PDFViewer.prototype = {
    * @param {Object} strings Dictionary of translated strings
    */
   handleStrings_: function(strings) {
-    this.passwordScreen_.text = strings.passwordPrompt;
-    if (!this.isMaterial_) {
+    if (this.isMaterial_) {
+      this.errorScreen_.strings = strings;
+      this.passwordScreen_.strings = strings;
+      if (this.materialToolbar_)
+        this.materialToolbar_.strings = strings;
+      this.zoomToolbar_.strings = strings;
+    } else {
+      this.passwordScreen_.text = strings.passwordPrompt;
       this.progressBar_.text = strings.pageLoading;
       if (!this.isPrintPreview_)
         this.progressBar_.style.visibility = 'visible';
+      this.errorScreen_.text = strings.pageLoadFailed;
     }
-    this.errorScreen_.text = strings.pageLoadFailed;
   },
 
   /**

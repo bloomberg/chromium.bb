@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/transform-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-fab/paper-fab.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 
 <dom-module id="viewer-zoom-button">
   <link rel="import" type="css" href="../shared-icon-style.css">
@@ -10,6 +11,7 @@
   <template>
     <paper-fab id="button" mini icon="[[visibleIcon_]]" on-click="fireClick">
     </paper-fab>
+    <paper-tooltip for="button">[[visibleTooltip_]]</paper-tooltip>
   </template>
 </dom-module>
 <script src="viewer-zoom-button.js"></script>

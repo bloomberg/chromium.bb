@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../viewer-bookmarks-content/viewer-bookmarks-content.html">
 <link rel="import" href="../viewer-page-selector/viewer-page-selector.html">
 <link rel="import" href="../viewer-toolbar-dropdown/viewer-toolbar-dropdown.html">
@@ -31,24 +32,33 @@
         </div>
 
         <div id="buttons" class="invisible flex-5">
-          <!-- TODO(tsergeant): "Bookmarks" should be localized. -->
           <viewer-toolbar-dropdown id="bookmarks"
                                    hidden$="[[!bookmarks.length]]"
-                                   header="Bookmarks"
+                                   header="{{strings.bookmarks}}"
                                    open-icon="bookmark"
                                    closed-icon="bookmark-border">
               <viewer-bookmarks-content bookmarks="{{bookmarks}}">
               </viewer-bookmarks-content>
           </viewer-toolbar-dropdown>
-          <paper-icon-button icon="image:rotate-right"
+
+          <paper-icon-button id="rotate-right" icon="image:rotate-right"
               on-click="rotateRight"></paper-icon-button>
-          <!-- TODO(tsergeant): Replace this placeholder with a more useful
-                button. -->
-          <paper-icon-button icon="image:rotate-left"
+          <paper-tooltip
+              for="rotate-right">{{strings.tooltipRotateCW}}</paper-tooltip>
+
+          <paper-icon-button id="rotate-left" icon="image:rotate-left"
               on-click="rotateLeft"></paper-icon-button>
-          <paper-icon-button icon="save"
+          <paper-tooltip
+              for="rotate-left">{{strings.tooltipRotateCCW}}</paper-tooltip>
+
+          <paper-icon-button id="save" icon="save"
               on-click="save"></paper-icon-button>
-          <paper-icon-button icon="print"
+          <paper-tooltip for="save">{{strings.tooltipSave}}</paper-tooltip>
+
+          <!-- toolbar_manager_test crashes in blink code if the tooltip is
+            last. TODO(tsergeant): Rearrange when this is fixed -->
+          <paper-tooltip for="print">{{strings.tooltipPrint}}</paper-tooltip>
+          <paper-icon-button id="print" icon="print"
               on-click="print"></paper-icon-button>
         </div>
       </div>

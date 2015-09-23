@@ -6,10 +6,7 @@ Polymer({
   is: 'viewer-password-screen',
 
   properties: {
-    text: {
-      type: String,
-      value: 'This document is password protected. Please enter a password.',
-    },
+    strings: Object,
 
     active: {
       type: Boolean,

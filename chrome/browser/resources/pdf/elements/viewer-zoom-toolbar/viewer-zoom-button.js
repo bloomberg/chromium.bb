@@ -28,6 +28,8 @@ Polymer({
       computed: 'computeIconsArray_(icons)'
     },
 
+    tooltips: Array,
+
     opened: {
       type: Boolean,
       value: true
@@ -55,6 +57,11 @@ Polymer({
     visibleIcon_: {
       type: String,
       computed: 'computeVisibleIcon_(icons_, activeIndex)'
+    },
+
+    visibleTooltip_: {
+      type: String,
+      computed: 'computeVisibleTooltip_(tooltips, activeIndex)'
     }
   },
 
@@ -89,6 +96,10 @@ Polymer({
 
   computeVisibleIcon_: function(icons, activeIndex) {
     return icons[activeIndex];
+  },
+
+  computeVisibleTooltip_: function(tooltips, activeIndex) {
+    return tooltips[activeIndex];
   },
 
   listeners: {

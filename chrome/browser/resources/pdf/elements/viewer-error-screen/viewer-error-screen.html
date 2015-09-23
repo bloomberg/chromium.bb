@@ -7,9 +7,9 @@
   <template>
     <paper-dialog id="dialog" modal no-cancel-on-esc-key
         entry-animation="fade-in-animation">
-      <div id="load-failed-message">{{text}}</div>
+      <div id="load-failed-message">{{strings.pageLoadFailed}}</div>
       <div class="buttons">
-        <paper-button on-click="reload">Reload</paper-button>
+        <paper-button on-click="reload">{{strings.pageReload}}</paper-button>
       </div>
     </paper-dialog>
   </template>

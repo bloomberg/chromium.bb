@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/web-animations.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-tooltip/paper-tooltip.html">
 
 <dom-module id="viewer-toolbar-dropdown">
   <link rel="import" type="css" href="../shared-icon-style.css">
@@ -10,6 +11,7 @@
     <div on-click="toggleDropdown" id="icon">
       <paper-icon-button icon="[[dropdownIcon]]"></paper-icon-button>
       <iron-icon icon="arrow-drop-down" id="arrow"></iron-icon>
+      <paper-tooltip>{{header}}</paper-tooltip>
     </div>
 
     <div id="container">

@@ -24,18 +24,30 @@ namespace extensions {
 
 namespace {
 
+void SetL10nString(base::DictionaryValue* dict, const std::string& string_id,
+                   int resource_id) {
+  dict->SetString(string_id, l10n_util::GetStringUTF16(resource_id));
+}
+
 void AddStringsForIdentity(base::DictionaryValue* dict) {
-  dict->SetString("window-title",
-                  l10n_util::GetStringUTF16(IDS_EXTENSION_CONFIRM_PERMISSIONS));
+  SetL10nString(dict, "window-title", IDS_EXTENSION_CONFIRM_PERMISSIONS);
 }
 
 void AddStringsForPdf(base::DictionaryValue* dict) {
-  dict->SetString("passwordPrompt",
-                  l10n_util::GetStringUTF16(IDS_PDF_NEED_PASSWORD));
-  dict->SetString("pageLoading",
-                  l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOADING));
-  dict->SetString("pageLoadFailed",
-                  l10n_util::GetStringUTF16(IDS_PDF_PAGE_LOAD_FAILED));
+  SetL10nString(dict, "passwordPrompt", IDS_PDF_NEED_PASSWORD);
+  SetL10nString(dict, "passwordSubmit", IDS_PDF_PASSWORD_SUBMIT);
+  SetL10nString(dict, "pageLoading", IDS_PDF_PAGE_LOADING);
+  SetL10nString(dict, "pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED);
+  SetL10nString(dict, "pageReload", IDS_PDF_PAGE_RELOAD_BUTTON);
+  SetL10nString(dict, "bookmarks", IDS_PDF_BOOKMARKS);
+  SetL10nString(dict, "tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW);
+  SetL10nString(dict, "tooltipRotateCCW", IDS_PDF_TOOLTIP_ROTATE_CCW);
+  SetL10nString(dict, "tooltipSave", IDS_PDF_TOOLTIP_SAVE);
+  SetL10nString(dict, "tooltipPrint", IDS_PDF_TOOLTIP_PRINT);
+  SetL10nString(dict, "tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE);
+  SetL10nString(dict, "tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH);
+  SetL10nString(dict, "tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN);
+  SetL10nString(dict, "tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT);
 }
 
 }  // namespace
