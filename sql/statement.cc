@@ -110,6 +110,11 @@ void Statement::Reset(bool clear_bound_vars) {
       ref_->connection()->RecordOneEvent(Connection::EVENT_STATEMENT_SUCCESS);
   }
 
+  // Potentially release dirty cache pages if an autocommit statement made
+  // changes.
+  if (ref_->connection())
+    ref_->connection()->ReleaseCacheMemoryIfNeeded(false);
+
   succeeded_ = false;
   stepped_ = false;
 }

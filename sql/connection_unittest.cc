@@ -4,10 +4,12 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "sql/connection.h"
 #include "sql/correct_sql_test_base.h"
@@ -1296,6 +1298,82 @@ TEST_F(SQLConnectionTest, TimeUpdateTransaction) {
 
   samples = tester.GetHistogramSamplesSinceCreation(kAutoCommitTime);
   EXPECT_EQ(0, samples->sum());
+}
+
+// Make sure that OS file writes to a mmap'ed file are reflected in the memory
+// mapping of a memory-mapped file.  Normally SQLite writes to memory-mapped
+// files using memcpy(), which should stay consistent.  Our SQLite is slightly
+// patched to mmap read only, then write using OS file writes.  If the
+// memory-mapped version doesn't reflect the OS file writes, SQLite's
+// memory-mapped I/O should be disabled on this platform.
+TEST_F(SQLConnectionTest, MmapTest) {
+  // Skip the test for platforms which don't enable memory-mapped I/O in SQLite,
+  // or which don't even support the pragma.  The former seems to apply to iOS,
+  // the latter to older iOS.
+  // TODO(shess): Disable test on iOS?  Disable on USE_SYSTEM_SQLITE?
+  {
+    sql::Statement s(db().GetUniqueStatement("PRAGMA mmap_size"));
+    if (!s.Step() || !s.ColumnInt64(0))
+      return;
+  }
+
+  // The test re-uses the database file to make sure it's representative of a
+  // SQLite file, but will be storing incompatible data.
+  db().Close();
+
+  const uint32 kFlags =
+      base::File::FLAG_OPEN|base::File::FLAG_READ|base::File::FLAG_WRITE;
+  char buf[4096];
+
+  // Create a file with a block of '0', a block of '1', and a block of '2'.
+  {
+    base::File f(db_path(), kFlags);
+    ASSERT_TRUE(f.IsValid());
+    memset(buf, '0', sizeof(buf));
+    ASSERT_EQ(f.Write(0*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+
+    memset(buf, '1', sizeof(buf));
+    ASSERT_EQ(f.Write(1*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+
+    memset(buf, '2', sizeof(buf));
+    ASSERT_EQ(f.Write(2*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+  }
+
+  // mmap the file and verify that everything looks right.
+  {
+    base::MemoryMappedFile m;
+    ASSERT_TRUE(m.Initialize(db_path()));
+
+    memset(buf, '0', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 0*sizeof(buf), sizeof(buf)));
+
+    memset(buf, '1', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 1*sizeof(buf), sizeof(buf)));
+
+    memset(buf, '2', sizeof(buf));
+    ASSERT_EQ(0, memcmp(buf, m.data() + 2*sizeof(buf), sizeof(buf)));
+
+    // Scribble some '3' into the first page of the file, and verify that it
+    // looks the same in the memory mapping.
+    {
+      base::File f(db_path(), kFlags);
+      ASSERT_TRUE(f.IsValid());
+      memset(buf, '3', sizeof(buf));
+      ASSERT_EQ(f.Write(0*sizeof(buf), buf, sizeof(buf)), (int)sizeof(buf));
+    }
+    ASSERT_EQ(0, memcmp(buf, m.data() + 0*sizeof(buf), sizeof(buf)));
+
+    // Repeat with a single '4' in case page-sized blocks are different.
+    const size_t kOffset = 1*sizeof(buf) + 123;
+    ASSERT_NE('4', m.data()[kOffset]);
+    {
+      base::File f(db_path(), kFlags);
+      ASSERT_TRUE(f.IsValid());
+      buf[0] = '4';
+      ASSERT_EQ(f.Write(kOffset, buf, 1), 1);
+    }
+    ASSERT_EQ('4', m.data()[kOffset]);
+  }
 }
 
 }  // namespace
