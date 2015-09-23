@@ -110,9 +110,10 @@ class ConnectionError(NetError):
 class HttpError(NetError):
   """Server returned HTTP error code."""
 
-  def __init__(self, code, inner_exc=None):
+  def __init__(self, code, content_type, inner_exc):
     super(HttpError, self).__init__(inner_exc)
     self.code = code
+    self.content_type = content_type
 
 
 def set_engine_class(engine_cls):
@@ -303,14 +304,20 @@ class HttpService(object):
     self.authenticator = authenticator
 
   @staticmethod
-  def is_transient_http_error(code, retry_404, retry_50x):
+  def is_transient_http_error(code, retry_404, retry_50x, suburl, content_type):
     """Returns True if given HTTP response code is a transient error."""
     # Google Storage can return this and it should be retried.
     if code == 408:
       return True
-    # Retry 404 only if allowed by the caller.
     if code == 404:
-      return retry_404
+      # Retry 404 if allowed by the caller.
+      if retry_404:
+        return retry_404
+      # Transparently retry 404 IIF it is a CloudEndpoints API call *and* the
+      # result is not JSON. This assumes that we only use JSON encoding.
+      return (
+          suburl.startswith('/_ah/api/') and
+          content_type.startswith('application/json'))
     # All other 4** errors are fatal.
     if code < 500:
       return False
@@ -489,7 +496,8 @@ class HttpService(object):
           return None
 
         # Hit a error that can not be retried -> stop retry loop.
-        if not self.is_transient_http_error(e.code, retry_404, retry_50x):
+        if not self.is_transient_http_error(
+            e.code, retry_404, retry_50x, parsed.path, e.content_type):
           # This HttpError means we reached the server and there was a problem
           # with the request, so don't retry.
           logging.warning(
@@ -717,6 +725,7 @@ class RequestsLibEngine(object):
       HttpError - server responded with >= 400 error code.
     """
     try:
+      # response is a requests.models.Response.
       response = self.session.request(
           method=request.method,
           url=request.url,
@@ -736,7 +745,8 @@ class RequestsLibEngine(object):
     except requests.Timeout as e:
       raise TimeoutError(e)
     except requests.HTTPError as e:
-      raise HttpError(e.response.status_code, e)
+      raise HttpError(
+          e.response.status_code, e.response.headers.get('Content-Type'), e)
     except (requests.ConnectionError, socket.timeout, ssl.SSLError) as e:
       raise ConnectionError(e)
 
