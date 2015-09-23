@@ -82,6 +82,7 @@ class MockCastSocket : public CastSocket {
   MOCK_CONST_METHOD0(ready_state, ReadyState());
   MOCK_CONST_METHOD0(error_state, ChannelError());
   MOCK_CONST_METHOD0(keep_alive, bool(void));
+  MOCK_CONST_METHOD0(audio_only, bool(void));
   MOCK_METHOD1(SetErrorState, void(ChannelError error_state));
 
   CastTransport* transport() const override { return mock_transport_.get(); }

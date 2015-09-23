@@ -100,6 +100,10 @@ class CastSocket : public ApiResource {
   // True when keep-alive signaling is handled for this socket.
   virtual bool keep_alive() const = 0;
 
+  // Whether the channel is audio only as identified by the device
+  // certificate during channel authentication.
+  virtual bool audio_only() const = 0;
+
   // Marks a socket as invalid due to an error, and sends an OnError
   // event to |delegate_|.
   // The OnError event receipient is responsible for closing the socket in the
@@ -161,6 +165,7 @@ class CastSocketImpl : public CastSocket {
   ReadyState ready_state() const override;
   ChannelError error_state() const override;
   bool keep_alive() const override;
+  bool audio_only() const override;
 
   // Required by ApiResourceManager.
   static const char* service_name() { return "CastSocketManager"; }
@@ -328,6 +333,10 @@ class CastSocketImpl : public CastSocket {
 
   // Capabilities declared by the cast device.
   uint64 device_capabilities_;
+
+  // Whether the channel is audio only as identified by the device
+  // certificate during channel authentication.
+  bool audio_only_;
 
   // Connection flow state machine state.
   proto::ConnectionState connect_state_;

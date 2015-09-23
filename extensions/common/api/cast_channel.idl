@@ -108,6 +108,10 @@ namespace cast.channel {
 
     // If true, keep-alive messages are handled automatically by the channel.
     boolean keepAlive;
+
+    // Whether the channel is audio only as identified by the device
+    // certificate during channel authentication.
+    boolean audioOnly;
   };
 
   // Describes a message sent or received over the channel.  Currently only

@@ -947,8 +947,11 @@ TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesNone) {
 TEST_F(CastSocketTest, TestChannelPolicyVerificationCapabilitiesVideoOut) {
   socket_ = TestCastSocket::Create(
       logger_, cast_channel::CastDeviceCapability::VIDEO_OUT);
+  EXPECT_FALSE(socket_->audio_only());
   EXPECT_TRUE(socket_->TestVerifyChannelPolicyNone());
+  EXPECT_FALSE(socket_->audio_only());
   EXPECT_FALSE(socket_->TestVerifyChannelPolicyAudioOnly());
+  EXPECT_TRUE(socket_->audio_only());
 }
 }  // namespace cast_channel
 }  // namespace api

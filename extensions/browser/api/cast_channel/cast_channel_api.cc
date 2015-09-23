@@ -73,6 +73,7 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->ready_state = socket.ready_state();
   channel_info->error_state = socket.error_state();
   channel_info->keep_alive = socket.keep_alive();
+  channel_info->audio_only = socket.audio_only();
 }
 
 // Fills |error_info| from |error_state| and |last_errors|.
