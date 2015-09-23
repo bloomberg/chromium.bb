@@ -23,7 +23,10 @@ group("config") {
 }
 
 source_set("config_sources") {
-  visibility = [ "//gpu/*" ]
+  visibility = [
+    "//components/mus/gles2:*",
+    "//gpu/*",
+  ]
 
   sources = [
     "dx_diag_node.cc",

@@ -5,6 +5,7 @@
 #include "components/mus/gles2/command_buffer_type_conversions.h"
 
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 
 namespace mojo {
 
@@ -165,6 +166,19 @@ gpu::Capabilities TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr>::Convert(
   result.blend_equation_advanced_coherent =
       input->blend_equation_advanced_coherent;
   return result;
+}
+
+GpuInfoPtr
+TypeConverter<GpuInfoPtr, gpu::GPUInfo>::Convert(
+    const gpu::GPUInfo& input) {
+  GpuInfoPtr result(GpuInfo::New());
+  result->vendor_id = input.gpu.vendor_id;
+  result->device_id = input.gpu.device_id;
+  result->vendor_info = mojo::String::From<std::string>(input.gl_vendor);
+  result->renderer_info = mojo::String::From<std::string>(input.gl_renderer);
+  result->driver_version =
+      mojo::String::From<std::string>(input.driver_version);
+  return result.Pass();
 }
 
 }  // namespace mojo

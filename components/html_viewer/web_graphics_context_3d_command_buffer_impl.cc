@@ -4,6 +4,8 @@
 
 #include "components/html_viewer/web_graphics_context_3d_command_buffer_impl.h"
 
+#include "components/html_viewer/blink_basic_type_converters.h"
+#include "components/html_viewer/global_state.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "mojo/application/public/cpp/application_impl.h"
@@ -11,32 +13,50 @@
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "third_party/mojo/src/mojo/public/cpp/environment/environment.h"
+#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 
 namespace html_viewer {
 
-WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
+// static
+WebGraphicsContext3DCommandBufferImpl*
+WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
+    GlobalState* global_state,
     mojo::ApplicationImpl* app,
     const GURL& active_url,
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
     blink::WebGLInfo* gl_info) {
+  const mojo::GpuInfo* gpu_info = global_state->GetGpuInfo();
+  gl_info->vendorId = gpu_info->vendor_id;
+  gl_info->deviceId = gpu_info->device_id;
+  gl_info->vendorInfo = gpu_info->vendor_info.To<blink::WebString>();
+  gl_info->rendererInfo = gpu_info->renderer_info.To<blink::WebString>();
+  gl_info->driverVersion = gpu_info->driver_version.To<blink::WebString>();
+
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = mojo::String::From("mojo:mus");
   mojo::GpuPtr gpu_service;
   app->ConnectToService(request.Pass(), &gpu_service);
-
   mojo::CommandBufferPtr cb;
   gpu_service->CreateOffscreenGLES2Context(GetProxy(&cb));
-  command_buffer_handle_ = cb.PassInterface().PassHandle();
-  CHECK(command_buffer_handle_.is_valid());
+  return new WebGraphicsContext3DCommandBufferImpl(
+      cb.PassInterface(), active_url, attributes, share_context);
+}
+
+WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
+    mojo::InterfacePtrInfo<mojo::CommandBuffer> command_buffer_info,
+    const GURL& active_url,
+    const blink::WebGraphicsContext3D::Attributes& attributes,
+    blink::WebGraphicsContext3D* share_context) {
+  mojo::ScopedMessagePipeHandle handle(command_buffer_info.PassHandle());
+  CHECK(handle.is_valid());
   // TODO(penghuang): Support share context.
-  // TODO(penghuang): Fill gl_info.
   gpu::gles2::ContextCreationAttribHelper attrib_helper;
   ConvertAttributes(attributes, &attrib_helper);
   std::vector<int32_t> attrib_vector;
   attrib_helper.Serialize(&attrib_vector);
   gles2_context_ = MojoGLES2CreateContext(
-      command_buffer_handle_.release().value(),
+      handle.release().value(),
       attrib_vector.data(),
       &ContextLostThunk,
       this,
@@ -49,18 +69,6 @@ WebGraphicsContext3DCommandBufferImpl::
     ~WebGraphicsContext3DCommandBufferImpl() {
   if (gles2_context_)
     MojoGLES2DestroyContext(gles2_context_);
-}
-
-// static
-WebGraphicsContext3DCommandBufferImpl*
-WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-    mojo::ApplicationImpl* app,
-    const GURL& active_url,
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    blink::WebGraphicsContext3D* share_context,
-    blink::WebGLInfo* gl_info) {
-  return new WebGraphicsContext3DCommandBufferImpl(
-      app, active_url, attributes, share_context, gl_info);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::ContextLost() {

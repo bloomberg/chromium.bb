@@ -5,6 +5,8 @@
 
 #include "components/mus/gles2/gpu_state.h"
 
+#include "gpu/config/gpu_info_collector.h"
+
 namespace mus {
 
 GpuState::GpuState()
@@ -12,6 +14,10 @@ GpuState::GpuState()
       sync_point_manager_(new gpu::SyncPointManager(true)),
       share_group_(new gfx::GLShareGroup),
       mailbox_manager_(new gpu::gles2::MailboxManagerImpl) {
+  gpu::CollectInfoResult result = gpu::CollectBasicGraphicsInfo(&gpu_info_);
+  CHECK(result == gpu::kCollectInfoSuccess);
+  result = gpu::CollectContextGraphicsInfo(&gpu_info_);
+  CHECK(result == gpu::kCollectInfoSuccess);
   control_thread_.Start();
 }
 

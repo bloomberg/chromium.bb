@@ -26,6 +26,7 @@ class GpuImpl : public mojo::Gpu {
  private:
   void CreateOffscreenGLES2Context(mojo::InterfaceRequest<mojo::CommandBuffer>
                                        command_buffer_request) override;
+  void GetGpuInfo(const GetGpuInfoCallback& callback) override;
 
   mojo::StrongBinding<Gpu> binding_;
   scoped_refptr<GpuState> state_;

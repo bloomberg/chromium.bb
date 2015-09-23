@@ -54,7 +54,8 @@ class AxProviderImplTest : public testing::Test {
     gin::V8Initializer::LoadV8Natives();
 #endif
     blink::initialize(
-        new html_viewer::BlinkPlatformImpl(nullptr, renderer_scheduler_.get()));
+        new html_viewer::BlinkPlatformImpl(nullptr, nullptr,
+                                           renderer_scheduler_.get()));
   }
 
   ~AxProviderImplTest() override {
