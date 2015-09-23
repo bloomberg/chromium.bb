@@ -466,73 +466,6 @@ void Connection::Preload() {
   }
 }
 
-// SQLite keeps unused pages associated with a connection in a cache.  It asks
-// the cache for pages by an id, and if the page is present and the database is
-// unchanged, it considers the content of the page valid and doesn't read it
-// from disk.  When memory-mapped I/O is enabled, on read SQLite uses page
-// structures created from the memory map data before consulting the cache.  On
-// write SQLite creates a new in-memory page structure, copies the data from the
-// memory map, and later writes it, releasing the updated page back to the
-// cache.
-//
-// This means that in memory-mapped mode, the contents of the cached pages are
-// not re-used for reads, but they are re-used for writes if the re-written page
-// is still in the cache. The implementation of sqlite3_db_release_memory() as
-// of SQLite 3.8.7.4 frees all pages from pcaches associated with the
-// connection, so it should free these pages.
-//
-// Unfortunately, the zero page is also freed.  That page is never accessed
-// using memory-mapped I/O, and the cached copy can be re-used after verifying
-// the file change counter on disk.  Also, fresh pages from cache receive some
-// pager-level initialization before they can be used.  Since the information
-// involved will immediately be accessed in various ways, it is unclear if the
-// additional overhead is material, or just moving processor cache effects
-// around.
-//
-// TODO(shess): It would be better to release the pages immediately when they
-// are no longer needed.  This would basically happen after SQLite commits a
-// transaction.  I had implemented a pcache wrapper to do this, but it involved
-// layering violations, and it had to be setup before any other sqlite call,
-// which was brittle.  Also, for large files it would actually make sense to
-// maintain the existing pcache behavior for blocks past the memory-mapped
-// segment.  I think drh would accept a reasonable implementation of the overall
-// concept for upstreaming to SQLite core.
-//
-// TODO(shess): Another possibility would be to set the cache size small, which
-// would keep the zero page around, plus some pre-initialized pages, and SQLite
-// can manage things.  The downside is that updates larger than the cache would
-// spill to the journal.  That could be compensated by setting cache_spill to
-// false.  The downside then is that it allows open-ended use of memory for
-// large transactions.
-//
-// TODO(shess): The TrimMemory() trick of bouncing the cache size would also
-// work.  There could be two prepared statements, one for cache_size=1 one for
-// cache_size=goal.
-void Connection::ReleaseCacheMemoryIfNeeded(bool implicit_change_performed) {
-  // If memory-mapping is not enabled, the page cache helps performance.
-  if (!mmap_enabled_)
-    return;
-
-  // On caller request, force the change comparison to fail.  Done before the
-  // transaction-nesting test so that the signal can carry to transaction
-  // commit.
-  if (implicit_change_performed)
-    --total_changes_at_last_release_;
-
-  // Cached pages may be re-used within the same transaction.
-  if (transaction_nesting())
-    return;
-
-  // If no changes have been made, skip flushing.  This allows the first page of
-  // the database to remain in cache across multiple reads.
-  const int total_changes = sqlite3_total_changes(db_);
-  if (total_changes == total_changes_at_last_release_)
-    return;
-
-  total_changes_at_last_release_ = total_changes;
-  sqlite3_db_release_memory(db_);
-}
-
 void Connection::TrimMemory(bool aggressively) {
   if (!db_)
     return;
@@ -843,9 +776,6 @@ bool Connection::CommitTransaction() {
   RecordCommitTime(delta);
   RecordOneEvent(EVENT_COMMIT);
 
-  // Release dirty cache pages after the transaction closes.
-  ReleaseCacheMemoryIfNeeded(false);
-
   return ret;
 }
 
@@ -936,12 +866,6 @@ int Connection::ExecuteAndReturnErrorCode(const char* sql) {
     const base::TimeDelta delta = Now() - before;
     RecordTimeAndChanges(delta, read_only);
   }
-
-  // Most calls to Execute() modify the database.  The main exceptions would be
-  // calls such as CREATE TABLE IF NOT EXISTS which could modify the database
-  // but sometimes don't.
-  ReleaseCacheMemoryIfNeeded(true);
-
   return rc;
 }
 
@@ -1306,18 +1230,6 @@ bool Connection::OpenInternal(const std::string& file_name,
   // secure_delete.
   ignore_result(Execute("PRAGMA journal_mode = TRUNCATE"));
 
-  // Enable memory-mapped access.  This value will be capped by
-  // SQLITE_MAX_MMAP_SIZE, which could be different between 32-bit and 64-bit
-  // platforms.
-  mmap_enabled_ = false;
-  if (!mmap_disabled_)
-    ignore_result(Execute("PRAGMA mmap_size = 268435456"));  // 256MB.
-  {
-    Statement s(GetUniqueStatement("PRAGMA mmap_size"));
-    if (s.Step() && s.ColumnInt64(0) > 0)
-      mmap_enabled_ = true;
-  }
-
   const base::TimeDelta kBusyTimeout =
     base::TimeDelta::FromSeconds(kBusyTimeoutSeconds);
 
@@ -1360,9 +1272,6 @@ void Connection::DoRollback() {
 
   RecordUpdateTime(delta);
   RecordOneEvent(EVENT_ROLLBACK);
-
-  // The cache may have been accumulating dirty pages for commit.
-  ReleaseCacheMemoryIfNeeded(false);
 
   needs_rollback_ = false;
 }
