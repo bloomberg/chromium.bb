@@ -48,6 +48,7 @@ public class WindowAndroid {
         TouchExplorationMonitor() {
             mTouchExplorationListener =
                     new AccessibilityManager.TouchExplorationStateChangeListener() {
+                @Override
                 public void onTouchExplorationStateChanged(boolean enabled) {
                     mIsTouchExplorationEnabled =
                             mAccessibilityManager.isTouchExplorationEnabled();
@@ -120,7 +121,8 @@ public class WindowAndroid {
 
     /**
      * @return true if onVSync handler is executing.
-     * @see org.chromium.ui.VSyncMonitor#isInsideVSync().
+     *
+     * @see org.chromium.ui.VSyncMonitor#isInsideVSync()
      */
     public boolean isInsideVSync() {
         return mVSyncMonitor.isInsideVSync();
@@ -454,7 +456,7 @@ public class WindowAndroid {
     }
 
     /**
-     * {@see setKeyboardAccessoryView(ViewGroup)}.
+     * @see #setKeyboardAccessoryView(ViewGroup)
      */
     public ViewGroup getKeyboardAccessoryView() {
         return mKeyboardAccessoryView;
@@ -468,7 +470,8 @@ public class WindowAndroid {
 
     /**
      * Adds a listener that is updated of keyboard visibility changes. This works as a best guess.
-     * {@see UiUtils.isKeyboardShowing}
+     *
+     * @see org.chromium.ui.UiUtils#isKeyboardShowing(Context, View)
      */
     public void addKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
         if (mKeyboardVisibilityListeners.isEmpty()) {
@@ -478,7 +481,7 @@ public class WindowAndroid {
     }
 
     /**
-     * {@see addKeyboardVisibilityListener()}.
+     * @see #addKeyboardVisibilityListener(KeyboardVisibilityListener)
      */
     public void removeKeyboardVisibilityListener(KeyboardVisibilityListener listener) {
         mKeyboardVisibilityListeners.remove(listener);
