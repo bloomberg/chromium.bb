@@ -1792,6 +1792,47 @@ TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
   EXPECT_EQ("0,0 250x253", docked->bounds().ToString());
 }
 
+TEST_F(DisplayManagerTest, DockMode) {
+  if (!SupportsMultipleDisplays())
+    return;
+  const int64 internal_id = 1;
+  const int64 external_id = 2;
+
+  const DisplayInfo internal_display_info =
+      CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
+  const DisplayInfo external_display_info =
+      CreateDisplayInfo(external_id, gfx::Rect(1, 1, 100, 100));
+  std::vector<DisplayInfo> display_info_list;
+
+  // software mirroring.
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  const int64 internal_display_id =
+      test::DisplayManagerTestApi().SetFirstDisplayAsInternalDisplay();
+  EXPECT_EQ(internal_id, internal_display_id);
+
+  display_info_list.clear();
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(1U, display_manager()->active_display_list().size());
+
+  EXPECT_TRUE(display_manager()->IsActiveDisplayId(external_id));
+  EXPECT_FALSE(display_manager()->IsActiveDisplayId(internal_id));
+
+  const DisplayInfo& info = display_manager()->GetDisplayInfo(internal_id);
+  DisplayMode mode;
+
+  EXPECT_FALSE(GetDisplayModeForNextUIScale(info, true, &mode));
+  EXPECT_FALSE(GetDisplayModeForNextUIScale(info, false, &mode));
+  EXPECT_FALSE(SetDisplayUIScale(internal_id, 1.0f));
+
+  DisplayInfo invalid_info;
+  EXPECT_FALSE(GetDisplayModeForNextUIScale(invalid_info, true, &mode));
+  EXPECT_FALSE(GetDisplayModeForNextUIScale(invalid_info, false, &mode));
+  EXPECT_FALSE(SetDisplayUIScale(gfx::Display::kInvalidDisplayID, 1.0f));
+}
+
 class ScreenShutdownTest : public test::AshTestBase {
  public:
   ScreenShutdownTest() {

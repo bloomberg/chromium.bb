@@ -240,6 +240,10 @@ class ASH_EXPORT DisplayManager
     return active_display_list_;
   }
 
+  // Returns true if the display specified by |display_id| is currently
+  // connected and active. (mirroring display isn't active, for example).
+  bool IsActiveDisplayId(int64 display_id) const;
+
   // Returns the number of connected displays. This returns 2
   // when displays are mirrored.
   size_t num_connected_displays() const { return num_connected_displays_; }

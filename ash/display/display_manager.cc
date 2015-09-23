@@ -870,6 +870,13 @@ size_t DisplayManager::GetNumDisplays() const {
   return active_display_list_.size();
 }
 
+bool DisplayManager::IsActiveDisplayId(int64 display_id) const {
+  return std::find_if(active_display_list_.begin(), active_display_list_.end(),
+                      [display_id](const gfx::Display& display) {
+                        return display.id() == display_id;
+                      }) != active_display_list_.end();
+}
+
 bool DisplayManager::IsInMirrorMode() const {
   return mirroring_display_id_ != gfx::Display::kInvalidDisplayID;
 }

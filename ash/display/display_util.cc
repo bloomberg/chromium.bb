@@ -173,8 +173,11 @@ bool GetDisplayModeForResolution(const DisplayInfo& info,
 bool GetDisplayModeForNextUIScale(const DisplayInfo& info,
                                   bool up,
                                   DisplayMode* out) {
-  if (!gfx::Display::IsInternalDisplayId(info.id()))
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->IsActiveDisplayId(info.id()) ||
+      !gfx::Display::IsInternalDisplayId(info.id())) {
     return false;
+  }
   const std::vector<DisplayMode>& modes = info.display_modes();
   ScaleComparator comparator(info.configured_ui_scale());
   auto iter = std::find_if(modes.begin(), modes.end(), comparator);
@@ -201,6 +204,10 @@ bool GetDisplayModeForNextResolution(const DisplayInfo& info,
 
 bool SetDisplayUIScale(int64 id, float ui_scale) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  if (!display_manager->IsActiveDisplayId(id) ||
+      !gfx::Display::IsInternalDisplayId(id)) {
+    return false;
+  }
   const DisplayInfo& info = display_manager->GetDisplayInfo(id);
   DisplayMode mode;
   if (!GetDisplayModeForUIScale(info, ui_scale, &mode))
