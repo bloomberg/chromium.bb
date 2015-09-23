@@ -151,6 +151,119 @@ __gCrWeb.autofill.lastActiveElement = null;
 __gCrWeb.autofill.styleInjected = false;
 
 /**
+ * Searches an element's ancestors to see if the element is inside a <form> or
+ * <fieldset>.
+ *
+ * It is based on the logic in
+ *     bool IsElementInsideFormOrFieldSet(const WebElement& element)
+ * in chromium/src/components/autofill/content/renderer/form_cache.cc
+ *
+ * @param {!FormControlElement} element An element to examine.
+ * @return {boolean} Whether the element is inside a <form> or <fieldset>.
+ */
+function isElementInsideFormOrFieldSet(element) {
+  var parentNode = element.parentNode;
+  while (parentNode) {
+    if ((parentNode.nodeType === Node.ELEMENT_NODE) &&
+        (__gCrWeb.autofill.hasTagName(parentNode, 'form') ||
+         __gCrWeb.autofill.hasTagName(parentNode, 'fieldset'))) {
+      return true;
+    }
+    parentNode = parentNode.parentNode;
+  }
+  return false;
+}
+
+/**
+ * To avoid overly expensive computation, we impose a minimum number of
+ * allowable fields.  The corresponding maximum number of allowable fields
+ * is imposed by webFormElementToFormData().
+ *
+ * Unlike the C++ version, this version takes a required field count param,
+ * instead of using a hard coded value.
+ *
+ * It is based on the logic in
+ *     bool ShouldIgnoreForm(size_t num_editable_elements,
+ *                           size_t num_control_elements);
+ * in chromium/src/components/autofill/content/renderer/form_cache.cc
+ *
+ * @param {number} numEditableElements number of editable elements.
+ * @param {number} numControlElements number of control elements.
+ * @param {number} numFieldsRequired number of fields required.
+ * @return {boolean} Whether to ignore the form or not.
+ */
+function shouldIgnoreForm_(numEditableElements,
+                           numControlElements,
+                           numFieldsRequired) {
+  return numEditableElements < numFieldsRequired && numControlElements > 0;
+}
+
+/**
+ * Scans |control_elements| and returns the number of editable elements.
+ *
+ * Unlike the C++ version, this version does not take the
+ * log_deprecation_messages parameter, and it does not save any state since
+ * there is no caching.
+ *
+ * It is based on the logic in:
+ *     size_t FormCache::ScanFormControlElements(
+ *         const std::vector<WebFormControlElement>& control_elements,
+ *         bool log_deprecation_messages);
+ * in chromium/src/components/autofill/content/renderer/form_cache.cc.
+ *
+ * @param {Array<FormControlElement>} controlElements The elements to scan.
+ * @return {number} The number of editable elements.
+ */
+function scanFormControlElements_(controlElements) {
+  var numEditableElements = 0;
+  for (var elementIndex = 0; elementIndex < controlElements.length;
+       ++elementIndex) {
+    var element = controlElements[elementIndex];
+    if (!__gCrWeb.autofill.isCheckableElement(element)) {
+      ++numEditableElements;
+    }
+  }
+  return numEditableElements;
+}
+
+/**
+ * Get all form control elements from |elements| that are not part of a form.
+ * Also append the fieldsets encountered that are not part of a form to
+ * |fieldsets|.
+ *
+ * It is based on the logic in:
+ *     std::vector<WebFormControlElement>
+ *     GetUnownedAutofillableFormFieldElements(
+ *         const WebElementCollection& elements,
+ *         std::vector<WebElement>* fieldsets);
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ *
+ * In the C++ version, |fieldsets| can be NULL, in which case we do not try to
+ * append to it.
+ *
+ * @param {Array<FormControlElement>} elements elements to look through.
+ * @param {Array<Element>} fieldsets out param for unowned fieldsets.
+ * @return {Array<FormControlElement>} The elements that are not part of a form.
+ */
+function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
+  var unownedFieldsetChildren = [];
+  for (var i = 0; i < elements.length; ++i) {
+    if (__gCrWeb.common.isFormControlElement(elements[i])) {
+      if (!elements[i].form) {
+        unownedFieldsetChildren.push(elements[i]);
+      }
+    }
+
+    if (__gCrWeb.autofill.hasTagName(elements[i], 'fieldset') &&
+        !isElementInsideFormOrFieldSet(elements[i])) {
+      fieldset.push(elements[i]);
+    }
+  }
+  return __gCrWeb.autofill.extractAutofillableElementsFromSet(
+      unownedFieldsetChildren);
+}
+
+/**
  * Extracts fields from |controlElements| with |extractMask| to |formFields|.
  * The extracted fields are also placed in |elementArray|.
  *
@@ -625,11 +738,10 @@ __gCrWeb.autofill.extractNewForms = function(minimumRequiredFields) {
  *     from which the data will be extracted.
  * @param {number} minimumRequiredFields The minimum number of fields a form
  *     should contain for autofill.
- * @param {Array<AutofillFormData>} forms Forms that will be filled in data of
- *     forms in frame.
+ * @param {Array<AutofillFormData>} forms Array to store the data for the forms
+ *     found in the frame.
  */
-function extractFormsAndFormElements_(
-    frame, minimumRequiredFields, forms) {
+function extractFormsAndFormElements_(frame, minimumRequiredFields, forms) {
   if (!frame) {
     return;
   }
@@ -641,31 +753,21 @@ function extractFormsAndFormElements_(
   /** @type {HTMLCollection} */
   var webForms = doc.forms;
 
+  var extractMask = __gCrWeb.autofill.EXTRACT_MASK_VALUE |
+      __gCrWeb.autofill.EXTRACT_MASK_OPTIONS;
   var numFieldsSeen = 0;
   for (var formIndex = 0; formIndex < webForms.length; ++formIndex) {
     /** @type {HTMLFormElement} */
     var formElement = webForms[formIndex];
     var controlElements =
         __gCrWeb.autofill.extractAutofillableElementsInForm(formElement);
-    var numEditableElements = 0;
-    for (var elementIndex = 0; elementIndex < controlElements.length;
-         ++elementIndex) {
-      var element = controlElements[elementIndex];
-      if (!__gCrWeb.autofill.isCheckableElement(element)) {
-        ++numEditableElements;
-      }
-    }
-
-    // To avoid overly expensive computation, we impose a minimum number of
-    // allowable fields.  The corresponding maximum number of allowable
-    // fields is imposed by webFormElementToFormData().
-    if (numEditableElements < minimumRequiredFields &&
-        controlElements.length > 0) {
+    var numEditableElements = scanFormControlElements_(controlElements);
+    if (shouldIgnoreForm_(numEditableElements,
+                          controlElements.length,
+                          minimumRequiredFields)) {
       continue;
     }
 
-    var extractMask = __gCrWeb.autofill.EXTRACT_MASK_VALUE |
-        __gCrWeb.autofill.EXTRACT_MASK_OPTIONS;
     var form = new __gCrWeb['common'].JSONSafeObject;
     if (!__gCrWeb.autofill.webFormElementToFormData(
         frame, formElement, null, extractMask, form, null /* field */)) {
@@ -678,6 +780,27 @@ function extractFormsAndFormElements_(
 
     if (form.fields.length >= minimumRequiredFields) {
       forms.push(form);
+    }
+  }
+
+  // Look for more parseable fields outside of forms.
+  var fieldsets = [];
+  var unownedControlElements =
+      getUnownedAutofillableFormFieldElements_(doc.all, fieldsets);
+  var numEditableUnownedElements =
+      scanFormControlElements_(unownedControlElements);
+  if (!shouldIgnoreForm_(numEditableUnownedElements,
+                         unownedControlElements.length,
+                         minimumRequiredFields)) {
+    var unownedForm = new __gCrWeb['common'].JSONSafeObject;
+    if (unownedFormElementsAndFieldSetsToFormData_(
+        frame, fieldsets, unownedControlElements, extractMask, unownedForm)) {
+      numFieldsSeen += unownedForm['fields'].length;
+      if (numFieldsSeen <= __gCrWeb.autofill.MAX_PARSEABLE_FIELDS) {
+        if (unownedForm.fields.length >= minimumRequiredFields) {
+          forms.push(unownedForm);
+        }
+      }
     }
   }
 
@@ -726,6 +849,7 @@ __gCrWeb.autofill.webFormElementToFormData = function(
   }
 
   form['name'] = __gCrWeb.common.getFormIdentifier(formElement);
+  // TODO(thestig): Check if method is unused and remove.
   var method = formElement.getAttribute('method');
   if (method) {
     form['method'] = method;
@@ -748,6 +872,50 @@ __gCrWeb.autofill.webFormElementToFormData = function(
   return formOrFieldsetsToFormData_(formElement, formControlElement,
       [] /* fieldsets */, controlElements, extractMask, form, field);
 };
+
+/**
+ * Fills |form| with the form data object corresponding to the unowned elements
+ * and fieldsets in the document.
+ * |extract_mask| controls what data is extracted.
+ * Returns true if |form| is filled out. Returns false if there are no fields or
+ * too many fields in the |form|.
+ *
+ * It is based on the logic in
+ *     bool UnownedFormElementsAndFieldSetsToFormData(
+ *         const std::vector<blink::WebElement>& fieldsets,
+ *         const std::vector<blink::WebFormControlElement>& control_elements,
+ *         const GURL& origin,
+ *         ExtractMask extract_mask,
+ *         FormData* form)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
+ *
+ * @param {HTMLFrameElement|Window} frame The window or frame where the
+ *     formElement is in.
+ * @param {Array<Element>} fieldsets The fieldsets to look through.
+ * @param {Array<FormControlElement>} controlElements The control elements that
+ *     will be processed.
+ * @param {number} extractMask Mask controls what data is extracted from
+ *     formElement.
+ * @param {AutofillFormData} form Form to fill in the AutofillFormData
+ *     information of formElement.
+ * @return {boolean} Whether there are fields and not too many fields in the
+ *     form.
+ */
+function unownedFormElementsAndFieldSetsToFormData_(
+    frame, fieldsets, controlElements, extractMask, form) {
+  if (!frame) {
+    return false;
+  }
+
+  form['name'] = '';
+  form['origin'] = __gCrWeb.common.removeQueryAndReferenceFromURL(
+      frame.location.href);
+  form['action'] = ''
+
+  return formOrFieldsetsToFormData_(
+      null /* formElement*/, null /* formControlElement */, fieldsets,
+      controlElements, extractMask, form, null /* field */);
+}
 
 /**
  * Returns is the tag of an |element| is tag.
