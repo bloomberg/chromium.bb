@@ -48,6 +48,10 @@ class BrowserActionsBarBrowserTest : public ExtensionBrowserTest {
     return extension_c_.get();
   }
 
+ protected:
+  // Enable or disable the feature redesign switch.
+  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> override_redesign_;
+
  private:
   scoped_ptr<BrowserActionTestUtil> browser_actions_bar_;
 
@@ -72,9 +76,6 @@ class BrowserActionsBarRedesignBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
-  // Enable the feature redesign switch.
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
-
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsBarRedesignBrowserTest);
 };
 

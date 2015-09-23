@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image.h"
 
 class GURL;
 
@@ -286,6 +287,11 @@ class ExtensionAction {
   // The default icon image, if |default_icon_| exists.
   // Lazily initialized via LoadDefaultIconImage().
   scoped_ptr<extensions::IconImage> default_icon_image_;
+
+  // The lazily-initialized image for a placeholder icon, in the event that the
+  // extension doesn't have its own icon. (Mutable to allow lazy init in
+  // GetDefaultIconImage().)
+  mutable gfx::Image placeholder_icon_image_;
 
   // The id for the ExtensionAction, for example: "RssPageAction". This is
   // needed for compat with an older version of the page actions API.
