@@ -748,6 +748,11 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
 
     if (equalIgnoringCase(name, ContentSecurityPolicy::DefaultSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_defaultSrc);
+        // TODO(mkwst) It seems unlikely that developers would use different
+        // algorithms for scripts and styles. We may want to combine the
+        // usesScriptHashAlgorithms() and usesStyleHashAlgorithms.
+        m_policy->usesScriptHashAlgorithms(m_defaultSrc->hashAlgorithmsUsed());
+        m_policy->usesStyleHashAlgorithms(m_defaultSrc->hashAlgorithmsUsed());
     } else if (equalIgnoringCase(name, ContentSecurityPolicy::ScriptSrc)) {
         setCSPDirective<SourceListDirective>(name, value, m_scriptSrc);
         m_policy->usesScriptHashAlgorithms(m_scriptSrc->hashAlgorithmsUsed());
