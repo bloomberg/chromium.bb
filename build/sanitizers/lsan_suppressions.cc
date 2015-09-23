@@ -48,26 +48,8 @@ char kLSanDefaultSuppressions[] =
 // xrandr leak. http://crbug.com/119677
 "leak:XRRFindDisplay\n"
 
-// Suppressions for objects which can be owned by the V8 heap. This is a
-// temporary workaround until LeakSanitizer supports the V8 heap.
-// Those should only fire in (browser)tests. If you see one of them in Chrome,
-// then it's a real leak.
-// http://crbug.com/328552
-"leak:WTF::StringImpl::createUninitialized\n"
-"leak:WTF::StringImpl::create8BitIfPossible\n"
-"leak:blink::MouseEvent::create\n"
-"leak:blink::*::*GetterCallback\n"
-"leak:blink::CSSComputedStyleDeclaration::create\n"
-"leak:blink::V8PerIsolateData::ensureDomInJSContext\n"
+// http://crbug.com/431213, http://crbug.com/416665
 "leak:gin/object_template_builder.h\n"
-"leak:gin::internal::Dispatcher\n"
-"leak:blink::LocalDOMWindow::getComputedStyle\n"
-// This should really be RemoteDOMWindow::create, but symbolization is
-// weird in release builds. https://crbug.com/484760
-"leak:blink::RemoteFrame::create\n"
-
-// http://crbug.com/356785
-"leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody\n"
 
 // ================ Leaks in Chromium code ================
 // PLEASE DO NOT ADD SUPPRESSIONS FOR NEW LEAKS.
