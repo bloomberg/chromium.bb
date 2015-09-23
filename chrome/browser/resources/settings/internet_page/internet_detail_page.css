@@ -47,7 +47,7 @@
   padding: 0
 }
 
-#advancedDiv cr-button {
+#advancedDiv paper-button {
   --paper-button: {
     text-align: start;
   };

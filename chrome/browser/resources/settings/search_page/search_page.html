@@ -1,6 +1,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 <link rel="import" href="chrome://md-settings/search_engines_page/search_engines_page.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
@@ -23,20 +23,20 @@
             </template>
           </select>
 
-          <cr-button class="search-engines"
+          <paper-button class="search-engines"
               i18n-content="searchManageButtonLabel"
               on-tap="onSearchEnginesTap_" raised>
-          </cr-button>
+          </paper-button>
         </div>
       </neon-animatable>
       <neon-animatable id="search-engines">
         <settings-subheader i18n-values="page-title:searchEnginesLabel">
         </settings-subheader>
         <cr-settings-search-engines-page></cr-settings-search-engines-page>
-        <cr-button class="search-engines-advanced"
+        <paper-button class="search-engines-advanced"
             i18n-content="advancedPageTitle"
             on-tap="onSearchEnginesAdvancedTap_" raised>
-        </cr-button>
+        </paper-button>
       </neon-animatable>
       <neon-animatable id="search-engines-advanced">
         <!-- This sub-subpage is purely a placeholder to provide an example. -->

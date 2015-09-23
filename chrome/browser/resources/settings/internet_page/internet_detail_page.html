@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
@@ -70,28 +71,28 @@
 
         <!-- Button row: Advanced + Disconnect | Connect. -->
         <div class="layout horizontal center">
-          <cr-button toggles active="{{advancedExpanded}}"
+          <paper-button toggles noink active="{{advancedExpanded}}"
               hidden$="[[!hasAdvancedOrDeviceFields_(networkState)]]">
             Advanced
-          </cr-button>
+          </paper-button>
           <span class="flex"></span>
-          <cr-button hidden$="[[!showViewAccount_(networkState)]]"
-              on-click="onViewAccountClicked_">
+          <paper-button hidden$="[[!showViewAccount_(networkState)]]"
+              on-tap="onViewAccountClicked_">
             View Account
-          </cr-button>
-          <cr-button hidden$="[[!showActivate_(networkState)]]"
-              on-click="onActivateClicked_">
+          </paper-button>
+          <paper-button hidden$="[[!showActivate_(networkState)]]"
+              on-tap="onActivateClicked_">
             Activate
-          </cr-button>
-          <cr-button hidden$="[[!showConnect_(networkState)]]"
+          </paper-button>
+          <paper-button hidden$="[[!showConnect_(networkState)]]"
               disabled="[[!enableConnect_(networkState)]]"
-              on-click="onConnectClicked_">
+              on-tap="onConnectClicked_">
             Connect
-          </cr-button>
-          <cr-button hidden$="[[!showDisconnect_(networkState)]]"
-              on-click="onDisconnectClicked_">
+          </paper-button>
+          <paper-button hidden$="[[!showDisconnect_(networkState)]]"
+              on-tap="onDisconnectClicked_">
             Disconnect
-          </cr-button>
+          </paper-button>
         </div>
 
         <!-- Advanced section -->
@@ -109,9 +110,9 @@
             <!-- Network (APN, address, nameservers) -->
             <div id="addressDiv" class="layout vertical"
                 hidden$="[[!hasNetworkSection_(networkState)]]">
-              <cr-button toggles active="{{addressExpanded}}">
+              <paper-button toggles noink active="{{addressExpanded}}">
                 Network
-              </cr-button>
+              </paper-button>
               <cr-collapse opened="[[addressExpanded]]">
                 <div class="layout vertical flex">
                   <network-apnlist editable
@@ -135,9 +136,9 @@
             <!-- Proxy -->
             <div class="layout vertical"
                 hidden$="[[!hasNetworkSection_(networkState)]]">
-              <cr-button toggles active="{{proxyExpanded}}">
+              <paper-button toggles noink active="{{proxyExpanded}}">
                 Proxy
-              </cr-button>
+              </paper-button>
               <cr-collapse opened="[[proxyExpanded]]">
                 <div id="proxyDiv" class="layout vertical flex">
                   <network-proxy editable
@@ -151,9 +152,9 @@
             <!-- Device properties -->
             <div class="layout vertical"
                 hidden$="[[!hasDeviceFields_(networkState)]]">
-              <cr-button toggles active="{{deviceExpanded}}">
+              <paper-button toggles noink active="{{deviceExpanded}}">
                 Device
-              </cr-button>
+              </paper-button>
               <cr-collapse opened="[[deviceExpanded]]">
                 <network-property-list
                     fields="[[getDeviceFields_(networkState)]]"

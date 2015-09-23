@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
 <link rel="import" href="chrome://md-settings/clear_browsing_data_page/clear_browsing_data_page.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
@@ -67,18 +67,18 @@
         </cr-settings-checkbox>
 </if>
         <div class="privacy-buttons layout horizontal end-justified">
-          <cr-button
+          <paper-button
               on-tap="onManageCertificatesTap_"
               i18n-content="manageCertificates">
-          </cr-button>
-          <cr-button
+          </paper-button>
+          <paper-button
               on-tap="onSiteSettingsTap_"
               i18n-content="siteSettings">
-          </cr-button>
-          <cr-button
+          </paper-button>
+          <paper-button
               on-tap="onClearBrowsingDataTap_"
               raised i18n-content="clearBrowsingData">
-          </cr-button>
+          </paper-button>
         </div>
       </neon-animatable>
       <neon-animatable id="manage-certificates">

@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
@@ -11,20 +11,6 @@
 <dom-module id="cr-demo-element">
   <link rel="import" type="css" href="demo_element.css">
   <template>
-    <h3>cr-button</h3>
-    <div class="layout vertical">
-      <div class="layout horizontal">
-        <cr-button>Button1</cr-button>
-        <cr-button>Button2</cr-button>
-        <cr-button>Button3</cr-button>
-      </div>
-      <cr-button raised>Raised Button</cr-button>
-      <div class="layout horizontal">
-        <cr-button toggles>Toggle Button1</cr-button>
-        <cr-button toggles>Toggle Button2</cr-button>
-      </div>
-    </div>
-
     <h3>cr-input</h3>
     <div class="layout vertical">
       <div class="layout horizontal">
@@ -72,9 +58,9 @@
           <paper-checkbox>Advanced option 2</paper-checkbox>
         </div>
       </cr-collapse>
-      <cr-button toggles active="{{collapseOpened2}}">
+      <paper-button toggles active="{{collapseOpened2}}">
         Collapse 2
-      </cr-button>
+      </paper-button>
       <cr-collapse opened="[[collapseOpened2]]">
         <div class="layout vertical">
           <span>Collapsable Section 2</span>

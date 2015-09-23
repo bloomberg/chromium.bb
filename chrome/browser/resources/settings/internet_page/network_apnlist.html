@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="network_property_list.html">
 
@@ -25,7 +25,7 @@
             edit-field-types="[[otherApnEditTypes_]]"
             on-property-change="onOtherApnChange_">
         </network-property-list>
-        <cr-button on-click="onSaveOther_">Save</cr-button>
+        <paper-button on-tap="onSaveOther_">Save</paper-button>
       </div>
     </div>
   </template>

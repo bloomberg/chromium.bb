@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 
@@ -16,49 +17,56 @@
       <div>
         <div i18n-content="certificateManagerYourCertificatesSubtitle"></div>
         <div class="privacy-buttons layout horizontal end-justified">
-          <cr-button i18n-content="certificateManagerView"></cr-button>
-          <cr-button i18n-content="certificateManagerImport"></cr-button>
-          <cr-button i18n-content="certificateManagerImportAndBind"></cr-button>
-          <cr-button i18n-content="certificateManagerExport"></cr-button>
-          <cr-button i18n-content="certificateManagerDelete"></cr-button>
+          <paper-button i18n-content="certificateManagerView"></paper-button>
+          <paper-button i18n-content="certificateManagerImport"></paper-button>
+          <paper-button i18n-content="certificateManagerImportAndBind">
+          </paper-button>
+          <paper-button i18n-content="certificateManagerExport"></paper-button>
+          <paper-button i18n-content="certificateManagerDelete"></paper-button>
           <span class="flex"></span>
-          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+          <paper-button raised i18n-content="certificateManagerDone">
+          </paper-button>
         </div>
       </div>
       <div>
         <div i18n-content="certificateManagerServersSubtitle"></div>
         <div class="privacy-buttons layout horizontal end-justified">
-          <cr-button disabled i18n-content="certificateManagerView"></cr-button>
-          <cr-button i18n-content="certificateManagerImport"></cr-button>
-          <cr-button disabled i18n-content="certificateManagerExport">
-          </cr-button>
-          <cr-button disabled i18n-content="certificateManagerDelete">
-          </cr-button>
+          <paper-button disabled i18n-content="certificateManagerView">
+          </paper-button>
+          <paper-button i18n-content="certificateManagerImport"></paper-button>
+          <paper-button disabled i18n-content="certificateManagerExport">
+          </paper-button>
+          <paper-button disabled i18n-content="certificateManagerDelete">
+          </paper-button>
           <span class="flex"></span>
-          <cr-button raised  i18n-content="certificateManagerDone"></cr-button>
+          <paper-button raised  i18n-content="certificateManagerDone">
+          </paper-button>
         </div>
       </div>
       <div>
         <div i18n-content="certificateManagerAuthoritiesSubtitle"></div>
         <div class="privacy-buttons layout horizontal end-justified">
-          <cr-button i18n-content="certificateManagerView"></cr-button>
-          <cr-button i18n-content="certificateManagerImport"></cr-button>
-          <cr-button i18n-content="certificateManagerExport"></cr-button>
-          <cr-button i18n-content="certificateManagerDelete"></cr-button>
+          <paper-button i18n-content="certificateManagerView"></paper-button>
+          <paper-button i18n-content="certificateManagerImport"></paper-button>
+          <paper-button i18n-content="certificateManagerExport"></paper-button>
+          <paper-button i18n-content="certificateManagerDelete"></paper-button>
           <span class="flex"></span>
-          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+          <paper-button raised i18n-content="certificateManagerDone">
+          </paper-button>
         </div>
       </div>
       <div>
         <div i18n-content="certificateManagerOthersSubtitle"></div>
         <div class="privacy-buttons layout horizontal end-justified">
-          <cr-button disabled i18n-content="certificateManagerView"></cr-button>
-          <cr-button disabled i18n-content="certificateManagerExport">
-          </cr-button>
-          <cr-button disabled i18n-content="certificateManagerDelete">
-          </cr-button>
+          <paper-button disabled i18n-content="certificateManagerView">
+          </paper-button>
+          <paper-button disabled i18n-content="certificateManagerExport">
+          </paper-button>
+          <paper-button disabled i18n-content="certificateManagerDelete">
+          </paper-button>
           <span class="flex"></span>
-          <cr-button raised i18n-content="certificateManagerDone"></cr-button>
+          <paper-button raised i18n-content="certificateManagerDone">
+          </paper-button>
         </div>
       </div>
     </iron-pages>

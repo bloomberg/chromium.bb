@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
@@ -70,9 +71,9 @@
         <div class="layout horizontal baseline">
           <cr-input id="proxyExclusion" class="flex" no-label-float>
           </cr-input>
-          <cr-button on-click="onAddProxyExclusion_">
+          <paper-button on-tap="onAddProxyExclusion_">
             Add Exception
-          </cr-button>
+          </paper-button>
         </div>
       </div>
     </div>

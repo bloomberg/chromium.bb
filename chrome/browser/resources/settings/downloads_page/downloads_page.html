@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
@@ -18,9 +18,9 @@
             readonly aria-labelledby="locationLabel">
         </cr-input>
       </div>
-      <cr-button id="changeDownloadsPath" on-click="selectDownloadLocation_"
+      <paper-button id="changeDownloadsPath" on-tap="selectDownloadLocation_"
           i18n-content="changeDownloadLocation">
-      </cr-button>
+      </paper-button>
     </div>
     <cr-settings-checkbox pref="{{prefs.download.prompt_for_download}}"
         i18n-values="label:promptForDownload">

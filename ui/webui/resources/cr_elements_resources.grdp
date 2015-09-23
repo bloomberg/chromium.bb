@@ -18,15 +18,6 @@
                file="../../webui/resources/cr_elements/v1_0/demo_page.html"
                type="chrome_html" />
   </if>
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_BUTTON_CSS"
-             file="../../webui/resources/cr_elements/v1_0/cr_button/cr_button.css"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_BUTTON_HTML"
-             file="../../webui/resources/cr_elements/v1_0/cr_button/cr_button.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_BUTTON_JS"
-             file="../../webui/resources/cr_elements/v1_0/cr_button/cr_button.js"
-             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_COLLAPSE_CSS"
              file="../../webui/resources/cr_elements/v1_0/cr_collapse/cr_collapse.css"
              type="chrome_html" />

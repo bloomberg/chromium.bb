@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_section.html">
@@ -53,9 +53,9 @@
           <cr-input id="addUserInput" i18n-values="label:addUsersLabel"
               disabled="[[editingUsersDisabled]]"></cr-input>
           <div class="add-user-button layout horizontal end-justified">
-            <cr-button i18n-content="addLabel" on-click="addUser_"
+            <paper-button i18n-content="addLabel" on-tap="addUser_"
                 disabled="[[editingUsersDisabled]]" raised>
-            </cr-button>
+            </paper-button>
           </div>
         </div>
       </div>

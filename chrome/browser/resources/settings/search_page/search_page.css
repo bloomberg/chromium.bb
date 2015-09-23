@@ -6,11 +6,11 @@
   -webkit-margin-start: 10px;
 }
 
-cr-button.search-engines-advanced {
+paper-button.search-engines-advanced {
   margin-top: 10px;
 }
 
-cr-button.search-engines {
+paper-button.search-engines {
   align-items: center;
   display: flex;
   margin-top: 20px;
