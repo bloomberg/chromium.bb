@@ -126,7 +126,12 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
   settings->use_distance_field_text =
       cmd.HasSwitch(switches::kEnableDistanceFieldText);
 
+#if defined(OS_MACOSX)
+  settings->use_zero_copy = !cmd.HasSwitch(switches::kDisableZeroCopy);
+#else
   settings->use_zero_copy = cmd.HasSwitch(switches::kEnableZeroCopy);
+#endif
+
   settings->enable_elastic_overscroll = false;
 
   if (cmd.HasSwitch(switches::kContentImageTextureTarget)) {

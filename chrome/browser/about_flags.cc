@@ -1376,7 +1376,8 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_ZERO_COPY_NAME,
      IDS_FLAGS_ENABLE_ZERO_COPY_DESCRIPTION,
      kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEnableZeroCopy)},
+     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableZeroCopy,
+                               switches::kDisableZeroCopy)},
 #if defined(OS_CHROMEOS)
     {"enable-first-run-ui-transitions",
      IDS_FLAGS_ENABLE_FIRST_RUN_UI_TRANSITIONS_NAME,

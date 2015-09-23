@@ -201,7 +201,11 @@ int NumberOfRendererRasterThreads() {
 bool IsZeroCopyUploadEnabled() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+#if defined(OS_MACOSX)
+  return !command_line.HasSwitch(switches::kDisableZeroCopy);
+#else
   return command_line.HasSwitch(switches::kEnableZeroCopy);
+#endif
 }
 
 bool IsPersistentGpuMemoryBufferEnabled() {
