@@ -409,6 +409,7 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
     no_pch_target.visibility().SetPublic();
     no_pch_target.sources().push_back(SourceFile("//foo/input1.cc"));
     no_pch_target.sources().push_back(SourceFile("//foo/input2.c"));
+    no_pch_target.config_values().cflags_c().push_back("-std=c99");
     no_pch_target.SetToolchain(&pch_toolchain);
     ASSERT_TRUE(no_pch_target.OnResolved(&err));
 
@@ -420,7 +421,7 @@ TEST(NinjaBinaryTargetWriter, WinPrecompiledHeaders) {
         "defines =\n"
         "include_dirs =\n"
         "cflags =\n"
-        "cflags_c =\n"
+        "cflags_c = -std=c99\n"
         "cflags_cc =\n"
         "target_output_name = no_pch_target\n"
         "\n"
@@ -537,6 +538,7 @@ TEST(NinjaBinaryTargetWriter, GCCPrecompiledHeaders) {
     no_pch_target.visibility().SetPublic();
     no_pch_target.sources().push_back(SourceFile("//foo/input1.cc"));
     no_pch_target.sources().push_back(SourceFile("//foo/input2.c"));
+    no_pch_target.config_values().cflags_c().push_back("-std=c99");
     no_pch_target.SetToolchain(&pch_toolchain);
     ASSERT_TRUE(no_pch_target.OnResolved(&err));
 
@@ -548,7 +550,7 @@ TEST(NinjaBinaryTargetWriter, GCCPrecompiledHeaders) {
         "defines =\n"
         "include_dirs =\n"
         "cflags =\n"
-        "cflags_c =\n"
+        "cflags_c = -std=c99\n"
         "cflags_cc =\n"
         "target_output_name = no_pch_target\n"
         "\n"

@@ -492,6 +492,9 @@ void NinjaBinaryTargetWriter::WriteOneFlag(
         out_ << " -include " << pch_file;
       }
     }
+  } else {
+    RecursiveTargetConfigStringsToStream(target_, getter,
+                                         flag_escape_options, out_);
   }
   out_ << std::endl;
 }

@@ -103,22 +103,6 @@ extern const char kCflagsObjCC[];
 extern const char kCflagsObjCC_HelpShort[];
 extern const char* kCflagsObjCC_Help;
 
-extern const char kCflagsPCHC[];
-extern const char kCflagsPCHC_HelpShort[];
-extern const char* kCflagsPCHC_Help;
-
-extern const char kCflagsPCHCC[];
-extern const char kCflagsPCHCC_HelpShort[];
-extern const char* kCflagsPCHCC_Help;
-
-extern const char kCflagsPCHObjC[];
-extern const char kCflagsPCHObjC_HelpShort[];
-extern const char* kCflagsPCHObjC_Help;
-
-extern const char kCflagsPCHObjCC[];
-extern const char kCflagsPCHObjCC_HelpShort[];
-extern const char* kCflagsPCHObjCC_Help;
-
 extern const char kCheckIncludes[];
 extern const char kCheckIncludes_HelpShort[];
 extern const char kCheckIncludes_Help[];
