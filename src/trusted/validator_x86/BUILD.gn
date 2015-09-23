@@ -2,14 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#  Generated from GYP
-
-static_library("nccopy") {
-  sources = [
-    "nccopycode.c",
-    "nccopycode_stores.S",
-  ]
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
+if (current_cpu == "x86" || current_cpu == "x64") {
+  static_library("nccopy") {
+    sources = [
+      "nccopycode.c",
+      "nccopycode_stores.S",
+    ]
+    deps = [
+      "//build/config/nacl:nacl_base",
+    ]
+  }
 }
