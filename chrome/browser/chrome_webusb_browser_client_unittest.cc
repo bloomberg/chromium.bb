@@ -81,11 +81,12 @@ TEST_F(ChromeWebUsbBrowserClientTest, UsbDeviceAddedAndRemoved) {
       message_center->FindVisibleNotificationById(guid);
   ASSERT_TRUE(notification != nullptr);
 
-  base::string16 expected_title = base::ASCIIToUTF16("Google Product A");
+  base::string16 expected_title =
+      base::ASCIIToUTF16("Google Product A detected");
   EXPECT_EQ(expected_title, notification->title());
 
   base::string16 expected_message =
-      base::ASCIIToUTF16("Click here to visit this page");
+      base::ASCIIToUTF16("Go to www.google.com/A to connect.");
   EXPECT_EQ(expected_message, notification->message());
 
   EXPECT_TRUE(notification->delegate() != nullptr);
@@ -195,26 +196,32 @@ TEST_F(ChromeWebUsbBrowserClientTest, ThreeUsbDevicesAddedAndRemoved) {
   message_center::Notification* notification_1 =
       message_center->FindVisibleNotificationById(guid_1);
   ASSERT_TRUE(notification_1 != nullptr);
-  base::string16 expected_title_1 = base::ASCIIToUTF16("Google Product A");
+  base::string16 expected_title_1 =
+      base::ASCIIToUTF16("Google Product A detected");
   EXPECT_EQ(expected_title_1, notification_1->title());
+  base::string16 expected_message_1 =
+      base::ASCIIToUTF16("Go to www.google.com/A to connect.");
+  EXPECT_EQ(expected_message_1, notification_1->message());
 
   message_center::Notification* notification_2 =
       message_center->FindVisibleNotificationById(guid_2);
   ASSERT_TRUE(notification_2 != nullptr);
-  base::string16 expected_title_2 = base::ASCIIToUTF16("Google Product B");
+  base::string16 expected_title_2 =
+      base::ASCIIToUTF16("Google Product B detected");
   EXPECT_EQ(expected_title_2, notification_2->title());
+  base::string16 expected_message_2 =
+      base::ASCIIToUTF16("Go to www.google.com/B to connect.");
+  EXPECT_EQ(expected_message_2, notification_2->message());
 
   message_center::Notification* notification_3 =
       message_center->FindVisibleNotificationById(guid_3);
   ASSERT_TRUE(notification_3 != nullptr);
-  base::string16 expected_title_3 = base::ASCIIToUTF16("Google Product C");
+  base::string16 expected_title_3 =
+      base::ASCIIToUTF16("Google Product C detected");
   EXPECT_EQ(expected_title_3, notification_3->title());
-
-  base::string16 expected_message =
-      base::ASCIIToUTF16("Click here to visit this page");
-  EXPECT_EQ(expected_message, notification_1->message());
-  EXPECT_EQ(expected_message, notification_2->message());
-  EXPECT_EQ(expected_message, notification_3->message());
+  base::string16 expected_message_3 =
+      base::ASCIIToUTF16("Go to www.google.com/C to connect.");
+  EXPECT_EQ(expected_message_3, notification_3->message());
 
   EXPECT_TRUE(notification_1->delegate() != nullptr);
   EXPECT_TRUE(notification_2->delegate() != nullptr);

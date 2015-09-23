@@ -8,8 +8,8 @@
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/common/origin_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -25,12 +25,17 @@ namespace {
 
 const char kWebUsbDetectorNotificationID[] = "webusb.detector";
 
+Browser* GetBrowser() {
+  chrome::ScopedTabbedBrowserDisplayer browser_displayer(
+      ProfileManager::GetActiveUserProfile(), chrome::GetActiveDesktop());
+  DCHECK(browser_displayer.browser());
+  return browser_displayer.browser();
+}
+
 void OpenURL(const GURL& url) {
-  Browser* browser = chrome::FindBrowserWithProfile(
-      ProfileManager::GetActiveUserProfile(), chrome::HOST_DESKTOP_TYPE_NATIVE);
-  content::OpenURLParams params(url, content::Referrer(), NEW_FOREGROUND_TAB,
-                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true);
-  browser->OpenURL(params);
+  GetBrowser()->OpenURL(
+      content::OpenURLParams(url, content::Referrer(), NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true));
 }
 
 // Delegate for webusb notification
@@ -69,23 +74,22 @@ void ChromeWebUsbBrowserClient::OnDeviceAdded(
     return;
   }
 
-  scoped_ptr<message_center::Notification> notification;
-
   message_center::RichNotificationData rich_notification_data;
-  rich_notification_data.context_message =
-      base::UTF8ToUTF16(landing_page.GetContent());
-
-  notification.reset(new message_center::Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      l10n_util::GetStringFUTF16(IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE,
-                                 product_name),
-      l10n_util::GetStringUTF16(IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION),
-      // TODO(juncai): use generic USB device icon here.
-      gfx::Image(), base::string16(), GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kWebUsbDetectorNotificationID),
-      rich_notification_data,
-      new WebUsbNotificationDelegate(landing_page, notification_id)));
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          l10n_util::GetStringFUTF16(
+              IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION_TITLE, product_name),
+          l10n_util::GetStringFUTF16(
+              IDS_WEBUSB_DEVICE_DETECTED_NOTIFICATION,
+              base::UTF8ToUTF16(landing_page.GetContent())),
+          // TODO(juncai): use generic USB device icon here.
+          gfx::Image(), base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              kWebUsbDetectorNotificationID),
+          rich_notification_data,
+          new WebUsbNotificationDelegate(landing_page, notification_id)));
 
   notification->SetSystemPriority();
   message_center::MessageCenter::Get()->AddNotification(notification.Pass());
