@@ -43149,6 +43149,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Startup.BrowserMainRunnerImplInitializeLongTime"
+    units="milliseconds">
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during BrowserMainRunnerImpl::Initialize.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMainRunnerImplInitializeStep1Time"
+    units="milliseconds">
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the first section of
+    BrowserMainRunnerImpl::Initialize.
+  </summary>
+</histogram>
+
+<histogram name="Startup.BrowserMainRunnerImplInitializeStep2Time"
+    units="milliseconds">
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    The amount of time that elapsed during the second section of
+    BrowserMainRunnerImpl::Initialize.
+  </summary>
+</histogram>
+
 <histogram name="Startup.BrowserMessageLoopStartHardFaultCount" units="faults">
   <owner>chrisha@chromium.org</owner>
   <summary>

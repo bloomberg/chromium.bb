@@ -9,9 +9,11 @@
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/profiler/scoped_profile.h"
 #include "base/profiler/scoped_tracker.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
 #include "components/tracing/trace_config_file.h"
@@ -138,6 +140,9 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
   }
 
   int Initialize(const MainFunctionParams& parameters) override {
+    SCOPED_UMA_HISTOGRAM_LONG_TIMER(
+        "Startup.BrowserMainRunnerImplInitializeLongTime");
+
     // TODO(vadimt, yiyaoliu): Remove all tracked_objects references below once
     // crbug.com/453640 is fixed.
     tracked_objects::ThreadData::InitializeThreadContext("CrBrowserMain");
@@ -151,6 +156,8 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     // not run these parts of initialization twice.
     if (!initialization_started_) {
       initialization_started_ = true;
+
+      const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
 
       SkGraphics::Init();
 
@@ -206,11 +213,17 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
 // to browser_shutdown::Shutdown or BrowserProcess::EndSession.
 
       ui::InitializeInputMethod();
+      UMA_HISTOGRAM_TIMES("Startup.BrowserMainRunnerImplInitializeStep1Time",
+                          base::TimeTicks::Now() - start_time_step1);
     }
+    const base::TimeTicks start_time_step2 = base::TimeTicks::Now();
     main_loop_->CreateStartupTasks();
     int result_code = main_loop_->GetResultCode();
     if (result_code > 0)
       return result_code;
+
+    UMA_HISTOGRAM_TIMES("Startup.BrowserMainRunnerImplInitializeStep2Time",
+                        base::TimeTicks::Now() - start_time_step2);
 
     // Return -1 to indicate no early termination.
     return -1;
