@@ -27,17 +27,12 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <linux/vt.h>
-#include <linux/kd.h>
-#include <linux/major.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/signalfd.h>
 #include <sys/stat.h>
 #include <systemd/sd-login.h>
 #include <unistd.h>
@@ -48,10 +43,6 @@
 
 #define DRM_MAJOR 226
 
-#ifndef KDSKBMUTE
-#define KDSKBMUTE	0x4B51
-#endif
-
 struct launcher_logind {
 	struct weston_launcher base;
 	struct weston_compositor *compositor;
@@ -61,8 +52,6 @@ struct launcher_logind {
 	unsigned int vtnr;
 	int vt;
 	int kb_mode;
-	int sfd;
-	struct wl_event_source *sfd_source;
 
 	DBusConnection *dbus;
 	struct wl_event_source *dbus_ctx;
@@ -242,27 +231,37 @@ launcher_logind_close(struct weston_launcher *launcher, int fd)
 static void
 launcher_logind_restore(struct weston_launcher *launcher)
 {
-	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
-	struct vt_mode mode = { 0 };
-
-	ioctl(wl->vt, KDSETMODE, KD_TEXT);
-	ioctl(wl->vt, KDSKBMUTE, 0);
-	ioctl(wl->vt, KDSKBMODE, wl->kb_mode);
-	mode.mode = VT_AUTO;
-	ioctl(wl->vt, VT_SETMODE, &mode);
 }
 
 static int
 launcher_logind_activate_vt(struct weston_launcher *launcher, int vt)
 {
 	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
+	DBusMessage *m;
+	bool b;
 	int r;
 
-	r = ioctl(wl->vt, VT_ACTIVATE, vt);
-	if (r < 0)
-		return -1;
+	m = dbus_message_new_method_call("org.freedesktop.login1",
+					 "/org/freedesktop/login1/seat/self",
+					 "org.freedesktop.login1.Seat",
+					 "SwitchTo");
+	if (!m)
+		return -ENOMEM;
 
-	return 0;
+	b = dbus_message_append_args(m,
+				     DBUS_TYPE_UINT32, &vt,
+				     DBUS_TYPE_INVALID);
+	if (!b) {
+		r = -ENOMEM;
+		goto err_unref;
+	}
+
+	dbus_connection_send(wl->dbus, m, NULL);
+	r = 0;
+
+ err_unref:
+	dbus_message_unref(m);
+	return r;
 }
 
 static void
@@ -678,157 +677,6 @@ launcher_logind_release_control(struct launcher_logind *wl)
 }
 
 static int
-signal_event(int fd, uint32_t mask, void *data)
-{
-	struct launcher_logind *wl = data;
-	struct signalfd_siginfo sig;
-
-	if (read(fd, &sig, sizeof sig) != sizeof sig) {
-		weston_log("logind: cannot read signalfd: %m\n");
-		return 0;
-	}
-
-	if (sig.ssi_signo == (unsigned int)SIGRTMIN)
-		ioctl(wl->vt, VT_RELDISP, 1);
-	else if (sig.ssi_signo == (unsigned int)SIGRTMIN + 1)
-		ioctl(wl->vt, VT_RELDISP, VT_ACKACQ);
-
-	return 0;
-}
-
-static int
-launcher_logind_setup_vt(struct launcher_logind *wl)
-{
-	struct stat st;
-	char buf[64];
-	struct vt_mode mode = { 0 };
-	int r;
-	sigset_t mask;
-	struct wl_event_loop *loop;
-
-	snprintf(buf, sizeof(buf), "/dev/tty%u", wl->vtnr);
-	buf[sizeof(buf) - 1] = 0;
-
-	wl->vt = open(buf, O_RDWR|O_CLOEXEC|O_NONBLOCK);
-
-	if (wl->vt < 0) {
-		r = -errno;
-		weston_log("logind: cannot open VT %s: %m\n", buf);
-		return r;
-	}
-
-	if (fstat(wl->vt, &st) == -1 ||
-	    major(st.st_rdev) != TTY_MAJOR || minor(st.st_rdev) <= 0 ||
-	    minor(st.st_rdev) >= 64) {
-		r = -EINVAL;
-		weston_log("logind: TTY %s is no virtual terminal\n", buf);
-		goto err_close;
-	}
-
-	/*r = setsid();
-	if (r < 0 && errno != EPERM) {
-		r = -errno;
-		weston_log("logind: setsid() failed: %m\n");
-		goto err_close;
-	}
-
-	r = ioctl(wl->vt, TIOCSCTTY, 0);
-	if (r < 0)
-		weston_log("logind: VT %s already in use\n", buf);*/
-
-	if (ioctl(wl->vt, KDGKBMODE, &wl->kb_mode) < 0) {
-		weston_log("logind: cannot read keyboard mode on %s: %m\n",
-			   buf);
-		wl->kb_mode = K_UNICODE;
-	} else if (wl->kb_mode == K_OFF) {
-		wl->kb_mode = K_UNICODE;
-	}
-
-	if (ioctl(wl->vt, KDSKBMUTE, 1) < 0 &&
-	    ioctl(wl->vt, KDSKBMODE, K_OFF) < 0) {
-		r = -errno;
-		weston_log("logind: cannot set K_OFF KB-mode on %s: %m\n",
-			   buf);
-		goto err_close;
-	}
-
-	if (ioctl(wl->vt, KDSETMODE, KD_GRAPHICS) < 0) {
-		r = -errno;
-		weston_log("logind: cannot set KD_GRAPHICS mode on %s: %m\n",
-			   buf);
-		goto err_kbmode;
-	}
-
-	/*
-	 * SIGRTMIN is used as global VT-release signal, SIGRTMIN + 1 is used
-	 * as VT-acquire signal. Note that SIGRT* must be tested on runtime, as
-	 * their exact values are not known at compile-time. POSIX requires 32
-	 * of them to be available, though.
-	 */
-	if (SIGRTMIN + 1 > SIGRTMAX) {
-		weston_log("logind: not enough RT signals available: %u-%u\n",
-			   SIGRTMIN, SIGRTMAX);
-		return -EINVAL;
-	}
-
-	sigemptyset(&mask);
-	sigaddset(&mask, SIGRTMIN);
-	sigaddset(&mask, SIGRTMIN + 1);
-	sigprocmask(SIG_BLOCK, &mask, NULL);
-
-	wl->sfd = signalfd(-1, &mask, SFD_NONBLOCK | SFD_CLOEXEC);
-	if (wl->sfd < 0) {
-		r = -errno;
-		weston_log("logind: cannot create signalfd: %m\n");
-		goto err_mode;
-	}
-
-	loop = wl_display_get_event_loop(wl->compositor->wl_display);
-	wl->sfd_source = wl_event_loop_add_fd(loop, wl->sfd,
-					      WL_EVENT_READABLE,
-					      signal_event, wl);
-	if (!wl->sfd_source) {
-		r = -errno;
-		weston_log("logind: cannot create signalfd source: %m\n");
-		goto err_sfd;
-	}
-
-	mode.mode = VT_PROCESS;
-	mode.relsig = SIGRTMIN;
-	mode.acqsig = SIGRTMIN + 1;
-	if (ioctl(wl->vt, VT_SETMODE, &mode) < 0) {
-		r = -errno;
-		weston_log("logind: cannot take over VT: %m\n");
-		goto err_sfd_source;
-	}
-
-	weston_log("logind: using VT %s\n", buf);
-	return 0;
-
-err_sfd_source:
-	wl_event_source_remove(wl->sfd_source);
-err_sfd:
-	close(wl->sfd);
-err_mode:
-	ioctl(wl->vt, KDSETMODE, KD_TEXT);
-err_kbmode:
-	ioctl(wl->vt, KDSKBMUTE, 0);
-	ioctl(wl->vt, KDSKBMODE, wl->kb_mode);
-err_close:
-	close(wl->vt);
-	return r;
-}
-
-static void
-launcher_logind_destroy_vt(struct launcher_logind *wl)
-{
-	launcher_logind_restore(&wl->base);
-	wl_event_source_remove(wl->sfd_source);
-	close(wl->sfd);
-	close(wl->vt);
-}
-
-static int
 weston_sd_session_get_vt(const char *sid, unsigned int *out)
 {
 #ifdef HAVE_SYSTEMD_LOGIN_209
@@ -849,6 +697,22 @@ weston_sd_session_get_vt(const char *sid, unsigned int *out)
 
 	return 0;
 #endif
+}
+
+static int
+launcher_logind_activate(struct launcher_logind *wl)
+{
+	DBusMessage *m;
+
+	m = dbus_message_new_method_call("org.freedesktop.login1",
+					 wl->spath,
+					 "org.freedesktop.login1.Session",
+					 "Activate");
+	if (!m)
+		return -ENOMEM;
+
+	dbus_connection_send(wl->dbus, m, NULL);
+	return 0;
 }
 
 static int
@@ -923,16 +787,14 @@ launcher_logind_connect(struct weston_launcher **out, struct weston_compositor *
 	if (r < 0)
 		goto err_dbus_cleanup;
 
-	r = launcher_logind_setup_vt(wl);
+	r = launcher_logind_activate(wl);
 	if (r < 0)
-		goto err_control;
+		goto err_dbus_cleanup;
 
 	weston_log("logind: session control granted\n");
 	* (struct launcher_logind **) out = wl;
 	return 0;
 
-err_control:
-	launcher_logind_release_control(wl);
 err_dbus_cleanup:
 	launcher_logind_destroy_dbus(wl);
 err_dbus:
@@ -959,7 +821,6 @@ launcher_logind_destroy(struct weston_launcher *launcher)
 		dbus_pending_call_unref(wl->pending_active);
 	}
 
-	launcher_logind_destroy_vt(wl);
 	launcher_logind_release_control(wl);
 	launcher_logind_destroy_dbus(wl);
 	weston_dbus_close(wl->dbus, wl->dbus_ctx);
