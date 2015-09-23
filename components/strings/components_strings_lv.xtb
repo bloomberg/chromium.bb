@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Reģistrācijas domēns:</translation>
 <translation id="1344588688991793829">Chromium automātiskās aizpildes iestatījumi...</translation>
 <translation id="1426410128494586442">Jā</translation>
+<translation id="1430915738399379752">Drukāt</translation>
 <translation id="1455235771979731432">Verificējot jūsu karti, radās problēma. Pārbaudiet interneta savienojumu un mēģiniet vēlreiz.</translation>
 <translation id="1491151370853475546">Atkārtoti ielādēt šo lapu</translation>
 <translation id="1549470594296187301">Lai izmantotu šo funkciju, ir jābūt iespējotai valodai JavaScript.</translation>
-<translation id="1639239467298939599">Notiek ielāde</translation>
 <translation id="1640180200866533862">Lietotāja politikas</translation>
 <translation id="1644184664548287040">Tīkla konfigurācija nav derīga, un to nevarēja importēt.</translation>
 <translation id="168841957122794586">Servera sertifikāts ietver vāju kriptogrāfisko atslēgu.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Šis dokuments ir aizsargāts ar paroli. Lūdzu, ievadiet paroli.</translation>
 <translation id="2625385379895617796">Norādītais laiks ir pārāk tālu nākotnē</translation>
 <translation id="2639739919103226564">Statuss:</translation>
+<translation id="2653659639078652383">Iesniegt</translation>
 <translation id="2704283930420550640">Vērtība neatbilst formātam.</translation>
 <translation id="2721148159707890343">Pieprasījums bija veiksmīgs.</translation>
 <translation id="2728127805433021124">Servera sertifikāts ir parakstīts, izmantojot vāju paraksta algoritmu.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Radās nezināma kļūda.</translation>
 <translation id="4800132727771399293">Pārbaudiet derīguma termiņu un CVC kodu un mēģiniet vēlreiz.</translation>
 <translation id="4813512666221746211">Tīkla kļūda</translation>
+<translation id="4816492930507672669">Ietilpināt lapā</translation>
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4923417429809017348">Šī lapa ir tulkota no nezināmas valodas valodā: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Jābūt norādītai.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Politikas nosaukums</translation>
 <translation id="552553974213252141">Vai iegūtais teksts bija pareizs?</translation>
 <translation id="5540224163453853">Pieprasīto rakstu nevarēja atrast.</translation>
+<translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5565735124758917034">Aktīvs</translation>
 <translation id="560412284261940334">Pārvaldīšana netiek atbalstīta.</translation>
 <translation id="5629630648637658800">Neizdevās ielādēt politikas iestatījumus.</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Pievienošanas atsaukuma atcelšana</translation>
 <translation id="5872918882028971132">Vecāku ieteikumi</translation>
 <translation id="59107663811261420">Šis kartes veids šim tirgotājam pakalpojumā Google Payments netiek atbalstīts. Lūdzu, atlasiet citu karti.</translation>
+<translation id="5975083100439434680">Tālināt</translation>
 <translation id="5989320800837274978">Nav norādīti nedz fiksēti starpniekserveri, nedz .pac skripta URL.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizi iestatīts, Chromium nevar verificēt šos sertifikātus.</translation>
 <translation id="8790007591277257123">&amp;Atcelt dzēšanas atsaukšanu</translation>
 <translation id="8804164990146287819">Konfidencialitātes politika</translation>
+<translation id="8820817407110198400">Grāmatzīmes</translation>
 <translation id="8824019021993735287">Pārlūks Chrome pašlaik nevarēja verificēt jūsu karti. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="8834246243508017242">Iespējot automātisko aizpildi, izmantojot kontaktpersonas...</translation>
 <translation id="883848425547221593">Citas grāmatzīmes</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Parsējot politikas iestatījumus, radās kļūda.</translation>
 <translation id="8876793034577346603">Neizdevās parsēt tīkla konfigurāciju.</translation>
 <translation id="8891727572606052622">Nederīgs starpniekservera režīms.</translation>
+<translation id="8903921497873541725">Tuvināt</translation>
 <translation id="8932102934695377596">Norādītais laiks ir pārāk tālu pagātnē</translation>
 <translation id="8940229512486821554">Izpildīt <ph name="EXTENSION_NAME" /> komandu: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Servera sertifikātam ir beidzies derīguma termiņš.</translation>

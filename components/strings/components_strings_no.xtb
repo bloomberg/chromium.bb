@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Registreringsdomene:</translation>
 <translation id="1344588688991793829">Innstillinger for autofyll i Chromium</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
-<translation id="1639239467298939599">Laster inn</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
 <translation id="1644184664548287040">Nettverkskonfigurasjonen er ugyldig og kan ikke importeres.</translation>
 <translation id="168841957122794586">Tjenersertifikatet inneholder en svak kryptografisk nøkkel.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
 <translation id="2625385379895617796">Klokken går for fort</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Send</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Det har oppstått en ukjent feil.</translation>
 <translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
+<translation id="4816492930507672669">Tilpass til siden</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4926049483395192435">Må angis.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Navn på retningslinje</translation>
 <translation id="552553974213252141">Ble tekstutdraget riktig?</translation>
 <translation id="5540224163453853">Den forespurte artikkelen ble ikke funnet.</translation>
+<translation id="5556459405103347317">Last inn på nytt</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Administrering støttes ikke</translation>
 <translation id="5629630648637658800">Kunne ikke laste in angivelsen for enhetsinnstillinger</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="5872918882028971132">Overordnede forslag</translation>
 <translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
+<translation id="5975083100439434680">Zoom ut</translation>
 <translation id="5989320800837274978">Verken statiske proxytjenere eller en nettadresse med .pac-skript er angitt.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Lukk</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
+<translation id="8820817407110198400">Bokmerker</translation>
 <translation id="8824019021993735287">Chrome kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="8834246243508017242">Aktiver autofyll for Kontakter</translation>
 <translation id="883848425547221593">Andre bokmerker</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Analysefeil i angivelsen av enhetrsinnstillinger</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
+<translation id="8903921497873541725">Zoom inn</translation>
 <translation id="8932102934695377596">Klokken går for sent</translation>
 <translation id="8940229512486821554">Kjør <ph name="EXTENSION_NAME" />-kommando: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>

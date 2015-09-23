@@ -961,7 +961,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
 <translation id="2378982052244864789">Uzantı dizinini seçin.</translation>
 <translation id="2379281330731083556">Sistem iletişim kutusunu kullanarak yazdır... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Etkinleştirilirse, oluşturucu birleştirme yetkisini tarayıcıya vererek her iki birleştirme geçişini bir araya getirir.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> kullanıcısının profilden çıkış yapmasını sağlayın.</translation>
 <translation id="2383034317918297467">Çok amaçlı adres çubuğu açılır listesinin bazen öneri başlıklarını URL'lere göre daha belirgin olacak şekilde göstermesine neden olur.</translation>
 <translation id="2384596874640104496">Sinhala klavye</translation>
@@ -2602,7 +2601,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4647090755847581616">Sekmeyi Ka&amp;pat</translation>
 <translation id="4647697156028544508">Lütfen "<ph name="DEVICE_NAME" />" için PIN'i girin:</translation>
 <translation id="4648491805942548247">İzinler yetersiz</translation>
-<translation id="4650159467443406318">Bu sayfayı ziyaret etmek için burayı tıklayın</translation>
 <translation id="4653235815000740718">OS kurtarma medyası oluşturulurken bir sorunla karşılaşıldı. Kullanılan depolama cihazı bulunamadı.</translation>
 <translation id="4654488276758583406">Çok Küçük</translation>
 <translation id="465499440663162826">Chrome Web Mağazası'na bağlanamadı.</translation>
@@ -3174,7 +3172,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5449624072515809082">Yazarken otomatik metin düzeltmeyi etkinleştirin. Eşzamanlı yazım denetimi bu özellikle uyumlu değildir.</translation>
 <translation id="5449716055534515760">Pencereyi &amp;Kapat</translation>
 <translation id="5451285724299252438">sayfa aralığı metin kurusu</translation>
-<translation id="5451561500892538488">Bildirimler Simgesini Gizle</translation>
 <translation id="5451646087589576080">Çerçeve &amp;Bilgilerini Görüntüle</translation>
 <translation id="5453029940327926427">Sekmeleri kapat</translation>
 <translation id="5453632173748266363">Kiril</translation>
@@ -5500,7 +5497,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8804398419035066391">İşbirliği yapan web siteleriyle iletişim kurma</translation>
 <translation id="8807632654848257479">Kararlı</translation>
 <translation id="8808478386290700967">Web Mağazası</translation>
-<translation id="8811314776632711217">Yetki Verilen Oluşturucu (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Ayarlarınız senkronize edildikten sonra "<ph name="FROM_LOCALE" />" olan Chrome dili "<ph name="TO_LOCALE" />" olarak değiştirildi.</translation>
 <translation id="8813811964357448561">kağıt</translation>
 <translation id="8814190375133053267">Kablosuz</translation>

@@ -961,7 +961,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer har valts</translation>
 <translation id="2378982052244864789">Välj tilläggets katalog.</translation>
 <translation id="2379281330731083556">Skriv ut via systemets dialogruta ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Om alternativet är aktiverat delegerar renderaren sammansättningen till webbläsaren och slår samman båda sammansättningspassagerna.</translation>
 <translation id="2381823505763074471">Logga ut den aktuella användaren <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Detta får adressfältets rullgardinsmeny att ibland visa förslagstitlar som är tydligare än webbadresser.</translation>
 <translation id="2384596874640104496">Sinhalesiskt tangentbord</translation>
@@ -2605,7 +2604,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="4647090755847581616">&amp;Stäng flik</translation>
 <translation id="4647697156028544508">Ange PIN-koden för <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Otillräckliga behörigheter</translation>
-<translation id="4650159467443406318">Klicka här om du vill besöka sidan</translation>
 <translation id="4653235815000740718">Det uppstod ett problem när återställningsmedia skapades för operativsystemet. Det gick inte att hitta lagringsenheten som användes.</translation>
 <translation id="4654488276758583406">Mycket liten</translation>
 <translation id="465499440663162826">Det gick inte att ansluta till Chrome Web Store.</translation>
@@ -3177,7 +3175,6 @@ Tryck på någon tangent om du vill fortsätta utforska.</translation>
 <translation id="5449624072515809082">Aktivera autokorrigering av text medan du skriver. Synkron rättstavning är inte kompatibel med den här funktionen.</translation>
 <translation id="5449716055534515760">Stäng fön&amp;ster</translation>
 <translation id="5451285724299252438">textruta för sidintervall</translation>
-<translation id="5451561500892538488">Dölj aviseringsikonen</translation>
 <translation id="5451646087589576080">Visa ram&amp;info</translation>
 <translation id="5453029940327926427">Stäng flikar</translation>
 <translation id="5453632173748266363">Kyrilliskt</translation>
@@ -5500,7 +5497,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8804398419035066391">Kommunicera med samarbetande webbplatser</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Delegerad renderare (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Chromes språk har ändrats från "<ph name="FROM_LOCALE" />" till "<ph name="TO_LOCALE" />" efter synkronisering av dina inställningar.</translation>
 <translation id="8813811964357448561">pappersark</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

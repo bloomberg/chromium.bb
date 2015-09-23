@@ -964,7 +964,6 @@ Pagkatapos mong gumawa ng bagong pinangangasiwaang user, maaari mong pamahalaan 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> (na) file ang pinili</translation>
 <translation id="2378982052244864789">Piliin ang direktoryo ng extension.</translation>
 <translation id="2379281330731083556">I-print gamit ang dialog ng system... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Kung naka-enable, inilalaan ng tagapag-render ang pagko-composite sa browser, na ipinagsasama ang parehong mga pass ng pagko-composite.</translation>
 <translation id="2381823505763074471">I-sign out ang user na si <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Nagiging sanhi ng pagpapakita paminsan-minsan ng drop-down ng omnibox ng mga pamagat ng suhestyon nang mas kapansin-pansin kaysa sa mga URL.</translation>
 <translation id="2384596874640104496">Sinhala keyboard</translation>
@@ -2607,7 +2606,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="4647090755847581616">&amp;Isara ang Tab</translation>
 <translation id="4647697156028544508">Pakilagay ang PIN para sa "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Hindi sapat na mga pagpapahintulot</translation>
-<translation id="4650159467443406318">Mag-click dito upang bisitahin ang page na ito</translation>
 <translation id="4653235815000740718">Nagkaproblema habang nililikha ang OS recovery media. Hindi matagpuan ang ginamit na storage device.</translation>
 <translation id="4654488276758583406">Napakaliit</translation>
 <translation id="465499440663162826">Hindi makakonekta sa Chrome Web Store.</translation>
@@ -3179,7 +3177,6 @@ Pumindot ng anumang key upang magpatuloy sa pagtuklas.</translation>
 <translation id="5449624072515809082">I-on ang autocorrection ng teksto habang nagta-type. Hindi tugma ang kasabay na pag-spellcheck sa tampok na ito.</translation>
 <translation id="5449716055534515760">Isara ang Win&amp;dow</translation>
 <translation id="5451285724299252438">text box ng saklaw ng pahina</translation>
-<translation id="5451561500892538488">Icon ng Itago ang Mga Notification</translation>
 <translation id="5451646087589576080">Tingnan ang &amp;Impormasyon ng Frame</translation>
 <translation id="5453029940327926427">Isara ang mga tab</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
@@ -5515,7 +5512,6 @@ Kinakalkula ang oras hanggang sa mapuno</translation>
 <translation id="8804398419035066391">Makipag-ugnay sa mga nakikipagtulungang website</translation>
 <translation id="8807632654848257479">Matatag</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Nakalaang Tagapag-render (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Nagpalit ang wika ng Chrome mula sa "<ph name="FROM_LOCALE" />" patungo sa "<ph name="TO_LOCALE" />" pagkatapos i-sync ang iyong mga setting.</translation>
 <translation id="8813811964357448561">piraso ng papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

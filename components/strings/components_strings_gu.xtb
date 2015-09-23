@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">નોંધણી ડોમેન:</translation>
 <translation id="1344588688991793829">Chromium સ્વતઃભરણ સેટિંગ્સ...</translation>
 <translation id="1426410128494586442">હા</translation>
+<translation id="1430915738399379752">છાપો</translation>
 <translation id="1455235771979731432">તમારું કાર્ડ ચકાસવામાં એક સમસ્યા આવી હતી. તમારું ઇન્ટરનેટ કનેક્શન તપાસો અને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="1491151370853475546">આ પૃષ્ઠને ફરીથી લોડ કરો</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
-<translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
 <translation id="1640180200866533862">વપરાશકર્તા નીતિઓ</translation>
 <translation id="1644184664548287040">નેટવર્ક ગોઠવણી અમાન્ય છે અને આયાત કરી શકાઇ નથી.</translation>
 <translation id="168841957122794586">સર્વર પ્રમાણપત્ર એક નબળી ક્રિપ્ટોગ્રાફિક કી ધરાવે છે.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">આ દસ્તાવેજ પાસવર્ડ સુરક્ષિત છે. કૃપા કરીને પાસવર્ડ દાખલ કરો.</translation>
 <translation id="2625385379895617796">તમારી ઘડિયાળ આગળ છે</translation>
 <translation id="2639739919103226564">સ્થિતિ:</translation>
+<translation id="2653659639078652383">સબમિટ કરો</translation>
 <translation id="2704283930420550640">મૂલ્ય ફોર્મેટથી મેળ ખાતું  નથી.</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું છે.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">કોઈ અજ્ઞાત ભૂલ આવી.</translation>
 <translation id="4800132727771399293">તમારી સમાપ્તિ તારીખ અને CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
 <translation id="4813512666221746211">નેટવર્ક ભૂલ</translation>
+<translation id="4816492930507672669">પૃષ્ઠ પર ફિટ</translation>
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4923417429809017348">આ પૃષ્ઠ કોઈ અજ્ઞાત ભાષામાંથી <ph name="LANGUAGE_LANGUAGE" /> માં અનુવાદિત કરવામાં આવ્યું છે</translation>
 <translation id="4926049483395192435">ઉલ્લેખિત હોવું આવશ્યક છે.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">નીતિનું નામ</translation>
 <translation id="552553974213252141">શું ટેક્સ્ટ ઠીકથી કાઢી હતી?</translation>
 <translation id="5540224163453853">વિનંતી કરેલ લેખ શોધી શકાયો નથી.</translation>
+<translation id="5556459405103347317">ફરિથી લોડ કરો</translation>
 <translation id="5565735124758917034">સક્રિય</translation>
 <translation id="560412284261940334">સંચાલન સમર્થિત નથી</translation>
 <translation id="5629630648637658800">નીતિ સેટિંગ્સ લોડ કરવામાં નિષ્ફળ થયાં</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
 <translation id="59107663811261420">આ વેપારી માટે Google Payments દ્વારા આ પ્રકારના કાર્ડને સમર્થન નથી. કૃપા કરીને બીજું કાર્ડ પસંદ કરો.</translation>
+<translation id="5975083100439434680">ઝૂમ ઘટાડો</translation>
 <translation id="5989320800837274978">નિયત પ્રોક્સી સર્વર્સ અથવા .pac સ્ક્રિપ્ટનો URL નો ઉલ્લેખ કરેલો નથી.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8790007591277257123">&amp;કાઢી નાખવું ફરી કરો</translation>
 <translation id="8804164990146287819">ગોપનીયતા નીતિ</translation>
+<translation id="8820817407110198400">બુકમાર્ક્સ</translation>
 <translation id="8824019021993735287">આ સમયે Chrome તમારું કાર્ડ ચકાસવા અસમર્થ હતું. કૃપા કરીને પછી ફરીથી પ્રયત્ન કરશો.</translation>
 <translation id="8834246243508017242">સંપર્કોનો ઉપયોગ કરીને સ્વતઃભરણ સક્ષમ કરો...</translation>
 <translation id="883848425547221593">અન્ય બુકમાર્ક્સ</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">ભૂલ વિશ્લેષણ નીતિ સેટિંગ્સ</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
+<translation id="8903921497873541725">ઝૂમ વધારો</translation>
 <translation id="8932102934695377596">તમારી ઘડિયાળ પાછળ છે</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> આદેશ ચલાવો: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">સર્વરના પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે.</translation>

@@ -964,7 +964,6 @@ Sinon, vous devrez en obtenir un nouveau d'un autre émetteur.</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fichiers sélectionnés</translation>
 <translation id="2378982052244864789">Sélectionner le répertoire de l'extension</translation>
 <translation id="2379281330731083556">Imprimer via la boîte de dialogue du système... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Lorsqu'il est activé, le moteur de rendu délègue la composition au navigateur, en fusionnant les passes de composition.</translation>
 <translation id="2381823505763074471">Déconnecter l'utilisateur <ph name="PROFILE_USERNAME" /></translation>
 <translation id="2383034317918297467">Entraîne la mise en valeur de certains titres par rapport aux URL dans la liste déroulante de suggestions de l'omnibox.</translation>
 <translation id="2384596874640104496">Clavier cinghalais</translation>
@@ -2601,7 +2600,6 @@ puis cliquez sur <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="4647090755847581616">&amp;Fermer l'onglet</translation>
 <translation id="4647697156028544508">Saisissez le code d'accès de "<ph name="DEVICE_NAME" />" :</translation>
 <translation id="4648491805942548247">Autorisations insuffisantes.</translation>
-<translation id="4650159467443406318">Cliquez ici pour accéder à cette page.</translation>
 <translation id="4653235815000740718">Un problème est survenu lors de la création du support de récupération du système d'exploitation. Le périphérique de stockage utilisé est introuvable.</translation>
 <translation id="4654488276758583406">Très petite</translation>
 <translation id="465499440663162826">Impossible de se connecter au Chrome Web Store.</translation>
@@ -3172,7 +3170,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5449624072515809082">Active la correction orthographique automatique lors de la saisie. La correction orthographique synchrone n'est pas compatible avec cette fonctionnalité.</translation>
 <translation id="5449716055534515760">Fe&amp;rmer la fenêtre</translation>
 <translation id="5451285724299252438">zone de texte concernant l'étendue de pages</translation>
-<translation id="5451561500892538488">Masquer l'icône de notification</translation>
 <translation id="5451646087589576080">Afficher les &amp;infos sur le cadre</translation>
 <translation id="5453029940327926427">Fermer les onglets</translation>
 <translation id="5453632173748266363">Cyrillique</translation>
@@ -5508,7 +5505,6 @@ Calcul de la durée restante</translation>
 <translation id="8804398419035066391">Communiquer avec des sites Web associés</translation>
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Moteur de rendu délégué (dit Übercompositor)</translation>
 <translation id="8811462119186190367">La langue utilisée pour Google Chrome est passée de "<ph name="FROM_LOCALE" />" à "<ph name="TO_LOCALE" />" après la synchronisation de vos paramètres.</translation>
 <translation id="8813811964357448561">feuille de papier</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>

@@ -963,7 +963,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> tệp được chọn</translation>
 <translation id="2378982052244864789">Chọn thư mục tiện ích.</translation>
 <translation id="2379281330731083556">In bằng hộp thoại hệ thống... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Nếu bật, trình kết xuất sẽ ủy quyền kết hợp cho trình duyệt, sáp nhập cả hai quá trình thông qua kết hợp.</translation>
 <translation id="2381823505763074471">Đăng xuất người dùng <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Làm cho danh sách thả xuống của thanh địa chỉ đôi khi hiển thị tiêu đề đề xuất nổi bật hơn URL.</translation>
 <translation id="2384596874640104496">Bàn phím tiếng Sinhala</translation>
@@ -2607,7 +2606,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4647090755847581616">&amp;Đóng tab</translation>
 <translation id="4647697156028544508">Vui lòng nhập PIN cho "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Không đủ quyền</translation>
-<translation id="4650159467443406318">Nhấp vào đây để truy cập trang này</translation>
 <translation id="4653235815000740718">Đã xảy ra sự cố khi tạo phương tiện khôi phục hệ điều hành. Không thể tìm thấy thiết bị lưu trữ đã sử dụng.</translation>
 <translation id="4654488276758583406">Rất nhỏ</translation>
 <translation id="465499440663162826">Không thể kết nối với Cửa hàng Chrome trực tuyến.</translation>
@@ -3179,7 +3177,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5449624072515809082">Bật tự động sửa lỗi văn bản trong khi gõ. Kiểm tra chính tả đồng bộ không tương thích với tính năng này.</translation>
 <translation id="5449716055534515760">Đóng cửa &amp;sổ</translation>
 <translation id="5451285724299252438">hộp văn bản phạm vi trang</translation>
-<translation id="5451561500892538488">Biểu tượng ẩn thông báo</translation>
 <translation id="5451646087589576080">Xem Thông t&amp;in Khung</translation>
 <translation id="5453029940327926427">Đóng các tab</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
@@ -5513,7 +5510,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8804398419035066391">Kết nối với các trang web hợp tác</translation>
 <translation id="8807632654848257479">Ổn định</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Trình kết xuất được ủy quyền (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Ngôn ngữ của Chrome đã đổi từ "<ph name="FROM_LOCALE" />" thành "<ph name="TO_LOCALE" />" sau khi đồng bộ hóa cài đặt của bạn.</translation>
 <translation id="8813811964357448561">trang giấy</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

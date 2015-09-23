@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domeniu de înregistrare:</translation>
 <translation id="1344588688991793829">Setări de completare automată în Chromium...</translation>
 <translation id="1426410128494586442">Da</translation>
+<translation id="1430915738399379752">Printează</translation>
 <translation id="1455235771979731432">A apărut o eroare la confirmarea cardului. Verifică conexiunea la internet și încearcă din nou.</translation>
 <translation id="1491151370853475546">Reîncărcați această pagină</translation>
 <translation id="1549470594296187301">Trebuie să activezi JavaScript pentru a folosi această funcție.</translation>
-<translation id="1639239467298939599">Se încarcă</translation>
 <translation id="1640180200866533862">Politici privind utilizatorii</translation>
 <translation id="1644184664548287040">Configurația rețelei este nevalidă și nu a putut fi importată.</translation>
 <translation id="168841957122794586">Certificatul de server conține o cheie criptografică slabă.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Acest document este protejat cu parolă. Introdu o parolă.</translation>
 <translation id="2625385379895617796">Ora este setată în viitor</translation>
 <translation id="2639739919103226564">Stare:</translation>
+<translation id="2653659639078652383">Trimite</translation>
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
+<translation id="4816492930507672669">Încadrați în pagină</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Numele politicii</translation>
 <translation id="552553974213252141">Textul a fost extras corect?</translation>
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
+<translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5565735124758917034">Activ</translation>
 <translation id="560412284261940334">Gestionarea nu este acceptată</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="5872918882028971132">Sugestii parentale</translation>
 <translation id="59107663811261420">Acest tip de card nu este acceptat de Google Payments pentru acest comerciant. Selectează alt card.</translation>
+<translation id="5975083100439434680">Micșorează</translation>
 <translation id="5989320800837274978">Nu sunt specificate nici servere proxy fixe și nici o adresă URL pentru scripturi .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Închide</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect. Aceasta deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Chromium nu poate verifica aceste certificate.</translation>
 <translation id="8790007591277257123">&amp;Repetați ștergerea</translation>
 <translation id="8804164990146287819">Politica de confidențialitate</translation>
+<translation id="8820817407110198400">Marcaje</translation>
 <translation id="8824019021993735287">Momentan, Chrome nu a putut confirma cardul. Încearcă mai târziu.</translation>
 <translation id="8834246243508017242">Activați completarea automată folosind Agenda…</translation>
 <translation id="883848425547221593">Alte marcaje</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Eroare la analizarea setărilor pentru politică</translation>
 <translation id="8876793034577346603">Configurația rețelei nu a putut fi analizată.</translation>
 <translation id="8891727572606052622">Mod proxy nevalid.</translation>
+<translation id="8903921497873541725">Mărește</translation>
 <translation id="8932102934695377596">Ora este setată în trecut</translation>
 <translation id="8940229512486821554">Execută comanda <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Certificatul serverului a expirat.</translation>

@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">የምዝገባ ጎራ፦</translation>
 <translation id="1344588688991793829">የChromium ራስ-ሙላ ቅንብሮች...</translation>
 <translation id="1426410128494586442">አዎ</translation>
+<translation id="1430915738399379752">አትም</translation>
 <translation id="1455235771979731432">የእርስዎን ካርድ ማረጋገጥ ላይ ችግር ነበር። የእርስዎን የበይነመረብ ግንኙነት ይፈትሹ እና እንደገና ይሞክሩ።</translation>
 <translation id="1491151370853475546">ይህን ገጽ ዳግም ይጫኑ</translation>
 <translation id="1549470594296187301">ይህን ባህሪ ለመጠቀም ጃቫስክሪፕት መንቃት አለበት።</translation>
-<translation id="1639239467298939599">በመጫን ላይ</translation>
 <translation id="1640180200866533862">የተጠቃሚ መምሪያዎች</translation>
 <translation id="1644184664548287040">የአውታረ መረቡ ውቅር ልክ ያልሆነ እና ሊመጣ የማይችል ነው።</translation>
 <translation id="168841957122794586">የአገልጋይ እውቅና ማረጋገጫው ደካማ የሆነ ባለስውር መረጃ ቁልፍ ነው ያለው።</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">ይህ ሰነድ በይለፍ ቃል የተጠበቀ ነው። እባክዎ የይለፍ ቃል ያስገቡ።</translation>
 <translation id="2625385379895617796">የእርስዎ ሰዓት ገና የወደፊት ነው</translation>
 <translation id="2639739919103226564">ሁኔታ፦</translation>
+<translation id="2653659639078652383">አስገባ</translation>
 <translation id="2704283930420550640">ዋጋ ከቅርጸት ጋር አይዛመድም።</translation>
 <translation id="2721148159707890343">ጥያቄ ተሳክቷል</translation>
 <translation id="2728127805433021124">የአገልጋዩ እውቅና ማረጋገጫ የተፈረመው በደካማ የፊርማ ስልተቀመር ነው።</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">ያልታወቀ ስህተት ተከስቷል።</translation>
 <translation id="4800132727771399293">የእርስዎን የአገልግሎት ማብቂያ ቀን እና CVC ይፈትሹ እና እንደገና ይሞክሩ</translation>
 <translation id="4813512666221746211">የአውታረ መረብ ስህተት</translation>
+<translation id="4816492930507672669">ገጹን አመጣጥን</translation>
 <translation id="4850886885716139402">አሳይ</translation>
 <translation id="4923417429809017348">ገጹ ከማይታወቅ ቋንቋ ወደ <ph name="LANGUAGE_LANGUAGE" /> ተተርጉሟል</translation>
 <translation id="4926049483395192435">መገለጽ አለበት።</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">የመምሪያ ስም</translation>
 <translation id="552553974213252141">ጽሑፉ በትክክል ነው የወጣው?</translation>
 <translation id="5540224163453853">የተጠየቀውን ጽሑፍ ማግኘት አልተቻለም።</translation>
+<translation id="5556459405103347317">ዳግም ጫን</translation>
 <translation id="5565735124758917034">ገባሪ</translation>
 <translation id="560412284261940334">አስተዳደር አይደገፍም</translation>
 <translation id="5629630648637658800">የመምሪያ ቅንብሮችን መጫን አልተሳካም</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;አክልን ድገም</translation>
 <translation id="5872918882028971132">የወላጅ አስተያየት ጥቆማዎች</translation>
 <translation id="59107663811261420">ይህ የካርድ አይነት ለዚህ ነጋዴ በGoogle ክፍያዎች አይደገፍም። እባክዎ የተለየ ካርድ ይምረጡ።</translation>
+<translation id="5975083100439434680">አሳንስ</translation>
 <translation id="5989320800837274978">ቋሚ ተኪ አገልጋዮችም ሆኑ የ.pac ስክሪፕት ዩአርኤል አልተገለጹም።</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">ደህንነቱ የተጠበቀ ግንኙነት ለመመስረት፣ የእርስዎ ሰዓት በትክክል መቀናበር ያስፈልገዋል። ይህን የሆነበት ምክንያት የድር ጣቢያዎች ራሳቸውን ለማሳወቅ የሚጠቀሙባቸው የምስክር ወረቀቶች የሚሰሩት ለተወሰኑ ክፍለ ጊዜያቶች ብቻ ስለሆነ ነው። የእርስዎ መሣሪያ ሰዓት ልክ እንዳለመሆኑ መጠን Chromium እነዚህን ምስክር ወረቀቶች ሊያረጋግጣቸው አይችልም።</translation>
 <translation id="8790007591277257123">&amp;ሰርዝን ድገም</translation>
 <translation id="8804164990146287819">የግላዊነት መመሪያ</translation>
+<translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="8824019021993735287">Chrome የእርስዎን ካርድ በዚህ ጊዜ ላይ ለማረጋገጥ አልቻለም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="8834246243508017242">እውቂያዎችን በመጠቀም የራስ ሰር መሙላትን አንቃ…</translation>
 <translation id="883848425547221593">ሌላ እልባቶች</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">የመምሪያ ቅንብሮችን መተንተን ላይ ስህተት</translation>
 <translation id="8876793034577346603">የአውታረ መረብ ውቅር ሊተነተን አልቻለም።</translation>
 <translation id="8891727572606052622">ልክ ያልሆነ የተኪ ሁነታ።</translation>
+<translation id="8903921497873541725">አጉላ</translation>
 <translation id="8932102934695377596">የእርስዎ ሰዓት ወደ ኋላ ቀርቷል</translation>
 <translation id="8940229512486821554">የ<ph name="EXTENSION_NAME" /> ትዕዛዝ ያሂዱ፦ <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">የአገልጋይ እውቅና ማረጋገጫ ጊዜው አልፎበታል።</translation>

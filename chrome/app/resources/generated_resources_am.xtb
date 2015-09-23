@@ -966,7 +966,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ፋይሎች ተመርጠዋል</translation>
 <translation id="2378982052244864789">የቅጥያውን ማውጫ ይምረጡ።</translation>
 <translation id="2379281330731083556">የስርዓት መገናኛ ተጠቅመው ያትሙ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">ከነቃ፣ አዘጋጁ ሁለቱንም የውህደት ማለፊያዎች በማዋሃድ መቀላቀልን ለአሳሹ ይወክላል።</translation>
 <translation id="2381823505763074471">ተጠቃሚ <ph name="PROFILE_USERNAME" /> ዘግተህ አስወጣቸው።</translation>
 <translation id="2383034317918297467">የኦምኒቦክስ ተቆልቋዩ አንዳንድ ጊዜ ከዩአርኤሎች ይልቅ የአስተያየት ጥቆማ ርዕሶችን አስበልጦ በበለጠ እንዲያሳይ ሊያደርግ ይችላል።</translation>
 <translation id="2384596874640104496">የሲንሃላ ቁልፍ ሰሌዳ</translation>
@@ -2605,7 +2604,6 @@
 <translation id="4647090755847581616">ትር &amp;ዝጋ</translation>
 <translation id="4647697156028544508">እባክዎ የ«<ph name="DEVICE_NAME" />»ን ፒን ያስገቡ፦</translation>
 <translation id="4648491805942548247">በቂ ያልሆኑ ፍቃዶች</translation>
-<translation id="4650159467443406318">ይህን ገጽ ለመጎብኘት እዚህ ጠቅ ያድርጉ</translation>
 <translation id="4653235815000740718">የስርዓተ ክወና ዳግም ማግኛ ማህደረ መረጃ በመፍጠር ላይ ሳለ አንድ ችግር ነበር። ስራ ላይ የዋለ የማከማቻ መሣሪያ ሊገኝ አልቻለም።</translation>
 <translation id="4654488276758583406">በጣም ትንሽ</translation>
 <translation id="465499440663162826">ወደ Chrome የድር መደብር ማገናኘት አልተቻለም።</translation>
@@ -3177,7 +3175,6 @@
 <translation id="5449624072515809082">በትየባ ጊዜ ራስ-ማረምን ያበራል። የሚመሳሰል ፊደል ማረም ከዚህ ባህሪ ጋር ተኳሃኝ አይደለም።</translation>
 <translation id="5449716055534515760">&amp;መስኮት ዝጋ</translation>
 <translation id="5451285724299252438">የገጽ ክልል ጽሑፍ ሳጥን</translation>
-<translation id="5451561500892538488">የማሳወቂያዎች አዝራርን ደብቅ</translation>
 <translation id="5451646087589576080">የፍሬም &amp;መረጃ አሳይ</translation>
 <translation id="5453029940327926427">ትሮችን ይዝጉ</translation>
 <translation id="5453632173748266363">ሲርሊክ</translation>
@@ -5522,7 +5519,6 @@ nil</translation>
 <translation id="8804398419035066391">ከተባባሪ ድር ጣቢያዎች ጋር በመገናኘት ላይ</translation>
 <translation id="8807632654848257479">የረጋ</translation>
 <translation id="8808478386290700967">የድር  መደብር </translation>
-<translation id="8811314776632711217">የተወከለ አዘጋጅ (AKA Übercompositor)።</translation>
 <translation id="8811462119186190367">ቅንብሮችዎ ከተመሳሰሉ በኋላ የChrome ቋንቋ ከ«<ph name="FROM_LOCALE" />» ወደ «<ph name="TO_LOCALE" />» ተቀይሯል።</translation>
 <translation id="8813811964357448561">የወረቀት ሉክ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

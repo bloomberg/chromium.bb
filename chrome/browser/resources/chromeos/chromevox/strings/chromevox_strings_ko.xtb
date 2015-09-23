@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1012173283529841972">목록 항목</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">병합되었습니다.</translation>
 <translation id="1025074108959230262">고정 모드 사용 중지됨</translation>
 <translation id="1031961866430398710">플러스</translation>
 <translation id="1044777062731150180">헤더 없음</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">입력이 잘못됨</translation>
 <translation id="1082209053475788238">이전 수준 6 제목이 없습니다.</translation>
 <translation id="1088219014394087294">제목이 없습니다.</translation>
@@ -20,8 +22,10 @@
 <translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">맞춤</translation>
 <translation id="1188858454923323853">상호 보완</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome이 말을 합니다.</translation>
 <translation id="1229276918471378188">이전 점프</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">다음 수준 6 제목</translation>
 <translation id="1275718070701477396">선택됨</translation>
 <translation id="1319608975892113573">이전 인용구가 없습니다.</translation>
@@ -33,7 +37,9 @@
 <translation id="1346748346194534595">오른쪽</translation>
 <translation id="136718599399906424">다음 행</translation>
 <translation id="1383876407941801731">검색</translation>
+<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">동의하려면 Enter를 누르고 취소하려면 Esc를 누르세요. 다음으로 이동하려면 아래를 누르고 이전으로 이동하려면 위를 누르세요.</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, 비밀번호 입력란</translation>
 <translation id="1467432559032391204">왼쪽</translation>
@@ -58,6 +64,7 @@
 <translation id="1674262202423278359">ChromeVox 탐색</translation>
 <translation id="16777221443363124">메뉴 바</translation>
 <translation id="1692077714702418899">구조 선</translation>
+<translation id="1700517974991662022">방문함</translation>
 <translation id="1722567105086139392">링크</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">다음 그래픽</translation>
@@ -71,6 +78,8 @@
 <translation id="188130072164734898">현재 날짜와 시간을 말합니다.</translation>
 <translation id="1902396333223336119">셀</translation>
 <translation id="1905379170753160525">제목 목록 표시</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">해당 연도의 주 컨트롤</translation>
 <translation id="1964135212174907577">다음 객체</translation>
 <translation id="1969092762068865084">7월</translation>
@@ -85,6 +94,7 @@
 <translation id="2089387485033699258">ko</translation>
 <translation id="2091933974477985526">이전 수정 가능 텍스트 영역</translation>
 <translation id="2100350898815792233">모든 구두점을 읽음</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">액세스 키:<ph name="KEY" /></translation>
 <translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">아래의 목록에서 옵션을 선택하여 현재의 6점 점자 표를 변경합니다.</translation>
@@ -98,6 +108,7 @@
 <translation id="2318372665160196757">기본</translation>
 <translation id="2329324941084714723">탭 패널</translation>
 <translation id="2344193891939537199">날짜 시간 컨트롤</translation>
+<translation id="2359897517538099099">표 모드를 사용하지 않습니다.</translation>
 <translation id="241124561063364910">플러스</translation>
 <translation id="2417569100218200841">콘텐츠 정보</translation>
 <translation id="2422937916923936891">메뉴 항목 체크박스</translation>
@@ -108,9 +119,11 @@
 <translation id="2471138580042810658">제목 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{별표}other{별표 #개}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" />이(가) 재설정되었습니다.</translation>
+<translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">그룹</translation>
 <translation id="2582407057977008361">사이드 바</translation>
 <translation id="2589102159832527089">이 페이지에는 PDF 파일인 &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;에서 자동으로 추출된 텍스트가 포함되어 있습니다. &lt;a href="<ph name="URL" />"&gt;원본을 보려면 여기를 클릭하세요.&lt;/a&gt;</translation>
+<translation id="2606210917827248971">포함{COUNT,plural, =1{항목 #개}other{항목 #개}}</translation>
 <translation id="2614981083756825552">Math ML 레이아웃</translation>
 <translation id="2626530649491650971">clickable</translation>
 <translation id="2628764385451019380">이전 콤보 상자가 없습니다.</translation>
@@ -118,9 +131,11 @@
 <translation id="2639750663247012216">ChromeVox 특수키</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2667291555398229137">라우팅 키에서 항목을 클릭합니다.</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{여는 괄호}other{여는 괄호 #개}}</translation>
 <translation id="2705875883745373140">누르지 않음</translation>
 <translation id="2706462751667573066">위</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">오디오</translation>
 <translation id="2732718972699418926">오전</translation>
 <translation id="2749275490991666823">선택됨</translation>
@@ -163,10 +178,12 @@
 <translation id="308895241372589742">다음 수식이 없습니다.</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">다음 랜드마크</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">접힘</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3138767756593758860">랜드마크 목록 표시</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">다음 행</translation>
 <translation id="3155083529632865074">이전 버튼이 없습니다.</translation>
 <translation id="3163593631834463955">열 헤더가 비어 있음</translation>
@@ -174,7 +191,10 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{공백}other{공백 #개}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> 입력함</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, 탭</translation>
+<translation id="3226035351387556942">chk</translation>
+<translation id="3229375994964697375">방문한 링크입니다.</translation>
 <translation id="323731244387692321">ChromeVox 키보드 도움말 열기</translation>
+<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">이전 방문한 링크</translation>
 <translation id="3286390186030710347">슬라이더</translation>
 <translation id="3299925995433437805">다음 방문한 링크가 없습니다.</translation>
@@ -182,8 +202,52 @@
 <translation id="3307886118343381874">표의 마지막으로 이동</translation>
 <translation id="3311969765485641742">알림을 검토하려면 Alt+Shift+A를 누릅니다.</translation>
 <translation id="3312997241656799641">다음 방문한 링크</translation>
+<translation id="3321460131042519426">줄바꿈 사용</translation>
 <translation id="3322936298410871309">이전 수준 1 제목</translation>
 <translation id="3323447499041942178">입력란</translation>
+<translation id="3353420241558113817">{"ar": "아랍어",
+        "bg": "불가리아어",
+        "ca": "카탈로니아어",
+        "cs": "체코어",
+        "da": "덴마크어",
+        "de": "독일어",
+        "de_CH": "독일어(스위스)",
+        "de_DE": "독일어(독일)",
+        "el": "그리스어",
+        "en": "영어",
+        "en_CA": "영어(캐나다)",
+        "en_GB": "영어(영국)",
+        "en_US": "영어(미국)",
+        "es": "스페인어",
+        "et": "에스토니아어",
+        "fr": "프랑스어",
+        "fr_CA": "프랑스어(캐나다)",
+        "fr_FR": "프랑스어(프랑스)",
+        "fi": "핀란드어",
+        "he": "히브리어",
+        "hi": "힌디어",
+        "hr": "크로아티아어",
+        "hu": "헝가리어",
+        "is": "아이슬란드어",
+        "it": "이탈리아어",
+        "ko": "한국어",
+        "lt": "리투아니아어",
+        "lv": "라트비아어",
+        "nb": "노르웨이어 보크몰",
+        "nl": "네덜란드어",
+        "pl": "폴란드어",
+        "pt": "포르투갈어",
+        "ro": "루마니아어",
+        "ru": "러시아어",
+        "sk": "슬로바키아어",
+        "sl": "슬로베니아어",
+        "sr": "세르비아어",
+        "sv": "스웨덴어",
+        "tr": "터키어",
+        "vi": "베트남어",
+        "zh": "중국어",
+        "zh_TW": "중국어(번체)"}</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{더하기 기호}other{더하기 기호 #개}}</translation>
 <translation id="338583716107319301">구분자</translation>
 <translation id="3389259863310851658">이전 양식 입력란</translation>
@@ -197,12 +261,14 @@
 <translation id="3486232535569802404"><ph name="V1" />에서 <ph name="V2" />까지</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{오른쪽 꺾음 괄호}other{오른쪽 꺾음 괄호 #개}}</translation>
 <translation id="3493915602752813531">다음 앵커가 없습니다.</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{물음표}other{물음표 #개}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{탈자 기호}other{탈자 기호 #개}}</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, 체크박스 선택 안 됨</translation>
 <translation id="3599054940393788245">수학 영역에 있지 않음</translation>
 <translation id="3616113530831147358">오디오</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{백틱 기호}other{백틱 기호 #개}}</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{달러 기호}other{달러 기호 #개}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, 목록 상자</translation>
@@ -215,12 +281,15 @@
 <translation id="3762198587642264450">현재 행의 마지막으로 이동</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">대화상자를 종료했습니다.</translation>
+<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">자동완성 목록</translation>
+<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">동영상</translation>
 <translation id="3816633764618089385">다음 미디어</translation>
 <translation id="3819376190738087562">점프가 없습니다.</translation>
 <translation id="385383972552776628">옵션 페이지 열기</translation>
 <translation id="3856075812838139784">읽기 전용</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">메뉴</translation>
 <translation id="3909320334364316587">이전 수준 6 제목</translation>
 <translation id="3914173277599553213">필수</translation>
@@ -241,6 +310,7 @@
 <translation id="4116415223832267137">알림</translation>
 <translation id="4147126331795725888">다음 컨트롤이 없습니다.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{오른쪽 중괄호}other{오른쪽 중괄호 #개}}</translation>
+<translation id="4158704014418536539">대소문자를 구분합니다.</translation>
 <translation id="4161663686871496107">ChromeVox 음성 피드백 사용할 수 있음</translation>
 <translation id="4173994908659439270">다음 수정 가능한 텍스트 입력란이 없습니다.</translation>
 <translation id="4176463684765177261">사용 중지</translation>
@@ -254,9 +324,11 @@
 <translation id="423334822609210999">왼쪽에 셀이 없습니다.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, <ph name="GRADE" />등급</translation>
 <translation id="4253168017788158739">메모</translation>
+<translation id="4254798249533888099">트리</translation>
 <translation id="4255943572433203166">아래 옵션을 사용하여 ChromeVox를 맞춤설정하세요. 변경사항은 바로 적용됩니다.</translation>
 <translation id="4271220233568730077">다음 수식</translation>
 <translation id="4271521365602459209">결과가 더 이상 없습니다.</translation>
+<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">다음 도움말이 없습니다.</translation>
 <translation id="4289540628985791613">개요</translation>
 <translation id="4300318234632215983">링크 이면의 URL 알림</translation>
@@ -267,6 +339,7 @@
 <translation id="4372435075475052704">최소:<ph name="X" /></translation>
 <translation id="4372705107434148843">음성 중지</translation>
 <translation id="4373197658375206385">링크가 아닌 이전 항목이 없습니다.</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4471074325120394300">링크가 없습니다.</translation>
 <translation id="4476183483923481720">새로운 행</translation>
@@ -283,6 +356,7 @@
 <translation id="4615592953348396470">다음 키 누름 무시</translation>
 <translation id="461613135510474570">문장</translation>
 <translation id="4647836961514597010">색상선택 도구</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">이전 랜드마크</translation>
@@ -300,6 +374,7 @@
 <translation id="4842108708071771135">다음 인용구가 없습니다.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">이전 유사한 요소</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS 로깅 사용</translation>
 <translation id="4877261390094455813">검색어를 입력하세요.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -331,8 +406,10 @@
 <translation id="5080758118274074384">더블 클릭함</translation>
 <translation id="5098541983634824365">격자를 종료합니다.</translation>
 <translation id="5102981729317424850">툴바</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">이전 양식 입력란이 없습니다.</translation>
 <translation id="5111640677200759579">열 헤더</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">이전 링크가 없습니다.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, 선택되지 않음</translation>
@@ -351,6 +428,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{쉼표}other{쉼표 #개}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, 입력란</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, 링크</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">계속 읽고 있는 중에 뒤로 건너뛰기</translation>
 <translation id="5368000168321181111">이어콘 사용 안함</translation>
 <translation id="5374320867641260420">다음 버튼이 없습니다.</translation>
@@ -372,6 +450,7 @@
 <translation id="5546092960038624944">이전 수준 5 제목이 없습니다.</translation>
 <translation id="556042886152191864">버튼</translation>
 <translation id="5561345396546889625">다음 목록</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">텍스트 수정, 이메일 항목</translation>
 <translation id="5597170376237141345">다음 체크박스</translation>
@@ -379,17 +458,21 @@
 <translation id="5598905979683743333"><ph name="NAME" />, 라디오 버튼 선택 안 됨</translation>
 <translation id="5601172225407283979">기본 작업 수행</translation>
 <translation id="5608798115546226984">자동완성 본문</translation>
+<translation id="561939826962581046">time</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">로그</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">이전 표가 없습니다.</translation>
 <translation id="5655682562155942719">이동 명령어</translation>
 <translation id="56637627897541303">텍스트 영역</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">랜드마크</translation>
 <translation id="5683155931978483559">이전 체크박스</translation>
 <translation id="5684277895745049190">목록</translation>
 <translation id="5700650669149824506">이전 수준 4 제목이 없습니다.</translation>
 <translation id="5709192780268610569">자세한 설명 없음</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">다음 열</translation>
 <translation id="571866080859340309">그룹 탐색</translation>
 <translation id="5728409797179002635">표를 찾을 수 없습니다.</translation>
@@ -414,17 +497,20 @@
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">대화상자</translation>
 <translation id="5963413905009737549">섹션</translation>
+<translation id="5968607524793740041">컨텍스트 메뉴 표시</translation>
 <translation id="5983179082906765664">탐색 세밀도 높이기</translation>
 <translation id="5999630716831179808">음성</translation>
 <translation id="6000417740266304866">아래의 목록에서 옵션을 선택하여 현재의 8점 점자 표를 변경합니다.</translation>
 <translation id="6006050241733874051">양식</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{역슬래시}other{역슬래시 #개}}</translation>
 <translation id="6037602951055904232">앞으로 이동</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">마지막 셀입니다.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">공백</translation>
 <translation id="6142308968191113180">제목 4</translation>
 <translation id="6169420925157477918">자세한 설명이 있는 이미지</translation>
+<translation id="6172087735260766220">복제 방지된 PDF에서 액세스 가능한 텍스트에 액세스할 수 없습니다.</translation>
 <translation id="6186305613600865047">페이지 끝으로 이동</translation>
 <translation id="6193330012414963395">오전/오후</translation>
 <translation id="622484624075952240">아래</translation>
@@ -468,10 +554,12 @@
 <translation id="6734854816611871228"><ph name="VALUE" />, 콤보 상자</translation>
 <translation id="6735257939857578167"><ph name="NUM" />개 항목 포함</translation>
 <translation id="6736510033526053669">탭이 생성됨</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">도움말</translation>
 <translation id="6787839852456839824">단축키</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">바닥글</translation>
+<translation id="6871161210040114857">대소문자를 구분하지 않습니다.</translation>
 <translation id="6877435256196695200">다음 그래픽이 없습니다.</translation>
 <translation id="6897341342232909480">왼쪽으로 이동</translation>
 <translation id="6901540140423170855">date</translation>
@@ -487,6 +575,7 @@
 <translation id="7041173719775863268">선택 종료</translation>
 <translation id="7095834689119144465">텍스트 숫자만 수정</translation>
 <translation id="7096001299300236431">이전 미디어</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">단어 에코</translation>
 <translation id="713824876195128146">다음 블록 인용</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
@@ -506,6 +595,8 @@
 <translation id="7273174640290488576">비어 있음</translation>
 <translation id="7285387653379749618">표</translation>
 <translation id="7289186959554153431">제목 3</translation>
+<translation id="7292195267473691167"><ph name="LOCALE" />(<ph name="VARIANT" />)</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">점자 캡션을 사용 중지했습니다.</translation>
 <translation id="7318872822751139669">마우스를 사용하여 초점을 변경하세요.</translation>
 <translation id="7322388933135261569">2월</translation>
@@ -514,6 +605,7 @@
 <translation id="7356165926712028380">8점 점자로 전환</translation>
 <translation id="7362871137496673139">이전 수준 2 제목이 없습니다.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{앰퍼샌드}other{앰퍼샌드 #개}}</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">표를 종료합니다.</translation>
 <translation id="739763518212184081">이전 행</translation>
 <translation id="7400575256015741911">철자 오류 발견됨</translation>
@@ -521,6 +613,7 @@
 <translation id="7425395583360211003">리턴</translation>
 <translation id="7434509671034404296">개발자 정보</translation>
 <translation id="7439060726180460871">디렉토리</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">대화상자 입력함</translation>
 <translation id="7532613204005497612">6월</translation>
@@ -528,17 +621,21 @@
 <translation id="7586163296341959563">붙여넣습니다.</translation>
 <translation id="7596919493010894443">선택항목 삭제됨</translation>
 <translation id="7604026522577407655">현재 열의 처음으로 이동</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">현재 페이지의 URL 알림</translation>
 <translation id="7609363189280667021">점자 캡션 전환</translation>
 <translation id="762020119231868829">현재 재생 중인 미디어 위젯 모두 일시중지</translation>
 <translation id="7625690649919402823">다음 표</translation>
+<translation id="7628927569678398026"><ph name="LOCALE" />(<ph name="VARIANT" />), <ph name="GRADE" />등급</translation>
 <translation id="7641134354185483015">이전 수준 3 제목이 없습니다.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, 입력란</translation>
 <translation id="7663318257180412551">제목 2</translation>
 <translation id="7674576868851035240">다음 링크</translation>
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">텍스트 수정, URL 항목</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">이전 라디오 버튼</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, 비밀번호 입력란</translation>
 <translation id="7805247615045262757">기본 탐색</translation>
 <translation id="7805768142964895445">상태</translation>
@@ -549,10 +646,13 @@
 <translation id="7851816175263618915">일부 구두점만 읽음</translation>
 <translation id="7870596830398826354">Math ML 트리</translation>
 <translation id="78826985582142166">sldr</translation>
+<translation id="7894517696028036636">ChromeVox 클래식으로 전환합니다.</translation>
 <translation id="7895896691902835279">알 수 없는 링크</translation>
 <translation id="7927711904086083099">선택되지 않음</translation>
+<translation id="7935627501098484003">시간 컨트롤</translation>
 <translation id="7939428177581522200">선택에 추가됨</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{애트 기호}other{애트 기호 #개}}</translation>
+<translation id="7965147473449754028">메뉴 닫힘</translation>
 <translation id="7974390230414479278">메뉴 항목</translation>
 <translation id="8002119852008410879">{COUNT,plural, =1{느낌표}other{느낌표 #개}}</translation>
 <translation id="8007540374018858731">h3</translation>
@@ -583,6 +683,7 @@
 <translation id="8382679411218029383">자동완성 본문 및 목록</translation>
 <translation id="8428603554127842284">수준 <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">다음 수준 3 제목이 없습니다.</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">이전 체크박스가 없습니다.</translation>
 <translation id="8455868257606149352">최대 <ph name="X" /></translation>
 <translation id="84575901236241018">액세스 키(<ph name="KEY" />) 있음</translation>
@@ -599,10 +700,12 @@
 <translation id="8631359288236106450"><ph name="COUNT" />개 항목 선택됨</translation>
 <translation id="8638532244051952400">현재 셀 좌표 알림</translation>
 <translation id="8650576015643545550">이전 목록이 없습니다.</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">링크 목록 표시</translation>
 <translation id="8664519043722036194">초</translation>
 <translation id="867187640362843212">제목 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{수직 기호}other{수직 기호 #개}}</translation>
+<translation id="8722779018229123609">(-)</translation>
 <translation id="8723726026961763755">시스템이 업데이트되었습니다. 다시 시작하는 것이 좋습니다.</translation>
 <translation id="8735450637152821465">선택 시작</translation>
 <translation id="8743786158317878347">구조화된 콘텐츠(예: 표) 입력</translation>
@@ -621,9 +724,12 @@
 <translation id="8896347895970027998">ChromeVox를 활성화 또는 비활성화로 전환</translation>
 <translation id="8898516272131543774">순환 구두점 에코</translation>
 <translation id="8900148057318340779">Prefix 키</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">헤더가 비어 있음</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">특수키</translation>
 <translation id="8943175951035496220">오른쪽에 셀이 없습니다.</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">표가 없습니다.</translation>
 <translation id="9040132695316389094">제목 1</translation>
@@ -635,9 +741,11 @@
 <translation id="9089864840575085222">순환 입력 에코</translation>
 <translation id="9107530006868467849">이전 미디어 위젯이 없습니다.</translation>
 <translation id="9108370397979208512">math</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{퍼센트 기호}other{퍼센트 기호 #개}}</translation>
 <translation id="9115913704608474258">11월</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">현재 위치에 대한 간단한 설명을 들려줍니다.</translation>
 <translation id="9153606228985488238">음조: <ph name="PERCENT" />퍼센트</translation>
 <translation id="9160096769946561184">현재 열의 마지막으로 이동</translation>

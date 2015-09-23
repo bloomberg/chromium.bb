@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Regisztrációs domain:</translation>
 <translation id="1344588688991793829">A Chromium Automatikus kitöltési beállításai…</translation>
 <translation id="1426410128494586442">Igen</translation>
+<translation id="1430915738399379752">Nyomtatás</translation>
 <translation id="1455235771979731432">A kártya ellenőrzése során hiba történt. Ellenőrizze az internetkapcsolatot, és próbálja újra.</translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
-<translation id="1639239467298939599">Betöltés</translation>
 <translation id="1640180200866533862">Felhasználói házirendek</translation>
 <translation id="1644184664548287040">A hálózati konfiguráció érvénytelen és nem importálható.</translation>
 <translation id="168841957122794586">A szervertanúsítvány gyenge titkosítási kulcsot tartalmaz.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Ez a dokumentum jelszóval védett. Kérjük, adja meg a jelszót.</translation>
 <translation id="2625385379895617796">Az órája siet</translation>
 <translation id="2639739919103226564">Állapot:</translation>
+<translation id="2653659639078652383">Elküldés</translation>
 <translation id="2704283930420550640">Az érték nem egyezik a formátummal.</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Ismeretlen hiba történt.</translation>
 <translation id="4800132727771399293">Ellenőrizze a lejárati dátumot és a CVC-t, majd próbálja újra</translation>
 <translation id="4813512666221746211">Hálózati hiba</translation>
+<translation id="4816492930507672669">Igazítás az oldalmérethez</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4926049483395192435">Meg kell határozni.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Az irányelv neve</translation>
 <translation id="552553974213252141">Megfelelően kinyerte a szöveget?</translation>
 <translation id="5540224163453853">A kért cikk nem található.</translation>
+<translation id="5556459405103347317">Újratöltés</translation>
 <translation id="5565735124758917034">Aktív</translation>
 <translation id="560412284261940334">A kezelés nem támogatott</translation>
 <translation id="5629630648637658800">Az irányelv-beállítások betöltése sikertelen</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Hozzáadás újra</translation>
 <translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="59107663811261420">A Google Payments ennél a kereskedőnél nem támogatja az ilyen típusú kártyákat. Kérjük, válasszon másik kártyát.</translation>
+<translation id="5975083100439434680">Kicsinyítés</translation>
 <translation id="5989320800837274978">Sem fix proxyszerver, sem pedig .pac típusú szkript URL-címe nincs megadva.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Bezárás</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Chromium nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="8790007591277257123">&amp;Törlés újra</translation>
 <translation id="8804164990146287819">Adatvédelmi irányelvek</translation>
+<translation id="8820817407110198400">Könyvjelzők</translation>
 <translation id="8824019021993735287">A Chrome ez alkalommal nem tudta azonosítani kártyáját. Próbálja újra később.</translation>
 <translation id="8834246243508017242">Az Ismerősöket felhasználó Automatikus kitöltés engedélyezése…</translation>
 <translation id="883848425547221593">Egyéb könyvjelzők</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Irányelv-beállítások előfeldolgozási hibája</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
+<translation id="8903921497873541725">Nagyítás</translation>
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> futtatása a következő paranccsal: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>

@@ -963,7 +963,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">If enabled, the renderer delegates compositing to the browser, merging both compositing passes.</translation>
 <translation id="2381823505763074471">Sign-out user <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Causes the omnibox drop-down to sometimes display suggestion titles more prominently than URLs.</translation>
 <translation id="2384596874640104496">Sinhala keyboard</translation>
@@ -2603,7 +2602,6 @@ Press any key to continue exploring.</translation>
 <translation id="4647090755847581616">&amp;Close Tab</translation>
 <translation id="4647697156028544508">Please enter the PIN for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Insufficient permissions</translation>
-<translation id="4650159467443406318">Click here to visit this page</translation>
 <translation id="4653235815000740718">There was a problem while creating OS recovery media. Used storage device could not be found.</translation>
 <translation id="4654488276758583406">Very Small</translation>
 <translation id="465499440663162826">Could not connect to the Chrome Web Store.</translation>
@@ -3175,7 +3173,6 @@ Press any key to continue exploring.</translation>
 <translation id="5449624072515809082">Turn on autocorrection of text while typing. Synchronous spellchecking is not compatible with this feature.</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5451285724299252438">page range text box</translation>
-<translation id="5451561500892538488">Hide Notifications Icon</translation>
 <translation id="5451646087589576080">View Frame &amp;Info</translation>
 <translation id="5453029940327926427">Close tabs</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
@@ -5505,7 +5502,6 @@ Calculating time until full</translation>
 <translation id="8804398419035066391">Communicate with cooperating websites</translation>
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Delegated Renderer (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Chrome's language has changed from "<ph name="FROM_LOCALE" />" to "<ph name="TO_LOCALE" />" after syncing your settings.</translation>
 <translation id="8813811964357448561">sheet of paper</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

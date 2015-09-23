@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Registreringsdomæne:</translation>
 <translation id="1344588688991793829">Indstillinger for AutoFyld i Chromium...</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="1430915738399379752">Udskriv</translation>
 <translation id="1455235771979731432">Dit kort kunne ikke godkendes. Kontrollér at du har forbindelse til internettet, og prøv igen.</translation>
 <translation id="1491151370853475546">Genindlæs denne side</translation>
 <translation id="1549470594296187301">JavaScript skal være aktiveret, før du kan bruge denne funktion.</translation>
-<translation id="1639239467298939599">Indlæser...</translation>
 <translation id="1640180200866533862">Brugerpolitikker</translation>
 <translation id="1644184664548287040">Netværkskonfigurationen er ugyldig og kunne ikke importeres.</translation>
 <translation id="168841957122794586">Servercertifikatet indeholder en svag kryptografisk nøgle.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Dette dokument er adgangskodebeskyttet. Indtast en adgangskode.</translation>
 <translation id="2625385379895617796">Dit ur er foran</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Indsend</translation>
 <translation id="2704283930420550640">Værdien stemmer ikke overens med formatet.</translation>
 <translation id="2721148159707890343">Anmodning lykkedes</translation>
 <translation id="2728127805433021124">Serverens certifikat er signeret ved hjælp af en svag signaturalgoritme.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Der er opstået en ukendt fejl.</translation>
 <translation id="4800132727771399293">Kontrollér, om din kontrolkode og udløbsdato er korrekte, og prøv igen.</translation>
 <translation id="4813512666221746211">Netværksfejl</translation>
+<translation id="4816492930507672669">Tilpas til siden</translation>
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4923417429809017348">Denne side er oversat fra et ukendt sprog til <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Skal angives.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Navn på politik</translation>
 <translation id="552553974213252141">Blev teksten trukket korrekt ud?</translation>
 <translation id="5540224163453853">Den anmodede artikel kunne ikke findes.</translation>
+<translation id="5556459405103347317">Genindlæs</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Administration er ikke understøttet</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="5872918882028971132">Forslag fra forældre</translation>
 <translation id="59107663811261420">Denne korttype understøttes ikke af Google Payments for denne sælger. Vælg et andet kort.</translation>
+<translation id="5975083100439434680">Zoom ud</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Luk</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">For at kunne oprette en sikker forbindelse skal dit ur være indstillet korrekt. Det er vigtigt, da de certifikater, som websites bruger til at identificere sig selv, kun er gyldige i bestemte tidsperioder. Da uret på din enhed går forkert, kan Chromium ikke bekræfte disse certifikater.</translation>
 <translation id="8790007591277257123">&amp;Annuller fortryd sletning</translation>
 <translation id="8804164990146287819">Privatlivspolitik</translation>
+<translation id="8820817407110198400">Bogmærker</translation>
 <translation id="8824019021993735287">Chrome kunne ikke bekræfte dit kort på dette tidspunkt. Prøv igen senere.</translation>
 <translation id="8834246243508017242">Aktivér autofyld med kontaktpersoner...</translation>
 <translation id="883848425547221593">Andre bogmærker</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Der opstod en fejl ved parsing af indstillinger for politik</translation>
 <translation id="8876793034577346603">Netværkskonfiguration kunne ikke parses.</translation>
 <translation id="8891727572606052622">Ugyldig proxytilstand.</translation>
+<translation id="8903921497873541725">Zoom ind</translation>
 <translation id="8932102934695377596">Dit ur er bagud</translation>
 <translation id="8940229512486821554">Kør <ph name="EXTENSION_NAME" />-kommandoen: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Serverens certifikat er udløbet.</translation>

@@ -950,7 +950,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">אם המאפשר מופעל, הוא מעניק זכויות כתיבה לדפדפן, תוך מיזוג של שני אישורי הכתיבה.</translation>
 <translation id="2381823505763074471">הוצא את המשתמש <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">גורם לתפריט הנפתח בסרגל הכתובות להציג לפעמים כותרות של הצעות בצורה בולטת יותר מאשר כתובות אתרים.</translation>
 <translation id="2384596874640104496">מקלדת סינהלה</translation>
@@ -2588,7 +2587,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4647090755847581616">&amp;סגור כרטיסייה</translation>
 <translation id="4647697156028544508">‏הזן PIN עבור "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">הרשאות לא מספיקות</translation>
-<translation id="4650159467443406318">לחץ כאן כדי לבקר בדף זה</translation>
 <translation id="4653235815000740718">אירעה בעיה במהלך היצירה של מדיית השחזור של מערכת ההפעלה. מכשיר האחסון שבו נעשה שימוש לא נמצא.</translation>
 <translation id="4654488276758583406">קטן מאוד</translation>
 <translation id="465499440663162826">‏לא ניתן היה להתחבר לחנות האינטרנט של Chrome.</translation>
@@ -3159,7 +3157,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5449624072515809082">הפעלת תיקון אוטומטי של טקסט תוך כדי הקלדה. תיקון שגיאות איות סנכרוני אינו תואם לתכונה זו.</translation>
 <translation id="5449716055534515760">סגור ח&amp;לון</translation>
 <translation id="5451285724299252438">תיבת טקסט של טווח דפים</translation>
-<translation id="5451561500892538488">הסתר את סמל ההודעות</translation>
 <translation id="5451646087589576080">הצג מסגרת &amp;ופרטים</translation>
 <translation id="5453029940327926427">סגור כרטיסיות</translation>
 <translation id="5453632173748266363">קירילית</translation>
@@ -5466,7 +5463,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8804398419035066391">יצירת קשר עם אתרים שמשתפים פעולה</translation>
 <translation id="8807632654848257479">יציב</translation>
 <translation id="8808478386290700967">חנות אינטרנט</translation>
-<translation id="8811314776632711217">‏מאפשר בעל גישה (מוכר גם בשם Übercompositor).</translation>
 <translation id="8811462119186190367">‏שפת Chrome השתנתה מ"<ph name="FROM_LOCALE" />" ל"<ph name="TO_LOCALE" />" לאחר סנכרון ההגדרות.</translation>
 <translation id="8813811964357448561">גליון נייר</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

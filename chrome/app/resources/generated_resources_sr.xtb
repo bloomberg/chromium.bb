@@ -961,7 +961,6 @@
 <translation id="2378075407703503998">Изабраних датотека: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Избор директоријума додатка.</translation>
 <translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ако је омогућен, приказивач преноси компоновање у прегледач и обједињује оба прелаза за компоновање.</translation>
 <translation id="2381823505763074471">Одјавите корисника <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Доводи до тога да наслови предлога у падајућој листи омнибокса понекад буду истакнутији од URL-ова.</translation>
 <translation id="2384596874640104496">Синхалска тастатура</translation>
@@ -2601,7 +2600,6 @@
 <translation id="4647090755847581616">&amp;Close Tab (Затвори картицу)</translation>
 <translation id="4647697156028544508">Унесите PIN за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Недовољан број дозвола</translation>
-<translation id="4650159467443406318">Кликните овде да бисте посетили ову страницу</translation>
 <translation id="4653235815000740718">Дошло је до проблема при прављењу медијума за обнављање ОС-а. Употребљени меморијски уређај није пронађен.</translation>
 <translation id="4654488276758583406">Веома мала</translation>
 <translation id="465499440663162826">Повезивање са Chrome веб-продавницом није успело.</translation>
@@ -3173,7 +3171,6 @@
 <translation id="5449624072515809082">Укључује аутоматско исправљање текста док куцате. Синхрона провера правописа није компатибилна са овом функцијом.</translation>
 <translation id="5449716055534515760">Close Win&amp;dow (Затвори прозор)</translation>
 <translation id="5451285724299252438">оквир за текст за опсег страница</translation>
-<translation id="5451561500892538488">Сакриј икону Обавештења</translation>
 <translation id="5451646087589576080">Прикажи &amp;информације о оквиру</translation>
 <translation id="5453029940327926427">Затвори картице</translation>
 <translation id="5453632173748266363">ћирилица</translation>
@@ -5500,7 +5497,6 @@
 <translation id="8804398419035066391">Комуникација са веб-сајтовима за сарадњу</translation>
 <translation id="8807632654848257479">Стабилно</translation>
 <translation id="8808478386290700967">Веб-продавница</translation>
-<translation id="8811314776632711217">Пренесени приказивач (такође познат као Übercompositor).</translation>
 <translation id="8811462119186190367">Језик Chrome прегледача је након синхронизације подешавања промењен са језика „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“.</translation>
 <translation id="8813811964357448561">лист папира</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

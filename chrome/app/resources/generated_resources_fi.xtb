@@ -957,7 +957,6 @@ Luotuasi uuden valvotun käyttäjän voit hallinnoida käyttäjän asetuksia mil
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> tiedostoa on valittu</translation>
 <translation id="2378982052244864789">Valitse laajennuksen hakemisto.</translation>
 <translation id="2379281330731083556">Tulosta järjestelmän tulostusikkunalla... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Jos tämä asetus on käytössä, hahmontaja siirtää koostamisen selaimen tehtäväksi ja yhdistää näin molemmat koostamistehtävät.</translation>
 <translation id="2381823505763074471">Kirjaa <ph name="PROFILE_USERNAME" /> ulos.</translation>
 <translation id="2383034317918297467">Sallii omniboxin valikon näyttää ehdotusten nimikkeitä URL-osoitteita näkyvämmin.</translation>
 <translation id="2384596874640104496">Sinhalinkielinen näppäimistö</translation>
@@ -2584,7 +2583,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="4647090755847581616">&amp;Sulje välilehti</translation>
 <translation id="4647697156028544508">Anna laitteen <ph name="DEVICE_NAME" /> PIN-koodi:</translation>
 <translation id="4648491805942548247">Käyttöluvat eivät riitä</translation>
-<translation id="4650159467443406318">Siirry sivulle klikkaamalla tätä</translation>
 <translation id="4653235815000740718">Virhe käyttöjärjestelmän palautustietovälineen luomisessa. Tallennuslaitetta ei löydy.</translation>
 <translation id="4654488276758583406">Hyvin pieni</translation>
 <translation id="465499440663162826">Chrome Web Storeen ei saatu yhteyttä.</translation>
@@ -3150,7 +3148,6 @@ Kaikkien käyttäjien täytyy kirjautua ulos jatkaakseen käyttöä.</translatio
 <translation id="5449624072515809082">Ota käyttöön tekstin automaattinen oikoluku kirjoitettaessa. Samaan aikaan tapahtuva oikeinkirjoituksen tarkistus ei ole yhteensopiva tämän ominaisuuden kanssa.</translation>
 <translation id="5449716055534515760">&amp;Sulje ikkuna</translation>
 <translation id="5451285724299252438">sivualue-tekstikenttä</translation>
-<translation id="5451561500892538488">Piilota ilmoitukset-kuvake</translation>
 <translation id="5451646087589576080">Näytä kehyst&amp;iedot</translation>
 <translation id="5453029940327926427">Sulje välilehdet</translation>
 <translation id="5453632173748266363">kyrillinen</translation>
@@ -5456,7 +5453,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8804398419035066391">Kommunikoida yhteistyösivustojen kanssa.</translation>
 <translation id="8807632654848257479">Vakaa</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Valtuutettu hahmontaja (eli Übercompositor).</translation>
 <translation id="8811462119186190367">Chromen kieli on muutettu kielestä <ph name="FROM_LOCALE" /> kieleksi <ph name="TO_LOCALE" /> asetustesi synkronoinnin jälkeen.</translation>
 <translation id="8813811964357448561">paperiarkki</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

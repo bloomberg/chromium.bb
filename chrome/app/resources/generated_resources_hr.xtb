@@ -957,7 +957,6 @@ Nakon izrade novog nadziranog korisnika možete upravljati njegovim postavkama u
 <translation id="2378075407703503998">Odabrane datoteke: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Odaberi direktorij proširenja.</translation>
 <translation id="2379281330731083556">Ispis pomoću dijaloškog okvira sustava... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ako je omogućen, ispunjivač će za uslojavanje ovlastiti preglednik, spajajući oba prolaza uslojavanja.</translation>
 <translation id="2381823505763074471">Odjava korisnika <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Uzrokuje da padajući izbornik višenamjenskog okvira ponekad prikazuje naslove prijedloga istaknutije od URL-ova.</translation>
 <translation id="2384596874640104496">singaleska tipkovnica</translation>
@@ -2590,7 +2589,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="4647090755847581616">&amp;Close Tab (Zatvori karticu)</translation>
 <translation id="4647697156028544508">Unesite PIN-a za uređaj "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Nedovoljne dozvole</translation>
-<translation id="4650159467443406318">Kliknite ovdje da biste posjetili stranicu</translation>
 <translation id="4653235815000740718">Došlo je do problema prilikom izrade medija za oporavak sustava. Nije bilo moguće pronaći upotrijebljeni uređaj za pohranu.</translation>
 <translation id="4654488276758583406">Vrlo mali</translation>
 <translation id="465499440663162826">Povezivanje s Chrome web-trgovinom nije uspjelo.</translation>
@@ -3162,7 +3160,6 @@ Pritisnite bilo koju tipku da biste nastavili istraživati.</translation>
 <translation id="5449624072515809082">Uključuje automatsko ispravljanje teksta tijekom tipkanja. Sinkronizirana provjera pravopisa nije kompatibilna s tom značajkom.</translation>
 <translation id="5449716055534515760">Close Win&amp;dow (Zatvori prozor)</translation>
 <translation id="5451285724299252438">tekstni okvir raspona stranica</translation>
-<translation id="5451561500892538488">Sakrij ikonu obavijesti</translation>
 <translation id="5451646087589576080">Prikaži &amp;informacije o okviru</translation>
 <translation id="5453029940327926427">Zatvori kartice</translation>
 <translation id="5453632173748266363">ćirilica</translation>
@@ -5472,7 +5469,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8804398419035066391">komunicirati sa suradničkim web-lokacijama</translation>
 <translation id="8807632654848257479">Stabilno</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Ovlašteni ispunjivač (još poznat kao Übercompositor).</translation>
 <translation id="8811462119186190367">Jezik preglednika Chrome promijenjen je iz "<ph name="FROM_LOCALE" />" u "<ph name="TO_LOCALE" />" nakon sinkronizacije vaših postavki.</translation>
 <translation id="8813811964357448561">list papira</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -961,7 +961,6 @@ Quan hàgiu creat un usuari supervisat, podeu gestionar-ne la configuració en q
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fitxers seleccionats</translation>
 <translation id="2378982052244864789">Seleccioneu el directori de l'extensió.</translation>
 <translation id="2379281330731083556">Imprimeix des de la finestra de diàleg del sistema… <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Si està activat, el renderitzador delega la composició al navegador i combina els dos permisos de composició.</translation>
 <translation id="2381823505763074471">Tanca la sessió de l'usuari <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Fa que el menú desplegable d'omnibox, de vegades, mostri els títols dels suggeriments de manera més destacada que no pas els URL.</translation>
 <translation id="2384596874640104496">Teclat de singalès</translation>
@@ -1929,7 +1928,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="3668823961463113931">Gestors</translation>
 <translation id="3672159315667503033"><ph name="URL" /> vol emmagatzemar de forma permanent una gran quantitat de dades a l'equip local.</translation>
 <translation id="3672681487849735243">S'ha detectat un error de fàbrica</translation>
-<translation id="3672928695873425336">No permetis que el menú d'aplicacions es minimitzi en fer-hi clic</translation>
+<translation id="3672928695873425336">No permetis que el prestatge es minimitzi en fer-hi clic</translation>
 <translation id="367645871420407123">deixeu-ho en blanc si voleu establir el valor predeterminat de la imatge de prova com a contrasenya arrel</translation>
 <translation id="3678156199662914018">Extensió: <ph name="EXTENSION_NAME" /></translation>
 <translation id="3678559383040232393">Teclat maltès</translation>
@@ -2590,7 +2589,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4647090755847581616">&amp;Tanca la pestanya</translation>
 <translation id="4647697156028544508">Introduïu el PIN per a "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficients</translation>
-<translation id="4650159467443406318">Feu clic aquí per accedir a aquesta pàgina</translation>
 <translation id="4653235815000740718">S'ha produït un error durant la creació del mitjà de recuperació del sistema operatiu. No s'ha pogut trobar el dispositiu d'emmagatzematge utilitzat.</translation>
 <translation id="4654488276758583406">Molt petit</translation>
 <translation id="465499440663162826">No s'ha pogut connectar a Chrome Web Store.</translation>
@@ -2995,7 +2993,7 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5233638681132016545">Pestanya nova</translation>
 <translation id="5233736638227740678">&amp;Enganxa</translation>
 <translation id="5233930340889611108">WebKit</translation>
-<translation id="5234320766290789922">No permet que el menú d'aplicacions minimitzi una finestra si es fa clic en un element del menú d'aplicacions que només tingui associada una finestra activa.</translation>
+<translation id="5234320766290789922">No permet que el prestatge minimitzi una finestra si es fa clic en un element del prestatge que només tingui associada una finestra activa.</translation>
 <translation id="5234764350956374838">Omet</translation>
 <translation id="5238278114306905396">L'aplicació "<ph name="EXTENSION_NAME" />" s'ha eliminat automàticament.</translation>
 <translation id="5238369540257804368">Àmbits</translation>
@@ -3158,7 +3156,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5449624072515809082">Activa la correcció automàtica del text mentre escriviu. El corrector ortogràfic síncron no és compatible amb aquesta funció.</translation>
 <translation id="5449716055534515760">Tanca la &amp;finestra</translation>
 <translation id="5451285724299252438">quadre de text de l'interval de pàgines</translation>
-<translation id="5451561500892538488">Amaga la icona de notificacions</translation>
 <translation id="5451646087589576080">V&amp;isualitza la informació del marc</translation>
 <translation id="5453029940327926427">Tanca les pestanyes</translation>
 <translation id="5453632173748266363">Ciríl·lic</translation>
@@ -5474,7 +5471,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8804398419035066391">Comunicar-se amb llocs web cooperatius</translation>
 <translation id="8807632654848257479">Estable</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Renderitzador delegat (també conegut com a Übercompositor).</translation>
 <translation id="8811462119186190367">L'idioma de Chrome ha canviat de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" després de sincronitzar la vostra sincronització.</translation>
 <translation id="8813811964357448561">full de paper</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

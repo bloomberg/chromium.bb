@@ -961,7 +961,6 @@ Pēc jauna uzraudzīta lietotāja izveides varat pārvaldīt viņa iestatījumus
 <translation id="2378075407703503998">Atlasīti <ph name="SELCTED_FILE_COUNT" /> faili.</translation>
 <translation id="2378982052244864789">Atlasiet paplašinājuma direktoriju.</translation>
 <translation id="2379281330731083556">Drukāt, izmantojot sistēmas dialoglodziņu... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ja opcija ir iespējota, renderētājs deleģē kompozicionēšanu pārlūkam, apvienojot abas kompozicionēšanas atļaujas.</translation>
 <translation id="2381823505763074471">Izrakstīt lietotāju <ph name="PROFILE_USERNAME" /></translation>
 <translation id="2383034317918297467">Universālā lodziņa nolaižamajā izvēlnē ieteikumu nosaukumi dažreiz tiek izcelti vairāk nekā vietrāži URL.</translation>
 <translation id="2384596874640104496">Singāļu valodas tastatūra</translation>
@@ -2602,7 +2601,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4647090755847581616">&amp;Aizvērt cilni</translation>
 <translation id="4647697156028544508">Ievadiet PIN ierīcei <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nav pietiekamu atļauju.</translation>
-<translation id="4650159467443406318">Noklikšķiniet šeit, lai apmeklētu šo lapu.</translation>
 <translation id="4653235815000740718">Veidojot OS atkopšanas datu nesēju, radās problēma. Nevarēja atrast izmantoto atmiņas ierīci.</translation>
 <translation id="4654488276758583406">Ļoti mazs</translation>
 <translation id="465499440663162826">Nevarēja izveidot savienojumu ar Chrome interneta veikalu.</translation>
@@ -3174,7 +3172,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5449624072515809082">Iespējojiet teksta automātisku labošanu rakstīšanas laikā. Sinhronizētā pareizrakstības pārbaude nav saderīga ar šo funkciju.</translation>
 <translation id="5449716055534515760">Aizvērt Win&amp;dow</translation>
 <translation id="5451285724299252438">lapas diapazona tekstlodziņš</translation>
-<translation id="5451561500892538488">Slēpt paziņojumu ikonu</translation>
 <translation id="5451646087589576080">Skatīt rāmja &amp;informāciju</translation>
 <translation id="5453029940327926427">Aizvērt cilnes</translation>
 <translation id="5453632173748266363">Kiriliska</translation>
@@ -5499,7 +5496,6 @@ Tiek rēķināts atlikušais uzlādes laiks</translation>
 <translation id="8804398419035066391">Izveidot savienojumu ar sadarbības vietnēm</translation>
 <translation id="8807632654848257479">Stabils</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Deleģētais renderētājs (Übercompositor).</translation>
 <translation id="8811462119186190367">Chrome valoda ir mainīta no valodas <ph name="FROM_LOCALE" /> uz valodu <ph name="TO_LOCALE" /> pēc jūsu iestatījumu sinhronizēšanas.</translation>
 <translation id="8813811964357448561">papīra loksne</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

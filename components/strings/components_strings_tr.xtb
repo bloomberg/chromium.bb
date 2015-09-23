@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Kayıt alan adı:</translation>
 <translation id="1344588688991793829">Chromium Otomatik Doldurma ayarları...</translation>
 <translation id="1426410128494586442">Evet</translation>
+<translation id="1430915738399379752">Yazdır</translation>
 <translation id="1455235771979731432">Kartınız doğrulanırken bir sorun oluştu. İnternet bağlantınızı kontrol edin ve tekrar deneyin.</translation>
 <translation id="1491151370853475546">Bu Sayfayı Yeniden Yükle</translation>
 <translation id="1549470594296187301">Bu özelliğin kullanılabilmesi için JavaScript etkinleştirilmelidir.</translation>
-<translation id="1639239467298939599">Yükleniyor</translation>
 <translation id="1640180200866533862">Kullanıcı politikaları</translation>
 <translation id="1644184664548287040">Ağ yapılandırması geçersiz, dolayısıyla içe aktarılamadı.</translation>
 <translation id="168841957122794586">Sunucu sertifikasında zayıf bir şifreleme anahtarı var.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Doküman şifre korumalı. Lütfen şifreyi girin.</translation>
 <translation id="2625385379895617796">Saatiniz ileri</translation>
 <translation id="2639739919103226564">Durum:</translation>
+<translation id="2653659639078652383">Gönder</translation>
 <translation id="2704283930420550640">Değer, biçimle eşleşmiyor.</translation>
 <translation id="2721148159707890343">İstek başarılı oldu</translation>
 <translation id="2728127805433021124">Sunucunun sertifikası, zayıf bir imza algoritması kullanılarak imzalanmış.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Bilinmeyen bir hata oluştu.</translation>
 <translation id="4800132727771399293">Son kullanma tarihinizi ve CVC'nizi kontrol edip tekrar deneyin</translation>
 <translation id="4813512666221746211">Ağ hatası</translation>
+<translation id="4816492930507672669">Sayfaya sığdır</translation>
 <translation id="4850886885716139402">Görüntüle</translation>
 <translation id="4923417429809017348">Bu sayfa, bilinmeyen bir dilden <ph name="LANGUAGE_LANGUAGE" /> diline çevrildi</translation>
 <translation id="4926049483395192435">Belirtilmelidir.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Politika adı</translation>
 <translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
 <translation id="5540224163453853">İstenen makale bulunamadı.</translation>
+<translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="5565735124758917034">Etkin</translation>
 <translation id="560412284261940334">Yönetim desteklenmiyor</translation>
 <translation id="5629630648637658800">Politika ayarları yüklenemedi</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">Eklemeyi &amp;Yeniden Yap</translation>
 <translation id="5872918882028971132">Ebeveyn Önerileri</translation>
 <translation id="59107663811261420">Google Payments, bu satıcı için bu kart türünü desteklememektedir. Lütfen farklı bir kart seçin.</translation>
+<translation id="5975083100439434680">Uzaklaştır</translation>
 <translation id="5989320800837274978">Sabit proxy sunucular veya bir .pac komut dosyası URL'si belirtilmedi.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Kapat</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Chromium bu sertifikaları doğrulayamaz.</translation>
 <translation id="8790007591277257123">Silmeyi &amp;yeniden yap</translation>
 <translation id="8804164990146287819">Gizlilik Politikası</translation>
+<translation id="8820817407110198400">Favoriler</translation>
 <translation id="8824019021993735287">Chrome, şu anda kartınızı doğrulayamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="8834246243508017242">Kişiler'i kullanarak Otomatik Doldur'u etkinleştir…</translation>
 <translation id="883848425547221593">Diğer Yer İşaretleri</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Politika ayarlarını ayrıştırma hatası</translation>
 <translation id="8876793034577346603">Ağ yapılandırması ayrıştırılamadı.</translation>
 <translation id="8891727572606052622">Geçersiz proxy modu.</translation>
+<translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="8932102934695377596">Saatiniz geri</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" /> komutunu çalıştır: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Sunucu sertifikasının süresi doldu.</translation>

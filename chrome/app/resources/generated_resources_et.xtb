@@ -960,7 +960,6 @@ Proovige uuesti mõne muu sertifikaadiga (kui teil on teisi sertifikaate). Kui t
 <translation id="2378075407703503998">Valitud on <ph name="SELCTED_FILE_COUNT" /> faili</translation>
 <translation id="2378982052244864789">Laiendi kataloogi valimine.</translation>
 <translation id="2379281330731083556">Prindi süsteemidialoogi abil ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Kui see lubatakse, siis delegeerib renderdaja liitmise brauserile, ühendades mõlemad liitmisprotsessid.</translation>
 <translation id="2381823505763074471">Kasutaja <ph name="PROFILE_USERNAME" /> väljalogimine.</translation>
 <translation id="2383034317918297467">Seetõttu võidakse omnikastikese rippmenüüs vahel näidata soovitusi URL-idest silmatorkavamalt.</translation>
 <translation id="2384596874640104496">Singali klaviatuur</translation>
@@ -2603,7 +2602,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4647090755847581616">&amp;Sule vaheleht</translation>
 <translation id="4647697156028544508">Sisestage seadme „<ph name="DEVICE_NAME" />” PIN-kood:</translation>
 <translation id="4648491805942548247">Ebapiisav luba</translation>
-<translation id="4650159467443406318">Selle lehe külastamiseks klõpsake siin</translation>
 <translation id="4653235815000740718">OS-i taastekandja loomisel ilmnes tõrge. Kasutatud salvestusseadet ei leitud.</translation>
 <translation id="4654488276758583406">Väga väike</translation>
 <translation id="465499440663162826">Chrome'i veebipoega ei õnnestunud ühendada.</translation>
@@ -3175,7 +3173,6 @@ Uurimise jätkamiseks vajutage mis tahes klahvi.</translation>
 <translation id="5449624072515809082">Lülitab sisse sisestatava teksti automaatse parandamise. Sünkroonne õigekirjakontroll ei ühildu selle funktsiooniga.</translation>
 <translation id="5449716055534515760">Sule &amp;aken</translation>
 <translation id="5451285724299252438">lehtede vahemiku tekstiväli</translation>
-<translation id="5451561500892538488">Peida märguannete ikoon</translation>
 <translation id="5451646087589576080">Vaata raami tea&amp;vet</translation>
 <translation id="5453029940327926427">Sule vahelehed</translation>
 <translation id="5453632173748266363">Kirillits</translation>
@@ -5499,7 +5496,6 @@ Täislaadimiseks kuluva aja arvutamine</translation>
 <translation id="8804398419035066391">Side koostööd tegevate veebisaitidega</translation>
 <translation id="8807632654848257479">Stabiilne</translation>
 <translation id="8808478386290700967">Veebipood</translation>
-<translation id="8811314776632711217">Delegeeritud renderdaja (EHK Übercompositor).</translation>
 <translation id="8811462119186190367">Pärast seadete sünkroonimist seati Chrome'i keeleks <ph name="FROM_LOCALE" /> keele asemel <ph name="TO_LOCALE" /> keel.</translation>
 <translation id="8813811964357448561">paberileht</translation>
 <translation id="8814190375133053267">WiFi</translation>

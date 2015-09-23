@@ -960,7 +960,6 @@ Miután létrehozott egy új felügyelt felhasználót, bármikor és bármilyen
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fájl kiválasztva</translation>
 <translation id="2378982052244864789">A bővítmény könyvtárának kiválasztása.</translation>
 <translation id="2379281330731083556">Nyomtatás a rendszer párbeszédablakán keresztül... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ha engedélyezve van, a megjelenítő a böngészőre ruházza át az összeállítást, egyesítve mindkét összeállítási műveletet.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> felhasználó kijelentkeztetése.</translation>
 <translation id="2383034317918297467">Azt eredményezi, hogy a legördülő cím- és keresősáv olykor hangsúlyosabban jeleníti meg a javaslatcímeket, mint az URL-eket.</translation>
 <translation id="2384596874640104496">Sinhala billentyűzet</translation>
@@ -2590,7 +2589,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4647090755847581616">&amp;Lap bezárása</translation>
 <translation id="4647697156028544508">Kérjük, adja meg a(z) "<ph name="DEVICE_NAME" />" PIN kódját:</translation>
 <translation id="4648491805942548247">Elégtelen engedélyek</translation>
-<translation id="4650159467443406318">Kattintson ide az oldal felkereséséhez</translation>
 <translation id="4653235815000740718">Probléma lépett fel az OS-helyreállító adathordozó elkészítése során. A felhasználni kívánt tárolóeszköz nem található.</translation>
 <translation id="4654488276758583406">Nagyon kicsi</translation>
 <translation id="465499440663162826">Nem sikerült csatlakozni a Chrome Internetes áruházhoz.</translation>
@@ -3161,7 +3159,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="5449624072515809082">Bekapcsolja a szöveg írás közbeni automatikus javítását. A szinkronizált helyesírás-ellenőrzés nem kompatibilis ezzel a funkcióval.</translation>
 <translation id="5449716055534515760">A&amp;blak bezárása</translation>
 <translation id="5451285724299252438">oldaltartomány szövegmező</translation>
-<translation id="5451561500892538488">Értesítések ikon elrejtése</translation>
 <translation id="5451646087589576080">Keret adata&amp;inak megtekintése</translation>
 <translation id="5453029940327926427">Lapok bezárása</translation>
 <translation id="5453632173748266363">Cirill</translation>
@@ -5481,7 +5478,6 @@ függetlenül a következő kártyára lesz terhelve: <ph name="BACKING_CREDIT_C
 <translation id="8804398419035066391">Kommunikáció az együttműködő webhelyekkel</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Chrome internetes áruház</translation>
-<translation id="8811314776632711217">Felhatalmazott megjelenítő (más néven Übercompositor).</translation>
 <translation id="8811462119186190367">A Chrome nyelve a beállítások szinkronizálását követően erről: "<ph name="FROM_LOCALE" />" erre: "<ph name="TO_LOCALE" />" változott.</translation>
 <translation id="8813811964357448561">papírlap</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

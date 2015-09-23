@@ -971,7 +971,6 @@ Selepas anda membuat pengguna di bawah seliaan yang baharu, anda boleh mengurus 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> fail dipilih</translation>
 <translation id="2378982052244864789">Pilih direktori sambungan.</translation>
 <translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Jika didayakan, pemapar menugaskan penggubahan kepada penyemak imbas, menggabungkan kedua-dua pas penggubahan.</translation>
 <translation id="2381823505763074471">Pengguna log keluar <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Menyebabkan menu lungsur kotak omni memaparkan tajuk cadangan lebih menonjol daripada URL pada sesetengah masa.</translation>
 <translation id="2384596874640104496">Papan kekunci bahasa Sinhala</translation>
@@ -2613,7 +2612,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="4647090755847581616">&amp;Tutup Tab</translation>
 <translation id="4647697156028544508">Sila masukkan PIN untuk "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Kebenaran tidak mencukupi</translation>
-<translation id="4650159467443406318">Klik di sini untuk melawat halaman ini</translation>
 <translation id="4653235815000740718">Terdapat masalah semasa mencipta media pemulihan OS. Peranti storan terpakai tidak dapat dijumpai.</translation>
 <translation id="4654488276758583406">Sangat Kecil</translation>
 <translation id="465499440663162826">Tidak dapat menyambung ke Gedung Web Chrome.</translation>
@@ -3185,7 +3183,6 @@ Tekan sebarang kekunci untuk terus meneroka.</translation>
 <translation id="5449624072515809082">Hidupkan autopembetulan teks semasa menaip. Semakan ejaan segerak tidak serasi dengan ciri ini.</translation>
 <translation id="5449716055534515760">Tutup Te&amp;tingkap</translation>
 <translation id="5451285724299252438">kotak teks julat halaman</translation>
-<translation id="5451561500892538488">Sembunyikan Ikon Pemberitahuan</translation>
 <translation id="5451646087589576080">Lihat Maklumat &amp;Bingkai</translation>
 <translation id="5453029940327926427">Tutup tab</translation>
 <translation id="5453632173748266363">Cyril</translation>
@@ -5516,7 +5513,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8804398419035066391">Berkomunikasi dengan tapak web yang bekerjasama</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Kedai Web</translation>
-<translation id="8811314776632711217">Pemapar Ditugaskan (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Bahasa Chrome ditukar daripada "<ph name="FROM_LOCALE" />" kepada "<ph name="TO_LOCALE" />" selepas menyegerakkan tetapan ini.</translation>
 <translation id="8813811964357448561">helai kertas</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -960,7 +960,6 @@ Po utworzeniu nadzorowanego użytkownika możesz w dowolnym czasie i z dowolnego
 <translation id="2378075407703503998">Wybrano <ph name="SELCTED_FILE_COUNT" /> pliki(ów)</translation>
 <translation id="2378982052244864789">Wybierz katalog rozszerzenia.</translation>
 <translation id="2379281330731083556">Drukuj w oknie systemowym <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Jeśli ta opcja jest włączona, mechanizm renderowania przekazuje komponowanie do przeglądarki, scalając oba przebiegi tego procesu.</translation>
 <translation id="2381823505763074471">Wyloguj użytkownika <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Powoduje, że tytuły podpowiedzi wyświetlanych w omniboksie są wyróżniane bardziej niż adresy URL.</translation>
 <translation id="2384596874640104496">Klawiatura syngaleska</translation>
@@ -2594,7 +2593,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4647090755847581616">&amp;Zamknij kartę</translation>
 <translation id="4647697156028544508">Wpisz PIN urządzenia „<ph name="DEVICE_NAME" />”:</translation>
 <translation id="4648491805942548247">Niewystarczające uprawnienia</translation>
-<translation id="4650159467443406318">Kliknij tutaj, by wejść na tę stronę</translation>
 <translation id="4653235815000740718">Wystąpił problem podczas tworzenia nośnika odzyskiwania systemu operacyjnego. Nie można znaleźć użytego urządzenia pamięci masowej.</translation>
 <translation id="4654488276758583406">Bardzo mały</translation>
 <translation id="465499440663162826">Nie udało się połączyć z Chrome Web Store.</translation>
@@ -3164,7 +3162,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5449624072515809082">Włącza automatyczne sprawdzanie pisowni podczas pisania. Synchroniczne sprawdzanie pisowni jest niezgodne z tą funkcją.</translation>
 <translation id="5449716055534515760">Zamknij o&amp;kno</translation>
 <translation id="5451285724299252438">pole tekstowe zakresu stron</translation>
-<translation id="5451561500892538488">Ukryj ikonę powiadomień</translation>
 <translation id="5451646087589576080">Wyświetl &amp;informacje o ramce</translation>
 <translation id="5453029940327926427">Zamknij karty</translation>
 <translation id="5453632173748266363">Cyrylica</translation>
@@ -5475,7 +5472,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8804398419035066391">Komunikowanie się ze współpracującymi witrynami</translation>
 <translation id="8807632654848257479">Stabilny</translation>
 <translation id="8808478386290700967">Chrome Web Store</translation>
-<translation id="8811314776632711217">Przekaźnik mechanizmu renderowania (inaczej Übercompositor).</translation>
 <translation id="8811462119186190367">Po zsynchronizowaniu ustawień zmieniono język przeglądarki Chrome z „<ph name="FROM_LOCALE" />” na „<ph name="TO_LOCALE" />”.</translation>
 <translation id="8813811964357448561">kartka</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

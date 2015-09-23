@@ -963,7 +963,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translation>
 <translation id="2378075407703503998">Počet vybratých súborov: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Vybrať adresár rozšírenia.</translation>
 <translation id="2379281330731083556">Tlačiť pomocou dialógového okna systému... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ak je táto možnosť povolená, vykresľovací modul deleguje skladanie prehliadaču, čím sa obidve povolenia na skladanie zlúčia.</translation>
 <translation id="2381823505763074471">Odhlásiť používateľa <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Spôsobí, že v rozbaľovacej časti všeobecného poľa sa niekedy zobrazia navrhované názvy výraznejšie ako webové adresy.</translation>
 <translation id="2384596874640104496">Klávesnica pre sinhálčinu</translation>
@@ -2604,7 +2603,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="4647090755847581616">&amp;Zavrieť kartu</translation>
 <translation id="4647697156028544508">Zadajte kód PIN pre zariadenie <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nedostatočné povolenia</translation>
-<translation id="4650159467443406318">Kliknutím tu prejdite na danú stránku</translation>
 <translation id="4653235815000740718">Pri vytváraní obnovovacieho média OS sa vyskytol problém. Nepodarilo sa nájsť používané zariadenie s ukladacím priestorom.</translation>
 <translation id="4654488276758583406">Veľmi malé</translation>
 <translation id="465499440663162826">K Internetovému obchodu Chrome sa nepodarilo pripojiť</translation>
@@ -3176,7 +3174,6 @@ Ak chcete pokračovať v práci, stlačte ľubovoľný kláves.</translation>
 <translation id="5449624072515809082">Zapne automatickú opravu pravopisu pri písaní. Synchronizovaná kontrola pravopisu nie je s touto funkciou kompatibilná.</translation>
 <translation id="5449716055534515760">Zavrieť o&amp;kno</translation>
 <translation id="5451285724299252438">textové pole rozsahu strán</translation>
-<translation id="5451561500892538488">Skryť ikonu upozornení</translation>
 <translation id="5451646087589576080">Zobraziť &amp;informácie o rámci</translation>
 <translation id="5453029940327926427">Zavrieť karty</translation>
 <translation id="5453632173748266363">Cyrilika</translation>
@@ -5499,7 +5496,6 @@ Prebieha výpočet času do úplného nabitia</translation>
 <translation id="8804398419035066391">Komunikovať so spolupracujúcimi webmi</translation>
 <translation id="8807632654848257479">Stabilné</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Delegovaný vykresľovací modul (známy ako modul Übercompositor).</translation>
 <translation id="8811462119186190367">Po synchronizácii vašich nastavení bol zmenený jazyk prehliadača Chrome z jazyka „<ph name="FROM_LOCALE" />“ na jazyk „<ph name="TO_LOCALE" />“.</translation>
 <translation id="8813811964357448561">list papiera</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1012173283529841972">ಪಟ್ಟಿಯ ಐಟಂ</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">ಸ್ಪ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1025074108959230262">ಸ್ಟಿಕಿ ಮೋಡ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1031961866430398710">ನಂತರ</translation>
 <translation id="1044777062731150180">ಯಾವುದೇ ಶಿರೋನಾಮೆಗಳಿಲ್ಲ</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">ಅಮಾನ್ಯ ಇನ್‌ಪುಟ್</translation>
 <translation id="1082209053475788238">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="1088219014394087294">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಗಳಿಲ್ಲ.</translation>
@@ -20,8 +22,10 @@
 <translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">ಕಸ್ಟಮ್</translation>
 <translation id="1188858454923323853">ಪೂರಕವಾಗಿ</translation>
+<translation id="1206619573307042055">ಮಾರ್ಕ್ಯೂ</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome ಗೆ ಧ್ವನಿ ನೀಡುವುದು</translation>
 <translation id="1229276918471378188">ಹಿಂದಿನ ಜಂಪ್</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">ಮುಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="1275718070701477396">ಆಯ್ಕೆ ಮಾಡಿದ</translation>
 <translation id="1319608975892113573">ಹಿಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
@@ -33,7 +37,9 @@
 <translation id="1346748346194534595">ಬಲಕ್ಕೆ</translation>
 <translation id="136718599399906424">ಮುಂದಿನ ಕೋಷ್ಟಕ ಸಾಲು</translation>
 <translation id="1383876407941801731">ಹುಡುಕಾಟ</translation>
+<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">ಸಮ್ಮತಿಸಲು enter ಒತ್ತಿರಿ ಅಥವಾ ರದ್ದುಗೊಳಿಸಲು escape ಒತ್ತಿರಿ, ಮುಂದಿನದ್ದಕ್ಕೆ ಹೋಗಲು ಕೆಳಕ್ಕೆ ಒತ್ತಿರಿ ಮತ್ತು ಹಿಂದಿನದ್ದಕ್ಕೆ ಹೋಗಲು ಮೇಲಕ್ಕೆ ಒತ್ತಿರಿ.</translation>
+<translation id="1396114365388024581">ಟ್ಯಾಬ್ ಪಟ್ಟಿ</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, ಪಾಸ್‌ವರ್ಡ್ ಪಠ್ಯ ಬಾಕ್ಸ್</translation>
 <translation id="1467432559032391204">ಎಡಕ್ಕೆ</translation>
@@ -58,6 +64,7 @@
 <translation id="1674262202423278359">ChromeVox ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="16777221443363124">ಮೆನು ಬಾರ್‌</translation>
 <translation id="1692077714702418899">ವ್ಯವಸ್ಥಿತ ಸಾಲು</translation>
+<translation id="1700517974991662022">ಭೇಟಿ ನೀಡಲಾಗಿದೆ</translation>
 <translation id="1722567105086139392">ಲಿಂಕ್</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">ಮುಂದಿನ ಗ್ರಾಫಿಕ್</translation>
@@ -71,6 +78,8 @@
 <translation id="188130072164734898">ಪ್ರಸ್ತುತ ಸಮಯ ಮತ್ತು ದಿನಾಂಕವನ್ನು ಮಾತನಾಡಿ.</translation>
 <translation id="1902396333223336119">ಸೆಲ್</translation>
 <translation id="1905379170753160525">ಶಿರೋನಾಮೆಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">ವರ್ಷದ ವಾರದ ನಿಯಂತ್ರಣ</translation>
 <translation id="1964135212174907577">ಮುಂದಿನ ವಿಷಯ</translation>
 <translation id="1969092762068865084">ಜುಲೈ</translation>
@@ -85,6 +94,7 @@
 <translation id="2089387485033699258">kn</translation>
 <translation id="2091933974477985526">ಹಿಂದಿನದನ್ನು ಸಂಪಾದಿಸಬಹುದಾದ ಪಠ್ಯ ಪ್ರದೇಶ</translation>
 <translation id="2100350898815792233">ಎಲ್ಲ ವಿರಾಮಚಿಹ್ನೆಗಳು</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">ಪ್ರವೇಶ ಕೀ:<ph name="KEY" /></translation>
 <translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">ಕೆಳಗಿನ ಪಟ್ಟಿಯಿಂದ ಆಯ್ಕೆಯೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡುವ ಮೂಲಕ ಪ್ರಸ್ತುತ 6 ಡಾಟ್ ಬ್ರೈಲಿ ಕೋಷ್ಟಕವನ್ನು ಬದಲಾಯಿಸಿ.</translation>
@@ -98,6 +108,7 @@
 <translation id="2318372665160196757">ಮುಖ್ಯ</translation>
 <translation id="2329324941084714723">ಟ್ಯಾಬ್ ಫಲಕ</translation>
 <translation id="2344193891939537199">ದಿನಾಂಕ ಸಮಯ ನಿಯಂತ್ರಣ</translation>
+<translation id="2359897517538099099">ಕೋಷ್ಟಕದ ಮೋಡ್‌‌ನಲ್ಲಿ ಇಲ್ಲ.</translation>
 <translation id="241124561063364910">ಇದರ ನಂತರ</translation>
 <translation id="2417569100218200841">ವಿಷಯ ಮಾಹಿತಿ</translation>
 <translation id="2422937916923936891">ಮೆನು ಐಟಂ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
@@ -108,9 +119,11 @@
 <translation id="2471138580042810658">ಶೀರ್ಷಿಕೆ 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{ನಕ್ಷತ್ರ ಚಿಹ್ನೆ}one{# ನಕ್ಷತ್ರ ಚಿಹ್ನೆಗಳು}other{# ನಕ್ಷತ್ರ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> ಅನ್ನು ಮರುಹೊಂದಿಸಲಾಗಿದೆ.</translation>
+<translation id="2553108862507765288">ತಪ್ಪಾದ ವ್ಯಾಕರಣ</translation>
 <translation id="257674075312929031">ಗುಂಪು</translation>
 <translation id="2582407057977008361">ಹೊರತಾಗಿ</translation>
 <translation id="2589102159832527089">PDF ಫೈಲ್‌ನಿಂದ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಬೇರ್ಪಡಿಸಲಾಗಿರುವ ಪಠ್ಯವನ್ನು ಈ ಪುಟ ಒಳಗೊಂಡಿದೆ &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;.&lt;a href="<ph name="URL" />"&gt;ಮೂಲಕ್ಕಾಗಿ ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ.&lt;/a&gt;</translation>
+<translation id="2606210917827248971">ಜೊತೆ {COUNT,plural, =1{# ಐಟಂ}one{# ಐಟಂಗಳು}other{# ಐಟಂಗಳು}}</translation>
 <translation id="2614981083756825552">ಗಣಿತ ML ಲೇಔಟ್</translation>
 <translation id="2626530649491650971">ಕ್ಲಿಕ್ ಮಾಡಬಹುದಾದ</translation>
 <translation id="2628764385451019380">ಮುಂದಿನ ಕಾಂಬೊ ಪೆಟ್ಟಿಗೆಯಿಲ್ಲ.</translation>
@@ -118,9 +131,11 @@
 <translation id="2639750663247012216">ChromeVox ಪರಿವರ್ತಕ</translation>
 <translation id="2644542693584024604">ತಪ್ಪು ಕಾಗುಣಿತ</translation>
 <translation id="2667291555398229137">ರೂಟಿಂಗ್ ಕೀ ಅಡಿಯಲ್ಲಿ ಐಟಂ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{ತೆರೆದ ಆವರಣ}one{# ತೆರೆದ ಆವರಣಗಳು}other{# ತೆರೆದ ಆವರಣಗಳು}}</translation>
 <translation id="2705875883745373140">ಒತ್ತಿಲ್ಲ</translation>
 <translation id="2706462751667573066">ಮೇಲಕ್ಕೆ</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ಆಡಿಯೋ</translation>
 <translation id="2732718972699418926">ಬೆಳಿಗ್ಗೆ</translation>
 <translation id="2749275490991666823">ಗುರುತಿಸಲಾಗಿದೆ</translation>
@@ -163,10 +178,12 @@
 <translation id="308895241372589742">ಯಾವುದೇ ಮುಂದಿನ ಗಣಿತ ಅಭಿವ್ಯಕ್ತಿ ಇಲ್ಲ.</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">ಮುಂದಿನ ಹೆಗ್ಗುರುತು</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">ಕುಗ್ಗಿಸಿದ</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3138767756593758860">ಹೆಗ್ಗುರುತುಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">ಮುಂದಿನ ಸಾಲು</translation>
 <translation id="3155083529632865074">ಹಿಂದಿನ ಬಟನ್‌ ಇಲ್ಲ.</translation>
 <translation id="3163593631834463955">ಕಾಲಮ್  ಶಿರೋನಾಮೆ ಖಾಲಿಯಿದೆ</translation>
@@ -174,7 +191,10 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{ಅಂತರ}one{# ಅಂತರಗಳು}other{# ಅಂತರಗಳು}}</translation>
 <translation id="320961988183078793">ನಮೂದಿಸಲಾಗಿದೆ <ph name="TYPE" /></translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ಟ್ಯಾಬ್</translation>
+<translation id="3226035351387556942">chk</translation>
+<translation id="3229375994964697375">ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್</translation>
 <translation id="323731244387692321">ChromeVox ಕೀಬೋರ್ಡ್ ಸಹಾಯವನ್ನು ತೆರೆಯಿರಿ</translation>
+<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">ಹಿಂದಿನ ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್</translation>
 <translation id="3286390186030710347">ಸ್ಲೈಡರ್</translation>
 <translation id="3299925995433437805">ಮುಂದೆ ಯಾವುದೇ ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್ ಇಲ್ಲ.</translation>
@@ -182,8 +202,52 @@
 <translation id="3307886118343381874">ಕೋಷ್ಟಕದ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="3311969765485641742">ಎಚ್ಚರಿಕೆಗಳನ್ನು ಪರಿಶೀಸಲು Alt+Shift+A ಒತ್ತಿರಿ</translation>
 <translation id="3312997241656799641">ಮುಂದಿನ ಭೇಟಿ ನೀಡಿದ ಲಿಂಕ್</translation>
+<translation id="3321460131042519426">ವರ್ಡ್ ವ್ರ್ಯಾಪ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3322936298410871309">ಹಿಂದಿನ ಹಂತದ 1 ಶಿರೋನಾಮೆ</translation>
 <translation id="3323447499041942178">ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
+<translation id="3353420241558113817">{"ar": "ಅರೇಬಿಕ್",
+        "bg": "ಬಲ್ಗೇರಿಯನ್",
+        "ca": "ಕೆಟಲಾನ್",
+        "cs": "ಜೆಕ್",
+        "da": "ಡ್ಯಾನಿಶ್",
+        "de": "ಜರ್ಮನ್",
+        "de_CH": "ಜರ್ಮನ್ (ಸ್ವಿಟ್ಜರ್‌ಲ್ಯಾಂಡ್)",
+        "de_DE": "ಜರ್ಮನ್ (ಜರ್ಮನಿ)",
+        "el": "ಗ್ರೀಕ್",
+        "en": "ಇಂಗ್ಲಿಷ್",
+        "en_CA": "ಇಂಗ್ಲಿಷ್ (ಕೆನಡಾ)",
+        "en_GB": "ಇಂಗ್ಲಿಷ್ (ಯುನೈಟೆಡ್ ಕಿಂಗ್‌ಡಮ್)",
+        "en_US": "ಇಂಗ್ಲಿಷ್ (ಯುನೈಟೆಡ್ ಸ್ಟೇಟ್ಸ್)",
+        "es": "ಸ್ಪ್ಯಾನಿಶ್",
+        "et": "ಎಸ್ಟೊನಿಯನ್",
+        "fr": "ಫ್ರೆಂಚ್",
+        "fr_CA": "ಫ್ರೆಂಚ್ (ಕೆನಡಾ)",
+        "fr_FR": "ಫ್ರೆಂಚ್ (ಫ್ರಾನ್ಸ್)",
+        "fi": "ಫಿನ್ನಿಶ್",
+        "he": "ಹಿಬ್ರೂ",
+        "hi": "ಹಿಂದಿ",
+        "hr": "ಕ್ರೊಯೇಶಿಯನ್",
+        "hu": "ಹಂಗೇರಿಯನ್",
+        "is": "ಐಸ್‌ಲ್ಯಾಂಡಿಕ್",
+        "it": "ಇಟಾಲಿಯನ್",
+        "ko": "ಕೊರಿಯನ್",
+        "lt": "ಲಿಥುವೇನಿಯನ್",
+        "lv": "ಲ್ಯಾಟ್ವಿಯನ್",
+        "nb": "ನಾರ್ವೇಜಿಯನ್ ಬೊಕ್ಮಲ್",
+        "nl": "ಡಚ್",
+        "pl": "ಪೋಲಿಷ್",
+        "pt": "ಪೋರ್ಚುಗೀಸ್",
+        "ro": "ರೊಮೇನಿಯನ್",
+        "ru": "ರಷ್ಯನ್",
+        "sk": "ಸ್ಲೋವಾಕ್",
+        "sl": "ಸ್ಲೋವೇನಿಯನ್",
+        "sr": "ಸೆರ್ಬಿಯನ್",
+        "sv": "ಸ್ವೀಡಿಷ್",
+        "tr": "ಟರ್ಕಿಶ್",
+        "vi": "ವಿಯೆಟ್ನಾಮೀಸ್",
+        "zh": "ಚೈನೀಸ್",
+        "zh_TW": "ಚೈನೀಸ್ (ಸಾಂಪ್ರದಾಯಿಕ ಹಾನ್)"}</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{ಸಂಕಲನ}one{# ಸಂಕಲನ ಚಿಹ್ನೆಗಳು}other{# ಸಂಕಲನ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="338583716107319301">ವಿಭಾಜಕ</translation>
 <translation id="3389259863310851658">ಹಿಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರ</translation>
@@ -197,12 +261,14 @@
 <translation id="3486232535569802404"><ph name="V1" /> ನಿಂದ <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{ಬಲ ಆವರಣ}one{# ಬಲ ಆವರಣಗಳು}other{# ಬಲ ಆವರಣಗಳು}}</translation>
 <translation id="3493915602752813531">ಮುಂದಿನ ಆಧಾರವಿಲ್ಲ.</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆ}one{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}other{# ಪ್ರಶ್ನಾರ್ಥಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{ಕ್ಯಾರೆಟ್}one{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}other{# ಕ್ಯಾರೆಟ್‌‌ಗಳು}}</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, ಚೆಕ್‌ಬಾಕ್ಸ್ ಅನ್ನು ಪರಿಶೀಲಿಸಿಲ್ಲ</translation>
 <translation id="3599054940393788245">ಮ್ಯಾಥ್ ಒಳಗೆ ಇಲ್ಲ</translation>
 <translation id="3616113530831147358">ಆಡಿಯೋ</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{ಬ್ಯಾಕ್‌ಟಿಕ್}one{# ಬ್ಯಾಕ್‌ಟಿಕ್‌ಗಳು}other{# ಬ್ಯಾಕ್‌ಟಿಕ್‌ಗಳು}}</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{ಡಾಲರ್}one{# ಡಾಲರ್ ಚಿಹ್ನೆಗಳು}other{# ಡಾಲರ್ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, ಪಟ್ಟಿಯ ಬಾಕ್ಸ್</translation>
@@ -215,12 +281,15 @@
 <translation id="3762198587642264450">ಪ್ರಸ್ತುತ ಸಾಲಿನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">ನಿರ್ಗಮಿಸಲಾದ ಸಂವಾದ.</translation>
+<translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಪಟ್ಟಿ</translation>
+<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">ವೀಡಿಯೊ</translation>
 <translation id="3816633764618089385">ಮುಂದಿನ ಮಾಧ್ಯಮ</translation>
 <translation id="3819376190738087562">ಯಾವುದೇ ಜಂಪ್‌ಗಳಿಲ್ಲ.</translation>
 <translation id="385383972552776628">ಆಯ್ಕೆಗಳ ಪುಟವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="3856075812838139784">ಓದಲು ಮಾತ್ರ</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">ಮೆನು</translation>
 <translation id="3909320334364316587">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆ</translation>
 <translation id="3914173277599553213">ಅಗತ್ಯವಿರುವುದು</translation>
@@ -241,6 +310,7 @@
 <translation id="4116415223832267137">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="4147126331795725888">ಯಾವುದೇ ಮುಂದಿನ ನಿಯಂತ್ರಣವಿಲ್ಲ.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{ಬಲ ಪುಷ್ಪಾವರಣ}one{# ಬಲ ಪುಷ್ಪಾವರಣಗಳು}other{# ಬಲ ಪುಷ್ಪಾವರಣಗಳು}}</translation>
+<translation id="4158704014418536539">ಕೇಸ್-ಸೆನ್ಸಿಟಿವ್‌.</translation>
 <translation id="4161663686871496107">ChromeVox ಮಾತನಾಡುವ ಪ್ರತಿಕ್ರಿಯೆಯು ಸಿದ್ಧವಾಗಿದೆ</translation>
 <translation id="4173994908659439270">ಮುಂದಿನ ಸಂಪಾದನೆಯ ಪಠ್ಯ ಕ್ಷೇತ್ರವಿಲ್ಲ.</translation>
 <translation id="4176463684765177261">ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
@@ -254,9 +324,11 @@
 <translation id="423334822609210999">ಯಾವುದೇ ಎಡ ಸೆಲ್ ಇಲ್ಲ.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, ಗ್ರೇಡ್‌ <ph name="GRADE" /></translation>
 <translation id="4253168017788158739">ಟಿಪ್ಪಣಿ</translation>
+<translation id="4254798249533888099">ಮರ</translation>
 <translation id="4255943572433203166">ChromeVox ಅನ್ನು ಕಸ್ಟಮೈಜ್‌‍ಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಗಳನ್ನು ಬಳಸಿ. ಬದಲಾವಣೆಗಳು ತಕ್ಷಣವೇ ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="4271220233568730077">ಮುಂದಿನ ಗಣಿತ</translation>
 <translation id="4271521365602459209">ಹೆಚ್ಚಿನ ಫಲಿತಾಂಶಗಳಿಲ್ಲ.</translation>
+<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">ಯಾವುದೇ ಮುಂದಿನ ಲೇಖನವಿಲ್ಲ.</translation>
 <translation id="4289540628985791613">ಅವಲೋಕನ</translation>
 <translation id="4300318234632215983">ಲಿಂಕ್‌ ಹಿಂದಿರುವ URL ಅನ್ನು ಪ್ರಕಟಿಸಿ</translation>
@@ -267,6 +339,7 @@
 <translation id="4372435075475052704">ಕನಿಷ್ಟ:<ph name="X" /></translation>
 <translation id="4372705107434148843">ಮಾತು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="4373197658375206385">ಹಿಂದಿನ ಯಾವುದೇ ಐಟಂ ಲಿಂಕ್ ಆಗಿಲ್ಲ</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">ಮರುಹೊಂದಿಸು</translation>
 <translation id="4471074325120394300">ಯಾವುದೇ ಲಿಂಕ್‌ಗಳಿಲ್ಲ.</translation>
 <translation id="4476183483923481720">ಹೊಸ ಸಾಲು</translation>
@@ -283,6 +356,7 @@
 <translation id="4615592953348396470">ಮುಂದಿನ ಕೀ ಒತ್ತುವಿಕೆಯನ್ನು ನಿರ್ಲಕ್ಷಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="461613135510474570">ವಾಕ್ಯ</translation>
 <translation id="4647836961514597010">ಬಣ್ಣ ಆಯ್ಕೆಮಾಡುವಿಕೆ</translation>
+<translation id="4661075872484491155">ಮರ</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">ಹಿಂದಿನ ಹೆಗ್ಗುರುತು</translation>
@@ -300,6 +374,7 @@
 <translation id="4842108708071771135">ಯಾವುದೇ ಮುಂದಿನ ಬ್ಲಾಕ್‌ಕೋಟ್ ಇಲ್ಲ.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">ಹಿಂದಿನ ಒಂದೇ ರೀತಿಯ ಅಂಶ.</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS ಲಾಗ್ ಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4877261390094455813">ಹುಡುಕಾಟದ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -331,8 +406,10 @@
 <translation id="5080758118274074384">ಡಬಲ್ ಕ್ಲಿಕ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="5098541983634824365">ಗ್ರಿಡ್ ತೊರೆಯಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="5102981729317424850">ಪರಿಕರ ಪಟ್ಟಿ</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">ಯಾವುದೇ ಹಿಂದಿನ ಫಾರ್ಮ್ ಕ್ಷೇತ್ರವಿಲ್ಲ.</translation>
 <translation id="5111640677200759579">ಕಾಲಮ್ ಶಿರೋನಾಮೆ</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">ಯಾವುದೇ ಹಿಂದಿನ ಲಿಂಕ್ ಇಲ್ಲ.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, ಆಯ್ಕೆ ಮಾಡಲಾಗಿಲ್ಲ</translation>
@@ -351,6 +428,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆ}one{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}other{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, ಲಿಂಕ್</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">ನಿರಂತರ ಓದುವಿಕೆ ಸಮಯದಲ್ಲಿ ಹಿಂದಿನದನ್ನು ಬಿಟ್ಟುಬಿಡಿ</translation>
 <translation id="5368000168321181111">Earcons ಆಫ್ ಆಗಿದೆ</translation>
 <translation id="5374320867641260420">ಮುಂದೆ ಬಟನ್‌ ಇಲ್ಲ.</translation>
@@ -372,6 +450,7 @@
 <translation id="5546092960038624944">ಹಿಂದಿನ ಹಂತದ 5 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="556042886152191864">ಬಟನ್</translation>
 <translation id="5561345396546889625">ಮುಂದಿನ ಪಟ್ಟಿ</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">ಪಠ್ಯ ಸಂಪಾದಿಸಿ, ಇಮೇಲ್ ನಮೂದಿಸಿ</translation>
 <translation id="5597170376237141345">ಮುಂದಿನ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
@@ -379,17 +458,21 @@
 <translation id="5598905979683743333"><ph name="NAME" />, ರೇಡಿಯೊ ಬಟನ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಲಾಗಲಿಲ್ಲ</translation>
 <translation id="5601172225407283979">ಡೀಫಾಲ್ಟ್ ಕ್ರಮವನ್ನು ಮಾಡಿ</translation>
 <translation id="5608798115546226984">ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆಯ ಇನ್‌ಲೈನ್</translation>
+<translation id="561939826962581046">ಸಮಯ</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">ಲಾಗ್</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">ಯಾವುದೇ ಹಿಂದಿನ ಕೋಷ್ಟಕವಿಲ್ಲ.</translation>
 <translation id="5655682562155942719">ಆಜ್ಞೆಗಳಿಗೆ ಹೋಗು</translation>
 <translation id="56637627897541303">ಪಠ್ಯ ಪ್ರದೇಶ</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">ಹೆಗ್ಗುರುತು</translation>
 <translation id="5683155931978483559">ಹಿಂದಿನ ಚೆಕ್‌ಬಾಕ್ಸ್</translation>
 <translation id="5684277895745049190">ಪಟ್ಟಿ</translation>
 <translation id="5700650669149824506">ಯಾವುದೇ ಹಿಂದಿನ ಮಟ್ಟದ 4 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="5709192780268610569">ಯಾವುದೇ ದೀರ್ಘ ವಿವರಣೆಯಿಲ್ಲ</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">ಮುಂದಿನ ಕೋಷ್ಟಕದ ಕಾಲಮ್</translation>
 <translation id="571866080859340309">ಗುಂಪುಗಳನ್ನು ಪರಿಶೋಧಿಸಲಾಗುತ್ತದೆ</translation>
 <translation id="5728409797179002635">ಯಾವುದೇ ಕೋಷ್ಟಕ ಕಂಡುಬಂದಿಲ್ಲ.</translation>
@@ -414,17 +497,20 @@
 <translation id="5955304353782037793">ಅಪ್ಲಿಕೇಶನ್‌</translation>
 <translation id="5956928062748260866">ಸಂವಾದ</translation>
 <translation id="5963413905009737549">ವಿಭಾಗ</translation>
+<translation id="5968607524793740041">ಸಂದರ್ಭದ ಮೆನು ತೋರಿಸಿ</translation>
 <translation id="5983179082906765664">ನ್ಯಾವಿಗೇಶನ್ ರಚನೆಯನ್ನು ಹೆಚ್ಚಿಸಿ</translation>
 <translation id="5999630716831179808">ಧ್ವನಿಗಳು</translation>
 <translation id="6000417740266304866">ಕೆಳಗಿನ ಪಟ್ಟಿಯಿಂದ ಆಯ್ಕೆಯೊಂದನ್ನು ಆಯ್ಕೆ ಮಾಡುವ ಮೂಲಕ ಪ್ರಸ್ತುತ 8 ಡಾಟ್ ಬ್ರೈಲಿ ಕೋಷ್ಟಕವನ್ನು ಬದಲಾಯಿಸಿ.</translation>
 <translation id="6006050241733874051">ಫಾರ್ಮ್</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌}one{# ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌ಗಳು}other{# ಬ್ಯಾಕ್‌ಸ್ಲ್ಯಾಶ್‌ಗಳು}}</translation>
 <translation id="6037602951055904232">ಮುಂದಕ್ಕೆ ಪ್ಯಾನ್ ಮಾಡಿ</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">ಸೆಲ್‌ನ ಅಂತ್ಯ.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">ಸ್ಪೇಸ್</translation>
 <translation id="6142308968191113180">ಶೀರ್ಷಿಕೆ 4</translation>
 <translation id="6169420925157477918">ದೀರ್ಘ ವಿವರಣೆಯೊಂದಿಗೆ ಚಿತ್ರ</translation>
+<translation id="6172087735260766220">ನಕಲು ರಕ್ಷಿತ PDF ನಿಂದ ಪ್ರವೇಶಿಸಬಹುದಾದ ಪಠ್ಯವನ್ನು ಪ್ರವೇಶಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="6186305613600865047">ಪುಟದ ಕೆಳಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">ಕೆಳಗೆ</translation>
@@ -468,10 +554,12 @@
 <translation id="6734854816611871228"><ph name="VALUE" />, ಕಾಂಬೊ ಬಾಕ್ಸ್</translation>
 <translation id="6735257939857578167"><ph name="NUM" /> ಐಟಂಗಳೊಂದಿಗೆ</translation>
 <translation id="6736510033526053669">ಟ್ಯಾಬ್ ರಚಿಸಲಾಗಿದೆ</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">ಆರ್ಟಿಕಲ್</translation>
 <translation id="6787839852456839824">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">ಅಡಿಟಿಪ್ಪಣಿ</translation>
+<translation id="6871161210040114857">ಕೇಸ್ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="6877435256196695200">ಮುಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
 <translation id="6897341342232909480">ಎಡಕ್ಕೆ ಸೇರಿಸಿ</translation>
 <translation id="6901540140423170855">ದಿನಾಂಕ</translation>
@@ -487,6 +575,7 @@
 <translation id="7041173719775863268">ಆಯ್ಕೆಯನ್ನು ಕೊನೆಗೊಳಿಸಿ</translation>
 <translation id="7095834689119144465">ಪಠ್ಯ ಸಂಖ್ಯೆ ಮಾತ್ರ ಸಂಪಾದಿಸಿ</translation>
 <translation id="7096001299300236431">ಹಿಂದಿನ ಮಾಧ್ಯಮ</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ಪದ ಎಕೋ</translation>
 <translation id="713824876195128146">ಮುಂದಿನ ನಿರ್ಬಂಧ ಖೋಟ್</translation>
 <translation id="7161771961008409533">ಪಾಪ್-ಅಪ್ ಬಟನ್</translation>
@@ -506,6 +595,8 @@
 <translation id="7273174640290488576">ಖಾಲಿ</translation>
 <translation id="7285387653379749618">ಕೋಷ್ಠಕಗಳು</translation>
 <translation id="7289186959554153431">ಶೀರ್ಷಿಕೆ 3</translation>
+<translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">ಬ್ರೈಲಿ ಶೀರ್ಷಿಕೆಗಳು ನಿಷ್ಕ್ರಿಯವಾಗಿವೆ.</translation>
 <translation id="7318872822751139669">ಗಮನ ಬದಲಾಯಿಸಲು ಮೌಸ್ ಬಳಸಿ.</translation>
 <translation id="7322388933135261569">ಫೆಬ್ರವರಿ</translation>
@@ -514,6 +605,7 @@
 <translation id="7356165926712028380">8 ಡಾಟ್‌ ಬ್ರೈಲಿಗೆ ಬದಲಿಸಿ</translation>
 <translation id="7362871137496673139">ಯಾವುದೇ ಹಿಂದಿನ ಮಟ್ಟದ 2 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ಮತ್ತು}one{# ಮತ್ತು ಚಿಹ್ನೆಗಳು}other{# ಮತ್ತು ಚಿಹ್ನೆಗಳು}}</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">ಕೋಷ್ಟಕವನ್ನು ತೊರೆಯಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="739763518212184081">ಹಿಂದಿನ ಸಾಲು</translation>
 <translation id="7400575256015741911">ಕಾಗುಣಿತ ತಪ್ಪು ಕಂಡುಬಂದಿಲ್ಲ</translation>
@@ -521,6 +613,7 @@
 <translation id="7425395583360211003">ರಿಟರ್ನ್</translation>
 <translation id="7434509671034404296">ಡೆವಲಪರ್</translation>
 <translation id="7439060726180460871">ಡೈರೆಕ್ಟರಿ</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">ಟ್ಯಾಬ್</translation>
 <translation id="7492049978501397201">ಸಂವಾದವನ್ನು ನಮೂದಿಸಲಾಗಿದೆ</translation>
 <translation id="7532613204005497612">ಜೂನ್</translation>
@@ -528,17 +621,21 @@
 <translation id="7586163296341959563">ಅಂಟಿಸು.</translation>
 <translation id="7596919493010894443">ಆಯ್ಕೆ ತೆರವುಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7604026522577407655">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಆರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">ಪ್ರಸ್ತುತದ ಪುಟದ URL ಅನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="7609363189280667021">ಬ್ರೇಲ್ ಶೀರ್ಷಿಕೆಗಳನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="762020119231868829">ಪ್ರಸ್ತುತ ಪ್ಲೇ ಆಗುತ್ತಿರುವ ಎಲ್ಲಾ ಮಾಧ್ಯಮ ವಿಜೆಟ್‌ಗಳನ್ನು ವಿರಾಮಗೊಳಿಸುತ್ತದೆ</translation>
 <translation id="7625690649919402823">ಮುಂದಿನ ಕೋಷ್ಟಕ</translation>
+<translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), ಗ್ರೇಡ್‌ <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">ಯಾವುದೇ ಹಿಂದಿನ ಮಟ್ಟದ 3 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
 <translation id="7663318257180412551">ಶೀರ್ಷಿಕೆ 2</translation>
 <translation id="7674576868851035240">ಮುಂದಿನ ಲಿಂಕ್</translation>
 <translation id="7674768236845044097">ಗುರುತು</translation>
 <translation id="7684431668231950609">ಪಠ್ಯ ಸಂಪಾದಿಸಿ, URL ನಮೂದಿಸಿ</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">ಹಿಂದಿನ ರೇಡಿಯೊ ಬಟನ್</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, ಪಾಸ್‌ವರ್ಡ್ ಪಠ್ಯ ಬಾಕ್ಸ್</translation>
 <translation id="7805247615045262757">ಡೀಫಾಲ್ಟ್ ನ್ಯಾವಿಗೇಷನ್</translation>
 <translation id="7805768142964895445">ಸ್ಥಿತಿ</translation>
@@ -549,10 +646,13 @@
 <translation id="7851816175263618915">ಕೆಲವು ವಿರಾಮಚಿಹ್ನೆಗಳು</translation>
 <translation id="7870596830398826354">ಗಣಿತ ML ಟ್ರಿ</translation>
 <translation id="78826985582142166">sldr</translation>
+<translation id="7894517696028036636">ChromeVox ಕ್ಲಾಸಿಕ್‌‌ ಟಾಗಲ್ ಮಾಡಿ</translation>
 <translation id="7895896691902835279">ಅಜ್ಞಾತ ಲಿಂಕ್</translation>
 <translation id="7927711904086083099">ಆಯ್ಕೆಮಾಡಲಾಗಿಲ್ಲ</translation>
+<translation id="7935627501098484003">ಸಮಯ ನಿಯಂತ್ರಣ</translation>
 <translation id="7939428177581522200">ಆಯ್ಕೆಗೆ ಸೇರಿಸಲಾಗಿದೆ</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{ಅಟ್}one{# ಅಟ್ ಚಿಹ್ನೆಗಳು}other{# ಅಟ್ ಚಿಹ್ನೆಗಳು}}</translation>
+<translation id="7965147473449754028">ಮೆನು ಮುಚ್ಚಲಾಗಿದೆ</translation>
 <translation id="7974390230414479278">ಮೆನು ಐಟಂ</translation>
 <translation id="8002119852008410879">{COUNT,plural, =1{ಭಾವ ಸೂಚಕ ಚಿಹ್ನೆ}one{# ಭಾವಸೂಚಕ ಚಿಹ್ನೆಗಳು}other{# ಭಾವಸೂಚಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="8007540374018858731">h3</translation>
@@ -583,6 +683,7 @@
 <translation id="8382679411218029383">ಸ್ವಯಂಪೂರ್ಣಗೊಳಿಸುವಿಕೆ ಇನ್‌ಲೈನ್ ಮತ್ತು ಪಟ್ಟಿ</translation>
 <translation id="8428603554127842284">ಮಟ್ಟ <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">ಯಾವುದೇ ಮುಂದಿನ ಮಟ್ಟದ 3 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">ಹಿಂದಿನ ಚೆಕ್‌ಬಾಕ್ಸ್ ಇಲ್ಲ</translation>
 <translation id="8455868257606149352">ಗರಿಷ್ಟ <ph name="X" /></translation>
 <translation id="84575901236241018">ಪ್ರವೇಶ ಕೀ ಹೊಂದಿದೆ, <ph name="KEY" /></translation>
@@ -599,10 +700,12 @@
 <translation id="8631359288236106450">ಆಯ್ಕೆಮಾಡಿದ <ph name="COUNT" /> ಐಟಂಗಳು</translation>
 <translation id="8638532244051952400">ಪ್ರಸ್ತುತ ಕೋಶ ಸಂಘಟನೆಗಳನ್ನು ಪ್ರಕಟಿಸಿ</translation>
 <translation id="8650576015643545550">ಯಾವುದೇ ಹಿಂದಿನ ಪಟ್ಟಿಯಿಲ್ಲ.</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">ಲಿಂಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
 <translation id="8664519043722036194">ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="867187640362843212">ಶೀರ್ಷಿಕೆ 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{ಪೈಪ್}one{# ಲಂಬ ಪೈಪ್‌ಗಳು}other{# ಲಂಬ ಪೈಪ್‌ಗಳು}}</translation>
+<translation id="8722779018229123609">(-)</translation>
 <translation id="8723726026961763755">ಸಿಸ್ಟಂ ಅನ್ನು ನವೀಕರಿಸಲಾಗಿದೆ. ಮರುಪ್ರಾರಂಭಿಸಲು ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="8735450637152821465">ಆಯ್ಕೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="8743786158317878347">ಕೋಷ್ಟಕಗಳಂತಹ, ವ್ಯವಸ್ಥಿತಗೊಳಿಸಿದ ವಿಷಯ ನಮೂದಿಸಿ</translation>
@@ -621,9 +724,12 @@
 <translation id="8896347895970027998">ChromeVox ಅನ್ನು ಸಕ್ರಿಯ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಕ್ಕೆ ಟಾಗಲ್ ಮಾಡಿ.</translation>
 <translation id="8898516272131543774">ಸೈಕಲ್ ಪಂಚುಯೇಶನ್ ಎಕೋ</translation>
 <translation id="8900148057318340779">ಪೂರ್ವಪ್ರತ್ಯಯ ಕೀ</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">ಖಾಲಿ ಶಿರೋನಾಮೆಗಳು</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">ಮಾರ್ಪಡಿಸುವ ಕೀಗಳು</translation>
 <translation id="8943175951035496220">ಯಾವುದೇ ಬಲ ಸೆಲ್ ಇಲ್ಲ.</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">ಫೈಲ್</translation>
 <translation id="9027462562263121875">ಯಾವುದೇ ಕೋಷ್ಟಕಗಳಿಲ್ಲ.</translation>
 <translation id="9040132695316389094">ಶೀರ್ಷಿಕೆ 1</translation>
@@ -635,9 +741,11 @@
 <translation id="9089864840575085222">ಸೈಕಲ್ ಟೈಪಿಂಗ್ ಇಕೋ</translation>
 <translation id="9107530006868467849">ಯಾವುದೇ ಹಿಂದಿನ ಮಾಧ್ಯಮ ವಿಜೆಟ್ ಇಲ್ಲ.</translation>
 <translation id="9108370397979208512">ಮ್ಯಾಥ್</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{ಶೇಕಡಾ}one{# ಶೇಕಡಾ ಚಿಹ್ನೆಗಳು}other{# ಶೇಕಡಾ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="9115913704608474258">ನವೆಂಬರ್</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">ಪ್ರಸ್ತುತ ಸ್ಥಾನದ ಸಂಕ್ಷಿಪ್ತ ವಿವರಣೆಯ ಪ್ರಕಟಣೆ</translation>
 <translation id="9153606228985488238">ಪಿಚ್‌ <ph name="PERCENT" /> ಶೇಕಡಾ ಹೊಂದಿದೆ</translation>
 <translation id="9160096769946561184">ಪ್ರಸ್ತುತ ಕಾಲಮ್‌ನ ಅಂತ್ಯಕ್ಕೆ ಹೋಗಿ</translation>

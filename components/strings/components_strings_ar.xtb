@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">نطاق التسجيل:</translation>
 <translation id="1344588688991793829">‏إعدادات الملء التلقائي في Chromium...</translation>
 <translation id="1426410128494586442">نعم</translation>
+<translation id="1430915738399379752">طباعة</translation>
 <translation id="1455235771979731432">حدثت مشكلة أثناء التحقق من بطاقتك. تحقق من اتصالك بالإنترنت وأعد المحاولة.</translation>
 <translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
 <translation id="1549470594296187301">‏يجب تمكين JavaScript لاستخدام هذه الميزة.</translation>
-<translation id="1639239467298939599">جارٍ التحميل.</translation>
 <translation id="1640180200866533862">سياسات المستخدم</translation>
 <translation id="1644184664548287040">تهيئة الشبكة غير صالحة ويتعذر استيرادها.</translation>
 <translation id="168841957122794586">تحتوي شهادة الخادم على مفتاح تشفير ضعيف.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">هذا المستند محمي بكلمة المرور.  الرجاء إدخال كلمة مرور.</translation>
 <translation id="2625385379895617796">توقيت ساعتك متقدم عن الوقت الحالي</translation>
 <translation id="2639739919103226564">الحالة:</translation>
+<translation id="2653659639078652383">إرسال</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
 <translation id="2721148159707890343">تم إرسال الطلب بنجاح</translation>
 <translation id="2728127805433021124">شهادة الخادم موقّعة باستخدام خوارزمية توقيع ضعيفة.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">حدث خطأ غير محدّد.</translation>
 <translation id="4800132727771399293">‏تحقق من تاريخ انتهاء الصلاحية ورمز التحقق من البطاقة (CVC) وأعد المحاولة مرة أخرى.</translation>
 <translation id="4813512666221746211">حدث خطأ في الشبكة</translation>
+<translation id="4816492930507672669">احتواء ضمن الصفحة</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4923417429809017348">تمت ترجمة هذه الصفحة من لغة غير معروفة إلى اللغة <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">يجب تحديدها.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">اسم السياسة</translation>
 <translation id="552553974213252141">هل تم استخراج النص بشكل صحيح؟</translation>
 <translation id="5540224163453853">تعذر العثور على المقالة المطلوبة</translation>
+<translation id="5556459405103347317">إعادة تحميل</translation>
 <translation id="5565735124758917034">نشط</translation>
 <translation id="560412284261940334">الإدارة غير متوفرة</translation>
 <translation id="5629630648637658800">أخفق تحميل إعدادات السياسة</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5872918882028971132">اقتراحات الآباء</translation>
 <translation id="59107663811261420">‏هذا النوع من البطاقات غير متوافق مع Google Payments لهذا التاجر. يُرجى تحديد بطاقة أخرى.</translation>
+<translation id="5975083100439434680">تصغير</translation>
 <translation id="5989320800837274978">‏لم يتم تحديد أي من الخوادم الوكيلة الثابتة ولا عنوان URL للنص البرمجي pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8790007591277257123">إعادة الح&amp;ذف</translation>
 <translation id="8804164990146287819">سياسة الخصوصية</translation>
+<translation id="8820817407110198400">إشارات</translation>
 <translation id="8824019021993735287">‏لم يتمكن Chrome من التحقق من بطاقتك في الوقت الحالي.يُرجى إعادة المحاولة في وقت لاحق.</translation>
 <translation id="8834246243508017242">تمكين الملء التلقائي باستخدام جهات الاتصال...</translation>
 <translation id="883848425547221593">إشارات أخرى</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">خطأ في إعدادات تحليل السياسة</translation>
 <translation id="8876793034577346603">أخفق تحليل تهيئة الشبكة</translation>
 <translation id="8891727572606052622">وضع الخادم الوكيل غير صالح.</translation>
+<translation id="8903921497873541725">تكبير</translation>
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="8940229512486821554">تشغيل الأمر <ph name="EXTENSION_NAME" />:<ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">انتهت صلاحية شهادة الخادم.</translation>

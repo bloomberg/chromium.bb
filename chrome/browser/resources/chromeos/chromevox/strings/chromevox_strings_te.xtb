@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1012173283529841972">జాబితా అంశం</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">వ్యాపించింది.</translation>
 <translation id="1025074108959230262">స్టిక్కీ మోడ్ నిలిపివేయబడింది</translation>
 <translation id="1031961866430398710">తర్వాత</translation>
 <translation id="1044777062731150180">ముఖ్య శీర్షికలు లేవు</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">ఇన్‌పుట్ చెల్లదు</translation>
 <translation id="1082209053475788238">మునుపటి స్థాయి 6 శీర్షిక లేదు.</translation>
 <translation id="1088219014394087294">శీర్షికలు లేవు.</translation>
@@ -20,8 +22,10 @@
 <translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">అనుకూలీకరించిన</translation>
 <translation id="1188858454923323853">బహుమానపూర్వకం</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chromeకు వాయిస్‌ను ఇస్తోంది</translation>
 <translation id="1229276918471378188">మునుపటి జంప్</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">తదుపరి స్థాయి 6 శీర్షిక</translation>
 <translation id="1275718070701477396">ఎంపికైంది</translation>
 <translation id="1319608975892113573">మునుపటి బ్లాక్‌కోట్ లేదు.</translation>
@@ -33,7 +37,9 @@
 <translation id="1346748346194534595">కుడి</translation>
 <translation id="136718599399906424">తదుపరి పట్టిక అడ్డు వరుస</translation>
 <translation id="1383876407941801731">శోధించు</translation>
+<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">ఆమోదించడానికి enterని లేదా రద్దు చేయడానికి escapeని, తదుపరి దాని కోసం క్రిందికి మరియు మునుపటి దాని కోసం పైకి నొక్కండి.</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, పాస్‌వర్డ్ వచన పెట్టె</translation>
 <translation id="1467432559032391204">ఎడమ</translation>
@@ -58,6 +64,7 @@
 <translation id="1674262202423278359">ChromeVox నావిగేషన్</translation>
 <translation id="16777221443363124">మెను పట్టీ</translation>
 <translation id="1692077714702418899">ఆకృతీకరణ పంక్తి</translation>
+<translation id="1700517974991662022">సందర్శించబడింది</translation>
 <translation id="1722567105086139392">లింక్</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">తదుపరి గ్రాఫిక్</translation>
@@ -71,6 +78,8 @@
 <translation id="188130072164734898">ప్రస్తుత సమయాన్ని మరియు తేదీని చదివి వినిపించండి.</translation>
 <translation id="1902396333223336119">సెల్</translation>
 <translation id="1905379170753160525">శీర్షికల జాబితాను చూపండి</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">సంవత్సరంలో వారం నియంత్రణ</translation>
 <translation id="1964135212174907577">తదుపరి ఆబ్జెక్ట్</translation>
 <translation id="1969092762068865084">జూలై</translation>
@@ -85,6 +94,7 @@
 <translation id="2089387485033699258">en</translation>
 <translation id="2091933974477985526">మునుపటి సవరించగల వచన ప్రదేశం</translation>
 <translation id="2100350898815792233">అన్ని విరామచిహ్నాలు</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">ప్రాప్యత కీ:<ph name="KEY" /></translation>
 <translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">దిగువ జాబితా నుండి ఎంపికను ఎంచుకోవడం ద్వారా ప్రస్తుత 6 చుక్కల బ్రెయిలీ పట్టికను మార్చండి.</translation>
@@ -98,6 +108,7 @@
 <translation id="2318372665160196757">ప్రధానం</translation>
 <translation id="2329324941084714723">ట్యాబ్ ప్యానెల్</translation>
 <translation id="2344193891939537199">తేదీ సమయ నియంత్రణ</translation>
+<translation id="2359897517538099099">పట్టిక మోడ్‌లో లేదు.</translation>
 <translation id="241124561063364910">దీని తర్వాత</translation>
 <translation id="2417569100218200841">కంటెంట్ సమాచారం</translation>
 <translation id="2422937916923936891">మెను అంశం తనిఖీపెట్టె</translation>
@@ -108,9 +119,11 @@
 <translation id="2471138580042810658">శీర్షిక 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{నక్షత్రం గుర్తు}other{# నక్షత్రం గుర్తులు}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> రీసెట్ చేయబడింది.</translation>
+<translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">సమూహం</translation>
 <translation id="2582407057977008361">ప్రక్కన</translation>
 <translation id="2589102159832527089">ఈ పేజీ PDF ఫైల్ &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; నుండి స్వయంచాలకంగా సంగ్రహించిన వచనాన్ని కలిగి ఉంది. &lt;a href="<ph name="URL" />"&gt;అసలైనదాని కోసం ఇక్కడ క్లిక్ చేయండి.&lt;/a&gt;</translation>
+<translation id="2606210917827248971">{COUNT,plural, =1{# అంశంతో}other{# అంశాలతో}}</translation>
 <translation id="2614981083756825552">గణిత ML లేఅవుట్</translation>
 <translation id="2626530649491650971">క్లిక్ చేయదగినది</translation>
 <translation id="2628764385451019380">మునుపటి కాంబో పెట్టె లేదు.</translation>
@@ -118,9 +131,11 @@
 <translation id="2639750663247012216">ChromeVox మాడిఫైయర్</translation>
 <translation id="2644542693584024604">అక్షరక్రమం తప్పుగా ఉంది</translation>
 <translation id="2667291555398229137">రూటింగ్ కీ దిగువ ఉన్న అంశాన్ని క్లిక్ చేయండి</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{తెరిచిన కుండలీకరణ గుర్తు}other{# తెరిచిన కుండలీకరణ గుర్తులు}}</translation>
 <translation id="2705875883745373140">నొక్కబడలేదు</translation>
 <translation id="2706462751667573066">Up</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ఆడియో</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">తనిఖీ చేయబడింది</translation>
@@ -163,10 +178,12 @@
 <translation id="308895241372589742">తదుపరి గణిత వ్యక్తీకరణ లేదు.</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">తదుపరి మైలురాయి</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">కుదించబడింది</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3138767756593758860">మైలురాళ్ల జాబితాను చూపండి</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">తదుపరి పంక్తి</translation>
 <translation id="3155083529632865074">మునుపటి బటన్ లేదు.</translation>
 <translation id="3163593631834463955">ఖాళీ నిలువు వరుస శీర్షిక</translation>
@@ -174,7 +191,10 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{ఖాళీ}other{# ఖాళీలు}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" />లోకి ప్రవేశించారు</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, ట్యాబ్</translation>
+<translation id="3226035351387556942">chk</translation>
+<translation id="3229375994964697375">సందర్శించిన లింక్</translation>
 <translation id="323731244387692321">ChromeVox కీబోర్డ్ సహాయాన్ని తెరవండి</translation>
+<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">మునుపు సందర్శించిన లింక్</translation>
 <translation id="3286390186030710347">స్లయిడర్</translation>
 <translation id="3299925995433437805">తదుపరి సందర్శించిన లింక్ లేదు.</translation>
@@ -182,8 +202,52 @@
 <translation id="3307886118343381874">పట్టిక చివరకు వెళ్లండి</translation>
 <translation id="3311969765485641742">హెచ్చరికలను సమీక్షించడానికి Alt+Shift+A నొక్కండి</translation>
 <translation id="3312997241656799641">తదుపరి సందర్శించిన లింక్</translation>
+<translation id="3321460131042519426">పదాల సర్దుబాటుని ప్రారంభించు</translation>
 <translation id="3322936298410871309">మునుపటి స్థాయి 1 శీర్షిక</translation>
 <translation id="3323447499041942178">టెక్స్ట్ బాక్స్</translation>
+<translation id="3353420241558113817">{"ar": "అరబిక్",
+        "bg": "బల్గేరియన్",
+        "ca": "క్యాటలాన్",
+        "cs": "చెక్",
+        "da": "డానిష్",
+        "de": "జర్మన్",
+        "de_CH": "జర్మన్ (స్విట్జర్లాండ్)",
+        "de_DE": "జర్మన్ (జర్మనీ)",
+        "el": "గ్రీక్",
+        "en": "ఆంగ్లం",
+        "en_CA": "ఆంగ్లం (కెనడా)",
+        "en_GB": "ఆంగ్లం (యునైటెడ్ కింగ్‌డమ్)",
+        "en_US": "ఆంగ్లం (యునైటెడ్ స్టేట్స్)",
+        "es": "స్పానిష్",
+        "et": "ఎస్టోనియన్",
+        "fr": "ఫ్రెంచ్",
+        "fr_CA": "ఫ్రెంచ్ (కెనడా)",
+        "fr_FR": "ఫ్రెంచ్ (ఫ్రాన్స్)",
+        "fi": "ఫిన్నిష్",
+        "he": "హిబ్రూ",
+        "hi": "హిందీ",
+        "hr": "క్రొయేషియన్",
+        "hu": "హంగేరియన్",
+        "is": "ఐస్‌ల్యాండిక్",
+        "it": "ఇటాలియన్",
+        "ko": "కొరియన్",
+        "lt": "లిథువేనియన్",
+        "lv": "లాత్వియన్",
+        "nb": "నార్వేజియన్ బొక్మాల్",
+        "nl": "డచ్",
+        "pl": "పోలిష్",
+        "pt": "పోర్చుగీస్",
+        "ro": "రొమేనియన్",
+        "ru": "రష్యన్",
+        "sk": "స్లోవక్",
+        "sl": "స్లొవేనియన్",
+        "sr": "సెర్బియన్",
+        "sv": "స్వీడిష్",
+        "tr": "టర్కిష్",
+        "vi": "వియత్నామీస్",
+        "zh": "చైనీస్",
+        "zh_TW": "చైనీస్ (సాంప్రదాయక హాన్)"}</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{కూడిక గుర్తు}other{# కూడిక గుర్తులు}}</translation>
 <translation id="338583716107319301">విభాగిని</translation>
 <translation id="3389259863310851658">మునుపటి ఫారమ్ ఫీల్డ్</translation>
@@ -197,12 +261,14 @@
 <translation id="3486232535569802404"><ph name="V1" /> నుండి <ph name="V2" /> వరకు</translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{కుడి కుండలీకరణ గుర్తు}other{# కుడి కుండలీకరణ గుర్తులు}}</translation>
 <translation id="3493915602752813531">తదుపరి యాంకర్ లేదు.</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{ప్రశ్నార్థక గుర్తు}other{# ప్రశ్నార్థక గుర్తులు}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{హంసపాదు గుర్తు}other{# హంసపాదు గుర్తులు}}</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, తనిఖీపెట్టె ఎంచుకోబడలేదు</translation>
 <translation id="3599054940393788245">లోపల గణితం కాదు</translation>
 <translation id="3616113530831147358">ఆడియో</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{బ్యాక్‌టిక్ గుర్తు}other{# బ్యాక్‌టిక్ గుర్తులు}}</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{డాలర్ గుర్తు}other{# డాలర్ గుర్తులు}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, జాబితా పెట్టె</translation>
@@ -215,12 +281,15 @@
 <translation id="3762198587642264450">ప్రస్తుత అడ్డు వరుస యొక్క చివరకు వెళ్లండి</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">నిష్క్రమణ డైలాగ్.</translation>
+<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">స్వీయపూర్తి జాబితా</translation>
+<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">వీడియో</translation>
 <translation id="3816633764618089385">తదుపరి మీడియా</translation>
 <translation id="3819376190738087562">జంప్‌లు లేవు.</translation>
 <translation id="385383972552776628">ఎంపికల పేజీని తెరవండి</translation>
 <translation id="3856075812838139784">చదవడానికి మాత్రమే</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">మెను</translation>
 <translation id="3909320334364316587">మునుపటి స్థాయి 6 శీర్షిక</translation>
 <translation id="3914173277599553213">అవసరమైనవి</translation>
@@ -241,6 +310,7 @@
 <translation id="4116415223832267137">హెచ్చరిక</translation>
 <translation id="4147126331795725888">తదుపరి నియంత్రణ లేదు.</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{కుడి ధనుర్బంధ గుర్తు}other{# కుడి ధనుర్బంధ గుర్తులు}}</translation>
+<translation id="4158704014418536539">కేస్ ఆధారితం.</translation>
 <translation id="4161663686871496107">ChromeVox చదివి వినిపించే అభిప్రాయం సిద్ధంగా ఉంది</translation>
 <translation id="4173994908659439270">తదుపరి సవరించగల వచనం ఫీల్డ్ లేదు.</translation>
 <translation id="4176463684765177261">ఆపివేయబడింది</translation>
@@ -254,9 +324,11 @@
 <translation id="423334822609210999">ఎడమవైపు సెల్ లేదు.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, <ph name="GRADE" />వ గ్రేడ్</translation>
 <translation id="4253168017788158739">గమనిక</translation>
+<translation id="4254798249533888099">ట్రీ</translation>
 <translation id="4255943572433203166">ChromeVoxను అనుకూలీకరించడానికి దిగువ ఎంపికలను ఉపయోగించండి. మార్పులు వెంటనే ప్రభావవంతమవుతాయి.</translation>
 <translation id="4271220233568730077">తదుపరి గణితం</translation>
 <translation id="4271521365602459209">ఇక ఫలితాలు లేవు.</translation>
+<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">తదుపరి కథనం లేదు.</translation>
 <translation id="4289540628985791613">స్థూలదృష్టి</translation>
 <translation id="4300318234632215983">లింక్ వెనుక URLను తెలియజేయండి</translation>
@@ -267,6 +339,7 @@
 <translation id="4372435075475052704">కనిష్టం:<ph name="X" /></translation>
 <translation id="4372705107434148843">ప్రసంగాన్ని ఆపివేయండి</translation>
 <translation id="4373197658375206385">లింక్ కానటువంటి మునుపటి అంశం లేదు.</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">రీసెట్</translation>
 <translation id="4471074325120394300">లింక్‌లు లేవు.</translation>
 <translation id="4476183483923481720">కొత్త పంక్తి</translation>
@@ -283,6 +356,7 @@
 <translation id="4615592953348396470">తదుపరి కీ ప్రెస్‌ను విస్మరిస్తోంది</translation>
 <translation id="461613135510474570">వాక్యం</translation>
 <translation id="4647836961514597010">రంగు ఎంపిక</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">మునుపటి మైలురాయి</translation>
@@ -300,6 +374,7 @@
 <translation id="4842108708071771135">తదుపరి బ్లాక్‌కోట్ లేదు.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">మునుపటి సారూప్య మూలకం.</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS లాగ్ చేయడాన్ని ప్రారంభించండి</translation>
 <translation id="4877261390094455813">శోధన ప్రశ్నను నమోదు చేయండి.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -331,8 +406,10 @@
 <translation id="5080758118274074384">రెండుసార్లు క్లిక్ చేయబడింది</translation>
 <translation id="5098541983634824365">గ్రిడ్ నుండి నిష్క్రమిస్తున్నారు.</translation>
 <translation id="5102981729317424850">సాధనపట్టీ</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">మునుపటి ఫారమ్ ఫీల్డ్ లేదు.</translation>
 <translation id="5111640677200759579">నిలువు వరుస ముఖ్య శీర్షిక</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">మునుపటి లింక్ లేదు.</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, ఎంపిక తీసివేయబడింది</translation>
@@ -351,6 +428,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{కామా గుర్తు}other{# కామా గుర్తులు}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, వచన పెట్టె</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, లింక్</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">నిరంతరంగా చదివేటప్పుడు వెనుకకు దాటవేయండి</translation>
 <translation id="5368000168321181111">శబ్ద హెచ్చరికలు ఆపివేయబడ్డాయి</translation>
 <translation id="5374320867641260420">తదుపరి బటన్ లేదు.</translation>
@@ -372,6 +450,7 @@
 <translation id="5546092960038624944">మునుపటి స్థాయి 5 శీర్షిక లేదు.</translation>
 <translation id="556042886152191864">బటన్</translation>
 <translation id="5561345396546889625">తదుపరి జాబితా</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">వచనం, ఇమెయిల్ నమోదును సవరించండి</translation>
 <translation id="5597170376237141345">తదుపరి తనిఖీపెట్టె</translation>
@@ -379,17 +458,21 @@
 <translation id="5598905979683743333"><ph name="NAME" />, రేడియో బటన్ ఎంపిక తీసివేయబడింది</translation>
 <translation id="5601172225407283979">డిఫాల్ట్ చర్యను అమలు చేయండి</translation>
 <translation id="5608798115546226984">స్వీయపూర్తి ఇన్‌లైన్</translation>
+<translation id="561939826962581046">time</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">లాగ్</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">మునుపటి పట్టిక లేదు.</translation>
 <translation id="5655682562155942719">దాటివేసే ఆదేశాలు</translation>
 <translation id="56637627897541303">వచన ప్రదేశం</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">మైలురాయి</translation>
 <translation id="5683155931978483559">మునుపటి తనిఖీపెట్టె</translation>
 <translation id="5684277895745049190">జాబితా</translation>
 <translation id="5700650669149824506">మునుపటి స్థాయి 4 శీర్షిక లేదు.</translation>
 <translation id="5709192780268610569">పెద్ద వివరణ లేదు</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">తదుపరి పట్టిక నిలువు వరుస</translation>
 <translation id="571866080859340309">విశ్లేషణ సమూహాలు</translation>
 <translation id="5728409797179002635">పట్టిక కనుగొనబడలేదు.</translation>
@@ -414,17 +497,20 @@
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">డైలాగ్</translation>
 <translation id="5963413905009737549">విభాగం</translation>
+<translation id="5968607524793740041">సందర్భ మెనుని చూపుతుంది</translation>
 <translation id="5983179082906765664">నావిగేషన్ గ్రాన్యులారిటీని పెంచండి</translation>
 <translation id="5999630716831179808">వాయిస్‌లు</translation>
 <translation id="6000417740266304866">దిగువ జాబితా నుండి ఎంపికను ఎంచుకోవడం ద్వారా ప్రస్తుత 8 చుక్కల బ్రెయిలీ పట్టికను మార్చండి.</translation>
 <translation id="6006050241733874051">ఫారమ్</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{బ్యాక్‌స్లాష్ గుర్తు}other{# బ్యాక్‌స్లాష్ గుర్తులు}}</translation>
 <translation id="6037602951055904232">ముందుకు ప్యాన్ చేయండి</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">సెల్ ముగింపు.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">ఖాళీ</translation>
 <translation id="6142308968191113180">శీర్షిక 4</translation>
 <translation id="6169420925157477918">పెద్ద వివరణ గల చిత్రం</translation>
+<translation id="6172087735260766220">కాపీ-రక్షిత PDF నుండి ప్రాప్యత చేయదగిన వచనాన్ని ప్రాప్యత చేయడం సాధ్యపడలేదు.</translation>
 <translation id="6186305613600865047">పేజీ దిగువకు వెళ్లండి</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Down</translation>
@@ -468,10 +554,12 @@
 <translation id="6734854816611871228"><ph name="VALUE" />, కాంబో పెట్టె</translation>
 <translation id="6735257939857578167"><ph name="NUM" /> అంశాలు గల జాబితా</translation>
 <translation id="6736510033526053669">ట్యాబ్ సృష్టించబడింది</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">కథనం</translation>
 <translation id="6787839852456839824">కీబోర్డ్ సత్వరమార్గాలు</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">ఫుటర్</translation>
+<translation id="6871161210040114857">కేస్‌ను విస్మరిస్తోంది.</translation>
 <translation id="6877435256196695200">తదుపరి గ్రాఫిక్ లేదు.</translation>
 <translation id="6897341342232909480">ఎడమవైపు తరలించండి</translation>
 <translation id="6901540140423170855">తేదీ</translation>
@@ -487,6 +575,7 @@
 <translation id="7041173719775863268">ఎంపికను ముగించండి</translation>
 <translation id="7095834689119144465">వచన సంఖ్యను మాత్రమే సవరించండి</translation>
 <translation id="7096001299300236431">మునుపటి మీడియా</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">పదం అనుకరణ</translation>
 <translation id="713824876195128146">తదుపరి బ్లాక్ కోట్</translation>
 <translation id="7161771961008409533">పాప్-అప్ బటన్</translation>
@@ -506,6 +595,8 @@
 <translation id="7273174640290488576">ఖాళీ</translation>
 <translation id="7285387653379749618">పట్టికలు</translation>
 <translation id="7289186959554153431">శీర్షిక 3</translation>
+<translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">బ్రెయిలీ శీర్షికలు నిలిపివేయబడ్డాయి.</translation>
 <translation id="7318872822751139669">ఫోకస్‌ను మార్చడానికి మౌస్‌ను ఉపయోగించండి.</translation>
 <translation id="7322388933135261569">ఫిబ్రవరి</translation>
@@ -514,6 +605,7 @@
 <translation id="7356165926712028380">8 చుక్కల బ్రెయిలీకి మార్చు</translation>
 <translation id="7362871137496673139">మునుపటి స్థాయి 2 శీర్షిక లేదు.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{ఆంపర్సండ్ గుర్తు}other{# ఆంపర్సండ్ గుర్తులు}}</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">పట్టిక నుండి నిష్క్రమిస్తున్నారు.</translation>
 <translation id="739763518212184081">మునుపటి పంక్తి</translation>
 <translation id="7400575256015741911">అక్షరదోషం కనుగొనబడింది</translation>
@@ -521,6 +613,7 @@
 <translation id="7425395583360211003">తిరిగి వెళ్లడం</translation>
 <translation id="7434509671034404296">డెవలపర్</translation>
 <translation id="7439060726180460871">డైరెక్టరీ</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">డైలాగ్‌లోకి ప్రవేశించారు</translation>
 <translation id="7532613204005497612">జూన్</translation>
@@ -528,17 +621,21 @@
 <translation id="7586163296341959563">అతికించండి.</translation>
 <translation id="7596919493010894443">ఎంపిక క్లియర్ చేయబడింది</translation>
 <translation id="7604026522577407655">ప్రస్తుత నిలువు వరుస ప్రారంభానికి వెళ్లండి</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">ప్రస్తుత పేజీ యొక్క URLను తెలియజేయండి</translation>
 <translation id="7609363189280667021">బ్రెయిలీ శీర్షికలను టోగుల్ చేయండి</translation>
 <translation id="762020119231868829">ప్రస్తుతం ప్లే అవుతున్న అన్ని మీడియా విడ్జెట్‌లను పాజ్ చేస్తుంది</translation>
 <translation id="7625690649919402823">తదుపరి పట్టిక</translation>
+<translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), గ్రేడ్ <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">మునుపటి స్థాయి 3 శీర్షిక లేదు.</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, <ph name="NAME" />, వచన పెట్టె</translation>
 <translation id="7663318257180412551">శీర్షిక 2</translation>
 <translation id="7674576868851035240">తదుపరి లింక్</translation>
 <translation id="7674768236845044097">గుర్తు పెట్టండి</translation>
 <translation id="7684431668231950609">వచనం, URL నమోదును సవరించండి</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">మునుపటి రేడియో బటన్</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, పాస్‌వర్డ్ వచన పెట్టె</translation>
 <translation id="7805247615045262757">డిఫాల్ట్ నావిగేషన్</translation>
 <translation id="7805768142964895445">స్థితి</translation>
@@ -549,10 +646,13 @@
 <translation id="7851816175263618915">కొన్ని విరామచిహ్నాలు</translation>
 <translation id="7870596830398826354">గణిత ML ట్రీ</translation>
 <translation id="78826985582142166">sldr</translation>
+<translation id="7894517696028036636">ChromeVox క్లాసిక్‌ను టోగుల్ చేస్తుంది.</translation>
 <translation id="7895896691902835279">తెలియని లింక్</translation>
 <translation id="7927711904086083099">ఎంచుకోబడలేదు</translation>
+<translation id="7935627501098484003">సమయ నియంత్రణ</translation>
 <translation id="7939428177581522200">ఎంపికకు జోడించబడింది</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{@ గుర్తు}other{# @ గుర్తులు}}</translation>
+<translation id="7965147473449754028">మెనుని మూసివేసారు</translation>
 <translation id="7974390230414479278">మెను అంశం</translation>
 <translation id="8002119852008410879">{COUNT,plural, =1{ఆశ్చర్యార్థక గుర్తు}other{# ఆశ్చర్యార్థక గుర్తులు}}</translation>
 <translation id="8007540374018858731">h3</translation>
@@ -583,6 +683,7 @@
 <translation id="8382679411218029383">స్వీయపూర్తి ఇన్‌లైన్ మరియు జాబితా</translation>
 <translation id="8428603554127842284">స్థాయి <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">తదుపరి స్థాయి 3 శీర్షిక లేదు.</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">మునుపటి తనిఖీపెట్టె లేదు.</translation>
 <translation id="8455868257606149352">గరిష్టం <ph name="X" /></translation>
 <translation id="84575901236241018">ప్రాప్యత కీ కలిగి ఉంది, <ph name="KEY" /></translation>
@@ -599,10 +700,12 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> అంశాలు ఎంచుకోబడ్డాయి</translation>
 <translation id="8638532244051952400">ప్రస్తుత సెల్ అక్షాలను తెలియజేయండి</translation>
 <translation id="8650576015643545550">మునుపటి జాబితా లేదు.</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">లింక్‌ల జాబితాను చూపండి</translation>
 <translation id="8664519043722036194">సెకన్లు</translation>
 <translation id="867187640362843212">శీర్షిక 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{పైప్ గుర్తు}other{# నిలువు పైప్ గుర్తులు}}</translation>
+<translation id="8722779018229123609">(-)</translation>
 <translation id="8723726026961763755">సిస్టమ్ నవీకరించబడింది.  పునఃప్రారంభించాలని సిఫార్సు చేయబడింది.</translation>
 <translation id="8735450637152821465">ఎంపికను ప్రారంభించండి</translation>
 <translation id="8743786158317878347">పట్టికల వంటి ఆకృతీకరించిన కంటెంట్‌లోకి ప్రవేశించండి</translation>
@@ -621,9 +724,12 @@
 <translation id="8896347895970027998">ChromeVoxని సక్రియం లేదా క్రియారహితానికి టోగుల్ చేయండి.</translation>
 <translation id="8898516272131543774">సైకిల్ విరామచిహ్న అనుకరణ</translation>
 <translation id="8900148057318340779">ఆదిప్రత్యయ కీ</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">ఖాళీ ముఖ్య శీర్షికలు</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">మాడిఫైయర్ కీలు</translation>
 <translation id="8943175951035496220">కుడివైపు సెల్ లేదు.</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">ఫైల్</translation>
 <translation id="9027462562263121875">పట్టికలు లేవు.</translation>
 <translation id="9040132695316389094">శీర్షిక 1</translation>
@@ -635,9 +741,11 @@
 <translation id="9089864840575085222">సైకిల్ టైపింగ్ అనుకరణ</translation>
 <translation id="9107530006868467849">మునుపటి మీడియా విడ్జెట్ లేదు.</translation>
 <translation id="9108370397979208512">math</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{శాతం గుర్తు}other{# శాతం గుర్తులు}}</translation>
 <translation id="9115913704608474258">నవంబర్</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">ప్రస్తుత స్థానం యొక్క సంక్షిప్త వివరణను తెలియజేస్తుంది</translation>
 <translation id="9153606228985488238">స్వర స్థాయి <ph name="PERCENT" /> శాతం</translation>
 <translation id="9160096769946561184">ప్రస్తుత నిలువు వరుస యొక్క చివరకు వెళ్లండి</translation>

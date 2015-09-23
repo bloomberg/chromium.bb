@@ -959,7 +959,6 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kudhibiti mipangilio yake w
 <translation id="2378075407703503998">Faili <ph name="SELCTED_FILE_COUNT" /> zimezochaguliwa</translation>
 <translation id="2378982052244864789">Chagua saraka ya kiendelezi.</translation>
 <translation id="2379281330731083556">Chapisha kwa kutumia kidadisi cha mfumo... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Kikiwashwa, kionyeshi hutoa mamlaka ya kuunganisha kwa wavuti, hivyo kushikanisha mapito yote ya kuunganisha.</translation>
 <translation id="2381823505763074471">Mwondoe mtumiaji <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Husababisha menyu kunjuzi ya sanduku kuu nyakati nyingine kuonyesha vichwa vya mapendekezo mara nyingi zaidi kuliko URL.</translation>
 <translation id="2384596874640104496">Kibodi ya Kisinhala</translation>
@@ -2586,7 +2585,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="4647090755847581616">&amp;Funga Kichupo</translation>
 <translation id="4647697156028544508">Tafadhali ingiza PIN ya "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Idhini isiyotosha</translation>
-<translation id="4650159467443406318">Bofya hapa ili uutembelee ukurasa huu</translation>
 <translation id="4653235815000740718">Kulikuwa na tatizo wakati wa kuunda media ya kufufua OS. Kifaa cha hifadhi kilichotumiwa hakikuweza kupatikana.</translation>
 <translation id="4654488276758583406">Ndogo Sana</translation>
 <translation id="465499440663162826">Haikuweza kuunganisha kwenye Duka la Chrome kwenye Wavuti.</translation>
@@ -3157,7 +3155,6 @@ Bonyeza kitufe chochote ili kuendelea kuchunguza.</translation>
 <translation id="5449624072515809082">Washa usahihishaji otomatiki wa maandishi unapocharaza. Ukaguzi wa tahajia wa kusawazisha hauoani na kipengee hiki.</translation>
 <translation id="5449716055534515760">Funga Dirisha</translation>
 <translation id="5451285724299252438">kikasha maandishi cha kiwango cha ukurasa</translation>
-<translation id="5451561500892538488">Ficha Ikoni ya Arifa</translation>
 <translation id="5451646087589576080">Tazama &amp;Maelezo ya Fremu</translation>
 <translation id="5453029940327926427">Funga vichupo</translation>
 <translation id="5453632173748266363">Kisiriliki</translation>
@@ -5489,7 +5486,6 @@ Inakokotoa muda wa kujaa</translation>
 <translation id="8804398419035066391">Kuwasiliana na tovuti zinazoshirikiana</translation>
 <translation id="8807632654848257479">Imara</translation>
 <translation id="8808478386290700967">Duka la Wavuti</translation>
-<translation id="8811314776632711217">Kionyeshi Kilichoteuliwa (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Lugha ya Chrome imebadilika kutoka "<ph name="FROM_LOCALE" />" hadi "<ph name="TO_LOCALE" />" baada ya kulinganisha mipangilio yako.</translation>
 <translation id="8813811964357448561">karatasi</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

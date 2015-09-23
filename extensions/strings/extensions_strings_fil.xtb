@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Hindi ma-load ang pahina ng mga pagpipilian na '<ph name="OPTIONS_PAGE" />'.</translation>
 <translation id="4115165561519362854">Iniaatas ng administrator ng computer na ito sa <ph name="EXTENSION_NAME" /> na magkaroon ng minimum na bersyon na <ph name="EXTENSION_VERSION" />. Hindi ito mae-enable hanggang sa ma-update ito sa bersyong iyon (o mas bago).</translation>
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE" />'.</translation>
+<translation id="4434145631756268951">{0,select, single{Pumili ng USB device}multiple{Pumili ng mga USB device}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukang muli.</translation>
 <translation id="4883436287898674711">Lahat ng site ng <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Kasama sa extension na ito ang key file na '<ph name="KEY_PATH" />'. Malamang na hindi mo iyon gustong gawin.</translation>
 <translation id="5627523580512561598">extension na <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Pumili ng HID device}multiple{Pumili ng mga HID device}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Kinakailangan ng administrator ng machine na ito na naka-install ang <ph name="EXTENSION_NAME" />. Hindi ito maaaring i-uninstall.</translation>
 <translation id="6027032947578871493">Hindi kilalang produkto na <ph name="PRODUCT_ID" /> mula sa <ph name="VENDOR_NAME" /> (serial number na <ph name="SERIAL_NUMBER" />)</translation>

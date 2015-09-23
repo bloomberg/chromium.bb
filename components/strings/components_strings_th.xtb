@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">โดเมนการลงทะเบียน:</translation>
 <translation id="1344588688991793829">การตั้งค่าป้อนข้อความอัตโนมัติของ Chromium...</translation>
 <translation id="1426410128494586442">ใช่</translation>
+<translation id="1430915738399379752">พิมพ์</translation>
 <translation id="1455235771979731432">เกิดปัญหาในการยืนยันบัตรของคุณ โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตและลองอีกครั้ง</translation>
 <translation id="1491151370853475546">โหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="1549470594296187301">ต้องเปิดใช้ JavaScript เพื่อใช้คุณลักษณะนี้</translation>
-<translation id="1639239467298939599">กำลังโหลด</translation>
 <translation id="1640180200866533862">นโยบายผู้ใช้</translation>
 <translation id="1644184664548287040">การกำหนดค่าเครือข่ายไม่ถูกต้องและไม่สามารถนำเข้า</translation>
 <translation id="168841957122794586">ใบรับรองของเซิร์ฟเวอร์มีคีย์การเข้ารหัสที่ไม่รัดกุม</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">เอกสารนี้ได้รับการป้องกันด้วยรหัสผ่าน โปรดป้อนรหัสผ่าน</translation>
 <translation id="2625385379895617796">นาฬิกาเร็วเกินไป</translation>
 <translation id="2639739919103226564">สถานะ:</translation>
+<translation id="2653659639078652383">ส่ง</translation>
 <translation id="2704283930420550640">ค่าไม่ตรงกับรูปแบบ</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">มีข้อผิดพลาดที่ไม่ทราบเกิดขึ้น</translation>
 <translation id="4800132727771399293">ตรวจสอบวันหมดอายุและ CVC แล้วลองอีกครั้ง</translation>
 <translation id="4813512666221746211">ข้อผิดพลาดของเครือข่าย</translation>
+<translation id="4816492930507672669">พอดีกับหน้า</translation>
 <translation id="4850886885716139402">มุมมอง</translation>
 <translation id="4923417429809017348">หน้านี้แปลจากภาษาที่ไม่รู้จักเป็นภาษา <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">ต้องระบุ</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">ชื่อนโยบาย</translation>
 <translation id="552553974213252141">ดึงข้อความออกมาถูกต้องไหม</translation>
 <translation id="5540224163453853">ไม่พบบทความที่ขอ</translation>
+<translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="5565735124758917034">ใช้งานอยู่</translation>
 <translation id="560412284261940334">ไม่สนับสนุนการจัดการ</translation>
 <translation id="5629630648637658800">ไม่สามารถโหลดการตั้งค่านโยบาย</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;ทำซ้ำการเพิ่ม</translation>
 <translation id="5872918882028971132">คำแนะนำระดับบนสุด</translation>
 <translation id="59107663811261420">Google Payments ไม่สนับสนุนบัตรประเภทนี้สำหรับผู้ขายรายนี้ โปรดเลือกบัตรอื่น</translation>
+<translation id="5975083100439434680">ย่อ</translation>
 <translation id="5989320800837274978">ไม่มีการระบุทั้งพร็อกซีเซิร์ฟเวอร์แบบคงที่หรือ URL สคริปต์ .pac</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">ปิด</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">หากต้องเริ่มการเชื่อมต่อที่ปลอดภัย นาฬิกาจะต้องตั้งค่าไว้อย่างถูกต้อง เนื่องจากใบรับรองที่เว็บไซต์ใช้เพื่อระบุตนเองจะใช้ได้เฉพาะช่วงเวลาหนึ่งเท่านั้น นาฬิกาของอุปกรณ์ไม่ถูกต้อง Chromium จึงไม่สามารถยืนยันใบรับรองเหล่านี้ได้</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8804164990146287819">นโยบายส่วนบุคคล</translation>
+<translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="8824019021993735287">Chrome ไม่สามารถยืนยันบัตรของคุณได้ในขณะนี้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="8834246243508017242">เปิดใช้การป้อนข้อความอัตโนมัติโดยใช้รายชื่อติดต่อ…</translation>
 <translation id="883848425547221593">บุ๊กมาร์กอื่นๆ</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">ข้อผิดพลาดในการแยกวิเคราะห์การตั้งค่านโยบาย</translation>
 <translation id="8876793034577346603">ไม่สามารถแยกวิเคราะห์การกำหนดค่าเครือข่าย</translation>
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
+<translation id="8903921497873541725">ขยาย</translation>
 <translation id="8932102934695377596">นาฬิกาช้าเกินไป</translation>
 <translation id="8940229512486821554">เรียกใช้คำสั่ง <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>

@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domini d'inscripció:</translation>
 <translation id="1344588688991793829">Configuració d'Emplenament automàtic de Chromium...</translation>
 <translation id="1426410128494586442">Sí</translation>
+<translation id="1430915738399379752">Impressió</translation>
 <translation id="1455235771979731432">S'ha produït un problema en verificar la targeta. Comproveu la connexió a Internet i torneu-ho a provar.</translation>
 <translation id="1491151370853475546">Torna a carregar aquesta pàgina</translation>
 <translation id="1549470594296187301">Heu d'activar el JavaScript per utilitzar aquesta funció.</translation>
-<translation id="1639239467298939599">S'està carregant</translation>
 <translation id="1640180200866533862">Polítiques d'usuari</translation>
 <translation id="1644184664548287040">La configuració de la xarxa no és vàlida i no s'ha pogut importar.</translation>
 <translation id="168841957122794586">El certificat de servidor conté una clau criptogràfica dèbil.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Aquest document està protegit mitjançant contrasenya. Introduïu una contrasenya.</translation>
 <translation id="2625385379895617796">El rellotge està avançat</translation>
 <translation id="2639739919103226564">Estat:</translation>
+<translation id="2653659639078652383">Envia</translation>
 <translation id="2704283930420550640">El valor no coincideix amb el format.</translation>
 <translation id="2721148159707890343">Sol·licitud realitzada correctament</translation>
 <translation id="2728127805433021124">El certificat del servidor està signat mitjançant un algoritme de signatura dèbil.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">S'ha produït un error desconegut.</translation>
 <translation id="4800132727771399293">Comproveu la data de caducitat i el CVC i torneu-ho a provar</translation>
 <translation id="4813512666221746211">Error de xarxa</translation>
+<translation id="4816492930507672669">Ajusta a la mida de la pàgina</translation>
 <translation id="4850886885716139402">Visualització</translation>
 <translation id="4923417429809017348">Aquesta pàgina s'ha traduït des d'un idioma desconegut a: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">S'ha d'especificar.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Nom de la política</translation>
 <translation id="552553974213252141">S'ha extret correctament el text?</translation>
 <translation id="5540224163453853">No s'ha pogut trobar l'article sol·licitat.</translation>
+<translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5565735124758917034">Actiu</translation>
 <translation id="560412284261940334">Gestió no compatible</translation>
 <translation id="5629630648637658800">No s'ha pogut carregar la configuració de la política</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Refés l'addició</translation>
 <translation id="5872918882028971132">Suggeriments per als responsables</translation>
 <translation id="59107663811261420">Google Payments no admet aquest tipus de targeta per a aquest comerciant. Seleccioneu-ne una altra.</translation>
+<translation id="5975083100439434680">Redueix</translation>
 <translation id="5989320800837274978">No s'especifiquen servidors intermediaris ni URL d'script .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Tanca</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Per establir una connexió segura, el rellotge ha d'estar ben ajustat, perquè els certificats que els llocs web fan servir per identificar-se només són vàlids per a períodes de temps concrets. Com que el rellotge del dispositiu no està ben ajustat, Chromium no pot verificar aquests certificats.</translation>
 <translation id="8790007591277257123">&amp;Refés la supressió</translation>
 <translation id="8804164990146287819">Política de privadesa</translation>
+<translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="8824019021993735287">Chrome no ha pogut verificar la vostra targeta. Torneu-ho a provar més tard.</translation>
 <translation id="8834246243508017242">Activa l'emplenament automàtic mitjançant els contactes...</translation>
 <translation id="883848425547221593">Altres adreces d'interès</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">S'ha produït un error en analitzar la configuració de la política</translation>
 <translation id="8876793034577346603">No s'ha pogut analitzar la configuració de la xarxa.</translation>
 <translation id="8891727572606052622">El mode de servidor intermediari no és vàlid.</translation>
+<translation id="8903921497873541725">Amplia</translation>
 <translation id="8932102934695377596">El rellotge està endarrerit</translation>
 <translation id="8940229512486821554">Executa l'ordre <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">El certificat del servidor ha caducat.</translation>

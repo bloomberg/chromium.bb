@@ -2,10 +2,12 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1012173283529841972">Listenelement</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Übergreifend</translation>
 <translation id="1025074108959230262">Fixierter Modus deaktiviert</translation>
 <translation id="1031961866430398710">und</translation>
 <translation id="1044777062731150180">Keine Überschriften</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Ungültige Eingabe</translation>
 <translation id="1082209053475788238">Keine vorherige Überschrift der Ebene 6</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
@@ -20,8 +22,10 @@
 <translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Benutzerdefiniert</translation>
 <translation id="1188858454923323853">ergänzend</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – eine Stimme für Chrome</translation>
 <translation id="1229276918471378188">Vorheriger Sprung</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Nächste Überschrift der Ebene 6</translation>
 <translation id="1275718070701477396">Ausgewählt</translation>
 <translation id="1319608975892113573">Kein vorheriges blockquote-Element</translation>
@@ -33,7 +37,9 @@
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="136718599399906424">Nächste Tabellenzeile</translation>
 <translation id="1383876407941801731">Suchen</translation>
+<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Drücken Sie zum Bestätigen die Eingabetaste, zum Abbrechen die Esc-Taste, zum Aufrufen des nächsten Ergebnisses den Abwärtspfeil und des vorherigen Ergebnisses den Aufwärtspfeil.</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, Passwort-Textfeld</translation>
 <translation id="1467432559032391204">Links</translation>
@@ -58,6 +64,7 @@
 <translation id="1674262202423278359">ChromeVox-Navigation</translation>
 <translation id="16777221443363124">Menüleiste</translation>
 <translation id="1692077714702418899">Strukturlinie</translation>
+<translation id="1700517974991662022">Besucht</translation>
 <translation id="1722567105086139392">Link</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Nächste Grafik</translation>
@@ -71,6 +78,8 @@
 <translation id="188130072164734898">Uhrzeit und Datum ansagen</translation>
 <translation id="1902396333223336119">Zelle</translation>
 <translation id="1905379170753160525">Überschriftenliste anzeigen</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">Steuerung für Kalenderwoche</translation>
 <translation id="1964135212174907577">Nächstes Objekt</translation>
 <translation id="1969092762068865084">Juli</translation>
@@ -85,6 +94,7 @@
 <translation id="2089387485033699258">de</translation>
 <translation id="2091933974477985526">Vorheriger bearbeitbarer Textbereich</translation>
 <translation id="2100350898815792233">Alle Satzzeichen</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">Zugriffsschlüssel: <ph name="KEY" /></translation>
 <translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Ändern Sie die aktuelle 6-Punkt-Brailletabelle durch Auswählen einer Option aus der unten stehenden Liste.</translation>
@@ -98,6 +108,7 @@
 <translation id="2318372665160196757">Hauptinhalt</translation>
 <translation id="2329324941084714723">Tabsteuerfeld</translation>
 <translation id="2344193891939537199">Steuerung für Uhrzeit/Datum</translation>
+<translation id="2359897517538099099">Tabellenmodus ist nicht aktiviert.</translation>
 <translation id="241124561063364910">gefolgt von</translation>
 <translation id="2417569100218200841">Inhaltsinfo</translation>
 <translation id="2422937916923936891">Kontrollkästchen für Menüpunkt</translation>
@@ -108,9 +119,11 @@
 <translation id="2471138580042810658">Überschrift 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{Sternchen}other{# Sternchen}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> wurde zurückgesetzt.</translation>
+<translation id="2553108862507765288">Grammatikfehler</translation>
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-Element</translation>
 <translation id="2589102159832527089">Diese Seite enthält automatisch aus der PDF-Datei &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; extrahierten Text. &lt;a href ="<ph name="URL" />"&gt;Klicken Sie hier, um das Original abzurufen.&lt;/a&gt;</translation>
+<translation id="2606210917827248971">mit {COUNT,plural, =1{# Eintrag}other{# Einträgen}}</translation>
 <translation id="2614981083756825552">MathML-Layout</translation>
 <translation id="2626530649491650971">anklickbar</translation>
 <translation id="2628764385451019380">Kein vorheriges Kombinationsfeld</translation>
@@ -118,9 +131,11 @@
 <translation id="2639750663247012216">ChromeVox-Modifikator</translation>
 <translation id="2644542693584024604">misspelled</translation>
 <translation id="2667291555398229137">Auf das Element unter einem Routing-Schlüssel klicken</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{runde Klammer auf}other{# runde Klammern auf}}</translation>
 <translation id="2705875883745373140">Nicht gedrückt</translation>
 <translation id="2706462751667573066">Aufwärts</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">Audio</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">Aktiviert</translation>
@@ -163,10 +178,12 @@
 <translation id="308895241372589742">Kein weiterer mathematischer Ausdruck</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Nächste Markierung</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Minimiert</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3138767756593758860">Liste der Markierungen anzeigen</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Nächste Zeile</translation>
 <translation id="3155083529632865074">Keine vorherige Schaltfläche</translation>
 <translation id="3163593631834463955">Spaltenüberschrift leer</translation>
@@ -174,7 +191,10 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{Leerzeichen}other{# Leerzeichen}}</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> eingegeben</translation>
 <translation id="3223701887221307104">Tab "<ph name="NAME" />"</translation>
+<translation id="3226035351387556942">chk</translation>
+<translation id="3229375994964697375">Besuchter Link</translation>
 <translation id="323731244387692321">ChromeVox-Tastaturhilfe öffnen</translation>
+<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Vorheriger besuchter Link</translation>
 <translation id="3286390186030710347">Schieberegler</translation>
 <translation id="3299925995433437805">Kein nächster besuchter Link</translation>
@@ -182,8 +202,52 @@
 <translation id="3307886118343381874">Zum Ende der Tabelle gehen</translation>
 <translation id="3311969765485641742">Drücken Sie Alt + Shift + A, um die Benachrichtigungen aufzurufen.</translation>
 <translation id="3312997241656799641">Nächster besuchter Link</translation>
+<translation id="3321460131042519426">Zeilenumbruch aktivieren</translation>
 <translation id="3322936298410871309">Vorherige Überschrift der Ebene 1</translation>
 <translation id="3323447499041942178">Textfeld</translation>
+<translation id="3353420241558113817">{"ar": "Arabisch",
+        "bg": "Bulgarisch",
+        "ca": "Katalanisch",
+        "cs": "Tschechisch",
+        "da": "Dänisch",
+        "de": "Deutsch",
+        "de_CH": "Deutsch (Schweiz)",
+        "de_DE": "Deutsch (Deutschland)",
+        "el": "Griechisch",
+        "en": "Englisch",
+        "en_CA": "Englisch (Kanada)",
+        "en_GB": "Englisch (Vereinigtes Königreich)",
+        "en_US": "Englisch (USA)",
+        "es": "Spanisch",
+        "et": "Estnisch",
+        "fr": "Französisch",
+        "fr_CA": "Französisch (Kanada)",
+        "fr_FR": "Französisch (Frankreich)",
+        "fi": "Finnisch",
+        "he": "Hebräisch",
+        "hi": "Hindi",
+        "hr": "Kroatisch",
+        "hu": "Ungarisch",
+        "is": "Isländisch",
+        "it": "Italienisch",
+        "ko": "Koreanisch",
+        "lt": "Litauisch",
+        "lv": "Lettisch",
+        "nb": "Norwegisch (Bokmål)",
+        "nl": "Niederländisch",
+        "pl": "Polnisch",
+        "pt": "Portugiesisch",
+        "ro": "Rumänisch",
+        "ru": "Russisch",
+        "sk": "Slowakisch",
+        "sl": "Slowenisch",
+        "sr": "Serbisch",
+        "sv": "Schwedisch",
+        "tr": "Türkisch",
+        "vi": "Vietnamesisch",
+        "zh": "Chinesisch",
+        "zh_TW": ""Chinesisch (Traditionelles Han)"}</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{Pluszeichen}other{# Pluszeichen}}</translation>
 <translation id="338583716107319301">Trennzeichen</translation>
 <translation id="3389259863310851658">Vorheriges Formularfeld</translation>
@@ -197,12 +261,14 @@
 <translation id="3486232535569802404"><ph name="V1" /> bis <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{eckige Klammer rechts}other{# eckige Klammern rechts}}</translation>
 <translation id="3493915602752813531">Kein nächstes Ankerelement</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{Fragezeichen}other{# Fragezeichen}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{Caret-Zeichen}other{# Caret-Zeichen}}</translation>
 <translation id="3568702578574425662">Kontrollkästchen "<ph name="NAME" />" ist nicht aktiviert.</translation>
 <translation id="3599054940393788245">Nicht in Mathematik</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{Backtick}other{# Backticks}}</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{Dollarzeichen}other{# Dollarzeichen}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, Listenfeld</translation>
@@ -215,12 +281,15 @@
 <translation id="3762198587642264450">Zum Ende der aktuellen Zeile gehen</translation>
 <translation id="3777255250339039212">h1</translation>
 <translation id="3793710123303304873">Dialogfeld geschlossen</translation>
+<translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Liste der Autovervollständigungen</translation>
+<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Nächstes Medium</translation>
 <translation id="3819376190738087562">Keine Sprünge</translation>
 <translation id="385383972552776628">Seite "Optionen" öffnen</translation>
 <translation id="3856075812838139784">Schreibgeschützt</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3909320334364316587">Vorherige Überschrift der Ebene 6</translation>
 <translation id="3914173277599553213">Erforderlich</translation>
@@ -241,6 +310,7 @@
 <translation id="4116415223832267137">Benachrichtigung</translation>
 <translation id="4147126331795725888">Kein weiteres Steuerelement</translation>
 <translation id="4148180433151187540">{COUNT,plural, =1{geschweifte Klammer rechts}other{# geschweifte Klammern rechts}}</translation>
+<translation id="4158704014418536539">Groß- und Kleinschreibung wird beachtet.</translation>
 <translation id="4161663686871496107">Das gesprochene Feedback von ChromeVox ist bereit.</translation>
 <translation id="4173994908659439270">Kein nächstes bearbeitbares Textfeld</translation>
 <translation id="4176463684765177261">Deaktiviert</translation>
@@ -254,9 +324,11 @@
 <translation id="423334822609210999">Keine Zelle links</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, Grad <ph name="GRADE" /></translation>
 <translation id="4253168017788158739">Notiz</translation>
+<translation id="4254798249533888099">Baumstruktur</translation>
 <translation id="4255943572433203166">Verwenden Sie die Optionen unten, um ChromeVox anzupassen. Änderungen werden sofort wirksam.</translation>
 <translation id="4271220233568730077">Nächster mathematischer Ausdruck</translation>
 <translation id="4271521365602459209">Keine weiteren Ergebnisse</translation>
+<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Kein weiterer Artikel</translation>
 <translation id="4289540628985791613">Übersicht</translation>
 <translation id="4300318234632215983">URL hinter einem Link ansagen</translation>
@@ -267,6 +339,7 @@
 <translation id="4372435075475052704">Mind.: <ph name="X" /></translation>
 <translation id="4372705107434148843">Sprachausgabe anhalten</translation>
 <translation id="4373197658375206385">Kein vorheriges Element, das kein Link ist</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">reset</translation>
 <translation id="4471074325120394300">Keine Links</translation>
 <translation id="4476183483923481720">Neue Zeile</translation>
@@ -283,6 +356,7 @@
 <translation id="4615592953348396470">Nächster Tastenanschlag wird ignoriert.</translation>
 <translation id="461613135510474570">Satz</translation>
 <translation id="4647836961514597010">Farbauswahl</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Vorherige Markierung</translation>
@@ -300,6 +374,7 @@
 <translation id="4842108708071771135">Kein nächstes blockquote-Element</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Vorheriges ähnliches Element</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">TTS-Protokollierung aktivieren</translation>
 <translation id="4877261390094455813">Suchanfrage eingeben</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
@@ -331,8 +406,10 @@
 <translation id="5080758118274074384">Doppelgeklickt</translation>
 <translation id="5098541983634824365">Raster wird verlassen.</translation>
 <translation id="5102981729317424850">Symbolleiste</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">Kein vorheriges Formularfeld</translation>
 <translation id="5111640677200759579">Spaltenüberschrift</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">Kein vorheriger Link</translation>
 <translation id="513774504516943387">lnk</translation>
 <translation id="517143700877085897">, nicht ausgewählt</translation>
@@ -351,6 +428,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{Komma}other{# Kommas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, Textfeld</translation>
 <translation id="5330443287809544590">Link "<ph name="NAME" />"</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">Im kontinuierlichen Lesemodus rückwärts springen</translation>
 <translation id="5368000168321181111">Earcons sind deaktiviert.</translation>
 <translation id="5374320867641260420">Keine nächste Schaltfläche</translation>
@@ -372,6 +450,7 @@
 <translation id="5546092960038624944">Keine vorherige Überschrift der Ebene 5</translation>
 <translation id="556042886152191864">Schaltfläche</translation>
 <translation id="5561345396546889625">Nächste Liste</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Rücktaste</translation>
 <translation id="5585044216466955529">Text bearbeiten, E-Mail-Eintrag</translation>
 <translation id="5597170376237141345">Nächstes Kontrollkästchen</translation>
@@ -379,17 +458,21 @@
 <translation id="5598905979683743333">Optionsfeld "<ph name="NAME" />" ist nicht aktiviert.</translation>
 <translation id="5601172225407283979">Standardaktion ausführen</translation>
 <translation id="5608798115546226984">Inline-Autovervollständigung</translation>
+<translation id="561939826962581046">time</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Protokoll</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">Keine vorherige Tabelle</translation>
 <translation id="5655682562155942719">Zwischen Befehlen wechseln</translation>
 <translation id="56637627897541303">Textbereich</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">def</translation>
 <translation id="5682113568322255809">Markierung</translation>
 <translation id="5683155931978483559">Vorheriges Kontrollkästchen</translation>
 <translation id="5684277895745049190">Liste</translation>
 <translation id="5700650669149824506">Keine vorherige Überschrift der Ebene 4</translation>
 <translation id="5709192780268610569">Keine ausführliche Beschreibung</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Nächste Tabellenspalte</translation>
 <translation id="571866080859340309">Gruppen erkunden</translation>
 <translation id="5728409797179002635">Keine Tabelle gefunden</translation>
@@ -414,17 +497,20 @@
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Dialogfeld</translation>
 <translation id="5963413905009737549">Section-Element</translation>
+<translation id="5968607524793740041">Kontextmenü anzeigen</translation>
 <translation id="5983179082906765664">Navigationsgenauigkeit erhöhen</translation>
 <translation id="5999630716831179808">Stimmen</translation>
 <translation id="6000417740266304866">Ändern Sie die aktuelle 8-Punkt-Brailletabelle durch Auswahl einer Option aus der unten stehenden Liste.</translation>
 <translation id="6006050241733874051">Formular</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{umgekehrter Schrägstrich}other{# umgekehrte Schrägstriche}}</translation>
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Ende der Zelle</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Leerzeichen</translation>
 <translation id="6142308968191113180">Überschrift 4</translation>
 <translation id="6169420925157477918">Bild mit ausführlicher Beschreibung</translation>
+<translation id="6172087735260766220">Kein Zugriff auf Text für Bedienungshilfen in der kopiergeschützten PDF.</translation>
 <translation id="6186305613600865047">Zum Seitenende</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Abwärts</translation>
@@ -468,10 +554,12 @@
 <translation id="6734854816611871228">Kombinationsfeld <ph name="VALUE" /></translation>
 <translation id="6735257939857578167">mit <ph name="NUM" /> Elementen</translation>
 <translation id="6736510033526053669">Tab erstellt</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">Article-Element</translation>
 <translation id="6787839852456839824">Tastenkombinationen</translation>
 <translation id="6793101435925451627">lstbx</translation>
 <translation id="6833103209700200188">Footer-Element</translation>
+<translation id="6871161210040114857">Groß- und Kleinschreibung wird nicht beachtet.</translation>
 <translation id="6877435256196695200">Keine nächste Grafik</translation>
 <translation id="6897341342232909480">Nach links</translation>
 <translation id="6901540140423170855">date</translation>
@@ -487,6 +575,7 @@
 <translation id="7041173719775863268">Auswahl beenden</translation>
 <translation id="7095834689119144465">Nur numerischen Text bearbeiten</translation>
 <translation id="7096001299300236431">Vorheriges Medium</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">Wortecho</translation>
 <translation id="713824876195128146">Nächstes Blockzitat</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
@@ -506,6 +595,8 @@
 <translation id="7273174640290488576">Leer</translation>
 <translation id="7285387653379749618">Tabellen</translation>
 <translation id="7289186959554153431">Überschrift 3</translation>
+<translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">Braille-Untertitel deaktiviert</translation>
 <translation id="7318872822751139669">Fokus mithilfe der Maus verschieben</translation>
 <translation id="7322388933135261569">Februar</translation>
@@ -514,6 +605,7 @@
 <translation id="7356165926712028380">Zu 8-Punkt-Braille wechseln</translation>
 <translation id="7362871137496673139">Keine vorherige Überschrift der Ebene 2</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{Und-Zeichen}other{# Und-Zeichen}}</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabelle wird verlassen.</translation>
 <translation id="739763518212184081">Vorherige Zeile</translation>
 <translation id="7400575256015741911">Rechtschreibfehler gefunden</translation>
@@ -521,6 +613,7 @@
 <translation id="7425395583360211003">Wagenrücklauf</translation>
 <translation id="7434509671034404296">Entwickler</translation>
 <translation id="7439060726180460871">Verzeichnis</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Dialogfeldtext eingegeben</translation>
 <translation id="7532613204005497612">Juni</translation>
@@ -528,17 +621,21 @@
 <translation id="7586163296341959563">einfügen</translation>
 <translation id="7596919493010894443">Auswahl gelöscht</translation>
 <translation id="7604026522577407655">Zum Anfang der aktuellen Spalte gehen</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">URL der aktuellen Seite ansagen</translation>
 <translation id="7609363189280667021">Braille-Untertitel aktivieren/deaktivieren</translation>
 <translation id="762020119231868829">Pausiert alle momentan aktiven Medien-Widgets</translation>
 <translation id="7625690649919402823">Nächste Tabelle</translation>
+<translation id="7628927569678398026"><ph name="LOCALE" /> (<ph name="VARIANT" />), Grad <ph name="GRADE" /></translation>
 <translation id="7641134354185483015">Keine vorherige Überschrift der Ebene 3</translation>
 <translation id="7659376057562985921"><ph name="VALUE" />, Textfeld "<ph name="NAME" />"</translation>
 <translation id="7663318257180412551">Überschrift 2</translation>
 <translation id="7674576868851035240">Nächster Link</translation>
 <translation id="7674768236845044097">mark</translation>
 <translation id="7684431668231950609">Text bearbeiten, URL-Eintrag</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Vorheriges Optionsfeld</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, Passwort-Textfeld "<ph name="NAME" />"</translation>
 <translation id="7805247615045262757">Standardnavigation</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -549,10 +646,13 @@
 <translation id="7851816175263618915">Einige Satzzeichen</translation>
 <translation id="7870596830398826354">MathML-Baum</translation>
 <translation id="78826985582142166">sldr</translation>
+<translation id="7894517696028036636">Klassische ChromeVox-Ansicht umschalten.</translation>
 <translation id="7895896691902835279">Unbekannter Link</translation>
 <translation id="7927711904086083099">Nicht ausgewählt</translation>
+<translation id="7935627501098484003">Zeit-/Datumsangabe</translation>
 <translation id="7939428177581522200">zur Auswahl hinzugefügt</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{At-Zeichen}other{# At-Zeichen}}</translation>
+<translation id="7965147473449754028">Menü geschlossen</translation>
 <translation id="7974390230414479278">Menüpunkt</translation>
 <translation id="8002119852008410879">{COUNT,plural, =1{Ausrufezeichen}other{# Ausrufezeichen}}</translation>
 <translation id="8007540374018858731">h3</translation>
@@ -583,6 +683,7 @@
 <translation id="8382679411218029383">Inline-Autovervollständigung und Liste</translation>
 <translation id="8428603554127842284">Ebene <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Keine nächste Überschrift der Ebene 3</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Kein vorheriges Kontrollkästchen</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
@@ -599,10 +700,12 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> Elemente ausgewählt</translation>
 <translation id="8638532244051952400">Koordinaten der aktuellen Zelle ansagen</translation>
 <translation id="8650576015643545550">Keine vorherige Liste</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Linkliste anzeigen</translation>
 <translation id="8664519043722036194">Sekunden</translation>
 <translation id="867187640362843212">Überschrift 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{senkrechter Strich}other{# senkrechte Striche}}</translation>
+<translation id="8722779018229123609">(-)</translation>
 <translation id="8723726026961763755">Das System wurde aktualisiert. Es wird ein Neustart empfohlen.</translation>
 <translation id="8735450637152821465">Auswahl starten</translation>
 <translation id="8743786158317878347">Strukturierte Inhalte wie z. B. Tabellen eingeben</translation>
@@ -621,9 +724,12 @@
 <translation id="8896347895970027998">ChromeVox aktivieren oder deaktivieren</translation>
 <translation id="8898516272131543774">Satzzeichenecho wiederholen</translation>
 <translation id="8900148057318340779">Präfix-Taste</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">Überschriften leer</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Modifikatortasten</translation>
 <translation id="8943175951035496220">Keine Zelle rechts</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">file</translation>
 <translation id="9027462562263121875">Keine Tabellen</translation>
 <translation id="9040132695316389094">Überschrift 1</translation>
@@ -635,9 +741,11 @@
 <translation id="9089864840575085222">Eingabeecho wiederholen</translation>
 <translation id="9107530006868467849">Kein vorheriges Medien-Widget</translation>
 <translation id="9108370397979208512">math</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{Prozentzeichen}other{# Prozentzeichen}}</translation>
 <translation id="9115913704608474258">November</translation>
 <translation id="9128414153595658330">dlg</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">Kurze Beschreibung der aktuellen Position ansagen</translation>
 <translation id="9153606228985488238">Tonhöhe: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Zum Ende der aktuellen Spalte gehen</translation>

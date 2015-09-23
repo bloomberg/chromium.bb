@@ -971,7 +971,6 @@ După ce creezi un utilizator monitorizat, poți gestiona setările oricând și
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> (de) fișiere selectate</translation>
 <translation id="2378982052244864789">Selectează directorul extensiei.</translation>
 <translation id="2379281330731083556">Printați utilizând caseta de dialog a sistemului... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Dacă este activat, programul de redare deleagă browserului compunerea, îmbinând ambele etape ale compunerii.</translation>
 <translation id="2381823505763074471">Deconectați utilizatorul <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Determină lista drop-down din caseta polivalentă să afișeze uneori titlurile unor sugestii mai vizibil decât adresele URL.</translation>
 <translation id="2384596874640104496">Tastatură sinhala</translation>
@@ -2609,7 +2608,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="4647090755847581616">&amp;Închide fila</translation>
 <translation id="4647697156028544508">Introduceți codul PIN pentru „<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisiuni insuficiente</translation>
-<translation id="4650159467443406318">Dă clic aici pentru a accesa această pagină</translation>
 <translation id="4653235815000740718">A apărut o problemă la crearea suportului de recuperare a sistemului de operare. Nu s-a găsit dispozitivul de stocare utilizat.</translation>
 <translation id="4654488276758583406">Foarte mică</translation>
 <translation id="465499440663162826">Nu s-a putut stabili conexiunea la Magazinul web Chrome.</translation>
@@ -3181,7 +3179,6 @@ Apăsați pe orice tastă pentru a continua explorarea.</translation>
 <translation id="5449624072515809082">Activați corectarea automată a textului în timp ce scrieți. Verificarea ortografică sincronă nu este compatibilă cu această funcție.</translation>
 <translation id="5449716055534515760">Închide fe&amp;reastra</translation>
 <translation id="5451285724299252438">casetă text interval pagini</translation>
-<translation id="5451561500892538488">Ascundeți pictograma Notificări</translation>
 <translation id="5451646087589576080">Afișează &amp;informații despre cadru</translation>
 <translation id="5453029940327926427">Închide filele</translation>
 <translation id="5453632173748266363">Chirilic</translation>
@@ -5515,7 +5512,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8804398419035066391">Comunicarea cu site-urile web cooperante</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Magazin web</translation>
-<translation id="8811314776632711217">Program de redare delegat (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">După sincronizarea setărilor, limba din Chrome a fost schimbată din „<ph name="FROM_LOCALE" />” în „<ph name="TO_LOCALE" />”.</translation>
 <translation id="8813811964357448561">foaie de hârtie</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

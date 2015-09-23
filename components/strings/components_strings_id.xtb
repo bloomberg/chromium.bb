@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domain pendaftaran:</translation>
 <translation id="1344588688991793829">Setelan IsiOtomatis Chromium...</translation>
 <translation id="1426410128494586442">Ya</translation>
+<translation id="1430915738399379752">Cetak</translation>
 <translation id="1455235771979731432">Terjadi masalah saat memverifikasi kartu. Periksa sambungan internet Anda dan coba lagi.</translation>
 <translation id="1491151370853475546">Muat Ulang Laman Ini</translation>
 <translation id="1549470594296187301">JavaScript harus diaktifkan untuk menggunakan fitur ini.</translation>
-<translation id="1639239467298939599">Memuat</translation>
 <translation id="1640180200866533862">Kebijakan pengguna</translation>
 <translation id="1644184664548287040">Konfigurasi cadangan tidak valid dan tidak dapat diimpor.</translation>
 <translation id="168841957122794586">Sertifikat server berisi kunci kriptografis yang lemah.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Dokumen ini dilindungi sandi. Masukkan sandi.</translation>
 <translation id="2625385379895617796">Setelan jam terlalu cepat</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Kirim</translation>
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
+<translation id="4816492930507672669">Paskan dengan halaman</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Nama kebijakan</translation>
 <translation id="552553974213252141">Apakah teks diekstrak dengan benar?</translation>
 <translation id="5540224163453853">Tidak dapat menemukan artikel yang diminta.</translation>
+<translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5565735124758917034">Aktif</translation>
 <translation id="560412284261940334">Pengelolaan tidak didukung</translation>
 <translation id="5629630648637658800">Gagal memuat setelan kebijakan</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
 <translation id="5872918882028971132">Saran Induk</translation>
 <translation id="59107663811261420">Kartu jenis ini tidak didukung oleh Google Payments untuk pedagang ini. Pilih kartu lain.</translation>
+<translation id="5975083100439434680">Perkecil</translation>
 <translation id="5989320800837274978">Baik proxy server tetap ataupun URL skrip .pac tidak ditentukan.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Hal ini karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Chromium tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="8790007591277257123">&amp;Ulangi penghapusan</translation>
 <translation id="8804164990146287819">Kebijakan Privasi</translation>
+<translation id="8820817407110198400">Bookmark</translation>
 <translation id="8824019021993735287">Chrome tidak dapat memverifikasi kartu saat ini. Coba lagi nanti.</translation>
 <translation id="8834246243508017242">Aktifkan IsiOtomatis menggunakan Kontak...</translation>
 <translation id="883848425547221593">Bookmark Lain</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Kesalahan saat menguraikan setelan kebijakan</translation>
 <translation id="8876793034577346603">Konfigurasi jaringan gagal diuraikan.</translation>
 <translation id="8891727572606052622">Mode proxy tidak valid.</translation>
+<translation id="8903921497873541725">Perbesar</translation>
 <translation id="8932102934695377596">Setelan waktu Anda terlalu lambat</translation>
 <translation id="8940229512486821554">Jalankan perintah <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Sertifikat server telah kedaluwarsa.</translation>

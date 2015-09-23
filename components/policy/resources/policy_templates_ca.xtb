@@ -177,7 +177,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
 <translation id="2188979373208322108">Activa la barra d'adreces d'interès a <ph name="PRODUCT_NAME" />. Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> mostrarà una barra d'adreces d'interès. Si el desactiveu, els usuaris no veuran mai la barra d'adreces d'interès. Si l'activeu o el desactiveu, els usuaris no podran canviar-lo ni substituir-lo a <ph name="PRODUCT_NAME" />. Si no es defineix aquest paràmetre, l'usuari podrà decidir si vol utilitzar aquesta funció o no.</translation>
 <translation id="2201555246697292490">Configura la llista blanca de missatgeria nativa</translation>
-<translation id="2204753382813641270">Controla l'opció d'amagar la safata automàticament</translation>
+<translation id="2204753382813641270">Controla l'opció d'amagar el prestatge automàticament</translation>
 <translation id="2208976000652006649">Paràmetres per a l'URL de cerca que utilitza POST</translation>
 <translation id="2223598546285729819">Configuració de notificacions predeterminada</translation>
 <translation id="2231817271680715693">Importació de l'historial de navegació des del navegador predeterminat en la primera execució</translation>
@@ -846,15 +846,15 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció als tipus d'ex
 
       Si no s'especifica, no modificarà l'URL del valor seed de les variacions.</translation>
 <translation id="5564962323737505851">Configura el gestor de contrasenyes. Si el gestor de contrasenyes està activat, podeu activar o desactivar la possibilitat que l'usuari mostri les contrasenyes emmagatzemades com a text no xifrat.</translation>
-<translation id="556941986578702361">Controla l'ocultació automàtica de la safata de <ph name="PRODUCT_OS_NAME" />.
+<translation id="556941986578702361">Controla l'ocultació automàtica del prestatge de <ph name="PRODUCT_OS_NAME" />.
 
-Si aquesta política es defineix com a "AlwaysAutoHideShelf", la safata s'amagarà sempre automàticament.
+Si aquesta política es defineix com a "AlwaysAutoHideShelf", el prestatge s'amagarà sempre automàticament.
 
-Si aquesta política es defineix com a "NeverAutoHideShelf", la safata no s'amagarà automàticament.
+Si aquesta política es defineix com a "NeverAutoHideShelf", el prestatge no s'amagarà automàticament.
 
 Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescriure-la.
 
-Si la política no es defineix, els usuaris podran triar si la safata s'ha d'amagar automàticament.</translation>
+Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'amagar automàticament.</translation>
 <translation id="557658534286111200">Activa o desactiva l'edició d'adreces d'interès.</translation>
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="5630352020869108293">Restaura l'última sessió</translation>

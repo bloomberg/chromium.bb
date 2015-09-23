@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">注册域：</translation>
 <translation id="1344588688991793829">Chromium自动填充设置…</translation>
 <translation id="1426410128494586442">是</translation>
+<translation id="1430915738399379752">打印</translation>
 <translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
-<translation id="1639239467298939599">正在加载</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="2639739919103226564">状态：</translation>
+<translation id="2653659639078652383">提交</translation>
 <translation id="2704283930420550640">值不符合格式要求。</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4813512666221746211">网络错误</translation>
+<translation id="4816492930507672669">适合页面大小</translation>
 <translation id="4850886885716139402">视图</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4926049483395192435">必须指定。</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">政策名</translation>
 <translation id="552553974213252141">提取的内容是否正确？</translation>
 <translation id="5540224163453853">找不到请求的文章。</translation>
+<translation id="5556459405103347317">重新加载</translation>
 <translation id="5565735124758917034">主动</translation>
 <translation id="560412284261940334">不支持管理</translation>
 <translation id="5629630648637658800">无法加载策略设置</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5872918882028971132">家长建议</translation>
 <translation id="59107663811261420">Google Payments 不支持使用这种类型的信用卡向此商家付款，请选择其他卡。</translation>
+<translation id="5975083100439434680">缩小</translation>
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
+<translation id="8820817407110198400">书签</translation>
 <translation id="8824019021993735287">Chrome 目前无法验证您的信用卡，请稍后重试。</translation>
 <translation id="8834246243508017242">允许利用通讯录中的信息自动填充…</translation>
 <translation id="883848425547221593">其他书签</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
+<translation id="8903921497873541725">放大</translation>
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="8940229512486821554">运行 <ph name="EXTENSION_NAME" /> 命令：<ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>

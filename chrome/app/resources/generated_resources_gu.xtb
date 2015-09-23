@@ -962,7 +962,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ફાઇલો પસંદ કરી</translation>
 <translation id="2378982052244864789">એક્સ્ટેંશન ડાયરેક્ટરી પસંદ કરો.</translation>
 <translation id="2379281330731083556">સિસ્ટમ સંવાદનો ઉપયોગ કરીને છાપો... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">જો સક્ષમ હોય, તો રેન્ડરર બંને કમ્પોઝીટીંગ પાસીઝને મર્જ કરી બ્રાઉઝરને કમ્પોઝીટીંગ નિયુક્ત કરે છે.</translation>
 <translation id="2381823505763074471">વપરાશકર્તા <ph name="PROFILE_USERNAME" /> ને સાઇન-આઉટ કરો.</translation>
 <translation id="2383034317918297467">આના કારણે ઑમ્નિબૉક્સ ડ્રોપડાઉન કેટલીકવાર URL કરતાં વધુ આગવી ઢબે સૂચન શીર્ષકો પ્રદર્શિત કરે છે.</translation>
 <translation id="2384596874640104496">સિંહલા કીબોર્ડ</translation>
@@ -2602,7 +2601,6 @@
 <translation id="4647090755847581616">&amp;Close Tab</translation>
 <translation id="4647697156028544508">કૃપા કરીને "<ph name="DEVICE_NAME" />" માટે પિન દાખલ કરો:</translation>
 <translation id="4648491805942548247">અપર્યાપ્ત પરવાનગીઓ</translation>
-<translation id="4650159467443406318">આ પૃષ્ઠની મુલાકાત લેવા માટે અહીં ક્લિક કરો</translation>
 <translation id="4653235815000740718">OS પુનર્પ્રાપ્તિ મીડિયા બનાવતી વખતે એક સમસ્યા આવી હતી. વપરાયેલ સ્ટોરેજ ઉપકરણ મળી શક્યું નથી. </translation>
 <translation id="4654488276758583406">ખૂબ નાનું</translation>
 <translation id="465499440663162826">Chrome વેબ દુકાન સાથે કનેક્ટ કરી શકાયું નથી.</translation>
@@ -3172,7 +3170,6 @@
 <translation id="5449624072515809082">ટાઇપિંગ કરતી વખતે ટેક્સ્ટની સ્વતઃસુધારણા ચાલુ કરો. સિંક્રનસ જોડણી ચકાસણી આ સુવિધા સાથે સુસંગત નથી.</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5451285724299252438">પૃષ્ઠ રેંજ ટેક્સ્ટ બૉક્સ</translation>
-<translation id="5451561500892538488">સૂચનાઓ આયકન છુપાવો</translation>
 <translation id="5451646087589576080">ફ્રેમ &amp;માહિતી જુઓ</translation>
 <translation id="5453029940327926427">ટૅબ્સ બંધ કરો</translation>
 <translation id="5453632173748266363">સિરિલિક</translation>
@@ -5493,7 +5490,6 @@
 <translation id="8804398419035066391">સહયોગ કરતી વેબસાઇટ્સ સાથે સંચાર કરો</translation>
 <translation id="8807632654848257479">ઘોડાર</translation>
 <translation id="8808478386290700967">વેબ બજાર</translation>
-<translation id="8811314776632711217">નિયુક્ત કરેલ રેંડરર (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">તમારી સેટિંગ્સ સમન્વયિત કર્યા પછી Chrome ની ભાષા "<ph name="FROM_LOCALE" />" થી "<ph name="TO_LOCALE" />" માં બદલાઈ ગઈ છે.</translation>
 <translation id="8813811964357448561">કાગળનું પત્રક</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

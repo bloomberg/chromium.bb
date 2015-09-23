@@ -962,7 +962,6 @@ Una vez que hayas creado un nuevo usuario supervisado, podrás administrar su co
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="2378982052244864789">Selecciona el directorio de la extensión.</translation>
 <translation id="2379281330731083556">Imprimir utilizando el cuadro de diálogo del sistema <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Si se habilita, el renderizador delega la composición al navegador, con lo que se fusionan ambas transferencias de composición.</translation>
 <translation id="2381823505763074471">Permite cerrar la sesión del usuario <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Hace que el menú desplegable del omnibox muestre sugerencias de títulos de forma más destacada que las URLs en algunos casos.</translation>
 <translation id="2384596874640104496">Teclado cingalés</translation>
@@ -2595,7 +2594,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="4647090755847581616">&amp;Cerrar pestaña</translation>
 <translation id="4647697156028544508">Introduce el PIN de "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
-<translation id="4650159467443406318">Haz clic aquí para visitar esta página</translation>
 <translation id="4653235815000740718">Se ha producido un error durante la creación del medio de recuperación del sistema operativo. No se ha podido encontrar el dispositivo de almacenamiento utilizado.</translation>
 <translation id="4654488276758583406">Muy pequeño</translation>
 <translation id="465499440663162826">No se ha podido establecer conexión con Chrome Web Store.</translation>
@@ -3164,7 +3162,6 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5449624072515809082">Permite activar la corrección automática de texto mientras se escribe. La corrección ortográfica síncrona no es compatible con esta función.</translation>
 <translation id="5449716055534515760">Cerrar &amp;ventana</translation>
 <translation id="5451285724299252438">Cuadro de texto de intervalo de páginas</translation>
-<translation id="5451561500892538488">Ocultar icono de notificaciones</translation>
 <translation id="5451646087589576080">Ver &amp;información del marco</translation>
 <translation id="5453029940327926427">Cerrar pestañas</translation>
 <translation id="5453632173748266363">Cirílico</translation>
@@ -5484,7 +5481,6 @@ Calculando el tiempo de carga completa</translation>
 <translation id="8804398419035066391">Comunicarse con sitios web cooperativos</translation>
 <translation id="8807632654848257479">Estable</translation>
 <translation id="8808478386290700967">Chrome Web Store</translation>
-<translation id="8811314776632711217">Renderizador delegado (también conocido como Übercompositor).</translation>
 <translation id="8811462119186190367">El idioma de Chrome ha cambiado de <ph name="FROM_LOCALE" /> a <ph name="TO_LOCALE" /> después de sincronizar tu configuración.</translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

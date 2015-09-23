@@ -961,7 +961,6 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file dipilih</translation>
 <translation id="2378982052244864789">Pilih direktori ekstensi.</translation>
 <translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Jika diaktifkan, perender mendelegasikan pengomposisian ke browser, menggabungkan kedua pengomposisian elemen.</translation>
 <translation id="2381823505763074471">Keluar untuk pengguna <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Menyebabkan menu tarik-turun omnibox kadang menampilkan judul saran yang lebih mencolok daripada URL.</translation>
 <translation id="2384596874640104496">Keyboard Sinhala</translation>
@@ -2596,7 +2595,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="4647090755847581616">&amp;Tutup Tab</translation>
 <translation id="4647697156028544508">Masukkan PIN untuk "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Izin tidak mencukupi</translation>
-<translation id="4650159467443406318">Klik di sini untuk mengunjungi laman ini</translation>
 <translation id="4653235815000740718">Ada masalah saat membuat media pemulihan OS. Perangkat penyimpanan yang dipakai tidak dapat ditemukan.</translation>
 <translation id="4654488276758583406">Sangat Kecil</translation>
 <translation id="465499440663162826">Tidak dapat tersambung ke Toko Web Chrome.</translation>
@@ -3168,7 +3166,6 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5449624072515809082">Mengaktifkan koreksi otomatis teks saat mengetik. Periksa ejaan yang sinkron tidak kompatibel dengan fitur ini.</translation>
 <translation id="5449716055534515760">Tutup Jen&amp;dela</translation>
 <translation id="5451285724299252438">kotak teks rentang laman</translation>
-<translation id="5451561500892538488">Sembunyikan Ikon Notifikasi</translation>
 <translation id="5451646087589576080">Lihat &amp;Info Bingkai</translation>
 <translation id="5453029940327926427">Tutup tab</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
@@ -5486,7 +5483,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8804398419035066391">Berkomunikasi dengan situs web yang bekerja sama</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Toko Web</translation>
-<translation id="8811314776632711217">Perender yang Didelegasikan (atau disebut juga Übercompositor).</translation>
 <translation id="8811462119186190367">Bahasa Chrome telah diubah dari "<ph name="FROM_LOCALE" />" menjadi "<ph name="TO_LOCALE" />" setelah menyinkronkan setelan Anda.</translation>
 <translation id="8813811964357448561">lembaran kertas</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

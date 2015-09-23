@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">ডোমেন নথিভুক্ত করুন:</translation>
 <translation id="1344588688991793829">Chromium স্বতঃপূর্ণ সেটিংস...</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
+<translation id="1430915738399379752">মুদ্রণ</translation>
 <translation id="1455235771979731432">আপনার কার্ডটি যাচাই করতে একটি সমস্যা হয়েছিল৷ আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="1491151370853475546">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
 <translation id="1549470594296187301">এই বৈশিষ্ট্যটি ব্যবহার করার জন্য JavaScript সক্ষম করা প্রয়োজন।</translation>
-<translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
 <translation id="1644184664548287040">নেটওয়ার্ক কনফিগারেশনটি অবৈধ এবং আমদানি করা যায়নি৷</translation>
 <translation id="168841957122794586">সার্ভার শংসাপত্রে একটি দুর্বল কপিরাইট কী আছে৷</translation>
@@ -78,6 +78,7 @@
 <translation id="2597378329261239068">এই দস্তাবেজটি পাসওয়ার্ড সুরক্ষিত৷  দয়া করে একটি পাসওয়ার্ড লিখুন৷</translation>
 <translation id="2625385379895617796">আপনার ঘড়ির সময় অনেকটা এগিয়ে</translation>
 <translation id="2639739919103226564">স্থিতি: </translation>
+<translation id="2653659639078652383">জমা</translation>
 <translation id="2704283930420550640">বিন্যাসের সাথে মূল্য মেলে না৷</translation>
 <translation id="2721148159707890343">অনুরোধ সফল হয়েছে</translation>
 <translation id="2728127805433021124">একটি দুর্বল স্বাক্ষর অ্যালগোরিদম ব্যবহার করে সার্ভারের শংসাপত্রে সাইন করা হয়েছে৷</translation>
@@ -157,6 +158,7 @@
 <translation id="4771973620359291008">একটি অজানা ত্রুটি ঘটেছে৷</translation>
 <translation id="4800132727771399293">আপনার মেয়াদ শেষের তারিখ এবং CVC পরীক্ষা করুন এবং আবার চেষ্টা করুন</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
+<translation id="4816492930507672669">পৃষ্ঠাতে মানানসই</translation>
 <translation id="4850886885716139402">দেখুন</translation>
 <translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE" />-এ অনুবাদ করা হয়েছে</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
@@ -184,6 +186,7 @@
 <translation id="5523118979700054094">নীতি নাম</translation>
 <translation id="552553974213252141">পাঠ্য কি সঠিকভাবে প্রাপ্ত হয়েছে?</translation>
 <translation id="5540224163453853">অনুরোধকৃত নিবন্ধ খুঁজে পাওয়া যায়নি৷</translation>
+<translation id="5556459405103347317">পুনরায় লোড করুন</translation>
 <translation id="5565735124758917034">সক্রিয়</translation>
 <translation id="560412284261940334">পরিচালনা সমর্থিত নয়</translation>
 <translation id="5629630648637658800">নীতি সেটিংস লোড করতে ব্যর্থ হয়েছে</translation>
@@ -192,6 +195,7 @@
 <translation id="5813119285467412249">&amp;যোগ করাকে পুনরায় করুন</translation>
 <translation id="5872918882028971132">মূল প্রস্তাবনাগুলি</translation>
 <translation id="59107663811261420">এই বণিকের জন্য এই ধরনের কার্ড Google Payments দ্বারা সমর্থিত নয়৷ দয়া করে একটি আলাদা কার্ড নির্বাচন করুন৷</translation>
+<translation id="5975083100439434680">জুম কমান</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -290,6 +294,7 @@
 <translation id="8738058698779197622">নিরাপদ নেটওয়ার্ক সংযোগ স্থাপন করতে আপনার ঘড়িকে সঠিকভাবে সেট করতে হবে৷ নিরাপদ সংযোগ স্থাপন করার জন্য নিজেদের সনাক্ত করার জন্য ওয়েবসাইটগুলি যে শংসাপত্রগুলি ব্যবহার করে, সেগুলি শুধুমাত্র নির্দিষ্ট সময়ের জন্য বৈধ থাকে৷ যেহেতু আপনার ডিভাইসের ঘড়িটি ভুল, সেই জন্য Chromium সঠিকভাবে শংসাপত্রগুলি পরীক্ষা করতে পারে না৷</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
+<translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="8824019021993735287">Chrome এই মুহূর্তে আপনার কার্ড যাচাই করতে অক্ষম হয়েছে৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>
 <translation id="883848425547221593">অন্যান্য বুকমার্ক</translation>
@@ -297,6 +302,7 @@
 <translation id="8866481888320382733">নীতি সেটিংস বিশ্লেষণ করার সময় ত্রুটি</translation>
 <translation id="8876793034577346603">নেটওয়ার্ক কনফিগারেশন বিশ্লেষণ করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="8891727572606052622">প্রক্সি মোড অবৈধ৷</translation>
+<translation id="8903921497873541725">জুম বাড়ান</translation>
 <translation id="8932102934695377596">আপনার ঘড়ির সময় পিছিয়ে রয়েছে</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" />আদেশটি <ph name="SEARCH_TERMS" />চালনা করুন</translation>
 <translation id="8971063699422889582">সার্ভারের শংসাপত্রের মেয়াদ ফুরিয়েছে৷</translation>

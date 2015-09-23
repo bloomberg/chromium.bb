@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Det gick inte att läsa in alternativsidan <ph name="OPTIONS_PAGE" />.</translation>
 <translation id="4115165561519362854">Administratören för datorn måste ha den lägsta versionen <ph name="EXTENSION_VERSION" /> av <ph name="EXTENSION_NAME" />. Det kan inte aktiveras förrän det har uppdaterats till den versionen (eller senare).</translation>
 <translation id="4233778200880751280">Det gick inte att ladda informationssidan <ph name="ABOUT_PAGE" />.</translation>
+<translation id="4434145631756268951">{0,select, single{Välj USB-enhet}multiple{Välj USB-enheter}other{ANVÄNDS INTE}}</translation>
 <translation id="4811956658694082538">Det gick inte att installera paketet eftersom en hjälpprocess kraschade. Testa att starta om Chrome och försöka igen.</translation>
 <translation id="4883436287898674711">Alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appvy: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Detta tillägg omfattar nyckelfilen <ph name="KEY_PATH" />. Du vill antagligen inte göra detta.</translation>
 <translation id="5627523580512561598">tillägget <ph name="EXTENSION_NAME" /></translation>
+<translation id="5630931906013276297">{0,select, single{Välj HID-enhet}multiple{Välj HID-enheter}other{ANVÄNDS INTE}}</translation>
 <translation id="5960890139610307736">Tilläggsvy: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">Administratören för den här datorn kräver att <ph name="EXTENSION_NAME" /> installeras. Det kan inte avinstalleras.</translation>
 <translation id="6027032947578871493">Okänd produkt (<ph name="PRODUCT_ID" />) från <ph name="VENDOR_NAME" /> (serienummer <ph name="SERIAL_NUMBER" />)</translation>

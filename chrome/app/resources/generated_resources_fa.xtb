@@ -711,7 +711,7 @@
 <translation id="2031695690821674406">پرکردن گذرواژه‌ها، وقتی یک حساب مشخصاً توسط کاربر انتخاب شده، به جای پر کردن خودکار اعتبارنامه‌ها هنگام بارگیری صفحه.</translation>
 <translation id="2040460856718599782">وای! هنگام احراز هویت شما مشکلی پیش آمد. لطفاً اطلاعات کاربری ورود به سیستمتان را دوباره بررسی کرده و دوباره امتحان نمایید.</translation>
 <translation id="2040822234646148327">قابلیت‌های پلتفرم وب آزمایشی را فعال کنید.</translation>
-<translation id="2042078858148122628">‏سرور در <ph name="HOST_NAME" /> یافت نمی‌شود، زیرا جستجوی DNS ناموفق بود. DNS سرویس وبی است که نام وب سایت را به آدرس اینترنتی آن ترجمه می‌کند. این خطا معمولاً به دلیل عدم وجود اتصال اینترنتی یا پیکربندی اشتباه شبکه روی می‌دهد. همچنین درصورتی‌که پاسخی از سرور DNS دریافت نشود یا فایروال مانع از دسترسی <ph name="PRODUCT_NAME" /> به شبکه شود، این خطا رخ می‌دهد.</translation>
+<translation id="2042078858148122628">‏سرور در <ph name="HOST_NAME" /> یافت نمی‌شود، زیرا جستجوی DNS ناموفق بود. DNS سرویس وبی است که نام وب سایت را به نشانی وب آن ترجمه می‌کند. این خطا معمولاً به دلیل عدم وجود اتصال اینترنتی یا پیکربندی اشتباه شبکه روی می‌دهد. همچنین درصورتی‌که پاسخی از سرور DNS دریافت نشود یا فایروال مانع از دسترسی <ph name="PRODUCT_NAME" /> به شبکه شود، این خطا رخ می‌دهد.</translation>
 <translation id="204497730941176055">‏نام الگوی گواهی Microsoft</translation>
 <translation id="2045969484888636535">ادامه مسدود کردن کوکی‌ها</translation>
 <translation id="2046040965693081040">استفاده از صفحات فعلی</translation>
@@ -958,7 +958,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> فایل انتخاب شد</translation>
 <translation id="2378982052244864789">دایرکتوری برنامهٔ افزودنی را انتخاب کنید.</translation>
 <translation id="2379281330731083556">چاپ با استفاده از گفتگوی سیستم... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">اگر فعال شود، اجراکننده ترکیب را به مرورگر محول می‌کند، و هر دو ترکیب در هم ادغام می‌شوند.</translation>
 <translation id="2381823505763074471">خروج کاربر <ph name="PROFILE_USERNAME" /> از سیستم.</translation>
 <translation id="2383034317918297467">‏باعث می‌شود منوی کشویی omnibox گاهی عنوان‌ها را برجسته‌تر از نشانی‌های وب نشان دهد.</translation>
 <translation id="2384596874640104496">صفحه‌کلید سینهالی</translation>
@@ -1450,7 +1449,7 @@
 <translation id="3031417829280473749">‏مأمور X</translation>
 <translation id="3031557471081358569">مواردی را برای وارد کردن انتخاب کنید:</translation>
 <translation id="3033332627063280038">فعال کردن پیاده‌سازی آزمایشی «کنترل حافظه پنهان: دایرکتیو غیرفعال-هنگام-تأیید مجدد. این کار به سرور اجازه می‌دهد تعیین کند بعضی از منابع می‌توانند برای بهبود زمان تأخیر، در پس‌زمینه دوباره تأیید شوند.</translation>
-<translation id="3037605927509011580">اوه، خراب شد!</translation>
+<translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3039828483675273919">درحال انتقال $1 مورد...</translation>
 <translation id="304009983491258911">تغییر دادن پین سیم کارت</translation>
 <translation id="3041612393474885105">اطلاعات گواهی</translation>
@@ -2067,7 +2066,7 @@
 <translation id="383161972796689579">مالک این دستگاه امکان افزوده شدن کاربران جدید را غیرفعال کرده است</translation>
 <translation id="3831688386498123870">‏برای پرداخت با Google Payments به سیستم وارد شوید</translation>
 <translation id="3833761542219863804">‏نویسه‌گردانی (mausam ← ‏ਮੌਸਮ)</translation>
-<translation id="3835522725882634757">وای نه! این سرور داده‌ای ارسال می‌کند که <ph name="PRODUCT_NAME" /> آن را نمی فهمد. لطفاً <ph name="BEGIN_LINK" />اشکال را گزارش دهید<ph name="END_LINK" />، و <ph name="BEGIN2_LINK" />فهرست خام<ph name="END2_LINK" /> را منظور کنید.</translation>
+<translation id="3835522725882634757">وای نه! این سرور داده‌ای ارسال می‌کند که <ph name="PRODUCT_NAME" /> آن را نمی‌ فهمد. لطفاً <ph name="BEGIN_LINK" />اشکال را گزارش دهید<ph name="END_LINK" />، و <ph name="BEGIN2_LINK" />فهرست خام<ph name="END2_LINK" /> را منظور کنید.</translation>
 <translation id="383652340667548381">صربستانی</translation>
 <translation id="3838486795898716504"><ph name="PAGE_TITLE" /> بیشتر</translation>
 <translation id="3838543471119263078">‏کوکی‌ها و دیگر داده‌های plugin و سایت</translation>
@@ -2232,7 +2231,7 @@
 <translation id="4089521618207933045">دارای منوی فرعی است</translation>
 <translation id="4090103403438682346">فعال کردن دسترسی تأییدشده</translation>
 <translation id="4090404313667273475"><ph name="PLUGIN_NAME" /> برای نمایش برخی از عناصر این صفحه لازم است.</translation>
-<translation id="4090535558450035482">(این برنامه افزودنی مدیریت می‌شود و نمی تواند حذف شود.)</translation>
+<translation id="4090535558450035482">(این برنامه افزودنی مدیریت می‌شود و نمی‌تواند حذف شود.)</translation>
 <translation id="4091434297613116013">صفحات کاغذ</translation>
 <translation id="4092067639640979396">پشتیبانی آزمایشی اندازه‌گیری را با استفاده از نزدیک کردن انگشتان به هم فعال می‌کند.</translation>
 <translation id="4092878864607680421">جدیدترین نسخه برنامه "<ph name="APP_NAME" />" به مجوزهای بیشتری نیاز دارد، بنابراین غیر فعال شده است.</translation>
@@ -2345,7 +2344,7 @@
 <translation id="4263757076580287579">ثبت چاپگر لغو شد.</translation>
 <translation id="4264549073314009907">‏محدود کردن اشکال‌زدایی برپایه GDB انجام شده توسط سرویس‌گیرنده داخلی براساس الگو</translation>
 <translation id="426564820080660648">‏برای بررسی موارد به‌روز لطفاً از کابل شبکه، Wi-Fi یا داده‌های تلفن همراه استفاده کنید.</translation>
-<translation id="4265682251887479829">چیزی را به دنبال آن هستید نمی یابید؟</translation>
+<translation id="4265682251887479829">چیزی را به دنبال آن هستید نمی‌ یابید؟</translation>
 <translation id="4267171000817377500">افزونه‌ها</translation>
 <translation id="4268025649754414643">به رمز درآوردن کلید</translation>
 <translation id="4268574628540273656">URL:</translation>
@@ -2590,7 +2589,6 @@
 <translation id="4647090755847581616">&amp;بستن برگه </translation>
 <translation id="4647697156028544508">لطفاً پین را برای "<ph name="DEVICE_NAME" />" وارد کنید:</translation>
 <translation id="4648491805942548247">مجوزها کافی نیستند</translation>
-<translation id="4650159467443406318">برای بازدید از این صفحه اینجا را کلیک کنید</translation>
 <translation id="4653235815000740718">در ایجاد رسانه بازیابی سیستم عامل مشکلی روی داد. دستگاه ذخیره‌سازی مورد استفاده یافت نشد.</translation>
 <translation id="4654488276758583406">خیلی کوچک</translation>
 <translation id="465499440663162826">‏اتصال به فروشگاه وب Chrome انجام نشد.</translation>
@@ -3161,7 +3159,6 @@
 <translation id="5449624072515809082">هنگام تایپ، تصحیح خودکار نوشتار را روشن کنید. تصحیح املای هم‌زمان با این ویژگی سازگاری ندارد.</translation>
 <translation id="5449716055534515760">بستن &amp;پنجره</translation>
 <translation id="5451285724299252438">کادر متنی محدوده صفحه</translation>
-<translation id="5451561500892538488">پنهان کردن نماد اعلان‌ها</translation>
 <translation id="5451646087589576080">مشاهده &amp;اطلاعات قاب</translation>
 <translation id="5453029940327926427">بستن برگه‌ها</translation>
 <translation id="5453632173748266363">سیریلی</translation>
@@ -3706,7 +3703,7 @@
 <translation id="6228691855869374890">‏این سایت کنترل کامل دستگاه‌های MIDI را دارد.</translation>
 <translation id="6231881193380278751">‏افزودن پارامتر جستار در نشانی وب برای بازخوانی خودکار صفحه: chrome://device-log/?refresh=&lt;sec&gt;</translation>
 <translation id="6232017090690406397">باتری</translation>
-<translation id="6232139169545176020">‏طرح نشانی وب درخواستی پشتیبانی نمی‎شود.</translation>
+<translation id="6232139169545176020">‏طرح نشانی وب درخواستی پشتیبانی نمی‌‎شود.</translation>
 <translation id="6237614789842758826">‏جستجو در Google</translation>
 <translation id="6241530762627360640">دسترسی به اطلاعات دستگاه‌های بلوتوث مرتبط شده با سیستم شما و کشف دستگاه‌های بلوتوث در این نزدیکی.</translation>
 <translation id="6243774244933267674">سرور در دسترس نیست</translation>
@@ -5425,7 +5422,7 @@
 <translation id="8726888928275282477">‏به‌جای باز کردن برگه جدید، گزینه‌های برنامه‌ افزودنی را به صورت عنصر جاسازی‌شده در chrome://extensions نشان دهید.</translation>
 <translation id="872728358380751743">‏این گزینه پشتیبانی را در پخش جریانی برای کدبندی جریان ویدیویی Cast با استفاده از سخت‌افزار پلتفورم غیرفعال می‌کند.</translation>
 <translation id="8728672262656704056">به صورت ناشناس وارد شدید</translation>
-<translation id="8729518820755801792">‏‫Chrome نمی‎تواند این نشانی وب را باز کند.</translation>
+<translation id="8729518820755801792">‏‫Chrome نمی‌‎تواند این نشانی وب را باز کند.</translation>
 <translation id="8730621377337864115">انجام شد</translation>
 <translation id="8731332457891046104">لغو ثبت <ph name="DEVICE_TYPE" /></translation>
 <translation id="8732030010853991079">با کلیک کردن روی این نماد از این برنامه افزودنی استفاده کنید.</translation>
@@ -5481,7 +5478,6 @@
 <translation id="8804398419035066391">ارتباط با وب‌سایت‌های همکار</translation>
 <translation id="8807632654848257479">ثابت</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">‏اجراکننده تعیین شده (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">‏زبانChrome بعد از همگام‌سازی تنظیمات از "<ph name="FROM_LOCALE" />" به "<ph name="TO_LOCALE" />" تغییر کرده است.</translation>
 <translation id="8813811964357448561">صفحه کاغذ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

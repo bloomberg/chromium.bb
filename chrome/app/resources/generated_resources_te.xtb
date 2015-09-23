@@ -966,7 +966,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ఫైల్‌లు ఎంచుకోబడ్డాయి</translation>
 <translation id="2378982052244864789">పొడిగింపు డైరెక్టరీని ఎంచుకోండి.</translation>
 <translation id="2379281330731083556">సిస్టమ్ డైలాగ్‌ ఉపయోగించి ముద్రించు ...<ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">ప్రారంభించబడితే, రెండెరెర్ రెండు కూర్పు పాస్‌లనూ విలీనం చేసి, కూర్పును బ్రౌజర్‌కు నియోగిస్తుంది.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> వినియోగదారును సైన్-అవుట్ చేయి.</translation>
 <translation id="2383034317918297467">ఓమ్నిపెట్టె డ్రాప్‌డౌన్ కొన్నిసార్లు URLల కంటే సూచన శీర్షికలను మరింత ప్రముఖంగా ప్రదర్శించేలా చేస్తుంది.</translation>
 <translation id="2384596874640104496">సింహళ కీబోర్డ్</translation>
@@ -2600,7 +2599,6 @@
 <translation id="4647090755847581616">&amp;టాబ్‌ను మూసివెయ్యి</translation>
 <translation id="4647697156028544508">దయచేసి "<ph name="DEVICE_NAME" />" కోసం PINను నమోదు చేయండి:</translation>
 <translation id="4648491805942548247">చాలని అనుమతులు</translation>
-<translation id="4650159467443406318">ఈ పేజీని సందర్శించడానికి ఇక్కడ క్లిక్ చేయండి</translation>
 <translation id="4653235815000740718">OS రికవరీ మీడియాని సృష్టిస్తున్నప్పుడు ఒక లోపం సంభవించింది. ఉపయోగించిన నిల్వ పరికరం కనుగొనబడలేదు.</translation>
 <translation id="4654488276758583406">చాలా చిన్నది</translation>
 <translation id="465499440663162826">Chrome వెబ్ స్టోర్‌కి కనెక్ట్ చేయడం సాధ్యపడలేదు.</translation>
@@ -3172,7 +3170,6 @@
 <translation id="5449624072515809082">టైప్ చేస్తున్నప్పుడు వచనం యొక్క స్వీయ దిద్దుబాటును ప్రారంభించండి. సమకాలీకరణ అక్షరక్రమ తనిఖీ ఈ లక్షణానికి అనుకూలంగా లేదు.</translation>
 <translation id="5449716055534515760">&amp;విండో మూసివెయ్యి</translation>
 <translation id="5451285724299252438">పేజీ పరిధి వచన పెట్టె</translation>
-<translation id="5451561500892538488">నోటిఫికేషన్‌ల చిహ్నాన్ని దాచు</translation>
 <translation id="5451646087589576080">ఫ్రేమ్ &amp;సమాచారాన్ని చూడండి</translation>
 <translation id="5453029940327926427">టాబ్లను మూసివెయ్యి</translation>
 <translation id="5453632173748266363">సిరిలిక్</translation>
@@ -5493,7 +5490,6 @@
 <translation id="8804398419035066391">సహకరిస్తున్న వెబ్‌సైట్‌లతో కమ్యూనికేట్ చేయండి</translation>
 <translation id="8807632654848257479">స్థిరత్వం</translation>
 <translation id="8808478386290700967">వెబ్ స్టోర్</translation>
-<translation id="8811314776632711217">నియోగింపు రెండెరెర్ (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">మీ సెట్టింగ్‌లను సమకాలీకరించిన తర్వాత Chrome యొక్క భాష "<ph name="FROM_LOCALE" />"నుండి "<ph name="TO_LOCALE" />" కి  మార్పు చెయ్యబడింది.</translation>
 <translation id="8813811964357448561">పేపర్ షీట్</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

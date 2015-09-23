@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Enrolment domain:</translation>
 <translation id="1344588688991793829">Chromium Auto-fill settings...</translation>
 <translation id="1426410128494586442">Yes</translation>
+<translation id="1430915738399379752">Print</translation>
 <translation id="1455235771979731432">There was a problem verifying your card. Check your Internet connection and try again.</translation>
 <translation id="1491151370853475546">Reload this Page</translation>
 <translation id="1549470594296187301">JavaScript must be enabled to use this feature.</translation>
-<translation id="1639239467298939599">Loading</translation>
 <translation id="1640180200866533862">User policies</translation>
 <translation id="1644184664548287040">The network configuration is invalid and couldn't be imported.</translation>
 <translation id="168841957122794586">The server certificate contains a weak cryptographic key.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">This document is password-protected.  Please enter a password.</translation>
 <translation id="2625385379895617796">Your clock is ahead</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Submit</translation>
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="4813512666221746211">Network error</translation>
+<translation id="4816492930507672669">Fit to page</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Must be specified.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Policy name</translation>
 <translation id="552553974213252141">Was the text extracted correctly?</translation>
 <translation id="5540224163453853">Could not find the requested article.</translation>
+<translation id="5556459405103347317">Reload</translation>
 <translation id="5565735124758917034">Active</translation>
 <translation id="560412284261940334">Management not supported</translation>
 <translation id="5629630648637658800">Failed to load policy settings</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Redo Add</translation>
 <translation id="5872918882028971132">Parent Suggestions</translation>
 <translation id="59107663811261420">This type of card is not supported by Google Payments for this merchant. Please select a different card.</translation>
+<translation id="5975083100439434680">Zoom out</translation>
 <translation id="5989320800837274978">Neither fixed proxy servers nor a .pac script URL are specified.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Close</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Chromium cannot verify these certificates.</translation>
 <translation id="8790007591277257123">&amp;Redo delete</translation>
 <translation id="8804164990146287819">Privacy Policy</translation>
+<translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8824019021993735287">Chrome was unable to verify your card at this time. Please try again later.</translation>
 <translation id="8834246243508017242">Enable Autofill using Contacts…</translation>
 <translation id="883848425547221593">Other Bookmarks</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Error parsing policy settings</translation>
 <translation id="8876793034577346603">Network configuration failed to be parsed.</translation>
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
+<translation id="8903921497873541725">Zoom in</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="8940229512486821554">Run <ph name="EXTENSION_NAME" /> command: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>

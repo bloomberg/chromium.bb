@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Регистрация домена:</translation>
 <translation id="1344588688991793829">Настройки автозаполнения в Chromium...</translation>
 <translation id="1426410128494586442">Да</translation>
+<translation id="1430915738399379752">Печать</translation>
 <translation id="1455235771979731432">Не удалось подтвердить данные карты. Проверьте подключение к Интернету и повторите попытку.</translation>
 <translation id="1491151370853475546">Обновить страницу</translation>
 <translation id="1549470594296187301">Для использования этой функции необходимо включить JavaScript.</translation>
-<translation id="1639239467298939599">Загрузка</translation>
 <translation id="1640180200866533862">Пользовательские правила</translation>
 <translation id="1644184664548287040">Импорт невозможен: недопустимая конфигурация сети.</translation>
 <translation id="168841957122794586">Сертификат сервера содержит ненадежный криптографический ключ.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Документ защищен паролем. Введите пароль.</translation>
 <translation id="2625385379895617796">Часы спешат</translation>
 <translation id="2639739919103226564">Состояние:</translation>
+<translation id="2653659639078652383">Отправить</translation>
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
 <translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
+<translation id="4816492930507672669">По размеру страницы</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Название правила</translation>
 <translation id="552553974213252141">Правильно ли извлечен текст?</translation>
 <translation id="5540224163453853">Не удалось найти указанную статью</translation>
+<translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5565735124758917034">Активен</translation>
 <translation id="560412284261940334">Управление устройствами не поддерживается</translation>
 <translation id="5629630648637658800">Не удалось применить настройки политики</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
 <translation id="5872918882028971132">Подсказки для родительских элементов</translation>
 <translation id="59107663811261420">Сервис Google Payments не поддерживает карты этого типа для данного продавца. Выберите другую карту.</translation>
+<translation id="5975083100439434680">Уменьшить</translation>
 <translation id="5989320800837274978">Ни фиксированные прокси-серверы, ни URL PAC-скриптов не указаны.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Для создания безопасного подключения необходимо, чтобы показания системных часов были верны. Причина в том, что сертификаты для идентификации сайтов имеют ограниченный срок действия. Если часы на устройстве неточны, Chromium не может проверить актуальность этих сертификатов.</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>
+<translation id="8820817407110198400">Закладки</translation>
 <translation id="8824019021993735287">Не удалось проверить данные карты. Повторите попытку позже.</translation>
 <translation id="8834246243508017242">Включить автозаполнение контактов…</translation>
 <translation id="883848425547221593">Другие закладки</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Не удалось выполнить анализ настроек политики</translation>
 <translation id="8876793034577346603">Не удалось выполнить анализ конфигурации сети.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
+<translation id="8903921497873541725">Увеличить</translation>
 <translation id="8932102934695377596">Часы отстают</translation>
 <translation id="8940229512486821554">Выполнить команду расширения <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Сертификат сервера устарел.</translation>

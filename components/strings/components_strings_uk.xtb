@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Домен реєстрації:</translation>
 <translation id="1344588688991793829">Налаштування автозаповнення Chromium…</translation>
 <translation id="1426410128494586442">так</translation>
+<translation id="1430915738399379752">Друк</translation>
 <translation id="1455235771979731432">Не вдалося підтвердити дані картки. Перевірте з’єднання з Інтернетом і повторіть спробу.</translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="1549470594296187301">Щоб користуватися цією функцією, потрібно ввімкнути JavaScript.</translation>
-<translation id="1639239467298939599">Завантаження</translation>
 <translation id="1640180200866533862">Правила користувача</translation>
 <translation id="1644184664548287040">Конфігурація мережі недійсна та не може імпортуватися.</translation>
 <translation id="168841957122794586">Сертифікат сервера містить слабкий криптографічний ключ.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Цей документ захищено паролем. Введіть пароль.</translation>
 <translation id="2625385379895617796">Ваш годинник спішить</translation>
 <translation id="2639739919103226564">Статус:</translation>
+<translation id="2653659639078652383">Надіслати</translation>
 <translation id="2704283930420550640">Значення не відповідає формату.</translation>
 <translation id="2721148159707890343">Запит надіслано</translation>
 <translation id="2728127805433021124">Сертифікат сервера підписано з використанням слабкого алгоритму підпису.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Виникла невідома помилка.</translation>
 <translation id="4800132727771399293">Перевірте дату закінчення терміну дії та код CVC та повторіть спробу</translation>
 <translation id="4813512666221746211">Помилка мережі</translation>
+<translation id="4816492930507672669">За розміром сторінки</translation>
 <translation id="4850886885716139402">Перегляд</translation>
 <translation id="4923417429809017348">Цю сторінку перекладено з невідомої мови оригіналу такою мовою: <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Потрібно вказати.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Назва правила</translation>
 <translation id="552553974213252141">Текст отримано правильно?</translation>
 <translation id="5540224163453853">Не вдалося знайти потрібну статтю.</translation>
+<translation id="5556459405103347317">Перезавантажити</translation>
 <translation id="5565735124758917034">Активний клієнт</translation>
 <translation id="560412284261940334">Керування не підтримується</translation>
 <translation id="5629630648637658800">Помилка завантаження налаштувань правила</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Повторити додавання</translation>
 <translation id="5872918882028971132">Поради для батьків</translation>
 <translation id="59107663811261420">Цей продавець не приймає такий тип картки в Google Payments. Виберіть іншу картку.</translation>
+<translation id="5975083100439434680">Зменшити масштаб</translation>
 <translation id="5989320800837274978">Не вказано ні фіксованих проксі-серверів, ні URL-адрес сценарію .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Закрити</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Щоб установити безпечне з’єднання, потрібно правильно вказати час, оскільки сертифікати, які веб-сайти використовують для самоідентифікації дійсні лише протягом певного періоду часу. Час на вашому пристрої неправильний, тому Chromium не може перевірити сертифікати.</translation>
 <translation id="8790007591277257123">&amp;Повторити видалення</translation>
 <translation id="8804164990146287819">Політика конфіденційності</translation>
+<translation id="8820817407110198400">Закладки</translation>
 <translation id="8824019021993735287">Не вдалося підтвердити дані вашої картки. Спробуйте пізніше.</translation>
 <translation id="8834246243508017242">Увімкнути "Автозаповнення за допомогою контактів"…</translation>
 <translation id="883848425547221593">Інші закладки</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Помилка аналізу налаштувань правила</translation>
 <translation id="8876793034577346603">Помилка аналізу конфігурації мережі.</translation>
 <translation id="8891727572606052622">Недійсний режим проксі-сервера.</translation>
+<translation id="8903921497873541725">Збільшити масштаб</translation>
 <translation id="8932102934695377596">Ваш годинник запізнюється</translation>
 <translation id="8940229512486821554">Запустити команду розширення <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Термін дії сертифіката сервера завершився.</translation>

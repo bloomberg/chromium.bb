@@ -966,7 +966,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फायली निवडल्या</translation>
 <translation id="2378982052244864789">विस्तार निर्देशिका निवडा.</translation>
 <translation id="2379281330731083556">सिस्टम संवाद वापरून मुद्रित करा… <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">सक्षम असल्यास, दोन्ही संयुक्तीकरण पास विलिन करून, प्रस्तुतकर्ता ब्राउझरवर संयुक्तीकरण नियुक्त करतो.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> वापरकर्ता साइन-आउट करा.</translation>
 <translation id="2383034317918297467">यामुळे विविधोपयोगी क्षेत्र ड्रॉपडाउन काहीवेळा URL पेक्षा सूचना शीर्षके अधिक ठळकपणे प्रदर्शित करते.</translation>
 <translation id="2384596874640104496">सिंहला कीबोर्ड</translation>
@@ -2601,7 +2600,6 @@
 <translation id="4647090755847581616">टॅब &amp;बंद करा</translation>
 <translation id="4647697156028544508">कृपया "<ph name="DEVICE_NAME" />" साठी पिन प्रविष्‍ट करा:</translation>
 <translation id="4648491805942548247">अपुर्‍या परवानग्या</translation>
-<translation id="4650159467443406318">या पृष्ठास भेट देण्‍यासाठी येथे क्लिक करा</translation>
 <translation id="4653235815000740718">OS पुनर्प्राप्ती मीडिया तयार करताना एक समस्या आली. वापरलेले संचय डिव्हाइस आढळू शकले नाही.</translation>
 <translation id="4654488276758583406">खूप लहान</translation>
 <translation id="465499440663162826">Chrome वेब स्टोअरशी कनेक्ट करणे शक्य झाले नाही.</translation>
@@ -3174,7 +3172,6 @@
 <translation id="5449624072515809082">टायपिंग करताना मजकूराची स्वयंसुधारणा चालू करा. या वैशिष्ट्याशी संकालिक शब्दलेखनतपासणी सुसंगत नाही.</translation>
 <translation id="5449716055534515760">विं&amp;डो बंद करा</translation>
 <translation id="5451285724299252438">पृष्ठ श्रेणी मजकूर बॉक्स</translation>
-<translation id="5451561500892538488">सूचना चिन्ह लपवा</translation>
 <translation id="5451646087589576080">फ्रेम &amp;माहिती पहा</translation>
 <translation id="5453029940327926427">टॅब बंद करा</translation>
 <translation id="5453632173748266363">सीरिलिक</translation>
@@ -5501,7 +5498,6 @@
 <translation id="8804398419035066391">वेबसाइटला सहकार्य करून संप्रेषण करा</translation>
 <translation id="8807632654848257479">स्थिर</translation>
 <translation id="8808478386290700967">वेब स्टोअर</translation>
-<translation id="8811314776632711217">नियुक्त केलेला प्रस्तुतकर्ता (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">आपली सेटिंग्ज समक्रमित केल्यानंतर Chrome ची भाषा "<ph name="FROM_LOCALE" />" मधून "<ph name="TO_LOCALE" />" मध्ये बदलली आहे.</translation>
 <translation id="8813811964357448561">कागदी पत्रक</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

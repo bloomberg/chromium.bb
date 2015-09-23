@@ -960,7 +960,6 @@
 <translation id="2378075407703503998">已選取 <ph name="SELCTED_FILE_COUNT" /> 個檔案</translation>
 <translation id="2378982052244864789">選取擴充功能目錄。</translation>
 <translation id="2379281330731083556">使用系統對話方塊進行列印... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">啟用後，轉譯器會委派合成瀏覽器，藉此將兩個合成通道合併。</translation>
 <translation id="2381823505763074471">登出目前使用者「<ph name="PROFILE_USERNAME" />」。</translation>
 <translation id="2383034317918297467">讓網址列下拉式選單不定時醒目顯示建議標題 (而不要醒目顯示網址)。</translation>
 <translation id="2384596874640104496">錫蘭文鍵盤</translation>
@@ -2591,7 +2590,6 @@
 <translation id="4647090755847581616">關閉分頁(&amp;C)</translation>
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME" />」的 PIN：</translation>
 <translation id="4648491805942548247">權限不足</translation>
-<translation id="4650159467443406318">請按這裡造訪此頁面</translation>
 <translation id="4653235815000740718">建立作業系統還原媒體時發生問題，找不到使用的儲存裝置。</translation>
 <translation id="4654488276758583406">非常小</translation>
 <translation id="465499440663162826">無法連上 Chrome 線上應用程式商店。</translation>
@@ -3159,7 +3157,6 @@
 <translation id="5449624072515809082">開啟輸入文字時的自動修正功能 (同步拼字檢查功能與這項功能不相容)。</translation>
 <translation id="5449716055534515760">關閉視窗(&amp;D)</translation>
 <translation id="5451285724299252438">頁面範圍文字框</translation>
-<translation id="5451561500892538488">隱藏通知圖示</translation>
 <translation id="5451646087589576080">檢視頁框資訊(&amp;I)</translation>
 <translation id="5453029940327926427">關閉分頁</translation>
 <translation id="5453632173748266363">斯拉夫語</translation>
@@ -5468,7 +5465,6 @@
 <translation id="8804398419035066391">與合作網站建立連線</translation>
 <translation id="8807632654848257479">穩定</translation>
 <translation id="8808478386290700967">線上應用程式商店</translation>
-<translation id="8811314776632711217">委派轉譯器 (AKA Übercompositor)。</translation>
 <translation id="8811462119186190367">同步處理您的設定後，系統已將 Chrome 的語言從「<ph name="FROM_LOCALE" />」變更為「<ph name="TO_LOCALE" />」。</translation>
 <translation id="8813811964357448561">張</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

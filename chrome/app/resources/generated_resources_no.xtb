@@ -960,7 +960,6 @@ annet sertifikat, kan du prøve å bruke dette. Ellers kan du forsøke å
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="2378982052244864789">Velg katalog for utvidelsen.</translation>
 <translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Hvis dette alternativet er aktivert, delegerer gjengiveren sammensettingen til nettleseren, og slår sammen begge sammensettingsprossessene.</translation>
 <translation id="2381823505763074471">Logg av brukeren <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Gjør at rullegardinmenyen i multifunksjonsfeltet iblant viser forslagstitlene mer fremtredende enn nettadressene.</translation>
 <translation id="2384596874640104496">Singalesisk tastatur</translation>
@@ -2593,7 +2592,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4647090755847581616">&amp;Lukk fane</translation>
 <translation id="4647697156028544508">Skriv inn PIN-koden for «<ph name="DEVICE_NAME" />»:</translation>
 <translation id="4648491805942548247">Utilstrekkelige tillatelser</translation>
-<translation id="4650159467443406318">Klikk her for å gå til denne siden</translation>
 <translation id="4653235815000740718">Det oppstod et problem under opprettelse av gjenopprettingsmedium for operativsystem. Fant ikke lagringsenheten som har blitt brukt.</translation>
 <translation id="4654488276758583406">Veldig liten</translation>
 <translation id="465499440663162826">Kunne ikke koble til Chrome Nettmarked.</translation>
@@ -3161,7 +3159,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5449624072515809082">Slå på autokorrigering i tekst mens du skriver. Synkron stavekontroll er ikke kompatibel med denne funksjonen.</translation>
 <translation id="5449716055534515760">Lukk vin&amp;du</translation>
 <translation id="5451285724299252438">tekstboks for sideområde</translation>
-<translation id="5451561500892538488">Skjul ikonet for varsler</translation>
 <translation id="5451646087589576080">Vis ramme&amp;informasjon</translation>
 <translation id="5453029940327926427">Lukk faner</translation>
 <translation id="5453632173748266363">Kyrillisk</translation>
@@ -5477,7 +5474,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8804398419035066391">kommunisere med samarbeidende nettsteder</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Nettmarked</translation>
-<translation id="8811314776632711217">Delegert gjengiver (også kalt Übercompositor).</translation>
 <translation id="8811462119186190367">Chromes språk er endret fra <ph name="FROM_LOCALE" /> til <ph name="TO_LOCALE" /> etter synkronisering av innstillingene dine.</translation>
 <translation id="8813811964357448561">ark</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -958,7 +958,6 @@
 <translation id="2378075407703503998">เลือก <ph name="SELCTED_FILE_COUNT" /> ไฟล์</translation>
 <translation id="2378982052244864789">เลือกไดเรกทอรีของส่วนขยาย</translation>
 <translation id="2379281330731083556">พิมพ์โดยใช้ช่องโต้ตอบของระบบ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">หากเปิดใช้งาน โหมดแสดงภาพจะมอบสิทธิ์การประกอบรวมให้แก่เบราว์เซอร์ โดยผสานเส้นทางการประกอบรวมทั้งสองทาง</translation>
 <translation id="2381823505763074471">ให้ผู้ใช้ <ph name="PROFILE_USERNAME" /> ออกจากระบบ</translation>
 <translation id="2383034317918297467">ทำให้แถบเอนกประสงค์แบบเลื่อนลงแสดงชื่อของคำแนะนำเด่นกว่า URL ในบางครั้ง</translation>
 <translation id="2384596874640104496">แป้นพิมพ์ภาษาสิงหล</translation>
@@ -2591,7 +2590,6 @@
 <translation id="4647090755847581616">&amp;ปิดแท็บ</translation>
 <translation id="4647697156028544508">โปรดป้อน PIN สำหรับ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">สิทธิ์ไม่เพียงพอ</translation>
-<translation id="4650159467443406318">คลิกที่นี่เพื่อไปที่หน้านี้</translation>
 <translation id="4653235815000740718">เกิดปัญหาขณะสร้างสื่อการกู้คืนระบบปฏิบัติการ ไม่พบอุปกรณ์จัดเก็บข้อมูลที่ใช้</translation>
 <translation id="4654488276758583406">ขนาดเล็กมาก</translation>
 <translation id="465499440663162826">ไม่สามารถเชื่อมต่อ Chrome เว็บสโตร์</translation>
@@ -3163,7 +3161,6 @@
 <translation id="5449624072515809082">เปิดการแก้ไขข้อความอัตโนมัติในขณะพิมพ์ การตรวจการสะกดไปพร้อมๆ กันไม่สามารถใช้งานกับคุณลักษณะนี้ได้</translation>
 <translation id="5449716055534515760">ปิดหน้าต่&amp;าง</translation>
 <translation id="5451285724299252438">ช่องข้อความช่วงหน้า</translation>
-<translation id="5451561500892538488">ซ่อนไอคอนการแจ้งเตือน</translation>
 <translation id="5451646087589576080">ดู&amp;ข้อมูลเฟรม</translation>
 <translation id="5453029940327926427">ปิดแท็บ</translation>
 <translation id="5453632173748266363">ซีริลลิก</translation>
@@ -5464,7 +5461,6 @@
 <translation id="8804398419035066391">ติดต่อกับเว็บไซต์ที่ร่วมมือ</translation>
 <translation id="8807632654848257479">เสถียร</translation>
 <translation id="8808478386290700967">ร้านค้าบนเว็บ</translation>
-<translation id="8811314776632711217">โหมดแสดงภาพที่ได้รับการมอบสิทธิ์ (AKA Übercompositor)</translation>
 <translation id="8811462119186190367">ภาษาของ Chrome ได้เปลี่ยนจาก "<ph name="FROM_LOCALE" />" เป็น "<ph name="TO_LOCALE" />" หลังจากทำการซิงค์การตั้งค่าของคุณ</translation>
 <translation id="8813811964357448561">หน้ากระดาษ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

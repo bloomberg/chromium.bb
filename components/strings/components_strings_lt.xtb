@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Registracijos domenas:</translation>
 <translation id="1344588688991793829">„Chromium“ automatinio pildymo nustatymai...</translation>
 <translation id="1426410128494586442">Taip</translation>
+<translation id="1430915738399379752">Spausdinti</translation>
 <translation id="1455235771979731432">Patvirtinant kortelę kilo problema. Patikrinkite interneto ryšį ir bandykite dar kartą.</translation>
 <translation id="1491151370853475546">Iš naujo įkelti šį puslapį</translation>
 <translation id="1549470594296187301">Norint naudoti šią funkciją, reikia įgalinti „JavaScript“.</translation>
-<translation id="1639239467298939599">Įkeliama</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
 <translation id="1644184664548287040">Tinklo konfigūracija netinkama ir jos neįmanoma importuoti.</translation>
 <translation id="168841957122794586">Serverio sertifikate yra nesudėtingas kriptografinis raktas.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Šis dokumentas apsaugotas slaptažodžiu. Įveskite slaptažodį.</translation>
 <translation id="2625385379895617796">Jūsų laikrodis skuba</translation>
 <translation id="2639739919103226564">Būsena:</translation>
+<translation id="2653659639078652383">Pateikti</translation>
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Įvyko nežinoma klaida.</translation>
 <translation id="4800132727771399293">Patikrinkite kortelės galiojimo pabaigos datą bei saugos kodą (CVC) ir bandykite dar kart</translation>
 <translation id="4813512666221746211">Tinklo klaida</translation>
+<translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
 <translation id="4850886885716139402">Žiūrėti</translation>
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Politikos pavadinimas</translation>
 <translation id="552553974213252141">Ar tekstas tinkamai ištrauktas?</translation>
 <translation id="5540224163453853">Nepavyko rasti straipsnio, dėl kurio pateikta užklausa.</translation>
+<translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5565735124758917034">Aktyvus</translation>
 <translation id="560412284261940334">Tvarkymas nepalaikomas</translation>
 <translation id="5629630648637658800">Įkeliant politikos nustatymus įvyko klaida</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
 <translation id="59107663811261420">„Google Payments“ nepalaiko šio tipo kortelės naudojantis šio prekybininko paslaugomis. Pasirinkite kitą kortelę.</translation>
+<translation id="5975083100439434680">Tolinti</translation>
 <translation id="5989320800837274978">Nenurodyti nei fiksuoti įgaliotieji serveriai, nei .pac scenarijaus URL.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Uždaryti</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chromium“ negali tinkamai patvirtinti sertifikatų.</translation>
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
 <translation id="8804164990146287819">Privatumo politika</translation>
+<translation id="8820817407110198400">Žymės</translation>
 <translation id="8824019021993735287">Šiuo metu „Chrome“ negali patvirtinti jūsų kortelės. Bandykite dar kartą vėliau.</translation>
 <translation id="8834246243508017242">Įgalinti automatinį pildymą naudojant kontaktus…</translation>
 <translation id="883848425547221593">Kitos žymės</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Analizuojant politikos nustatymus įvyko klaida</translation>
 <translation id="8876793034577346603">Analizuojant tinklo konfigūraciją įvyko klaida.</translation>
 <translation id="8891727572606052622">Netinkamas įgaliotojo serverio režimas.</translation>
+<translation id="8903921497873541725">Artinti</translation>
 <translation id="8932102934695377596">Jūsų laikrodis atsilieka</translation>
 <translation id="8940229512486821554">Paleisti „<ph name="EXTENSION_NAME" />“ komandą: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Baigėsi serverio sertifikato galiojimo laikas.</translation>

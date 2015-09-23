@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">دامنه ثبت‌نام:</translation>
 <translation id="1344588688991793829">‏تنظیمات تکمیل خودکار Chromium...</translation>
 <translation id="1426410128494586442">بله</translation>
+<translation id="1430915738399379752">چاپ</translation>
 <translation id="1455235771979731432">هنگام تأیید کارت‌تان مشکلی رخ داد. اتصال اینترنت را بررسی کرده و دوباره امتحان کنید.</translation>
 <translation id="1491151370853475546">تازه‌سازی این صفحه</translation>
 <translation id="1549470594296187301">برای استفاده از این قابلیت، جاوا اسکریپت باید فعال باشد.</translation>
-<translation id="1639239467298939599">بارگیری</translation>
 <translation id="1640180200866533862">خط‌مشی‌های کاربر</translation>
 <translation id="1644184664548287040">پیکربندی شبکه نامعتبر است و نتوانست وارد شود.</translation>
 <translation id="168841957122794586">گواهی‌نامه سرور دارای یک کلید رمزنگاری ضعیف است.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">این سند توسط رمز ورود محافظت می‌شود.  لطفاً یک رمز ورود وارد کنید.</translation>
 <translation id="2625385379895617796">ساعت شما جلو است</translation>
 <translation id="2639739919103226564">وضعیت:</translation>
+<translation id="2653659639078652383">ارائه</translation>
 <translation id="2704283930420550640">مقدار با فرمت مطابقت ندارد.</translation>
 <translation id="2721148159707890343">درخواست با موفقیت انجام شد</translation>
 <translation id="2728127805433021124">گواهی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">خطای ناشناخته‌ای رخ داد.</translation>
 <translation id="4800132727771399293">‏تاریخ انقضا و CVC را بررسی کرده و دوباره امتحان کنید</translation>
 <translation id="4813512666221746211">خطای شبکه</translation>
+<translation id="4816492930507672669">متناسب با صفحه</translation>
 <translation id="4850886885716139402">نما</translation>
 <translation id="4923417429809017348">این صفحه از یک زبان ناشناخته به <ph name="LANGUAGE_LANGUAGE" /> ترجمه شده است.</translation>
 <translation id="4926049483395192435">باید مشخص شود.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">نام خط‌مشی</translation>
 <translation id="552553974213252141">آیا نوشتار به درستی استخراج شده است؟</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
+<translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5565735124758917034">فعال</translation>
 <translation id="560412284261940334">مدیریت پشتیبانی نمی‌شود</translation>
 <translation id="5629630648637658800">تنظیمات خط‌مشی بارگیری نشد</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;انجام مجدد افزودن</translation>
 <translation id="5872918882028971132">پیشنهادات والدین</translation>
 <translation id="59107663811261420">‏Google Payments این نوع کارت را برای این تاجر پشتیبانی نمی‌کند. لطفاً کارت دیگری انتخاب کنید.</translation>
+<translation id="5975083100439434680">کوچک نمایی</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8790007591277257123">&amp;انجام مجدد حذف</translation>
 <translation id="8804164990146287819">خط‌مشی رازداری</translation>
+<translation id="8820817407110198400">نشانک‌ها</translation>
 <translation id="8824019021993735287">‏Chrome در حال حاضر نمی‌تواند کارت‌تان را تأیید کند. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="8834246243508017242">فعال‌سازی تکمیل خودکار با استفاده از مخاطبین…</translation>
 <translation id="883848425547221593">نشانک‌های دیگر</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">خطا در تجزیه تنظیمات خط‌مشی</translation>
 <translation id="8876793034577346603">پیکربندی شبکه نتوانست تجزیه شود.</translation>
 <translation id="8891727572606052622">حالت پروکسی نامعتبر است.</translation>
+<translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="8940229512486821554">اجرای فرمان <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">گواهی سرور منقضی شده است.</translation>

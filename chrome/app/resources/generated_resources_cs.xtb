@@ -958,7 +958,6 @@ Po vytvoření nového dozorovaného uživatele můžete jeho nastavení spravov
 <translation id="2378075407703503998">Vybrané soubory: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Vyberte adresář rozšíření.</translation>
 <translation id="2379281330731083556">Tisk pomocí dialogového okna systému... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Pokud je tato možnost aktivní, modul vykreslení deleguje skládání na prohlížeč a oba průchody skládání budou sloučeny.</translation>
 <translation id="2381823505763074471">Odhlášení uživatele <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Způsobí, že se v rozbalovacím seznamu omniboxu budou názvy návrhů někdy zobrazovat výrazněji než adresy URL.</translation>
 <translation id="2384596874640104496">Sinhálská klávesnice</translation>
@@ -2585,7 +2584,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4647090755847581616">&amp;Zavřít kartu</translation>
 <translation id="4647697156028544508">Zadejte prosím PIN pro zařízení <ph name="DEVICE_NAME" />:</translation>
 <translation id="4648491805942548247">Nedostatečná oprávnění</translation>
-<translation id="4650159467443406318">Tuto stránku navštívíte kliknutím sem</translation>
 <translation id="4653235815000740718">Při vytváření média pro obnovení operačního systému došlo k potížím. Vybrané úložné zařízení nebylo nalezeno.</translation>
 <translation id="4654488276758583406">Velmi malé</translation>
 <translation id="465499440663162826">K Internetovému obchodu Chrome se nelze připojit.</translation>
@@ -3154,7 +3152,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5449624072515809082">Zapne automatické opravy pravopisu při psaní. Synchronní kontrola pravopisu není s touto funkcí kompatibilní.</translation>
 <translation id="5449716055534515760">Zavřít okno</translation>
 <translation id="5451285724299252438">textové pole rozsahu stran</translation>
-<translation id="5451561500892538488">Skrýt ikonu oznámení</translation>
 <translation id="5451646087589576080">Zobrazit &amp;informace o rámu</translation>
 <translation id="5453029940327926427">Zavřít karty</translation>
 <translation id="5453632173748266363">Cyrilice</translation>
@@ -5478,7 +5475,6 @@ Výpočet času zbývajícího do úplného nabití</translation>
 <translation id="8804398419035066391">Komunikovat se spolupracujícími weby</translation>
 <translation id="8807632654848257479">Stabilní</translation>
 <translation id="8808478386290700967">Obchod Chrome</translation>
-<translation id="8811314776632711217">Delegovaný modul vykreslení (neboli Übercompositor)</translation>
 <translation id="8811462119186190367">Jazyk prohlížeče Chrome se po synchronizaci nastavení změnil z jazyka <ph name="FROM_LOCALE" /> na jazyk <ph name="TO_LOCALE" />.</translation>
 <translation id="8813811964357448561">list papíru</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

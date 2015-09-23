@@ -957,7 +957,6 @@ Después de crear un usuario supervisado nuevo, puedes administrar las opciones 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="2378982052244864789">Seleccionar el directorio de extensión.</translation>
 <translation id="2379281330731083556">Imprimir mediante el sistema de diálogo... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Si está habilitado, el procesador delega la composición al navegador, con lo que se fusionan ambas transferencias de composición.</translation>
 <translation id="2381823505763074471">Salir del perfil de <ph name="PROFILE_USERNAME" /></translation>
 <translation id="2383034317918297467">Permite que, algunas veces, el menú desplegable del cuadro multifunción muestre los títulos de sugerencia de forma más destacada en comparación con las URL.</translation>
 <translation id="2384596874640104496">Teclado cingalés</translation>
@@ -2590,7 +2589,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4647090755847581616">&amp;Cerrar pestaña</translation>
 <translation id="4647697156028544508">Ingresa el PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permisos insuficientes</translation>
-<translation id="4650159467443406318">Haz clic aquí para visitar esta página.</translation>
 <translation id="4653235815000740718">Se produjo un error durante la creación de la recuperación de datos del SO. No se pudo encontrar el dispositivo de almacenamiento utilizado.</translation>
 <translation id="4654488276758583406">Muy pequeño</translation>
 <translation id="465499440663162826">No fue posible establecer conexión con Chrome Web Store.</translation>
@@ -3162,7 +3160,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5449624072515809082">Permite activar la corrección automática de texto mientras se escribe. La corrección ortográfica sincrónica no es compatible con esta función.</translation>
 <translation id="5449716055534515760">Cerrar ven&amp;tana</translation>
 <translation id="5451285724299252438">cuadro de texto para rango de página</translation>
-<translation id="5451561500892538488">Ocultar ícono de notificaciones</translation>
 <translation id="5451646087589576080">Ver &amp;información del marco</translation>
 <translation id="5453029940327926427">Cerrar pestañas</translation>
 <translation id="5453632173748266363">Cirílico</translation>
@@ -5482,7 +5479,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8804398419035066391">Comunicarse con sitios web cooperativos</translation>
 <translation id="8807632654848257479">Estable</translation>
 <translation id="8808478386290700967">Tienda virtual</translation>
-<translation id="8811314776632711217">Procesador delegado (también denominado Übercompositor)</translation>
 <translation id="8811462119186190367">Después de sincronizar tu configuración, el idioma de Chrome se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="8813811964357448561">hoja de papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

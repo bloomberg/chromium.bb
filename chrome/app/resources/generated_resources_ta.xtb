@@ -962,7 +962,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> கோப்புகள் தேர்ந்தெடுக்கப்பட்டன</translation>
 <translation id="2378982052244864789">நீட்டிப்பு கோப்பகத்தைத் தேர்ந்தெடு.</translation>
 <translation id="2379281330731083556">கணினி உரையாடலைப் பயன்படுத்தி அச்சிடுக…<ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">இயக்கப்பட்டிருந்தால், வழங்குநர், தொகுத்தலை உலாவிக்கு ஒதுக்கும், இரண்டு தொகுத்தல் வழிகளையும் இணைக்கும்.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> பயனரை வெளியேற்றவும்.</translation>
 <translation id="2383034317918297467">சில நேரங்களில் URLகளைக் காட்டிலும் அதிக முக்கியத்துவம் வாய்ந்த பரிந்துரை தலைப்புகளைக் காட்ட, சர்வபுலக் கீழ்த்தோன்றல் பட்டியை ஏற்படுத்தும்.</translation>
 <translation id="2384596874640104496">சிங்கள விசைப்பலகை</translation>
@@ -2594,7 +2593,6 @@
 <translation id="4647090755847581616">&amp;தாவலை மூடுக</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" க்கான PIN ஐ உள்ளிடுக:</translation>
 <translation id="4648491805942548247">போதிய அனுமதிகள் இல்லை</translation>
-<translation id="4650159467443406318">இந்தப் பக்கத்திற்குச் செல்ல இங்கே கிளிக் செய்யவும்</translation>
 <translation id="4653235815000740718">OS மீட்பு மீடியாவை உருவாக்குவதில் சிக்கல் ஏற்பட்டது. பயன்படுத்தப்பட்ட சேகரிக்கப்பட்ட சாதனத்தைக் கண்டறிய முடியவில்லை.</translation>
 <translation id="4654488276758583406">மிகச் சிறிய</translation>
 <translation id="465499440663162826">Chrome இணைய அங்காடியுடன் இணைக்க முடியவில்லை.</translation>
@@ -3160,7 +3158,6 @@
 <translation id="5449624072515809082">தட்டச்சு செய்யும்போது உரையின் தானியங்குசரிபார்ப்பை இயக்கவும். இந்த அம்சத்துடன் ஒத்திசைக்கத்தகு எழுத்துவரிசை திருத்தி இணங்காது.</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5451285724299252438">பக்க வரம்பு உரைப்பெட்டி</translation>
-<translation id="5451561500892538488">அறிவிப்புகளின் ஐகானை மறை</translation>
 <translation id="5451646087589576080">சட்டக &amp;தகவலைக் காண்க</translation>
 <translation id="5453029940327926427">தாவல்களை மூடுக</translation>
 <translation id="5453632173748266363">சிரில்லிக்</translation>
@@ -5471,7 +5468,6 @@
 <translation id="8804398419035066391">ஒன்றிணைந்து செயல்படும் இணையதளங்களுடன் தொடர்புகொள்</translation>
 <translation id="8807632654848257479">நிலையான</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">பிரதிநிதிப்படுத்திய வழங்குநர் (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">உங்கள் அமைப்புகளை ஒத்திசைத்தப் பிறகு, Chrome இன் மொழி "<ph name="FROM_LOCALE" />" இலிருந்து "<ph name="TO_LOCALE" />" க்கு மாற்றப்பட்டது.</translation>
 <translation id="8813811964357448561">தாளின் ஒரு பக்கம்</translation>
 <translation id="8814190375133053267">வைஃபை</translation>

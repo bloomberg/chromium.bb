@@ -21,12 +21,14 @@
 <translation id="388442998277590542">Nem lehet betölteni a(z) "<ph name="OPTIONS_PAGE" />" opcióoldalt.</translation>
 <translation id="4115165561519362854">A gép rendszergazdája előírta, hogy a(z) <ph name="EXTENSION_NAME" /> bővítmény verziója legalább <ph name="EXTENSION_VERSION" /> legyen. Nem kapcsolható be addig, amíg nincs frissítve erre a verzióra (vagy újabbra).</translation>
 <translation id="4233778200880751280">A(z) „<ph name="ABOUT_PAGE" />” névjegyoldal betöltése sikertelen volt.</translation>
+<translation id="4434145631756268951">{0,select, single{USB-eszköz kiválasztása}multiple{USB-eszközök kiválasztása}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nem lehetett telepíteni a csomagot, mert egy segédprogram-folyamat összeomlott. Indítsa újra a Chrome-ot, majd próbálja újra.</translation>
 <translation id="4883436287898674711">Minden <ph name="WEBSITE_1" /> webhelyen</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Alkalmazásnézet: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Ez a bővítmény a(z) "<ph name="KEY_PATH" />" kulcsfájlt tartalmazza. Ezt Ön valószínűleg nem szeretné.</translation>
 <translation id="5627523580512561598"><ph name="EXTENSION_NAME" /> bővítmény</translation>
+<translation id="5630931906013276297">{0,select, single{HID-eszköz kiválasztása}multiple{HID-eszközök kiválasztása}other{UNUSED}}</translation>
 <translation id="5960890139610307736">ExtensionView: <ph name="EXTENSIONVIEW_TAG_NAME" /></translation>
 <translation id="5972529113578162692">A számítógép adminisztrátorának szüksége van arra, hogy a(z) <ph name="EXTENSION_NAME" /> telepítve legyen. Nem lehet eltávolítani.</translation>
 <translation id="6027032947578871493">Ismeretlen termék (<ph name="PRODUCT_ID" />) a következő szolgáltatótól: <ph name="VENDOR_NAME" /> (sorozatszám: <ph name="SERIAL_NUMBER" />)</translation>

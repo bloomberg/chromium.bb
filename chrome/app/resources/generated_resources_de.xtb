@@ -952,7 +952,6 @@ Nach der Erstellung eines neuen betreuten Nutzers können Sie die Einstellungen 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> Dateien ausgewählt</translation>
 <translation id="2378982052244864789">Erweiterungsverzeichnis auswählen</translation>
 <translation id="2379281330731083556">Über das Systemdialogfeld drucken... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Bei Aktivierung dieser Option delegiert der Renderer die Erstellung an den Browser. Dadurch werden beide Erstellungsdurchläufe zusammengeführt.</translation>
 <translation id="2381823505763074471">Nutzer <ph name="PROFILE_USERNAME" /> abmelden</translation>
 <translation id="2383034317918297467">Führt dazu, dass im Drop-down-Menü der Omnibox die Titel der Vorschläge manchmal besser sichtbar sind als URLs</translation>
 <translation id="2384596874640104496">Singhalesische Tastatur</translation>
@@ -2591,7 +2590,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="4647090755847581616">&amp;Tab schließen</translation>
 <translation id="4647697156028544508">Bitte geben Sie die PIN für "<ph name="DEVICE_NAME" />" ein:</translation>
 <translation id="4648491805942548247">Unzureichende Berechtigungen</translation>
-<translation id="4650159467443406318">Klicken Sie hier, um diese Seite aufzurufen.</translation>
 <translation id="4653235815000740718">Beim Erstellen des Datenträgers für die OS-Wiederherstellung ist ein Problem aufgetreten. Das verwendete Speichergerät konnte nicht gefunden werden.</translation>
 <translation id="4654488276758583406">Sehr klein</translation>
 <translation id="465499440663162826">Verbindung zum Chrome Web Store nicht möglich.</translation>
@@ -3157,7 +3155,6 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5449624072515809082">Aktivieren Sie die Autokorrektur, während Sie Text eingeben. Die synchrone Rechtschreibprüfung ist mit dieser Funktion nicht kompatibel.</translation>
 <translation id="5449716055534515760">Fen&amp;ster schließen</translation>
 <translation id="5451285724299252438">Textfeld im Seitenbereich</translation>
-<translation id="5451561500892538488">Benachrichtigungssymbol ausblenden</translation>
 <translation id="5451646087589576080">Frame&amp;informationen anzeigen</translation>
 <translation id="5453029940327926427">Tabs schließen</translation>
 <translation id="5453632173748266363">Kyrillisch</translation>
@@ -5461,7 +5458,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8804398419035066391">Mit zusammenarbeitenden Websites kommunizieren</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Delegierter Renderer (auch "Übercompositor" genannt)</translation>
 <translation id="8811462119186190367">Nach Synchronisierung Ihrer Einstellungen wurde die Sprache in Chrome von "<ph name="FROM_LOCALE" />" auf "<ph name="TO_LOCALE" />" geändert.</translation>
 <translation id="8813811964357448561">Blatt Papier</translation>
 <translation id="8814190375133053267">WLAN</translation>

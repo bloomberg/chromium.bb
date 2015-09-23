@@ -963,7 +963,6 @@ Ko ustvarite novega zaščitenega uporabnika, lahko na <ph name="DISPLAY_LINK" /
 <translation id="2378075407703503998">Št. izbranih datotek: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Izberite imenik z razširitvami.</translation>
 <translation id="2379281330731083556">Tiskanje v pogovornem oknu sistema ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Če je ta možnost omogočena, upodabljalnik prenese sestavljanje na brskalnik in s tem združi oba prehoda sestavljanja.</translation>
 <translation id="2381823505763074471">Odjava uporabnika <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Povzroči, da spustni meni naslovne vrstice včasih prikaže naslove predlogov vidnejše od URL-jev.</translation>
 <translation id="2384596874640104496">Tipkovnica za sinhalščino</translation>
@@ -2604,7 +2603,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4647090755847581616">Zap&amp;ri zavihek</translation>
 <translation id="4647697156028544508">Vnesite PIN za napravo »<ph name="DEVICE_NAME" />«:</translation>
 <translation id="4648491805942548247">Nezadostna dovoljenja</translation>
-<translation id="4650159467443406318">Kliknite tukaj, če želite obiskati to stran</translation>
 <translation id="4653235815000740718">Pri ustvarjanju nosilca podatkov za obnovitev operacijskega sistema je prišlo do težave. Uporabljene naprave za shranjevanje ni bilo mogoče najti.</translation>
 <translation id="4654488276758583406">Zelo majhna</translation>
 <translation id="465499440663162826">Povezave s Spletno trgovino Chrome ni bilo mogoče vzpostaviti.</translation>
@@ -3176,7 +3174,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5449624072515809082">Vklopi samodejno popravljanje besedila med vnašanjem. Sinhrono preverjanje črkovanja ni združljivo s to funkcijo.</translation>
 <translation id="5449716055534515760">Zapri &amp;okno</translation>
 <translation id="5451285724299252438">obseg strani besedilno polje</translation>
-<translation id="5451561500892538488">Skrij ikono za obvestila</translation>
 <translation id="5451646087589576080">Prikaz podatkov &amp;okvirja</translation>
 <translation id="5453029940327926427">Zapri zavihke</translation>
 <translation id="5453632173748266363">Cirilica</translation>
@@ -5507,7 +5504,6 @@ izračun časa do napolnjenosti</translation>
 <translation id="8804398419035066391">Komuniciranje s sodelujočim spletnim mestom</translation>
 <translation id="8807632654848257479">Stabilna</translation>
 <translation id="8808478386290700967">Spletna trgovina</translation>
-<translation id="8811314776632711217">Prevzemni upodabljalnik (imenovan tudi Übercompositor).</translation>
 <translation id="8811462119186190367">Po sinhronizaciji nastavitev se je jezik brskalnika Chrome spremenil iz jezika »<ph name="FROM_LOCALE" />« v jezik »<ph name="TO_LOCALE" />«.</translation>
 <translation id="8813811964357448561">list papirja</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

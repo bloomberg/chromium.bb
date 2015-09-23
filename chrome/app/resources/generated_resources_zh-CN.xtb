@@ -958,7 +958,6 @@
 <translation id="2378075407703503998">已选择 <ph name="SELCTED_FILE_COUNT" /> 个文件</translation>
 <translation id="2378982052244864789">选择扩展程序目录。</translation>
 <translation id="2379281330731083556">使用系统对话框进行打印...<ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">如果启用，渲染程序会委托合成到浏览器，从而将两个合成通道合并。</translation>
 <translation id="2381823505763074471">退出用户 <ph name="PROFILE_USERNAME" />。</translation>
 <translation id="2383034317918297467">让多功能框下拉菜单不时地突出显示建议标题（而非网址）。</translation>
 <translation id="2384596874640104496">僧伽罗语键盘</translation>
@@ -2578,7 +2577,6 @@
 <translation id="4647090755847581616">关闭标签页(&amp;C)</translation>
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
 <translation id="4648491805942548247">权限不足</translation>
-<translation id="4650159467443406318">点击此处可访问该页面</translation>
 <translation id="4653235815000740718">创建操作系统恢复媒体时出现问题。找不到已使用的存储设备。</translation>
 <translation id="4654488276758583406">极小</translation>
 <translation id="465499440663162826">无法连接到 Chrome 网上应用店。</translation>
@@ -3143,7 +3141,6 @@
 <translation id="5449624072515809082">打开输入时的文本自动更正功能。同步拼写检查与此功能不兼容。</translation>
 <translation id="5449716055534515760">关闭窗口(&amp;D)</translation>
 <translation id="5451285724299252438">页码范围文本框</translation>
-<translation id="5451561500892538488">隐藏“通知”图标</translation>
 <translation id="5451646087589576080">查看框架信息(&amp;I)</translation>
 <translation id="5453029940327926427">关闭标签页</translation>
 <translation id="5453632173748266363">西里尔语</translation>
@@ -5448,7 +5445,6 @@
 <translation id="8804398419035066391">与合作网站通信</translation>
 <translation id="8807632654848257479">稳定</translation>
 <translation id="8808478386290700967">Chrome 网上应用店</translation>
-<translation id="8811314776632711217">已委托的渲染程序 (AKA Übercompositor)。</translation>
 <translation id="8811462119186190367">同步设置后，Chrome 浏览器的语言已由“<ph name="FROM_LOCALE" />”更改为“<ph name="TO_LOCALE" />”。</translation>
 <translation id="8813811964357448561">张纸</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

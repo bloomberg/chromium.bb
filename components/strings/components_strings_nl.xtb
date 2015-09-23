@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Inschrijvingsdomein:</translation>
 <translation id="1344588688991793829">Instellingen voor automatisch aanvullen in Chromium...</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1455235771979731432">Er is een probleem opgetreden bij het verifiëren van je kaart. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
 <translation id="1549470594296187301">JavaScript moet zijn ingeschakeld om deze functie te kunnen gebruiken.</translation>
-<translation id="1639239467298939599">Laden</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1644184664548287040">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.</translation>
 <translation id="168841957122794586">Het servercertificaat bevat een zwakke cryptografische sleutel.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Dit document is beveiligd met een wachtwoord. Geef een wachtwoord op.</translation>
 <translation id="2625385379895617796">Je klok loopt voor</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Verzenden</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
 <translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
+<translation id="4816492930507672669">Aanpassen aan pagina</translation>
 <translation id="4850886885716139402">Weergave</translation>
 <translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Beleidsnaam</translation>
 <translation id="552553974213252141">Is de tekst correct geëxtraheerd?</translation>
 <translation id="5540224163453853">Kan het gevraagde artikel niet vinden.</translation>
+<translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5565735124758917034">Actief</translation>
 <translation id="560412284261940334">Beheer wordt niet ondersteund</translation>
 <translation id="5629630648637658800">Laden van beleidsinstellingen is mislukt</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="5872918882028971132">Bovenliggende suggesties</translation>
 <translation id="59107663811261420">Dit type kaart wordt voor deze verkoper niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>
+<translation id="5975083100439434680">Uitzoomen</translation>
 <translation id="5989320800837274978">Er worden geen vaste proxyservers en geen pac-script-URL gespecificeerd.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Sluiten</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Als je een veilige verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8804164990146287819">Privacybeleid</translation>
+<translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="8824019021993735287">Chrome kan je kaart momenteel niet verifiëren. Probeer het later opnieuw.</translation>
 <translation id="8834246243508017242">Automatisch aanvullen inschakelen met contacten…</translation>
 <translation id="883848425547221593">Andere bladwijzers</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Fout bij het parseren van beleidsinstellingen</translation>
 <translation id="8876793034577346603">Netwerkconfiguratie kan niet worden geparseerd.</translation>
 <translation id="8891727572606052622">Ongeldige proxymodus.</translation>
+<translation id="8903921497873541725">Inzoomen</translation>
 <translation id="8932102934695377596">Je klok loopt achter</translation>
 <translation id="8940229512486821554">Opdracht van <ph name="SEARCH_TERMS" /> uitvoeren: <ph name="EXTENSION_NAME" /></translation>
 <translation id="8971063699422889582">Het servercertificaat is verlopen.</translation>

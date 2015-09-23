@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Kikoa cha kujiandikisha:</translation>
 <translation id="1344588688991793829">Mipangilio ya Kujaza otomatiki ya Chromium...</translation>
 <translation id="1426410128494586442">Ndio</translation>
+<translation id="1430915738399379752">Chapisha</translation>
 <translation id="1455235771979731432">Kulikuwa na tatizo wakati wa kuthibitisha kadi yako. Angalia muunganisho wako wa intaneti na ujaribu tena.</translation>
 <translation id="1491151370853475546">Pakia Ukurasa huu Upya</translation>
 <translation id="1549470594296187301">Lazima JavaScript iwashwe ili utumie kipengele hiki.</translation>
-<translation id="1639239467298939599">Inapakia</translation>
 <translation id="1640180200866533862">Sera za mtumiaji</translation>
 <translation id="1644184664548287040">Usanidi wa mtandao ni batili na usingeweza kuingizwa.</translation>
 <translation id="168841957122794586">Cheti cha seva kina kitufe dhaifu cha kifichua msimbo.</translation>
@@ -73,6 +73,7 @@
 <translation id="2597378329261239068">Hati hii imelindwa kwa nenosiri. Tafadhali weka nenosiri linalotumika.</translation>
 <translation id="2625385379895617796">Saa yako iko mbele</translation>
 <translation id="2639739919103226564">Hali:</translation>
+<translation id="2653659639078652383">Wasilisha</translation>
 <translation id="2704283930420550640">Thamani haioani na umbizo.</translation>
 <translation id="2721148159707890343">Ombi limefanikiwa</translation>
 <translation id="2728127805433021124">Cheti cha seva kimetiwa sahihi kwa kutumia algoriti dhaifu ya sahihi.</translation>
@@ -152,6 +153,7 @@
 <translation id="4771973620359291008">Hitilafu isiyojulikana imetokea.</translation>
 <translation id="4800132727771399293">Angalia tarehe yako ya kuisha muda na CVC na ujaribu tena</translation>
 <translation id="4813512666221746211">Hitilafu ya mtandao</translation>
+<translation id="4816492930507672669">Sawazisha kwenye ukurasa</translation>
 <translation id="4850886885716139402">Mwonekano</translation>
 <translation id="4923417429809017348">Ukurasa huu umetafsiriwa kutoka katika lugha ambayo haijulikani hadi <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Sharti ibainishwe.</translation>
@@ -179,6 +181,7 @@
 <translation id="5523118979700054094">Jina la sera</translation>
 <translation id="552553974213252141">Je, maandishi yalitolewa kwa njia sahihi?</translation>
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
+<translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5565735124758917034">Inatumika</translation>
 <translation id="560412284261940334">Usimamizi hautumiki</translation>
 <translation id="5629630648637658800">Imeshindwa kupakia mipangilio ya sera</translation>
@@ -187,6 +190,7 @@
 <translation id="5813119285467412249">Rudia Kuongeza</translation>
 <translation id="5872918882028971132">Mapendekezo ya Wazazi</translation>
 <translation id="59107663811261420">Aina hii ya kadi haiwezi kutumiwa na Google Payments kwa muuzaji huyu. Tafadhali teua kadi tofauti.</translation>
+<translation id="5975083100439434680">Fifiza</translation>
 <translation id="5989320800837274978">Siyo seva proksi za kudumu wala URL ya hati ya .pac zimebainishwa.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Funga</translation>
@@ -285,6 +289,7 @@
 <translation id="8738058698779197622">Ili kutambua muunganisho salama, saa yako inahitaji kuwekwa sahihi. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Chromium haiwezi kuthibitisha vyeti hivi.</translation>
 <translation id="8790007591277257123">Rudia kufuta</translation>
 <translation id="8804164990146287819">Sera ya Faragha</translation>
+<translation id="8820817407110198400">Alamisho</translation>
 <translation id="8824019021993735287">Chrome haikuthibitisha kadi yako wakati huu. Tafadhali jaribu tena baadaye.</translation>
 <translation id="8834246243508017242">Washa Kujaza Otomatiki ukitumia Anwani…</translation>
 <translation id="883848425547221593">Alamisho Zingine</translation>
@@ -292,6 +297,7 @@
 <translation id="8866481888320382733">Hitilafu wakati wa kuchanganua mipangilio ya sera</translation>
 <translation id="8876793034577346603">Usanidi wa mtandao umekosa kuchanganuliwa.</translation>
 <translation id="8891727572606052622">Modi batili ya proksi.</translation>
+<translation id="8903921497873541725">Kuza karibu</translation>
 <translation id="8932102934695377596">Saa yako iko nyuma</translation>
 <translation id="8940229512486821554">Endesha amri ya <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Cheti cha seva kimechina.</translation>

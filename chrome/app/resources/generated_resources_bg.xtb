@@ -953,7 +953,6 @@
 <translation id="2378075407703503998">Избрани са <ph name="SELCTED_FILE_COUNT" /> файла</translation>
 <translation id="2378982052244864789">Изберете директорията на разширението.</translation>
 <translation id="2379281330731083556">Печат чрез системния диалогов прозорец... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Ако флагът е активиран, изграждането се делегира от изобразяващата машина към браузъра, при което двата канала за изграждане се обединяват.</translation>
 <translation id="2381823505763074471">Изход от профила на потребителя <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Понякога заглавията на предложенията в падащия списък на полето за всичко са по-видими от URL адресите.</translation>
 <translation id="2384596874640104496">Синхалска клавиатура</translation>
@@ -2579,7 +2578,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4647090755847581616">&amp;Затваряне на раздела</translation>
 <translation id="4647697156028544508">Моля, въведете ПИН кода за „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="4648491805942548247">Недостатъчни разрешения</translation>
-<translation id="4650159467443406318">Кликнете тук, за да посетите тази страница</translation>
 <translation id="4653235815000740718">Възникна проблем при създаването на носителя за възстановяване на операционната система. Използваното устройство за съхранение не бе намерено.</translation>
 <translation id="4654488276758583406">Много малък</translation>
 <translation id="465499440663162826">Не можа да се установи връзка с уеб магазина на Chrome.</translation>
@@ -3150,7 +3148,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5449624072515809082">Включете автоматичната корекция на текст при писане. Синхронната проверка на правописа не е съвместима с тази функция.</translation>
 <translation id="5449716055534515760">Затваряне на &amp;прозореца</translation>
 <translation id="5451285724299252438">текстово поле за обхват на страници</translation>
-<translation id="5451561500892538488">Скриване на иконата за известия</translation>
 <translation id="5451646087589576080">Преглед на информацията за &amp;рамката</translation>
 <translation id="5453029940327926427">Затваряне на разделите</translation>
 <translation id="5453632173748266363">Кирилица</translation>
@@ -5470,7 +5467,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8804398419035066391">Комуникация със съдействащи уебсайтове</translation>
 <translation id="8807632654848257479">Стабилно</translation>
 <translation id="8808478386290700967">Уеб магазин</translation>
-<translation id="8811314776632711217">Делегирана изобразяваща машина (известна също като Übercompositor).</translation>
 <translation id="8811462119186190367">Езикът на Chrome се промени от „<ph name="FROM_LOCALE" />“ на „<ph name="TO_LOCALE" />“ след синхронизирането на настройките ви.</translation>
 <translation id="8813811964357448561">лист хартия</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

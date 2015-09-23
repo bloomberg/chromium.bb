@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">註冊網域：</translation>
 <translation id="1344588688991793829">Chromium 自動填入設定...</translation>
 <translation id="1426410128494586442">是</translation>
+<translation id="1430915738399379752">列印</translation>
 <translation id="1455235771979731432">驗證您的信用卡時發生問題。請檢查網際網路連線，然後再試一次。</translation>
 <translation id="1491151370853475546">重新載入這個網頁</translation>
 <translation id="1549470594296187301">您必須啟用 JavaScript 才能使用這項功能。</translation>
-<translation id="1639239467298939599">載入中</translation>
 <translation id="1640180200866533862">使用者政策</translation>
 <translation id="1644184664548287040">網路設定無效，無法匯入。</translation>
 <translation id="168841957122794586">伺服器憑證含有防護力薄弱的加密編譯金鑰。</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">此文件受到密碼保護，請輸入密碼。</translation>
 <translation id="2625385379895617796">您的時鐘時間過快</translation>
 <translation id="2639739919103226564">狀態：</translation>
+<translation id="2653659639078652383">提交</translation>
 <translation id="2704283930420550640">政策值格式不符。</translation>
 <translation id="2721148159707890343">要求成功</translation>
 <translation id="2728127805433021124">伺服器憑證是以防護力較弱的簽章演算法進行簽署。</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
 <translation id="4800132727771399293">請檢查您的有效期限和信用卡安全碼，然後再試一次</translation>
 <translation id="4813512666221746211">網路錯誤</translation>
+<translation id="4816492930507672669">依頁面大小自動調整</translation>
 <translation id="4850886885716139402">檢視</translation>
 <translation id="4923417429809017348">系統已將此網頁從不明語言翻譯成<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">必須指定。</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">政策名稱</translation>
 <translation id="552553974213252141">擷取的文字是否正確？</translation>
 <translation id="5540224163453853">找不到要求的文章。</translation>
+<translation id="5556459405103347317">重新載入</translation>
 <translation id="5565735124758917034">管理中</translation>
 <translation id="560412284261940334">系統不支援管理</translation>
 <translation id="5629630648637658800">無法載入政策設定</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">重做新增(&amp;R)</translation>
 <translation id="5872918882028971132">家長建議</translation>
 <translation id="59107663811261420">這個商家的 Google Payments 不支援此類型卡片，請選取其他卡片。</translation>
+<translation id="5975083100439434680">縮小</translation>
 <translation id="5989320800837274978">沒有指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">您必須正確設定時鐘，才能建立安全連線。這是因為網站驗證身分時所使用的憑證僅於特定一段時間內有效。由於您裝置的時鐘不正確，因此 Chromium 無法驗證這些憑證。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
 <translation id="8804164990146287819">隱私權政策</translation>
+<translation id="8820817407110198400">書籤</translation>
 <translation id="8824019021993735287">Chrome 目前無法驗證您的信用卡，請稍後再試。</translation>
 <translation id="8834246243508017242">啟用「使用聯絡人資料自動填入」功能…</translation>
 <translation id="883848425547221593">其他書籤</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">解析政策設定時發生錯誤</translation>
 <translation id="8876793034577346603">無法解析網路設定。</translation>
 <translation id="8891727572606052622">Proxy 模式無效。</translation>
+<translation id="8903921497873541725">放大</translation>
 <translation id="8932102934695377596">您的時鐘時間過慢</translation>
 <translation id="8940229512486821554">執行 <ph name="EXTENSION_NAME" /> 指令：<ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">伺服器憑證已過期。</translation>

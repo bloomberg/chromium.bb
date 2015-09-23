@@ -970,7 +970,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फ़ाइलें चयनित</translation>
 <translation id="2378982052244864789">विस्तार निर्देशिका को चुनें.</translation>
 <translation id="2379281330731083556">सिस्‍टम डॉयलॉग का उपयोग करके प्रिंट करें… <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">यदि सक्षम हो, तो रेंडरर, दोनों संयोजन पास को मिलाते हुए, ब्राउज़र को संयोजन सौंप देता है.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> उपयोगकर्ता को साइन-आउट करें.</translation>
 <translation id="2383034317918297467">इसके कारण ऑम्‍निबॉक्‍स ड्रॉपडाउन कभी-कभी URL की अपेक्षा सुझाव शीर्षकों को अधिक प्रमुखता से दिखाता है.</translation>
 <translation id="2384596874640104496">सिंहला कीबोर्ड</translation>
@@ -2608,7 +2607,6 @@
 <translation id="4647090755847581616">&amp;टैब बंद करें</translation>
 <translation id="4647697156028544508">कृपया "<ph name="DEVICE_NAME" />" के लिए पिन दर्ज करें:</translation>
 <translation id="4648491805942548247">अपर्याप्त अनुमतियां</translation>
-<translation id="4650159467443406318">इस पृष्‍ठ पर जाने के लिए यहां क्‍लिक करें</translation>
 <translation id="4653235815000740718">OS पुनर्प्राप्‍ति मीडिया बनाते समय समस्‍या आई थी. उपयोग किया गया मेमोरी डिवाइस नहीं मिला.</translation>
 <translation id="4654488276758583406">बहुत छोटा</translation>
 <translation id="465499440663162826">Chrome वेब स्टोर से कनेक्ट नहीं किया जा सका.</translation>
@@ -3180,7 +3178,6 @@
 <translation id="5449624072515809082">लेख लिखते समय स्वत: सुधार चालू करें. समकालीन वर्तनी-जांच इस सुविधा के साथ समर्थित नहीं है.</translation>
 <translation id="5449716055534515760">विं&amp;डो बंद करें</translation>
 <translation id="5451285724299252438">पृष्ठ श्रेणी टेक्स्ट बॉक्स</translation>
-<translation id="5451561500892538488">सूचनाएं छिपाएं आइकन</translation>
 <translation id="5451646087589576080">फ़्रेम &amp;जानकारी देखें</translation>
 <translation id="5453029940327926427">टैब बंद करें</translation>
 <translation id="5453632173748266363">सिरिलिक</translation>
@@ -5516,7 +5513,6 @@
 <translation id="8804398419035066391">सहयोगी वेबसाइटों से डॉयलॉग करें</translation>
 <translation id="8807632654848257479">स्‍थिर</translation>
 <translation id="8808478386290700967">वेब स्टोर</translation>
-<translation id="8811314776632711217">रेंडरर सौंपें (यानी Übercompositor).</translation>
 <translation id="8811462119186190367">आपकी सेटिंग समन्‍वयित करने के बाद Chrome की भाषा "<ph name="FROM_LOCALE" />" से "<ph name="TO_LOCALE" />" में बदल दी गई है.</translation>
 <translation id="8813811964357448561">कागज़</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>

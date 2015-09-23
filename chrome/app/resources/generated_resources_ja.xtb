@@ -64,7 +64,7 @@
 <translation id="1084538181352409184">プロキシの設定を確認するか、ネットワーク管理者に問い合わせて
           プロキシ サーバーが正常に動作しているかどうかを確認してください。
           <ph name="PLATFORM_TEXT" /></translation>
-<translation id="1084824384139382525">リンク アドレスをコピー(&amp;E)</translation>
+<translation id="1084824384139382525">リンクのアドレスをコピー(&amp;E)</translation>
 <translation id="1087119889335281750">スペルの候補を表示しない(&amp;N)</translation>
 <translation id="1090126737595388931">実行中のバックグラウンド アプリはありません</translation>
 <translation id="1091767800771861448">Esc キーを押すとスキップできます（非公式のビルドのみ）。</translation>
@@ -962,7 +962,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
 <translation id="2378982052244864789">拡張機能のディレクトリを選択してください。</translation>
 <translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">有効にすると、レンダラはブラウザに合成を委任します。このとき、両方の合成パスが統合されます。</translation>
 <translation id="2381823505763074471">ユーザー <ph name="PROFILE_USERNAME" /> をログアウトします。</translation>
 <translation id="2383034317918297467">アドレスバーのプルダウンで、状況に応じて、候補のタイトルを URL よりも目立つように表示します。</translation>
 <translation id="2384596874640104496">シンハラ語キーボード</translation>
@@ -1798,7 +1797,7 @@
 <translation id="3507421388498836150">「<ph name="EXTENSION_NAME" />」の現在の権限</translation>
 <translation id="3508920295779105875">別のフォルダを選択...</translation>
 <translation id="3510797500218907545">WiMAX</translation>
-<translation id="3511307672085573050">リンク アドレスをコピー(&amp;E)</translation>
+<translation id="3511307672085573050">リンクのアドレスをコピー(&amp;E)</translation>
 <translation id="3511399794969432965">接続がうまくいかない場合</translation>
 <translation id="351152300840026870">固定幅フォント</translation>
 <translation id="3511528412952710609">短い</translation>
@@ -2596,7 +2595,6 @@
 <translation id="4647090755847581616">タブを閉じる(&amp;C)</translation>
 <translation id="4647697156028544508">「<ph name="DEVICE_NAME" />」の PIN を入力してください:</translation>
 <translation id="4648491805942548247">十分な権限がありません</translation>
-<translation id="4650159467443406318">このページにアクセスするにはここをクリックしてください</translation>
 <translation id="4653235815000740718">OS リカバリ メディアの作成中に問題が発生しました。使用するストレージ デバイスが見つかりません。</translation>
 <translation id="4654488276758583406">極小</translation>
 <translation id="465499440663162826">Chrome ウェブストアに接続できませんでした。</translation>
@@ -3168,7 +3166,6 @@
 <translation id="5449624072515809082">入力中のテキストの自動修正をオンにします。同期スペルチェックとこの機能は同時に使用できません。</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
 <translation id="5451285724299252438">ページ範囲のテキスト ボックス</translation>
-<translation id="5451561500892538488">通知アイコンを表示しない</translation>
 <translation id="5451646087589576080">フレーム情報を表示(&amp;I)</translation>
 <translation id="5453029940327926427">複数のタブを閉じる</translation>
 <translation id="5453632173748266363">キリル文字</translation>
@@ -5500,7 +5497,6 @@
 <translation id="8804398419035066391">連携するウェブサイトとの通信</translation>
 <translation id="8807632654848257479">Stable</translation>
 <translation id="8808478386290700967">ウェブストア</translation>
-<translation id="8811314776632711217">委任レンダラ（別名 Übercompositor）。</translation>
 <translation id="8811462119186190367">設定の同期後に Chrome の言語が「<ph name="FROM_LOCALE" />」から「<ph name="TO_LOCALE" />」に変更されました。</translation>
 <translation id="8813811964357448561">枚</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -957,7 +957,6 @@
 <translation id="2378075407703503998">Выбрано файлов: <ph name="SELCTED_FILE_COUNT" />.</translation>
 <translation id="2378982052244864789">Выберите каталог расширения</translation>
 <translation id="2379281330731083556">Печатать с помощью системного диалогового окна <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Если функция включена, устройство видеообработки делегирует наложение изображений браузеру, объединяя оба прохода наложения изображений.</translation>
 <translation id="2381823505763074471">Выйти из профиля <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">В подсказках омнибокса названия сайтов будут выделены.</translation>
 <translation id="2384596874640104496">Сингальская раскладка</translation>
@@ -2592,7 +2591,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4647090755847581616">&amp;Закрыть вкладку</translation>
 <translation id="4647697156028544508">Введите PIN-код для "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Недостаточно прав</translation>
-<translation id="4650159467443406318">Нажмите, чтобы открыть страницу</translation>
 <translation id="4653235815000740718">При создании образа для восстановления системы произошла ошибка. Используемый накопитель не найден.</translation>
 <translation id="4654488276758583406">Очень мелкий</translation>
 <translation id="465499440663162826">Не удалось подключиться к Интернет-магазину Chrome.</translation>
@@ -3164,7 +3162,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5449624072515809082">Автоматическое исправление ошибок при наборе текста. Функция несовместима с автоматической проверкой правописания.</translation>
 <translation id="5449716055534515760">Закрыть &amp;окно</translation>
 <translation id="5451285724299252438">поле для ввода диапазона страниц</translation>
-<translation id="5451561500892538488">Скрыть значок оповещений</translation>
 <translation id="5451646087589576080">Просмотреть сведения о фрейме</translation>
 <translation id="5453029940327926427">Закрыть вкладки</translation>
 <translation id="5453632173748266363">Кириллица</translation>
@@ -5483,7 +5480,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8804398419035066391">Обмен данными с определенными сайтами</translation>
 <translation id="8807632654848257479">Стабильная</translation>
 <translation id="8808478386290700967">Интернет-магазин Chrome</translation>
-<translation id="8811314776632711217">Назначенное устройство обработки (Übercompositor).</translation>
 <translation id="8811462119186190367">В результате синхронизации настроек язык браузера Chrome изменен с "<ph name="FROM_LOCALE" />" на "<ph name="TO_LOCALE" />".</translation>
 <translation id="8813811964357448561">лист бумаги</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

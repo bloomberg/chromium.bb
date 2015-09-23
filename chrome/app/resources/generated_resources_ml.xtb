@@ -966,7 +966,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ഫയലുകൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="2378982052244864789">വിപുലീകരണ ഡയറക്‌ടറി തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="2379281330731083556">സിസ്റ്റം ഡയലോഗ് ഉപയോഗിച്ച് പ്രിന്റ് ചെയ്യുക... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">പ്രവർത്തനക്ഷമമാക്കുകയാണെങ്കിൽ, രണ്ട് സംയോജിപ്പിക്കൽ പാസുകളെയും ലയിപ്പിച്ച് റെൻഡറർ ബ്രൗസറിലേക്ക് സംയോജിപ്പിക്കൽ നിയുക്തമാക്കുന്നു.</translation>
 <translation id="2381823505763074471">സൈൻ- ഔട്ട് ചെയ്യുന്ന ഉപയോക്താവിന്റെ <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">URL-കളേക്കാൾ നിർദ്ദേശ ശീർഷകങ്ങളെ ചിലപ്പോൾ കൂടുതൽ പ്രാധാന്യമുള്ള രീതിയിൽ കാണിക്കാൻ ഓമ്‌നിബോക്‌സ് ഡ്രോപ്പ്ഡൗണിനെ ഇടയാക്കുന്നു.</translation>
 <translation id="2384596874640104496">സിംഹള കീബോർഡ്</translation>
@@ -2610,7 +2609,6 @@
 <translation id="4647090755847581616">&amp;ടാബ് അടയ്ക്കുക</translation>
 <translation id="4647697156028544508">"<ph name="DEVICE_NAME" />" എന്നതിനായി PIN നൽകുക:</translation>
 <translation id="4648491805942548247">അപര്യാപ്‌തമായ അനുമതികൾ</translation>
-<translation id="4650159467443406318">ഈ പേജ് സന്ദർശിക്കാൻ ഇവിടെ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="4653235815000740718">OS റിക്കവറി മീഡിയ സൃഷ്ടിക്കുന്നതിനിടയില്‍ ഒരു പ്രശ്നമുണ്ടായി. ഉപയോഗിക്കപ്പെട്ട സംഭരണ ഉപാധി കണ്ടെത്താനായില്ല.</translation>
 <translation id="4654488276758583406">വളരെ ചെറുത്</translation>
 <translation id="465499440663162826">Chrome വെബ് സ്‌റ്റോറിൽ കണക്‌റ്റുചെയ്യാനായില്ല.</translation>
@@ -3182,7 +3180,6 @@
 <translation id="5449624072515809082">ടൈപ്പുചെയ്യുമ്പോൾ വാചകം യാന്ത്രികമായി തിരുത്തുന്നത് ഓൺ ചെയ്യുക. സമന്വയിപ്പിച്ച അക്ഷരവിന്യാസ പരിശോധന ഈ സവിശേഷതയ്‌ക്ക് അനുയോജ്യമല്ല.</translation>
 <translation id="5449716055534515760">വി&amp;ന്‍ഡോ അടയ്ക്കുക</translation>
 <translation id="5451285724299252438">പേജ് പരിധി വാചകപ്പെട്ടി</translation>
-<translation id="5451561500892538488">അറിയിപ്പുകളുടെ ഐക്കൺ മറയ്‌ക്കുക</translation>
 <translation id="5451646087589576080">ഫ്രെയിമിന്റെ &amp;വിവരങ്ങള്‍ കാണുക</translation>
 <translation id="5453029940327926427">ടാബുകള്‍ അടയ്ക്കുക</translation>
 <translation id="5453632173748266363">സിറിലിക്</translation>
@@ -4930,7 +4927,7 @@
 <translation id="79962507603257656">ഡൗൺലോഡ് നില അറിയിപ്പ് കേന്ദ്രത്തിൽ ലഭ്യമാക്കുക</translation>
 <translation id="7997089631332811254">(Chrome |പുനരാരംഭിക്കേണ്ടതുണ്ട്|)</translation>
 <translation id="7997479212858899587">ഐഡന്‍റിറ്റി:</translation>
-<translation id="7999087758969799248">മാനക ഇന്‍‌പുട്ട് രീതി</translation>
+<translation id="7999087758969799248">സാധാരണ ഇന്‍‌പുട്ട് രീതി</translation>
 <translation id="7999229196265990314">ഇനിപ്പറയുന്ന ഫയലുകള്‍‌ സൃഷ്‌ടിച്ചു:
 
 വിപുലീകരണം: <ph name="EXTENSION_FILE" />
@@ -5508,7 +5505,6 @@
 <translation id="8804398419035066391">സഹകരിക്കുന്ന വെബ്‌സൈറ്റുകളുമായി ആശയവിനിമയം നടത്തുക</translation>
 <translation id="8807632654848257479">സുസ്ഥിരമായ</translation>
 <translation id="8808478386290700967">വെബ് സ്റ്റോര്‍</translation>
-<translation id="8811314776632711217">നിയുക്ത റെൻഡറർ (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">നിങ്ങളുടെ ക്രമീകരണങ്ങള്‍ സമന്വയിപ്പിച്ച ശേഷം "<ph name="FROM_LOCALE" />" എന്നതില്‍ നിന്ന് "<ph name="TO_LOCALE" />" എന്നതിലേക്ക് Chrome-ന്‍റെ ഭാഷ മാറിയിരിക്കുന്നു.</translation>
 <translation id="8813811964357448561">പേപ്പറുകളുടെ ഷീറ്റ്</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

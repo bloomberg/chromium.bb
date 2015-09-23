@@ -957,7 +957,6 @@
 <translation id="2378075407703503998">Вибрано файлів: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Виберіть каталог розширення.</translation>
 <translation id="2379281330731083556">Друкувати за допомогою діалогового вікна системи... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Якщо ввімкнено, засіб обробки відео доручає компонування веб-переглядачу, об’єднуючи обидва шляхи компонування.</translation>
 <translation id="2381823505763074471">Вийти з облікового запису користувача <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">У спадному меню універсального вікна пошуку назви сторінок можуть виділятися більше, ніж URL-адреси.</translation>
 <translation id="2384596874640104496">Сингальська клавіатура</translation>
@@ -2590,7 +2589,6 @@
 <translation id="4647090755847581616">&amp;Закрити вкладку</translation>
 <translation id="4647697156028544508">Введіть PIN-код для пристрою "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Недостатні дозволи</translation>
-<translation id="4650159467443406318">Натисніть тут, щоб відвідати цю сторінку</translation>
 <translation id="4653235815000740718">Під час створення носія для відновлення ОС виникла проблема. Використовуваний пристрій пам’яті неможливо знайти.</translation>
 <translation id="4654488276758583406">Дуже малий</translation>
 <translation id="465499440663162826">Не вдалося під’єднатися до Веб-магазину Chrome.</translation>
@@ -3162,7 +3160,6 @@
 <translation id="5449624072515809082">Вмикається автоматичне виправлення тексту під час введення. Синхронна перевірка правопису несумісна з цією функцією.</translation>
 <translation id="5449716055534515760">Закрити вік&amp;но</translation>
 <translation id="5451285724299252438">текстове поле діапазону сторінок</translation>
-<translation id="5451561500892538488">Сховати значок сповіщень</translation>
 <translation id="5451646087589576080">Переглянути &amp;інформацію про фрейм</translation>
 <translation id="5453029940327926427">Закрити вкладки</translation>
 <translation id="5453632173748266363">Кирилиця</translation>
@@ -5456,7 +5453,6 @@
 <translation id="8804398419035066391">Обмінюватися даними з певними веб-сайтами</translation>
 <translation id="8807632654848257479">Стабільний</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Уповноважений засіб обробки відео (відомий як Übercompositor).</translation>
 <translation id="8811462119186190367">Після синхронізації налаштувань мову Chrome змінено. Попередня: <ph name="FROM_LOCALE" />, нова: <ph name="TO_LOCALE" />.</translation>
 <translation id="8813811964357448561">аркуш паперу</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

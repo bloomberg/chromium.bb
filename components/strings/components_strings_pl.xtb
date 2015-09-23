@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domena rejestracji:</translation>
 <translation id="1344588688991793829">Ustawienia autouzupełniania Chromium...</translation>
 <translation id="1426410128494586442">Tak</translation>
+<translation id="1430915738399379752">Drukuj</translation>
 <translation id="1455235771979731432">Podczas weryfikacji karty wystąpił problem. Sprawdź połączenie internetowe i spróbuj ponownie.</translation>
 <translation id="1491151370853475546">Załaduj tę stronę ponownie</translation>
 <translation id="1549470594296187301">Aby można było korzystać z tej funkcji, musi być włączony JavaScript.</translation>
-<translation id="1639239467298939599">Wczytywanie</translation>
 <translation id="1640180200866533862">Zasady dotyczące użytkowników</translation>
 <translation id="1644184664548287040">Konfiguracja sieci jest nieprawidłowa i nie można jej zaimportować.</translation>
 <translation id="168841957122794586">Certyfikat serwera ma słaby klucz kryptograficzny.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Ten dokument jest chroniony hasłem. Wprowadź hasło.</translation>
 <translation id="2625385379895617796">Twój zegar się śpieszy</translation>
 <translation id="2639739919103226564">Stan:</translation>
+<translation id="2653659639078652383">Prześlij</translation>
 <translation id="2704283930420550640">Wartość nie pasuje do formatu.</translation>
 <translation id="2721148159707890343">Żądanie wykonane pomyślnie</translation>
 <translation id="2728127805433021124">Certyfikat serwera został podpisany przy użyciu słabego algorytmu podpisu.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Wystąpił nieznany błąd.</translation>
 <translation id="4800132727771399293">Sprawdź datę ważności i kod CVC, a potem spróbuj ponownie</translation>
 <translation id="4813512666221746211">Błąd sieci</translation>
+<translation id="4816492930507672669">Dopasuj do strony.</translation>
 <translation id="4850886885716139402">Widok</translation>
 <translation id="4923417429809017348">Ta strona została przetłumaczona z nieznanego języka na język <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musi być określona.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Nazwa zasady</translation>
 <translation id="552553974213252141">Czy tekst został prawidłowo wyodrębniony?</translation>
 <translation id="5540224163453853">Nie udało się znaleźć tego artykułu.</translation>
+<translation id="5556459405103347317">Odśwież</translation>
 <translation id="5565735124758917034">Aktywny</translation>
 <translation id="560412284261940334">Zarządzanie jest nieobsługiwane</translation>
 <translation id="5629630648637658800">Ładowanie ustawień zasady nie powiodło się</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Ponów dodanie</translation>
 <translation id="5872918882028971132">Propozycje rodziców</translation>
 <translation id="59107663811261420">Karty tego typu nie są obsługiwane w Google Payments w przypadku tego sprzedawcy. Wybierz inną.</translation>
+<translation id="5975083100439434680">Pomniejsz</translation>
 <translation id="5989320800837274978">Nie określono ani stałych serwerów proxy, ani adresu URL skryptu PAC.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Aby nawiązać bezpieczne połączenie, Twój zegar musi mieć ustawioną prawidłową godzinę. Jest to wymagane, ponieważ certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Ponieważ zegar Twojego urządzenia nie jest ustawiony prawidłowo, Chromium nie może zweryfikować tych certyfikatów.</translation>
 <translation id="8790007591277257123">&amp;Ponów usunięcie</translation>
 <translation id="8804164990146287819">Polityka prywatności</translation>
+<translation id="8820817407110198400">Zakładki</translation>
 <translation id="8824019021993735287">Chrome nie może obecnie zweryfikować karty. Spróbuj ponownie później.</translation>
 <translation id="8834246243508017242">Włącz Autouzupełnianie z kontaktami…</translation>
 <translation id="883848425547221593">Inne zakładki</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Podczas przetwarzania ustawień zasady wystąpił błąd</translation>
 <translation id="8876793034577346603">Przetwarzanie konfiguracji sieci nie powiodło się.</translation>
 <translation id="8891727572606052622">Nieprawidłowy tryb proxy</translation>
+<translation id="8903921497873541725">Powiększ</translation>
 <translation id="8932102934695377596">Twój zegar się spóźnia</translation>
 <translation id="8940229512486821554">Uruchom polecenie rozszerzenia <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Ważność certyfikatu serwera wygasła.</translation>

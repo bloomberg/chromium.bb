@@ -966,7 +966,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> টি ফাইল নির্বাচিত</translation>
 <translation id="2378982052244864789">এক্সটেনশন ডিরেক্টরিটি নির্বাচন করুন৷</translation>
 <translation id="2379281330731083556">সিস্টেম কথোপকথন ব্যবহার করে মুদ্রণ করুন...<ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">যদি সক্ষমিত থাকে, তাহলে রেন্ডারার ব্রাউজারে কম্পোজিটিং পাঠায় যা উভয় কম্পোজিটিং পাসগুলিকে মার্জ করছে৷</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> সাইন আউট ব্যবহারকারী৷</translation>
 <translation id="2383034317918297467">বহুউপযোগী ক্ষেত্রের ড্রপডাউনকে কখনো কখনো URLগুলির চেয়ে প্রস্তাবনা শিরোনামকে বেশি স্পষ্টরূপে দেখাতে বাধ্য করে।</translation>
 <translation id="2384596874640104496">সিংহল কীবোর্ড</translation>
@@ -2597,7 +2596,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="4647090755847581616">&amp;Close Tab</translation>
 <translation id="4647697156028544508">দয়া করে "<ph name="DEVICE_NAME" />"-এর পিন লিখুন:</translation>
 <translation id="4648491805942548247">অপর্যাপ্ত অনুমতিগুলি</translation>
-<translation id="4650159467443406318">এই পৃষ্ঠা ঘুরে দেখার জন্য এখানে ক্লিক করুন</translation>
 <translation id="4653235815000740718">OS পুনরুদ্ধার মিডিয়াটি তৈরি করার সময় একটি ত্রুটি ছিল৷ ব্যবহৃত সঞ্চয় ডিভাইসটির খোঁজ পাওয়া যায়নি৷</translation>
 <translation id="4654488276758583406">অতি ক্ষুদ্র</translation>
 <translation id="465499440663162826">Chrome ওয়েব দোকানে সংযোগ করতে পারেনি।</translation>
@@ -3167,7 +3165,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="5449624072515809082">টাইপ করার সময় পাঠ্যের স্বয়ং সংশোধন চালু করুন৷ সিঙ্ক্রোনাস বানান পরীক্ষণ এই বৈশিষ্ট্যের সঙ্গে সামঞ্জস্যপূর্ণ নয়৷</translation>
 <translation id="5449716055534515760">Close Win&amp;dow</translation>
 <translation id="5451285724299252438">পৃষ্ঠা শ্রেণি পাঠ্য বাক্স</translation>
-<translation id="5451561500892538488">বিজ্ঞপ্তি আইকন লুকান</translation>
 <translation id="5451646087589576080">ফ্রেম &amp;তথ্য দেখুন</translation>
 <translation id="5453029940327926427">ট্যাবগুলি বন্ধ করুন</translation>
 <translation id="5453632173748266363">সিরিলিক</translation>
@@ -5497,7 +5494,6 @@ Google ড্রাইভের মধ্যে ফাইলগুলি আপ-
 <translation id="8804398419035066391">সহযোগী ওয়েবসাইটগুলির মাধ্যমে যোগাযোগ করুন</translation>
 <translation id="8807632654848257479">স্থায়ী</translation>
 <translation id="8808478386290700967">ওয়েব দোকান</translation>
-<translation id="8811314776632711217">পাঠানো রেন্ডারার (Übercompositor নামে পরিচিত)৷</translation>
 <translation id="8811462119186190367">আপনার সেটিংস সিঙ্ক করার পরে Chrome এর ভাষাটি "<ph name="FROM_LOCALE" />" থেকে "<ph name="TO_LOCALE" />"তে পরিবর্তিত হয়েছে৷</translation>
 <translation id="8813811964357448561">কাগজের পত্রক</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

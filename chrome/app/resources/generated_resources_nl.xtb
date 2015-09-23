@@ -958,7 +958,6 @@ Nadat je een nieuwe gebruiker met beperkte rechten hebt gemaakt, kun je zijn ins
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> bestanden geselecteerd</translation>
 <translation id="2378982052244864789">Selecteer de directory van de extensie.</translation>
 <translation id="2379281330731083556">Afdrukken via systeemdialoogvenster... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Indien ingeschakeld, delegeert de renderer de samenstelling aan de browser, waardoor beide samenstellingsbewerkingen worden samengevoegd.</translation>
 <translation id="2381823505763074471">Gebruiker <ph name="PROFILE_USERNAME" /> uitloggen.</translation>
 <translation id="2383034317918297467">Hiermee worden in het dropdown-menu van de omnibox titels van suggesties soms prominenter weergegeven dan URL's.</translation>
 <translation id="2384596874640104496">Singalees toetsenbord</translation>
@@ -2599,7 +2598,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4647090755847581616">&amp;Tabblad sluiten</translation>
 <translation id="4647697156028544508">Geef de pincode op voor '<ph name="DEVICE_NAME" />':</translation>
 <translation id="4648491805942548247">Onvoldoende rechten</translation>
-<translation id="4650159467443406318">Klik hier om deze pagina te bezoeken</translation>
 <translation id="4653235815000740718">Er is een probleem opgetreden tijdens het maken van het OS-herstelmedium. Het gebruikte opslagapparaat kan niet worden gevonden.</translation>
 <translation id="4654488276758583406">Zeer klein</translation>
 <translation id="465499440663162826">Kan geen verbinding maken met de Chrome Web Store.</translation>
@@ -3169,7 +3167,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5449624072515809082">Autocorrectie van tekst tijdens het typen inschakelen. Synchrone spellingcontrole is niet compatibel met deze functie.</translation>
 <translation id="5449716055534515760">Ve&amp;nster sluiten</translation>
 <translation id="5451285724299252438">tekstvak voor paginabereik</translation>
-<translation id="5451561500892538488">Meldingenpictogram verbergen</translation>
 <translation id="5451646087589576080">&amp;Framegegevens weergeven</translation>
 <translation id="5453029940327926427">Tabbladen sluiten</translation>
 <translation id="5453632173748266363">Cyrillisch</translation>
@@ -5506,7 +5503,6 @@ Tijd berekenen tot vol</translation>
 <translation id="8804398419035066391">Communiceren met samenwerkende websites</translation>
 <translation id="8807632654848257479">Stabiel</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Gedelegeerde renderer (ofwel Übercompositor).</translation>
 <translation id="8811462119186190367">De taal van Chrome is na het synchroniseren van je instellingen gewijzigd van '<ph name="FROM_LOCALE" />' in '<ph name="TO_LOCALE" />'.</translation>
 <translation id="8813811964357448561">vel papier</translation>
 <translation id="8814190375133053267">Wifi</translation>

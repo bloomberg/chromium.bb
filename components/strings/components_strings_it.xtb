@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Dominio registrazione:</translation>
 <translation id="1344588688991793829">Impostazioni di Compilazione automatica Chromium...</translation>
 <translation id="1426410128494586442">Sì</translation>
+<translation id="1430915738399379752">Stampa</translation>
 <translation id="1455235771979731432">Si è verificato un problema durante la verifica della carta. Controlla la connessione Internet e riprova.</translation>
 <translation id="1491151370853475546">Ricarica questa pagina</translation>
 <translation id="1549470594296187301">JavaScript deve essere attivato per utilizzare questa funzione.</translation>
-<translation id="1639239467298939599">Caricamento</translation>
 <translation id="1640180200866533862">Criteri utente</translation>
 <translation id="1644184664548287040">La configurazione di rete non è valida e non può essere importata.</translation>
 <translation id="168841957122794586">Il certificato del server contiene una chiave crittografica debole.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Questo documento è protetto da password. Inserisci una password.</translation>
 <translation id="2625385379895617796">L'orologio è avanti</translation>
 <translation id="2639739919103226564">Stato:</translation>
+<translation id="2653659639078652383">Invia</translation>
 <translation id="2704283930420550640">Il valore non corrisponde al formato.</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Si è verificato un errore sconosciuto.</translation>
 <translation id="4800132727771399293">Controlla la data di scadenza e il codice CVC, poi riprova</translation>
 <translation id="4813512666221746211">Errore di rete</translation>
+<translation id="4816492930507672669">Adatta alla pagina</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="4923417429809017348">Questa pagina è stata tradotta da una lingua sconosciuta in <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Deve essere specificato.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Nome norma</translation>
 <translation id="552553974213252141">Il testo è stato estratto correttamente?</translation>
 <translation id="5540224163453853">Impossibile trovare l'articolo richiesto.</translation>
+<translation id="5556459405103347317">Ricarica</translation>
 <translation id="5565735124758917034">Attivo</translation>
 <translation id="560412284261940334">Gestione non supportata</translation>
 <translation id="5629630648637658800">Caricamento delle impostazioni criterio non riuscito</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Ripeti aggiunta</translation>
 <translation id="5872918882028971132">Suggerimenti per i genitori</translation>
 <translation id="59107663811261420">Questo tipo di carta non è supportato in Google Payments per questo commerciante. Seleziona un'altra carta.</translation>
+<translation id="5975083100439434680">Diminuisci lo zoom</translation>
 <translation id="5989320800837274978">Non sono stati specificati né server proxy fissi né un URL script .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo è sbagliato, pertanto Chromium non può verificare i certificati.</translation>
 <translation id="8790007591277257123">&amp;Ripeti eliminazione</translation>
 <translation id="8804164990146287819">Norme sulla privacy</translation>
+<translation id="8820817407110198400">Segnalibri</translation>
 <translation id="8824019021993735287">Al momento non è possibile verificare la carta in Chrome. Riprova più tardi.</translation>
 <translation id="8834246243508017242">Attiva Compilazione automatica utilizzando Contatti…</translation>
 <translation id="883848425547221593">Altri Preferiti</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Errore durante l'analisi delle impostazioni criterio</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
+<translation id="8903921497873541725">Aumenta lo zoom</translation>
 <translation id="8932102934695377596">L'orologio è indietro</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" />: esegui comando <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>

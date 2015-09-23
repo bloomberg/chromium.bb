@@ -123,7 +123,7 @@
 <translation id="257674075312929031">Kikundi</translation>
 <translation id="2582407057977008361">Kando</translation>
 <translation id="2589102159832527089">Ukurasa huu una maandishi yaliyotolewa kwenye faili ya PDF kiotomatiki &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Bofya hapa kwa faili ya awali.&lt;/a&gt;</translation>
-<translation id="2606210917827248971">na {COUNT,plural, =1{Kipengee #}other{Vipengee #}}</translation>
+<translation id="2606210917827248971">ina {COUNT,plural, =1{Kipengee #}other{Vipengee #}}</translation>
 <translation id="2614981083756825552">Mpangilio wa Hisabati ML</translation>
 <translation id="2626530649491650971">kinabofyeka</translation>
 <translation id="2628764385451019380">Hakuna kikasha mseto kilichotangulia.</translation>
@@ -135,7 +135,7 @@
 <translation id="2704429362613743330">{COUNT,plural, =1{alama ya kufungua mabano}other{alama # za kufungua mabano}}</translation>
 <translation id="2705875883745373140">Haijabonyezwa</translation>
 <translation id="2706462751667573066">Juu</translation>
-<translation id="2717271541250958000">kidirisha cha kichupo</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">sauti</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">Imeteuliwa</translation>
@@ -235,7 +235,7 @@
         "lv": "Kilatvia",
         "nb": "Kinorwei cha Bokmål",
         "nl": "Kidachi",
-        "pl": "Kipolishi",
+        "pl": "Kipoli",
         "pt": "Kireno",
         "ro": "Kiroma",
         "ru": "Kirusi",
@@ -510,7 +510,7 @@
 <translation id="6129953537138746214">Nafasi</translation>
 <translation id="6142308968191113180">Kichwa cha 4</translation>
 <translation id="6169420925157477918">Picha yenye maelezo marefu</translation>
-<translation id="6172087735260766220">Imeshindwa kufikia maandishi yanayoweza kufikiwa kutoka kwenye nakala ya PDF iliyolindwa.</translation>
+<translation id="6172087735260766220">Imeshindwa kufikia maandishi yanayoweza kufikiwa kutoka kwenye nakala ya PDF inayolindwa.</translation>
 <translation id="6186305613600865047">Ruka hadi mwisho wa ukurasa</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Chini</translation>

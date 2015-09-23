@@ -968,7 +968,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2378982052244864789">ವಿಸ್ತರಣೆ ಡೈರೆಕ್ಟರಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="2379281330731083556">ಸಿಸ್ಟಂ ಸಂವಾದವನ್ನು ಬಳಸಿ ಮುದ್ರಿಸಿ... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">ಸಕ್ರಿಯಗೊಳಿಸಿದ್ದರೆ, ಎರಡೂ ಸಂಯೋಜನೆಯ ರವಾನಿಕೆಗಳನ್ನು ವಿಲೀನಗೊಳಿಸುವ ಮೂಲಕ ಬ್ರೌಸರ್‌ಗೆ ಸಂಯೋಜನೆಯನ್ನು ರೆಂಡರರ್ ಪ್ರತಿನಿಧಿಸುತ್ತದೆ.</translation>
 <translation id="2381823505763074471">ಸೈನ್-ಔಟ್ ಬಳಕೆದಾರ <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">ಓಮ್ನಿಬಾಕ್ಸ್ ಡ್ರಾಪ್‌ಡೌನ್‌ಗೆ ಕೆಲವೊಮ್ಮೆ URL ಗಳಿಗಿಂತ ಹೆಚ್ಚು ಪ್ರಮುಖವಾದ ಸಲಹೆ ಶೀರ್ಷಿಕೆಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲು ಕಾರಣವಾಗುತ್ತದೆ.</translation>
 <translation id="2384596874640104496">ಸಿಂಹಳ ಕೀಬೋರ್ಡ್</translation>
@@ -2602,7 +2601,6 @@
 <translation id="4647090755847581616">&amp;ಟ್ಯಾಬ್ ಅನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="4647697156028544508">ದಯವಿಟ್ಟು "<ph name="DEVICE_NAME" />" ಗಾಗಿ PIN ಅನ್ನು ನಮೂದಿಸಿ:</translation>
 <translation id="4648491805942548247">ಸಾಕಷ್ಟಿಲ್ಲದ ಅನುಮತಿಗಳು</translation>
-<translation id="4650159467443406318">ಈ ಪುಟವನ್ನು ಭೇಟಿ ಮಾಡಲು ಇಲ್ಲಿ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="4653235815000740718">OS ಪುನರ್‌ಪ್ರಾಪ್ತಿ ಮಾಧ್ಯಮವನ್ನು ರಚಿಸುವಲ್ಲಿ ಒಂದು ಸಮಸ್ಯೆ ಇದೆ. ಬಳಸಿದ ಸಂಗ್ರಹ ಸಾಧನವನ್ನು ಕಂಡುಹಿಡಿಯಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="4654488276758583406">ತುಂಬಾ ಚಿಕ್ಕದು</translation>
 <translation id="465499440663162826">Chrome ವೆಬ್ ಅಂಗಡಿಗೆ ಸಂಪರ್ಕಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
@@ -3178,7 +3176,6 @@
 <translation id="5449624072515809082">ಟೈಪ್ ಮಾಡುವಾಗ ಸ್ವಯಂತಿದ್ದುಪಡಿಯ ಪಠ್ಯವನ್ನು ಆನ್ ಮಾಡಿ. ಈ ವೈಶಿಷ್ಟ್ಯದೊಂದಿಗೆ ಸಿಂಕ್ರೊನಸ್ ಕಾಗುಣಿತ ಪರಿಶೀಲನೆಯು ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="5449716055534515760">&amp;ವಿಂಡೋ ಮುಚ್ಚಿರಿ</translation>
 <translation id="5451285724299252438">ಪುಟ ವ್ಯಾಪ್ತಿ ಪಠ್ಯ ಪೆಟ್ಟಿಗೆ</translation>
-<translation id="5451561500892538488">ಅಧಿಸೂಚನೆಗಳ ಐಕಾನ್ ಮರೆಮಾಡಿ</translation>
 <translation id="5451646087589576080">ಫ್ರೇಮ್ &amp;ಮಾಹಿತಿಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="5453029940327926427">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ </translation>
 <translation id="5453632173748266363">ಸಿರಿಲಿಕ್</translation>
@@ -5480,7 +5477,6 @@
 <translation id="8804398419035066391">ಸಹಕಾರಿ ವೆಬ್‌ಸೈಟ್‌ಗಳೊಂದಿಗೆ ಸಂವಹಿಸಿ</translation>
 <translation id="8807632654848257479">ಸ್ಥಿರ</translation>
 <translation id="8808478386290700967">ವೆಬ್‌ ಅಂಗಡಿ</translation>
-<translation id="8811314776632711217">ನಿಯೋಜಿಸಲಾದ ರೆಂಡರರ್ (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">ನಿಮ್ಮ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸಿಂಕ್ ಮಾಡಿದ ನಂತರ Chrome ಭಾಷೆಯನ್ನು "<ph name="FROM_LOCALE" />" ನಿಂದ "<ph name="TO_LOCALE" />" ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ.</translation>
 <translation id="8813811964357448561">ಕಾಗದದ ಹಾಳೆ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

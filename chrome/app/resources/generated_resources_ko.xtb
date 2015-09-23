@@ -963,7 +963,6 @@
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" />개의 파일이 선택됨</translation>
 <translation id="2378982052244864789">확장 프로그램 디렉토리를 선택합니다.</translation>
 <translation id="2379281330731083556">시스템 대화상자를 사용하여 인쇄... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">사용하도록 설정하면 렌더러가 브라우저에 합성을 위임하며 두 합성 경로를 통합합니다.</translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" />님 로그아웃</translation>
 <translation id="2383034317918297467">때에 따라 검색주소창 드롭다운이 URL보다 추천 URL 제목을 더욱 눈에 잘 띄게 표시하도록 합니다.</translation>
 <translation id="2384596874640104496">신할라어 키보드</translation>
@@ -2606,7 +2605,6 @@
 <translation id="4647090755847581616">탭 닫기(&amp;C)</translation>
 <translation id="4647697156028544508">'<ph name="DEVICE_NAME" />'의 PIN을 입력하세요:</translation>
 <translation id="4648491805942548247">권한 부족</translation>
-<translation id="4650159467443406318">이 페이지를 방문하려면 여기를 클릭하세요.</translation>
 <translation id="4653235815000740718">OS 복구 미디어를 만드는 중에 문제가 발생했습니다. 사용된 저장장치를 찾을 수 없습니다.</translation>
 <translation id="4654488276758583406">아주 작게</translation>
 <translation id="465499440663162826">Chrome 웹 스토어에 연결할 수 없습니다.</translation>
@@ -3178,7 +3176,6 @@
 <translation id="5449624072515809082">입력하는 동안 텍스트의 자동 수정을 사용하도록 설정합니다. 동기적 맞춤법 검사는 이 기능과 호환되지 않습니다.</translation>
 <translation id="5449716055534515760">창 닫기(&amp;D)</translation>
 <translation id="5451285724299252438">페이지 범위 입력란</translation>
-<translation id="5451561500892538488">알림 아이콘 숨기기</translation>
 <translation id="5451646087589576080">프레임 정보(&amp;I)</translation>
 <translation id="5453029940327926427">탭 닫기</translation>
 <translation id="5453632173748266363">키릴 문자</translation>
@@ -5507,7 +5504,6 @@
 <translation id="8804398419035066391">협력 중인 웹사이트와 통신</translation>
 <translation id="8807632654848257479">안정</translation>
 <translation id="8808478386290700967">웹 스토어</translation>
-<translation id="8811314776632711217">위임된 렌더러(AKA Übercompositor)</translation>
 <translation id="8811462119186190367">설정을 동기화한 뒤 Chrome의 언어가 '<ph name="FROM_LOCALE" />'에서 '<ph name="TO_LOCALE" />'로 변경되었습니다.</translation>
 <translation id="8813811964357448561">장</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

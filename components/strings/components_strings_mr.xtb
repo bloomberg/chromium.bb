@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">नावनोंदणी डोमेन:</translation>
 <translation id="1344588688991793829">Chromium स्वयंभरण सेटिंग्ज...</translation>
 <translation id="1426410128494586442">होय</translation>
+<translation id="1430915738399379752">मुद्रण</translation>
 <translation id="1455235771979731432">आपले कार्ड सत्यापित करताना समस्या आली. आपले इंटरनेट कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="1491151370853475546">हे पृष्ठ रीलोड करा</translation>
 <translation id="1549470594296187301">हे वैशिष्‍ट्य वापरण्‍यासाठी JavaScript सक्षम करणे आवश्‍यक आहे.</translation>
-<translation id="1639239467298939599">लोड करीत आहे</translation>
 <translation id="1640180200866533862">वापरकर्ता धोरणे</translation>
 <translation id="1644184664548287040">नेटवर्क कॉन्फिगरेशन अवैध आहे आणि आयात केले जाऊ शकले नाही.</translation>
 <translation id="168841957122794586">सर्व्हर प्रमाणपत्रात एक कमकुवत क्रिप्टोग्राफिक की आहे.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">हा दस्तऐवज संकेतशब्द संरक्षित आहे. कृपया संकेतशब्द प्रविष्ट करा.</translation>
 <translation id="2625385379895617796">आपले घड्याळ पुढे आहे</translation>
 <translation id="2639739919103226564">स्थिती:</translation>
+<translation id="2653659639078652383">सबमिट करा</translation>
 <translation id="2704283930420550640">मूल्य स्वरुपनाशी जुळत नाही.</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2728127805433021124">सर्व्हरचे प्रमाणपत्र कमकुवत स्वाक्षरी अल्गोरिदम वापरून स्वाक्षरित केले आहे.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">एक अज्ञात त्रुटी आली आहे.</translation>
 <translation id="4800132727771399293">आपली कालबाह्यता तारीख आणि CVC तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="4813512666221746211">नेटवर्क त्रुटी</translation>
+<translation id="4816492930507672669">पृष्‍ठानुरुप करा</translation>
 <translation id="4850886885716139402">पहा</translation>
 <translation id="4923417429809017348">हे पृष्ठ अज्ञात भाषेतून <ph name="LANGUAGE_LANGUAGE" /> मध्ये अनुवादित करण्यात आले</translation>
 <translation id="4926049483395192435">निर्दिष्‍ट केले जाणे आवश्‍यक आहे.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">धोरणाचे नाव</translation>
 <translation id="552553974213252141">मजकूर योग्यरितीने काढला होता?</translation>
 <translation id="5540224163453853">विनंती केलेला लेख शोधू शकलो नाही.</translation>
+<translation id="5556459405103347317">रीलोड करा</translation>
 <translation id="5565735124758917034">सक्रिय</translation>
 <translation id="560412284261940334">व्यवस्थापन समर्थित नाही</translation>
 <translation id="5629630648637658800">धोरण सेटिंग्ज लोड करण्यात अयशस्वी</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;जोडा पुन्हा करा</translation>
 <translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="59107663811261420">कार्डचा हा प्रकार या व्यापार्‍यासाठी Google Payments द्वारे समर्थित नाही. कृपया एक भिन्न कार्ड निवडा.</translation>
+<translation id="5975083100439434680">झूम कमी करा</translation>
 <translation id="5989320800837274978">निश्चित प्रॉक्‍सी सर्व्हर किंवा .pac स्क्रिप्ट URL देखील निर्दिष्‍ट केलेली नाही.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">बंद करा</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, आपले घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. कारण वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरतात ती प्रमाणपत्रे केवळ निर्दिष्‍ट केलेल्‍या कालावधीसाठी वैध असतात. आपल्‍या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Chromium ही प्रमाणपत्रे सत्यापित करू शकत नाही.</translation>
 <translation id="8790007591277257123">&amp;पुन्हा करा हटवा</translation>
 <translation id="8804164990146287819">गोपनीयता धोरण</translation>
+<translation id="8820817407110198400">Bookmarks</translation>
 <translation id="8824019021993735287">Chrome यावेळी आपले कार्ड सत्यापित करण्यात अक्षम होते. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="8834246243508017242">संपर्क वापरून स्वयं-भरण सक्षम करा...</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">धोरण सेटिंग्ज विश्लेषित करताना त्रुटी</translation>
 <translation id="8876793034577346603">विश्लेषण करण्यात नेटवर्क कॉन्फिगरेशन अयशस्वी.</translation>
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
+<translation id="8903921497873541725">झूम वाढवा</translation>
 <translation id="8932102934695377596">आपले घड्याळ मागे आहे</translation>
 <translation id="8940229512486821554">Run <ph name="EXTENSION_NAME" /> कमांडः <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>

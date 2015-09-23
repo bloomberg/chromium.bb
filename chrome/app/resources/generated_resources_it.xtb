@@ -959,7 +959,6 @@ Dopo avere creato un nuovo utente supervisionato, puoi gestirne le impostazioni 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file selezionati</translation>
 <translation id="2378982052244864789">Seleziona la directory dell'estensione.</translation>
 <translation id="2379281330731083556">Stampa utilizzando la finestra di dialogo di sistema... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Se l'opzione viene attivata, il renderer delega la composizione al browser, unendo entrambi i passaggi di composizione.</translation>
 <translation id="2381823505763074471">Disconnetti l'utente <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Potrebbe talvolta causare la visualizzazione dei titoli dei suggerimenti in posizioni più evidenti rispetto agli URL nel menu a discesa della omnibox.</translation>
 <translation id="2384596874640104496">Tastiera Singalese</translation>
@@ -2573,7 +2572,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4647090755847581616">&amp;Chiudi scheda</translation>
 <translation id="4647697156028544508">Inserisci il codice PIN per "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Autorizzazioni insufficienti</translation>
-<translation id="4650159467443406318">Fai clic qui per visitare la pagina</translation>
 <translation id="4653235815000740718">Si è verificato un problema durante la creazione del supporto di ripristino del sistema operativo. Il dispositivo di archiviazione utilizzato non è stato trovato.</translation>
 <translation id="4654488276758583406">Molto piccole</translation>
 <translation id="465499440663162826">Impossibile collegarsi al Chrome Web Store.</translation>
@@ -3142,7 +3140,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5449624072515809082">Attiva la correzione automatica del testo durante la digitazione. Il correttore ortografico sincrono non è compatibile con questa funzione.</translation>
 <translation id="5449716055534515760">Chiu&amp;di finestra</translation>
 <translation id="5451285724299252438">casella di testo dell'intervallo di pagine</translation>
-<translation id="5451561500892538488">Nascondi icona Notifiche</translation>
 <translation id="5451646087589576080">Visualizza &amp;informazioni frame</translation>
 <translation id="5453029940327926427">Chiudi schede</translation>
 <translation id="5453632173748266363">Cirillico</translation>
@@ -5451,7 +5448,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8804398419035066391">Comunicare con siti web interoperativi</translation>
 <translation id="8807632654848257479">Stabile</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Renderer delegato (anche chiamato Übercompositor).</translation>
 <translation id="8811462119186190367">La lingua di Google Chrome è stata modificata da "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />" dopo la sincronizzazione delle impostazioni.</translation>
 <translation id="8813811964357448561">foglio</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

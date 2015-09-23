@@ -960,7 +960,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Se ativado, o renderizador delega a composição ao navegador, mesclando ambas as passagens de composição.</translation>
 <translation id="2381823505763074471">Desconectar usuário <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Faz com que o menu suspenso da omnibox às vezes exiba títulos de sugestões com mais destaque do que URLs.</translation>
 <translation id="2384596874640104496">Teclado em cingalês</translation>
@@ -2591,7 +2590,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4647090755847581616">&amp;Fechar guia</translation>
 <translation id="4647697156028544508">Insira o PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permissões insuficientes</translation>
-<translation id="4650159467443406318">Clique aqui para visitar esta página</translation>
 <translation id="4653235815000740718">Ocorreu um problema ao criar a mídia de recuperação de sistema operacional. Não foi possível encontrar o dispositivo de armazenamento usado.</translation>
 <translation id="4654488276758583406">Muito pequeno</translation>
 <translation id="465499440663162826">Não foi possível conectar-se à Chrome Web Store.</translation>
@@ -3162,7 +3160,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5449624072515809082">Ativa a correção automática de texto durante a digitação. A correção ortográfica síncrona não é compatível com este recurso.</translation>
 <translation id="5449716055534515760">Fechar jan&amp;ela</translation>
 <translation id="5451285724299252438">caixa de texto do intervalo de páginas</translation>
-<translation id="5451561500892538488">Ocultar ícone de notificações</translation>
 <translation id="5451646087589576080">Exibir &amp;informações do frame</translation>
 <translation id="5453029940327926427">Fechar guias</translation>
 <translation id="5453632173748266363">Cirílico</translation>
@@ -5484,7 +5481,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8804398419035066391">Comunicar-se com websites colaborativos</translation>
 <translation id="8807632654848257479">Estável</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Reenderizador delegado (também conhecido como Übercompositor).</translation>
 <translation id="8811462119186190367">O idioma do Chrome foi alterado de "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" após a sincronização de suas configurações.</translation>
 <translation id="8813811964357448561">folha de papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

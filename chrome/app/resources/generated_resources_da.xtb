@@ -957,7 +957,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="2378982052244864789">Vælg udvidelsens mappe.</translation>
 <translation id="2379281330731083556">Dialogboks til Udskriv via system... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Hvis dette er aktiveret, delegerer gengiveren sammensætninger til browseren, så begge sammensætninger passerer.</translation>
 <translation id="2381823505763074471">Log <ph name="PROFILE_USERNAME" /> ud.</translation>
 <translation id="2383034317918297467">Kan nogle gange få omnifeltets rullemenu til at vise titler mere tydeligt end webadresser.</translation>
 <translation id="2384596874640104496">Singalesisk tastatur</translation>
@@ -2597,7 +2596,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="4647090755847581616">&amp;Luk fanen</translation>
 <translation id="4647697156028544508">Indtast pinkoden for "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Utilstrækkelige tilladelser</translation>
-<translation id="4650159467443406318">Klik her for at gå til denne side</translation>
 <translation id="4653235815000740718">Der opstod et problem under oprettelsen af genoprettelsesmediet til operativsystemet. Den brugte lagerenhed kunne ikke findes.</translation>
 <translation id="4654488276758583406">Meget lille</translation>
 <translation id="465499440663162826">Der kunne ikke oprettes forbindelse til Chrome Webshop.</translation>
@@ -3168,7 +3166,6 @@ Tryk på en vilkårlig tast for at fortsætte udforskningen.</translation>
 <translation id="5449624072515809082">Aktivér automatisk retning af tekst, mens du taster. Synkron stavekontrol er ikke kompatibel med denne funktion.</translation>
 <translation id="5449716055534515760">Luk vin&amp;due</translation>
 <translation id="5451285724299252438">tekstfelt til sideinterval</translation>
-<translation id="5451561500892538488">Skjul underretningsikonet</translation>
 <translation id="5451646087589576080">Se ramme&amp;oplysninger</translation>
 <translation id="5453029940327926427">Luk faner</translation>
 <translation id="5453632173748266363">Kyrillisk</translation>
@@ -5490,7 +5487,6 @@ Beregner resterende tid</translation>
 <translation id="8804398419035066391">Kommunikere med andre websites</translation>
 <translation id="8807632654848257479">Stabil</translation>
 <translation id="8808478386290700967">Webshop</translation>
-<translation id="8811314776632711217">Delegeret gengiver (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">Sproget i Chrome er ændret fra "<ph name="FROM_LOCALE" />" til "<ph name="TO_LOCALE" />", efter at du har synkroniseret dine indstillinger.</translation>
 <translation id="8813811964357448561">papirark</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

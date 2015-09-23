@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Tên miền đăng ký:</translation>
 <translation id="1344588688991793829">Cài đặt tự động điền trong Chromium...</translation>
 <translation id="1426410128494586442">Có</translation>
+<translation id="1430915738399379752">In</translation>
 <translation id="1455235771979731432">Đã xảy ra sự cố khi xác minh thẻ của bạn. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
 <translation id="1491151370853475546">Tải lại trang này</translation>
 <translation id="1549470594296187301">Bạn phải bật JavaScript để sử dụng tính năng này.</translation>
-<translation id="1639239467298939599">Đang tải</translation>
 <translation id="1640180200866533862">Chính sách người dùng</translation>
 <translation id="1644184664548287040">Cấu hình mạng không hợp lệ và không thể nhập được.</translation>
 <translation id="168841957122794586">Chứng chỉ máy chủ chứa khóa mật mã yếu.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Tài liệu này được bảo vệ bằng mật khẩu. Vui lòng nhập mật khẩu.</translation>
 <translation id="2625385379895617796">Đồng hồ của bạn chạy nhanh</translation>
 <translation id="2639739919103226564">Trạng thái:</translation>
+<translation id="2653659639078652383">Gửi</translation>
 <translation id="2704283930420550640">Giá trị không khớp với định dạng.</translation>
 <translation id="2721148159707890343">Yêu cầu đã thành công</translation>
 <translation id="2728127805433021124">Chứng chỉ của máy chủ đã được ký bằng thuật toán chữ ký yếu.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Xảy ra lỗi chưa biết.</translation>
 <translation id="4800132727771399293">Kiểm tra ngày hết hạn và CVC của bạn rồi thử lại</translation>
 <translation id="4813512666221746211">Lỗi mạng</translation>
+<translation id="4816492930507672669">Vừa với trang</translation>
 <translation id="4850886885716139402">Xem</translation>
 <translation id="4923417429809017348">Trang này đã được dịch từ một ngôn ngữ không xác định sang <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Phải được chỉ định.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Tên chính sách</translation>
 <translation id="552553974213252141">Văn bản đã được trích xuất chính xác chưa?</translation>
 <translation id="5540224163453853">Không thể tìm thấy bài viết đã yêu cầu.</translation>
+<translation id="5556459405103347317">Tải lại</translation>
 <translation id="5565735124758917034">Đang hoạt động</translation>
 <translation id="560412284261940334">Không hỗ trợ quản lý</translation>
 <translation id="5629630648637658800">Không thể tải cài đặt chính sách</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Làm lại thêm</translation>
 <translation id="5872918882028971132">Đề xuất chính</translation>
 <translation id="59107663811261420">Loại thẻ này không được Google Payments hỗ trợ cho người bán này. Vui lòng chọn thẻ khác.</translation>
+<translation id="5975083100439434680">Thu nhỏ</translation>
 <translation id="5989320800837274978">Cả máy chủ proxy cố định và URL tập lệnh .pac đều chưa được chỉ định.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Đóng</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8804164990146287819">Chính sách bảo mật</translation>
+<translation id="8820817407110198400">Dấu trang</translation>
 <translation id="8824019021993735287">Chrome không thể xác minh thẻ của bạn vào lúc này. Vui lòng thử lại sau.</translation>
 <translation id="8834246243508017242">Bật Tự động điền bằng Liên hệ…</translation>
 <translation id="883848425547221593">Dấu trang Khác</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Lỗi phân tích cú pháp cài đặt chính sách</translation>
 <translation id="8876793034577346603">Không thể phân tích cú pháp cấu hình mạng.</translation>
 <translation id="8891727572606052622">Chế độ proxy không hợp lệ.</translation>
+<translation id="8903921497873541725">Phóng to</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
 <translation id="8940229512486821554">Chạy <ph name="EXTENSION_NAME" /> lệnh: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Chứng chỉ của máy chủ đã hết hạn.</translation>

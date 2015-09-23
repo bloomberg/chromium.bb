@@ -960,7 +960,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ficheiros selecionados</translation>
 <translation id="2378982052244864789">Selecione o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando a caixa de diálogo do sistema... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Se ativado, o renderizador delega a composição ao navegador, unindo ambos os passes de composição.</translation>
 <translation id="2381823505763074471">Terminar a sessão do utilizador <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Faz com que o menu pendente da caixa geral apresente, por vezes, títulos de sugestões de forma mais proeminente do que URLs.</translation>
 <translation id="2384596874640104496">Teclado sinhala</translation>
@@ -2600,7 +2599,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4647090755847581616">Fe&amp;char Separador</translation>
 <translation id="4647697156028544508">Introduza o PIN para "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">Permissões insuficientes</translation>
-<translation id="4650159467443406318">Clique aqui para visitar esta página</translation>
 <translation id="4653235815000740718">Ocorreu um problema ao criar o suporte de dados de recuperação do SO. Não foi possível localizar o dispositivo de armazenamento utilizado.</translation>
 <translation id="4654488276758583406">Muito pequeno</translation>
 <translation id="465499440663162826">Não foi possível estabelecer ligação à Web Store do Chrome.</translation>
@@ -3172,7 +3170,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5449624072515809082">Ative a correção automática de texto enquanto escreve. A verificação ortográfica síncrona não é compatível com esta funcionalidade.</translation>
 <translation id="5449716055534515760">Fechar &amp;Janela</translation>
 <translation id="5451285724299252438">caixa de texto do intervalo de páginas</translation>
-<translation id="5451561500892538488">Ocultar ícone de notificações</translation>
 <translation id="5451646087589576080">Ver &amp;Informações da Moldura</translation>
 <translation id="5453029940327926427">Fechar separadores</translation>
 <translation id="5453632173748266363">Cirílico</translation>
@@ -5492,7 +5489,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8804398419035066391">Comunicar com Websites de cooperação</translation>
 <translation id="8807632654848257479">Estável</translation>
 <translation id="8808478386290700967">Web Store</translation>
-<translation id="8811314776632711217">Renderizador Delegado (também conhecido como "Übercompositor").</translation>
 <translation id="8811462119186190367">O idioma do Chrome foi alterado de "<ph name="FROM_LOCALE" />" para "<ph name="TO_LOCALE" />" depois de sincronizar as suas definições.</translation>
 <translation id="8813811964357448561">folha de papel</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

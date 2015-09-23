@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Anmeldedomain:</translation>
 <translation id="1344588688991793829">AutoFill-Einstellungen für Chromium...</translation>
 <translation id="1426410128494586442">Ja</translation>
+<translation id="1430915738399379752">Drucken</translation>
 <translation id="1455235771979731432">Beim Bestätigen Ihrer Karte ist ein Problem aufgetreten. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
-<translation id="1639239467298939599">Wird geladen...</translation>
 <translation id="1640180200866533862">Nutzerrichtlinien</translation>
 <translation id="1644184664548287040">Die Netzwerkkonfiguration ist ungültig und konnte nicht importiert werden.</translation>
 <translation id="168841957122794586">Das Serverzertifikat weist einen schwachen kryptografischen Schlüssel auf.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Dieses Dokument ist passwortgeschützt. Geben Sie ein Passwort ein.</translation>
 <translation id="2625385379895617796">Ihre Uhr geht vor.</translation>
 <translation id="2639739919103226564">Status:</translation>
+<translation id="2653659639078652383">Senden</translation>
 <translation id="2704283930420550640">Wert stimmt nicht mit dem Format überein.</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4800132727771399293">Prüfen Sie Ihr Ablaufdatum und Ihren CVC und versuchen Sie es dann erneut.</translation>
 <translation id="4813512666221746211">Netzwerkfehler</translation>
+<translation id="4816492930507672669">An Seite anpassen</translation>
 <translation id="4850886885716139402">Anzeigen</translation>
 <translation id="4923417429809017348">Diese Seite wurde von einer unbekannten Sprache in <ph name="LANGUAGE_LANGUAGE" /> übersetzt.</translation>
 <translation id="4926049483395192435">Angabe erforderlich</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
+<translation id="5556459405103347317">Neu laden</translation>
 <translation id="5565735124758917034">Aktiv</translation>
 <translation id="560412284261940334">Verwaltung wird nicht unterstützt.</translation>
 <translation id="5629630648637658800">Fehler beim Laden der Richtlinieneinstellungen</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Hinzufügen wiederholen</translation>
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
 <translation id="59107663811261420">Dieser Kartentyp wird von Google Payments für diesen Händler nicht unterstützt. Bitte verwenden Sie eine andere Karte.</translation>
+<translation id="5975083100439434680">Verkleinern</translation>
 <translation id="5989320800837274978">Weder feste Proxyserver noch eine PAC-Skript-URL sind festgelegt.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Zum Aufbau einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Chromium diese Zertifikate nicht bestätigen.</translation>
 <translation id="8790007591277257123">&amp;Löschen wiederholen</translation>
 <translation id="8804164990146287819">Datenschutzerklärung</translation>
+<translation id="8820817407110198400">Lesezeichen</translation>
 <translation id="8824019021993735287">Ihre Karte konnte momentan nicht überprüft werden. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8834246243508017242">AutoFill aktivieren und dazu die Kontakte verwenden…</translation>
 <translation id="883848425547221593">Andere Lesezeichen</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Fehler beim Parsen der Richtlinieneinstellungen</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
+<translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8932102934695377596">Ihre Uhr geht nach.</translation>
 <translation id="8940229512486821554"><ph name="EXTENSION_NAME" />-Befehl ausführen: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>

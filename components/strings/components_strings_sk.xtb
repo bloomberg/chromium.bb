@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Doména registrácie:</translation>
 <translation id="1344588688991793829">Nastavenia Automatického dopĺňania prehliadača Chromium...</translation>
 <translation id="1426410128494586442">Áno</translation>
+<translation id="1430915738399379752">Tlačiť</translation>
 <translation id="1455235771979731432">Pri overovaní karty sa vyskytol problém. Skontrolujte svoje pripojenie k internetu a skúste to znova.</translation>
 <translation id="1491151370853475546">Znova načítať stránku</translation>
 <translation id="1549470594296187301">Ak chcete použiť túto funkciu, musíte povoliť JavaScript.</translation>
-<translation id="1639239467298939599">Prebieha načítavanie</translation>
 <translation id="1640180200866533862">Pravidlá pre používateľa</translation>
 <translation id="1644184664548287040">Konfigurácia siete je neplatná a nepodarilo sa ju importovať.</translation>
 <translation id="168841957122794586">Certifikát servera obsahuje slabý kryptografický kľúč.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Tento dokument je chránený heslom. Zadajte heslo.</translation>
 <translation id="2625385379895617796">Vaše hodiny idú dopredu</translation>
 <translation id="2639739919103226564">Stav:</translation>
+<translation id="2653659639078652383">Odoslať</translation>
 <translation id="2704283930420550640">Hodnota nezodpovedá formátu.</translation>
 <translation id="2721148159707890343">Žiadosť bola úspešná</translation>
 <translation id="2728127805433021124">Certifikát servera je podpísaný pomocou slabého podpisového algoritmu.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Vyskytla sa neznáma chyba.</translation>
 <translation id="4800132727771399293">Skontrolujte dátum vypršania platnosti aj kód CVC a skúste to znova</translation>
 <translation id="4813512666221746211">Chyba siete</translation>
+<translation id="4816492930507672669">Prispôsobiť stránke</translation>
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4923417429809017348">Táto stránka bola preložená z neznámeho jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musí byť určená.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Názov pravidla</translation>
 <translation id="552553974213252141">Bol text vyňatý správne?</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
+<translation id="5556459405103347317">Obnoviť</translation>
 <translation id="5565735124758917034">Aktívne</translation>
 <translation id="560412284261940334">Správa nie je podporovaná</translation>
 <translation id="5629630648637658800">Nastavenia pravidla sa nepodarilo načítať</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Znova pridať</translation>
 <translation id="5872918882028971132">Návrhy rodiča</translation>
 <translation id="59107663811261420">Služba Google Payments nepodporuje v prípade tohto obchodníka tento typ karty. Vyberte inú kartu.</translation>
+<translation id="5975083100439434680">Oddialiť</translation>
 <translation id="5989320800837274978">Nie sú určené pevne dané servery proxy ani skript PAC webovej adresy.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Zatvoriť</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Ak chcete nadviazať zabezpečené pripojenie, vaše hodiny musia byť nastavené správne. Je to preto, že certifikáty, ktoré webové stránky používajú na vlastnú identifikáciu, sú platné iba určitý čas. Keďže nie sú hodiny vášho zariadenia nastavené správne, Chromium nemôže tieto certifikáty overiť.</translation>
 <translation id="8790007591277257123">&amp;Znova vymazať</translation>
 <translation id="8804164990146287819">Pravidlá ochrany osobných údajov</translation>
+<translation id="8820817407110198400">Záložky</translation>
 <translation id="8824019021993735287">Prehliadaču Chrome sa nepodarilo overiť vašu kartu. Skúste to znova neskôr.</translation>
 <translation id="8834246243508017242">Povoliť automatické dopĺňanie pomocou Kontaktov…</translation>
 <translation id="883848425547221593">Iné záložky</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Pri analýze nastavení pravidla sa vyskytla chyba</translation>
 <translation id="8876793034577346603">Konfiguráciu siete sa nepodarilo analyzovať.</translation>
 <translation id="8891727572606052622">Neplatný režim proxy.</translation>
+<translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8932102934695377596">Vaše hodiny idú pozadu</translation>
 <translation id="8940229512486821554">Spustiť príkaz rozšírenia <ph name="EXTENSION_NAME" />: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Platnosť certifikátu servera vypršala.</translation>

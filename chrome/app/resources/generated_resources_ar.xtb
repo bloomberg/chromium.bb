@@ -958,7 +958,6 @@
 <translation id="2378075407703503998">تم تحديد <ph name="SELCTED_FILE_COUNT" /> من الملفات</translation>
 <translation id="2378982052244864789">تحديد دليل الإضافة.</translation>
 <translation id="2379281330731083556">الطباعة باستخدام مربع حوار النظام... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">عند تمكينه، يفوض العارض عملية الجمع للمتصفح، بحيث يتم الدمج بين مساري الجمع.</translation>
 <translation id="2381823505763074471">الخروج من حساب المستخدم <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">‏يؤدي أحيانًا إلى عرض القائمة المنسدلة للمربّع متعدد الاستخدامات لعرض عناوين اقتراح أحيانًا أكثر وضوحًا من عناوين URL.</translation>
 <translation id="2384596874640104496">لوحة مفاتيح اللغة السنهالية</translation>
@@ -2589,7 +2588,6 @@
 <translation id="4647090755847581616">إغلاق &amp;علامة التبويب</translation>
 <translation id="4647697156028544508">الرجاء إدخال رقم التعريف الشخصي لـ "<ph name="DEVICE_NAME" />":</translation>
 <translation id="4648491805942548247">أذونات غير كافية</translation>
-<translation id="4650159467443406318">انقر هنا لزيارة هذه الصفحة</translation>
 <translation id="4653235815000740718">حدثت مشكلة أثناء إنشاء وسائط استعادة نظام التشغيل. حيث تعذر العثور على جهاز التخزين المستخدم.</translation>
 <translation id="4654488276758583406">صغير جدًا</translation>
 <translation id="465499440663162826">‏تعذر الاتصال بسوق Chrome الإلكتروني.</translation>
@@ -3160,7 +3158,6 @@
 <translation id="5449624072515809082">لتشغيل التصحيح التلقائي للنص أثناء الكتابة. ولا يتوافق التدقيق الإملائي المتزامن مع هذه الميزة.</translation>
 <translation id="5449716055534515760">إغلاق &amp;النافذة</translation>
 <translation id="5451285724299252438">مربع نص نطاق الصفحة</translation>
-<translation id="5451561500892538488">إخفاء أيقونة الإشعارات</translation>
 <translation id="5451646087589576080">عرض &amp;معلومات الإطار</translation>
 <translation id="5453029940327926427">إغلاق علامات التبويب</translation>
 <translation id="5453632173748266363">السيريليّة</translation>
@@ -5476,7 +5473,6 @@
 <translation id="8804398419035066391">السماح بالاتصال بالمواقع المتعاونة</translation>
 <translation id="8807632654848257479">ثابت</translation>
 <translation id="8808478386290700967">السوق الإلكتروني</translation>
-<translation id="8811314776632711217">‏العارض المفوَّض (AKA Übercompositor).</translation>
 <translation id="8811462119186190367">‏لقد تم تغيير لغة Chrome من "<ph name="FROM_LOCALE" />" إلى "<ph name="TO_LOCALE" />" بعد مزامنة إعداداتك.</translation>
 <translation id="8813811964357448561">أوراق</translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>

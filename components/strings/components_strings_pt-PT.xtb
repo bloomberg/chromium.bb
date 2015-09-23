@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domínio de inscrição:</translation>
 <translation id="1344588688991793829">Definições de preenchimento automático do Chromium…</translation>
 <translation id="1426410128494586442">Sim</translation>
+<translation id="1430915738399379752">Imprimir</translation>
 <translation id="1455235771979731432">Ocorreu um erro ao validar o cartão. Verifique a sua ligação à Internet e tente novamente.</translation>
 <translation id="1491151370853475546">Atualizar esta Página</translation>
 <translation id="1549470594296187301">É necessário ativar o JavaScript para utilizar esta funcionalidade.</translation>
-<translation id="1639239467298939599">A carregar</translation>
 <translation id="1640180200866533862">Políticas do utilizador</translation>
 <translation id="1644184664548287040">A configuração de rede é inválida e não pode ser importada.</translation>
 <translation id="168841957122794586">O certificado do servidor contém uma chave criptográfica fraca.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Este documento está protegido por palavra-passe.  Introduza uma palavra-passe.</translation>
 <translation id="2625385379895617796">O seu relógio está adiantado</translation>
 <translation id="2639739919103226564">Estado:</translation>
+<translation id="2653659639078652383">Submeter</translation>
 <translation id="2704283930420550640">O valor não corresponde ao formato.</translation>
 <translation id="2721148159707890343">Pedido com êxito</translation>
 <translation id="2728127805433021124">O certificado do servidor foi assinado utilizando um algoritmo de assinatura fraco.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Ocorreu um erro desconhecido.</translation>
 <translation id="4800132727771399293">Verifique a data de validade e o Código de Segurança/CVC e tente novamente</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
+<translation id="4816492930507672669">Ajustar à página</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4923417429809017348">Esta página foi traduzida de um idioma desconhecido para <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Tem de ser especificado.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Nome da política</translation>
 <translation id="552553974213252141">O texto foi extraído corretamente?</translation>
 <translation id="5540224163453853">Não foi possível encontrar o artigo solicitado.</translation>
+<translation id="5556459405103347317">Recarregar</translation>
 <translation id="5565735124758917034">Ativo</translation>
 <translation id="560412284261940334">Gestão não suportada</translation>
 <translation id="5629630648637658800">Falha ao carregar as definições da política</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Refazer adição</translation>
 <translation id="5872918882028971132">Sugestões superiores</translation>
 <translation id="59107663811261420">O Google Payments não é compatível com este tipo de cartão para este comerciante. Selecione outro cartão.</translation>
+<translation id="5975083100439434680">Reduzir</translation>
 <translation id="5989320800837274978">Não foram especificados servidores proxy fixos nem um URL de script .pac.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Chromium não consegue validar estes certificados.</translation>
 <translation id="8790007591277257123">&amp;Refazer eliminação</translation>
 <translation id="8804164990146287819">Política de Privacidade</translation>
+<translation id="8820817407110198400">Marcadores</translation>
 <translation id="8824019021993735287">Neste momento o Chrome não consegue validar o seu cartão. Tente novamente mais tarde.</translation>
 <translation id="8834246243508017242">Ativar preenchimento automático utilizando os contactos...</translation>
 <translation id="883848425547221593">Outros marcadores</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Erro ao analisar as definições da política</translation>
 <translation id="8876793034577346603">Falha ao analisar a configuração de rede.</translation>
 <translation id="8891727572606052622">Modo de proxy inválido.</translation>
+<translation id="8903921497873541725">Ampliar</translation>
 <translation id="8932102934695377596">O seu relógio está atrasado</translation>
 <translation id="8940229512486821554">Executar o comando: <ph name="EXTENSION_NAME" /><ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">O certificado do servidor expirou.</translation>

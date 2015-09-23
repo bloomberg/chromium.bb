@@ -18,10 +18,10 @@
 <translation id="1339601241726513588">Domain ng pagpapatala:</translation>
 <translation id="1344588688991793829">Mga setting ng Autofill ng Chromium...</translation>
 <translation id="1426410128494586442">Oo</translation>
+<translation id="1430915738399379752">I-print</translation>
 <translation id="1455235771979731432">Nagkaroon ng problema sa pag-verify ng iyong card. Tingnan ang koneksyon sa internet at subukang muli.</translation>
 <translation id="1491151370853475546">I-reload ang Pahinang Ito</translation>
 <translation id="1549470594296187301">Dapat naka-enable ang JavaScript upang magamit ang feature na ito.</translation>
-<translation id="1639239467298939599">Naglo-load</translation>
 <translation id="1640180200866533862">Mga patakaran ng user</translation>
 <translation id="1644184664548287040">Di-wasto ang configuration ng network at hindi maaaring i-import.</translation>
 <translation id="168841957122794586">Naglalaman ang server certificate ng isang mahinang cryptographic key.</translation>
@@ -77,6 +77,7 @@
 <translation id="2597378329261239068">Protektado ng password ang dokumentong ito.  Mangyaring magpasok ng password.</translation>
 <translation id="2625385379895617796">Nauuna ang iyong orasan</translation>
 <translation id="2639739919103226564">Katayuan:</translation>
+<translation id="2653659639078652383">Isumite</translation>
 <translation id="2704283930420550640">Hindi tumutugma ang format sa halaga.</translation>
 <translation id="2721148159707890343">Matagumpay ang kahilingan</translation>
 <translation id="2728127805433021124">Nilagdaan ang certificate ng server gamit ang mahinang algorithm ng lagda.</translation>
@@ -156,6 +157,7 @@
 <translation id="4771973620359291008">Isang hindi alam na error ang nangyari.</translation>
 <translation id="4800132727771399293">Tingnan ang iyong petsa ng pag-expire at CVC at subukang muli</translation>
 <translation id="4813512666221746211">Error sa network</translation>
+<translation id="4816492930507672669">Pagkasyahin sa pahina</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4923417429809017348">Na-translate ang pahinang ito mula sa hindi kilalang wika patungo sa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Dapat na tukuyin.</translation>
@@ -183,6 +185,7 @@
 <translation id="5523118979700054094">Pangalan ng patakaran</translation>
 <translation id="552553974213252141">Nakuha ba nang tama ang text?</translation>
 <translation id="5540224163453853">Hindi mahanap ang hiniling na artikulo.</translation>
+<translation id="5556459405103347317">I-reload</translation>
 <translation id="5565735124758917034">Aktibo</translation>
 <translation id="560412284261940334">Hindi sinusuportahan ang pamamahala</translation>
 <translation id="5629630648637658800">Nabigong i-load ang mga setting ng patakaran</translation>
@@ -191,6 +194,7 @@
 <translation id="5813119285467412249">&amp;Gawing Muli ang Pagdagdag</translation>
 <translation id="5872918882028971132">Mga Suhestyon ng Magulang</translation>
 <translation id="59107663811261420">Ang ganitong uri ng card ay hindi sinusuportahan ng Google Payments para sa merchant na ito. Mangyaring pumili ng ibang card.</translation>
+<translation id="5975083100439434680">Mag-zoom out</translation>
 <translation id="5989320800837274978">Hindi tunukoy ang alinman sa mga hindi nababagong proxy server o isang .pac script URL.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">Isara</translation>
@@ -289,6 +293,7 @@
 <translation id="8738058698779197622">Upang makapagtatag ng secure na koneksyon, kailangang itakda nang tama ang iyong orasan. Ito ay dahil sa may-bisa lang ang mga certificate na ginagamit ng mga website upang tukuyin ang mga sarili ng mga ito sa loob ng mga partikular na tagal ng panahon. Dahil mali ang orasan ng iyong device, hindi ma-verify ng Chromium ang mga certificate na ito.</translation>
 <translation id="8790007591277257123">&amp;Gawing muli ang pagtanggal</translation>
 <translation id="8804164990146287819">Patakaran sa Privacy</translation>
+<translation id="8820817407110198400">Mga Bookmark</translation>
 <translation id="8824019021993735287">Hindi na-verify ng Chrome ang iyong card sa oras na ito. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="8834246243508017242">I-enable ang Autofill gamit ang Mga Contact…</translation>
 <translation id="883848425547221593">Iba Pang Mga Bookmark</translation>
@@ -296,6 +301,7 @@
 <translation id="8866481888320382733">Error sa pag-parse ng mga setting ng patakaran</translation>
 <translation id="8876793034577346603">Nabigong ma-parse ang configuration ng network.</translation>
 <translation id="8891727572606052622">Di-wastong mode ng proxy.</translation>
+<translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="8932102934695377596">Nahuhuli ang iyong orasan</translation>
 <translation id="8940229512486821554">Patakbuhin ang <ph name="EXTENSION_NAME" /> na command: <ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">Nag-expire na ang certificate ng server.</translation>

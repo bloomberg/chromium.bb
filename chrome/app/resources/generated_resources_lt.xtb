@@ -966,7 +966,6 @@ Sukūrę naują prižiūrimą naudotoją, bet kuriuo metu galite tvarkyti jo nus
 <translation id="2378075407703503998">Pasirinkta failų: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Pasirinkti plėtinio katalogą.</translation>
 <translation id="2379281330731083556">Spausdinti naudojant sistemos dialogo langą... <ph name="SHORTCUT_KEY" /></translation>
-<translation id="238039057627789696">Jei įgalinta, pateikėjas deleguoja kūrimą naršyklei, sujungdamas abu kūrimo leidimus.</translation>
 <translation id="2381823505763074471">Atjungti naudotoją <ph name="PROFILE_USERNAME" />.</translation>
 <translation id="2383034317918297467">Leidžiama „omnibox“ išskleidžiamajame meniu kartais pateikti pasiūlymų pavadinimus aiškiau nei URL.</translation>
 <translation id="2384596874640104496">Sinhalų klaviatūra</translation>
@@ -2606,7 +2605,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="4647090755847581616">&amp;Uždaryti skirtuką</translation>
 <translation id="4647697156028544508">Įveskite „<ph name="DEVICE_NAME" />“ PIN kodą:</translation>
 <translation id="4648491805942548247">Nepakankami leidimai</translation>
-<translation id="4650159467443406318">Spustelėkite čia, kad apsilankytumėte šiame puslapyje</translation>
 <translation id="4653235815000740718">Kuriant OS atkūrimo mediją iškilo problema. Nepavyko rasti naudojamo saugojimo įrenginio.</translation>
 <translation id="4654488276758583406">Labai mažas</translation>
 <translation id="465499440663162826">Nepavyko prisijungti prie „Chrome“ internetinės parduotuvės.</translation>
@@ -3178,7 +3176,6 @@ Jei norite toliau naršyti, paspauskite bet kurį klavišą.</translation>
 <translation id="5449624072515809082">Įjungiamas automatinis teksto taisymas įvedant. Sinchroninis rašybos tikrinimas nesuderinamas su šia funkcija.</translation>
 <translation id="5449716055534515760">Uždaryti lan&amp;gą</translation>
 <translation id="5451285724299252438">puslapių diapazono teksto laukelis</translation>
-<translation id="5451561500892538488">Pranešimų slėpimo piktograma</translation>
 <translation id="5451646087589576080">Žiūrėti rėmelio &amp;informaciją</translation>
 <translation id="5453029940327926427">Uždaryti skirtukus</translation>
 <translation id="5453632173748266363">Kirilica</translation>
@@ -5517,7 +5514,6 @@ Skaičiuojamas laikas, kol bus įkrauta</translation>
 <translation id="8804398419035066391">Susisiekti su bendradarbiaujančiomis svetainėmis</translation>
 <translation id="8807632654848257479">Stabilus</translation>
 <translation id="8808478386290700967">Internetinė parduotuvė</translation>
-<translation id="8811314776632711217">Deleguotas pateikėjas („AKA Übercompositor“).</translation>
 <translation id="8811462119186190367">Po nustatymų sinchronizavimo „Chrome“ kalba pakeista iš „<ph name="FROM_LOCALE" />“ į „<ph name="TO_LOCALE" />“.</translation>
 <translation id="8813811964357448561">popieriaus lapas</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
