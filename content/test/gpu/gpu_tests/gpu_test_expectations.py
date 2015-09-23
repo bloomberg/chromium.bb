@@ -101,14 +101,14 @@ class GpuTestExpectations(test_expectations.TestExpectations):
       if primary_gpu:
         vendor_string = primary_gpu.vendor_string.lower()
         vendor_id = primary_gpu.vendor_id
-        if vendor_string:
-          return vendor_string.split(' ')[0]
-        elif vendor_id == 0x10DE:
+        if vendor_id == 0x10DE:
           return 'nvidia'
         elif vendor_id == 0x1002:
           return 'amd'
         elif vendor_id == 0x8086:
           return 'intel'
+        elif vendor_string:
+          return vendor_string.split(' ')[0]
     return 'unknown_gpu'
 
   def _GetGpuDeviceId(self, gpu_info):

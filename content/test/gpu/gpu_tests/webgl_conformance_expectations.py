@@ -651,16 +651,36 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
 
     # Linux only.
-    self.Skip('deqp/data/gles3/shaders/arrays.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
-        ['linux', 'amd'], bug=483282)
-    self.Skip('deqp/functional/gles3/shaderswitch.html',
-        ['linux', 'nvidia'], bug=483282)
-
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
         ['linux'], bug=483282)
+    # Linux NVIDIA only.
+    self.Skip('deqp/functional/gles3/shaderswitch.html',
+        ['linux', 'nvidia'], bug=483282)
+    # Linux AMD only.
+    # It looks like AMD shader compiler rejects many valid ES3 semantics.
+    self.Skip('deqp/data/gles3/shaders/arrays.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/constant_expressions.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/constants.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/conversions.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/functions.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/linkage.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/preprocessor.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/data/gles3/shaders/qualification_order.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/framework/opengl/simplereference/referencecontext.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/functional/gles3//attriblocation.html',
+        ['linux', 'amd'], bug=483282)
+    self.Skip('deqp/functional/gles3/booleanstatequery.html',
+        ['linux', 'amd'], bug=483282)
