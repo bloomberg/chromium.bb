@@ -284,7 +284,6 @@ crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ 
 crbug.com/356828 fast/dom/gc-dom-tree-lifetime.html [ Pass Timeout ]
 crbug.com/518902 accessibility/AccessibilityScrollbar-leak.html [ Failure Pass ]
 crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash Pass ]
-crbug.com/518917 [ Android ] animations/animation-shorthand-overriding.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 crbug.com/469657 fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
 crbug.com/469657 virtual/pointerevent/fast/events/mouse-event-buttons-attribute.html [ Failure Pass ]
