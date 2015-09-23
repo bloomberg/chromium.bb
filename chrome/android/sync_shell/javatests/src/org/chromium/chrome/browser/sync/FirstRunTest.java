@@ -13,7 +13,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
-import org.chromium.chrome.browser.firstrun.FirstRunSigninProcessor;
+import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.sync.AndroidSyncSettings;
 
@@ -60,16 +60,16 @@ public class FirstRunTest extends SyncTestBase {
      * @param showSyncSettings Whether to show the sync settings page.
      */
     private void processFirstRun(String account, ShowSyncSettings showSyncSettings) {
-        FirstRunSigninProcessor.setFirstRunFlowSignInComplete(getActivity(), false);
+        FirstRunSignInProcessor.setFirstRunFlowSignInComplete(getActivity(), false);
         Bundle data = new Bundle();
         data.putString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME, account);
         data.putBoolean(FirstRunActivity.RESULT_SHOW_SYNC_SETTINGS,
                 showSyncSettings == ShowSyncSettings.YES);
-        FirstRunSigninProcessor.finalizeFirstRunFlowState(getActivity(), data);
+        FirstRunSignInProcessor.finalizeFirstRunFlowState(getActivity(), data);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                FirstRunSigninProcessor.start(getActivity());
+                FirstRunSignInProcessor.start(getActivity());
             }
         });
         getInstrumentation().waitForIdleSync();

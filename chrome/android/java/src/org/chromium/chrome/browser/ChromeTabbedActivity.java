@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,7 +23,6 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -51,7 +51,7 @@ import org.chromium.chrome.browser.document.DocumentUma;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
-import org.chromium.chrome.browser.firstrun.FirstRunSigninProcessor;
+import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
@@ -236,8 +236,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private void refreshSignIn() {
         if (mIsOnFirstRun) return;
-        Log.i(TAG, "in refreshSignIn before starting the sign-in processor");
-        FirstRunSigninProcessor.start(this);
+        android.util.Log.i(TAG, "in refreshSignIn before starting the sign-in processor");
+        FirstRunSignInProcessor.start(this);
     }
 
     @Override
@@ -815,10 +815,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         final boolean isIntentActionMain = getIntent() != null
                 && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
-        Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
+        android.util.Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
                 this, isIntentActionMain);
-        Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
+        android.util.Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         if (freIntent == null) return;
 
         mIsOnFirstRun = true;

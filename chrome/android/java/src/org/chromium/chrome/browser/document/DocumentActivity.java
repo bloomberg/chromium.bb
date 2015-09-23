@@ -33,7 +33,7 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerDocument;
 import org.chromium.chrome.browser.document.DocumentTab.DocumentTabObserver;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkUtils;
-import org.chromium.chrome.browser.firstrun.FirstRunSigninProcessor;
+import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -213,7 +213,7 @@ public class DocumentActivity extends ChromeActivity {
             }
         }
 
-        FirstRunSigninProcessor.start(this);
+        FirstRunSignInProcessor.start(this);
 
         if (!preferenceManager.hasAttemptedMigrationOnUpgrade()) {
             InitializationObserver observer = new InitializationObserver(

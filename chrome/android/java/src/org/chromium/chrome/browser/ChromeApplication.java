@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feedback.EmptyFeedbackReporter;
 import org.chromium.chrome.browser.feedback.FeedbackReporter;
-import org.chromium.chrome.browser.firstrun.ForcedSigninProcessor;
 import org.chromium.chrome.browser.gsa.GSAHelper;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
@@ -75,7 +74,6 @@ import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
 import org.chromium.chrome.browser.printing.PrintingControllerFactory;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.services.AccountsChangedReceiver;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
@@ -431,18 +429,6 @@ public class ChromeApplication extends ContentApplication {
         if (mInitializedSharedClasses) return;
         mInitializedSharedClasses = true;
 
-        ForcedSigninProcessor.start(this);
-        AccountsChangedReceiver.addObserver(new AccountsChangedReceiver.AccountsChangedObserver() {
-            @Override
-            public void onAccountsChanged(Context context, Intent intent) {
-                ThreadUtils.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        ForcedSigninProcessor.start(ChromeApplication.this);
-                    }
-                });
-            }
-        });
         GoogleServicesManager.get(this).onMainActivityStart();
         RevenueStats.getInstance();
 
