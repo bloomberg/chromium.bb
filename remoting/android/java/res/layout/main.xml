@@ -71,7 +71,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_gravity="start"
-        android:padding="16dp"
         android:background="@android:color/background_light">
     </LinearLayout>
 </android.support.v4.widget.DrawerLayout>

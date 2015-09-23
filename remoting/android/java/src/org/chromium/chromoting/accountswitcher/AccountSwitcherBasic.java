@@ -43,6 +43,8 @@ public class AccountSwitcherBasic extends AccountSwitcherBase {
         mAccountsSpinner.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
+        int padding = (int) (context.getResources().getDisplayMetrics().density * 16f);
+        mAccountsSpinner.setPadding(padding, padding, padding, padding);
         mContainer = new LinearLayout(context);
         mContainer.setOrientation(LinearLayout.VERTICAL);
         mContainer.addView(mAccountsSpinner);

@@ -8,6 +8,6 @@
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:paddingBottom="16dp"
-        android:paddingTop="16dp"
-        android:gravity="center_vertical"/>
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        style="@style/NavigationTextStyle"/>

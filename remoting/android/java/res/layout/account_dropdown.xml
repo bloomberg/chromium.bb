@@ -10,4 +10,5 @@
         android:layout_width="match_parent"
         android:drawablePadding="15sp"
         android:padding="15sp"
-        android:gravity="center_vertical"/>
+        android:gravity="center_vertical"
+        style="@style/NavigationTextStyle"/>
