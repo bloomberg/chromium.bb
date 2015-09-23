@@ -270,19 +270,16 @@ void RenderViewTest::SetUp() {
 }
 
 void RenderViewTest::TearDown() {
-  // Try very hard to collect garbage before shutting down.
-  // "5" was chosen following http://crbug.com/46571#c9
-  const int kGCIterations = 5;
-  for (int i = 0; i < kGCIterations; i++)
-    GetMainFrame()->collectGarbage();
-
   // Run the loop so the release task from the renderwidget executes.
   ProcessPendingMessages();
 
-  for (int i = 0; i < kGCIterations; i++)
-    GetMainFrame()->collectGarbage();
-
   render_thread_->SendCloseMessage();
+
+  scoped_ptr<blink::WebLeakDetector> leak_detector =
+      make_scoped_ptr(blink::WebLeakDetector::create(this));
+
+  leak_detector->collectGarbageAndGetDOMCounts(GetMainFrame());
+
   view_ = NULL;
   mock_process_.reset();
 
@@ -303,6 +300,18 @@ void RenderViewTest::TearDown() {
   platform_.reset();
   params_.reset();
   command_line_.reset();
+}
+
+void RenderViewTest::onLeakDetectionComplete(const Result& result) {
+  EXPECT_EQ(0u, result.numberOfLiveAudioNodes);
+  EXPECT_EQ(0u, result.numberOfLiveDocuments);
+  EXPECT_EQ(0u, result.numberOfLiveNodes);
+  EXPECT_EQ(0u, result.numberOfLiveLayoutObjects);
+  EXPECT_EQ(0u, result.numberOfLiveResources);
+  EXPECT_EQ(0u, result.numberOfLiveActiveDOMObjects);
+  EXPECT_EQ(0u, result.numberOfLiveScriptPromises);
+  EXPECT_EQ(0u, result.numberOfLiveFrames);
+  EXPECT_EQ(0u, result.numberOfLiveV8PerContextData);
 }
 
 void RenderViewTest::SendNativeKeyEvent(

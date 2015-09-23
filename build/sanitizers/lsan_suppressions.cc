@@ -25,9 +25,6 @@ char kLSanDefaultSuppressions[] =
 // Leaks in Nvidia's libGL.
 "leak:libGL.so\n"
 
-// A small leak in V8. http://crbug.com/46571#c9
-"leak:blink::V8GCController::collectGarbage\n"
-
 // TODO(earthdok): revisit NSS suppressions after the switch to BoringSSL
 // NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
 "leak:net::NSSCertDatabase::ImportFromPKCS12\n"
@@ -68,9 +65,6 @@ char kLSanDefaultSuppressions[] =
 // This should really be RemoteDOMWindow::create, but symbolization is
 // weird in release builds. https://crbug.com/484760
 "leak:blink::RemoteFrame::create\n"
-// Likewise, this should really be blink::WindowProxy::initializeIfNeeded.
-// https://crbug.com/484760
-"leak:blink::WindowProxy::createContext\n"
 
 // http://crbug.com/356785
 "leak:content::RenderViewImplTest_DecideNavigationPolicyForWebUI_Test::TestBody\n"
@@ -96,9 +90,6 @@ char kLSanDefaultSuppressions[] =
 
 // http://crbug.com/356306
 "leak:content::SetProcessTitleFromCommandLine\n"
-
-// http://crbug.com/506433
-"leak:blink::ResourceFetcher::garbageCollectDocumentResources\n"
 
 // PLEASE READ ABOVE BEFORE ADDING NEW SUPPRESSIONS.
 
