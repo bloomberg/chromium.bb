@@ -170,7 +170,8 @@ void SuggestionsService::BlacklistURL(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!blacklist_store_->BlacklistUrl(candidate_url)) {
-    fail_callback.Run();
+    if (!fail_callback.is_null())
+      fail_callback.Run();
     return;
   }
 
@@ -198,7 +199,8 @@ void SuggestionsService::UndoBlacklistURL(
     ServeFromCache();
     return;
   }
-  fail_callback.Run();
+  if (!fail_callback.is_null())
+    fail_callback.Run();
 }
 
 void SuggestionsService::ClearBlacklist(const ResponseCallback& callback) {
