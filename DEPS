@@ -592,6 +592,7 @@ hooks = [
     'name': 'lastchange',
     'pattern': '.',
     'action': ['python', 'src/build/util/lastchange.py',
+               '--git-hash-only',
                '-s', 'src/third_party/WebKit',
                '-o', 'src/build/util/LASTCHANGE.blink'],
   },

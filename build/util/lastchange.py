@@ -90,7 +90,7 @@ def RunGitCommand(directory, command):
     return None
 
 
-def FetchGitRevision(directory):
+def FetchGitRevision(directory, hash_only):
   """
   Fetch the Git hash for a given directory.
 
@@ -116,7 +116,7 @@ def FetchGitRevision(directory):
         if line.startswith('Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
           break
-  if not pos:
+  if hash_only or not pos:
     return VersionInfo('git', hsh)
   return VersionInfo('git', '%s-%s' % (hsh, pos))
 
@@ -166,7 +166,7 @@ def FetchGitSVNRevision(directory, svn_url_regex, go_deeper):
 
 def FetchVersionInfo(default_lastchange, directory=None,
                      directory_regex_prior_to_src_url='chrome|blink|svn',
-                     go_deeper=False):
+                     go_deeper=False, hash_only=False):
   """
   Returns the last change (in the form of a branch, revision tuple),
   from some appropriate revision control system.
@@ -176,7 +176,7 @@ def FetchVersionInfo(default_lastchange, directory=None,
 
   version_info = (FetchSVNRevision(directory, svn_url_regex) or
                   FetchGitSVNRevision(directory, svn_url_regex, go_deeper) or
-                  FetchGitRevision(directory))
+                  FetchGitRevision(directory, hash_only))
   if not version_info:
     if default_lastchange and os.path.exists(default_lastchange):
       revision = open(default_lastchange, 'r').read().strip()
@@ -263,6 +263,9 @@ def main(argv=None):
   parser.add_option("--git-svn-go-deeper", action='store_true',
                     help="In a Git-SVN repo, dig down to the last committed " +
                     "SVN change (historic behaviour).")
+  parser.add_option("--git-hash-only", action="store_true",
+                    help="In a Git repo with commit positions, only report " +
+                    "the hash.")
   opts, args = parser.parse_args(argv[1:])
 
   out_file = opts.output
@@ -283,7 +286,8 @@ def main(argv=None):
 
   version_info = FetchVersionInfo(opts.default_lastchange,
                                   directory=src_dir,
-                                  go_deeper=opts.git_svn_go_deeper)
+                                  go_deeper=opts.git_svn_go_deeper,
+                                  hash_only=opts.git_hash_only)
 
   if version_info.revision == None:
     version_info.revision = '0'
