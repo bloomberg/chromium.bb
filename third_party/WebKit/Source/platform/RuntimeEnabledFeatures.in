@@ -7,7 +7,6 @@
 // status=stable -> Enable this in all Blink configurations.  We are committed to these APIs indefinitely.
 // status=experimental -> In-progress features, Web Developers might play with, but are not on by default in stable.
 // status=test -> Enabled in ContentShell for testing, otherwise off.
-// status=deprecated -> Alias for "test", will be removed at some point.
 // Features without a status are not enabled anywhere by default.
 //
 // "implied_by" or "depends_on" specifies relationship to other features:
@@ -126,7 +125,7 @@ Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent
 PreciseMemoryInfo
-PrefixedEncryptedMedia status=deprecated
+PrefixedEncryptedMedia status=test
 // This feature is deprecated and we are evangelizing affected sites.
 // See https://crbug.com/346236 for current status.
 PrefixedVideoFullscreen status=stable

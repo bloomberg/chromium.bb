@@ -43,7 +43,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
 
     # FIXME: valid_values and defaults should probably roll into one object.
     valid_values = {
-        'status': ['stable', 'experimental', 'test', 'deprecated'],
+        'status': ['stable', 'experimental', 'test'],
     }
     defaults = {
         'condition': None,
@@ -51,10 +51,6 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'depends_on': [],
         'custom': False,
         'status': None,
-    }
-
-    _status_aliases = {
-        'deprecated': 'test',
     }
 
     def __init__(self, in_file_path):
@@ -67,7 +63,6 @@ class RuntimeFeatureWriter(in_generator.Writer):
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
             feature['first_lowered_name'] = lower_first(feature['name'])
-            feature['status'] = self._status_aliases.get(feature['status'], feature['status'])
             # Most features just check their isFooEnabled bool
             # but some depend on or are implied by other bools.
             enabled_condition = 'is%sEnabled' % feature['name']
@@ -82,7 +77,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
     def _feature_sets(self):
         # Another way to think of the status levels is as "sets of features"
         # which is how we're referring to them in this generator.
-        return [status for status in self.valid_values['status'] if status not in self._status_aliases]
+        return list(self.valid_values['status'])
 
     @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
     def generate_header(self):
