@@ -35,9 +35,11 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      16, 0, 0, 0,
+      24, 0, 0, 0,
+       0, 0, 0, 0,
        0, 0, 0, 0,
       42, 0, 0, 0,
+       0, 0, 0, 0,
        0, 0, 0, 0,
 
       16, 0, 0, 0,
@@ -105,12 +107,13 @@ define([
     var message = builder.finish();
 
     var expectedMemory = new Uint8Array([
-      /*  0: */   16,    0,    0,    0,    0,    0,    0,    0,
-      /*  8: */   31,    0,    0,    0,    0,    0,    0,    0,
-      /* 16: */   96,    0,    0,    0,    0,    0,    0,    0,
-      /* 24: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
-      /* 32: */    5,    0,    0,    0,    0,    0,    0,    0,
-      /* 40: */   72,    0,    0,    0,    0,    0,    0,    0,
+      /*  0: */   24,    0,    0,    0,    0,    0,    0,    0,
+      /*  8: */    0,    0,    0,    0,   31,    0,    0,    0,
+      /* 16: */    0,    0,    0,    0,    0,    0,    0,    0,
+      /* 24: */   96,    0,    0,    0,    0,    0,    0,    0,
+      /* 32: */ 0xD5, 0xB4, 0x12, 0x02, 0x93, 0x6E, 0x01,    0,
+      /* 40: */    5,    0,    0,    0,    0,    0,    0,    0,
+      /* 48: */   72,    0,    0,    0,    0,    0,    0,    0,
     ]);
     // TODO(abarth): Test more of the message's raw memory.
     var actualMemory = new Uint8Array(message.buffer.arrayBuffer,
@@ -240,11 +243,12 @@ define([
     encoder.encodeStringPointer(str);
     var message = builder.finish();
     var expectedMemory = new Uint8Array([
-      /*  0: */   16,    0,    0,    0,    0,    0,    0,    0,
-      /*  8: */   42,    0,    0,    0,    0,    0,    0,    0,
-      /* 16: */    8,    0,    0,    0,    0,    0,    0,    0,
-      /* 24: */   14,    0,    0,    0,    6,    0,    0,    0,
-      /* 32: */ 0x42, 0xCE, 0xBA, 0xE1, 0xBD, 0xB9,    0,    0,
+      /*  0: */   24,    0,    0,    0,    0,    0,    0,    0,
+      /*  8: */    0,    0,    0,    0,   42,    0,    0,    0,
+      /* 16: */    0,    0,    0,    0,    0,    0,    0,    0,
+      /* 24: */    8,    0,    0,    0,    0,    0,    0,    0,
+      /* 32: */   14,    0,    0,    0,    6,    0,    0,    0,
+      /* 40: */ 0x42, 0xCE, 0xBA, 0xE1, 0xBD, 0xB9,    0,    0,
     ]);
     var actualMemory = new Uint8Array(message.buffer.arrayBuffer);
     expect(actualMemory.length).toEqual(expectedMemory.length);

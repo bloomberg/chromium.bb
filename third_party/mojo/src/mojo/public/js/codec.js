@@ -28,8 +28,8 @@ define("mojo/public/js/codec", [
 
   var kArrayHeaderSize = 8;
   var kStructHeaderSize = 8;
-  var kMessageHeaderSize = 16;
-  var kMessageWithRequestIDHeaderSize = 24;
+  var kMessageHeaderSize = 24;
+  var kMessageWithRequestIDHeaderSize = 32;
   var kMapStructPayloadSize = 16;
 
   var kStructHeaderNumBytesOffset = 0;
@@ -419,9 +419,10 @@ define("mojo/public/js/codec", [
 
   // Message ------------------------------------------------------------------
 
-  var kMessageNameOffset = kStructHeaderSize;
+  var kMessageInterfaceIdOffset = kStructHeaderSize;
+  var kMessageNameOffset = kMessageInterfaceIdOffset + 4;
   var kMessageFlagsOffset = kMessageNameOffset + 4;
-  var kMessageRequestIDOffset = kMessageFlagsOffset + 4;
+  var kMessageRequestIDOffset = kMessageFlagsOffset + 8;
 
   var kMessageExpectsResponse = 1 << 0;
   var kMessageIsResponse      = 1 << 1;
@@ -472,8 +473,10 @@ define("mojo/public/js/codec", [
     var encoder = this.createEncoder(kMessageHeaderSize);
     encoder.writeUint32(kMessageHeaderSize);
     encoder.writeUint32(0);  // version.
+    encoder.writeUint32(0);  // interface ID.
     encoder.writeUint32(messageName);
     encoder.writeUint32(0);  // flags.
+    encoder.writeUint32(0);  // padding.
   }
 
   MessageBuilder.prototype.createEncoder = function(size) {
@@ -508,8 +511,10 @@ define("mojo/public/js/codec", [
     var encoder = this.createEncoder(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(kMessageWithRequestIDHeaderSize);
     encoder.writeUint32(1);  // version.
+    encoder.writeUint32(0);  // interface ID.
     encoder.writeUint32(messageName);
     encoder.writeUint32(flags);
+    encoder.writeUint32(0);  // padding.
     encoder.writeUint64(requestID);
   }
 
@@ -526,8 +531,15 @@ define("mojo/public/js/codec", [
     var messageHeaderSize = this.decoder.readUint32();
     this.payloadSize = message.buffer.byteLength - messageHeaderSize;
     var version = this.decoder.readUint32();
+    var interface_id = this.decoder.readUint32();
+    if (interface_id != 0) {
+      throw new Error("Receiving non-zero interface ID. Associated interfaces " +
+                      "are not yet supported.");
+    }
     this.messageName = this.decoder.readUint32();
     this.flags = this.decoder.readUint32();
+    // Skip the padding.
+    this.decoder.skip(4);
     if (version >= 1)
       this.requestID = this.decoder.readUint64();
     this.decoder.skip(messageHeaderSize - this.decoder.next);

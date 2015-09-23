@@ -11,19 +11,20 @@ import java.nio.ByteBuffer;
  */
 public class MessageHeader {
 
-    private static final int SIMPLE_MESSAGE_SIZE = 16;
+    private static final int SIMPLE_MESSAGE_SIZE = 24;
     private static final int SIMPLE_MESSAGE_VERSION = 0;
     private static final DataHeader SIMPLE_MESSAGE_STRUCT_INFO =
             new DataHeader(SIMPLE_MESSAGE_SIZE, SIMPLE_MESSAGE_VERSION);
 
-    private static final int MESSAGE_WITH_REQUEST_ID_SIZE = 24;
+    private static final int MESSAGE_WITH_REQUEST_ID_SIZE = 32;
     private static final int MESSAGE_WITH_REQUEST_ID_VERSION = 1;
     private static final DataHeader MESSAGE_WITH_REQUEST_ID_STRUCT_INFO =
             new DataHeader(MESSAGE_WITH_REQUEST_ID_SIZE, MESSAGE_WITH_REQUEST_ID_VERSION);
 
-    private static final int TYPE_OFFSET = 8;
-    private static final int FLAGS_OFFSET = 12;
-    private static final int REQUEST_ID_OFFSET = 16;
+    private static final int INTERFACE_ID_OFFSET = 8;
+    private static final int TYPE_OFFSET = 12;
+    private static final int FLAGS_OFFSET = 16;
+    private static final int REQUEST_ID_OFFSET = 24;
 
     /**
      * Flag for a header of a simple message.
@@ -74,6 +75,14 @@ public class MessageHeader {
         Decoder decoder = new Decoder(message);
         mDataHeader = decoder.readDataHeader();
         validateDataHeader(mDataHeader);
+
+        // Currently associated interfaces are not supported.
+        int interfaceId = decoder.readInt(INTERFACE_ID_OFFSET);
+        if (interfaceId != 0) {
+          throw new DeserializationException("Non-zero interface ID, expecting zero since "
+                  + "associated interfaces are not yet supported.");
+        }
+
         mType = decoder.readInt(TYPE_OFFSET);
         mFlags = decoder.readInt(FLAGS_OFFSET);
         if (mustHaveRequestId(mFlags)) {
@@ -137,6 +146,8 @@ public class MessageHeader {
      */
     public void encode(Encoder encoder) {
         encoder.encode(mDataHeader);
+        // Set the interface ID field to 0.
+        encoder.encode(0, INTERFACE_ID_OFFSET);
         encoder.encode(getType(), TYPE_OFFSET);
         encoder.encode(getFlags(), FLAGS_OFFSET);
         if (hasRequestId()) {

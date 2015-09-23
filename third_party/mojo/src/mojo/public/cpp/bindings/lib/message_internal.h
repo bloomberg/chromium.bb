@@ -15,15 +15,24 @@ namespace internal {
 enum { kMessageExpectsResponse = 1 << 0, kMessageIsResponse = 1 << 1 };
 
 struct MessageHeader : internal::StructHeader {
+  // Interface ID for identifying multiple interfaces running on the same
+  // message pipe.
+  uint32_t interface_id;
+  // Message name, which is scoped to the interface that the message belongs to.
   uint32_t name;
+  // 0 or either of the enum values defined above.
   uint32_t flags;
+  // Unused padding to make the struct size a multiple of 8 bytes.
+  uint32_t padding;
 };
-static_assert(sizeof(MessageHeader) == 16, "Bad sizeof(MessageHeader)");
+static_assert(sizeof(MessageHeader) == 24, "Bad sizeof(MessageHeader)");
 
 struct MessageHeaderWithRequestID : MessageHeader {
+  // Only used if either kMessageExpectsResponse or kMessageIsResponse is set in
+  // order to match responses with corresponding requests.
   uint64_t request_id;
 };
-static_assert(sizeof(MessageHeaderWithRequestID) == 24,
+static_assert(sizeof(MessageHeaderWithRequestID) == 32,
               "Bad sizeof(MessageHeaderWithRequestID)");
 
 struct MessageData {
