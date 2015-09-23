@@ -138,8 +138,8 @@ if HAVE_SYSTEMD_LOGIN
 libsession_helper_la_SOURCES +=			\
 	src/dbus.h				\
 	src/dbus.c				\
-	src/logind-util.h			\
-	src/logind-util.c
+	src/launcher-logind.h			\
+	src/launcher-logind.c
 libsession_helper_la_CFLAGS += $(SYSTEMD_LOGIN_CFLAGS) $(DBUS_CFLAGS)
 libsession_helper_la_LIBADD += $(SYSTEMD_LOGIN_LIBS) $(DBUS_LIBS)
 endif

@@ -44,7 +44,7 @@
 
 #include "compositor.h"
 #include "dbus.h"
-#include "logind-util.h"
+#include "launcher-logind.h"
 
 #define DRM_MAJOR 226
 

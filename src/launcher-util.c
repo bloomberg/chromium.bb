@@ -45,7 +45,7 @@
 
 #include "compositor.h"
 #include "launcher-util.h"
-#include "logind-util.h"
+#include "launcher-logind.h"
 #include "weston-launch.h"
 
 #define DRM_MAJOR 226
