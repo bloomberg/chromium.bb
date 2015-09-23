@@ -8,11 +8,9 @@
 #include "tools/gn/substitution_writer.h"
 #include "tools/gn/target.h"
 
-ActionValues::ActionValues() {
-}
+ActionValues::ActionValues() : console_(false) {}
 
-ActionValues::~ActionValues() {
-}
+ActionValues::~ActionValues() {}
 
 void ActionValues::GetOutputsAsSourceFiles(
     const Target* target,

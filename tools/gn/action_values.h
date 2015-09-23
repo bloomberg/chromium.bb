@@ -43,11 +43,16 @@ class ActionValues {
   bool has_depfile() const { return !depfile_.ranges().empty(); }
   void set_depfile(const SubstitutionPattern& depfile) { depfile_ = depfile; }
 
+  // Console pool option
+  bool is_console() const { return console_; }
+  void set_console(bool value) { console_ = value; }
+
  private:
   SourceFile script_;
   SubstitutionList args_;
   SubstitutionList outputs_;
   SubstitutionPattern depfile_;
+  bool console_;
 
   DISALLOW_COPY_AND_ASSIGN(ActionValues);
 };

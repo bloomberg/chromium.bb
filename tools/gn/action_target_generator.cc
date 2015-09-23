@@ -54,6 +54,9 @@ void ActionTargetGenerator::DoRun() {
   if (!FillDepfile())
     return;
 
+  if (!FillConsole())
+    return;
+
   if (!FillCheckIncludes())
     return;
 
@@ -104,6 +107,16 @@ bool ActionTargetGenerator::FillDepfile() {
     return false;
 
   target_->action_values().set_depfile(depfile);
+  return true;
+}
+
+bool ActionTargetGenerator::FillConsole() {
+  const Value* value = scope_->GetValue(variables::kConsole, true);
+  if (!value)
+    return true;
+  if (!value->VerifyTypeIs(Value::BOOLEAN, err_))
+    return false;
+  target_->action_values().set_console(value->boolean_value());
   return true;
 }
 

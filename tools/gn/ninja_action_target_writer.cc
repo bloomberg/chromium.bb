@@ -74,6 +74,10 @@ void NinjaActionTargetWriter::Run() {
       WriteDepfile(SourceFile());
       out_ << std::endl;
     }
+    if (target_->action_values().is_console()) {
+      out_ << "  pool = console";
+      out_ << std::endl;
+    }
   }
   out_ << std::endl;
 

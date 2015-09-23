@@ -76,6 +76,49 @@ TEST(NinjaActionTargetWriter, ActionNoSources) {
   EXPECT_EQ(expected, out.str());
 }
 
+
+// Tests an action with no sources and console = true
+TEST(NinjaActionTargetWriter, ActionNoSourcesConsole) {
+  TestWithScope setup;
+  Err err;
+
+  setup.build_settings()->SetBuildDir(SourceDir("//out/Debug/"));
+  Target target(setup.settings(), Label(SourceDir("//foo/"), "bar"));
+  target.set_output_type(Target::ACTION);
+
+  target.action_values().set_script(SourceFile("//foo/script.py"));
+  target.inputs().push_back(SourceFile("//foo/included.txt"));
+
+  target.action_values().outputs() =
+      SubstitutionList::MakeForTest("//out/Debug/foo.out");
+  target.action_values().set_console(true);
+
+  target.SetToolchain(setup.toolchain());
+  ASSERT_TRUE(target.OnResolved(&err));
+
+  setup.settings()->set_target_os(Settings::LINUX);
+  setup.build_settings()->set_python_path(base::FilePath(FILE_PATH_LITERAL(
+      "/usr/bin/python")));
+
+  std::ostringstream out;
+  NinjaActionTargetWriter writer(&target, out);
+  writer.Run();
+
+  const char expected[] =
+      "rule __foo_bar___rule\n"
+      "  command = /usr/bin/python ../../foo/script.py\n"
+      "  description = ACTION //foo:bar()\n"
+      "  restat = 1\n"
+      "build obj/foo/bar.inputdeps.stamp: stamp ../../foo/script.py "
+          "../../foo/included.txt\n"
+      "\n"
+      "build foo.out: __foo_bar___rule | obj/foo/bar.inputdeps.stamp\n"
+      "  pool = console\n"
+      "\n"
+      "build obj/foo/bar.stamp: stamp foo.out\n";
+  EXPECT_EQ(expected, out.str());
+}
+
 // Makes sure that we write sources as input dependencies for actions with
 // both sources and inputs (ACTION_FOREACH treats the sources differently).
 TEST(NinjaActionTargetWriter, ActionWithSources) {
