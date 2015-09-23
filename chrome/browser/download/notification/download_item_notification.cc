@@ -37,9 +37,9 @@
 #include "ui/message_center/message_center_style.h"
 
 #if !defined(OS_MACOSX)
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/native_theme/common_theme.h"
 #endif
 
 using base::UserMetricsAction;
@@ -159,14 +159,6 @@ void RecordButtonClickAction(DownloadCommands::Command command) {
       break;
   }
 }
-
-#if !defined(OS_MACOSX)
-gfx::Image GetVectorIcon(gfx::VectorIconId id, ui::NativeTheme::ColorId color) {
-  SkColor icon_color;
-  ui::CommonThemeGetSystemColor(color, &icon_color);
-  return gfx::Image(gfx::CreateVectorIcon(id, 40, icon_color));
-}
-#endif
 
 }  // anonymous namespace
 
@@ -516,7 +508,7 @@ void DownloadItemNotification::UpdateNotificationIcon() {
         SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
 #else
         SetNotificationVectorIcon(gfx::VectorIconId::FILE_DOWNLOAD,
-                                  ui::NativeTheme::kColorId_GoogleBlue);
+                                  gfx::kGoogleBlue);
 #endif
       }
       break;
@@ -557,14 +549,13 @@ void DownloadItemNotification::SetNotificationIcon(int resource_id) {
 }
 
 #if !defined(OS_MACOSX)
-void DownloadItemNotification::SetNotificationVectorIcon(
-    gfx::VectorIconId id,
-    ui::NativeTheme::ColorId color) {
+void DownloadItemNotification::SetNotificationVectorIcon(gfx::VectorIconId id,
+                                                         SkColor color) {
   if (vector_icon_params_ == std::make_pair(id, color))
     return;
   vector_icon_params_ = std::make_pair(id, color);
   image_resource_id_ = 0;
-  notification_->set_icon(GetVectorIcon(id, color));
+  notification_->set_icon(gfx::Image(gfx::CreateVectorIcon(id, 40, color)));
 }
 #endif
 

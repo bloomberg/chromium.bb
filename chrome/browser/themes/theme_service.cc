@@ -35,6 +35,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme.h"
@@ -231,14 +232,9 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-    case Properties::COLOR_TAB_ICON: {
-      SkColor base_color;
-      bool found_color = ui::CommonThemeGetSystemColor(
-          ui::NativeTheme::kColorId_ChromeIconGrey, &base_color);
-      DCHECK(found_color);
-      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS);
-      return color_utils::HSLShift(base_color, hsl);
-    }
+    case Properties::COLOR_TAB_ICON:
+      return color_utils::HSLShift(gfx::kChromeIconGrey,
+                                   GetTint(Properties::TINT_BUTTONS));
     case Properties::COLOR_THROBBER_SPINNING:
     case Properties::COLOR_THROBBER_WAITING: {
       SkColor base_color;

@@ -39,10 +39,9 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 #endif
 
 #if defined(OS_WIN)
@@ -212,10 +211,7 @@ BookmarkShortcutDisposition GetBookmarkShortcutDisposition(Profile* profile) {
 
 #if defined(TOOLKIT_VIEWS)
 gfx::ImageSkia GetFolderIcon(gfx::VectorIconId id) {
-  SkColor icon_color;
-  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                &icon_color);
-  return gfx::CreateVectorIcon(id, 16, icon_color);
+  return gfx::CreateVectorIcon(id, 16, gfx::kChromeIconGrey);
 }
 #endif
 

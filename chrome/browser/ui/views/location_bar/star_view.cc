@@ -17,10 +17,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 
 StarView::StarView(CommandUpdater* command_updater, Browser* browser)
     : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE), browser_(browser) {
@@ -39,13 +38,9 @@ void StarView::SetToggled(bool on) {
       on ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR));
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkColor icon_color;
-    ui::CommonThemeGetSystemColor(on ? ui::NativeTheme::kColorId_GoogleBlue
-                                     : ui::NativeTheme::kColorId_ChromeIconGrey,
-                                  &icon_color);
     SetImage(gfx::CreateVectorIcon(
         on ? gfx::VectorIconId::STAR : gfx::VectorIconId::STAR_BORDER, 18,
-        icon_color));
+        on ? gfx::kGoogleBlue : gfx::kChromeIconGrey));
   } else {
     SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
         on ? IDR_STAR_LIT : IDR_STAR));

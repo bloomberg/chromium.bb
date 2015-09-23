@@ -13,9 +13,8 @@
 #include "ui/gfx/vector_icons_public.h"
 
 #if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 #endif
 
 namespace infobars {
@@ -47,14 +46,9 @@ gfx::Image InfoBarDelegate::GetIcon() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::VectorIconId vector_id = GetVectorIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
-      SkColor icon_color;
-      if (GetInfoBarType() == WARNING_TYPE) {
-        icon_color = SkColorSetRGB(0xFF, 0x6F, 0x00);
-      } else {
-        ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_GoogleBlue,
-                                      &icon_color);
-      }
-      return gfx::Image(gfx::CreateVectorIcon(vector_id, 16, icon_color));
+      return gfx::Image(gfx::CreateVectorIcon(
+          vector_id, 16,
+          GetInfoBarType() == WARNING_TYPE ? gfx::kAmber : gfx::kGoogleBlue));
     }
   }
 #endif

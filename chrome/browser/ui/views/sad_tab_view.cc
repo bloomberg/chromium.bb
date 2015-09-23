@@ -17,6 +17,7 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/native_theme/common_theme.h"
@@ -140,11 +141,8 @@ SadTabView::SadTabView(WebContents* web_contents, chrome::SadTabKind kind)
 
   views::ImageView* image = new views::ImageView();
 
-  SkColor icon_color;
-  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                &icon_color);
-  image->SetImage(
-      gfx::CreateVectorIcon(gfx::VectorIconId::CRASHED_TAB, 48, icon_color));
+  image->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::CRASHED_TAB, 48,
+                                        gfx::kChromeIconGrey));
   layout->AddPaddingRow(1, views::kPanelVerticalSpacing);
   layout->StartRow(0, column_set_id);
   layout->AddView(image, 2, 1);

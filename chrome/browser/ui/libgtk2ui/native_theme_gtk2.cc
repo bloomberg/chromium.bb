@@ -430,9 +430,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
                                      0x80);
     }
 
-    case kColorId_Amber:
-    case kColorId_ChromeIconGrey:
-    case kColorId_GoogleBlue:
     case kColorId_NumColors:
       NOTREACHED();
       break;

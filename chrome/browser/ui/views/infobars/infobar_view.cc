@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/compositor/clip_transform_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -224,11 +225,8 @@ void InfoBarView::ViewHierarchyChanged(
     close_button_ = new views::ImageButton(this);
 
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      SkColor grey;
-      ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                    &grey);
-      gfx::ImageSkia image =
-          gfx::CreateVectorIcon(gfx::VectorIconId::BAR_CLOSE, 16, grey);
+      gfx::ImageSkia image = gfx::CreateVectorIcon(gfx::VectorIconId::BAR_CLOSE,
+                                                   16, gfx::kChromeIconGrey);
       close_button_->SetImage(views::CustomButton::STATE_NORMAL, &image);
     } else {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

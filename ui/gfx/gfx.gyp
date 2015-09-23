@@ -143,6 +143,7 @@
         'codec/png_codec.h',
         'color_analysis.cc',
         'color_analysis.h',
+        'color_palette.h',
         'color_profile.cc',
         'color_profile.h',
         'color_profile_mac.mm',

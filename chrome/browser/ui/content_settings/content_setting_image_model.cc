@@ -17,10 +17,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if !defined(OS_MACOSX)
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 #endif
 
 using content::WebContents;
@@ -38,10 +37,8 @@ bool UseVectorGraphics() {
 #if !defined(OS_MACOSX)
 // Gets a vector icon badged with |badge|.
 gfx::Image GetIcon(gfx::VectorIconId id, gfx::VectorIconId badge) {
-  SkColor icon_color;
-  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                &icon_color);
-  return gfx::Image(gfx::CreateVectorIconWithBadge(id, 16, icon_color, badge));
+  return gfx::Image(
+      gfx::CreateVectorIconWithBadge(id, 16, gfx::kChromeIconGrey, badge));
 }
 #endif
 

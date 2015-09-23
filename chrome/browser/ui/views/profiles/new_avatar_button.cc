@@ -13,11 +13,10 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#include "ui/native_theme/common_theme.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/painter.h"
@@ -210,10 +209,9 @@ void NewAvatarButton::Update() {
   if (use_generic_button) {
     SetImage(views::Button::STATE_NORMAL, generic_avatar_);
   } else if (has_auth_error_) {
-    SkColor icon_color;
-    ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_Amber, &icon_color);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13, icon_color));
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 13, gfx::kAmber));
   } else {
     SetImage(views::Button::STATE_NORMAL, gfx::ImageSkia());
   }

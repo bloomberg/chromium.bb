@@ -30,6 +30,7 @@
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -813,17 +814,10 @@ void ExpandableContainerView::ToggleDetailLevel() {
 }
 
 void ExpandableContainerView::UpdateArrowToggle(bool expanded) {
-  SkColor icon_color;
-  ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                &icon_color);
-  gfx::ImageSkia icon = gfx::CreateVectorIcon(expanded ?
-          gfx::VectorIconId::FIND_PREV :
-          gfx::VectorIconId::FIND_NEXT,
-          16,
-          icon_color);
-  arrow_toggle_->SetImage(
-      views::Button::STATE_NORMAL,
-      &icon);
+  gfx::ImageSkia icon = gfx::CreateVectorIcon(
+      expanded ? gfx::VectorIconId::FIND_PREV : gfx::VectorIconId::FIND_NEXT,
+      16, gfx::kChromeIconGrey);
+  arrow_toggle_->SetImage(views::Button::STATE_NORMAL, &icon);
 }
 
 // static

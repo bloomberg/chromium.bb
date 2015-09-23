@@ -15,6 +15,7 @@
 #include "content/public/browser/download_item.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
@@ -68,8 +69,7 @@ class DownloadItemNotification : public DownloadNotification,
   void SetNotificationIcon(int resource_id);
 
 #if !defined(OS_MACOSX)
-  void SetNotificationVectorIcon(gfx::VectorIconId id,
-                                 ui::NativeTheme::ColorId color);
+  void SetNotificationVectorIcon(gfx::VectorIconId id, SkColor color);
 #endif
 
   // Set preview image of the notification. Must be called on IO thread.
@@ -113,7 +113,7 @@ class DownloadItemNotification : public DownloadNotification,
 
   int image_resource_id_ = 0;
 #if !defined(OS_MACOSX)
-  std::pair<gfx::VectorIconId, ui::NativeTheme::ColorId> vector_icon_params_;
+  std::pair<gfx::VectorIconId, SkColor> vector_icon_params_;
 #endif
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state

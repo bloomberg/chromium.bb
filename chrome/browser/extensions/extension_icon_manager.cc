@@ -17,6 +17,7 @@
 #include "skia/ext/image_operations.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/size.h"
@@ -112,15 +113,12 @@ void ExtensionIconManager::OnImageLoaded(const std::string& extension_id,
 
 void ExtensionIconManager::EnsureDefaultIcon() {
   if (default_icon_.empty()) {
-    SkColor icon_color;
-    ui::CommonThemeGetSystemColor(ui::NativeTheme::kColorId_ChromeIconGrey,
-                                  &icon_color);
     // TODO(estade): use correct scale factor instead of 1x.
-    default_icon_ =
-        ApplyPadding(*gfx::CreateVectorIcon(gfx::VectorIconId::EXTENSION,
-                                            gfx::kFaviconSize, icon_color)
-                          .bitmap(),
-                     padding_);
+    default_icon_ = ApplyPadding(
+        *gfx::CreateVectorIcon(gfx::VectorIconId::EXTENSION, gfx::kFaviconSize,
+                               gfx::kChromeIconGrey)
+             .bitmap(),
+        padding_);
   }
 }
 
