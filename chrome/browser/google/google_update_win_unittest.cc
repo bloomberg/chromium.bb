@@ -31,12 +31,9 @@
 #include "ui/base/win/atl_module.h"
 #include "version.h"
 
-using ::testing::Assign;
 using ::testing::DoAll;
-using ::testing::DoubleEq;
 using ::testing::HasSubstr;
 using ::testing::InSequence;
-using ::testing::Invoke;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::Sequence;
@@ -76,16 +73,6 @@ class GoogleUpdateFactory {
   virtual ~GoogleUpdateFactory() {}
   virtual HRESULT Create(
       base::win::ScopedComPtr<IGoogleUpdate3Web>* google_update) = 0;
-};
-
-// A mock factory for creating an IGoogleUpdate3Web instance.
-class MockGoogleUpdateFactory : public GoogleUpdateFactory {
- public:
-  MockGoogleUpdateFactory() {}
-  MOCK_METHOD1(Create, HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockGoogleUpdateFactory);
 };
 
 class MockCurrentState : public CComObjectRootEx<CComSingleThreadModel>,
@@ -200,13 +187,19 @@ class MockCurrentState : public CComObjectRootEx<CComSingleThreadModel>,
   DISALLOW_COPY_AND_ASSIGN(MockCurrentState);
 };
 
+// A mock IAppWeb that can run callers of get_currentState through a sequence of
+// pre-programmed states registered via the various Push*State methods.
 class MockApp : public CComObjectRootEx<CComSingleThreadModel>, public IAppWeb {
  public:
   BEGIN_COM_MAP(MockApp)
     COM_INTERFACE_ENTRY(IAppWeb)
   END_COM_MAP()
 
-  MockApp() {}
+  MockApp() {
+    // Connect get_currentState so that each call will go to GetNextState.
+    ON_CALL(*this, get_currentState(_))
+        .WillByDefault(::testing::Invoke(this, &MockApp::GetNextState));
+  }
 
   // IAppWeb:
   MOCK_METHOD1_WITH_CALLTYPE(STDMETHODCALLTYPE,
@@ -249,10 +242,90 @@ class MockApp : public CComObjectRootEx<CComSingleThreadModel>, public IAppWeb {
                              HRESULT(DISPID, REFIID, LCID, WORD, DISPPARAMS *,
                                      VARIANT *, EXCEPINFO *, UINT *));
 
+  // Adds a MockCurrentState to the back of the sequence to be returned by the
+  // mock IAppWeb.
+  void PushState(CurrentState state) { MakeNextState(state); }
+
+  // Adds a MockCurrentState to the back of the sequence to be returned by the
+  // mock IAppWeb for an ERROR state.
+  void PushErrorState(LONG error_code,
+                      const base::string16& completion_message,
+                      LONG installer_result_code) {
+    CComObject<MockCurrentState>* mock_state = MakeNextState(STATE_ERROR);
+    EXPECT_CALL(*mock_state, get_errorCode(_))
+        .WillRepeatedly(DoAll(SetArgPointee<0>(error_code), Return(S_OK)));
+    mock_state->ExpectCompletionMessage(completion_message);
+    if (installer_result_code != -1) {
+      EXPECT_CALL(*mock_state, get_installerResultCode(_))
+          .WillRepeatedly(DoAll(SetArgPointee<0>(installer_result_code),
+                                Return(S_OK)));
+    }
+  }
+
+  // Adds a MockCurrentState to the back of the sequence to be returned by the
+  // mock IAppWeb for an UPDATE_AVAILABLE state.
+  void PushUpdateAvailableState(const base::string16& new_version) {
+    MakeNextState(STATE_UPDATE_AVAILABLE)->ExpectAvailableVersion(new_version);
+  }
+
+  // Adds a MockCurrentState to the back of the sequence to be returned by the
+  // mock IAppWeb for a DOWNLOADING or INSTALLING state.
+  void PushProgressiveState(CurrentState state, int progress) {
+    CComObject<MockCurrentState>* mock_state = MakeNextState(state);
+    if (state == STATE_DOWNLOADING) {
+      const ULONG kTotalBytes = 1024;
+      ULONG bytes_down = static_cast<double>(kTotalBytes) * progress / 100.0;
+      EXPECT_CALL(*mock_state, get_totalBytesToDownload(_))
+          .WillRepeatedly(DoAll(SetArgPointee<0>(kTotalBytes), Return(S_OK)));
+      EXPECT_CALL(*mock_state, get_bytesDownloaded(_))
+          .WillRepeatedly(DoAll(SetArgPointee<0>(bytes_down), Return(S_OK)));
+    } else if (state == STATE_INSTALLING) {
+      EXPECT_CALL(*mock_state, get_installProgress(_))
+          .WillRepeatedly(DoAll(SetArgPointee<0>(progress), Return(S_OK)));
+    } else {
+      ADD_FAILURE() << "unsupported state " << state;
+    }
+  }
+
  private:
+  // Returns a new MockCurrentState that will be returned by the mock IAppWeb's
+  // get_currentState method.
+  CComObject<MockCurrentState>* MakeNextState(CurrentState state) {
+    CComObject<MockCurrentState>* mock_state = nullptr;
+    // The new object's refcount is held at zero until it is released from the
+    // simulator in GetNextState.
+    EXPECT_EQ(S_OK, CComObject<MockCurrentState>::CreateInstance(&mock_state));
+    EXPECT_CALL(*mock_state, get_stateValue(_))
+        .WillRepeatedly(DoAll(SetArgPointee<0>(state), Return(S_OK)));
+    states_.push(mock_state);
+    // Tell the app to expect this state.
+    EXPECT_CALL(*this, get_currentState(_)).InSequence(state_sequence_);
+    return mock_state;
+  }
+
+  // An implementation of IAppWeb::get_currentState that advances the
+  // IGoogleUpdate3Web simulator through a series of states.
+  HRESULT GetNextState(IDispatch** current_state) {
+    EXPECT_FALSE(states_.empty());
+    *current_state = states_.front();
+    // Give a reference to the caller.
+    (*current_state)->AddRef();
+    states_.pop();
+    return S_OK;
+  }
+
+  // The states returned by the MockApp when probed.
+  std::queue<CComObject<MockCurrentState>*> states_;
+
+  // A gmock sequence under which a series of get_CurrentState expectations are
+  // evaluated.
+  Sequence state_sequence_;
+
   DISALLOW_COPY_AND_ASSIGN(MockApp);
 };
 
+// A mock IAppBundleWeb that can handle a single call to createInstalledApp
+// followed by get_appWeb.
 class MockAppBundle : public CComObjectRootEx<CComSingleThreadModel>,
                       public IAppBundleWeb {
  public:
@@ -330,10 +403,35 @@ class MockAppBundle : public CComObjectRootEx<CComSingleThreadModel>,
                              HRESULT(DISPID, REFIID, LCID, WORD, DISPPARAMS *,
                                      VARIANT *, EXCEPINFO *, UINT *));
 
+  // Returns a MockApp for the given |app_guid| that will be returned by this
+  // instance's get_appWeb method. The returned instance is only valid for use
+  // in setting up expectations until a consumer obtains it via get_appWeb, at
+  // which time it is owned by the consumer.
+  CComObject<MockApp>* MakeApp(const base::char16* app_guid) {
+    // The bundle will be called on to create the installed app.
+    EXPECT_CALL(*this, createInstalledApp(StrEq(app_guid)))
+        .WillOnce(Return(S_OK));
+
+    CComObject<MockApp>* mock_app = nullptr;
+    EXPECT_EQ(S_OK, CComObject<MockApp>::CreateInstance(&mock_app));
+
+    // Give mock_app_bundle a ref to the app which it will return when asked.
+    // Note: to support multiple apps, get_appWeb expectations should use
+    // successive indices.
+    mock_app->AddRef();
+    EXPECT_CALL(*this, get_appWeb(0, _))
+        .WillOnce(DoAll(SetArgPointee<1>(mock_app),
+                        Return(S_OK)));
+
+    return mock_app;
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAppBundle);
 };
 
+// A mock IGoogleUpdate3Web that can handle a call to initialize and
+// createAppBundleWeb by consumers.
 class MockGoogleUpdate : public CComObjectRootEx<CComSingleThreadModel>,
                          public IGoogleUpdate3Web {
  public:
@@ -363,7 +461,51 @@ class MockGoogleUpdate : public CComObjectRootEx<CComSingleThreadModel>,
                              HRESULT(DISPID, REFIID, LCID, WORD, DISPPARAMS *,
                                      VARIANT *, EXCEPINFO *, UINT *));
 
+  // Returns a MockAppBundle that will be returned by this instance's
+  // createAppBundleWeb method. The returned instance is only valid for use in
+  // setting up expectations until a consumer obtains it via createAppBundleWeb,
+  // at which time it is owned by the consumer.
+  CComObject<MockAppBundle>* MakeAppBundle() {
+    CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+    EXPECT_EQ(S_OK,
+              CComObject<MockAppBundle>::CreateInstance(&mock_app_bundle));
+    EXPECT_CALL(*mock_app_bundle, initialize())
+        .WillOnce(Return(S_OK));
+    // Give this instance a ref to the bundle which it will return when created.
+    mock_app_bundle->AddRef();
+    EXPECT_CALL(*this, createAppBundleWeb(_))
+        .WillOnce(DoAll(SetArgPointee<0>(mock_app_bundle), Return(S_OK)));
+    return mock_app_bundle;
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(MockGoogleUpdate);
+};
+
+// A mock factory for creating an IGoogleUpdate3Web instance.
+class MockGoogleUpdateFactory : public GoogleUpdateFactory {
+ public:
+  MockGoogleUpdateFactory() {}
+  MOCK_METHOD1(Create, HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*));
+
+  // Returns a mock IGoogleUpdate3Web object that will be returned by the
+  // factory.
+  CComObject<MockGoogleUpdate>* MakeServerMock() {
+    CComObject<MockGoogleUpdate>* mock_google_update = nullptr;
+    EXPECT_EQ(S_OK, CComObject<MockGoogleUpdate>::CreateInstance(
+                        &mock_google_update));
+    // Give the factory this updater. Do not add a ref, as the factory will add
+    // one when it hands out its instance.
+    EXPECT_CALL(*this, Create(_))
+        .InSequence(sequence_)
+        .WillOnce(DoAll(SetArgPointee<0>(mock_google_update), Return(S_OK)));
+    return mock_google_update;
+  }
+
+ private:
+  Sequence sequence_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockGoogleUpdateFactory);
 };
 
 }  // namespace
@@ -386,9 +528,7 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   GoogleUpdateWinTest()
       : task_runner_(new base::TestSimpleTaskRunner()),
         task_runner_handle_(task_runner_),
-        system_level_install_(GetParam()),
-        mock_app_(nullptr),
-        mock_app_bundle_(nullptr) {}
+        system_level_install_(GetParam()) {}
 
   void SetUp() override {
     ::testing::TestWithParam<bool>::SetUp();
@@ -452,117 +592,25 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
                                       current_version.components()[3]);
   }
 
+  // Creates app bundle and app mocks that will be used to simulate Google
+  // Update.
+  void MakeGoogleUpdateMocks(CComObject<MockAppBundle>** mock_app_bundle,
+                             CComObject<MockApp>** mock_app) {
+    CComObject<MockGoogleUpdate>* google_update =
+        mock_google_update_factory_.MakeServerMock();
+    CComObject<MockAppBundle>* app_bundle = google_update->MakeAppBundle();
+    CComObject<MockApp>* app = app_bundle->MakeApp(kChromeBinariesGuid);
+
+    if (mock_app_bundle)
+      *mock_app_bundle = app_bundle;
+    if (mock_app)
+      *mock_app = app;
+  }
+
   void TearDown() override {
-    ASSERT_EQ(nullptr, mock_app_);
-    ASSERT_EQ(nullptr, mock_app_bundle_);
-    ASSERT_TRUE(states_.empty());
     // Remove the test's IGoogleUpdate on-demand update class factory.
     SetGoogleUpdateFactoryForTesting(GoogleUpdate3ClassFactory());
     ::testing::TestWithParam<bool>::TearDown();
-  }
-
-  // Prepares the IGoogleUpdate3Web simulator.
-  void PrepareSimulator(const base::char16* app_guid) {
-    // Make the installed app and configure it to call the test fixture's
-    // GetNextState method.
-    ASSERT_EQ(S_OK, CComObject<MockApp>::CreateInstance(&mock_app_));
-    ON_CALL(*mock_app_, get_currentState(_))
-        .WillByDefault(Invoke(this, &GoogleUpdateWinTest::GetNextState));
-
-    // Make the app bundle containing the app.
-    ASSERT_EQ(S_OK,
-              CComObject<MockAppBundle>::CreateInstance(&mock_app_bundle_));
-    EXPECT_CALL(*mock_app_bundle_, initialize())
-        .WillOnce(Return(S_OK));
-    // The bundle will be called on to create the installed app.
-    EXPECT_CALL(*mock_app_bundle_, createInstalledApp(StrEq(app_guid)))
-        .WillOnce(Return(S_OK));
-    // Give mock_app_bundle a ref to the app which it will return when asked.
-    mock_app_->AddRef();
-    EXPECT_CALL(*mock_app_bundle_, get_appWeb(0, _))
-        .WillOnce(DoAll(SetArgPointee<1>(mock_app_),
-                        Assign(&mock_app_, nullptr),
-                        Return(S_OK)));
-
-    // Make the updater which will return the app bundle above.
-    CComObject<MockGoogleUpdate>* mock_google_update = nullptr;
-    ASSERT_EQ(S_OK, CComObject<MockGoogleUpdate>::CreateInstance(
-                        &mock_google_update));
-    // Give mock_google_update a ref to the bundle which it will return when
-    // created.
-    mock_app_bundle_->AddRef();
-    EXPECT_CALL(*mock_google_update, createAppBundleWeb(_))
-        .WillOnce(DoAll(SetArgPointee<0>(mock_app_bundle_),
-                        Assign(&mock_app_bundle_, nullptr),
-                        Return(S_OK)));
-
-    // Give the factory this updater. Do not add a ref, as the factory will add
-    // one when it hands out its instance.
-    EXPECT_CALL(mock_google_update_factory_, Create(_))
-        .WillOnce(DoAll(SetArgPointee<0>(mock_google_update), Return(S_OK)));
-  }
-
-  // Prepares the IGoogleUpdate3Web simulator to process an update check.
-  void PrepareSimulatorForUpdateCheck(const base::char16* app_guid) {
-    PrepareSimulator(app_guid);
-    // Expect the bundle to be called on to start the update.
-    EXPECT_CALL(*mock_app_bundle_, checkForUpdate())
-        .WillOnce(Return(S_OK));
-  }
-
-  // Prepares the IGoogleUpdate3Web simulator to process an upgrade.
-  void PrepareSimulatorForUpgrade(const base::char16* app_guid) {
-    PrepareSimulatorForUpdateCheck(app_guid);
-    // Expect the bundle to be called on to start the install.
-    EXPECT_CALL(*mock_app_bundle_, install())
-        .WillOnce(Return(S_OK));
-  }
-
-  // Adds a MockCurrentState to the back of the sequence to be returned by the
-  // mock IAppWeb.
-  void PushState(CurrentState state) {
-    MakeNextState(state);
-  }
-
-  // Adds a MockCurrentState to the back of the sequence to be returned by the
-  // mock IAppWeb for an ERROR state.
-  void PushErrorState(LONG error_code,
-                      const base::string16& completion_message,
-                      LONG installer_result_code) {
-    CComObject<MockCurrentState>* mock_state = MakeNextState(STATE_ERROR);
-    EXPECT_CALL(*mock_state, get_errorCode(_))
-        .WillRepeatedly(DoAll(SetArgPointee<0>(error_code), Return(S_OK)));
-    mock_state->ExpectCompletionMessage(completion_message);
-    if (installer_result_code != -1) {
-      EXPECT_CALL(*mock_state, get_installerResultCode(_))
-          .WillRepeatedly(DoAll(SetArgPointee<0>(installer_result_code),
-                                Return(S_OK)));
-    }
-  }
-
-  // Adds a MockCurrentState to the back of the sequence to be returned by the
-  // mock IAppWeb for an UPDATE_AVAILABLE state.
-  void PushUpdateAvailableState(const base::string16& new_version) {
-    MakeNextState(STATE_UPDATE_AVAILABLE)->ExpectAvailableVersion(new_version);
-  }
-
-  // Adds a MockCurrentState to the back of the sequence to be returned by the
-  // mock IAppWeb for a DOWNLOADING or INSTALLING state.
-  void PushProgressiveState(CurrentState state, int progress) {
-    CComObject<MockCurrentState>* mock_state = MakeNextState(state);
-    if (state == STATE_DOWNLOADING) {
-      const ULONG kTotalBytes = 1024;
-      ULONG bytes_down = static_cast<double>(kTotalBytes) * progress / 100.0;
-      EXPECT_CALL(*mock_state, get_totalBytesToDownload(_))
-          .WillRepeatedly(DoAll(SetArgPointee<0>(kTotalBytes), Return(S_OK)));
-      EXPECT_CALL(*mock_state, get_bytesDownloaded(_))
-          .WillRepeatedly(DoAll(SetArgPointee<0>(bytes_down), Return(S_OK)));
-    } else if (state == STATE_INSTALLING) {
-      EXPECT_CALL(*mock_state, get_installProgress(_))
-          .WillRepeatedly(DoAll(SetArgPointee<0>(progress), Return(S_OK)));
-    } else {
-      ADD_FAILURE() << "unsupported state " << state;
-    }
   }
 
   static const base::char16 kClients[];
@@ -588,47 +636,10 @@ class GoogleUpdateWinTest : public ::testing::TestWithParam<bool> {
   // machinery.
   StrictMock<MockGoogleUpdateFactory> mock_google_update_factory_;
 
-  // The mock objects that simulate the IGoogleUpdate3Web API.
-  CComObject<MockApp>* mock_app_;
-  CComObject<MockAppBundle>* mock_app_bundle_;
-
-  // A gmock sequence under which expectations on the MockApp are evaluated.
-  Sequence state_sequence_;
-
-  // The states returned by the MockApp when probed.
-  std::queue<CComObject<MockCurrentState>*> states_;
-
   // The new version that the fixture will pretend is available.
   base::string16 new_version_;
 
  private:
-  // Returns a new MockCurrentState that will be returned by the mock IAppWeb's
-  // get_currentState method.
-  CComObject<MockCurrentState>* MakeNextState(CurrentState state) {
-    CComObject<MockCurrentState>* mock_state = nullptr;
-    // The new object's refcount is held at zero until it is released from the
-    // simulator in GetNextState.
-    EXPECT_EQ(S_OK, CComObject<MockCurrentState>::CreateInstance(&mock_state));
-    EXPECT_CALL(*mock_state, get_stateValue(_))
-        .WillRepeatedly(DoAll(SetArgPointee<0>(state), Return(S_OK)));
-    states_.push(mock_state);
-    // Tell the app to expect this state.
-    EXPECT_CALL(*mock_app_, get_currentState(_))
-        .InSequence(state_sequence_);
-    return mock_state;
-  }
-
-  // An implementation of IAppWeb::get_currentState that advances the
-  // IGoogleUpdate3Web simulator through a series of states.
-  HRESULT GetNextState(IDispatch** current_state) {
-    EXPECT_FALSE(states_.empty());
-    *current_state = states_.front();
-    // Give a reference to the caller.
-    (*current_state)->AddRef();
-    states_.pop();
-    return S_OK;
-  }
-
   DISALLOW_COPY_AND_ASSIGN(GoogleUpdateWinTest);
 };
 
@@ -693,10 +704,11 @@ TEST_P(GoogleUpdateWinTest, NoGoogleUpdateForUpgrade) {
 // Test the case where the GoogleUpdate class returns an error when an update
 // check is started.
 TEST_P(GoogleUpdateWinTest, FailUpdateCheck) {
-  // The factory should be called upon: let it return the mock on-demand class.
-  PrepareSimulator(kChromeBinariesGuid);
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, nullptr);
+
   // checkForUpdate will fail.
-  EXPECT_CALL(*mock_app_bundle_, checkForUpdate())
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
       .WillOnce(Return(E_FAIL));
 
   EXPECT_CALL(mock_update_check_delegate_,
@@ -710,11 +722,19 @@ TEST_P(GoogleUpdateWinTest, FailUpdateCheck) {
 // by Group Policy.
 TEST_P(GoogleUpdateWinTest, UpdatesDisabledByPolicy) {
   static const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
-  PrepareSimulatorForUpdateCheck(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushErrorState(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY,
-                 L"disabled by policy", -1);
+
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushErrorState(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY,
+                           L"disabled by policy", -1);
 
   EXPECT_CALL(mock_update_check_delegate_,
               OnError(GOOGLE_UPDATE_DISABLED_BY_POLICY, _, _));
@@ -728,11 +748,19 @@ TEST_P(GoogleUpdateWinTest, UpdatesDisabledByPolicy) {
 TEST_P(GoogleUpdateWinTest, ManualUpdatesDisabledByPolicy) {
   static const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL =
       0x8004081f;
-  PrepareSimulatorForUpdateCheck(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushErrorState(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL,
-                 L"manual updates disabled by policy", -1);
+
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushErrorState(GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL,
+                           L"manual updates disabled by policy", -1);
 
   EXPECT_CALL(mock_update_check_delegate_,
               OnError(GOOGLE_UPDATE_DISABLED_BY_POLICY_AUTO_ONLY, _, _));
@@ -743,10 +771,17 @@ TEST_P(GoogleUpdateWinTest, ManualUpdatesDisabledByPolicy) {
 
 // Test an update check where no update is available.
 TEST_P(GoogleUpdateWinTest, UpdateCheckNoUpdate) {
-  PrepareSimulatorForUpdateCheck(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushState(STATE_NO_UPDATE);
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushState(STATE_NO_UPDATE);
 
   EXPECT_CALL(mock_update_check_delegate_,
               OnUpdateCheckComplete(IsEmpty()));  // new_version
@@ -757,10 +792,17 @@ TEST_P(GoogleUpdateWinTest, UpdateCheckNoUpdate) {
 
 // Test an update check where an update is available.
 TEST_P(GoogleUpdateWinTest, UpdateCheckUpdateAvailable) {
-  PrepareSimulatorForUpdateCheck(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushUpdateAvailableState(new_version_);
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushUpdateAvailableState(new_version_);
 
   EXPECT_CALL(mock_update_check_delegate_,
               OnUpdateCheckComplete(StrEq(new_version_)));
@@ -771,18 +813,28 @@ TEST_P(GoogleUpdateWinTest, UpdateCheckUpdateAvailable) {
 
 // Test a successful upgrade.
 TEST_P(GoogleUpdateWinTest, UpdateInstalled) {
-  PrepareSimulatorForUpgrade(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushUpdateAvailableState(new_version_);
-  PushState(STATE_WAITING_TO_DOWNLOAD);
-  PushProgressiveState(STATE_DOWNLOADING, 0);
-  PushProgressiveState(STATE_DOWNLOADING, 25);
-  PushProgressiveState(STATE_DOWNLOADING, 25);
-  PushProgressiveState(STATE_DOWNLOADING, 75);
-  PushState(STATE_WAITING_TO_INSTALL);
-  PushProgressiveState(STATE_INSTALLING, 50);
-  PushState(STATE_INSTALL_COMPLETE);
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+  // Expect the bundle to be called on to start the install.
+  EXPECT_CALL(*mock_app_bundle, install())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushUpdateAvailableState(new_version_);
+  mock_app->PushState(STATE_WAITING_TO_DOWNLOAD);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 0);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 75);
+  mock_app->PushState(STATE_WAITING_TO_INSTALL);
+  mock_app->PushProgressiveState(STATE_INSTALLING, 50);
+  mock_app->PushState(STATE_INSTALL_COMPLETE);
 
   {
     InSequence callback_sequence;
@@ -810,18 +862,29 @@ TEST_P(GoogleUpdateWinTest, UpdateFailed) {
   static const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
   static const int kInstallerError = 12;
 
-  PrepareSimulatorForUpgrade(kChromeBinariesGuid);
-  PushState(STATE_INIT);
-  PushState(STATE_CHECKING_FOR_UPDATE);
-  PushUpdateAvailableState(new_version_);
-  PushState(STATE_WAITING_TO_DOWNLOAD);
-  PushProgressiveState(STATE_DOWNLOADING, 0);
-  PushProgressiveState(STATE_DOWNLOADING, 25);
-  PushProgressiveState(STATE_DOWNLOADING, 25);
-  PushProgressiveState(STATE_DOWNLOADING, 75);
-  PushState(STATE_WAITING_TO_INSTALL);
-  PushProgressiveState(STATE_INSTALLING, 50);
-  PushErrorState(GOOPDATEINSTALL_E_INSTALLER_FAILED, error, kInstallerError);
+  CComObject<MockAppBundle>* mock_app_bundle = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle, checkForUpdate())
+      .WillOnce(Return(S_OK));
+  // Expect the bundle to be called on to start the install.
+  EXPECT_CALL(*mock_app_bundle, install())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushUpdateAvailableState(new_version_);
+  mock_app->PushState(STATE_WAITING_TO_DOWNLOAD);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 0);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 25);
+  mock_app->PushProgressiveState(STATE_DOWNLOADING, 75);
+  mock_app->PushState(STATE_WAITING_TO_INSTALL);
+  mock_app->PushProgressiveState(STATE_INSTALLING, 50);
+  mock_app->PushErrorState(GOOPDATEINSTALL_E_INSTALLER_FAILED, error,
+                           kInstallerError);
 
   {
     InSequence callback_sequence;
@@ -840,6 +903,51 @@ TEST_P(GoogleUpdateWinTest, UpdateFailed) {
                         StrEq(new_version_)));
   }
   BeginUpdateCheck(task_runner_, std::string(), true, 0,
+                   mock_update_check_delegate_.AsWeakPtr());
+  task_runner_->RunUntilIdle();
+}
+
+// Test that a retry after a USING_EXTERNAL_UPDATER failure succeeds.
+TEST_P(GoogleUpdateWinTest, RetryAfterExternalUpdaterError) {
+  static const HRESULT GOOPDATE_E_APP_USING_EXTERNAL_UPDATER = 0xa043081d;
+
+  CComObject<MockAppBundle>* mock_app_bundle1 =
+      mock_google_update_factory_.MakeServerMock()->MakeAppBundle();
+
+  // The first attempt will fail in createInstalledApp indicating that an update
+  // is already in progress.
+  EXPECT_CALL(*mock_app_bundle1, createInstalledApp(StrEq(kChromeBinariesGuid)))
+      .WillOnce(Return(GOOPDATE_E_APP_USING_EXTERNAL_UPDATER));
+
+  // Retry with a second instance.
+  CComObject<MockAppBundle>* mock_app_bundle2 = nullptr;
+  CComObject<MockApp>* mock_app = nullptr;
+  MakeGoogleUpdateMocks(&mock_app_bundle2, &mock_app);
+
+  // Expect the bundle to be called on to start the update.
+  EXPECT_CALL(*mock_app_bundle2, checkForUpdate())
+      .WillOnce(Return(S_OK));
+
+  mock_app->PushState(STATE_INIT);
+  mock_app->PushState(STATE_CHECKING_FOR_UPDATE);
+  mock_app->PushState(STATE_NO_UPDATE);
+
+  // Until http://crbug.com/504516 is fixed, we expect the first update check
+  // to fail.
+  EXPECT_CALL(mock_update_check_delegate_,
+              OnError(GOOGLE_UPDATE_ONDEMAND_CLASS_REPORTED_ERROR, _, _));
+
+  // Run the first update check. When http://crbug.com/504516 is fixed, this
+  // update check will be subsumed in the one below.
+  BeginUpdateCheck(task_runner_, std::string(), true, 0,
+                   mock_update_check_delegate_.AsWeakPtr());
+  task_runner_->RunUntilIdle();
+
+  // Expect a second update check to succeed. When http://crbug.com/504516 is
+  // fixed, this will be the one and only update check.
+  EXPECT_CALL(mock_update_check_delegate_,
+              OnUpdateCheckComplete(IsEmpty()));  // new_version
+  BeginUpdateCheck(task_runner_, std::string(), false, 0,
                    mock_update_check_delegate_.AsWeakPtr());
   task_runner_->RunUntilIdle();
 }
