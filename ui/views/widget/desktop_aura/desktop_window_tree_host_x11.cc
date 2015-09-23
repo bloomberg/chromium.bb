@@ -976,16 +976,17 @@ void DesktopWindowTreeHostX11::SetBounds(
   unsigned value_mask = 0;
 
   if (size_changed) {
+    // Update the minimum and maximum sizes in case they have changed.
+    UpdateMinAndMaxSize();
+
     if (bounds_in_pixels.width() < min_size_in_pixels_.width() ||
         bounds_in_pixels.height() < min_size_in_pixels_.height() ||
         (!max_size_in_pixels_.IsEmpty() &&
          (bounds_in_pixels.width() > max_size_in_pixels_.width() ||
           bounds_in_pixels.height() > max_size_in_pixels_.height()))) {
-      // Update the minimum and maximum sizes in case they have changed.
-      UpdateMinAndMaxSize();
-
       gfx::Size size_in_pixels = bounds_in_pixels.size();
-      size_in_pixels.SetToMin(max_size_in_pixels_);
+      if (!max_size_in_pixels_.IsEmpty())
+        size_in_pixels.SetToMin(max_size_in_pixels_);
       size_in_pixels.SetToMax(min_size_in_pixels_);
       bounds_in_pixels.set_size(size_in_pixels);
     }
