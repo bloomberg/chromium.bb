@@ -743,13 +743,16 @@ void Animation::setCompositorPending(bool effectChanged)
     if (m_compositorPending || m_isPausedForTesting) {
         return;
     }
+#if !ENABLE(OILPAN)
+    if (!timeline() || !timeline()->document()) {
+        return;
+    }
+#endif
 
     if (!m_compositorState || m_compositorState->effectChanged
         || !playing() || m_compositorState->playbackRate != m_playbackRate
         || m_compositorState->startTime != m_startTime) {
         m_compositorPending = true;
-        ASSERT(timeline());
-        ASSERT(timeline()->document());
         timeline()->document()->compositorPendingAnimations().add(this);
     }
 }
