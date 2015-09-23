@@ -24,6 +24,8 @@ source_set("base") {
     "resource_id.h",
     "rolling_time_delta_history.cc",
     "rolling_time_delta_history.h",
+    "rtree.cc",
+    "rtree.h",
     "scoped_ptr_algorithm.h",
     "scoped_ptr_deque.h",
     "scoped_ptr_vector.h",

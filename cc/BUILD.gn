@@ -728,6 +728,7 @@ test("cc_unittests") {
     "base/random_access_list_container_unittest.cc",
     "base/region_unittest.cc",
     "base/rolling_time_delta_history_unittest.cc",
+    "base/rtree_unittest.cc",
     "base/scoped_ptr_vector_unittest.cc",
     "base/simple_enclosed_region_unittest.cc",
     "base/tiling_data_unittest.cc",

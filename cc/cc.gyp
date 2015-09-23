@@ -91,6 +91,8 @@
         'base/resource_id.h',
         'base/rolling_time_delta_history.cc',
         'base/rolling_time_delta_history.h',
+        'base/rtree.cc',
+        'base/rtree.h',
         'base/scoped_ptr_algorithm.h',
         'base/scoped_ptr_deque.h',
         'base/scoped_ptr_vector.h',
