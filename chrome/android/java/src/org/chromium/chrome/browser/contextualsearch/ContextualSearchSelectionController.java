@@ -154,6 +154,7 @@ public class ContextualSearchSelectionController {
      */
     void handleSelectionChanged(String selection) {
         if (mDidExpandSelection) {
+            mSelectedText = selection;
             mDidExpandSelection = false;
             return;
         }

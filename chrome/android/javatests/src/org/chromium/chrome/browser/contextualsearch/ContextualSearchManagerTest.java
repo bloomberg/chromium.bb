@@ -201,15 +201,26 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Fakes a server response with the parameters given.
+     * Fakes a server response with the parameters given and startAdjust and endAdjust equal to 0.
      * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
      */
     private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload) {
+        fakeResponse(isNetworkUnavailable, responseCode, searchTerm, displayText, alternateTerm,
+                doPreventPreload, 0, 0);
+    }
+
+    /**
+     * Fakes a server response with the parameters given.
+     * {@See ContextualSearchManager#handleSearchTermResolutionResponse}.
+     */
+    private void fakeResponse(boolean isNetworkUnavailable, int responseCode,
+            String searchTerm, String displayText, String alternateTerm, boolean doPreventPreload,
+            int startAdjust, int endAdjust) {
         if (mFakeServer.getSearchTermRequested() != null) {
             getInstrumentation().runOnMainSync(
                     new FakeResponseOnMainThread(isNetworkUnavailable, responseCode, searchTerm,
-                            displayText, alternateTerm, doPreventPreload, 0, 0));
+                            displayText, alternateTerm, doPreventPreload, startAdjust, endAdjust));
         }
     }
 
@@ -1907,5 +1918,19 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         });
         assertEquals(0, mActivityMonitor.getHits());
+    }
+
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testSelectionExpansionOnSearchTermResolution()
+            throws InterruptedException, TimeoutException {
+        mFakeServer.reset();
+        clickWordNode("intelligence");
+        waitForPanelToPeekAndAssert();
+
+        fakeResponse(false, 200, "Intelligence", "United States Intelligence", "alternate-term",
+                false, -14, 0);
+        waitForSelectionToBe("United States Intelligence");
     }
 }
