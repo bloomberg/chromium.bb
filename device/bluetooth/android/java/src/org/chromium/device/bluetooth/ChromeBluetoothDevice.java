@@ -24,7 +24,7 @@ import java.util.List;
 @JNINamespace("device")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 final class ChromeBluetoothDevice {
-    private static final String TAG = "cr.Bluetooth";
+    private static final String TAG = "Bluetooth";
 
     private final Wrappers.BluetoothDeviceWrapper mDevice;
     private List<ParcelUuid> mUuidsFromScan;

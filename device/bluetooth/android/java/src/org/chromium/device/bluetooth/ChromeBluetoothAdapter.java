@@ -26,7 +26,7 @@ import java.util.List;
 @JNINamespace("device")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 final class ChromeBluetoothAdapter {
-    private static final String TAG = "cr.Bluetooth";
+    private static final String TAG = "Bluetooth";
 
     private long mNativeBluetoothAdapterAndroid;
     private Wrappers.BluetoothAdapterWrapper mAdapter;
