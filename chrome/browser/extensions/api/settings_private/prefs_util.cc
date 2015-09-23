@@ -309,7 +309,10 @@ PrefsUtil::SetPrefResult PrefsUtil::SetPref(const std::string& pref_name,
 
       if (IsPrefTypeURL(pref_name)) {
         GURL fixed = url_formatter::FixupURL(string_value, std::string());
-        string_value = fixed.spec();
+        if (fixed.is_valid())
+          string_value = fixed.spec();
+        else
+          string_value = std::string();
       }
 
       pref_service->SetString(pref_name, string_value);
