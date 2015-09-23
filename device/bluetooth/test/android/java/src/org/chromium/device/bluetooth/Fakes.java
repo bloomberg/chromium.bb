@@ -60,10 +60,10 @@ class Fakes {
                     uuids.add(ParcelUuid.fromString("00001800-0000-1000-8000-00805f9b34fb"));
                     uuids.add(ParcelUuid.fromString("00001801-0000-1000-8000-00805f9b34fb"));
 
-                    mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
-                                                                uuids));
+                                                                    uuids));
                     break;
                 }
                 case 2: {
@@ -71,15 +71,15 @@ class Fakes {
                     uuids.add(ParcelUuid.fromString("00001802-0000-1000-8000-00805f9b34fb"));
                     uuids.add(ParcelUuid.fromString("00001803-0000-1000-8000-00805f9b34fb"));
 
-                    mFakeScanner.mCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
+                    mFakeScanner.mScanCallback.onScanResult(ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(new FakeBluetoothDevice(this, "01:00:00:90:1E:BE",
                                                        "FakeBluetoothDevice"),
-                                                                uuids));
+                                                                    uuids));
                     break;
                 }
                 case 3: {
                     ArrayList<ParcelUuid> uuids = null;
-                    mFakeScanner.mCallback.onScanResult(
+                    mFakeScanner.mScanCallback.onScanResult(
                             ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "01:00:00:90:1E:BE", ""), uuids));
@@ -88,7 +88,7 @@ class Fakes {
                 }
                 case 4: {
                     ArrayList<ParcelUuid> uuids = null;
-                    mFakeScanner.mCallback.onScanResult(
+                    mFakeScanner.mScanCallback.onScanResult(
                             ScanSettings.CALLBACK_TYPE_ALL_MATCHES,
                             new FakeScanResult(
                                     new FakeBluetoothDevice(this, "02:00:00:8B:74:63", ""), uuids));
@@ -131,7 +131,7 @@ class Fakes {
      * Fakes android.bluetooth.le.BluetoothLeScanner.
      */
     static class FakeBluetoothLeScanner extends Wrappers.BluetoothLeScannerWrapper {
-        public Wrappers.ScanCallbackWrapper mCallback;
+        public Wrappers.ScanCallbackWrapper mScanCallback;
 
         private FakeBluetoothLeScanner() {
             super(null);
@@ -140,19 +140,19 @@ class Fakes {
         @Override
         public void startScan(List<ScanFilter> filters, int scanSettingsScanMode,
                 Wrappers.ScanCallbackWrapper callback) {
-            if (mCallback != null) {
+            if (mScanCallback != null) {
                 throw new IllegalArgumentException(
                         "FakeBluetoothLeScanner does not support multiple scans.");
             }
-            mCallback = callback;
+            mScanCallback = callback;
         }
 
         @Override
         public void stopScan(Wrappers.ScanCallbackWrapper callback) {
-            if (mCallback != callback) {
+            if (mScanCallback != callback) {
                 throw new IllegalArgumentException("No scan in progress.");
             }
-            mCallback = null;
+            mScanCallback = null;
         }
     }
 
