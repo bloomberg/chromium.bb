@@ -79,9 +79,8 @@ class LibjingleTransport
   void NotifyConnected();
 
   // Signal handlers for cricket::TransportChannel.
-  void OnRequestSignaling(cricket::TransportChannelImpl* channel);
-  void OnCandidateReady(cricket::TransportChannelImpl* channel,
-                        const cricket::Candidate& candidate);
+  void OnCandidateGathered(cricket::TransportChannelImpl* channel,
+                           const cricket::Candidate& candidate);
   void OnRouteChange(cricket::TransportChannel* channel,
                      const cricket::Candidate& candidate);
   void OnWritableState(cricket::TransportChannel* channel);
@@ -161,7 +160,7 @@ void LibjingleTransport::OnCanStart() {
   }
 
   while (!pending_candidates_.empty()) {
-    channel_->OnCandidate(pending_candidates_.front());
+    channel_->AddRemoteCandidate(pending_candidates_.front());
     pending_candidates_.pop_front();
   }
 }
@@ -199,10 +198,8 @@ void LibjingleTransport::DoStart() {
   event_handler_->OnTransportIceCredentials(this, ice_username_fragment_,
                                             ice_password);
   channel_->SetIceCredentials(ice_username_fragment_, ice_password);
-  channel_->SignalRequestSignaling.connect(
-      this, &LibjingleTransport::OnRequestSignaling);
-  channel_->SignalCandidateReady.connect(
-      this, &LibjingleTransport::OnCandidateReady);
+  channel_->SignalCandidateGathered.connect(
+      this, &LibjingleTransport::OnCandidateGathered);
   channel_->SignalRouteChange.connect(
       this, &LibjingleTransport::OnRouteChange);
   channel_->SignalWritableState.connect(
@@ -211,6 +208,7 @@ void LibjingleTransport::DoStart() {
       !(network_settings_.flags & NetworkSettings::NAT_TRAVERSAL_OUTGOING));
 
   channel_->Connect();
+  channel_->MaybeStartGathering();
 
   --connect_attempts_left_;
 
@@ -256,7 +254,7 @@ void LibjingleTransport::AddRemoteCandidate(
     return;
 
   if (channel_) {
-    channel_->OnCandidate(candidate);
+    channel_->AddRemoteCandidate(candidate);
   } else {
     pending_candidates_.push_back(candidate);
   }
@@ -272,13 +270,7 @@ bool LibjingleTransport::is_connected() const {
   return callback_.is_null();
 }
 
-void LibjingleTransport::OnRequestSignaling(
-    cricket::TransportChannelImpl* channel) {
-  DCHECK(CalledOnValidThread());
-  channel_->OnSignalingReady();
-}
-
-void LibjingleTransport::OnCandidateReady(
+void LibjingleTransport::OnCandidateGathered(
     cricket::TransportChannelImpl* channel,
     const cricket::Candidate& candidate) {
   DCHECK(CalledOnValidThread());
