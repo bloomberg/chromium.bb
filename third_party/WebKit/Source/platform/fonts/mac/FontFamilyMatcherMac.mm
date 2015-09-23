@@ -133,15 +133,6 @@ static BOOL betterChoice(NSFontTraitMask desiredTraits, int desiredWeight,
 NSFont* MatchNSFontFamily(NSString* desiredFamily, NSFontTraitMask desiredTraits, FontWeight desiredWeight, float size)
 {
     if ([desiredFamily isEqualToString:@"BlinkMacSystemFont"]) {
-        // On OSX 10.11, returning the default system font causes rendering
-        // problems. In the short term, return nil, which is what would be
-        // returned if "BlinkMacSystemFont" was never introduced.
-        // TODO(erikchen): Fix the rendering problems.
-        // http://crbug.com/521034.
-        if (IsOSElCapitan()) {
-            return nil;
-        }
-
         // On OSX 10.9, the default system font depends on the SDK version. When
         // compiled against the OSX 10.10 SDK, the font is .LucidaGrandeUI. When
         // compiled against the OSX 10.6 SDK, the font is Lucida Grande. Layout
