@@ -48,6 +48,11 @@ const SkColor kMenuPopupBackgroundColorYosemite =
 // Hardcoded color used for some existing dialogs in Chrome's Cocoa UI.
 const SkColor kDialogBackgroundColor = SkColorSetRGB(251, 251, 251);
 
+// Color for the highlighted text in a control when that control doesn't have
+// keyboard focus.
+const SkColor kUnfocusedSelectedTextBackgroundColor =
+    SkColorSetRGB(220, 220, 220);
+
 // On 10.6 and 10.7 there is no way to get components from system colors. Here,
 // system colors are just opaque objects that can paint themselves and otherwise
 // tell you nothing. In 10.8, some of the system color classes have incomplete
@@ -139,6 +144,8 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor windowBackgroundColor]);
     case kColorId_DialogBackground:
       return kDialogBackgroundColor;
+    case kColorId_BubbleBackground:
+      return SK_ColorWHITE;
 
     case kColorId_FocusedBorderColor:
     case kColorId_FocusedMenuButtonBorderColor:
@@ -181,6 +188,14 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_MenuBorderColor:
       return kMenuBorderColor;
 
+    // Link.
+    case kColorId_LinkDisabled:
+      return SK_ColorBLACK;
+    case kColorId_LinkEnabled:
+      return SK_ColorBLUE;
+    case kColorId_LinkPressed:
+      return SK_ColorRED;
+
     // Text fields.
     case kColorId_TextfieldDefaultColor:
     case kColorId_TextfieldReadOnlyColor:
@@ -192,6 +207,31 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
       return NSSystemColorToSkColor([NSColor selectedTextColor]);
     case kColorId_TextfieldSelectionBackgroundFocused:
       return NSSystemColorToSkColor([NSColor selectedTextBackgroundColor]);
+
+    // Trees/Tables. For focused text, use the alternate* versions, which
+    // NSColor documents as "the table and list view equivalent to the
+    // selectedControlTextColor".
+    case kColorId_TreeBackground:
+    case kColorId_TableBackground:
+      return NSSystemColorToSkColor([NSColor controlBackgroundColor]);
+    case kColorId_TreeText:
+    case kColorId_TableText:
+    case kColorId_TableSelectedTextUnfocused:
+    case kColorId_TreeSelectedTextUnfocused:
+      return NSSystemColorToSkColor([NSColor textColor]);
+    case kColorId_TreeSelectedText:
+    case kColorId_TableSelectedText:
+      return NSSystemColorToSkColor(
+          [NSColor alternateSelectedControlTextColor]);
+    case kColorId_TreeSelectionBackgroundFocused:
+    case kColorId_TableSelectionBackgroundFocused:
+      return NSSystemColorToSkColor([NSColor alternateSelectedControlColor]);
+    case kColorId_TreeSelectionBackgroundUnfocused:
+    case kColorId_TableSelectionBackgroundUnfocused:
+      return kUnfocusedSelectedTextBackgroundColor;
+    case kColorId_TreeArrow:
+    case kColorId_TableGroupingIndicatorColor:
+      return SkColorSetRGB(140, 140, 140);
 
     default:
       break;  // TODO(tapted): Handle all values and remove the default case.

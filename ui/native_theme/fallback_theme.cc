@@ -53,6 +53,7 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
     switch (color_id) {
       // Dialogs
       case kColorId_DialogBackground:
+      case kColorId_BubbleBackground:
         return kDialogBackgroundColorMd;
 
       // Results Tables
@@ -190,6 +191,7 @@ SkColor FallbackTheme::GetSystemColor(ColorId color_id) const {
 
     // Dialogs
     case kColorId_DialogBackground:
+    case kColorId_BubbleBackground:
       return kDialogBackgroundColor;
 
     // FocusableBorder

@@ -234,6 +234,7 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
 
     // Dialogs
     case kColorId_DialogBackground:
+    case kColorId_BubbleBackground:
       return GetBGColor(GetWindow(), NORMAL);
 
     // FocusableBorder
