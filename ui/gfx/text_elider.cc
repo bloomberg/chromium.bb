@@ -752,45 +752,43 @@ int ElideRectangleText(const base::string16& input,
 base::string16 TruncateString(const base::string16& string,
                               size_t length,
                               BreakType break_type) {
-  DCHECK(break_type == CHARACTER_BREAK || break_type == WORD_BREAK);
+  const bool word_break = break_type == WORD_BREAK;
+  DCHECK(word_break || (break_type == CHARACTER_BREAK));
 
   if (string.size() <= length)
-    // String fits, return it.
-    return string;
+    return string;  // No need to elide.
 
   if (length == 0)
-    // No room for the elide string, return an empty string.
-    return base::string16();
-
-  size_t max = length - 1;
+    return base::string16();  // No room for anything, even an ellipsis.
 
   // Added to the end of strings that are too big.
   static const base::char16 kElideString[] = { 0x2026, 0 };
 
-  if (max == 0)
-    // Just enough room for the elide string.
-    return kElideString;
+  if (length == 1)
+    return kElideString;  // Only room for an ellipsis.
 
-  int32_t index = static_cast<int32_t>(max);
-  if (break_type == WORD_BREAK) {
-    // Use a line iterator to find the first boundary.
+  int32_t index = static_cast<int32_t>(length - 1);
+  if (word_break) {
+    // Use a word iterator to find the first boundary.
     UErrorCode status = U_ZERO_ERROR;
     scoped_ptr<icu::BreakIterator> bi(
-        icu::RuleBasedBreakIterator::createLineInstance(
+        icu::RuleBasedBreakIterator::createWordInstance(
             icu::Locale::getDefault(), status));
     if (U_FAILURE(status))
-      return string.substr(0, max) + kElideString;
+      return string.substr(0, length - 1) + kElideString;
     bi->setText(string.c_str());
-    index = bi->preceding(index);
+    index = bi->preceding(static_cast<int32_t>(length));
     if (index == icu::BreakIterator::DONE || index == 0) {
-      // We either found no valid line break at all, or one right at the
+      // We either found no valid word break at all, or one right at the
       // beginning of the string. Go back to the end; we'll have to break in the
       // middle of a word.
-      index = static_cast<int32_t>(max);
+      index = static_cast<int32_t>(length - 1);
     }
   }
 
-  // Use a character iterator to find the previous non-whitespace character.
+  // By this point, |index| should point at the character that's a candidate for
+  // replacing with an ellipsis.  Use a character iterator to check previous
+  // characters and stop as soon as we find a previous non-whitespace character.
   icu::StringCharacterIterator char_iterator(string.c_str());
   char_iterator.setIndex(index);
   while (char_iterator.hasPrevious()) {
@@ -798,21 +796,23 @@ base::string16 TruncateString(const base::string16& string,
     if (!(u_isspace(char_iterator.current()) ||
           u_charType(char_iterator.current()) == U_CONTROL_CHAR ||
           u_charType(char_iterator.current()) == U_NON_SPACING_MARK)) {
-      // Not a whitespace character. Advance the iterator so that we
-      // include the current character in the truncated string.
+      // Not a whitespace character.  Truncate to everything up to and including
+      // this character, and append an ellipsis.
       char_iterator.next();
-      break;
+      return string.substr(0, char_iterator.getIndex()) + kElideString;
     }
   }
-  if (char_iterator.hasPrevious()) {
-    // Found a valid break point.
-    index = char_iterator.getIndex();
-  } else {
-    // String has leading whitespace, return the elide string.
-    return kElideString;
-  }
 
-  return string.substr(0, index) + kElideString;
+  // Couldn't find a previous non-whitespace character.  If we were originally
+  // word-breaking, and index != length - 1, then the string is |index|
+  // whitespace characters followed by a word we're trying to break in the midst
+  // of, and we can fit at least one character of the word in the elided string.
+  // Do that rather than just returning an ellipsis.
+  if (word_break && (index != static_cast<int32_t>(length - 1)))
+    return string.substr(0, length - 1) + kElideString;
+
+  // Trying to break after only whitespace, elide all of it.
+  return kElideString;
 }
 
 }  // namespace gfx
