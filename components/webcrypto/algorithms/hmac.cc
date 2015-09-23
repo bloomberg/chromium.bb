@@ -24,21 +24,13 @@ namespace webcrypto {
 
 namespace {
 
-// TODO(eroman): Use EVP_MD_block_size() instead.
-Status GetShaBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
-                           unsigned int* block_size_bits) {
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdSha1:
-    case blink::WebCryptoAlgorithmIdSha256:
-      *block_size_bits = 512;
-      return Status::Success();
-    case blink::WebCryptoAlgorithmIdSha384:
-    case blink::WebCryptoAlgorithmIdSha512:
-      *block_size_bits = 1024;
-      return Status::Success();
-    default:
-      return Status::ErrorUnsupported();
-  }
+Status GetDigestBlockSizeBits(const blink::WebCryptoAlgorithm& algorithm,
+                              unsigned int* block_size_bits) {
+  const EVP_MD* md = GetDigest(algorithm.id());
+  if (!md)
+    return Status::ErrorUnsupported();
+  *block_size_bits = static_cast<unsigned int>(8 * EVP_MD_block_size(md));
+  return Status::Success();
 }
 
 // Gets the requested key length in bits for an HMAC import operation.
@@ -138,7 +130,7 @@ class HmacImplementation : public AlgorithmImplementation {
       if (keylen_bits == 0)
         return Status::ErrorGenerateHmacKeyLengthZero();
     } else {
-      status = GetShaBlockSizeBits(params->hash(), &keylen_bits);
+      status = GetDigestBlockSizeBits(params->hash(), &keylen_bits);
       if (status.IsError())
         return status;
     }
@@ -291,7 +283,7 @@ class HmacImplementation : public AlgorithmImplementation {
       return Status::Success();
     }
 
-    return GetShaBlockSizeBits(params->hash(), length_bits);
+    return GetDigestBlockSizeBits(params->hash(), length_bits);
   }
 };
 

@@ -56,7 +56,7 @@ Status AesAlgorithm::GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
 
   unsigned int keylen_bits = algorithm.aesKeyGenParams()->lengthBits();
 
-  // BoringSSL does not support 192-bit AES.
+  // 192-bit AES is intentionally unsupported (http://crbug.com/533699).
   if (keylen_bits == 192)
     return Status::ErrorAes192BitUnsupported();
 
@@ -87,7 +87,7 @@ Status AesAlgorithm::ImportKeyRaw(const CryptoData& key_data,
                                   blink::WebCryptoKey* key) const {
   const unsigned int keylen_bytes = key_data.byte_length();
 
-  // BoringSSL does not support 192-bit AES.
+  // 192-bit AES is intentionally unsupported (http://crbug.com/533699).
   if (keylen_bytes == 24)
     return Status::ErrorAes192BitUnsupported();
 
@@ -178,7 +178,7 @@ Status AesAlgorithm::GetKeyLength(
   if (*length_bits == 128 || *length_bits == 256)
     return Status::Success();
 
-  // BoringSSL does not support 192-bit AES.
+  // 192-bit AES is intentionally unsupported (http://crbug.com/533699).
   if (*length_bits == 192)
     return Status::ErrorAes192BitUnsupported();
 

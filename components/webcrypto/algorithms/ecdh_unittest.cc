@@ -16,15 +16,6 @@ namespace webcrypto {
 
 namespace {
 
-bool SupportsEcdh() {
-#if defined(USE_OPENSSL)
-  return true;
-#else
-  LOG(ERROR) << "Skipping ECDH test because unsupported";
-  return false;
-#endif
-}
-
 // TODO(eroman): Test passing an RSA public key instead of ECDH key.
 // TODO(eroman): Test passing an ECDSA public key
 
@@ -83,9 +74,6 @@ bool ImportKeysFromTest(const base::DictionaryValue* test,
 class WebCryptoEcdhTest : public WebCryptoTestBase {};
 
 TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
-  if (!SupportsEcdh())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdh.json", &tests));
 
@@ -156,9 +144,6 @@ TEST_F(WebCryptoEcdhTest, DeriveBitsKnownAnswer) {
 
 // Try deriving an AES key of length 129 bits.
 TEST_F(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -174,9 +159,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyBadAesLength) {
 
 // Try deriving an AES key of length 192 bits.
 TEST_F(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -192,9 +174,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyUnsupportedAesLength) {
 
 // Try deriving an HMAC key of length 0 bits.
 TEST_F(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -212,9 +191,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyZeroLengthHmac) {
 
 // Derive an HMAC key of length 19 bits.
 TEST_F(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -245,9 +221,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyHmac19Bits) {
 
 // Derive an HMAC key with no specified length (just the hash of SHA-256).
 TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -284,9 +257,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha256NoLength) {
 // and generate keys. For simplicity of testing, however, test using an HMAC
 // key.
 TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -304,9 +274,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyHmacSha512NoLength) {
 
 // Try deriving an AES key of length 128 bits.
 TEST_F(WebCryptoEcdhTest, DeriveKeyAes128) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey base_key;
   ASSERT_TRUE(LoadTestKeys(&public_key, &base_key));
@@ -330,9 +297,6 @@ TEST_F(WebCryptoEcdhTest, DeriveKeyAes128) {
 }
 
 TEST_F(WebCryptoEcdhTest, ImportKeyEmptyUsage) {
-  if (!SupportsEcdh())
-    return;
-
   blink::WebCryptoKey key;
 
   scoped_ptr<base::ListValue> tests;

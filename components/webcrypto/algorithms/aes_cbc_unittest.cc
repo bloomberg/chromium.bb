@@ -394,7 +394,7 @@ TEST_F(WebCryptoAesCbcTest, ImportExportJwk) {
       "A256CBC");
 }
 
-// AES 192-bit is not allowed: http://crbug.com/381829
+// 192-bit AES is intentionally unsupported (http://crbug.com/533699).
 TEST_F(WebCryptoAesCbcTest, GenerateAesCbc192) {
   blink::WebCryptoKey key;
   Status status = GenerateSecretKey(CreateAesCbcKeyGenAlgorithm(192), true,
@@ -402,7 +402,7 @@ TEST_F(WebCryptoAesCbcTest, GenerateAesCbc192) {
   ASSERT_EQ(Status::ErrorAes192BitUnsupported(), status);
 }
 
-// AES 192-bit is not allowed: http://crbug.com/381829
+// 192-bit AES is intentionally unsupported (http://crbug.com/533699).
 TEST_F(WebCryptoAesCbcTest, UnwrapAesCbc192) {
   std::vector<uint8_t> wrapping_key_data(16, 0);
   std::vector<uint8_t> wrapped_key = HexStringToBytes(

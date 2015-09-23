@@ -231,7 +231,7 @@ Status UnwrapKey(blink::WebCryptoKeyFormat format,
   // information about the plaintext of the encrypted key (for instance the JWK
   // key_ops). As long as the ImportKey error messages don't describe actual
   // key bytes however this should be OK. For more discussion see
-  // http://crubg.com/372040
+  // http://crbug.com/372040
   return ImportKey(format, CryptoData(buffer), algorithm, extractable, usages,
                    key);
 }

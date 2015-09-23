@@ -16,15 +16,6 @@ namespace webcrypto {
 
 namespace {
 
-bool SupportsEcdsa() {
-#if defined(USE_OPENSSL)
-  return true;
-#else
-  LOG(ERROR) << "Skipping ECDSA test because unsupported";
-  return false;
-#endif
-}
-
 blink::WebCryptoAlgorithm CreateEcdsaKeyGenAlgorithm(
     blink::WebCryptoNamedCurve named_curve) {
   return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
@@ -51,9 +42,6 @@ class WebCryptoEcdsaTest : public WebCryptoTestBase {};
 // ensure that the keys are otherwise usable (by trying to sign/verify with
 // them).
 TEST_F(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
-  if (!SupportsEcdsa())
-    return;
-
   blink::WebCryptoNamedCurve named_curve = blink::WebCryptoNamedCurveP256;
 
   std::vector<std::vector<uint8_t>> serialized_keys;
@@ -91,9 +79,6 @@ TEST_F(WebCryptoEcdsaTest, GenerateKeyIsRandom) {
 }
 
 TEST_F(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
-  if (!SupportsEcdsa())
-    return;
-
   blink::WebCryptoNamedCurve named_curve = blink::WebCryptoNamedCurveP256;
   blink::WebCryptoKey public_key;
   blink::WebCryptoKey private_key;
@@ -106,9 +91,6 @@ TEST_F(WebCryptoEcdsaTest, GenerateKeyEmptyUsage) {
 // times should yield different signatures. However both signatures should
 // verify correctly.
 TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
-  if (!SupportsEcdsa())
-    return;
-
   // Import a public and private keypair from "ec_private_keys.json". It doesn't
   // really matter which one is used since they are all valid. In this case
   // using the first one.
@@ -167,9 +149,6 @@ TEST_F(WebCryptoEcdsaTest, SignatureIsRandom) {
 // Tests verify() for ECDSA using an assortment of keys, curves and hashes.
 // These tests also include expected failures for bad signatures and keys.
 TEST_F(WebCryptoEcdsaTest, VerifyKnownAnswer) {
-  if (!SupportsEcdsa())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ecdsa.json", &tests));
 
@@ -252,9 +231,6 @@ blink::WebCryptoKeyUsageMask GetExpectedUsagesForKeyImport(
 
 // Tests importing bad public/private keys in a variety of formats.
 TEST_F(WebCryptoEcdsaTest, ImportBadKeys) {
-  if (!SupportsEcdsa())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("bad_ec_keys.json", &tests));
 
@@ -285,9 +261,6 @@ TEST_F(WebCryptoEcdsaTest, ImportBadKeys) {
 // The test imports a key first using JWK, and then exporting it to JWK and
 // PKCS8. It does the same thing using PKCS8 as the original source of truth.
 TEST_F(WebCryptoEcdsaTest, ImportExportPrivateKey) {
-  if (!SupportsEcdsa())
-    return;
-
   scoped_ptr<base::ListValue> tests;
   ASSERT_TRUE(ReadJsonTestFileToList("ec_private_keys.json", &tests));
 

@@ -134,7 +134,7 @@ class Status {
   // Attempted to generate an AES key with an invalid length.
   static Status ErrorGenerateAesKeyLength();
 
-  // 192-bit AES keys are valid, however unsupported.
+  // 192-bit AES keys are valid, however unsupported (http://crbug.com/533699)
   static Status ErrorAes192BitUnsupported();
 
   // The wrong key was used for the operation. For instance, a public key was
