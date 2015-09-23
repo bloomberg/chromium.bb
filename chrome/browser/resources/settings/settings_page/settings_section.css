@@ -14,19 +14,6 @@
   width: 605px;
 }
 
-#header {
-  @apply(--layout-horizontal);
-  @apply(--layout-center);
-  background-color: #f8f8f8;
-  border-bottom: 1px solid rgba(0, 0, 0, .1);
-  padding: 16px;
-}
-
-#header iron-icon {
-  -webkit-padding-end: 16px;
-  color: rgba(0, 0, 0, .87);
-}
-
 #header .title {
   @apply(--paper-font-body2);
 }

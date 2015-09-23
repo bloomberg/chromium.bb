@@ -1,18 +1,14 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/notification-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animation-runner-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-material/paper-material.html">
 
 <dom-module id="cr-settings-section">
   <link rel="import" type="css" href="settings_section.css">
   <template>
+    <div id="header">
+      <div class="title">{{pageTitle}}</div>
+    </div>
     <paper-material id="section" animated>
-      <div id="header">
-        <iron-icon icon="{{icon}}"></iron-icon>
-        <div class="title">{{pageTitle}}</div>
-      </div>
       <div id="content-container">
         <content id="content"></content>
       </div>

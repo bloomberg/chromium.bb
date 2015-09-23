@@ -5,11 +5,11 @@
 /**
  * @fileoverview
  * 'cr-settings-section' shows a paper material themed section with a header
- * which shows its page title and icon.
+ * which shows its page title.
  *
  * Example:
  *
- *    <cr-settings-section page-title="[[pageTitle]]" icon="[[icon]]">
+ *    <cr-settings-section page-title="[[pageTitle]]">
  *      <!-- Insert your section controls here -->
  *    </cr-settings-section>
  *
@@ -44,11 +44,6 @@ Polymer({
      * Title for the page header and navigation menu.
      */
     pageTitle: String,
-
-    /**
-     * Name of the 'iron-icon' to show.
-     */
-    icon: String,
 
     /**
      * Container that determines the sizing of expanded sections.

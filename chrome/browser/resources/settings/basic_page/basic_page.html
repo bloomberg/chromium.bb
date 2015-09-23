@@ -13,24 +13,21 @@
 <dom-module id="cr-settings-basic-page">
   <template>
 <if expr="chromeos">
-    <cr-settings-section icon="settings-ethernet"
-        i18n-values="page-title:internetPageTitle"
+    <cr-settings-section i18n-values="page-title:internetPageTitle"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="internet">
       <cr-settings-internet-page current-route="{{currentRoute}}">
       </cr-settings-internet-page>
     </cr-settings-section>
 </if>
-    <cr-settings-section icon="home"
-        i18n-values="page-title:appearancePageTitle"
+    <cr-settings-section i18n-values="page-title:appearancePageTitle"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="appearance">
       <cr-settings-appearance-page prefs="{{prefs}}">
       </cr-settings-appearance-page>
     </cr-settings-section>
 
-    <cr-settings-section icon="image:brightness-1"
-        i18n-values="page-title:onStartup"
+    <cr-settings-section i18n-values="page-title:onStartup"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="on-startup">
       <cr-settings-on-startup-page
@@ -38,8 +35,7 @@
       </cr-settings-on-startup-page>
     </cr-settings-section>
 
-    <cr-settings-section icon="search"
-        i18n-values="page-title:searchPageTitle"
+    <cr-settings-section i18n-values="page-title:searchPageTitle"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="search">
       <cr-settings-search-page current-route="{{currentRoute}}">
@@ -47,8 +43,7 @@
     </cr-settings-section>
 
 <if expr="chromeos">
-    <cr-settings-section icon="person"
-        i18n-values="page-title:usersPageTitle"
+    <cr-settings-section i18n-values="page-title:usersPageTitle"
         expand-container="{{expandContainer}}"
         current-route="[[currentRoute]]" section="users">
       <cr-settings-users-page prefs="{{prefs}}"></cr-settings-users-page>
