@@ -378,10 +378,17 @@ ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
 }
 
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
+  // Works around the crashes seen in https://crbug.com/501863, where the
+  // active WebContents from a browser iterator may contain a render frame
+  // detached from the frame tree.
+  RenderWidgetHostView* view = RenderFrameHostImpl::GetView();
+  if (!view || !view->GetRenderWidgetHost())
+    return blink::WebPageVisibilityStateHidden;
+
   // TODO(mlamouri,kenrb): call GetRenderWidgetHost() directly when it stops
   // returning nullptr in some cases. See https://crbug.com/455245.
   blink::WebPageVisibilityState visibility_state =
-      RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())->is_hidden()
+      RenderWidgetHostImpl::From(view->GetRenderWidgetHost())->is_hidden()
           ? blink::WebPageVisibilityStateHidden
           : blink::WebPageVisibilityStateVisible;
   GetContentClient()->browser()->OverridePageVisibilityState(this,
