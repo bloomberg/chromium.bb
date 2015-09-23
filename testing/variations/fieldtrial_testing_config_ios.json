@@ -13,7 +13,7 @@
         {
             "group_name": "Enabled",
             "params": {
-                "alternate_protocol_probability_threshold": "0.01"
+                "alternate_protocol_probability_threshold": "0.001"
             }
         }
     ],
