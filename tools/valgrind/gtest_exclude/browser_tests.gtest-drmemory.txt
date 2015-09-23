@@ -46,6 +46,7 @@ NaClBrowserTestGLibc.SuccessfulLoadUMA
 
 # https://crbug.com/512140
 PluginPowerSaverBrowserTest.BackgroundTabPlugins
+PluginPowerSaverBrowserTest.LargeCrossOriginObscured
 
 # https://crbug.com/504885
 # The test takes too long.
