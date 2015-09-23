@@ -119,7 +119,8 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
     // to a different app.
     EXISTING_FRAME_NEW_APP,
 
-    // The client is the result of navigating an existing frame to a new app.
+    // The client is the result of navigating an existing frame in the same
+    // app.
     EXISTING_FRAME_SAME_APP,
 
     // The client is the result of a new frame (not the root).

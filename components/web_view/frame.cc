@@ -200,6 +200,12 @@ void Frame::InitClient(ClientType client_type,
         array.Pass(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
+
+    // We need |embedded_connection_id_| is order to validate requests to
+    // create a child frame (OnCreatedFrame()). Pause incoming methods until
+    // we get the id to prevent race conditions.
+    if (embedded_connection_id_ == kInvalidConnectionId)
+      frame_binding_->PauseIncomingMethodCallProcessing();
   }
 }
 
@@ -241,6 +247,8 @@ void Frame::ChangeClient(mojom::FrameClient* frame_client,
 void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
   if (success)
     embedded_connection_id_ = connection_id;
+  if (frame_binding_->is_bound())
+    frame_binding_->ResumeIncomingMethodCallProcessing();
 }
 
 void Frame::SetView(mus::View* view) {
@@ -449,10 +457,6 @@ void Frame::OnCreatedFrame(
     mojo::Map<mojo::String, mojo::Array<uint8_t>> client_properties) {
   if ((frame_id >> 16) != embedded_connection_id_) {
     // TODO(sky): kill connection here?
-    // TODO(sky): there is a race in that there is no guarantee we received the
-    // connection id before the frame tries to create a new frame. Ideally we
-    // could pause the frame until we get the connection id, but bindings don't
-    // offer such an API.
     DVLOG(1) << "OnCreatedFrame supplied invalid frame id, expecting"
              << embedded_connection_id_;
     return;
