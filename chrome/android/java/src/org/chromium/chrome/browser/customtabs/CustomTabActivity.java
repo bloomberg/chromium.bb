@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
+import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 
@@ -393,6 +394,9 @@ public class CustomTabActivity extends ChromeActivity {
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.open_in_chrome_id) {
             String url = getTabModelSelector().getCurrentTab().getUrl();
+            if (DomDistillerUrlUtils.isDistilledPage(url)) {
+                url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
+            }
             Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             chromeIntent.setPackage(getApplicationContext().getPackageName());
             chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
