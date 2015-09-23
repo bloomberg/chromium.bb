@@ -74,7 +74,7 @@ class BluetoothAdapterProfileChromeOSTest : public testing::Test {
   class FakeDelegate
       : public chromeos::BluetoothProfileServiceProvider::Delegate {
    public:
-    FakeDelegate(std::string device_path) : connections_(0) {
+    FakeDelegate(const std::string& device_path) : connections_(0) {
       device_path_ = dbus::ObjectPath(device_path);
     }
 
