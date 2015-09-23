@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/env_vars.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"

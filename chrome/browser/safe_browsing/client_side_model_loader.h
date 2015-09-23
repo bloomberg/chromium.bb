@@ -25,8 +25,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-class SafeBrowsingService;
-
 namespace base {
 class TimeDelta;
 }

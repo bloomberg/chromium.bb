@@ -8,7 +8,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/common/env_vars.h"
 #include "components/certificate_reporting/error_reporter.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
