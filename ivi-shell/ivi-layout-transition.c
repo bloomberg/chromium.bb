@@ -512,7 +512,7 @@ create_visibility_transition(struct ivi_layout_surface *surface,
 		destroy_func,
 		duration);
 
-	if(!layout_transition_register(transition))
+	if (!layout_transition_register(transition))
 		layout_transition_destroy(transition);
 }
 
@@ -746,9 +746,10 @@ ivi_layout_transition_move_layer(struct ivi_layout_layer *layer,
 		NULL, NULL,
 		duration);
 
-	layout_transition_register(transition);
+	if (transition && layout_transition_register(transition))
+		return;
 
-	return;
+	free(transition);
 }
 
 void
@@ -850,6 +851,7 @@ ivi_layout_transition_fade_layer(
 	data = malloc(sizeof(*data));
 	if (data == NULL) {
 		weston_log("%s: memory allocation fails\n", __func__);
+		free(transition);
 		return;
 	}
 
@@ -871,7 +873,8 @@ ivi_layout_transition_fade_layer(
 	data->end_alpha = end_alpha;
 	data->destroy_func = destroy_func;
 
-	layout_transition_register(transition);
+	if (!layout_transition_register(transition))
+		layout_transition_destroy(transition);
 
 	return;
 }
