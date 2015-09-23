@@ -242,32 +242,6 @@ const char kShiftCharsForNumberKeys[] = ")!@#$%^&*(";
 // Translates from character code to keyboard code.
 KeyboardCode KeyboardCodeFromCharCode(unichar charCode) {
   switch (charCode) {
-    case 8: case 0x7F: return VKEY_BACK;
-    case 9: return VKEY_TAB;
-    case 0xD: case 3: return VKEY_RETURN;
-    case 0x1B: return VKEY_ESCAPE;
-    case ' ': return VKEY_SPACE;
-    case NSHomeFunctionKey: return VKEY_HOME;
-    case NSEndFunctionKey: return VKEY_END;
-    case NSPageUpFunctionKey: return VKEY_PRIOR;
-    case NSPageDownFunctionKey: return VKEY_NEXT;
-    case NSUpArrowFunctionKey: return VKEY_UP;
-    case NSDownArrowFunctionKey: return VKEY_DOWN;
-    case NSLeftArrowFunctionKey: return VKEY_LEFT;
-    case NSRightArrowFunctionKey: return VKEY_RIGHT;
-    case NSDeleteFunctionKey: return VKEY_DELETE;
-
-    case '0': case ')': return VKEY_0;
-    case '1': case '!': return VKEY_1;
-    case '2': case '@': return VKEY_2;
-    case '3': case '#': return VKEY_3;
-    case '4': case '$': return VKEY_4;
-    case '5': case '%': return VKEY_5;
-    case '6': case '^': return VKEY_6;
-    case '7': case '&': return VKEY_7;
-    case '8': case '*': return VKEY_8;
-    case '9': case '(': return VKEY_9;
-
     case 'a': case 'A': return VKEY_A;
     case 'b': case 'B': return VKEY_B;
     case 'c': case 'C': return VKEY_C;
@@ -301,36 +275,13 @@ KeyboardCode KeyboardCodeFromCharCode(unichar charCode) {
     case NSExecuteFunctionKey: return VKEY_EXECUTE;
     case NSPrintScreenFunctionKey: return VKEY_SNAPSHOT;
     case NSInsertFunctionKey: return VKEY_INSERT;
-    case NSHelpFunctionKey: return VKEY_INSERT;
-
-    case NSF1FunctionKey: return VKEY_F1;
-    case NSF2FunctionKey: return VKEY_F2;
-    case NSF3FunctionKey: return VKEY_F3;
-    case NSF4FunctionKey: return VKEY_F4;
-    case NSF5FunctionKey: return VKEY_F5;
-    case NSF6FunctionKey: return VKEY_F6;
-    case NSF7FunctionKey: return VKEY_F7;
-    case NSF8FunctionKey: return VKEY_F8;
-    case NSF9FunctionKey: return VKEY_F9;
-    case NSF10FunctionKey: return VKEY_F10;
-    case NSF11FunctionKey: return VKEY_F11;
-    case NSF12FunctionKey: return VKEY_F12;
-    case NSF13FunctionKey: return VKEY_F13;
-    case NSF14FunctionKey: return VKEY_F14;
-    case NSF15FunctionKey: return VKEY_F15;
-    case NSF16FunctionKey: return VKEY_F16;
-    case NSF17FunctionKey: return VKEY_F17;
-    case NSF18FunctionKey: return VKEY_F18;
-    case NSF19FunctionKey: return VKEY_F19;
-    case NSF20FunctionKey: return VKEY_F20;
-
     case NSF21FunctionKey: return VKEY_F21;
     case NSF22FunctionKey: return VKEY_F22;
     case NSF23FunctionKey: return VKEY_F23;
     case NSF24FunctionKey: return VKEY_F24;
     case NSScrollLockFunctionKey: return VKEY_SCROLL;
 
-      // U.S. Specific mappings.  Mileage may vary.
+    // U.S. Specific mappings.  Mileage may vary.
     case ';': case ':': return VKEY_OEM_1;
     case '=': case '+': return VKEY_OEM_PLUS;
     case ',': case '<': return VKEY_OEM_COMMA;

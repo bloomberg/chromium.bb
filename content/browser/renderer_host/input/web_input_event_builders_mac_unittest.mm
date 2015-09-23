@@ -85,6 +85,15 @@ TEST(WebInputEventBuilderMacTest, ArrowKeyNumPad) {
   EXPECT_EQ(0, web_event.modifiers);
 }
 
+// Test that control sequence generate the correct vkey code.
+TEST(WebInputEventBuilderMacTest, ControlSequence) {
+  // Ctrl-[ generates escape.
+  NSEvent* mac_event =
+      BuildFakeKeyEvent(0x21, 0x1b, NSControlKeyMask, NSKeyDown);
+  WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
+  EXPECT_EQ(ui::VKEY_OEM_4, web_event.windowsKeyCode);
+}
+
 // Test that numpad keys get mapped correctly.
 TEST(WebInputEventBuilderMacTest, NumPadMapping) {
   KeyMappingEntry table[] = {
