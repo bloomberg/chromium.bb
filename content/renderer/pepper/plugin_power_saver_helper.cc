@@ -12,8 +12,8 @@
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/renderer/plugin_instance_throttler.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/renderer/peripheral_content_heuristic.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
@@ -21,30 +21,8 @@ namespace content {
 
 namespace {
 
-// Initial decision of the peripheral content decision.
-// These numeric values are used in UMA logs; do not change them.
-enum PeripheralHeuristicDecision {
-  HEURISTIC_DECISION_PERIPHERAL = 0,
-  HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN = 1,
-  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
-  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
-  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY = 4,
-  HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE = 5,
-  HEURISTIC_DECISION_NUM_ITEMS
-};
-
 const char kPeripheralHeuristicHistogram[] =
     "Plugin.PowerSaver.PeripheralHeuristic";
-
-// Plugin content below this size in height and width is considered "tiny".
-// Tiny content is never peripheral, as tiny plugins often serve a critical
-// purpose, and the user often cannot find and click to unthrottle it.
-const int kPeripheralContentTinySize = 5;
-
-void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
-  UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, decision,
-                            HEURISTIC_DECISION_NUM_ITEMS);
-}
 
 }  // namespace
 
@@ -139,39 +117,19 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(
     return false;
   }
 
-  if (main_frame_origin.IsSameOriginWith(content_origin)) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN);
-    return false;
-  }
+  auto decision = PeripheralContentHeuristic::GetPeripheralStatus(
+      origin_whitelist_, main_frame_origin, content_origin, width, height);
 
-  if (width <= 0 || height <= 0) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_UNKNOWN_SIZE);
-    return false;
-  }
+  UMA_HISTOGRAM_ENUMERATION(
+      kPeripheralHeuristicHistogram, decision,
+      PeripheralContentHeuristic::HEURISTIC_DECISION_NUM_ITEMS);
 
-  // Whitelisted plugin origins are also essential.
-  if (origin_whitelist_.count(content_origin)) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED);
-    return false;
-  }
+  if (decision == PeripheralContentHeuristic::
+                      HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG &&
+      cross_origin_main_content)
+    *cross_origin_main_content = true;
 
-  // Never mark tiny content as peripheral.
-  if (width <= kPeripheralContentTinySize &&
-      height <= kPeripheralContentTinySize) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_TINY);
-    return false;
-  }
-
-  // Plugin content large in both dimensions are the "main attraction".
-  if (PluginInstanceThrottler::IsLargeContent(width, height)) {
-    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG);
-    if (cross_origin_main_content)
-      *cross_origin_main_content = true;
-    return false;
-  }
-
-  RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
-  return true;
+  return decision == PeripheralContentHeuristic::HEURISTIC_DECISION_PERIPHERAL;
 }
 
 void PluginPowerSaverHelper::WhitelistContentOrigin(

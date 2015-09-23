@@ -329,6 +329,8 @@
       'renderer/net_info_helper.h',
       'renderer/notification_permission_dispatcher.cc',
       'renderer/notification_permission_dispatcher.h',
+      'renderer/peripheral_content_heuristic.cc',
+      'renderer/peripheral_content_heuristic.h',
       'renderer/presentation/presentation_dispatcher.cc',
       'renderer/presentation/presentation_dispatcher.h',
       'renderer/presentation/presentation_session_client.cc',
