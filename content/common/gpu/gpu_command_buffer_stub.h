@@ -80,7 +80,6 @@ class GpuCommandBufferStub
       const gpu::gles2::DisallowedFeatures& disallowed_features,
       const std::vector<int32>& attribs,
       gfx::GpuPreference gpu_preference,
-      bool use_virtualized_gl_context,
       int32 stream_id,
       int32 route_id,
       int32 surface_id,

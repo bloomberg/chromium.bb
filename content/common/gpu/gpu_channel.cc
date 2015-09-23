@@ -725,20 +725,12 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
     return CREATE_COMMAND_BUFFER_FAILED;
   }
 
-  // Virtualize compositor contexts on OS X to prevent performance regressions
-  // when enabling FCM.
-  // http://crbug.com/180463
-  bool use_virtualized_gl_context = false;
-#if defined(OS_MACOSX)
-  use_virtualized_gl_context = true;
-#endif
-
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, task_runner_.get(), share_group, window, mailbox_manager_.get(),
       subscription_ref_set_.get(), pending_valuebuffer_state_.get(),
       gfx::Size(), disallowed_features_, init_params.attribs,
-      init_params.gpu_preference, use_virtualized_gl_context, stream_id,
-      route_id, surface_id, watchdog_, software_, init_params.active_url));
+      init_params.gpu_preference, stream_id, route_id, surface_id, watchdog_,
+      software_, init_params.active_url));
 
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);
@@ -960,9 +952,8 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
       this, task_runner_.get(), share_group, gfx::GLSurfaceHandle(),
       mailbox_manager_.get(), subscription_ref_set_.get(),
       pending_valuebuffer_state_.get(), size, disallowed_features_,
-      init_params.attribs, init_params.gpu_preference, false,
-      init_params.stream_id, route_id, 0, watchdog_, software_,
-      init_params.active_url));
+      init_params.attribs, init_params.gpu_preference, init_params.stream_id,
+      route_id, 0, watchdog_, software_, init_params.active_url));
 
   if (preempted_flag_.get())
     stub->SetPreemptByFlag(preempted_flag_);

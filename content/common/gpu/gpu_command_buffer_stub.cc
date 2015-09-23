@@ -185,7 +185,6 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     const gpu::gles2::DisallowedFeatures& disallowed_features,
     const std::vector<int32>& attribs,
     gfx::GpuPreference gpu_preference,
-    bool use_virtualized_gl_context,
     int32 stream_id,
     int32 route_id,
     int32 surface_id,
@@ -200,7 +199,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       disallowed_features_(disallowed_features),
       requested_attribs_(attribs),
       gpu_preference_(gpu_preference),
-      use_virtualized_gl_context_(use_virtualized_gl_context),
+      use_virtualized_gl_context_(false),
       command_buffer_id_(GetCommandBufferID(channel->client_id(), route_id)),
       stream_id_(stream_id),
       route_id_(route_id),
@@ -232,6 +231,14 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         subscription_ref_set, pending_valuebuffer_state,
         attrib_parser.bind_generates_resource);
   }
+
+// Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
+// performance regressions when enabling FCM.
+// http://crbug.com/180463
+#if defined(OS_MACOSX)
+  if (gpu_preference_ == gfx::PreferIntegratedGpu)
+    use_virtualized_gl_context_ = true;
+#endif
 
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->UseVirtualizedGLContexts();
