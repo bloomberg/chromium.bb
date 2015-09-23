@@ -342,6 +342,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
 
+  scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
+
   uint32_t GetSurfaceIdNamespace() override;
   uint32_t SurfaceIdNamespaceAtPoint(const gfx::Point& point,
                                      gfx::Point* transformed_point) override;

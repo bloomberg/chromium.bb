@@ -13,6 +13,8 @@
 #include "content/browser/renderer_host/input/synthetic_smooth_move_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_tap_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_touchpad_pinch_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
@@ -218,7 +220,8 @@ class MockDragMouseTarget : public MockMoveGestureTarget {
   gfx::PointF start_, last_mouse_point_;
 };
 
-class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
+class MockSyntheticTouchscreenPinchTouchTarget
+    : public MockSyntheticGestureTarget {
  public:
   enum ZoomDirection {
     ZOOM_DIRECTION_UNKNOWN,
@@ -226,12 +229,12 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     ZOOM_OUT
   };
 
-  MockSyntheticPinchTouchTarget()
+  MockSyntheticTouchscreenPinchTouchTarget()
       : initial_pointer_distance_(0),
         last_pointer_distance_(0),
         zoom_direction_(ZOOM_DIRECTION_UNKNOWN),
         started_(false) {}
-  ~MockSyntheticPinchTouchTarget() override {}
+  ~MockSyntheticTouchscreenPinchTouchTarget() override {}
 
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {
     ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
@@ -271,6 +274,11 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
     }
   }
 
+  SyntheticGestureParams::GestureSourceType
+  GetDefaultSyntheticGestureSourceType() const override {
+    return SyntheticGestureParams::TOUCH_INPUT;
+  }
+
   ZoomDirection zoom_direction() const { return zoom_direction_; }
 
   float ComputeScaleFactor() const {
@@ -303,6 +311,67 @@ class MockSyntheticPinchTouchTarget : public MockSyntheticGestureTarget {
   gfx::PointF start_0_;
   gfx::PointF start_1_;
   bool started_;
+};
+
+class MockSyntheticTouchpadPinchTouchTarget
+    : public MockSyntheticGestureTarget {
+ public:
+  enum ZoomDirection { ZOOM_DIRECTION_UNKNOWN, ZOOM_IN, ZOOM_OUT };
+
+  MockSyntheticTouchpadPinchTouchTarget()
+      : zoom_direction_(ZOOM_DIRECTION_UNKNOWN),
+        started_(false),
+        ended_(false),
+        scale_factor_(1.0f) {}
+  ~MockSyntheticTouchpadPinchTouchTarget() override {}
+
+  void DispatchInputEventToPlatform(const WebInputEvent& event) override {
+    EXPECT_TRUE(WebInputEvent::isGestureEventType(event.type));
+    const blink::WebGestureEvent& gesture_event =
+        static_cast<const blink::WebGestureEvent&>(event);
+
+    if (gesture_event.type == WebInputEvent::GesturePinchBegin) {
+      EXPECT_FALSE(started_);
+      EXPECT_FALSE(ended_);
+      started_ = true;
+    } else if (gesture_event.type == WebInputEvent::GesturePinchEnd) {
+      EXPECT_TRUE(started_);
+      EXPECT_FALSE(ended_);
+      ended_ = true;
+    } else {
+      EXPECT_EQ(WebInputEvent::GesturePinchUpdate, gesture_event.type);
+      EXPECT_TRUE(started_);
+      EXPECT_FALSE(ended_);
+      const float scale = gesture_event.data.pinchUpdate.scale;
+      if (scale != 1.0f) {
+        if (zoom_direction_ == ZOOM_DIRECTION_UNKNOWN) {
+          zoom_direction_ = scale > 1.0f ? ZOOM_IN : ZOOM_OUT;
+        } else if (zoom_direction_ == ZOOM_IN) {
+          EXPECT_GT(scale, 1.0f);
+        } else {
+          EXPECT_EQ(ZOOM_OUT, zoom_direction_);
+          EXPECT_LT(scale, 1.0f);
+        }
+
+        scale_factor_ *= scale;
+      }
+    }
+  }
+
+  SyntheticGestureParams::GestureSourceType
+  GetDefaultSyntheticGestureSourceType() const override {
+    return SyntheticGestureParams::MOUSE_INPUT;
+  }
+
+  ZoomDirection zoom_direction() const { return zoom_direction_; }
+
+  float scale_factor() const { return scale_factor_; }
+
+ private:
+  ZoomDirection zoom_direction_;
+  bool started_;
+  bool ended_;
+  float scale_factor_;
 };
 
 class MockSyntheticTapGestureTarget : public MockSyntheticGestureTarget {
@@ -1100,8 +1169,143 @@ TEST_F(SyntheticGestureControllerTest,
   gesture->ForwardInputEvents(timestamp, target_);
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
-  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+TEST_F(SyntheticGestureControllerTest,
+       TouchscreenTouchpadPinchGestureTouchZoomIn) {
+  CreateControllerAndTarget<MockSyntheticTouchscreenPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.scale_factor = 2.3f;
+  params.anchor.SetPoint(54, 89);
+
+  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+      new SyntheticTouchscreenPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchscreenPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchscreenPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchscreenPinchTouchTarget::ZOOM_IN);
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+}
+
+TEST_F(SyntheticGestureControllerTest,
+       TouchscreenTouchpadPinchGestureTouchZoomOut) {
+  CreateControllerAndTarget<MockSyntheticTouchscreenPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.scale_factor = 0.4f;
+  params.anchor.SetPoint(-12, 93);
+
+  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+      new SyntheticTouchscreenPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchscreenPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchscreenPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchscreenPinchTouchTarget::ZOOM_OUT);
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+}
+
+TEST_F(SyntheticGestureControllerTest,
+       TouchscreenTouchpadPinchGestureTouchNoScaling) {
+  CreateControllerAndTarget<MockSyntheticTouchscreenPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.scale_factor = 1.0f;
+
+  scoped_ptr<SyntheticTouchscreenPinchGesture> gesture(
+      new SyntheticTouchscreenPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchscreenPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchscreenPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchscreenPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
+  EXPECT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+}
+
+TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchZoomIn) {
+  CreateControllerAndTarget<MockSyntheticTouchpadPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.scale_factor = 2.3f;
+  params.anchor.SetPoint(54, 89);
+
+  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+      new SyntheticTouchpadPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchpadPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchpadPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchpadPinchTouchTarget::ZOOM_IN);
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->scale_factor());
+}
+
+TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchZoomOut) {
+  CreateControllerAndTarget<MockSyntheticTouchpadPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.scale_factor = 0.4f;
+  params.anchor.SetPoint(-12, 93);
+
+  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+      new SyntheticTouchpadPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchpadPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchpadPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchpadPinchTouchTarget::ZOOM_OUT);
+  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->scale_factor());
+}
+
+TEST_F(SyntheticGestureControllerTest, TouchpadPinchGestureTouchNoScaling) {
+  CreateControllerAndTarget<MockSyntheticTouchpadPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.scale_factor = 1.0f;
+
+  scoped_ptr<SyntheticTouchpadPinchGesture> gesture(
+      new SyntheticTouchpadPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  MockSyntheticTouchpadPinchTouchTarget* pinch_target =
+      static_cast<MockSyntheticTouchpadPinchTouchTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pinch_target->zoom_direction(),
+            MockSyntheticTouchpadPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
+  EXPECT_EQ(params.scale_factor, pinch_target->scale_factor());
+}
+
+// Ensure that if SyntheticPinchGesture is instantiated with TOUCH_INPUT it
+// correctly creates a touchscreen gesture.
+TEST_F(SyntheticGestureControllerTest, PinchGestureExplicitTouch) {
+  CreateControllerAndTarget<MockSyntheticTouchscreenPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
   params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -1112,54 +1316,62 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
-  MockSyntheticPinchTouchTarget* pinch_target =
-      static_cast<MockSyntheticPinchTouchTarget*>(target_);
-  EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pinch_target->zoom_direction(),
-            MockSyntheticPinchTouchTarget::ZOOM_IN);
-  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+  // Gesture target will fail expectations if the wrong underlying
+  // SyntheticPinch*Gesture was instantiated.
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
-  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+// Ensure that if SyntheticPinchGesture is instantiated with MOUSE_INPUT it
+// correctly creates a touchpad gesture.
+TEST_F(SyntheticGestureControllerTest, PinchGestureExplicitMouse) {
+  CreateControllerAndTarget<MockSyntheticTouchpadPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.scale_factor = 0.4f;
-  params.anchor.SetPoint(-12, 93);
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.scale_factor = 2.3f;
+  params.anchor.SetPoint(54, 89);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
   QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
-  MockSyntheticPinchTouchTarget* pinch_target =
-      static_cast<MockSyntheticPinchTouchTarget*>(target_);
-  EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pinch_target->zoom_direction(),
-            MockSyntheticPinchTouchTarget::ZOOM_OUT);
-  EXPECT_FLOAT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+  // Gesture target will fail expectations if the wrong underlying
+  // SyntheticPinch*Gesture was instantiated.
 }
 
-TEST_F(SyntheticGestureControllerTest, PinchGestureTouchNoScaling) {
-  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+// Ensure that if SyntheticPinchGesture is instantiated with DEFAULT_INPUT it
+// correctly creates a touchscreen gesture for a touchscreen controller.
+TEST_F(SyntheticGestureControllerTest, PinchGestureDefaultTouch) {
+  CreateControllerAndTarget<MockSyntheticTouchscreenPinchTouchTarget>();
 
   SyntheticPinchGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
-  params.scale_factor = 1.0f;
+  params.gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
+  params.scale_factor = 2.3f;
+  params.anchor.SetPoint(54, 89);
 
   scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
   QueueSyntheticGesture(gesture.Pass());
   FlushInputUntilComplete();
 
-  MockSyntheticPinchTouchTarget* pinch_target =
-      static_cast<MockSyntheticPinchTouchTarget*>(target_);
-  EXPECT_EQ(1, num_success_);
-  EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pinch_target->zoom_direction(),
-            MockSyntheticPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
-  EXPECT_EQ(params.scale_factor, pinch_target->ComputeScaleFactor());
+  // Gesture target will fail expectations if the wrong underlying
+  // SyntheticPinch*Gesture was instantiated.
+}
+
+// Ensure that if SyntheticPinchGesture is instantiated with DEFAULT_INPUT it
+// correctly creates a touchpad gesture for a touchpad controller.
+TEST_F(SyntheticGestureControllerTest, PinchGestureDefaultMouse) {
+  CreateControllerAndTarget<MockSyntheticTouchpadPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
+  params.scale_factor = 2.3f;
+  params.anchor.SetPoint(54, 89);
+
+  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  QueueSyntheticGesture(gesture.Pass());
+  FlushInputUntilComplete();
+
+  // Gesture target will fail expectations if the wrong underlying
+  // SyntheticPinch*Gesture was instantiated.
 }
 
 TEST_F(SyntheticGestureControllerTest, TapGestureTouch) {

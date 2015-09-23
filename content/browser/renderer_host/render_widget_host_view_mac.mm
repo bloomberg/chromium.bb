@@ -42,6 +42,7 @@
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
+#import "content/browser/renderer_host/input/synthetic_gesture_target_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
 #import "content/browser/renderer_host/render_widget_host_view_mac_editcommand_helper.h"
 #include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
@@ -1636,6 +1637,14 @@ void RenderWidgetHostViewMac::WheelEventAck(
   // to see it (no-op wheel events are ignored by the event dispatcher)
   if (event.deltaX || event.deltaY)
     [cocoa_view_ processedWheelEvent:event consumed:consumed];
+}
+
+scoped_ptr<SyntheticGestureTarget>
+RenderWidgetHostViewMac::CreateSyntheticGestureTarget() {
+  RenderWidgetHostImpl* host =
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  return scoped_ptr<SyntheticGestureTarget>(
+      new SyntheticGestureTargetMac(host, cocoa_view_));
 }
 
 uint32_t RenderWidgetHostViewMac::GetSurfaceIdNamespace() {

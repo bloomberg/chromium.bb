@@ -250,7 +250,7 @@ class SmoothnessFlingSimpleMobilePages(perf_benchmark.PerfBenchmark):
     return 'smoothness.fling.simple_mobile_sites'
 
 
-@benchmark.Enabled('android', 'chromeos')
+@benchmark.Enabled('android', 'chromeos', 'mac')
 class SmoothnessToughPinchZoomCases(perf_benchmark.PerfBenchmark):
   """Measures rendering statistics for pinch-zooming into the tough pinch zoom
   cases.
