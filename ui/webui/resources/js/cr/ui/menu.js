@@ -32,6 +32,7 @@ cr.define('cr.ui', function() {
     decorate: function() {
       this.addEventListener('mouseover', this.handleMouseOver_);
       this.addEventListener('mouseout', this.handleMouseOut_);
+      this.addEventListener('mouseup', this.handleMouseUp_, true);
 
       this.classList.add('decorated');
       this.setAttribute('role', 'menu');
@@ -111,6 +112,37 @@ cr.define('cr.ui', function() {
      */
     handleMouseOut_: function(e) {
       this.selectedItem = null;
+    },
+
+    /**
+     * If there's a mouseup that happens quickly in about the same position,
+     * stop it from propagating to items. This is to prevent accidentally
+     * selecting a menu item that's created under the mouse cursor.
+     * @param {Event} e A mouseup event on the menu (in capturing phase).
+     * @private
+     */
+    handleMouseUp_: function(e) {
+      assert(this.contains(/** @type {Element} */(e.target)));
+
+      if (!this.trustEvent_(e) || Date.now() - this.shown_.time > 200)
+        return;
+
+      var pos = this.shown_.mouseDownPos;
+      if (!pos || Math.abs(pos.x - e.screenX) + Math.abs(pos.y - e.screenY) > 4)
+        return;
+
+      e.preventDefault();
+      e.stopPropagation();
+    },
+
+    /**
+     * @param {!Event} e
+     * @return {boolean} Whether |e| can be trusted.
+     * @private
+     * @suppress {checkTypes}
+     */
+    trustEvent_: function(e) {
+      return e.isTrusted || e.isTrustedForTesting;
     },
 
     get menuItems() {
@@ -236,6 +268,17 @@ cr.define('cr.ui', function() {
       }
 
       return false;
+    },
+
+    hide: function() {
+      this.hidden = true;
+      delete this.shown_;
+    },
+
+    /** @param {{x: number, y: number}=} opt_mouseDownPos */
+    show: function(opt_mouseDownPos) {
+      this.shown_ = {mouseDownPos: opt_mouseDownPos, time: Date.now()};
+      this.hidden = false;
     },
 
     /**

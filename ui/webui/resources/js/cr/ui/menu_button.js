@@ -110,7 +110,7 @@ cr.define('cr.ui', function() {
               this.hideMenu();
             } else if (e.button == 0) {  // Only show the menu when using left
                                          // mouse button.
-              this.showMenu(false);
+              this.showMenu(false, {x: e.screenX, y: e.screenY});
 
               // Prevent the button from stealing focus on mousedown.
               e.preventDefault();
@@ -158,7 +158,7 @@ cr.define('cr.ui', function() {
         case 'contextmenu':
           if ((!this.menu || !this.menu.contains(e.target)) &&
               (!this.hideTimestamp_ || Date.now() - this.hideTimestamp_ > 50))
-            this.showMenu(true);
+            this.showMenu(true, {x: e.screenX, y: e.screenY});
           e.preventDefault();
           // Don't allow elements further up in the DOM to show their menus.
           e.stopPropagation();
@@ -175,8 +175,10 @@ cr.define('cr.ui', function() {
      * Shows the menu.
      * @param {boolean} shouldSetFocus Whether to set focus on the
      *     selected menu item.
+     * @param {{x: number, y: number}=} opt_mousePos The position of the mouse
+     *     when shown (in screen coordinates).
      */
-    showMenu: function(shouldSetFocus) {
+    showMenu: function(shouldSetFocus, opt_mousePos) {
       this.hideMenu();
 
       this.menu.updateCommands(this);
@@ -189,7 +191,7 @@ cr.define('cr.ui', function() {
       if (!this.dispatchEvent(event))
         return;
 
-      this.menu.hidden = false;
+      this.menu.show(opt_mousePos);
 
       this.setAttribute('menu-shown', '');
 
@@ -225,7 +227,7 @@ cr.define('cr.ui', function() {
         this.menu.classList.add('hide-delayed');
       else
         this.menu.classList.remove('hide-delayed');
-      this.menu.hidden = true;
+      this.menu.hide();
 
       this.showingEvents_.removeAll();
       this.focus();
