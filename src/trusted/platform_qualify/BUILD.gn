@@ -42,7 +42,7 @@ static_library("platform_qual_lib") {
     sources += [ "osx/nacl_os_qualify.c" ]
   }
 
-  if (current_os == "linux") {
+  if (is_linux) {
     sources += [ "linux/nacl_os_qualify.c" ]
   }
 

@@ -85,7 +85,7 @@ static_library("sel") {
     "thread_suspension_unwind.c",
   ]
 
-  if (current_os == "linux") {
+  if (is_linux) {
     sources += [ "linux/nacl_signal.c" ]
   }
 
@@ -144,7 +144,7 @@ static_library("sel") {
       "linux/nacl_signal_mips.c",
     ]
   }
-  if (current_os == "linux" || current_os == "android") {
+  if (is_linux || current_os == "android") {
     sources += [
       "linux/nacl_bootstrap_args.c",
       "linux/nacl_thread_nice.c",

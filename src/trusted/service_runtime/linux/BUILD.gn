@@ -4,7 +4,7 @@
 
 #  Generated from GYP
 
-if (current_os == "linux") {
+if (is_linux) {
   if (current_cpu == "arm") {
     import("//build/config/arm.gni")
   }
