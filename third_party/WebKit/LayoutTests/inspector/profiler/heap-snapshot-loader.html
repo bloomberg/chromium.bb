@@ -11,7 +11,7 @@ function test()
     var partSize = sourceStringified.length >> 3;
 
     function injectMockProfile(callback) {
-        var dispatcher = InspectorBackend._connection._dispatchers["HeapProfiler"]._dispatcher;
+        var dispatcher = InspectorTest.connection._dispatchers["HeapProfiler"]._dispatcher;
         var panel = WebInspector.panels.profiles;
         panel._reset();
 

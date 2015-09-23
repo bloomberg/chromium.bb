@@ -847,6 +847,7 @@ WebInspector.targetManager.observeTargets({
         InspectorTest.serviceWorkerManager = target.serviceWorkerManager;
         InspectorTest.tracingManager = target.tracingManager;
         InspectorTest.mainTarget = target;
+        InspectorTest.connection = target._connection;
     },
 
     targetRemoved: function(target) { }
