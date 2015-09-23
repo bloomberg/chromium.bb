@@ -311,12 +311,14 @@ jboolean ProfileSyncServiceAndroid::IsSyncKeystoreMigrationDone(
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(
       JNIEnv* env, jobject obj) {
   syncer::ModelTypeSet types = sync_service_->GetActiveDataTypes();
+  types.PutAll(syncer::ControlTypes());
   return ModelTypeSetToJavaIntArray(env, types);
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetPreferredDataTypes(
       JNIEnv* env, jobject obj) {
   syncer::ModelTypeSet types = sync_service_->GetPreferredDataTypes();
+  types.PutAll(syncer::ControlTypes());
   return ModelTypeSetToJavaIntArray(env, types);
 }
 
@@ -331,6 +333,7 @@ void ProfileSyncServiceAndroid::SetPreferredDataTypes(
   for (size_t i = 0; i < types_vector.size(); i++) {
     types.Put(static_cast<syncer::ModelType>(types_vector[i]));
   }
+  types.RetainAll(syncer::UserSelectableTypes());
   sync_service_->OnUserChoseDatatypes(sync_everything, types);
 }
 

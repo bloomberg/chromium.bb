@@ -1811,8 +1811,6 @@ void ProfileSyncService::RefreshSpareBootstrapToken(
 void ProfileSyncService::OnUserChoseDatatypes(
     bool sync_everything,
     syncer::ModelTypeSet chosen_types) {
-  DCHECK(syncer::UserSelectableTypes().HasAll(chosen_types));
-
   if (!backend_.get() && !HasUnrecoverableError()) {
     NOTREACHED();
     return;
@@ -1850,8 +1848,7 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
 syncer::ModelTypeSet ProfileSyncService::GetPreferredDataTypes() const {
   const syncer::ModelTypeSet registered_types = GetRegisteredDataTypes();
   const syncer::ModelTypeSet preferred_types =
-      Union(sync_prefs_.GetPreferredDataTypes(registered_types),
-            syncer::ControlTypes());
+      sync_prefs_.GetPreferredDataTypes(registered_types);
   const syncer::ModelTypeSet enforced_types =
       Intersection(GetDataTypesFromPreferenceProviders(), registered_types);
   return Union(preferred_types, enforced_types);
