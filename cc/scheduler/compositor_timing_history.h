@@ -57,10 +57,7 @@ class CC_EXPORT CompositorTimingHistory {
   static scoped_ptr<UMAReporter> CreateUMAReporter(UMACategory category);
   virtual base::TimeTicks Now() const;
 
-  bool AffectsEstimate() const;
-
   bool enabled_;
-  int draws_left_before_estimates_affected_;
 
   RollingTimeDeltaHistory begin_main_frame_to_commit_duration_history_;
   RollingTimeDeltaHistory commit_to_ready_to_activate_duration_history_;

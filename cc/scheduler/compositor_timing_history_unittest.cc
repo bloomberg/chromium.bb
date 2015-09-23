@@ -16,9 +16,7 @@ class TestCompositorTimingHistory : public CompositorTimingHistory {
  public:
   TestCompositorTimingHistory(CompositorTimingHistoryTest* test,
                               RenderingStatsInstrumentation* rendering_stats)
-      : CompositorTimingHistory(CompositorTimingHistory::NULL_UMA,
-                                rendering_stats),
-        test_(test) {}
+      : CompositorTimingHistory(NULL_UMA, rendering_stats), test_(test) {}
 
  protected:
   base::TimeTicks Now() const override;
@@ -42,25 +40,6 @@ class CompositorTimingHistoryTest : public testing::Test {
 
   base::TimeTicks Now() { return now_; }
 
-  void TriggerAllNotificationsWithoutAdvancingTime() {
-    timing_history_.WillBeginMainFrame();
-    timing_history_.DidCommit();
-    timing_history_.WillPrepareTiles();
-    timing_history_.DidPrepareTiles();
-    timing_history_.ReadyToActivate();
-    timing_history_.WillActivate();
-    timing_history_.DidActivate();
-    timing_history_.WillDraw();
-    timing_history_.DidDraw();
-  }
-
-  void TriggerInitialUnrecordedActions() {
-    // The first two cycles are not used since
-    // they are generally more expensive then subsequent frames.
-    TriggerAllNotificationsWithoutAdvancingTime();
-    TriggerAllNotificationsWithoutAdvancingTime();
-  }
-
  protected:
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_;
   TestCompositorTimingHistory timing_history_;
@@ -71,80 +50,7 @@ base::TimeTicks TestCompositorTimingHistory::Now() const {
   return test_->Now();
 }
 
-TEST_F(CompositorTimingHistoryTest, FirstTwoFramesNotRecorded) {
-  base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
-
-  base::TimeDelta begin_main_frame_to_commit_duration =
-      base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta prepare_tiles_duration = base::TimeDelta::FromMilliseconds(2);
-  base::TimeDelta prepare_tiles_end_to_ready_to_activate_duration =
-      base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta commit_to_ready_to_activate_duration =
-      base::TimeDelta::FromMilliseconds(3);
-  base::TimeDelta activate_duration = base::TimeDelta::FromMilliseconds(4);
-  base::TimeDelta draw_duration = base::TimeDelta::FromMilliseconds(5);
-
-  // Verify first two frames don't affect results.
-  for (int i = 0; i < 2; i++) {
-    timing_history_.WillBeginMainFrame();
-    AdvanceNowBy(begin_main_frame_to_commit_duration);
-    timing_history_.DidCommit();
-    timing_history_.WillPrepareTiles();
-    AdvanceNowBy(prepare_tiles_duration);
-    timing_history_.DidPrepareTiles();
-    AdvanceNowBy(prepare_tiles_end_to_ready_to_activate_duration);
-    timing_history_.ReadyToActivate();
-    AdvanceNowBy(one_second);
-    timing_history_.WillActivate();
-    AdvanceNowBy(activate_duration);
-    timing_history_.DidActivate();
-    AdvanceNowBy(one_second);
-    timing_history_.WillDraw();
-    AdvanceNowBy(draw_duration);
-    timing_history_.DidDraw();
-
-    EXPECT_EQ(base::TimeDelta(),
-              timing_history_.BeginMainFrameToCommitDurationEstimate());
-    EXPECT_EQ(base::TimeDelta(),
-              timing_history_.CommitToReadyToActivateDurationEstimate());
-    EXPECT_EQ(base::TimeDelta(),
-              timing_history_.PrepareTilesDurationEstimate());
-    EXPECT_EQ(base::TimeDelta(), timing_history_.ActivateDurationEstimate());
-    EXPECT_EQ(base::TimeDelta(), timing_history_.DrawDurationEstimate());
-  }
-
-  timing_history_.WillBeginMainFrame();
-  AdvanceNowBy(begin_main_frame_to_commit_duration);
-  timing_history_.DidCommit();
-  timing_history_.WillPrepareTiles();
-  AdvanceNowBy(prepare_tiles_duration);
-  timing_history_.DidPrepareTiles();
-  AdvanceNowBy(prepare_tiles_end_to_ready_to_activate_duration);
-  timing_history_.ReadyToActivate();
-  // Do not count idle time between notification and actual activation.
-  AdvanceNowBy(one_second);
-  timing_history_.WillActivate();
-  AdvanceNowBy(activate_duration);
-  timing_history_.DidActivate();
-  // Do not count idle time between activate and draw.
-  AdvanceNowBy(one_second);
-  timing_history_.WillDraw();
-  AdvanceNowBy(draw_duration);
-  timing_history_.DidDraw();
-
-  EXPECT_EQ(begin_main_frame_to_commit_duration,
-            timing_history_.BeginMainFrameToCommitDurationEstimate());
-  EXPECT_EQ(commit_to_ready_to_activate_duration,
-            timing_history_.CommitToReadyToActivateDurationEstimate());
-  EXPECT_EQ(prepare_tiles_duration,
-            timing_history_.PrepareTilesDurationEstimate());
-  EXPECT_EQ(activate_duration, timing_history_.ActivateDurationEstimate());
-  EXPECT_EQ(draw_duration, timing_history_.DrawDurationEstimate());
-}
-
 TEST_F(CompositorTimingHistoryTest, AllSequentialCommit) {
-  TriggerInitialUnrecordedActions();
-
   base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
 
   base::TimeDelta begin_main_frame_to_commit_duration =
@@ -159,6 +65,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequentialCommit) {
 
   timing_history_.WillBeginMainFrame();
   AdvanceNowBy(begin_main_frame_to_commit_duration);
+  // timing_history_.BeginMainFrameAborted();
   timing_history_.DidCommit();
   timing_history_.WillPrepareTiles();
   AdvanceNowBy(prepare_tiles_duration);
@@ -187,8 +94,6 @@ TEST_F(CompositorTimingHistoryTest, AllSequentialCommit) {
 }
 
 TEST_F(CompositorTimingHistoryTest, AllSequentialBeginMainFrameAborted) {
-  TriggerInitialUnrecordedActions();
-
   base::TimeDelta one_second = base::TimeDelta::FromSeconds(1);
 
   base::TimeDelta begin_main_frame_to_commit_duration =
