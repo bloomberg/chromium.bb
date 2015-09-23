@@ -8994,6 +8994,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="EnhancedBookmarks.ViewMode" enum="EnhancedBookmarkViewMode">
   <owner>ianwen@chromium.org</owner>
+  <obsolete>
+    Removed 9/2015 after list view became the only view mode.
+  </obsolete>
   <summary>
     Record which Enhanced Bookmark UI mode users are in. This will be recorded
     everytime the user opens the bookmark manager UI.
@@ -55118,6 +55121,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="EnhancedBookmarkViewMode" type="int">
+  <obsolete>
+    Deprecated 9/2015.
+  </obsolete>
   <int value="0" label="Default view mode"/>
   <int value="1" label="List view mode"/>
   <int value="2" label="Grid view mode"/>
