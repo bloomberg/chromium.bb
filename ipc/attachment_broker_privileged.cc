@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/metrics/histogram_macros.h"
 #include "ipc/ipc_endpoint.h"
 
 namespace IPC {
@@ -35,6 +36,11 @@ Sender* AttachmentBrokerPrivileged::GetSenderWithProcessId(base::ProcessId id) {
   if (it == endpoints_.end())
     return nullptr;
   return *it;
+}
+
+void AttachmentBrokerPrivileged::LogError(UMAError error) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "IPC.AttachmentBrokerPrivileged.BrokerAttachmentError", error, ERROR_MAX);
 }
 
 }  // namespace IPC

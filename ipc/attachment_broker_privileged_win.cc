@@ -59,8 +59,10 @@ void AttachmentBrokerPrivilegedWin::OnDuplicateWinHandle(
   IPC::internal::HandleAttachmentWin::WireFormat wire_format =
       base::get<0>(param);
 
-  if (wire_format.destination_process == base::kNullProcessId)
+  if (wire_format.destination_process == base::kNullProcessId) {
+    LogError(NO_DESTINATION);
     return;
+  }
 
   HandleWireFormat new_wire_format =
       DuplicateWinHandle(wire_format, message.get_sender_pid());
@@ -86,9 +88,11 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
     // forever.
     LOG(ERROR) << "Failed to deliver brokerable attachment to process with id: "
                << dest;
+    LogError(DESTINATION_NOT_FOUND);
     return;
   }
 
+  LogError(DESTINATION_FOUND);
   sender->Send(new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
 }
 

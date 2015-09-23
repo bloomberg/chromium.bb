@@ -36,6 +36,24 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   // Returns nullptr if no sender is found.
   Sender* GetSenderWithProcessId(base::ProcessId id);
 
+  // Errors that can be reported by subclasses.
+  // These match tools/metrics/histograms.xml.
+  // This enum is append-only.
+  enum UMAError {
+    // The brokerable attachment had a valid destination. This is the success
+    // case.
+    DESTINATION_FOUND = 0,
+    // The brokerable attachment had a destination, but the broker did not have
+    // a channel of communication with that process.
+    DESTINATION_NOT_FOUND = 1,
+    // The brokerable attachment did not have a destination process.
+    NO_DESTINATION = 2,
+    ERROR_MAX
+  };
+
+  // Emits an UMA metric.
+  void LogError(UMAError error);
+
  private:
   std::vector<Endpoint*> endpoints_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivileged);

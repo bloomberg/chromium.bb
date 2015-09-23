@@ -16179,6 +16179,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Network channel used for invalidations.</summary>
 </histogram>
 
+<histogram name="IPC.AttachmentBrokerPrivileged.BrokerAttachmentError"
+    enum="IPCAttachmentBrokerPrivilegedBrokerAttachmentError">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    Errors that the privileged attachment broker encounters while trying to
+    broker attachments.
+  </summary>
+</histogram>
+
 <histogram name="Keyboard.KeystrokeDeltas" units="milliseconds">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -62026,6 +62035,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="MainFrameAllowed"/>
   <int value="1" label="SubframeAllowed"/>
   <int value="2" label="SubframeBlocked"/>
+</enum>
+
+<enum name="IPCAttachmentBrokerPrivilegedBrokerAttachmentError" type="int">
+  <int value="0" label="DESTINATION_FOUND">
+    The brokerable attachment had a valid destination. This is the success case.
+  </int>
+  <int value="1" label="DESTINATION_NOT_FOUND">
+    The brokerable attachment had a destination, but the broker did not have a
+    channel of communication with that process.
+  </int>
+  <int value="2" label="NO_DESTINATION">
+    The brokerable attachment did not have a destination process.
+  </int>
 </enum>
 
 <enum name="IPv6ConnectivityStatus" type="int">
