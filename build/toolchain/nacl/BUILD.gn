@@ -70,30 +70,22 @@ nacl_toolchain("glibc_x64") {
   ld = cxx
 }
 
-nacl_toolchain("clang_newlib_x86") {
+template("nacl_clang_toolchain") {
+  toolchain_cpu = target_name
+  assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
+
   toolchain_package = "pnacl_newlib"
   toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu = "x86"
-  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
-  is_clang = true
+  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/" +
+               invoker.toolchain_tuple + "-"
 
-  cc = toolprefix + "clang"
-  cxx = toolprefix + "clang++"
-  ar = toolprefix + "ar"
-  ld = cxx
-}
-
-nacl_toolchain("clang_newlib_x64") {
-  toolchain_package = "pnacl_newlib"
-  toolchain_revision = pnacl_newlib_rev
-  toolchain_cpu = "x64"
-  toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
-  is_clang = true
-
-  cc = toolprefix + "clang"
-  cxx = toolprefix + "clang++"
-  ar = toolprefix + "ar"
-  ld = cxx
+  nacl_toolchain("clang_newlib_" + toolchain_cpu) {
+    is_clang = true
+    cc = toolprefix + "clang"
+    cxx = toolprefix + "clang++"
+    ar = toolprefix + "ar"
+    ld = cxx
+  }
 }
 
 template("nacl_irt_toolchain") {
@@ -132,14 +124,24 @@ template("nacl_irt_toolchain") {
   }
 }
 
-nacl_irt_toolchain("x86") {
+template("nacl_clang_toolchains") {
+  assert(defined(invoker.toolchain_tuple), "Must define toolchain_tuple")
+  nacl_clang_toolchain(target_name) {
+    toolchain_tuple = invoker.toolchain_tuple
+  }
+  nacl_irt_toolchain(target_name) {
+    toolchain_tuple = invoker.toolchain_tuple
+  }
+}
+
+nacl_clang_toolchains("x86") {
   toolchain_tuple = "i686-nacl"
 }
 
-nacl_irt_toolchain("x64") {
+nacl_clang_toolchains("x64") {
   toolchain_tuple = "x86_64-nacl"
 }
 
-nacl_irt_toolchain("arm") {
+nacl_clang_toolchains("arm") {
   toolchain_tuple = "arm-nacl"
 }

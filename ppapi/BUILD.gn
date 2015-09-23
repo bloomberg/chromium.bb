@@ -197,9 +197,8 @@ if (enable_nacl) {
   }
 
   group("ppapi_nacl_tests") {
-    deps = []
-    if (target_cpu == "x86" || target_cpu == "x64") {
-      deps += [ ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})" ]
-    }
+    deps = [
+      ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
+    ]
   }
 }

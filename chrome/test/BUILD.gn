@@ -829,11 +829,6 @@ if (!is_android) {
           "nacl/pnacl_header_test.h",
         ]
 
-        # TODO(GYP): Make NaCl work in other configs and update the irt
-        # dependency as appropriate. We should probably push this
-        # dependency into ppapi/native_client so that clients don't need
-        # to know all of the different toolchain options.
-        assert(current_cpu == "x64")
         data_deps += [
           # "test/data/nacl:shared_test_files",  # TODO(GYP) bug 512902
           "//ppapi/native_client:irt",
@@ -868,7 +863,7 @@ if (!is_android) {
             [ "//build/config/win:default_large_module_incremental_linking" ]
       }
       if (is_linux) {
-        deps += [
+        data_deps += [
           "//native_client/src/trusted/service_runtime/linux:munge_nacl_helper_bootstrap",
           "//components/nacl:nacl_helper",
 
