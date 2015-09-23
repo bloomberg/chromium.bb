@@ -272,7 +272,7 @@ class HTMLFrame : public blink::WebFrameClient,
       uint32_t source_frame_id,
       uint32_t target_frame_id,
       web_view::mojom::HTMLMessageEventPtr serialized_event) override;
-  void OnWillNavigate() override;
+  void OnWillNavigate(const OnWillNavigateCallback& callback) override;
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override;
   void OnDispatchFrameLoadEvent(uint32_t frame_id) override;
 

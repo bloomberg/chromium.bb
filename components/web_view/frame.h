@@ -85,6 +85,8 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
 
   uint32_t app_id() const { return app_id_; }
 
+  bool loading() const { return loading_; }
+
   const ClientPropertyMap& client_properties() const {
     return client_properties_;
   }
@@ -151,6 +153,12 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
 
   // Callback from OnEmbed().
   void OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id);
+
+  // Callback from Frame::OnWillNavigate(). Completes navigation.
+  void OnWillNavigateAck(mojom::FrameClient* frame_client,
+                         scoped_ptr<FrameUserData> user_data,
+                         mojo::ViewTreeClientPtr view_tree_client,
+                         uint32 app_id);
 
   // Completes a navigation request; swapping the existing FrameClient to the
   // supplied arguments.
@@ -241,6 +249,9 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   mojo::URLRequestPtr pending_navigate_;
 
   scoped_ptr<mojo::Binding<mojom::Frame>> frame_binding_;
+
+  // True if waiting on callback from FrameClient::OnWillNavigate().
+  bool waiting_for_on_will_navigate_ack_;
 
   base::WeakPtrFactory<Frame> embed_weak_ptr_factory_;
 

@@ -69,6 +69,7 @@ Frame::Frame(FrameTree* tree,
       loading_(false),
       progress_(0.f),
       client_properties_(client_properties),
+      waiting_for_on_will_navigate_ack_(false),
       embed_weak_ptr_factory_(this),
       navigate_weak_ptr_factory_(this) {
   if (view)
@@ -76,6 +77,7 @@ Frame::Frame(FrameTree* tree,
 }
 
 Frame::~Frame() {
+  DVLOG(2) << "~Frame id=" << id_ << " this=" << this;
   if (view_)
     view_->RemoveObserver(this);
   while (!children_.empty())
@@ -109,6 +111,9 @@ void Frame::Init(Frame* parent,
              frame_request.Pass());
 
   tree_->delegate_->DidCreateFrame(this);
+
+  DVLOG(2) << "Frame id=" << id_ << " parent=" << (parent_ ? parent_->id_ : 0)
+           << " app_id=" << app_id_ << " this=" << this;
 }
 
 // static
@@ -251,6 +256,18 @@ void Frame::OnEmbedAck(bool success, mus::ConnectionSpecificId connection_id) {
     frame_binding_->ResumeIncomingMethodCallProcessing();
 }
 
+void Frame::OnWillNavigateAck(mojom::FrameClient* frame_client,
+                              scoped_ptr<FrameUserData> user_data,
+                              mojo::ViewTreeClientPtr view_tree_client,
+                              uint32 app_id) {
+  DCHECK(waiting_for_on_will_navigate_ack_);
+  DVLOG(2) << "Frame::OnWillNavigateAck id=" << id_;
+  waiting_for_on_will_navigate_ack_ = false;
+  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id);
+  if (pending_navigate_.get())
+    StartNavigate(pending_navigate_.Pass());
+}
+
 void Frame::SetView(mus::View* view) {
   DCHECK(!view_);
   DCHECK_EQ(id_, view->id());
@@ -287,6 +304,13 @@ void Frame::Remove(Frame* node) {
 }
 
 void Frame::StartNavigate(mojo::URLRequestPtr request) {
+  if (waiting_for_on_will_navigate_ack_) {
+    // We're waiting for OnWillNavigate(). We need to wait until that completes
+    // before attempting any other loads.
+    pending_navigate_ = request.Pass();
+    return;
+  }
+
   pending_navigate_.reset();
 
   // We need a View to navigate. When we get the View we'll complete the
@@ -299,6 +323,8 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
   // Drop any pending navigation requests.
   navigate_weak_ptr_factory_.InvalidateWeakPtrs();
 
+  DVLOG(2) << "Frame::StartNavigate id=" << id_ << " url=" << request->url;
+
   tree_->delegate_->CanNavigateFrame(
       this, request.Pass(),
       base::Bind(&Frame::OnCanNavigateFrame,
@@ -309,16 +335,22 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
                                mojom::FrameClient* frame_client,
                                scoped_ptr<FrameUserData> user_data,
                                mojo::ViewTreeClientPtr view_tree_client) {
+  DVLOG(2) << "Frame::OnCanNavigateFrame id=" << id_
+           << " equal=" << (AreAppIdsEqual(app_id, app_id_) ? "true" : "false");
   if (AreAppIdsEqual(app_id, app_id_)) {
     // The app currently rendering the frame will continue rendering it. In this
     // case we do not use the ViewTreeClient (because the app has a View already
     // and ends up reusing it).
     DCHECK(!view_tree_client.get());
+    ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(),
+                 app_id);
   } else {
-    frame_client_->OnWillNavigate();
+    waiting_for_on_will_navigate_ack_ = true;
     DCHECK(view_tree_client.get());
+    frame_client_->OnWillNavigate(base::Bind(
+        &Frame::OnWillNavigateAck, base::Unretained(this), frame_client,
+        base::Passed(&user_data), base::Passed(&view_tree_client), app_id));
   }
-  ChangeClient(frame_client, user_data.Pass(), view_tree_client.Pass(), app_id);
 }
 
 void Frame::NotifyAdded(const Frame* source,

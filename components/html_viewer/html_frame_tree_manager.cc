@@ -94,6 +94,11 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
 
   DCHECK(!frame_tree || change_id <= frame_tree->change_id_);
 
+  DVLOG(2) << "HTMLFrameTreeManager::CreateFrameAndAttachToTree "
+           << " frame_tree=" << frame_tree << " use_existing="
+           << (view_connect_type ==
+               web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING)
+           << " frame_id=" << view_id;
   if (view_connect_type == web_view::mojom::VIEW_CONNECT_TYPE_USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing view but do not have frame tree";
@@ -300,6 +305,9 @@ void HTMLFrameTreeManager::ProcessOnFrameAdded(
   if (pending_remove_ids_.count(frame_data->frame_id))
     return;
 
+  DVLOG(2) << "OnFrameAdded this=" << this
+           << " frame_id=" << frame_data->frame_id;
+
   HTMLFrame::CreateParams params(this, parent, frame_data->frame_id, nullptr,
                                  frame_data->client_properties, nullptr);
   // |parent| takes ownership of created HTMLFrame.
@@ -334,6 +342,8 @@ void HTMLFrameTreeManager::ProcessOnFrameRemoved(HTMLFrame* source,
   // We handle destruction there.
   if (frame->IsLocal())
     return;
+
+  DVLOG(2) << "OnFrameRemoved this=" << this << " frame_id=" << frame_id;
 
   DCHECK(!in_process_on_frame_removed_);
   in_process_on_frame_removed_ = true;

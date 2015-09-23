@@ -152,7 +152,9 @@ interface FrameClient {
   // Called prior to starting a new navigation. This is only called on the
   // FrameClient that is rendering to the frame, and only when another content
   // handler is going to start handling the rendering.
-  OnWillNavigate();
+  //
+  // The new navigation is not started until the callback is run.
+  OnWillNavigate() => ();
 
   // Called to notify that |frame_id|'s loading state has changed. This is only
   // called on the FrameClient rendering the parent of |frame_id|.

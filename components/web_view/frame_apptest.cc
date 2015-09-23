@@ -149,7 +149,9 @@ class TestFrameClient : public mojom::FrameClient {
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           mojom::HTMLMessageEventPtr event) override {}
-  void OnWillNavigate() override {}
+  void OnWillNavigate(const OnWillNavigateCallback& callback) override {
+    callback.Run();
+  }
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override {
     last_loading_state_changed_notification_.frame_id = frame_id;
     last_loading_state_changed_notification_.loading = loading;

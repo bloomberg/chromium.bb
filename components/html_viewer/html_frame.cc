@@ -190,6 +190,10 @@ HTMLFrame::HTMLFrame(CreateParams* params)
     parent_->web_frame_->appendChild(child_web_frame);
   }
 
+  DVLOG(2) << "HTMLFrame init this=" << this << " id=" << id_
+           << " local=" << IsLocal()
+           << " parent=" << (parent_ ? parent_->id_ : 0u);
+
   if (!IsLocal()) {
     blink::WebRemoteFrame* remote_web_frame = web_frame_->toWebRemoteFrame();
     if (remote_web_frame) {
@@ -254,6 +258,8 @@ bool HTMLFrame::HasLocalDescendant() const {
 }
 
 HTMLFrame::~HTMLFrame() {
+  DVLOG(2) << "~HTMLFrame this=" << this << " id=" << id_;
+
   DCHECK(children_.empty());
 
   if (parent_) {
@@ -367,6 +373,7 @@ blink::WebNavigationPolicy HTMLFrame::decidePolicyForNavigation(
 }
 
 void HTMLFrame::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
+  DVLOG(2) << "XXX HTMLFrame::didHandleOnloadEvents id=" << id_;
   static bool recorded = false;
   if (!recorded && startup_performance_data_collector_) {
     startup_performance_data_collector_->SetFirstWebContentsMainFrameLoadTime(
@@ -547,6 +554,8 @@ void HTMLFrame::UpdateFocus() {
 }
 
 void HTMLFrame::SwapToRemote() {
+  DVLOG(2) << "HTMLFrame::SwapToRemote this=" << this << " id=" << id_;
+
   DCHECK(IsLocal());
 
   HTMLFrameDelegate* delegate = delegate_;
@@ -583,6 +592,7 @@ void HTMLFrame::SwapToLocal(
     HTMLFrameDelegate* delegate,
     mus::View* view,
     const mojo::Map<mojo::String, mojo::Array<uint8_t>>& properties) {
+  DVLOG(2) << "HTMLFrame::SwapToLocal this=" << this << " id=" << id_;
   CHECK(!IsLocal());
   // It doesn't make sense for the root to swap to local.
   CHECK(parent_);
@@ -763,7 +773,11 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
                                                         msg_event);
 }
 
-void HTMLFrame::OnWillNavigate() {
+void HTMLFrame::OnWillNavigate(const OnWillNavigateCallback& callback) {
+  DVLOG(2) << "HTMLFrame::OnWillNavigate this=" << this << " id=" << id_
+           << " local=" << IsLocal() << " will_swap="
+           << (IsLocal() && this != frame_tree_manager_->local_root_);
+  callback.Run();
   if (IsLocal() && this != frame_tree_manager_->local_root_)
     SwapToRemote();
 }
