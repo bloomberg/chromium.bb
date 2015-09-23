@@ -5,7 +5,7 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
@@ -86,14 +86,13 @@ ContentSettingsRegistry::~ContentSettingsRegistry() {}
 
 const ContentSettingsInfo* ContentSettingsRegistry::Get(
     ContentSettingsType type) const {
-  DCHECK_GE(type, 0);
-  DCHECK_LT(type, static_cast<int>(content_settings_info_.size()));
-  return content_settings_info_[type];
+  const auto& it = content_settings_info_.find(type);
+  if (it != content_settings_info_.end())
+    return it->second;
+  return nullptr;
 }
 
 void ContentSettingsRegistry::Init() {
-  content_settings_info_.resize(CONTENT_SETTINGS_NUM_TYPES);
-
   // TODO(raymes): This registration code should not have to be in a single
   // location. It should be possible to register a setting from the code
   // associated with it.
@@ -181,10 +180,10 @@ void ContentSettingsRegistry::Register(
       website_settings_registry_->Register(type, name, default_value.Pass(),
                                            sync_status,
                                            WebsiteSettingsInfo::NOT_LOSSY);
-  DCHECK_GE(type, 0);
-  DCHECK_LT(type, static_cast<int>(content_settings_info_.size()));
-  content_settings_info_[type] =
-      new ContentSettingsInfo(website_settings_info, whitelisted_schemes);
+  DCHECK(!ContainsKey(content_settings_info_, type));
+  content_settings_info_.set(
+      type, make_scoped_ptr(new ContentSettingsInfo(website_settings_info,
+                                                    whitelisted_schemes)));
 }
 
 }  // namespace content_settings

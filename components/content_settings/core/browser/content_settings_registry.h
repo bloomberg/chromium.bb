@@ -7,9 +7,10 @@
 
 #include <string>
 
+#include "base/containers/scoped_ptr_map.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -50,7 +51,8 @@ class ContentSettingsRegistry {
                 WebsiteSettingsInfo::SyncStatus sync_status,
                 const std::vector<std::string>& whitelisted_schemes);
 
-  ScopedVector<ContentSettingsInfo> content_settings_info_;
+  base::ScopedPtrMap<ContentSettingsType, scoped_ptr<ContentSettingsInfo>>
+      content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsRegistry);

@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_vector.h"
+#include "base/containers/scoped_ptr_map.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
@@ -63,16 +64,18 @@ class PrefProvider : public ObservableProvider {
                           const ContentSettingsPattern& secondary_pattern,
                           ContentSettingsType content_type);
 
-  void Notify(const ContentSettingsPattern& primary_pattern,
-              const ContentSettingsPattern& secondary_pattern,
-              ContentSettingsType content_type,
-              const std::string& resource_identifier);
+  ContentSettingsPref* GetPref(ContentSettingsType type) const;
 
   // Gains ownership of |clock|.
   void SetClockForTesting(scoped_ptr<base::Clock> clock);
 
  private:
   friend class DeadlockCheckerObserver;  // For testing.
+
+  void Notify(const ContentSettingsPattern& primary_pattern,
+              const ContentSettingsPattern& secondary_pattern,
+              ContentSettingsType content_type,
+              const std::string& resource_identifier);
 
   // Clean up the obsolete preferences from the user's profile.
   void DiscardObsoletePreferences();
@@ -87,7 +90,8 @@ class PrefProvider : public ObservableProvider {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  ScopedVector<ContentSettingsPref> content_settings_prefs_;
+  base::ScopedPtrMap<ContentSettingsType, scoped_ptr<ContentSettingsPref>>
+      content_settings_prefs_;
 
   base::ThreadChecker thread_checker_;
 

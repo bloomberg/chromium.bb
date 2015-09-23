@@ -55,9 +55,7 @@ void PrefProvider::RegisterProfilePrefs(
 
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    const WebsiteSettingsInfo* info =
-        website_settings->Get(static_cast<ContentSettingsType>(i));
+  for (const WebsiteSettingsInfo* info : *website_settings) {
     registry->RegisterDictionaryPref(info->pref_name(),
                                      info->GetPrefRegistrationFlags());
   }
@@ -90,18 +88,19 @@ PrefProvider::PrefProvider(PrefService* prefs, bool incognito)
 
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
-  for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    content_settings_prefs_.push_back(new ContentSettingsPref(
-        ContentSettingsType(i), prefs_, &pref_change_registrar_,
-        website_settings->Get(static_cast<ContentSettingsType>(i))->pref_name(),
-        is_incognito_,
-        base::Bind(&PrefProvider::Notify, base::Unretained(this))));
+  for (const WebsiteSettingsInfo* info : *website_settings) {
+    content_settings_prefs_.set(
+        info->type(),
+        make_scoped_ptr(new ContentSettingsPref(
+            info->type(), prefs_, &pref_change_registrar_, info->pref_name(),
+            is_incognito_,
+            base::Bind(&PrefProvider::Notify, base::Unretained(this)))));
   }
 
   if (!is_incognito_) {
     size_t num_exceptions = 0;
-    for (size_t i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-      num_exceptions += content_settings_prefs_[i]->GetNumExceptions();
+    for (const auto& pref : content_settings_prefs_)
+      num_exceptions += pref.second->GetNumExceptions();
 
     UMA_HISTOGRAM_COUNTS("ContentSettings.NumberOfExceptions",
                          num_exceptions);
@@ -118,9 +117,7 @@ RuleIterator* PrefProvider::GetRuleIterator(
     ContentSettingsType content_type,
     const ResourceIdentifier& resource_identifier,
     bool incognito) const {
-  return content_settings_prefs_[content_type]->GetRuleIterator(
-      resource_identifier,
-      incognito);
+  return GetPref(content_type)->GetRuleIterator(resource_identifier, incognito);
 }
 
 bool PrefProvider::SetWebsiteSetting(
@@ -143,11 +140,9 @@ bool PrefProvider::SetWebsiteSetting(
     return false;
   }
 
-  return content_settings_prefs_[content_type]->SetWebsiteSetting(
-      primary_pattern,
-      secondary_pattern,
-      resource_identifier,
-      in_value);
+  return GetPref(content_type)
+      ->SetWebsiteSetting(primary_pattern, secondary_pattern,
+                          resource_identifier, in_value);
 }
 
 void PrefProvider::ClearAllContentSettingsRules(
@@ -155,7 +150,7 @@ void PrefProvider::ClearAllContentSettingsRules(
   DCHECK(CalledOnValidThread());
   DCHECK(prefs_);
 
-  content_settings_prefs_[content_type]->ClearAllContentSettingsRules();
+  GetPref(content_type)->ClearAllContentSettingsRules();
 }
 
 void PrefProvider::ShutdownOnUIThread() {
@@ -170,21 +165,27 @@ void PrefProvider::UpdateLastUsage(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
-  content_settings_prefs_[content_type]->UpdateLastUsage(primary_pattern,
-                                                         secondary_pattern,
-                                                         clock_.get());
+  GetPref(content_type)
+      ->UpdateLastUsage(primary_pattern, secondary_pattern, clock_.get());
 }
 
 base::Time PrefProvider::GetLastUsage(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type) {
-  return content_settings_prefs_[content_type]->GetLastUsage(primary_pattern,
-                                                             secondary_pattern);
+  return GetPref(content_type)
+      ->GetLastUsage(primary_pattern, secondary_pattern);
 }
 
-// ////////////////////////////////////////////////////////////////////////////
-// Private
+ContentSettingsPref* PrefProvider::GetPref(ContentSettingsType type) const {
+  auto it = content_settings_prefs_.find(type);
+  DCHECK(it != content_settings_prefs_.end());
+  return it->second;
+}
+
+void PrefProvider::SetClockForTesting(scoped_ptr<base::Clock> clock) {
+  clock_ = clock.Pass();
+}
 
 void PrefProvider::Notify(
     const ContentSettingsPattern& primary_pattern,
@@ -195,10 +196,6 @@ void PrefProvider::Notify(
                   secondary_pattern,
                   content_type,
                   resource_identifier);
-}
-
-void PrefProvider::SetClockForTesting(scoped_ptr<base::Clock> clock) {
-  clock_ = clock.Pass();
 }
 
 void PrefProvider::DiscardObsoletePreferences() {

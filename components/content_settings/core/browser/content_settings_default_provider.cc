@@ -86,9 +86,7 @@ void DefaultProvider::RegisterProfilePrefs(
   // Register the default settings' preferences.
   WebsiteSettingsRegistry* website_settings =
       WebsiteSettingsRegistry::GetInstance();
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    const WebsiteSettingsInfo* info = website_settings->Get(type);
+  for (const WebsiteSettingsInfo* info : *website_settings) {
     registry->RegisterIntegerPref(info->default_value_pref_name(),
                                   GetDefaultValue(info),
                                   info->GetPrefRegistrationFlags());
@@ -186,10 +184,10 @@ DefaultProvider::DefaultProvider(PrefService* prefs, bool incognito)
   pref_change_registrar_.Init(prefs_);
   PrefChangeRegistrar::NamedChangeCallback callback = base::Bind(
       &DefaultProvider::OnPreferenceChanged, base::Unretained(this));
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    pref_change_registrar_.Add(GetPrefName(type), callback);
-  }
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
+  for (const WebsiteSettingsInfo* info : *website_settings)
+    pref_change_registrar_.Add(info->default_value_pref_name(), callback);
 }
 
 DefaultProvider::~DefaultProvider() {
@@ -271,10 +269,10 @@ void DefaultProvider::ShutdownOnUIThread() {
 
 void DefaultProvider::ReadDefaultSettings() {
   base::AutoLock lock(lock_);
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    ChangeSetting(type, ReadFromPref(type).get());
-  }
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
+  for (const WebsiteSettingsInfo* info : *website_settings)
+    ChangeSetting(info->type(), ReadFromPref(info->type()).get());
 }
 
 bool DefaultProvider::IsValueEmptyOrDefault(ContentSettingsType content_type,
@@ -314,10 +312,11 @@ void DefaultProvider::OnPreferenceChanged(const std::string& name) {
   // Find out which content setting the preference corresponds to.
   ContentSettingsType content_type = CONTENT_SETTINGS_TYPE_DEFAULT;
 
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    ContentSettingsType type = static_cast<ContentSettingsType>(i);
-    if (GetPrefName(type) == name) {
-      content_type = type;
+  WebsiteSettingsRegistry* website_settings =
+      WebsiteSettingsRegistry::GetInstance();
+  for (const WebsiteSettingsInfo* info : *website_settings) {
+    if (info->default_value_pref_name() == name) {
+      content_type = info->type();
       break;
     }
   }

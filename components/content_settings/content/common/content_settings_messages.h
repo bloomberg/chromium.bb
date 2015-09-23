@@ -12,7 +12,8 @@
 
 #define IPC_MESSAGE_START ContentSettingsMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(ContentSettingsType, CONTENT_SETTINGS_NUM_TYPES - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(ContentSettingsType,
+                          CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE - 1)
 
 //-----------------------------------------------------------------------------
 // These are messages sent from the browser to the renderer process.
