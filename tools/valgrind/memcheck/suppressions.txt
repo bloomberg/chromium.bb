@@ -3350,7 +3350,6 @@
    Memcheck:Uninitialized
    fun:av_packet_unpack_dictionary
    fun:add_metadata_from_side_data
-   ...
 }
 {
    bug_448700_a

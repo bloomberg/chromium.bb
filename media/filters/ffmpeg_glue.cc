@@ -175,21 +175,9 @@ bool FFmpegGlue::OpenContext() {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedContainer", container);
   }
 
-  // Use TOC when available to quickly seek MP3 file.
-  // TODO(dalecurtis): Remove this upon rolling ffmpeg. Commit c43bd08... will
-  // make setting AVFMT_FLAG_FAST_SEEK (which we already do) default usetoc = 1.
-  AVDictionary* options = nullptr;
-  av_dict_set(&options, "usetoc", "1", 0);
-
   // By passing nullptr for the filename (second parameter) we are telling
   // FFmpeg to use the AVIO context we setup from the AVFormatContext structure.
-  bool success =
-      avformat_open_input(&format_context_, nullptr, nullptr, &options) == 0;
-
-  if (options)
-    av_dict_free(&options);
-
-  return success;
+  return avformat_open_input(&format_context_, nullptr, nullptr, nullptr) == 0;
 }
 
 FFmpegGlue::~FFmpegGlue() {
