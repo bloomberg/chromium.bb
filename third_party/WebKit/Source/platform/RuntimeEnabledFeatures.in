@@ -156,9 +156,10 @@ ShadowRootDelegatesFocus status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
 SlimmingPaintV2
-SlimmingPaintUnderInvalidationChecking
+SlimmingPaintOffsetCaching implied_by=SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 SlimmingPaintSubsequenceCaching implied_by=SlimmingPaintV2
+SlimmingPaintUnderInvalidationChecking
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable
 StyleMatchedPropertiesCache status=stable

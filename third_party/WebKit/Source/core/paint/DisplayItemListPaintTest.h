@@ -18,6 +18,7 @@ class DisplayItemListPaintTest : public RenderingTest {
 public:
     DisplayItemListPaintTest()
         : m_originalSlimmingPaintSubsequenceCachingEnabled(RuntimeEnabledFeatures::slimmingPaintSubsequenceCachingEnabled())
+        , m_originalSlimmingPaintOffsetCachingEnabled(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         { }
 
 protected:
@@ -33,9 +34,11 @@ private:
     void TearDown() override
     {
         RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(m_originalSlimmingPaintSubsequenceCachingEnabled);
+        RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(m_originalSlimmingPaintOffsetCachingEnabled);
     }
 
     bool m_originalSlimmingPaintSubsequenceCachingEnabled;
+    bool m_originalSlimmingPaintOffsetCachingEnabled;
 };
 
 // Slimming paint v2 has subtly different behavior on some paint tests. This

@@ -119,8 +119,10 @@ TEST_F(LayoutObjectDrawingRecorderTest, CullRectMatchesProvidedClip)
     EXPECT_EQ(rect, drawAndGetCullRect(rootDisplayItemList(), layoutView(), LayoutRect(rect)));
 }
 
-TEST_F(LayoutObjectDrawingRecorderTestForSlimmingPaintV2, PaintOffsetCache)
+TEST_F(LayoutObjectDrawingRecorderTest, PaintOffsetCache)
 {
+    RuntimeEnabledFeatures::setSlimmingPaintOffsetCachingEnabled(true);
+
     GraphicsContext context(&rootDisplayItemList());
     LayoutRect bounds = layoutView().viewRect();
     LayoutPoint paintOffset(1, 2);

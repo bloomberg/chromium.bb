@@ -26,7 +26,7 @@ public:
     static bool useCachedDrawingIfPossible(GraphicsContext& context, const LayoutObject& layoutObject, DisplayItem::Type displayItemType, const LayoutPoint& paintOffset)
     {
         // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !context.displayItemList()->paintOffsetIsUnchanged(layoutObject.displayItemClient(), paintOffset))
+        if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && !context.displayItemList()->paintOffsetIsUnchanged(layoutObject.displayItemClient(), paintOffset))
             return false;
         if (layoutObject.fullPaintInvalidationReason() == PaintInvalidationDelayedFull)
             return false;
@@ -41,7 +41,7 @@ public:
     static bool useCachedDrawingIfPossible(GraphicsContext& context, const InlineBox& inlineBox, DisplayItem::Type displayItemType, const LayoutPoint& paintOffset)
     {
         // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !context.displayItemList()->paintOffsetIsUnchanged(inlineBox.displayItemClient(), paintOffset))
+        if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && !context.displayItemList()->paintOffsetIsUnchanged(inlineBox.displayItemClient(), paintOffset))
             return false;
         return DrawingRecorder::useCachedDrawingIfPossible(context, inlineBox, displayItemType);
     }
@@ -94,7 +94,7 @@ public:
 private:
     static void updatePaintOffsetIfNeeded(DisplayItemList* displayItemList, const DisplayItemClientWrapper& client, const LayoutPoint& paintOffset)
     {
-        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
             return;
 
         // TODO(pdr): The paint offset cache should be stored on LayoutObject but is temporarily on the DisplayItemList.

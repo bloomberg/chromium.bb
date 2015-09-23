@@ -135,6 +135,9 @@ crbug.com/527242 paint/invalidation/spv2/cached-change-row-border-width.html [ I
 crbug.com/527242 paint/invalidation/spv2/cached-change-table-border-width.html [ ImageOnlyFailure ]
 crbug.com/527242 paint/invalidation/spv2/cached-change-tbody-border-width.html [ ImageOnlyFailure ]
 
+# Needs paint offset cache
+crbug.com/533277 paint/invalidation/percentage-transform-paint-offset.html [ ImageOnlyFailure ]
+
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/504613 crbug.com/524248 virtual/spv2/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 crbug.com/502531 fast/borders/border-antialiasing.html [ ImageOnlyFailure ]

@@ -1340,9 +1340,9 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         return PaintInvalidationNone; // Don't invalidate paints if we're printing.
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
-    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintV2Enabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
+    const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
     LayoutRect newBounds = boundsRectForPaintInvalidation(&paintInvalidationContainer, &paintInvalidationState);
-    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintV2Enabled() ? LayoutPoint() : DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() ? LayoutPoint() : DeprecatedPaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
     // does not move on scroll.
@@ -1353,7 +1353,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
     }
 
     setPreviousPaintInvalidationRect(newBounds);
-    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         setPreviousPositionFromPaintInvalidationBacking(newLocation);
 
     PaintInvalidationReason invalidationReason = paintInvalidationReason(paintInvalidationContainer, oldBounds, oldLocation, newBounds, newLocation);
@@ -1377,7 +1377,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         // mutation, but incurs no pixel difference (i.e. bounds stay the same) so no rect-based
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
-        if (paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
+        if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
             invalidateDisplayItemClients(paintInvalidationContainer);
 
         return invalidationReason;

@@ -137,7 +137,7 @@ bool DisplayItemList::clientCacheIsValid(DisplayItemClient client) const
 
 void DisplayItemList::invalidatePaintOffset(const DisplayItemClientWrapper& client)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
 
     updateValidlyCachedClientsIfNeeded();
     m_validlyCachedClients.remove(client.displayItemClient());
@@ -158,20 +158,20 @@ void DisplayItemList::invalidatePaintOffset(const DisplayItemClientWrapper& clie
 #if ENABLE(ASSERT)
 bool DisplayItemList::paintOffsetWasInvalidated(DisplayItemClient client) const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     return m_clientsWithPaintOffsetInvalidations.contains(client);
 }
 #endif
 
 void DisplayItemList::recordPaintOffset(DisplayItemClient client, const LayoutPoint& paintOffset)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     m_previousPaintOffsets.set(client, paintOffset);
 }
 
 bool DisplayItemList::paintOffsetIsUnchanged(DisplayItemClient client, const LayoutPoint& paintOffset) const
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
     PreviousPaintOffsets::const_iterator it = m_previousPaintOffsets.find(client);
     if (it == m_previousPaintOffsets.end())
         return false;
@@ -180,7 +180,7 @@ bool DisplayItemList::paintOffsetIsUnchanged(DisplayItemClient client, const Lay
 
 void DisplayItemList::removeUnneededPaintOffsetEntries()
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
 
     // This function is only needed temporarily while paint offsets are stored
     // in a map on the list itself. Because we don't always get notified when
@@ -309,7 +309,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
         m_numCachedItems = 0;
-        if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
             removeUnneededPaintOffsetEntries();
         return;
     }
@@ -336,7 +336,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
 
         if (newDisplayItemHasCachedType) {
             ASSERT(newDisplayItem.isCached());
-            ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
+            ASSERT(clientCacheIsValid(newDisplayItem.client()) || (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && !paintOffsetWasInvalidated(newDisplayItem.client())));
             if (!isSynchronized) {
                 currentIt = findOutOfOrderCachedItem(newDisplayItemId, outOfOrderIndexContext);
 
@@ -370,7 +370,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
             ASSERT(!newDisplayItem.isDrawing()
                 || newDisplayItem.skippedCache()
                 || !clientCacheIsValid(newDisplayItem.client())
-                || (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
+                || (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintOffsetWasInvalidated(newDisplayItem.client())));
 
             updatedList.appendByMoving(*newIt);
 
@@ -392,7 +392,7 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
     m_currentDisplayItems.swap(updatedList);
     m_numCachedItems = 0;
 
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
         removeUnneededPaintOffsetEntries();
 
 #if ENABLE(ASSERT)

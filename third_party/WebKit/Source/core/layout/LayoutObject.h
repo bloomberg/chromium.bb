@@ -1129,12 +1129,12 @@ public:
     // The previous position of the top-left corner of the object in its previous paint backing.
     const LayoutPoint& previousPositionFromPaintInvalidationBacking() const
     {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
         return m_previousPositionFromPaintInvalidationBacking;
     }
     void setPreviousPositionFromPaintInvalidationBacking(const LayoutPoint& positionFromPaintInvalidationBacking)
     {
-        ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+        ASSERT(!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
         m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking;
     }
 
