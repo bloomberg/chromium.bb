@@ -430,7 +430,7 @@ crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html
 
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
 
-crbug.com/487281 [ Mac ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
+crbug.com/487281 [ SnowLeopard Lion MountainLion Retina Mavericks ] fast/forms/menulist-narrow-width.html [ ImageOnlyFailure ]
 
 crbug.com/441840 [ Mac XP ] cssom/ahem-ex-units.html [ Failure ]
 
@@ -1191,6 +1191,7 @@ crbug.com/524646 [ Yosemite ] fast/forms/listbox-hit-test-zoomed.html [ NeedsReb
 crbug.com/524646 [ Yosemite ] fast/forms/listbox-scrollbar-incremental-load.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/listbox-width-change.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/menulist-deselect-update.html [ NeedsRebaseline ]
+crbug.com/524646 [ Yosemite ] fast/forms/menulist-narrow-width.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/menulist-no-overflow.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/menulist-option-wrap.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/menulist-restrict-line-height.html [ NeedsRebaseline ]
