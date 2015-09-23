@@ -488,9 +488,8 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* frame,
       const blink::WebURLRequest& request,
       const blink::WebURLResponse& response);
-  virtual void didDisplayInsecureContent(blink::WebLocalFrame* frame);
-  virtual void didRunInsecureContent(blink::WebLocalFrame* frame,
-                                     const blink::WebSecurityOrigin& origin,
+  virtual void didDisplayInsecureContent();
+  virtual void didRunInsecureContent(const blink::WebSecurityOrigin& origin,
                                      const blink::WebURL& target);
   virtual void didChangePerformanceTiming();
   virtual void didAbortLoading(blink::WebLocalFrame* frame);

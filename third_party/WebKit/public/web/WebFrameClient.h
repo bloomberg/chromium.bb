@@ -428,15 +428,15 @@ public:
 
     // This frame has displayed inactive content (such as an image) from an
     // insecure source.  Inactive content cannot spread to other frames.
-    virtual void didDisplayInsecureContent(WebLocalFrame*) { }
+    virtual void didDisplayInsecureContent() { }
 
     // The indicated security origin has run active content (such as a
     // script) from an insecure source.  Note that the insecure content can
     // spread to other frames in the same origin.
-    virtual void didRunInsecureContent(WebLocalFrame*, const WebSecurityOrigin&, const WebURL& insecureURL) { }
+    virtual void didRunInsecureContent(const WebSecurityOrigin&, const WebURL& insecureURL) { }
 
     // A reflected XSS was encountered in the page and suppressed.
-    virtual void didDetectXSS(WebLocalFrame*, const WebURL&, bool didBlockEntirePage) { }
+    virtual void didDetectXSS(const WebURL&, bool didBlockEntirePage) { }
 
     // A PingLoader was created, and a request dispatched to a URL.
     virtual void didDispatchPingLoader(WebLocalFrame*, const WebURL&) { }

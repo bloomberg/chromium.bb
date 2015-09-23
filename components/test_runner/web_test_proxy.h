@@ -204,8 +204,7 @@ class TEST_RUNNER_EXPORT WebTestProxyBase {
                    blink::WebHistoryCommitType commit_type);
   void DidFinishLoad(blink::WebLocalFrame* frame);
   void DidChangeLocationWithinPage(blink::WebLocalFrame* frame);
-  void DidDetectXSS(blink::WebLocalFrame* frame,
-                    const blink::WebURL& insecure_url,
+  void DidDetectXSS(const blink::WebURL& insecure_url,
                     bool did_block_entire_page);
   void DidDispatchPingLoader(blink::WebLocalFrame* frame,
                              const blink::WebURL& url);

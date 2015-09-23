@@ -3453,16 +3453,13 @@ void RenderFrameImpl::didLoadResourceFromMemoryCache(
       response.mimeType().utf8(), WebURLRequestToResourceType(request)));
 }
 
-void RenderFrameImpl::didDisplayInsecureContent(blink::WebLocalFrame* frame) {
-  DCHECK(!frame_ || frame_ == frame);
+void RenderFrameImpl::didDisplayInsecureContent() {
   Send(new FrameHostMsg_DidDisplayInsecureContent(routing_id_));
 }
 
 void RenderFrameImpl::didRunInsecureContent(
-    blink::WebLocalFrame* frame,
     const blink::WebSecurityOrigin& origin,
     const blink::WebURL& target) {
-  DCHECK(!frame_ || frame_ == frame);
   Send(new FrameHostMsg_DidRunInsecureContent(
       routing_id_, origin.toString().utf8(), target));
   GetContentClient()->renderer()->RecordRapporURL(

@@ -626,19 +626,19 @@ void FrameLoaderClientImpl::didAccessInitialDocument()
 void FrameLoaderClientImpl::didDisplayInsecureContent()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didDisplayInsecureContent(m_webFrame);
+        m_webFrame->client()->didDisplayInsecureContent();
 }
 
 void FrameLoaderClientImpl::didRunInsecureContent(SecurityOrigin* origin, const KURL& insecureURL)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didRunInsecureContent(m_webFrame, WebSecurityOrigin(origin), insecureURL);
+        m_webFrame->client()->didRunInsecureContent(WebSecurityOrigin(origin), insecureURL);
 }
 
 void FrameLoaderClientImpl::didDetectXSS(const KURL& insecureURL, bool didBlockEntirePage)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->didDetectXSS(m_webFrame, insecureURL, didBlockEntirePage);
+        m_webFrame->client()->didDetectXSS(insecureURL, didBlockEntirePage);
 }
 
 void FrameLoaderClientImpl::didDispatchPingLoader(const KURL& url)

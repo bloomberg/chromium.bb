@@ -179,13 +179,12 @@ class WebFrameTestProxy : public Base {
     Base::showContextMenu(context_menu_data);
   }
 
-  virtual void didDetectXSS(blink::WebLocalFrame* frame,
-                            const blink::WebURL& insecure_url,
+  virtual void didDetectXSS(const blink::WebURL& insecure_url,
                             bool did_block_entire_page) {
     // This is not implemented in RenderFrameImpl, so need to explicitly call
     // into the base proxy.
-    base_proxy_->DidDetectXSS(frame, insecure_url, did_block_entire_page);
-    Base::didDetectXSS(frame, insecure_url, did_block_entire_page);
+    base_proxy_->DidDetectXSS(insecure_url, did_block_entire_page);
+    Base::didDetectXSS(insecure_url, did_block_entire_page);
   }
 
   virtual void didDispatchPingLoader(blink::WebLocalFrame* frame,

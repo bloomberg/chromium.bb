@@ -1159,8 +1159,7 @@ void WebTestProxyBase::DidFinishLoad(blink::WebLocalFrame* frame) {
   CheckDone(frame, LoadFinished);
 }
 
-void WebTestProxyBase::DidDetectXSS(blink::WebLocalFrame* frame,
-                                    const blink::WebURL& insecure_url,
+void WebTestProxyBase::DidDetectXSS(const blink::WebURL& insecure_url,
                                     bool did_block_entire_page) {
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks())
     delegate_->PrintMessage("didDetectXSS\n");
