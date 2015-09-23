@@ -15,6 +15,7 @@ namespace extensions {
 // override settings.
 class SettingsOverrideAPIPermission : public APIPermission {
  public:
+  explicit SettingsOverrideAPIPermission(const APIPermissionInfo* permission);
   SettingsOverrideAPIPermission(const APIPermissionInfo* permission,
                                 const std::string& setting_value);
   ~SettingsOverrideAPIPermission() override;

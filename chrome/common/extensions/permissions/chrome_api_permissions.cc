@@ -9,6 +9,7 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/media_galleries_permission.h"
 #include "extensions/common/permissions/permissions_info.h"
+#include "extensions/common/permissions/settings_override_permission.h"
 #include "extensions/strings/grit/extensions_strings.h"
 
 namespace extensions {
@@ -252,13 +253,16 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       // Settings override permissions.
       {APIPermission::kHomepage, "homepage",
        APIPermissionInfo::kFlagCannotBeOptional |
-           APIPermissionInfo::kFlagInternal},
+           APIPermissionInfo::kFlagInternal,
+       &CreateAPIPermission<SettingsOverrideAPIPermission>},
       {APIPermission::kSearchProvider, "searchProvider",
        APIPermissionInfo::kFlagCannotBeOptional |
-           APIPermissionInfo::kFlagInternal},
+           APIPermissionInfo::kFlagInternal,
+       &CreateAPIPermission<SettingsOverrideAPIPermission>},
       {APIPermission::kStartupPages, "startupPages",
        APIPermissionInfo::kFlagCannotBeOptional |
-           APIPermissionInfo::kFlagInternal},
+           APIPermissionInfo::kFlagInternal,
+       &CreateAPIPermission<SettingsOverrideAPIPermission>},
   };
 
   std::vector<APIPermissionInfo*> permissions;
