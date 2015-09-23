@@ -154,6 +154,25 @@
 
 
 ```
+## **\--threads**: Specify number of worker threads.
+
+```
+  GN runs many threads to load and run build files. This can make
+  debugging challenging. Or you may want to experiment with different
+  values to see how it affects performance.
+
+  The parameter is the number of worker threads. This does not count the
+  main thread (so there are always at least two).
+
+```
+
+### **Examples**
+
+```
+  gen gen out/Default --threads=1
+
+
+```
 ## **\--time**: Outputs a summary of how long everything took.
 
 ```
@@ -1010,7 +1029,7 @@
 ### **Variables valid in a config definition**:
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs
+         defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
 
 ```
@@ -1209,7 +1228,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs
+         defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, forward_dependent_configs_from, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -1984,7 +2003,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs
+         defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, forward_dependent_configs_from, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2025,7 +2044,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs
+         defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, forward_dependent_configs_from, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2049,7 +2068,7 @@
 
 ```
   Flags: cflags, cflags_c, cflags_cc, cflags_objc, cflags_objcc,
-         defines, include_dirs, ldflags, lib_dirs, libs
+         defines, include_dirs, ldflags, lib_dirs, libs,
          precompiled_header, precompiled_source
   Deps: data_deps, deps, forward_dependent_configs_from, public_deps
   Dependent configs: all_dependent_configs, public_configs
@@ -2413,13 +2432,14 @@
 
         Type of precompiled headers. If undefined or the empty string,
         precompiled headers will not be used for this tool. Otherwise
-        use "msvc" which is the only currently supported value.
+        use "gcc" or "msvc".
 
         For precompiled headers to be used for a given target, the
         target (or a config applied to it) must also specify a
         "precompiled_header" and, for "msvc"-style headers, a
-        "precompiled_source" value.
-
+        "precompiled_source" value. If the type is "gcc", then both
+        "precompiled_header" and "precompiled_source" must resolve
+        to the same file, despite the different formats required for each.
         See "gn help precompiled_header" for more.
 
     restat  [boolean]
@@ -3125,7 +3145,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3209,7 +3229,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3242,7 +3262,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3275,7 +3295,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3308,7 +3328,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3341,7 +3361,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3438,15 +3458,25 @@
 
 
 ```
-## **configs**: Configs applying to this target.
+## **configs**: Configs applying to this target or config.
 
 ```
   A list of config labels.
 
-  The include_dirs, defines, etc. in each config are appended in the
-  order they appear to the compile command for each file in the target.
-  They will appear after the include_dirs, defines, etc. that the target
-  sets directly.
+```
+
+### **Configs on a target**
+
+```
+  When used on a target, the include_dirs, defines, etc. in each config
+  are appended in the order they appear to the compile command for each
+  file in the target. They will appear after the include_dirs, defines,
+  etc. that the target sets directly.
+
+  Since configs apply after the values set on a target, directly setting
+  a compiler flag will prepend it to the command line. If you want to
+  append a flag instead, you can put that flag in a one-off config and
+  append that config to the target's configs list.
 
   The build configuration script will generally set up the default
   configs applying to a given target type (see "set_defaults").
@@ -3455,7 +3485,32 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Configs on a config**
+
+```
+  It is possible to create composite configs by specifying configs on a
+  config. One might do this to forward values, or to factor out blocks
+  of settings from very large configs into more manageable named chunks.
+
+  In this case, the composite config is expanded to be the concatenation
+  of its own values, and in order, the values from its sub-configs
+  *before* anything else happens. This has some ramifications:
+
+   - A target has no visibility into a config's sub-configs. Target
+     code only sees the name of the composite config. It can't remove
+     sub-configs or opt in to only parts of it. The composite config may
+     not even be defined before the target is.
+
+   - You can get duplication of values if a config is listed twice, say,
+     on a target and in a sub-config that also applies. In other cases,
+     the configs applying to a target are de-duped. It's expected that
+     if a config is listed as a sub-config that it is only used in that
+     context. (Note that it's possible to fix this and de-dupe, but it's
+     not normally relevant and complicates the implementation.)
+
+```
+
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3474,11 +3529,32 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
-  static_library("foo") {
-    configs -= "//build:no_rtti"  # Don't use the default RTTI config.
-    configs += ":mysettings"      # Add some of our own settings.
+  # Configs on a target.
+  source_set("foo") {
+    # Don't use the default RTTI config that BUILDCONFIG applied to us.
+    configs -= [ "//build:no_rtti" ]
+
+    # Add some of our own settings.
+    configs += [ ":mysettings" ]
+  }
+
+  # Create a default_optimization config that forwards to one of a set
+  # of more specialized configs depending on build flags. This pattern
+  # is useful because it allows a target to opt in to either a default
+  # set, or a more specific set, while avoid duplicating the settings in
+  # two places.
+  config("super_optimization") {
+    cflags = [ ... ]
+  }
+  config("default_optimization") {
+    if (optimize_everything) {
+      configs = [ ":super_optimization" ]
+    } else {
+      configs = [ ":no_optimization" ]
+    }
   }
 
 
@@ -3547,7 +3623,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3611,10 +3687,7 @@
   A list of target labels.
 
   Specifies private dependencies of a target. Shared and dynamic
-  libraries will be linked into the current target. Other target types
-  that can't be linked (like actions and groups) listed in "deps" will
-  be treated as "data_deps". Likewise, if the current target isn't
-  linkable, then all deps will be treated as "data_deps".
+  libraries will be linked into the current target.
 
   These dependencies are private in that it does not grant dependent
   targets the ability to include headers from the dependency, and direct
@@ -3686,7 +3759,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3780,7 +3853,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3816,7 +3889,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -3869,7 +3942,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -4074,7 +4147,7 @@
 
 ```
 
-### **Ordering of flags and values**:
+### **Ordering of flags and values**
 
 ```
   1. Those set on the current target (not in a config).
@@ -4844,6 +4917,7 @@
 **  -q**: Quiet mode. Don't print output on success.
 **  \--root**: Explicitly specify source root.
 **  \--runtime-deps-list-file**: Save runtime dependencies for targets in file.
+**  \--threads**: Specify number of worker threads.
 **  \--time**: Outputs a summary of how long everything took.
 **  \--tracelog**: Writes a Chrome-compatible trace log to the given file.
 **  -v**: Verbose logging.
