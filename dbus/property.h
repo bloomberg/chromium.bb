@@ -276,6 +276,8 @@ class CHROME_DBUS_EXPORT PropertySet {
   // depending on the remote object. This method may be overridden by
   // sub-classes if interfaces use different method calls.
   virtual void Set(PropertyBase* property, SetCallback callback);
+  // The sychronous version of Set().
+  virtual bool SetAndBlock(PropertyBase* property);
   virtual void OnSet(PropertyBase* property, SetCallback callback,
                      Response* response);
 
@@ -387,6 +389,12 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
   virtual void Set(const T& value, dbus::PropertySet::SetCallback callback) {
     set_value_ = value;
     property_set()->Set(this, callback);
+  }
+
+  // The sychronous version of Set().
+  virtual bool SetAndBlock(const T& value) {
+    set_value_ = value;
+    return property_set()->SetAndBlock(this);
   }
 
   // Method used by PropertySet to retrieve the value from a MessageReader,

@@ -174,6 +174,22 @@ void PropertySet::Set(PropertyBase* property, SetCallback callback) {
                                        callback));
 }
 
+bool PropertySet::SetAndBlock(PropertyBase* property) {
+  MethodCall method_call(kPropertiesInterface, kPropertiesSet);
+  MessageWriter writer(&method_call);
+  writer.AppendString(interface());
+  writer.AppendString(property->name());
+  property->AppendSetValueToWriter(&writer);
+
+  DCHECK(object_proxy_);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call,
+      ObjectProxy::TIMEOUT_USE_DEFAULT));
+  if (response.get())
+    return true;
+  return false;
+}
+
 void PropertySet::OnSet(PropertyBase* property,
                         SetCallback callback,
                         Response* response) {
