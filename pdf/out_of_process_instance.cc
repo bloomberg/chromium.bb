@@ -144,6 +144,10 @@ const char kJSNamedDestinationPageNumber[] = "pageNumber";
 const char kJSSetIsSelectingType[] = "setIsSelecting";
 const char kJSIsSelecting[] = "isSelecting";
 
+// Notify when a form field is focused (Plugin -> Page)
+const char kJSFieldFocusType[] = "formFocusChange";
+const char kJSFieldFocus[] = "focused";
+
 const int kFindResultCooldownMs = 100;
 
 const double kMinZoom = 0.01;
@@ -1264,6 +1268,12 @@ void OutOfProcessInstance::DocumentLoadProgress(uint32 available,
 void OutOfProcessInstance::FormTextFieldFocusChange(bool in_focus) {
   if (!text_input_.get())
     return;
+
+  pp::VarDictionary message;
+  message.Set(pp::Var(kType), pp::Var(kJSFieldFocusType));
+  message.Set(pp::Var(kJSFieldFocus), pp::Var(in_focus));
+  PostMessage(message);
+
   if (in_focus)
     text_input_->SetTextInputType(PP_TEXTINPUT_TYPE_DEV_TEXT);
   else

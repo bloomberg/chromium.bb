@@ -115,6 +115,7 @@ function PDFViewer(browserApi) {
   this.loadState_ = LoadState.LOADING;
   this.parentWindow_ = null;
   this.parentOrigin_ = null;
+  this.isFormFieldFocused_ = false;
 
   this.delayedScriptingMessages_ = [];
 
@@ -325,8 +326,10 @@ PDFViewer.prototype = {
         return;
       case 37:  // Left arrow key.
         if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
-          // Go to the previous page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().horizontal) {
+          // Go to the previous page if there are no horizontal scrollbars and
+          // no form field is focused.
+          if (!(this.viewport_.documentHasScrollbars().horizontal ||
+                this.isFormFieldFocused_)) {
             this.viewport_.goToPage(this.viewport_.getMostVisiblePage() - 1);
             // Since we do the movement of the page.
             e.preventDefault();
@@ -344,8 +347,10 @@ PDFViewer.prototype = {
         return;
       case 39:  // Right arrow key.
         if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
-          // Go to the next page if there are no horizontal scrollbars.
-          if (!this.viewport_.documentHasScrollbars().horizontal) {
+          // Go to the next page if there are no horizontal scrollbars and no
+          // form field is focused.
+          if (!(this.viewport_.documentHasScrollbars().horizontal ||
+                this.isFormFieldFocused_)) {
             this.viewport_.goToPage(this.viewport_.getMostVisiblePage() + 1);
             // Since we do the movement of the page.
             e.preventDefault();
@@ -672,6 +677,9 @@ PDFViewer.prototype = {
       case 'getNamedDestinationReply':
         this.paramsParser_.onNamedDestinationReceived(
             message.data.pageNumber);
+        break;
+      case 'formFocusChange':
+        this.isFormFieldFocused_ = message.data.focused;
         break;
     }
   },
