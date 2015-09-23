@@ -166,7 +166,7 @@ function didntGetStream(err) {
 function openCamera(width, height) {
   if (localStream) {
     pcClient.removeStream(localStream);
-    localStream.getVideoTracks().stop();
+    localStream.getVideoTracks()[0].stop();
     localStream = null;
   }
   navigator.webkitGetUserMedia({
@@ -203,14 +203,14 @@ function onServerAnswer(desc) {
 }
 
 function onServerGotStream(e) {
-  trace('Received remote stream: ' + e.stream.label +
+  trace('Received remote stream: ' + e.stream.id +
         '; looking up corresponding video tag.');
 
-  var remoteVideo = $(e.stream.label);
+  var remoteVideo = $(e.stream.id);
   if (!remoteVideo) {
     // All streams we receive must have a corresponding video tag defined in the
     // html, otherwise we can't detect video in it.
-    throw 'Received video with unexpected id ' + e.stream.label;
+    throw 'Received video with unexpected id ' + e.stream.id;
   }
   remoteVideo.src = webkitURL.createObjectURL(e.stream);
 }
