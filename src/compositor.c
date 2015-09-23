@@ -4527,7 +4527,6 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
-	wl_event_source_timer_update(ec->idle_source, ec->idle_time * 1000);
 
 	ec->input_loop = wl_event_loop_create();
 
