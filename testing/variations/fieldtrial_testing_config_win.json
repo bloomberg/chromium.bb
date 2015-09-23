@@ -44,11 +44,6 @@
             "group_name": "Enabled"
         }
     ],
-    "ExtensionActionRedesign": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "ExtensionContentVerification": [
         {
             "group_name": "Enforce"

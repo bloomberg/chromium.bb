@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
-#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -42,8 +41,8 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-
-namespace extensions {
+using extensions::Extension;
+using extensions::ResultCatcher;
 
 namespace {
 
@@ -53,11 +52,12 @@ namespace {
 // incognito involves reloading the extension - and the background pages may
 // have already loaded once before then. So we wait until the extension is
 // unloaded before listening to the background page notifications.
-class LoadedIncognitoObserver : public ExtensionRegistryObserver {
+class LoadedIncognitoObserver : public extensions::ExtensionRegistryObserver {
  public:
   explicit LoadedIncognitoObserver(Profile* profile)
       : profile_(profile), extension_registry_observer_(this) {
-    extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(profile_));
   }
 
   void Wait() {
@@ -67,16 +67,18 @@ class LoadedIncognitoObserver : public ExtensionRegistryObserver {
   }
 
  private:
-  void OnExtensionUnloaded(content::BrowserContext* browser_context,
-                           const Extension* extension,
-                           UnloadedExtensionInfo::Reason reason) override {
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override {
     original_complete_.reset(new LazyBackgroundObserver(profile_));
     incognito_complete_.reset(
         new LazyBackgroundObserver(profile_->GetOffTheRecordProfile()));
   }
 
   Profile* profile_;
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
   scoped_ptr<LazyBackgroundObserver> original_complete_;
   scoped_ptr<LazyBackgroundObserver> incognito_complete_;
@@ -92,8 +94,8 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     // Set shorter delays to prevent test timeouts.
-    ProcessManager::SetEventPageIdleTimeForTesting(1);
-    ProcessManager::SetEventPageSuspendingTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+    extensions::ProcessManager::SetEventPageSuspendingTimeForTesting(1);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -119,7 +121,8 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
   // Returns true if the lazy background page for the extension with
   // |extension_id| is still running.
   bool IsBackgroundPageAlive(const std::string& extension_id) {
-    ProcessManager* pm = ProcessManager::Get(browser()->profile());
+    extensions::ProcessManager* pm =
+        extensions::ProcessManager::Get(browser()->profile());
     return pm->GetBackgroundHostForExtension(extension_id);
   }
 
@@ -188,9 +191,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, BroadcastEvent) {
 
   // Page action is shown.
   WaitForPageActionVisibilityChangeTo(num_page_actions + 1);
-  EXPECT_EQ(static_cast<size_t>(num_page_actions + 1),
-            extension_action_test_util::GetVisiblePageActionCount(
-                browser()->tab_strip_model()->GetActiveWebContents()));
+  EXPECT_EQ(num_page_actions + 1,
+            browser()->window()->GetLocationBar()->
+                GetLocationBarForTesting()->PageActionVisibleCount());
 }
 
 IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Filters) {
@@ -236,7 +239,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForDialog) {
   EXPECT_TRUE(IsBackgroundPageAlive(extension->id()));
 
   // Close the dialog. The keep alive count is decremented.
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  extensions::ProcessManager* pm =
+      extensions::ProcessManager::Get(browser()->profile());
   int previous_keep_alive_count = pm->GetLazyKeepaliveCount(extension);
   dialog->CloseModalDialog();
   EXPECT_EQ(previous_keep_alive_count - 1,
@@ -291,8 +295,9 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, WaitForRequest) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 
   // Lazy Background Page still exists, because the extension started a request.
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
-  ExtensionHost* host =
+  extensions::ProcessManager* pm =
+      extensions::ProcessManager::Get(browser()->profile());
+  extensions::ExtensionHost* host =
       pm->GetBackgroundHostForExtension(last_loaded_extension_id());
   ASSERT_TRUE(host);
 
@@ -394,8 +399,10 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, DISABLED_IncognitoSplitMode) {
   }
 
   // Lazy Background Page doesn't exist yet.
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
-  ProcessManager* pmi = ProcessManager::Get(incognito_browser->profile());
+  extensions::ProcessManager* pm =
+      extensions::ProcessManager::Get(browser()->profile());
+  extensions::ProcessManager* pmi =
+      extensions::ProcessManager::Get(incognito_browser->profile());
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
   EXPECT_FALSE(pmi->GetBackgroundHostForExtension(last_loaded_extension_id()));
 
@@ -481,7 +488,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, ImpulseAddsCount) {
   ASSERT_TRUE(extension);
 
   // Lazy Background Page doesn't exist yet.
-  ProcessManager* pm = ProcessManager::Get(browser()->profile());
+  extensions::ProcessManager* pm =
+      extensions::ProcessManager::Get(browser()->profile());
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
@@ -527,7 +535,8 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, EventDispatchToTab) {
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(browser()->profile());
 
-  const Extension* extension = LoadExtensionAndWait("event_dispatch_to_tab");
+  const extensions::Extension* extension =
+      LoadExtensionAndWait("event_dispatch_to_tab");
 
   ExtensionTestMessageListener page_ready("ready", true);
   GURL page_url = extension->GetResourceURL("page.html");
@@ -621,5 +630,3 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, OnSuspendUseStorageApi) {
 
 // TODO: background page with timer.
 // TODO: background page that interacts with popup.
-
-}  // namespace extensions

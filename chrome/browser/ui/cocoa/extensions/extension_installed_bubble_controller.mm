@@ -234,12 +234,10 @@ bool ExtensionInstalledBubbleBridge::MaybeShowNow() {
         NSMaxY(bounds) - extension_installed_bubble::kAppsBubbleArrowOffset);
     arrowPoint = [button convertPoint:anchor toView:nil];
   } else if (type_ == extension_installed_bubble::kBrowserAction ||
-             (extensions::FeatureSwitch::extension_action_redesign()->
-                  IsEnabled() &&
-              type_ != extension_installed_bubble::kBundle)) {
+             extensions::FeatureSwitch::extension_action_redesign()->
+                 IsEnabled()) {
     // If the toolbar redesign is enabled, all bubbles for extensions point to
-    // their toolbar action. The exception is for bundles, for which there is no
-    // single associated extension.
+    // their toolbar action.
     BrowserActionsController* controller =
         [[window->cocoa_controller() toolbarController]
             browserActionsController];

@@ -30,7 +30,8 @@ LocationBarController::LocationBarController(
       should_show_page_actions_(
           !FeatureSwitch::extension_action_redesign()->IsEnabled()),
       extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  if (should_show_page_actions_)
+    extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
 LocationBarController::~LocationBarController() {
@@ -92,7 +93,7 @@ std::vector<ExtensionAction*> LocationBarController::GetCurrentActions() {
 void LocationBarController::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  if (should_show_page_actions_ && action_manager_->GetPageAction(*extension)) {
+  if (action_manager_->GetPageAction(*extension)) {
     ExtensionActionAPI::Get(browser_context)->
         NotifyPageActionsChanged(web_contents_);
   }
@@ -121,7 +122,7 @@ void LocationBarController::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionInfo::Reason reason) {
-  if (should_show_page_actions_ && action_manager_->GetPageAction(*extension)) {
+  if (action_manager_->GetPageAction(*extension)) {
     ExtensionActionAPI::Get(browser_context)->
         NotifyPageActionsChanged(web_contents_);
   }

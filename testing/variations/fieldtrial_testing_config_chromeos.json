@@ -19,11 +19,6 @@
             "group_name": "Button"
         }
     ],
-    "ExtensionActionRedesign": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "PluginPowerSaver": [
         {
             "group_name": "Enabled"

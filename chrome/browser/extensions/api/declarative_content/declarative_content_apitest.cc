@@ -21,7 +21,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -644,65 +643,32 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
                        ShowPageActionWithoutPageAction) {
-  // Load an extension without a page action.
   std::string manifest_without_page_action = kDeclarativeContentManifest;
   base::ReplaceSubstringsAfterOffset(
       &manifest_without_page_action, 0, "\"page_action\": {},", "");
   ASSERT_NE(kDeclarativeContentManifest, manifest_without_page_action);
   ext_dir_.WriteManifest(manifest_without_page_action);
   ext_dir_.WriteFile(FILE_PATH_LITERAL("background.js"), kBackgroundHelpers);
+  const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
+  ASSERT_TRUE(extension);
 
-  std::string extension_id;
+  EXPECT_THAT(ExecuteScriptInBackgroundPage(
+                  extension->id(),
+                  "setRules([{\n"
+                  "  conditions: [new PageStateMatcher({\n"
+                  "                   pageUrl: {hostPrefix: \"test\"}})],\n"
+                  "  actions: [new ShowPageAction()]\n"
+                  "}], 'test_rule');\n"),
+              testing::HasSubstr("without a page action"));
 
-  std::string script =
-      "setRules([{\n"
-      "  conditions: [new PageStateMatcher({\n"
-      "                   pageUrl: {hostPrefix: \"test\"}})],\n"
-      "  actions: [new ShowPageAction()]\n"
-      "}], 'test_rule');\n";
+  content::WebContents* const tab =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  NavigateInRenderer(tab, GURL("http://test/"));
 
-  {
-    // Without the extension action redesign, the extension should get an error.
-    FeatureSwitch::ScopedOverride override_toolbar_redesign(
-        FeatureSwitch::extension_action_redesign(), false);
-    const Extension* extension = LoadExtension(ext_dir_.unpacked_path());
-    ASSERT_TRUE(extension);
-    extension_id = extension->id();
-
-    EXPECT_THAT(ExecuteScriptInBackgroundPage(extension->id(), script),
-                testing::HasSubstr("without a page action"));
-
-    content::WebContents* const tab =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    NavigateInRenderer(tab, GURL("http://test/"));
-
-    // There should be no page action.
-    EXPECT_EQ(nullptr, ExtensionActionManager::Get(browser()->profile())
-                           ->GetPageAction(*extension));
-    EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(tab));
-  }
-  {
-    // With the extension action redesign, it should work normally.
-    FeatureSwitch::ScopedOverride override_toolbar_redesign(
-        FeatureSwitch::extension_action_redesign(), true);
-    ReloadExtension(extension_id);
-    const Extension* extension =
-        ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
-            extension_id);
-    ASSERT_TRUE(extension);
-
-    EXPECT_THAT(ExecuteScriptInBackgroundPage(extension->id(), script),
-                testing::Not(testing::HasSubstr("without a page action")));
-
-    content::WebContents* const tab =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    NavigateInRenderer(tab, GURL("http://test/"));
-
-    // There should be a page action.
-    EXPECT_TRUE(ExtensionActionManager::Get(browser()->profile())
-                    ->GetPageAction(*extension));
-    EXPECT_EQ(1u, extension_action_test_util::GetVisiblePageActionCount(tab));
-  }
+  EXPECT_EQ(NULL,
+            ExtensionActionManager::Get(browser()->profile())->
+                GetPageAction(*extension));
+  EXPECT_EQ(0u, extension_action_test_util::GetVisiblePageActionCount(tab));
 }
 
 IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,

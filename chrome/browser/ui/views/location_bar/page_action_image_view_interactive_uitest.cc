@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/feature_switch.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -22,23 +21,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/controls/menu/menu_controller.h"
 
-class PageActionImageViewInteractiveUITest : public ExtensionBrowserTest {
- protected:
-  PageActionImageViewInteractiveUITest() {}
-  ~PageActionImageViewInteractiveUITest() override {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
-    // Testing page action-specific UI means we need to disable the redesign.
-    disable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-        extensions::FeatureSwitch::extension_action_redesign(), false));
-  }
-
- private:
-  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> disable_redesign_;
-
-  DISALLOW_COPY_AND_ASSIGN(PageActionImageViewInteractiveUITest);
-};
+using PageActionImageViewInteractiveUITest = ExtensionBrowserTest;
 
 // An ImageSkia source that will do nothing. We need this because we need a
 // blank canvas at a certain size, and that can't be done by just using a null

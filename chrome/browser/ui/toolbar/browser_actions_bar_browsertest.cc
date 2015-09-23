@@ -60,12 +60,8 @@ BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
 
 void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ExtensionBrowserTest::SetUpCommandLine(command_line);
   ToolbarActionsBar::disable_animations_for_testing_ = true;
-  // These tests are deliberately testing behavior without the redesign.
-  // Forcefully disable it.
-  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), false));
+  ExtensionBrowserTest::SetUpCommandLine(command_line);
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
@@ -114,9 +110,9 @@ BrowserActionsBarRedesignBrowserTest::~BrowserActionsBarRedesignBrowserTest() {
 void BrowserActionsBarRedesignBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-  // Override to force the redesign.
-  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(), true));
+  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(),
+      true));
 }
 
 // Test the basic functionality.
