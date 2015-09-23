@@ -174,7 +174,7 @@ class CronetPerfTestMeasurement(
     # it is not a browser with a timeline interface.
     pass
 
-  def Measure(self, tracing_controller, results):
+  def Measure(self, platform, results):
     # Reads results from |RESULTS_FILE| on target and adds to |results|.
     jsonResults = json.loads(self._device.ReadFile(RESULTS_FILE))
     for test in jsonResults:

@@ -57,12 +57,11 @@ class Smoothness(page_test.PageTest):
     self._tbm.WillRunStoryForPageTest(tracing_controller)
 
   def ValidateAndMeasurePage(self, _, tab, results):
-    tracing_controller = tab.browser.platform.tracing_controller
-    self._tbm.MeasureForPageTest(tracing_controller, results)
+    self._tbm.Measure(tab.browser.platform, results)
 
   def DidRunPage(self, platform):
     if self._tbm:
-      self._tbm.DidRunStoryForPageTest(platform.tracing_controller)
+      self._tbm.DidRunStory(platform)
 
 
 class Repaint(Smoothness):
