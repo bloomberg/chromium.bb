@@ -5,44 +5,50 @@ License: BSD
 License File: source/libvpx/LICENSE
 Security Critical: yes
 
-Date: Monday September 14 2015
+Date: Tuesday September 22 2015
 Branch: master
-Commit: c5f11912ae328a912ef087fdcd074ff07e96d8f9
+Commit: 90a109f0eef8bfaaa4869cf7b2873dac5076b582
 
 Description:
 Contains the sources used to compile libvpx binaries used by Google Chrome and
 Chromium.
 
 The libvpx source is from webmproject.org:
-  git://review.webmproject.org/libvpx
-
-Notes on updating libvpx source code.
+  http://www.webmproject.org/code/
+  https://chromium.googlesource.com/webm/libvpx
 
 Please follow these steps to update libvpx source code:
 
-1. Update libvpx source tree. Look for "Current HEAD: <hash>" output to update
-   README.chromium. Look for "git log from upstream: <git log>" output to add
-   to the commit message.
+1. Update the code:
+     cd source/libvpx
+     git fetch
+     git checkout NEW_HASH
 
-   ./update_libvpx.sh [branch name]
+   For a list of changes for the commit message run:
+     cd source/libvpx
+     git log --no-merges --topo-order --pretty="%h %s" --max-count=20 \
+       OLD_HASH..NEW_HASH
 
-2. Generate updated .gypi and config files.
+2. Generate .gypi, .gni and config files.
 
    ./generate_gypi.sh
 
-3. Update this README with any Version, Date, Branch, and Commit changes. The
-   version is in the file source/config/vpx_version.h
+3. Change the libvpx_new revision in src/DEPS to the desired hash from upstream
+   libvpx. Update README.chromium with Date, Branch, and Commit.
 
-4. Commit the changes in root (I.e README & .gypi files), source/libvpx, and
+4. Commit the changes in root (I.e README & .gypi files) and
    source/config directories. The commit message should look like this:
-   libvpx: Pull from upstream
 
-   Current HEAD: <hash>
+   Roll libvpx OLD_HASH:NEW_HASH
 
    git log from upstream:
-   a6b2070 <git commit message 1>
-   08dabbc <git commit message 2>
-   c29fb02 <git commit message 3>
+   90a109f Restrict get_msb inputs
+   8903b9f remove static from fdct4/8/16/32
+   dd4f953 Remove vpx_filter_block1d16_v8_intrin_ssse3
+   38ad2dc Non-rd pickmode: Don't skip checking zeromv-last mode.
+   d6be267 Create sub8x8 block inter prediction function
+   571b7c9 vp9_end_to_end_test: disable vp10 w/high bitdepth
+   <..>
 
 Tools needed to build libvpx:
 
