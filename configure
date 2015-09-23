@@ -585,7 +585,7 @@ PACKAGE_STRING='breakpad 0.1'
 PACKAGE_BUGREPORT='google-breakpad-dev@googlegroups.com'
 PACKAGE_URL=''
 
-ac_unique_file="README"
+ac_unique_file="README.md"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

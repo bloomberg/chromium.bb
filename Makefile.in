@@ -1883,9 +1883,9 @@ am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/autotools/missing \
 	$(top_srcdir)/autotools/test-driver \
 	$(top_srcdir)/src/config.h.in AUTHORS ChangeLog INSTALL NEWS \
-	README autotools/compile autotools/config.guess \
-	autotools/config.sub autotools/depcomp autotools/install-sh \
-	autotools/ltmain.sh autotools/missing
+	autotools/compile autotools/config.guess autotools/config.sub \
+	autotools/depcomp autotools/install-sh autotools/ltmain.sh \
+	autotools/missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
