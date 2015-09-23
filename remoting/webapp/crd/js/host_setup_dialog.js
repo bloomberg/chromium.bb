@@ -260,7 +260,7 @@ remoting.HostSetupDialog.prototype.showForPin = function() {
  * @return {void} Nothing.
  */
 remoting.HostSetupDialog.prototype.showForStop = function() {
-  // TODO(sergeyu): Add another step to unregister the host, crubg.com/121146 .
+  // TODO(sergeyu): Add another step to unregister the host, crbug.com/121146 .
   this.startNewFlow_(
       [remoting.HostSetupFlow.State.STOPPING_HOST,
        remoting.HostSetupFlow.State.HOST_STOPPED]);
