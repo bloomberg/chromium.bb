@@ -51,10 +51,8 @@
 #include "content/child/websocket_dispatcher.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
-#include "content/common/resource_messages.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/attachment_broker_unprivileged.h"
-#include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
@@ -398,9 +396,6 @@ void ChildThreadImpl::Init(const Options& options) {
   if (!IsInBrowserProcess())
     IPC::Logging::GetInstance()->SetIPCSender(this);
 #endif
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  IPC::Channel::SetMessageVerifier(
-      &content::CheckContentsOfDataReceivedMessage);
 
   mojo_application_.reset(new MojoApplication(GetIOTaskRunner()));
 
