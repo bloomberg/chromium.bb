@@ -81,7 +81,8 @@ void SearchResultTileItemView::OnResultDestroying() {
 
   if (item_)
     item_->RemoveObserver(this);
-  item_ = NULL;
+
+  SetSearchResult(nullptr);
 }
 
 void SearchResultTileItemView::ShowContextMenuForView(

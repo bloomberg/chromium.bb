@@ -75,6 +75,11 @@ void SearchController::Stop() {
 }
 
 void SearchController::OpenResult(SearchResult* result, int event_flags) {
+  // This can happen in certain circumstances due to races. See
+  // https://crbug.com/534772
+  if (!result)
+    return;
+
   // Count AppList.Search here because it is composed of search + action.
   base::RecordAction(base::UserMetricsAction("AppList_Search"));
 
