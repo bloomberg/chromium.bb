@@ -1369,7 +1369,9 @@ void DeprecatedPaintLayer::updateStackingNode()
 {
     ASSERT(!m_stackingNode);
     if (requiresStackingNode())
-        m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(*layoutObject()));
+        m_stackingNode = adoptPtr(new DeprecatedPaintLayerStackingNode(this));
+    else
+        m_stackingNode = nullptr;
 }
 
 void DeprecatedPaintLayer::updateScrollableArea()
@@ -1550,6 +1552,12 @@ Node* DeprecatedPaintLayer::enclosingElement() const
     }
     ASSERT_NOT_REACHED();
     return 0;
+}
+
+bool DeprecatedPaintLayer::isInTopLayer() const
+{
+    Node* node = layoutObject()->node();
+    return node && node->isElementNode() && toElement(node)->isInTopLayer();
 }
 
 // Compute the z-offset of the point in the transformState.

@@ -89,12 +89,12 @@ class CORE_EXPORT DeprecatedPaintLayerStackingNode {
     WTF_MAKE_FAST_ALLOCATED(DeprecatedPaintLayerStackingNode);
     WTF_MAKE_NONCOPYABLE(DeprecatedPaintLayerStackingNode);
 public:
-    explicit DeprecatedPaintLayerStackingNode(LayoutBoxModelObject&);
+    explicit DeprecatedPaintLayerStackingNode(DeprecatedPaintLayer*);
     ~DeprecatedPaintLayerStackingNode();
 
-    int zIndex() const { return layoutObject().style()->zIndex(); }
+    int zIndex() const { return layoutObject()->style()->zIndex(); }
 
-    bool isStackingContext() const { return layoutObject().style()->isStackingContext(); }
+    bool isStackingContext() const { return layoutObject()->style()->isStackingContext(); }
 
     // Update our normal and z-index lists.
     void updateLayerListsIfNeeded();
@@ -115,9 +115,7 @@ public:
 
     DeprecatedPaintLayerStackingNode* ancestorStackingContextNode() const;
 
-    // FIXME: A lot of code depends on this function but shouldn't. We should
-    // build our code on top of LayoutBoxModelObject, not DeprecatedPaintLayer.
-    DeprecatedPaintLayer* layer() const;
+    DeprecatedPaintLayer* layer() const { return m_layer; }
 
 #if ENABLE(ASSERT)
     bool layerListMutationAllowed() const { return m_layerListMutationAllowed; }
@@ -144,6 +142,7 @@ private:
     }
 
     void rebuildZOrderLists();
+    void collectLayers(OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& posZOrderList, OwnPtr<Vector<DeprecatedPaintLayerStackingNode*>>& negZOrderList);
 
 #if ENABLE(ASSERT)
     bool isInStackingParentZOrderLists() const;
@@ -151,15 +150,15 @@ private:
     void setStackingParent(DeprecatedPaintLayerStackingNode* stackingParent) { m_stackingParent = stackingParent; }
 #endif
 
-    bool shouldBeTreatedAsOrStackingContext() const { return layoutObject().style()->isTreatedAsOrStackingContext(); }
+    bool shouldBeTreatedAsOrStackingContext() const { return layoutObject()->style()->isTreatedAsOrStackingContext(); }
 
     bool isDirtyStackingContext() const { return m_zOrderListsDirty && isStackingContext(); }
 
     DeprecatedPaintLayerCompositor* compositor() const;
     // We can't return a LayoutBox as LayoutInline can be a stacking context.
-    LayoutBoxModelObject& layoutObject() const { return m_layoutObject; }
+    LayoutBoxModelObject* layoutObject() const;
 
-    LayoutBoxModelObject& m_layoutObject;
+    DeprecatedPaintLayer* m_layer;
 
     // m_posZOrderList holds a sorted list of all the descendant nodes within
     // that have z-indices of 0 or greater (auto will count as 0).

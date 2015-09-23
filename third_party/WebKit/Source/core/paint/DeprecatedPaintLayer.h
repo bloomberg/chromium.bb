@@ -399,6 +399,8 @@ public:
 
     Node* enclosingElement() const;
 
+    bool isInTopLayer() const;
+
     bool scrollsWithViewport() const;
     bool scrollsWithRespectTo(const DeprecatedPaintLayer*) const;
 
