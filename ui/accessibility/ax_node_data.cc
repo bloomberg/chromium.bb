@@ -244,11 +244,11 @@ void AXNodeData::AddIntListAttribute(
   intlist_attributes.push_back(std::make_pair(attribute, value));
 }
 
-void AXNodeData::SetName(std::string name) {
+void AXNodeData::SetName(const std::string& name) {
   string_attributes.push_back(std::make_pair(AX_ATTR_NAME, name));
 }
 
-void AXNodeData::SetValue(std::string value) {
+void AXNodeData::SetValue(const std::string& value) {
   string_attributes.push_back(std::make_pair(AX_ATTR_VALUE, value));
 }
 

@@ -808,7 +808,7 @@ void Layer::SetForceRenderSurface(bool force) {
 
 class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
  public:
-  explicit LayerDebugInfo(std::string name) : name_(name) { }
+  explicit LayerDebugInfo(const std::string& name) : name_(name) {}
   void AppendAsTraceFormat(std::string* out) const override {
     base::DictionaryValue dictionary;
     dictionary.SetString("layer_name", name_);
