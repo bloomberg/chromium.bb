@@ -75,7 +75,10 @@ static BOOL OCMTypesEqualAllowOpaqueStructs(const char *type1, const char *type2
             if (type2[0] != type1[0])
                 return NO;
             return OCMTypesEqualAllowOpaqueStructs(type1+1, type2+1);
-        
+
+        case '?':
+            return type2[0] == '?';
+
         case '\0':
             return type2[0] == '\0';
 
