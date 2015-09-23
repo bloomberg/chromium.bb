@@ -21,7 +21,6 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
-
 var player;
 
 function startAnimationWithDelay()
@@ -69,7 +68,7 @@ function test()
     WebInspector.AnimationTimeline.prototype.width = function() { return 1000; }
     // Override animation color for testing
     // FIXME: Set animation name of Web Animation instead; not supported yet
-    WebInspector.AnimationUI.prototype._color = function() { return "black"; }
+    WebInspector.AnimationUI.Color = function() { return "black"; }
 
     function step1()
     {
@@ -77,8 +76,10 @@ function test()
         InspectorTest.evaluateInPage("startAnimationWithDelay()");
     }
 
-    function step2()
+    function step2(group)
     {
+        timeline._selectAnimationGroup(group);
+        timeline._redraw();
         InspectorTest.addResult(">>>> Animation with start delay only");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -86,8 +87,10 @@ function test()
         InspectorTest.evaluateInPage("startAnimationWithEndDelay()");
     }
 
-    function step3()
+    function step3(group)
     {
+        timeline._selectAnimationGroup(group);
+        timeline._redraw();
         InspectorTest.addResult(">>>> Animation with start and end delay");
         InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "_cancelAnimation", step4);
@@ -105,8 +108,10 @@ function test()
         InspectorTest.evaluateInPage("startAnimationWithStepTiming()");
     }
 
-    function step5()
+    function step5(group)
     {
+        timeline._selectAnimationGroup(group);
+        timeline._redraw();
         InspectorTest.addResult(">>>> Animation with step timing function");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -114,8 +119,10 @@ function test()
         InspectorTest.evaluateInPage("startCSSAnimation()");
     }
 
-    function step6()
+    function step6(group)
     {
+        timeline._selectAnimationGroup(group);
+        timeline._redraw();
         InspectorTest.addResult(">>>> CSS animation started");
         InspectorTest.dumpAnimationTimeline(timeline);
         timeline._reset();
@@ -123,8 +130,10 @@ function test()
         InspectorTest.evaluateInPage("startCSSTransition()");
     }
 
-    function step7()
+    function step7(group)
     {
+        timeline._selectAnimationGroup(group);
+        timeline._redraw();
         InspectorTest.addResult(">>>> CSS transition started");
         InspectorTest.dumpAnimationTimeline(timeline);
         InspectorTest.completeTest();

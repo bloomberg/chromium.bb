@@ -1005,7 +1005,7 @@ InspectorTest.dumpInspectorHighlightJSON = function(idValue, callback)
 
 InspectorTest.waitForAnimationAdded = function(callback)
 {
-    InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "_addAnimation", callback);
+    InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "_addAnimationGroup", callback);
 }
 
 InspectorTest.dumpAnimationTimeline = function(timeline)
