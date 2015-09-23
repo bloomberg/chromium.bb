@@ -181,7 +181,7 @@ class GNRoller(object):
   def WaitForBuildToFinish(self):
     print('Checking build')
     results = self.CheckBuild()
-    while (len(results) or
+    while (len(results) < 3 or
            any(r['state'] == 'pending' for r in results.values())):
       print()
       print('Sleeping for 30 seconds')
