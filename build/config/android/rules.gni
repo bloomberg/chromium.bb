@@ -1403,7 +1403,6 @@ template("android_apk") {
   if (_dist_jar_path != "") {
     create_dist_target = "${_template_name}__create_dist_jar"
     _final_deps += [ ":$create_dist_target" ]
-    _incremental_final_deps += [ ":$create_dist_target" ]
 
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
     # run. See build/android/pylib/instrumentation/test_jar.py. We should be
