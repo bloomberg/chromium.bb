@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include <gtk/gtk.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <map>
 #include <set>
 #include <vector>
@@ -621,8 +625,22 @@ void SelectFileDialogImplGTK::OnFileChooserDestroy(GtkWidget* dialog) {
 void SelectFileDialogImplGTK::OnUpdatePreview(GtkWidget* chooser) {
   gchar* filename = gtk_file_chooser_get_preview_filename(
       GTK_FILE_CHOOSER(chooser));
-  if (!filename)
+  if (!filename) {
+    gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(chooser),
+                                               FALSE);
     return;
+  }
+
+  // Don't attempt to open anything which isn't a regular file. If a named pipe,
+  // this may hang. See https://crbug.com/534754.
+  struct stat stat_buf;
+  if (stat(filename, &stat_buf) != 0 || !S_ISREG(stat_buf.st_mode)) {
+    g_free(filename);
+    gtk_file_chooser_set_preview_widget_active(GTK_FILE_CHOOSER(chooser),
+                                               FALSE);
+    return;
+  }
+
   // This will preserve the image's aspect ratio.
   GdkPixbuf* pixbuf = gdk_pixbuf_new_from_file_at_size(filename, kPreviewWidth,
                                                        kPreviewHeight, NULL);
