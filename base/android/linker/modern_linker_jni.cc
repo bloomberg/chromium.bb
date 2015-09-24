@@ -128,7 +128,7 @@ bool AndroidDlopenExt(const char* filename,
 
   if (!function_ptr) {
     function_ptr =
-      reinterpret_cast<DlopenExtFunctionPtr>(Dlsym("android_dlopen_ext"));
+        reinterpret_cast<DlopenExtFunctionPtr>(Dlsym("android_dlopen_ext"));
     if (!function_ptr) {
       LOG_ERROR("dlsym: android_dlopen_ext: %s", dlerror());
       return false;
@@ -150,16 +150,17 @@ bool AndroidDlopenExt(const char* filename,
 // Callback data for FindLoadedLibrarySize().
 struct CallbackData {
   explicit CallbackData(void* address)
-      : load_address(address), load_size(0) { }
+      : load_address(address), load_size(0), min_vaddr(0) { }
 
   const void* load_address;
   size_t load_size;
+  size_t min_vaddr;
 };
 
 // Callback for dl_iterate_phdr(). Read phdrs to identify whether or not
 // this library's load address matches the |load_address| passed in
-// |data|. If yes, pass back load size via |data|. A non-zero return value
-// terminates iteration.
+// |data|. If yes, pass back load size and min vaddr via |data|. A non-zero
+// return value terminates iteration.
 int FindLoadedLibrarySize(dl_phdr_info* info, size_t size UNUSED, void* data) {
   CallbackData* callback_data = reinterpret_cast<CallbackData*>(data);
 
@@ -188,6 +189,7 @@ int FindLoadedLibrarySize(dl_phdr_info* info, size_t size UNUSED, void* data) {
   // If this library matches what we seek, return its load size.
   if (is_matching) {
     callback_data->load_size = PAGE_END(max_vaddr) - PAGE_START(min_vaddr);
+    callback_data->min_vaddr = min_vaddr;
     return true;
   }
 
@@ -263,12 +265,12 @@ ScopedAnonymousMmap::ScopedAnonymousMmap(void* addr, size_t size) {
 }
 
 // Helper for LoadLibrary(). Return the actual size of the library loaded
-// at |addr| in |load_size|. Returns false if the library appears not to
-// be loaded.
-bool GetLibraryLoadSize(void* addr, size_t* load_size) {
+// at |addr| in |load_size|, and the min vaddr in |min_vaddr|. Returns false
+// if the library appears not to be loaded.
+bool GetLibraryLoadSize(void* addr, size_t* load_size, size_t* min_vaddr) {
   LOG_INFO("Called for %p", addr);
 
-  // Find the real load size for the library loaded at |addr|.
+  // Find the real load size and min vaddr for the library loaded at |addr|.
   CallbackData callback_data(addr);
   int status = 0;
   if (!DlIteratePhdr(&FindLoadedLibrarySize, &callback_data, &status)) {
@@ -281,6 +283,7 @@ bool GetLibraryLoadSize(void* addr, size_t* load_size) {
   }
 
   *load_size = callback_data.load_size;
+  *min_vaddr = callback_data.min_vaddr;
   return true;
 }
 
@@ -289,9 +292,13 @@ bool GetLibraryLoadSize(void* addr, size_t* load_size) {
 // what is needed.
 bool ResizeReservedAddressSpace(void* addr,
                                 size_t reserved_size,
-                                size_t load_size) {
-  LOG_INFO("Called for %p, reserved %d, loaded %d",
-           addr, static_cast<int>(reserved_size), static_cast<int>(load_size));
+                                size_t load_size,
+                                size_t min_vaddr) {
+  LOG_INFO("Called for %p, reserved %d, loaded %d, min_vaddr %d",
+           addr, static_cast<int>(reserved_size),
+           static_cast<int>(load_size), static_cast<int>(min_vaddr));
+
+  const uintptr_t uintptr_addr = reinterpret_cast<uintptr_t>(addr);
 
   if (reserved_size < load_size) {
     LOG_ERROR("WARNING: library reservation was too small");
@@ -300,13 +307,29 @@ bool ResizeReservedAddressSpace(void* addr,
 
   // Unmap the part of the reserved address space that is beyond the end of
   // the loaded library data.
-  void* unmap =
-      reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(addr) + load_size);
+  void* unmap = reinterpret_cast<void*>(uintptr_addr + load_size);
   size_t length = reserved_size - load_size;
   if (munmap(unmap, length) == -1) {
     LOG_ERROR("Failed to unmap %d at %p", static_cast<int>(length), unmap);
     return false;
   }
+
+#if RESERVE_BREAKPAD_GUARD_REGION
+  if (min_vaddr > kBreakpadGuardRegionBytes) {
+    LOG_ERROR("WARNING: breakpad guard region reservation was too small");
+    return true;
+  }
+
+  // Unmap the part of the reserved address space that is ahead of where we
+  // actually need the guard region to start. Resizes the guard region to
+  // min_vaddr bytes.
+  unmap = reinterpret_cast<void*>(uintptr_addr - kBreakpadGuardRegionBytes);
+  length = kBreakpadGuardRegionBytes - min_vaddr;
+  if (munmap(unmap, length) == -1) {
+    LOG_ERROR("Failed to unmap %d at %p", static_cast<int>(length), unmap);
+    return false;
+  }
+#endif
 
   return true;
 }
@@ -403,11 +426,12 @@ jboolean LoadLibrary(JNIEnv* env,
 
   // After loading, trim the mapping to match the library's actual size.
   size_t load_size = 0;
-  if (!GetLibraryLoadSize(addr, &load_size)) {
+  size_t min_vaddr = 0;
+  if (!GetLibraryLoadSize(addr, &load_size, &min_vaddr)) {
     LOG_ERROR("Unable to find size for load at %p", addr);
     return false;
   }
-  if (!ResizeReservedAddressSpace(addr, size, load_size)) {
+  if (!ResizeReservedAddressSpace(addr, size, load_size, min_vaddr)) {
     LOG_ERROR("Unable to resize reserved address mapping");
     return false;
   }

@@ -188,9 +188,8 @@ struct LibInfo_class {
     }
 
     if (relro_size) {
-      *relro_size =
-          static_cast<size_t>(env->GetLongField(library_info_obj,
-                                                relro_size_id));
+      *relro_size = static_cast<size_t>(
+          env->GetLongField(library_info_obj, relro_size_id));
     }
 
     if (relro_fd) {
