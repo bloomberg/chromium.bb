@@ -37,11 +37,11 @@ class MEDIA_EXPORT WebEncryptedMediaClientImpl
       base::Callback<bool(void)> are_secure_codecs_supported_cb,
       CdmFactory* cdm_factory,
       MediaPermission* media_permission);
-  virtual ~WebEncryptedMediaClientImpl();
+  ~WebEncryptedMediaClientImpl() override;
 
   // WebEncryptedMediaClient implementation.
-  virtual void requestMediaKeySystemAccess(
-      blink::WebEncryptedMediaRequest request);
+  void requestMediaKeySystemAccess(
+      blink::WebEncryptedMediaRequest request) override;
 
   // Create the CDM for |key_system| and |security_origin|. The caller owns
   // the created cdm (passed back using |result|).

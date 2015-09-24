@@ -37,15 +37,15 @@ class MEDIA_EXPORT WebContentDecryptionModuleImpl
       const CdmConfig& cdm_config,
       scoped_ptr<blink::WebContentDecryptionModuleResult> result);
 
-  virtual ~WebContentDecryptionModuleImpl();
+  ~WebContentDecryptionModuleImpl() override;
 
   // blink::WebContentDecryptionModule implementation.
-  virtual blink::WebContentDecryptionModuleSession* createSession();
+  blink::WebContentDecryptionModuleSession* createSession() override;
 
-  virtual void setServerCertificate(
+  void setServerCertificate(
       const uint8* server_certificate,
       size_t server_certificate_length,
-      blink::WebContentDecryptionModuleResult result);
+      blink::WebContentDecryptionModuleResult result) override;
 
   // Returns the CdmContext associated with this CDM, which must not be nullptr.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor

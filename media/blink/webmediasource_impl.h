@@ -20,17 +20,17 @@ class MEDIA_EXPORT WebMediaSourceImpl
  public:
   WebMediaSourceImpl(ChunkDemuxer* demuxer,
                      const scoped_refptr<MediaLog>& media_log);
-  virtual ~WebMediaSourceImpl();
+  ~WebMediaSourceImpl() override;
 
   // blink::WebMediaSource implementation.
-  virtual AddStatus addSourceBuffer(
+  AddStatus addSourceBuffer(
       const blink::WebString& type,
       const blink::WebString& codecs,
-      blink::WebSourceBuffer** source_buffer);
-  virtual double duration();
-  virtual void setDuration(double duration);
-  virtual void markEndOfStream(EndOfStreamStatus status);
-  virtual void unmarkEndOfStream();
+      blink::WebSourceBuffer** source_buffer) override;
+  double duration() override;
+  void setDuration(double duration) override;
+  void markEndOfStream(EndOfStreamStatus status) override;
+  void unmarkEndOfStream() override;
 
  private:
   ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.

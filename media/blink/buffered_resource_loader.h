@@ -87,7 +87,7 @@ class MEDIA_EXPORT BufferedResourceLoader
       int bitrate,
       double playback_rate,
       MediaLog* media_log);
-  virtual ~BufferedResourceLoader();
+  ~BufferedResourceLoader() override;
 
   // Start the resource loading with the specified URL and range.
   //
@@ -132,36 +132,36 @@ class MEDIA_EXPORT BufferedResourceLoader
   bool range_supported();
 
   // blink::WebURLLoaderClient implementation.
-  virtual void willSendRequest(
+  void willSendRequest(
       blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
-      const blink::WebURLResponse& redirectResponse);
-  virtual void didSendData(
+      const blink::WebURLResponse& redirectResponse) override;
+  void didSendData(
       blink::WebURLLoader* loader,
       unsigned long long bytesSent,
-      unsigned long long totalBytesToBeSent);
-  virtual void didReceiveResponse(
+      unsigned long long totalBytesToBeSent) override;
+  void didReceiveResponse(
       blink::WebURLLoader* loader,
-      const blink::WebURLResponse& response);
-  virtual void didDownloadData(
+      const blink::WebURLResponse& response) override;
+  void didDownloadData(
       blink::WebURLLoader* loader,
       int data_length,
-      int encoded_data_length);
-  virtual void didReceiveData(
+      int encoded_data_length) override;
+  void didReceiveData(
       blink::WebURLLoader* loader,
       const char* data,
       int data_length,
-      int encoded_data_length);
-  virtual void didReceiveCachedMetadata(
+      int encoded_data_length) override;
+  void didReceiveCachedMetadata(
       blink::WebURLLoader* loader,
-      const char* data, int dataLength);
-  virtual void didFinishLoading(
+      const char* data, int dataLength) override;
+  void didFinishLoading(
       blink::WebURLLoader* loader,
       double finishTime,
-      int64_t total_encoded_data_length);
-  virtual void didFail(
+      int64_t total_encoded_data_length) override;
+  void didFail(
       blink::WebURLLoader* loader,
-      const blink::WebURLError&);
+      const blink::WebURLError&) override;
 
   // Returns true if the media resource has a single origin, false otherwise.
   // Only valid to call after Start() has completed.

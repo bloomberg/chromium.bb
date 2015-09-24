@@ -26,12 +26,12 @@ class WebContentDecryptionModuleAccessImpl
       const blink::WebMediaKeySystemConfiguration& configuration,
       const CdmConfig& cdm_config,
       const base::WeakPtr<WebEncryptedMediaClientImpl>& client);
-  virtual ~WebContentDecryptionModuleAccessImpl();
+  ~WebContentDecryptionModuleAccessImpl() override;
 
   // blink::WebContentDecryptionModuleAccess interface.
-  virtual blink::WebMediaKeySystemConfiguration getConfiguration();
-  virtual void createContentDecryptionModule(
-      blink::WebContentDecryptionModuleResult result);
+  blink::WebMediaKeySystemConfiguration getConfiguration() override;
+  void createContentDecryptionModule(
+      blink::WebContentDecryptionModuleResult result) override;
 
  private:
   WebContentDecryptionModuleAccessImpl(
