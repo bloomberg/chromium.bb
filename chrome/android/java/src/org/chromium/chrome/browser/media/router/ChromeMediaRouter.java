@@ -81,6 +81,11 @@ public class ChromeMediaRouter implements MediaRouteManager {
     }
 
     @Override
+    public void onRouteClosed(String mediaRouteId) {
+        nativeOnRouteClosed(mNativeMediaRouterAndroid, mediaRouteId);
+    }
+
+    @Override
     public void onMessageSentResult(boolean success, int callbackId) {
         nativeOnMessageSentResult(mNativeMediaRouterAndroid, success, callbackId);
     }
@@ -185,7 +190,6 @@ public class ChromeMediaRouter implements MediaRouteManager {
         assert provider != null;
 
         provider.closeRoute(routeId);
-        nativeOnRouteClosed(mNativeMediaRouterAndroid, routeId);
     }
 
     /**

@@ -33,6 +33,9 @@ public class CastMediaRouteProvider
             new HashMap<String, DiscoveryCallback>();
     private final Map<String, RouteController> mRoutes =
             new HashMap<String, RouteController>();
+    private final Map<String, String> mClientIdsToRouteIds = new HashMap<String, String>();
+
+    private CreateRouteRequest mPendingCreateRouteRequest;
 
     @Override
     public void onSinksReceived(String sourceId, List<MediaSink> sinks) {
@@ -40,15 +43,31 @@ public class CastMediaRouteProvider
     }
 
     @Override
-    public void onRouteCreated(
-            String mediaRouteId, int requestId, RouteController route, boolean wasLaunched) {
-        mRoutes.put(mediaRouteId, route);
-        mManager.onRouteCreated(mediaRouteId, requestId, this, wasLaunched);
+    public void onRouteCreated(int requestId, RouteController route, boolean wasLaunched) {
+        String routeId = route.getId();
+
+        mRoutes.put(routeId, route);
+        mClientIdsToRouteIds.put(MediaSource.from(route.getSourceId()).getClientId(), routeId);
+
+        mManager.onRouteCreated(routeId, requestId, this, wasLaunched);
     }
 
     @Override
     public void onRouteCreationError(String message, int requestId) {
         mManager.onRouteCreationError(message, requestId);
+    }
+
+    @Override
+    public void onRouteClosed(RouteController route) {
+        mClientIdsToRouteIds.remove(MediaSource.from(route.getSourceId()).getClientId());
+
+        if (mPendingCreateRouteRequest != null) {
+            mPendingCreateRouteRequest.start(mApplicationContext);
+            mPendingCreateRouteRequest = null;
+        } else if (mAndroidMediaRouter != null) {
+            mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
+        }
+        mManager.onRouteClosed(route.getId());
     }
 
     @Override
@@ -124,8 +143,28 @@ public class CastMediaRouteProvider
             return;
         }
 
-        new CreateRouteRequest(sourceId, sinkId, routeId, nativeRequestId, this)
-                .start(mAndroidMediaRouter, mApplicationContext);
+        MediaSource source = MediaSource.from(sourceId);
+        if (source == null || source.getClientId() == null) {
+            mManager.onRouteCreationError("Invalid source", nativeRequestId);
+            return;
+        }
+
+        MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
+        if (sink == null) {
+            mManager.onRouteCreationError("No sink", nativeRequestId);
+            return;
+        }
+
+        CreateRouteRequest createRouteRequest = new CreateRouteRequest(
+                source, sink, routeId, nativeRequestId, this);
+        String existingRouteId = mClientIdsToRouteIds.get(source.getClientId());
+        if (existingRouteId == null) {
+            createRouteRequest.start(mApplicationContext);
+            return;
+        }
+
+        mPendingCreateRouteRequest = createRouteRequest;
+        closeRoute(existingRouteId);
     }
 
     @Override
@@ -134,9 +173,6 @@ public class CastMediaRouteProvider
         if (route == null) return;
 
         route.close();
-        if (mAndroidMediaRouter != null) {
-            mAndroidMediaRouter.selectRoute(mAndroidMediaRouter.getDefaultRoute());
-        }
     }
 
     @Override

@@ -71,6 +71,7 @@ public class SessionWrapper implements RouteController {
     private final CastMessagingChannel mMessageChannel;
     private final RouteDelegate mRouteDelegate;
     private final CastDevice mCastDevice;
+    private final MediaSource mSource;
 
     // Ids of the connected Cast clients.
     private Set<String> mClients = new HashSet<String>();
@@ -86,6 +87,7 @@ public class SessionWrapper implements RouteController {
      * @param apiClient The Google Play Services client used to create the session.
      * @param sessionId The session identifier to use with the Cast SDK.
      * @param mediaRouteId The media route identifier associated with this session.
+     * @param source The {@link MediaSource} corresponding to this session.
      * @param mediaRouter The {@link ChromeMediaRouter} instance managing this session.
      */
     public SessionWrapper(
@@ -93,10 +95,12 @@ public class SessionWrapper implements RouteController {
             Cast.ApplicationConnectionResult result,
             CastDevice castDevice,
             String mediaRouteId,
+            MediaSource source,
             RouteDelegate delegate) {
         mApiClient = apiClient;
         mSessionId = result.getSessionId();
         mMediaRouteId = mediaRouteId;
+        mSource = source;
         mRouteDelegate = delegate;
         mApplicationMetadata = result.getApplicationMetadata();
         mApplicationStatus = result.getApplicationStatus();
@@ -111,18 +115,28 @@ public class SessionWrapper implements RouteController {
 
     @Override
     public void close() {
-        assert mApiClient != null;
+        // close() have been called before from another code path.
+        if (mApiClient == null) return;
 
         if (mApiClient.isConnected() || mApiClient.isConnecting()) {
-            Cast.CastApi.stopApplication(mApiClient, mSessionId);
+            Cast.CastApi.stopApplication(mApiClient, mSessionId)
+                    .setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(Status status) {
+                            // TODO(avayvod): handle a failure to stop the application.
+                            // https://crbug.com/535577
+
+                            for (String namespace : mNamespaces) unregisterNamespace(namespace);
+                            mNamespaces.clear();
+
+                            mClients.clear();
+                            mSessionId = null;
+                            mApiClient = null;
+
+                            mRouteDelegate.onRouteClosed(SessionWrapper.this);
+                        }
+                    });
         }
-
-        for (String namespace : mNamespaces) unregisterNamespace(namespace);
-        mNamespaces.clear();
-        mClients.clear();
-
-        mSessionId = null;
-        mApiClient = null;
     }
 
     @Override
@@ -131,6 +145,16 @@ public class SessionWrapper implements RouteController {
 
         // TODO(avayvod): figure out what to do with custom namespace messages.
         mRouteDelegate.onMessageSentResult(false, callbackId);
+    }
+
+    @Override
+    public String getSourceId() {
+        return mSource.getUrn();
+    }
+
+    @Override
+    public String getId() {
+        return mMediaRouteId;
     }
 
     /**
@@ -339,7 +363,7 @@ public class SessionWrapper implements RouteController {
     }
 
     public void updateSessionStatus() {
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return;
+        if (mApiClient == null || (!mApiClient.isConnected() && !mApiClient.isConnecting())) return;
 
         try {
             mApplicationStatus = Cast.CastApi.getApplicationStatus(mApiClient);

@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.media.router.cast;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.media.MediaRouter;
 
 import com.google.android.gms.cast.Cast;
-import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.CastStatusCodes;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,8 +37,6 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private static final int STATE_LAUNCH_SUCCEEDED = 4;
     private static final int STATE_TERMINATED = 5;
 
-    private static final String ERROR_NEW_ROUTE_INVALID_SOURCE_URN = "Invalid source URN: %s";
-    private static final String ERROR_NEW_ROUTE_INVALID_SINK_URN = "Invalid sink URN: %s";
     private static final String ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED =
             "Launch application failed: %s, %s";
     private static final String ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED_STATUS =
@@ -70,40 +66,45 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                 Log.e(TAG, String.format(
                         "Application disconnected with: %d", errorCode));
             }
-            mSession.close();
-        }
-    };
 
-    private final String mSourceUrn;
-    private final MediaSource mMediaSource;
-    private final String mSinkId;
+            // This callback can be called more than once if the application is stopped from Chrome.
+            if (mSession == null) return;
+
+            mSession.close();
+            mSession = null;
+        }
+    }
+
+    private final MediaSource mSource;
+    private final MediaSink mSink;
     private final String mRouteId;
     private final int mRequestId;
     private final RouteDelegate mDelegate;
     private final CastListener mCastListener = new CastListener();
 
     private GoogleApiClient mApiClient;
-    private MediaRouter.RouteInfo mRoute;
     private int mState = STATE_IDLE;
 
     /**
      * Initializes the request.
-     * @param sourceUrn The URN defining the application to launch on the Cast device
-     * @param sinkUrn The URN identifying the selected Cast device
+     * @param source The {@link MediaSource} defining the application to launch on the Cast device
+     * @param sink The {@link MediaSink} identifying the selected Cast device
      * @param routeId The id assigned to the route by {@link ChromeMediaRouter}
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}
      * @param delegate The instance of {@link RouteDelegate} handling the request
      */
     public CreateRouteRequest(
-            String sourceUrn,
-            String sinkUrn,
+            MediaSource source,
+            MediaSink sink,
             String routeId,
             int requestId,
             RouteDelegate delegate) {
-        mSourceUrn = sourceUrn;
-        mMediaSource = MediaSource.from(sourceUrn);
-        mSinkId = sinkUrn;
+        assert source != null;
+        assert sink != null;
+
+        mSource = source;
+        mSink = sink;
         mRouteId = routeId;
         mRequestId = requestId;
         mDelegate = delegate;
@@ -111,38 +112,15 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     /**
      * Starts the process of launching the application on the Cast device.
-     * @param androidMediaRouter Android's {@link MediaRouter} instance.
      * @param applicationContext application context
      * implementation provided by the caller.
      */
-    public void start(
-            MediaRouter androidMediaRouter,
-            Context applicationContext) {
-        assert androidMediaRouter != null;
+    public void start(Context applicationContext) {
         assert applicationContext != null;
 
         if (mState != STATE_IDLE) throwInvalidState();
 
-        if (mMediaSource == null) {
-            reportError(String.format(ERROR_NEW_ROUTE_INVALID_SOURCE_URN, mSourceUrn));
-            return;
-        }
-
-        mRoute = null;
-        for (MediaRouter.RouteInfo route : androidMediaRouter.getRoutes()) {
-            MediaSink routeSink = MediaSink.fromRoute(route);
-            if (routeSink.getId().equals(mSinkId)) {
-                mRoute = route;
-                break;
-            }
-        }
-
-        if (mRoute == null) {
-            reportError(String.format(ERROR_NEW_ROUTE_INVALID_SINK_URN, mSinkId));
-            return;
-        }
-
-        mApiClient = createApiClient(mRoute, mCastListener, applicationContext);
+        mApiClient = createApiClient(mCastListener, applicationContext);
         mApiClient.connect();
         mState = STATE_CONNECTING_TO_API;
     }
@@ -158,12 +136,12 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (mState == STATE_API_CONNECTION_SUSPENDED) return;
 
         try {
-            launchApplication(mApiClient, mMediaSource.getApplicationId(), false)
+            launchApplication(mApiClient, mSource.getApplicationId(), false)
                     .setResultCallback(this);
             mState = STATE_LAUNCHING_APPLICATION;
         } catch (Exception e) {
             reportError(String.format(ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED,
-                    mMediaSource.getApplicationId(), e));
+                    mSource.getApplicationId(), e));
         }
     }
 
@@ -182,7 +160,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         if (!status.isSuccess()) {
             reportError(String.format(
                     ERROR_NEW_ROUTE_LAUNCH_APPLICATION_FAILED_STATUS,
-                    mMediaSource.getApplicationId(),
+                    mSource.getApplicationId(),
                     status.getStatusCode(),
                     status.getStatusMessage()));
         }
@@ -203,12 +181,9 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                 result.hasResolution()));
     }
 
-    private GoogleApiClient createApiClient(
-            MediaRouter.RouteInfo route, Cast.Listener listener, Context context) {
-        CastDevice selectedDevice = CastDevice.getFromBundle(route.getExtras());
-
+    private GoogleApiClient createApiClient(Cast.Listener listener, Context context) {
         Cast.CastOptions.Builder apiOptionsBuilder = Cast.CastOptions
-                .builder(selectedDevice, listener)
+                .builder(mSink.getDevice(), listener)
                 // TODO(avayvod): hide this behind the flag or remove
                 .setVerboseLoggingEnabled(true);
 
@@ -236,11 +211,12 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         SessionWrapper session = new SessionWrapper(
                 mApiClient,
                 result,
-                CastDevice.getFromBundle(mRoute.getExtras()),
+                mSink.getDevice(),
                 mRouteId,
+                mSource,
                 mDelegate);
         mCastListener.setSession(session);
-        mDelegate.onRouteCreated(mRouteId, mRequestId, session, result.getWasLaunched());
+        mDelegate.onRouteCreated(mRequestId, session, result.getWasLaunched());
 
         terminate();
     }

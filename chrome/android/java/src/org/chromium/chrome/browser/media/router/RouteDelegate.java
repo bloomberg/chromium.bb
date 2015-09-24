@@ -10,13 +10,11 @@ package org.chromium.chrome.browser.media.router;
 public interface RouteDelegate {
     /**
      * Called when the route is created successfully.
-     * @param mediaRouteId The id of the route created.
      * @param requestId The id of the request to create the route.
      * @param route The route controller.
      * @param wasLaunched Whether the presentation was freshly launched.
      */
-    void onRouteCreated(
-            String mediaRouteId, int requestId, RouteController route, boolean wasLaunched);
+    void onRouteCreated(int requestId, RouteController route, boolean wasLaunched);
 
     /**
      * Called when the route creation failed.
@@ -24,6 +22,12 @@ public interface RouteDelegate {
      * @param requestId The id of the request to create the route.
      */
     void onRouteCreationError(String message, int requestId);
+
+    /**
+     *
+     * @param route
+     */
+    void onRouteClosed(RouteController route);
 
     /**
      * Called when sending a message to the route has finished.

@@ -20,4 +20,14 @@ public interface RouteController {
      * @param nativeCallbackId The id of the callback handling the result.
      */
     void sendStringMessage(String message, int nativeCallbackId);
+
+    /**
+     * @return the source id for the route.
+     */
+    String getSourceId();
+
+    /**
+     * @return the route id
+     */
+    String getId();
 }
