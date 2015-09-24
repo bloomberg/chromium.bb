@@ -134,3 +134,9 @@
 -keep class android.support.customtabs.ICustomTabsCallback** {
   *;
 }
+
+#-keep public class android.net.http.SslCertificate
+#-keep public class android.webkit.WebVie
+
+#-dontwarn android.webkit.WebView
+-dontwarn android.net.http.SslCertificate

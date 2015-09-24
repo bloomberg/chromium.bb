@@ -1865,6 +1865,12 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
       <message name="IDS_OFFLINE_PAGES_FREE_UP_SPACE_MESSAGE" desc="Text explaining how many pages are going to be removed and how much storage is going to be freed.">
         Delete <ph name="PAGES_NUMBER">%1$d<ex>8</ex></ph> saved pages that are older than 1 month? This will clear <ph name="TOTAL_PAGE_SIZE">%2$s<ex>8.3 MB</ex></ph> of space.
       </message>
+      <message name="IDS_OFFLINE_PAGES_FOLDER_EMPTY" desc="Text explaining that the currently selected saved pages folder is empty.">
+        No saved pages here
+      </message>
+      <message name="IDS_OFFLINE_PAGES_NTP_BUTTON_NAME" desc="Text for saved pages button on the new tab page [CHAR-LIMIT=20]">
+        Saved pages
+      </message>
       <message name="IDS_OFFLINE_PAGES_OPEN_STORAGE_SETTINGS_DIALOG_TEXT" desc="Text of the dialog asking if the user wants to open storage settings to remove files to make space.">
         Your device storage is full. Please remove other media to make space.
       </message>

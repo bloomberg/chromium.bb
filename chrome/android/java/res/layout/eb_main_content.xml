@@ -31,7 +31,6 @@
         android:drawableTop="@drawable/eb_logo_large"
         android:gravity="center"
         android:padding="16dp"
-        android:text="@string/bookmarks_folder_empty"
         android:textColor="#5B5B5B"
         android:textSize="16sp"
         android:visibility="gone" />

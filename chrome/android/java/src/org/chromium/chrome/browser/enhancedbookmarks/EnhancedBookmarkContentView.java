@@ -8,9 +8,11 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -41,7 +43,10 @@ public class EnhancedBookmarkContentView extends RelativeLayout implements
     protected void onFinishInflate() {
         super.onFinishInflate();
         mItemsContainer = (EnhancedBookmarkRecyclerView) findViewById(R.id.eb_items_container);
-        mItemsContainer.setEmptyView(findViewById(R.id.eb_empty_view));
+        TextView emptyView = (TextView) findViewById(R.id.eb_empty_view);
+        emptyView.setText(OfflinePageBridge.isEnabled()
+                ? R.string.offline_pages_folder_empty : R.string.bookmarks_folder_empty);
+        mItemsContainer.setEmptyView(emptyView);
         mActionBar = (EnhancedBookmarkActionBar) findViewById(R.id.eb_action_bar);
         mLoadingView = (EnhancedBookmarkLoadingView) findViewById(R.id.eb_initial_loading_view);
         FadingShadowView shadow = (FadingShadowView) findViewById(R.id.shadow);

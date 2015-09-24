@@ -16,6 +16,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.appmenu.ChromeAppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
@@ -72,7 +73,8 @@ public class NewTabPageToolbar extends LinearLayout implements OnLongClickListen
     public boolean onLongClick(View v) {
         // Display tooltip on long click
         if (v == mBookmarksButton) {
-            showTooltip(R.string.ntp_bookmarks);
+            showTooltip(OfflinePageBridge.isEnabled()
+                    ? R.string.offline_pages_ntp_button_name : R.string.ntp_bookmarks);
         } else if (v == mRecentTabsButton) {
             showTooltip(R.string.recent_tabs);
         }
