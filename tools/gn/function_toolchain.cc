@@ -618,6 +618,7 @@ const char kTool_Help[] =
     "  along with a set of compiler-specific flags. The following expansions\n"
     "  are available:\n"
     "\n"
+    "    {{asmflags}}\n"
     "    {{cflags}}\n"
     "    {{cflags_c}}\n"
     "    {{cflags_cc}}\n"

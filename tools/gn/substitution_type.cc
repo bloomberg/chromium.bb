@@ -28,6 +28,7 @@ const char* kSubstitutionNames[SUBSTITUTION_NUM_TYPES] = {
   "{{target_out_dir}}",  // SUBSTITUTION_TARGET_OUT_DIR
   "{{target_output_name}}",  // SUBSTITUTION_TARGET_OUTPUT_NAME
 
+  "{{asmflags}}",  // SUBSTITUTION_ASMFLAGS
   "{{cflags}}",  // SUBSTITUTION_CFLAGS
   "{{cflags_c}}",  // SUBSTITUTION_CFLAGS_C
   "{{cflags_cc}}",  // SUBSTITUTION_CFLAGS_CC
@@ -64,6 +65,7 @@ const char* kSubstitutionNinjaNames[SUBSTITUTION_NUM_TYPES] = {
     "target_out_dir",      // SUBSTITUTION_TARGET_OUT_DIR
     "target_output_name",  // SUBSTITUTION_TARGET_OUTPUT_NAME
 
+    "asmflags",      // SUBSTITUTION_ASMFLAGS
     "cflags",        // SUBSTITUTION_CFLAGS
     "cflags_c",      // SUBSTITUTION_CFLAGS_C
     "cflags_cc",     // SUBSTITUTION_CFLAGS_CC
@@ -133,6 +135,7 @@ bool IsValidCompilerSubstitution(SubstitutionType type) {
   return IsValidToolSubstutition(type) ||
          IsValidSourceSubstitution(type) ||
          type == SUBSTITUTION_SOURCE ||
+         type == SUBSTITUTION_ASMFLAGS ||
          type == SUBSTITUTION_CFLAGS ||
          type == SUBSTITUTION_CFLAGS_C ||
          type == SUBSTITUTION_CFLAGS_CC ||

@@ -403,10 +403,24 @@ const char kCommonCflagsHelp[] =
     "  and Objective C++ compilers.\n"
     "\n"
     "  To target one of these variants individually, use \"cflags_c\",\n"
-    "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\", respectively.\n"
-    "  These variant-specific versions will be appended to the \"cflags\".\n"
+    "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\",\n"
+    "  respectively.\n"
+    "\n"
+    "  These variant-specific versions of cflags* will be appended to the\n"
+    "  \"cflags\".\n"
     COMMON_ORDERING_HELP;
 const char* kCflags_Help = kCommonCflagsHelp;
+
+const char kAsmflags[] = "asmflags";
+const char kAsmflags_HelpShort[] =
+    "asmflags: [string list] Flags passed to any assembly compiler.";
+const char* kAsmflags_Help =
+    "asmflags: Flags passed to any assembly compiler.\n"
+    "\n"
+    "  A list of strings.\n"
+    "\n"
+    "  \"asmflags\" are passed to any invocation of a tool that takes an\n"
+    "  .asm or .S file as input.\n";
 
 const char kCflagsC[] = "cflags_c";
 const char kCflagsC_HelpShort[] =

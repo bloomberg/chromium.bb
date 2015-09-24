@@ -351,12 +351,7 @@ void NinjaBinaryTargetWriter::Run() {
       &pch_obj_files : &pch_other_files;
 
   // Treat all pch output files as explicit dependencies of all
-  // compiles. Some notes:
-  //
-  //  - Only the language-specific one is required for any specific compile, but
-  //    that's more difficult to express and the additional logic doesn't buy
-  //    much reduced parallelism. Just list them all (there's usually only one
-  //    anyway).
+  // compiles that support them. Some notes:
   //
   //  - On Windows, the .pch file is the input to the compile, not the
   //    precompiled header's corresponding object file that we're using here.
@@ -420,8 +415,13 @@ void NinjaBinaryTargetWriter::WriteCompilerVars(
   bool has_precompiled_headers =
       target_->config_values().has_precompiled_headers();
 
-  // Some toolchains pass cflags to the assembler since it's the same command.
   EscapeOptions opts = GetFlagOptions();
+  if (used_types.Get(SOURCE_S) || used_types.Get(SOURCE_ASM)) {
+    WriteOneFlag(SUBSTITUTION_ASMFLAGS, false, Toolchain::TYPE_NONE,
+                 &ConfigValues::asmflags, opts);
+  }
+  // TODO(andybons): Remove SOURCE_S and SOURCE_ASM checks once asmflags is
+  // used.
   if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_CPP) ||
       used_types.Get(SOURCE_M) || used_types.Get(SOURCE_MM) ||
       used_types.Get(SOURCE_S) || used_types.Get(SOURCE_ASM)) {
@@ -678,17 +678,20 @@ void NinjaBinaryTargetWriter::WriteSources(
       // with the naming scheme specified in GetWindowsPCHObjectExtension or
       // GetGCCPCHOutputExtension.
       const Tool* tool = target_->toolchain()->GetTool(tool_type);
-      for (const auto& dep : pch_deps) {
-        const std::string& output_value = dep.value();
-        std::string output_extension;
-        if (tool->precompiled_header_type() == Tool::PCH_MSVC) {
-          output_extension = GetWindowsPCHObjectExtension(tool_type);
-        } else if (tool->precompiled_header_type() == Tool::PCH_GCC) {
-          output_extension = GetGCCPCHOutputExtension(tool_type);
-        }
-        if (output_value.compare(output_value.size() - output_extension.size(),
-            output_extension.size(), output_extension) == 0) {
-          deps.push_back(dep);
+      if (tool->precompiled_header_type() != Tool::PCH_NONE) {
+        for (const auto& dep : pch_deps) {
+          const std::string& output_value = dep.value();
+          std::string output_extension;
+          if (tool->precompiled_header_type() == Tool::PCH_MSVC) {
+            output_extension = GetWindowsPCHObjectExtension(tool_type);
+          } else if (tool->precompiled_header_type() == Tool::PCH_GCC) {
+            output_extension = GetGCCPCHOutputExtension(tool_type);
+          }
+          if (output_value.compare(output_value.size() -
+              output_extension.size(), output_extension.size(),
+              output_extension) == 0) {
+            deps.push_back(dep);
+          }
         }
       }
       WriteCompilerBuildLine(source, deps, order_only_dep, tool_type,

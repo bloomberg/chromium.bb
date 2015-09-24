@@ -51,7 +51,7 @@ template("mac_toolchain") {
     tool("cc") {
       depfile = "{{output}}.d"
 
-      # TODO:(andybons): enable this when GCC PCH support in the binary has been
+      # TODO(andybons): enable this when GCC PCH support in the binary has been
       # rolled.
       #precompiled_header_type = "gcc"
       command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
@@ -65,7 +65,7 @@ template("mac_toolchain") {
     tool("cxx") {
       depfile = "{{output}}.d"
 
-      # TODO:(andybons): enable this when GCC PCH support in the binary has been
+      # TODO(andybons): enable this when GCC PCH support in the binary has been
       # rolled.
       #precompiled_header_type = "gcc"
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
@@ -91,7 +91,7 @@ template("mac_toolchain") {
       depfile = "{{output}}.d"
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
 
-      # TODO:(andybons): enable this when GCC PCH support in the binary has been
+      # TODO(andybons): enable this when GCC PCH support in the binary has been
       # rolled.
       #precompiled_header_type = "gcc"
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} {{cflags_objc}} -c {{source}} -o {{output}}"
@@ -106,7 +106,7 @@ template("mac_toolchain") {
       depfile = "{{output}}.d"
       command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
 
-      # TODO:(andybons): enable this when GCC PCH support in the binary has been
+      # TODO(andybons): enable this when GCC PCH support in the binary has been
       # rolled.
       #precompiled_header_type = "gcc"
       depsformat = "gcc"

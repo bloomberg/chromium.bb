@@ -41,6 +41,7 @@ enum SubstitutionType {
   SUBSTITUTION_TARGET_OUTPUT_NAME,  // {{target_output_name}}
 
   // Valid for compiler tools.
+  SUBSTITUTION_ASMFLAGS,  // {{asmflags}}
   SUBSTITUTION_CFLAGS,  // {{cflags}}
   SUBSTITUTION_CFLAGS_C,  // {{cflags_c}}
   SUBSTITUTION_CFLAGS_CC,  // {{cflags_cc}}
