@@ -358,6 +358,8 @@ crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
 # crbug.com/521730 [ Win10 ] fast/text/complex-text-opacity.html [ Failure Timeout Failure Failure ]
 crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
+crbug.com/535408 fast/js/function-bind.html [ NeedsManualRebaseline ]
+
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
