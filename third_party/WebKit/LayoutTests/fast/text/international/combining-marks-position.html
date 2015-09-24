@@ -1,6 +1,15 @@
 <html>
 <head>
 <meta charset="utf-8" />
+<style type="text/css">
+@font-face {
+font-family: linlibertine;
+src: url("../../../third_party/Libertine/LinLibertine_R.woff");
+}
+div:lang(ar) {
+font-family: linlibertine;
+}
+</style>
 <script>
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -19,10 +28,10 @@ words (one has marks, and the other doesn't have marks).
 <span id="target1">te&#768;st прове&#768;рка</span>
 </div>
 
-<div>
+<div lang="ar">
 <span id="reference2">خانه</span>
 </div>
-<div>
+<div lang="ar">
 <span id="target2">خانهٔ</span>
 </div>
 
