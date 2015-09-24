@@ -17,7 +17,6 @@
 #include "base/process/process.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -81,7 +80,8 @@
 #include "content/renderer/manifest/manifest_manager.h"
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
-#include "content/renderer/media/media_permission_dispatcher.h"
+#include "content/renderer/media/media_permission_dispatcher_impl.h"
+#include "content/renderer/media/media_permission_dispatcher_proxy.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_renderer_factory_impl.h"
 #include "content/renderer/media/midi_dispatcher.h"
@@ -5052,9 +5052,16 @@ RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {
 }
 #endif  // defined(OS_ANDROID)
 
+scoped_ptr<media::MediaPermission> RenderFrameImpl::CreateMediaPermissionProxy(
+    scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner) {
+  MediaPermissionDispatcherImpl* media_permission =
+      static_cast<MediaPermissionDispatcherImpl*>(GetMediaPermission());
+  return media_permission->CreateProxy(caller_task_runner).Pass();
+}
+
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
   if (!media_permission_dispatcher_)
-    media_permission_dispatcher_ = new MediaPermissionDispatcher(this);
+    media_permission_dispatcher_ = new MediaPermissionDispatcherImpl(this);
   return media_permission_dispatcher_;
 }
 

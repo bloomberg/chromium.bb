@@ -99,7 +99,7 @@ class GeolocationDispatcher;
 class ManifestManager;
 class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
-class MediaPermissionDispatcher;
+class MediaPermissionDispatcherImpl;
 class MidiDispatcher;
 class NavigationState;
 class NotificationPermissionDispatcher;
@@ -583,6 +583,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void SetPendingNavigationParams(
       scoped_ptr<NavigationParams> navigation_params);
 
+  // Expose MediaPermission to the non-UI threads. Any calls to this will be
+  // redirected to |media_permission_dispatcher_| on UI thread and have the
+  // callback called on |caller_task_runner|.
+  scoped_ptr<media::MediaPermission> CreateMediaPermissionProxy(
+      scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner);
+
  protected:
   explicit RenderFrameImpl(const CreateParams& params);
 
@@ -954,7 +960,7 @@ class CONTENT_EXPORT RenderFrameImpl
   scoped_ptr<media::WebEncryptedMediaClientImpl> web_encrypted_media_client_;
 
   // The media permission dispatcher attached to this frame, lazily initialized.
-  MediaPermissionDispatcher* media_permission_dispatcher_;
+  MediaPermissionDispatcherImpl* media_permission_dispatcher_;
 
 #if defined(ENABLE_MOJO_MEDIA)
   // The media factory attached to this frame, lazily initialized.
