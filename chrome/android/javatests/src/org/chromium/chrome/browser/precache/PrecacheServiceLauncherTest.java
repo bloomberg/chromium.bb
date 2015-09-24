@@ -94,12 +94,19 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
     }
 
     @Override
-    public void setUp() {
+    public void setUp() throws Exception {
+        super.setUp();
         mLauncher = new MockPrecacheServiceLauncher();
         mPrecacheLauncher = new MockPrecacheLauncher();
         mLauncher.setPrecacheLauncher(mPrecacheLauncher);
         mContext = new PrecacheMockContext();
         setPrecachingEnabled(true);
+    }
+
+    @Override
+    public void tearDown() throws Exception {
+        PrecacheService.setIsPrecaching(false);
+        super.tearDown();
     }
 
     @SmallTest
@@ -172,6 +179,7 @@ public class PrecacheServiceLauncherTest extends InstrumentationTestCase {
                         FailureReason.NATIVE_SHOULD_RUN_IS_FALSE));
         mLauncher.setDeviceState(new MockDeviceState(0, false, true, false));
         setLastPrecacheMs(0L);
+        PrecacheService.setIsPrecaching(true);
 
         mLauncher.onReceive(mContext, new Intent(PrecacheServiceLauncher.ACTION_ALARM));
 

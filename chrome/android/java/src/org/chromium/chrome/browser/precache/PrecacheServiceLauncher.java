@@ -150,6 +150,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         if (timeSinceLastPrecacheMs(context) < WAIT_UNTIL_NEXT_PRECACHE_MS) {
             reasons.add(FailureReason.NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE);
         }
+        if (PrecacheService.isPrecaching()) reasons.add(FailureReason.CURRENTLY_PRECACHING);
         return reasons;
     }
 

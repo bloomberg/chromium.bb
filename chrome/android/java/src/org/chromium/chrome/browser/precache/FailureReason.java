@@ -30,7 +30,10 @@ enum FailureReason {
     SCREEN_ON(6),
 
     /** PrecacheServiceLauncher#timeSinceLastPrecacheMs() is too recent. */
-    NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE(7);
+    NOT_ENOUGH_TIME_SINCE_LAST_PRECACHE(7),
+
+    /** PrecacheService#isPrecaching() returns true. */
+    CURRENTLY_PRECACHING(8);
 
     /** Returns the set of reasons as a bit vector. */
     static int bitValue(EnumSet<FailureReason> reasons) {
