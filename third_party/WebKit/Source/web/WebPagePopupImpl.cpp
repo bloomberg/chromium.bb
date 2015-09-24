@@ -350,7 +350,7 @@ void WebPagePopupImpl::beginFrame(const WebBeginFrameArgs& frameTime)
         return;
     // FIXME: This should use frameTime.lastFrameTimeMonotonic but doing so
     // breaks tests.
-    PageWidgetDelegate::animate(*m_page, monotonicallyIncreasingTime(), *m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::animate(*m_page, monotonicallyIncreasingTime());
 }
 
 void WebPagePopupImpl::willCloseLayerTreeView()

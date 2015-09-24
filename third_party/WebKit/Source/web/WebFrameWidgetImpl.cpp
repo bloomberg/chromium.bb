@@ -254,7 +254,7 @@ void WebFrameWidgetImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!validFrameTime.lastFrameTimeMonotonic)
         validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
 
-    PageWidgetDelegate::animate(*page(), validFrameTime.lastFrameTimeMonotonic, *m_localRoot->frame());
+    PageWidgetDelegate::animate(*page(), validFrameTime.lastFrameTimeMonotonic);
 }
 
 void WebFrameWidgetImpl::layout()

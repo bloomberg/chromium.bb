@@ -242,7 +242,7 @@ class BitmapUploader : public mojo::SurfaceClient {
     frame->passes.push_back(pass.Pass());
 
     // TODO(rjkroege, fsamuel): We should throttle frames.
-    surface_->SubmitCompositorFrame(frame.Pass());
+    surface_->SubmitCompositorFrame(frame.Pass(), mojo::Closure());
   }
 
   uint32_t BindTextureForSize(const mojo::Size size) {

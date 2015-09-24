@@ -64,10 +64,11 @@ public:
 // Common implementation of WebViewImpl and WebPagePopupImpl.
 class PageWidgetDelegate {
 public:
+    static void animate(Page&, double monotonicFrameBeginTime);
+
     // rootFrame arguments indicate a root localFrame from which to start performing the
     // specified operation. If rootFrame is 0, these methods will attempt to use the
     // Page's mainFrame(), if it is a LocalFrame.
-    static void animate(Page&, double monotonicFrameBeginTime, LocalFrame& root);
     static void layout(Page&, LocalFrame& root);
     static void paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
     static void paintIgnoringCompositing(Page&, WebCanvas*, const WebRect&, LocalFrame& root);

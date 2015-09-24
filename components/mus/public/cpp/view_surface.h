@@ -25,8 +25,8 @@ class ViewSurface : public mojo::SurfaceClient {
   // object.
   void BindToThread();
 
-  // TODO(fsamuel): Add a callback.
-  void SubmitCompositorFrame(mojo::CompositorFramePtr frame);
+  void SubmitCompositorFrame(mojo::CompositorFramePtr frame,
+                             const mojo::Closure& callback);
 
   void set_client(ViewSurfaceClient* client) { client_ = client; }
 

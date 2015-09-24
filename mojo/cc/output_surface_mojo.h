@@ -31,6 +31,8 @@ class OutputSurfaceMojo : public cc::OutputSurface,
       mus::ViewSurface* surface,
       mojo::Array<mojo::ReturnedResourcePtr> resources) override;
 
+  void SwapBuffersComplete();
+
   scoped_ptr<mus::ViewSurface> surface_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurfaceMojo);

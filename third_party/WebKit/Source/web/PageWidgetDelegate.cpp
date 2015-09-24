@@ -51,11 +51,8 @@
 
 namespace blink {
 
-void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime, LocalFrame& root)
+void PageWidgetDelegate::animate(Page& page, double monotonicFrameBeginTime)
 {
-    RefPtrWillBeRawPtr<FrameView> view = root.view();
-    if (!view)
-        return;
     page.autoscrollController().animate(monotonicFrameBeginTime);
     page.animator().serviceScriptedAnimations(monotonicFrameBeginTime);
 }

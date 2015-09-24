@@ -96,6 +96,7 @@ void WebLayerTreeViewImpl::BeginMainFrame(const cc::BeginFrameArgs& args) {
   blink::WebBeginFrameArgs web_begin_frame_args(
       frame_time_sec, deadline_sec, interval_sec);
   widget_->beginFrame(web_begin_frame_args);
+  layer_tree_host_->SetNeedsAnimate();
 }
 
 void WebLayerTreeViewImpl::Layout() {

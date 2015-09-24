@@ -1888,9 +1888,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!m_page)
         return;
 
-    // FIXME: This should probably be using the local root?
-    if (m_page->mainFrame()->isLocalFrame())
-        PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic, *m_page->deprecatedLocalMainFrame());
+    PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic);
 }
 
 void WebViewImpl::layout()

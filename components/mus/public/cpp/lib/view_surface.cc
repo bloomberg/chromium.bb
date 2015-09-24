@@ -18,11 +18,12 @@ void ViewSurface::BindToThread() {
   client_binding_.Bind(client_request_.Pass());
 }
 
-void ViewSurface::SubmitCompositorFrame(mojo::CompositorFramePtr frame) {
+void ViewSurface::SubmitCompositorFrame(mojo::CompositorFramePtr frame,
+                                        const mojo::Closure& callback) {
   DCHECK(bound_to_thread_);
   if (!surface_)
     return;
-  surface_->SubmitCompositorFrame(frame.Pass(), mojo::Closure());
+  surface_->SubmitCompositorFrame(frame.Pass(), callback);
 }
 
 ViewSurface::ViewSurface(
