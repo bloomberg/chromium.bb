@@ -455,11 +455,13 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void createNewContentView() {
-        // TODO(mdjones): This should not be a public API.
-        if (mContentViewCore != null) {
-            mContentController.destroyContentView();
+        // If the ContentViewCore has already been created, but never used,
+        // then there's no need to create a new one.
+        if (mContentViewCore != null && !mDidLoadAnyUrl) {
+            return;
         }
 
+        mContentController.destroyContentView();
         mContentViewCore = new ContentViewCore(mActivity);
 
         // Adds a ContentViewClient to override the default fullscreen size.
@@ -538,6 +540,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                 mWebContentsObserver.destroy();
                 mWebContentsObserver = null;
             }
+
+            getManagementDelegate().onContentViewDestroyed();
         }
 
         // This should be called last here. The setSearchContentViewVisibility method
@@ -546,15 +550,17 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         // the SearchContentView, it will be faster, because only the internal property
         // will be changed, since there will be no need to change the visibility of the
         // SearchContentView.
+        //
+        // Also, this should be called outside the block above because tests will not
+        // create a ContentView, therefore if this call is placed inside the block,
+        // it will not be called on tests, which will cause some tests to fail.
         setSearchContentViewVisibility(false);
-
-        getManagementDelegate().onContentViewDestroyed();
     }
 
     @Override
     public void loadUrl(String url) {
-        mContentController.destroyContentView();
         createNewPanelContentView();
+
         if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
             mDidLoadAnyUrl = true;
             mContentViewCore.getWebContents().getNavigationController().loadUrl(
