@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'MediaStream.stop()' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.
 Tests webkitMediaStream.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

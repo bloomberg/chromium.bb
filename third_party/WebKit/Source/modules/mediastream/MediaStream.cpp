@@ -173,11 +173,6 @@ bool MediaStream::emptyOrOnlyEndedTracks()
     return true;
 }
 
-bool MediaStream::ended() const
-{
-    return m_stopped || m_descriptor->ended();
-}
-
 MediaStreamTrackVector MediaStream::getTracks()
 {
     MediaStreamTrackVector tracks;
@@ -276,16 +271,6 @@ MediaStream* MediaStream::clone(ExecutionContext* context)
     return MediaStream::create(context, tracks);
 }
 
-void MediaStream::stop()
-{
-    if (ended())
-        return;
-
-    streamEnded();
-
-    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
-}
-
 void MediaStream::trackEnded()
 {
     for (MediaStreamTrackVector::iterator iter = m_audioTracks.begin(); iter != m_audioTracks.end(); ++iter) {
@@ -303,7 +288,7 @@ void MediaStream::trackEnded()
 
 void MediaStream::streamEnded()
 {
-    if (ended())
+    if (m_stopped || m_descriptor->ended())
         return;
 
     if (active()) {
@@ -333,7 +318,7 @@ ExecutionContext* MediaStream::executionContext() const
 void MediaStream::addRemoteTrack(MediaStreamComponent* component)
 {
     ASSERT(component);
-    if (ended())
+    if (m_stopped || m_descriptor->ended())
         return;
 
     MediaStreamTrack* track = MediaStreamTrack::create(executionContext(), component);

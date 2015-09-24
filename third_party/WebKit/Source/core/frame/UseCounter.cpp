@@ -917,16 +917,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case SVGSMILElementInDocument:
     case SVGSMILAnimationInImageRegardlessOfCache:
         return "SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.";
-
-    case MediaStreamLabel:
-        return "'MediaStream.label' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.id' instead.";
-
-    case MediaStreamStop:
-        return "'MediaStream.stop()' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.";
-
-    case MediaStreamEnded:
-        return "'MediaStream.ended' is deprecated and will be removed in M47, around November 2015. Please use 'MediaStream.active' instead.";
-
     case PrefixedPerformanceClearResourceTimings:
         return replacedBy("Performance.webkitClearResourceTimings", "Performance.clearResourceTimings");
 

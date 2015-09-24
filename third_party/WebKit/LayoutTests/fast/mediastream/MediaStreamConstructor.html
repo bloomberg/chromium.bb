@@ -94,7 +94,8 @@ function testConstructor(s) {
         finishJSTest();
     };
 
-    s.stop();
+    s.getAudioTracks()[0].stop();
+    s.getVideoTracks()[0].stop();
 }
 
 function verifyStream(s, numAudioTracks, numVideoTracks) {

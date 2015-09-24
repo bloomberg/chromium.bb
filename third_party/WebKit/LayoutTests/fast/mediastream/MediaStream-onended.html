@@ -27,16 +27,15 @@ var stream;
 
 function streamEnded2() {
     testPassed('streamEnded was called.');
-    shouldBeTrue('stream.ended');
     finishJSTest();
 }
 
 function gotStream2(s) {
     stream = new webkitMediaStream(s);
-    shouldBeFalse('stream.ended');
     try {
         stream.onended = streamEnded2;
-        s.stop();
+        s.getAudioTracks()[0].stop();
+        s.getVideoTracks()[0].stop();
     } catch (e) {
         testFailed('MediaStream threw exception :' + e);
         finishJSTest();
@@ -45,17 +44,15 @@ function gotStream2(s) {
 
 function streamEnded() {
     testPassed('streamEnded was called.');
-    shouldBeTrue('stream.ended');
-
     getUserMedia({audio:true, video:true}, gotStream2);
 }
 
 function gotStream(s) {
     stream = s;
-    shouldBeFalse('stream.ended');
     try {
         stream.onended = streamEnded;
-        stream.stop();
+        s.getAudioTracks()[0].stop();
+        s.getVideoTracks()[0].stop();
     } catch (e) {
         testFailed('MediaStream threw exception :' + e);
         finishJSTest();

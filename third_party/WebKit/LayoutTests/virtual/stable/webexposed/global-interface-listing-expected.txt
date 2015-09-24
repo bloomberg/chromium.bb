@@ -5894,9 +5894,7 @@ interface webkitIDBTransaction
     setter onerror
 interface webkitMediaStream
     getter active
-    getter ended
     getter id
-    getter label
     getter onactive
     getter onaddtrack
     getter onended
@@ -5910,7 +5908,6 @@ interface webkitMediaStream
     method getTracks
     method getVideoTracks
     method removeTrack
-    method stop
     setter onactive
     setter onaddtrack
     setter onended

@@ -22,7 +22,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/2011/webrtc/editor/getusermedia.html#idl-def-MediaStream
+// http://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaStream
 
 [
     GarbageCollected,
@@ -32,8 +32,6 @@
     ConstructorCallWith=ExecutionContext,
     NoInterfaceObject,
 ] interface MediaStream : EventTarget {
-    // DEPRECATED
-    [DeprecateAs=MediaStreamLabel] readonly attribute DOMString label;
 
     readonly attribute DOMString id;
 
@@ -45,13 +43,8 @@
     [RaisesException] void removeTrack(MediaStreamTrack track);
     MediaStreamTrack getTrackById(DOMString trackId);
     [CallWith=ExecutionContext] MediaStream clone();
-    // DEPRECATED
-    [DeprecateAs=MediaStreamEnded] readonly attribute boolean ended;
 
     readonly attribute boolean active;
-
-    // DEPRECATED
-    [DeprecateAs=MediaStreamStop] void stop();
 
     attribute EventHandler onactive;
     attribute EventHandler oninactive;

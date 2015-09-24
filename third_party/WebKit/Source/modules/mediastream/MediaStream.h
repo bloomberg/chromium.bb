@@ -53,9 +53,6 @@ public:
     static MediaStream* create(ExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     ~MediaStream() override;
 
-    // DEPRECATED
-    String label() const { return m_descriptor->id(); }
-
     String id() const { return m_descriptor->id(); }
 
     void addTrack(MediaStreamTrack*, ExceptionState&);
@@ -68,8 +65,6 @@ public:
     MediaStreamTrackVector getTracks();
 
     bool active() const { return m_descriptor->active(); }
-    bool ended() const;
-    void stop();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(active);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(inactive);
