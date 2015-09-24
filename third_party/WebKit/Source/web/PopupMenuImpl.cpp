@@ -490,6 +490,9 @@ void PopupMenuImpl::update()
     if (!m_popup || !m_ownerElement)
         return;
     ownerElement().document().updateLayoutTreeIfNeeded();
+    // disconnectClient() might have been called.
+    if (!m_ownerElement)
+        return;
     m_needsUpdate = false;
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
