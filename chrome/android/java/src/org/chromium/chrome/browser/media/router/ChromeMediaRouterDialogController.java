@@ -7,14 +7,13 @@ package org.chromium.chrome.browser.media.router;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.DialogInterface.OnDismissListener;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
 import android.support.v7.app.MediaRouteDialogFactory;
-import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
-import android.support.v7.media.MediaRouter.Callback;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.annotations.CalledByNative;
@@ -29,7 +28,8 @@ import org.chromium.chrome.browser.media.router.cast.MediaSource;
  */
 @JNINamespace("media_router")
 public class ChromeMediaRouterDialogController extends MediaRouter.Callback
-        implements OnDismissListener {
+        implements OnDismissListener, OnCancelListener {
+
     private static final String MEDIA_ROUTE_CHOOSER_DIALOG_FRAGMENT =
             "android.support.v7.mediarouter:MediaRouteChooserDialogFragment";
 
@@ -69,12 +69,9 @@ public class ChromeMediaRouterDialogController extends MediaRouter.Callback
 
         if (fm.findFragmentByTag(MEDIA_ROUTE_CHOOSER_DIALOG_FRAGMENT) != null) return;
 
-        MediaRouteSelector selector = mediaSource.buildRouteSelector();
-        mAndroidMediaRouter.addCallback(selector, this);
-
         MediaRouteDialogFactory factory = new ChromeMediaRouteDialogFactory();
         mChooserDialogFragment = factory.onCreateChooserDialogFragment();
-        mChooserDialogFragment.setRouteSelector(selector);
+        mChooserDialogFragment.setRouteSelector(mediaSource.buildRouteSelector());
         mChooserDialogFragment.show(fm, MEDIA_ROUTE_CHOOSER_DIALOG_FRAGMENT);
         fm.executePendingTransactions();
 
@@ -85,6 +82,7 @@ public class ChromeMediaRouterDialogController extends MediaRouter.Callback
         }
 
         dialog.setOnDismissListener(this);
+        dialog.setOnCancelListener(this);
     }
 
     /**
@@ -108,20 +106,24 @@ public class ChromeMediaRouterDialogController extends MediaRouter.Callback
     }
 
     /**
-     * {@link Callback} implementation.
-     */
-    @Override
-    public void onRouteSelected(MediaRouter router, MediaRouter.RouteInfo route) {
-        closeDialog();
-        nativeOnSinkSelected(mNativeDialogController, MediaSink.fromRoute(route).getId());
-    }
-
-    /**
      * {@link OnDismissListener} implementation.
      */
     @Override
     public void onDismiss(DialogInterface dialog) {
-        mAndroidMediaRouter.removeCallback(this);
+        // If the dialog was cancelled, the fragment will be null.
+        if (mChooserDialogFragment == null) return;
+
+        mChooserDialogFragment.dismiss();
+        mChooserDialogFragment = null;
+        nativeOnSinkSelected(mNativeDialogController,
+                MediaSink.fromRoute(mAndroidMediaRouter.getSelectedRoute()).getId());
+    }
+
+    /**
+     * {@link OnCancelListener} implementation.
+     */
+    @Override
+    public void onCancel(DialogInterface dialog) {
         mChooserDialogFragment.dismiss();
         mChooserDialogFragment = null;
         nativeOnDialogDismissed(mNativeDialogController);
