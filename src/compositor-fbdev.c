@@ -338,6 +338,7 @@ fbdev_query_screen_info(struct fbdev_output *output, int fd,
 	info->buffer_length = fixinfo.smem_len;
 	info->line_length = fixinfo.line_length;
 	strncpy(info->id, fixinfo.id, sizeof(info->id));
+	info->id[sizeof(info->id)-1] = '\0';
 
 	info->pixel_format = calculate_pixman_format(&varinfo, &fixinfo);
 	info->refresh_rate = calculate_refresh_rate(&varinfo);
