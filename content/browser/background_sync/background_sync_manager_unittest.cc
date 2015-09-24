@@ -1257,6 +1257,104 @@ TEST_F(BackgroundSyncManagerTest, NotifyWhenDoneBeforeUnregistered) {
   EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
 }
 
+TEST_F(BackgroundSyncManagerTest, OverwritePendingRegistration) {
+  // An overwritten pending registration should complete with
+  // BACKGROUND_SYNC_STATE_UNREGISTERED.
+  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_EQ(POWER_STATE_AVOID_DRAINING,
+            callback_registration_handle_->options()->power_state);
+  scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
+      callback_registration_handle_.Pass();
+
+  // Overwrite the pending registration.
+  sync_options_1_.power_state = POWER_STATE_AUTO;
+  EXPECT_TRUE(Register(sync_options_1_));
+  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_EQ(POWER_STATE_AUTO,
+            callback_registration_handle_->options()->power_state);
+
+  bool notify_done_called = false;
+  BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
+  BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  original_handle->NotifyWhenDone(base::Bind(
+      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(notify_done_called);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
+  EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, sync_state);
+  EXPECT_EQ(0, sync_events_called_);
+}
+
+TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichSucceeds) {
+  // An overwritten pending registration should complete with
+  // BACKGROUND_SYNC_STATE_SUCCESS if firing completes successfully.
+  InitDelayedSyncEventTest();
+
+  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  RegisterAndVerifySyncEventDelayed(sync_options_1_);
+  scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
+      callback_registration_handle_.Pass();
+
+  // The next registration won't block.
+  InitSyncEventTest();
+
+  // Overwrite the firing registration.
+  sync_options_1_.power_state = POWER_STATE_AUTO;
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  bool notify_done_called = false;
+  BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
+  BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  original_handle->NotifyWhenDone(base::Bind(
+      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(notify_done_called);
+
+  // Successfully finish the first event.
+  sync_fired_callback_.Run(SERVICE_WORKER_OK);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(notify_done_called);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
+  EXPECT_EQ(BACKGROUND_SYNC_STATE_SUCCESS, sync_state);
+}
+
+TEST_F(BackgroundSyncManagerTest, OverwriteFiringRegistrationWhichFails) {
+  // An overwritten pending registration should complete with
+  // BACKGROUND_SYNC_STATE_FAILED if firing fails.
+  InitDelayedSyncEventTest();
+
+  sync_options_1_.power_state = POWER_STATE_AVOID_DRAINING;
+  RegisterAndVerifySyncEventDelayed(sync_options_1_);
+  scoped_ptr<BackgroundSyncRegistrationHandle> original_handle =
+      callback_registration_handle_.Pass();
+
+  // The next registration won't block.
+  InitSyncEventTest();
+
+  // Overwrite the firing registration.
+  sync_options_1_.power_state = POWER_STATE_AUTO;
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  bool notify_done_called = false;
+  BackgroundSyncStatus status = BACKGROUND_SYNC_STATUS_OK;
+  BackgroundSyncState sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  original_handle->NotifyWhenDone(base::Bind(
+      &NotifyWhenDoneCallback, &notify_done_called, &status, &sync_state));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(notify_done_called);
+
+  // Fail the first event.
+  sync_fired_callback_.Run(SERVICE_WORKER_ERROR_FAILED);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(notify_done_called);
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, status);
+  EXPECT_EQ(BACKGROUND_SYNC_STATE_FAILED, sync_state);
+}
+
 // TODO(jkarlin): Change this to a periodic test as one-shots can't be power
 // dependent according to spec.
 TEST_F(BackgroundSyncManagerTest, OneShotFiresOnPowerChange) {

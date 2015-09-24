@@ -361,10 +361,10 @@ void BackgroundSyncManager::RegisterImpl(
 
   RefCountedRegistration* existing_registration_ref =
       LookupActiveRegistration(sw_registration_id, RegistrationKey(options));
-  if (existing_registration_ref &&
-      existing_registration_ref->value()->options()->Equals(options)) {
-    BackgroundSyncRegistration* existing_registration =
-        existing_registration_ref->value();
+  if (existing_registration_ref) {
+    if (existing_registration_ref->value()->options()->Equals(options)) {
+      BackgroundSyncRegistration* existing_registration =
+          existing_registration_ref->value();
 
     // Record the duplicated registration
     BackgroundSyncMetrics::CountRegister(
@@ -379,6 +379,24 @@ void BackgroundSyncManager::RegisterImpl(
             base::Passed(
                 CreateRegistrationHandle(existing_registration_ref).Pass())));
     return;
+    } else {
+      DCHECK(!existing_registration_ref->value()->HasCompleted());
+      bool firing = existing_registration_ref->value()->sync_state() ==
+                        BACKGROUND_SYNC_STATE_FIRING ||
+                    existing_registration_ref->value()->sync_state() ==
+                        BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING;
+
+      existing_registration_ref->value()->set_sync_state(
+          firing ? BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING
+                 : BACKGROUND_SYNC_STATE_UNREGISTERED);
+
+      if (!firing) {
+        // If the registration is currently firing then wait to run
+        // RunDoneCallbacks until after it has finished as it might
+        // change state to SUCCESS first.
+        existing_registration_ref->value()->RunDoneCallbacks();
+      }
+    }
   }
 
   scoped_refptr<RefCountedRegistration> new_ref_registration(
