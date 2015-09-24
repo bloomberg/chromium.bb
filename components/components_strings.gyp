@@ -15,6 +15,7 @@
           # GN version: //components/strings:components_strings
           'action_name': 'generate_components_strings',
           'variables': {
+            'grit_whitelist': '',
             'grit_grd_file': 'components_strings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
@@ -23,6 +24,7 @@
           # GN version: //components/strings:components_chromium_strings
           'action_name': 'generate_components_chromium_strings',
           'variables': {
+            'grit_whitelist': '',
             'grit_grd_file': 'components_chromium_strings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
@@ -31,6 +33,7 @@
           # GN version: //components/strings:components_google_chrome_strings
           'action_name': 'generate_components_google_chrome_strings',
           'variables': {
+            'grit_whitelist': '',
             'grit_grd_file': 'components_google_chrome_strings.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],

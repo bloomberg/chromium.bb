@@ -16,6 +16,7 @@
           # GN version: //components/resources:components_resources
           'action_name': 'generate_components_resources',
           'variables': {
+            'grit_whitelist': '',
             'grit_grd_file': 'resources/components_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],
@@ -24,6 +25,7 @@
           # GN version: //components/resources:components_scaled_resources
           'action_name': 'generate_components_scaled_resources',
           'variables': {
+            'grit_whitelist': '',
             'grit_grd_file': 'resources/components_scaled_resources.grd',
           },
           'includes': [ '../build/grit_action.gypi' ],

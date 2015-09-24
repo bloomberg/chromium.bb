@@ -188,10 +188,6 @@ if (is_ios) {
   grit_defines += [
     "-t",
     "ios",
-
-    # iOS uses a whitelist to filter resources.
-    "-w",
-    rebase_path("//build/ios/grit_whitelist.txt", root_build_dir),
   ]
 }
 
