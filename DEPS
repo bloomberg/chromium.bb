@@ -32,7 +32,7 @@ vars = {
   # If you do not know, use the full path while defining your new deps entry.
   'googlecode_url': 'http://%s.googlecode.com/svn',
   'chromium_git': 'https://chromium.googlesource.com',
-  'libvpx_revision': '0d6551cd1e1359423a7f4af503472d280437e9bb',
+  'libvpx_revision': '70db2235b7e389f4d1b178320ebce76280c127af',
   'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
   'skia_revision': '10cae83e4bb726610b93276e17815c5d52d73395',
   # Three lines of non-changing comments so that
