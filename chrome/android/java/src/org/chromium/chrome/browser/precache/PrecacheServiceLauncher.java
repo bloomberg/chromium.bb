@@ -190,10 +190,12 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         boolean hasEnoughTimePassedSinceLastPrecache =
                 timeSinceLastPrecacheMs(context) >= WAIT_UNTIL_NEXT_PRECACHE_MS;
 
-        recordFailureReasons(context);
 
         // Do nothing if precaching is disabled.
-        if (!isPrecachingEnabled(context.getApplicationContext())) return;
+        if (!isPrecachingEnabled(context.getApplicationContext())) {
+            recordFailureReasons(context);
+            return;
+        }
 
         // Only start precaching when an alarm action is received. This is to prevent situations
         // such as power being connected, precaching starting, then precaching being immediately
@@ -201,9 +203,13 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
         if (ACTION_ALARM.equals(intent.getAction())
                 && areConditionsGoodForPrecaching
                 && hasEnoughTimePassedSinceLastPrecache) {
+            recordFailureReasons(context); // Record success.
             acquireWakeLockAndStartService(context);
         } else {
             if (isPowerConnected && isWifiAvailable) {
+                // Don't call record failure reasons when setting an alarm to retry. These cases are
+                // uninteresting.
+
                 // If we're just waiting for non-interactivity (e.g., the screen to be off), or for
                 // enough time to pass after Wi-Fi or power has been connected, then set an alarm
                 // for the next time to check the device state. We can't receive SCREEN_ON/OFF
@@ -215,6 +221,7 @@ public class PrecacheServiceLauncher extends BroadcastReceiver {
                         Math.max(INTERACTIVE_STATE_POLLING_PERIOD_MS,
                                 WAIT_UNTIL_NEXT_PRECACHE_MS - timeSinceLastPrecacheMs(context)));
             } else {
+                recordFailureReasons(context);
                 // If the device doesn't have connected power or doesn't have Wi-Fi, then there's no
                 // point in setting an alarm.
                 cancelAlarm(context);
