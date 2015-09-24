@@ -215,8 +215,7 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None):
           raise Exception(
               'Path already exists from zip: %s %s %s'
               % (zip_path, name, output_path))
-
-    z.extractall(path=path)
+      z.extract(name, path)
 
 
 def DoZip(inputs, output, base_dir=None):
