@@ -701,7 +701,7 @@ void InspectorCSSAgent::getMediaQueries(ErrorString* errorString, RefPtr<TypeBui
     }
 }
 
-void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries)
+void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::CSS::CSSStyle>& inlineStyle, RefPtr<TypeBuilder::CSS::CSSStyle>& attributesStyle, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::RuleMatch>>& matchedCSSRules, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>>& pseudoIdMatches, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::InheritedStyleEntry>>& inheritedEntries)
 {
     Element* element = elementForId(errorString, nodeId);
     if (!element) {
@@ -746,12 +746,13 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
         attributesStyle = attributes ? attributes.release() : nullptr;
     }
 
-    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>> pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoIdMatches>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>> pseudoElements = TypeBuilder::Array<TypeBuilder::CSS::PseudoElementMatches>::create();
     for (PseudoId pseudoId = FIRST_PUBLIC_PSEUDOID; pseudoId < AFTER_LAST_INTERNAL_PSEUDOID; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
         RefPtrWillBeRawPtr<CSSRuleList> matchedRules = styleResolver.pseudoCSSRulesForElement(element, pseudoId, StyleResolver::AllCSSRules);
-        if (matchedRules && matchedRules->length()) {
-            RefPtr<TypeBuilder::CSS::PseudoIdMatches> matches = TypeBuilder::CSS::PseudoIdMatches::create()
-                .setPseudoId(static_cast<int>(pseudoId))
+        TypeBuilder::DOM::PseudoType::Enum pseudoType;
+        if (matchedRules && matchedRules->length() && m_domAgent->getPseudoElementType(pseudoId, &pseudoType)) {
+            RefPtr<TypeBuilder::CSS::PseudoElementMatches> matches = TypeBuilder::CSS::PseudoElementMatches::create()
+                .setPseudoType(pseudoType)
                 .setMatches(buildArrayForMatchedRuleList(matchedRules.get(), element, pseudoId));
             pseudoElements->addItem(matches.release());
         }

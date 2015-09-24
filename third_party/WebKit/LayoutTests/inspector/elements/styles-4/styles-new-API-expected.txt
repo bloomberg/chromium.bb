@@ -63,7 +63,7 @@ body.mainpage: [regular, 8:0-8:13] {
 }
 
 === Pseudo rules for body ===
-PseudoId=4
+PseudoType=after
 body::after: [regular, 26:0-26:11] {
     ['content':'"After body"'] @[27:4-27:26] 
 }

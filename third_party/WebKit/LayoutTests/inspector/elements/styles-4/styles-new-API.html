@@ -28,7 +28,7 @@ function test()
                 InspectorTest.addResult("");
                 InspectorTest.addResult("=== Pseudo rules for body ===");
                 for (var i = 0; i < styles.pseudoElements.length; ++i) {
-                    InspectorTest.addResult("PseudoId=" + styles.pseudoElements[i].pseudoId);
+                    InspectorTest.addResult("PseudoType=" + styles.pseudoElements[i].pseudoType);
                     InspectorTest.dumpRuleMatchesArray(styles.pseudoElements[i].matches);
                 }
 
