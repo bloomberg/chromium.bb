@@ -202,9 +202,11 @@ void GetOsPasswordStatus() {
   prefs->Read(local_state);
   scoped_ptr<OsPasswordStatus> status(
       new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN));
+  PasswordCheckPrefs* prefs_weak = prefs.get();
+  OsPasswordStatus* status_weak = status.get();
   bool posted = base::WorkerPool::PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&GetOsPasswordStatusInternal, prefs.get(), status.get()),
+      base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
       base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
                  base::Passed(&status)),
       true);
