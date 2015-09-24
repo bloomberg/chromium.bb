@@ -41,23 +41,15 @@ var tests = [
       navigator.permissions.request({name:'geolocation'}).then(function(result) {
           assert_true(result instanceof PermissionStatus);
           assert_equals(result.state, 'denied');
-
-          result.onchange = function() {
-              assert_equals(result.state, 'granted');
-
-              navigator.permissions.request({name:'geolocation'}).then(function() {
-                  assert_true(result instanceof PermissionStatus);
-                  assert_equals(result.state, 'granted');
-                  callback();
-              }).catch(function() {
-                  assert_unreached('requesting geolocation permission should not fail.')
-                  callback();
-              });
-          };
-
-          setPermission('geolocation', 'granted', location.origin, location.origin)
-      }).catch(function() {
-          assert_unreached('requesting geolocation permission should not fail.')
+          return setPermission('geolocation', 'granted', location.origin, location.origin);
+      }).then(function() {
+          return navigator.permissions.request({name:'geolocation'});
+      }).then(function(result) {
+          assert_true(result instanceof PermissionStatus);
+          assert_equals(result.state, 'granted');
+          navigator.permissions.revoke({name:'geolocation'}).then(callback);
+      }).catch(function(error) {
+          assert_unreached(error);
           callback();
       });
     }
