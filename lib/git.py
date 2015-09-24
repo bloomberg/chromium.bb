@@ -67,6 +67,9 @@ GIT_TRANSIENT_ERRORS = (
 
     # crbug.com/451458, b/19202011
     r'repository cannot accept new pushes; contact support',
+
+    # crbug.com/535306
+    r'Service Temporarily Unavailable',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
