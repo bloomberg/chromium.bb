@@ -129,6 +129,7 @@ noinst_LTLIBRARIES +=				\
 libsession_helper_la_SOURCES =			\
 	src/launcher-util.c			\
 	src/launcher-util.h			\
+	src/launcher-impl.h			\
 	src/weston-launch.h			\
 	src/launcher-weston-launch.c		\
 	src/launcher-direct.c
