@@ -75,11 +75,6 @@ enum OpacityMode {
     Opaque,
 };
 
-enum AccelerationHint {
-    PreferAcceleration,
-    PreferNoAcceleration,
-};
-
 // TODO(junov): crbug.com/453113 relocate ShadowMode to CanvasRenderingContext2DState.h once
 // GraphicsContext no longer uses it.
 enum ShadowMode {

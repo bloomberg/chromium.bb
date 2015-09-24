@@ -48,7 +48,7 @@ public:
     bool isValid() const override;
     const SkBitmap& deprecatedBitmapForOverwrite() override;
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint) override;
+    PassRefPtr<SkImage> newImageSnapshot() override;
 private:
     RefPtr<SkSurface> m_surface;
 };

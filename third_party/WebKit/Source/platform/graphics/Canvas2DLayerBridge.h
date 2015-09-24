@@ -53,13 +53,7 @@ class SharedContextRateLimiter;
 class PLATFORM_EXPORT Canvas2DLayerBridge : public WebExternalTextureLayerClient, public WebThread::TaskObserver, public RefCounted<Canvas2DLayerBridge> {
     WTF_MAKE_NONCOPYABLE(Canvas2DLayerBridge);
 public:
-    enum AccelerationMode {
-        DisableAcceleration,
-        EnableAcceleration,
-        ForceAccelerationForTesting,
-    };
-
-    static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
+    static PassRefPtr<Canvas2DLayerBridge> create(const IntSize&, OpacityMode, int msaaSampleCount);
 
     ~Canvas2DLayerBridge() override;
 
@@ -77,7 +71,7 @@ public:
     bool checkSurfaceValid();
     bool restoreSurface();
     WebLayer* layer() const;
-    bool isAccelerated() const;
+    bool isAccelerated() const { return true; }
     void setFilterQuality(SkFilterQuality);
     void setIsHidden(bool);
     void setImageBuffer(ImageBuffer*);
@@ -85,15 +79,14 @@ public:
     bool writePixels(const SkImageInfo&, const void* pixels, size_t rowBytes, int x, int y);
     void flush();
     void flushGpu();
-    void prepareSurfaceForPaintingIfNeeded();
     bool isHidden() { return m_isHidden; }
 
     void beginDestruction();
 
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint);
+    PassRefPtr<SkImage> newImageSnapshot();
 
 private:
-    Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, int msaaSampleCount, OpacityMode, AccelerationMode);
+    Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider>, PassRefPtr<SkSurface>, int, OpacityMode);
     WebGraphicsContext3D* context();
     void startRecording();
     void skipQueuedDrawCommands();
@@ -103,9 +96,6 @@ private:
     // WebThread::TaskOberver implementation
     void willProcessTask() override;
     void didProcessTask() override;
-
-    SkSurface* getOrCreateSurface(AccelerationHint = PreferAcceleration);
-    bool shouldAccelerate(AccelerationHint) const;
 
     OwnPtr<SkPictureRecorder> m_recorder;
     RefPtr<SkSurface> m_surface;
@@ -145,7 +135,6 @@ private:
 
     Deque<MailboxInfo, MaxActiveMailboxes> m_mailboxes;
     GLenum m_lastFilter;
-    AccelerationMode m_accelerationMode;
     OpacityMode m_opacityMode;
     IntSize m_size;
     int m_recordingPixelCount;

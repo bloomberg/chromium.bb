@@ -62,7 +62,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size
     clear();
 }
 
-PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot(AccelerationHint)
+PassRefPtr<SkImage> AcceleratedImageBufferSurface::newImageSnapshot()
 {
     return adoptRef(m_surface->newImageSnapshot());
 }

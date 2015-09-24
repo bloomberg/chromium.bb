@@ -56,26 +56,15 @@ DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, canvas2DLayerBridgeInstance
 
 namespace blink {
 
-static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, bool* surfaceIsAccelerated)
+static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode)
 {
-    if (gr)
-        gr->resetContext();
-
-    SkAlphaType alphaType = (Opaque == opacityMode) ? kOpaque_SkAlphaType : kPremul_SkAlphaType;
-    SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(), alphaType);
+    if (!gr)
+        return nullptr;
+    gr->resetContext();
+    SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());
     SkSurfaceProps disableLCDProps(0, kUnknown_SkPixelGeometry);
-    RefPtr<SkSurface> surface;
-
-    if (gr) {
-        *surfaceIsAccelerated = true;
-        surface = adoptRef(SkSurface::NewRenderTarget(gr, SkSurface::kNo_Budgeted, info, msaaSampleCount, Opaque == opacityMode ? 0 : &disableLCDProps));
-    }
-
-    if (!surface) {
-        *surfaceIsAccelerated = false;
-        surface = adoptRef(SkSurface::NewRaster(info, Opaque == opacityMode ? 0 : &disableLCDProps));
-    }
-
+    RefPtr<SkSurface> surface = adoptRef(SkSurface::NewRenderTarget(gr, SkSurface::kNo_Budgeted, info, msaaSampleCount,
+        Opaque == opacityMode ? 0 : &disableLCDProps));
     if (surface) {
         if (opacityMode == Opaque) {
             surface->getCanvas()->clear(SK_ColorBLACK);
@@ -86,19 +75,23 @@ static PassRefPtr<SkSurface> createSkSurface(GrContext* gr, const IntSize& size,
     return surface;
 }
 
-PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
+PassRefPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
 {
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!contextProvider)
         return nullptr;
+    RefPtr<SkSurface> surface(createSkSurface(contextProvider->grContext(), size, msaaSampleCount, opacityMode));
+    if (!surface)
+        return nullptr;
     RefPtr<Canvas2DLayerBridge> layerBridge;
-    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), size, msaaSampleCount, opacityMode, accelerationMode));
+    layerBridge = adoptRef(new Canvas2DLayerBridge(contextProvider.release(), surface.release(), msaaSampleCount, opacityMode));
     return layerBridge.release();
 }
 
-Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, AccelerationMode accelerationMode)
-    : m_contextProvider(contextProvider)
+Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassRefPtr<SkSurface> surface, int msaaSampleCount, OpacityMode opacityMode)
+    : m_surface(surface)
+    , m_contextProvider(contextProvider)
     , m_imageBuffer(0)
     , m_msaaSampleCount(msaaSampleCount)
     , m_bytesAllocated(0)
@@ -111,13 +104,19 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(PassOwnPtr<WebGraphicsContext3DProvider
     , m_renderingTaskCompletedForCurrentFrame(false)
     , m_lastImageId(0)
     , m_lastFilter(GL_LINEAR)
-    , m_accelerationMode(accelerationMode)
     , m_opacityMode(opacityMode)
-    , m_size(size)
+    , m_size(m_surface->width(), m_surface->height())
 {
+    ASSERT(m_surface);
     ASSERT(m_contextProvider);
+    m_initialSurfaceSaveCount = m_surface->getCanvas()->getSaveCount();
     // Used by browser tests to detect the use of a Canvas2DLayerBridge.
     TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation", TRACE_EVENT_SCOPE_GLOBAL);
+    m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
+    m_layer->setOpaque(opacityMode == Opaque);
+    m_layer->setBlendBackgroundColor(opacityMode != Opaque);
+    GraphicsLayer::registerContentsLayer(m_layer->layer());
+    m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
     startRecording();
 #ifndef NDEBUG
     canvas2DLayerBridgeInstanceCounter.increment();
@@ -145,62 +144,10 @@ void Canvas2DLayerBridge::startRecording()
     m_recordingPixelCount = 0;
 }
 
-bool Canvas2DLayerBridge::shouldAccelerate(AccelerationHint hint) const
-{
-    bool accelerate;
-    if (m_accelerationMode == ForceAccelerationForTesting)
-        accelerate = true;
-    else if (m_accelerationMode == DisableAcceleration)
-        accelerate = false;
-    else
-        accelerate = hint == PreferAcceleration;
-
-    if (accelerate && (!m_contextProvider || m_contextProvider->context3d()->isContextLost()))
-        accelerate = false;
-    return accelerate;
-}
-
-bool Canvas2DLayerBridge::isAccelerated() const
-{
-    if (m_layer) // We don't check m_surface, so this returns true if context was lost (m_surface is null) with restoration pending.
-        return true;
-    if (m_surface) // && !m_layer is implied
-        return false;
-
-    // Whether or not to accelerate is not yet resolved, determine whether immediate presentation
-    // of the canvas would result in the canvas being accelerated. Presentation is assumed to be
-    // a 'PreferAcceleration' operation.
-    return shouldAccelerate(PreferAcceleration);
-}
-
-SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
-{
-    if (!m_surface) {
-        if (m_layer)
-            return nullptr; // recreation will happen through restore()
-
-        bool wantAccelerated = shouldAccelerate(hint);
-        bool surfaceIsAccelerated;
-
-        m_surface = createSkSurface(wantAccelerated ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
-
-        if (m_surface && surfaceIsAccelerated && !m_layer) {
-            m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
-            m_layer->setOpaque(m_opacityMode == Opaque);
-            m_layer->setBlendBackgroundColor(m_opacityMode != Opaque);
-            GraphicsLayer::registerContentsLayer(m_layer->layer());
-            m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
-        }
-    }
-    return m_surface.get();
-}
-
 SkCanvas* Canvas2DLayerBridge::canvas()
 {
-    if (!m_isDeferralEnabled) {
-        SkSurface* s = getOrCreateSurface();
-        return s ? s->getCanvas() : nullptr;
-    }
+    if (!m_isDeferralEnabled)
+        return m_surface->getCanvas();
     return m_recorder->getRecordingCanvas();
 }
 
@@ -222,7 +169,7 @@ void Canvas2DLayerBridge::disableDeferral()
     flushRecordingOnly();
     m_recorder.clear();
     // install the current matrix/clip stack onto the immediate canvas
-    m_imageBuffer->resetCanvas(getOrCreateSurface()->getCanvas());
+    m_imageBuffer->resetCanvas(m_surface->getCanvas());
 }
 
 void Canvas2DLayerBridge::setImageBuffer(ImageBuffer* imageBuffer)
@@ -240,18 +187,16 @@ void Canvas2DLayerBridge::beginDestruction()
     m_imageBuffer = nullptr;
     m_destructionInProgress = true;
     setIsHidden(true);
+    GraphicsLayer::unregisterContentsLayer(m_layer->layer());
     m_surface.clear();
-
+    m_layer->clearTexture();
+    // Orphaning the layer is required to trigger the recration of a new layer
+    // in the case where destruction is caused by a canvas resize. Test:
+    // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
+    m_layer->layer()->removeFromParent();
+    // To anyone who ever hits this assert: Please update crbug.com/344666
+    // with repro steps.
     unregisterTaskObserver();
-
-    if (m_layer) {
-        GraphicsLayer::unregisterContentsLayer(m_layer->layer());
-        m_layer->clearTexture();
-        // Orphaning the layer is required to trigger the recration of a new layer
-        // in the case where destruction is caused by a canvas resize. Test:
-        // virtual/gpu/fast/canvas/canvas-resize-after-paint-without-layout.html
-        m_layer->layer()->removeFromParent();
-    }
     ASSERT(!m_bytesAllocated);
 }
 
@@ -267,8 +212,7 @@ void Canvas2DLayerBridge::setFilterQuality(SkFilterQuality filterQuality)
 {
     ASSERT(!m_destructionInProgress);
     m_filterQuality = filterQuality;
-    if (m_layer)
-        m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
+    m_layer->setNearestNeighbor(m_filterQuality == kNone_SkFilterQuality);
 }
 
 void Canvas2DLayerBridge::setIsHidden(bool hidden)
@@ -284,7 +228,7 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
 
 bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y)
 {
-    if (!getOrCreateSurface())
+    if (!m_surface)
         return false;
     if (x <= 0 && y <= 0 && x + origInfo.width() >= m_size.width() && y + origInfo.height() >= m_size.height()) {
         skipQueuedDrawCommands();
@@ -295,7 +239,7 @@ bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* p
     // call write pixels on the surface, not the recording canvas.
     // No need to call beginDirectSurfaceAccessModeIfNeeded() because writePixels
     // ignores the matrix and clip state.
-    return getOrCreateSurface()->getCanvas()->writePixels(origInfo, pixels, rowBytes, x, y);
+    return m_surface->getCanvas()->writePixels(origInfo, pixels, rowBytes, x, y);
 }
 
 void Canvas2DLayerBridge::skipQueuedDrawCommands()
@@ -316,11 +260,9 @@ void Canvas2DLayerBridge::skipQueuedDrawCommands()
 void Canvas2DLayerBridge::flushRecordingOnly()
 {
     ASSERT(!m_destructionInProgress);
-
-    if (m_haveRecordedDrawCommands && getOrCreateSurface()) {
-        TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecordingOnly");
+    if (m_haveRecordedDrawCommands && m_surface) {
         RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
-        picture->playback(getOrCreateSurface()->getCanvas());
+        picture->playback(m_surface->getCanvas());
         if (m_isDeferralEnabled)
             startRecording();
         m_haveRecordedDrawCommands = false;
@@ -329,16 +271,15 @@ void Canvas2DLayerBridge::flushRecordingOnly()
 
 void Canvas2DLayerBridge::flush()
 {
-    if (!getOrCreateSurface())
+    if (!m_surface)
         return;
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flush");
     flushRecordingOnly();
-    getOrCreateSurface()->getCanvas()->flush();
+    m_surface->getCanvas()->flush();
 }
 
 void Canvas2DLayerBridge::flushGpu()
 {
-    TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushGpu");
     flush();
     WebGraphicsContext3D* webContext = context();
     if (isAccelerated() && webContext)
@@ -358,11 +299,7 @@ WebGraphicsContext3D* Canvas2DLayerBridge::context()
 bool Canvas2DLayerBridge::checkSurfaceValid()
 {
     ASSERT(!m_destructionInProgress);
-    if (m_destructionInProgress)
-        return false;
-    if (!m_layer)
-        return true;
-    if (!m_surface)
+    if (m_destructionInProgress || !m_surface)
         return false;
     if (m_contextProvider->context3d()->isContextLost()) {
         m_surface.clear();
@@ -381,7 +318,7 @@ bool Canvas2DLayerBridge::restoreSurface()
     ASSERT(!m_destructionInProgress);
     if (m_destructionInProgress)
         return false;
-    ASSERT(isAccelerated() && !m_surface);
+    ASSERT(m_layer && !m_surface);
 
     WebGraphicsContext3D* sharedContext = 0;
     m_layer->clearTexture();
@@ -391,13 +328,10 @@ bool Canvas2DLayerBridge::restoreSurface()
 
     if (sharedContext && !sharedContext->isContextLost()) {
         GrContext* grCtx = m_contextProvider->grContext();
-        bool surfaceIsAccelerated;
-        RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated));
-        // Current paradigm does support switching from accelerated to non-accelerated, which would be tricky
-        // due to changes to the layer tree, which can only happen at specific times during the document lifecycle.
-        // Therefore, we can only accept the restored surface if it is accelerated.
-        if (surface.get() && surfaceIsAccelerated) {
+        RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode));
+        if (surface.get()) {
             m_surface = surface.release();
+            m_initialSurfaceSaveCount = m_surface->getCanvas()->getSaveCount();
             // FIXME: draw sad canvas picture into new buffer crbug.com/243842
         }
     }
@@ -407,7 +341,6 @@ bool Canvas2DLayerBridge::restoreSurface()
 
 bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExternalBitmap* bitmap)
 {
-    ASSERT(isAccelerated());
     if (m_destructionInProgress) {
         // It can be hit in the following sequence.
         // 1. Canvas draws something.
@@ -430,7 +363,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
     WebGraphicsContext3D* webContext = context();
 
-    RefPtr<SkImage> image = newImageSnapshot(PreferAcceleration);
+    RefPtr<SkImage> image = newImageSnapshot();
 
     // Early exit if canvas was not drawn to since last prepareMailbox
     GLenum filter = m_filterQuality == kNone_SkFilterQuality ? GL_NEAREST : GL_LINEAR;
@@ -501,7 +434,6 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
 
 void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailbox, bool lostResource)
 {
-    ASSERT(isAccelerated());
     bool contextLost = !m_surface || m_contextProvider->context3d()->isContextLost();
     ASSERT(m_mailboxes.last().m_parentLayerBridge.get() == this);
 
@@ -515,7 +447,12 @@ void Canvas2DLayerBridge::mailboxReleased(const WebExternalTextureMailbox& mailb
         if (nameEquals(releasedMailboxInfo->m_mailbox, mailbox)) {
             break;
         }
-        ASSERT(releasedMailboxInfo == firstMailbox);
+        if (releasedMailboxInfo == firstMailbox) {
+            // Reached last entry without finding a match, should never happen.
+            // FIXME: This used to be an ASSERT, and was (temporarily?) changed to a
+            // CRASH to facilitate the investigation of crbug.com/443898.
+            CRASH();
+        }
     }
 
     if (!contextLost) {
@@ -573,16 +510,10 @@ void Canvas2DLayerBridge::didDraw(const FloatRect& rect)
     }
 }
 
-void Canvas2DLayerBridge::prepareSurfaceForPaintingIfNeeded()
-{
-    getOrCreateSurface(PreferAcceleration);
-}
-
 void Canvas2DLayerBridge::finalizeFrame(const FloatRect &dirtyRect)
 {
     ASSERT(!m_destructionInProgress);
-    if (m_layer)
-        m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
+    m_layer->layer()->invalidateRect(enclosingIntRect(dirtyRect));
     if (m_rateLimiter)
         m_rateLimiter->reset();
     m_renderingTaskCompletedForCurrentFrame = false;
@@ -620,17 +551,16 @@ void Canvas2DLayerBridge::willProcessTask()
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot(AccelerationHint hint)
+PassRefPtr<SkImage> Canvas2DLayerBridge::newImageSnapshot()
 {
     if (!checkSurfaceValid())
         return nullptr;
-    getOrCreateSurface(hint);
     flush();
     // A readback operation may alter the texture parameters, which may affect
     // the compositor's behavior. Therefore, we must trigger copy-on-write
     // even though we are not technically writing to the texture, only to its
     // parameters.
-    getOrCreateSurface()->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+    m_surface->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
     return adoptRef(m_surface->newImageSnapshot());
 }
 
@@ -639,8 +569,7 @@ void Canvas2DLayerBridge::willOverwriteCanvas()
     skipQueuedDrawCommands();
 }
 
-Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other)
-{
+Canvas2DLayerBridge::MailboxInfo::MailboxInfo(const MailboxInfo& other) {
     memcpy(&m_mailbox, &other.m_mailbox, sizeof(m_mailbox));
     m_image = other.m_image;
     m_parentLayerBridge = other.m_parentLayerBridge;

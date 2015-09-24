@@ -93,7 +93,7 @@ PassRefPtr<Image> CSSCanvasValue::image(LayoutObject* layoutObject, const IntSiz
     if (!elt)
         return nullptr;
     UseCounter::count(layoutObject->document(), UseCounter::WebkitCanvas);
-    return elt->copiedImage(FrontBuffer, PreferNoAcceleration);
+    return elt->copiedImage(FrontBuffer);
 }
 
 bool CSSCanvasValue::equals(const CSSCanvasValue& other) const

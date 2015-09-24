@@ -45,7 +45,7 @@ public:
     void willOverwriteCanvas() override;
     virtual void finalizeFrame(const FloatRect&);
     void setImageBuffer(ImageBuffer*) override;
-    PassRefPtr<SkImage> newImageSnapshot(AccelerationHint) override;
+    PassRefPtr<SkImage> newImageSnapshot() override;
     void draw(GraphicsContext*, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode) override;
     bool isExpensiveToPaint() override;
     void setHasExpensiveOp() override { m_currentFrameHasExpensiveOp = true; }

@@ -203,7 +203,7 @@ void WebGLRenderingContextBase::willDestroyContext(WebGLRenderingContextBase* co
     deactivateContext(context);
 
     // Try to re-enable the oldest inactive contexts.
-    while (activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
+    while(activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
         WebGLRenderingContextBase* evictedContext = forciblyEvictedContexts().first();
         if (!evictedContext->m_restoreAllowed) {
             forciblyEvictedContexts().remove(0);
@@ -866,6 +866,11 @@ static const FormatType kSupportedFormatTypesES3[] = {
 
 } // namespace anonymous
 
+#define ADD_VALUES_TO_SET(set, values) \
+    for (size_t i = 0; i < arraysize(values); ++i) {   \
+        set.insert(values[i]);                         \
+    }
+
 WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , m_contextLostMode(NotLostContext)
@@ -904,11 +909,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
-    
-#define ADD_VALUES_TO_SET(set, values) \
-    for (size_t i = 0; i < arraysize(values); ++i) {   \
-        set.insert(values[i]);                         \
-    }
 
     ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
     ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
@@ -1107,10 +1107,9 @@ WebGLRenderingContextBase::~WebGLRenderingContextBase()
 
     destroyContext();
 
-    if (m_multisamplingObserverRegistered) {
+    if (m_multisamplingObserverRegistered)
         if (Page* page = canvas()->document().page())
             page->removeMultisamplingChangedObserver(this);
-    }
 
     willDestroyContext(this);
 }
@@ -4033,9 +4032,9 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
     const void* imagePixelData = imageExtractor.imagePixelData();
 
     bool needConversion = true;
-    if (type == GL_UNSIGNED_BYTE && sourceDataFormat == WebGLImageConversion::DataFormatRGBA8 && format == GL_RGBA && alphaOp == WebGLImageConversion::AlphaDoNothing && !flipY) {
+    if (type == GL_UNSIGNED_BYTE && sourceDataFormat == WebGLImageConversion::DataFormatRGBA8 && format == GL_RGBA && alphaOp == WebGLImageConversion::AlphaDoNothing && !flipY)
         needConversion = false;
-    } else {
+    else {
         if (!WebGLImageConversion::packImageData(image, imagePixelData, format, type, flipY, alphaOp, sourceDataFormat, imageExtractor.imageWidth(), imageExtractor.imageHeight(), imageExtractor.imageSourceUnpackAlignment(), data)) {
             synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "packImage error");
             return;
@@ -4188,9 +4187,9 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     bool needConversion = true;
     // The data from ImageData is always of format RGBA8.
     // No conversion is needed if destination format is RGBA and type is USIGNED_BYTE and no Flip or Premultiply operation is required.
-    if (!m_unpackFlipY && !m_unpackPremultiplyAlpha && format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
+    if (!m_unpackFlipY && !m_unpackPremultiplyAlpha && format == GL_RGBA && type == GL_UNSIGNED_BYTE)
         needConversion = false;
-    } else {
+    else {
         if (!WebGLImageConversion::extractImageData(pixels->data()->data(), pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
             synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "bad image data");
             return;
@@ -4298,7 +4297,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLenum in
     bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
         // 2D canvas has only FrontBuffer.
-        texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
+        texImage2DImpl(target, level, internalformat, format, type, canvas->copiedImage(FrontBuffer).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
         return;
     }
@@ -4449,9 +4448,9 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
     const void* imagePixelData = imageExtractor.imagePixelData();
 
     bool needConversion = true;
-    if (type == GL_UNSIGNED_BYTE && sourceDataFormat == WebGLImageConversion::DataFormatRGBA8 && format == GL_RGBA && alphaOp == WebGLImageConversion::AlphaDoNothing && !flipY) {
+    if (type == GL_UNSIGNED_BYTE && sourceDataFormat == WebGLImageConversion::DataFormatRGBA8 && format == GL_RGBA && alphaOp == WebGLImageConversion::AlphaDoNothing && !flipY)
         needConversion = false;
-    } else {
+    else {
         if (!WebGLImageConversion::packImageData(image, imagePixelData, format, type, flipY, alphaOp, sourceDataFormat, imageExtractor.imageWidth(), imageExtractor.imageHeight(), imageExtractor.imageSourceUnpackAlignment(), data)) {
             synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "bad image data");
             return;
@@ -4477,7 +4476,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     bool changeUnpackAlignment = false;
     if (data && (m_unpackFlipY || m_unpackPremultiplyAlpha)) {
         if (!WebGLImageConversion::extractTextureData(width, height, format, type,
-            m_unpackAlignment, m_unpackFlipY, m_unpackPremultiplyAlpha, data, tempData))
+                                           m_unpackAlignment,
+                                           m_unpackFlipY, m_unpackPremultiplyAlpha,
+                                           data,
+                                           tempData))
             return;
         data = tempData.data();
         changeUnpackAlignment = true;
@@ -4506,9 +4508,9 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     bool needConversion = true;
     // The data from ImageData is always of format RGBA8.
     // No conversion is needed if destination format is RGBA and type is USIGNED_BYTE and no Flip or Premultiply operation is required.
-    if (format == GL_RGBA && type == GL_UNSIGNED_BYTE && !m_unpackFlipY && !m_unpackPremultiplyAlpha) {
+    if (format == GL_RGBA && type == GL_UNSIGNED_BYTE && !m_unpackFlipY && !m_unpackPremultiplyAlpha)
         needConversion = false;
-    } else {
+    else {
         if (!WebGLImageConversion::extractImageData(pixels->data()->data(), pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
             synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "bad image data");
             return;
@@ -4555,7 +4557,7 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
     bool isFloatType = type == GL_FLOAT || type == GL_HALF_FLOAT || type == GL_HALF_FLOAT_OES;
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || isFloatType) {
         // 2D canvas has only FrontBuffer.
-        texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
+        texSubImage2DImpl(target, level, xoffset, yoffset, format, type, canvas->copiedImage(FrontBuffer).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
         return;
     }
@@ -6554,9 +6556,9 @@ void WebGLRenderingContextBase::synthesizeGLError(GLenum error, const char* func
         String message = String("WebGL: ") + errorType +  ": " + String(functionName) + ": " + String(description);
         printGLErrorToConsole(message);
     }
-    if (!isContextLost()) {
+    if (!isContextLost())
         webContext()->synthesizeGLError(error);
-    } else {
+    else {
         if (m_lostContextErrors.find(error) == WTF::kNotFound)
             m_lostContextErrors.append(error);
     }
@@ -6576,14 +6578,15 @@ void WebGLRenderingContextBase::applyStencilTest()
 {
     bool haveStencilBuffer = false;
 
-    if (m_framebufferBinding) {
+    if (m_framebufferBinding)
         haveStencilBuffer = m_framebufferBinding->hasStencilBuffer();
-    } else {
+    else {
         Nullable<WebGLContextAttributes> attributes;
         getContextAttributes(attributes);
         haveStencilBuffer = !attributes.isNull() && attributes.get().stencil();
     }
-    enableOrDisable(GL_STENCIL_TEST, m_stencilEnabled && haveStencilBuffer);
+    enableOrDisable(GL_STENCIL_TEST,
+                    m_stencilEnabled && haveStencilBuffer);
 }
 
 void WebGLRenderingContextBase::enableOrDisable(GLenum capability, bool enable)
@@ -6599,7 +6602,7 @@ void WebGLRenderingContextBase::enableOrDisable(GLenum capability, bool enable)
 IntSize WebGLRenderingContextBase::clampedCanvasSize()
 {
     return IntSize(clamp(canvas()->width(), 1, m_maxViewportDims[0]),
-        clamp(canvas()->height(), 1, m_maxViewportDims[1]));
+                   clamp(canvas()->height(), 1, m_maxViewportDims[1]));
 }
 
 GLint WebGLRenderingContextBase::maxDrawBuffers()

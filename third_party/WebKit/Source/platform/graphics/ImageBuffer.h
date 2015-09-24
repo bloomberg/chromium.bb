@@ -82,7 +82,6 @@ public:
     bool isRecording() const { return m_surface->isRecording(); }
     void setHasExpensiveOp() { m_surface->setHasExpensiveOp(); }
     bool isExpensiveToPaint() const { return m_surface->isExpensiveToPaint(); }
-    void prepareSurfaceForPaintingIfNeeded() { m_surface->prepareSurfaceForPaintingIfNeeded(); }
     bool isSurfaceValid() const;
     bool restoreSurface() const;
     void didDraw(const FloatRect&) const;
@@ -131,8 +130,8 @@ public:
 
     void notifySurfaceInvalid();
 
-    PassRefPtr<SkImage> newSkImageSnapshot(AccelerationHint) const;
-    PassRefPtr<Image> newImageSnapshot(AccelerationHint = PreferNoAcceleration) const;
+    PassRefPtr<SkImage> newSkImageSnapshot() const;
+    PassRefPtr<Image> newImageSnapshot() const;
 
     DisplayItemClient displayItemClient() const { return toDisplayItemClient(this); }
     String debugName() const { return "ImageBuffer"; }

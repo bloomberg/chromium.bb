@@ -132,7 +132,7 @@ public:
 
     void ensureUnacceleratedImageBuffer();
     ImageBuffer* buffer() const;
-    PassRefPtr<Image> copiedImage(SourceDrawingBuffer, AccelerationHint) const;
+    PassRefPtr<Image> copiedImage(SourceDrawingBuffer) const;
     void clearCopiedImage();
 
     SecurityOrigin* securityOrigin() const;
@@ -151,8 +151,6 @@ public:
 
     bool shouldBeDirectComposited() const;
 
-    void prepareSurfaceForPaintingIfNeeded() const;
-
     const AtomicString imageSourceURL() const override;
 
     InsertionNotificationRequest insertedInto(ContainerNode*) override;
@@ -161,7 +159,7 @@ public:
     void didChangeVisibilityState(PageVisibilityState) override;
 
     // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*) const override;
     bool wouldTaintOrigin(SecurityOrigin*) const override;
     FloatSize elementSize() const override;
     bool isCanvasElement() const override { return true; }
