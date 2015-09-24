@@ -1813,7 +1813,7 @@
     { "name": "gaytorrent.ru", "include_subdomains": true, "mode": "force-https" },
     { "name": "getable.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "gpsfix.cz", "include_subdomains": true, "mode": "force-https" },
-    { "name": "guidetoiceland.is", "include_subdomains": true, "mode": "force-https" },
+    { "name": "guidetoiceland.is", "include_subdomains": false, "mode": "force-https" },
     { "name": "happylifestyle.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "heppler.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "httpswatch.com", "include_subdomains": true, "mode": "force-https" },
