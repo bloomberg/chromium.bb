@@ -5,6 +5,8 @@
 #ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_MANAGER_H_
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_MANAGER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 
@@ -34,6 +36,9 @@ class ChromeBrowserStateManager {
 
   // Returns the BrowserStateInfoCache associated with this manager.
   virtual BrowserStateInfoCache* GetBrowserStateInfoCache() = 0;
+
+  // Returns the list of loaded ChromeBrowserStates.
+  virtual std::vector<ChromeBrowserState*> GetLoadedChromeBrowserStates() = 0;
 
  protected:
   ChromeBrowserStateManager() {}
