@@ -71,11 +71,20 @@ void ConfigureSettings(blink::WebSettings* settings) {
 // HTMLWidgetRootRemote -------------------------------------------------------
 
 HTMLWidgetRootRemote::HTMLWidgetRootRemote()
-    : web_view_(blink::WebView::create(nullptr)) {
+    : web_view_(blink::WebView::create(this)) {
   ConfigureSettings(web_view_->settings());
 }
 
 HTMLWidgetRootRemote::~HTMLWidgetRootRemote() {}
+
+blink::WebStorageNamespace*
+HTMLWidgetRootRemote::createSessionStorageNamespace() {
+  return new WebStorageNamespaceImpl();
+}
+
+bool HTMLWidgetRootRemote::allowsBrokenNullLayerTreeView() const {
+  return true;
+}
 
 blink::WebWidget* HTMLWidgetRootRemote::GetWidget() {
   return web_view_;

@@ -38,12 +38,16 @@ class HTMLWidget {
 };
 
 // Used for the root frame when the root frame is remote.
-class HTMLWidgetRootRemote : public HTMLWidget {
+class HTMLWidgetRootRemote : public HTMLWidget, public blink::WebViewClient {
  public:
   HTMLWidgetRootRemote();
   ~HTMLWidgetRootRemote() override;
 
  private:
+  // WebViewClient methods:
+  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
+  virtual bool allowsBrokenNullLayerTreeView() const;
+
   // HTMLWidget:
   blink::WebWidget* GetWidget() override;
   void OnViewBoundsChanged(mus::View* view) override;
