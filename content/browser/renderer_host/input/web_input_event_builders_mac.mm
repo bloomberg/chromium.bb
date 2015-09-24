@@ -567,6 +567,13 @@ blink::WebMouseWheelEvent::Phase MomentumPhaseForEvent(NSEvent* event) {
   return PhaseForNSEventPhase(event_momentum_phase);
 }
 
+ui::DomKey DomKeyFromEvent(NSEvent* event) {
+  ui::DomKey key = ui::DomKeyFromNSEvent(event);
+  if (key != ui::DomKey::NONE)
+    return key;
+  return ui::DomKey::UNIDENTIFIED;
+}
+
 }  // namespace
 
 blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event) {
@@ -580,12 +587,13 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event) {
   if (([event type] != NSFlagsChanged) && [event isARepeat])
     result.modifiers |= blink::WebInputEvent::IsAutoRepeat;
 
-  ui::DomCode dom_code = ui::CodeFromNSEvent(event);
+  ui::DomCode dom_code = ui::DomCodeFromNSEvent(event);
   result.windowsKeyCode =
       ui::LocatedToNonLocatedKeyboardCode(ui::KeyboardCodeFromNSEvent(event));
   result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = [event keyCode];
   result.domCode = static_cast<int>(dom_code);
+  result.domKey = DomKeyFromEvent(event);
   NSString* text_str = TextFromEvent(event);
   NSString* unmodified_str = UnmodifiedTextFromEvent(event);
   NSString* identifier_str = KeyIdentifierForKeyEvent(event);

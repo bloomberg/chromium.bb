@@ -217,7 +217,7 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
 }
 
 DomCode CodeFromNative(const base::NativeEvent& native_event) {
-  return CodeFromNSEvent(native_event);
+  return DomCodeFromNSEvent(native_event);
 }
 
 uint32 WindowsKeycodeFromNative(const base::NativeEvent& native_event) {

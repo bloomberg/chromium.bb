@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "ui/events/events_base_export.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 
 namespace ui {
@@ -42,7 +43,12 @@ EVENTS_BASE_EXPORT int MacKeyCodeForWindowsKeyCode(
 // has a different notion of key codes.
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
 
-EVENTS_BASE_EXPORT DomCode CodeFromNSEvent(NSEvent* event);
+EVENTS_BASE_EXPORT DomCode DomCodeFromNSEvent(NSEvent* event);
+
+// Map a |event| to a |DomKey|. |DomKey::NONE| is returned on a failed
+// mapping and the callee should may wish to convert this to
+// |DomKey::UNIDENTIFIED| before handing the value off.
+EVENTS_BASE_EXPORT DomKey DomKeyFromNSEvent(NSEvent* event);
 
 } // namespace ui
 

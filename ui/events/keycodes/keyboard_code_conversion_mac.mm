@@ -436,6 +436,204 @@ KeyboardCode KeyboardCodeFromKeyCode(unsigned short keyCode) {
   return kKeyboardCodes[keyCode];
 }
 
+DomKey DomKeyFromKeyCode(unsigned short keyCode) {
+  switch (keyCode) {
+    case kVK_Return:
+      return DomKey::ENTER;
+    case kVK_Tab:
+      return DomKey::TAB;
+    case kVK_Delete:
+      return DomKey::BACKSPACE;
+    case kVK_Escape:
+      return DomKey::ESCAPE;
+    case kVK_Command:
+      return DomKey::META;
+    case kVK_Shift:
+    case kVK_RightShift:
+      return DomKey::SHIFT;
+    case kVK_CapsLock:
+      return DomKey::CAPS_LOCK;
+    case kVK_Option:
+    case kVK_RightOption:
+      return DomKey::ALT;
+    case kVK_Control:
+    case kVK_RightControl:
+      return DomKey::CONTROL;
+    case kVK_Function:
+      return DomKey::FN;
+    case kVK_VolumeUp:
+      return DomKey::VOLUME_UP;
+    case kVK_VolumeDown:
+      return DomKey::VOLUME_DOWN;
+    case kVK_Mute:
+      return DomKey::VOLUME_MUTE;
+    case kVK_F1:
+      return DomKey::F1;
+    case kVK_F2:
+      return DomKey::F2;
+    case kVK_F3:
+      return DomKey::F3;
+    case kVK_F4:
+      return DomKey::F4;
+    case kVK_F5:
+      return DomKey::F5;
+    case kVK_F6:
+      return DomKey::F6;
+    case kVK_F7:
+      return DomKey::F7;
+    case kVK_F8:
+      return DomKey::F8;
+    case kVK_F9:
+      return DomKey::F9;
+    case kVK_F10:
+      return DomKey::F10;
+    case kVK_F11:
+      return DomKey::F11;
+    case kVK_F12:
+      return DomKey::F12;
+    case kVK_F13:
+      return DomKey::F13;
+    case kVK_F14:
+      return DomKey::F14;
+    case kVK_F15:
+      return DomKey::F15;
+    case kVK_F16:
+      return DomKey::F16;
+    case kVK_F17:
+      return DomKey::F17;
+    case kVK_F18:
+      return DomKey::F18;
+    case kVK_F19:
+      return DomKey::F19;
+    case kVK_F20:
+      return DomKey::F20;
+    case kVK_Help:
+      return DomKey::HELP;
+    case kVK_Home:
+      return DomKey::HOME;
+    case kVK_PageUp:
+      return DomKey::PAGE_UP;
+    case kVK_ForwardDelete:
+      return DomKey::DEL;
+    case kVK_End:
+      return DomKey::END;
+    case kVK_PageDown:
+      return DomKey::PAGE_DOWN;
+    case kVK_LeftArrow:
+      return DomKey::ARROW_LEFT;
+    case kVK_RightArrow:
+      return DomKey::ARROW_RIGHT;
+    case kVK_DownArrow:
+      return DomKey::ARROW_DOWN;
+    case kVK_UpArrow:
+      return DomKey::ARROW_UP;
+    default:
+      return DomKey::NONE;
+  }
+}
+
+DomKey DomKeyFromCharCode(unichar char_code) {
+  switch (char_code) {
+    case 0x03:
+      return DomKey::ENTER;  // Numpad Enter
+    // Mac maps backspace to forward delete unicode.
+    case 0x7f:
+      return DomKey::BACKSPACE;
+    case NSUpArrowFunctionKey:
+      return DomKey::ARROW_UP;
+    case NSDownArrowFunctionKey:
+      return DomKey::ARROW_DOWN;
+    case NSLeftArrowFunctionKey:
+      return DomKey::ARROW_LEFT;
+    case NSRightArrowFunctionKey:
+      return DomKey::ARROW_RIGHT;
+    case NSF1FunctionKey:
+      return DomKey::F1;
+    case NSF2FunctionKey:
+      return DomKey::F2;
+    case NSF3FunctionKey:
+      return DomKey::F3;
+    case NSF4FunctionKey:
+      return DomKey::F4;
+    case NSF5FunctionKey:
+      return DomKey::F5;
+    case NSF6FunctionKey:
+      return DomKey::F6;
+    case NSF7FunctionKey:
+      return DomKey::F7;
+    case NSF8FunctionKey:
+      return DomKey::F8;
+    case NSF9FunctionKey:
+      return DomKey::F9;
+    case NSF10FunctionKey:
+      return DomKey::F10;
+    case NSF11FunctionKey:
+      return DomKey::F11;
+    case NSF12FunctionKey:
+      return DomKey::F12;
+    case NSF13FunctionKey:
+      return DomKey::F13;
+    case NSF14FunctionKey:
+      return DomKey::F14;
+    case NSF15FunctionKey:
+      return DomKey::F15;
+    case NSF16FunctionKey:
+      return DomKey::F16;
+    case NSF17FunctionKey:
+      return DomKey::F17;
+    case NSF18FunctionKey:
+      return DomKey::F18;
+    case NSF19FunctionKey:
+      return DomKey::F19;
+    case NSF20FunctionKey:
+      return DomKey::F20;
+    case NSF21FunctionKey:
+      return DomKey::F21;
+    case NSF22FunctionKey:
+      return DomKey::F22;
+    case NSF23FunctionKey:
+      return DomKey::F23;
+    case NSF24FunctionKey:
+      return DomKey::F24;
+    case NSInsertFunctionKey:
+      return DomKey::INSERT;
+    case NSDeleteFunctionKey:
+      return DomKey::DEL;
+    case NSHomeFunctionKey:
+      return DomKey::HOME;
+    case NSEndFunctionKey:
+      return DomKey::END;
+    case NSPageUpFunctionKey:
+      return DomKey::PAGE_UP;
+    case NSPageDownFunctionKey:
+      return DomKey::PAGE_DOWN;
+    case NSPrintScreenFunctionKey:
+      return DomKey::PRINT_SCREEN;
+    case NSScrollLockFunctionKey:
+      return DomKey::SCROLL_LOCK;
+    case NSPauseFunctionKey:
+      return DomKey::PAUSE;
+    case NSPrintFunctionKey:
+      return DomKey::PRINT;
+    case NSClearLineFunctionKey:
+      return DomKey::CLEAR;
+    case NSSelectFunctionKey:
+      return DomKey::SELECT;
+    case NSExecuteFunctionKey:
+      return DomKey::EXECUTE;
+    case NSUndoFunctionKey:
+      return DomKey::UNDO;
+    case NSRedoFunctionKey:
+      return DomKey::REDO;
+    case NSFindFunctionKey:
+      return DomKey::FIND;
+    case NSHelpFunctionKey:
+      return DomKey::HELP;
+    default:
+      return DomKey::FromCharacter(char_code);
+  }
+}
+
 }  // namespace
 
 int MacKeyCodeForWindowsKeyCode(KeyboardCode keycode,
@@ -537,8 +735,20 @@ KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
   return KeyboardCodeFromKeyCode([event keyCode]);
 }
 
-DomCode CodeFromNSEvent(NSEvent* event) {
+DomCode DomCodeFromNSEvent(NSEvent* event) {
   return ui::KeycodeConverter::NativeKeycodeToDomCode([event keyCode]);
+}
+
+DomKey DomKeyFromNSEvent(NSEvent* event) {
+  // Apply the lookup based on the character first since that has the
+  // Keyboard layout and modifers already applied; whereas the keyCode
+  // doesn't.
+  if ([event type] == NSKeyDown || [event type] == NSKeyUp) {
+    NSString* characters = [event characters];
+    if ([characters length] > 0)
+      return DomKeyFromCharCode([characters characterAtIndex:0]);
+  }
+  return DomKeyFromKeyCode([event keyCode]);
 }
 
 }  // namespace ui

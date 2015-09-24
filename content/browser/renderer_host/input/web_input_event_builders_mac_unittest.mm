@@ -7,6 +7,8 @@
 #import <Cocoa/Cocoa.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using blink::WebKeyboardEvent;
@@ -19,6 +21,8 @@ struct KeyMappingEntry {
   int mac_key_code;
   unichar character;
   int windows_key_code;
+  ui::DomCode dom_code;
+  ui::DomKey dom_key;
 };
 
 struct ModifierKey {
@@ -65,24 +69,35 @@ TEST(WebInputEventBuilderMacTest, ArrowKeyNumPad) {
                                          NSNumericPadKeyMask, NSKeyDown);
   WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
   EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ(ui::DomCode::ARROW_LEFT,
+            static_cast<ui::DomCode>(web_event.domCode));
+  EXPECT_EQ(ui::DomKey::ARROW_LEFT, web_event.domKey);
 
   // Right
   mac_event = BuildFakeKeyEvent(0x7C, NSRightArrowFunctionKey,
                                 NSNumericPadKeyMask, NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
   EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ(ui::DomCode::ARROW_RIGHT,
+            static_cast<ui::DomCode>(web_event.domCode));
+  EXPECT_EQ(ui::DomKey::ARROW_RIGHT, web_event.domKey);
 
   // Down
   mac_event = BuildFakeKeyEvent(0x7D, NSDownArrowFunctionKey,
                                 NSNumericPadKeyMask, NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
   EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ(ui::DomCode::ARROW_DOWN,
+            static_cast<ui::DomCode>(web_event.domCode));
+  EXPECT_EQ(ui::DomKey::ARROW_DOWN, web_event.domKey);
 
   // Up
   mac_event = BuildFakeKeyEvent(0x7E, NSUpArrowFunctionKey, NSNumericPadKeyMask,
                                 NSKeyDown);
   web_event = WebKeyboardEventBuilder::Build(mac_event);
   EXPECT_EQ(0, web_event.modifiers);
+  EXPECT_EQ(ui::DomCode::ARROW_UP, static_cast<ui::DomCode>(web_event.domCode));
+  EXPECT_EQ(ui::DomKey::ARROW_UP, web_event.domKey);
 }
 
 // Test that control sequence generate the correct vkey code.
@@ -92,29 +107,49 @@ TEST(WebInputEventBuilderMacTest, ControlSequence) {
       BuildFakeKeyEvent(0x21, 0x1b, NSControlKeyMask, NSKeyDown);
   WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
   EXPECT_EQ(ui::VKEY_OEM_4, web_event.windowsKeyCode);
+  EXPECT_EQ(ui::DomCode::BRACKET_LEFT,
+            static_cast<ui::DomCode>(web_event.domCode));
+  EXPECT_EQ(ui::DomKey::FromCharacter(0x1b), web_event.domKey);
 }
 
 // Test that numpad keys get mapped correctly.
 TEST(WebInputEventBuilderMacTest, NumPadMapping) {
   KeyMappingEntry table[] = {
-      {65, '.', ui::VKEY_DECIMAL},
-      {67, '*', ui::VKEY_MULTIPLY},
-      {69, '+', ui::VKEY_ADD},
-      {71, NSClearLineFunctionKey, ui::VKEY_CLEAR},
-      {75, '/', ui::VKEY_DIVIDE},
-      {76, 3, ui::VKEY_RETURN},
-      {78, '-', ui::VKEY_SUBTRACT},
-      {81, '=', ui::VKEY_OEM_PLUS},
-      {82, '0', ui::VKEY_0},
-      {83, '1', ui::VKEY_1},
-      {84, '2', ui::VKEY_2},
-      {85, '3', ui::VKEY_3},
-      {86, '4', ui::VKEY_4},
-      {87, '5', ui::VKEY_5},
-      {88, '6', ui::VKEY_6},
-      {89, '7', ui::VKEY_7},
-      {91, '8', ui::VKEY_8},
-      {92, '9', ui::VKEY_9},
+      {65, '.', ui::VKEY_DECIMAL, ui::DomCode::NUMPAD_DECIMAL,
+       ui::DomKey::FromCharacter('.')},
+      {67, '*', ui::VKEY_MULTIPLY, ui::DomCode::NUMPAD_MULTIPLY,
+       ui::DomKey::FromCharacter('*')},
+      {69, '+', ui::VKEY_ADD, ui::DomCode::NUMPAD_ADD,
+       ui::DomKey::FromCharacter('+')},
+      {71, NSClearLineFunctionKey, ui::VKEY_CLEAR, ui::DomCode::NUM_LOCK,
+       ui::DomKey::CLEAR},
+      {75, '/', ui::VKEY_DIVIDE, ui::DomCode::NUMPAD_DIVIDE,
+       ui::DomKey::FromCharacter('/')},
+      {76, 3, ui::VKEY_RETURN, ui::DomCode::NUMPAD_ENTER, ui::DomKey::ENTER},
+      {78, '-', ui::VKEY_SUBTRACT, ui::DomCode::NUMPAD_SUBTRACT,
+       ui::DomKey::FromCharacter('-')},
+      {81, '=', ui::VKEY_OEM_PLUS, ui::DomCode::NUMPAD_EQUAL,
+       ui::DomKey::FromCharacter('=')},
+      {82, '0', ui::VKEY_0, ui::DomCode::NUMPAD0,
+       ui::DomKey::FromCharacter('0')},
+      {83, '1', ui::VKEY_1, ui::DomCode::NUMPAD1,
+       ui::DomKey::FromCharacter('1')},
+      {84, '2', ui::VKEY_2, ui::DomCode::NUMPAD2,
+       ui::DomKey::FromCharacter('2')},
+      {85, '3', ui::VKEY_3, ui::DomCode::NUMPAD3,
+       ui::DomKey::FromCharacter('3')},
+      {86, '4', ui::VKEY_4, ui::DomCode::NUMPAD4,
+       ui::DomKey::FromCharacter('4')},
+      {87, '5', ui::VKEY_5, ui::DomCode::NUMPAD5,
+       ui::DomKey::FromCharacter('5')},
+      {88, '6', ui::VKEY_6, ui::DomCode::NUMPAD6,
+       ui::DomKey::FromCharacter('6')},
+      {89, '7', ui::VKEY_7, ui::DomCode::NUMPAD7,
+       ui::DomKey::FromCharacter('7')},
+      {91, '8', ui::VKEY_8, ui::DomCode::NUMPAD8,
+       ui::DomKey::FromCharacter('8')},
+      {92, '9', ui::VKEY_9, ui::DomCode::NUMPAD9,
+       ui::DomKey::FromCharacter('9')},
   };
 
   for (size_t i = 0; i < arraysize(table); ++i) {
@@ -122,6 +157,8 @@ TEST(WebInputEventBuilderMacTest, NumPadMapping) {
                                            table[i].character, 0, NSKeyDown);
     WebKeyboardEvent web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(table[i].windows_key_code, web_event.windowsKeyCode);
+    EXPECT_EQ(table[i].dom_code, static_cast<ui::DomCode>(web_event.domCode));
+    EXPECT_EQ(table[i].dom_key, web_event.domKey);
   }
 }
 
