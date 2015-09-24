@@ -33,7 +33,6 @@ MockHostList.prototype.refresh = function(callback) {
 MockHostList.prototype.getHostForId = function(hostId) {
   var host = new remoting.Host(hostId);
   host.jabberId = 'fake_jabber_id';
-  host.loggingChannel = 'APIARY';
   return host;
 };
 
@@ -203,7 +202,6 @@ remoting.Me2MeTestDriver.prototype.me2meActivity = function() {
 /** @return {Promise} */
 remoting.Me2MeTestDriver.prototype.startTest = function() {
   var host = new remoting.Host('fake_host_id');
-  host.loggingChannel = 'APIARY';
 
   // Default behavior.
   this.enterPinWhenPrompted();

@@ -159,21 +159,29 @@ SessionMonitor.prototype.unbindSession = function(windowId) {
   if (this.sessionMap_.has(windowId)) {
     var sessionInfo = this.sessionMap_.get(windowId);
     console.assert(sessionInfo !== undefined);
-    inferSessionEndEvent(/** @type {SessionInfo} */ (sessionInfo));
-    this.eventWriter_.write(/** @type {Object} */ (sessionInfo.event));
+    var event = createSessionEndEvent(/** @type {SessionInfo} */ (sessionInfo));
+    this.eventWriter_.write(/** @type {Object} */ (event));
     this.sessionMap_.delete(windowId);
   }
 };
 
 /**
+ * Inspects |sessionInfo| to generate a session termination state.  This is
+ * called when the user closes the window using the context menu such that we
+ * won't get a proper termination event.
+ *
  * @param {SessionInfo} sessionInfo
+ * @return {remoting.ChromotingEvent}
  */
-function inferSessionEndEvent(sessionInfo) {
-  var event = sessionInfo.event;
+function createSessionEndEvent(sessionInfo) {
+  var event =
+      /** @type{remoting.ChromotingEvent} */ (base.deepCopy(sessionInfo.event));
   var SessionState = remoting.ChromotingEvent.SessionState;
 
   switch (event.session_state) {
-    case SessionState.INITIALIZING:
+    case SessionState.STARTED:
+    case SessionState.SIGNALING:
+    case SessionState.CREATING_PLUGIN:
     case SessionState.CONNECTING:
     case SessionState.AUTHENTICATED:
       event.session_state = SessionState.CONNECTION_CANCELED;
@@ -183,6 +191,7 @@ function inferSessionEndEvent(sessionInfo) {
   }
   var elapsed = (Date.now() - sessionInfo.timestamp) / 1000.0;
   event.session_duration +=  elapsed;
+  return event;
 }
 
 })();

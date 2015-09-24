@@ -52,7 +52,8 @@ remoting.It2MeActivity.prototype.start = function() {
       remoting.ChromotingEvent.SessionState.STARTED,
       remoting.ChromotingEvent.ConnectionError.NONE);
 
-  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  this.desktopActivity_ =
+      new remoting.DesktopRemotingActivity(this, this.logger_);
 
   this.accessCodeDialog_.show().then(function(/** string */ accessCode) {
     that.desktopActivity_.getConnectingDialog().show();
@@ -168,8 +169,7 @@ remoting.It2MeActivity.prototype.verifyAccessCode_ = function(accessCode) {
  */
 remoting.It2MeActivity.prototype.connect_ = function(host) {
   this.desktopActivity_.start(
-      host, new remoting.CredentialsProvider({accessCode: this.passCode_}),
-      this.logger_);
+      host, new remoting.CredentialsProvider({accessCode: this.passCode_}));
 };
 
 })();

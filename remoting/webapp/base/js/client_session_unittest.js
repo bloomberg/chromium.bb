@@ -49,7 +49,7 @@ function connect(opt_error) {
   var sessionFactory = new remoting.ClientSessionFactory(
     document.createElement('div'), ['fake_capability']);
 
-  sessionFactory.createSession(listener, logger, true).then(
+  sessionFactory.createSession(listener, logger).then(
       function(clientSession) {
     session = clientSession;
     clientSession.connect(host, new remoting.CredentialsProvider({

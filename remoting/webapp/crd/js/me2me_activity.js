@@ -108,10 +108,10 @@ remoting.Me2MeActivity.prototype.reconnect_ = function(entryPoint) {
  */
 remoting.Me2MeActivity.prototype.connect_ = function() {
   base.dispose(this.desktopActivity_);
-  this.desktopActivity_ = new remoting.DesktopRemotingActivity(this);
+  this.desktopActivity_ =
+      new remoting.DesktopRemotingActivity(this, this.logger_);
   this.desktopActivity_.getConnectingDialog().show();
-  this.desktopActivity_.start(this.host_, this.createCredentialsProvider_(),
-                              this.logger_);
+  this.desktopActivity_.start(this.host_, this.createCredentialsProvider_());
 };
 
 /**

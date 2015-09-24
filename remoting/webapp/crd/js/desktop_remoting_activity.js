@@ -15,11 +15,12 @@ var remoting = remoting || {};
  * session state changes to the |parentActivity|.
  *
  * @param {remoting.Activity} parentActivity
+ * @param {remoting.SessionLogger} logger
  * @implements {remoting.ClientSession.EventHandler}
  * @implements {base.Disposable}
  * @constructor
  */
-remoting.DesktopRemotingActivity = function(parentActivity) {
+remoting.DesktopRemotingActivity = function(parentActivity, logger) {
   /** @private */
   this.parentActivity_ = parentActivity;
   /** @private {remoting.DesktopConnectedView} */
@@ -35,6 +36,12 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
   /** @private {remoting.ConnectingDialog} */
   this.connectingDialog_ = remoting.modalDialogFactory.createConnectingDialog(
       parentActivity.stop.bind(parentActivity));
+
+  /** @private */
+  this.creatingSession_ = false;
+
+  /** @private */
+  this.logger_ = logger;
 };
 
 /**
@@ -42,29 +49,17 @@ remoting.DesktopRemotingActivity = function(parentActivity) {
  *
  * @param {remoting.Host} host the Host to connect to.
  * @param {remoting.CredentialsProvider} credentialsProvider
- * @param {remoting.SessionLogger} logger
  * @return {void} Nothing.
  */
 remoting.DesktopRemotingActivity.prototype.start =
-    function(host, credentialsProvider, logger) {
+    function(host, credentialsProvider) {
   var that = this;
-  var useApiaryForLogging = host.loggingChannel === 'APIARY';
-  this.sessionFactory_.createSession(this, logger, useApiaryForLogging).then(
+  this.creatingSession_ = true;
+  this.sessionFactory_.createSession(this, this.logger_).then(
     function(/** remoting.ClientSession */ session) {
+      that.creatingSession_ = false;
       that.session_ = session;
-
-      // Update the host version and the Mode for the legacy XMPP logger.
-      // TODO(kelvinp): Remove this block of code when we have migrated away
-      // from XMPP-based logging (crbug.com/523423).
-      session.getLogger().setHostVersion(host.hostVersion);
-      var Mode = remoting.ChromotingEvent.Mode;
-      if (that.parentActivity_ instanceof remoting.It2MeActivity) {
-        session.getLogger().setLogEntryMode(Mode.IT2ME);
-      } else if (that.parentActivity_ instanceof remoting.Me2MeActivity) {
-        session.getLogger().setLogEntryMode(Mode.ME2ME);
-      }
-
-      session.connect(host, credentialsProvider);
+      return session.connect(host, credentialsProvider);
   }).catch(remoting.Error.handler(
     function(/** !remoting.Error */ error) {
       that.parentActivity_.onConnectionFailed(error);
@@ -75,6 +70,11 @@ remoting.DesktopRemotingActivity.prototype.stop = function() {
   if (this.session_) {
     this.session_.disconnect(remoting.Error.none());
     console.log('Disconnected.');
+  } else if (this.creatingSession_) {
+    this.creatingSession_ = false;
+    this.logger_.logSessionStateChange(
+        remoting.ChromotingEvent.SessionState.CONNECTION_CANCELED,
+        remoting.ChromotingEvent.ConnectionError.NONE);
   }
 };
 
