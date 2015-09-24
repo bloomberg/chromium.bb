@@ -34,7 +34,7 @@ class CommitAnnouncerTest(unittest.TestCase):
         tool = MockTool()
         bot = CommitAnnouncer(tool, "test/directory", "test_password")
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line"',
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -52,7 +52,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'master@{#456789} https://chromium.googlesource.com/chromium/src/+/1234comm '
+            'https://crrev.com/456789 '
             'authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
 1234commit1234
@@ -69,7 +69,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line"',
+            'https://crrev.com/1234comm authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -85,7 +85,7 @@ Review URL: https://codereview.chromium.org/123456
 """))
 
         self.assertEqual(
-            'https://chromium.googlesource.com/chromium/src/+/1234comm authorABC@chromium.org committed "Commit test subject line"',
+            'https://crrev.com/1234comm authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -97,7 +97,7 @@ description.
 """))
 
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line"',
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line"',
             bot._format_commit_detail("""\
 1234commit1234
 authorABC@chromium.org
@@ -117,7 +117,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line" '
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line" '
             '\x037TBR=reviewerDEF@chromium.org\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -137,7 +137,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line" '
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line" '
             '\x037NOTRY=true\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -157,7 +157,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line" '
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line" '
             '\x037NOTRY=true TBR=reviewerDEF@chromium.org\x03',
             bot._format_commit_detail("""\
 1234commit1234
@@ -178,7 +178,7 @@ Cr-Commit-Position: refs/heads/master@{#456789}
 """))
 
         self.assertEqual(
-            'master@{#456789} http://crrev.com/123456 authorABC@chromium.org committed "Commit test subject line" '
+            'https://crrev.com/456789 authorABC@chromium.org committed "Commit test subject line" '
             '\x037tbr=reviewerDEF@chromium.org, reviewerGHI@chromium.org, reviewerJKL@chromium.org notry=TRUE\x03',
             bot._format_commit_detail("""\
 1234commit1234

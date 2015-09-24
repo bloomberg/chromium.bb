@@ -158,16 +158,10 @@ class CommitAnnouncer(SingleServerIRCBot):
         commit, email, subject, body = commit_detail.split('\n', 3)
         commit_position_re = r'^Cr-Commit-Position: refs/heads/master@\{#(?P<commit_position>\d+)\}'
         commit_position = None
-        review_id_re = r'^Review URL: https://codereview\.chromium\.org/(?P<review_id>\d+)'
-        review_id = None
         red_flag_strings = ['NOTRY=true', 'TBR=']
         red_flags = []
 
         for line in body.split('\n'):
-            match = re.search(review_id_re, line)
-            if match:
-                review_id = match.group('review_id')
-
             match = re.search(commit_position_re, line)
             if match:
                 commit_position = match.group('commit_position')
@@ -176,16 +170,10 @@ class CommitAnnouncer(SingleServerIRCBot):
                 if line.lower().startswith(red_flag_string.lower()):
                     red_flags.append(line.strip())
 
-        position_string = 'master@{#%s}' % commit_position if commit_position else ''
-
-        if review_id:
-            url = 'http://crrev.com/%s' % review_id
-        else:
-            url = 'https://chromium.googlesource.com/chromium/src/+/%s' % commit[:8]
-
+        url = 'https://crrev.com/%s' % (commit_position if commit_position else commit[:8])
         red_flag_message = '\x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
 
-        return ('%s %s %s committed "%s" %s' % (position_string, url, email, subject, red_flag_message)).strip()
+        return ('%s %s committed "%s" %s' % (url, email, subject, red_flag_message)).strip()
 
     def _post(self, message):
         self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, self._sanitize_string(message)))
