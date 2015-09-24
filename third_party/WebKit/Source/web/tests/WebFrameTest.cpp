@@ -3461,8 +3461,7 @@ public:
     }
 };
 
-// TODO(aa): Deflake this test.
-TEST_P(ParameterizedWebFrameTest, FLAKY_ContextNotificationsLoadUnload)
+TEST_P(ParameterizedWebFrameTest, ContextNotificationsLoadUnload)
 {
     v8::HandleScope handleScope(v8::Isolate::GetCurrent());
 
