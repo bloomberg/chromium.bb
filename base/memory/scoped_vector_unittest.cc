@@ -24,7 +24,8 @@ class LifeCycleObject {
   };
 
   ~LifeCycleObject() {
-    observer_->OnLifeCycleDestroy(this);
+    if (observer_)
+      observer_->OnLifeCycleDestroy(this);
   }
 
  private:
@@ -33,6 +34,10 @@ class LifeCycleObject {
   explicit LifeCycleObject(Observer* observer)
       : observer_(observer) {
     observer_->OnLifeCycleConstruct(this);
+  }
+
+  void DisconnectObserver() {
+    observer_ = nullptr;
   }
 
   Observer* observer_;
@@ -62,7 +67,13 @@ enum LifeCycleState {
 class LifeCycleWatcher : public LifeCycleObject::Observer {
  public:
   LifeCycleWatcher() : life_cycle_state_(LC_INITIAL) {}
-  ~LifeCycleWatcher() override {}
+  ~LifeCycleWatcher() override {
+    // Stop watching the watched object. Without this, the object's destructor
+    // will call into OnLifeCycleDestroy when destructed, which happens after
+    // this destructor has finished running.
+    if (constructed_life_cycle_object_)
+      constructed_life_cycle_object_->DisconnectObserver();
+  }
 
   // Assert INITIAL -> CONSTRUCTED and no LifeCycleObject associated with this
   // LifeCycleWatcher.
