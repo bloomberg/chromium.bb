@@ -50,9 +50,13 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   static const int kLowPowerPercentage;
   static const int kNoWarningPercentage;
 
+  static const char kUsbNotificationId[];
+
   TrayPower(SystemTray* system_tray,
             message_center::MessageCenter* message_center);
   ~TrayPower() override;
+
+  void NotifyUsbNotificationClosedByUser();
 
  private:
   friend class TrayPowerTest;
@@ -99,6 +103,10 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
 
   // Was line power connected the last time onPowerStatusChanged() was called?
   bool line_power_was_connected_;
+
+  // Has the user already dismissed a low-power notification? Should be set
+  // back to false when all power sources are disconnected.
+  bool usb_notification_dismissed_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPower);
 };

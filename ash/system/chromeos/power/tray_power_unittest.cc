@@ -9,6 +9,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/test/ash_test_base.h"
+#include "base/containers/scoped_ptr_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"
@@ -29,9 +30,12 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
   // message_center::FakeMessageCenter overrides:
   void AddNotification(scoped_ptr<Notification> notification) override {
     add_count_++;
-    notifications_[notification->id()] = notification.get();
+    notifications_.insert(notification->id(), notification.Pass());
   }
   void RemoveNotification(const std::string& id, bool by_user) override {
+    Notification* notification = FindVisibleNotificationById(id);
+    if (notification && notification->delegate())
+      notification->delegate()->Close(by_user);
     remove_count_++;
     notifications_.erase(id);
   }
@@ -44,7 +48,7 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
  private:
   int add_count_;
   int remove_count_;
-  std::map<std::string, Notification*> notifications_;
+  base::ScopedPtrMap<std::string, scoped_ptr<Notification>> notifications_;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
@@ -135,6 +139,7 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
+  SetUsbChargerConnected(true);
 
   // Change in charge does not trigger the notification again.
   PowerSupplyProperties more_charge = DefaultPowerSupplyProperties();
@@ -142,7 +147,6 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
       power_manager::PowerSupplyProperties_ExternalPower_USB);
   more_charge.set_battery_time_to_full_sec(60 * 60);
   more_charge.set_battery_percent(75.0);
-  SetUsbChargerConnected(true);
   EXPECT_FALSE(MaybeShowUsbChargerNotification(more_charge));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(0, message_center()->remove_count());
@@ -152,6 +156,47 @@ TEST_F(TrayPowerTest, MaybeShowUsbChargerNotification) {
   EXPECT_TRUE(MaybeShowUsbChargerNotification(discharging));
   EXPECT_EQ(1, message_center()->add_count());
   EXPECT_EQ(1, message_center()->remove_count());
+  SetUsbChargerConnected(false);
+
+  // Notification shows when connecting a USB charger again.
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(1, message_center()->remove_count());
+  SetUsbChargerConnected(true);
+
+  // Notification hides when external power switches to AC.
+  PowerSupplyProperties ac_charger = DefaultPowerSupplyProperties();
+  ac_charger.set_external_power(
+      power_manager::PowerSupplyProperties_ExternalPower_AC);
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(ac_charger));
+  EXPECT_EQ(2, message_center()->add_count());
+  EXPECT_EQ(2, message_center()->remove_count());
+  SetUsbChargerConnected(false);
+
+  // Notification shows when external power switches back to USB.
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(usb_connected));
+  EXPECT_EQ(3, message_center()->add_count());
+  EXPECT_EQ(2, message_center()->remove_count());
+  SetUsbChargerConnected(true);
+
+  // Notification does not re-appear after being manually dismissed if
+  // power supply flickers between AC and USB charger.
+  message_center()->RemoveNotification(TrayPower::kUsbNotificationId, true);
+  EXPECT_EQ(3, message_center()->remove_count());
+  EXPECT_TRUE(MaybeShowUsbChargerNotification(ac_charger));
+  SetUsbChargerConnected(false);
+  EXPECT_FALSE(MaybeShowUsbChargerNotification(usb_connected));
+  EXPECT_EQ(3, message_center()->add_count());
+  SetUsbChargerConnected(true);
+
+  // Notification appears again after being manually dismissed if the charger
+  // is removed, and then a USB charger is attached.
+  MaybeShowUsbChargerNotification(discharging);
+  EXPECT_EQ(3, message_center()->add_count());
+  SetUsbChargerConnected(false);
+  MaybeShowUsbChargerNotification(usb_connected);
+  EXPECT_EQ(4, message_center()->add_count());
+  SetUsbChargerConnected(true);
 }
 
 TEST_F(TrayPowerTest, UpdateNotificationState) {
