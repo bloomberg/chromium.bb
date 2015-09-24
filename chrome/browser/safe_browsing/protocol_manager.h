@@ -332,14 +332,6 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
 
   HashRequests hash_requests_;
 
-  // The next scheduled update has special behavior for the first 2 requests.
-  enum UpdateRequestState {
-    FIRST_REQUEST = 0,
-    SECOND_REQUEST,
-    NORMAL_REQUEST
-  };
-  UpdateRequestState update_state_;
-
   // True if the service has been given an add/sub chunk but it hasn't been
   // added to the database yet.
   bool chunk_pending_to_write_;

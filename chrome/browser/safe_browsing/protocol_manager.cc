@@ -122,7 +122,6 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       next_update_interval_(base::TimeDelta::FromSeconds(
           base::RandInt(kSbTimerStartIntervalSecMin,
                         kSbTimerStartIntervalSecMax))),
-      update_state_(FIRST_REQUEST),
       chunk_pending_to_write_(false),
       version_(config.version),
       update_size_(0),
@@ -417,17 +416,9 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(
           base::TimeDelta::FromSeconds(next_update_sec);
       last_update_ = Time::Now();
 
-      if (update_state_ == FIRST_REQUEST)
-        update_state_ = SECOND_REQUEST;
-      else if (update_state_ == SECOND_REQUEST)
-        update_state_ = NORMAL_REQUEST;
-
       // New time for the next update.
       if (next_update_interval > base::TimeDelta()) {
         next_update_interval_ = next_update_interval;
-      } else if (update_state_ == SECOND_REQUEST) {
-        next_update_interval_ = base::TimeDelta::FromSeconds(
-            base::RandInt(15, 45));
       }
 
       // New chunks to download.
