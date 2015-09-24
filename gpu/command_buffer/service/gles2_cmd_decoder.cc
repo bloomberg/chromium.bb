@@ -3035,13 +3035,6 @@ bool GLES2DecoderImpl::Initialize(
     context_->SetUnbindFboOnMakeCurrent();
   }
 
-  // Only compositor contexts are known to use only the subset of GL
-  // that can be safely migrated between the iGPU and the dGPU. Mark
-  // those contexts as safe to forcibly transition between the GPUs.
-  // http://crbug.com/180876, http://crbug.com/227228
-  if (!offscreen)
-    context_->SetSafeToForceGpuSwitch();
-
   if (workarounds().gl_clear_broken) {
     DCHECK(!clear_framebuffer_blit_.get());
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glClearWorkaroundInit");

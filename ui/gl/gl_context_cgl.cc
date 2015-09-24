@@ -80,7 +80,7 @@ GLContextCGL::GLContextCGL(GLShareGroup* share_group)
     discrete_pixelformat_(nullptr),
     screen_(-1),
     renderer_id_(-1),
-    safe_to_force_gpu_switch_(false) {
+    safe_to_force_gpu_switch_(true) {
 }
 
 bool GLContextCGL::Initialize(GLSurface* compatible_surface,
@@ -126,6 +126,11 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
   }
 
   gpu_preference_ = gpu_preference;
+  // Contexts that prefer integrated gpu are known to use only the subset of GL
+  // that can be safely migrated between the iGPU and the dGPU. Mark those
+  // contexts as safe to forcibly transition between the GPUs by default.
+  // http://crbug.com/180876, http://crbug.com/227228
+  safe_to_force_gpu_switch_ = gpu_preference == PreferIntegratedGpu;
   return true;
 }
 
