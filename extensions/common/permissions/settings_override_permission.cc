@@ -48,7 +48,14 @@ bool SettingsOverrideAPIPermission::FromValue(
     const base::Value* value,
     std::string* /*error*/,
     std::vector<std::string>* unhandled_permissions) {
-  return value && value->GetAsString(&setting_value_);
+  // Ugly hack: |value| being null should be an error. But before M46 beta, we
+  // didn't store the parameter for settings override permissions in prefs.
+  // See crbug.com/533086.
+  // TODO(treib,devlin): Remove this for M48, when hopefully all users will have
+  // updated prefs.
+  // This should read:
+  // return value && value->GetAsString(&setting_value_);
+  return !value || value->GetAsString(&setting_value_);
 }
 
 scoped_ptr<base::Value> SettingsOverrideAPIPermission::ToValue() const {

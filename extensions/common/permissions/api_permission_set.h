@@ -123,6 +123,7 @@ class PermissionIDSet {
               const base::string16& permission_parameter);
   void InsertAll(const PermissionIDSet& permission_set);
 
+  // Erases all permissions with the given id.
   void erase(APIPermission::ID permission_id);
 
   // Returns the parameters for all PermissionIDs in this set.

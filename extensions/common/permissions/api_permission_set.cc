@@ -216,7 +216,13 @@ void PermissionIDSet::InsertAll(const PermissionIDSet& permission_set) {
 }
 
 void PermissionIDSet::erase(APIPermission::ID permission_id) {
-  permissions_.erase(PermissionID(permission_id));
+  auto lower_bound = permissions_.lower_bound(PermissionID(permission_id));
+  auto upper_bound = lower_bound;
+  while (upper_bound != permissions_.end() &&
+         upper_bound->id() == permission_id) {
+    ++upper_bound;
+  }
+  permissions_.erase(lower_bound, upper_bound);
 }
 
 std::vector<base::string16> PermissionIDSet::GetAllPermissionParameters()
