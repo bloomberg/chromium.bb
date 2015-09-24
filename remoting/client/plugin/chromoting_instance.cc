@@ -85,6 +85,12 @@ const int kConnectionDurationHistogramMinMinutes = 1;
 const int kConnectionDurationHistogramMaxMinutes = 24 * 60;
 const int kConnectionDurationHistogramBuckets = 50;
 
+// Input event latency is expected to be below 10ms.
+const char kInputEventLatencyHistogram[] = "Chromoting.Input.EventLatency";
+const int kInputEventLatencyHistogramMinUs = 1;
+const int kInputEventLatencyHistogramMaxUs = 10000;
+const int kInputEventLatencyHistogramBuckets = 50;
+
 // Update perf stats in the UI every second.
 const int kUIStatsUpdatePeriodSeconds = 1;
 
@@ -302,6 +308,14 @@ bool ChromotingInstance::HandleInputEvent(const pp::InputEvent& event) {
 
   if (!IsConnected())
     return false;
+
+  PP_TimeTicks latency =
+      pp::Module::Get()->core()->GetTimeTicks() - event.GetTimeStamp();
+  pp::UMAPrivate uma(this);
+  uma.HistogramCustomTimes(
+      kInputEventLatencyHistogram, static_cast<int64_t>(latency * 1000000),
+      kInputEventLatencyHistogramMinUs, kInputEventLatencyHistogramMaxUs,
+      kInputEventLatencyHistogramBuckets);
 
   return input_handler_.HandleInputEvent(event);
 }
@@ -1128,12 +1142,13 @@ void ChromotingInstance::UpdateUmaCustomHistogram(
     int histogram_buckets) {
   pp::UMAPrivate uma(this);
 
-  if (is_custom_counts_histogram)
+  if (is_custom_counts_histogram) {
     uma.HistogramCustomCounts(histogram_name, value, histogram_min,
                               histogram_max, histogram_buckets);
-  else
+  } else {
     uma.HistogramCustomTimes(histogram_name, value, histogram_min,
                              histogram_max, histogram_buckets);
+  }
 }
 
 }  // namespace remoting

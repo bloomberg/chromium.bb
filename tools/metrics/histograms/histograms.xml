@@ -4075,6 +4075,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Chromoting.Input.EventLatency" units="microseconds">
+  <owner>anandc@chromium.org</owner>
+  <owner>sergeyu@chromium.org</owner>
+  <summary>
+    Input event delivery latency from the browser to the plugin.
+  </summary>
+</histogram>
+
 <histogram name="Chromoting.Video.Bandwidth" units="Bytes/second">
   <owner>anandc@chromium.org</owner>
   <owner>sergeyu@chromium.org</owner>
