@@ -129,15 +129,17 @@ def ProvisionDevice(device, blacklist, options):
 
 def WipeChromeData(device, options):
   """Wipes chrome specific data from device
-  Chrome specific data is:
-  (1) any dir under /data/data/ whose name matches *chrom*, except
-      com.android.chrome, which is the chrome stable package
-  (2) any dir under /data/app/ and /data/app-lib/ whose name matches *chrom*
-  (3) any files under /data/tombstones/ whose name matches "tombstone*"
-  (4) /data/local.prop if there is any
-  (5) /data/local/chrome-command-line if there is any
-  (6) dir /data/local/.config/ if there is any (this is telemetry related)
-  (7) dir /data/local/tmp/
+
+  (1) uninstall any app whose name matches *chrom*, except
+      com.android.chrome, which is the chrome stable package. Doing so also
+      removes the corresponding dirs under /data/data/ and /data/app/
+  (2) remove any dir under /data/app-lib/ whose name matches *chrom*
+  (3) remove any files under /data/tombstones/ whose name matches "tombstone*"
+  (4) remove /data/local.prop if there is any
+  (5) remove /data/local/chrome-command-line if there is any
+  (6) remove anything under /data/local/.config/ if the dir exists
+      (this is telemetry related)
+  (7) remove anything under /data/local/tmp/
 
   Arguments:
     device: the device to wipe
@@ -147,9 +149,8 @@ def WipeChromeData(device, options):
 
   try:
     device.EnableRoot()
-    _WipeUnderDirIfMatch(device, '/data/data/', _CHROME_PACKAGE_REGEX,
-                         constants.PACKAGE_INFO['chrome_stable'].package)
-    _WipeUnderDirIfMatch(device, '/data/app/', _CHROME_PACKAGE_REGEX)
+    _UninstallIfMatch(device, _CHROME_PACKAGE_REGEX,
+                      constants.PACKAGE_INFO['chrome_stable'].package)
     _WipeUnderDirIfMatch(device, '/data/app-lib/', _CHROME_PACKAGE_REGEX)
     _WipeUnderDirIfMatch(device, '/data/tombstones/', _TOMBSTONE_REGEX)
 
@@ -339,12 +340,19 @@ def FinishProvisioning(device, options):
     _PushAndLaunchAdbReboot(device, options.target)
 
 
-def _WipeUnderDirIfMatch(device, path, pattern, app_to_keep=None):
+def _UninstallIfMatch(device, pattern, app_to_keep):
+  installed_packages = device.RunShellCommand(['pm', 'list', 'packages'])
+  for package_output in installed_packages:
+    package = package_output.split(":")[1]
+    if pattern.match(package) and not package == app_to_keep:
+      device.Uninstall(package)
+
+
+def _WipeUnderDirIfMatch(device, path, pattern):
   ls_result = device.Ls(path)
   for (content, _) in ls_result:
     if pattern.match(content):
-      if content != app_to_keep:
-        _WipeFileOrDir(device, path + content)
+      _WipeFileOrDir(device, path + content)
 
 
 def _WipeFileOrDir(device, path):
