@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_icon.html">
 
 <dom-module id="cr-demo-element">
@@ -26,24 +25,6 @@
       </cr-input>
       <cr-input no-label-float label="CrInput5" value="{{inputValues.5}}">
       </cr-input>
-    </div>
-
-    <h3>cr-toggle-button</h3>
-    <div class="layout vertical">
-      <cr-toggle-button checked="{{toggleButtonChecked}}">
-        Toggle Button
-      </cr-toggle-button>
-      <paper-checkbox checked="{{toggleButtonChecked}}">
-        Bound Checkbox
-      </paper-checkbox>
-      <div class="layout horizontal">
-        <cr-toggle-button checked="{{toggleButtonChecked2}}">
-          Toggle Button 2
-        </cr-toggle-button>
-        <cr-toggle-button checked="{{toggleButtonChecked3}}">
-          Toggle Button 3
-        </cr-toggle-button>
-      </div>
     </div>
 
     <h3>cr-collapse</h3>

@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_list_item.html">
 
@@ -23,11 +23,11 @@
               class$="[[getExpandButtonClass_(deviceState, networkStateList)]]"
               expanded="{{expanded}}">
           </cr-expand-button>
-          <cr-toggle-button id="deviceEnabledButton"
+          <paper-toggle-button id="deviceEnabledButton"
               checked="[[deviceIsEnabled_(deviceState)]]"
               class$="[[getDeviceEnabledButtonClass_(deviceState)]]"
               on-tap="onDeviceEnabledToggled_">
-          </cr-toggle-button>
+          </paper-toggle-button>
         </div>
       </div>
       <div id="listDiv" class="layout vertical">

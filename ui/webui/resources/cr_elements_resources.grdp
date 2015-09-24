@@ -111,13 +111,4 @@
   <structure name="IDR_CR_ELEMENTS_1_0_CR_SEARCH_FIELD_JS"
              file="../../webui/resources/cr_elements/v1_0/cr_search_field/cr_search_field.js"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_TOGGLE_BUTTON_CSS"
-             file="../../webui/resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.css"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_TOGGLE_BUTTON_HTML"
-             file="../../webui/resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_TOGGLE_BUTTON_JS"
-             file="../../webui/resources/cr_elements/v1_0/cr_toggle_button/cr_toggle_button.js"
-             type="chrome_html" />
 </grit-part>
