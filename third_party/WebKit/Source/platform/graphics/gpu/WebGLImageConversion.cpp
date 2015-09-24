@@ -10,6 +10,7 @@
 #include "platform/graphics/cpu/arm/WebGLImageConversionNEON.h"
 #include "platform/graphics/cpu/x86/WebGLImageConversionSSE.h"
 #include "platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -2016,42 +2017,60 @@ WebGLImageConversion::ImageExtractor::ImageExtractor(Image* image, ImageHtmlDomS
 {
     m_image = image;
     m_imageHtmlDomSource = imageHtmlDomSource;
-    m_extractSucceeded = extractImage(premultiplyAlpha, ignoreGammaAndColorProfile);
+    extractImage(premultiplyAlpha, ignoreGammaAndColorProfile);
 }
 
-WebGLImageConversion::ImageExtractor::~ImageExtractor()
+namespace {
+
+bool frameIsValid(const SkBitmap& frameBitmap)
 {
-    if (!m_skiaBitmap.isNull())
-        m_skiaBitmap.unlockPixels();
+    return !frameBitmap.isNull()
+        && !frameBitmap.empty()
+        && frameBitmap.isImmutable()
+        && frameBitmap.colorType() == kN32_SkColorType;
 }
 
-bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile)
+} // anonymous namespace
+
+void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile)
 {
+    ASSERT(!m_imagePixelLocker);
+
     if (!m_image)
-        return false;
-    bool success = m_image->deprecatedBitmapForCurrentFrame(&m_skiaBitmap);
+        return;
+
+    RefPtr<SkImage> skiaImage = m_image->imageForCurrentFrame();
+    SkImageInfo info = skiaImage
+        ? SkImageInfo::MakeN32Premul(m_image->width(), m_image->height())
+        : SkImageInfo::MakeUnknown();
     m_alphaOp = AlphaDoNothing;
-    bool hasAlpha = success ? !m_skiaBitmap.isOpaque() : true;
-    if ((!success || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
+    bool hasAlpha = skiaImage ? !skiaImage->isOpaque() : true;
+
+    if ((!skiaImage || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
         // Attempt to get raw unpremultiplied image data.
         OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
             *(m_image->data()), ImageDecoder::AlphaNotPremultiplied,
             ignoreGammaAndColorProfile ? ImageDecoder::GammaAndColorProfileIgnored : ImageDecoder::GammaAndColorProfileApplied));
         if (!decoder)
-            return false;
+            return;
         decoder->setData(m_image->data(), true);
         if (!decoder->frameCount())
-            return false;
+            return;
         ImageFrame* frame = decoder->frameBufferAtIndex(0);
         if (!frame || frame->status() != ImageFrame::FrameComplete)
-            return false;
+            return;
         hasAlpha = frame->hasAlpha();
-        m_bitmap = frame->bitmap();
-        if (m_bitmap.isNull() || !m_bitmap.isImmutable() || !m_bitmap.width() || !m_bitmap.height())
-            return false;
-        if (m_bitmap.colorType() != kN32_SkColorType)
-            return false;
-        m_skiaBitmap = m_bitmap;
+        SkBitmap bitmap = frame->bitmap();
+        if (!frameIsValid(bitmap))
+            return;
+
+        // TODO(fmalita): Partial frames are not supported currently: frameIsValid ensures that
+        // only immutable/fully decoded frames make it through.  We could potentially relax this
+        // and allow SkImage::NewFromBitmap to make a copy.
+        ASSERT(bitmap.isImmutable());
+        skiaImage = adoptRef(SkImage::NewFromBitmap(bitmap));
+        info = bitmap.info();
+
         if (hasAlpha && premultiplyAlpha)
             m_alphaOp = AlphaDoPremultiply;
     } else if (!premultiplyAlpha && hasAlpha) {
@@ -2062,25 +2081,22 @@ bool WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         if (m_imageHtmlDomSource != HtmlDomVideo)
             m_alphaOp = AlphaDoUnmultiply;
     }
-    if (!success)
-        return false;
+
+    if (!skiaImage)
+        return;
 
     m_imageSourceFormat = SK_B32_SHIFT ? DataFormatRGBA8 : DataFormatBGRA8;
-    m_imageWidth = m_skiaBitmap.width();
-    m_imageHeight = m_skiaBitmap.height();
-    if (!m_imageWidth || !m_imageHeight) {
-        m_skiaBitmap.reset();
-        return false;
-    }
+    m_imageSourceUnpackAlignment = 0; // FIXME: this seems to always be zero - why use at all?
+
+    ASSERT(skiaImage->width() && skiaImage->height());
+    m_imageWidth = skiaImage->width();
+    m_imageHeight = skiaImage->height();
+
     // Fail if the image was downsampled because of memory limits.
-    if (m_imageWidth != (unsigned)m_image->size().width() || m_imageHeight != (unsigned)m_image->size().height()) {
-        m_skiaBitmap.reset();
-        return false;
-    }
-    m_imageSourceUnpackAlignment = 0;
-    m_skiaBitmap.lockPixels();
-    m_imagePixelData = m_skiaBitmap.getPixels();
-    return true;
+    if (m_imageWidth != (unsigned)m_image->width() || m_imageHeight != (unsigned)m_image->height())
+        return;
+
+    m_imagePixelLocker.emplace(skiaImage, info.alphaType());
 }
 
 unsigned WebGLImageConversion::getChannelBitsByFormat(GLenum format)

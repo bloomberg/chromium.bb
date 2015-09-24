@@ -16,7 +16,6 @@ class SkImage;
 namespace blink {
 
 class ImagePixelLocker {
-    STACK_ALLOCATED()
 public:
     ImagePixelLocker(PassRefPtr<const SkImage>, SkAlphaType);
 

@@ -4023,7 +4023,7 @@ void WebGLRenderingContextBase::texImage2DImpl(GLenum target, GLint level, GLenu
     }
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
-    if (!imageExtractor.extractSucceeded()) {
+    if (!imageExtractor.imagePixelData()) {
         synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "bad image data");
         return;
     }
@@ -4439,7 +4439,7 @@ void WebGLRenderingContextBase::texSubImage2DImpl(GLenum target, GLint level, GL
     }
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
-    if (!imageExtractor.extractSucceeded()) {
+    if (!imageExtractor.imagePixelData()) {
         synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "bad image");
         return;
     }

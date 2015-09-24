@@ -7,10 +7,12 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/graphics/Image.h"
+#include "platform/graphics/skia/ImagePixelLocker.h"
+#include "platform/heap/Heap.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/khronos/GLES3/gl3.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "wtf/Optional.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
@@ -112,13 +114,11 @@ public:
     };
 
     class PLATFORM_EXPORT ImageExtractor {
+        STACK_ALLOCATED();
     public:
         ImageExtractor(Image*, ImageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
-        ~ImageExtractor();
-
-        bool extractSucceeded() { return m_extractSucceeded; }
-        const void* imagePixelData() { return m_imagePixelData; }
+        const void* imagePixelData() { return m_imagePixelLocker ? m_imagePixelLocker->pixels() : nullptr; }
         unsigned imageWidth() { return m_imageWidth; }
         unsigned imageHeight() { return m_imageHeight; }
         DataFormat imageSourceFormat() { return m_imageSourceFormat; }
@@ -126,16 +126,13 @@ public:
         unsigned imageSourceUnpackAlignment() { return m_imageSourceUnpackAlignment; }
         ImageHtmlDomSource imageHtmlDomSource() { return m_imageHtmlDomSource; }
     private:
-        // Extract the image and keeps track of its status, such as width, height, Source Alignment, format and AlphaOp etc.
-        // This needs to lock the resources or relevant data if needed and return true upon success
-        bool extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
+        // Extract the image and keeps track of its status, such as width, height, Source Alignment,
+        // format and AlphaOp etc. This needs to lock the resources or relevant data if needed.
+        void extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
-        SkBitmap m_bitmap;
-        SkBitmap m_skiaBitmap;
         Image* m_image;
+        Optional<ImagePixelLocker> m_imagePixelLocker;
         ImageHtmlDomSource m_imageHtmlDomSource;
-        bool m_extractSucceeded;
-        const void* m_imagePixelData;
         unsigned m_imageWidth;
         unsigned m_imageHeight;
         DataFormat m_imageSourceFormat;

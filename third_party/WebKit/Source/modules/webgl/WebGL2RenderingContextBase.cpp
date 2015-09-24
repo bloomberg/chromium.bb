@@ -696,7 +696,7 @@ void WebGL2RenderingContextBase::texSubImage3DImpl(GLenum target, GLint level, G
     // All calling functions check isContextLost, so a duplicate check is not needed here.
     Vector<uint8_t> data;
     WebGLImageConversion::ImageExtractor imageExtractor(image, domSource, premultiplyAlpha, m_unpackColorspaceConversion == GL_NONE);
-    if (!imageExtractor.extractSucceeded()) {
+    if (!imageExtractor.imagePixelData()) {
         synthesizeGLError(GL_INVALID_VALUE, "texSubImage3D", "bad image");
         return;
     }
