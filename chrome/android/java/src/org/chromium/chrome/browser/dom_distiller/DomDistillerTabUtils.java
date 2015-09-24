@@ -49,8 +49,19 @@ public class DomDistillerTabUtils {
         return nativeGetFormattedUrlFromOriginalDistillerUrl(url);
     }
 
+    /**
+     * Detect if any heuristic is being used to determine if a page is distillable. On the native
+     * side, this is testing if the heuristic is not "NONE".
+     *
+     * @return True if heuristics are being used to detect distillable pages.
+     */
+    public static boolean isDistillerHeuristicsEnabled() {
+        return nativeIsDistillerHeuristicsEnabled();
+    }
+
     private static native void nativeDistillCurrentPageAndView(WebContents webContents);
     private static native void nativeDistillAndView(
             WebContents sourceWebContents, WebContents destinationWebContents);
     private static native String nativeGetFormattedUrlFromOriginalDistillerUrl(String url);
+    private static native boolean nativeIsDistillerHeuristicsEnabled();
 }

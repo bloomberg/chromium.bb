@@ -352,7 +352,8 @@ public class ReaderModeManager extends EmptyTabObserver
         boolean enabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_DOM_DISTILLER)
                 && !CommandLine.getInstance().hasSwitch(
                         ChromeSwitches.DISABLE_READER_MODE_BOTTOM_BAR)
-                && !DeviceFormFactor.isTablet(context);
+                && !DeviceFormFactor.isTablet(context)
+                && DomDistillerTabUtils.isDistillerHeuristicsEnabled();
         return enabled;
     }
 }

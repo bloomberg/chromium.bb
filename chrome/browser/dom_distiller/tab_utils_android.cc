@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/dom_distiller/core/experiments.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
@@ -61,6 +62,15 @@ ScopedJavaLocalRef<jstring> GetFormattedUrlFromOriginalDistillerUrl(
       env, url_formatter::FormatUrl(
                url, languages, url_formatter::kFormatUrlOmitAll,
                net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
+}
+
+// Returns true if the distiller experiment is set to use any heuristic other
+// than "NONE". This is used to prevent the Reader Mode panel from loading
+// when it would otherwise never be shown.
+jboolean IsDistillerHeuristicsEnabled(JNIEnv* env,
+                                    const JavaParamRef<jclass>& clazz) {
+  return dom_distiller::GetDistillerHeuristicsType()
+      != dom_distiller::DistillerHeuristicsType::NONE;
 }
 
 }  // namespace android
