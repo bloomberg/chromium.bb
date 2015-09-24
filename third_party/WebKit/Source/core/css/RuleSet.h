@@ -95,7 +95,7 @@ public:
 
 private:
     RawPtrWillBeMember<StyleRule> m_rule;
-    unsigned m_selectorIndex : 12;
+    unsigned m_selectorIndex : 13;
     unsigned m_isLastInArray : 1; // We store an array of RuleData objects in a primitive array.
     // This number was picked fairly arbitrarily. We can probably lower it if we need to.
     // Some simple testing showed <100,000 RuleData's on large sites.

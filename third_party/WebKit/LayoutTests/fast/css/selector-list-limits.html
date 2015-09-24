@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+
+<style id=style></style>
+<div id=target></div>
+
+<script>
+function selectors(n) {
+  var list = [];
+  for (var i = 0; i < n; i++) {
+    list.push('#foo');
+  }
+  return list.join(', ');
+}
+
+var selectorLimit = 8192;
+style.textContent = selectors(selectorLimit - 1) + ', #target { width: 100px; }\n' +
+                    selectors(selectorLimit) + ', #target { height: 100px; }';
+
+test(function() {
+    assert_equals(getComputedStyle(target).width, '100px');
+    assert_not_equals(getComputedStyle(target).height, '100px');
+}, 'Selector list limit is ' + selectorLimit);
+</script>
