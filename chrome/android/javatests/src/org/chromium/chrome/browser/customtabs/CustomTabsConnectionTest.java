@@ -20,11 +20,13 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     private static final String URL2 = "https://www.android.com";
     private static final String INVALID_SCHEME_URL = "intent://www.google.com";
 
+    private Context mContext;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) context);
+        mContext = getInstrumentation().getTargetContext().getApplicationContext();
+        mCustomTabsConnection = CustomTabsTestUtils.setUpConnection((Application) mContext);
     }
 
     @Override
@@ -121,9 +123,9 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testMultipleMayLaunchUrl() {
         ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(Process.myUid());
+        mCustomTabsConnection.resetThrottling(mContext, Process.myUid());
         assertWarmupAndMayLaunchUrl(cb, URL, true);
-        mCustomTabsConnection.resetThrottling(Process.myUid());
+        mCustomTabsConnection.resetThrottling(mContext, Process.myUid());
         assertWarmupAndMayLaunchUrl(cb, URL2, true);
     }
 
@@ -222,9 +224,9 @@ public class CustomTabsConnectionTest extends InstrumentationTestCase {
     @SmallTest
     public void testThrottlingAcrossSessions() {
         ICustomTabsCallback cb = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(Process.myUid());
+        mCustomTabsConnection.resetThrottling(mContext, Process.myUid());
         ICustomTabsCallback cb2 = assertWarmupAndMayLaunchUrl(null, URL, true);
-        mCustomTabsConnection.resetThrottling(Process.myUid());
+        mCustomTabsConnection.resetThrottling(mContext, Process.myUid());
         for (int i = 0; i < 10; i++) {
             mCustomTabsConnection.mayLaunchUrl(cb, Uri.parse(URL), null, null);
         }

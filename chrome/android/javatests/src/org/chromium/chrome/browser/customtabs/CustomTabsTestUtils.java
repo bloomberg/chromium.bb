@@ -52,7 +52,7 @@ public class CustomTabsTestUtils {
 
     public static CustomTabsConnection setUpConnection(Application application) {
         CustomTabsConnection connection = CustomTabsConnection.getInstance(application);
-        connection.resetThrottling(Process.myUid());
+        connection.resetThrottling(application, Process.myUid());
         return connection;
     }
 

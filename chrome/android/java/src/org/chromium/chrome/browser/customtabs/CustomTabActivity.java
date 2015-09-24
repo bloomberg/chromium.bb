@@ -183,8 +183,7 @@ public class CustomTabActivity extends ChromeActivity {
         // If extra headers have been passed, cancel any current prerender, as
         // prerendering doesn't support extra headers.
         if (IntentHandler.getExtraHeadersFromIntent(getIntent()) != null) {
-            CustomTabsConnection.getInstance(getApplication())
-                    .takePrerenderedUrl(mSession, "", null);
+            CustomTabsConnection.getInstance(getApplication()).cancelPrerender(mSession);
         }
 
         mTab = new CustomTab(this, getWindowAndroid(), mSession, url, referrerUrl,
