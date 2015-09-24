@@ -226,7 +226,7 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleTextNode()
         return true;
 
     String text = layoutObject->text();
-    if (!layoutObject->firstTextBox() && text.length() > 0)
+    if (!layoutObject->hasTextBoxes() && text.length() > 0)
         return true;
 
     m_positionEndOffset = m_offset;

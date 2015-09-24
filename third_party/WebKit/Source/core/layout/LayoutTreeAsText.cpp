@@ -194,7 +194,7 @@ void LayoutTreeAsText::writeLayoutObject(TextStream& ts, const LayoutObject& o, 
         const LayoutText& text = toLayoutText(o);
         IntRect linesBox = text.linesBoundingBox();
         r = LayoutRect(IntRect(text.firstRunX(), text.firstRunY(), linesBox.width(), linesBox.height()));
-        if (adjustForTableCells && !text.firstTextBox())
+        if (adjustForTableCells && !text.hasTextBoxes())
             adjustForTableCells = false;
     } else if (o.isLayoutInline()) {
         // FIXME: Would be better not to just dump 0, 0 as the x and y here.

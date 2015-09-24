@@ -744,12 +744,12 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
             || inherited->visitedLinkColor != other.inherited->visitedLinkColor
             || inherited_flags.m_textUnderline != other.inherited_flags.m_textUnderline
             || visual->textDecoration != other.visual->textDecoration) {
-            diff.setTextOrColorChanged();
+            diff.setTextDecorationOrColorChanged();
         } else if (rareNonInheritedData.get() != other.rareNonInheritedData.get()
             && (rareNonInheritedData->m_textDecorationStyle != other.rareNonInheritedData->m_textDecorationStyle
                 || rareNonInheritedData->m_textDecorationColor != other.rareNonInheritedData->m_textDecorationColor
                 || rareNonInheritedData->m_visitedLinkTextDecorationColor != other.rareNonInheritedData->m_visitedLinkTextDecorationColor)) {
-                diff.setTextOrColorChanged();
+                diff.setTextDecorationOrColorChanged();
         } else if (rareInheritedData.get() != other.rareInheritedData.get()
             && (rareInheritedData->textFillColor() != other.rareInheritedData->textFillColor()
                 || rareInheritedData->textStrokeColor() != other.rareInheritedData->textStrokeColor()
@@ -759,7 +759,7 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
                 || rareInheritedData->visitedLinkTextEmphasisColor() != other.rareInheritedData->visitedLinkTextEmphasisColor()
                 || rareInheritedData->textEmphasisFill != other.rareInheritedData->textEmphasisFill
                 || rareInheritedData->appliedTextDecorations != other.rareInheritedData->appliedTextDecorations)) {
-                diff.setTextOrColorChanged();
+                diff.setTextDecorationOrColorChanged();
         }
     }
 }

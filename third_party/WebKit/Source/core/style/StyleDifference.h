@@ -19,8 +19,8 @@ public:
         ZIndexChanged = 1 << 2,
         FilterChanged = 1 << 3,
         BackdropFilterChanged = 1 << 4,
-        // The object needs to issue paint invalidations if it contains text or properties dependent on color (e.g., border or outline).
-        TextOrColorChanged = 1 << 5,
+        // The object needs to issue paint invalidations if it is affected by text decorations or properties dependent on color (e.g., border or outline).
+        TextDecorationOrColorChanged = 1 << 5,
         // If you add a value here, be sure to update the number of bits on m_propertySpecificDifferences.
     };
 
@@ -81,8 +81,8 @@ public:
     bool backdropFilterChanged() const { return m_propertySpecificDifferences & BackdropFilterChanged; }
     void setBackdropFilterChanged() { m_propertySpecificDifferences |= BackdropFilterChanged; }
 
-    bool textOrColorChanged() const { return m_propertySpecificDifferences & TextOrColorChanged; }
-    void setTextOrColorChanged() { m_propertySpecificDifferences |= TextOrColorChanged; }
+    bool textDecorationOrColorChanged() const { return m_propertySpecificDifferences & TextDecorationOrColorChanged; }
+    void setTextDecorationOrColorChanged() { m_propertySpecificDifferences |= TextDecorationOrColorChanged; }
 
 private:
     enum PaintInvalidationType {

@@ -153,6 +153,9 @@ public:
     InlineTextBox* firstTextBox() const { return m_firstTextBox; }
     InlineTextBox* lastTextBox() const { return m_lastTextBox; }
 
+    // True if we have inline text box children which implies rendered text (or whitespace) output.
+    bool hasTextBoxes() const { return firstTextBox(); }
+
     int caretMinOffset() const override;
     int caretMaxOffset() const override;
     unsigned resolvedTextLength() const;

@@ -614,7 +614,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
             return true;
         }
         LayoutText* layoutText = toLayoutText(m_layoutObject);
-        if (!layoutText->firstTextBox()) {
+        if (!layoutText->hasTextBoxes()) {
             if (ignoredReasons)
                 ignoredReasons->append(IgnoredReason(AXEmptyText));
             return true;

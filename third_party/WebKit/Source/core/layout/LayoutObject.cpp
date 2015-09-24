@@ -1722,10 +1722,13 @@ StyleDifference LayoutObject::adjustStyleDifference(StyleDifference diff) const
             diff.setNeedsPaintInvalidationLayer();
     }
 
-    if (diff.textOrColorChanged() && !diff.needsPaintInvalidation()) {
+    // Optimization: for decoration/color property changes, invalidation is only needed if we have style or text affected by these properties.
+    if (diff.textDecorationOrColorChanged() && !diff.needsPaintInvalidation()) {
         if (style()->hasBorder() || style()->hasOutline()
             || style()->isBackgroundColorCurrentColor()
-            || (isText() && !toLayoutText(this)->isAllCollapsibleWhitespace()))
+            // Skip any text nodes that do not contain text boxes. Whitespace cannot be
+            // skipped or we will miss invalidating decorations (e.g., underlines).
+            || (isText() && !isBR() && toLayoutText(this)->hasTextBoxes()))
             diff.setNeedsPaintInvalidationObject();
     }
 

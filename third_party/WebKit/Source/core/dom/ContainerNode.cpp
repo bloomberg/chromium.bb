@@ -938,7 +938,7 @@ bool ContainerNode::getUpperLeftCorner(FloatPoint& point) const
             return true;
         }
 
-        if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toLayoutText(o)->firstTextBox()) {
+        if (p->node() && p->node() == this && o->isText() && !o->isBR() && !toLayoutText(o)->hasTextBoxes()) {
             // Do nothing - skip unrendered whitespace that is a child or next sibling of the anchor.
         } else if ((o->isText() && !o->isBR()) || o->isReplaced()) {
             point = FloatPoint();
