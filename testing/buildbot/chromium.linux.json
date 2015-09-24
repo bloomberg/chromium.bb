@@ -1036,6 +1036,10 @@
       {
         "name": "nacl_integration",
         "script": "nacl_integration.py"
+      },
+      {
+        "name": "mojo_apptests",
+        "script": "mojo_apptests.py"
       }
     ]
   },
