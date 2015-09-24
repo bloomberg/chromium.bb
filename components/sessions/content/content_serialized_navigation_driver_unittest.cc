@@ -4,8 +4,8 @@
 
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"

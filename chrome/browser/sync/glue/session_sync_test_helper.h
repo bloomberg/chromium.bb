@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 namespace sync_driver {
 struct SyncedSession;

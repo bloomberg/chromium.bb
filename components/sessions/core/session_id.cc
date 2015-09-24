@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 static SessionID::id_type next_id = 1;
 

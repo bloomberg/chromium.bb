@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SERIALIZED_NAVIGATION_ENTRY_H_
-#define COMPONENTS_SESSIONS_SERIALIZED_NAVIGATION_ENTRY_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_H_
+#define COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_H_
 
 #include <set>
 #include <string>
@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
@@ -143,4 +143,4 @@ class SESSIONS_EXPORT SerializedNavigationEntry {
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_SERIALIZED_NAVIGATION_ENTRY_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SERIALIZED_NAVIGATION_ENTRY_H_

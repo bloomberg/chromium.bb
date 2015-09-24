@@ -6,7 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/thread_task_runner_handle.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/revisit/current_tab_matcher.h"
 #include "components/sync_driver/revisit/offset_tab_matcher.h"

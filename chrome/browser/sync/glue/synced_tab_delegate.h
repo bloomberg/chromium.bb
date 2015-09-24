@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sync_driver/sessions/synced_window_delegates_getter.h"
 
 class Profile;

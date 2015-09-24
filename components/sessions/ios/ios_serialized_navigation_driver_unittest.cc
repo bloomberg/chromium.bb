@@ -4,8 +4,8 @@
 
 #include "components/sessions/ios/ios_serialized_navigation_driver.h"
 
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "ios/web/public/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -7,7 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/sessions/core/live_tab.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 #include "content/public/browser/session_storage_namespace.h"
 
 namespace content {

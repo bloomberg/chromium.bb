@@ -11,11 +11,11 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "components/sessions/core/live_tab.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_client.h"
 #include "components/sessions/core/tab_restore_service_delegate.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/session_types.h"
 
 namespace sessions {
 

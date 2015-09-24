@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/session_service_commands.h"
+#include "components/sessions/core/session_service_commands.h"
 
 #include <vector>
 
 #include "base/pickle.h"
-#include "components/sessions/base_session_service_commands.h"
-#include "components/sessions/base_session_service_delegate.h"
-#include "components/sessions/session_command.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/base_session_service_commands.h"
+#include "components/sessions/core/base_session_service_delegate.h"
+#include "components/sessions/core/session_command.h"
+#include "components/sessions/core/session_types.h"
 
 namespace sessions {
 

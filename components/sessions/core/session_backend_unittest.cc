@@ -6,7 +6,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "components/sessions/session_backend.h"
+#include "components/sessions/core/session_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sessions {

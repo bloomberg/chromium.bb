@@ -6,9 +6,9 @@
 #define COMPONENTS_SESSIONS_CORE_LIVE_TAB_H_
 
 #include "base/basictypes.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/sessions_export.h"
 
 namespace sessions {
 

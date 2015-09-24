@@ -4,8 +4,8 @@
 
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/page_state.h"

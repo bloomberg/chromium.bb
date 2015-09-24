@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSIONS_EXPORT_H_
-#define COMPONENTS_SESSIONS_SESSIONS_EXPORT_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSIONS_EXPORT_H_
+#define COMPONENTS_SESSIONS_CORE_SESSIONS_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
@@ -31,4 +31,4 @@
 #define SESSIONS_EXPORT_PRIVATE
 #endif
 
-#endif  // COMPONENTS_SESSIONS_SESSIONS_EXPORT_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSIONS_EXPORT_H_

@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/session_types.h"
+#include "components/sessions/core/sessions_export.h"
 #include "components/sessions/core/tab_restore_service.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/session_types.h"
-#include "components/sessions/sessions_export.h"
 
 namespace sessions {
 

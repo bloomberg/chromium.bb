@@ -6,7 +6,7 @@
 #define COMPONENTS_SYNC_DRIVER_CURRENT_TAB_MATCHER_H_
 
 #include "base/gtest_prod_util.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sync_driver/revisit/page_equality.h"
 #include "components/sync_driver/revisit/page_visit_observer.h"
 

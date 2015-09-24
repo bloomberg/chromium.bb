@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_COMMANDS_H_
-#define COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_COMMANDS_H_
+#ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_COMMANDS_H_
+#define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_COMMANDS_H_
 
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace sessions {
 class SessionCommand;
@@ -76,4 +76,4 @@ SESSIONS_EXPORT bool RestoreSetWindowAppNameCommand(
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_COMMANDS_H_
+#endif  // COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_COMMANDS_H_

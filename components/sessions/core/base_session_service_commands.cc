@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/base_session_service_commands.h"
+#include "components/sessions/core/base_session_service_commands.h"
 
 #include "base/pickle.h"
-#include "components/sessions/session_backend.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_backend.h"
+#include "components/sessions/core/session_types.h"
 
 namespace sessions {
 namespace {

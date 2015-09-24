@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSION_SERVICE_COMMANDS_H_
-#define COMPONENTS_SESSIONS_SESSION_SERVICE_COMMANDS_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSION_SERVICE_COMMANDS_H_
+#define COMPONENTS_SESSIONS_CORE_SESSION_SERVICE_COMMANDS_H_
 
 #include <map>
 #include <string>
@@ -13,9 +13,9 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/sessions/base_session_service.h"
-#include "components/sessions/session_types.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/base_session_service.h"
+#include "components/sessions/core/session_types.h"
+#include "components/sessions/core/sessions_export.h"
 #include "ui/base/ui_base_types.h"
 
 namespace sessions {
@@ -105,4 +105,4 @@ SESSIONS_EXPORT void RestoreSessionFromCommands(
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_SESSION_SERVICE_COMMANDS_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSION_SERVICE_COMMANDS_H_

@@ -9,7 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 namespace browser_sync {
 class SessionsSyncManager;

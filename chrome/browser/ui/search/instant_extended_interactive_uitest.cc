@@ -59,7 +59,7 @@
 #include "components/omnibox/browser/search_provider.h"
 #include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"

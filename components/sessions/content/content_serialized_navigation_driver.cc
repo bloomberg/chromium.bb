@@ -5,7 +5,7 @@
 #include "components/sessions/content/content_serialized_navigation_driver.h"
 
 #include "base/memory/singleton.h"
-#include "components/sessions/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/url_constants.h"

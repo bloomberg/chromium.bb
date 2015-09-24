@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SESSIONS_CORE_SESSION_CONSTANTS_H_
 #define COMPONENTS_SESSIONS_CORE_SESSION_CONSTANTS_H_
 
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace sessions {
 

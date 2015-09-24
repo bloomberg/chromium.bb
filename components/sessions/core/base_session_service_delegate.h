@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
-#define COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
+#define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -39,4 +39,4 @@ class BaseSessionServiceDelegate {
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_DELEGATE_H_

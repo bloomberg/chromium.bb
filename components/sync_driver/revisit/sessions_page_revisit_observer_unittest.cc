@@ -6,9 +6,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/test/histogram_tester.h"
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/serialized_navigation_entry_test_helper.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sync_driver/glue/synced_session.h"
 #include "components/sync_driver/revisit/page_visit_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"

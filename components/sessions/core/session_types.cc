@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 
 #include "base/basictypes.h"
 #include "base/stl_util.h"
-#include "components/sessions/session_command.h"
+#include "components/sessions/core/session_command.h"
 
 namespace sessions {
 

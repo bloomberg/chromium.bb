@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 class SessionService;
 

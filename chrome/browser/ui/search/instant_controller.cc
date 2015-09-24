@@ -20,7 +20,7 @@
 #include "chrome/common/search_urls.h"
 #include "chrome/common/url_constants.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/serialized_navigation_entry.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"

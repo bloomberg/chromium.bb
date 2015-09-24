@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sessions/base_session_service_test_helper.h"
+#include "components/sessions/core/base_session_service_test_helper.h"
 
-#include "components/sessions/base_session_service.h"
-#include "components/sessions/session_backend.h"
+#include "components/sessions/core/base_session_service.h"
+#include "components/sessions/core/session_backend.h"
 
 namespace sessions {
 

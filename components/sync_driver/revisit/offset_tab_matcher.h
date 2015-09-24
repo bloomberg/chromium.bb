@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SYNC_DRIVER_OFFSET_TAB_MATCHER_H_
 #define COMPONENTS_SYNC_DRIVER_OFFSET_TAB_MATCHER_H_
 
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sync_driver/revisit/page_equality.h"
 #include "components/sync_driver/revisit/page_visit_observer.h"
 

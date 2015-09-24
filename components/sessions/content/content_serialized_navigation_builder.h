@@ -9,7 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace content {
 class BrowserContext;

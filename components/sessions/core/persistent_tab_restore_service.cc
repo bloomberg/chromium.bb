@@ -17,11 +17,11 @@
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
-#include "components/sessions/base_session_service.h"
-#include "components/sessions/base_session_service_commands.h"
-#include "components/sessions/base_session_service_delegate.h"
+#include "components/sessions/core/base_session_service.h"
+#include "components/sessions/core/base_session_service_commands.h"
+#include "components/sessions/core/base_session_service_delegate.h"
+#include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
-#include "components/sessions/session_command.h"
 
 namespace sessions {
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSION_TYPES_H_
-#define COMPONENTS_SESSIONS_SESSION_TYPES_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSION_TYPES_H_
+#define COMPONENTS_SESSIONS_CORE_SESSION_TYPES_H_
 
 #include <algorithm>
 #include <string>
@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/sessions_export.h"
 #include "components/variations/variations_associated_data.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
@@ -175,4 +175,4 @@ struct SESSIONS_EXPORT SessionWindow {
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_SESSION_TYPES_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSION_TYPES_H_

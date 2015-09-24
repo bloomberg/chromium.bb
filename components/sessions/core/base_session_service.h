@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_
-#define COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_H_
+#define COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -12,7 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 #include "url/gurl.h"
 
 
@@ -134,4 +134,4 @@ class SESSIONS_EXPORT BaseSessionService {
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_
+#endif  // COMPONENTS_SESSIONS_CORE_BASE_SESSION_SERVICE_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSION_BACKEND_H_
-#define COMPONENTS_SESSIONS_SESSION_BACKEND_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSION_BACKEND_H_
+#define COMPONENTS_SESSIONS_CORE_SESSION_BACKEND_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "components/sessions/base_session_service.h"
-#include "components/sessions/session_command.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/base_session_service.h"
+#include "components/sessions/core/session_command.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace base {
 class File;
@@ -142,4 +142,4 @@ class SESSIONS_EXPORT SessionBackend
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_SESSION_BACKEND_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSION_BACKEND_H_

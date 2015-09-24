@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSION_ID_H_
-#define COMPONENTS_SESSIONS_SESSION_ID_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSION_ID_H_
+#define COMPONENTS_SESSIONS_CORE_SESSION_ID_H_
 
 #include "base/basictypes.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 
 // Uniquely identifies a tab or window for the duration of a session.
 class SESSIONS_EXPORT SessionID {
@@ -24,4 +24,4 @@ class SESSIONS_EXPORT SessionID {
   id_type id_;
 };
 
-#endif  // COMPONENTS_SESSIONS_SESSION_ID_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSION_ID_H_

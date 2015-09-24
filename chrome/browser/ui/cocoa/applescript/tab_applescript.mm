@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/cocoa/applescript/metrics_applescript.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/url_constants.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"

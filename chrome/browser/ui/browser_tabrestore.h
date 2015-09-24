@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 
 class Browser;
 

@@ -11,7 +11,7 @@
 #include "base/callback_list.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;

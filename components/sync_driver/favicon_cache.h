@@ -19,7 +19,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 #include "sync/api/sync_change.h"
 #include "sync/api/sync_error_factory.h"
 #include "sync/api/syncable_service.h"

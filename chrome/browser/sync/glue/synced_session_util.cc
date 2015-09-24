@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/glue/synced_session_util.h"
 
 #include "chrome/common/url_constants.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "content/public/common/url_constants.h"
 
 namespace browser_sync {

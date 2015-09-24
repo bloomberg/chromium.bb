@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SESSIONS_SESSION_COMMAND_H_
-#define COMPONENTS_SESSIONS_SESSION_COMMAND_H_
+#ifndef COMPONENTS_SESSIONS_CORE_SESSION_COMMAND_H_
+#define COMPONENTS_SESSIONS_CORE_SESSION_COMMAND_H_
 
 #include <string>
 
 #include "base/basictypes.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace base {
 class Pickle;
@@ -72,4 +72,4 @@ class SESSIONS_EXPORT SessionCommand {
 
 }  // namespace sessions
 
-#endif  // COMPONENTS_SESSIONS_SESSION_COMMAND_H_
+#endif  // COMPONENTS_SESSIONS_CORE_SESSION_COMMAND_H_

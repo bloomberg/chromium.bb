@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/window_controller_list_observer.h"
 #include "chrome/common/extensions/api/windows.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 #include "extensions/browser/extension_function.h"
 #include "ui/base/base_window.h"
 

@@ -9,8 +9,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace base {
 class CancelableTaskTracker;

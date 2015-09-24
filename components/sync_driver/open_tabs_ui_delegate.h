@@ -11,8 +11,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sync_driver/glue/synced_session.h"
 
 namespace sync_driver {

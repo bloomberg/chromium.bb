@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 class Profile;
 class TabModel;

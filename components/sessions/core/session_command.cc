@@ -5,7 +5,7 @@
 #include <limits>
 
 #include "base/pickle.h"
-#include "components/sessions/session_command.h"
+#include "components/sessions/core/session_command.h"
 
 namespace sessions {
 

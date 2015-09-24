@@ -12,7 +12,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 
 class AutocompleteResult;
 

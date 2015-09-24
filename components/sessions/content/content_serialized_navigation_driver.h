@@ -7,7 +7,7 @@
 
 #include "components/sessions/core/serialized_navigation_driver.h"
 
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/sessions_export.h"
 
 namespace base {
 template <typename T> struct DefaultSingletonTraits;

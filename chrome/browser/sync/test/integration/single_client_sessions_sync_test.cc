@@ -10,7 +10,7 @@
 #include "chrome/browser/sync/test/integration/typed_urls_helper.h"
 #include "chrome/common/url_constants.h"
 #include "components/history/core/browser/history_types.h"
-#include "components/sessions/session_types.h"
+#include "components/sessions/core/session_types.h"
 #include "sync/test/fake_server/fake_server_verifier.h"
 #include "sync/test/fake_server/sessions_hierarchy.h"
 #include "sync/util/time.h"

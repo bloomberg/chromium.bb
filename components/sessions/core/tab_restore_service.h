@@ -12,10 +12,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sessions/serialized_navigation_entry.h"
-#include "components/sessions/session_id.h"
-#include "components/sessions/session_types.h"
-#include "components/sessions/sessions_export.h"
+#include "components/sessions/core/serialized_navigation_entry.h"
+#include "components/sessions/core/session_id.h"
+#include "components/sessions/core/session_types.h"
+#include "components/sessions/core/sessions_export.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace sessions {

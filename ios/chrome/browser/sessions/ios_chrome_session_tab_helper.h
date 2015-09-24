@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_SESSIONS_IOS_CHROME_SESSION_TAB_HELPER_H_
 
 #include "base/basictypes.h"
-#include "components/sessions/session_id.h"
+#include "components/sessions/core/session_id.h"
 #include "ios/web/public/web_state/web_state_user_data.h"
 
 class IOSChromeSessionTabHelper
