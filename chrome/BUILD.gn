@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/config/win/manifest.gni")
 import("//chrome/chrome_repack_locales.gni")
@@ -14,11 +15,50 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_win) {
+  action("reorder_imports") {
+    script = "//build/win/reorder-imports.py"
+
+    # See comment in chrome_dll.gypi in the hardlink_to_output
+    # target for why this cannot be 'initial' like the DLL.
+    inputs = [
+      "$root_out_dir/initialexe/chrome.exe",
+    ]
+    outputs = [
+      "$root_out_dir/chrome.exe",
+      "$root_out_dir/chrome.exe.pdb",
+    ]
+    args = [
+      "-i",
+      rebase_path("$root_out_dir/initialexe", root_build_dir),
+      "-o",
+      rebase_path("$root_out_dir", root_build_dir),
+      "-a",
+      target_cpu,
+    ]
+    deps = [
+      ":chrome_initial",
+    ]
+  }
+}
+
 if (!is_android) {
-  # TODO(GYP) bug 512599: for Windows need to the the reorder-imports step
-  # which probably means adding another target and renaming this to
-  # chrome_initial like in GYP.
-  executable("chrome") {
+  group("chrome") {
+    deps = [
+      ":chrome_initial",
+    ]
+    if (is_win) {
+      deps += [ ":reorder_imports" ]
+    }
+  }
+
+  executable("chrome_initial") {
+    if (is_win) {
+      output_name = "initialexe/chrome"
+    } else {
+      output_name = "chrome"
+    }
+
     # Because the sources list varies so significantly per-platform, generally
     # each platform lists its own files rather than relying on filtering or
     # removing unused files.
@@ -119,8 +159,12 @@ if (!is_android) {
         "wintrust.lib",
         "crypt32.lib",
       ]
-      configs -= [ "//build/config/win:console" ]
-      configs += [ "//build/config/win:windowed" ]
+      if (!is_asan) {
+        # Set /SUBSYSTEM:WINDOWS for chrome.exe itself, except for the
+        # AddressSanitizer build where console output is important.
+        configs -= [ "//build/config/win:console" ]
+        configs += [ "//build/config/win:windowed" ]
+      }
     } else if (use_aura) {
       # Non-Windows aura entrypoint.
       sources += [ "app/chrome_exe_main_aura.cc" ]
@@ -146,6 +190,10 @@ if (!is_android) {
         "//chrome/installer/util",
         "//content/public/app:both",
       ]
+      if (enable_plugins) {
+        deps += [ "//pdf" ]
+      }
+
       public_deps = [
         ":xdg_mime",  # Needs to be public for installer to consume files.
       ]
@@ -183,10 +231,6 @@ if (!is_android) {
         "//third_party/adobe/flash:flapper_binaries",
         "//third_party/widevine/cdm:widevinecdmadapter",
       ]
-    }
-
-    if (is_linux && enable_plugins) {
-      deps += [ "//pdf" ]
     }
 
     if (is_multi_dll_chrome) {

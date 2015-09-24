@@ -5,6 +5,7 @@
 {
   'targets': [
     {
+      # GN version: //chrome
       'target_name': 'chrome',
       'type': 'none',
       'dependencies': [ 'chrome_initial', ],
@@ -42,7 +43,7 @@
       ],
     },
     {
-      # GN version: //chrome
+      # GN version: //chrome:chrome_initial
       'target_name': 'chrome_initial',
       'type': 'executable',
       # Name the exe chrome.exe, not chrome_initial.exe.
