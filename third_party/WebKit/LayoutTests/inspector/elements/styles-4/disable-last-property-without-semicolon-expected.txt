@@ -1,0 +1,29 @@
+Verifies that formatter adds a semicolon when enabling property.
+
+Formatted
+
+Running: initFormattedStyle
+
+Running: testFormattedDisableLast
+raw cssText:
+{
+    property1: value1;
+    /* property2: value2 */
+}
+
+Running: testFormattedInsertEnd
+raw cssText:
+{
+    property1: value1;
+    /* property2: value2 */
+    endProperty: endValue;
+}
+
+Running: testFormattedEnable
+raw cssText:
+{
+    property1: value1;
+    property2: value2;
+    endProperty: endValue;
+}
+
