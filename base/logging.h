@@ -806,7 +806,7 @@ class BASE_EXPORT LogMessage {
 
 // A non-macro interface to the log facility; (useful
 // when the logging level is not a compile-time constant).
-inline void LogAtLevel(int const log_level, std::string const &msg) {
+inline void LogAtLevel(int log_level, const std::string& msg) {
   LogMessage(__FILE__, __LINE__, log_level).stream() << msg;
 }
 

@@ -99,7 +99,7 @@ TestSessionStateDelegate::~TestSessionStateDelegate() {
   STLDeleteElements(&user_list_);
 }
 
-void TestSessionStateDelegate::AddUser(const std::string user_id) {
+void TestSessionStateDelegate::AddUser(const std::string& user_id) {
   user_list_.push_back(new MockUserInfo(user_id));
 }
 

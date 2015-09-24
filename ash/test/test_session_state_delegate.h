@@ -27,7 +27,7 @@ class TestSessionStateDelegate : public SessionStateDelegate {
   void set_session_state(SessionState session_state) {
     session_state_ = session_state;
   }
-  void AddUser(const std::string user_id);
+  void AddUser(const std::string& user_id);
   const user_manager::UserInfo* GetActiveUserInfo() const;
 
   // SessionStateDelegate:
