@@ -191,7 +191,6 @@ private:
     bool parseFont(bool important);
     bool parseSystemFont(bool important);
     PassRefPtrWillBeRawPtr<CSSValueList> parseFontFamily();
-    PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseCounter(int defaultValue);
     PassRefPtrWillBeRawPtr<CSSValue> parseCounterContent(CSSParserValueList* args, bool counters);

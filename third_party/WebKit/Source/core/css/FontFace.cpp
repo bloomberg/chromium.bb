@@ -112,7 +112,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 
     // Obtain the font-family property and the src property. Both must be defined.
     RefPtrWillBeRawPtr<CSSValue> family = properties.getPropertyCSSValue(CSSPropertyFontFamily);
-    if (!family || !family->isValueList())
+    if (!family || !family->isPrimitiveValue())
         return nullptr;
     RefPtrWillBeRawPtr<CSSValue> src = properties.getPropertyCSSValue(CSSPropertySrc);
     if (!src || !src->isValueList())
@@ -120,7 +120,7 @@ PassRefPtrWillBeRawPtr<FontFace> FontFace::create(Document* document, const Styl
 
     RefPtrWillBeRawPtr<FontFace> fontFace = adoptRefWillBeNoop(new FontFace(document));
 
-    if (fontFace->setFamilyValue(toCSSValueList(family.get()))
+    if (fontFace->setFamilyValue(toCSSPrimitiveValue(family.get()))
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStyle)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontWeight)
         && fontFace->setPropertyFromStyle(properties, CSSPropertyFontStretch)
@@ -270,13 +270,8 @@ bool FontFace::setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue> value, CSSPrope
     return true;
 }
 
-bool FontFace::setFamilyValue(CSSValueList* familyList)
+bool FontFace::setFamilyValue(CSSPrimitiveValue* familyValue)
 {
-    // The font-family descriptor has to have exactly one family name.
-    if (familyList->length() != 1)
-        return false;
-
-    CSSPrimitiveValue* familyValue = toCSSPrimitiveValue(familyList->item(0));
     AtomicString family;
     if (familyValue->isCustomIdent()) {
         family = AtomicString(familyValue->getStringValue());

@@ -344,6 +344,58 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFontWeight(CSSParserTokenRange& r
     return cssValuePool().createIdentifierValue(static_cast<CSSValueID>(CSSValue100 + weight / 100 - 1));
 }
 
+static String concatenateFamilyName(CSSParserTokenRange& range)
+{
+    StringBuilder builder;
+    bool addedSpace = false;
+    const CSSParserToken& firstToken = range.peek();
+    while (range.peek().type() == IdentToken) {
+        if (!builder.isEmpty()) {
+            builder.append(' ');
+            addedSpace = true;
+        }
+        builder.append(range.consumeIncludingWhitespace().value());
+    }
+    if (!addedSpace && isCSSWideKeyword(firstToken.id()))
+        return String();
+    return builder.toString();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeFamilyName(CSSParserTokenRange& range)
+{
+    if (range.peek().type() == StringToken)
+        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value());
+    if (range.peek().type() != IdentToken)
+        return nullptr;
+    String familyName = concatenateFamilyName(range);
+    if (familyName.isNull())
+        return nullptr;
+    return cssValuePool().createFontFamilyValue(familyName);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGenericFamily(CSSParserTokenRange& range)
+{
+    if (range.peek().id() >= CSSValueSerif && range.peek().id() <= CSSValueWebkitBody)
+        return consumeIdent(range);
+    return nullptr;
+}
+
+static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily(CSSParserTokenRange& range)
+{
+    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
+        if ((parsedValue = consumeGenericFamily(range))) {
+            list->append(parsedValue);
+        } else if ((parsedValue = consumeFamilyName(range))) {
+            list->append(parsedValue);
+        } else {
+            return nullptr;
+        }
+    } while (consumeCommaIncludingWhitespace(range));
+    return list.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID propId)
 {
     m_range.consumeWhitespace();
@@ -363,7 +415,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyFontVariant:
         return consumeFontVariant();
     case CSSPropertyFontFamily:
-        return consumeFontFamily();
+        return consumeFontFamily(m_range);
     case CSSPropertyFontWeight:
         return consumeFontWeight(m_range);
     default:
@@ -412,24 +464,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcURI()
     return uriValue.release();
 }
 
-static String concatenateFamilyName(CSSParserTokenRange& range)
-{
-    StringBuilder builder;
-    bool addedSpace = false;
-    const CSSParserToken& firstToken = range.peek();
-    while (range.peek().type() == IdentToken) {
-        if (!builder.isEmpty()) {
-            builder.append(' ');
-            addedSpace = true;
-        }
-        builder.append(range.consumeIncludingWhitespace().value());
-    }
-    if (!addedSpace && isCSSWideKeyword(firstToken.id())) {
-        return String();
-}
-    return builder.toString();
-}
-
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::consumeFontFaceSrcLocal()
 {
     CSSParserTokenRange args = consumeFunction(m_range);
@@ -467,49 +501,17 @@ PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFaceSrc()
     return values.release();
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> consumeFamilyName(CSSParserTokenRange& range)
-{
-    if (range.peek().type() == StringToken)
-        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value());
-    if (range.peek().type() != IdentToken)
-        return nullptr;
-    String familyName = concatenateFamilyName(range);
-    if (familyName.isNull())
-        return nullptr;
-    return cssValuePool().createFontFamilyValue(familyName);
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> consumeGenericFamily(CSSParserTokenRange& range)
-{
-    if (range.peek().id() >= CSSValueSerif && range.peek().id() <= CSSValueWebkitBody)
-        return consumeIdent(range);
-    return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSPropertyParser::consumeFontFamily()
-{
-    RefPtrWillBeRawPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    do {
-        RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
-        if ((parsedValue = consumeGenericFamily(m_range))) {
-            list->append(parsedValue);
-        } else if ((parsedValue = consumeFamilyName(m_range))) {
-            list->append(parsedValue);
-        } else {
-            return nullptr;
-        }
-    } while (consumeCommaIncludingWhitespace(m_range));
-    if (m_ruleType == StyleRule::FontFace && list->length() > 1)
-        return nullptr;
-    return list.release();
-}
-
 bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
 {
     RefPtrWillBeRawPtr<CSSValue> parsedValue = nullptr;
 
     m_range.consumeWhitespace();
     switch (propId) {
+    case CSSPropertyFontFamily:
+        if (consumeGenericFamily(m_range))
+            return false;
+        parsedValue = consumeFamilyName(m_range);
+        break;
     case CSSPropertySrc: // This is a list of urls or local references.
         parsedValue = consumeFontFaceSrc();
         break;
@@ -524,8 +526,6 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         parsedValue = cssValuePool().createIdentifierValue(id);
         break;
     }
-    // TODO(rwlbuis): check there is only one family-name in font-face descriptor case
-    case CSSPropertyFontFamily:
     case CSSPropertyFontVariant:
     case CSSPropertyFontWeight:
     case CSSPropertyWebkitFontFeatureSettings:
