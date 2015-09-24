@@ -543,7 +543,7 @@ public:
         ASSERT(!m_hasSelfPaintingLayerDescendantDirty);
         return m_hasSelfPaintingLayerDescendant;
     }
-    LayoutRect paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, GlobalPaintFlags);
+    LayoutRect paintingExtent(const DeprecatedPaintLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, GlobalPaintFlags);
     void appendSingleFragmentIgnoringPagination(DeprecatedPaintLayerFragments&, const DeprecatedPaintLayer* rootLayer, const LayoutRect& dirtyRect, ClipRectsCacheSlot, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize, ShouldRespectOverflowClip = RespectOverflowClip, const LayoutPoint* offsetFromRoot = 0, const LayoutSize& subPixelAccumulation = LayoutSize());
     void collectFragments(DeprecatedPaintLayerFragments&, const DeprecatedPaintLayer* rootLayer, const LayoutRect& dirtyRect,
         ClipRectsCacheSlot, OverlayScrollbarSizeRelevancy inOverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize,
@@ -563,7 +563,7 @@ public:
     };
 
     static LayoutRect transparencyClipBox(const DeprecatedPaintLayer*, const DeprecatedPaintLayer* rootLayer, TransparencyClipBoxBehavior transparencyBehavior,
-        TransparencyClipBoxMode transparencyMode, GlobalPaintFlags = GlobalPaintNormalPhase);
+        TransparencyClipBoxMode transparencyMode, const LayoutSize& subPixelAccumulation, GlobalPaintFlags = GlobalPaintNormalPhase);
 
     bool needsRepaint() const { return m_needsRepaint; }
     void setNeedsRepaint();

@@ -268,7 +268,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
     // FIXME: this should be unified further into DeprecatedPaintLayer::paintsWithTransparency().
     bool shouldCompositeForBlendMode = (!m_paintLayer.layoutObject()->isDocumentElement() || m_paintLayer.layoutObject()->isSVGRoot()) && m_paintLayer.stackingNode()->isStackingContext() && m_paintLayer.hasNonIsolatedDescendantWithBlendMode();
     if (shouldCompositeForBlendMode || m_paintLayer.paintsWithTransparency(paintingInfo.globalPaintFlags())) {
-        FloatRect compositingBounds = FloatRect(m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.globalPaintFlags()));
+        FloatRect compositingBounds = FloatRect(m_paintLayer.paintingExtent(paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.globalPaintFlags()));
         compositingRecorder.emplace(*context, *m_paintLayer.layoutObject(),
             WebCoreCompositeToSkiaComposite(CompositeSourceOver, m_paintLayer.layoutObject()->style()->blendMode()),
             m_paintLayer.layoutObject()->opacity(), &compositingBounds);
@@ -415,7 +415,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
         ShouldRespectOverflowClip respectOverflowClip = shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject());
         // Calculate the transformed bounding box in the current coordinate space, to figure out
         // which fragmentainers (e.g. columns) we need to visit.
-        LayoutRect transformedExtent = DeprecatedPaintLayer::transparencyClipBox(&m_paintLayer, paginationLayer, DeprecatedPaintLayer::PaintingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, paintingInfo.globalPaintFlags());
+        LayoutRect transformedExtent = DeprecatedPaintLayer::transparencyClipBox(&m_paintLayer, paginationLayer, DeprecatedPaintLayer::PaintingTransparencyClipBox, DeprecatedPaintLayer::RootOfTransparencyClipBox, paintingInfo.subPixelAccumulation, paintingInfo.globalPaintFlags());
         // FIXME: we don't check if paginationLayer is within paintingInfo.rootLayer here.
         paginationLayer->collectFragments(fragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, cacheSlot, IgnoreOverlayScrollbarSize, respectOverflowClip, 0, paintingInfo.subPixelAccumulation, &transformedExtent);
     } else {
