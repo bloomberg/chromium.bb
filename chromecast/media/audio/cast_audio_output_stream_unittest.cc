@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chromecast/base/metrics/cast_metrics_test_helper.cc"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
@@ -209,6 +210,7 @@ class AudioOutputStreamTest : public ::testing::Test {
   void SetUp() override {
     message_loop_.reset(new base::MessageLoop());
     audio_manager_.reset(new FakeAudioManager);
+    metrics::InitializeMetricsHelperForTesting();
   }
 
   void TearDown() override {

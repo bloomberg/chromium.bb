@@ -79,6 +79,9 @@ class CastMetricsHelper {
   // Logs UMA record of the time the app made its first paint.
   virtual void LogTimeToFirstPaint();
 
+  // Logs UMA record of the time the app pushed its first audio frame.
+  virtual void LogTimeToFirstAudio();
+
   // Logs UMA record of the time needed to re-buffer A/V.
   virtual void LogTimeToBufferAv(BufferingType buffering_type,
                                  base::TimeDelta time);
@@ -134,6 +137,9 @@ class CastMetricsHelper {
   std::string sdk_version_;
 
   MetricsSink* metrics_sink_;
+
+  bool logged_first_audio_;
+
   // Default RecordAction callback when metrics_sink_ is not set.
   RecordActionCallback record_action_callback_;
 

@@ -23,6 +23,7 @@ class CastMetricsHelperStub : public CastMetricsHelper {
   void UpdateSDKInfo(const std::string& sdk_version) override;
   void LogMediaPlay() override;
   void LogMediaPause() override;
+  void LogTimeToFirstAudio() override;
   void LogTimeToBufferAv(BufferingType buffering_type,
                          base::TimeDelta time) override;
   std::string GetMetricsNameWithAppName(
@@ -58,6 +59,9 @@ void CastMetricsHelperStub::LogMediaPlay() {
 }
 
 void CastMetricsHelperStub::LogMediaPause() {
+}
+
+void CastMetricsHelperStub::LogTimeToFirstAudio() {
 }
 
 void CastMetricsHelperStub::LogTimeToBufferAv(BufferingType buffering_type,

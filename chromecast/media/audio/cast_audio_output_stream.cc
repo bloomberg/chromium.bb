@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
+#include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/cma/base/cast_decoder_buffer_impl.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
@@ -187,6 +188,8 @@ void CastAudioOutputStream::PushFrame(AudioSourceCallback* source_callback) {
                  << " skipped because audio device is busy.";
     return;
   }
+
+  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
 
   int frame_count = source_callback->OnMoreData(audio_bus_.get(), 0);
   DCHECK_EQ(frame_count, audio_bus_->frames());

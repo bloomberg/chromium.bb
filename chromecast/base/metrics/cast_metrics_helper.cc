@@ -92,6 +92,7 @@ CastMetricsHelper::CastMetricsHelper(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       metrics_sink_(NULL),
+      logged_first_audio_(false),
       record_action_callback_(base::Bind(&base::RecordComputedAction)) {
   DCHECK(task_runner_.get());
   DCHECK(!g_instance);
@@ -99,7 +100,7 @@ CastMetricsHelper::CastMetricsHelper(
 }
 
 CastMetricsHelper::CastMetricsHelper()
-    : metrics_sink_(NULL) {
+    : metrics_sink_(NULL), logged_first_audio_(false) {
   DCHECK(!g_instance);
   g_instance = this;
 }
@@ -115,6 +116,7 @@ void CastMetricsHelper::UpdateCurrentAppInfo(const std::string& app_id,
   app_id_ = app_id;
   session_id_ = session_id;
   app_start_time_ = base::TimeTicks::Now();
+  logged_first_audio_ = false;
   TagAppStartForGroupedHistograms(app_id_);
   sdk_version_.clear();
 }
@@ -151,6 +153,22 @@ void CastMetricsHelper::LogTimeToFirstPaint() {
                                                        "TimeToFirstPaint"));
   LogMediumTimeHistogramEvent(uma_name, launch_time);
   LOG(INFO) << uma_name << " is " << launch_time.InSecondsF() << " seconds.";
+}
+
+void CastMetricsHelper::LogTimeToFirstAudio() {
+  MAKE_SURE_THREAD(LogTimeToFirstAudio);
+  if (logged_first_audio_)
+    return;
+  if (app_id_.empty())
+    return;
+  base::TimeDelta time_to_first_audio =
+      base::TimeTicks::Now() - app_start_time_;
+  const std::string uma_name(
+      GetMetricsNameWithAppName("Startup", "TimeToFirstAudio"));
+  LogMediumTimeHistogramEvent(uma_name, time_to_first_audio);
+  LOG(INFO) << uma_name << " is " << time_to_first_audio.InSecondsF()
+            << " seconds.";
+  logged_first_audio_ = true;
 }
 
 void CastMetricsHelper::LogTimeToBufferAv(BufferingType buffering_type,
