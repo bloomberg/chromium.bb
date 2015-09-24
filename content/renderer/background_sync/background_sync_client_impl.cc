@@ -27,7 +27,8 @@ BackgroundSyncClientImpl::BackgroundSyncClientImpl(
     int64 service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
     : service_worker_registration_id_(service_worker_registration_id),
-      binding_(this, request.Pass()) {}
+      binding_(this, request.Pass()),
+      callback_seq_num_(0) {}
 
 void BackgroundSyncClientImpl::Sync(int handle_id,
                                     const SyncCallback& callback) {
@@ -44,15 +45,23 @@ void BackgroundSyncClientImpl::Sync(int handle_id,
 
   // TODO(jkarlin): Find a way to claim the handle safely without requiring a
   // round-trip IPC.
+  int64_t id = ++callback_seq_num_;
+  sync_callbacks_[id] = callback;
   provider->DuplicateRegistrationHandle(
       handle_id, base::Bind(&BackgroundSyncClientImpl::SyncDidGetRegistration,
-                            base::Unretained(this), callback));
+                            base::Unretained(this), id));
 }
 
 void BackgroundSyncClientImpl::SyncDidGetRegistration(
-    const SyncCallback& callback,
+    int64_t callback_id,
     BackgroundSyncError error,
-    const SyncRegistrationPtr& registration) {
+    SyncRegistrationPtr registration) {
+  SyncCallback callback;
+  auto it = sync_callbacks_.find(callback_id);
+  DCHECK(it != sync_callbacks_.end());
+  callback = it->second;
+  sync_callbacks_.erase(it);
+
   if (error != BACKGROUND_SYNC_ERROR_NONE) {
     callback.Run(SERVICE_WORKER_EVENT_STATUS_ABORTED);
     return;

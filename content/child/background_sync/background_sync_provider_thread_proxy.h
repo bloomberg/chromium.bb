@@ -29,6 +29,9 @@ class BackgroundSyncProvider;
 class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
                                           public WorkerThread::Observer {
  public:
+  using DuplicateRegistrationHandleCallback =
+      base::Callback<void(BackgroundSyncError, SyncRegistrationPtr)>;
+
   static BackgroundSyncProviderThreadProxy* GetThreadInstance(
       base::SingleThreadTaskRunner* main_thread_task_runner,
       BackgroundSyncProvider* permissions_dispatcher);
@@ -67,8 +70,7 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
   // underlying registration.
   void DuplicateRegistrationHandle(
       int64 handle_id,
-      const BackgroundSyncService::DuplicateRegistrationHandleCallback&
-          callback);
+      const DuplicateRegistrationHandleCallback& callback);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;

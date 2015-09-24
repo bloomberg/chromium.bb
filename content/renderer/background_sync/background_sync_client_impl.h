@@ -5,6 +5,8 @@
 #ifndef CONTENT_RENDERER_BACKGROUND_SYNC_BACKGROUND_SYNC_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_BACKGROUND_SYNC_BACKGROUND_SYNC_CLIENT_IMPL_H_
 
+#include <map>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "content/common/background_sync_service.mojom.h"
@@ -30,12 +32,15 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
 
   // BackgroundSyncServiceClient methods:
   void Sync(int handle_id, const SyncCallback& callback) override;
-  void SyncDidGetRegistration(const SyncCallback& callback,
+  void SyncDidGetRegistration(int64_t callback_id,
                               BackgroundSyncError error,
-                              const SyncRegistrationPtr& registration);
+                              SyncRegistrationPtr registration);
 
   int64_t service_worker_registration_id_;
   mojo::StrongBinding<BackgroundSyncServiceClient> binding_;
+
+  int64_t callback_seq_num_;
+  std::map<int64_t, SyncCallback> sync_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncClientImpl);
 };

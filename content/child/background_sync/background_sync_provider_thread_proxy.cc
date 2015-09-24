@@ -76,7 +76,8 @@ LazyInstance<ThreadLocalPointer<BackgroundSyncProviderThreadProxy>>::Leaky
     g_sync_provider_tls = LAZY_INSTANCE_INITIALIZER;
 
 void DuplicateRegistrationHandleCallbackOnSWThread(
-    const BackgroundSyncService::DuplicateRegistrationHandleCallback& callback,
+    const BackgroundSyncProviderThreadProxy::
+        DuplicateRegistrationHandleCallback& callback,
     BackgroundSyncError error,
     SyncRegistrationPtr registration) {
   callback.Run(error, registration.Pass());
@@ -84,7 +85,8 @@ void DuplicateRegistrationHandleCallbackOnSWThread(
 
 void DuplicateRegistrationHandleCallbackOnMainThread(
     int worker_thread_id,
-    const BackgroundSyncService::DuplicateRegistrationHandleCallback& callback,
+    const BackgroundSyncProviderThreadProxy::
+        DuplicateRegistrationHandleCallback& callback,
     BackgroundSyncError error,
     SyncRegistrationPtr registration) {
   WorkerTaskRunner::Instance()->PostTask(
@@ -227,8 +229,7 @@ void BackgroundSyncProviderThreadProxy::notifyWhenDone(
 
 void BackgroundSyncProviderThreadProxy::DuplicateRegistrationHandle(
     int64 handle_id,
-    const BackgroundSyncService::DuplicateRegistrationHandleCallback&
-        callback) {
+    const DuplicateRegistrationHandleCallback& callback) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&BackgroundSyncProvider::DuplicateRegistrationHandle,
