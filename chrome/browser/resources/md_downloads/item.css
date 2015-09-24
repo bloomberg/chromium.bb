@@ -157,6 +157,9 @@
 #remove {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
+  --layout-inline: {
+    /* HACK(dbeam): we probably shouldn't be overriding Polymer like this. */
+  };
   color: #969696;
   height: 16px;
   padding: 8px;
