@@ -52,7 +52,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
           scoped_ptr< ::gpu::GLInProcessContext> context,
           const blink::WebGraphicsContext3D::Attributes& attributes);
 
-  virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
+  ~WebGraphicsContext3DInProcessCommandBufferImpl() override;
 
   size_t GetMappedMemoryLimit();
 
