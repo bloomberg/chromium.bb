@@ -37595,6 +37595,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SafeBrowsing.Pref.Extended" enum="BooleanEnabled">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Whether the Safe Browsing extended reporting service is currently enabled.
+    Recorded for all non-Incognito profiles on profile startup.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.Pref.General" enum="BooleanEnabled">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Whether the Safe Browsing service is currently enabled. Recorded for all
+    non-Incognito profiles on profile startup.
+  </summary>
+</histogram>
+
 <histogram name="SB.BloomFilter" units="milliseconds">
   <obsolete>
     Has not been generated for years (7/8/14).

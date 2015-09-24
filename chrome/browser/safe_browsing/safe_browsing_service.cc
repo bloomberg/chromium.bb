@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -284,6 +285,9 @@ void SafeBrowsingService::Initialize() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
     std::vector<Profile*> profiles = profile_manager->GetLoadedProfiles();
+    // TODO(felt): I believe this for-loop is dead code. Confirm this and
+    // remove in a future CL. See https://codereview.chromium.org/1341533002/
+    DCHECK_EQ(0u, profiles.size());
     for (size_t i = 0; i < profiles.size(); ++i) {
       if (profiles[i]->IsOffTheRecord())
         continue;
@@ -619,6 +623,13 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
                             base::Unretained(this)));
   prefs_map_[pref_service] = registrar;
   RefreshState();
+
+  // Record the current pref state.
+  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.Pref.General",
+                        pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.Pref.Extended",
+      pref_service->GetBoolean(prefs::kSafeBrowsingExtendedReportingEnabled));
 }
 
 void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
