@@ -60,9 +60,6 @@ function requestDeviceWithKeyDown() {
 // Calls testRunner.getBluetoothManualChooserEvents() until it's returned
 // |expected_count| events. Or just once if |expected_count| is undefined.
 function getBluetoothManualChooserEvents(expected_count) {
-  if (expected_count === undefined) {
-    expected_count = 0;
-  }
   return new Promise((resolve, reject) => {
     let events = [];
     let accumulate_events = new_events => {
