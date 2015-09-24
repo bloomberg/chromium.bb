@@ -253,19 +253,21 @@ void SchedulerStateMachine::AsValueInto(
 }
 
 bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
+  // Normally when |visible_| is false, pending activations will be forced and
+  // draws will be aborted. However, when the embedder is Android WebView,
+  // software draws could be scheduled by the Android OS at any time and draws
+  // should not be aborted in this case.
+  bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_LOST);
+  if (settings_.using_synchronous_renderer_compositor)
+    return is_output_surface_lost || !can_draw_;
+
   // These are all the cases where we normally cannot or do not want to draw
   // but, if needs_redraw_ is true and we do not draw to make forward progress,
   // we might deadlock with the main thread.
   // This should be a superset of PendingActivationsShouldBeForced() since
   // activation of the pending tree is blocked by drawing of the active tree and
   // the main thread might be blocked on activation of the most recent commit.
-  if (PendingActivationsShouldBeForced())
-    return true;
-
-  // Additional states where we should abort draws.
-  if (!can_draw_)
-    return true;
-  return false;
+  return is_output_surface_lost || !can_draw_ || !visible_;
 }
 
 bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {

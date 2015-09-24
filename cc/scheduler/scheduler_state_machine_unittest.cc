@@ -1806,6 +1806,35 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
+TEST(SchedulerStateMachineTest, ForceDrawForSynchronousCompositor) {
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.using_synchronous_renderer_compositor = true;
+  StateMachine state(scheduler_settings);
+  SET_UP_STATE(state)
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+
+  state.SetVisible(false);
+  state.DidLoseOutputSurface();
+
+  state.SetCanDraw(false);
+  state.WillBeginOutputSurfaceCreation();
+  state.DidCreateAndInitializeOutputSurface();
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+
+  state.SetCanDraw(true);
+  state.DidLoseOutputSurface();
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+
+  state.SetCanDraw(true);
+  state.WillBeginOutputSurfaceCreation();
+  state.DidCreateAndInitializeOutputSurface();
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+
+  state.SetCanDraw(false);
+  state.DidLoseOutputSurface();
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+}
+
 TEST(SchedulerStateMachineTest,
      TestTriggerDeadlineImmediatelyAfterAbortedCommit) {
   SchedulerSettings default_scheduler_settings;

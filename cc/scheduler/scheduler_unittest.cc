@@ -3440,6 +3440,23 @@ TEST_F(SchedulerTest, SynchronousCompositorSendBeginMainFrameWhileIdle) {
   client_->Reset();
 }
 
+TEST_F(SchedulerTest, SynchronousCompositorOnDrawWhenInvisible) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  scheduler_->SetVisible(false);
+
+  scheduler_->SetNeedsRedraw();
+  scheduler_->OnDrawForOutputSurface();
+  // Action animate is the result of SetNeedsRedraw.
+  EXPECT_ACTION("ScheduledActionAnimate", client_, 0, 2);
+  // SynchronousCompositor has to draw regardless of visibility.
+  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client_, 1, 2);
+  EXPECT_FALSE(scheduler_->BeginImplFrameDeadlinePending());
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, AuthoritativeVSyncInterval) {
   SetUpScheduler(true);
   base::TimeDelta initial_interval = scheduler_->BeginImplFrameInterval();
