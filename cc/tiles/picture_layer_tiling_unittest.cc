@@ -6,10 +6,10 @@
 #include <set>
 
 #include "cc/base/math_util.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/tiles/picture_layer_tiling.h"
@@ -85,10 +85,11 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                   float contents_scale,
                   const gfx::Size& layer_bounds) {
     client_.SetTileSize(tile_size);
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
-    tiling_ = TestablePictureLayerTiling::Create(
-        PENDING_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    tiling_ = TestablePictureLayerTiling::Create(PENDING_TREE, contents_scale,
+                                                 raster_source, &client_,
+                                                 LayerTreeSettings());
     tiling_->set_resolution(HIGH_RESOLUTION);
   }
 
@@ -96,10 +97,11 @@ class PictureLayerTilingIteratorTest : public testing::Test {
                         float contents_scale,
                         const gfx::Size& layer_bounds) {
     client_.SetTileSize(tile_size);
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
-    tiling_ = TestablePictureLayerTiling::Create(
-        ACTIVE_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    tiling_ = TestablePictureLayerTiling::Create(ACTIVE_TREE, contents_scale,
+                                                 raster_source, &client_,
+                                                 LayerTreeSettings());
     tiling_->set_resolution(HIGH_RESOLUTION);
   }
 
@@ -211,12 +213,13 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
 
   // Stop creating tiles so that any invalidations are left as holes.
   gfx::Size new_layer_size(200, 200);
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(new_layer_size);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreatePartiallyFilled(new_layer_size,
+                                                         gfx::Rect());
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
-  tiling_->SetRasterSourceAndResize(pile);
+  tiling_->SetRasterSourceAndResize(raster_source);
   EXPECT_TRUE(tiling_->TileAt(0, 0));
   tiling_->Invalidate(invalidation);
   EXPECT_FALSE(tiling_->TileAt(0, 0));
@@ -272,14 +275,14 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
   // Shrink the tiling so that the last tile row/column is entirely in the
   // border pixels of the interior tiles. That row/column is removed.
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(
           gfx::Size(right + 1, bottom + 1));
-  tiling_->SetRasterSourceAndResize(pile);
+  tiling_->SetRasterSourceAndResize(raster_source);
   EXPECT_EQ(2, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
 
-  // The live tiles rect was clamped to the pile size.
+  // The live tiles rect was clamped to the raster source size.
   EXPECT_EQ(gfx::Rect(right + 1, bottom + 1), tiling_->live_tiles_rect());
 
   // Since the row/column is gone, the tiles should be gone too.
@@ -292,9 +295,9 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
   // Growing outside the current right/bottom tiles border pixels should create
   // the tiles again, even though the live rect has not changed size.
-  pile = FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+  raster_source = FakeDisplayListRasterSource::CreateFilled(
       gfx::Size(right + 2, bottom + 2));
-  tiling_->SetRasterSourceAndResize(pile);
+  tiling_->SetRasterSourceAndResize(raster_source);
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -426,10 +429,10 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
   EXPECT_TRUE(tiling_->TileAt(0, 0));
 
   // Stop creating tiles so that any invalidations are left as holes.
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(
-          gfx::Size(200, 200));
-  tiling_->SetRasterSourceAndResize(pile);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreatePartiallyFilled(gfx::Size(200, 200),
+                                                         gfx::Rect());
+  tiling_->SetRasterSourceAndResize(raster_source);
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
@@ -554,11 +557,11 @@ TEST(PictureLayerTilingTest, SkewportLimits) {
   LayerTreeSettings settings;
   settings.skewport_extrapolation_limit_in_content_pixels = 75;
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         settings);
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, settings);
 
   tiling->ComputeTilePriorityRects(viewport, 1.f, 1.0, Occlusion());
 
@@ -638,11 +641,11 @@ TEST(PictureLayerTilingTest, ComputeSkewportExtremeCases) {
   gfx::Size layer_bounds(200, 200);
   client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         settings);
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, settings);
 
   gfx::Rect viewport1(-1918, 255860, 4010, 2356);
   gfx::Rect viewport2(-7088, -91738, 14212, 8350);
@@ -664,11 +667,11 @@ TEST(PictureLayerTilingTest, ComputeSkewport) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
 
   tiling->ComputeTilePriorityRects(viewport, 1.f, 1.0, Occlusion());
 
@@ -726,11 +729,11 @@ TEST(PictureLayerTilingTest, SkewportThroughUpdateTilePriorities) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
 
   tiling->ComputeTilePriorityRects(viewport, 1.f, 1.0, Occlusion());
 
@@ -800,11 +803,11 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   // for instance begins at (8, 16) pixels. So tile at (46, 46) will begin at
   // (368, 368) and extend to the end of 1500 * 0.25 = 375 edge of the
   // tiling.
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.25f, pile, &client,
-                                         settings);
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.25f, raster_source,
+                                         &client, settings);
   tiling->set_resolution(HIGH_RESOLUTION);
   gfx::Rect viewport_in_content_space =
       gfx::ScaleToEnclosedRect(viewport, 0.25f);
@@ -961,8 +964,8 @@ TEST(PictureLayerTilingTest, ViewportDistanceWithScale) {
   EXPECT_FLOAT_EQ(8.f, priority.distance_to_visible);
 
   // Test additional scales.
-  tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.2f, pile, &client,
-                                              LayerTreeSettings());
+  tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 0.2f, raster_source,
+                                              &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
   tiling->ComputeTilePriorityRects(viewport, 1.0f, 4.0, Occlusion());
   prioritized_tiles = tiling->UpdateAndGetAllPrioritizedTilesForTesting();
@@ -1074,9 +1077,9 @@ TEST_F(PictureLayerTilingIteratorTest,
   LayerTreeSettings settings;
   settings.tiling_interest_area_padding = 1;
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
-  tiling_ = TestablePictureLayerTiling::Create(PENDING_TREE, 1.f, pile,
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+  tiling_ = TestablePictureLayerTiling::Create(PENDING_TREE, 1.f, raster_source,
                                                &client_, settings);
   tiling_->set_resolution(HIGH_RESOLUTION);
   VerifyTilesExactlyCoverRect(1.f, gfx::Rect(layer_bounds));
@@ -1110,12 +1113,11 @@ TEST(ComputeTilePriorityRectsTest, VisibleTiles) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1166,12 +1168,11 @@ TEST(ComputeTilePriorityRectsTest, OffscreenTiles) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1232,12 +1233,11 @@ TEST(ComputeTilePriorityRectsTest, PartiallyOffscreenLayer) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1292,12 +1292,11 @@ TEST(ComputeTilePriorityRectsTest, PartiallyOffscreenRotatedLayer) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1377,12 +1376,11 @@ TEST(ComputeTilePriorityRectsTest, PerspectiveLayer) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1472,12 +1470,11 @@ TEST(ComputeTilePriorityRectsTest, PerspectiveLayerClippedByW) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         LayerTreeSettings());
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   tiling->ComputeTilePriorityRects(viewport_in_layer_space,
@@ -1537,12 +1534,11 @@ TEST(ComputeTilePriorityRectsTest, BasicMotion) {
   client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
   scoped_ptr<TestablePictureLayerTiling> tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                         settings);
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                         &client, settings);
   tiling->set_resolution(HIGH_RESOLUTION);
 
   // previous ("last") frame
@@ -1616,11 +1612,10 @@ TEST(ComputeTilePriorityRectsTest, RotationMotion) {
 
   client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          current_layer_bounds);
-  tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile, &client,
-                                              LayerTreeSettings());
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(current_layer_bounds);
+  tiling = TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
+                                              &client, LayerTreeSettings());
   tiling->set_resolution(HIGH_RESOLUTION);
 
   // previous ("last") frame
@@ -1668,11 +1663,10 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   active_client.SetTileSize(gfx::Size(100, 100));
   LayerTreeSettings settings;
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          gfx::Size(10000, 10000));
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(10000, 10000));
   scoped_ptr<TestablePictureLayerTiling> active_tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile,
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
                                          &active_client, settings);
   active_tiling->set_resolution(HIGH_RESOLUTION);
   // Create all tiles on this tiling.
@@ -1683,10 +1677,10 @@ TEST(PictureLayerTilingTest, RecycledTilesCleared) {
   recycle_client.SetTileSize(gfx::Size(100, 100));
   recycle_client.set_twin_tiling(active_tiling.get());
 
-  pile = FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-      gfx::Size(10000, 10000));
+  raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(10000, 10000));
   scoped_ptr<TestablePictureLayerTiling> recycle_tiling =
-      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, pile,
+      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, raster_source,
                                          &recycle_client, settings);
   recycle_tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -1721,11 +1715,10 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   FakePictureLayerTilingClient active_client;
   active_client.SetTileSize(gfx::Size(100, 100));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          gfx::Size(100, 100));
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(100, 100));
   scoped_ptr<TestablePictureLayerTiling> active_tiling =
-      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, pile,
+      TestablePictureLayerTiling::Create(ACTIVE_TREE, 1.0f, raster_source,
                                          &active_client, LayerTreeSettings());
   active_tiling->set_resolution(HIGH_RESOLUTION);
   // Create all tiles on this tiling.
@@ -1738,10 +1731,10 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
 
   LayerTreeSettings settings;
 
-  pile = FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-      gfx::Size(100, 100));
+  raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(100, 100));
   scoped_ptr<TestablePictureLayerTiling> recycle_tiling =
-      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, pile,
+      TestablePictureLayerTiling::Create(PENDING_TREE, 1.0f, raster_source,
                                          &recycle_client, settings);
   recycle_tiling->set_resolution(HIGH_RESOLUTION);
 
@@ -1777,10 +1770,9 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
   EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
 
   // The layer's size isn't changed, but the tile size was.
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          gfx::Size(250, 150));
-  tiling_->SetRasterSourceAndResize(pile);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(250, 150));
+  tiling_->SetRasterSourceAndResize(raster_source);
 
   // Tile size in the tiling should be resized to 250x200.
   EXPECT_EQ(250, tiling_->TilingDataForTesting().max_texture_size().width());
@@ -1792,14 +1784,14 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
 TEST_F(PictureLayerTilingIteratorTest, GiantRect) {
   gfx::Size tile_size(256, 256);
   gfx::Size layer_size(33554432, 33554432);
-  bool filled = false;
   float contents_scale = 1.f;
 
   client_.SetTileSize(tile_size);
-  scoped_refptr<FakePicturePileImpl> pile = FakePicturePileImpl::CreatePile(
-      tile_size, layer_size, gfx::Rect(), filled);
-  tiling_ = TestablePictureLayerTiling::Create(
-      PENDING_TREE, contents_scale, pile, &client_, LayerTreeSettings());
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateEmpty(layer_size);
+  tiling_ = TestablePictureLayerTiling::Create(PENDING_TREE, contents_scale,
+                                               raster_source, &client_,
+                                               LayerTreeSettings());
 
   gfx::Rect content_rect(25554432, 25554432, 950, 860);
   VerifyTilesExactlyCoverRect(contents_scale, content_rect);

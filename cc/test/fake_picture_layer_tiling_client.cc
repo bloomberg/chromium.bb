@@ -7,18 +7,17 @@
 #include <limits>
 
 #include "base/thread_task_runner_handle.h"
-#include "cc/test/fake_picture_pile_impl.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_tile_manager.h"
 
 namespace cc {
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient()
     : tile_manager_(new FakeTileManager(&tile_manager_client_)),
-      pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
+      raster_source_(FakeDisplayListRasterSource::CreateInfiniteFilled()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
-      has_valid_tile_priorities_(true) {
-}
+      has_valid_tile_priorities_(true) {}
 
 FakePictureLayerTilingClient::FakePictureLayerTilingClient(
     ResourceProvider* resource_provider)
@@ -28,7 +27,7 @@ FakePictureLayerTilingClient::FakePictureLayerTilingClient(
                                GL_TEXTURE_2D)),
       tile_manager_(
           new FakeTileManager(&tile_manager_client_, resource_pool_.get())),
-      pile_(FakePicturePileImpl::CreateInfiniteFilledPile()),
+      raster_source_(FakeDisplayListRasterSource::CreateInfiniteFilled()),
       twin_set_(nullptr),
       twin_tiling_(nullptr),
       has_valid_tile_priorities_(true) {}

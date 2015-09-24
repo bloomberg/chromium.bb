@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/debug/lap_timer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -126,12 +127,12 @@ class TileManagerPerfTest : public testing::Test {
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
-    scoped_refptr<FakePicturePileImpl> pending_pile =
-        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
-    scoped_refptr<FakePicturePileImpl> active_pile =
-        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
+    scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
+    scoped_refptr<FakeDisplayListRasterSource> active_raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
 
-    SetupTrees(pending_pile, active_pile);
+    SetupTrees(pending_raster_source, active_raster_source);
   }
 
   void ActivateTree() {
@@ -149,21 +150,22 @@ class TileManagerPerfTest : public testing::Test {
     active_root_layer_->set_fixed_tile_size(tile_size);
   }
 
-  void SetupTrees(scoped_refptr<PicturePileImpl> pending_pile,
-                  scoped_refptr<PicturePileImpl> active_pile) {
-    SetupPendingTree(active_pile);
+  void SetupTrees(scoped_refptr<RasterSource> pending_raster_source,
+                  scoped_refptr<RasterSource> active_raster_source) {
+    SetupPendingTree(active_raster_source);
     ActivateTree();
-    SetupPendingTree(pending_pile);
+    SetupPendingTree(pending_raster_source);
   }
 
-  void SetupPendingTree(scoped_refptr<PicturePileImpl> pile) {
+  void SetupPendingTree(scoped_refptr<RasterSource> raster_source) {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
     // Clear recycled tree.
     pending_tree->DetachLayerTree();
 
     scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
+        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
+                                                     raster_source);
     pending_layer->SetDrawsContent(true);
     pending_layer->SetHasRenderSurface(true);
     pending_tree->SetRootLayer(pending_layer.Pass());
@@ -345,12 +347,12 @@ class TileManagerPerfTest : public testing::Test {
     int next_id = id_ + 1;
 
     // Create the rest of the layers as children of the root layer.
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
       scoped_ptr<FakePictureLayerImpl> layer =
           FakePictureLayerImpl::CreateWithRasterSource(
-              host_impl_.pending_tree(), next_id, pile);
+              host_impl_.pending_tree(), next_id, raster_source);
       layer->SetBounds(layer_bounds);
       layer->SetDrawsContent(true);
       layers.push_back(layer.get());
@@ -419,11 +421,7 @@ class TileManagerPerfTest : public testing::Test {
   FakePictureLayerImpl* active_root_layer_;
   LapTimer timer_;
   LayerTreeSettings settings_;
-
-  static const gfx::Size kDefaultTileSize;
 };
-
-const gfx::Size TileManagerPerfTest::kDefaultTileSize(100, 100);
 
 TEST_F(TileManagerPerfTest, PrepareTiles) {
   RunPrepareTilesTest("2_100", 2, 100);

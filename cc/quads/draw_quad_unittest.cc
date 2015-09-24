@@ -22,7 +22,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
-#include "cc/test/fake_picture_pile_impl.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
@@ -684,8 +684,7 @@ TEST(DrawQuadTest, CopyPictureDrawQuad) {
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   scoped_refptr<RasterSource> raster_source =
-      FakePicturePileImpl::CreateEmptyPile(gfx::Size(100, 100),
-                                           gfx::Size(100, 100));
+      FakeDisplayListRasterSource::CreateEmpty(gfx::Size(100, 100));
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_9_NEW(PictureDrawQuad, opaque_rect, visible_rect, tex_coord_rect,
@@ -932,8 +931,7 @@ TEST_F(DrawQuadIteratorTest, DISABLED_PictureDrawQuad) {
   gfx::Rect content_rect(30, 40, 20, 30);
   float contents_scale = 3.141592f;
   scoped_refptr<RasterSource> raster_source =
-      FakePicturePileImpl::CreateEmptyPile(gfx::Size(100, 100),
-                                           gfx::Size(100, 100));
+      FakeDisplayListRasterSource::CreateEmpty(gfx::Size(100, 100));
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_9_NEW(PictureDrawQuad, opaque_rect, visible_rect, tex_coord_rect,

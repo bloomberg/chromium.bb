@@ -5,10 +5,10 @@
 #include "cc/debug/lap_timer.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -44,11 +44,11 @@ class PictureLayerTilingPerfTest : public testing::Test {
   void SetUp() override {
     LayerTreeSettings defaults;
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(
             gfx::Size(256 * 50, 256 * 50));
     picture_layer_tiling_ = PictureLayerTiling::Create(
-        PENDING_TREE, 1.f, pile, &picture_layer_tiling_client_,
+        PENDING_TREE, 1.f, raster_source, &picture_layer_tiling_client_,
         defaults.tiling_interest_area_padding,
         defaults.skewport_target_time_in_seconds,
         defaults.skewport_extrapolation_limit_in_content_pixels);

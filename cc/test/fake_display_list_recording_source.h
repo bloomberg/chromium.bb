@@ -10,6 +10,10 @@
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/trees/layer_tree_settings.h"
 
+namespace base {
+class WaitableEvent;
+}  // namespace base
+
 namespace cc {
 
 // This class provides method for test to add bitmap and draw rect to content
@@ -19,7 +23,8 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
  public:
   explicit FakeDisplayListRecordingSource(const gfx::Size& grid_cell_size)
       : DisplayListRecordingSource(grid_cell_size),
-        force_unsuitable_for_gpu_rasterization_(false) {}
+        force_unsuitable_for_gpu_rasterization_(false),
+        playback_allowed_event_(nullptr) {}
   ~FakeDisplayListRecordingSource() override {}
 
   static scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
@@ -42,6 +47,11 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
   }
+
+  // DisplayListRecordingSource overrides.
+  scoped_refptr<RasterSource> CreateRasterSource(
+      bool can_use_lcd) const override;
+  bool IsSuitableForGpuRasterization() const override;
 
   void SetRecordedViewport(const gfx::Rect& recorded_viewport) {
     recorded_viewport_ = recorded_viewport;
@@ -88,21 +98,33 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     client_.add_draw_image_with_transform(image, transform, default_paint_);
   }
 
+  void add_draw_image_with_paint(const SkImage* image,
+                                 const gfx::Point& point,
+                                 const SkPaint& paint) {
+    client_.add_draw_image(image, point, paint);
+  }
+
   void set_default_paint(const SkPaint& paint) { default_paint_ = paint; }
 
   void set_reported_memory_usage(size_t reported_memory_usage) {
     client_.set_reported_memory_usage(reported_memory_usage);
   }
 
-  bool IsSuitableForGpuRasterization() const override;
+  void reset_draws() { client_ = FakeContentLayerClient(); }
+
   void SetUnsuitableForGpuRasterization() {
     force_unsuitable_for_gpu_rasterization_ = true;
+  }
+
+  void SetPlaybackAllowedEvent(base::WaitableEvent* event) {
+    playback_allowed_event_ = event;
   }
 
  private:
   FakeContentLayerClient client_;
   SkPaint default_paint_;
   bool force_unsuitable_for_gpu_rasterization_;
+  base::WaitableEvent* playback_allowed_event_;
 };
 
 }  // namespace cc

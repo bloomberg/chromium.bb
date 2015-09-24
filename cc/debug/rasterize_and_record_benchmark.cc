@@ -17,7 +17,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/picture_pile.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "skia/ext/analysis_canvas.h"

@@ -6,11 +6,11 @@
 
 #include "base/thread_task_runner_handle.h"
 #include "cc/debug/lap_timer.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/tiles/tiling_set_raster_queue_all.h"
@@ -54,15 +54,15 @@ class PictureLayerImplPerfTest : public testing::Test {
     host_impl_.InitializeRenderer(output_surface_.get());
   }
 
-  void SetupActiveTree(const gfx::Size& layer_bounds,
-                       const gfx::Size& tile_size) {
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  void SetupActiveTree(const gfx::Size& layer_bounds) {
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
     LayerTreeImpl* active_tree = host_impl_.active_tree();
     active_tree->DetachLayerTree();
 
     scoped_ptr<FakePictureLayerImpl> active_layer =
-        FakePictureLayerImpl::CreateWithRasterSource(active_tree, 7, pile);
+        FakePictureLayerImpl::CreateWithRasterSource(active_tree, 7,
+                                                     raster_source);
     active_layer->SetDrawsContent(true);
     active_layer->SetHasRenderSurface(true);
     active_tree->SetRootLayer(active_layer.Pass());
@@ -175,7 +175,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 };
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
-  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
@@ -192,7 +192,7 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstructAndIterate) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
-  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
@@ -208,7 +208,7 @@ TEST_F(PictureLayerImplPerfTest, TilingSetRasterQueueConstruct) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
-  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 
@@ -233,7 +233,7 @@ TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstructAndIterate) {
 }
 
 TEST_F(PictureLayerImplPerfTest, TilingSetEvictionQueueConstruct) {
-  SetupActiveTree(gfx::Size(10000, 10000), gfx::Size(256, 256));
+  SetupActiveTree(gfx::Size(10000, 10000));
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
 

@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "cc/resources/resource_provider.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -36,12 +36,12 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
   client.SetTileSize(gfx::Size(256, 256));
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateEmpty(layer_bounds);
 
-  set->AddTiling(1.0, pile);
-  set->AddTiling(1.5, pile);
-  set->AddTiling(2.0, pile);
+  set->AddTiling(1.0, raster_source);
+  set->AddTiling(1.5, raster_source);
+  set->AddTiling(2.0, raster_source);
 
   float contents_scale = 2.0;
   gfx::Size content_bounds(
@@ -74,17 +74,17 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   PictureLayerTiling* high_res_tiling;
   PictureLayerTiling* low_res_tiling;
 
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
 
   scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
-  set->AddTiling(2.0, pile);
-  high_res_tiling = set->AddTiling(1.0, pile);
+  set->AddTiling(2.0, raster_source);
+  high_res_tiling = set->AddTiling(1.0, raster_source);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set->AddTiling(0.5, pile);
-  low_res_tiling = set->AddTiling(0.25, pile);
+  set->AddTiling(0.5, raster_source);
+  low_res_tiling = set->AddTiling(0.25, raster_source);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
-  set->AddTiling(0.125, pile);
+  set->AddTiling(0.125, raster_source);
 
   higher_than_high_res_range =
       set->GetTilingRange(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
@@ -111,11 +111,11 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
 
   scoped_ptr<PictureLayerTilingSet> set_without_low_res =
       CreateTilingSet(&client);
-  set_without_low_res->AddTiling(2.0, pile);
-  high_res_tiling = set_without_low_res->AddTiling(1.0, pile);
+  set_without_low_res->AddTiling(2.0, raster_source);
+  high_res_tiling = set_without_low_res->AddTiling(1.0, raster_source);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set_without_low_res->AddTiling(0.5, pile);
-  set_without_low_res->AddTiling(0.25, pile);
+  set_without_low_res->AddTiling(0.5, raster_source);
+  set_without_low_res->AddTiling(0.25, raster_source);
 
   higher_than_high_res_range = set_without_low_res->GetTilingRange(
       PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
@@ -142,9 +142,11 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
 
   scoped_ptr<PictureLayerTilingSet> set_with_only_high_and_low_res =
       CreateTilingSet(&client);
-  high_res_tiling = set_with_only_high_and_low_res->AddTiling(1.0, pile);
+  high_res_tiling =
+      set_with_only_high_and_low_res->AddTiling(1.0, raster_source);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  low_res_tiling = set_with_only_high_and_low_res->AddTiling(0.5, pile);
+  low_res_tiling =
+      set_with_only_high_and_low_res->AddTiling(0.5, raster_source);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
 
   higher_than_high_res_range = set_with_only_high_and_low_res->GetTilingRange(
@@ -174,7 +176,7 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
 
   scoped_ptr<PictureLayerTilingSet> set_with_only_high_res =
       CreateTilingSet(&client);
-  high_res_tiling = set_with_only_high_res->AddTiling(1.0, pile);
+  high_res_tiling = set_with_only_high_res->AddTiling(1.0, raster_source);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
 
   higher_than_high_res_range = set_with_only_high_res->GetTilingRange(
@@ -223,12 +225,12 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     client.SetTileSize(gfx::Size(256, 256));
     gfx::Size layer_bounds(1000, 800);
     scoped_ptr<PictureLayerTilingSet> set = CreateTilingSet(&client);
-    scoped_refptr<FakePicturePileImpl> pile =
-        FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+    scoped_refptr<FakeDisplayListRasterSource> raster_source =
+        FakeDisplayListRasterSource::CreateFilled(layer_bounds);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
-      PictureLayerTiling* tiling = set->AddTiling(scale, pile);
+      PictureLayerTiling* tiling = set->AddTiling(scale, raster_source);
       tiling->set_resolution(HIGH_RESOLUTION);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
@@ -303,15 +305,15 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
       ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 100);
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateFilled(layer_bounds);
 
   gfx::Size tile_size1(10, 10);
   gfx::Size tile_size2(30, 30);
   gfx::Size tile_size3(20, 20);
 
   pending_client.SetTileSize(tile_size1);
-  pending_set->AddTiling(1.f, pile);
+  pending_set->AddTiling(1.f, raster_source);
   // New tilings get the correct tile size.
   EXPECT_EQ(tile_size1, pending_set->tiling_at(0)->tile_size());
 
@@ -336,11 +338,11 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // activation, since we can't set the raster source twice on the pending tree
   // without activating. For test, just remove and add a new tiling instead.
   pending_set->RemoveAllTilings();
-  pending_set->AddTiling(1.f, pile);
+  pending_set->AddTiling(1.f, raster_source);
   pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
   pending_client.SetTileSize(tile_size2);
-  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(pile.get(), Region(),
-                                                           1.f, 1.f);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(raster_source.get(),
+                                                           Region(), 1.f, 1.f);
   // The tiling should get the correct tile size.
   EXPECT_EQ(tile_size2, pending_set->tiling_at(0)->tile_size());
 
@@ -358,7 +360,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // Clone from the pending to the active tree.
   active_client.SetTileSize(tile_size2);
   active_set->UpdateTilingsToCurrentRasterSourceForActivation(
-      pile.get(), pending_set.get(), Region(), 1.f, 1.f);
+      raster_source.get(), pending_set.get(), Region(), 1.f, 1.f);
   // The active tiling should get the right tile size.
   EXPECT_EQ(tile_size2, active_set->tiling_at(0)->tile_size());
 
@@ -371,8 +373,8 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
 
   // A new source frame with a new tile size.
   pending_client.SetTileSize(tile_size3);
-  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(pile.get(), Region(),
-                                                           1.f, 1.f);
+  pending_set->UpdateTilingsToCurrentRasterSourceForCommit(raster_source.get(),
+                                                           Region(), 1.f, 1.f);
   // The tiling gets the new size correctly.
   EXPECT_EQ(tile_size3, pending_set->tiling_at(0)->tile_size());
 
@@ -390,7 +392,7 @@ TEST(PictureLayerTilingSetTest, TileSizeChange) {
   // Now we activate with a different tile size for the active tiling.
   active_client.SetTileSize(tile_size3);
   active_set->UpdateTilingsToCurrentRasterSourceForActivation(
-      pile.get(), pending_set.get(), Region(), 1.f, 1.f);
+      raster_source.get(), pending_set.get(), Region(), 1.f, 1.f);
   // The active tiling changes its tile size.
   EXPECT_EQ(tile_size3, active_set->tiling_at(0)->tile_size());
 
@@ -410,13 +412,13 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
       ACTIVE_TREE, &active_client, 1000, 1.f, 1000);
 
   gfx::Size layer_bounds(100, 105);
-  scoped_refptr<FakePicturePileImpl> pile =
-      FakePicturePileImpl::CreateEmptyPileWithDefaultTileSize(layer_bounds);
+  scoped_refptr<FakeDisplayListRasterSource> raster_source =
+      FakeDisplayListRasterSource::CreateEmpty(layer_bounds);
 
   // Tilings can be added of any scale, the tiling client can controls this.
-  pending_set->AddTiling(1.f, pile);
-  pending_set->AddTiling(2.f, pile);
-  pending_set->AddTiling(3.f, pile);
+  pending_set->AddTiling(1.f, raster_source);
+  pending_set->AddTiling(2.f, raster_source);
+  pending_set->AddTiling(3.f, raster_source);
 
   // Set some expected things for the tiling set to function.
   pending_set->tiling_at(0)->set_resolution(HIGH_RESOLUTION);
@@ -426,14 +428,14 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
   // everything.
   float max_content_scale = 3.f;
   pending_set->UpdateTilingsToCurrentRasterSourceForCommit(
-      pile.get(), Region(), 1.f, max_content_scale);
+      raster_source.get(), Region(), 1.f, max_content_scale);
 
   // All the tilings are there still.
   EXPECT_EQ(3u, pending_set->num_tilings());
 
   // Clone from the pending to the active tree with the same max content size.
   active_set->UpdateTilingsToCurrentRasterSourceForActivation(
-      pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
+      raster_source.get(), pending_set.get(), Region(), 1.f, max_content_scale);
   // All the tilings are on the active tree.
   EXPECT_EQ(3u, active_set->num_tilings());
 
@@ -441,7 +443,7 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
   // tiling.
   max_content_scale = 2.9f;
   pending_set->UpdateTilingsToCurrentRasterSourceForCommit(
-      pile.get(), Region(), 1.f, max_content_scale);
+      raster_source.get(), Region(), 1.f, max_content_scale);
   // All the tilings are there still.
   EXPECT_EQ(2u, pending_set->num_tilings());
 
@@ -449,7 +451,7 @@ TEST(PictureLayerTilingSetTest, MaxContentScale) {
 
   // Clone from the pending to the active tree with the same max content size.
   active_set->UpdateTilingsToCurrentRasterSourceForActivation(
-      pile.get(), pending_set.get(), Region(), 1.f, max_content_scale);
+      raster_source.get(), pending_set.get(), Region(), 1.f, max_content_scale);
   // All the tilings are on the active tree.
   EXPECT_EQ(2u, active_set->num_tilings());
 }

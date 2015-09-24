@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/playback/raster_source.h"
 
 namespace cc {
 

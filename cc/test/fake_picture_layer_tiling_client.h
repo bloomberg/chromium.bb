@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_PICTURE_LAYER_TILING_CLIENT_H_
 #define CC_TEST_FAKE_PICTURE_LAYER_TILING_CLIENT_H_
 
-#include "cc/playback/picture_pile_impl.h"
+#include "cc/playback/display_list_raster_source.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/tile.h"
@@ -46,7 +46,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_has_valid_tile_priorities(bool has_valid_tile_priorities) {
     has_valid_tile_priorities_ = has_valid_tile_priorities;
   }
-  RasterSource* raster_source() { return pile_.get(); }
+  RasterSource* raster_source() { return raster_source_.get(); }
 
   TileManager* tile_manager() const {
     return tile_manager_.get();
@@ -56,7 +56,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   FakeTileManagerClient tile_manager_client_;
   scoped_ptr<ResourcePool> resource_pool_;
   scoped_ptr<TileManager> tile_manager_;
-  scoped_refptr<PicturePileImpl> pile_;
+  scoped_refptr<DisplayListRasterSource> raster_source_;
   gfx::Size tile_size_;
   PictureLayerTilingSet* twin_set_;
   PictureLayerTiling* twin_tiling_;

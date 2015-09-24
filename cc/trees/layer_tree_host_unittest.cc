@@ -38,7 +38,6 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/fake_picture_pile.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
@@ -1150,17 +1149,17 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                            LayerTreeSettings().default_tile_grid_size));
+    scoped_ptr<FakeDisplayListRecordingSource> recording(
+        new FakeDisplayListRecordingSource(
+            LayerTreeSettings().default_tile_grid_size));
     root_layer_ = FakePictureLayer::CreateWithRecordingSource(
-        layer_settings(), &client_, pile.Pass());
+        layer_settings(), &client_, recording.Pass());
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    pile.reset(new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                                   LayerTreeSettings().default_tile_grid_size));
+    recording.reset(new FakeDisplayListRecordingSource(
+        LayerTreeSettings().default_tile_grid_size));
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
-        layer_settings(), &client_, pile.Pass());
+        layer_settings(), &client_, recording.Pass());
     child_layer_->SetBounds(gfx::Size(25, 25));
     child_layer_->SetIsDrawable(true);
     child_layer_->SetContentsOpaque(true);
@@ -4933,13 +4932,13 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     pinch->SetIsContainerForFixedPositionLayers(true);
     root->AddChild(pinch);
 
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                            LayerTreeSettings().default_tile_grid_size));
-    pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
+    scoped_ptr<FakeDisplayListRecordingSource> recording(
+        new FakeDisplayListRecordingSource(
+            LayerTreeSettings().default_tile_grid_size));
+    recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
-                                                    pile.Pass());
+                                                    recording.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we
@@ -5137,12 +5136,12 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     scoped_refptr<Layer> root = Layer::Create(layer_settings());
     root->SetBounds(gfx::Size(500, 500));
 
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                            LayerTreeSettings().default_tile_grid_size));
+    scoped_ptr<FakeDisplayListRecordingSource> recording(
+        new FakeDisplayListRecordingSource(
+            LayerTreeSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
-                                                    pile.Pass());
+                                                    recording.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     root->AddChild(layer);
@@ -5179,12 +5178,12 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
   void SetupTree() override {
     client_.set_fill_with_nonsolid_color(true);
 
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                            LayerTreeSettings().default_tile_grid_size));
+    scoped_ptr<FakeDisplayListRecordingSource> recording(
+        new FakeDisplayListRecordingSource(
+            LayerTreeSettings().default_tile_grid_size));
     scoped_refptr<FakePictureLayer> root =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
-                                                    pile.Pass());
+                                                    recording.Pass());
     root->SetBounds(gfx::Size(10000, 10000));
     root->SetContentsOpaque(true);
 
@@ -5232,13 +5231,13 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     pinch->SetIsContainerForFixedPositionLayers(true);
     root->AddChild(pinch);
 
-    scoped_ptr<FakePicturePile> pile(
-        new FakePicturePile(LayerTreeSettings().minimum_contents_scale,
-                            LayerTreeSettings().default_tile_grid_size));
-    pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
+    scoped_ptr<FakeDisplayListRecordingSource> recording(
+        new FakeDisplayListRecordingSource(
+            LayerTreeSettings().default_tile_grid_size));
+    recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
-                                                    pile.Pass());
+                                                    recording.Pass());
     layer->SetBounds(gfx::Size(500, 500));
     layer->SetContentsOpaque(true);
     // Avoid LCD text on the layer so we don't cause extra commits when we

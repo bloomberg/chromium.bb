@@ -43,11 +43,11 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_impl.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_video_frame_provider.h"
 #include "cc/test/geometry_test_utils.h"
@@ -6301,13 +6301,12 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   root->AddChild(scoped_scrolling_layer.Pass());
 
   gfx::Size content_layer_bounds(100000, 100);
-  gfx::Size pile_tile_size(3000, 3000);
-  scoped_refptr<FakePicturePileImpl> pile(FakePicturePileImpl::CreateFilledPile(
-      pile_tile_size, content_layer_bounds));
+  scoped_refptr<FakeDisplayListRasterSource> raster_source(
+      FakeDisplayListRasterSource::CreateFilled(content_layer_bounds));
 
   scoped_ptr<FakePictureLayerImpl> scoped_content_layer =
       FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
-                                                   3, pile);
+                                                   3, raster_source);
   LayerImpl* content_layer = scoped_content_layer.get();
   scrolling_layer->AddChild(scoped_content_layer.Pass());
   content_layer->SetBounds(content_layer_bounds);
@@ -8132,17 +8131,17 @@ TEST_F(LayerTreeHostImplTest, InvalidLayerNotAddedToRasterQueue) {
   host_impl_->CreatePendingTree();
 
   Region empty_invalidation;
-  scoped_refptr<RasterSource> pile_with_tiles(
-      FakePicturePileImpl::CreateFilledPileWithDefaultTileSize(
-          gfx::Size(10, 10)));
+  scoped_refptr<RasterSource> raster_source_with_tiles(
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(10, 10)));
 
   scoped_ptr<FakePictureLayerImpl> layer =
       FakePictureLayerImpl::Create(host_impl_->pending_tree(), 11);
   layer->SetBounds(gfx::Size(10, 10));
   layer->set_gpu_raster_max_texture_size(host_impl_->device_viewport_size());
   layer->SetDrawsContent(true);
-  layer->tilings()->AddTiling(1.0f, pile_with_tiles);
-  layer->UpdateRasterSource(pile_with_tiles, &empty_invalidation, nullptr);
+  layer->tilings()->AddTiling(1.0f, raster_source_with_tiles);
+  layer->UpdateRasterSource(raster_source_with_tiles, &empty_invalidation,
+                            nullptr);
   layer->tilings()->tiling_at(0)->set_resolution(
       TileResolution::HIGH_RESOLUTION);
   layer->tilings()->tiling_at(0)->CreateAllTilesForTesting();

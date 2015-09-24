@@ -12,8 +12,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "cc/base/unique_notifier.h"
-#include "cc/playback/picture_pile.h"
-#include "cc/playback/picture_pile_impl.h"
 #include "cc/raster/bitmap_tile_task_worker_pool.h"
 #include "cc/raster/gpu_rasterizer.h"
 #include "cc/raster/gpu_tile_task_worker_pool.h"
@@ -24,9 +22,9 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_resource.h"
+#include "cc/test/fake_display_list_raster_source.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
-#include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -59,13 +57,13 @@ class TestRasterTaskImpl : public RasterTask {
       : RasterTask(dependencies),
         resource_(resource),
         reply_(reply),
-        picture_pile_(FakePicturePileImpl::CreateEmptyPile(gfx::Size(1, 1),
-                                                           gfx::Size(1, 1))) {}
+        raster_source_(
+            FakeDisplayListRasterSource::CreateFilled(gfx::Size(1, 1))) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
     uint64_t new_content_id = 0;
-    raster_buffer_->Playback(picture_pile_.get(), gfx::Rect(1, 1),
+    raster_buffer_->Playback(raster_source_.get(), gfx::Rect(1, 1),
                              gfx::Rect(1, 1), new_content_id, 1.f, true);
   }
 
@@ -87,7 +85,7 @@ class TestRasterTaskImpl : public RasterTask {
   const Resource* resource_;
   const Reply reply_;
   scoped_ptr<RasterBuffer> raster_buffer_;
-  scoped_refptr<PicturePileImpl> picture_pile_;
+  scoped_refptr<RasterSource> raster_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRasterTaskImpl);
 };
