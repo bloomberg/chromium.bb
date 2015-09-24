@@ -250,8 +250,6 @@ void Channel::SerializeEndpointWithRemotePeer(
   DCHECK(destination);
   DCHECK(peer_endpoint);
 
-  DLOG(WARNING) << "Direct message pipe passing across multiple channels not "
-                   "yet implemented; will proxy";
   // Create and set up an |EndpointRelayer| to proxy.
   // TODO(vtl): If we were to own/track the relayer directly (rather than owning
   // it via its |ChannelEndpoint|s), then we might be able to make
