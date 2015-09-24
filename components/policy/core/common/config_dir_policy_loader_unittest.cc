@@ -215,12 +215,12 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   base::DictionaryValue test_dict_bar;
   test_dict_bar.SetString("HomepageLocation", "http://bar.com");
   for (unsigned int i = 1; i <= 4; ++i)
-    harness_.WriteConfigFile(test_dict_bar, base::IntToString(i));
+    harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
   base::DictionaryValue test_dict_foo;
   test_dict_foo.SetString("HomepageLocation", "http://foo.com");
   harness_.WriteConfigFile(test_dict_foo, "9");
   for (unsigned int i = 5; i <= 8; ++i)
-    harness_.WriteConfigFile(test_dict_bar, base::IntToString(i));
+    harness_.WriteConfigFile(test_dict_bar, base::UintToString(i));
 
   ConfigDirPolicyLoader loader(loop_.task_runner(), harness_.test_dir(),
                                POLICY_SCOPE_USER);

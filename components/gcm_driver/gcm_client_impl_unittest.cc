@@ -984,7 +984,7 @@ TEST_F(GCMClientImplCheckinTest, GServicesSettingsAfterInitialCheckin) {
 // This test only checks that periodic checkin happens.
 TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
   std::map<std::string, std::string> settings;
-  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
   settings["checkin_url"] = "http://alternative.url/checkin";
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
@@ -1005,7 +1005,7 @@ TEST_F(GCMClientImplCheckinTest, PeriodicCheckin) {
 
 TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
   std::map<std::string, std::string> settings;
-  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
   settings["checkin_url"] = "http://alternative.url/checkin";
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
@@ -1034,7 +1034,7 @@ TEST_F(GCMClientImplCheckinTest, LoadGSettingsFromStore) {
 // This test only checks that periodic checkin happens.
 TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
   std::map<std::string, std::string> settings;
-  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
   settings["checkin_url"] = "http://alternative.url/checkin";
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
@@ -1072,7 +1072,7 @@ TEST_F(GCMClientImplCheckinTest, CheckinWithAccounts) {
 // This test only checks that periodic checkin happens.
 TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
   std::map<std::string, std::string> settings;
-  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
   settings["checkin_url"] = "http://alternative.url/checkin";
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";
@@ -1117,7 +1117,7 @@ TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountRemoved) {
 // This test only checks that periodic checkin happens.
 TEST_F(GCMClientImplCheckinTest, CheckinWhenAccountReplaced) {
   std::map<std::string, std::string> settings;
-  settings["checkin_interval"] = base::IntToString(kSettingsCheckinInterval);
+  settings["checkin_interval"] = base::Int64ToString(kSettingsCheckinInterval);
   settings["checkin_url"] = "http://alternative.url/checkin";
   settings["gcm_hostname"] = "alternative.gcm.host";
   settings["gcm_secure_port"] = "7777";

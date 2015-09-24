@@ -3492,7 +3492,7 @@ TEST_F(HistoryBackendTest, ExpireHistory) {
   // Insert 4 entries into the database.
   HistoryAddPageArgs args[4];
   for (size_t i = 0; i < arraysize(args); ++i) {
-    args[i].url = GURL("http://example" + base::IntToString(i) + ".com");
+    args[i].url = GURL("http://example" + base::SizeTToString(i) + ".com");
     args[i].time = reference_time + base::TimeDelta::FromDays(i);
     backend_->AddPage(args[i]);
   }

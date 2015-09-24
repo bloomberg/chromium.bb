@@ -995,13 +995,13 @@ std::string TemplateURLRef::HandleReplacements(
             search_terms_args.contextual_search_params;
 
         if (params.start != std::string::npos) {
-          context_data.append("ctxs_start=" + base::IntToString(
-              params.start) + "&");
+          context_data.append("ctxs_start=" +
+                              base::SizeTToString(params.start) + "&");
         }
 
         if (params.end != std::string::npos) {
-          context_data.append("ctxs_end=" + base::IntToString(
-              params.end) + "&");
+          context_data.append("ctxs_end=" +
+                              base::SizeTToString(params.end) + "&");
         }
 
         if (!params.selection.empty())

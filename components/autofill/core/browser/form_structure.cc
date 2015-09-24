@@ -411,7 +411,7 @@ FormStructure::FormStructure(const FormData& form)
     // guaranteed to avoid collisions.
     base::string16 unique_name =
         field.name + base::ASCIIToUTF16("_") +
-        base::IntToString16(++unique_names[field.name]);
+        base::SizeTToString16(++unique_names[field.name]);
     fields_.push_back(new AutofillField(field, unique_name));
   }
 }

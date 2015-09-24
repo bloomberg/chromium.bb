@@ -814,7 +814,7 @@ void ServerWrapper::WriteActivePortToUserProfile(
   // Write this port to a well-known file in the profile directory
   // so Telemetry can pick it up.
   base::FilePath path = output_directory.Append(kDevToolsActivePortFileName);
-  std::string port_string = base::IntToString(endpoint.port());
+  std::string port_string = base::UintToString(endpoint.port());
   if (base::WriteFile(path, port_string.c_str(),
                       static_cast<int>(port_string.length())) < 0) {
     LOG(ERROR) << "Error writing DevTools active port to file";

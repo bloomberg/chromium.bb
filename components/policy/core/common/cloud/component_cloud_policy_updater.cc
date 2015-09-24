@@ -102,7 +102,7 @@ void ComponentCloudPolicyUpdater::CancelUpdate(const PolicyNamespace& ns) {
 std::string ComponentCloudPolicyUpdater::NamespaceToKey(
     const PolicyNamespace& ns) {
   const std::string domain = base::IntToString(ns.domain);
-  const std::string size = base::IntToString(domain.size());
+  const std::string size = base::SizeTToString(domain.size());
   return size + ":" + domain + ":" + ns.component_id;
 }
 

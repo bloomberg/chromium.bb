@@ -146,11 +146,11 @@ void VerifyIncrementalUpdatesMatch(
 string GenerateNextPageUrl(const std::string& url_prefix, size_t page_num,
     size_t pages_size) {
   return page_num + 1 < pages_size ?
-      url_prefix + base::IntToString(page_num + 1) : "";
+      url_prefix + base::SizeTToString(page_num + 1) : "";
 }
 
 string GeneratePrevPageUrl(const std::string& url_prefix, size_t page_num) {
-  return page_num > 0 ? url_prefix + base::IntToString(page_num - 1) : "";
+  return page_num > 0 ? url_prefix + base::SizeTToString(page_num - 1) : "";
 }
 
 scoped_ptr<MultipageDistillerData> CreateMultipageDistillerDataWithoutImages(
@@ -158,9 +158,9 @@ scoped_ptr<MultipageDistillerData> CreateMultipageDistillerDataWithoutImages(
   scoped_ptr<MultipageDistillerData> result(new MultipageDistillerData());
   string url_prefix = kURL;
   for (size_t page_num = 0; page_num < pages_size; ++page_num) {
-    result->page_urls.push_back(url_prefix + base::IntToString(page_num));
+    result->page_urls.push_back(url_prefix + base::SizeTToString(page_num));
     result->content.push_back("Content for page:" +
-                              base::IntToString(page_num));
+                              base::SizeTToString(page_num));
     result->image_ids.push_back(vector<int>());
     string next_page_url =
         GenerateNextPageUrl(url_prefix, page_num, pages_size);

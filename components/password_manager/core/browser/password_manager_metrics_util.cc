@@ -110,7 +110,7 @@ void LogUMAHistogramBoolean(const std::string& name, bool sample) {
 std::string GroupIdToString(size_t group_id) {
   DCHECK_LE(group_id, kNumGroups);
   if (group_id > 0)
-    return "group_" + base::IntToString(group_id);
+    return "group_" + base::SizeTToString(group_id);
   return std::string();
 }
 

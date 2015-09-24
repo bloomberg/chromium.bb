@@ -110,7 +110,7 @@ struct DriveUploader::UploadFileInfo {
   std::string DebugString() const {
     return "file_path=[" + file_path.AsUTF8Unsafe() +
            "], content_type=[" + content_type +
-           "], content_length=[" + base::UintToString(content_length) +
+           "], content_length=[" + base::Int64ToString(content_length) +
            "]";
   }
 

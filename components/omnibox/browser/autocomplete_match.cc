@@ -323,8 +323,9 @@ std::string AutocompleteMatch::ClassificationsToString(
   for (size_t i = 0; i < classifications.size(); ++i) {
     if (i)
       serialized_classifications += ',';
-    serialized_classifications += base::IntToString(classifications[i].offset) +
-        ',' + base::IntToString(classifications[i].style);
+    serialized_classifications +=
+        base::SizeTToString(classifications[i].offset) + ',' +
+        base::IntToString(classifications[i].style);
   }
   return serialized_classifications;
 }

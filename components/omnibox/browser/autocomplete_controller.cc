@@ -268,7 +268,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   if (input.want_asynchronous_matches() && (input.text().length() < 6)) {
     base::TimeTicks end_time = base::TimeTicks::Now();
     std::string name =
-        "Omnibox.QueryTime2." + base::IntToString(input.text().length());
+        "Omnibox.QueryTime2." + base::SizeTToString(input.text().length());
     base::HistogramBase* counter = base::Histogram::FactoryGet(
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));

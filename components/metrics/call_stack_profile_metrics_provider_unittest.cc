@@ -213,7 +213,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
   ASSERT_EQ(static_cast<int>(arraysize(profile_sample_frames)),
             uma_proto.sampled_profile().size());
   for (size_t i = 0; i < arraysize(profile_sample_frames); ++i) {
-    SCOPED_TRACE("profile " + base::IntToString(i));
+    SCOPED_TRACE("profile " + base::SizeTToString(i));
     const SampledProfile& sampled_profile = uma_proto.sampled_profile().Get(i);
     ASSERT_TRUE(sampled_profile.has_call_stack_profile());
     const CallStackProfile& call_stack_profile =
@@ -222,7 +222,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     ASSERT_EQ(static_cast<int>(arraysize(profile_sample_frames[i])),
               call_stack_profile.sample().size());
     for (size_t j = 0; j < arraysize(profile_sample_frames[i]); ++j) {
-      SCOPED_TRACE("sample " + base::IntToString(j));
+      SCOPED_TRACE("sample " + base::SizeTToString(j));
       const CallStackProfile::Sample& proto_sample =
           call_stack_profile.sample().Get(j);
       ASSERT_EQ(static_cast<int>(arraysize(profile_sample_frames[i][j])),
@@ -230,7 +230,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
       ASSERT_TRUE(proto_sample.has_count());
       EXPECT_EQ(1u, proto_sample.count());
       for (size_t k = 0; k < arraysize(profile_sample_frames[i][j]); ++k) {
-        SCOPED_TRACE("frame " + base::IntToString(k));
+        SCOPED_TRACE("frame " + base::SizeTToString(k));
         const CallStackProfile::Entry& entry = proto_sample.entry().Get(k);
         ASSERT_TRUE(entry.has_address());
         const char* instruction_pointer = reinterpret_cast<const char*>(
@@ -249,7 +249,7 @@ TEST_F(CallStackProfileMetricsProviderTest, MultipleProfiles) {
     ASSERT_EQ(static_cast<int>(arraysize(profile_modules[i])),
               call_stack_profile.module_id().size());
     for (size_t j = 0; j < arraysize(profile_modules[i]); ++j) {
-      SCOPED_TRACE("module " + base::IntToString(j));
+      SCOPED_TRACE("module " + base::SizeTToString(j));
       const CallStackProfile::ModuleIdentifier& module_identifier =
           call_stack_profile.module_id().Get(j);
       ASSERT_TRUE(module_identifier.has_build_id());
@@ -333,7 +333,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksUnordered) {
     ASSERT_TRUE(proto_sample.has_count());
     EXPECT_EQ(i == 0 ? 3u : 1u, proto_sample.count());
     for (size_t j = 0; j < arraysize(sample_frames[i]); ++j) {
-      SCOPED_TRACE("frame " + base::IntToString(j));
+      SCOPED_TRACE("frame " + base::SizeTToString(j));
       const CallStackProfile::Entry& entry = proto_sample.entry().Get(j);
       ASSERT_TRUE(entry.has_address());
       const char* instruction_pointer = reinterpret_cast<const char*>(
@@ -411,7 +411,7 @@ TEST_F(CallStackProfileMetricsProviderTest, RepeatedStacksOrdered) {
     ASSERT_TRUE(proto_sample.has_count());
     EXPECT_EQ(i == 2 ? 2u : 1u, proto_sample.count());
     for (size_t j = 0; j < arraysize(sample_frames[i]); ++j) {
-      SCOPED_TRACE("frame " + base::IntToString(j));
+      SCOPED_TRACE("frame " + base::SizeTToString(j));
       const CallStackProfile::Entry& entry = proto_sample.entry().Get(j);
       ASSERT_TRUE(entry.has_address());
       const char* instruction_pointer = reinterpret_cast<const char*>(
