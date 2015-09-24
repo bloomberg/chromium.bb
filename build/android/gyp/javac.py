@@ -12,6 +12,7 @@ import sys
 import textwrap
 
 from util import build_utils
+from util import md5_check
 
 import jar
 
@@ -211,20 +212,16 @@ def main(argv):
     compile_classpath = (
         [ijar_re.sub('.interface.jar', p) for p in runtime_classpath])
 
-  javac_cmd = ['javac']
-  if options.use_errorprone_path:
-    javac_cmd = [options.use_errorprone_path] + ERRORPRONE_OPTIONS
-
-  javac_cmd.extend((
+  javac_args = [
       '-g',
       # Chromium only allows UTF8 source files.  Being explicit avoids
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
       '-classpath', ':'.join(compile_classpath),
-  ))
+      ]
 
   if options.bootclasspath:
-    javac_cmd.extend([
+    javac_args.extend([
         '-bootclasspath', ':'.join(options.bootclasspath),
         '-source', '1.7',
         '-target', '1.7',
@@ -232,12 +229,16 @@ def main(argv):
 
   if options.chromium_code:
     # TODO(aurimas): re-enable '-Xlint:deprecation' checks once they are fixed.
-    javac_cmd.extend(['-Xlint:unchecked'])
+    javac_args.extend(['-Xlint:unchecked'])
   else:
     # XDignore.symbol.file makes javac compile against rt.jar instead of
     # ct.sym. This means that using a java internal package/class will not
     # trigger a compile warning or error.
-    javac_cmd.extend(['-XDignore.symbol.file'])
+    javac_args.extend(['-XDignore.symbol.file'])
+
+  javac_cmd = ['javac']
+  if options.use_errorprone_path:
+    javac_cmd = [options.use_errorprone_path] + ERRORPRONE_OPTIONS
 
   # Compute the list of paths that when changed, we need to rebuild.
   input_paths = options.bootclasspath + options.java_srcjars + java_files
@@ -248,8 +249,9 @@ def main(argv):
         input_paths.append(path + '.TOC')
       else:
         input_paths.append(path)
+  python_deps = build_utils.GetPythonDependencies()
 
-  def on_stale_md5():
+  def OnStaleMd5():
     with build_utils.TempDir() as temp_dir:
       if options.java_srcjars:
         java_dir = os.path.join(temp_dir, 'java')
@@ -265,7 +267,7 @@ def main(argv):
       if java_files:
         # Don't include the output directory in the initial set of args since it
         # being in a temp dir makes it unstable (breaks md5 stamping).
-        cmd = javac_cmd + ['-d', classes_dir] + java_files
+        cmd = javac_cmd + javac_args + ['-d', classes_dir] + java_files
 
         build_utils.CheckOutput(
             cmd,
@@ -286,16 +288,25 @@ def main(argv):
                        options.jar_path,
                        manifest_file=manifest_file)
 
+    if options.stamp:
+      build_utils.Touch(options.stamp)
+
+    if options.depfile:
+      build_utils.WriteDepfile(options.depfile, input_paths + python_deps)
+
 
   # List python deps in input_strings rather than input_paths since the contents
   # of them does not change what gets written to the depsfile.
-  build_utils.CallAndWriteDepfileIfStale(
-      on_stale_md5,
-      options,
+  md5_check.CallAndRecordIfStale(
+      OnStaleMd5,
+      record_path=options.jar_path + '.javac.md5.stamp',
       input_paths=input_paths,
-      input_strings=javac_cmd,
-      output_paths=[options.jar_path])
+      input_strings=javac_cmd + javac_args + python_deps,
+      force=not os.path.exists(options.jar_path))
+
 
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
+
+

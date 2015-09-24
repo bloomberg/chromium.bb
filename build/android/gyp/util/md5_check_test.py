@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -27,15 +26,7 @@ class TestMd5Check(unittest.TestCase):
 
     record_path = tempfile.NamedTemporaryFile(suffix='.stamp')
 
-    def CheckCallAndRecord(should_call, message, force=False,
-                           outputs_specified=False, outputs_missing=False):
-      output_paths = None
-      if outputs_specified:
-        output_file1 = tempfile.NamedTemporaryFile()
-        if outputs_missing:
-          output_file1.close()  # Gets deleted on close().
-        output_paths = [output_file1.name]
-
+    def CheckCallAndRecord(should_call, message, force=False):
       self.called = False
       def MarkCalled():
         self.called = True
@@ -44,16 +35,11 @@ class TestMd5Check(unittest.TestCase):
           record_path=record_path.name,
           input_paths=input_files,
           input_strings=input_strings,
-          output_paths=output_paths,
           force=force)
       self.failUnlessEqual(should_call, self.called, message)
 
     CheckCallAndRecord(True, 'should call when record doesn\'t exist')
     CheckCallAndRecord(False, 'should not call when nothing changed')
-    CheckCallAndRecord(False, 'should not call when nothing changed2',
-                       outputs_specified=True, outputs_missing=False)
-    CheckCallAndRecord(True, 'should call when output missing',
-                       outputs_specified=True, outputs_missing=True)
     CheckCallAndRecord(True, force=True, message='should call when forced')
 
     input_file1.write('some more input')
