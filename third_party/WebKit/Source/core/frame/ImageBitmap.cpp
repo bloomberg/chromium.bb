@@ -37,8 +37,7 @@ static inline PassRefPtr<Image> cropImage(PassRefPtr<Image> image, const IntRect
     if (!skImage)
         return nullptr;
 
-    return StaticBitmapImage::create(adoptRef(
-        skImage->newImage(srcRect.width(), srcRect.height(), &srcRect)));
+    return StaticBitmapImage::create(adoptRef(skImage->newSubset(srcRect)));
 }
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)

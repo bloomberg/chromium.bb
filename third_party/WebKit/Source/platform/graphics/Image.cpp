@@ -240,8 +240,7 @@ void Image::drawPattern(GraphicsContext* context, const FloatRect& floatSrcRect,
     // Fetch this now as subsetting may swap the image.
     auto imageID = image->uniqueID();
 
-    SkIRect srcRect = enclosingIntRect(normSrcRect);
-    image = adoptRef(image->newImage(srcRect.width(), srcRect.height(), &srcRect));
+    image = adoptRef(image->newSubset(enclosingIntRect(normSrcRect)));
     if (!image)
         return;
 
