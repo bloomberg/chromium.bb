@@ -12,6 +12,8 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "base/scoped_clear_errno.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/third_party/dmg_fp/dmg_fp.h"
@@ -20,68 +22,21 @@ namespace base {
 
 namespace {
 
-template <typename STR, typename INT, typename UINT, bool NEG>
+template <typename STR, typename INT>
 struct IntToStringT {
-  // This is to avoid a compiler warning about unary minus on unsigned type.
-  // For example, say you had the following code:
-  //   template <typename INT>
-  //   INT abs(INT value) { return value < 0 ? -value : value; }
-  // Even though if INT is unsigned, it's impossible for value < 0, so the
-  // unary minus will never be taken, the compiler will still generate a
-  // warning.  We do a little specialization dance...
-  template <typename INT2, typename UINT2, bool NEG2>
-  struct ToUnsignedT {};
-
-  template <typename INT2, typename UINT2>
-  struct ToUnsignedT<INT2, UINT2, false> {
-    static UINT2 ToUnsigned(INT2 value) {
-      return static_cast<UINT2>(value);
-    }
-  };
-
-  template <typename INT2, typename UINT2>
-  struct ToUnsignedT<INT2, UINT2, true> {
-    static UINT2 ToUnsigned(INT2 value) {
-      if (value >= 0) {
-        return value;
-      } else {
-        // Avoid integer overflow when negating INT_MIN.
-        return static_cast<UINT2>(-(value + 1)) + 1;
-      }
-    }
-  };
-
-  // This set of templates is very similar to the above templates, but
-  // for testing whether an integer is negative.
-  template <typename INT2, bool NEG2>
-  struct TestNegT {};
-  template <typename INT2>
-  struct TestNegT<INT2, false> {
-    static bool TestNeg(INT2 value) {
-      // value is unsigned, and can never be negative.
-      return false;
-    }
-  };
-  template <typename INT2>
-  struct TestNegT<INT2, true> {
-    static bool TestNeg(INT2 value) {
-      return value < 0;
-    }
-  };
-
   static STR IntToString(INT value) {
     // log10(2) ~= 0.3 bytes needed per bit or per byte log10(2**8) ~= 2.4.
     // So round up to allocate 3 output characters per byte, plus 1 for '-'.
-    const int kOutputBufSize = 3 * sizeof(INT) + 1;
+    const int kOutputBufSize =
+        3 * sizeof(INT) + std::numeric_limits<INT>::is_signed;
 
     // Allocate the whole string right away, we will right back to front, and
     // then return the substr of what we ended up using.
     STR outbuf(kOutputBufSize, 0);
 
-    bool is_neg = TestNegT<INT, NEG>::TestNeg(value);
-    // Even though is_neg will never be true when INT is parameterized as
-    // unsigned, even the presence of the unary operation causes a warning.
-    UINT res = ToUnsignedT<INT, UINT, NEG>::ToUnsigned(value);
+    // The ValueOrDie call below can never fail, because UnsignedAbs is valid
+    // for all valid inputs.
+    auto res = CheckedNumeric<INT>(value).UnsignedAbs().ValueOrDie();
 
     typename STR::iterator it(outbuf.end());
     do {
@@ -90,7 +45,7 @@ struct IntToStringT {
       *it = static_cast<typename STR::value_type>((res % 10) + '0');
       res /= 10;
     } while (res != 0);
-    if (is_neg) {
+    if (IsValueNegative(value)) {
       --it;
       DCHECK(it != outbuf.begin());
       *it = static_cast<typename STR::value_type>('-');
@@ -373,47 +328,43 @@ bool String16ToIntImpl(const StringPiece16& input, VALUE* output) {
 }  // namespace
 
 std::string IntToString(int value) {
-  return IntToStringT<std::string, int, unsigned int, true>::
-      IntToString(value);
+  return IntToStringT<std::string, int>::IntToString(value);
 }
 
 string16 IntToString16(int value) {
-  return IntToStringT<string16, int, unsigned int, true>::
-      IntToString(value);
+  return IntToStringT<string16, int>::IntToString(value);
 }
 
 std::string UintToString(unsigned int value) {
-  return IntToStringT<std::string, unsigned int, unsigned int, false>::
-      IntToString(value);
+  return IntToStringT<std::string, unsigned int>::IntToString(value);
 }
 
 string16 UintToString16(unsigned int value) {
-  return IntToStringT<string16, unsigned int, unsigned int, false>::
-      IntToString(value);
+  return IntToStringT<string16, unsigned int>::IntToString(value);
 }
 
 std::string Int64ToString(int64 value) {
-  return IntToStringT<std::string, int64, uint64, true>::IntToString(value);
+  return IntToStringT<std::string, int64>::IntToString(value);
 }
 
 string16 Int64ToString16(int64 value) {
-  return IntToStringT<string16, int64, uint64, true>::IntToString(value);
+  return IntToStringT<string16, int64>::IntToString(value);
 }
 
 std::string Uint64ToString(uint64 value) {
-  return IntToStringT<std::string, uint64, uint64, false>::IntToString(value);
+  return IntToStringT<std::string, uint64>::IntToString(value);
 }
 
 string16 Uint64ToString16(uint64 value) {
-  return IntToStringT<string16, uint64, uint64, false>::IntToString(value);
+  return IntToStringT<string16, uint64>::IntToString(value);
 }
 
 std::string SizeTToString(size_t value) {
-  return IntToStringT<std::string, size_t, size_t, false>::IntToString(value);
+  return IntToStringT<std::string, size_t>::IntToString(value);
 }
 
 string16 SizeTToString16(size_t value) {
-  return IntToStringT<string16, size_t, size_t, false>::IntToString(value);
+  return IntToStringT<string16, size_t>::IntToString(value);
 }
 
 std::string DoubleToString(double value) {
