@@ -1346,19 +1346,12 @@ TEST_F(BackgroundSyncManagerTest, OneShotFiresOnManagerRestart) {
   EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, FailedOneShotStillExists) {
+TEST_F(BackgroundSyncManagerTest, FailedOneShotShouldBeRemoved) {
   InitFailedSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-
-  // The failed one-shot should stay registered but not fire until the
-  // ServiceWorker is reloaded with an active client. Therefore, changing the
-  // network should not cause the event to run again.
-  SetNetwork(net::NetworkChangeNotifier::CONNECTION_2G);
-  EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
 }
 
 TEST_F(BackgroundSyncManagerTest, FailedOneShotReregisteredAndFires) {
@@ -1367,7 +1360,7 @@ TEST_F(BackgroundSyncManagerTest, FailedOneShotReregisteredAndFires) {
   // The initial sync event fails.
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_EQ(1, sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
+  EXPECT_FALSE(GetRegistration(sync_options_1_));
 
   InitSyncEventTest();
 

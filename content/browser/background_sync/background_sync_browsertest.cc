@@ -360,11 +360,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, WaitUntilReject) {
   // Complete the task.
   EXPECT_TRUE(RejectDelayedOneShot());
   EXPECT_TRUE(PopConsole("ok - delay rejected"));
-
-  // Since the event failed the registration should still be there.
-  // TODO(jkarlin): Use registration.done to verify that the event actually
-  // failed.
-  EXPECT_TRUE(GetRegistrationOneShot("delay"));
+  EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, Incognito) {

@@ -365,15 +365,6 @@ void BackgroundSyncManager::RegisterImpl(
       existing_registration_ref->value()->options()->Equals(options)) {
     BackgroundSyncRegistration* existing_registration =
         existing_registration_ref->value();
-    if (existing_registration->sync_state() == BACKGROUND_SYNC_STATE_FAILED) {
-      existing_registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
-      StoreRegistrations(
-          sw_registration_id,
-          base::Bind(&BackgroundSyncManager::RegisterDidStore,
-                     weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
-                     make_scoped_refptr(existing_registration_ref), callback));
-      return;
-    }
 
     // Record the duplicated registration
     BackgroundSyncMetrics::CountRegister(
@@ -1119,23 +1110,20 @@ void BackgroundSyncManager::EventCompleteImpl(
       // is UNREGISTERED_WHILE_FIRING first. If so then set the state to failed
       // if it was already out of retry attempts otherwise keep the state as
       // unregistered. Then call RunDoneCallbacks(); (crbug.com/501838)
-      // TODO(jkarlin): Fire the sync event on the next page load controlled
-      // by
-      // this registration. (crbug.com/479665)
       registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
       registration->RunDoneCallbacks();
     } else {
       registration->set_sync_state(BACKGROUND_SYNC_STATE_SUCCESS);
       registration->RunDoneCallbacks();
+    }
 
-      RegistrationKey key(*registration);
-      // Remove the registration if it's still active.
-      RefCountedRegistration* active_registration =
-          LookupActiveRegistration(service_worker_id, key);
-      if (active_registration &&
-          active_registration->value()->id() == registration->id()) {
-        RemoveActiveRegistration(service_worker_id, key);
-      }
+    RegistrationKey key(*registration);
+    // Remove the registration if it's still active.
+    RefCountedRegistration* active_registration =
+        LookupActiveRegistration(service_worker_id, key);
+    if (active_registration &&
+        active_registration->value()->id() == registration->id()) {
+      RemoveActiveRegistration(service_worker_id, key);
     }
   } else {
     // TODO(jkarlin): Add support for running periodic syncs. (crbug.com/479674)
