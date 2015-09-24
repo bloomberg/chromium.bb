@@ -113,6 +113,7 @@ class SlaveFailureSummaryStageTest(
         'build_config': 'build-config',
         'stage_name': 'FailingStage',
         'stage_status': constants.BUILDER_STATUS_FAILED,
+        'build_status': constants.BUILDER_STATUS_FAILED,
         }
     self.PatchObject(self.db, 'GetSlaveFailures', return_value=[fake_failure])
     self.PatchObject(logging, 'PrintBuildbotLink')

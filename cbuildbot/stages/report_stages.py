@@ -229,9 +229,12 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
       for stage_id in sorted(failures_by_stage):
         failure = failures_by_stage[stage_id][0]
         # Ignore failures that did not cause their enclosing stage to fail.
+        # Ignore slave builds that are still inflight, because some stage logs
+        # might not have been printed to buildbot yet.
         # TODO(akeshet) revisit this approach, if we seem to be suppressing
         # useful information as a result of it.
-        if failure['stage_status'] != constants.BUILDER_STATUS_FAILED:
+        if (failure['stage_status'] != constants.BUILDER_STATUS_FAILED or
+            failure['build_status'] == constants.BUILDER_STATUS_INFLIGHT):
           continue
         waterfall_url = constants.WATERFALL_TO_DASHBOARD[failure['waterfall']]
         slave_stage_url = tree_status.ConstructDashboardURL(
