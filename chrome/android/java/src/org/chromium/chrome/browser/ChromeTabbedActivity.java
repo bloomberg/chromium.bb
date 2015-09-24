@@ -993,14 +993,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             return true;
         }
 
-        if (isFullscreenVideoPlaying()) {
-            ContentVideoView.getContentVideoView().exitFullscreen(false);
-            Log.i(TAG, "handleBackPressed() - exit fullscreen video");
-            return true;
-        }
-
-        if (getFullscreenManager().getPersistentFullscreenMode()) {
-            getFullscreenManager().setPersistentFullscreenMode(false);
+        if (exitFullscreenIfShowing()) {
             Log.i(TAG, "handleBackPressed() - exit fullscreen");
             return true;
         }

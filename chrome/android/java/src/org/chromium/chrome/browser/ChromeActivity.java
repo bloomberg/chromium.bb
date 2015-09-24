@@ -122,6 +122,7 @@ import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.content.browser.ContentReadbackHandler.GetBitmapCallback;
+import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -1207,6 +1208,23 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected ChromeFullscreenManager createFullscreenManager(View controlContainer) {
         return new ChromeFullscreenManager(this, controlContainer, getTabModelSelector(),
                 getControlContainerHeightResource(), true);
+    }
+
+    /**
+     * Exits the fullscreen mode, if any. Does nothing if no fullscreen is present.
+     * @return Whether the fullscreen mode is currently showing.
+     */
+    protected boolean exitFullscreenIfShowing() {
+        ContentVideoView view = ContentVideoView.getContentVideoView();
+        if (view != null && view.getContext() == this) {
+            view.exitFullscreen(false);
+            return true;
+        }
+        if (getFullscreenManager().getPersistentFullscreenMode()) {
+            getFullscreenManager().setPersistentFullscreenMode(false);
+            return true;
+        }
+        return false;
     }
 
     /**

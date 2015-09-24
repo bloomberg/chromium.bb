@@ -11,7 +11,6 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 
@@ -61,7 +60,6 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.service_tab_launcher.ServiceTabLauncher;
-import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.base.PageTransition;
@@ -656,16 +654,7 @@ public class DocumentActivity extends ChromeActivity {
     public boolean handleBackPressed() {
         if (mDocumentTab == null) return false;
 
-        View view = ContentVideoView.getContentVideoView();
-        if (view != null && view.getContext() == this) {
-            ContentVideoView.getContentVideoView().exitFullscreen(false);
-            return true;
-        }
-
-        if (getFullscreenManager().getPersistentFullscreenMode()) {
-            getFullscreenManager().setPersistentFullscreenMode(false);
-            return true;
-        }
+        if (exitFullscreenIfShowing()) return true;
 
         if (mDocumentTab.canGoBack()) {
             mDocumentTab.goBack();

@@ -330,6 +330,9 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected boolean handleBackPressed() {
         if (mTab == null) return false;
+
+        if (exitFullscreenIfShowing()) return true;
+
         if (mTab.canGoBack()) {
             mTab.goBack();
         } else {
