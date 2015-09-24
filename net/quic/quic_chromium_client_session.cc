@@ -663,6 +663,11 @@ void QuicChromiumClientSession::OnCryptoHandshakeMessageReceived(
   logger_->OnCryptoHandshakeMessageReceived(message);
 }
 
+void QuicChromiumClientSession::OnGoAway(const QuicGoAwayFrame& frame) {
+  QuicSession::OnGoAway(frame);
+  NotifyFactoryOfSessionGoingAway();
+}
+
 void QuicChromiumClientSession::OnConnectionClosed(QuicErrorCode error,
                                                    bool from_peer) {
   DCHECK(!connection()->connected());

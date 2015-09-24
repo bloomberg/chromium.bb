@@ -153,6 +153,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const CryptoHandshakeMessage& message) override;
   void OnCryptoHandshakeMessageReceived(
       const CryptoHandshakeMessage& message) override;
+  void OnGoAway(const QuicGoAwayFrame& frame) override;
 
   // QuicClientSessionBase methods:
   void OnProofValid(const QuicCryptoClientConfig::CachedState& cached) override;
