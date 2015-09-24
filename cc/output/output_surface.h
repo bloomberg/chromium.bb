@@ -200,6 +200,7 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority,
       bool resourceless_software_draw);
+  void DetachFromClientInternal();
 
  private:
   bool external_stencil_test_enabled_;

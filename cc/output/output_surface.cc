@@ -196,7 +196,7 @@ OutputSurface::~OutputSurface() {
       this);
 
   if (client_)
-    DetachFromClient();
+    DetachFromClientInternal();
 }
 
 bool OutputSurface::HasExternalStencilTest() const {
@@ -238,17 +238,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
 }
 
 void OutputSurface::DetachFromClient() {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
-  DCHECK(client_);
-  if (context_provider_.get()) {
-    context_provider_->SetLostContextCallback(
-        ContextProvider::LostContextCallback());
-    context_provider_->SetMemoryPolicyChangedCallback(
-        ContextProvider::MemoryPolicyChangedCallback());
-  }
-  context_provider_ = nullptr;
-  client_ = nullptr;
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  DetachFromClientInternal();
 }
 
 void OutputSurface::EnsureBackbuffer() {
@@ -356,6 +346,20 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
   }
 
   return true;
+}
+
+void OutputSurface::DetachFromClientInternal() {
+  DCHECK(client_thread_checker_.CalledOnValidThread());
+  DCHECK(client_);
+  if (context_provider_.get()) {
+    context_provider_->SetLostContextCallback(
+        ContextProvider::LostContextCallback());
+    context_provider_->SetMemoryPolicyChangedCallback(
+        ContextProvider::MemoryPolicyChangedCallback());
+  }
+  context_provider_ = nullptr;
+  client_ = nullptr;
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 }  // namespace cc
