@@ -650,6 +650,10 @@ component("base") {
       "files/file_path_watcher_kqueue.h",
       "message_loop/message_pump_libevent.cc",
       "message_loop/message_pump_libevent.h",
+
+      # These don't work and are unused on iOS.
+      "sync_socket.h",
+      "sync_socket_posix.cc",
     ]
   }
 
@@ -1480,6 +1484,7 @@ test("base_unittests") {
       "process/memory_unittest.cc",
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
+      "sync_socket_unittest.cc",
     ]
 
     # Pull in specific Mac files for iOS (which have been filtered out by file

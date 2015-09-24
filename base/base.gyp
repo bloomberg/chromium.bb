@@ -218,6 +218,12 @@
             }],
           ],
         }],
+        ['OS=="ios"', {
+          'sources!': [
+            'sync_socket.h',
+            'sync_socket_posix.cc',
+          ]
+        }],
       ],
       'sources': [
         'auto_reset.h',
@@ -817,6 +823,12 @@
         # strings
         ['OS=="mac" or OS=="ios" or <(chromeos)==1 or <(chromecast)==1', {
           'defines': ['SYSTEM_NATIVE_UTF8'],
+        }],
+        # SyncSocket isn't used on iOS
+        ['OS=="ios"', {
+          'sources!': [
+            'sync_socket_unittest.cc',
+          ],
         }],
       ],  # target_conditions
     },
