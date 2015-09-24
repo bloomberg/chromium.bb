@@ -329,8 +329,13 @@ class CLStatsEngine(object):
       if master_build['status'] == constants.BUILDER_STATUS_PASSED:
         if not self.slave_builds_by_master_id[bid]:
           continue
+        # TODO(akeshet): The set of slaves also includes non-important slaves
+        # (there is no distinction in cidb between important and non-important).
+        # To protect max(...) from hitting any None values we need the if check
+        # below. Revisit this once we can filter out non-important slaves.
         _, long_config = max((slave['finish_time'], slave['build_config'])
-                             for slave in self.slave_builds_by_master_id[bid])
+                             for slave in self.slave_builds_by_master_id[bid]
+                             if slave['finish_time'])
         long_pole_slave_counts[long_config] = (
             long_pole_slave_counts.get(long_config, 0) + 1)
 
