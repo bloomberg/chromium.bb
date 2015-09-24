@@ -305,7 +305,8 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
 void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
     const std::string& signed_in_account,
     bool force_notifications) {
-  std::vector<std::string> prev_ids = GetAccounts();
+  std::vector<std::string> prev_stored_ids = GetAccounts();
+  std::vector<std::string> prev_ids;
   std::vector<std::string> curr_ids = GetSystemAccountNames();
   std::vector<std::string> refreshed_ids;
   std::vector<std::string> revoked_ids;
@@ -314,8 +315,10 @@ void OAuth2TokenServiceDelegateAndroid::ValidateAccounts(
   for (size_t i = 0; i < curr_ids.size(); ++i)
     curr_ids[i] = MapAccountNameToAccountId(curr_ids[i]);
 
-  for (size_t i = 0; i < prev_ids.size(); ++i)
-    ValidateAccountId(prev_ids[i]);
+  for (size_t i = 0; i < prev_stored_ids.size(); ++i) {
+    if (ValidateAccountId(prev_stored_ids[i]))
+      prev_ids.push_back(prev_stored_ids[i]);
+  }
 
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::ValidateAccounts:"
            << " sigined_in_account=" << signed_in_account
@@ -481,10 +484,14 @@ void OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked(
   DVLOG(1) << "OAuth2TokenServiceDelegateAndroid::FireRefreshTokenRevoked id="
            << account_id;
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> account_name =
-      ConvertUTF8ToJavaString(env, MapAccountIdToAccountName(account_id));
-  Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
-                                                    account_name.obj());
+  std::string account_name = MapAccountIdToAccountName(account_id);
+  // Do not crash in case of missed information.
+  if (!account_name.empty()) {
+    ScopedJavaLocalRef<jstring> account =
+        ConvertUTF8ToJavaString(env, account_name);
+    Java_OAuth2TokenService_notifyRefreshTokenRevoked(env, java_ref_.obj(),
+                                                      account.obj());
+  }
   OAuth2TokenServiceDelegate::FireRefreshTokenRevoked(account_id);
 }
 

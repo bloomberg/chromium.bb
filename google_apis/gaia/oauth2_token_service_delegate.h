@@ -48,7 +48,7 @@ class OAuth2TokenServiceDelegate {
   virtual void RevokeCredentials(const std::string& account_id) {}
   virtual net::URLRequestContextGetter* GetRequestContext() const;
 
-  void ValidateAccountId(const std::string& account_id) const;
+  bool ValidateAccountId(const std::string& account_id) const;
 
   // Add or remove observers of this token service.
   void AddObserver(OAuth2TokenService::Observer* observer);

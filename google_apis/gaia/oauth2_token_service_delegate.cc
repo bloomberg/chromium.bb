@@ -24,16 +24,21 @@ OAuth2TokenServiceDelegate::OAuth2TokenServiceDelegate()
 OAuth2TokenServiceDelegate::~OAuth2TokenServiceDelegate() {
 }
 
-void OAuth2TokenServiceDelegate::ValidateAccountId(
+bool OAuth2TokenServiceDelegate::ValidateAccountId(
     const std::string& account_id) const {
-  DCHECK(!account_id.empty());
+  bool valid = !account_id.empty();
 
   // If the account is given as an email, make sure its a canonical email.
   // Note that some tests don't use email strings as account id, and after
   // the gaia id migration it won't be an email.  So only check for
   // canonicalization if the account_id is suspected to be an email.
-  if (account_id.find('@') != std::string::npos)
-    DCHECK_EQ(gaia::CanonicalizeEmail(account_id), account_id);
+  if (account_id.find('@') != std::string::npos &&
+      gaia::CanonicalizeEmail(account_id) != account_id) {
+    valid = false;
+  }
+
+  DCHECK(valid);
+  return valid;
 }
 
 void OAuth2TokenServiceDelegate::AddObserver(
