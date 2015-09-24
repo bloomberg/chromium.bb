@@ -333,6 +333,7 @@ WebGLFramebuffer* WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
     , m_object(ctx->webContext()->createFramebuffer())
+    , m_destructionInProgress(false)
     , m_hasEverBeenBound(false)
     , m_readBuffer(GL_COLOR_ATTACHMENT0)
 {
@@ -340,9 +341,10 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
 
 WebGLFramebuffer::~WebGLFramebuffer()
 {
-    // Attachments in |m_attachments| will be deleted from other places, so we
-    // clear it to avoid deleting those attachments in detachAndDeleteObject().
-    m_attachments.clear();
+    // Attachments in |m_attachments| will be deleted from other
+    // places, and we must not touch that map in deleteObjectImpl once
+    // the destructor has been entered.
+    m_destructionInProgress = true;
 
     // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
@@ -580,10 +582,14 @@ bool WebGLFramebuffer::hasStencilBuffer() const
 void WebGLFramebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d)
 {
     // Both the AttachmentMap and its WebGLAttachment objects are GCed
-    // objects and cannot be accessed, as they may have been finalized
-    // already during the same GC sweep.
-    for (const auto& attachment : m_attachments)
-        attachment.value->onDetached(context3d);
+    // objects and cannot be accessed after the destructor has been
+    // entered, as they may have been finalized already during the
+    // same GC sweep. These attachments' OpenGL objects will be fully
+    // destroyed once their JavaScript wrappers are collected.
+    if (!m_destructionInProgress) {
+        for (const auto& attachment : m_attachments)
+            attachment.value->onDetached(context3d);
+    }
 
     context3d->deleteFramebuffer(m_object);
     m_object = 0;

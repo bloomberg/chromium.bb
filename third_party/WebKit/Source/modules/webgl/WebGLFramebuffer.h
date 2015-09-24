@@ -135,6 +135,7 @@ private:
     typedef HeapHashMap<GLenum, Member<WebGLAttachment>> AttachmentMap;
 
     AttachmentMap m_attachments;
+    bool m_destructionInProgress;
 
     bool m_hasEverBeenBound;
 
