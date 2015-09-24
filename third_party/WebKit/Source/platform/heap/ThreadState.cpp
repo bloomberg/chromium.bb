@@ -1056,19 +1056,15 @@ void ThreadState::preSweep()
 #endif
 
 #if ENABLE(LAZY_SWEEPING)
+    eagerSweep();
+#if defined(ADDRESS_SANITIZER)
+    poisonAllHeaps();
+#endif
     if (previousGCState == EagerSweepScheduled) {
         // Eager sweeping should happen only in testing.
-        eagerSweep();
-#if defined(ADDRESS_SANITIZER)
-        poisonAllHeaps();
-#endif
         completeSweep();
     } else {
         // The default behavior is lazy sweeping.
-        eagerSweep();
-#if defined(ADDRESS_SANITIZER)
-        poisonAllHeaps();
-#endif
         scheduleIdleLazySweep();
     }
 #else
