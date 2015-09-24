@@ -125,5 +125,8 @@ mojo_native_application("apptests") {
     "//url:url",
   ]
 
-  data_deps = [ "//components/mus" ]
+  data_deps = [
+    ":web_view",
+    "//components/mus",
+  ]
 }
