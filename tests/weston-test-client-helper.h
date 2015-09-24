@@ -197,10 +197,10 @@ void
 expect_protocol_error(struct client *client,
 		      const struct wl_interface *intf, uint32_t code);
 
-char*
+char *
 screenshot_output_filename(const char *basename, uint32_t seq);
 
-char*
+char *
 screenshot_reference_filename(const char *basename, uint32_t seq);
 
 bool
@@ -211,5 +211,17 @@ check_surfaces_equal(const struct surface *a, const struct surface *b);
 
 bool
 check_surfaces_match_in_clip(const struct surface *a, const struct surface *b, const struct rectangle *clip);
+
+bool
+write_surface_as_png(const struct surface *weston_surface, const char *fname);
+
+struct surface *
+load_surface_from_png(const char *fname);
+
+struct surface *
+create_screenshot_surface(struct client *client);
+
+struct surface *
+capture_screenshot_of_output(struct client *client);
 
 #endif

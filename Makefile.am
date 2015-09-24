@@ -1153,8 +1153,8 @@ libtest_client_la_SOURCES =			\
 nodist_libtest_client_la_SOURCES =		\
 	protocol/weston-test-protocol.c	\
 	protocol/weston-test-client-protocol.h
-libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
-libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
+libtest_client_la_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS) $(CAIRO_CFLAGS)
+libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) $(CAIRO_LIBS) libshared.la libtest-runner.la
 
 
 #
@@ -1162,8 +1162,8 @@ libtest_client_la_LIBADD = $(TEST_CLIENT_LIBS) libshared.la libtest-runner.la
 #
 
 internal_screenshot_weston_SOURCES = tests/internal-screenshot-test.c
-internal_screenshot_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS) $(CAIRO_CFLAGS)
-internal_screenshot_weston_LDADD = libtest-client.la  $(CAIRO_LIBS)
+internal_screenshot_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+internal_screenshot_weston_LDADD = libtest-client.la
 
 
 #
