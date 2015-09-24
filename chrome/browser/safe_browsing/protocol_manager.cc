@@ -12,11 +12,13 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/common/env_vars.h"
+#include "components/variations/variations_associated_data.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -55,6 +57,22 @@ enum UpdateResult {
 void RecordUpdateResult(UpdateResult result) {
   DCHECK(result >= 0 && result < UPDATE_RESULT_MAX);
   UMA_HISTOGRAM_ENUMERATION("SB2.UpdateResult", result, UPDATE_RESULT_MAX);
+}
+
+const char kSBUpdateFrequencyFinchExperiment[] = "SafeBrowsingUpdateFrequency";
+const char kSBUpdateFrequencyFinchParam[] = "NextUpdateIntervalInMinutes";
+
+// This will be used for experimenting on a small subset of the population to
+// better estimate the benefit of updating the safe browsing hashes more
+// frequently.
+base::TimeDelta GetNextUpdateIntervalFromFinch() {
+  std::string num_str = variations::GetVariationParamValue(
+      kSBUpdateFrequencyFinchExperiment, kSBUpdateFrequencyFinchParam);
+  int finch_next_update_interval_minutes = 0;
+  if (!base::StringToInt(num_str, &finch_next_update_interval_minutes)) {
+    finch_next_update_interval_minutes = 0;  // Defaults to 0.
+  }
+  return base::TimeDelta::FromMinutes(finch_next_update_interval_minutes);
 }
 
 }  // namespace
@@ -412,14 +430,19 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(
         return false;
       }
 
-      base::TimeDelta next_update_interval =
-          base::TimeDelta::FromSeconds(next_update_sec);
-      last_update_ = Time::Now();
-
       // New time for the next update.
-      if (next_update_interval > base::TimeDelta()) {
-        next_update_interval_ = next_update_interval;
+      base::TimeDelta finch_next_update_interval =
+          GetNextUpdateIntervalFromFinch();
+      if (finch_next_update_interval > base::TimeDelta()) {
+          next_update_interval_ = finch_next_update_interval;
+      } else {
+        base::TimeDelta next_update_interval =
+            base::TimeDelta::FromSeconds(next_update_sec);
+        if (next_update_interval > base::TimeDelta()) {
+          next_update_interval_ = next_update_interval;
+        }
       }
+      last_update_ = Time::Now();
 
       // New chunks to download.
       if (!chunk_urls.empty()) {
