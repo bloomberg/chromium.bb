@@ -97,18 +97,18 @@ void AudioHardwareConfig::UpdateOutputConfig(
   output_params_ = output_params;
 }
 
-int AudioHardwareConfig::GetHighLatencyBufferSize() const {
-  AutoLock auto_lock(config_lock_);
-
+// static
+int AudioHardwareConfig::GetHighLatencyBufferSize(
+    const media::AudioParameters& output_params) {
   // Empirically, we consider 20ms of samples to be high latency.
-  const double twenty_ms_size = 2.0 * output_params_.sample_rate() / 100;
+  const double twenty_ms_size = 2.0 * output_params.sample_rate() / 100;
 
 #if defined(OS_WIN)
   // Windows doesn't use power of two buffer sizes, so we should always round up
   // to the nearest multiple of the output buffer size.
   const int high_latency_buffer_size =
-      std::ceil(twenty_ms_size / output_params_.frames_per_buffer()) *
-      output_params_.frames_per_buffer();
+      std::ceil(twenty_ms_size / output_params.frames_per_buffer()) *
+      output_params.frames_per_buffer();
 #else
   // On other platforms use the nearest higher power of two buffer size.  For a
   // given sample rate, this works out to:
@@ -126,7 +126,12 @@ int AudioHardwareConfig::GetHighLatencyBufferSize() const {
   const int high_latency_buffer_size = RoundUpToPowerOfTwo(twenty_ms_size);
 #endif  // defined(OS_WIN)
 
-  return std::max(output_params_.frames_per_buffer(), high_latency_buffer_size);
+  return std::max(output_params.frames_per_buffer(), high_latency_buffer_size);
+}
+
+int AudioHardwareConfig::GetHighLatencyBufferSize() const {
+  AutoLock auto_lock(config_lock_);
+  return GetHighLatencyBufferSize(output_params_);
 }
 
 }  // namespace media

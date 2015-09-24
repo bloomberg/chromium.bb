@@ -6,11 +6,13 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
 
 #include <map>
+#include <string>
 #include <utility>
 
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_parameters.h"
+#include "url/origin.h"
 
 namespace media {
 class AudioHardwareConfig;
@@ -47,43 +49,74 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
   // |source_render_frame_id| refers to the RenderFrame containing the entity
   // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
-  // the returned input.
+  // the returned input. The default output device is used.
+  // TODO(guidou): Remove this method once upper layers make use of the
+  // output device functionality. See http://crbug.com/534306
   media::AudioRendererMixerInput* CreateInput(int source_render_frame_id);
+
+  // Creates an AudioRendererMixerInput with the proper callbacks necessary to
+  // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
+  // |source_render_frame_id| refers to the RenderFrame containing the entity
+  // rendering the audio.  Caller must ensure AudioRendererMixerManager outlives
+  // the returned input. |device_id| and |security_origin| identify the output
+  // device to use
+  media::AudioRendererMixerInput* CreateInput(
+      int source_render_frame_id,
+      const std::string& device_id,
+      const url::Origin& security_origin);
 
   // Returns a mixer instance based on AudioParameters; an existing one if one
   // with the provided AudioParameters exists or a new one if not.
   media::AudioRendererMixer* GetMixer(int source_render_frame_id,
-                                      const media::AudioParameters& params);
+                                      const media::AudioParameters& params,
+                                      const std::string& device_id,
+                                      const url::Origin& security_origin);
 
   // Remove a mixer instance given a mixer if the only other reference is held
   // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
   // this method when it's done with a mixer.
   void RemoveMixer(int source_render_frame_id,
-                   const media::AudioParameters& params);
+                   const media::AudioParameters& params,
+                   const std::string& device_id,
+                   const url::Origin& security_origin);
 
  private:
   friend class AudioRendererMixerManagerTest;
 
   // Define a key so that only those AudioRendererMixerInputs from the same
-  // RenderView and with the same AudioParameters can be mixed together.  The
-  // first value is the RenderViewId.
-  typedef std::pair<int, media::AudioParameters> MixerKey;
+  // RenderView, AudioParameters and output device can be mixed together.
+  struct MixerKey {
+    MixerKey(int source_render_frame_id,
+             const media::AudioParameters& params,
+             const std::string& device_id,
+             const url::Origin& security_origin);
+    int source_render_frame_id;
+    media::AudioParameters params;
+    std::string device_id;
+    url::Origin security_origin;
+  };
 
   // Custom compare operator for the AudioRendererMixerMap.  Allows reuse of
   // mixers where only irrelevant keys mismatch; e.g., effects, bits per sample.
   struct MixerKeyCompare {
     bool operator()(const MixerKey& a, const MixerKey& b) const {
-      if (a.first != b.first)
-        return a.first < b.first;
-      if (a.second.sample_rate() != b.second.sample_rate())
-        return a.second.sample_rate() < b.second.sample_rate();
-      if (a.second.channels() != b.second.channels())
-        return a.second.channels() < b.second.channels();
+      if (a.source_render_frame_id != b.source_render_frame_id)
+        return a.source_render_frame_id < b.source_render_frame_id;
+      if (a.params.sample_rate() != b.params.sample_rate())
+        return a.params.sample_rate() < b.params.sample_rate();
+      if (a.params.channels() != b.params.channels())
+        return a.params.channels() < b.params.channels();
 
       // Ignore effects(), bits_per_sample(), format(), and frames_per_buffer(),
       // these parameters do not affect mixer reuse.  All AudioRendererMixer
       // units disable FIFO, so frames_per_buffer() can be safely ignored.
-      return a.second.channel_layout() < b.second.channel_layout();
+      if (a.params.channel_layout() != b.params.channel_layout())
+        return a.params.channel_layout() < b.params.channel_layout();
+
+      if (a.device_id != b.device_id)
+        return a.device_id < b.device_id;
+
+      return a.security_origin < b.security_origin;
     }
   };
 

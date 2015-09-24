@@ -6,11 +6,11 @@
 #define MEDIA_BASE_AUDIO_RENDERER_MIXER_INPUT_H_
 
 #include <string>
-#include <vector>
 
 #include "base/callback.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_renderer_sink.h"
+#include "url/origin.h"
 
 namespace media {
 
@@ -18,14 +18,22 @@ class AudioRendererMixer;
 
 class MEDIA_EXPORT AudioRendererMixerInput
     : NON_EXPORTED_BASE(public AudioRendererSink),
+      NON_EXPORTED_BASE(public OutputDevice),
       public AudioConverter::InputCallback {
  public:
   typedef base::Callback<AudioRendererMixer*(
-      const AudioParameters& params)> GetMixerCB;
-  typedef base::Callback<void(const AudioParameters& params)> RemoveMixerCB;
+      const AudioParameters& params,
+      const std::string& device_id,
+      const url::Origin& security_origin)> GetMixerCB;
+  typedef base::Callback<void(const AudioParameters& params,
+                              const std::string& device_id,
+                              const url::Origin& security_origin)>
+      RemoveMixerCB;
 
-  AudioRendererMixerInput(
-      const GetMixerCB& get_mixer_cb, const RemoveMixerCB& remove_mixer_cb);
+  AudioRendererMixerInput(const GetMixerCB& get_mixer_cb,
+                          const RemoveMixerCB& remove_mixer_cb,
+                          const std::string& device_id,
+                          const url::Origin& security_origin);
 
   // AudioRendererSink implementation.
   void Start() override;
@@ -36,6 +44,12 @@ class MEDIA_EXPORT AudioRendererMixerInput
   OutputDevice* GetOutputDevice() override;
   void Initialize(const AudioParameters& params,
                   AudioRendererSink::RenderCallback* renderer) override;
+
+  // OutputDevice implementation.
+  void SwitchOutputDevice(const std::string& device_id,
+                          const url::Origin& security_origin,
+                          const SwitchOutputDeviceCB& callback) override;
+  AudioParameters GetOutputParameters() override;
 
   // Called by AudioRendererMixer when an error occurs.
   void OnRenderError();
@@ -61,6 +75,10 @@ class MEDIA_EXPORT AudioRendererMixerInput
 
   // AudioParameters received during Initialize().
   AudioParameters params_;
+
+  // ID of hardware device to use
+  std::string device_id_;
+  url::Origin security_origin_;
 
   // AudioRendererMixer provided through |get_mixer_cb_| during Initialize(),
   // guaranteed to live (at least) until |remove_mixer_cb_| is called.

@@ -13,6 +13,8 @@
 
 namespace media {
 
+class FakeOutputDevice;
+
 class MockAudioRendererSink : public AudioRendererSink {
  public:
   MockAudioRendererSink();
@@ -22,7 +24,7 @@ class MockAudioRendererSink : public AudioRendererSink {
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Play, void());
   MOCK_METHOD1(SetVolume, bool(double volume));
-  MOCK_METHOD0(GetOutputDevice, OutputDevice*());
+  OutputDevice* GetOutputDevice();
 
   void Initialize(const AudioParameters& params,
                   RenderCallback* renderer) override;
@@ -33,6 +35,7 @@ class MockAudioRendererSink : public AudioRendererSink {
 
  private:
   RenderCallback* callback_;
+  scoped_ptr<FakeOutputDevice> output_device_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererSink);
 };

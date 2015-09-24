@@ -34,6 +34,10 @@ const int kLowLatencyBufferSize = 256;
 // Number of full sine wave cycles for each Render() call.
 const int kSineCycles = 4;
 
+// Default device ID
+const std::string kDefaultDeviceId;
+const url::Origin kDefaultSecurityOrigin;
+
 // Tuple of <input sampling rate, output sampling rate, epsilon>.
 typedef std::tr1::tuple<int, int, double> AudioRendererMixerTestData;
 class AudioRendererMixerTest
@@ -67,11 +71,16 @@ class AudioRendererMixerTest
     expected_callback_.reset(new FakeAudioRenderCallback(step));
   }
 
-  AudioRendererMixer* GetMixer(const AudioParameters& params) {
+  AudioRendererMixer* GetMixer(const AudioParameters& params,
+                               const std::string& device_id,
+                               const url::Origin& security_origin) {
     return mixer_.get();
   }
 
-  MOCK_METHOD1(RemoveMixer, void(const AudioParameters&));
+  MOCK_METHOD3(RemoveMixer,
+               void(const AudioParameters&,
+                    const std::string&,
+                    const url::Origin&));
 
   void InitializeInputs(int count) {
     mixer_inputs_.reserve(count);
@@ -86,14 +95,15 @@ class AudioRendererMixerTest
     for (int i = 0; i < count; ++i) {
       fake_callbacks_.push_back(new FakeAudioRenderCallback(step));
       mixer_inputs_.push_back(new AudioRendererMixerInput(
-          base::Bind(&AudioRendererMixerTest::GetMixer,
-                     base::Unretained(this)),
+          base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
-                     base::Unretained(this))));
+                     base::Unretained(this)),
+          kDefaultDeviceId, kDefaultSecurityOrigin));
       mixer_inputs_[i]->Initialize(input_parameters_, fake_callbacks_[i]);
       mixer_inputs_[i]->SetVolume(1.0f);
     }
-    EXPECT_CALL(*this, RemoveMixer(testing::_)).Times(count);
+    EXPECT_CALL(*this, RemoveMixer(testing::_, testing::_, testing::_))
+        .Times(count);
   }
 
   bool ValidateAudioData(int index, int frames, float scale, double epsilon) {
@@ -284,6 +294,7 @@ class AudioRendererMixerTest
   double epsilon_;
   bool half_fill_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerTest);
 };
 
@@ -412,13 +423,13 @@ TEST_P(AudioRendererMixerBehavioralTest, OnRenderErrorPausedInput) {
 // Ensure constructing an AudioRendererMixerInput, but not initializing it does
 // not call RemoveMixer().
 TEST_P(AudioRendererMixerBehavioralTest, NoInitialize) {
-  EXPECT_CALL(*this, RemoveMixer(testing::_)).Times(0);
+  EXPECT_CALL(*this, RemoveMixer(testing::_, testing::_, testing::_)).Times(0);
   scoped_refptr<AudioRendererMixerInput> audio_renderer_mixer =
       new AudioRendererMixerInput(
-          base::Bind(&AudioRendererMixerTest::GetMixer,
-                     base::Unretained(this)),
+          base::Bind(&AudioRendererMixerTest::GetMixer, base::Unretained(this)),
           base::Bind(&AudioRendererMixerTest::RemoveMixer,
-                     base::Unretained(this)));
+                     base::Unretained(this)),
+          kDefaultDeviceId, kDefaultSecurityOrigin);
 }
 
 // Ensure the physical stream is paused after a certain amount of time with no
