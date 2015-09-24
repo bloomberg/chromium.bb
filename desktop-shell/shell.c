@@ -2098,7 +2098,7 @@ xdg_ping_timeout_handler(void *data)
 			continue;
 
 		shsurf = get_shell_surface(pointer->focus->surface);
-		if (shsurf &&
+		if (shsurf && shsurf->resource &&
 		    wl_resource_get_client(shsurf->resource) == sc->client)
 			set_busy_cursor(shsurf, pointer);
 	}
@@ -2133,7 +2133,8 @@ handle_xdg_ping(struct shell_surface *shsurf, uint32_t serial)
 	if (shell_surface_is_xdg_surface(shsurf) ||
 	    shell_surface_is_xdg_popup(shsurf))
 		xdg_shell_send_ping(sc->resource, serial);
-	else if (shell_surface_is_wl_shell_surface(shsurf))
+	else if (shell_surface_is_wl_shell_surface(shsurf)
+		 && shsurf->resource)
 		wl_shell_surface_send_ping(shsurf->resource, serial);
 }
 
@@ -3342,7 +3343,9 @@ static const struct weston_touch_grab_interface touch_popup_grab_interface = {
 static void
 shell_surface_send_popup_done(struct shell_surface *shsurf)
 {
-	if (shell_surface_is_wl_shell_surface(shsurf))
+	if (shsurf->resource == NULL)
+		return;
+	else if (shell_surface_is_wl_shell_surface(shsurf))
 		wl_shell_surface_send_popup_done(shsurf->resource);
 	else if (shell_surface_is_xdg_popup(shsurf))
 		xdg_popup_send_popup_done(shsurf->resource);
@@ -3589,7 +3592,8 @@ shell_destroy_shell_surface(struct wl_resource *resource)
 
 	if (!wl_list_empty(&shsurf->popup.grab_link))
 		remove_popup_grab(shsurf);
-	wl_list_remove(wl_resource_get_link(shsurf->resource));
+	if (shsurf->resource)
+		wl_list_remove(wl_resource_get_link(shsurf->resource));
 	shsurf->resource = NULL;
 }
 
@@ -3767,6 +3771,10 @@ shell_get_shell_surface(struct wl_client *client,
 	shsurf->resource =
 		wl_resource_create(client,
 				   &wl_shell_surface_interface, 1, id);
+	if (!shsurf->resource) {
+		wl_resource_post_no_memory(surface_resource);
+	        return;
+	}
 	wl_resource_set_implementation(shsurf->resource,
 				       &shell_surface_implementation,
 				       shsurf, shell_destroy_shell_surface);
@@ -4115,6 +4123,10 @@ xdg_get_xdg_surface(struct wl_client *client,
 	shsurf->resource =
 		wl_resource_create(client,
 				   &xdg_surface_interface, 1, id);
+	if (!shsurf->resource) {
+		wl_resource_post_no_memory(surface_resource);
+		return;
+	}
 	wl_resource_set_implementation(shsurf->resource,
 				       &xdg_surface_implementation,
 				       shsurf, shell_destroy_shell_surface);
@@ -4246,6 +4258,10 @@ xdg_get_xdg_popup(struct wl_client *client,
 	shsurf->resource =
 		wl_resource_create(client,
 				   &xdg_popup_interface, 1, id);
+	if (!shsurf->resource) {
+		wl_resource_post_no_memory(surface_resource);
+		return;
+	}
 	wl_resource_set_implementation(shsurf->resource,
 				       &xdg_popup_implementation,
 				       shsurf, shell_destroy_shell_surface);
@@ -4266,9 +4282,10 @@ xdg_pong(struct wl_client *client,
 static bool
 shell_surface_is_xdg_popup(struct shell_surface *shsurf)
 {
-	return wl_resource_instance_of(shsurf->resource,
-				       &xdg_popup_interface,
-				       &xdg_popup_implementation);
+	return (shsurf->resource &&
+		wl_resource_instance_of(shsurf->resource,
+					&xdg_popup_interface,
+					&xdg_popup_implementation));
 }
 
 static const struct xdg_shell_interface xdg_implementation = {
