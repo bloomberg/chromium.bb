@@ -11,6 +11,7 @@
 #include "components/html_viewer/discardable_memory_allocator.h"
 #include "components/mus/gles2/mojo_gpu_memory_buffer_manager.h"
 #include "components/mus/gles2/raster_thread_helper.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "skia/ext/refptr.h"
 #include "ui/gfx/geometry/size.h"
@@ -78,9 +79,14 @@ class GlobalState {
     return &gpu_memory_buffer_manager_;
   }
 
+  const mojo::GpuInfo* GetGpuInfo();
+
   MediaFactory* media_factory() { return media_factory_.get(); }
 
  private:
+  // Callback for |gpu_service_|->GetGpuInfo().
+  void GetGpuInfoCallback(mojo::GpuInfoPtr gpu_info);
+
   // App for HTMLViewer, not the document's app.
   // WARNING: do not expose this. It's too easy to use the wrong one.
   // HTMLDocument should be using the application it creates, not this one.
@@ -110,6 +116,8 @@ class GlobalState {
   base::Thread compositor_thread_;
   gles2::RasterThreadHelper raster_thread_helper_;
   mus::MojoGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  mojo::GpuPtr gpu_service_;
+  mojo::GpuInfoPtr gpu_info_;
   scoped_ptr<MediaFactory> media_factory_;
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)

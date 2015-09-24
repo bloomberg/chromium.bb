@@ -6,8 +6,10 @@
 #define COMPONENTS_MUS_GLES2_COMMAND_BUFFER_TYPE_CONVERSIONS_H_
 
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
+#include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/config/gpu_info.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -60,6 +62,11 @@ struct TypeConverter<GpuCapabilitiesPtr, gpu::Capabilities> {
 template <>
 struct TypeConverter<gpu::Capabilities, GpuCapabilitiesPtr> {
   static gpu::Capabilities Convert(const GpuCapabilitiesPtr& input);
+};
+
+template <>
+struct TypeConverter<GpuInfoPtr, gpu::GPUInfo> {
+  static GpuInfoPtr Convert(const gpu::GPUInfo& input);
 };
 
 }  // namespace mojo

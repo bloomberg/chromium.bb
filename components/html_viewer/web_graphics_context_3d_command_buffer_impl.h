@@ -6,37 +6,32 @@
 #define COMPONENTS_HTML_VIEWER_WEB_GRAPHICS_CONTEXT_3D_COMMAND_BUFFER_IMPL_H_
 
 #include "base/macros.h"
+#include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/mojo/src/mojo/public/cpp/system/core.h"
-#include "third_party/mojo/src/mojo/public/cpp/system/message_pipe.h"
 #include "url/gurl.h"
+
+namespace mojo {
+class ApplicationImpl;
+}
 
 namespace gpu {
   class ContextSupport;
   namespace gles2 { class GLES2Interface; }
 }
 
-namespace mojo {
-class ApplicationImpl;
-}  // namespace mojo
-
 namespace html_viewer {
+
+class GlobalState;
 
 class WebGraphicsContext3DCommandBufferImpl
     : public gpu_blink::WebGraphicsContext3DImpl {
  public:
-  WebGraphicsContext3DCommandBufferImpl(
-      mojo::ApplicationImpl* app,
-      const GURL& active_url,
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context,
-      blink::WebGLInfo* gl_info);
-  virtual ~WebGraphicsContext3DCommandBufferImpl();
-
   static WebGraphicsContext3DCommandBufferImpl* CreateOffscreenContext(
+      GlobalState* global_state,
       mojo::ApplicationImpl* app,
       const GURL& active_url,
       const blink::WebGraphicsContext3D::Attributes& attributes,
@@ -44,12 +39,18 @@ class WebGraphicsContext3DCommandBufferImpl
       blink::WebGLInfo* gl_info);
 
  private:
+  WebGraphicsContext3DCommandBufferImpl(
+      mojo::InterfacePtrInfo<mojo::CommandBuffer> command_buffer_info,
+      const GURL& active_url,
+      const blink::WebGraphicsContext3D::Attributes& attributes,
+      blink::WebGraphicsContext3D* share_context);
+  virtual ~WebGraphicsContext3DCommandBufferImpl();
+
   static void ContextLostThunk(void* closure) {
     static_cast<WebGraphicsContext3DCommandBufferImpl*>(closure)->ContextLost();
   }
   void ContextLost();
 
-  mojo::ScopedMessagePipeHandle command_buffer_handle_;
   MojoGLES2Context gles2_context_;
   scoped_ptr<gpu::gles2::GLES2Interface> context_gl_;
 
