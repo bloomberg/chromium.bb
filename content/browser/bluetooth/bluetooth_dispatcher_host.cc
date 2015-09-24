@@ -865,7 +865,10 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
         thread_id, request_id, WebBluetoothError::DeviceNoLongerInRange));
     return;
   }
+
+  VLOG(1) << "Looking for service: " << service_uuid;
   for (BluetoothGattService* service : device->GetGattServices()) {
+    VLOG(1) << "Service in cache: " << service->GetUUID().canonical_value();
     if (service->GetUUID().canonical_value() == service_uuid) {
       // TODO(ortuno): Use generated instance ID instead.
       // https://crbug.com/495379
@@ -883,6 +886,8 @@ void BluetoothDispatcherHost::OnServicesDiscovered(
       return;
     }
   }
+
+  VLOG(1) << "No service found";
   RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
   Send(new BluetoothMsg_GetPrimaryServiceError(
       thread_id, request_id, WebBluetoothError::ServiceNotFound));

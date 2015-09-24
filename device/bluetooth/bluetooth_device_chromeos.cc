@@ -538,10 +538,13 @@ void BluetoothDeviceChromeOS::GattServiceRemoved(
     return;
   }
 
-  VLOG(1) << "Removing remote GATT service from device: " << GetAddress();
-
   BluetoothRemoteGattServiceChromeOS* service =
       static_cast<BluetoothRemoteGattServiceChromeOS*>(iter->second);
+
+  VLOG(1) << "Removing remote GATT service with UUID: '"
+          << service->GetUUID().canonical_value()
+          << "' from device: " << GetAddress();
+
   DCHECK(service->object_path() == object_path);
   gatt_services_.erase(iter);
 
