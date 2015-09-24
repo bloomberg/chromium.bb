@@ -21,6 +21,7 @@ ParseHTML Properties:
     thread : <string>
     type : "ParseHTML"
 }
+Text details for ParseHTML: timeline-parse-html.html [1 – 0]
 ParseHTML Properties:
 {
     data : {
@@ -41,4 +42,5 @@ ParseHTML Properties:
     thread : <string>
     type : "ParseHTML"
 }
+Text details for ParseHTML: timeline-parse-html.html [1 – 0]
 

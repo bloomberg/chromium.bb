@@ -54,6 +54,7 @@ function test()
     {
         InspectorTest.addResult("");
         InspectorTest.printTimelineRecordProperties(record);
+        InspectorTest.addResult("Text details for " + record.type() + ": " + WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent()));
     }
 
     function printSend(record)

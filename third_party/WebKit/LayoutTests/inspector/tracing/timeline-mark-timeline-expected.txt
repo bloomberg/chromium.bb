@@ -13,4 +13,5 @@ TimeStamp Properties:
     thread : <string>
     type : "TimeStamp"
 }
+Text details for TimeStamp: null
 

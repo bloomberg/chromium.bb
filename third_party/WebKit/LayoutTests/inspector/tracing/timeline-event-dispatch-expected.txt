@@ -13,6 +13,7 @@ EventDispatch Properties:
     thread : <string>
     type : "EventDispatch"
 }
+Text details for EventDispatch: mouseover
 EventDispatch Properties:
 {
     data : {
@@ -25,6 +26,7 @@ EventDispatch Properties:
     thread : <string>
     type : "EventDispatch"
 }
+Text details for EventDispatch: mousemove
 EventDispatch Properties:
 {
     children : <object>
@@ -38,6 +40,7 @@ EventDispatch Properties:
     thread : <string>
     type : "EventDispatch"
 }
+Text details for EventDispatch: mousedown
 EventDispatch Properties:
 {
     data : {
@@ -50,6 +53,7 @@ EventDispatch Properties:
     thread : <string>
     type : "EventDispatch"
 }
+Text details for EventDispatch: selectstart
 EventDispatch Properties:
 {
     data : {
@@ -60,4 +64,5 @@ EventDispatch Properties:
     thread : <string>
     type : "EventDispatch"
 }
+Text details for EventDispatch: selectionchange
 

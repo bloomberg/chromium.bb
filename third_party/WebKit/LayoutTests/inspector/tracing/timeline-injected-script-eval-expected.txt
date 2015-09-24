@@ -16,4 +16,5 @@ FunctionCall Properties:
     thread : <string>
     type : "FunctionCall"
 }
+Text details for FunctionCall: undefined
 

@@ -16,6 +16,7 @@ TimerInstall Properties:
     thread : <string>
     type : "TimerInstall"
 }
+Text details for TimerInstall: timeline-timer.html:9
 TimerInstall Properties:
 {
     data : {
@@ -32,6 +33,7 @@ TimerInstall Properties:
     thread : <string>
     type : "TimerInstall"
 }
+Text details for TimerInstall: timeline-timer.html:10
 TimerFire Properties:
 {
     children : <object>
@@ -45,6 +47,7 @@ TimerFire Properties:
     thread : <string>
     type : "TimerFire"
 }
+Text details for TimerFire: timeline-timer.html:9
 TimerFire Properties:
 {
     children : <object>
@@ -58,6 +61,7 @@ TimerFire Properties:
     thread : <string>
     type : "TimerFire"
 }
+Text details for TimerFire: timeline-timer.html:10
 TimerFire Properties:
 {
     children : <object>
@@ -71,6 +75,7 @@ TimerFire Properties:
     thread : <string>
     type : "TimerFire"
 }
+Text details for TimerFire: timeline-timer.html:10
 TimerRemove Properties:
 {
     data : {
@@ -85,6 +90,7 @@ TimerRemove Properties:
     thread : <string>
     type : "TimerRemove"
 }
+Text details for TimerRemove: timeline-timer.html:17
 FunctionCall Properties:
 {
     children : <object>
@@ -150,4 +156,5 @@ EvaluateScript Properties:
     thread : <string>
     type : "EvaluateScript"
 }
+Text details for EvaluateScript: undefined
 

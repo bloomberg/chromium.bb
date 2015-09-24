@@ -14,6 +14,9 @@ function test()
     InspectorTest.performActionsAndPrint("performActions()", "TimeStamp", true);
 }
 
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+
 </script>
 </head>
 

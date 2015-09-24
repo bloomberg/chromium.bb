@@ -15,6 +15,7 @@ WebSocketCreate Properties:
     thread : <string>
     type : "WebSocketCreate"
 }
+Text details for WebSocketCreate: ws://127.0.0.1:8880/simple
 WebSocketSendHandshakeRequest Properties:
 {
     data : {
@@ -27,6 +28,7 @@ WebSocketSendHandshakeRequest Properties:
     thread : <string>
     type : "WebSocketSendHandshakeRequest"
 }
+Text details for WebSocketSendHandshakeRequest: ws://127.0.0.1:8880/simple
 WebSocketReceiveHandshakeResponse Properties:
 {
     data : {
@@ -39,6 +41,7 @@ WebSocketReceiveHandshakeResponse Properties:
     thread : <string>
     type : "WebSocketReceiveHandshakeResponse"
 }
+Text details for WebSocketReceiveHandshakeResponse: ws://127.0.0.1:8880/simple
 WebSocketDestroy Properties:
 {
     data : {
@@ -51,4 +54,5 @@ WebSocketDestroy Properties:
     thread : <string>
     type : "WebSocketDestroy"
 }
+Text details for WebSocketDestroy: ws://127.0.0.1:8880/simple
 

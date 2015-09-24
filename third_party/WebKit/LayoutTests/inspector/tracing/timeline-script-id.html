@@ -39,7 +39,7 @@ function test()
             return;
 
         var detailsText = WebInspector.TimelineUIUtils.buildDetailsTextForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target());
-        InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText.replace(/VM[\d]+/, "VM") + "'");
+        InspectorTest.addResult("detailsTextContent for " + record.type() + " event: '" + detailsText + "'");
 
         var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), InspectorTest.timelineModel().target(), linkifier);
         if (!details)

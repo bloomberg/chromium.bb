@@ -14,6 +14,7 @@ RequestAnimationFrame Properties:
     thread : <string>
     type : "RequestAnimationFrame"
 }
+Text details for RequestAnimationFrame: timeline-animation-frame.html:10
 FireAnimationFrame Properties:
 {
     children : <object>
@@ -27,6 +28,7 @@ FireAnimationFrame Properties:
     thread : <string>
     type : "FireAnimationFrame"
 }
+Text details for FireAnimationFrame: timeline-animation-frame.html:10
 CancelAnimationFrame Properties:
 {
     data : {
@@ -41,4 +43,5 @@ CancelAnimationFrame Properties:
     thread : <string>
     type : "CancelAnimationFrame"
 }
+Text details for CancelAnimationFrame: timeline-animation-frame.html:13
 

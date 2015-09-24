@@ -10,5 +10,5 @@ Program:
 --------> ResourceSendRequest: example.com
 --------> RecalculateStyles: 
 --------> Layout: 
---------> ParseHTML: http://example.com
+--------> ParseHTML: example.com
 

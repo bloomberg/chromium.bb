@@ -26,6 +26,9 @@ function test()
 
     function finish()
     {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        var typesToDump = new Set([recordTypes.ResourceSendRequest, recordTypes.ResourceReceiveResponse, recordTypes.ResourceReceivedData, recordTypes.ResourceFinish,
+            recordTypes.EventDispatch, recordTypes.FunctionCall]);
         function dumpFormattedRecord(presentationRecord, prefix)
         {
             var record = presentationRecord.record();
@@ -37,8 +40,7 @@ function test()
             var childPrefix = prefix;
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
             // Filter out InjectedScript function call because they happen out of sync.
-            if (!presentationRecord.coalesced()
-                && record.type() !== "GCEvent"
+            if (!presentationRecord.coalesced() && typesToDump.has(record.type())
                 && (record.type() !== "FunctionCall" || record.traceEvent().args["data"].scriptName)) {
                 InspectorTest.addResult(prefix + record.type());
                 childPrefix = childPrefix + "    ";

@@ -18,6 +18,7 @@ ResourceSendRequest Properties:
     thread : <string>
     type : "ResourceSendRequest"
 }
+Text details for ResourceSendRequest: timeline-network-resource.js
 
 ResourceReceiveResponse Properties:
 {
@@ -33,6 +34,7 @@ ResourceReceiveResponse Properties:
     thread : <string>
     type : "ResourceReceiveResponse"
 }
+Text details for ResourceReceiveResponse: timeline-network-resource.js
 
 ResourceFinish Properties:
 {
@@ -46,4 +48,5 @@ ResourceFinish Properties:
     thread : <string>
     type : "ResourceFinish"
 }
+Text details for ResourceFinish: timeline-network-resource.js
 

@@ -365,7 +365,6 @@ crbug.com/498539 [ Win ] inspector/tracing/timeline-event-dispatch.html [ Failur
 crbug.com/498539 inspector/console/console-log-syntax-error.html [ Pass Timeout ]
 crbug.com/498539 inspector/tracing/timeline-bound-function.html [ Pass Failure ]
 crbug.com/498539 inspector/tracing/timeline-injected-script-eval.html [ Pass Failure ]
-crbug.com/498539 inspector/tracing/timeline-receive-response-event.html [ Pass Failure ]
 crbug.com/498539 inspector/tracing/timeline-time.html [ Pass Failure Timeout ]
 crbug.com/498539 inspector/tracing/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 crbug.com/534422 inspector/elements/styles-3/styles-change-node-while-editing.html [ Crash Failure Pass ]

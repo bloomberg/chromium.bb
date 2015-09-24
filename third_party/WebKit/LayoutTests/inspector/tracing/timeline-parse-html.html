@@ -16,6 +16,9 @@ function test()
     InspectorTest.performActionsAndPrint("performActions()", "ParseHTML");
 }
 
+if (!window.testRunner)
+    setTimeout(performActions, 2000);
+
 </script>
 </head>
 

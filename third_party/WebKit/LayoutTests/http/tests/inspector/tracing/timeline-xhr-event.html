@@ -20,8 +20,8 @@ function test()
 
     function finish()
     {
-        InspectorTest.printTimelineRecords("XHRReadyStateChange");
-        InspectorTest.printTimelineRecords("XHRLoad");
+        InspectorTest.printTimelineRecordsWithDetails("XHRReadyStateChange");
+        InspectorTest.printTimelineRecordsWithDetails("XHRLoad");
         InspectorTest.completeTest();
     }
 }

@@ -15,6 +15,7 @@ XHRReadyStateChange Properties:
     thread : <string>
     type : "XHRReadyStateChange"
 }
+Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
     children : <object>
@@ -29,6 +30,7 @@ XHRReadyStateChange Properties:
     thread : <string>
     type : "XHRReadyStateChange"
 }
+Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
     children : <object>
@@ -43,6 +45,7 @@ XHRReadyStateChange Properties:
     thread : <string>
     type : "XHRReadyStateChange"
 }
+Text details for XHRReadyStateChange: network/resources/resource.php
 XHRReadyStateChange Properties:
 {
     children : <object>
@@ -57,6 +60,7 @@ XHRReadyStateChange Properties:
     thread : <string>
     type : "XHRReadyStateChange"
 }
+Text details for XHRReadyStateChange: network/resources/resource.php
 XHRLoad Properties:
 {
     children : <object>
@@ -70,4 +74,5 @@ XHRLoad Properties:
     thread : <string>
     type : "XHRLoad"
 }
+Text details for XHRLoad: network/resources/resource.php
 

@@ -16,10 +16,10 @@ function test()
 
     function finish()
     {
-        InspectorTest.printTimelineRecords("WebSocketCreate");
-        InspectorTest.printTimelineRecords("WebSocketSendHandshakeRequest");
-        InspectorTest.printTimelineRecords("WebSocketReceiveHandshakeResponse");
-        InspectorTest.printTimelineRecords("WebSocketDestroy");
+        InspectorTest.printTimelineRecordsWithDetails("WebSocketCreate");
+        InspectorTest.printTimelineRecordsWithDetails("WebSocketSendHandshakeRequest");
+        InspectorTest.printTimelineRecordsWithDetails("WebSocketReceiveHandshakeResponse");
+        InspectorTest.printTimelineRecordsWithDetails("WebSocketDestroy");
         InspectorTest.completeTest();
     }
 }

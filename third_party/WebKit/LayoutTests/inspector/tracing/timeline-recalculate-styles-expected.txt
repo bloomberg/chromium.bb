@@ -17,4 +17,5 @@ UpdateLayoutTree Properties:
     thread : <string>
     type : "UpdateLayoutTree"
 }
+Text details for UpdateLayoutTree: timeline-recalculate-styles.html:20
 

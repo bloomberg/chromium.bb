@@ -16,4 +16,5 @@ HitTest Properties:
     thread : <string>
     type : "HitTest"
 }
+Text details for HitTest: null
 

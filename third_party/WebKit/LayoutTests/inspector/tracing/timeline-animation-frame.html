@@ -11,7 +11,8 @@ function performActions(callback)
     function animationFrameCallback()
     {
         window.cancelAnimationFrame(requestId);
-        callback();
+        if (callback)
+            callback();
     }
 }
 
@@ -21,9 +22,9 @@ function test()
 
     function finish()
     {
-        InspectorTest.printTimelineRecords("RequestAnimationFrame");
-        InspectorTest.printTimelineRecords("FireAnimationFrame");
-        InspectorTest.printTimelineRecords("CancelAnimationFrame");
+        InspectorTest.printTimelineRecordsWithDetails("RequestAnimationFrame");
+        InspectorTest.printTimelineRecordsWithDetails("FireAnimationFrame");
+        InspectorTest.printTimelineRecordsWithDetails("CancelAnimationFrame");
         InspectorTest.completeTest();
     }
 }

@@ -25,11 +25,11 @@ function test()
 
     function finish()
     {
-        InspectorTest.printTimelineRecords("TimerInstall");
-        InspectorTest.printTimelineRecords("TimerFire");
-        InspectorTest.printTimelineRecords("TimerRemove");
+        InspectorTest.printTimelineRecordsWithDetails("TimerInstall");
+        InspectorTest.printTimelineRecordsWithDetails("TimerFire");
+        InspectorTest.printTimelineRecordsWithDetails("TimerRemove");
         InspectorTest.printTimelineRecords("FunctionCall");
-        InspectorTest.printTimelineRecords("EvaluateScript");
+        InspectorTest.printTimelineRecordsWithDetails("EvaluateScript");
         InspectorTest.completeTest();
     }
 }
