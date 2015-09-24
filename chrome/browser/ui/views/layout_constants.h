@@ -77,6 +77,10 @@ enum LayoutConstant {
 };
 
 enum LayoutInset {
+  // The padding between the avatar icon and the frame border on the left, the
+  // tabstrip on the right, and the toolbar on the bottom.
+  AVATAR_ICON,
+
   // In an omnibox dropdown row, the minimum distance between the icon and the
   // row edge.
   OMNIBOX_DROPDOWN_ICON,

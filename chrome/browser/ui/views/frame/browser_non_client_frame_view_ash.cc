@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
+#include "chrome/browser/ui/views/layout_constants.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -54,13 +55,6 @@
 
 namespace {
 
-// The avatar ends 2 px above the bottom of the tabstrip (which, given the
-// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
-// user).
-const int kAvatarBottomSpacing = 2;
-// There are 2 px on each side of the avatar (between the frame border and
-// it on the left, and between it and the tabstrip on the right).
-const int kAvatarSideSpacing = 2;
 #if defined(FRAME_AVATAR_BUTTON)
 // Space between the new avatar button and the minimize button.
 const int kNewAvatarButtonOffset = 5;
@@ -505,9 +499,9 @@ bool BrowserNonClientFrameViewAsh::DoesIntersectRect(
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
-  return avatar_button() ? kAvatarSideSpacing +
-      browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
-      kTabstripLeftSpacing;
+  const int icon_width = browser_view()->GetOTRAvatarIcon().width();
+  const int insets_width = GetLayoutInsets(AVATAR_ICON).width();
+  return avatar_button() ? (icon_width + insets_width) : kTabstripLeftSpacing;
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
@@ -550,14 +544,15 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
-
-  int avatar_bottom = GetTopInset() +
-      browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
-  int avatar_restored_y = avatar_bottom - incognito_icon.height();
-  int avatar_y =
-      (browser_view()->IsTabStripVisible() &&
-       (frame()->IsMaximized() || frame()->IsFullscreen())) ?
-      GetTopInset() + kContentShadowHeight : avatar_restored_y;
+  gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
+  int avatar_bottom = GetTopInset() + browser_view()->GetTabStripHeight() -
+                      avatar_insets.bottom();
+  int avatar_y = avatar_bottom - incognito_icon.height();
+  if (!ui::MaterialDesignController::IsModeMaterial() &&
+      browser_view()->IsTabStripVisible() &&
+      (frame()->IsMaximized() || frame()->IsFullscreen())) {
+    avatar_y = GetTopInset() + kContentShadowHeight;
+  }
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
   // visible because the header is too short for the icognito icon to be
@@ -565,10 +560,8 @@ void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
   int avatar_height = avatar_visible ? avatar_bottom - avatar_y : 0;
 
-  gfx::Rect avatar_bounds(kAvatarSideSpacing,
-                          avatar_y,
-                          incognito_icon.width(),
-                          avatar_height);
+  gfx::Rect avatar_bounds(avatar_insets.left(), avatar_y,
+                          incognito_icon.width(), avatar_height);
   avatar_button()->SetBoundsRect(avatar_bounds);
   avatar_button()->SetVisible(avatar_visible);
 }

@@ -81,6 +81,9 @@ int GetLayoutConstant(LayoutConstant constant) {
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
+  const int kAvatarLeftPadding[] = {2, 4, 4};
+  const int kAvatarRightPadding[] = {2, 2, 2};
+  const int kAvatarBottomPadding[] = {2, 4, 4};
   const int kOmniboxDropdownIconPadding[] = {2, 4, 8};
   const int kOmniboxDropdownTextPadding[] = {3, 4, 8};
   const int kTabBottomPadding[] = {2, 2, 2};
@@ -95,6 +98,10 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
+    case AVATAR_ICON: {
+      return gfx::Insets(0, kAvatarLeftPadding[mode],
+                         kAvatarBottomPadding[mode], kAvatarRightPadding[mode]);
+    }
     case OMNIBOX_DROPDOWN_ICON: {
       const int padding = kOmniboxDropdownIconPadding[mode];
       return gfx::Insets(padding, 0, padding, 0);
