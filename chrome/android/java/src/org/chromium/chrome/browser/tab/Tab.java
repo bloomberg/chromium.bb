@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.AccessibilityUtil;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.ChromeWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.FrozenNativePage;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
@@ -3237,7 +3238,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     private static boolean isThemeColorEnabledInTabbedMode() {
         CommandLine commandLine = CommandLine.getInstance();
-        return commandLine.hasSwitch(ChromeSwitches.ENABLE_THEME_COLOR_IN_TABBED_MODE);
+        return ChromeVersionInfo.isLocalBuild()
+                || commandLine.hasSwitch(ChromeSwitches.ENABLE_THEME_COLOR_IN_TABBED_MODE);
     }
 
     /**
