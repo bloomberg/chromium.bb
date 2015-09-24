@@ -57,8 +57,6 @@ EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBasel
 {
     ASSERT(textLayoutObject);
     ASSERT(textLayoutObject->style());
-    ASSERT(textLayoutObject->parent());
-    ASSERT(textLayoutObject->parent()->style());
 
     const SVGComputedStyle& style = textLayoutObject->style()->svgStyle();
 
@@ -72,11 +70,15 @@ EAlignmentBaseline SVGTextLayoutEngineBaseline::dominantBaselineToAlignmentBasel
 
     switch (baseline) {
     case DB_USE_SCRIPT:
-        // FIXME: The dominant-baseline and the baseline-table components are set by determining the predominant script of the character data content.
+        // TODO(fs): The dominant-baseline and the baseline-table components
+        // are set by determining the predominant script of the character data
+        // content.
         return AB_ALPHABETIC;
     case DB_NO_CHANGE:
+        ASSERT(textLayoutObject->parent());
         return dominantBaselineToAlignmentBaseline(isVerticalText, textLayoutObject->parent());
     case DB_RESET_SIZE:
+        ASSERT(textLayoutObject->parent());
         return dominantBaselineToAlignmentBaseline(isVerticalText, textLayoutObject->parent());
     case DB_IDEOGRAPHIC:
         return AB_IDEOGRAPHIC;
