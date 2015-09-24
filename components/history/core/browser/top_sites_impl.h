@@ -271,7 +271,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Timer that asks history for the top sites. This is used to make sure our
   // data stays in sync with history.
-  base::OneShotTimer<TopSitesImpl> timer_;
+  base::OneShotTimer timer_;
 
   // The time we started |timer_| at. Only valid if |timer_| is running.
   base::TimeTicks timer_start_time_;

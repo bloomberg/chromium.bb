@@ -30,7 +30,7 @@ class PulsingBlockView : public views::View {
   // views::View overrides:
   void OnPaint(gfx::Canvas* canvas) override;
 
-  base::OneShotTimer<PulsingBlockView> start_delay_timer_;
+  base::OneShotTimer start_delay_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PulsingBlockView);
 };

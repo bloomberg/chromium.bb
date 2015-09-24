@@ -56,7 +56,7 @@ class NET_EXPORT_PRIVATE HttpResponseBodyDrainer {
   State next_state_;
   int total_read_;
   CompletionCallback user_callback_;
-  base::OneShotTimer<HttpResponseBodyDrainer> timer_;
+  base::OneShotTimer timer_;
   HttpNetworkSession* session_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpResponseBodyDrainer);

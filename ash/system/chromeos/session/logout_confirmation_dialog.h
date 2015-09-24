@@ -46,7 +46,7 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
 
   views::Label* label_;
 
-  base::RepeatingTimer<LogoutConfirmationDialog> update_timer_;
+  base::RepeatingTimer update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(LogoutConfirmationDialog);
 };

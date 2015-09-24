@@ -175,7 +175,7 @@ class CONTENT_EXPORT IndexedDBTransaction
   // This timer is started after requests have been processed. If no subsequent
   // requests are processed before the timer fires, assume the script is
   // unresponsive and abort to unblock the transaction queue.
-  base::OneShotTimer<IndexedDBTransaction> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   Diagnostics diagnostics_;
 };

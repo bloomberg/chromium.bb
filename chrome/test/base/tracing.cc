@@ -151,7 +151,7 @@ class InProcessTraceController {
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
-  base::OneShotTimer<InProcessTraceController> timer_;
+  base::OneShotTimer timer_;
 
   bool is_waiting_on_watch_;
   int watch_notification_count_;

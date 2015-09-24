@@ -242,7 +242,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // Reprocesses the most recent mouse move event if the mouse has not moved
   // in a while in case the window stacking order has changed and
   // |source_current_window_| needs to be updated.
-  base::OneShotTimer<DesktopDragDropClientAuraX11> repeat_mouse_move_timer_;
+  base::OneShotTimer repeat_mouse_move_timer_;
 
   // When the mouse is released, we need to wait for the last XdndStatus message
   // only if we have previously received a status message from
@@ -271,7 +271,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
 
   // Ends the move loop if the target is too slow to respond after the mouse is
   // released.
-  base::OneShotTimer<DesktopDragDropClientAuraX11> end_move_loop_timer_;
+  base::OneShotTimer end_move_loop_timer_;
 
   // Widget that the user drags around. May be NULL.
   scoped_ptr<Widget> drag_widget_;

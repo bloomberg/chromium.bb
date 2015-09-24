@@ -55,7 +55,7 @@ AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(
     const DirectivesCallback& update_directives_callback)
     : update_directives_callback_(update_directives_callback),
       audio_modem_(audio_modem::Modem::Create()),
-      audio_event_timer_(new base::OneShotTimer<AudioDirectiveHandler>),
+      audio_event_timer_(new base::OneShotTimer),
       clock_(new TickClockRefCounted(new base::DefaultTickClock)) {}
 
 AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(

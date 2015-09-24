@@ -212,7 +212,7 @@ class CastExtensionSession : public HostExtensionSession,
   rtc::scoped_refptr<webrtc::StatsObserver> stats_observer_;
 
   // Used to repeatedly poll stats from the |peer_connection_|.
-  base::RepeatingTimer<CastExtensionSession> stats_polling_timer_;
+  base::RepeatingTimer stats_polling_timer_;
 
   // True if a PeerConnection offer from the client has been received. This
   // necessarily means that the host is not the caller in this attempted

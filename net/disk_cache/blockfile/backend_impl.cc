@@ -294,7 +294,7 @@ int BackendImpl::SyncInit() {
   if (!disabled_ && should_create_timer) {
     // Create a recurrent timer of 30 secs.
     int timer_delay = unit_test_ ? 1000 : 30000;
-    timer_.reset(new base::RepeatingTimer<BackendImpl>());
+    timer_.reset(new base::RepeatingTimer());
     timer_->Start(FROM_HERE, TimeDelta::FromMilliseconds(timer_delay), this,
                   &BackendImpl::OnStatsTimer);
   }
@@ -1158,7 +1158,7 @@ void BackendImpl::TrimDeletedListForTest(bool empty) {
   eviction_.TrimDeletedList(empty);
 }
 
-base::RepeatingTimer<BackendImpl>* BackendImpl::GetTimerForTest() {
+base::RepeatingTimer* BackendImpl::GetTimerForTest() {
   return timer_.get();
 }
 

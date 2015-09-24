@@ -57,7 +57,7 @@ class CriticalNotificationBubbleView : public views::BubbleDelegateView,
   views::LabelButton* dismiss_button_;
 
   // A timer to refresh the bubble to show new countdown value.
-  base::RepeatingTimer<CriticalNotificationBubbleView> refresh_timer_;
+  base::RepeatingTimer refresh_timer_;
 
   // When the bubble was created.
   base::Time bubble_created_;

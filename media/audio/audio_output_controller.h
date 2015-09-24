@@ -248,7 +248,7 @@ class MEDIA_EXPORT AudioOutputController
 
   // Flags when we've asked for a stream to start but it never did.
   base::AtomicRefCount on_more_io_data_called_;
-  scoped_ptr<base::OneShotTimer<AudioOutputController> > wedge_timer_;
+  scoped_ptr<base::OneShotTimer> wedge_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };

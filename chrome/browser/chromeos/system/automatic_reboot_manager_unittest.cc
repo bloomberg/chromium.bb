@@ -134,8 +134,6 @@ class MockAutomaticRebootManagerObserver
 
 class AutomaticRebootManagerBasicTest : public testing::Test {
  protected:
-  typedef base::OneShotTimer<AutomaticRebootManager> Timer;
-
   AutomaticRebootManagerBasicTest();
   ~AutomaticRebootManagerBasicTest() override;
 
@@ -190,8 +188,8 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   scoped_ptr<AutomaticRebootManager> automatic_reboot_manager_;
 
  private:
-  void VerifyTimerIsStopped(const Timer* timer) const;
-  void VerifyTimerIsRunning(const Timer* timer,
+  void VerifyTimerIsStopped(const base::OneShotTimer* timer) const;
+  void VerifyTimerIsRunning(const base::OneShotTimer* timer,
                             const base::TimeDelta& delay) const;
   void VerifyLoginScreenIdleTimerIsRunning() const;
 
@@ -542,13 +540,13 @@ void AutomaticRebootManagerBasicTest::SetUpdateStatusNeedReboot() {
 }
 
 void AutomaticRebootManagerBasicTest::VerifyTimerIsStopped(
-    const Timer* timer) const {
+    const base::OneShotTimer* timer) const {
   if (timer)
     EXPECT_FALSE(timer->IsRunning());
 }
 
 void AutomaticRebootManagerBasicTest::VerifyTimerIsRunning(
-    const Timer* timer,
+    const base::OneShotTimer* timer,
     const base::TimeDelta& delay) const {
   ASSERT_TRUE(timer);
   EXPECT_TRUE(timer->IsRunning());

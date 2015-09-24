@@ -152,7 +152,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // The OneShotTimer object used to timeout of starting the sync backend
   // service.
-  scoped_ptr<base::OneShotTimer<SyncSetupHandler> > backend_start_timer_;
+  scoped_ptr<base::OneShotTimer> backend_start_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

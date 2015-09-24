@@ -232,10 +232,10 @@ class AutocompleteController : public AutocompleteProviderListener {
 
   // Timer used to remove any matches copied from the last result. When run
   // invokes |ExpireCopiedEntries|.
-  base::OneShotTimer<AutocompleteController> expire_timer_;
+  base::OneShotTimer expire_timer_;
 
   // Timer used to tell the providers to Stop() searching for matches.
-  base::OneShotTimer<AutocompleteController> stop_timer_;
+  base::OneShotTimer stop_timer_;
 
   // Amount of time (in ms) between when the user stops typing and
   // when we send Stop() to every provider.  This is intended to avoid

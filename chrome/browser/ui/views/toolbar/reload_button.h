@@ -78,8 +78,8 @@ class ReloadButton : public ToolbarButton,
   void OnDoubleClickTimer();
   void OnStopToReloadTimer();
 
-  base::OneShotTimer<ReloadButton> double_click_timer_;
-  base::OneShotTimer<ReloadButton> stop_to_reload_timer_;
+  base::OneShotTimer double_click_timer_;
+  base::OneShotTimer stop_to_reload_timer_;
 
   // This may be NULL when testing.
   CommandUpdater* command_updater_;

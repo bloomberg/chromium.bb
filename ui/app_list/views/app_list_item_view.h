@@ -171,7 +171,7 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
   base::string16 tooltip_text_;
 
   // A timer to defer showing drag UI when mouse is pressed.
-  base::OneShotTimer<AppListItemView> mouse_drag_timer_;
+  base::OneShotTimer mouse_drag_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListItemView);
 };

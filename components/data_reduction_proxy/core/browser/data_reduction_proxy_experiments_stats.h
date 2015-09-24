@@ -64,7 +64,7 @@ class DataReductionProxyExperimentsStats {
 
   // If set, periodically updates the simulated expiration of the Data Reduction
   // Proxy configuration.
-  base::RepeatingTimer<DataReductionProxyExperimentsStats> config_refresh_time_;
+  base::RepeatingTimer config_refresh_time_;
 
   // Enforce initialization order.
   bool initialized_;

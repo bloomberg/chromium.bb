@@ -127,8 +127,7 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
 
   // Arm |offline_signin_limit_timer_| so that it sets the flag enforcing online
   // login when the limit expires.
-  offline_signin_limit_timer_.reset(
-      new base::OneShotTimer<SAMLOfflineSigninLimiter>);
+  offline_signin_limit_timer_.reset(new base::OneShotTimer);
   offline_signin_limit_timer_->Start(
       FROM_HERE,
       offline_signin_time_limit - time_since_last_gaia_signin,

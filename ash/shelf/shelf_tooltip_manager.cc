@@ -363,8 +363,7 @@ void ShelfTooltipManager::CreateBubble(views::View* anchor,
 }
 
 void ShelfTooltipManager::CreateTimer(int delay_in_ms) {
-  base::OneShotTimer<ShelfTooltipManager>* new_timer =
-      new base::OneShotTimer<ShelfTooltipManager>();
+  base::OneShotTimer* new_timer = new base::OneShotTimer();
   new_timer->Start(FROM_HERE,
                    base::TimeDelta::FromMilliseconds(delay_in_ms),
                    this,

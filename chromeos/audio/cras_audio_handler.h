@@ -356,7 +356,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool log_errors_;
 
   // Timer for HDMI re-discovering grace period.
-  base::OneShotTimer<CrasAudioHandler> hdmi_rediscover_timer_;
+  base::OneShotTimer hdmi_rediscover_timer_;
   int hdmi_rediscover_grace_period_duration_in_ms_;
   bool hdmi_rediscovering_;
 

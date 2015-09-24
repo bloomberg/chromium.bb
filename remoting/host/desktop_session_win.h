@@ -123,7 +123,7 @@ class DesktopSessionWin
 
   // Used to report an error if the session attach notification does not arrives
   // for too long.
-  base::OneShotTimer<DesktopSessionWin> session_attach_timer_;
+  base::OneShotTimer session_attach_timer_;
 
   base::Time last_timestamp_;
 

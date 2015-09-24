@@ -146,7 +146,7 @@ class UI_BASE_EXPORT SelectionRequestor {
   size_t current_request_index_;
 
   // Used to abort requests if the selection owner takes too long to respond.
-  base::RepeatingTimer<SelectionRequestor> abort_timer_;
+  base::RepeatingTimer abort_timer_;
 
   X11AtomCache atom_cache_;
 

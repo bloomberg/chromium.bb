@@ -45,7 +45,7 @@ class KioskModeIdleAppNameNotification : public ui::UserActivityObserver,
   // Invoked by |timer_| to display the application idle message.
   void OnTimeout();
 
-  base::OneShotTimer<KioskModeIdleAppNameNotification> timer_;
+  base::OneShotTimer timer_;
 
   // If set the notification should get shown upon next user activity.
   bool show_notification_upon_next_user_activity_;

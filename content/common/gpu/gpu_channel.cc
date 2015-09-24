@@ -238,7 +238,7 @@ GpuChannelMessageFilter::~GpuChannelMessageFilter() {}
 void GpuChannelMessageFilter::OnFilterAdded(IPC::Sender* sender) {
   DCHECK(!sender_);
   sender_ = sender;
-  timer_ = make_scoped_ptr(new base::OneShotTimer<GpuChannelMessageFilter>);
+  timer_ = make_scoped_ptr(new base::OneShotTimer);
   for (scoped_refptr<IPC::MessageFilter>& filter : channel_filters_) {
     filter->OnFilterAdded(sender_);
   }

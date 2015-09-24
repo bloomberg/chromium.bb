@@ -215,9 +215,9 @@ class DeviceStatusCollector {
   // Whether a geolocation update is currently in progress.
   bool geolocation_update_in_progress_;
 
-  base::RepeatingTimer<DeviceStatusCollector> idle_poll_timer_;
-  base::RepeatingTimer<DeviceStatusCollector> hardware_status_sampling_timer_;
-  base::OneShotTimer<DeviceStatusCollector> geolocation_update_timer_;
+  base::RepeatingTimer idle_poll_timer_;
+  base::RepeatingTimer hardware_status_sampling_timer_;
+  base::OneShotTimer geolocation_update_timer_;
 
   std::string os_version_;
   std::string firmware_version_;

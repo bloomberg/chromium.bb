@@ -376,7 +376,7 @@ class NET_EXPORT WebSocketChannel {
   uint64 current_receive_quota_;
 
   // Timer for the closing handshake.
-  base::OneShotTimer<WebSocketChannel> close_timer_;
+  base::OneShotTimer close_timer_;
 
   // Timeout for the closing handshake.
   base::TimeDelta closing_handshake_timeout_;

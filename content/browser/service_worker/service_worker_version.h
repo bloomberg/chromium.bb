@@ -593,10 +593,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::ObserverList<Listener> listeners_;
   ServiceWorkerScriptCacheMap script_cache_map_;
-  base::OneShotTimer<ServiceWorkerVersion> update_timer_;
+  base::OneShotTimer update_timer_;
 
   // Starts running in StartWorker and continues until the worker is stopped.
-  base::RepeatingTimer<ServiceWorkerVersion> timeout_timer_;
+  base::RepeatingTimer timeout_timer_;
   // Holds the time the worker last started being considered idle.
   base::TimeTicks idle_time_;
   // Holds the time that the outstanding StartWorker() request started.

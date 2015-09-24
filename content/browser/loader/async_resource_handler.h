@@ -81,7 +81,7 @@ class AsyncResourceHandler : public ResourceHandler,
   uint64 last_upload_position_;
   bool waiting_for_upload_progress_ack_;
   base::TimeTicks last_upload_ticks_;
-  base::RepeatingTimer<AsyncResourceHandler> progress_timer_;
+  base::RepeatingTimer progress_timer_;
 
   int64_t reported_transfer_size_;
 

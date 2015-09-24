@@ -129,7 +129,7 @@ class TabLoader : public content::NotificationObserver,
   // The tabs we need to load.
   TabsToLoad tabs_to_load_;
 
-  base::OneShotTimer<TabLoader> force_load_timer_;
+  base::OneShotTimer force_load_timer_;
 
   // The time the restore process started.
   base::TimeTicks restore_started_;

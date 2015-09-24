@@ -42,10 +42,10 @@ class ContinueWindow : public HostWindow {
   base::WeakPtr<ClientSessionControl> client_session_control_;
 
   // Used to disconnect the client session when timeout expires.
-  base::OneShotTimer<ContinueWindow> disconnect_timer_;
+  base::OneShotTimer disconnect_timer_;
 
   // Used to ask the local user whether the session should be continued.
-  base::OneShotTimer<ContinueWindow> session_expired_timer_;
+  base::OneShotTimer session_expired_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindow);
 };

@@ -39,7 +39,7 @@ class DeviceCommandRebootJob : public RemoteCommandJob {
 
   chromeos::PowerManagerClient* power_manager_client_;
 
-  base::OneShotTimer<DeviceCommandRebootJob> reboot_timer_;
+  base::OneShotTimer reboot_timer_;
 
   base::WeakPtrFactory<DeviceCommandRebootJob> weak_ptr_factory_;
 

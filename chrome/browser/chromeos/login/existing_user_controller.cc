@@ -901,7 +901,7 @@ void ExistingUserController::StartPublicSessionAutoLoginTimer() {
 
   // Start the auto-login timer.
   if (!auto_login_timer_)
-    auto_login_timer_.reset(new base::OneShotTimer<ExistingUserController>);
+    auto_login_timer_.reset(new base::OneShotTimer);
 
   auto_login_timer_->Start(
       FROM_HERE,

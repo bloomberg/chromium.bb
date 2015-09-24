@@ -418,7 +418,7 @@ void SyncSetupHandler::DisplaySpinner() {
 
   const int kTimeoutSec = 30;
   DCHECK(!backend_start_timer_);
-  backend_start_timer_.reset(new base::OneShotTimer<SyncSetupHandler>());
+  backend_start_timer_.reset(new base::OneShotTimer());
   backend_start_timer_->Start(FROM_HERE,
                               base::TimeDelta::FromSeconds(kTimeoutSec),
                               this, &SyncSetupHandler::DisplayTimeout);

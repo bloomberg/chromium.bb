@@ -196,7 +196,7 @@ class ClientSession
 
   // A timer that triggers a disconnect when the maximum session duration
   // is reached.
-  base::OneShotTimer<ClientSession> max_duration_timer_;
+  base::OneShotTimer max_duration_timer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;

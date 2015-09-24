@@ -61,7 +61,7 @@ class OAuthTokenGetterImpl : public OAuthTokenGetter,
   std::string oauth_access_token_;
   base::Time auth_token_expiry_time_;
   std::queue<OAuthTokenGetter::TokenCallback> pending_callbacks_;
-  scoped_ptr<base::OneShotTimer<OAuthTokenGetterImpl>> refresh_timer_;
+  scoped_ptr<base::OneShotTimer> refresh_timer_;
 };
 
 }  // namespace remoting

@@ -44,7 +44,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
   void OnLocaleChanged() override;
 
   // Invokes UpdateText() when the displayed time should change.
-  base::OneShotTimer<BaseDateTimeView> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseDateTimeView);
 };

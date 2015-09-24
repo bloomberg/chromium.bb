@@ -192,8 +192,7 @@ class DataReductionProxyConfigServiceClient
 
   // An event that fires when it is time to refresh the Data Reduction Proxy
   // configuration.
-  base::OneShotTimer<DataReductionProxyConfigServiceClient>
-      config_refresh_timer_;
+  base::OneShotTimer config_refresh_timer_;
 
   // A |net::URLFetcher| to retrieve the Data Reduction Proxy configuration.
   scoped_ptr<net::URLFetcher> fetcher_;

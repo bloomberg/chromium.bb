@@ -60,7 +60,7 @@ class LongPressAffordanceHandler : public gfx::LinearAnimation,
 
   scoped_ptr<LongPressAffordanceView> view_;
   gfx::Point tap_down_location_;
-  base::OneShotTimer<LongPressAffordanceHandler> timer_;
+  base::OneShotTimer timer_;
   aura::Window* tap_down_target_;
   LongPressAnimationType current_animation_type_;
 

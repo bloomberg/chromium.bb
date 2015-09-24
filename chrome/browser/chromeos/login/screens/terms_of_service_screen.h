@@ -60,7 +60,7 @@ class TermsOfServiceScreen : public BaseScreen,
 
   // Timer that enforces a custom (shorter) timeout on the attempt to download
   // the Terms of Service.
-  base::OneShotTimer<TermsOfServiceScreen> download_timer_;
+  base::OneShotTimer download_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TermsOfServiceScreen);
 };

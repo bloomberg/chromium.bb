@@ -51,7 +51,7 @@ class MonitoredVideoStub : public VideoStub {
   ChannelStateCallback callback_;
   base::ThreadChecker thread_checker_;
   bool is_connected_;
-  base::DelayTimer<MonitoredVideoStub> connectivity_check_timer_;
+  base::DelayTimer connectivity_check_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(MonitoredVideoStub);
 };

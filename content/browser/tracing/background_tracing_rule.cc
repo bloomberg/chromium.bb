@@ -274,7 +274,7 @@ class ReactiveTraceAtRandomIntervalsRule : public BackgroundTracingRule {
 
  private:
   std::string named_event_;
-  base::OneShotTimer<ReactiveTraceAtRandomIntervalsRule> trigger_timer_;
+  base::OneShotTimer trigger_timer_;
   BackgroundTracingConfigImpl::CategoryPreset category_preset_;
   BackgroundTracingManagerImpl::TriggerHandle handle_;
   int timeout_min_;

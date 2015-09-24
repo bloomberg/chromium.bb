@@ -50,10 +50,10 @@ bool SupportedTokenMedium(const TokenObservation& token) {
 
 CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
     : delegate_(delegate),
-      whispernet_init_callback_(base::Bind(
-          &CopresenceManagerImpl::WhispernetInitComplete,
-          // This callback gets cancelled when we are destroyed.
-          base::Unretained(this))),
+      whispernet_init_callback_(
+          base::Bind(&CopresenceManagerImpl::WhispernetInitComplete,
+                     // This callback gets cancelled when we are destroyed.
+                     base::Unretained(this))),
       init_failed_(false),
       state_(new CopresenceStateImpl),
       directive_handler_(new DirectiveHandlerImpl(
@@ -61,8 +61,8 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
           // will be destructed before the CopresenceState instance.
           base::Bind(&CopresenceStateImpl::UpdateDirectives,
                      base::Unretained(state_.get())))),
-      poll_timer_(new base::RepeatingTimer<CopresenceManagerImpl>),
-      audio_check_timer_(new base::RepeatingTimer<CopresenceManagerImpl>),
+      poll_timer_(new base::RepeatingTimer),
+      audio_check_timer_(new base::RepeatingTimer),
       queued_messages_by_token_(
           base::TimeDelta::FromSeconds(kQueuedMessageTimeout),
           kMaxQueuedMessages) {

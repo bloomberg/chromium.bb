@@ -65,7 +65,7 @@ class AwRenderViewExt : public content::RenderViewObserver {
   float page_scale_factor_;
 
   gfx::Size last_sent_contents_size_;
-  base::OneShotTimer<AwRenderViewExt> check_contents_size_timer_;
+  base::OneShotTimer check_contents_size_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AwRenderViewExt);
 };

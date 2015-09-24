@@ -95,7 +95,7 @@ cricket::CaptureState CastVideoCapturerAdapter::Start(
   // to estimate the creation time of the frame source, to set the elapsed_time
   // of future CapturedFrames in OnCaptureCompleted().
   start_time_ = base::TimeTicks::Now();
-  capture_timer_.reset(new base::RepeatingTimer<CastVideoCapturerAdapter>());
+  capture_timer_.reset(new base::RepeatingTimer());
   capture_timer_->Start(FROM_HERE,
                         base::TimeDelta::FromMicroseconds(
                             GetCaptureFormat()->interval /

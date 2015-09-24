@@ -192,7 +192,7 @@ class ScreenMac : public gfx::Screen {
       return;
     }
 
-    configure_timer_.reset(new base::OneShotTimer<ScreenMac>());
+    configure_timer_.reset(new base::OneShotTimer());
     configure_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
@@ -262,7 +262,7 @@ class ScreenMac : public gfx::Screen {
 
   // The timer to delay configuring outputs. See also the comments in
   // HandleDisplayReconfiguration().
-  scoped_ptr<base::OneShotTimer<ScreenMac> > configure_timer_;
+  scoped_ptr<base::OneShotTimer> configure_timer_;
 
   gfx::DisplayChangeNotifier change_notifier_;
 

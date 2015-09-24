@@ -116,7 +116,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   scoped_ptr<ByteStreamReader> stream_reader_;
 
   // Used to trigger progress updates.
-  scoped_ptr<base::RepeatingTimer<DownloadFileImpl> > update_timer_;
+  scoped_ptr<base::RepeatingTimer> update_timer_;
 
   // Statistics
   size_t bytes_seen_;

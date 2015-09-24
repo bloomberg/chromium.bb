@@ -116,8 +116,7 @@ class SystemGestureEventFilterTest : public AshTestBase {
         long_press_affordance_.get();
   }
 
-  base::OneShotTimer<LongPressAffordanceHandler>*
-  GetLongPressAffordanceTimer() {
+  base::OneShotTimer* GetLongPressAffordanceTimer() {
     return &GetLongPressAffordance()->timer_;
   }
 
@@ -199,8 +198,7 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(window1->HasCapture());
 
-  base::OneShotTimer<LongPressAffordanceHandler>* timer =
-      GetLongPressAffordanceTimer();
+  base::OneShotTimer* timer = GetLongPressAffordanceTimer();
   EXPECT_TRUE(timer->IsRunning());
   EXPECT_EQ(window1, GetLongPressAffordanceTarget());
 

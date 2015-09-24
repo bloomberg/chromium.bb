@@ -125,10 +125,8 @@ void ImageDecoder::DecodeImageInSandbox(
 
   if (!batch_mode_timer_) {
     // Created here so it will call StopBatchMode() on the right thread.
-    batch_mode_timer_.reset(new base::DelayTimer<ImageDecoder>(
-        FROM_HERE,
-        base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds),
-        this,
+    batch_mode_timer_.reset(new base::DelayTimer(
+        FROM_HERE, base::TimeDelta::FromSeconds(kBatchModeTimeoutSeconds), this,
         &ImageDecoder::StopBatchMode));
   }
   batch_mode_timer_->Reset();

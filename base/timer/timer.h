@@ -29,7 +29,7 @@
 //       // This method is called every second to do stuff.
 //       ...
 //     }
-//     base::RepeatingTimer<MyClass> timer_;
+//     base::RepeatingTimer timer_;
 //   };
 //
 // Both OneShotTimer and RepeatingTimer also support a Reset method, which
@@ -200,11 +200,8 @@ class BASE_EXPORT Timer {
 //-----------------------------------------------------------------------------
 // This class is an implementation detail of OneShotTimer and RepeatingTimer.
 // Please do not use this class directly.
-template <class Receiver, bool kIsRepeating>
 class BaseTimerMethodPointer : public Timer {
  public:
-  typedef void (Receiver::*ReceiverMethod)();
-
   // This is here to work around the fact that Timer::Start is "hidden" by the
   // Start definition below, rather than being overloaded.
   // TODO(tim): We should remove uses of BaseTimerMethodPointer::Start below
@@ -212,15 +209,18 @@ class BaseTimerMethodPointer : public Timer {
   // see bug 148832.
   using Timer::Start;
 
-  BaseTimerMethodPointer() : Timer(kIsRepeating, kIsRepeating) {}
+  enum RepeatMode { ONE_SHOT, REPEATING };
+  BaseTimerMethodPointer(RepeatMode mode)
+      : Timer(mode == REPEATING, mode == REPEATING) {}
 
   // Start the timer to run at the given |delay| from now. If the timer is
   // already running, it will be replaced to call a task formed from
   // |reviewer->*method|.
-  virtual void Start(const tracked_objects::Location& posted_from,
-                     TimeDelta delay,
-                     Receiver* receiver,
-                     ReceiverMethod method) {
+  template <class Receiver>
+  void Start(const tracked_objects::Location& posted_from,
+             TimeDelta delay,
+             Receiver* receiver,
+             void (Receiver::*method)()) {
     Timer::Start(posted_from, delay,
                  base::Bind(method, base::Unretained(receiver)));
   }
@@ -228,13 +228,17 @@ class BaseTimerMethodPointer : public Timer {
 
 //-----------------------------------------------------------------------------
 // A simple, one-shot timer.  See usage notes at the top of the file.
-template <class Receiver>
-class OneShotTimer : public BaseTimerMethodPointer<Receiver, false> {};
+class OneShotTimer : public BaseTimerMethodPointer {
+ public:
+  OneShotTimer() : BaseTimerMethodPointer(ONE_SHOT) {}
+};
 
 //-----------------------------------------------------------------------------
 // A simple, repeating timer.  See usage notes at the top of the file.
-template <class Receiver>
-class RepeatingTimer : public BaseTimerMethodPointer<Receiver, true> {};
+class RepeatingTimer : public BaseTimerMethodPointer {
+ public:
+  RepeatingTimer() : BaseTimerMethodPointer(REPEATING) {}
+};
 
 //-----------------------------------------------------------------------------
 // A Delay timer is like The Button from Lost. Once started, you have to keep
@@ -247,21 +251,28 @@ class RepeatingTimer : public BaseTimerMethodPointer<Receiver, true> {};
 //
 // If destroyed, the timeout is canceled and will not occur even if already
 // inflight.
-template <class Receiver>
 class DelayTimer : protected Timer {
  public:
-  typedef void (Receiver::*ReceiverMethod)();
-
+  template <class Receiver>
   DelayTimer(const tracked_objects::Location& posted_from,
              TimeDelta delay,
              Receiver* receiver,
-             ReceiverMethod method)
-      : Timer(posted_from, delay,
+             void (Receiver::*method)())
+      : Timer(posted_from,
+              delay,
               base::Bind(method, base::Unretained(receiver)),
               false) {}
 
-  void Reset() override { Timer::Reset(); }
+  void Reset() override;
 };
+
+// This class has a templated method so it can not be exported without failing
+// to link in MSVC. But clang-plugin does not allow inline definitions of
+// virtual methods, so the inline definition lives in the header file here
+// to satisfy both.
+inline void DelayTimer::Reset() {
+  Timer::Reset();
+}
 
 }  // namespace base
 

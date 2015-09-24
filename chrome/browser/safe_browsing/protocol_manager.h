@@ -321,11 +321,11 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // For managing the next earliest time to query the SafeBrowsing servers for
   // updates.
   base::TimeDelta next_update_interval_;
-  base::OneShotTimer<SafeBrowsingProtocolManager> update_timer_;
+  base::OneShotTimer update_timer_;
 
   // timeout_timer_ is used to interrupt update requests which are taking
   // too long.
-  base::OneShotTimer<SafeBrowsingProtocolManager> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   // All chunk requests that need to be made.
   std::deque<ChunkUrl> chunk_request_urls_;

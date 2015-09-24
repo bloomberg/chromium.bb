@@ -41,7 +41,7 @@ class MonitoredVideoStubTest : public testing::Test {
 
   scoped_ptr<MonitoredVideoStub> monitor_;
   scoped_ptr<VideoPacket> packet_;
-  base::OneShotTimer<MonitoredVideoStubTest> timer_end_test_;
+  base::OneShotTimer timer_end_test_;
 };
 
 TEST_F(MonitoredVideoStubTest, OnChannelConnected) {

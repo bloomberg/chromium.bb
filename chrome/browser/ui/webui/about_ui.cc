@@ -204,7 +204,7 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
 
   // Timer that enforces a timeout on the attempt to download the
   // ChromeOS Terms.
-  base::OneShotTimer<ChromeOSOnlineTermsHandler> download_timer_;
+  base::OneShotTimer download_timer_;
 
   // |fetch_callback_| called when fetching succeeded or failed.
   FetchCallback fetch_callback_;

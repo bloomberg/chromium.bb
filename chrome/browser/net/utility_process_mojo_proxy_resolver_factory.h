@@ -59,7 +59,7 @@ class UtilityProcessMojoProxyResolverFactory
   base::WeakPtr<content::UtilityProcessHost> weak_utility_process_host_;
   size_t num_proxy_resolvers_ = 0;
 
-  base::OneShotTimer<UtilityProcessMojoProxyResolverFactory> idle_timer_;
+  base::OneShotTimer idle_timer_;
 
   base::ThreadChecker thread_checker_;
 

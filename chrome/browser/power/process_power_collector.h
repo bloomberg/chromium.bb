@@ -135,7 +135,7 @@ class ProcessPowerCollector
                           const GURL& origin);
 
   ProcessMetricsMap metrics_map_;
-  base::RepeatingTimer<ProcessPowerCollector> timer_;
+  base::RepeatingTimer timer_;
 
   // Callback to use to get CPU usage if set.
   CpuUsageCallback cpu_usage_callback_;

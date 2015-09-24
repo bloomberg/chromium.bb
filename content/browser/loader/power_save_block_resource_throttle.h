@@ -29,7 +29,7 @@ class PowerSaveBlockResourceThrottle : public ResourceThrottle {
  private:
   void ActivatePowerSaveBlocker();
 
-  base::OneShotTimer<PowerSaveBlockResourceThrottle> timer_;
+  base::OneShotTimer timer_;
   scoped_ptr<PowerSaveBlocker> power_save_blocker_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockResourceThrottle);

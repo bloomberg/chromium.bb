@@ -73,11 +73,11 @@ class AudioModemAPI final : public BrowserContextKeyedAPI {
   std::string transmitters_[2];
 
   // Timeouts for the currently active transmits, indexed by AudioType.
-  base::OneShotTimer<AudioModemAPI> transmit_timers_[2];
+  base::OneShotTimer transmit_timers_[2];
 
   // Maps of currently receiving app ID => timeouts. Indexed by AudioType.
   // We own all of these pointers. Do not remove them without calling delete.
-  std::map<std::string, base::OneShotTimer<AudioModemAPI>*> receive_timers_[2];
+  std::map<std::string, base::OneShotTimer*> receive_timers_[2];
 
   // BrowserContextKeyedAPI implementation.
   static const bool kServiceIsCreatedWithBrowserContext = false;

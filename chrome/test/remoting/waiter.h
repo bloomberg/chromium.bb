@@ -33,7 +33,7 @@ class TimeoutWaiter {
   // Callback used to cancel the TimeoutWaiter::Wait.
   void CancelWaitCallback();
 
-  base::OneShotTimer<TimeoutWaiter> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
   base::TimeDelta timeout_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
@@ -63,7 +63,7 @@ class ConditionalTimeoutWaiter : public TimeoutWaiter {
 
   base::TimeDelta interval_;
   Predicate callback_;
-  base::RepeatingTimer<ConditionalTimeoutWaiter> condition_timer_;
+  base::RepeatingTimer condition_timer_;
   bool success_;
 
   DISALLOW_COPY_AND_ASSIGN(ConditionalTimeoutWaiter);

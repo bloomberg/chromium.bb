@@ -114,7 +114,7 @@ class MEDIA_EXPORT MojoRendererService
 
   scoped_ptr<media::Renderer> renderer_;
 
-  base::RepeatingTimer<MojoRendererService> time_update_timer_;
+  base::RepeatingTimer time_update_timer_;
   uint64_t last_media_time_usec_;
 
   interfaces::RendererClientPtr client_;

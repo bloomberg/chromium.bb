@@ -186,7 +186,7 @@ class ASH_EXPORT UserMetricsRecorder {
   void StartTimer();
 
   // The periodic timer that triggers metrics to be recorded.
-  base::RepeatingTimer<UserMetricsRecorder> timer_;
+  base::RepeatingTimer timer_;
 
   TaskSwitchMetricsRecorder task_switch_metrics_recorder_;
 

@@ -102,7 +102,7 @@ class BASE_EXPORT PowerMonitorDeviceSource : public PowerMonitorSource {
 #endif
 
 #if defined(ENABLE_BATTERY_MONITORING)
-  base::OneShotTimer<PowerMonitorDeviceSource> delayed_battery_check_;
+  base::OneShotTimer delayed_battery_check_;
 #endif
 
 #if defined(OS_WIN)

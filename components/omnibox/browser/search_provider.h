@@ -378,7 +378,7 @@ class SearchProvider : public BaseSearchProvider,
 
   // A timer to start a query to the suggest server after the user has stopped
   // typing for long enough.
-  base::OneShotTimer<SearchProvider> timer_;
+  base::OneShotTimer timer_;
 
   // The time at which we sent a query to the suggest server.
   base::TimeTicks time_suggest_request_sent_;

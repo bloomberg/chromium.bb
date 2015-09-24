@@ -58,7 +58,7 @@ bool AudioCapturerWin::Start(const PacketCapturedCallback& callback) {
   callback_ = callback;
 
   // Initialize the capture timer.
-  capture_timer_.reset(new base::RepeatingTimer<AudioCapturerWin>());
+  capture_timer_.reset(new base::RepeatingTimer());
 
   HRESULT hr = S_OK;
 

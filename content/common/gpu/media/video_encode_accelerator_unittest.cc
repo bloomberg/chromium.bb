@@ -965,7 +965,7 @@ class VEAClient : public VideoEncodeAccelerator::Client {
   unsigned int requested_subsequent_framerate_;
 
   // The timer used to feed the encoder with the input frames.
-  scoped_ptr<base::RepeatingTimer<VEAClient>> input_timer_;
+  scoped_ptr<base::RepeatingTimer> input_timer_;
 };
 
 VEAClient::VEAClient(TestStream* test_stream,
@@ -1209,7 +1209,7 @@ void VEAClient::RequireBitstreamBuffers(unsigned int input_count,
   }
 
   if (g_env->run_at_fps()) {
-    input_timer_.reset(new base::RepeatingTimer<VEAClient>());
+    input_timer_.reset(new base::RepeatingTimer());
     input_timer_->Start(
         FROM_HERE, base::TimeDelta::FromSeconds(1) / current_framerate_,
         base::Bind(&VEAClient::OnInputTimer, base::Unretained(this)));

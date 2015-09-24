@@ -129,11 +129,11 @@ class OomPriorityManager {
   static bool CompareTabStats(TabStats first, TabStats second);
 
   // Timer to periodically update the stats of the renderers.
-  base::RepeatingTimer<OomPriorityManager> update_timer_;
+  base::RepeatingTimer update_timer_;
 
   // Timer to periodically report whether a tab has been discarded since the
   // last time the timer has fired.
-  base::RepeatingTimer<OomPriorityManager> recent_tab_discard_timer_;
+  base::RepeatingTimer recent_tab_discard_timer_;
 
   // A listener to global memory pressure events.
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;

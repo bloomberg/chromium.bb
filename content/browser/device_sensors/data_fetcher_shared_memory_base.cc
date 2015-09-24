@@ -51,7 +51,7 @@ class DataFetcherSharedMemoryBase::PollingThread : public base::Thread {
 
   unsigned consumers_bitmask_;
   DataFetcherSharedMemoryBase* fetcher_;
-  scoped_ptr<base::RepeatingTimer<PollingThread> > timer_;
+  scoped_ptr<base::RepeatingTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PollingThread);
 };
@@ -77,7 +77,7 @@ void DataFetcherSharedMemoryBase::PollingThread::AddConsumer(
   consumers_bitmask_ |= consumer_type;
 
   if (!timer_ && fetcher_->GetType() == FETCHER_TYPE_POLLING_CALLBACK) {
-    timer_.reset(new base::RepeatingTimer<PollingThread>());
+    timer_.reset(new base::RepeatingTimer());
     timer_->Start(FROM_HERE,
                   fetcher_->GetInterval(),
                   this, &PollingThread::DoPoll);

@@ -96,7 +96,7 @@ class ChildAccountService : public KeyedService,
 
   scoped_ptr<FamilyInfoFetcher> family_fetcher_;
   // If fetching the family info fails, retry with exponential backoff.
-  base::OneShotTimer<ChildAccountService> family_fetch_timer_;
+  base::OneShotTimer family_fetch_timer_;
   net::BackoffEntry family_fetch_backoff_;
 
   // Callbacks to run when the user status becomes known.

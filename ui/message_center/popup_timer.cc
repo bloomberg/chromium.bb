@@ -35,7 +35,7 @@ PopupTimer::PopupTimer(const std::string& id,
     : id_(id),
       timeout_(timeout),
       timer_controller_(controller),
-      timer_(new base::OneShotTimer<PopupTimersController>) {}
+      timer_(new base::OneShotTimer) {}
 
 PopupTimer::~PopupTimer() {
   if (!timer_)

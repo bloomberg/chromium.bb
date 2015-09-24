@@ -155,7 +155,7 @@ class ASH_EXPORT DesktopBackgroundController
 
   gfx::Size current_max_display_size_;
 
-  base::OneShotTimer<DesktopBackgroundController> timer_;
+  base::OneShotTimer timer_;
 
   int wallpaper_reload_delay_;
 

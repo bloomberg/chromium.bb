@@ -115,7 +115,7 @@ class PerfProvider : public base::NonThreadSafe,
   std::vector<SampledProfile> cached_perf_data_;
 
   // For scheduling collection of perf data.
-  base::OneShotTimer<PerfProvider> timer_;
+  base::OneShotTimer timer_;
 
   // For detecting when changes to the login state.
   LoginObserver login_observer_;

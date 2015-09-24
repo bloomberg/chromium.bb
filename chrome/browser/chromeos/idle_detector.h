@@ -28,7 +28,7 @@ class IdleDetector : public ui::UserActivityObserver {
   // Resets |timer_| to fire when we reach our idle timeout.
   void ResetTimer();
 
-  base::OneShotTimer<IdleDetector> timer_;
+  base::OneShotTimer timer_;
 
   base::Closure idle_callback_;
 

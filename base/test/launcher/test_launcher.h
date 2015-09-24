@@ -194,7 +194,7 @@ class TestLauncher {
   TestResultsTracker results_tracker_;
 
   // Watchdog timer to make sure we do not go without output for too long.
-  DelayTimer<TestLauncher> watchdog_timer_;
+  DelayTimer watchdog_timer_;
 
   // Number of jobs to run in parallel.
   size_t parallel_jobs_;

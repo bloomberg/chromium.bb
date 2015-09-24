@@ -159,7 +159,7 @@ class Me2MeNativeMessagingHost
   scoped_ptr<ElevatedChannelEventHandler> elevated_channel_event_handler_;
 
   // Timer to control the lifetime of the elevated host.
-  base::OneShotTimer<Me2MeNativeMessagingHost> elevated_host_timer_;
+  base::OneShotTimer elevated_host_timer_;
 #endif  // defined(OS_WIN)
 
   bool needs_elevation_;

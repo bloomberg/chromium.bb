@@ -192,7 +192,7 @@ class CONTENT_EXPORT GestureEventQueue {
   GestureQueue coalesced_gesture_events_;
 
   // Timer to release a previously deferred gesture event.
-  base::OneShotTimer<GestureEventQueue> debounce_deferring_timer_;
+  base::OneShotTimer debounce_deferring_timer_;
 
   // Queue of events that have been deferred for debounce.
   GestureQueue debouncing_deferral_queue_;

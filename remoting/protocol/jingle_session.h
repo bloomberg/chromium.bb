@@ -176,7 +176,7 @@ class JingleSession : public base::NonThreadSafe,
   scoped_ptr<QuicChannelFactory> quic_channel_factory_;
 
   scoped_ptr<JingleMessage> pending_transport_info_message_;
-  base::OneShotTimer<JingleSession> transport_info_timer_;
+  base::OneShotTimer transport_info_timer_;
 
   // Pending remote transport info received before the local channels were
   // created.

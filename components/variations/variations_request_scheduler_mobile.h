@@ -39,7 +39,7 @@ class VariationsRequestSchedulerMobile : public VariationsRequestScheduler {
   PrefService* local_state_;
 
   // Timer used for triggering a delayed fetch for ScheduleFetch().
-  base::OneShotTimer<VariationsRequestSchedulerMobile> schedule_fetch_timer_;
+  base::OneShotTimer schedule_fetch_timer_;
 
   // The time the last seed request was initiated.
   base::Time last_request_time_;

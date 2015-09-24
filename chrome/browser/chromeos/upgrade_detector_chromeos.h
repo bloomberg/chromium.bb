@@ -51,7 +51,7 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
 
   // After we detect an upgrade we start a recurring timer to see if enough time
   // has passed and we should start notifying the user.
-  base::RepeatingTimer<UpgradeDetectorChromeos> upgrade_notification_timer_;
+  base::RepeatingTimer upgrade_notification_timer_;
   bool initialized_;
   base::Time upgrade_detected_time_;
 

@@ -1356,7 +1356,7 @@ TEST_F(ResourceDispatcherHostTest, DetachedResourceTimesOut) {
 
   // Wait until after the delay timer times out before we start processing any
   // messages.
-  base::OneShotTimer<base::MessageLoop> timer;
+  base::OneShotTimer timer;
   timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
               base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
   base::MessageLoop::current()->Run();
@@ -1759,7 +1759,7 @@ TEST_F(ResourceDispatcherHostTest, TestProcessCancelDetachedTimesOut) {
 
   // Wait until after the delay timer times out before we start processing any
   // messages.
-  base::OneShotTimer<base::MessageLoop> timer;
+  base::OneShotTimer timer;
   timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(210),
               base::MessageLoop::current(), &base::MessageLoop::QuitWhenIdle);
   base::MessageLoop::current()->Run();

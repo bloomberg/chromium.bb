@@ -139,7 +139,7 @@ class WorkerProcessLauncher
 
   // The timer used to delay termination of the worker process when an IPC error
   // occured or when Crash() request is pending
-  base::OneShotTimer<WorkerProcessLauncher> kill_process_timer_;
+  base::OneShotTimer kill_process_timer_;
 
   // The default timeout for |kill_process_timer_|.
   base::TimeDelta kill_process_timeout_;
@@ -148,7 +148,7 @@ class WorkerProcessLauncher
   net::BackoffEntry launch_backoff_;
 
   // Timer used to schedule the next attempt to launch the process.
-  base::OneShotTimer<WorkerProcessLauncher> launch_timer_;
+  base::OneShotTimer launch_timer_;
 
   // Monitors |worker_process_| to detect when the launched process
   // terminates.
@@ -156,7 +156,7 @@ class WorkerProcessLauncher
 
   // Timer used to detect whether a launch attempt was successful or not, and to
   // cancel the launch attempt if it is taking too long.
-  base::OneShotTimer<WorkerProcessLauncher> launch_result_timer_;
+  base::OneShotTimer launch_result_timer_;
 
   // The handle of the worker process, if launched.
   base::win::ScopedHandle worker_process_;

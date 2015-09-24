@@ -486,7 +486,7 @@ class SafeBrowsingServerTestHelper
     return response_status_;
   }
 
-  base::OneShotTimer<SafeBrowsingServerTestHelper> check_update_timer_;
+  base::OneShotTimer check_update_timer_;
   SafeBrowsingServerTest* safe_browsing_test_;
   scoped_ptr<net::URLFetcher> url_fetcher_;
   std::string response_data_;

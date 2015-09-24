@@ -916,7 +916,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // If RequestAccessToken fails with transient error then retry requesting
   // access token with exponential backoff.
-  base::OneShotTimer<ProfileSyncService> request_access_token_retry_timer_;
+  base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
   // States related to sync token and connection.

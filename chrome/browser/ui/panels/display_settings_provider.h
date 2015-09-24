@@ -149,7 +149,7 @@ class DisplaySettingsProvider {
   bool is_full_screen_;
 
   // Timer used to detect full-screen mode change.
-  base::RepeatingTimer<DisplaySettingsProvider> full_screen_mode_timer_;
+  base::RepeatingTimer full_screen_mode_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplaySettingsProvider);
 };

@@ -41,7 +41,7 @@ class CONTENT_EXPORT TimeoutMonitor {
   base::TimeTicks time_when_considered_timed_out_;
 
   // This timer runs to check if |time_when_considered_timed_out_| has past.
-  base::OneShotTimer<TimeoutMonitor> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeoutMonitor);
 };

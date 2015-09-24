@@ -121,7 +121,7 @@ class Login : public net::NetworkChangeNotifier::IPAddressObserver,
 
   // reconnection state.
   base::TimeDelta reconnect_interval_;
-  base::OneShotTimer<Login> reconnect_timer_;
+  base::OneShotTimer reconnect_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Login);
 };

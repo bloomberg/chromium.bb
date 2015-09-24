@@ -442,7 +442,7 @@ void BackgroundDownloader::BeginDownload(const GURL& url) {
 
   // A repeating timer retains the user task. This timer can be stopped and
   // reset multiple times.
-  timer_.reset(new base::RepeatingTimer<BackgroundDownloader>);
+  timer_.reset(new base::RepeatingTimer);
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(kJobPollingIntervalSec),
                 this, &BackgroundDownloader::OnDownloading);
 }

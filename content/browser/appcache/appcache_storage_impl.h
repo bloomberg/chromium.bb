@@ -176,7 +176,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   bool is_disabled_;
 
   scoped_ptr<AppCacheDiskCache> disk_cache_;
-  base::OneShotTimer<AppCacheStorageImpl> lazy_commit_timer_;
+  base::OneShotTimer lazy_commit_timer_;
 
   // Used to short-circuit certain operations without having to schedule
   // any tasks on the background database thread.

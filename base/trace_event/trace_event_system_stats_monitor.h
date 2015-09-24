@@ -56,7 +56,7 @@ class BASE_EXPORT TraceEventSystemStatsMonitor
   scoped_refptr<SingleThreadTaskRunner> task_runner_;
 
   // Timer to schedule system profile dumps.
-  RepeatingTimer<TraceEventSystemStatsMonitor> dump_timer_;
+  RepeatingTimer dump_timer_;
 
   WeakPtrFactory<TraceEventSystemStatsMonitor> weak_factory_;
 

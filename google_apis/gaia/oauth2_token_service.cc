@@ -172,7 +172,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   std::vector<base::WeakPtr<RequestImpl> > waiting_requests_;
 
   int retry_number_;
-  base::OneShotTimer<Fetcher> retry_timer_;
+  base::OneShotTimer retry_timer_;
   scoped_ptr<OAuth2AccessTokenFetcher> fetcher_;
 
   // Variables that store fetch results.

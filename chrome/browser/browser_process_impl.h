@@ -271,7 +271,7 @@ class BrowserProcessImpl : public BrowserProcess,
   scoped_ptr<web_resource::PromoResourceService> promo_resource_service_;
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
-  base::RepeatingTimer<BrowserProcessImpl> autoupdate_timer_;
+  base::RepeatingTimer autoupdate_timer_;
 
   // Gets called by autoupdate timer to see if browser needs restart and can be
   // restarted, and if that's the case, restarts the browser.

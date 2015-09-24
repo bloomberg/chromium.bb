@@ -213,8 +213,7 @@ class DriveAppProviderTest : public ExtensionBrowserTest,
   scoped_ptr<drive::DriveAppRegistry> apps_registry_;
   scoped_ptr<DriveAppProvider> provider_;
 
-  base::RepeatingTimer<DriveAppProviderTest>
-      pending_drive_app_converter_check_timer_;
+  base::RepeatingTimer pending_drive_app_converter_check_timer_;
   scoped_refptr<content::MessageLoopRunner> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveAppProviderTest);

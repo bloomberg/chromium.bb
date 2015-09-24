@@ -71,7 +71,7 @@ class TooltipIcon : public views::ImageView,
   views::BubbleBorder::Arrow bubble_arrow_;
 
   // A timer to delay showing |bubble_|.
-  base::OneShotTimer<TooltipIcon> show_timer_;
+  base::OneShotTimer show_timer_;
 
   // A watcher that keeps |bubble_| open if the user's mouse enters it.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;

@@ -125,7 +125,7 @@ class UI_BASE_EXPORT SelectionOwner {
   std::vector<IncrementalTransfer> incremental_transfers_;
 
   // Used to abort stale incremental data transfers.
-  base::RepeatingTimer<SelectionOwner> incremental_transfer_abort_timer_;
+  base::RepeatingTimer incremental_transfer_abort_timer_;
 
   X11AtomCache atom_cache_;
 

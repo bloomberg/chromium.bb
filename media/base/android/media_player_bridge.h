@@ -177,7 +177,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   // Java MediaPlayerBridge instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_bridge_;
 
-  base::RepeatingTimer<MediaPlayerBridge> time_update_timer_;
+  base::RepeatingTimer time_update_timer_;
 
   // Volume of playback.
   double volume_;

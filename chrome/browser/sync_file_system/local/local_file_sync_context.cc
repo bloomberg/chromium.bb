@@ -678,7 +678,7 @@ void LocalFileSyncContext::InitializeFileSystemContextOnIOThread(
     DCHECK(!sync_status_);
     DCHECK(!timer_on_io_);
     sync_status_.reset(new LocalFileSyncStatus);
-    timer_on_io_.reset(new base::OneShotTimer<LocalFileSyncContext>);
+    timer_on_io_.reset(new base::OneShotTimer);
     operation_runner_.reset(new SyncableFileOperationRunner(
             kMaxConcurrentSyncableOperation,
             sync_status_.get()));

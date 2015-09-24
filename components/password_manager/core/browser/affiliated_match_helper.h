@@ -171,8 +171,8 @@ class AffiliatedMatchHelper : public PasswordStore::Observer,
   scoped_ptr<AffiliationService> affiliation_service_;
 
   // Timers used to schedule VerifyAffiliationsPrefetchedForDummyFacets().
-  base::OneShotTimer<AffiliatedMatchHelper> on_startup_verification_timer_;
-  base::RepeatingTimer<AffiliatedMatchHelper> repeated_verification_timer_;
+  base::OneShotTimer on_startup_verification_timer_;
+  base::RepeatingTimer repeated_verification_timer_;
 
   base::WeakPtrFactory<AffiliatedMatchHelper> weak_ptr_factory_;
 

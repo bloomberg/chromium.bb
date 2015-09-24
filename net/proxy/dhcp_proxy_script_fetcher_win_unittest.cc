@@ -112,8 +112,8 @@ class RealFetchTester {
   scoped_ptr<DhcpProxyScriptFetcherWin> fetcher_;
   bool finished_;
   base::string16 pac_text_;
-  base::OneShotTimer<RealFetchTester> timeout_;
-  base::OneShotTimer<RealFetchTester> cancel_timer_;
+  base::OneShotTimer timeout_;
+  base::OneShotTimer cancel_timer_;
   bool on_completion_is_error_;
 };
 
@@ -260,7 +260,7 @@ class DummyDhcpProxyScriptAdapterFetcher
   base::string16 pac_script_;
   int fetch_delay_ms_;
   CompletionCallback callback_;
-  base::OneShotTimer<DummyDhcpProxyScriptAdapterFetcher> timer_;
+  base::OneShotTimer timer_;
 };
 
 class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {

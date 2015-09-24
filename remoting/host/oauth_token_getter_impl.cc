@@ -33,7 +33,7 @@ OAuthTokenGetterImpl::OAuthTokenGetterImpl(
           new gaia::GaiaOAuthClient(url_request_context_getter.get())),
       url_request_context_getter_(url_request_context_getter) {
   if (auto_refresh) {
-    refresh_timer_.reset(new base::OneShotTimer<OAuthTokenGetterImpl>());
+    refresh_timer_.reset(new base::OneShotTimer());
   }
 }
 

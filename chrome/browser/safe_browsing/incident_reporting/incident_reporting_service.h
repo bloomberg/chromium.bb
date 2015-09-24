@@ -285,7 +285,7 @@ class IncidentReportingService : public content::NotificationObserver {
 
   // A timer upon the firing of which the service will report received
   // incidents.
-  base::DelayTimer<IncidentReportingService> collation_timer_;
+  base::DelayTimer collation_timer_;
 
   // The report currently being assembled. This becomes non-NULL when an initial
   // incident is reported, and returns to NULL when the report is sent for

@@ -141,7 +141,7 @@ class UserSelectionScreen
       user_auth_type_map_;
 
   // Timer for measuring idle state duration before password clear.
-  base::OneShotTimer<UserSelectionScreen> password_clear_timer_;
+  base::OneShotTimer password_clear_timer_;
 
   // Token handler util for checking user OAuth token status.
   scoped_ptr<TokenHandleUtil> token_handle_util_;

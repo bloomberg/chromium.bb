@@ -150,7 +150,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
       ui::LayerAnimationSequence* sequence) override {}
 
   SystemTrayItem* owner_;
-  base::OneShotTimer<UpdateNagger> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateNagger);
 };

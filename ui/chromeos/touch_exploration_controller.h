@@ -436,13 +436,13 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   scoped_ptr<ui::TouchEvent> last_touch_exploration_;
 
   // A timer that fires after the double-tap delay.
-  base::OneShotTimer<TouchExplorationController> tap_timer_;
+  base::OneShotTimer tap_timer_;
 
   // A timer that fires to enter passthrough.
-  base::OneShotTimer<TouchExplorationController> passthrough_timer_;
+  base::OneShotTimer passthrough_timer_;
 
   // A timer to fire an indicating sound when sliding to change volume.
-  base::RepeatingTimer<TouchExplorationController> sound_timer_;
+  base::RepeatingTimer sound_timer_;
 
   // A default gesture detector config, so we can share the same
   // timeout and pixel slop constants.

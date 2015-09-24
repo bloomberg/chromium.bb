@@ -358,9 +358,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   const GURL& origin_url() const { return origin_url_; }
   IndexedDBFactory* factory() const { return indexed_db_factory_; }
   base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
-  base::OneShotTimer<IndexedDBBackingStore>* close_timer() {
-    return &close_timer_;
-  }
+  base::OneShotTimer* close_timer() { return &close_timer_; }
   IndexedDBActiveBlobRegistry* active_blob_registry() {
     return &active_blob_registry_;
   }
@@ -653,14 +651,14 @@ class CONTENT_EXPORT IndexedDBBackingStore
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::set<int> child_process_ids_granted_;
   BlobChangeMap incognito_blob_map_;
-  base::OneShotTimer<IndexedDBBackingStore> journal_cleaning_timer_;
+  base::OneShotTimer journal_cleaning_timer_;
 
   scoped_ptr<LevelDBDatabase> db_;
   scoped_ptr<LevelDBComparator> comparator_;
   // Whenever blobs are registered in active_blob_registry_, indexed_db_factory_
   // will hold a reference to this backing store.
   IndexedDBActiveBlobRegistry active_blob_registry_;
-  base::OneShotTimer<IndexedDBBackingStore> close_timer_;
+  base::OneShotTimer close_timer_;
 
   // Incremented whenever a transaction starts committing, decremented when
   // complete. While > 0, temporary journal entries may exist so out-of-band

@@ -62,7 +62,7 @@ MessagePopupCollection::MessagePopupCollection(
       context_menu_controller_(new MessageViewContextMenuController(this)),
       weak_factory_(this) {
   DCHECK(message_center_);
-  defer_timer_.reset(new base::OneShotTimer<MessagePopupCollection>);
+  defer_timer_.reset(new base::OneShotTimer);
   message_center_->AddObserver(this);
   alignment_delegate_->set_collection(this);
 }

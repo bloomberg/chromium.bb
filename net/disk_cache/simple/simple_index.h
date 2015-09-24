@@ -187,7 +187,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // has been a while since last time we wrote.
   base::TimeTicks last_write_to_disk_;
 
-  base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
+  base::OneShotTimer write_to_disk_timer_;
   base::Closure write_to_disk_cb_;
 
   typedef std::list<net::CompletionCallback> CallbackList;

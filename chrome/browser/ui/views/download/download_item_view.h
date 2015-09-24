@@ -308,7 +308,7 @@ class DownloadItemView : public views::ButtonListener,
   scoped_ptr<gfx::SlideAnimation> complete_animation_;
 
   // Progress animation
-  base::RepeatingTimer<DownloadItemView> progress_timer_;
+  base::RepeatingTimer progress_timer_;
 
   // Dangerous mode buttons.
   views::LabelButton* save_button_;

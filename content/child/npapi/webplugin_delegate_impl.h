@@ -395,7 +395,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   CALayer* layer_;  // Used for CA drawing mode. Weak, retained by plugin.
   WebPluginAcceleratedSurface* surface_;  // Weak ref.
   CARenderer* renderer_;  // Renders layer_ to surface_.
-  scoped_ptr<base::RepeatingTimer<WebPluginDelegateImpl> > redraw_timer_;
+  scoped_ptr<base::RepeatingTimer> redraw_timer_;
 
   // The upper-left corner of the web content area in screen coordinates,
   // relative to an upper-left (0,0).

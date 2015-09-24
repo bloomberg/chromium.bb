@@ -71,7 +71,7 @@ class ShellNetworkController : public chromeos::NetworkStateHandlerObserver {
   State state_;
 
   // Invokes RequestScan() periodically.
-  base::RepeatingTimer<ShellNetworkController> scan_timer_;
+  base::RepeatingTimer scan_timer_;
 
   // Optionally-supplied name of the preferred network.
   std::string preferred_network_name_;

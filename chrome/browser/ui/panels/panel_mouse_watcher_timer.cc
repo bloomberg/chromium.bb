@@ -25,13 +25,13 @@ class PanelMouseWatcherTimer : public PanelMouseWatcher {
 
   // Timer callback function.
   void DoWork();
-  friend class base::RepeatingTimer<PanelMouseWatcherTimer>;
+  friend class base::RepeatingTimer;
 
   // Timer used to track mouse movements. Some OSes do not provide an easy way
   // of tracking mouse movements across applications.  So we use a timer to
   // accomplish the same.  This could also be more efficient as you end up
   // getting a lot of notifications when tracking mouse movements.
-  base::RepeatingTimer<PanelMouseWatcherTimer> timer_;
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelMouseWatcherTimer);
 };

@@ -179,7 +179,7 @@ class SupervisedUserCreationControllerNew
   scoped_ptr<UserCreationContext> creation_context_;
 
   // Timer for showing warning if creation process takes too long.
-  base::OneShotTimer<SupervisedUserCreationControllerNew> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   // Factory of callbacks.
   base::WeakPtrFactory<SupervisedUserCreationControllerNew> weak_factory_;

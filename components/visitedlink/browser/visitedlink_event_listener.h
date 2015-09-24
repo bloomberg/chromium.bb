@@ -47,7 +47,7 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  base::OneShotTimer<VisitedLinkEventListener> coalesce_timer_;
+  base::OneShotTimer coalesce_timer_;
   VisitedLinkCommon::Fingerprints pending_visited_links_;
 
   content::NotificationRegistrar registrar_;

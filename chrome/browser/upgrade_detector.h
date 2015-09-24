@@ -163,7 +163,7 @@ class UpgradeDetector {
   // A timer to check to see if we've been idle for long enough to show the
   // critical warning. Should only be set if |upgrade_available_| is
   // UPGRADE_AVAILABLE_CRITICAL.
-  base::RepeatingTimer<UpgradeDetector> idle_check_timer_;
+  base::RepeatingTimer idle_check_timer_;
 
   // The stage at which the annoyance level for upgrade notifications is at.
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage_;

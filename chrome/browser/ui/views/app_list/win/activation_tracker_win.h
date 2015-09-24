@@ -45,7 +45,7 @@ class ActivationTrackerWin : public app_list::AppListViewObserver {
   // Timer used to check if the taskbar or app list is active. Using a timer
   // means we don't need to hook Windows, which is apparently not possible
   // since Vista (and is not nice at any time).
-  base::RepeatingTimer<ActivationTrackerWin> timer_;
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivationTrackerWin);
 };

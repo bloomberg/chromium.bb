@@ -116,7 +116,7 @@ class ZoomBubbleView : public ManagedFullScreenBubbleDelegateView,
   static ZoomBubbleView* zoom_bubble_;
 
   // Timer used to close the bubble when |auto_close_| is true.
-  base::OneShotTimer<ZoomBubbleView> timer_;
+  base::OneShotTimer timer_;
 
   // Image button in the zoom bubble that will show the |extension_icon_| image
   // if an extension initiated the zoom change, and links to that extension at

@@ -122,7 +122,7 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   const scoped_refptr<SequencedTaskRunner> task_runner_;
 
   // Timer used to schedule commit after ScheduleWrite.
-  OneShotTimer<ImportantFileWriter> timer_;
+  OneShotTimer timer_;
 
   // Serializer which will provide the data to be saved.
   DataSerializer* serializer_;

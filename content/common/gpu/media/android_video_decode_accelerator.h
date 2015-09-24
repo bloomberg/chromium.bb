@@ -204,7 +204,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder_;
 
   // Repeating timer responsible for draining pending IO to the codec.
-  base::RepeatingTimer<AndroidVideoDecodeAccelerator> io_timer_;
+  base::RepeatingTimer io_timer_;
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
   scoped_ptr<BackingStrategy> strategy_;

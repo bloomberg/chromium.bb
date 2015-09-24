@@ -260,7 +260,7 @@ class JsConditionWaiter {
     if (CheckJs())
       return;
 
-    base::RepeatingTimer<JsConditionWaiter> check_timer;
+    base::RepeatingTimer check_timer;
     check_timer.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(10),

@@ -122,8 +122,8 @@ class STORAGE_EXPORT_PRIVATE QuotaTemporaryStorageEvictor
   int64 interval_ms_;
   bool repeated_eviction_;
 
-  base::OneShotTimer<QuotaTemporaryStorageEvictor> eviction_timer_;
-  base::RepeatingTimer<QuotaTemporaryStorageEvictor> histogram_timer_;
+  base::OneShotTimer eviction_timer_;
+  base::RepeatingTimer histogram_timer_;
   base::WeakPtrFactory<QuotaTemporaryStorageEvictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaTemporaryStorageEvictor);

@@ -255,7 +255,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   // Timer for polling. Restarted on each successful poll, and when entering
   // normal sync mode or exiting an error state. Not active in configuration
   // mode.
-  base::OneShotTimer<SyncSchedulerImpl> poll_timer_;
+  base::OneShotTimer poll_timer_;
 
   // The mode of operation.
   Mode mode_;
@@ -266,10 +266,10 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   scoped_ptr<BackoffDelayProvider> delay_provider_;
 
   // The event that will wake us up.
-  base::OneShotTimer<SyncSchedulerImpl> pending_wakeup_timer_;
+  base::OneShotTimer pending_wakeup_timer_;
 
   // An event that fires when data type throttling expires.
-  base::OneShotTimer<SyncSchedulerImpl> type_unthrottle_timer_;
+  base::OneShotTimer type_unthrottle_timer_;
 
   // Storage for variables related to an in-progress configure request.  Note
   // that (mode_ != CONFIGURATION_MODE) \implies !pending_configure_params_.
@@ -315,7 +315,7 @@ class SYNC_EXPORT_PRIVATE SyncSchedulerImpl
   JobPriority next_sync_session_job_priority_;
 
   // One-shot timer for scheduling GU retry according to delay set by server.
-  base::OneShotTimer<SyncSchedulerImpl> retry_timer_;
+  base::OneShotTimer retry_timer_;
 
   base::WeakPtrFactory<SyncSchedulerImpl> weak_ptr_factory_;
 

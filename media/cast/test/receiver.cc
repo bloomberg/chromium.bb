@@ -517,7 +517,7 @@ class NaivePlayer : public InProcessReceiver,
   base::TimeTicks last_popped_video_playout_time_;
   int64 num_video_frames_processed_;
 
-  base::OneShotTimer<NaivePlayer> video_playout_timer_;
+  base::OneShotTimer video_playout_timer_;
 
   // Audio playout queue, synchronized by |audio_lock_|.
   base::Lock audio_lock_;

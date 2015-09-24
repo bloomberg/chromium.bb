@@ -212,7 +212,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   base::FilePath startup_trace_file_;
 
   // This timer initiates trace file saving.
-  base::OneShotTimer<BrowserMainLoop> startup_trace_timer_;
+  base::OneShotTimer startup_trace_timer_;
 
   // Members initialized in |Init()| -------------------------------------------
   // Destroy |parts_| before |main_message_loop_| (required) and before other

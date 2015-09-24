@@ -117,7 +117,7 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   bool pending_play_;
   int width_;
   int height_;
-  base::RepeatingTimer<RemoteMediaPlayerBridge> time_update_timer_;
+  base::RepeatingTimer time_update_timer_;
   base::TimeDelta duration_;
   bool should_seek_on_prepare_;
   base::TimeDelta pending_seek_;

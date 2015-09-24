@@ -229,7 +229,7 @@ class CrossDevicePromo : public KeyedService,
   // Used to delay the check of device activity. See
   // OnFetchDeviceActivitySuccess() or MaybeBrowsingSessionStarted(), as well as
   // |delay_until_next_device_activity_fetch_|, for details.
-  base::OneShotTimer<CrossDevicePromo> device_activity_timer_;
+  base::OneShotTimer device_activity_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossDevicePromo);
 };

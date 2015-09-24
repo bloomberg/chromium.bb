@@ -178,7 +178,7 @@ void AudioModemAPI::StartReceive(const std::string& app_id,
   modem_->StartRecording(audio_type);
 
   if (receive_timers_[audio_type].count(app_id) == 0)
-    receive_timers_[audio_type][app_id] = new base::OneShotTimer<AudioModemAPI>;
+    receive_timers_[audio_type][app_id] = new base::OneShotTimer;
   DCHECK(receive_timers_[audio_type][app_id]);
   receive_timers_[audio_type][app_id]->Start(
       FROM_HERE,

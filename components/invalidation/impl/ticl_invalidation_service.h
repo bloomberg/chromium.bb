@@ -144,7 +144,7 @@ class TiclInvalidationService : public base::NonThreadSafe,
   // TiclInvalidationService needs to hold reference to access_token_request_
   // for the duration of request in order to receive callbacks.
   scoped_ptr<OAuth2TokenService::Request> access_token_request_;
-  base::OneShotTimer<TiclInvalidationService> request_access_token_retry_timer_;
+  base::OneShotTimer request_access_token_retry_timer_;
   net::BackoffEntry request_access_token_backoff_;
 
   InvalidationNetworkChannel network_channel_type_;

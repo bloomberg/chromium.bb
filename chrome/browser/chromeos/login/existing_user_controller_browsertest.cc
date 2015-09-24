@@ -192,7 +192,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
   }
 
   // ExistingUserController private member accessors.
-  base::OneShotTimer<ExistingUserController>* auto_login_timer() {
+  base::OneShotTimer* auto_login_timer() {
     return existing_user_controller()->auto_login_timer_.get();
   }
 
@@ -559,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
 
   // Wait for the timer to fire.
   base::RunLoop runner;
-  base::OneShotTimer<base::RunLoop> timer;
+  base::OneShotTimer timer;
   timer.Start(FROM_HERE,
               base::TimeDelta::FromMilliseconds(kAutoLoginShortDelay + 1),
               runner.QuitClosure());

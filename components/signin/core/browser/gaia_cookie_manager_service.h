@@ -141,12 +141,12 @@ class GaiaCookieManagerService : public KeyedService,
     void GetCheckConnectionInfoCompleted(bool succeeded);
 
     GaiaCookieManagerService* helper_;
-    base::OneShotTimer<ExternalCcResultFetcher> timer_;
+    base::OneShotTimer timer_;
     URLToTokenAndFetcher fetchers_;
     ResultMap results_;
     base::Time m_external_cc_result_start_time_;
 
-    base::OneShotTimer<ExternalCcResultFetcher> gaia_auth_fetcher_timer_;
+    base::OneShotTimer gaia_auth_fetcher_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(ExternalCcResultFetcher);
   };
@@ -246,9 +246,7 @@ class GaiaCookieManagerService : public KeyedService,
   // If the GaiaAuthFetcher or URLFetcher fails, retry with exponential backoff
   // and network delay.
   net::BackoffEntry fetcher_backoff_;
-  // We can safely depend on the SigninClient here because there is an explicit
-  // dependency, as noted in the GaiaCookieManagerServiceFactory.
-  base::OneShotTimer<SigninClient> fetcher_timer_;
+  base::OneShotTimer fetcher_timer_;
   int fetcher_retries_;
 
   // The last fetched ubertoken, for use in MergeSession retries.

@@ -158,8 +158,8 @@ class HeartbeatSender : public SignalStrategy::Listener {
   scoped_ptr<IqSender> iq_sender_;
   scoped_ptr<IqRequest> request_;
   int interval_ms_;
-  base::RepeatingTimer<HeartbeatSender> timer_;
-  base::OneShotTimer<HeartbeatSender> timer_resend_;
+  base::RepeatingTimer timer_;
+  base::OneShotTimer timer_resend_;
   int sequence_id_;
   bool sequence_id_was_set_;
   int sequence_id_recent_set_num_;
@@ -169,7 +169,7 @@ class HeartbeatSender : public SignalStrategy::Listener {
   // Fields to send and indicate completion of sending host-offline-reason.
   std::string host_offline_reason_;
   base::Callback<void(bool success)> host_offline_reason_ack_callback_;
-  base::OneShotTimer<HeartbeatSender> host_offline_reason_timeout_timer_;
+  base::OneShotTimer host_offline_reason_timeout_timer_;
 
   base::ThreadChecker thread_checker_;
 

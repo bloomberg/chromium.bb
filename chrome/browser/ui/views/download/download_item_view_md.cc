@@ -242,9 +242,10 @@ void DownloadItemViewMd::StartDownloadProgress() {
   if (progress_timer_.IsRunning())
     return;
   progress_start_time_ = base::TimeTicks::Now();
-  progress_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                       DownloadShelf::kProgressRateMs),
-                        this, &DownloadItemViewMd::SchedulePaint);
+  progress_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMilliseconds(DownloadShelf::kProgressRateMs),
+      base::Bind(&DownloadItemViewMd::SchedulePaint, base::Unretained(this)));
 }
 
 void DownloadItemViewMd::StopDownloadProgress() {

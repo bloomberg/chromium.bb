@@ -176,7 +176,7 @@ void AudioOutputController::DoPlay() {
   // Timer self-manages its lifetime and WedgeCheck() will only record the UMA
   // statistic if state is still kPlaying.  Additional Start() calls will
   // invalidate the previous timer.
-  wedge_timer_.reset(new base::OneShotTimer<AudioOutputController>());
+  wedge_timer_.reset(new base::OneShotTimer());
   wedge_timer_->Start(
       FROM_HERE, TimeDelta::FromSeconds(5), this,
       &AudioOutputController::WedgeCheck);

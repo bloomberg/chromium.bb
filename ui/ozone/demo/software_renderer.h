@@ -38,7 +38,7 @@ class SoftwareRenderer : public RendererBase {
   scoped_ptr<gfx::VSyncProvider> vsync_provider_;
 
   // Timer for animation.
-  base::RepeatingTimer<SoftwareRenderer> timer_;
+  base::RepeatingTimer timer_;
 
   base::TimeDelta vsync_period_;
 

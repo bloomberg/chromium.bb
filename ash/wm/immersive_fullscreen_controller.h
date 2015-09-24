@@ -259,7 +259,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   int revealed_lock_count_;
 
   // Timer to track cursor being held at the top edge of the screen.
-  base::OneShotTimer<ImmersiveFullscreenController> top_edge_hover_timer_;
+  base::OneShotTimer top_edge_hover_timer_;
 
   // The cursor x position in screen coordinates when the cursor first hit the
   // top edge of the screen.

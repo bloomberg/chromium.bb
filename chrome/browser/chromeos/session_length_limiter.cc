@@ -204,7 +204,7 @@ void SessionLengthLimiter::UpdateLimit() {
   }
 
   // Set a timer to log out the user when the session length limit is reached.
-  timer_.reset(new base::OneShotTimer<SessionLengthLimiter::Delegate>);
+  timer_.reset(new base::OneShotTimer);
   timer_->Start(FROM_HERE, remaining, delegate_.get(),
                 &SessionLengthLimiter::Delegate::StopSession);
 }

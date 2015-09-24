@@ -158,7 +158,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptFetcherWin
   // PAC URL retrieved from DHCP, if any. Valid only in state STATE_DONE.
   GURL pac_url_;
 
-  base::OneShotTimer<DhcpProxyScriptFetcherWin> wait_timer_;
+  base::OneShotTimer wait_timer_;
 
   URLRequestContext* const url_request_context_;
 

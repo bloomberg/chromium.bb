@@ -206,7 +206,7 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
   scoped_ptr<StreamSocket> fallback_transport_socket_;
   scoped_ptr<AddressList> fallback_addresses_;
   base::TimeTicks fallback_connect_start_time_;
-  base::OneShotTimer<TransportConnectJob> fallback_timer_;
+  base::OneShotTimer fallback_timer_;
 
   // Track the interval between this connect and previous connect.
   ConnectInterval interval_between_connects_;

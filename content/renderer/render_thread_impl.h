@@ -552,7 +552,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool layout_test_mode_;
 
   // Timer that periodically calls IdleHandler.
-  base::RepeatingTimer<RenderThreadImpl> idle_timer_;
+  base::RepeatingTimer idle_timer_;
 
   // The channel from the renderer process to the GPU process.
   scoped_refptr<GpuChannelHost> gpu_channel_;

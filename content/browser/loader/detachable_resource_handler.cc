@@ -63,7 +63,7 @@ void DetachableResourceHandler::Detach() {
   next_handler_.reset();
 
   // Time the request out if it takes too long.
-  detached_timer_.reset(new base::OneShotTimer<DetachableResourceHandler>());
+  detached_timer_.reset(new base::OneShotTimer());
   detached_timer_->Start(
       FROM_HERE, cancel_delay_, this, &DetachableResourceHandler::Cancel);
 

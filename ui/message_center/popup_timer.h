@@ -65,7 +65,7 @@ class PopupTimer {
   base::WeakPtr<PopupTimersController> timer_controller_;
 
   // The actual timer.
-  scoped_ptr<base::OneShotTimer<PopupTimersController>> timer_;
+  scoped_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTimer);
 };

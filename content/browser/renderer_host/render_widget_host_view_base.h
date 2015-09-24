@@ -425,7 +425,7 @@ protected:
 
   uint32 renderer_frame_number_;
 
-  base::OneShotTimer<RenderWidgetHostViewBase> flush_input_timer_;
+  base::OneShotTimer flush_input_timer_;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_;
 

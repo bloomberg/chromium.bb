@@ -92,7 +92,7 @@ class FetcherDelegate {
   static FetcherDelegate* instance_;
 
  private:
-  base::OneShotTimer<FetcherDelegate> timer_;
+  base::OneShotTimer timer_;
   bool completed_;
   bool timed_out_;
   WebURLResponse response_;

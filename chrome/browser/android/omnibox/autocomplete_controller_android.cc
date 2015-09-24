@@ -80,7 +80,7 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
   void OnResultChanged(bool default_match_changed) override;
 
   scoped_ptr<AutocompleteController> controller_;
-  base::OneShotTimer<ZeroSuggestPrefetcher> expire_timer_;
+  base::OneShotTimer expire_timer_;
 };
 
 ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)

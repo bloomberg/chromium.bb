@@ -89,7 +89,7 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
 }
 
 scoped_ptr<base::Timer> DeviceToDeviceAuthenticator::CreateTimer() {
-  return make_scoped_ptr(new base::OneShotTimer<DeviceToDeviceAuthenticator>());
+  return make_scoped_ptr(new base::OneShotTimer());
 }
 
 void DeviceToDeviceAuthenticator::OnHelloMessageCreated(

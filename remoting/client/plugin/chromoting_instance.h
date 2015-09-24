@@ -287,7 +287,7 @@ class ChromotingInstance : public ClientUserInterface,
 
   base::WeakPtr<TokenFetcherProxy> token_fetcher_proxy_;
 
-  base::RepeatingTimer<ChromotingInstance> stats_update_timer_;
+  base::RepeatingTimer stats_update_timer_;
 
   base::TimeTicks connection_started_time;
   base::TimeTicks connection_authenticated_time_;

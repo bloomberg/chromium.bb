@@ -39,17 +39,16 @@ namespace chrome_browser_net {
 
 class WaitForResolutionHelper;
 
-typedef base::RepeatingTimer<WaitForResolutionHelper> HelperTimer;
-
 class WaitForResolutionHelper {
  public:
-  WaitForResolutionHelper(Predictor* predictor, const UrlList& hosts,
-                          HelperTimer* timer, int checks_until_quit)
+  WaitForResolutionHelper(Predictor* predictor,
+                          const UrlList& hosts,
+                          base::RepeatingTimer* timer,
+                          int checks_until_quit)
       : predictor_(predictor),
         hosts_(hosts),
         timer_(timer),
-        checks_until_quit_(checks_until_quit) {
-  }
+        checks_until_quit_(checks_until_quit) {}
 
   void CheckIfResolutionsDone() {
     if (--checks_until_quit_ > 0) {
@@ -70,7 +69,7 @@ class WaitForResolutionHelper {
  private:
   Predictor* predictor_;
   const UrlList hosts_;
-  HelperTimer* timer_;
+  base::RepeatingTimer* timer_;
   int checks_until_quit_;
 };
 
@@ -102,7 +101,7 @@ class PredictorTest : public testing::Test {
   }
 
   void WaitForResolution(Predictor* predictor, const UrlList& hosts) {
-    HelperTimer* timer = new HelperTimer();
+    base::RepeatingTimer* timer = new base::RepeatingTimer();
     // By default allow the loop to run for a minute -- 600 iterations.
     timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
                  new WaitForResolutionHelper(predictor, hosts, timer, 600),
@@ -112,7 +111,7 @@ class PredictorTest : public testing::Test {
 
   void WaitForResolutionWithLimit(
       Predictor* predictor, const UrlList& hosts, int limit) {
-    HelperTimer* timer = new HelperTimer();
+    base::RepeatingTimer* timer = new base::RepeatingTimer();
     timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
                  new WaitForResolutionHelper(predictor, hosts, timer, limit),
                  &WaitForResolutionHelper::CheckIfResolutionsDone);

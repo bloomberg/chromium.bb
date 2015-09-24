@@ -45,7 +45,7 @@ class LauncherSearchProvider : public SearchProvider {
       extension_results_;
 
   // A timer to delay query.
-  base::OneShotTimer<LauncherSearchProvider> query_timer_;
+  base::OneShotTimer query_timer_;
 
   // The timestamp of the last query.
   base::Time last_query_time_;

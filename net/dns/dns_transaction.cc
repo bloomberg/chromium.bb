@@ -961,7 +961,7 @@ class DnsTransactionImpl : public DnsTransaction,
   // Index of the first server to try on each search query.
   int first_server_index_;
 
-  base::OneShotTimer<DnsTransactionImpl> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsTransactionImpl);
 };

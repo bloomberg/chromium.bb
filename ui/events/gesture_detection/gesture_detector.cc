@@ -103,7 +103,7 @@ class GestureDetector::TimeoutGestureHandler {
   typedef void (GestureDetector::*ReceiverMethod)();
 
   GestureDetector* const gesture_detector_;
-  base::OneShotTimer<GestureDetector> timeout_timers_[TIMEOUT_EVENT_COUNT];
+  base::OneShotTimer timeout_timers_[TIMEOUT_EVENT_COUNT];
   ReceiverMethod timeout_callbacks_[TIMEOUT_EVENT_COUNT];
   base::TimeDelta timeout_delays_[TIMEOUT_EVENT_COUNT];
 };

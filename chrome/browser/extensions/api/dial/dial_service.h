@@ -268,14 +268,14 @@ class DialServiceImpl : public DialService,
   int max_requests_;
 
   // Timer for finishing discovery.
-  base::OneShotTimer<DialServiceImpl> finish_timer_;
+  base::OneShotTimer finish_timer_;
 
   // The delay for |finish_timer_|; how long to wait for discovery to finish.
   // Setting this to zero disables the timer.
   base::TimeDelta finish_delay_;
 
   // Timer for sending multiple requests at fixed intervals.
-  base::RepeatingTimer<DialServiceImpl> request_timer_;
+  base::RepeatingTimer request_timer_;
 
   // The delay for |request_timer_|; how long to wait between successive
   // requests.

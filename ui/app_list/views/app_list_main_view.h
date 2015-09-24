@@ -123,7 +123,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
 
   // A timer that fires when maximum allowed time to wait for icon loading has
   // passed.
-  base::OneShotTimer<AppListMainView> icon_loading_wait_timer_;
+  base::OneShotTimer icon_loading_wait_timer_;
 
   ScopedVector<IconLoader> pending_icon_loaders_;
 

@@ -54,7 +54,7 @@ class SyncStoppedReporter : public net::URLFetcherDelegate {
   void OnTimeout();
 
   // Handles timing out requests.
-  base::OneShotTimer<SyncStoppedReporter> timer_;
+  base::OneShotTimer timer_;
 
   // The URL for the sync server's event RPC.
   const GURL sync_event_url_;

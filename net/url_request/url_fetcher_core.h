@@ -326,8 +326,7 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
 
   // Timer to poll the progress of uploading for POST and PUT requests.
   // When crbug.com/119629 is fixed, scoped_ptr is not necessary here.
-  scoped_ptr<base::RepeatingTimer<URLFetcherCore> >
-      upload_progress_checker_timer_;
+  scoped_ptr<base::RepeatingTimer> upload_progress_checker_timer_;
   // Number of bytes sent so far.
   int64 current_upload_bytes_;
   // Number of bytes received so far.

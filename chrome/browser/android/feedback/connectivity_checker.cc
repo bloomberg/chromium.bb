@@ -100,7 +100,7 @@ class ConnectivityChecker : public net::URLFetcherDelegate {
   // has already happened, and no further action should be taken.
   bool is_being_destroyed_;
 
-  scoped_ptr<base::OneShotTimer<ConnectivityChecker>> expiration_timer_;
+  scoped_ptr<base::OneShotTimer> expiration_timer_;
 };
 
 void ConnectivityChecker::OnURLFetchComplete(const net::URLFetcher* source) {
@@ -147,7 +147,7 @@ void ConnectivityChecker::StartAsyncCheck() {
                              net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
-  expiration_timer_.reset(new base::OneShotTimer<ConnectivityChecker>());
+  expiration_timer_.reset(new base::OneShotTimer());
   expiration_timer_->Start(FROM_HERE, timeout_, this,
                            &ConnectivityChecker::OnTimeout);
 }

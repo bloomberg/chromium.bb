@@ -162,7 +162,7 @@ class FeedbackSender : public base::SupportsWeakPtr<FeedbackSender>,
   // all of the renderers. The timer starts in StartFeedbackCollection() and
   // stops in StopFeedbackCollection(). The timer stops and abandons its tasks
   // on destruction.
-  base::RepeatingTimer<FeedbackSender> timer_;
+  base::RepeatingTimer timer_;
 
   // Feedback senders that need to stay alive for the duration of sending data.
   // If a sender is destroyed before it finishes, then sending feedback will be

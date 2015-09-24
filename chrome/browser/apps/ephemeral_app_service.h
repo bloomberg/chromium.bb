@@ -93,7 +93,7 @@ class EphemeralAppService : public KeyedService,
   ScopedObserver<apps::AppLifetimeMonitor, apps::AppLifetimeMonitor::Observer>
       app_lifetime_monitor_observer_;
 
-  base::OneShotTimer<EphemeralAppService> garbage_collect_apps_timer_;
+  base::OneShotTimer garbage_collect_apps_timer_;
 
   // The count of cached ephemeral apps.
   int ephemeral_app_count_;

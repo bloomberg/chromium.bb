@@ -149,7 +149,7 @@ class RequestManager {
     ~Request();
 
     // Timer for discarding the request during a timeout.
-    base::OneShotTimer<RequestManager> timeout_timer;
+    base::OneShotTimer timeout_timer;
 
     // Handler tied to this request.
     scoped_ptr<HandlerInterface> handler;

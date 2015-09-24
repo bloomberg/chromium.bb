@@ -130,7 +130,7 @@ class VIEWS_EXPORT TouchSelectionControllerImpl
   // Timer to trigger quick menu (Quick menu is not shown if the selection
   // handles are being updated. It appears only when the handles are stationary
   // for a certain amount of time).
-  base::OneShotTimer<TouchSelectionControllerImpl> quick_menu_timer_;
+  base::OneShotTimer quick_menu_timer_;
 
   // Pointer to the SelectionHandleView being dragged during a drag session.
   EditingHandleView* dragging_handle_;

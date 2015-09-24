@@ -69,7 +69,7 @@ class MagnifierAnimationWaiter {
       : controller_(controller) {}
 
   void Wait() {
-    base::RepeatingTimer<MagnifierAnimationWaiter> check_timer;
+    base::RepeatingTimer check_timer;
     check_timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10), this,
                       &MagnifierAnimationWaiter::OnTimer);
     runner_ = new content::MessageLoopRunner;

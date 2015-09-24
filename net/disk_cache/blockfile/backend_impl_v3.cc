@@ -1026,7 +1026,7 @@ int BackendImplV3::SyncInit() {
     trace_object_ = TraceObject::GetTraceObject();
     // Create a recurrent timer of 30 secs.
     int timer_delay = unit_test_ ? 1000 : 30000;
-    timer_.reset(new base::RepeatingTimer<BackendImplV3>());
+    timer_.reset(new base::RepeatingTimer());
     timer_->Start(FROM_HERE, TimeDelta::FromMilliseconds(timer_delay), this,
                   &BackendImplV3::OnStatsTimer);
   }

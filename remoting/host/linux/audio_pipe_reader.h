@@ -79,7 +79,7 @@ class AudioPipeReader
   base::FilePathWatcher file_watcher_;
 
   base::File pipe_;
-  base::RepeatingTimer<AudioPipeReader> timer_;
+  base::RepeatingTimer timer_;
   scoped_refptr<base::ObserverListThreadSafe<StreamObserver>> observers_;
 
   // Size of the pipe buffer.

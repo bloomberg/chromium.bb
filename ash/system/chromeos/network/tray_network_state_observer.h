@@ -53,7 +53,7 @@ class TrayNetworkStateObserver : public chromeos::NetworkStateHandlerObserver {
   int update_frequency_;
 
   // Timer used to limit the frequency of NetworkStateChanged updates.
-  base::OneShotTimer<TrayNetworkStateObserver> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayNetworkStateObserver);
 };

@@ -243,7 +243,7 @@ class ProfileImpl : public Profile {
   ExitType last_session_exit_type_;
 
 #if defined(ENABLE_SESSION_SERVICE)
-  base::OneShotTimer<ProfileImpl> create_session_service_timer_;
+  base::OneShotTimer create_session_service_timer_;
 #endif
 
   scoped_ptr<Profile> off_the_record_profile_;

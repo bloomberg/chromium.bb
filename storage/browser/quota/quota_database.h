@@ -174,7 +174,7 @@ class STORAGE_EXPORT_PRIVATE QuotaDatabase {
   bool is_recreating_;
   bool is_disabled_;
 
-  base::OneShotTimer<QuotaDatabase> timer_;
+  base::OneShotTimer timer_;
 
   friend class content::QuotaDatabaseTest;
   friend class QuotaManager;

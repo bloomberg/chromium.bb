@@ -67,7 +67,7 @@ class CastVideoCapturerAdapter : public cricket::VideoCapturer,
   scoped_ptr<webrtc::DesktopCapturer> desktop_capturer_;
 
   // Used to schedule periodic screen captures.
-  scoped_ptr<base::RepeatingTimer<CastVideoCapturerAdapter> > capture_timer_;
+  scoped_ptr<base::RepeatingTimer> capture_timer_;
 
   // Used to set the elapsed_time attribute of captured frames.
   base::TimeTicks start_time_;

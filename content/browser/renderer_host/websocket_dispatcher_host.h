@@ -165,7 +165,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
   WebSocketHostFactory websocket_host_factory_;
 
   // Timer and counters for per-renderer WebSocket throttling.
-  base::RepeatingTimer<WebSocketDispatcherHost> throttling_period_timer_;
+  base::RepeatingTimer throttling_period_timer_;
 
   // The current number of pending connections.
   int num_pending_connections_;

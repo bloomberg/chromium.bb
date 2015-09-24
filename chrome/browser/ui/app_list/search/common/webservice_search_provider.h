@@ -43,7 +43,7 @@ class WebserviceSearchProvider : public SearchProvider {
   base::Time last_keytyped_;
 
   // The timer to throttle QPS.
-  base::OneShotTimer<WebserviceSearchProvider> query_throttler_;
+  base::OneShotTimer query_throttler_;
 
   // The flag for tests. It prevents the throttling If set to false.
   bool use_throttling_;

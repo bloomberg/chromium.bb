@@ -77,7 +77,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
   scoped_ptr<RemoteCommandJob> running_command_;
 
   scoped_ptr<base::TickClock> clock_;
-  base::OneShotTimer<RemoteCommandsQueue> execution_timeout_timer_;
+  base::OneShotTimer execution_timeout_timer_;
 
   base::ObserverList<Observer, true> observer_list_;
 

@@ -251,8 +251,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   base::WeakPtr<HttpServerPropertiesManager> pref_weak_ptr_;
 
   // Used to post cache update tasks.
-  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
-      pref_cache_update_timer_;
+  scoped_ptr<base::OneShotTimer> pref_cache_update_timer_;
 
   // Used to track the spdy servers changes.
   PrefChangeRegistrar pref_change_registrar_;
@@ -267,8 +266,7 @@ class NET_EXPORT HttpServerPropertiesManager : public HttpServerProperties {
   const scoped_refptr<base::SequencedTaskRunner> network_task_runner_;
 
   // Used to post |prefs::kHttpServerProperties| pref update tasks.
-  scoped_ptr<base::OneShotTimer<HttpServerPropertiesManager> >
-      network_prefs_update_timer_;
+  scoped_ptr<base::OneShotTimer> network_prefs_update_timer_;
 
   scoped_ptr<HttpServerPropertiesImpl> http_server_properties_impl_;
 

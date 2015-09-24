@@ -902,7 +902,7 @@ void Dispatcher::WebKitInitialized() {
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
   if (set_idle_notifications_) {
-    forced_idle_timer_.reset(new base::RepeatingTimer<RenderThread>);
+    forced_idle_timer_.reset(new base::RepeatingTimer);
     forced_idle_timer_->Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),

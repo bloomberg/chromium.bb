@@ -136,7 +136,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // TODO(akalin): Support reprioritization.
   const RequestPriority priority_;
   // Timer to abort jobs that take too long.
-  base::OneShotTimer<ConnectJob> timer_;
+  base::OneShotTimer timer_;
   Delegate* delegate_;
   scoped_ptr<StreamSocket> socket_;
   BoundNetLog net_log_;
@@ -494,7 +494,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     RequestQueue pending_requests_;
     int active_socket_count_;  // number of active sockets used by clients
     // A timer for when to start the backup job.
-    base::OneShotTimer<Group> backup_job_timer_;
+    base::OneShotTimer backup_job_timer_;
   };
 
   typedef std::map<std::string, Group*> GroupMap;
@@ -615,7 +615,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // Timer used to periodically prune idle sockets that timed out or can't be
   // reused.
-  base::RepeatingTimer<ClientSocketPoolBaseHelper> timer_;
+  base::RepeatingTimer timer_;
 
   // The total number of idle sockets in the system.
   int idle_socket_count_;

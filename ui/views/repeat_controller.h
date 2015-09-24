@@ -37,7 +37,7 @@ class RepeatController {
   void Run();
 
   // The current timer.
-  base::OneShotTimer<RepeatController> timer_;
+  base::OneShotTimer timer_;
 
   base::Closure callback_;
 

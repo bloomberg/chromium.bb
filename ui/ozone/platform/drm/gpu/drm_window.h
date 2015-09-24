@@ -122,7 +122,7 @@ class OZONE_EXPORT DrmWindow {
   // the window isn't over an active display.
   HardwareDisplayController* controller_ = nullptr;
 
-  base::RepeatingTimer<DrmWindow> cursor_timer_;
+  base::RepeatingTimer cursor_timer_;
 
   scoped_refptr<DrmBuffer> cursor_buffers_[2];
   int cursor_frontbuffer_ = 0;

@@ -41,7 +41,7 @@ struct GesturesTimer {
 
   GesturesTimerCallback callback_ = nullptr;
   void* callback_data_ = nullptr;
-  base::OneShotTimer<GesturesTimer> timer_;
+  base::OneShotTimer timer_;
 };
 
 namespace ui {

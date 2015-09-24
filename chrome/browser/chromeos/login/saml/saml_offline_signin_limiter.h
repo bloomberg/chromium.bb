@@ -66,8 +66,7 @@ class SAMLOfflineSigninLimiter : public KeyedService {
 
   PrefChangeRegistrar pref_change_registrar_;
 
-  scoped_ptr<base::OneShotTimer<SAMLOfflineSigninLimiter> >
-      offline_signin_limit_timer_;
+  scoped_ptr<base::OneShotTimer> offline_signin_limit_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SAMLOfflineSigninLimiter);
 };

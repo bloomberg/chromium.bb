@@ -760,7 +760,7 @@ void SyncBackendHostCore::StartSavingChanges() {
     return;
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   DCHECK(!save_changes_timer_.get());
-  save_changes_timer_.reset(new base::RepeatingTimer<SyncBackendHostCore>());
+  save_changes_timer_.reset(new base::RepeatingTimer());
   save_changes_timer_->Start(FROM_HERE,
       base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &SyncBackendHostCore::SaveChanges);

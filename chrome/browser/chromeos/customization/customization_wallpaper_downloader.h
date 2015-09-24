@@ -93,7 +93,7 @@ class CustomizationWallpaperDownloader : public net::URLFetcherDelegate {
   const base::FilePath wallpaper_temporary_file_;
 
   // Pending retry.
-  base::OneShotTimer<CustomizationWallpaperDownloader> request_scheduled_;
+  base::OneShotTimer request_scheduled_;
 
   // Number of download retries (first attempt is not counted as retry).
   size_t retries_;

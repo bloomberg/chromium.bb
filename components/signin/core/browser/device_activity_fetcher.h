@@ -65,7 +65,7 @@ class DeviceActivityFetcher : public GaiaAuthConsumer,
 
   // If either fetcher fails, retry with exponential backoff.
   net::BackoffEntry fetcher_backoff_;
-  base::OneShotTimer<DeviceActivityFetcher> fetcher_timer_;
+  base::OneShotTimer fetcher_timer_;
   int fetcher_retries_;
 
   std::string access_token_;

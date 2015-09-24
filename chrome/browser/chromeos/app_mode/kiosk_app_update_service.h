@@ -68,7 +68,7 @@ class KioskAppUpdateService : public KeyedService,
   std::string app_id_;
 
   // After we detect an upgrade we start a one-short timer to force restart.
-  base::OneShotTimer<KioskAppUpdateService> restart_timer_;
+  base::OneShotTimer restart_timer_;
 
   system::AutomaticRebootManager* automatic_reboot_manager_;  // Not owned.
 

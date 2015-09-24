@@ -66,7 +66,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  update_timer_.reset(new base::RepeatingTimer<DownloadFileImpl>());
+  update_timer_.reset(new base::RepeatingTimer());
   DownloadInterruptReason result =
       file_.Initialize(default_download_directory_);
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {

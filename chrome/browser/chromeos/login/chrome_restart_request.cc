@@ -259,7 +259,7 @@ class ChromeRestartRequest
   void RestartJob();
 
   const std::vector<std::string> argv_;
-  base::OneShotTimer<ChromeRestartRequest> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRestartRequest);
 };

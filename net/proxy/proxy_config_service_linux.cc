@@ -208,8 +208,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
         system_proxy_id_(0),
         system_http_proxy_id_(0),
         notify_delegate_(NULL),
-        debounce_timer_(new base::OneShotTimer<SettingGetterImplGConf>()) {
-  }
+        debounce_timer_(new base::OneShotTimer()) {}
 
   ~SettingGetterImplGConf() override {
     // client_ should have been released before now, from
@@ -505,7 +504,7 @@ class SettingGetterImplGConf : public ProxyConfigServiceLinux::SettingGetter {
   guint system_http_proxy_id_;
 
   ProxyConfigServiceLinux::Delegate* notify_delegate_;
-  scoped_ptr<base::OneShotTimer<SettingGetterImplGConf> > debounce_timer_;
+  scoped_ptr<base::OneShotTimer> debounce_timer_;
 
   // Task runner for the thread that we make gconf calls on. It should
   // be the UI thread and all our methods should be called on this
@@ -523,15 +522,14 @@ const char kProxyGConfSchema[] = "org.gnome.system.proxy";
 class SettingGetterImplGSettings
     : public ProxyConfigServiceLinux::SettingGetter {
  public:
-  SettingGetterImplGSettings() :
-    client_(NULL),
-    http_client_(NULL),
-    https_client_(NULL),
-    ftp_client_(NULL),
-    socks_client_(NULL),
-    notify_delegate_(NULL),
-    debounce_timer_(new base::OneShotTimer<SettingGetterImplGSettings>()) {
-  }
+  SettingGetterImplGSettings()
+      : client_(NULL),
+        http_client_(NULL),
+        https_client_(NULL),
+        ftp_client_(NULL),
+        socks_client_(NULL),
+        notify_delegate_(NULL),
+        debounce_timer_(new base::OneShotTimer()) {}
 
   ~SettingGetterImplGSettings() override {
     // client_ should have been released before now, from
@@ -776,7 +774,7 @@ class SettingGetterImplGSettings
   GSettings* ftp_client_;
   GSettings* socks_client_;
   ProxyConfigServiceLinux::Delegate* notify_delegate_;
-  scoped_ptr<base::OneShotTimer<SettingGetterImplGSettings> > debounce_timer_;
+  scoped_ptr<base::OneShotTimer> debounce_timer_;
 
   // Task runner for the thread that we make gsettings calls on. It should
   // be the UI thread and all our methods should be called on this
@@ -862,7 +860,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   explicit SettingGetterImplKDE(base::Environment* env_var_getter)
       : inotify_fd_(-1),
         notify_delegate_(NULL),
-        debounce_timer_(new base::OneShotTimer<SettingGetterImplKDE>()),
+        debounce_timer_(new base::OneShotTimer()),
         indirect_manual_(false),
         auto_no_pac_(false),
         reversed_bypass_list_(false),
@@ -1333,7 +1331,7 @@ class SettingGetterImplKDE : public ProxyConfigServiceLinux::SettingGetter,
   int inotify_fd_;
   base::MessagePumpLibevent::FileDescriptorWatcher inotify_watcher_;
   ProxyConfigServiceLinux::Delegate* notify_delegate_;
-  scoped_ptr<base::OneShotTimer<SettingGetterImplKDE> > debounce_timer_;
+  scoped_ptr<base::OneShotTimer> debounce_timer_;
   base::FilePath kde_config_dir_;
   bool indirect_manual_;
   bool auto_no_pac_;

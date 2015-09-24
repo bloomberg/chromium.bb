@@ -817,7 +817,7 @@ void MessageCenterImpl::EnterQuietModeWithExpire(
     FOR_EACH_OBSERVER(
         MessageCenterObserver, observer_list_, OnQuietModeChanged(true));
 
-    quiet_mode_timer_.reset(new base::OneShotTimer<MessageCenterImpl>);
+    quiet_mode_timer_.reset(new base::OneShotTimer);
     quiet_mode_timer_->Start(
         FROM_HERE,
         expires_in,

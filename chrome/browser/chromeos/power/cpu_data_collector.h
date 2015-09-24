@@ -84,7 +84,7 @@ class CpuDataCollector {
       const std::vector<std::string>* cpu_freq_state_names,
       const std::vector<StateOccupancySample>* freq_samples);
 
-  base::RepeatingTimer<CpuDataCollector> timer_;
+  base::RepeatingTimer timer_;
 
   // Names of the idle states.
   std::vector<std::string> cpu_idle_state_names_;

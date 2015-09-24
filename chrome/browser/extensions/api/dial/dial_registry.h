@@ -166,7 +166,7 @@ class DialRegistry : public DialService::Observer,
   DeviceByLabelMap device_by_label_map_;
 
   // Timer used to manage periodic discovery requests.
-  base::RepeatingTimer<DialRegistry> repeating_timer_;
+  base::RepeatingTimer repeating_timer_;
 
   // Interface from which the DIAL API is notified of DIAL device events. the
   // DIAL API owns this DIAL registry.

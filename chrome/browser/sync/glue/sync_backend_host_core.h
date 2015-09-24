@@ -284,7 +284,7 @@ class SyncBackendHostCore
   SyncBackendRegistrar* registrar_;
 
   // The timer used to periodically call SaveChanges.
-  scoped_ptr<base::RepeatingTimer<SyncBackendHostCore> > save_changes_timer_;
+  scoped_ptr<base::RepeatingTimer> save_changes_timer_;
 
   // Our encryptor, which uses Chrome's encryption functions.
   sync_driver::SystemEncryptor encryptor_;

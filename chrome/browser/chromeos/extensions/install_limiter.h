@@ -78,7 +78,7 @@ class InstallLimiter : public KeyedService,
   CrxInstallerSet running_installers_;
 
   // A timer to wait before running deferred big app install.
-  base::OneShotTimer<InstallLimiter> wait_timer_;
+  base::OneShotTimer wait_timer_;
 
   bool disabled_for_test_;
 

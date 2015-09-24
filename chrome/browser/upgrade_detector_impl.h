@@ -74,11 +74,11 @@ class UpgradeDetectorImpl : public UpgradeDetector,
       base::WeakPtr<UpgradeDetectorImpl> upgrade_detector);
 
   // We periodically check to see if Chrome has been upgraded.
-  base::RepeatingTimer<UpgradeDetectorImpl> detect_upgrade_timer_;
+  base::RepeatingTimer detect_upgrade_timer_;
 
   // After we detect an upgrade we start a recurring timer to see if enough time
   // has passed and we should start notifying the user.
-  base::RepeatingTimer<UpgradeDetectorImpl> upgrade_notification_timer_;
+  base::RepeatingTimer upgrade_notification_timer_;
 
   // True if this build is a dev or canary channel build.
   bool is_unstable_channel_;

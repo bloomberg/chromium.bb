@@ -92,7 +92,7 @@ class CONTENT_EXPORT DeviceSensorEventPump
 
   int pump_delay_microseconds_;
   PumpState state_;
-  base::RepeatingTimer<DeviceSensorEventPump> timer_;
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSensorEventPump);
 };

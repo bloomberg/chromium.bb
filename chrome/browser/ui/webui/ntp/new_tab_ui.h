@@ -131,7 +131,7 @@ class NewTabUI : public content::WebUIController,
   // The last time we got a paint notification.
   base::TimeTicks last_paint_;
   // Scoping so we can be sure our timeouts don't outlive us.
-  base::OneShotTimer<NewTabUI> timer_;
+  base::OneShotTimer timer_;
   // The preference version. This used for migrating prefs of the NTP.
   static const int current_pref_version_ = 3;
 

@@ -218,7 +218,7 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   subtle::AtomicWord memory_tracing_enabled_;
 
   // For time-triggered periodic dumps.
-  RepeatingTimer<MemoryDumpManager> periodic_dump_timer_;
+  RepeatingTimer periodic_dump_timer_;
 
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.

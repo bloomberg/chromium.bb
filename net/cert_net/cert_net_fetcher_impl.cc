@@ -217,7 +217,7 @@ class CertNetFetcherImpl::Job : public URLRequest::Delegate {
 
   // Used to timeout the job when the URLRequest takes too long. This timer is
   // also used for notifying a failure to start the URLRequest.
-  base::OneShotTimer<Job> timer_;
+  base::OneShotTimer timer_;
 
   // Non-owned pointer to the CertNetFetcherImpl that created this job.
   CertNetFetcherImpl* parent_;

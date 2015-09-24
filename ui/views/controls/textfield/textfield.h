@@ -437,7 +437,7 @@ class VIEWS_EXPORT Textfield : public View,
 
   // The duration and timer to reveal the last typed password character.
   base::TimeDelta password_reveal_duration_;
-  base::OneShotTimer<Textfield> password_reveal_timer_;
+  base::OneShotTimer password_reveal_timer_;
 
   // Tracks whether a user action is being performed; i.e. OnBeforeUserAction()
   // has been called, but OnAfterUserAction() has not yet been called.
@@ -447,7 +447,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool skip_input_method_cancel_composition_;
 
   // The text editing cursor repaint timer and visibility.
-  base::RepeatingTimer<Textfield> cursor_repaint_timer_;
+  base::RepeatingTimer cursor_repaint_timer_;
   bool cursor_visible_;
 
   // The drop cursor is a visual cue for where dragged text will be dropped.
@@ -458,7 +458,7 @@ class VIEWS_EXPORT Textfield : public View,
   bool initiating_drag_;
 
   // A timer and point used to modify the selection when dragging.
-  base::RepeatingTimer<Textfield> drag_selection_timer_;
+  base::RepeatingTimer drag_selection_timer_;
   gfx::Point last_drag_location_;
 
   // State variables used to track double and triple clicks.

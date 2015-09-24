@@ -106,7 +106,7 @@ class PseudoTcpAdapter::Core : public cricket::IPseudoTcpNotify,
   bool socket_write_pending_;
   scoped_refptr<net::IOBuffer> socket_read_buffer_;
 
-  base::OneShotTimer<Core> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

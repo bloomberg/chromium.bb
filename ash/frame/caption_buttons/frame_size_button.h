@@ -97,7 +97,7 @@ class ASH_EXPORT FrameSizeButton : public FrameCaptionButton {
   // right.
   int set_buttons_to_snap_mode_delay_ms_;
 
-  base::OneShotTimer<FrameSizeButton> set_buttons_to_snap_mode_timer_;
+  base::OneShotTimer set_buttons_to_snap_mode_timer_;
 
   // Whether the buttons adjacent to the size button snap the window left and
   // right.

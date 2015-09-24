@@ -307,14 +307,14 @@ class MobileActivator
   // Payment portal reload/reconnect attempt count.
   int payment_reconnect_count_;
   // Timer that monitors how long we spend in error-prone states.
-  base::RepeatingTimer<MobileActivator> state_duration_timer_;
+  base::RepeatingTimer state_duration_timer_;
 
   // State we will return to if we are disconnected.
   PlanActivationState post_reconnect_state_;
   // Called to continue the reconnect attempt.
-  base::RepeatingTimer<MobileActivator> continue_reconnect_timer_;
+  base::RepeatingTimer continue_reconnect_timer_;
   // Called when the reconnect attempt times out.
-  base::OneShotTimer<MobileActivator> reconnect_timeout_timer_;
+  base::OneShotTimer reconnect_timeout_timer_;
   // Cellular plan payment time.
   base::Time cellular_plan_payment_time_;
 

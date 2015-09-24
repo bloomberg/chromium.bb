@@ -152,8 +152,7 @@ class ExtensionWelcomeNotification
 
   // If the welcome notification is shown, this timer tracks when to hide the
   // welcome notification.
-  scoped_ptr<base::OneShotTimer<ExtensionWelcomeNotification> >
-      expiration_timer_;
+  scoped_ptr<base::OneShotTimer> expiration_timer_;
 
   // Delegate for Chrome global calls like base::Time::GetTime() for
   // testability.

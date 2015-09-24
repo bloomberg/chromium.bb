@@ -223,7 +223,7 @@ class MenuController::MenuScrollTask {
   bool is_scrolling_up_;
 
   // Timer to periodically scroll.
-  base::RepeatingTimer<MenuScrollTask> scrolling_timer_;
+  base::RepeatingTimer scrolling_timer_;
 
   // Time we started scrolling at.
   base::Time start_scroll_time_;

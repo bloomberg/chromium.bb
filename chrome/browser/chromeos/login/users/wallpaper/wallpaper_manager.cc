@@ -265,7 +265,7 @@ class WallpaperManager::PendingWallpaper :
   // This is "on destroy" callback that will call OnWallpaperSet() when
   // image will be loaded.
   wallpaper::MovableOnDestroyCallbackHolder on_finish_;
-  base::OneShotTimer<WallpaperManager::PendingWallpaper> timer;
+  base::OneShotTimer timer;
 
   // Load start time to calculate duration.
   base::Time started_load_at_;

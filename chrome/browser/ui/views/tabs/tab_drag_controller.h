@@ -510,11 +510,11 @@ class TabDragController : public content::NotificationObserver,
   // Timer used to bring the window under the cursor to front. If the user
   // stops moving the mouse for a brief time over a browser window, it is
   // brought to front.
-  base::OneShotTimer<TabDragController> bring_to_front_timer_;
+  base::OneShotTimer bring_to_front_timer_;
 
   // Timer used to move the stacked tabs. See comment aboue
   // StartMoveStackedTimerIfNecessary().
-  base::OneShotTimer<TabDragController> move_stacked_timer_;
+  base::OneShotTimer move_stacked_timer_;
 
   // Did the mouse move enough that we started a drag?
   bool started_drag_;

@@ -199,7 +199,7 @@ class IdleAppNameNotificationDelegateView
   }
 
   // A timer which calls us to remove the message from the screen.
-  base::OneShotTimer<IdleAppNameNotificationDelegateView> hide_timer_;
+  base::OneShotTimer hide_timer_;
 
   // The owner of this message which needs to get notified when the message
   // closes.

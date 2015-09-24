@@ -214,7 +214,7 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
       if (!err) {
         if (drawing_model == NPDrawingModelCoreAnimation) {
           // Create the timer; it will be started when we get a window handle.
-          redraw_timer_.reset(new base::RepeatingTimer<WebPluginDelegateImpl>);
+          redraw_timer_.reset(new base::RepeatingTimer);
         }
         layer_ = layer;
 

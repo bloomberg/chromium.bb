@@ -103,10 +103,10 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
   const base::TimeDelta timeout_;
 
   // Pending retry.
-  base::OneShotTimer<SimpleGeolocationRequest> request_scheduled_;
+  base::OneShotTimer request_scheduled_;
 
   // Stop request on timeout.
-  base::OneShotTimer<SimpleGeolocationRequest> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   // Number of retry attempts.
   unsigned retries_;

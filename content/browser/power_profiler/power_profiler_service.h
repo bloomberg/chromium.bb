@@ -59,7 +59,7 @@ class CONTENT_EXPORT PowerProfilerService {
   // Executes on the UI thread.
   void Notify(const PowerEventVector&);
 
-  base::RepeatingTimer<PowerProfilerService> query_power_timer_;
+  base::RepeatingTimer query_power_timer_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   Status status_;

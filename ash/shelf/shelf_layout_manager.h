@@ -365,7 +365,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Do any windows overlap the shelf? This is maintained by WorkspaceManager.
   bool window_overlaps_shelf_;
 
-  base::OneShotTimer<ShelfLayoutManager> auto_hide_timer_;
+  base::OneShotTimer auto_hide_timer_;
 
   // Whether the mouse was over the shelf when the auto hide timer started.
   // False when neither the auto hide timer nor the timer task are running.

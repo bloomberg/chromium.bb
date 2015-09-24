@@ -108,7 +108,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.
-  base::OneShotTimer<RemoteDeviceLifeCycleImpl> authentication_recovery_timer_;
+  base::OneShotTimer authentication_recovery_timer_;
 
   base::WeakPtrFactory<RemoteDeviceLifeCycleImpl> weak_ptr_factory_;
 

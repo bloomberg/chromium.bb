@@ -144,7 +144,7 @@ class INVALIDATION_EXPORT_PRIVATE RegistrationManager
     // Increased after each consecutive failure.
     base::TimeDelta next_delay;
     // The actual timer for registration.
-    base::OneShotTimer<RegistrationStatus> registration_timer;
+    base::OneShotTimer registration_timer;
 
     DISALLOW_COPY_AND_ASSIGN(RegistrationStatus);
   };

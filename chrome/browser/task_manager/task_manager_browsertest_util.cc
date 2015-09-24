@@ -174,7 +174,7 @@ class ResourceChangeObserver : public TaskManagerModelObserver {
   const ColumnSpecifier column_specifier_;
   const size_t min_column_value_;
   base::RunLoop run_loop_;
-  base::OneShotTimer<ResourceChangeObserver> timer_;
+  base::OneShotTimer timer_;
 };
 
 }  // namespace

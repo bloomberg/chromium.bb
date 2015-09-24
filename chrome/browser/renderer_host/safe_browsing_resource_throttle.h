@@ -164,7 +164,7 @@ class SafeBrowsingResourceThrottle
   base::TimeTicks defer_start_time_;
 
   // Timer to abort the safe browsing check if it takes too long.
-  base::OneShotTimer<SafeBrowsingResourceThrottle> timer_;
+  base::OneShotTimer timer_;
 
   // The redirect chain for this resource
   std::vector<GURL> redirect_urls_;

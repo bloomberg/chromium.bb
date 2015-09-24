@@ -67,7 +67,7 @@ class PerformanceMonitor {
   MetricsMap metrics_map_;
 
   // The timer to signal PerformanceMonitor to perform its timed collections.
-  base::OneShotTimer<PerformanceMonitor> repeating_timer_;
+  base::OneShotTimer repeating_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMonitor);
 };

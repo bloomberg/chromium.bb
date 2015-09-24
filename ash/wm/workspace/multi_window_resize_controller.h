@@ -156,7 +156,7 @@ class ASH_EXPORT MultiWindowResizeController :
   ResizeWindows windows_;
 
   // Timer used before showing.
-  base::OneShotTimer<MultiWindowResizeController> show_timer_;
+  base::OneShotTimer show_timer_;
 
   scoped_ptr<views::Widget> resize_widget_;
 

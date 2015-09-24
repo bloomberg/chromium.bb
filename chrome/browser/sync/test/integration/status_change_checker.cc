@@ -22,7 +22,7 @@ base::TimeDelta StatusChangeChecker::GetTimeoutDuration() {
 }
 
 void StatusChangeChecker::StartBlockingWait() {
-  base::OneShotTimer<StatusChangeChecker> timer;
+  base::OneShotTimer timer;
   timer.Start(FROM_HERE,
               GetTimeoutDuration(),
               base::Bind(&StatusChangeChecker::OnTimeout,

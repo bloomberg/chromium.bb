@@ -471,8 +471,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
                           base::Bind(&ResourceDispatcherHostImpl::OnInit,
                                      base::Unretained(this)));
 
-  update_load_states_timer_.reset(
-      new base::RepeatingTimer<ResourceDispatcherHostImpl>());
+  update_load_states_timer_.reset(new base::RepeatingTimer());
 }
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {

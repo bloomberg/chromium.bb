@@ -204,7 +204,7 @@ class NET_EXPORT_PRIVATE DnsConfigService
   base::TimeTicks last_sent_empty_time_;
 
   // Started in Invalidate*, cleared in On*Read.
-  base::OneShotTimer<DnsConfigService> timer_;
+  base::OneShotTimer timer_;
 
   NameServerClassifier classifier_;
 

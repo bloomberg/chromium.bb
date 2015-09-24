@@ -687,7 +687,7 @@ class BrowserView : public BrowserWindow,
 #endif
 
   // The timer used to update frames for the Loading Animation.
-  base::RepeatingTimer<BrowserView> loading_animation_timer_;
+  base::RepeatingTimer loading_animation_timer_;
 
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
 

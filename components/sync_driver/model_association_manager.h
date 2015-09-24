@@ -84,7 +84,7 @@ class ModelAssociationManager {
   // and modify the timer.
   // TODO(sync) : This would go away if we made this class be able to do
   // Dependency injection. crbug.com/129212.
-   base::OneShotTimer<ModelAssociationManager>* GetTimerForTesting();
+  base::OneShotTimer* GetTimerForTesting();
 
    State state() const { return state_; }
 
@@ -149,7 +149,7 @@ class ModelAssociationManager {
   ModelAssociationManagerDelegate* delegate_;
 
   // Timer to track and limit how long a datatype takes to model associate.
-  base::OneShotTimer<ModelAssociationManager> timer_;
+  base::OneShotTimer timer_;
 
   DataTypeManager::ConfigureStatus configure_status_;
 

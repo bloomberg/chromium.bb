@@ -237,7 +237,7 @@ class FingerprintDataLoader : public content::GpuDataManagerObserver {
 
   // Timer to enforce a maximum timeout before the |callback_| is called, even
   // if not all asynchronous data has been loaded.
-  base::OneShotTimer<FingerprintDataLoader> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   // The callback that will be called once all the data is available.
   base::Callback<void(scoped_ptr<Fingerprint>)> callback_;

@@ -73,7 +73,7 @@ class BASE_EXPORT TraceMemoryController
   GetHeapProfileFunction get_heap_profile_function_;
 
   // Timer to schedule memory profile dumps.
-  RepeatingTimer<TraceMemoryController> dump_timer_;
+  RepeatingTimer dump_timer_;
 
   WeakPtrFactory<TraceMemoryController> weak_factory_;
 

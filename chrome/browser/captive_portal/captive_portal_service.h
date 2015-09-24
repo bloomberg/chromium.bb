@@ -190,7 +190,7 @@ class CaptivePortalService : public KeyedService, public base::NonThreadSafe {
   // the Link Doctor.
   BooleanPrefMember resolve_errors_with_web_service_;
 
-  base::OneShotTimer<CaptivePortalService> check_captive_portal_timer_;
+  base::OneShotTimer check_captive_portal_timer_;
 
   static TestingState testing_state_;
 

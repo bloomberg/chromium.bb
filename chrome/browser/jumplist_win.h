@@ -170,7 +170,7 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   ShellLinkItemList recently_closed_pages_;
 
   // Timer for requesting delayed updates of the jumplist.
-  base::OneShotTimer<JumpList> timer_;
+  base::OneShotTimer timer_;
 
   // A list of URLs we need to retrieve their favicons,
   // protected by the list_lock_.

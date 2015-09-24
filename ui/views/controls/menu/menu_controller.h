@@ -567,13 +567,13 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
 
   // As the mouse moves around submenus are not opened immediately. Instead
   // they open after this timer fires.
-  base::OneShotTimer<MenuController> show_timer_;
+  base::OneShotTimer show_timer_;
 
   // Used to invoke CancelAll(). This is used during drag and drop to hide the
   // menu after the mouse moves out of the of the menu. This is necessitated by
   // the lack of an ability to detect when the drag has completed from the drop
   // side.
-  base::OneShotTimer<MenuController> cancel_all_timer_;
+  base::OneShotTimer cancel_all_timer_;
 
   // Drop target.
   MenuItemView* drop_target_;

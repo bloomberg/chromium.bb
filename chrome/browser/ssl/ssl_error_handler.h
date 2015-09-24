@@ -86,9 +86,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   // check and fires a one shot timer to wait for a "captive portal detected"
   // result to arrive.
   void StartHandlingError();
-  const base::OneShotTimer<SSLErrorHandler>& get_timer() const {
-    return timer_;
-  }
+  const base::OneShotTimer& get_timer() const { return timer_; }
 
   // These are virtual for tests:
   virtual void CheckForCaptivePortal();
@@ -136,7 +134,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   Profile* const profile_;
 
   content::NotificationRegistrar registrar_;
-  base::OneShotTimer<SSLErrorHandler> timer_;
+  base::OneShotTimer timer_;
 
   scoped_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
 

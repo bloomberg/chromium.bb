@@ -69,7 +69,7 @@ public:
   LimitState last_limit_state_;  // State of last notification update.
 
   LabelTrayView* tray_bubble_view_;
-  scoped_ptr<base::RepeatingTimer<TraySessionLengthLimit> > timer_;
+  scoped_ptr<base::RepeatingTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySessionLengthLimit);
 };

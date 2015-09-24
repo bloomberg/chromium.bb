@@ -63,7 +63,7 @@ class APP_LIST_EXPORT SearchController {
 
   bool is_voice_query_;
 
-  base::OneShotTimer<SearchController> stop_timer_;
+  base::OneShotTimer stop_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);
 };

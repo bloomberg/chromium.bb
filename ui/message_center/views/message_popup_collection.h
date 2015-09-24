@@ -165,7 +165,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // happens to be right under the mouse, and the user can just dispose of
   // multipel toasts by clicking. The mode ends when defer_timer_ expires.
   bool user_is_closing_toasts_by_clicking_;
-  scoped_ptr<base::OneShotTimer<MessagePopupCollection> > defer_timer_;
+  scoped_ptr<base::OneShotTimer> defer_timer_;
   // The top edge to align the position of the next toast during 'close by
   // clicking" mode.
   // Only to be used when user_is_closing_toasts_by_clicking_ is true.

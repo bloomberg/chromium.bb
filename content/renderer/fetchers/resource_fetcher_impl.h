@@ -71,7 +71,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
   Callback callback_;
 
   // Limit how long to wait for the server.
-  base::OneShotTimer<ResourceFetcherImpl> timeout_timer_;
+  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceFetcherImpl);
 };

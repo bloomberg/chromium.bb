@@ -220,7 +220,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
       extension_registry_observer_;
 
   // The timer for this alarm manager.
-  base::OneShotTimer<AlarmManager> timer_;
+  base::OneShotTimer timer_;
 
   // A map of our pending alarms, per extension.
   // Invariant: None of the AlarmLists are empty.

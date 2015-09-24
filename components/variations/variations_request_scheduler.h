@@ -57,10 +57,10 @@ class VariationsRequestScheduler {
   // The timer used to repeatedly ping the server. Keep this as an instance
   // member so if VariationsRequestScheduler goes out of scope, the timer is
   // automatically canceled.
-  base::RepeatingTimer<VariationsRequestScheduler> timer_;
+  base::RepeatingTimer timer_;
 
   // A one-shot timer used for scheduling out-of-band fetches.
-  base::OneShotTimer<VariationsRequestScheduler> one_shot_timer_;
+  base::OneShotTimer one_shot_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsRequestScheduler);
 };

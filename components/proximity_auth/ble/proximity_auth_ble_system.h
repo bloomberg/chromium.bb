@@ -134,7 +134,7 @@ class ProximityAuthBleSystem : public ScreenlockBridge::Observer,
 
   // The timer controlling the time the spinner for the user pod icon is shown
   // right after the screen is locked.
-  base::OneShotTimer<ProximityAuthBleSystem> spinner_timer_;
+  base::OneShotTimer spinner_timer_;
 
   // The different UI states that the lock screen can be in.
   enum class ScreenlockUIState {

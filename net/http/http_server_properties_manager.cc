@@ -86,8 +86,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
   pref_weak_ptr_factory_.reset(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   pref_weak_ptr_ = pref_weak_ptr_factory_->GetWeakPtr();
-  pref_cache_update_timer_.reset(
-      new base::OneShotTimer<HttpServerPropertiesManager>);
+  pref_cache_update_timer_.reset(new base::OneShotTimer);
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       path_,
@@ -106,8 +105,7 @@ void HttpServerPropertiesManager::InitializeOnNetworkThread() {
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   http_server_properties_impl_.reset(new HttpServerPropertiesImpl());
 
-  network_prefs_update_timer_.reset(
-      new base::OneShotTimer<HttpServerPropertiesManager>);
+  network_prefs_update_timer_.reset(new base::OneShotTimer);
 
   pref_task_runner_->PostTask(
       FROM_HERE,

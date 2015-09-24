@@ -150,7 +150,7 @@ class ImageDecoder : public content::UtilityProcessHostClient {
 
   // Calls StopBatchMode() after |kBatchModeTimeoutSeconds| have elapsed,
   // unless a new decoding request resets the timer.
-  scoped_ptr<base::DelayTimer<ImageDecoder>> batch_mode_timer_;
+  scoped_ptr<base::DelayTimer> batch_mode_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoder);
 };

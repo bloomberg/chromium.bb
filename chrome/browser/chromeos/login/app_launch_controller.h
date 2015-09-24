@@ -128,9 +128,9 @@ class AppLaunchController
   bool launcher_ready_;
 
   // A timer to ensure the app splash is shown for a minimum amount of time.
-  base::OneShotTimer<AppLaunchController> splash_wait_timer_;
+  base::OneShotTimer splash_wait_timer_;
 
-  base::OneShotTimer<AppLaunchController> network_wait_timer_;
+  base::OneShotTimer network_wait_timer_;
   bool waiting_for_network_;
   bool network_wait_timedout_;
   bool showing_network_dialog_;

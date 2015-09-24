@@ -93,7 +93,7 @@ class GCM_EXPORT ConnectionHandlerImpl : public ConnectionHandler {
   // TODO(zea): consider enforcing a separate timeout when waiting for
   // a message to send.
   const base::TimeDelta read_timeout_;
-  base::OneShotTimer<ConnectionHandlerImpl> read_timeout_timer_;
+  base::OneShotTimer read_timeout_timer_;
 
   // This connection's socket and the input/output streams attached to it.
   net::StreamSocket* socket_;

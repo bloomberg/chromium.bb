@@ -215,7 +215,7 @@ class CONTENT_EXPORT AppCacheServiceImpl
   bool force_keep_session_state_;
   base::Time last_reinit_time_;
   base::TimeDelta next_reinit_delay_;
-  base::OneShotTimer<AppCacheServiceImpl> reinit_timer_;
+  base::OneShotTimer reinit_timer_;
   base::ObserverList<Observer> observers_;
 
  private:

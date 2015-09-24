@@ -101,7 +101,7 @@ void TraySessionLengthLimit::UpdateState() {
     limit_state_ = remaining_session_time_ <= expiring_soon_threshold ?
         LIMIT_EXPIRING_SOON : LIMIT_SET;
     if (!timer_)
-      timer_.reset(new base::RepeatingTimer<TraySessionLengthLimit>);
+      timer_.reset(new base::RepeatingTimer);
     if (!timer_->IsRunning()) {
       timer_->Start(FROM_HERE,
                     base::TimeDelta::FromMilliseconds(

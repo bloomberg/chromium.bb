@@ -69,7 +69,7 @@ class SignalingConnector
   // Number of times we tried to connect without success.
   int reconnect_attempts_;
 
-  base::OneShotTimer<SignalingConnector> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SignalingConnector);
 };

@@ -43,7 +43,7 @@ class ClipboardAura : public Clipboard {
 
   base::ThreadChecker thread_checker_;
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
-  base::RepeatingTimer<ClipboardAura> clipboard_polling_timer_;
+  base::RepeatingTimer clipboard_polling_timer_;
   uint64 current_change_count_;
   base::TimeDelta polling_interval_;
 

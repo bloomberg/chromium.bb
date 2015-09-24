@@ -104,7 +104,7 @@ class ExistingUserControllerAutoLoginTest : public ::testing::Test {
   }
 
   // ExistingUserController private member accessors.
-  base::OneShotTimer<ExistingUserController>* auto_login_timer() {
+  base::OneShotTimer* auto_login_timer() {
     return existing_user_controller()->auto_login_timer_.get();
   }
 

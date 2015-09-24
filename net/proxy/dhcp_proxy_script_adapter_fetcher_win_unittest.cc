@@ -128,7 +128,7 @@ class MockDhcpProxyScriptAdapterFetcher
   int fetcher_result_;
   std::string pac_script_;
   MockProxyScriptFetcher* fetcher_;
-  base::OneShotTimer<MockDhcpProxyScriptAdapterFetcher> fetcher_timer_;
+  base::OneShotTimer fetcher_timer_;
   scoped_refptr<DelayingDhcpQuery> dhcp_query_;
 };
 

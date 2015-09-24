@@ -664,7 +664,7 @@ class TabStrip : public views::View,
 
   // Timer used when a tab is closed and we need to relayout. Only used when a
   // tab close comes from a touch device.
-  base::OneShotTimer<TabStrip> resize_layout_timer_;
+  base::OneShotTimer resize_layout_timer_;
 
   // True if tabs are painted as rectangular light-bars.
   bool immersive_style_;

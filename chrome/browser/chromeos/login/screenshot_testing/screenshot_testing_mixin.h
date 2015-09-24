@@ -50,7 +50,7 @@ class ScreenshotTestingMixin : public MixinBasedBrowserTest::Mixin {
 
   // Required for current implementation of
   // SynchronizeAnimationLoadWithCompositor()
-  base::OneShotTimer<ScreenshotTestingMixin> timer_;
+  base::OneShotTimer timer_;
   base::Closure animation_waiter_quitter_;
 
   // Is true if testing with screenshots is turned on with all proper switches.

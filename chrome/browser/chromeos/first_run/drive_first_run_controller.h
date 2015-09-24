@@ -78,8 +78,8 @@ class DriveFirstRunController {
 
   Profile* profile_;
   scoped_ptr<DriveWebContentsManager> web_contents_manager_;
-  base::OneShotTimer<DriveFirstRunController> web_contents_timer_;
-  base::OneShotTimer<DriveFirstRunController> initial_delay_timer_;
+  base::OneShotTimer web_contents_timer_;
+  base::OneShotTimer initial_delay_timer_;
   bool started_;
   base::ObserverList<Observer> observer_list_;
 

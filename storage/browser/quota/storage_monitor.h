@@ -60,7 +60,7 @@ class STORAGE_EXPORT_PRIVATE StorageObserverList {
   void DispatchPendingEvent();
 
   StorageObserverStateMap observers_;
-  base::OneShotTimer<StorageObserverList> notification_timer_;
+  base::OneShotTimer notification_timer_;
   StorageObserver::Event pending_event_;
 
   friend class content::StorageMonitorTestBase;

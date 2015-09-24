@@ -199,11 +199,11 @@ class UserImageManagerImpl
 
   // Timer used to start a profile data download shortly after login and to
   // restart the download after network errors.
-  base::OneShotTimer<UserImageManagerImpl> profile_download_one_shot_timer_;
+  base::OneShotTimer profile_download_one_shot_timer_;
 
   // Timer used to periodically start a profile data, ensuring the profile data
   // stays up to date.
-  base::RepeatingTimer<UserImageManagerImpl> profile_download_periodic_timer_;
+  base::RepeatingTimer profile_download_periodic_timer_;
 
   // Sync observer for the currently logged-in user.
   scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;

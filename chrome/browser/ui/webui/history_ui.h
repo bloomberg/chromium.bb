@@ -207,7 +207,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
   std::vector<HistoryEntry> web_history_query_results_;
 
   // Timer used to implement a timeout on a Web History response.
-  base::OneShotTimer<BrowsingHistoryHandler> web_history_timer_;
+  base::OneShotTimer web_history_timer_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

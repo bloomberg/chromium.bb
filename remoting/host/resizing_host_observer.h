@@ -44,7 +44,7 @@ class ResizingHostObserver : public ScreenControls {
   ScreenResolution original_resolution_;
 
   // State to manage rate-limiting of desktop resizes.
-  base::OneShotTimer<ResizingHostObserver> deferred_resize_timer_;
+  base::OneShotTimer deferred_resize_timer_;
   base::Time previous_resize_time_;
   base::Callback<base::Time(void)> now_function_;
 

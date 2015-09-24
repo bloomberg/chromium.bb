@@ -28,7 +28,7 @@ class ScreenLockNotificationBlocker
  private:
   bool is_locked_;
 
-  base::OneShotTimer<ScreenLockNotificationBlocker> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenLockNotificationBlocker);
 };

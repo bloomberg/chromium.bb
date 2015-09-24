@@ -121,7 +121,7 @@ class LoadablePluginPlaceholder : public PluginPlaceholderBase {
   // Used to prevent re-entrancy during the size recheck for throttled plugins.
   bool in_size_recheck_;
   gfx::Rect unobscured_rect_;
-  base::OneShotTimer<LoadablePluginPlaceholder> size_update_timer_;
+  base::OneShotTimer size_update_timer_;
 
   base::WeakPtrFactory<LoadablePluginPlaceholder> weak_factory_;
 

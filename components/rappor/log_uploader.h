@@ -96,7 +96,7 @@ class LogUploader : public net::URLFetcherDelegate,
   std::queue<std::string> queued_logs_;
 
   // A timer used to delay before attempting another upload.
-  base::OneShotTimer<LogUploader> upload_timer_;
+  base::OneShotTimer upload_timer_;
 
   // Indicates that the last triggered upload hasn't resolved yet.
   bool has_callback_pending_;

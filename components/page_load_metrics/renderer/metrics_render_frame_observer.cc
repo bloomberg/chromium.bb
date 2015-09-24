@@ -115,8 +115,7 @@ PageLoadTiming MetricsRenderFrameObserver::GetTiming() const {
 }
 
 scoped_ptr<base::Timer> MetricsRenderFrameObserver::CreateTimer() const {
-  return scoped_ptr<base::Timer>(
-      new base::OneShotTimer<PageTimingMetricsSender>());
+  return make_scoped_ptr(new base::OneShotTimer);
 }
 
 }  // namespace page_load_metrics

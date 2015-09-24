@@ -78,7 +78,7 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
    private:
     void TracingTimerFired();
 
-    base::OneShotTimer<TracingTimer> tracing_timer_;
+    base::OneShotTimer tracing_timer_;
     StartedFinalizingCallback callback_;
   };
 

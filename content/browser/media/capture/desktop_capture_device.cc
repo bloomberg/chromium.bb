@@ -108,7 +108,7 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   scoped_ptr<webrtc::DesktopFrame> output_frame_;
 
   // Timer used to capture the frame.
-  base::OneShotTimer<Core> capture_timer_;
+  base::OneShotTimer capture_timer_;
 
   // True when waiting for |desktop_capturer_| to capture current frame.
   bool capture_in_progress_;

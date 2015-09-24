@@ -37,7 +37,7 @@ class ClipboardMac : public Clipboard {
   void CheckClipboardForChanges();
 
   scoped_ptr<protocol::ClipboardStub> client_clipboard_;
-  scoped_ptr<base::RepeatingTimer<ClipboardMac> > clipboard_polling_timer_;
+  scoped_ptr<base::RepeatingTimer> clipboard_polling_timer_;
   NSInteger current_change_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ClipboardMac);
@@ -56,7 +56,7 @@ void ClipboardMac::Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) {
 
   // OS X doesn't provide a clipboard-changed notification. The only way to
   // detect clipboard changes is by polling.
-  clipboard_polling_timer_.reset(new base::RepeatingTimer<ClipboardMac>());
+  clipboard_polling_timer_.reset(new base::RepeatingTimer());
   clipboard_polling_timer_->Start(FROM_HERE,
       base::TimeDelta::FromMilliseconds(kClipboardPollingIntervalMs),
       this, &ClipboardMac::CheckClipboardForChanges);

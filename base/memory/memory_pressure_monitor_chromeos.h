@@ -95,7 +95,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
 
   // A periodic timer to check for resource pressure changes. This will get
   // replaced by a kernel triggered event system (see crbug.com/381196).
-  base::RepeatingTimer<MemoryPressureMonitor> timer_;
+  base::RepeatingTimer timer_;
 
   // To slow down the amount of moderate pressure event calls, this counter
   // gets used to count the number of events since the last event occured.

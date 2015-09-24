@@ -18,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::OneShotTimer;
 using base::Thread;
 using base::TimeDelta;
 using content::BrowserThread;
@@ -37,7 +36,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
 
   bool did_do_work() { return did_do_work_; }
   BrowserThreadModelWorker* worker() { return worker_.get(); }
-  OneShotTimer<SyncBrowserThreadModelWorkerTest>* timer() { return &timer_; }
+  base::OneShotTimer* timer() { return &timer_; }
   base::WeakPtrFactory<SyncBrowserThreadModelWorkerTest>* factory() {
     return &weak_factory_;
   }
@@ -89,7 +88,7 @@ class SyncBrowserThreadModelWorkerTest : public testing::Test {
  private:
   bool did_do_work_;
   scoped_refptr<BrowserThreadModelWorker> worker_;
-  OneShotTimer<SyncBrowserThreadModelWorkerTest> timer_;
+  base::OneShotTimer timer_;
 
   content::TestBrowserThreadBundle thread_bundle_;
 

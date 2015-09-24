@@ -115,7 +115,7 @@ class AccountFetcherService : public KeyedService,
   bool network_fetches_enabled_;
   std::list<std::string> pending_user_info_fetches_;
   base::Time last_updated_;
-  base::OneShotTimer<AccountFetcherService> timer_;
+  base::OneShotTimer timer_;
   bool shutdown_called_;
 
   std::string child_request_account_id_;

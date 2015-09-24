@@ -56,7 +56,7 @@ class ASH_EXPORT DisplayConfiguratorAnimation
   void ClearHidingLayers();
 
   std::map<aura::Window*, ui::Layer*> hiding_layers_;
-  scoped_ptr<base::OneShotTimer<DisplayConfiguratorAnimation> > timer_;
+  scoped_ptr<base::OneShotTimer> timer_;
   base::WeakPtrFactory<DisplayConfiguratorAnimation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorAnimation);

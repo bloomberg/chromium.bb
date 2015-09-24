@@ -121,7 +121,7 @@ struct ResolutionNotificationController::ResolutionChangeInfo {
   // The timer to invoke OnTimerTick() every second. This cannot be
   // OneShotTimer since the message contains text "automatically closed in xx
   // seconds..." which has to be updated every second.
-  base::RepeatingTimer<ResolutionNotificationController> timer;
+  base::RepeatingTimer timer;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResolutionChangeInfo);

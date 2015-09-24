@@ -109,7 +109,7 @@ class CONTENT_EXPORT PluginInstanceThrottlerImpl
   // Video plugins with throttled audio often stop generating frames.
   // This timer is so we don't wait forever for candidate poster frames.
   bool audio_throttled_;
-  base::DelayTimer<PluginInstanceThrottlerImpl> audio_throttled_frame_timeout_;
+  base::DelayTimer audio_throttled_frame_timeout_;
 
   base::ObserverList<Observer> observer_list_;
 

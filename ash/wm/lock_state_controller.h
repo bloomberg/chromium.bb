@@ -312,21 +312,21 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   // Started when we request that the screen be locked.  When it fires, we
   // assume that our request got dropped.
-  base::OneShotTimer<LockStateController> lock_fail_timer_;
+  base::OneShotTimer lock_fail_timer_;
 
   // Started when the screen is locked while the power button is held.  Adds a
   // delay between the appearance of the lock screen and the beginning of the
   // pre-shutdown animation.
-  base::OneShotTimer<LockStateController> lock_to_shutdown_timer_;
+  base::OneShotTimer lock_to_shutdown_timer_;
 
   // Started when we begin displaying the pre-shutdown animation.  When it
   // fires, we start the shutdown animation and get ready to request shutdown.
-  base::OneShotTimer<LockStateController> pre_shutdown_timer_;
+  base::OneShotTimer pre_shutdown_timer_;
 
   // Started when we display the shutdown animation.  When it fires, we actually
   // request shutdown.  Gives the animation time to complete before Chrome, X,
   // etc. are shut down.
-  base::OneShotTimer<LockStateController> real_shutdown_timer_;
+  base::OneShotTimer real_shutdown_timer_;
 
   base::Closure lock_screen_displayed_callback_;
 

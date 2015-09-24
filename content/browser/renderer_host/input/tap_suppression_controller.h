@@ -72,7 +72,7 @@ class CONTENT_EXPORT TapSuppressionController {
   };
 
   TapSuppressionControllerClient* client_;
-  base::OneShotTimer<TapSuppressionController> tap_down_timer_;
+  base::OneShotTimer tap_down_timer_;
   State state_;
 
   base::TimeDelta max_cancel_to_down_time_;

@@ -63,7 +63,7 @@ class SessionLengthLimiter : public ui::UserActivityObserver {
   scoped_ptr<Delegate> delegate_;
   PrefChangeRegistrar pref_change_registrar_;
 
-  scoped_ptr<base::OneShotTimer<SessionLengthLimiter::Delegate> > timer_;
+  scoped_ptr<base::OneShotTimer> timer_;
   base::TimeTicks session_start_time_;
   bool user_activity_seen_;
 

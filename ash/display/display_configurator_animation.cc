@@ -139,7 +139,7 @@ void DisplayConfiguratorAnimation::StartFadeOutAnimation(
   // In case that OnDisplayModeChanged() isn't called or its animator is
   // canceled due to some unknown errors, we set a timer to clear these
   // hiding layers.
-  timer_.reset(new base::OneShotTimer<DisplayConfiguratorAnimation>());
+  timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kFadingTimeoutDurationInSeconds),
                 this,

@@ -249,7 +249,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   void TrimDeletedListForTest(bool empty);
 
   // Only intended for testing
-  base::RepeatingTimer<BackendImpl>* GetTimerForTest();
+  base::RepeatingTimer* GetTimerForTest();
 
   // Performs a simple self-check, and returns the number of dirty items
   // or an error code (negative value).
@@ -395,7 +395,7 @@ class NET_EXPORT_PRIVATE BackendImpl : public Backend {
   net::NetLog* net_log_;
 
   Stats stats_;  // Usage statistics.
-  scoped_ptr<base::RepeatingTimer<BackendImpl> > timer_;  // Usage timer.
+  scoped_ptr<base::RepeatingTimer> timer_;  // Usage timer.
   base::WaitableEvent done_;  // Signals the end of background work.
   scoped_refptr<TraceObject> trace_object_;  // Initializes internal tracing.
   base::WeakPtrFactory<BackendImpl> ptr_factory_;

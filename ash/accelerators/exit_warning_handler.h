@@ -73,7 +73,7 @@ class ASH_EXPORT ExitWarningHandler {
 
   State state_;
   scoped_ptr<views::Widget> widget_;
-  base::OneShotTimer<ExitWarningHandler> timer_;
+  base::OneShotTimer timer_;
 
   // Flag to suppress starting the timer for testing. For test we call
   // TimerAction() directly to simulate the expiration of the timer.

@@ -484,7 +484,7 @@ class NetworkChangeNotifier::NetworkChangeCalculator
   // Value to pass to NotifyObserversOfNetworkChange when Notify is called.
   ConnectionType pending_connection_type_;
   // Used to delay notifications so duplicates can be combined.
-  base::OneShotTimer<NetworkChangeCalculator> timer_;
+  base::OneShotTimer timer_;
 
   base::ThreadChecker thread_checker_;
 

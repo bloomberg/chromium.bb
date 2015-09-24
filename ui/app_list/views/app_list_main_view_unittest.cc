@@ -59,7 +59,7 @@ class GridViewVisibleWaiter {
 
   AppsGridView* grid_view_;
   scoped_ptr<base::RunLoop> run_loop_;
-  base::RepeatingTimer<GridViewVisibleWaiter> check_timer_;
+  base::RepeatingTimer check_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(GridViewVisibleWaiter);
 };

@@ -64,7 +64,7 @@ class MetricsReportingScheduler {
   // The MetricsService method to call when uploading should happen.
   const base::Closure upload_callback_;
 
-  base::OneShotTimer<MetricsReportingScheduler> upload_timer_;
+  base::OneShotTimer upload_timer_;
 
   // The interval between being told an upload is done and starting the next
   // upload.

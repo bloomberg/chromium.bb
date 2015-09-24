@@ -68,7 +68,7 @@ class SystemTrayBubble {
   BubbleType bubble_type_;
 
   int autoclose_delay_;
-  base::OneShotTimer<SystemTrayBubble> autoclose_;
+  base::OneShotTimer autoclose_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayBubble);
 };

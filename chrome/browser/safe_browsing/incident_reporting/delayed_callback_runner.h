@@ -56,7 +56,7 @@ class DelayedCallbackRunner {
   CallbackList::iterator next_callback_;
 
   // A timer upon the firing of which the next callback will be run.
-  base::DelayTimer<DelayedCallbackRunner> timer_;
+  base::DelayTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedCallbackRunner);
 };

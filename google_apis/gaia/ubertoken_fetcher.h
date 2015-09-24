@@ -91,7 +91,7 @@ class UbertokenFetcher : public GaiaAuthConsumer,
   std::string account_id_;
   std::string access_token_;
   int retry_number_;
-  base::OneShotTimer<UbertokenFetcher> retry_timer_;
+  base::OneShotTimer retry_timer_;
   bool second_access_token_request_;
 
   DISALLOW_COPY_AND_ASSIGN(UbertokenFetcher);

@@ -42,7 +42,7 @@ class IdleActionWarningDialogView : public views::DialogDelegateView {
 
   views::Label* label_;
 
-  base::RepeatingTimer<IdleActionWarningDialogView> update_timer_;
+  base::RepeatingTimer update_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleActionWarningDialogView);
 };

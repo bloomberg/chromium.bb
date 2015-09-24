@@ -110,7 +110,7 @@ class LibjingleTransport
   std::list<cricket::Candidate> pending_candidates_;
   scoped_ptr<cricket::P2PTransportChannel> channel_;
   int connect_attempts_left_;
-  base::RepeatingTimer<LibjingleTransport> reconnect_timer_;
+  base::RepeatingTimer reconnect_timer_;
 
   base::WeakPtrFactory<LibjingleTransport> weak_factory_;
 

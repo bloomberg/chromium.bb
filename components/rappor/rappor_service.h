@@ -157,7 +157,7 @@ class RapporService {
   int32_t cohort_;
 
   // Timer which schedules calls to OnLogInterval().
-  base::OneShotTimer<RapporService> log_rotation_timer_;
+  base::OneShotTimer log_rotation_timer_;
 
   // A daily event for collecting metrics once a day.
   metrics::DailyEvent daily_event_;

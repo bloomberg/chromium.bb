@@ -1077,8 +1077,7 @@ bool EasyUnlockPrivateFindSetupConnectionFunction::RunAsync() {
   connection_finder_->Find(base::Bind(
       &EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound, this));
 
-  timer_.reset(
-      new base::OneShotTimer<EasyUnlockPrivateFindSetupConnectionFunction>());
+  timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(params->time_out),
                 base::Bind(&EasyUnlockPrivateFindSetupConnectionFunction::
                                OnConnectionFinderTimedOut,

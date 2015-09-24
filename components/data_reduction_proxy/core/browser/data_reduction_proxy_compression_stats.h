@@ -256,7 +256,7 @@ class DataReductionProxyCompressionStats
   // Tracks state of loading data usage from storage.
   CurrentDataUsageLoadStatus current_data_usage_load_status_;
 
-  base::OneShotTimer<DataReductionProxyCompressionStats> pref_writer_timer_;
+  base::OneShotTimer pref_writer_timer_;
   base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<DataReductionProxyCompressionStats> weak_factory_;

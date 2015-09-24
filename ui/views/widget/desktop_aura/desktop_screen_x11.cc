@@ -238,7 +238,7 @@ uint32_t DesktopScreenX11::DispatchEvent(const ui::PlatformEvent& event) {
     if (configure_timer_.get() && configure_timer_->IsRunning()) {
       configure_timer_->Reset();
     } else {
-      configure_timer_.reset(new base::OneShotTimer<DesktopScreenX11>());
+      configure_timer_.reset(new base::OneShotTimer());
       configure_timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kConfigureDelayMs),

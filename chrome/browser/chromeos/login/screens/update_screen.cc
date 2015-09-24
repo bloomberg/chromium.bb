@@ -593,8 +593,7 @@ void UpdateScreen::DelayErrorMessage() {
       &UpdateScreen::ShowErrorMessage);
 }
 
-base::OneShotTimer<UpdateScreen>&
-UpdateScreen::GetErrorMessageTimerForTesting() {
+base::OneShotTimer& UpdateScreen::GetErrorMessageTimerForTesting() {
   return error_message_timer_;
 }
 

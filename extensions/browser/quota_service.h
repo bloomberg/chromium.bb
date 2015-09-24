@@ -69,7 +69,7 @@ class QuotaService : public base::NonThreadSafe {
   // while tracking quota.
   void Purge();
   void PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map);
-  base::RepeatingTimer<QuotaService> purge_timer_;
+  base::RepeatingTimer purge_timer_;
 
   // Our quota tracking state for extensions that have invoked quota limited
   // functions.  Each extension is treated separately, so extension ids are the

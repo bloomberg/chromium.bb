@@ -64,7 +64,7 @@ class RecommendationRestorer : public KeyedService,
 
   bool logged_in_;
 
-  base::OneShotTimer<RecommendationRestorer> restore_timer_;
+  base::OneShotTimer restore_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendationRestorer);
 };

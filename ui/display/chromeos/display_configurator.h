@@ -403,7 +403,7 @@ class DISPLAY_EXPORT DisplayConfigurator : public NativeDisplayObserver {
   // The timer to delay configuring displays. This is used to aggregate multiple
   // display configuration events when they are reported in short time spans.
   // See comment for NativeDisplayEventDispatcherX11 for more details.
-  base::OneShotTimer<DisplayConfigurator> configure_timer_;
+  base::OneShotTimer configure_timer_;
 
   // Id for next display protection client.
   ContentProtectionClientId next_display_protection_client_id_;

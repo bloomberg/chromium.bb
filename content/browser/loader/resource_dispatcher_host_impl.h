@@ -522,8 +522,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // A timer that periodically calls UpdateLoadInfo while pending_loaders_ is
   // not empty and at least one RenderViewHost is loading.
-  scoped_ptr<base::RepeatingTimer<ResourceDispatcherHostImpl> >
-      update_load_states_timer_;
+  scoped_ptr<base::RepeatingTimer> update_load_states_timer_;
 
   // We own the save file manager.
   scoped_refptr<SaveFileManager> save_file_manager_;

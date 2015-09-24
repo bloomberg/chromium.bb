@@ -205,7 +205,7 @@ class CONTENT_EXPORT CompositorImpl
   base::TimeDelta vsync_period_;
   base::TimeTicks last_vsync_;
 
-  base::OneShotTimer<CompositorImpl> establish_gpu_channel_timeout_;
+  base::OneShotTimer establish_gpu_channel_timeout_;
 
   // Whether there is an OutputSurface request pending from the current
   // |host_|. Becomes |true| if RequestNewOutputSurface is called, and |false|

@@ -37,7 +37,7 @@ class AudioCapturerWin : public AudioCapturer {
 
   AudioPacket::SamplingRate sampling_rate_;
 
-  scoped_ptr<base::RepeatingTimer<AudioCapturerWin> > capture_timer_;
+  scoped_ptr<base::RepeatingTimer> capture_timer_;
   base::TimeDelta audio_device_period_;
 
   AudioSilenceDetector silence_detector_;

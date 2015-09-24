@@ -45,7 +45,7 @@ class UI_CHROMEOS_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
  private:
   gfx::Rect cursor_bounds_;
   views::Label* label_view_;
-  base::OneShotTimer<views::Widget> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorView);
 };

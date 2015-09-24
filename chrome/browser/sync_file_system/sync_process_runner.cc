@@ -39,7 +39,7 @@ class BaseTimerHelper : public SyncProcessRunner::TimerHelper {
   ~BaseTimerHelper() override {}
 
  private:
-  base::OneShotTimer<SyncProcessRunner> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseTimerHelper);
 };

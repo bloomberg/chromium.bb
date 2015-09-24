@@ -58,7 +58,7 @@ class ChildAccountInfoFetcherImpl : public ChildAccountInfoFetcher,
   const std::string account_id_;
 
   // If fetching fails, retry with exponential backoff.
-  base::OneShotTimer<ChildAccountInfoFetcherImpl> timer_;
+  base::OneShotTimer timer_;
   net::BackoffEntry backoff_;
 
   scoped_ptr<OAuth2TokenService::Request> login_token_request_;

@@ -162,7 +162,7 @@ class NetworkScreen : public NetworkModel,
   bool continue_pressed_;
 
   // Timer for connection timeout.
-  base::OneShotTimer<NetworkScreen> connection_timer_;
+  base::OneShotTimer connection_timer_;
 
   scoped_ptr<CrosSettings::ObserverSubscription> timezone_subscription_;
 

@@ -90,11 +90,11 @@ class VIEWS_EXPORT TooltipController : public aura::client::TooltipClient,
 
   scoped_ptr<Tooltip> tooltip_;
 
-  base::RepeatingTimer<TooltipController> tooltip_timer_;
+  base::RepeatingTimer tooltip_timer_;
 
   // Timer to timeout the life of an on-screen tooltip. We hide the tooltip when
   // this timer fires.
-  base::OneShotTimer<TooltipController> tooltip_shown_timer_;
+  base::OneShotTimer tooltip_shown_timer_;
 
   // Location of the last event in |tooltip_window_|'s coordinates.
   gfx::Point curr_mouse_loc_;

@@ -178,7 +178,7 @@ class NET_EXPORT_PRIVATE DhcpProxyScriptAdapterFetcher
   scoped_ptr<ProxyScriptFetcher> script_fetcher_;
 
   // Implements a timeout on the call to the Win32 DHCP API.
-  base::OneShotTimer<DhcpProxyScriptAdapterFetcher> wait_timer_;
+  base::OneShotTimer wait_timer_;
 
   URLRequestContext* const url_request_context_;
 

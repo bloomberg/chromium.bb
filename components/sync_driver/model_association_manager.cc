@@ -419,8 +419,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
   delegate_->OnModelAssociationDone(result);
 }
 
-base::OneShotTimer<ModelAssociationManager>*
-    ModelAssociationManager::GetTimerForTesting() {
+base::OneShotTimer* ModelAssociationManager::GetTimerForTesting() {
   return &timer_;
 }
 

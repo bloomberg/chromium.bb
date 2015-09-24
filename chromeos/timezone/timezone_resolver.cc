@@ -125,7 +125,7 @@ class TimeZoneResolver::TimeZoneResolverImpl : public base::PowerObserver {
   SimpleGeolocationProvider geolocation_provider_;
   TimeZoneProvider timezone_provider_;
 
-  base::OneShotTimer<TimeZoneResolver::TimeZoneResolverImpl> refresh_timer_;
+  base::OneShotTimer refresh_timer_;
 
   // Total number of request attempts.
   int requests_count_;

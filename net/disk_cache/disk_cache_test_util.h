@@ -64,7 +64,7 @@ class MessageLoopHelper {
   // Called periodically to test if WaitUntilCacheIoFinished should return.
   void TimerExpired();
 
-  base::RepeatingTimer<MessageLoopHelper> timer_;
+  base::RepeatingTimer timer_;
   int num_callbacks_;
   int num_iterations_;
   int last_;

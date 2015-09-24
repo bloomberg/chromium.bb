@@ -579,7 +579,7 @@ class AutofillDialogControllerImpl
 
   // The timer that delays enabling submit button for a short period of time on
   // startup.
-  base::OneShotTimer<AutofillDialogControllerImpl> submit_button_delay_timer_;
+  base::OneShotTimer submit_button_delay_timer_;
 
   base::WeakPtrFactory<AutofillDialogControllerImpl> weak_ptr_factory_;
 

@@ -59,8 +59,8 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
       const std::vector<SpellCheckResult>& results);
 
  private:
-  // The callback function for base::RepeatingTimer<SpellingMenuClient>. This
-  // function updates the "loading..." animation in the context-menu item.
+  // The callback function for base::RepeatingTimer. This function updates the
+  // "loading..." animation in the context-menu item.
   void OnAnimationTimerExpired();
 
   // The interface to add a context-menu item and update it. This class uses
@@ -104,7 +104,7 @@ class SpellingMenuObserver : public RenderViewContextMenuObserver {
   scoped_ptr<SpellingServiceClient> client_;
 
   // A timer used for loading animation.
-  base::RepeatingTimer<SpellingMenuObserver> animation_timer_;
+  base::RepeatingTimer animation_timer_;
 
   // Flag indicating whether online spelling correction service is enabled. When
   // this variable is true and we right-click a misspelled word, we send a

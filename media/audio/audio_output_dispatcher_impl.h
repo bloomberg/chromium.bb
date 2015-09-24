@@ -83,7 +83,7 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
   // When streams are stopped they're added to |idle_streams_|, if no stream is
   // reused before |close_delay_| elapses |close_timer_| will run
   // CloseIdleStreams().
-  base::DelayTimer<AudioOutputDispatcherImpl> close_timer_;
+  base::DelayTimer close_timer_;
 
   typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   AudioStreamMap proxy_to_physical_map_;

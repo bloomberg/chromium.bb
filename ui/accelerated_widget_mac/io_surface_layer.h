@@ -109,7 +109,7 @@ class IOSurfaceLayerHelper {
   // calls until they appear on the screen. This can lead to hangs if the
   // view is moved offscreen (among other things). Prevent hangs by always
   // acknowledging the frame after timeout of 1/6th of a second  has passed.
-  base::DelayTimer<IOSurfaceLayerHelper> timer_;
+  base::DelayTimer timer_;
 };
 
 }  // namespace ui

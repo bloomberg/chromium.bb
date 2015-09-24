@@ -240,7 +240,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void OnOAuth2TokensFetched(bool success, const UserContext& user_context);
 
   // Public session auto-login timer.
-  scoped_ptr<base::OneShotTimer<ExistingUserController> > auto_login_timer_;
+  scoped_ptr<base::OneShotTimer> auto_login_timer_;
 
   // Public session auto-login timeout, in milliseconds.
   int public_session_auto_login_delay_;
@@ -302,7 +302,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   base::Time time_init_;
 
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
-  base::OneShotTimer<ExistingUserController> reboot_timer_;
+  base::OneShotTimer reboot_timer_;
 
   scoped_ptr<login::NetworkStateHelper> network_state_helper_;
 

@@ -148,8 +148,7 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
 
   // Fires when the user has been idle on the login screen for a set amount of
   // time.
-  scoped_ptr<base::OneShotTimer<AutomaticRebootManager> >
-      login_screen_idle_timer_;
+  scoped_ptr<base::OneShotTimer> login_screen_idle_timer_;
 
   // The time at which the device was booted, in |clock_| ticks.
   bool have_boot_time_;
@@ -167,8 +166,8 @@ class AutomaticRebootManager : public PowerManagerClient::Observer,
   bool reboot_requested_;
 
   // Timers that start and end the grace period.
-  scoped_ptr<base::OneShotTimer<AutomaticRebootManager> > grace_start_timer_;
-  scoped_ptr<base::OneShotTimer<AutomaticRebootManager> > grace_end_timer_;
+  scoped_ptr<base::OneShotTimer> grace_start_timer_;
+  scoped_ptr<base::OneShotTimer> grace_end_timer_;
 
   base::ObserverList<AutomaticRebootManagerObserver, true> observers_;
 

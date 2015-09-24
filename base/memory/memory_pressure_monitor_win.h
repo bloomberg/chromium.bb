@@ -117,7 +117,7 @@ class BASE_EXPORT MemoryPressureMonitor : public base::MemoryPressureMonitor {
   int critical_threshold_mb_;
 
   // A periodic timer to check for memory pressure changes.
-  base::RepeatingTimer<MemoryPressureMonitor> timer_;
+  base::RepeatingTimer timer_;
 
   // The current memory pressure.
   MemoryPressureLevel current_memory_pressure_level_;

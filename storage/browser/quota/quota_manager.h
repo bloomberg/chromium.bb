@@ -452,7 +452,7 @@ class STORAGE_EXPORT QuotaManager
 
   scoped_refptr<SpecialStoragePolicy> special_storage_policy_;
 
-  base::RepeatingTimer<QuotaManager> histogram_timer_;
+  base::RepeatingTimer histogram_timer_;
 
   // Pointer to the function used to get the available disk space. This is
   // overwritten by QuotaManagerTest in order to attain a deterministic reported

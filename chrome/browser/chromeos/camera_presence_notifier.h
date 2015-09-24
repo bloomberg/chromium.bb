@@ -40,7 +40,7 @@ class CameraPresenceNotifier {
   bool camera_present_on_last_check_;
 
   // Timer for camera check cycle.
-  base::RepeatingTimer<CameraPresenceNotifier> camera_check_timer_;
+  base::RepeatingTimer camera_check_timer_;
 
   base::ObserverList<Observer> observers_;
 

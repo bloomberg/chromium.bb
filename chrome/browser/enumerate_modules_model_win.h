@@ -333,7 +333,7 @@ class EnumerateModulesModel {
 
   // When this singleton object is constructed we go and fire off this timer to
   // start scanning for modules after a certain amount of time has passed.
-  base::OneShotTimer<EnumerateModulesModel> check_modules_timer_;
+  base::OneShotTimer check_modules_timer_;
 
   // While normally |false|, this mode can be set to indicate that the scanning
   // process should not rely on certain services normally available to Chrome,

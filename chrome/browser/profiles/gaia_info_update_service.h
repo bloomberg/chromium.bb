@@ -62,7 +62,7 @@ class GAIAInfoUpdateService : public KeyedService,
   Profile* profile_;
   scoped_ptr<ProfileDownloader> profile_image_downloader_;
   base::Time last_updated_;
-  base::OneShotTimer<GAIAInfoUpdateService> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(GAIAInfoUpdateService);
 };

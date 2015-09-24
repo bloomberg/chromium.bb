@@ -78,7 +78,7 @@ class AppSyncUIState : public KeyedService,
   ProfileSyncService* sync_service_;
 
   // Timer to limit how much time STATUS_SYNCING is allowed.
-  base::OneShotTimer<AppSyncUIState> max_syncing_status_timer_;
+  base::OneShotTimer max_syncing_status_timer_;
 
   Status status_;
   base::ObserverList<AppSyncUIStateObserver> observers_;

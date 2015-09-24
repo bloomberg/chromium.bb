@@ -254,7 +254,7 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Fetches the crx files for the extensions that have an available update.
   scoped_ptr<ExtensionDownloader> downloader_;
 
-  base::OneShotTimer<ExtensionUpdater> timer_;
+  base::OneShotTimer timer_;
   int frequency_seconds_;
   bool will_check_soon_;
 

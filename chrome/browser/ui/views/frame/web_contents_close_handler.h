@@ -47,7 +47,7 @@ class WebContentsCloseHandler {
   // was invoked following a WillCloseAllTabs()).
   bool tab_changed_after_clone_;
 
-  base::OneShotTimer<WebContentsCloseHandler> timer_;
+  base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsCloseHandler);
 };

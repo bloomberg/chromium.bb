@@ -75,7 +75,7 @@ class NetworkDropdown : public NetworkMenu::Delegate,
   bool oobe_;
 
   // Timer used to periodically force network scan.
-  base::RepeatingTimer<NetworkDropdown> network_scan_timer_;
+  base::RepeatingTimer network_scan_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDropdown);
 };

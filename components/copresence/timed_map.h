@@ -96,7 +96,7 @@ class TimedMap {
   const ValueType kEmptyValue;
 
   scoped_ptr<base::TickClock> clock_;
-  base::RepeatingTimer<TimedMap> timer_;
+  base::RepeatingTimer timer_;
   const base::TimeDelta lifetime_;
   const size_t max_elements_;
   std::map<KeyType, ValueType> map_;

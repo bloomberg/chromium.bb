@@ -93,7 +93,7 @@ class BackgroundDownloader : public CrxDownloader {
   // The timer and the BITS interface pointers have thread affinity. These
   // members are initialized on the task runner and they must be destroyed
   // on the task runner.
-  scoped_ptr<base::RepeatingTimer<BackgroundDownloader>> timer_;
+  scoped_ptr<base::RepeatingTimer> timer_;
 
   base::win::ScopedComPtr<IBackgroundCopyManager> bits_manager_;
   base::win::ScopedComPtr<IBackgroundCopyJob> job_;

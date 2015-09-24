@@ -126,7 +126,7 @@ class IdleManager : public ExtensionRegistryObserver,
   ui::IdleState last_state_;
   MonitorMap monitors_;
 
-  base::RepeatingTimer<IdleManager> poll_timer_;
+  base::RepeatingTimer poll_timer_;
 
   scoped_ptr<IdleTimeProvider> idle_time_provider_;
   scoped_ptr<EventDelegate> event_delegate_;

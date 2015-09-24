@@ -102,7 +102,7 @@ class PerformanceTracker {
 
   bool is_paused_ = false;
 
-  base::RepeatingTimer<PerformanceTracker> upload_uma_stats_timer_;
+  base::RepeatingTimer upload_uma_stats_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceTracker);
 };

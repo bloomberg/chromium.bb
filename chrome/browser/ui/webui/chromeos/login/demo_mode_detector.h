@@ -42,7 +42,7 @@ class DemoModeDetector {
 
   scoped_ptr<IdleDetector> idle_detector_;
 
-  base::RepeatingTimer<DemoModeDetector> oobe_timer_;
+  base::RepeatingTimer oobe_timer_;
 
   // Timeout to detect if the machine is in a derelict state.
   base::TimeDelta derelict_detection_timeout_;

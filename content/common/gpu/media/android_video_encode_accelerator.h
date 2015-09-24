@@ -90,7 +90,7 @@ class CONTENT_EXPORT AndroidVideoEncodeAccelerator
   PendingFrames pending_frames_;
 
   // Repeating timer responsible for draining pending IO to the codec.
-  base::RepeatingTimer<AndroidVideoEncodeAccelerator> io_timer_;
+  base::RepeatingTimer io_timer_;
 
   // The difference between number of buffers queued & dequeued at the codec.
   int32 num_buffers_at_codec_;

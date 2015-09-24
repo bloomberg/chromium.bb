@@ -126,7 +126,7 @@ class CaptivePortalTabReloader {
   // STATE_TIMER_RUNNING.  Stopped on any state change, including when a page
   // commits or there's an error.  If the timer triggers, the state switches to
   // STATE_MAYBE_BROKEN_BY_PORTAL and |this| kicks off a captive portal check.
-  base::OneShotTimer<CaptivePortalTabReloader> slow_ssl_load_timer_;
+  base::OneShotTimer slow_ssl_load_timer_;
 
  private:
   friend class CaptivePortalBrowserTest;

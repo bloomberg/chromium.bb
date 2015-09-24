@@ -180,7 +180,7 @@ class MEDIA_EXPORT AgcAudioStream : public AudioInterface {
 
   // Repeating timer which cancels itself when it goes out of scope.
   // Used to check the microphone volume periodically.
-  base::RepeatingTimer<AgcAudioStream<AudioInterface> > timer_;
+  base::RepeatingTimer timer_;
 
   // True when automatic gain control is enabled, false otherwise.
   bool agc_is_enabled_;

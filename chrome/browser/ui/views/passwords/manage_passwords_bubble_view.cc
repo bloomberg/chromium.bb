@@ -300,7 +300,7 @@ class ManagePasswordsBubbleView::AutoSigninView
         ManagePasswordsBubbleView::auto_signin_toast_timeout_);
   }
 
-  base::OneShotTimer<AutoSigninView> timer_;
+  base::OneShotTimer timer_;
   ManagePasswordsBubbleView* parent_;
   ScopedObserver<views::Widget, views::WidgetObserver> observed_browser_;
 

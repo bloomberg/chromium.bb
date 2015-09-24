@@ -65,7 +65,7 @@ class OomPriorityManagerDelegate : public content::NotificationObserver {
   // Registrar to receive renderer notifications.
   content::NotificationRegistrar registrar_;
   // Timer to guarantee that the tab is focused for a certain amount of time.
-  base::OneShotTimer<OomPriorityManagerDelegate> focus_tab_score_adjust_timer_;
+  base::OneShotTimer focus_tab_score_adjust_timer_;
   // This lock is for |oom_score_map_| and |focused_tab_process_info_|.
   base::Lock oom_score_lock_;
   // Map maintaining the child process host id - oom_score mapping.

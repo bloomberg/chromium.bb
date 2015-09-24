@@ -139,11 +139,11 @@ class CONTENT_EXPORT AudioStreamMonitor {
   bool was_recently_audible_;
 
   // Calls Poll() at regular intervals while |poll_callbacks_| is non-empty.
-  base::RepeatingTimer<AudioStreamMonitor> poll_timer_;
+  base::RepeatingTimer poll_timer_;
 
   // Started only when an indicator is toggled on, to turn it off again in the
   // future.
-  base::OneShotTimer<AudioStreamMonitor> off_timer_;
+  base::OneShotTimer off_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioStreamMonitor);
 };

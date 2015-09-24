@@ -602,8 +602,7 @@ void URLFetcherCore::StartURLRequest() {
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
       //  layer and avoid using timer here.
-      upload_progress_checker_timer_.reset(
-          new base::RepeatingTimer<URLFetcherCore>());
+      upload_progress_checker_timer_.reset(new base::RepeatingTimer());
       upload_progress_checker_timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kUploadProgressTimerInterval),

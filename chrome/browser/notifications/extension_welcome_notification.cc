@@ -308,8 +308,7 @@ void ExtensionWelcomeNotification::StartExpirationTimer() {
       expiration_timestamp = GetExpirationTimestamp();
       DCHECK(!expiration_timestamp.is_null());
     }
-    expiration_timer_.reset(
-        new base::OneShotTimer<ExtensionWelcomeNotification>());
+    expiration_timer_.reset(new base::OneShotTimer());
     expiration_timer_->Start(
         FROM_HERE,
         expiration_timestamp - delegate_->GetCurrentTime(),

@@ -360,7 +360,7 @@ class LocalFileSyncContext
 
   // Used only on IO thread for available changes notifications.
   base::Time last_notified_changes_;
-  scoped_ptr<base::OneShotTimer<LocalFileSyncContext> > timer_on_io_;
+  scoped_ptr<base::OneShotTimer> timer_on_io_;
   std::vector<base::Closure> pending_completion_callbacks_;
   std::set<GURL> origins_with_pending_changes_;
 

@@ -75,7 +75,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public gfx::Screen,
 
   // The timer to delay configuring outputs. See also the comments in
   // Dispatch().
-  scoped_ptr<base::OneShotTimer<DesktopScreenX11> > configure_timer_;
+  scoped_ptr<base::OneShotTimer> configure_timer_;
 
   gfx::DisplayChangeNotifier change_notifier_;
 

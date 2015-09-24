@@ -113,7 +113,7 @@ class FlashDOMHandler : public WebUIMessageHandler,
   void OnTimeout();
 
   // A timer to keep track of when the data fetching times out.
-  base::OneShotTimer<FlashDOMHandler> timeout_;
+  base::OneShotTimer timeout_;
 
   // Crash list.
   scoped_refptr<CrashUploadList> upload_list_;
