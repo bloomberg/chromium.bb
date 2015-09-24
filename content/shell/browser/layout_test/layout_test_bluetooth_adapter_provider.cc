@@ -4,8 +4,12 @@
 
 #include "content/shell/browser/layout_test/layout_test_bluetooth_adapter_provider.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/strings/stringprintf.h"
+#include "base/thread_task_runner_handle.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -122,6 +126,8 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetFailingConnectionsAdapter();
   else if (fake_adapter_name == "FailingGATTOperationsAdapter")
     return GetFailingGATTOperationsAdapter();
+  else if (fake_adapter_name == "SecondDiscoveryFindsHeartRateAdapter")
+    return GetSecondDiscoveryFindsHeartRateAdapter();
   else if (fake_adapter_name == "")
     return NULL;
 
@@ -246,6 +252,40 @@ LayoutTestBluetoothAdapterProvider::GetGlucoseHeartRateAdapter() {
   adapter->AddMockDevice(GetGlucoseDevice(adapter.get()));
 
   return adapter.Pass();
+}
+
+// Adds a device to |adapter| and notifies all observers about that new device.
+// Mocks can call this asynchronously to cause changes in the middle of a test.
+static void AddDevice(scoped_refptr<NiceMockBluetoothAdapter> adapter,
+                      scoped_ptr<NiceMockBluetoothDevice> new_device) {
+  NiceMockBluetoothDevice* new_device_ptr = new_device.get();
+  adapter->AddMockDevice(new_device.Pass());
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter->GetObservers(),
+                    DeviceAdded(adapter.get(), new_device_ptr));
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetSecondDiscoveryFindsHeartRateAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetPoweredAdapter());
+  NiceMockBluetoothAdapter* adapter_ptr = adapter.get();
+
+  EXPECT_CALL(*adapter, StartDiscoverySessionWithFilterRaw(_, _, _))
+      .WillOnce(RunCallbackWithResult<1 /* success_callback */>(
+          []() { return GetDiscoverySession(); }))
+      .WillOnce(
+          RunCallbackWithResult<1 /* success_callback */>([adapter_ptr]() {
+            // In the second discovery session, have the adapter discover a new
+            // device, shortly after the session starts.
+            base::ThreadTaskRunnerHandle::Get()->PostTask(
+                FROM_HERE,
+                base::Bind(&AddDevice, make_scoped_refptr(adapter_ptr),
+
+                           base::Passed(GetHeartRateDevice(adapter_ptr))));
+            return GetDiscoverySession();
+          }));
+
+  return adapter;
 }
 
 // static

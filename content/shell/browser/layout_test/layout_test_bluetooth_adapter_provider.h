@@ -121,6 +121,15 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetGlucoseHeartRateAdapter();
 
+  // |SecondDiscoveryFindsHeartRateAdapter|
+  // Inherits from |PoweredAdapter|
+  // Mock Functions:
+  //  - StartDiscoverySessionWithFilter:
+  //      Run success callback with |DiscoverySession|.
+  //      After the first call, adds a |HeartRateDevice|.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetSecondDiscoveryFindsHeartRateAdapter();
+
   // |MissingServiceGenericAccessAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

@@ -59,6 +59,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // releasing references to previous |adapter_|.
   void set_adapter(scoped_refptr<device::BluetoothAdapter> adapter);
 
+  // Makes sure a BluetoothDiscoverySession is active for |session|, and resets
+  // its timeout.
+  void StartDeviceDiscovery(RequestDeviceSession* session, int chooser_id);
+
   // Stops all BluetoothDiscoverySessions being run for requestDevice()
   // choosers.
   void StopDeviceDiscovery();

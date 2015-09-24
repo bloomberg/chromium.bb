@@ -243,6 +243,20 @@ struct BluetoothDispatcherHost::RequestDeviceSession {
     }
   }
 
+  scoped_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter() const {
+    std::set<BluetoothUUID> services;
+    for (const BluetoothScanFilter& filter : filters) {
+      services.insert(filter.services.begin(), filter.services.end());
+    }
+    scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
+        new device::BluetoothDiscoveryFilter(
+            device::BluetoothDiscoveryFilter::TRANSPORT_DUAL));
+    for (const BluetoothUUID& service : services) {
+      discovery_filter->AddUUID(service);
+    }
+    return discovery_filter.Pass();
+  }
+
   const int thread_id;
   const int request_id;
   const std::vector<BluetoothScanFilter> filters;
@@ -259,6 +273,24 @@ void BluetoothDispatcherHost::set_adapter(
   adapter_ = adapter;
   if (adapter_.get())
     adapter_->AddObserver(this);
+}
+
+void BluetoothDispatcherHost::StartDeviceDiscovery(
+    RequestDeviceSession* session,
+    int chooser_id) {
+  if (session->discovery_session) {
+    // Already running; just increase the timeout.
+    discovery_session_timer_.Reset();
+  } else {
+    session->chooser->ShowDiscoveryState(
+        BluetoothChooser::DiscoveryState::DISCOVERING);
+    adapter_->StartDiscoverySessionWithFilter(
+        session->ComputeScanFilter(),
+        base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
+                   weak_ptr_factory_.GetWeakPtr(), chooser_id),
+        base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
+                   weak_ptr_factory_.GetWeakPtr(), chooser_id));
+  }
 }
 
 void BluetoothDispatcherHost::StopDeviceDiscovery() {
@@ -313,21 +345,6 @@ void BluetoothDispatcherHost::DeviceRemoved(device::BluetoothAdapter* adapter,
       session->chooser->RemoveDevice(device->GetAddress());
     }
   }
-}
-
-static scoped_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
-    const std::vector<BluetoothScanFilter>& filters) {
-  std::set<BluetoothUUID> services;
-  for (const BluetoothScanFilter& filter : filters) {
-    services.insert(filter.services.begin(), filter.services.end());
-  }
-  scoped_ptr<device::BluetoothDiscoveryFilter> discovery_filter(
-      new device::BluetoothDiscoveryFilter(
-          device::BluetoothDiscoveryFilter::TRANSPORT_DUAL));
-  for (const BluetoothUUID& service : services) {
-    discovery_filter->AddUUID(service);
-  }
-  return discovery_filter.Pass();
 }
 
 void BluetoothDispatcherHost::OnRequestDevice(
@@ -425,15 +442,7 @@ void BluetoothDispatcherHost::OnRequestDevice(
     return;
   }
 
-  // Redundant with the chooser's default; just to be clear:
-  session->chooser->ShowDiscoveryState(
-      BluetoothChooser::DiscoveryState::DISCOVERING);
-  adapter_->StartDiscoverySessionWithFilter(
-      ComputeScanFilter(filters),
-      base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStarted,
-                 weak_ptr_factory_.GetWeakPtr(), chooser_id),
-      base::Bind(&BluetoothDispatcherHost::OnDiscoverySessionStartedError,
-                 weak_ptr_factory_.GetWeakPtr(), chooser_id));
+  StartDeviceDiscovery(session, chooser_id);
 }
 
 void BluetoothDispatcherHost::OnConnectGATT(
@@ -721,18 +730,18 @@ void BluetoothDispatcherHost::OnBluetoothChooserEvent(
     int chooser_id,
     BluetoothChooser::Event event,
     const std::string& device_id) {
+  RequestDeviceSession* session = request_device_sessions_.Lookup(chooser_id);
+  DCHECK(session) << "Shouldn't receive an event (" << static_cast<int>(event)
+                  << ") from a closed chooser.";
+  CHECK(session->chooser) << "Shouldn't receive an event ("
+                          << static_cast<int>(event)
+                          << ") from a closed chooser.";
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
-      // TODO(jyasskin): Implement starting a new Bluetooth discovery session.
-      NOTIMPLEMENTED();
+      StartDeviceDiscovery(session, chooser_id);
       break;
     case BluetoothChooser::Event::CANCELLED:
     case BluetoothChooser::Event::SELECTED: {
-      RequestDeviceSession* session =
-          request_device_sessions_.Lookup(chooser_id);
-      DCHECK(session) << "Shouldn't close the dialog twice.";
-      CHECK(session->chooser) << "Shouldn't close the dialog twice.";
-
       // Synchronously ensure nothing else calls into the chooser after it has
       // asked to be closed.
       session->chooser.reset();

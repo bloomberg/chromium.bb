@@ -109,6 +109,13 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   BluetoothAdapter::ConstDeviceList GetConstMockDevices();
   BluetoothAdapter::DeviceList GetMockDevices();
 
+  // The observers are maintained by the default behavior of AddObserver() and
+  // RemoveObserver(). Test fakes can use this function to notify the observers
+  // about events.
+  base::ObserverList<device::BluetoothAdapter::Observer>& GetObservers() {
+    return observers_;
+  }
+
  protected:
   void AddDiscoverySession(
       BluetoothDiscoveryFilter* discovery_filter,

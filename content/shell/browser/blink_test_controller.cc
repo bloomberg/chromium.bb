@@ -753,6 +753,8 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
     event = BluetoothChooser::Event::CANCELLED;
   } else if (event_name == "selected") {
     event = BluetoothChooser::Event::SELECTED;
+  } else if (event_name == "rescan") {
+    event = BluetoothChooser::Event::RESCAN;
   } else {
     printer_->AddErrorMessage(base::StringPrintf(
         "FAIL: Unexpected sendBluetoothManualChooserEvent() event name '%s'.",
