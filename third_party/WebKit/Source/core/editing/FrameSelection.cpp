@@ -890,8 +890,14 @@ void FrameSelection::notifyEventHandlerForSelectionChange()
 void FrameSelection::focusedOrActiveStateChanged()
 {
     bool activeAndFocused = isFocusedAndActive();
-
     RefPtrWillBeRawPtr<Document> document = m_frame->document();
+
+    // Trigger style invalidation from the focused element. Even though
+    // the focused element hasn't changed, the evaluation of focus pseudo
+    // selectors are dependent on whether the frame is focused and active.
+    if (Element* element = document->focusedElement())
+        element->focusStateChanged();
+
     document->updateLayoutTreeIfNeeded();
 
     // Because LayoutObject::selectionBackgroundColor() and
@@ -909,11 +915,6 @@ void FrameSelection::focusedOrActiveStateChanged()
 
     // Update for caps lock state
     m_frame->eventHandler().capsLockStateMayHaveChanged();
-
-    // We may have lost active status even though the focusElement hasn't changed
-    // give the element a chance to recalc style if its affected by focus.
-    if (Element* element = document->focusedElement())
-        element->focusStateChanged();
 
     // Secure keyboard entry is set by the active frame.
     if (document->useSecureKeyboardEntryWhenActive())
