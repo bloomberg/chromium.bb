@@ -149,7 +149,8 @@ class TestFrameClient : public mojom::FrameClient {
   void OnPostMessageEvent(uint32_t source_frame_id,
                           uint32_t target_frame_id,
                           mojom::HTMLMessageEventPtr event) override {}
-  void OnWillNavigate(const OnWillNavigateCallback& callback) override {
+  void OnWillNavigate(const mojo::String& origin,
+                      const OnWillNavigateCallback& callback) override {
     callback.Run();
   }
   void OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) override {

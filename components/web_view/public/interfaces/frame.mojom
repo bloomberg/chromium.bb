@@ -154,7 +154,10 @@ interface FrameClient {
   // handler is going to start handling the rendering.
   //
   // The new navigation is not started until the callback is run.
-  OnWillNavigate() => ();
+  //
+  // TODO(sky): sort out origin. It needs to be more than a string.
+  // Additionally it overlaps with the client properties.
+  OnWillNavigate(string origin) => ();
 
   // Called to notify that |frame_id|'s loading state has changed. This is only
   // called on the FrameClient rendering the parent of |frame_id|.

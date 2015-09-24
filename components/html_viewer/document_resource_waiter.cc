@@ -169,6 +169,7 @@ void DocumentResourceWaiter::OnPostMessageEvent(
 }
 
 void DocumentResourceWaiter::OnWillNavigate(
+    const mojo::String& origin,
     const OnWillNavigateCallback& callback) {
   // It is assumed we receive OnConnect() (which unbinds) before anything else.
   NOTREACHED();

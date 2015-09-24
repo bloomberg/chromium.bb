@@ -15,6 +15,8 @@
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/binding.h"
 
+class GURL;
+
 namespace web_view {
 
 class FrameTest;
@@ -180,7 +182,8 @@ class Frame : public mus::ViewObserver, public mojom::Frame {
   // as there is a View and once OnWillNavigate() has returned. If there is
   // no View the navigation waits until the View is available.
   void StartNavigate(mojo::URLRequestPtr request);
-  void OnCanNavigateFrame(uint32_t app_id,
+  void OnCanNavigateFrame(const GURL& url,
+                          uint32_t app_id,
                           mojom::FrameClient* frame_client,
                           scoped_ptr<FrameUserData> user_data,
                           mojo::ViewTreeClientPtr view_tree_client);

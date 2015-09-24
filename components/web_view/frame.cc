@@ -17,6 +17,7 @@
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/frame_utils.h"
 #include "mojo/application/public/interfaces/shell.mojom.h"
+#include "url/gurl.h"
 
 using mus::View;
 
@@ -325,13 +326,15 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 
   DVLOG(2) << "Frame::StartNavigate id=" << id_ << " url=" << request->url;
 
+  const GURL requested_url(request->url);
   tree_->delegate_->CanNavigateFrame(
       this, request.Pass(),
       base::Bind(&Frame::OnCanNavigateFrame,
-                 navigate_weak_ptr_factory_.GetWeakPtr()));
+                 navigate_weak_ptr_factory_.GetWeakPtr(), requested_url));
 }
 
-void Frame::OnCanNavigateFrame(uint32_t app_id,
+void Frame::OnCanNavigateFrame(const GURL& url,
+                               uint32_t app_id,
                                mojom::FrameClient* frame_client,
                                scoped_ptr<FrameUserData> user_data,
                                mojo::ViewTreeClientPtr view_tree_client) {
@@ -347,7 +350,8 @@ void Frame::OnCanNavigateFrame(uint32_t app_id,
   } else {
     waiting_for_on_will_navigate_ack_ = true;
     DCHECK(view_tree_client.get());
-    frame_client_->OnWillNavigate(base::Bind(
+    // TODO(sky): url isn't correct here, it should be a security origin.
+    frame_client_->OnWillNavigate(url.spec(), base::Bind(
         &Frame::OnWillNavigateAck, base::Unretained(this), frame_client,
         base::Passed(&user_data), base::Passed(&view_tree_client), app_id));
   }

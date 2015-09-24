@@ -773,13 +773,19 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
                                                         msg_event);
 }
 
-void HTMLFrame::OnWillNavigate(const OnWillNavigateCallback& callback) {
+void HTMLFrame::OnWillNavigate(const mojo::String& origin,
+                               const OnWillNavigateCallback& callback) {
   DVLOG(2) << "HTMLFrame::OnWillNavigate this=" << this << " id=" << id_
            << " local=" << IsLocal() << " will_swap="
            << (IsLocal() && this != frame_tree_manager_->local_root_);
   callback.Run();
-  if (IsLocal() && this != frame_tree_manager_->local_root_)
+  if (IsLocal() && this != frame_tree_manager_->local_root_) {
     SwapToRemote();
+    const blink::WebSecurityOrigin security_origin(
+        blink::WebSecurityOrigin::createFromString(
+            blink::WebString::fromUTF8(origin)));
+    web_frame_->toWebRemoteFrame()->setReplicatedOrigin(security_origin);
+  }
 }
 
 void HTMLFrame::OnFrameLoadingStateChanged(uint32_t frame_id, bool loading) {
