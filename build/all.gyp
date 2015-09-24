@@ -783,9 +783,7 @@
       'targets': [
         {
           # The current list of tests for android.  This is temporary
-          # until the full set supported.  If adding a new test here,
-          # please also add it to build/android/pylib/gtest/gtest_config.py,
-          # else the test is not run.
+          # until the full set supported.
           #
           # WARNING:
           # Do not add targets here without communicating the implications
