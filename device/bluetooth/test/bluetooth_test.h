@@ -17,6 +17,7 @@
 namespace device {
 
 class BluetoothAdapter;
+class BluetoothDevice;
 
 // A test fixture for Bluetooth that abstracts platform specifics for creating
 // and controlling fake low level objects.
@@ -41,6 +42,10 @@ class BluetoothTestBase : public testing::Test {
 
   BluetoothTestBase();
   ~BluetoothTestBase() override;
+
+  // Calls adapter_->StartDiscoverySession with this fixture's callbacks, and
+  // then RunLoop().RunUntilIdle().
+  void StartDiscoverySession();
 
   // Check if Low Energy is available. On Mac, we require OS X >= 10.10.
   virtual bool PlatformSupportsLowEnergy() = 0;
@@ -67,17 +72,17 @@ class BluetoothTestBase : public testing::Test {
   //      kTestDeviceAddress1.
   //   4: kTestDeviceNameEmpty with no advertised UUIDs and address
   //      kTestDeviceAddress2.
-  virtual void DiscoverLowEnergyDevice(int device_ordinal){};
+  virtual BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal);
 
   // Simulates success of implementation details of CreateGattConnection.
-  virtual void CompleteGattConnection(BluetoothDevice* device){};
+  virtual void CompleteGattConnection(BluetoothDevice* device) {}
 
   // Simulates failure of CreateGattConnection with the given error code.
   virtual void FailGattConnection(BluetoothDevice* device,
-                                  BluetoothDevice::ConnectErrorCode){};
+                                  BluetoothDevice::ConnectErrorCode) {}
 
   // Simulates GattConnection disconnecting.
-  virtual void CompleteGattDisconnection(BluetoothDevice* device){};
+  virtual void CompleteGattDisconnection(BluetoothDevice* device) {}
 
   // Remove the device from the adapter and delete it.
   virtual void DeleteDevice(BluetoothDevice* device);
@@ -95,6 +100,9 @@ class BluetoothTestBase : public testing::Test {
   BluetoothDevice::GattConnectionCallback GetGattConnectionCallback();
   BluetoothAdapter::ErrorCallback GetErrorCallback();
   BluetoothDevice::ConnectErrorCallback GetConnectErrorCallback();
+
+  // Reset all event count members to 0.
+  void ResetEventCounts();
 
   // A Message loop is required by some implementations that will PostTasks and
   // by base::RunLoop().RunUntilIdle() use in this fixuture.

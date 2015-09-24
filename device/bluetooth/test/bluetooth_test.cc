@@ -30,6 +30,18 @@ BluetoothTestBase::BluetoothTestBase() : weak_factory_(this) {}
 BluetoothTestBase::~BluetoothTestBase() {
 }
 
+void BluetoothTestBase::StartDiscoverySession() {
+  adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
+                                  GetErrorCallback());
+  base::RunLoop().RunUntilIdle();
+}
+
+BluetoothDevice* BluetoothTestBase::DiscoverLowEnergyDevice(
+    int device_ordinal) {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 void BluetoothTestBase::DeleteDevice(BluetoothDevice* device) {
   adapter_->DeleteDeviceForTesting(device->GetAddress());
 }
@@ -85,6 +97,14 @@ BluetoothDevice::ConnectErrorCallback
 BluetoothTestBase::GetConnectErrorCallback() {
   return base::Bind(&BluetoothTestBase::ConnectErrorCallback,
                     weak_factory_.GetWeakPtr());
+}
+
+void BluetoothTestBase::ResetEventCounts() {
+  last_connect_error_code_ = BluetoothDevice::ERROR_UNKNOWN;
+  callback_count_ = 0;
+  error_callback_count_ = 0;
+  gatt_connection_attempt_count_ = 0;
+  gatt_disconnection_attempt_count_ = 0;
 }
 
 }  // namespace device

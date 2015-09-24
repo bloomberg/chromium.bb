@@ -26,7 +26,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
-  void DiscoverLowEnergyDevice(int device_ordinal) override;
+  BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
   void CompleteGattConnection(BluetoothDevice* device) override;
   void FailGattConnection(BluetoothDevice* device,
                           BluetoothDevice::ConnectErrorCode) override;

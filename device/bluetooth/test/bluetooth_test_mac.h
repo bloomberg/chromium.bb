@@ -29,7 +29,7 @@ class BluetoothTestMac : public BluetoothTestBase {
   void InitWithDefaultAdapter() override;
   void InitWithoutDefaultAdapter() override;
   void InitWithFakeAdapter() override;
-  void DiscoverLowEnergyDevice(int device_ordinal) override;
+  BluetoothDevice* DiscoverLowEnergyDevice(int device_ordinal) override;
 
  protected:
   // Utility function for finding CBUUIDs with relatively nice SHA256 hashes.

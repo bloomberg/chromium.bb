@@ -459,16 +459,15 @@ TEST_F(BluetoothTest, DiscoverySession) {
 
   adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
                                   GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, callback_count_--);
+  EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(adapter_->IsDiscovering());
   ASSERT_EQ((size_t)1, discovery_sessions_.size());
   EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 
+  ResetEventCounts();
   discovery_sessions_[0]->Stop(GetCallback(), GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, callback_count_--);
+  EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(adapter_->IsDiscovering());
   EXPECT_FALSE(discovery_sessions_[0]->IsActive());
@@ -492,9 +491,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDevice) {
   adapter_->StartDiscoverySessionWithFilter(discovery_filter.Pass(),
                                             GetDiscoverySessionCallback(),
                                             GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
   DiscoverLowEnergyDevice(1);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
@@ -514,9 +511,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceTwice) {
   // Start discovery and find a device.
   adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
                                   GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
   DiscoverLowEnergyDevice(1);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, observer.device_added_count());
   BluetoothDevice* device = adapter_->GetDevice(observer.last_device_address());
   EXPECT_TRUE(device);
@@ -543,10 +538,7 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   // Start discovery and find a device.
   adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
                                   GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
-  DiscoverLowEnergyDevice(1);
-  base::RunLoop().RunUntilIdle();
-  BluetoothDevice* device = observer.last_device();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(1);
 
   // Check the initial UUIDs:
   EXPECT_TRUE(
@@ -557,7 +549,6 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   // Discover same device again with updated UUIDs:
   observer.Reset();
   DiscoverLowEnergyDevice(2);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
@@ -572,7 +563,6 @@ TEST_F(BluetoothTest, DiscoverLowEnergyDeviceWithUpdatedUUIDs) {
   // Discover same device again with empty UUIDs:
   observer.Reset();
   DiscoverLowEnergyDevice(3);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, observer.device_added_count());
   EXPECT_EQ(1, observer.device_changed_count());
   EXPECT_EQ(1u, adapter_->GetDevices().size());
@@ -596,10 +586,8 @@ TEST_F(BluetoothTest, DiscoverMultipleLowEnergyDevices) {
   // Start discovery and find a device.
   adapter_->StartDiscoverySession(GetDiscoverySessionCallback(),
                                   GetErrorCallback());
-  base::RunLoop().RunUntilIdle();
   DiscoverLowEnergyDevice(1);
   DiscoverLowEnergyDevice(4);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, observer.device_added_count());
   EXPECT_EQ(2u, adapter_->GetDevices().size());
 }

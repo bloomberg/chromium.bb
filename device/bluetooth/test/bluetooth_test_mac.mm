@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "device/bluetooth/bluetooth_adapter_mac.h"
 #include "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
+#include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 
 #if defined(OS_IOS)
@@ -99,7 +100,8 @@ void BluetoothTestMac::InitWithFakeAdapter() {
   }
 }
 
-void BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
+BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
+  TestBluetoothAdapterObserver observer(adapter_);
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
   BluetoothLowEnergyCentralManagerDelegate* central_manager_delegate =
       adapter_mac_->low_energy_central_manager_delegate_;
@@ -172,6 +174,7 @@ void BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
       break;
     }
   }
+  return observer.last_device();
 }
 
 // Utility function for generating new (CBUUID, address) pairs where CBUUID
