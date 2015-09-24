@@ -106,6 +106,11 @@ def _InProcessDataUpdate(lock_uri_data_uri):
 class GSLockTest(cros_test_lib.MockTestCase):
   """This test suite covers the GSLock file."""
 
+  # For contention tests, how many parallel workers to spawn.  To really
+  # stress test, you can bump it up to 200, but 20 seems to provide good
+  # coverage w/out sucking up too many resources.
+  NUM_THREADS = 20
+
   @cros_test_lib.NetworkTest()
   def setUp(self):
     self.ctx = gs.GSContext()
@@ -192,7 +197,7 @@ class GSLockTest(cros_test_lib.MockTestCase):
   @cros_test_lib.NetworkTest()
   def testRaceToAcquire(self):
     """Have lots of processes race to acquire the same lock."""
-    count = 20
+    count = self.NUM_THREADS
     pool = multiprocessing.Pool(processes=count)
     with gs.TemporaryURL('gslock') as lock_uri:
       results = pool.map(_InProcessAcquire, [lock_uri] * count)
@@ -206,7 +211,7 @@ class GSLockTest(cros_test_lib.MockTestCase):
   @cros_test_lib.NetworkTest()
   def testRaceToDoubleAcquire(self):
     """Have lots of processes race to double acquire the same lock."""
-    count = 20
+    count = self.NUM_THREADS
     pool = multiprocessing.Pool(processes=count)
     with gs.TemporaryURL('gslock') as lock_uri:
       results = pool.map(_InProcessDoubleAcquire, [lock_uri] * count)
@@ -221,7 +226,7 @@ class GSLockTest(cros_test_lib.MockTestCase):
   @cros_test_lib.NetworkTest()
   def testMultiProcessDataUpdate(self):
     """Have lots of processes update a GS file proctected by a lock."""
-    count = 20   # To really stress, bump up to 200.
+    count = self.NUM_THREADS
     pool = multiprocessing.Pool(processes=count)
     with gs.TemporaryURL('gslock') as lock_uri:
       data_uri = lock_uri + '.data'
