@@ -512,6 +512,7 @@
             '../google_apis/google_apis.gyp:google_apis_unittests_run',
             '../gpu/gpu.gyp:gpu_unittests_run',
             '../ipc/ipc.gyp:ipc_tests_run',
+            '../media/blink/media_blink.gyp:media_blink_unittests_run',
             '../media/cast/cast.gyp:cast_unittests_run',
             '../media/media.gyp:media_unittests_run',
             '../media/midi/midi.gyp:midi_unittests_run',
