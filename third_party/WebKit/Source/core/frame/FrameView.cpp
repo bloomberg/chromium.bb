@@ -530,91 +530,70 @@ void FrameView::adjustViewSize()
     setContentsSize(size);
 }
 
-void FrameView::applyOverflowToViewport(LayoutObject* o, ScrollbarMode& hMode, ScrollbarMode& vMode)
+void FrameView::calculateScrollbarModesFromOverflowStyle(const ComputedStyle* style, ScrollbarMode& hMode, ScrollbarMode& vMode)
 {
-    // Handle the overflow:hidden/scroll case for the body/html elements.  WinIE treats
-    // overflow:hidden and overflow:scroll on <body> as applying to the document's
-    // scrollbars.  The CSS2.1 draft states that HTML UAs should use the <html> or <body> element and XML/XHTML UAs should
-    // use the root element.
+    hMode = vMode = ScrollbarAuto;
 
-    EOverflow overflowX = o->style()->overflowX();
-    EOverflow overflowY = o->style()->overflowY();
+    EOverflow overflowX = style->overflowX();
+    EOverflow overflowY = style->overflowY();
 
-    if (o->isSVGRoot()) {
+    if (!shouldIgnoreOverflowHidden()) {
+        if (overflowX == OHIDDEN)
+            hMode = ScrollbarAlwaysOff;
+        if (overflowY == OHIDDEN)
+            vMode = ScrollbarAlwaysOff;
+    }
+
+    if (overflowX == OSCROLL)
+        hMode = ScrollbarAlwaysOn;
+    if (overflowY == OSCROLL)
+        vMode = ScrollbarAlwaysOn;
+}
+
+void FrameView::calculateScrollbarModes(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
+{
+#define RETURN_SCROLLBAR_MODE(mode) \
+    { \
+        hMode = vMode = mode; \
+        return; \
+    }
+
+    // Setting scrolling="no" on an iframe element disables scrolling.
+    // FIXME: Handle this for OOPI?
+    if (const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner()) {
+        if (owner->scrollingMode() == ScrollbarAlwaysOff)
+            RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
+    }
+
+    // Framesets can't scroll.
+    Node* body = m_frame->document()->body();
+    if (isHTMLFrameSetElement(body) && body->layoutObject())
+        RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
+
+    // Scrollbars can be disabled by FrameView::setCanHaveScrollbars.
+    if (!m_canHaveScrollbars && strategy != RulesFromWebContentOnly)
+        RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
+
+    // This will be the LayoutObject for either the body element or the html element
+    // (see Document::viewportDefiningElement).
+    LayoutObject* viewport = viewportLayoutObject();
+    if (!viewport || !viewport->style())
+        RETURN_SCROLLBAR_MODE(ScrollbarAuto);
+
+    if (viewport->isSVGRoot()) {
         // Don't allow overflow to affect <img> and css backgrounds
-        if (toLayoutSVGRoot(o)->isEmbeddedThroughSVGImage())
-            return;
+        if (toLayoutSVGRoot(viewport)->isEmbeddedThroughSVGImage())
+            RETURN_SCROLLBAR_MODE(ScrollbarAuto);
 
         // FIXME: evaluate if we can allow overflow for these cases too.
         // Overflow is always hidden when stand-alone SVG documents are embedded.
-        if (toLayoutSVGRoot(o)->isEmbeddedThroughFrameContainingSVGDocument()) {
-            overflowX = OHIDDEN;
-            overflowY = OHIDDEN;
-        }
+        if (toLayoutSVGRoot(viewport)->isEmbeddedThroughFrameContainingSVGDocument())
+            RETURN_SCROLLBAR_MODE(ScrollbarAlwaysOff);
     }
 
-    switch (overflowX) {
-        case OHIDDEN:
-            if (!shouldIgnoreOverflowHidden())
-                hMode = ScrollbarAlwaysOff;
-            break;
-        case OSCROLL:
-            hMode = ScrollbarAlwaysOn;
-            break;
-        case OAUTO:
-            hMode = ScrollbarAuto;
-            break;
-        default:
-            // Don't set it at all.
-            ;
-    }
+    calculateScrollbarModesFromOverflowStyle(viewport->style(), hMode, vMode);
 
-     switch (overflowY) {
-        case OHIDDEN:
-            if (!shouldIgnoreOverflowHidden())
-                vMode = ScrollbarAlwaysOff;
-            break;
-        case OSCROLL:
-            vMode = ScrollbarAlwaysOn;
-            break;
-        case OAUTO:
-            vMode = ScrollbarAuto;
-            break;
-        default:
-            // Don't set it at all.
-            ;
-    }
-}
-
-void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, ScrollbarMode& vMode, ScrollbarModesCalculationStrategy strategy)
-{
-    // FIXME: How do we handle this for OOPI?
-    const HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
-    if (owner && (owner->scrollingMode() == ScrollbarAlwaysOff)) {
-        hMode = ScrollbarAlwaysOff;
-        vMode = ScrollbarAlwaysOff;
-        return;
-    }
-
-    if (m_canHaveScrollbars || strategy == RulesFromWebContentOnly) {
-        hMode = ScrollbarAuto;
-        vMode = ScrollbarAuto;
-    } else {
-        hMode = ScrollbarAlwaysOff;
-        vMode = ScrollbarAlwaysOff;
-    }
-
-    if (!isSubtreeLayout()) {
-        Document* document = m_frame->document();
-        Node* body = document->body();
-        if (isHTMLFrameSetElement(body) && body->layoutObject()) {
-            vMode = ScrollbarAlwaysOff;
-            hMode = ScrollbarAlwaysOff;
-        } else if (LayoutObject* viewport = viewportLayoutObject()) {
-            if (viewport->style())
-                applyOverflowToViewport(viewport, hMode, vMode);
-        }
-    }
+#undef RETURN_SCROLLBAR_MODE
 }
 
 void FrameView::updateAcceleratedCompositingSettings()
@@ -965,11 +944,11 @@ void FrameView::layout()
         }
         updateCounters();
 
-        ScrollbarMode hMode;
-        ScrollbarMode vMode;
-        calculateScrollbarModesForLayout(hMode, vMode);
-
         if (!inSubtreeLayout) {
+            ScrollbarMode hMode;
+            ScrollbarMode vMode;
+            calculateScrollbarModes(hMode, vMode);
+
             // Now set our scrollbar state for the layout.
             ScrollbarMode currentHMode = horizontalScrollbarMode();
             ScrollbarMode currentVMode = verticalScrollbarMode();
@@ -2243,7 +2222,7 @@ FrameView::ScrollingReasons FrameView::scrollingReasons()
     // Cover #3 and #4.
     ScrollbarMode horizontalMode;
     ScrollbarMode verticalMode;
-    calculateScrollbarModesForLayout(horizontalMode, verticalMode, RulesFromWebContentOnly);
+    calculateScrollbarModes(horizontalMode, verticalMode, RulesFromWebContentOnly);
     if (horizontalMode == ScrollbarAlwaysOff && verticalMode == ScrollbarAlwaysOff)
         return NotScrollableExplicitlyDisabled;
 

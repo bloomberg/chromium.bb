@@ -333,7 +333,7 @@ bool canScrollInDirection(const LocalFrame* frame, WebFocusType type)
         return false;
     ScrollbarMode verticalMode;
     ScrollbarMode horizontalMode;
-    frame->view()->calculateScrollbarModesForLayout(horizontalMode, verticalMode);
+    frame->view()->calculateScrollbarModes(horizontalMode, verticalMode);
     if ((type == WebFocusTypeLeft || type == WebFocusTypeRight) && ScrollbarAlwaysOff == horizontalMode)
         return false;
     if ((type == WebFocusTypeUp || type == WebFocusTypeDown) &&  ScrollbarAlwaysOff == verticalMode)
