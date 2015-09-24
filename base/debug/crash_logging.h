@@ -95,9 +95,6 @@ BASE_EXPORT std::vector<std::string> ChunkCrashKeyValue(
     const base::StringPiece& value,
     size_t chunk_max_length);
 
-// Resets the crash key system so it can be reinitialized. For testing only.
-BASE_EXPORT void ResetCrashLoggingForTesting();
-
 }  // namespace debug
 }  // namespace base
 

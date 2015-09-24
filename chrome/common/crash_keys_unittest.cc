@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
@@ -25,7 +26,6 @@ class CrashKeysTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::debug::ResetCrashLoggingForTesting();
     self_ = NULL;
   }
 
@@ -53,6 +53,10 @@ class CrashKeysTest : public testing::Test {
   static CrashKeysTest* self_;
 
   std::map<std::string, std::string> keys_;
+
+  // The ShadowingAtExitManager will destroy the singleton used to store crash
+  // key data upon destruction.
+  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 CrashKeysTest* CrashKeysTest::self_ = NULL;

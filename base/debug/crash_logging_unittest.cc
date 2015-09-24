@@ -7,12 +7,13 @@
 #include <map>
 #include <string>
 
+#include "base/at_exit.h"
 #include "base/bind.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-std::map<std::string, std::string>* key_values_ = NULL;
+std::map<std::string, std::string>* key_values_ = nullptr;
 
 }  // namespace
 
@@ -26,10 +27,8 @@ class CrashLoggingTest : public testing::Test {
   }
 
   void TearDown() override {
-    base::debug::ResetCrashLoggingForTesting();
-
     delete key_values_;
-    key_values_ = NULL;
+    key_values_ = nullptr;
   }
 
  private:
@@ -41,6 +40,10 @@ class CrashLoggingTest : public testing::Test {
   static void ClearKeyValue(const base::StringPiece& key) {
     key_values_->erase(key.as_string());
   }
+
+  // The ShadowingAtExitManager will destroy the singleton used to store crash
+  // key data upon destruction.
+  base::ShadowingAtExitManager at_exit_manager_;
 };
 
 TEST_F(CrashLoggingTest, SetClearSingle) {
