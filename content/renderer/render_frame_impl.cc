@@ -792,6 +792,28 @@ void RenderFrameImpl::Initialize() {
   is_subframe_ = !!frame_->parent();
   is_local_root_ = !frame_->parent() || frame_->parent()->isWebRemoteFrame();
 
+  bool is_tracing = false;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
+  if (is_tracing) {
+    int parent_id = MSG_ROUTING_NONE;
+    if (is_subframe_) {
+      if (frame_->parent()->isWebRemoteFrame()) {
+        RenderFrameProxy* parent_proxy = RenderFrameProxy::FromWebFrame(
+            frame_->parent());
+        if (parent_proxy)
+          parent_id = parent_proxy->routing_id();
+      } else {
+        RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
+            frame_->parent());
+        if (parent_frame)
+          parent_id = parent_frame->GetRoutingID();
+      }
+    }
+    TRACE_EVENT2("navigation", "RenderFrameImpl::Initialize",
+                 "id", routing_id_,
+                 "parent", parent_id);
+  }
+
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
@@ -2204,6 +2226,14 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     NOTREACHED() << "Failed to allocate routing id for child frame.";
     return nullptr;
   }
+
+  // This method is always called by local frames, never remote frames.
+
+  // Tracing analysis uses this to find main frames when this value is
+  // MSG_ROUTING_NONE, and build the frame tree otherwise.
+  TRACE_EVENT2("navigation", "RenderFrameImpl::createChildFrame",
+               "id", routing_id_,
+               "child", child_routing_id);
 
   // Create the RenderFrame and WebLocalFrame, linking the two.
   RenderFrameImpl* child_render_frame = RenderFrameImpl::Create(
