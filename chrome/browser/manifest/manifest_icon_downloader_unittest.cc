@@ -113,11 +113,28 @@ TEST_F(ManifestIconDownloaderTest, MixedCanReturnMiddle) {
   ASSERT_EQ(1, FindBitmap(7, 0, bitmaps));
 }
 
-TEST_F(ManifestIconDownloaderTest, NonSquareIsIgnored) {
+TEST_F(ManifestIconDownloaderTest, SquareIsPickedOverNonSquare) {
   std::vector<SkBitmap> bitmaps;
-  bitmaps.push_back(CreateDummyBitmap(15, 10));
+  bitmaps.push_back(CreateDummyBitmap(5, 5));
   bitmaps.push_back(CreateDummyBitmap(10, 15));
 
-  ASSERT_EQ(-1, FindBitmap(15, 0, bitmaps));
-  ASSERT_EQ(-1, FindBitmap(10, 0, bitmaps));
+  ASSERT_EQ(0, FindBitmap(15, 5, bitmaps));
+  ASSERT_EQ(0, FindBitmap(10, 5, bitmaps));
+}
+
+TEST_F(ManifestIconDownloaderTest, MostSquareNonSquareIsPicked) {
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(CreateDummyBitmap(25, 35));
+  bitmaps.push_back(CreateDummyBitmap(10, 11));
+
+  ASSERT_EQ(1, FindBitmap(25, 0, bitmaps));
+  ASSERT_EQ(1, FindBitmap(35, 0, bitmaps));
+}
+
+TEST_F(ManifestIconDownloaderTest, NonSquareBelowMinimumIsNotPicked) {
+  std::vector<SkBitmap> bitmaps;
+  bitmaps.push_back(CreateDummyBitmap(10, 15));
+  bitmaps.push_back(CreateDummyBitmap(15, 10));
+
+  ASSERT_EQ(-1, FindBitmap(15, 11, bitmaps));
 }

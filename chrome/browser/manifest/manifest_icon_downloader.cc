@@ -68,7 +68,8 @@ void ManifestIconDownloader::OnIconFetched(
   // Only scale if we need to scale down. For scaling up we will let the system
   // handle that when it is required to display it. This saves space in the
   // webapp storage system as well.
-  if (chosen.height() > ideal_icon_size_in_px) {
+  if (chosen.height() > ideal_icon_size_in_px ||
+      chosen.width() > ideal_icon_size_in_px) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO,
         FROM_HERE,
@@ -126,5 +127,28 @@ int ManifestIconDownloader::FindClosestBitmapIndex(
       best_delta = delta;
     }
   }
+
+  if (best_index != -1)
+    return best_index;
+
+  // There was no square icon of a correct size found. Try to find the most
+  // square-like icon which has both dimensions greater than the minimum size.
+  float best_ratio_difference = std::numeric_limits<float>::infinity();
+  for (size_t i = 0; i < bitmaps.size(); ++i) {
+    if (bitmaps[i].height() < minimum_icon_size_in_px ||
+        bitmaps[i].width() < minimum_icon_size_in_px) {
+      continue;
+    }
+
+    float height = static_cast<float>(bitmaps[i].height());
+    float width = static_cast<float>(bitmaps[i].width());
+    float ratio = height / width;
+    float ratio_difference = fabs(ratio - 1);
+    if (ratio_difference < best_ratio_difference) {
+      best_index = i;
+      best_ratio_difference = ratio_difference;
+    }
+  }
+
   return best_index;
 }
