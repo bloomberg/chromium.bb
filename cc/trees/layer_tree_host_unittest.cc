@@ -4621,7 +4621,6 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
       : will_begin_impl_frame_count_(0), did_finish_impl_frame_count_(0) {}
 
   void BeginTest() override {
-    // Kick off the test with a commit.
     PostSetNeedsCommitToMainThread();
   }
 
@@ -4666,6 +4665,70 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame);
+
+::testing::AssertionResult AssertFrameTimeContained(
+    const char* haystack_expr,
+    const char* needle_expr,
+    const std::vector<BeginFrameArgs> haystack,
+    const BeginFrameArgs needle) {
+  auto failure = ::testing::AssertionFailure()
+                 << needle.frame_time << " (" << needle_expr
+                 << ") not found in " << haystack_expr;
+
+  if (haystack.size() == 0) {
+    failure << " which is empty.";
+  } else {
+    failure << " which contains:\n";
+    for (size_t i = 0; i < haystack.size(); i++) {
+      if (haystack[i].frame_time == needle.frame_time)
+        return ::testing::AssertionSuccess();
+      failure << "  [" << i << "]: " << haystack[i].frame_time << "\n";
+    }
+  }
+
+  return failure;
+}
+
+class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
+    : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime()
+      : impl_frame_args_(), will_begin_impl_frame_count_(0) {}
+
+  void BeginTest() override {
+    // Kick off the test with a commit.
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void WillBeginImplFrameOnThread(LayerTreeHostImpl* impl,
+                                  const BeginFrameArgs& args) override {
+    impl_frame_args_.push_back(args);
+
+    will_begin_impl_frame_count_++;
+    if (will_begin_impl_frame_count_ < 10)
+      PostSetNeedsCommitToMainThread();
+  }
+
+  void BeginMainFrame(const BeginFrameArgs& args) override {
+    ASSERT_GT(impl_frame_args_.size(), 0U)
+        << "BeginMainFrame called before BeginImplFrame called!";
+    EXPECT_PRED_FORMAT2(AssertFrameTimeContained, impl_frame_args_, args);
+  }
+
+  void SendBeginMainFrameNotExpectedSoon() override { EndTest(); }
+
+  void AfterTest() override {
+    EXPECT_GT(impl_frame_args_.size(), 0U);
+    EXPECT_GE(will_begin_impl_frame_count_, 10);
+  }
+
+ private:
+  std::vector<BeginFrameArgs> impl_frame_args_;
+  int will_begin_impl_frame_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime);
 
 class LayerTreeHostTestSendBeginFramesToChildren : public LayerTreeHostTest {
  public:
