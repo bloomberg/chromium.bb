@@ -59,29 +59,35 @@ void GpuDriverBugList::AppendWorkaroundsFromCommandLine(
     const base::CommandLine& command_line) {
   DCHECK(workarounds);
   for (int i = 0; i < NUMBER_OF_GPU_DRIVER_BUG_WORKAROUND_TYPES; i++) {
-    if (!command_line.HasSwitch(kFeatureList[i].name))
-      continue;
-    // Removing conflicting workarounds.
-    switch (kFeatureList[i].type) {
-      case FORCE_DISCRETE_GPU:
-        workarounds->erase(FORCE_INTEGRATED_GPU);
-        workarounds->insert(FORCE_DISCRETE_GPU);
-        break;
-      case FORCE_INTEGRATED_GPU:
-        workarounds->erase(FORCE_DISCRETE_GPU);
-        workarounds->insert(FORCE_INTEGRATED_GPU);
-        break;
-      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
-      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
-      case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
-        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512);
-        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024);
-        workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096);
-        workarounds->insert(kFeatureList[i].type);
-        break;
-      default:
-        workarounds->insert(kFeatureList[i].type);
-        break;
+    if (command_line.HasSwitch(kFeatureList[i].name)) {
+      // Check for disabling workaround flag.
+      if (command_line.GetSwitchValueASCII(kFeatureList[i].name) == "0") {
+        workarounds->erase(kFeatureList[i].type);
+        continue;
+      }
+
+      // Removing conflicting workarounds.
+      switch (kFeatureList[i].type) {
+        case FORCE_DISCRETE_GPU:
+          workarounds->erase(FORCE_INTEGRATED_GPU);
+          workarounds->insert(FORCE_DISCRETE_GPU);
+          break;
+        case FORCE_INTEGRATED_GPU:
+          workarounds->erase(FORCE_DISCRETE_GPU);
+          workarounds->insert(FORCE_INTEGRATED_GPU);
+          break;
+        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512:
+        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024:
+        case MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096:
+          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_512);
+          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_1024);
+          workarounds->erase(MAX_CUBE_MAP_TEXTURE_SIZE_LIMIT_4096);
+          workarounds->insert(kFeatureList[i].type);
+          break;
+        default:
+          workarounds->insert(kFeatureList[i].type);
+          break;
+      }
     }
   }
 }
