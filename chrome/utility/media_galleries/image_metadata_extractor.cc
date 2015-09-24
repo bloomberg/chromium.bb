@@ -4,6 +4,11 @@
 
 #include "chrome/utility/media_galleries/image_metadata_extractor.h"
 
+extern "C" {
+#include <libexif/exif-data.h>
+#include <libexif/exif-loader.h>
+}  // extern "C"
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -16,11 +21,6 @@
 #include "content/public/common/content_paths.h"
 #include "media/base/data_source.h"
 #include "net/base/io_buffer.h"
-
-extern "C" {
-#include <libexif/exif-data.h>
-#include <libexif/exif-loader.h>
-}  // extern "C"
 
 namespace metadata {
 
@@ -106,9 +106,10 @@ class ExifFunctions {
     base::FilePath module_path = base::FilePath().AppendASCII("libexif.so.12");
 #endif
 
-    base::ScopedNativeLibrary lib(base::LoadNativeLibrary(module_path, NULL));
+    base::NativeLibraryLoadError error;
+    base::ScopedNativeLibrary lib(base::LoadNativeLibrary(module_path, &error));
     if (!lib.is_valid()) {
-      LOG(ERROR) << "Couldn't load libexif.";
+      LOG(ERROR) << "Couldn't load libexif. " << error.ToString();
       return false;
     }
 
@@ -215,8 +216,9 @@ class ExifFunctions {
 
  private:
   // Exported by libexif.
-  typedef unsigned char (*ExifLoaderWriteFunc)(
-      ExifLoader *eld, unsigned char *buf, unsigned int len);
+  typedef unsigned char (*ExifLoaderWriteFunc)(ExifLoader* eld,
+                                               unsigned char* buf,
+                                               unsigned int len);
   typedef ExifLoader* (*ExifLoaderNewFunc)();
   typedef void (*ExifLoaderUnrefFunc)(ExifLoader* loader);
   typedef ExifData* (*ExifLoaderGetDataFunc)(ExifLoader* loader);
@@ -319,7 +321,6 @@ void ImageMetadataExtractor::Extract(media::DataSource* source,
 
   GetImageBytes(source, base::Bind(&ImageMetadataExtractor::FinishExtraction,
                                    base::Unretained(this), callback));
-
 }
 
 int ImageMetadataExtractor::width() const {
