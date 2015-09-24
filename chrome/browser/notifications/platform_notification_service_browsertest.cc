@@ -355,13 +355,6 @@ IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
   if (PermissionBubbleManager::Enabled())
     return;
 
-  // TODO(dewittj): It currently isn't possible to get the notification
-  // permission for a file:// URL. If that changes, this test will fail to
-  // remind the author that the
-  // |PlatformNotificationServiceImpl::WebOriginDisplayName| function needs
-  // to be updated to properly display file:// URL origins.
-  // See crbug.com/402191.
-
   // This case should succeed because a normal page URL is used.
   std::string script_result;
 
