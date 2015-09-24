@@ -808,6 +808,10 @@ select:-internal-list-box:focus option:checked {
     color: -internal-active-list-box-selection-text !important;
 }
 
+select:-internal-list-box:focus option:checked:disabled {
+    background-color: -internal-inactive-list-box-selection !important;
+}
+
 select:-internal-list-box option:checked {
     background-color: -internal-inactive-list-box-selection !important;
     color: -internal-inactive-list-box-selection-text !important;

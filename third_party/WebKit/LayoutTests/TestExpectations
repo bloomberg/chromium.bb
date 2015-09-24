@@ -1236,7 +1236,7 @@ crbug.com/524646 [ Yosemite ] fast/forms/select-selected.html [ NeedsRebaseline 
 crbug.com/524646 [ Yosemite ] fast/forms/select-size.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/select-style.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/select-writing-direction-natural.html [ NeedsRebaseline ]
-crbug.com/524646 [ Yosemite ] fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/534265 fast/forms/select/listbox-appearance-basic.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/select/listbox-appearance-separator.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/select/listbox-with-display-none-option.html [ NeedsRebaseline ]
 crbug.com/524646 [ Yosemite ] fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]

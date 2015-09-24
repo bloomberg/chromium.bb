@@ -11,7 +11,7 @@ if (window.testRunner)
 </script>
 
 <select multiple><option>foo</option></select>
-<select multiple><option selected>foo</option><option>bar</option></select>
+<select multiple><option selected>foo</option><option>bar</option><option selected disabled>Disabled</option></select>
 <script>
 // autofocus makes the test timeout.
 document.querySelectorAll('select')[1].focus();
