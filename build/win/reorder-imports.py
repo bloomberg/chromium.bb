@@ -31,7 +31,7 @@ def reorder_imports(input_dir, output_dir, architecture):
 
   args.append('chrome_elf.dll');
 
-  subprocess.call(args)
+  subprocess.check_call(args)
 
   for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
     shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
