@@ -436,7 +436,7 @@ chrome.automation.AutomationNode.prototype.location;
 
 /**
  * @param {chrome.automation.EventType} eventType
- * @param {function(chrome.automation.AutomationNode) : void} callback
+ * @param {function(!chrome.automation.AutomationEvent) : void} callback
  * @param {boolean} capture
  */
 chrome.automation.AutomationNode.prototype.addEventListener =

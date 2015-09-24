@@ -479,7 +479,7 @@ Background.prototype = {
    */
   onFocus: function(evt) {
     // Invalidate any previous editable text handler state.
-    this.editableTextHandler = null;
+    this.editableTextHandler_ = null;
 
     var node = evt.target;
 
