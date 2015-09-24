@@ -1863,15 +1863,12 @@ void WebViewImpl::didExitFullScreen()
 
 void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
-    TRACE_EVENT0("blink", "WebViewImpl::beginFrame");
-
-    WebBeginFrameArgs validFrameTime(frameTime);
-    if (!validFrameTime.lastFrameTimeMonotonic)
-        validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
+    TRACE_EVENT1("blink", "WebViewImpl::beginFrame", "frameTime", frameTime.lastFrameTimeMonotonic);
+    ASSERT(frameTime.lastFrameTimeMonotonic);
 
     // Create synthetic wheel events as necessary for fling.
     if (m_gestureAnimation) {
-        if (m_gestureAnimation->animate(validFrameTime.lastFrameTimeMonotonic))
+        if (m_gestureAnimation->animate(frameTime.lastFrameTimeMonotonic))
             scheduleAnimation();
         else {
             endActiveFlingAnimation();
@@ -1888,7 +1885,7 @@ void WebViewImpl::beginFrame(const WebBeginFrameArgs& frameTime)
     if (!m_page)
         return;
 
-    PageWidgetDelegate::animate(*m_page, validFrameTime.lastFrameTimeMonotonic);
+    PageWidgetDelegate::animate(*m_page, frameTime.lastFrameTimeMonotonic);
 }
 
 void WebViewImpl::layout()

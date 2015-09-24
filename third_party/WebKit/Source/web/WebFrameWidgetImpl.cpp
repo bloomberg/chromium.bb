@@ -248,13 +248,9 @@ void WebFrameWidgetImpl::didExitFullScreen()
 
 void WebFrameWidgetImpl::beginFrame(const WebBeginFrameArgs& frameTime)
 {
-    TRACE_EVENT0("blink", "WebFrameWidgetImpl::beginFrame");
-
-    WebBeginFrameArgs validFrameTime(frameTime);
-    if (!validFrameTime.lastFrameTimeMonotonic)
-        validFrameTime.lastFrameTimeMonotonic = monotonicallyIncreasingTime();
-
-    PageWidgetDelegate::animate(*page(), validFrameTime.lastFrameTimeMonotonic);
+    TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime", frameTime.lastFrameTimeMonotonic);
+    ASSERT(frameTime.lastFrameTimeMonotonic);
+    PageWidgetDelegate::animate(*page(), frameTime.lastFrameTimeMonotonic);
 }
 
 void WebFrameWidgetImpl::layout()
