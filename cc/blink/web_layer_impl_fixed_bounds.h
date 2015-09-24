@@ -21,7 +21,7 @@ class WebLayerImplFixedBounds : public WebLayerImpl {
   CC_BLINK_EXPORT WebLayerImplFixedBounds();
   CC_BLINK_EXPORT explicit WebLayerImplFixedBounds(
       scoped_refptr<cc::Layer> layer);
-  virtual ~WebLayerImplFixedBounds();
+  ~WebLayerImplFixedBounds() override;
 
   // WebLayerImpl overrides.
   void invalidateRect(const blink::WebRect& rect) override;

@@ -23,41 +23,40 @@ class CC_BLINK_EXPORT WebCompositorSupportImpl
     : public NON_EXPORTED_BASE(blink::WebCompositorSupport) {
  public:
   WebCompositorSupportImpl();
-  virtual ~WebCompositorSupportImpl();
+  ~WebCompositorSupportImpl() override;
 
-  virtual blink::WebLayer* createLayer();
-  virtual blink::WebContentLayer* createContentLayer(
-      blink::WebContentLayerClient* client);
-  virtual blink::WebExternalTextureLayer* createExternalTextureLayer(
-      blink::WebExternalTextureLayerClient* client);
-  virtual blink::WebImageLayer* createImageLayer();
-  virtual blink::WebScrollbarLayer* createScrollbarLayer(
+  blink::WebLayer* createLayer() override;
+  blink::WebContentLayer* createContentLayer(
+      blink::WebContentLayerClient* client) override;
+  blink::WebExternalTextureLayer* createExternalTextureLayer(
+      blink::WebExternalTextureLayerClient* client) override;
+  blink::WebImageLayer* createImageLayer() override;
+  blink::WebScrollbarLayer* createScrollbarLayer(
       blink::WebScrollbar* scrollbar,
       blink::WebScrollbarThemePainter painter,
-      blink::WebScrollbarThemeGeometry*);
-  virtual blink::WebScrollbarLayer* createSolidColorScrollbarLayer(
+      blink::WebScrollbarThemeGeometry*) override;
+  blink::WebScrollbarLayer* createSolidColorScrollbarLayer(
       blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
       int track_start,
-      bool is_left_side_vertical_scrollbar);
-  virtual blink::WebCompositorAnimation* createAnimation(
+      bool is_left_side_vertical_scrollbar) override;
+  blink::WebCompositorAnimation* createAnimation(
       const blink::WebCompositorAnimationCurve& curve,
       blink::WebCompositorAnimation::TargetProperty target,
       int group_id,
-      int animation_id);
-  virtual blink::WebFilterAnimationCurve* createFilterAnimationCurve();
-  virtual blink::WebFloatAnimationCurve* createFloatAnimationCurve();
-  virtual blink::WebScrollOffsetAnimationCurve*
-      createScrollOffsetAnimationCurve(
-          blink::WebFloatPoint target_value,
-          blink::WebCompositorAnimationCurve::TimingFunctionType
-              timing_function);
-  virtual blink::WebTransformAnimationCurve* createTransformAnimationCurve();
-  virtual blink::WebTransformOperations* createTransformOperations();
-  virtual blink::WebFilterOperations* createFilterOperations();
+      int animation_id) override;
+  blink::WebFilterAnimationCurve* createFilterAnimationCurve() override;
+  blink::WebFloatAnimationCurve* createFloatAnimationCurve() override;
+  blink::WebScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
+      blink::WebFloatPoint target_value,
+      blink::WebCompositorAnimationCurve::TimingFunctionType timing_function)
+      override;
+  blink::WebTransformAnimationCurve* createTransformAnimationCurve() override;
+  blink::WebTransformOperations* createTransformOperations() override;
+  blink::WebFilterOperations* createFilterOperations() override;
 
-  virtual blink::WebCompositorAnimationPlayer* createAnimationPlayer();
-  virtual blink::WebCompositorAnimationTimeline* createAnimationTimeline();
+  blink::WebCompositorAnimationPlayer* createAnimationPlayer() override;
+  blink::WebCompositorAnimationTimeline* createAnimationTimeline() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCompositorSupportImpl);

@@ -24,15 +24,15 @@ class WebCompositorAnimationTimelineImpl
     : public blink::WebCompositorAnimationTimeline {
  public:
   CC_BLINK_EXPORT explicit WebCompositorAnimationTimelineImpl();
-  virtual ~WebCompositorAnimationTimelineImpl();
+  ~WebCompositorAnimationTimelineImpl() override;
 
   CC_BLINK_EXPORT cc::AnimationTimeline* animation_timeline() const;
 
   // blink::WebCompositorAnimationTimeline implementation
-  virtual void playerAttached(
-      const blink::WebCompositorAnimationPlayerClient& client);
-  virtual void playerDestroyed(
-      const blink::WebCompositorAnimationPlayerClient& client);
+  void playerAttached(
+      const blink::WebCompositorAnimationPlayerClient& client) override;
+  void playerDestroyed(
+      const blink::WebCompositorAnimationPlayerClient& client) override;
 
  private:
   scoped_refptr<cc::AnimationTimeline> animation_timeline_;

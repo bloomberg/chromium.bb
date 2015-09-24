@@ -35,15 +35,15 @@ class WebExternalTextureLayerImpl
  public:
   CC_BLINK_EXPORT explicit WebExternalTextureLayerImpl(
       blink::WebExternalTextureLayerClient*);
-  virtual ~WebExternalTextureLayerImpl();
+  ~WebExternalTextureLayerImpl() override;
 
   // blink::WebExternalTextureLayer implementation.
-  virtual blink::WebLayer* layer();
-  virtual void clearTexture();
-  virtual void setOpaque(bool opaque);
-  virtual void setPremultipliedAlpha(bool premultiplied);
-  virtual void setBlendBackgroundColor(bool blend);
-  virtual void setNearestNeighbor(bool nearest_neighbor);
+  blink::WebLayer* layer() override;
+  void clearTexture() override;
+  void setOpaque(bool opaque) override;
+  void setPremultipliedAlpha(bool premultiplied) override;
+  void setBlendBackgroundColor(bool blend) override;
+  void setNearestNeighbor(bool nearest_neighbor) override;
 
   // TextureLayerClient implementation.
   bool PrepareTextureMailbox(

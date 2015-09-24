@@ -38,33 +38,33 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   CC_BLINK_EXPORT WebDisplayItemListImpl();
   CC_BLINK_EXPORT explicit WebDisplayItemListImpl(
       cc::DisplayItemList* display_list);
-  virtual ~WebDisplayItemListImpl();
+  ~WebDisplayItemListImpl() override;
 
   // blink::WebDisplayItemList implementation.
-  virtual void appendDrawingItem(const SkPicture*);
-  virtual void appendClipItem(
+  void appendDrawingItem(const SkPicture*) override;
+  void appendClipItem(
       const blink::WebRect& clip_rect,
-      const blink::WebVector<SkRRect>& rounded_clip_rects);
-  virtual void appendEndClipItem();
-  virtual void appendClipPathItem(const SkPath& clip_path,
-                                  SkRegion::Op clip_op,
-                                  bool antialias);
-  virtual void appendEndClipPathItem();
-  virtual void appendFloatClipItem(const blink::WebFloatRect& clip_rect);
-  virtual void appendEndFloatClipItem();
-  virtual void appendTransformItem(const SkMatrix44& matrix);
-  virtual void appendEndTransformItem();
-  virtual void appendCompositingItem(float opacity,
-                                     SkXfermode::Mode,
-                                     SkRect* bounds,
-                                     SkColorFilter*);
-  virtual void appendEndCompositingItem();
-  virtual void appendFilterItem(const blink::WebFilterOperations& filters,
-                                const blink::WebFloatRect& bounds);
-  virtual void appendEndFilterItem();
-  virtual void appendScrollItem(const blink::WebSize& scrollOffset,
-                                ScrollContainerId);
-  virtual void appendEndScrollItem();
+      const blink::WebVector<SkRRect>& rounded_clip_rects) override;
+  void appendEndClipItem() override;
+  void appendClipPathItem(const SkPath& clip_path,
+                          SkRegion::Op clip_op,
+                          bool antialias) override;
+  void appendEndClipPathItem() override;
+  void appendFloatClipItem(const blink::WebFloatRect& clip_rect) override;
+  void appendEndFloatClipItem() override;
+  void appendTransformItem(const SkMatrix44& matrix) override;
+  void appendEndTransformItem() override;
+  void appendCompositingItem(float opacity,
+                             SkXfermode::Mode,
+                             SkRect* bounds,
+                             SkColorFilter*) override;
+  void appendEndCompositingItem() override;
+  void appendFilterItem(const blink::WebFilterOperations& filters,
+                        const blink::WebFloatRect& bounds) override;
+  void appendEndFilterItem() override;
+  void appendScrollItem(const blink::WebSize& scrollOffset,
+                        ScrollContainerId) override;
+  void appendEndScrollItem() override;
 
  private:
   scoped_refptr<cc::DisplayItemList> display_item_list_;

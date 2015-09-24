@@ -22,15 +22,16 @@ class WebScrollOffsetAnimationCurveImpl
   CC_BLINK_EXPORT WebScrollOffsetAnimationCurveImpl(
       blink::WebFloatPoint target_value,
       TimingFunctionType timing_function);
-  virtual ~WebScrollOffsetAnimationCurveImpl();
+  ~WebScrollOffsetAnimationCurveImpl() override;
 
   // blink::WebCompositorAnimationCurve implementation.
-  virtual AnimationCurveType type() const;
+  AnimationCurveType type() const override;
 
   // blink::WebScrollOffsetAnimationCurve implementation.
-  virtual void setInitialValue(blink::WebFloatPoint initial_value);
-  virtual blink::WebFloatPoint getValue(double time) const;
-  virtual double duration() const;
+  void setInitialValue(blink::WebFloatPoint initial_value) override;
+  blink::WebFloatPoint getValue(double time) const override;
+  double duration() const override;
+
   virtual blink::WebFloatPoint targetValue() const;
   virtual void updateTarget(double time, blink::WebFloatPoint new_target);
 

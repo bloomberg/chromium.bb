@@ -26,26 +26,26 @@ class WebCompositorAnimationImpl : public blink::WebCompositorAnimation {
       TargetProperty target,
       int animation_id,
       int group_id);
-  virtual ~WebCompositorAnimationImpl();
+  ~WebCompositorAnimationImpl() override;
 
   // blink::WebCompositorAnimation implementation
-  virtual int id();
-  virtual int group();
-  virtual TargetProperty targetProperty() const;
-  virtual double iterations() const;
-  virtual void setIterations(double iterations);
-  virtual double iterationStart() const;
-  virtual void setIterationStart(double iteration_start);
-  virtual double startTime() const;
-  virtual void setStartTime(double monotonic_time);
-  virtual double timeOffset() const;
-  virtual void setTimeOffset(double monotonic_time);
-  virtual Direction direction() const;
-  virtual void setDirection(Direction);
-  virtual double playbackRate() const;
-  virtual void setPlaybackRate(double playback_rate);
-  virtual FillMode fillMode() const;
-  virtual void setFillMode(blink::WebCompositorAnimation::FillMode fill_mode);
+  int id() override;
+  int group() override;
+  TargetProperty targetProperty() const override;
+  double iterations() const override;
+  void setIterations(double iterations) override;
+  double iterationStart() const override;
+  void setIterationStart(double iteration_start) override;
+  double startTime() const override;
+  void setStartTime(double monotonic_time) override;
+  double timeOffset() const override;
+  void setTimeOffset(double monotonic_time) override;
+  Direction direction() const override;
+  void setDirection(Direction) override;
+  double playbackRate() const override;
+  void setPlaybackRate(double playback_rate) override;
+  FillMode fillMode() const override;
+  void setFillMode(blink::WebCompositorAnimation::FillMode fill_mode) override;
   scoped_ptr<cc::Animation> PassAnimation();
 
  private:

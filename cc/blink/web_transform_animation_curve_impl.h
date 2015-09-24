@@ -24,31 +24,31 @@ class WebTransformAnimationCurveImpl
     : public blink::WebTransformAnimationCurve {
  public:
   CC_BLINK_EXPORT WebTransformAnimationCurveImpl();
-  virtual ~WebTransformAnimationCurveImpl();
+  ~WebTransformAnimationCurveImpl() override;
 
   // blink::WebCompositorAnimationCurve implementation.
-  virtual AnimationCurveType type() const;
+  AnimationCurveType type() const override;
 
   // blink::WebTransformAnimationCurve implementation.
-  virtual void add(const blink::WebTransformKeyframe& keyframe);
-  virtual void add(const blink::WebTransformKeyframe& keyframe,
-                   TimingFunctionType type);
-  virtual void add(const blink::WebTransformKeyframe& keyframe,
-                   double x1,
-                   double y1,
-                   double x2,
-                   double y2);
-  virtual void add(const blink::WebTransformKeyframe& keyframe,
-                   int steps,
-                   float stepsStartOffset);
-  virtual void setLinearTimingFunction();
-  virtual void setCubicBezierTimingFunction(TimingFunctionType);
-  virtual void setCubicBezierTimingFunction(double x1,
-                                            double y1,
-                                            double x2,
-                                            double y2);
-  virtual void setStepsTimingFunction(int number_of_steps,
-                                      float steps_start_offset);
+  void add(const blink::WebTransformKeyframe& keyframe) override;
+  void add(const blink::WebTransformKeyframe& keyframe,
+           TimingFunctionType type) override;
+  void add(const blink::WebTransformKeyframe& keyframe,
+           double x1,
+           double y1,
+           double x2,
+           double y2) override;
+  void add(const blink::WebTransformKeyframe& keyframe,
+           int steps,
+           float stepsStartOffset) override;
+  void setLinearTimingFunction() override;
+  void setCubicBezierTimingFunction(TimingFunctionType) override;
+  void setCubicBezierTimingFunction(double x1,
+                                    double y1,
+                                    double x2,
+                                    double y2) override;
+  void setStepsTimingFunction(int number_of_steps,
+                              float steps_start_offset) override;
 
   scoped_ptr<cc::AnimationCurve> CloneToAnimationCurve() const;
 

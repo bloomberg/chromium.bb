@@ -15,20 +15,20 @@ namespace cc_blink {
 class WebTransformOperationsImpl : public blink::WebTransformOperations {
  public:
   CC_BLINK_EXPORT WebTransformOperationsImpl();
-  virtual ~WebTransformOperationsImpl();
+  ~WebTransformOperationsImpl() override;
 
   const cc::TransformOperations& AsTransformOperations() const;
 
   // Implementation of blink::WebTransformOperations methods
-  virtual bool canBlendWith(const blink::WebTransformOperations& other) const;
-  virtual void appendTranslate(double x, double y, double z);
-  virtual void appendRotate(double x, double y, double z, double degrees);
-  virtual void appendScale(double x, double y, double z);
-  virtual void appendSkew(double x, double y);
-  virtual void appendPerspective(double depth);
-  virtual void appendMatrix(const SkMatrix44&);
-  virtual void appendIdentity();
-  virtual bool isIdentity() const;
+  bool canBlendWith(const blink::WebTransformOperations& other) const override;
+  void appendTranslate(double x, double y, double z) override;
+  void appendRotate(double x, double y, double z, double degrees) override;
+  void appendScale(double x, double y, double z) override;
+  void appendSkew(double x, double y) override;
+  void appendPerspective(double depth) override;
+  void appendMatrix(const SkMatrix44&) override;
+  void appendIdentity() override;
+  bool isIdentity() const override;
 
  private:
   cc::TransformOperations transform_operations_;

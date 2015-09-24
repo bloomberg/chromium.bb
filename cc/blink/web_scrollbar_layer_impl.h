@@ -30,12 +30,12 @@ class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
       int thumb_thickness,
       int track_start,
       bool is_left_side_vertical_scrollbar);
-  virtual ~WebScrollbarLayerImpl();
+  ~WebScrollbarLayerImpl() override;
 
   // blink::WebScrollbarLayer implementation.
-  virtual blink::WebLayer* layer();
-  virtual void setScrollLayer(blink::WebLayer* layer);
-  virtual void setClipLayer(blink::WebLayer* layer);
+  blink::WebLayer* layer() override;
+  void setScrollLayer(blink::WebLayer* layer) override;
+  void setClipLayer(blink::WebLayer* layer) override;
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

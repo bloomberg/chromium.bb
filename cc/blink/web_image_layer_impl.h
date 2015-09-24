@@ -16,12 +16,12 @@ class WebLayerImpl;
 class WebImageLayerImpl : public blink::WebImageLayer {
  public:
   CC_BLINK_EXPORT WebImageLayerImpl();
-  virtual ~WebImageLayerImpl();
+  ~WebImageLayerImpl() override;
 
   // blink::WebImageLayer implementation.
-  virtual blink::WebLayer* layer();
-  virtual void setImage(const SkImage* image);
-  virtual void setNearestNeighbor(bool nearest_neighbor);
+  blink::WebLayer* layer() override;
+  void setImage(const SkImage* image) override;
+  void setNearestNeighbor(bool nearest_neighbor) override;
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

@@ -28,11 +28,11 @@ class WebContentLayerImpl : public blink::WebContentLayer,
   CC_BLINK_EXPORT explicit WebContentLayerImpl(blink::WebContentLayerClient*);
 
   // WebContentLayer implementation.
-  virtual blink::WebLayer* layer();
-  virtual void setDoubleSided(bool double_sided);
+  blink::WebLayer* layer() override;
+  void setDoubleSided(bool double_sided) override;
 
  protected:
-  virtual ~WebContentLayerImpl();
+  ~WebContentLayerImpl() override;
 
   // ContentLayerClient implementation.
   void PaintContents(SkCanvas* canvas,
