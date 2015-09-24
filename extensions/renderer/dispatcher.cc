@@ -1155,9 +1155,9 @@ void Dispatcher::OnUpdatePermissions(
   if (!extension)
     return;
 
-  scoped_refptr<const PermissionSet> active =
+  scoped_ptr<const PermissionSet> active =
       params.active_permissions.ToPermissionSet();
-  scoped_refptr<const PermissionSet> withheld =
+  scoped_ptr<const PermissionSet> withheld =
       params.withheld_permissions.ToPermissionSet();
 
   if (is_webkit_initialized_) {
@@ -1167,7 +1167,7 @@ void Dispatcher::OnUpdatePermissions(
         active->effective_hosts());
   }
 
-  extension->permissions_data()->SetPermissions(active, withheld);
+  extension->permissions_data()->SetPermissions(active.Pass(), withheld.Pass());
   UpdateBindings(extension->id());
 }
 
@@ -1185,10 +1185,9 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
       extension->permissions_data()->GetEffectiveHostPermissions();
   extension->permissions_data()->UpdateTabSpecificPermissions(
       tab_id,
-      new extensions::PermissionSet(extensions::APIPermissionSet(),
-                                    extensions::ManifestPermissionSet(),
-                                    new_hosts,
-                                    extensions::URLPatternSet()));
+      extensions::PermissionSet(extensions::APIPermissionSet(),
+                                extensions::ManifestPermissionSet(), new_hosts,
+                                extensions::URLPatternSet()));
 
   if (is_webkit_initialized_ && update_origin_whitelist) {
     UpdateOriginPermissions(

@@ -29,6 +29,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "sync/api/string_ordinal.h"
 
 using content::BrowserThread;
@@ -168,6 +169,7 @@ bool UnpackedInstaller::LoadFromCommandLine(const base::FilePath& path_in,
     return false;
   }
 
+  extension()->permissions_data()->BindToCurrentThread();
   PermissionsUpdater(
       service_weak_->profile(), PermissionsUpdater::INIT_FLAG_TRANSIENT)
       .InitializePermissions(extension());

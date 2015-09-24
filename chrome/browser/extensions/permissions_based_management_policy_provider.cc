@@ -41,10 +41,10 @@ bool PermissionsBasedManagementPolicyProvider::UserMayLoad(
   if (Manifest::IsComponentLocation(extension->location()))
     return true;
 
-  scoped_refptr<const PermissionSet> required_permissions =
+  const PermissionSet* required_permissions =
       PermissionsParser::GetRequiredPermissions(extension);
 
-  if (!settings_->IsPermissionSetAllowed(extension, required_permissions)) {
+  if (!settings_->IsPermissionSetAllowed(extension, *required_permissions)) {
     if (error) {
       *error =
           l10n_util::GetStringFUTF16(IDS_EXTENSION_CANT_INSTALL_POLICY_BLOCKED,

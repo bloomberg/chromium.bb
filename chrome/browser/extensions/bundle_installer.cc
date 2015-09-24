@@ -261,11 +261,13 @@ void BundleInstaller::ShowPrompt() {
     return;
   }
 
-  scoped_refptr<const PermissionSet> permissions =
-      dummy_extensions_[0]->permissions_data()->active_permissions();
-  for (size_t i = 1; i < dummy_extensions_.size(); ++i) {
+  scoped_ptr<const PermissionSet> permissions;
+  PermissionSet empty;
+  for (size_t i = 0; i < dummy_extensions_.size(); ++i) {
+    // Using "permissions ? *permissions : PermissionSet()" tries to do a copy,
+    // and doesn't compile. Use a more verbose, but compilable, workaround.
     permissions = PermissionSet::CreateUnion(
-        *permissions,
+        permissions ? *permissions : empty,
         *dummy_extensions_[i]->permissions_data()->active_permissions());
   }
 
@@ -285,10 +287,10 @@ void BundleInstaller::ShowPrompt() {
       web_contents = browser->tab_strip_model()->GetActiveWebContents();
     install_ui_.reset(new ExtensionInstallPrompt(web_contents));
     if (delegated_username_.empty()) {
-      install_ui_->ConfirmBundleInstall(this, &icon_, permissions.get());
+      install_ui_->ConfirmBundleInstall(this, &icon_, permissions.Pass());
     } else {
       install_ui_->ConfirmPermissionsForDelegatedBundleInstall(
-          this, delegated_username_, &icon_, permissions.get());
+          this, delegated_username_, &icon_, permissions.Pass());
     }
   }
 }

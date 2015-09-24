@@ -212,16 +212,17 @@ TEST_F(ProfileSigninConfirmationHelperTest, PromptForNewProfile_Extensions) {
       CreateExtension("web store",
                       extensions::kWebStoreAppId,
                       extensions::Manifest::COMPONENT);
-  extensions::ExtensionPrefs::Get(profile_.get())->AddGrantedPermissions(
-      webstore->id(), make_scoped_refptr(new extensions::PermissionSet).get());
+  extensions::PermissionSet empty_permissions;
+  extensions::ExtensionPrefs::Get(profile_.get())
+      ->AddGrantedPermissions(webstore->id(), &empty_permissions);
   extensions->AddExtension(webstore.get());
   EXPECT_FALSE(GetCallbackResult(
       base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));
 
   scoped_refptr<extensions::Extension> extension =
       CreateExtension("foo", std::string(), extensions::Manifest::INTERNAL);
-  extensions::ExtensionPrefs::Get(profile_.get())->AddGrantedPermissions(
-      extension->id(), make_scoped_refptr(new extensions::PermissionSet).get());
+  extensions::ExtensionPrefs::Get(profile_.get())
+      ->AddGrantedPermissions(extension->id(), &empty_permissions);
   extensions->AddExtension(extension.get());
   EXPECT_TRUE(GetCallbackResult(
       base::Bind(&ui::CheckShouldPromptForNewProfile, profile_.get())));

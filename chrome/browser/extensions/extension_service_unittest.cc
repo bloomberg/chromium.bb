@@ -792,10 +792,10 @@ class ExtensionServiceTest : public extensions::ExtensionServiceTestBase,
   // set for extension |id|.
   void GrantAllOptionalPermissions(const std::string& id) {
     const Extension* extension = service()->GetInstalledExtension(id);
-    scoped_refptr<const PermissionSet> all_optional_permissions =
+    const PermissionSet* all_optional_permissions =
         extensions::PermissionsParser::GetOptionalPermissions(extension);
     extensions::PermissionsUpdater perms_updater(profile());
-    perms_updater.AddPermissions(extension, all_optional_permissions.get());
+    perms_updater.AddPermissions(extension, all_optional_permissions);
   }
 
   // Helper method to set up a WindowedNotificationObserver to wait for a
@@ -1851,9 +1851,7 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<const PermissionSet> known_perms(
-      prefs->GetGrantedPermissions(permissions_crx));
-  EXPECT_FALSE(known_perms.get());
+  EXPECT_FALSE(prefs->GetGrantedPermissions(permissions_crx).get());
 
   const Extension* extension = PackAndInstallCRX(path, pem_path, INSTALL_NEW);
 
@@ -1869,7 +1867,8 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
   AddPattern(&expected_host_perms, "http://*.google.com.hk/*");
   AddPattern(&expected_host_perms, "http://www.example.com/*");
 
-  known_perms = prefs->GetGrantedPermissions(extension->id());
+  scoped_ptr<const PermissionSet> known_perms =
+      prefs->GetGrantedPermissions(extension->id());
   EXPECT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
@@ -1898,9 +1897,7 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
 
   // Make sure there aren't any granted permissions before the
   // extension is installed.
-  scoped_refptr<const PermissionSet> known_perms(
-      prefs->GetGrantedPermissions(permissions_crx));
-  EXPECT_FALSE(known_perms.get());
+  EXPECT_FALSE(prefs->GetGrantedPermissions(permissions_crx).get());
 
   const Extension* extension = PackAndInstallCRX(
       path, pem_path, INSTALL_NEW, Extension::WAS_INSTALLED_BY_DEFAULT);
@@ -1912,7 +1909,8 @@ TEST_F(ExtensionServiceTest, DefaultAppsGrantedPermissions) {
   // Verify that the valid API permissions have been recognized.
   expected_api_perms.insert(APIPermission::kTab);
 
-  known_perms = prefs->GetGrantedPermissions(extension->id());
+  scoped_ptr<const PermissionSet> known_perms =
+      prefs->GetGrantedPermissions(extension->id());
   EXPECT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
@@ -1935,8 +1933,8 @@ TEST_F(ExtensionServiceTest, GrantedFullAccessPermissions) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
 
-  scoped_refptr<const PermissionSet> permissions(
-      prefs->GetGrantedPermissions(extension->id()));
+  scoped_ptr<const PermissionSet> permissions =
+      prefs->GetGrantedPermissions(extension->id());
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
   EXPECT_FALSE(permissions->apis().empty());
@@ -1998,8 +1996,8 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   ASSERT_TRUE(service()->IsExtensionEnabled(extension_id));
   ASSERT_FALSE(prefs->DidExtensionEscalatePermissions(extension_id));
 
-  scoped_refptr<const PermissionSet> current_perms(
-      prefs->GetGrantedPermissions(extension_id));
+  scoped_ptr<const PermissionSet> current_perms =
+      prefs->GetGrantedPermissions(extension_id);
   ASSERT_TRUE(current_perms.get());
   ASSERT_FALSE(current_perms->IsEmpty());
   ASSERT_FALSE(current_perms->HasEffectiveFullAccess());
@@ -2893,8 +2891,8 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_TRUE(registry()->enabled_extensions().Contains(good2));
 
   // Make sure the granted permissions have been setup.
-  scoped_refptr<const PermissionSet> permissions(
-      ExtensionPrefs::Get(profile())->GetGrantedPermissions(good1));
+  scoped_ptr<const PermissionSet> permissions =
+      ExtensionPrefs::Get(profile())->GetGrantedPermissions(good1);
   EXPECT_FALSE(permissions->IsEmpty());
   EXPECT_TRUE(permissions->HasEffectiveFullAccess());
   EXPECT_FALSE(permissions->apis().empty());
@@ -4282,8 +4280,8 @@ TEST_F(ExtensionServiceTest, PolicyBlockedPermissionPolicyUpdate) {
   GrantAllOptionalPermissions(ext2);
   GrantAllOptionalPermissions(ext2_forced);
 
-  scoped_refptr<const PermissionSet> active_permissions(
-      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1));
+  scoped_ptr<const PermissionSet> active_permissions =
+      ExtensionPrefs::Get(profile())->GetActivePermissions(ext1);
   EXPECT_TRUE(active_permissions->HasAPIPermission(
       extensions::APIPermission::kDownloads));
 
@@ -6616,8 +6614,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataNewExtension) {
                                                            : DISABLED);
     EXPECT_EQ(test_case.expect_disable_reasons,
               prefs->GetDisableReasons(good_crx));
-    scoped_refptr<const PermissionSet> permissions(
-        prefs->GetGrantedPermissions(good_crx));
+    scoped_ptr<const PermissionSet> permissions =
+        prefs->GetGrantedPermissions(good_crx);
     EXPECT_EQ(test_case.expect_permissions_granted, !permissions->IsEmpty());
     ASSERT_FALSE(service()->pending_extension_manager()->IsIdPending(good_crx));
 
@@ -6961,8 +6959,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
     }
     ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
 
-    scoped_refptr<const PermissionSet> granted_permissions_v1(
-        prefs->GetGrantedPermissions(id));
+    scoped_ptr<const PermissionSet> granted_permissions_v1 =
+        prefs->GetGrantedPermissions(id);
 
     // Update to a new version with increased permissions.
     UpdateExtension(id, crx_path_v2, DISABLED);
@@ -6978,8 +6976,8 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
         id, Extension::DISABLE_PERMISSIONS_INCREASE));
 
     // No new permissions should have been granted.
-    scoped_refptr<const PermissionSet> granted_permissions_v2(
-        prefs->GetGrantedPermissions(id));
+    scoped_ptr<const PermissionSet> granted_permissions_v2 =
+        prefs->GetGrantedPermissions(id);
     ASSERT_EQ(*granted_permissions_v1, *granted_permissions_v2);
 
     // Now a sync update comes in.
@@ -7001,11 +6999,11 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataPermissionApproval) {
 
     // Check expectations.
     EXPECT_TRUE(registry()->GetExtensionById(id, ExtensionRegistry::ENABLED));
-    scoped_refptr<const PermissionSet> granted_permissions(
-        prefs->GetGrantedPermissions(id));
+    scoped_ptr<const PermissionSet> granted_permissions =
+        prefs->GetGrantedPermissions(id);
     if (test_case.expect_permissions_granted) {
-      scoped_refptr<const PermissionSet> active_permissions(
-          prefs->GetActivePermissions(id));
+      scoped_ptr<const PermissionSet> active_permissions =
+          prefs->GetActivePermissions(id);
       EXPECT_EQ(*granted_permissions, *active_permissions);
     } else {
       EXPECT_EQ(*granted_permissions, *granted_permissions_v1);

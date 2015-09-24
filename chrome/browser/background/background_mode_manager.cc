@@ -67,7 +67,6 @@
 
 using base::UserMetricsAction;
 using extensions::Extension;
-using extensions::UpdatedExtensionPermissionsInfo;
 
 namespace {
 

@@ -32,16 +32,15 @@ namespace keys = manifest_keys;
 namespace errors = manifest_errors;
 
 struct ManifestPermissions : public Extension::ManifestData {
-  ManifestPermissions(scoped_refptr<const PermissionSet> permissions);
+  ManifestPermissions(scoped_ptr<const PermissionSet> permissions);
   ~ManifestPermissions() override;
 
-  scoped_refptr<const PermissionSet> permissions;
+  scoped_ptr<const PermissionSet> permissions;
 };
 
 ManifestPermissions::ManifestPermissions(
-    scoped_refptr<const PermissionSet> permissions)
-    : permissions(permissions) {
-}
+    scoped_ptr<const PermissionSet> permissions)
+    : permissions(permissions.Pass()) {}
 
 ManifestPermissions::~ManifestPermissions() {
 }
@@ -267,21 +266,21 @@ void PermissionsParser::Finalize(Extension* extension) {
   ManifestHandler::AddExtensionInitialRequiredPermissions(
       extension, &initial_required_permissions_->manifest_permissions);
 
-  scoped_refptr<const PermissionSet> required_permissions(
+  scoped_ptr<const PermissionSet> required_permissions(
       new PermissionSet(initial_required_permissions_->api_permissions,
                         initial_required_permissions_->manifest_permissions,
                         initial_required_permissions_->host_permissions,
                         initial_required_permissions_->scriptable_hosts));
-  extension->SetManifestData(keys::kPermissions,
-                             new ManifestPermissions(required_permissions));
+  extension->SetManifestData(
+      keys::kPermissions, new ManifestPermissions(required_permissions.Pass()));
 
-  scoped_refptr<const PermissionSet> optional_permissions(
-      new PermissionSet(initial_optional_permissions_->api_permissions,
-                        initial_optional_permissions_->manifest_permissions,
-                        initial_optional_permissions_->host_permissions,
-                        URLPatternSet()));
-  extension->SetManifestData(keys::kOptionalPermissions,
-                             new ManifestPermissions(optional_permissions));
+  scoped_ptr<const PermissionSet> optional_permissions(new PermissionSet(
+      initial_optional_permissions_->api_permissions,
+      initial_optional_permissions_->manifest_permissions,
+      initial_optional_permissions_->host_permissions, URLPatternSet()));
+  extension->SetManifestData(
+      keys::kOptionalPermissions,
+      new ManifestPermissions(optional_permissions.Pass()));
 }
 
 // static
@@ -319,20 +318,21 @@ void PermissionsParser::SetScriptableHosts(
 }
 
 // static
-scoped_refptr<const PermissionSet> PermissionsParser::GetRequiredPermissions(
+const PermissionSet* PermissionsParser::GetRequiredPermissions(
     const Extension* extension) {
   DCHECK(extension->GetManifestData(keys::kPermissions));
   return static_cast<const ManifestPermissions*>(
-             extension->GetManifestData(keys::kPermissions))->permissions;
+             extension->GetManifestData(keys::kPermissions))
+      ->permissions.get();
 }
 
 // static
-scoped_refptr<const PermissionSet> PermissionsParser::GetOptionalPermissions(
+const PermissionSet* PermissionsParser::GetOptionalPermissions(
     const Extension* extension) {
   DCHECK(extension->GetManifestData(keys::kOptionalPermissions));
   return static_cast<const ManifestPermissions*>(
              extension->GetManifestData(keys::kOptionalPermissions))
-      ->permissions;
+      ->permissions.get();
 }
 
 }  // namespace extensions

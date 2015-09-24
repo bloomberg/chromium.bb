@@ -249,7 +249,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
     InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
-    scoped_refptr<const PermissionSet> permissions =
+    scoped_ptr<const PermissionSet> permissions =
         ExtensionPrefs::Get(browser()->profile())
             ->GetGrantedPermissions(mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());

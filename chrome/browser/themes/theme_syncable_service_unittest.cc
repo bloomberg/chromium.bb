@@ -189,11 +189,10 @@ class ThemeSyncableServiceTest : public testing::Test {
     extensions::APIPermissionSet empty_set;
     extensions::ManifestPermissionSet empty_manifest_permissions;
     extensions::URLPatternSet empty_extent;
-    scoped_refptr<extensions::PermissionSet> permissions =
-        new extensions::PermissionSet(empty_set, empty_manifest_permissions,
-                                      empty_extent, empty_extent);
+    extensions::PermissionSet permissions(empty_set, empty_manifest_permissions,
+                                          empty_extent, empty_extent);
     extensions::ExtensionPrefs::Get(profile_.get())
-        ->AddGrantedPermissions(theme_extension_->id(), permissions.get());
+        ->AddGrantedPermissions(theme_extension_->id(), &permissions);
     service->AddExtension(theme_extension_.get());
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile_.get());

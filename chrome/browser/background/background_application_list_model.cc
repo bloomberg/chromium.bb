@@ -363,8 +363,8 @@ void BackgroundApplicationListModel::OnExtensionUnloaded(
 void BackgroundApplicationListModel::OnExtensionPermissionsUpdated(
     const Extension* extension,
     UpdatedExtensionPermissionsInfo::Reason reason,
-    const PermissionSet* permissions) {
-  if (permissions->HasAPIPermission(APIPermission::kBackground)) {
+    const PermissionSet& permissions) {
+  if (permissions.HasAPIPermission(APIPermission::kBackground)) {
     switch (reason) {
       case UpdatedExtensionPermissionsInfo::ADDED:
         DCHECK(IsBackgroundApp(*extension, profile_));

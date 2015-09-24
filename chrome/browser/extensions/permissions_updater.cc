@@ -59,29 +59,29 @@ URLPatternSet FilterSingleOriginPermissions(const URLPatternSet& permissions,
 
 // Returns a PermissionSet that has the active permissions of the extension,
 // bounded to its current manifest.
-scoped_refptr<const PermissionSet> GetBoundedActivePermissions(
+scoped_ptr<const PermissionSet> GetBoundedActivePermissions(
     const Extension* extension,
-    const scoped_refptr<const PermissionSet>& active_permissions) {
+    const PermissionSet* active_permissions) {
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
-  if (!active_permissions.get())
-    return extension->permissions_data()->active_permissions();
+  if (!active_permissions)
+    return extension->permissions_data()->active_permissions()->Clone();
 
-  scoped_refptr<const PermissionSet> required_permissions =
+  const PermissionSet* required_permissions =
       PermissionsParser::GetRequiredPermissions(extension);
 
   // We restrict the active permissions to be within the bounds defined in the
   // extension's manifest.
   //  a) active permissions must be a subset of optional + default permissions
   //  b) active permissions must contains all default permissions
-  scoped_refptr<const PermissionSet> total_permissions =
+  scoped_ptr<const PermissionSet> total_permissions =
       PermissionSet::CreateUnion(
           *required_permissions,
           *PermissionsParser::GetOptionalPermissions(extension));
 
   // Make sure the active permissions contain no more than optional + default.
-  scoped_refptr<const PermissionSet> adjusted_active =
+  scoped_ptr<const PermissionSet> adjusted_active =
       PermissionSet::CreateIntersection(*total_permissions,
                                         *active_permissions);
 
@@ -124,19 +124,19 @@ PermissionsUpdater::~PermissionsUpdater() {}
 
 void PermissionsUpdater::AddPermissions(
     const Extension* extension, const PermissionSet* permissions) {
-  scoped_refptr<const PermissionSet> active(
+  const PermissionSet* active(
       extension->permissions_data()->active_permissions());
-  scoped_refptr<const PermissionSet> total(
-      PermissionSet::CreateUnion(*active, *permissions));
-  scoped_refptr<const PermissionSet> added(
-      PermissionSet::CreateDifference(*total, *active));
+  scoped_ptr<const PermissionSet> total =
+      PermissionSet::CreateUnion(*active, *permissions);
+  scoped_ptr<const PermissionSet> added =
+      PermissionSet::CreateDifference(*total, *active);
 
-  SetPermissions(extension, total, nullptr);
+  SetPermissions(extension, total.Pass(), nullptr);
 
   // Update the granted permissions so we don't auto-disable the extension.
   GrantActivePermissions(extension);
 
-  NotifyPermissionsUpdated(ADDED, extension, added.get());
+  NotifyPermissionsUpdated(ADDED, extension, *added);
 }
 
 void PermissionsUpdater::RemovePermissions(const Extension* extension,
@@ -145,23 +145,23 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
   // We should only be revoking revokable permissions.
   CHECK(GetRevokablePermissions(extension)->Contains(*to_remove));
 
-  scoped_refptr<const PermissionSet> active(
-      extension->permissions_data()->active_permissions());
-  scoped_refptr<const PermissionSet> remaining(
-      PermissionSet::CreateDifference(*active, *to_remove));
+  const PermissionSet* active =
+      extension->permissions_data()->active_permissions();
+  scoped_ptr<const PermissionSet> remaining =
+      PermissionSet::CreateDifference(*active, *to_remove);
 
   // Move any granted permissions that were in the withheld set back to the
   // withheld set so they can be added back later.
   // Any revoked permission that isn't from the optional permissions can only
   // be a withheld permission.
-  scoped_refptr<const PermissionSet> removed_withheld =
+  scoped_ptr<const PermissionSet> removed_withheld =
       PermissionSet::CreateDifference(
           *to_remove, *PermissionsParser::GetOptionalPermissions(extension));
-  scoped_refptr<const PermissionSet> withheld = PermissionSet::CreateUnion(
+  scoped_ptr<const PermissionSet> withheld = PermissionSet::CreateUnion(
       *removed_withheld,
       *extension->permissions_data()->withheld_permissions());
 
-  SetPermissions(extension, remaining, withheld);
+  SetPermissions(extension, remaining.Pass(), withheld.Pass());
 
   // We might not want to revoke the granted permissions because the extension,
   // not the user, removed the permissions. This allows the extension to add
@@ -171,36 +171,37 @@ void PermissionsUpdater::RemovePermissions(const Extension* extension,
         ->RemoveGrantedPermissions(extension->id(), to_remove);
   }
 
-  NotifyPermissionsUpdated(REMOVED, extension, to_remove);
+  NotifyPermissionsUpdated(REMOVED, extension, *to_remove);
 }
 
 void PermissionsUpdater::RemovePermissionsUnsafe(
     const Extension* extension,
     const PermissionSet* to_remove) {
-  scoped_refptr<const PermissionSet> active(
-      extension->permissions_data()->active_permissions());
-  scoped_refptr<const PermissionSet> total(
-      PermissionSet::CreateDifference(*active, *to_remove));
+  const PermissionSet* active =
+      extension->permissions_data()->active_permissions();
+  scoped_ptr<const PermissionSet> total =
+      PermissionSet::CreateDifference(*active, *to_remove);
   // |successfully_removed| might not equal |to_remove| if |to_remove| contains
   // permissions the extension didn't have.
-  scoped_refptr<const PermissionSet> successfully_removed(
-      PermissionSet::CreateDifference(*active, *total));
+  scoped_ptr<const PermissionSet> successfully_removed =
+      PermissionSet::CreateDifference(*active, *total);
 
-  SetPermissions(extension, total, nullptr);
-  NotifyPermissionsUpdated(REMOVED, extension, successfully_removed.get());
+  SetPermissions(extension, total.Pass(), nullptr);
+  NotifyPermissionsUpdated(REMOVED, extension, *successfully_removed);
 }
 
-scoped_refptr<const PermissionSet> PermissionsUpdater::GetRevokablePermissions(
+scoped_ptr<const PermissionSet> PermissionsUpdater::GetRevokablePermissions(
     const Extension* extension) const {
   // Optional permissions are revokable.
-  scoped_refptr<const PermissionSet> revokable_permissions =
+  scoped_ptr<const PermissionSet> wrapper;
+  const PermissionSet* revokable_permissions =
       PermissionsParser::GetOptionalPermissions(extension);
-  scoped_refptr<const PermissionSet> active_permissions =
+  const PermissionSet* active_permissions =
       extension->permissions_data()->active_permissions();
   // If click-to-script is enabled, then any hosts that are granted, but not
   // listed explicitly as a required permission, are also revokable.
   if (FeatureSwitch::scripts_require_action()->IsEnabled()) {
-    scoped_refptr<const PermissionSet> required_permissions =
+    const PermissionSet* required_permissions =
         PermissionsParser::GetRequiredPermissions(extension);
     auto find_revokable_hosts = [](const URLPatternSet& active_hosts,
                                    const URLPatternSet& required_hosts) {
@@ -219,42 +220,51 @@ scoped_refptr<const PermissionSet> PermissionsUpdater::GetRevokablePermissions(
     URLPatternSet revokable_scriptable_hosts =
         find_revokable_hosts(active_permissions->scriptable_hosts(),
                              required_permissions->scriptable_hosts());
-    scoped_refptr<const PermissionSet> revokable_host_permissions =
+    scoped_ptr<const PermissionSet> revokable_host_permissions(
         new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                          revokable_explicit_hosts, revokable_scriptable_hosts);
-    revokable_permissions = PermissionSet::CreateUnion(
-        *revokable_permissions, *revokable_host_permissions);
+                          revokable_explicit_hosts,
+                          revokable_scriptable_hosts));
+    wrapper = PermissionSet::CreateUnion(*revokable_permissions,
+                                         *revokable_host_permissions);
+    revokable_permissions = wrapper.get();
   }
-  return scoped_refptr<const PermissionSet>(PermissionSet::CreateIntersection(
-      *active_permissions, *revokable_permissions));
+  return PermissionSet::CreateIntersection(*active_permissions,
+                                           *revokable_permissions);
 }
 
 void PermissionsUpdater::GrantActivePermissions(const Extension* extension) {
   CHECK(extension);
 
-  ExtensionPrefs::Get(browser_context_)->AddGrantedPermissions(
-      extension->id(),
-      extension->permissions_data()->active_permissions().get());
+  ExtensionPrefs::Get(browser_context_)
+      ->AddGrantedPermissions(
+          extension->id(), extension->permissions_data()->active_permissions());
 }
 
 void PermissionsUpdater::InitializePermissions(const Extension* extension) {
-  scoped_refptr<const PermissionSet> active_permissions(NULL);
-  scoped_refptr<const PermissionSet> bounded_active(NULL);
+  scoped_ptr<const PermissionSet> active_wrapper;
+  scoped_ptr<const PermissionSet> bounded_wrapper;
+  const PermissionSet* active_permissions = nullptr;
+  const PermissionSet* bounded_active = nullptr;
   // If |extension| is a transient dummy extension, we do not want to look for
   // it in preferences.
   if (init_flag_ & INIT_FLAG_TRANSIENT) {
-    bounded_active = active_permissions =
+    active_permissions = bounded_active =
         extension->permissions_data()->active_permissions();
   } else {
-    active_permissions = ExtensionPrefs::Get(browser_context_)
-                             ->GetActivePermissions(extension->id());
-    bounded_active = GetBoundedActivePermissions(extension, active_permissions);
+    // As part of initializing permissions, we restrict access to the main
+    // thread.
+    active_wrapper = ExtensionPrefs::Get(browser_context_)
+                         ->GetActivePermissions(extension->id());
+    active_permissions = active_wrapper.get();
+    bounded_wrapper =
+        GetBoundedActivePermissions(extension, active_permissions);
+    bounded_active = bounded_wrapper.get();
   }
 
   // Determine whether or not to withhold host permissions.
   bool should_withhold_permissions = false;
-  if (PermissionsData::ScriptsMayRequireActionForExtension(
-          extension, bounded_active.get())) {
+  if (PermissionsData::ScriptsMayRequireActionForExtension(extension,
+                                                           bounded_active)) {
     should_withhold_permissions =
         init_flag_ & INIT_FLAG_TRANSIENT ?
             !util::DefaultAllowedScriptingOnAllUrls() :
@@ -280,7 +290,7 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
   // For example, the union of <all_urls> and "example.com" is <all_urls>, so
   // we may lose "example.com". However, "example.com" is important once
   // <all_urls> is stripped during withholding.
-  if (active_permissions.get()) {
+  if (active_permissions) {
     granted_explicit_hosts.AddPatterns(
         FilterSingleOriginPermissions(active_permissions->explicit_hosts(),
                                       bounded_active->explicit_hosts()));
@@ -289,23 +299,20 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
                                       bounded_active->scriptable_hosts()));
   }
 
-  bounded_active = new PermissionSet(bounded_active->apis(),
-                                     bounded_active->manifest_permissions(),
-                                     granted_explicit_hosts,
-                                     granted_scriptable_hosts);
+  scoped_ptr<const PermissionSet> new_permissions(new PermissionSet(
+      bounded_active->apis(), bounded_active->manifest_permissions(),
+      granted_explicit_hosts, granted_scriptable_hosts));
 
-  scoped_refptr<const PermissionSet> withheld =
-      new PermissionSet(APIPermissionSet(),
-                        ManifestPermissionSet(),
-                        withheld_explicit_hosts,
-                        withheld_scriptable_hosts);
-  SetPermissions(extension, bounded_active, withheld);
+  scoped_ptr<const PermissionSet> withheld(
+      new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        withheld_explicit_hosts, withheld_scriptable_hosts));
+  SetPermissions(extension, new_permissions.Pass(), withheld.Pass());
 }
 
 void PermissionsUpdater::WithholdImpliedAllHosts(const Extension* extension) {
-  scoped_refptr<const PermissionSet> active =
+  const PermissionSet* active =
       extension->permissions_data()->active_permissions();
-  scoped_refptr<const PermissionSet> withheld =
+  const PermissionSet* withheld =
       extension->permissions_data()->withheld_permissions();
 
   URLPatternSet withheld_scriptable = withheld->scriptable_hosts();
@@ -327,29 +334,24 @@ void PermissionsUpdater::WithholdImpliedAllHosts(const Extension* extension) {
   URLPatternSet delta_scriptable = URLPatternSet::CreateDifference(
       active->scriptable_hosts(), active_scriptable);
 
-  SetPermissions(extension,
-                 new PermissionSet(active->apis(),
-                                   active->manifest_permissions(),
-                                   active_explicit,
-                                   active_scriptable),
-                 new PermissionSet(withheld->apis(),
-                                   withheld->manifest_permissions(),
-                                   withheld_explicit,
-                                   withheld_scriptable));
+  SetPermissions(extension, make_scoped_ptr(new PermissionSet(
+                                active->apis(), active->manifest_permissions(),
+                                active_explicit, active_scriptable)),
+                 make_scoped_ptr(new PermissionSet(
+                     withheld->apis(), withheld->manifest_permissions(),
+                     withheld_explicit, withheld_scriptable)));
 
-  scoped_refptr<const PermissionSet> delta(new PermissionSet(
-      APIPermissionSet(),
-      ManifestPermissionSet(),
-      delta_explicit,
-      delta_scriptable));
-  NotifyPermissionsUpdated(REMOVED, extension, delta.get());
+  NotifyPermissionsUpdated(
+      REMOVED, extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(), delta_explicit,
+                    delta_scriptable));
 }
 
 void PermissionsUpdater::GrantWithheldImpliedAllHosts(
     const Extension* extension) {
-  scoped_refptr<const PermissionSet> active =
+  const PermissionSet* active =
       extension->permissions_data()->active_permissions();
-  scoped_refptr<const PermissionSet> withheld =
+  const PermissionSet* withheld =
       extension->permissions_data()->withheld_permissions();
 
   // Move the all-hosts permission from withheld to active.
@@ -368,31 +370,33 @@ void PermissionsUpdater::GrantWithheldImpliedAllHosts(
 
   // Since we only withhold host permissions (so far), we know that withheld
   // permissions will be empty.
-  SetPermissions(extension,
-                 new PermissionSet(active->apis(),
-                                   active->manifest_permissions(),
-                                   explicit_hosts,
-                                   scriptable_hosts),
-                 new PermissionSet());
+  SetPermissions(extension, make_scoped_ptr(new PermissionSet(
+                                active->apis(), active->manifest_permissions(),
+                                explicit_hosts, scriptable_hosts)),
+                 make_scoped_ptr(new PermissionSet()));
 
-  scoped_refptr<const PermissionSet> delta(new PermissionSet(
-      APIPermissionSet(),
-      ManifestPermissionSet(),
-      delta_explicit,
-      delta_scriptable));
-  NotifyPermissionsUpdated(ADDED, extension, delta.get());
+  NotifyPermissionsUpdated(
+      ADDED, extension,
+      PermissionSet(APIPermissionSet(), ManifestPermissionSet(), delta_explicit,
+                    delta_scriptable));
 }
 
 void PermissionsUpdater::SetPermissions(
     const Extension* extension,
-    const scoped_refptr<const PermissionSet>& active,
-    scoped_refptr<const PermissionSet> withheld) {
-  withheld = withheld.get() ? withheld
-                 : extension->permissions_data()->withheld_permissions();
-  extension->permissions_data()->SetPermissions(active, withheld);
+    scoped_ptr<const PermissionSet> active,
+    scoped_ptr<const PermissionSet> withheld) {
+  DCHECK(active);
+  const PermissionSet* active_weak = active.get();
+  if (withheld) {
+    extension->permissions_data()->SetPermissions(active.Pass(),
+                                                  withheld.Pass());
+  } else {
+    extension->permissions_data()->SetActivePermissions(active.Pass());
+  }
+
   if ((init_flag_ & INIT_FLAG_TRANSIENT) == 0) {
     ExtensionPrefs::Get(browser_context_)
-        ->SetActivePermissions(extension->id(), active.get());
+        ->SetActivePermissions(extension->id(), active_weak);
   }
 }
 
@@ -400,14 +404,14 @@ void PermissionsUpdater::DispatchEvent(
     const std::string& extension_id,
     events::HistogramValue histogram_value,
     const char* event_name,
-    const PermissionSet* changed_permissions) {
+    const PermissionSet& changed_permissions) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   if (!event_router)
     return;
 
   scoped_ptr<base::ListValue> value(new base::ListValue());
   scoped_ptr<api::permissions::Permissions> permissions =
-      PackPermissionSet(changed_permissions);
+      PackPermissionSet(&changed_permissions);
   value->Append(permissions->ToValue().release());
   scoped_ptr<Event> event(new Event(histogram_value, event_name, value.Pass()));
   event->restrict_to_browser_context = browser_context_;
@@ -417,9 +421,9 @@ void PermissionsUpdater::DispatchEvent(
 void PermissionsUpdater::NotifyPermissionsUpdated(
     EventType event_type,
     const Extension* extension,
-    const PermissionSet* changed) {
+    const PermissionSet& changed) {
   DCHECK((init_flag_ & INIT_FLAG_TRANSIENT) == 0);
-  if (!changed || changed->IsEmpty())
+  if (changed.IsEmpty())
     return;
 
   UpdatedExtensionPermissionsInfo::Reason reason;

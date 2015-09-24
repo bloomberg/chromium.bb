@@ -78,42 +78,40 @@ class PermissionMessagesUnittest : public testing::Test {
   // Returns the permission messages that would display in the prompt that
   // requests all the optional permissions for the current |app_|.
   std::vector<base::string16> GetOptionalPermissionMessages() {
-    scoped_refptr<const PermissionSet> granted_permissions =
+    scoped_ptr<const PermissionSet> granted_permissions =
         env_.GetExtensionPrefs()->GetGrantedPermissions(app_->id());
-    scoped_refptr<const PermissionSet> optional_permissions =
+    const PermissionSet* optional_permissions =
         PermissionsParser::GetOptionalPermissions(app_.get());
-    scoped_refptr<const PermissionSet> requested_permissions =
+    scoped_ptr<const PermissionSet> requested_permissions =
         PermissionSet::CreateDifference(*optional_permissions,
                                         *granted_permissions);
-    return GetMessages(requested_permissions);
+    return GetMessages(*requested_permissions);
   }
 
   void GrantOptionalPermissions() {
     PermissionsUpdater perms_updater(env_.profile());
     perms_updater.AddPermissions(
-        app_.get(),
-        PermissionsParser::GetOptionalPermissions(app_.get()).get());
+        app_.get(), PermissionsParser::GetOptionalPermissions(app_.get()));
   }
 
   std::vector<base::string16> active_permissions() {
-    return GetMessages(app_->permissions_data()->active_permissions());
+    return GetMessages(*app_->permissions_data()->active_permissions());
   }
 
   std::vector<base::string16> required_permissions() {
-    return GetMessages(PermissionsParser::GetRequiredPermissions(app_.get()));
+    return GetMessages(*PermissionsParser::GetRequiredPermissions(app_.get()));
   }
 
   std::vector<base::string16> optional_permissions() {
-    return GetMessages(PermissionsParser::GetOptionalPermissions(app_.get()));
+    return GetMessages(*PermissionsParser::GetOptionalPermissions(app_.get()));
   }
 
  private:
-  std::vector<base::string16> GetMessages(
-      scoped_refptr<const PermissionSet> permissions) {
+  std::vector<base::string16> GetMessages(const PermissionSet& permissions) {
     std::vector<base::string16> messages;
     for (const PermissionMessage& msg :
          message_provider_->GetPermissionMessages(
-             message_provider_->GetAllPermissionIDs(permissions.get(),
+             message_provider_->GetAllPermissionIDs(&permissions,
                                                     app_->GetType()))) {
       messages.push_back(msg.message());
     }

@@ -297,11 +297,11 @@ CrxInstallError CrxInstaller::AllowInstall(const Extension* extension) {
                               extension->id(),
                               &error);
         if (error.empty()) {
-          scoped_refptr<const PermissionSet> expected_permissions =
+          const PermissionSet* expected_permissions =
               dummy_extension->permissions_data()->active_permissions();
           valid = !(PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-              expected_permissions.get(),
-              extension->permissions_data()->active_permissions().get(),
+              expected_permissions,
+              extension->permissions_data()->active_permissions(),
               extension->GetType()));
         }
       }
@@ -797,6 +797,8 @@ void CrxInstaller::ReportSuccessFromUIThread() {
 
   if (!service_weak_.get() || service_weak_->browser_terminating())
     return;
+
+  extension()->permissions_data()->BindToCurrentThread();
 
   if (!update_from_settings_page_) {
     // If there is a client, tell the client about installation.

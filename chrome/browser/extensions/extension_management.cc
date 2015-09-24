@@ -204,19 +204,19 @@ APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
   return default_settings_->blocked_permissions;
 }
 
-scoped_refptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
+scoped_ptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
     const Extension* extension) const {
   // Only api permissions are supported currently.
-  return scoped_refptr<const PermissionSet>(new PermissionSet(
+  return scoped_ptr<const PermissionSet>(new PermissionSet(
       GetBlockedAPIPermissions(extension), ManifestPermissionSet(),
       URLPatternSet(), URLPatternSet()));
 }
 
 bool ExtensionManagement::IsPermissionSetAllowed(
     const Extension* extension,
-    scoped_refptr<const PermissionSet> perms) const {
+    const PermissionSet& perms) const {
   for (const auto& blocked_api : GetBlockedAPIPermissions(extension)) {
-    if (perms->HasAPIPermission(blocked_api->id()))
+    if (perms.HasAPIPermission(blocked_api->id()))
       return false;
   }
   return true;

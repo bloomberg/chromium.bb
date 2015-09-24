@@ -220,11 +220,8 @@ TEST(PermissionsDataTest, EffectiveHostPermissions) {
   URLPatternSet new_hosts;
   new_hosts.AddOrigin(URLPattern::SCHEME_ALL, tab_url);
   extension->permissions_data()->UpdateTabSpecificPermissions(
-      1,
-      new PermissionSet(APIPermissionSet(),
-                        ManifestPermissionSet(),
-                        new_hosts,
-                        URLPatternSet()));
+      1, PermissionSet(APIPermissionSet(), ManifestPermissionSet(), new_hosts,
+                       URLPatternSet()));
   EXPECT_TRUE(extension->permissions_data()->GetEffectiveHostPermissions().
       MatchesURL(tab_url));
   extension->permissions_data()->ClearTabSpecificPermissions(1);
@@ -695,9 +692,9 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
       LoadManifestStrict("script_and_capture", "tab_specific.json");
 
   const PermissionsData* permissions_data = extension->permissions_data();
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1).get());
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(2).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1));
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(2));
 
   std::set<GURL> no_urls;
 
@@ -716,11 +713,10 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   allowed_urls.insert(http_url_with_path);
 
   {
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                          allowed_hosts, URLPatternSet()));
+    PermissionSet permissions(APIPermissionSet(), ManifestPermissionSet(),
+                              allowed_hosts, URLPatternSet());
     permissions_data->UpdateTabSpecificPermissions(0, permissions);
-    EXPECT_EQ(permissions->explicit_hosts(),
+    EXPECT_EQ(permissions.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(0)
                   ->explicit_hosts());
   }
@@ -730,7 +726,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(0);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 1));
@@ -743,20 +739,17 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
                                            https_url.spec()));
 
   {
-    scoped_refptr<PermissionSet> permissions(
-        new PermissionSet(APIPermissionSet(),  ManifestPermissionSet(),
-                          allowed_hosts, URLPatternSet()));
-    permissions_data->UpdateTabSpecificPermissions(0, permissions);
-    EXPECT_EQ(permissions->explicit_hosts(),
+    PermissionSet permissions1(APIPermissionSet(), ManifestPermissionSet(),
+                               allowed_hosts, URLPatternSet());
+    permissions_data->UpdateTabSpecificPermissions(0, permissions1);
+    EXPECT_EQ(permissions1.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(0)
                   ->explicit_hosts());
 
-    permissions = new PermissionSet(APIPermissionSet(),
-                                    ManifestPermissionSet(),
-                                    more_allowed_hosts,
-                                    URLPatternSet());
-    permissions_data->UpdateTabSpecificPermissions(1, permissions);
-    EXPECT_EQ(permissions->explicit_hosts(),
+    PermissionSet permissions2(APIPermissionSet(), ManifestPermissionSet(),
+                               more_allowed_hosts, URLPatternSet());
+    permissions_data->UpdateTabSpecificPermissions(1, permissions2);
+    EXPECT_EQ(permissions2.explicit_hosts(),
               permissions_data->GetTabSpecificPermissionsForTesting(1)
                   ->explicit_hosts());
   }
@@ -767,7 +760,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(0);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(0));
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(
@@ -775,7 +768,7 @@ TEST_F(ExtensionScriptAndCaptureVisibleTest, TabSpecific) {
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 2));
 
   permissions_data->ClearTabSpecificPermissions(1);
-  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1).get());
+  EXPECT_FALSE(permissions_data->GetTabSpecificPermissionsForTesting(1));
 
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 0));
   EXPECT_TRUE(ScriptAllowedExclusivelyOnTab(extension.get(), no_urls, 1));

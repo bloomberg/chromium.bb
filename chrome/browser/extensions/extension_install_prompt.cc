@@ -623,10 +623,10 @@ ExtensionInstallPrompt::~ExtensionInstallPrompt() {
 void ExtensionInstallPrompt::ConfirmBundleInstall(
     extensions::BundleInstaller* bundle,
     const SkBitmap* icon,
-    const PermissionSet* permissions) {
+    scoped_ptr<const PermissionSet> permissions) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   bundle_ = bundle;
-  custom_permissions_ = permissions;
+  custom_permissions_ = permissions.Pass();
   delegate_ = bundle;
   prompt_ = new Prompt(BUNDLE_INSTALL_PROMPT);
 
@@ -638,11 +638,11 @@ void ExtensionInstallPrompt::ConfirmPermissionsForDelegatedBundleInstall(
     extensions::BundleInstaller* bundle,
     const std::string& delegated_username,
     const SkBitmap* icon,
-    const extensions::PermissionSet* permissions) {
+    scoped_ptr<const extensions::PermissionSet> permissions) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   bundle_ = bundle;
   delegated_username_ = delegated_username;
-  custom_permissions_ = permissions;
+  custom_permissions_ = permissions.Pass();
   delegate_ = bundle;
   prompt_ = new Prompt(DELEGATED_BUNDLE_PERMISSIONS_PROMPT);
 
@@ -759,10 +759,10 @@ void ExtensionInstallPrompt::ConfirmExternalInstall(
 void ExtensionInstallPrompt::ConfirmPermissions(
     Delegate* delegate,
     const Extension* extension,
-    const PermissionSet* permissions) {
+    scoped_ptr<const PermissionSet> permissions) {
   DCHECK(ui_loop_ == base::MessageLoop::current());
   extension_ = extension;
-  custom_permissions_ = permissions;
+  custom_permissions_ = permissions.Pass();
   delegate_ = delegate;
   prompt_ = new Prompt(PERMISSIONS_PROMPT);
 
@@ -845,9 +845,10 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {
-  scoped_refptr<const PermissionSet> permissions_to_display;
+  scoped_ptr<const PermissionSet> permissions_wrapper;
+  const PermissionSet* permissions_to_display = nullptr;
   if (custom_permissions_.get()) {
-    permissions_to_display = custom_permissions_;
+    permissions_to_display = custom_permissions_.get();
   } else if (extension_) {
     // Initialize permissions if they have not already been set so that
     // withheld permissions are displayed properly in the install prompt.
@@ -860,14 +861,15 @@ void ExtensionInstallPrompt::ShowConfirmation() {
     // person who triggers the install, so add them to the list.
     if (prompt_->type() == DELEGATED_PERMISSIONS_PROMPT ||
         prompt_->type() == DELEGATED_BUNDLE_PERMISSIONS_PROMPT) {
-      scoped_refptr<const PermissionSet> optional_permissions =
+      const PermissionSet* optional_permissions =
           extensions::PermissionsParser::GetOptionalPermissions(extension_);
-      permissions_to_display = PermissionSet::CreateUnion(
-          *permissions_to_display, *optional_permissions);
+      permissions_wrapper = PermissionSet::CreateUnion(*permissions_to_display,
+                                                       *optional_permissions);
+      permissions_to_display = permissions_wrapper.get();
     }
   }
 
-  if (permissions_to_display.get() &&
+  if (permissions_to_display &&
       (!extension_ ||
        !extensions::PermissionsData::ShouldSkipPermissionWarnings(
            extension_->id()))) {
@@ -878,16 +880,16 @@ void ExtensionInstallPrompt::ShowConfirmation() {
 
     prompt_->SetPermissions(message_provider->GetPermissionMessages(
                                 message_provider->GetAllPermissionIDs(
-                                    permissions_to_display.get(), type)),
+                                    permissions_to_display, type)),
                             REGULAR_PERMISSIONS);
 
-    scoped_refptr<const extensions::PermissionSet> withheld =
+    const PermissionSet* withheld =
         extension_ ? extension_->permissions_data()->withheld_permissions()
                    : nullptr;
     if (withheld && !withheld->IsEmpty()) {
       prompt_->SetPermissions(
           message_provider->GetPermissionMessages(
-              message_provider->GetAllPermissionIDs(withheld.get(), type)),
+              message_provider->GetAllPermissionIDs(withheld, type)),
           WITHHELD_PERMISSIONS);
     }
   }

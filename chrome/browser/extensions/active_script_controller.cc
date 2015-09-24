@@ -89,7 +89,7 @@ void ActiveScriptController::AlwaysRunOnVisibleOrigin(
   URLPatternSet new_explicit_hosts;
   URLPatternSet new_scriptable_hosts;
 
-  scoped_refptr<const PermissionSet> withheld_permissions =
+  const PermissionSet* withheld_permissions =
       extension->permissions_data()->withheld_permissions();
   if (withheld_permissions->explicit_hosts().MatchesURL(url)) {
     new_explicit_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(),
@@ -100,18 +100,15 @@ void ActiveScriptController::AlwaysRunOnVisibleOrigin(
                                    url.GetOrigin());
   }
 
-  scoped_refptr<PermissionSet> new_permissions =
-      new PermissionSet(APIPermissionSet(),
-                        ManifestPermissionSet(),
-                        new_explicit_hosts,
-                        new_scriptable_hosts);
+  PermissionSet new_permissions(APIPermissionSet(), ManifestPermissionSet(),
+                                new_explicit_hosts, new_scriptable_hosts);
 
   // Update permissions for the session. This adds |new_permissions| to active
   // permissions and granted permissions.
   // TODO(devlin): Make sure that the permission is removed from
   // withheld_permissions if appropriate.
-  PermissionsUpdater(browser_context_).AddPermissions(extension,
-                                                      new_permissions.get());
+  PermissionsUpdater(browser_context_)
+      .AddPermissions(extension, &new_permissions);
 
   // Allow current tab to run injection.
   OnClicked(extension);
@@ -231,8 +228,7 @@ void ActiveScriptController::OnRequestScriptInjectionPermission(
   // permitted extensions (for metrics), and return immediately.
   if (request_id == -1) {
     if (PermissionsData::ScriptsMayRequireActionForExtension(
-            extension,
-            extension->permissions_data()->active_permissions().get())) {
+            extension, extension->permissions_data()->active_permissions())) {
       permitted_extensions_.insert(extension->id());
     }
     return;

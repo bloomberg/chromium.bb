@@ -43,8 +43,10 @@ PermissionSet::PermissionSet(
   InitEffectiveHosts();
 }
 
+PermissionSet::~PermissionSet() {}
+
 // static
-scoped_refptr<const PermissionSet> PermissionSet::CreateDifference(
+scoped_ptr<const PermissionSet> PermissionSet::CreateDifference(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -61,12 +63,12 @@ scoped_refptr<const PermissionSet> PermissionSet::CreateDifference(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateDifference(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return make_scoped_refptr(new PermissionSet(
-      apis, manifest_permissions, explicit_hosts, scriptable_hosts));
+  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
+                                           explicit_hosts, scriptable_hosts));
 }
 
 // static
-scoped_refptr<const PermissionSet> PermissionSet::CreateIntersection(
+scoped_ptr<const PermissionSet> PermissionSet::CreateIntersection(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -82,12 +84,12 @@ scoped_refptr<const PermissionSet> PermissionSet::CreateIntersection(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateSemanticIntersection(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return new PermissionSet(apis, manifest_permissions,
-                           explicit_hosts, scriptable_hosts);
+  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
+                                           explicit_hosts, scriptable_hosts));
 }
 
 // static
-scoped_refptr<const PermissionSet> PermissionSet::CreateUnion(
+scoped_ptr<const PermissionSet> PermissionSet::CreateUnion(
     const PermissionSet& set1,
     const PermissionSet& set2) {
   APIPermissionSet apis;
@@ -104,8 +106,8 @@ scoped_refptr<const PermissionSet> PermissionSet::CreateUnion(
   URLPatternSet scriptable_hosts = URLPatternSet::CreateUnion(
       set1.scriptable_hosts(), set2.scriptable_hosts());
 
-  return new PermissionSet(apis, manifest_permissions,
-                           explicit_hosts, scriptable_hosts);
+  return make_scoped_ptr(new PermissionSet(apis, manifest_permissions,
+                                           explicit_hosts, scriptable_hosts));
 }
 
 bool PermissionSet::operator==(
@@ -118,6 +120,10 @@ bool PermissionSet::operator==(
 
 bool PermissionSet::operator!=(const PermissionSet& rhs) const {
   return !(*this == rhs);
+}
+
+scoped_ptr<const PermissionSet> PermissionSet::Clone() const {
+  return make_scoped_ptr(new PermissionSet(*this));
 }
 
 bool PermissionSet::Contains(const PermissionSet& set) const {
@@ -218,7 +224,13 @@ bool PermissionSet::HasEffectiveFullAccess() const {
   return false;
 }
 
-PermissionSet::~PermissionSet() {}
+PermissionSet::PermissionSet(const PermissionSet& permissions)
+    : apis_(permissions.apis_),
+      manifest_permissions_(permissions.manifest_permissions_),
+      explicit_hosts_(permissions.explicit_hosts_),
+      scriptable_hosts_(permissions.scriptable_hosts_),
+      effective_hosts_(permissions.effective_hosts_),
+      should_warn_all_hosts_(permissions.should_warn_all_hosts_) {}
 
 void PermissionSet::InitImplicitPermissions() {
   // The downloads permission implies the internal version as well.

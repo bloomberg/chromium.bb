@@ -353,7 +353,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Returns the granted permission set for the extension with |extension_id|,
   // and NULL if no preferences were found for |extension_id|.
   // This passes ownership of the returned set to the caller.
-  scoped_refptr<const PermissionSet> GetGrantedPermissions(
+  scoped_ptr<const PermissionSet> GetGrantedPermissions(
       const std::string& extension_id) const;
 
   // Adds |permissions| to the granted permissions set for the extension with
@@ -369,7 +369,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
   // Gets the active permission set for the specified extension. This may
   // differ from the permissions in the manifest due to the optional
   // permissions API. This passes ownership of the set to the caller.
-  scoped_refptr<const PermissionSet> GetActivePermissions(
+  scoped_ptr<const PermissionSet> GetActivePermissions(
       const std::string& extension_id) const;
 
   // Sets the active |permissions| for the extension with |extension_id|.
@@ -605,7 +605,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
 
   // Interprets |pref_key| in |extension_id|'s preferences as an
   // PermissionSet, and passes ownership of the set to the caller.
-  scoped_refptr<const PermissionSet> ReadPrefAsPermissionSet(
+  scoped_ptr<const PermissionSet> ReadPrefAsPermissionSet(
       const std::string& extension_id,
       const std::string& pref_key) const;
 

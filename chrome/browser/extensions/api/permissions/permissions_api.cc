@@ -56,7 +56,7 @@ bool PermissionsContainsFunction::RunSync() {
   scoped_ptr<Contains::Params> params(Contains::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
+  scoped_ptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
       params->permissions,
       ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
       &error_);
@@ -65,13 +65,13 @@ bool PermissionsContainsFunction::RunSync() {
 
   results_ = Contains::Results::Create(
       extension()->permissions_data()->active_permissions()->Contains(
-          *permissions.get()));
+          *permissions));
   return true;
 }
 
 bool PermissionsGetAllFunction::RunSync() {
   scoped_ptr<Permissions> permissions = helpers::PackPermissionSet(
-      extension()->permissions_data()->active_permissions().get());
+      extension()->permissions_data()->active_permissions());
   results_ = GetAll::Results::Create(*permissions);
   return true;
 }
@@ -80,7 +80,7 @@ bool PermissionsRemoveFunction::RunSync() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  scoped_refptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
+  scoped_ptr<const PermissionSet> permissions = helpers::UnpackPermissionSet(
       params->permissions,
       ExtensionPrefs::Get(GetProfile())->AllowFileAccess(extension_->id()),
       &error_);
@@ -103,12 +103,12 @@ bool PermissionsRemoveFunction::RunSync() {
   // optional and required (and should assume its required), so we need both of
   // these checks.
   // TODO(devlin): *Why* do we support that? Should be a load error.
-  scoped_refptr<const PermissionSet> optional =
+  const PermissionSet* optional =
       PermissionsParser::GetOptionalPermissions(extension());
-  scoped_refptr<const PermissionSet> required =
+  const PermissionSet* required =
       PermissionsParser::GetRequiredPermissions(extension());
   if (!optional->Contains(*permissions) ||
-      !scoped_refptr<const PermissionSet>(
+      !scoped_ptr<const PermissionSet>(
            PermissionSet::CreateIntersection(*permissions, *required))
            ->IsEmpty()) {
     error_ = kCantRemoveRequiredPermissionsError;
@@ -192,7 +192,7 @@ bool PermissionsRequestFunction::RunAsync() {
 
   // The requested permissions must be defined as optional in the manifest.
   if (!PermissionsParser::GetOptionalPermissions(extension())
-           ->Contains(*requested_permissions_.get())) {
+           ->Contains(*requested_permissions_)) {
     error_ = kNotInOptionalPermissionsError;
     return false;
   }
@@ -200,17 +200,17 @@ bool PermissionsRequestFunction::RunAsync() {
   // Automatically declines api permissions requests, which are blocked by
   // enterprise policy.
   if (!ExtensionManagementFactory::GetForBrowserContext(GetProfile())
-           ->IsPermissionSetAllowed(extension(), requested_permissions_)) {
+           ->IsPermissionSetAllowed(extension(), *requested_permissions_)) {
     error_ = kBlockedByEnterprisePolicy;
     return false;
   }
 
   // We don't need to prompt the user if the requested permissions are a subset
   // of the granted permissions set.
-  scoped_refptr<const PermissionSet> granted =
+  scoped_ptr<const PermissionSet> granted =
       ExtensionPrefs::Get(GetProfile())
           ->GetGrantedPermissions(extension()->id());
-  if (granted.get() && granted->Contains(*requested_permissions_.get())) {
+  if (granted.get() && granted->Contains(*requested_permissions_)) {
     PermissionsUpdater perms_updater(GetProfile());
     perms_updater.AddPermissions(extension(), requested_permissions_.get());
     results_ = Request::Results::Create(true);
@@ -224,7 +224,7 @@ bool PermissionsRequestFunction::RunAsync() {
 
   // Filter out the active permissions.
   requested_permissions_ = PermissionSet::CreateDifference(
-      *requested_permissions_.get(),
+      *requested_permissions_,
       *extension()->permissions_data()->active_permissions());
 
   AddRef();  // Balanced in InstallUIProceed() / InstallUIAbort().
@@ -248,8 +248,8 @@ bool PermissionsRequestFunction::RunAsync() {
   } else {
     CHECK_EQ(DO_NOT_SKIP, auto_confirm_for_tests);
     install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
-    install_ui_->ConfirmPermissions(
-        this, extension(), requested_permissions_.get());
+    install_ui_->ConfirmPermissions(this, extension(),
+                                    requested_permissions_->Clone());
   }
 
   return true;

@@ -93,8 +93,7 @@ bool ExtensionInjectionHost::ShouldNotifyBrowserOfInjection() const {
   // otherwise been affected by the scripts-require-action feature.
   return extension_->permissions_data()->withheld_permissions()->IsEmpty() &&
          PermissionsData::ScriptsMayRequireActionForExtension(
-             extension_,
-             extension_->permissions_data()->active_permissions().get());
+             extension_, extension_->permissions_data()->active_permissions());
 }
 
 }  // namespace extensions

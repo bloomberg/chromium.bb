@@ -1001,7 +1001,7 @@ void ExtensionService::RecordPermissionMessagesHistogram(
 
   PermissionIDSet permissions =
       extensions::PermissionMessageProvider::Get()->GetAllPermissionIDs(
-          extension->permissions_data()->active_permissions().get(),
+          extension->permissions_data()->active_permissions(),
           extension->GetType());
   counter_has_any->AddBoolean(!permissions.empty());
   for (const PermissionID& id : permissions)
@@ -1602,7 +1602,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
   if (extension->location() == Manifest::INTERNAL && !auto_grant_permission) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
-    scoped_refptr<const PermissionSet> granted_permissions =
+    scoped_ptr<const PermissionSet> granted_permissions =
         extension_prefs_->GetGrantedPermissions(extension->id());
     CHECK(granted_permissions.get());
 
@@ -1613,7 +1613,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     is_privilege_increase =
         extensions::PermissionMessageProvider::Get()->IsPrivilegeIncrease(
             granted_permissions.get(),
-            extension->permissions_data()->active_permissions().get(),
+            extension->permissions_data()->active_permissions(),
             extension->GetType());
   }
 
@@ -1848,7 +1848,7 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
   for (const auto& extension : *all_extensions.get()) {
     if (!settings->IsPermissionSetAllowed(
             extension.get(),
-            extension->permissions_data()->active_permissions())) {
+            *extension->permissions_data()->active_permissions())) {
       extensions::PermissionsUpdater(profile()).RemovePermissionsUnsafe(
           extension.get(),
           settings->GetBlockedPermissions(extension.get()).get());

@@ -64,8 +64,8 @@ class SettingsOverridePermissionTest : public ChromeManifestTest {
 
 TEST_F(SettingsOverridePermissionTest, HomePage) {
   scoped_refptr<Extension> extension(GetPermissionSet(kHomepage));
-  scoped_refptr<const PermissionSet> permission_set(
-      extension->permissions_data()->active_permissions());
+  const PermissionSet* permission_set =
+      extension->permissions_data()->active_permissions();
 
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kHomepage));
@@ -82,8 +82,8 @@ TEST_F(SettingsOverridePermissionTest, HomePage) {
 
 TEST_F(SettingsOverridePermissionTest, StartupPages) {
   scoped_refptr<Extension> extension(GetPermissionSet(kStartupPages));
-  scoped_refptr<const PermissionSet> permission_set(
-      extension->permissions_data()->active_permissions());
+  const PermissionSet* permission_set =
+      extension->permissions_data()->active_permissions();
 
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kStartupPages));
@@ -101,8 +101,8 @@ TEST_F(SettingsOverridePermissionTest, StartupPages) {
 
 TEST_F(SettingsOverridePermissionTest, SearchSettings) {
   scoped_refptr<Extension> extension(GetPermissionSet(kSearchProvider));
-  scoped_refptr<const PermissionSet> permission_set(
-      extension->permissions_data()->active_permissions());
+  const PermissionSet* permission_set =
+      extension->permissions_data()->active_permissions();
 
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kSearchProvider));
@@ -120,8 +120,8 @@ TEST_F(SettingsOverridePermissionTest, SearchSettings) {
 TEST_F(SettingsOverridePermissionTest, All) {
   scoped_refptr<Extension> extension(GetPermissionSet(
       kSearchProvider | kStartupPages | kHomepage));
-  scoped_refptr<const PermissionSet> permission_set(
-      extension->permissions_data()->active_permissions());
+  const PermissionSet* permission_set =
+      extension->permissions_data()->active_permissions();
 
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kHomepage));
@@ -138,8 +138,8 @@ TEST_F(SettingsOverridePermissionTest, All) {
 TEST_F(SettingsOverridePermissionTest, Some) {
   scoped_refptr<Extension> extension(GetPermissionSet(
       kSearchProvider | kHomepage));
-  scoped_refptr<const PermissionSet> permission_set(
-      extension->permissions_data()->active_permissions());
+  const PermissionSet* permission_set =
+      extension->permissions_data()->active_permissions();
 
 #if defined(OS_WIN)
   EXPECT_TRUE(permission_set->HasAPIPermission(APIPermission::kHomepage));

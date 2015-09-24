@@ -574,12 +574,11 @@ struct UpdatedExtensionPermissionsInfo {
   // The permissions that have changed. For Reason::ADDED, this would contain
   // only the permissions that have added, and for Reason::REMOVED, this would
   // only contain the removed permissions.
-  const PermissionSet* permissions;
+  const PermissionSet& permissions;
 
-  UpdatedExtensionPermissionsInfo(
-      const Extension* extension,
-      const PermissionSet* permissions,
-      Reason reason);
+  UpdatedExtensionPermissionsInfo(const Extension* extension,
+                                  const PermissionSet& permissions,
+                                  Reason reason);
 };
 
 }  // namespace extensions

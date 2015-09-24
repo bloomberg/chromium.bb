@@ -139,7 +139,7 @@ class BackgroundApplicationListModel : public content::NotificationObserver {
   void OnExtensionPermissionsUpdated(
       const extensions::Extension* extension,
       extensions::UpdatedExtensionPermissionsInfo::Reason reason,
-      const extensions::PermissionSet* permissions);
+      const extensions::PermissionSet& permissions);
 
   // Refresh the list of background applications and generate notifications.
   void Update();

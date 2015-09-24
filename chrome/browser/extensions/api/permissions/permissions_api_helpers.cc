@@ -15,10 +15,6 @@
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "extensions/common/url_pattern_set.h"
 
-using extensions::APIPermission;
-using extensions::PermissionSet;
-using extensions::PermissionsInfo;
-
 namespace extensions {
 
 using api::permissions::Permissions;
@@ -67,7 +63,7 @@ scoped_ptr<Permissions> PackPermissionSet(const PermissionSet* set) {
   return scoped_ptr<Permissions>(permissions);
 }
 
-scoped_refptr<const PermissionSet> UnpackPermissionSet(
+scoped_ptr<const PermissionSet> UnpackPermissionSet(
     const Permissions& permissions,
     bool allow_file_access,
     std::string* error) {
@@ -149,7 +145,7 @@ scoped_refptr<const PermissionSet> UnpackPermissionSet(
     }
   }
 
-  return make_scoped_refptr(
+  return make_scoped_ptr(
       new PermissionSet(apis, manifest_permissions, origins, URLPatternSet()));
 }
 

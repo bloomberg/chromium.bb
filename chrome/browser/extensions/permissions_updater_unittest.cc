@@ -156,7 +156,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
         content::Details<UpdatedExtensionPermissionsInfo>(details).ptr();
 
     extension_ = info->extension;
-    permissions_ = info->permissions;
+    permissions_ = info->permissions.Clone();
     reason_ = info->reason;
 
     if (waiting_) {
@@ -169,7 +169,7 @@ class PermissionsUpdaterListener : public content::NotificationObserver {
   bool waiting_;
   content::NotificationRegistrar registrar_;
   scoped_refptr<const Extension> extension_;
-  scoped_refptr<const PermissionSet> permissions_;
+  scoped_ptr<const PermissionSet> permissions_;
   UpdatedExtensionPermissionsInfo::Reason reason_;
 };
 
@@ -210,14 +210,16 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
 
   URLPatternSet default_hosts;
   AddPattern(&default_hosts, "http://a.com/*");
-  scoped_refptr<const PermissionSet> default_permissions = new PermissionSet(
-      default_apis, empty_manifest_permissions, default_hosts, URLPatternSet());
+  PermissionSet default_permissions(default_apis, empty_manifest_permissions,
+                                    default_hosts, URLPatternSet());
 
   // Make sure it loaded properly.
-  scoped_refptr<const PermissionSet> permissions =
-      extension->permissions_data()->active_permissions();
-  ASSERT_EQ(*default_permissions.get(),
-            *extension->permissions_data()->active_permissions().get());
+  ASSERT_EQ(default_permissions,
+            *extension->permissions_data()->active_permissions());
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_.get());
+  scoped_ptr<const PermissionSet> active_permissions;
+  scoped_ptr<const PermissionSet> granted_permissions;
 
   // Add a few permissions.
   APIPermissionSet apis;
@@ -225,12 +227,12 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   URLPatternSet hosts;
   AddPattern(&hosts, "http://*.c.com/*");
 
-  scoped_refptr<const PermissionSet> delta = new PermissionSet(
-      apis, empty_manifest_permissions, hosts, URLPatternSet());
+  {
+    PermissionSet delta(apis, empty_manifest_permissions, hosts,
+                        URLPatternSet());
 
   PermissionsUpdaterListener listener;
-  PermissionsUpdater updater(profile_.get());
-  updater.AddPermissions(extension.get(), delta.get());
+  PermissionsUpdater(profile_.get()).AddPermissions(extension.get(), &delta);
 
   listener.Wait();
 
@@ -238,57 +240,54 @@ TEST_F(PermissionsUpdaterTest, AddAndRemovePermissions) {
   ASSERT_TRUE(listener.received_notification());
   ASSERT_EQ(extension.get(), listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::ADDED, listener.reason());
-  ASSERT_EQ(*delta.get(), *listener.permissions());
+  ASSERT_EQ(delta, *listener.permissions());
 
   // Make sure the extension's active permissions reflect the change.
-  scoped_refptr<const PermissionSet> active_permissions =
-      PermissionSet::CreateUnion(*default_permissions, *delta);
+  active_permissions = PermissionSet::CreateUnion(default_permissions, delta);
   ASSERT_EQ(*active_permissions.get(),
-            *extension->permissions_data()->active_permissions().get());
+            *extension->permissions_data()->active_permissions());
 
   // Verify that the new granted and active permissions were also stored
   // in the extension preferences. In this case, the granted permissions should
   // be equal to the active permissions.
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_.get());
-  scoped_refptr<const PermissionSet> granted_permissions = active_permissions;
+  ASSERT_EQ(*active_permissions.get(),
+            *prefs->GetActivePermissions(extension->id()));
+  granted_permissions = active_permissions->Clone();
+  ASSERT_EQ(*granted_permissions,
+            *prefs->GetGrantedPermissions(extension->id()));
+  }
 
-  scoped_refptr<const PermissionSet> from_prefs =
-      prefs->GetActivePermissions(extension->id());
-  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
-
-  from_prefs = prefs->GetGrantedPermissions(extension->id());
-  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
-
+  {
   // In the second part of the test, we'll remove the permissions that we
   // just added except for 'notifications'.
   apis.erase(APIPermission::kNotifications);
-  delta = new PermissionSet(apis, empty_manifest_permissions,
-                            hosts, URLPatternSet());
+  PermissionSet delta(apis, empty_manifest_permissions, hosts, URLPatternSet());
 
-  listener.Reset();
-  updater.RemovePermissions(extension.get(), delta.get(),
-                            PermissionsUpdater::REMOVE_SOFT);
+  PermissionsUpdaterListener listener;
+  PermissionsUpdater(profile_.get())
+      .RemovePermissions(extension.get(), &delta,
+                         PermissionsUpdater::REMOVE_SOFT);
   listener.Wait();
 
   // Verify that the notification was correct.
   ASSERT_TRUE(listener.received_notification());
   ASSERT_EQ(extension.get(), listener.extension());
   ASSERT_EQ(UpdatedExtensionPermissionsInfo::REMOVED, listener.reason());
-  ASSERT_EQ(*delta.get(), *listener.permissions());
+  ASSERT_EQ(delta, *listener.permissions());
 
   // Make sure the extension's active permissions reflect the change.
   active_permissions =
-      PermissionSet::CreateDifference(*active_permissions, *delta);
+      PermissionSet::CreateDifference(*active_permissions, delta);
   ASSERT_EQ(*active_permissions.get(),
-            *extension->permissions_data()->active_permissions().get());
+            *extension->permissions_data()->active_permissions());
 
   // Verify that the extension prefs hold the new active permissions and the
   // same granted permissions.
-  from_prefs = prefs->GetActivePermissions(extension->id());
-  ASSERT_EQ(*active_permissions.get(), *from_prefs.get());
+  ASSERT_EQ(*active_permissions, *prefs->GetActivePermissions(extension->id()));
 
-  from_prefs = prefs->GetGrantedPermissions(extension->id());
-  ASSERT_EQ(*granted_permissions.get(), *from_prefs.get());
+  ASSERT_EQ(*granted_permissions,
+            *prefs->GetGrantedPermissions(extension->id()));
+  }
 }
 
 TEST_F(PermissionsUpdaterTest, WithholdAllHosts) {
@@ -495,15 +494,15 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
   auto api_permission_set = [](APIPermission::ID id) {
     APIPermissionSet apis;
     apis.insert(id);
-    return make_scoped_refptr(new PermissionSet(
-        apis, ManifestPermissionSet(), URLPatternSet(), URLPatternSet()));
+    return make_scoped_ptr(new PermissionSet(apis, ManifestPermissionSet(),
+                                             URLPatternSet(), URLPatternSet()));
   };
 
   auto url_permission_set = [](const GURL& url) {
     URLPatternSet set;
     URLPattern pattern(URLPattern::SCHEME_ALL, url.spec());
     set.AddPattern(pattern);
-    return make_scoped_refptr(new PermissionSet(
+    return make_scoped_ptr(new PermissionSet(
         APIPermissionSet(), ManifestPermissionSet(), set, URLPatternSet()));
   };
 
@@ -529,7 +528,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
     // its granted permissions (stored in prefs). And, the permission should
     // be revokable.
     EXPECT_TRUE(permissions->HasAPIPermission(APIPermission::kCookie));
-    scoped_refptr<const PermissionSet> granted_permissions =
+    scoped_ptr<const PermissionSet> granted_permissions =
         prefs->GetGrantedPermissions(extension->id());
     EXPECT_TRUE(granted_permissions->HasAPIPermission(APIPermission::kCookie));
     EXPECT_TRUE(updater.GetRevokablePermissions(extension.get())

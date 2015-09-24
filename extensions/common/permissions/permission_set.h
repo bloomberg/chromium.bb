@@ -25,8 +25,7 @@ namespace extensions {
 // PermissionMessageProvider::GetCoalescedPermissionMessages() is the only
 // method used for generating permission messages, find the other users of this
 // class and deprecate or rename it as appropriate.
-class PermissionSet
-    : public base::RefCountedThreadSafe<PermissionSet> {
+class PermissionSet {
  public:
   // Creates an empty permission set (e.g. default permissions).
   PermissionSet();
@@ -39,25 +38,28 @@ class PermissionSet
                 const ManifestPermissionSet& manifest_permissions,
                 const URLPatternSet& explicit_hosts,
                 const URLPatternSet& scriptable_hosts);
+  ~PermissionSet();
 
   // Creates a new permission set equal to |set1| - |set2|.
-  static scoped_refptr<const PermissionSet> CreateDifference(
+  static scoped_ptr<const PermissionSet> CreateDifference(
       const PermissionSet& set1,
       const PermissionSet& set2);
 
   // Creates a new permission set equal to the intersection of |set1| and
   // |set2|.
-  static scoped_refptr<const PermissionSet> CreateIntersection(
+  static scoped_ptr<const PermissionSet> CreateIntersection(
       const PermissionSet& set1,
       const PermissionSet& set2);
 
   // Creates a new permission set equal to the union of |set1| and |set2|.
-  static scoped_refptr<const PermissionSet> CreateUnion(
-      const PermissionSet& set1,
-      const PermissionSet& set2);
+  static scoped_ptr<const PermissionSet> CreateUnion(const PermissionSet& set1,
+                                                     const PermissionSet& set2);
 
   bool operator==(const PermissionSet& rhs) const;
   bool operator!=(const PermissionSet& rhs) const;
+
+  // Returns a copy of this PermissionSet.
+  scoped_ptr<const PermissionSet> Clone() const;
 
   // Returns true if every API or host permission available to |set| is also
   // available to this. In other words, if the API permissions of |set| are a
@@ -123,9 +125,9 @@ class PermissionSet
  private:
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, GetWarningMessages_AudioVideo);
   FRIEND_TEST_ALL_PREFIXES(PermissionsTest, AccessToDevicesMessages);
-  friend class base::RefCountedThreadSafe<PermissionSet>;
 
-  ~PermissionSet();
+  // Deliberate copy constructor for cloning the set.
+  PermissionSet(const PermissionSet& permission_set);
 
   // Adds permissions implied independently of other context.
   void InitImplicitPermissions();
@@ -160,10 +162,11 @@ class PermissionSet
     WARN_ALL_HOSTS,
     DONT_WARN_ALL_HOSTS
   };
-  // Whether or not this permission set includes access to so many origins, we
-  // should treat it as all_hosts for warning purposes.
-  // Lazily initialized (and therefore mutable).
+  // Cache whether this set implies access to all hosts, because it's
+  // non-trivial to compute (lazily initialized).
   mutable ShouldWarnAllHostsType should_warn_all_hosts_;
+
+  DISALLOW_ASSIGN(PermissionSet);
 };
 
 }  // namespace extensions

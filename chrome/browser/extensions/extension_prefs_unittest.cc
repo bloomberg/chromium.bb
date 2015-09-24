@@ -208,32 +208,32 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     APIPermissionSet empty_set;
     ManifestPermissionSet empty_manifest_permissions;
     URLPatternSet empty_extent;
-    scoped_refptr<const PermissionSet> permissions;
-    scoped_refptr<const PermissionSet> granted_permissions;
 
     // Make sure both granted api and host permissions start empty.
-    granted_permissions =
-        prefs()->GetGrantedPermissions(extension_id_);
-    EXPECT_TRUE(granted_permissions->IsEmpty());
+    EXPECT_TRUE(prefs()->GetGrantedPermissions(extension_id_)->IsEmpty());
 
-    permissions = new PermissionSet(
-        api_perm_set1_, empty_manifest_permissions, empty_extent, empty_extent);
+    {
+      PermissionSet permissions(api_perm_set1_, empty_manifest_permissions,
+                                empty_extent, empty_extent);
 
     // Add part of the api permissions.
-    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
+    prefs()->AddGrantedPermissions(extension_id_, &permissions);
+    scoped_ptr<const PermissionSet> granted_permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions.get());
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
     EXPECT_TRUE(granted_permissions->effective_hosts().is_empty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
-    granted_permissions = NULL;
+    }
 
+    {
     // Add part of the explicit host permissions.
-    permissions = new PermissionSet(
-        empty_set, empty_manifest_permissions, ehost_perm_set1_, empty_extent);
-    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
+    PermissionSet permissions(empty_set, empty_manifest_permissions,
+                              ehost_perm_set1_, empty_extent);
+    prefs()->AddGrantedPermissions(extension_id_, &permissions);
+    scoped_ptr<const PermissionSet> granted_permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
@@ -241,12 +241,15 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
               granted_permissions->explicit_hosts());
     EXPECT_EQ(ehost_perm_set1_,
               granted_permissions->effective_hosts());
+    }
 
+    {
     // Add part of the scriptable host permissions.
-    permissions = new PermissionSet(
-        empty_set, empty_manifest_permissions, empty_extent, shost_perm_set1_);
-    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
+    PermissionSet permissions(empty_set, empty_manifest_permissions,
+                              empty_extent, shost_perm_set1_);
+    prefs()->AddGrantedPermissions(extension_id_, &permissions);
+    scoped_ptr<const PermissionSet> granted_permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_FALSE(granted_permissions->HasEffectiveFullAccess());
     EXPECT_EQ(expected_apis, granted_permissions->apis());
@@ -258,16 +261,18 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     effective_permissions_ =
         URLPatternSet::CreateUnion(ehost_perm_set1_, shost_perm_set1_);
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
+    }
 
+    {
     // Add the rest of the permissions.
-    permissions = new PermissionSet(
-        api_perm_set2_, empty_manifest_permissions,
-        ehost_perm_set2_, shost_perm_set2_);
+    PermissionSet permissions(api_perm_set2_, empty_manifest_permissions,
+                              ehost_perm_set2_, shost_perm_set2_);
 
     APIPermissionSet::Union(expected_apis, api_perm_set2_, &api_permissions_);
 
-    prefs()->AddGrantedPermissions(extension_id_, permissions.get());
-    granted_permissions = prefs()->GetGrantedPermissions(extension_id_);
+    prefs()->AddGrantedPermissions(extension_id_, &permissions);
+    scoped_ptr<const PermissionSet> granted_permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(granted_permissions.get());
     EXPECT_FALSE(granted_permissions->IsEmpty());
     EXPECT_EQ(api_permissions_, granted_permissions->apis());
@@ -278,11 +283,12 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
     effective_permissions_ =
         URLPatternSet::CreateUnion(ehost_permissions_, shost_permissions_);
     EXPECT_EQ(effective_permissions_, granted_permissions->effective_hosts());
+    }
   }
 
   void Verify() override {
-    scoped_refptr<const PermissionSet> permissions(
-        prefs()->GetGrantedPermissions(extension_id_));
+    scoped_ptr<const PermissionSet> permissions =
+        prefs()->GetGrantedPermissions(extension_id_);
     EXPECT_TRUE(permissions.get());
     EXPECT_FALSE(permissions->HasEffectiveFullAccess());
     EXPECT_EQ(api_permissions_, permissions->apis());
@@ -330,12 +336,12 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
     AddPattern(&shosts, "https://*.google.com/*");
     AddPattern(&shosts, "http://reddit.com/r/test/*");
 
-    active_perms_ = new PermissionSet(
-        api_perms, empty_manifest_permissions, ehosts, shosts);
+    active_perms_.reset(new PermissionSet(api_perms, empty_manifest_permissions,
+                                          ehosts, shosts));
 
     // Make sure the active permissions start empty.
-    scoped_refptr<const PermissionSet> active(
-        prefs()->GetActivePermissions(extension_id_));
+    scoped_ptr<const PermissionSet> active =
+        prefs()->GetActivePermissions(extension_id_);
     EXPECT_TRUE(active->IsEmpty());
 
     // Set the active permissions.
@@ -348,14 +354,14 @@ class ExtensionPrefsActivePermissions : public ExtensionPrefsTest {
   }
 
   void Verify() override {
-    scoped_refptr<const PermissionSet> permissions(
-        prefs()->GetActivePermissions(extension_id_));
+    scoped_ptr<const PermissionSet> permissions =
+        prefs()->GetActivePermissions(extension_id_);
     EXPECT_EQ(*active_perms_.get(), *permissions.get());
   }
 
  private:
   std::string extension_id_;
-  scoped_refptr<const PermissionSet> active_perms_;
+  scoped_ptr<const PermissionSet> active_perms_;
 };
 TEST_F(ExtensionPrefsActivePermissions, SetAndGetActivePermissions) {}
 
@@ -952,8 +958,8 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
     URLPatternSet ehosts, shosts;
     AddPattern(&shosts, "chrome://print/*");
 
-    active_perms_ = new PermissionSet(api_perms, empty_manifest_permissions,
-                                      ehosts, shosts);
+    active_perms_.reset(new PermissionSet(api_perms, empty_manifest_permissions,
+                                          ehosts, shosts));
     // Set the active permissions.
     prefs()->SetActivePermissions(component_extension_->id(),
                                   active_perms_.get());
@@ -963,13 +969,13 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
 
   void Verify() override {
     // Component extension can access chrome://print/*.
-    scoped_refptr<const PermissionSet> component_permissions(
-        prefs()->GetActivePermissions(component_extension_->id()));
+    scoped_ptr<const PermissionSet> component_permissions =
+        prefs()->GetActivePermissions(component_extension_->id());
     EXPECT_EQ(1u, component_permissions->scriptable_hosts().size());
 
     // Non Component extension can not access chrome://print/*.
-    scoped_refptr<const PermissionSet> no_component_permissions(
-        prefs()->GetActivePermissions(no_component_extension_->id()));
+    scoped_ptr<const PermissionSet> no_component_permissions =
+        prefs()->GetActivePermissions(no_component_extension_->id());
     EXPECT_EQ(0u, no_component_permissions->scriptable_hosts().size());
 
     // |URLPattern::SCHEME_CHROMEUI| scheme will be added in valid_schemes for
@@ -988,7 +994,7 @@ class ExtensionPrefsComponentExtension : public ExtensionPrefsTest {
   }
 
  private:
-  scoped_refptr<const PermissionSet> active_perms_;
+  scoped_ptr<const PermissionSet> active_perms_;
   scoped_refptr<Extension> component_extension_;
   scoped_refptr<Extension> no_component_extension_;
 };

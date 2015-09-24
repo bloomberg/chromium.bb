@@ -31,7 +31,7 @@ scoped_ptr<api::permissions::Permissions> PackPermissionSet(
 
 // Creates a permission set from |permissions|. Returns NULL if the permissions
 // cannot be converted to a permission set, in which case |error| will be set.
-scoped_refptr<const PermissionSet> UnpackPermissionSet(
+scoped_ptr<const PermissionSet> UnpackPermissionSet(
     const api::permissions::Permissions& permissions,
     bool allow_file_access,
     std::string* error);

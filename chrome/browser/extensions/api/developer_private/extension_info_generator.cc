@@ -501,8 +501,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   info->run_on_all_urls.is_enabled =
       (FeatureSwitch::scripts_require_action()->IsEnabled() &&
        PermissionsData::ScriptsMayRequireActionForExtension(
-           &extension,
-           extension.permissions_data()->active_permissions().get())) ||
+           &extension, extension.permissions_data()->active_permissions())) ||
       extension.permissions_data()->HasWithheldImpliedAllHosts() ||
       util::HasSetAllowedScriptingOnAllUrls(extension.id(), browser_context_);
   info->run_on_all_urls.is_active =

@@ -35,21 +35,19 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
  protected:
   PermissionMessages GetMessages(const APIPermissionSet& permissions,
                                  Manifest::Type type) {
-    scoped_refptr<const PermissionSet> permission_set = new PermissionSet(
-        permissions, ManifestPermissionSet(), URLPatternSet(), URLPatternSet());
+    PermissionSet permission_set(permissions, ManifestPermissionSet(),
+                                 URLPatternSet(), URLPatternSet());
     return message_provider_->GetPermissionMessages(
-        message_provider_->GetAllPermissionIDs(permission_set.get(), type));
+        message_provider_->GetAllPermissionIDs(&permission_set, type));
   }
 
   bool IsPrivilegeIncrease(const APIPermissionSet& old_permissions,
                            const APIPermissionSet& new_permissions) {
-    scoped_refptr<PermissionSet> old_set(
-        new PermissionSet(old_permissions, ManifestPermissionSet(),
-                          URLPatternSet(), URLPatternSet()));
-    scoped_refptr<PermissionSet> new_set(
-        new PermissionSet(new_permissions, ManifestPermissionSet(),
-                          URLPatternSet(), URLPatternSet()));
-    return message_provider_->IsPrivilegeIncrease(old_set.get(), new_set.get(),
+    PermissionSet old_set(old_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet());
+    PermissionSet new_set(new_permissions, ManifestPermissionSet(),
+                          URLPatternSet(), URLPatternSet());
+    return message_provider_->IsPrivilegeIncrease(&old_set, &new_set,
                                                   Manifest::TYPE_EXTENSION);
   }
 

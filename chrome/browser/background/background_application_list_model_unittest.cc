@@ -117,10 +117,10 @@ void AddBackgroundPermission(ExtensionService* service,
 
   scoped_refptr<Extension> temporary =
       CreateExtension(GenerateUniqueExtensionName(), true);
-  scoped_refptr<const extensions::PermissionSet> permissions =
+  const extensions::PermissionSet* permissions =
       temporary->permissions_data()->active_permissions();
-  extensions::PermissionsUpdater(service->profile()).AddPermissions(
-      extension, permissions.get());
+  extensions::PermissionsUpdater(service->profile())
+      .AddPermissions(extension, permissions);
 }
 
 void RemoveBackgroundPermission(ExtensionService* service,
@@ -131,7 +131,7 @@ void RemoveBackgroundPermission(ExtensionService* service,
   }
   extensions::PermissionsUpdater(service->profile())
       .RemovePermissionsUnsafe(
-          extension, extension->permissions_data()->active_permissions().get());
+          extension, extension->permissions_data()->active_permissions());
 }
 
 void AddEphemeralApp(const Extension* extension, ExtensionService* service) {
