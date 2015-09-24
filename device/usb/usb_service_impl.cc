@@ -197,8 +197,8 @@ void OnReadStringDescriptor(
 
 void ReadStringDescriptor(
     scoped_refptr<UsbDeviceHandle> device_handle,
-    uint8 index,
-    uint16 language_id,
+    uint8_t index,
+    uint16_t language_id,
     const base::Callback<void(const base::string16&)>& callback) {
   scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
   device_handle->ControlTransfer(
@@ -231,7 +231,7 @@ void OnReadWebUsbLandingPage(scoped_refptr<UsbDevice> device,
 
 void ReadWebUsbLandingPage(scoped_refptr<UsbDeviceHandle> device_handle,
                            const base::Closure& callback,
-                           uint8 vendor_code) {
+                           uint8_t vendor_code) {
   scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(256);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
@@ -264,7 +264,7 @@ void OnReadWebUsbAllowedOrigins(scoped_refptr<UsbDevice> device,
 void OnReadWebUsbAllowedOriginsHeader(
     scoped_refptr<UsbDeviceHandle> device_handle,
     const base::Closure& callback,
-    uint8 vendor_code,
+    uint8_t vendor_code,
     UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
     size_t length) {
@@ -274,7 +274,7 @@ void OnReadWebUsbAllowedOriginsHeader(
     return;
   }
 
-  uint16 new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
   scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
@@ -286,7 +286,7 @@ void OnReadWebUsbAllowedOriginsHeader(
 
 void ReadWebUsbAllowedOrigins(scoped_refptr<UsbDeviceHandle> device_handle,
                               const base::Closure& callback,
-                              uint8 vendor_code) {
+                              uint8_t vendor_code) {
   scoped_refptr<IOBufferWithSize> buffer = new IOBufferWithSize(4);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::VENDOR, UsbDeviceHandle::DEVICE,
@@ -330,7 +330,7 @@ void OnReadBosDescriptorHeader(scoped_refptr<UsbDeviceHandle> device_handle,
     return;
   }
 
-  uint16 new_length = buffer->data()[2] | (buffer->data()[3] << 8);
+  uint16_t new_length = buffer->data()[2] | (buffer->data()[3] << 8);
   scoped_refptr<IOBufferWithSize> new_buffer = new IOBufferWithSize(new_length);
   device_handle->ControlTransfer(
       USB_DIRECTION_INBOUND, UsbDeviceHandle::STANDARD, UsbDeviceHandle::DEVICE,
@@ -367,14 +367,14 @@ void SaveStringAndRunContinuation(
 
 // This function runs |barrier| once for every string it tries to read.
 void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
-                       uint8 manufacturer,
-                       uint8 product,
-                       uint8 serial_number,
+                       uint8_t manufacturer,
+                       uint8_t product,
+                       uint8_t serial_number,
                        const base::Closure& barrier,
                        const base::string16& languages) {
   // Default to English unless the device provides a language and then just pick
   // the first one.
-  uint16 language_id = 0x0409;
+  uint16_t language_id = 0x0409;
   if (!languages.empty()) {
     language_id = languages[0];
   }
@@ -408,9 +408,9 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
 }
 
 void OnDeviceOpenedReadDescriptors(
-    uint8 manufacturer,
-    uint8 product,
-    uint8 serial_number,
+    uint8_t manufacturer,
+    uint8_t product,
+    uint8_t serial_number,
     bool read_bos_descriptors,
     const base::Closure& success_closure,
     const base::Closure& failure_closure,

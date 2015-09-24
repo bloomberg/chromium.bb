@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/threading/thread_checker.h"
 #include "device/usb/usb_descriptors.h"
@@ -71,8 +70,8 @@ class UsbDeviceImpl : public UsbDevice {
   // Called by UsbServiceImpl only;
   UsbDeviceImpl(scoped_refptr<UsbContext> context,
                 PlatformUsbDevice platform_device,
-                uint16 vendor_id,
-                uint16 product_id,
+                uint16_t vendor_id,
+                uint16_t product_id,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   ~UsbDeviceImpl() override;

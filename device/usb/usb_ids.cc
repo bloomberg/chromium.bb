@@ -6,8 +6,6 @@
 
 #include <stdlib.h>
 
-#include "base/basictypes.h"
-
 namespace device {
 
 namespace {

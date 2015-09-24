@@ -149,8 +149,8 @@ void ConvertConfigDescriptor(const libusb_config_descriptor* platform_config,
 UsbDeviceImpl::UsbDeviceImpl(
     scoped_refptr<UsbContext> context,
     PlatformUsbDevice platform_device,
-    uint16 vendor_id,
-    uint16 product_id,
+    uint16_t vendor_id,
+    uint16_t product_id,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
     : UsbDevice(vendor_id,
                 product_id,

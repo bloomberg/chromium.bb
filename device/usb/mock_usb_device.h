@@ -16,23 +16,23 @@ namespace device {
 
 class MockUsbDevice : public UsbDevice {
  public:
-  MockUsbDevice(uint16 vendor_id, uint16 product_id);
-  MockUsbDevice(uint16 vendor_id,
-                uint16 product_id,
+  MockUsbDevice(uint16_t vendor_id, uint16_t product_id);
+  MockUsbDevice(uint16_t vendor_id,
+                uint16_t product_id,
                 const std::string& manufacturer_string,
                 const std::string& product_string,
                 const std::string& serial_number);
-  MockUsbDevice(uint16 vendor_id,
-                uint16 product_id,
+  MockUsbDevice(uint16_t vendor_id,
+                uint16_t product_id,
                 const std::string& manufacturer_string,
                 const std::string& product_string,
                 const std::string& serial_number,
                 const GURL& webusb_landing_page);
-  MockUsbDevice(uint16 vendor_id,
-                uint16 product_id,
+  MockUsbDevice(uint16_t vendor_id,
+                uint16_t product_id,
                 const UsbConfigDescriptor& configuration);
-  MockUsbDevice(uint16 vendor_id,
-                uint16 product_id,
+  MockUsbDevice(uint16_t vendor_id,
+                uint16_t product_id,
                 const std::string& manufacturer_string,
                 const std::string& product_string,
                 const std::string& serial_number,

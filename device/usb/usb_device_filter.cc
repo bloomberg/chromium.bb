@@ -31,27 +31,27 @@ UsbDeviceFilter::UsbDeviceFilter()
 UsbDeviceFilter::~UsbDeviceFilter() {
 }
 
-void UsbDeviceFilter::SetVendorId(uint16 vendor_id) {
+void UsbDeviceFilter::SetVendorId(uint16_t vendor_id) {
   vendor_id_set_ = true;
   vendor_id_ = vendor_id;
 }
 
-void UsbDeviceFilter::SetProductId(uint16 product_id) {
+void UsbDeviceFilter::SetProductId(uint16_t product_id) {
   product_id_set_ = true;
   product_id_ = product_id;
 }
 
-void UsbDeviceFilter::SetInterfaceClass(uint8 interface_class) {
+void UsbDeviceFilter::SetInterfaceClass(uint8_t interface_class) {
   interface_class_set_ = true;
   interface_class_ = interface_class;
 }
 
-void UsbDeviceFilter::SetInterfaceSubclass(uint8 interface_subclass) {
+void UsbDeviceFilter::SetInterfaceSubclass(uint8_t interface_subclass) {
   interface_subclass_set_ = true;
   interface_subclass_ = interface_subclass;
 }
 
-void UsbDeviceFilter::SetInterfaceProtocol(uint8 interface_protocol) {
+void UsbDeviceFilter::SetInterfaceProtocol(uint8_t interface_protocol) {
   interface_protocol_set_ = true;
   interface_protocol_ = interface_protocol;
 }

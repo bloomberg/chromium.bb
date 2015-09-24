@@ -54,21 +54,21 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                     int alternate_setting,
                                     const ResultCallback& callback) override;
   void ResetDevice(const ResultCallback& callback) override;
-  void ClearHalt(uint8 endpoint, const ResultCallback& callback) override;
+  void ClearHalt(uint8_t endpoint, const ResultCallback& callback) override;
 
   void ControlTransfer(UsbEndpointDirection direction,
                        TransferRequestType request_type,
                        TransferRecipient recipient,
-                       uint8 request,
-                       uint16 value,
-                       uint16 index,
+                       uint8_t request,
+                       uint16_t value,
+                       uint16_t index,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override;
 
   void IsochronousTransfer(UsbEndpointDirection direction,
-                           uint8 endpoint,
+                           uint8_t endpoint,
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t length,
                            unsigned int packets,
@@ -77,7 +77,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                            const TransferCallback& callback) override;
 
   void GenericTransfer(UsbEndpointDirection direction,
-                       uint8 endpoint,
+                       uint8_t endpoint,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
@@ -118,7 +118,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                                             bool success,
                                             const ResultCallback& callback);
   void ResetDeviceOnBlockingThread(const ResultCallback& callback);
-  void ClearHaltOnBlockingThread(uint8 endpoint,
+  void ClearHaltOnBlockingThread(uint8_t endpoint,
                                  const ResultCallback& callback);
 
   // Refresh endpoint_map_ after ClaimInterface, ReleaseInterface and
@@ -128,15 +128,15 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
   // Look up the claimed interface by endpoint. Return NULL if the interface
   // of the endpoint is not found.
   scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
-      uint8 endpoint);
+      uint8_t endpoint);
 
   void ControlTransferInternal(
       UsbEndpointDirection direction,
       TransferRequestType request_type,
       TransferRecipient recipient,
-      uint8 request,
-      uint16 value,
-      uint16 index,
+      uint8_t request,
+      uint16_t value,
+      uint16_t index,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,
@@ -145,7 +145,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void BulkTransferInternal(
       UsbEndpointDirection direction,
-      uint8 endpoint,
+      uint8_t endpoint,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,
@@ -154,7 +154,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void InterruptTransferInternal(
       UsbEndpointDirection direction,
-      uint8 endpoint,
+      uint8_t endpoint,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,
@@ -163,7 +163,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void IsochronousTransferInternal(
       UsbEndpointDirection direction,
-      uint8 endpoint,
+      uint8_t endpoint,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int packets,
@@ -174,7 +174,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
 
   void GenericTransferInternal(
       UsbEndpointDirection direction,
-      uint8 endpoint,
+      uint8_t endpoint,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,

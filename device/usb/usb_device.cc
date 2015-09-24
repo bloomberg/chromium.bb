@@ -9,8 +9,8 @@
 
 namespace device {
 
-UsbDevice::UsbDevice(uint16 vendor_id,
-                     uint16 product_id,
+UsbDevice::UsbDevice(uint16_t vendor_id,
+                     uint16_t product_id,
                      const base::string16& manufacturer_string,
                      const base::string16& product_string,
                      const base::string16& serial_number)
@@ -19,8 +19,7 @@ UsbDevice::UsbDevice(uint16 vendor_id,
       serial_number_(serial_number),
       guid_(base::GenerateGUID()),
       vendor_id_(vendor_id),
-      product_id_(product_id) {
-}
+      product_id_(product_id) {}
 
 UsbDevice::~UsbDevice() {
 }

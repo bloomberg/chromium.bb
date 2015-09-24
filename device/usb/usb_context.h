@@ -5,7 +5,6 @@
 #ifndef DEVICE_USB_USB_CONTEXT_H_
 #define DEVICE_USB_USB_CONTEXT_H_
 
-#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"

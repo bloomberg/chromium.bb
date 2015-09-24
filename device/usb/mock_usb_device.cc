@@ -8,12 +8,11 @@
 
 namespace device {
 
-MockUsbDevice::MockUsbDevice(uint16 vendor_id, uint16 product_id)
-    : MockUsbDevice(vendor_id, product_id, "", "", "") {
-}
+MockUsbDevice::MockUsbDevice(uint16_t vendor_id, uint16_t product_id)
+    : MockUsbDevice(vendor_id, product_id, "", "", "") {}
 
-MockUsbDevice::MockUsbDevice(uint16 vendor_id,
-                             uint16 product_id,
+MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
+                             uint16_t product_id,
                              const std::string& manufacturer_string,
                              const std::string& product_string,
                              const std::string& serial_number)
@@ -21,11 +20,10 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
                 product_id,
                 base::UTF8ToUTF16(manufacturer_string),
                 base::UTF8ToUTF16(product_string),
-                base::UTF8ToUTF16(serial_number)) {
-}
+                base::UTF8ToUTF16(serial_number)) {}
 
-MockUsbDevice::MockUsbDevice(uint16 vendor_id,
-                             uint16 product_id,
+MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
+                             uint16_t product_id,
                              const std::string& manufacturer_string,
                              const std::string& product_string,
                              const std::string& serial_number,
@@ -38,16 +36,16 @@ MockUsbDevice::MockUsbDevice(uint16 vendor_id,
   webusb_landing_page_ = webusb_landing_page;
 }
 
-MockUsbDevice::MockUsbDevice(uint16 vendor_id,
-                             uint16 product_id,
+MockUsbDevice::MockUsbDevice(uint16_t vendor_id,
+                             uint16_t product_id,
                              const UsbConfigDescriptor& configuration)
     : MockUsbDevice(vendor_id, product_id) {
   configurations_.push_back(configuration);
 }
 
 MockUsbDevice::MockUsbDevice(
-    uint16 vendor_id,
-    uint16 product_id,
+    uint16_t vendor_id,
+    uint16_t product_id,
     const std::string& manufacturer_string,
     const std::string& product_string,
     const std::string& serial_number,

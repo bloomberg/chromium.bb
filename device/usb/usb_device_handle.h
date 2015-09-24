@@ -59,23 +59,23 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                             int alternate_setting,
                                             const ResultCallback& callback) = 0;
   virtual void ResetDevice(const ResultCallback& callback) = 0;
-  virtual void ClearHalt(uint8 endpoint, const ResultCallback& callback) = 0;
+  virtual void ClearHalt(uint8_t endpoint, const ResultCallback& callback) = 0;
 
   // The transfer functions may be called from any thread. The provided callback
   // will be run on the caller's thread.
   virtual void ControlTransfer(UsbEndpointDirection direction,
                                TransferRequestType request_type,
                                TransferRecipient recipient,
-                               uint8 request,
-                               uint16 value,
-                               uint16 index,
+                               uint8_t request,
+                               uint16_t value,
+                               uint16_t index,
                                scoped_refptr<net::IOBuffer> buffer,
                                size_t length,
                                unsigned int timeout,
                                const TransferCallback& callback) = 0;
 
   virtual void IsochronousTransfer(UsbEndpointDirection direction,
-                                   uint8 endpoint,
+                                   uint8_t endpoint,
                                    scoped_refptr<net::IOBuffer> buffer,
                                    size_t length,
                                    unsigned int packets,
@@ -84,7 +84,7 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
                                    const TransferCallback& callback) = 0;
 
   virtual void GenericTransfer(UsbEndpointDirection direction,
-                               uint8 endpoint,
+                               uint8_t endpoint,
                                scoped_refptr<net::IOBuffer> buffer,
                                size_t length,
                                unsigned int timeout,

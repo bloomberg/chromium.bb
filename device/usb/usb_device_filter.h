@@ -23,11 +23,11 @@ class UsbDeviceFilter {
   UsbDeviceFilter();
   ~UsbDeviceFilter();
 
-  void SetVendorId(uint16 vendor_id);
-  void SetProductId(uint16 product_id);
-  void SetInterfaceClass(uint8 interface_class);
-  void SetInterfaceSubclass(uint8 interface_subclass);
-  void SetInterfaceProtocol(uint8 interface_protocol);
+  void SetVendorId(uint16_t vendor_id);
+  void SetProductId(uint16_t product_id);
+  void SetInterfaceClass(uint8_t interface_class);
+  void SetInterfaceSubclass(uint8_t interface_subclass);
+  void SetInterfaceProtocol(uint8_t interface_protocol);
 
   bool Matches(scoped_refptr<UsbDevice> device) const;
   scoped_ptr<base::Value> ToValue() const;
@@ -36,11 +36,11 @@ class UsbDeviceFilter {
                          const std::vector<UsbDeviceFilter>& filters);
 
  private:
-  uint16 vendor_id_;
-  uint16 product_id_;
-  uint8 interface_class_;
-  uint8 interface_subclass_;
-  uint8 interface_protocol_;
+  uint16_t vendor_id_;
+  uint16_t product_id_;
+  uint8_t interface_class_;
+  uint8_t interface_subclass_;
+  uint8_t interface_protocol_;
   bool vendor_id_set_ : 1;
   bool product_id_set_ : 1;
   bool interface_class_set_ : 1;
