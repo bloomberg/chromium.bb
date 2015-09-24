@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
-import org.chromium.chrome.browser.tabmodel.TabModelBase;
+import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.content.browser.ContentReadbackHandler;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -449,7 +449,7 @@ public class CompositorView
         final LayoutTab[] tabs = layout.getLayoutTabsToRender();
         final int tabsCount = tabs != null ? tabs.length : 0;
         mLastLayerCount = tabsCount;
-        TabModelBase.flushActualTabSwitchLatencyMetric();
+        TabModelImpl.flushActualTabSwitchLatencyMetric();
         nativeFinalizeLayers(mNativeCompositorView);
         TraceEvent.end("CompositorView:finalizeLayers");
     }

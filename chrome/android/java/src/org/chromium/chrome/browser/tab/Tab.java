@@ -91,7 +91,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
-import org.chromium.chrome.browser.tabmodel.TabModelBase;
+import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -2848,7 +2848,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         } else {
             mFullscreenManager.setPositionsForTab(topControlsOffsetY, contentOffsetY);
         }
-        TabModelBase.setActualTabSwitchLatencyMetricRequired();
+        TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
 
     /**
