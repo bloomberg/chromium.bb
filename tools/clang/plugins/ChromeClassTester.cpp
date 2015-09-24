@@ -194,8 +194,10 @@ void ChromeClassTester::BuildBannedLists() {
   banned_namespaces_.push_back("std");
   banned_namespaces_.push_back("__gnu_cxx");
 
-  banned_namespaces_.push_back("blink");
-  banned_namespaces_.push_back("WTF");
+  if (!options_.enforce_blink) {
+    banned_namespaces_.push_back("blink");
+    banned_namespaces_.push_back("WTF");
+  }
 
   banned_directories_.push_back("/third_party/");
   banned_directories_.push_back("/native_client/");

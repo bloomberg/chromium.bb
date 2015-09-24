@@ -10,12 +10,14 @@ namespace chrome_checker {
 struct Options {
   Options()
       : check_base_classes(false),
+        enforce_blink(false),
         check_enum_last_value(false),
         with_ast_visitor(false),
         check_templates(false),
         warn_only(false) {}
 
   bool check_base_classes;
+  bool enforce_blink;
   bool check_enum_last_value;
   bool with_ast_visitor;
   bool check_templates;

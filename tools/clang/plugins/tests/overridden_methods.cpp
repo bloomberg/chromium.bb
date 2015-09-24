@@ -24,9 +24,9 @@ class ImplementationDerivedClass : public ImplementationInterimClass,
   virtual void SomeMethod();
   // Should not warn if marked as override.
   void SomeOtherMethod() override;
-  // Should not warn for inline implementations in implementation files.
+  // Should warn for inline implementations in implementation files.
   virtual void SomeInlineMethod() {}
-  // Should not warn if overriding a method whose origin is blink.
+  // Should warn if overriding a method whose origin is blink.
   virtual void WebKitModifiedSomething();
   // Should warn with the insertion point after the const.
   virtual void SomeConstMethod() const {}

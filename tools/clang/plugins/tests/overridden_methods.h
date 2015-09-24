@@ -50,7 +50,7 @@ class DerivedClass : public InterimClass,
   void SomeOtherMethod() override;
   // Should warn for inline implementations.
   virtual void SomeInlineMethod() {}
-  // Should not warn if overriding a method whose origin is blink.
+  // Should warn if overriding a method whose origin is blink.
   virtual void WebKitModifiedSomething();
   // Should warn with the insertion point after the const.
   virtual void SomeConstMethod() const {}

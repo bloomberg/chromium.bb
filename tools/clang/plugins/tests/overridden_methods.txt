@@ -3,6 +3,10 @@ In file included from overridden_methods.cpp:5:
   virtual void SomeMethod() = 0;
                             ^
                              override
+./overridden_methods.h:38:42: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void WebKitModifiedSomething() {};
+                                         ^
+                                          override
 ./overridden_methods.h:46:27: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual ~DerivedClass() {}
                           ^
@@ -15,6 +19,10 @@ In file included from overridden_methods.cpp:5:
   virtual void SomeInlineMethod() {}
                                   ^
                                    override
+./overridden_methods.h:54:41: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void WebKitModifiedSomething();
+                                        ^
+                                         override
 ./overridden_methods.h:56:40: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeConstMethod() const {}
                                        ^
@@ -55,6 +63,10 @@ overridden_methods.cpp:28:35: warning: [chromium-style] Overriding method must b
   virtual void SomeInlineMethod() {}
                                   ^
                                    override
+overridden_methods.cpp:30:41: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
+  virtual void WebKitModifiedSomething();
+                                        ^
+                                         override
 overridden_methods.cpp:32:40: warning: [chromium-style] Overriding method must be marked with 'override' or 'final'.
   virtual void SomeConstMethod() const {}
                                        ^
@@ -79,4 +91,4 @@ overridden_methods.cpp:43:47: warning: [chromium-style] Overriding method must b
   virtual void SomeMethodWithCommentAndBody() {}  // This is a comment.
                                               ^
                                                override
-20 warnings generated.
+23 warnings generated.
