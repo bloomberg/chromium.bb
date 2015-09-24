@@ -155,7 +155,8 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Vector<Dictio
             return promise;
     }
 
-    client->requestPermissions(*permissions, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionsCallback(resolver, permissions.release()));
+    WebVector<WebPermissionType> permissionsCopy = *permissions;
+    client->requestPermissions(permissionsCopy, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionsCallback(resolver, permissions.release()));
     return promise;
 }
 
