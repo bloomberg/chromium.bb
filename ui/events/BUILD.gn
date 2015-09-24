@@ -77,7 +77,7 @@ component("events_base") {
     deps += [ "//ui/gfx/x" ]
   }
 
-  if (use_x11 || use_ozone) {
+  if (use_x11 || use_xkbcommon) {
     sources += [
       "keycodes/keyboard_code_conversion_xkb.cc",
       "keycodes/keyboard_code_conversion_xkb.h",
@@ -381,8 +381,12 @@ test("events_unittests") {
       "ozone/evdev/tablet_event_converter_evdev_unittest.cc",
       "ozone/evdev/touch_event_converter_evdev_unittest.cc",
       "ozone/evdev/touch_noise/touch_noise_finder_unittest.cc",
-      "ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc",
     ]
+
+    if (use_xkbcommon) {
+      sources += [ "ozone/layout/xkb/xkb_keyboard_layout_engine_unittest.cc" ]
+    }
+
     deps += [
       "//ui/events/ozone:events_ozone",
       "//ui/events/ozone:events_ozone_evdev",

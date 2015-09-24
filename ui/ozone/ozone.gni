@@ -25,13 +25,15 @@ declare_args() {
     if (is_chromecast) {
       # The default platform used at runtime is "cast".
       ozone_platform = "cast"
+      ozone_platform_cast = true
+      ozone_platform_test = true
 
       # For desktop Chromecast builds, override the default "cast" platform with
       # --ozone_platform=egltest
-      ozone_platform_cast = true
-      ozone_platform_egltest = true
-      ozone_platform_ozonex = true
-      ozone_platform_test = true
+      if (target_os == "linux" && target_cpu != "arm") {
+        ozone_platform_egltest = true
+        ozone_platform_ozonex = true
+      }
     } else {
       # Use test as the default platform.
       ozone_platform = "test"

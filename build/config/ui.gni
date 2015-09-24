@@ -39,6 +39,9 @@ declare_args() {
 
   # Whether we should use GTKv3 instead of GTKv2.
   use_gtk3 = false
+
+  # Optional system libraries.
+  use_xkbcommon = false
 }
 
 # Additional dependent variables -----------------------------------------------
