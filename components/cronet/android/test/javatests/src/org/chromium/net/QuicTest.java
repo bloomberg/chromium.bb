@@ -4,8 +4,8 @@
 
 package org.chromium.net;
 
-import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.Suppress;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -70,8 +70,10 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", listener.mNegotiatedProtocol);
     }
 
-    @LargeTest
-    @Feature({"Cronet"})
+    // Test disabled: http://crbug.com/535462
+    //@LargeTest
+    //@Feature({"Cronet"})
+    @Suppress
     public void testQuicLoadUrl() throws Exception {
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         TestUrlRequestListener listener = new TestUrlRequestListener();
