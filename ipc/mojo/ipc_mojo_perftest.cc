@@ -36,7 +36,7 @@ public:
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    return IPC::ChannelMojo::CreateServerFactory(runner, handle, nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(runner, handle);
   }
 
   bool DidStartClient() override {
@@ -82,7 +82,7 @@ scoped_ptr<IPC::Channel> MojoTestClient::CreateChannel(
     IPC::Listener* listener) {
   return scoped_ptr<IPC::Channel>(IPC::ChannelMojo::Create(
       task_runner(), IPCTestBase::GetChannelName("PerformanceClient"),
-      IPC::Channel::MODE_CLIENT, listener, nullptr));
+      IPC::Channel::MODE_CLIENT, listener));
 }
 
 MULTIPROCESS_IPC_TEST_CLIENT_MAIN(PerformanceClient) {

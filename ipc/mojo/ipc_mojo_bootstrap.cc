@@ -148,8 +148,7 @@ void MojoClientBootstrap::OnChannelConnected(int32_t peer_pid) {
 // static
 scoped_ptr<MojoBootstrap> MojoBootstrap::Create(ChannelHandle handle,
                                                 Channel::Mode mode,
-                                                Delegate* delegate,
-                                                AttachmentBroker* broker) {
+                                                Delegate* delegate) {
   CHECK(mode == Channel::MODE_CLIENT || mode == Channel::MODE_SERVER);
   scoped_ptr<MojoBootstrap> self =
       mode == Channel::MODE_CLIENT
@@ -157,7 +156,7 @@ scoped_ptr<MojoBootstrap> MojoBootstrap::Create(ChannelHandle handle,
           : scoped_ptr<MojoBootstrap>(new MojoServerBootstrap());
 
   scoped_ptr<Channel> bootstrap_channel =
-      Channel::Create(handle, mode, self.get(), broker);
+      Channel::Create(handle, mode, self.get());
   self->Init(bootstrap_channel.Pass(), delegate);
   return self.Pass();
 }

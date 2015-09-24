@@ -83,15 +83,11 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // on the background thread.  Any message not handled by the filter will be
   // dispatched to the listener.  The given task runner correspond to a thread
   // on which IPC::Channel is created and used (e.g. IO thread).
-  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
-  // make the upcoming refactor decomposable into smaller CLs.
-  // http://crbug.com/493414.
   static scoped_ptr<ChannelProxy> Create(
       const IPC::ChannelHandle& channel_handle,
       Channel::Mode mode,
       Listener* listener,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
-      AttachmentBroker* broker = nullptr);
+      const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner);
 
   static scoped_ptr<ChannelProxy> Create(
       scoped_ptr<ChannelFactory> factory,
@@ -104,13 +100,9 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // proxy that was not initialized in its constructor. If create_pipe_now is
   // true, the pipe is created synchronously. Otherwise it's created on the IO
   // thread.
-  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
-  // make the upcoming refactor decomposable into smaller CLs.
-  // http://crbug.com/493414.
   void Init(const IPC::ChannelHandle& channel_handle,
             Channel::Mode mode,
-            bool create_pipe_now,
-            AttachmentBroker* broker = nullptr);
+            bool create_pipe_now);
   void Init(scoped_ptr<ChannelFactory> factory, bool create_pipe_now);
 
   // Close the IPC::Channel.  This operation completes asynchronously, once the

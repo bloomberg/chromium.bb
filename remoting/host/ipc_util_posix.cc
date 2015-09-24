@@ -47,10 +47,8 @@ bool CreateConnectedIpcChannel(
   base::FileDescriptor fd(pipe_fds[0], false);
   IPC::ChannelHandle handle(socket_name, fd);
   *server_out = IPC::ChannelProxy::Create(IPC::ChannelHandle(socket_name, fd),
-                                          IPC::Channel::MODE_SERVER,
-                                          listener,
-                                          io_task_runner.get(),
-                                          nullptr);
+                                          IPC::Channel::MODE_SERVER, listener,
+                                          io_task_runner.get());
 
   *client_out = base::File(pipe_fds[1]);
   return true;

@@ -10,23 +10,20 @@ namespace {
 
 class PlatformChannelFactory : public ChannelFactory {
  public:
-  PlatformChannelFactory(ChannelHandle handle,
-                         Channel::Mode mode,
-                         AttachmentBroker* broker)
-      : handle_(handle), mode_(mode), broker_(broker) {}
+  PlatformChannelFactory(ChannelHandle handle, Channel::Mode mode)
+      : handle_(handle), mode_(mode) {}
 
   std::string GetName() const override {
     return handle_.name;
   }
 
   scoped_ptr<Channel> BuildChannel(Listener* listener) override {
-    return Channel::Create(handle_, mode_, listener, broker_);
+    return Channel::Create(handle_, mode_, listener);
   }
 
  private:
   ChannelHandle handle_;
   Channel::Mode mode_;
-  AttachmentBroker* broker_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformChannelFactory);
 };
@@ -35,10 +32,8 @@ class PlatformChannelFactory : public ChannelFactory {
 
 // static
 scoped_ptr<ChannelFactory> ChannelFactory::Create(const ChannelHandle& handle,
-                                                  Channel::Mode mode,
-                                                  AttachmentBroker* broker) {
-  return scoped_ptr<ChannelFactory>(
-      new PlatformChannelFactory(handle, mode, broker));
+                                                  Channel::Mode mode) {
+  return scoped_ptr<ChannelFactory>(new PlatformChannelFactory(handle, mode));
 }
 
 }  // namespace IPC

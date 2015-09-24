@@ -1019,8 +1019,7 @@ void ChannelPosix::ResetSafely(base::ScopedFD* fd) {
 // static
 scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Mode mode,
-                                    Listener* listener,
-                                    AttachmentBroker* broker) {
+                                    Listener* listener) {
   return make_scoped_ptr(
       new ChannelPosix(channel_handle, mode, listener));
 }

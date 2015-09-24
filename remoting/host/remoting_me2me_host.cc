@@ -469,19 +469,15 @@ bool HostProcess::InitWithCommandLine(const base::CommandLine* cmd_line) {
   daemon_channel_ = IPC::ChannelProxy::Create(channel_handle,
                                               IPC::Channel::MODE_CLIENT,
                                               this,
-                                              context_->network_task_runner(),
-                                              nullptr);
+                                              context_->network_task_runner());
 #else  // !defined(REMOTING_MULTI_PROCESS)
   // Connect to the daemon process.
   std::string channel_name =
       cmd_line->GetSwitchValueASCII(kDaemonPipeSwitchName);
   if (!channel_name.empty()) {
     daemon_channel_ =
-        IPC::ChannelProxy::Create(channel_name,
-                                  IPC::Channel::MODE_CLIENT,
-                                  this,
-                                  context_->network_task_runner().get(),
-                                  nullptr);
+        IPC::ChannelProxy::Create(channel_name, IPC::Channel::MODE_CLIENT, this,
+                                  context_->network_task_runner().get());
   }
 
   if (cmd_line->HasSwitch(kHostConfigSwitchName)) {

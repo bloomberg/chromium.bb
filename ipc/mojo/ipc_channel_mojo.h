@@ -61,34 +61,22 @@ class IPC_MOJO_EXPORT ChannelMojo
   static bool ShouldBeUsed();
 
   // Create ChannelMojo. A bootstrap channel is created as well.
-  // |broker| must outlive the newly created channel.
   static scoped_ptr<ChannelMojo> Create(
       scoped_refptr<base::TaskRunner> io_runner,
       const ChannelHandle& channel_handle,
       Mode mode,
-      Listener* listener,
-      AttachmentBroker* broker);
+      Listener* listener);
 
   // Create a factory object for ChannelMojo.
   // The factory is used to create Mojo-based ChannelProxy family.
   // |host| must not be null.
-  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
-  // make the upcoming refactor decomposable into smaller CLs.
-  // http://crbug.com/493414.
-  // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateServerFactory(
       scoped_refptr<base::TaskRunner> io_runner,
-      const ChannelHandle& channel_handle,
-      AttachmentBroker* broker = nullptr);
+      const ChannelHandle& channel_handle);
 
-  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
-  // make the upcoming refactor decomposable into smaller CLs.
-  // http://crbug.com/493414.
-  // |broker| must outlive the factory and all channels it creates.
   static scoped_ptr<ChannelFactory> CreateClientFactory(
       scoped_refptr<base::TaskRunner> io_runner,
-      const ChannelHandle& channel_handle,
-      AttachmentBroker* broker = nullptr);
+      const ChannelHandle& channel_handle);
 
   ~ChannelMojo() override;
 
@@ -126,8 +114,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   ChannelMojo(scoped_refptr<base::TaskRunner> io_runner,
               const ChannelHandle& channel_handle,
               Mode mode,
-              Listener* listener,
-              AttachmentBroker* broker);
+              Listener* listener);
 
   void CreateMessagingPipe(mojo::embedder::ScopedPlatformHandle handle,
                            const CreateMessagingPipeCallback& callback);

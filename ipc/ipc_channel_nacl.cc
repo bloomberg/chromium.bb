@@ -123,8 +123,7 @@ void ChannelNacl::ReaderThreadRunner::Run() {
 
 ChannelNacl::ChannelNacl(const IPC::ChannelHandle& channel_handle,
                          Mode mode,
-                         Listener* listener,
-                         AttachmentBroker* broker)
+                         Listener* listener)
     : ChannelReader(listener),
       mode_(mode),
       waiting_connect_(true),
@@ -398,10 +397,8 @@ bool ChannelNacl::IsAttachmentBrokerEndpoint() {
 // static
 scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Mode mode,
-                                    Listener* listener,
-                                    AttachmentBroker* broker) {
-  return scoped_ptr<Channel>(
-      new ChannelNacl(channel_handle, mode, listener, broker));
+                                    Listener* listener) {
+  return scoped_ptr<Channel>(new ChannelNacl(channel_handle, mode, listener));
 }
 
 }  // namespace IPC

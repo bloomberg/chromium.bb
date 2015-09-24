@@ -95,8 +95,7 @@ void ServiceListener::Connect() {
     // This process never sends or receives brokered attachments, so there's no
     // need for an attachment broker.
     channel_ =
-        IPC::Channel::CreateClient(IPC::ChannelHandle(handle.Get()), this,
-                                   nullptr /* attachment_broker */);
+        IPC::Channel::CreateClient(IPC::ChannelHandle(handle.Get()), this);
     channel_->Connect();
   } else {
     ipc_thread_->message_loop()->PostDelayedTask(

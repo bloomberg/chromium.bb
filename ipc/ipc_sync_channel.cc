@@ -412,11 +412,10 @@ scoped_ptr<SyncChannel> SyncChannel::Create(
     Listener* listener,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
     bool create_pipe_now,
-    base::WaitableEvent* shutdown_event,
-    AttachmentBroker* broker) {
+    base::WaitableEvent* shutdown_event) {
   scoped_ptr<SyncChannel> channel =
       Create(listener, ipc_task_runner, shutdown_event);
-  channel->Init(channel_handle, mode, create_pipe_now, broker);
+  channel->Init(channel_handle, mode, create_pipe_now);
   return channel.Pass();
 }
 

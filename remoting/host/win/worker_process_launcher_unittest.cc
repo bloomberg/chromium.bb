@@ -277,8 +277,7 @@ void WorkerProcessLauncherTest::ConnectClient() {
   channel_client_ = IPC::ChannelProxy::Create(IPC::ChannelHandle(channel_name_),
                                               IPC::Channel::MODE_CLIENT,
                                               &client_listener_,
-                                              task_runner_,
-                                              nullptr);
+                                              task_runner_);
 
   // Pretend that |kLaunchSuccessTimeoutSeconds| passed since launching
   // the worker process. This will make the backoff algorithm think that this
@@ -365,7 +364,7 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
   // Wrap the pipe into an IPC channel.
   channel_server_ = IPC::ChannelProxy::Create(
       IPC::ChannelHandle(pipe.Get()), IPC::Channel::MODE_SERVER, this,
-      task_runner_, nullptr);
+      task_runner_);
 
   HANDLE temp_handle;
   ASSERT_TRUE(DuplicateHandle(GetCurrentProcess(),

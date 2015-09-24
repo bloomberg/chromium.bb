@@ -70,17 +70,13 @@ class IPC_EXPORT SyncChannel : public ChannelProxy {
   // Creates and initializes a sync channel. If create_pipe_now is specified,
   // the channel will be initialized synchronously.
   // The naming pattern follows IPC::Channel.
-  // TODO(erikchen): Remove default parameter for |broker|. It exists only to
-  // make the upcoming refactor decomposable into smaller CLs.
-  // http://crbug.com/493414.
   static scoped_ptr<SyncChannel> Create(
       const IPC::ChannelHandle& channel_handle,
       IPC::Channel::Mode mode,
       Listener* listener,
       const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner,
       bool create_pipe_now,
-      base::WaitableEvent* shutdown_event,
-      AttachmentBroker* broker = nullptr);
+      base::WaitableEvent* shutdown_event);
 
   static scoped_ptr<SyncChannel> Create(
       scoped_ptr<ChannelFactory> factory,

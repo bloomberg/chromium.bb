@@ -154,7 +154,7 @@ int SendFdsClientCommon(const std::string& test_client_name,
 
   // Set up IPC channel.
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
-      IPCTestBase::GetChannelName(test_client_name), &listener, nullptr));
+      IPCTestBase::GetChannelName(test_client_name), &listener));
   CHECK(channel->Connect());
 
   // Run message loop.
@@ -249,10 +249,10 @@ class PipeChannelHelper {
 
   void Init() {
     IPC::ChannelHandle in_handle("IN");
-    in = IPC::Channel::CreateServer(in_handle, &null_listener_, nullptr);
+    in = IPC::Channel::CreateServer(in_handle, &null_listener_);
     IPC::ChannelHandle out_handle(
         "OUT", base::FileDescriptor(in->TakeClientFileDescriptor()));
-    out = IPC::Channel::CreateClient(out_handle, &cb_listener_, nullptr);
+    out = IPC::Channel::CreateClient(out_handle, &cb_listener_);
     // PostTask the connect calls to make sure the callbacks happens
     // on the right threads.
     in_thread_->task_runner()->PostTask(

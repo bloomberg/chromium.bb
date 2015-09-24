@@ -69,9 +69,9 @@ class ListenerThatExpectsOK : public IPC::Listener {
 class ChannelClient {
  public:
   explicit ChannelClient(IPC::Listener* listener, const char* name) {
-    channel_ = IPC::ChannelMojo::Create(
-        main_message_loop_.task_runner(), IPCTestBase::GetChannelName(name),
-        IPC::Channel::MODE_CLIENT, listener, nullptr);
+    channel_ = IPC::ChannelMojo::Create(main_message_loop_.task_runner(),
+                                        IPCTestBase::GetChannelName(name),
+                                        IPC::Channel::MODE_CLIENT, listener);
   }
 
   void Connect() {
@@ -116,8 +116,7 @@ class IPCChannelMojoTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
-                                                 nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
   }
 
   bool DidStartClient() override {
@@ -225,8 +224,7 @@ class IPCChannelMojoErrorTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
-                                                 nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
   }
 
   bool DidStartClient() override {
@@ -627,8 +625,7 @@ class IPCChannelMojoDeadHandleTest : public IPCChannelMojoTestBase {
   scoped_ptr<IPC::ChannelFactory> CreateChannelFactory(
       const IPC::ChannelHandle& handle,
       base::SequencedTaskRunner* runner) override {
-    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle,
-                                                 nullptr);
+    return IPC::ChannelMojo::CreateServerFactory(task_runner(), handle);
   }
 
   bool DidStartClient() override {

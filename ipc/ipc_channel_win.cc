@@ -570,8 +570,7 @@ void ChannelWin::OnIOCompleted(
 // static
 scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Mode mode,
-                                    Listener* listener,
-                                    AttachmentBroker* broker) {
+                                    Listener* listener) {
   return scoped_ptr<Channel>(
       new ChannelWin(channel_handle, mode, listener));
 }
