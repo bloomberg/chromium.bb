@@ -85,24 +85,20 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
         assertTrue(DOMUtils.waitForNonZeroNodeBounds(webContentsRef.get(), "fn"));
 
         // Click on the unfocused input element for the first time to focus on it. This brings up
-        // the keyboard, but does not show the autofill popup.
+        // the autofill popup and shows the keyboard at the same time. Showing the keyboard should
+        // not hide the autofill popup.
         DOMUtils.clickNode(this, viewCoreRef.get(), "fn");
-        waitForKeyboardShown(true);
 
-        // Hide the keyboard while still keeping the focus on the input field.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                UiUtils.hideKeyboard(viewRef.get());
-            }
-        });
-        waitForKeyboardShown(false);
-
-        // Click on the focused input element for the second time. This brings up the autofill popup
-        // and shows the keyboard at the same time. Showing the keyboard should not hide the
-        // autofill popup.
-        DOMUtils.clickNode(this, viewCoreRef.get(), "fn");
-        waitForKeyboardShown(true);
+        // Wait until the keyboard is showing.
+        assertTrue("Keyboard was never shown.",
+                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                    @Override
+                    public boolean isSatisfied() {
+                        return UiUtils.isKeyboardShowing(
+                                getActivity(),
+                                getActivity().getCurrentContentViewCore().getContainerView());
+                    }
+                }));
 
         // Verify that the autofill popup is showing.
         assertTrue("Autofill Popup anchor view was never added.",
@@ -127,30 +123,5 @@ public class AutofillPopupWithKeyboardTest extends ChromeActivityTestCaseBase<Ch
                         return popup.isShowing();
                     }
                 }));
-    }
-
-    /**
-     * Wait until the keyboard is showing and notify the ContentViewCore that its height was changed
-     * on the UI thread.
-     */
-    private void waitForKeyboardShown(final boolean shown) throws InterruptedException {
-        assertTrue((shown ? "Keyboard was never shown" : "Keyboard was never hidden"),
-                CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return shown == UiUtils.isKeyboardShowing(
-                                getActivity(),
-                                getActivity().getCurrentContentViewCore().getContainerView());
-                    }
-                }));
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ContentViewCore viewCore = getActivity().getCurrentContentViewCore();
-                viewCore.onSizeChanged(viewCore.getViewportWidthPix(),
-                        viewCore.getViewportHeightPix() + (shown ? -100 : 100),
-                        viewCore.getViewportWidthPix(), viewCore.getViewportHeightPix());
-            }
-        });
     }
 }
