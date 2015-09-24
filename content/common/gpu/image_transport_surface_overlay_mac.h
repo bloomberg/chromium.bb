@@ -52,7 +52,6 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
   void OnResize(gfx::Size pixel_size, float scale_factor) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
-  void WakeUpGpu() override;
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;

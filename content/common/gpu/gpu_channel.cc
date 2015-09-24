@@ -910,6 +910,17 @@ void GpuChannel::HandleOutOfOrderMessage(const IPC::Message& msg) {
   }
 }
 
+#if defined(OS_ANDROID)
+const GpuCommandBufferStub* GpuChannel::GetOneStub() const {
+  for (const auto& kv : stubs_) {
+    const GpuCommandBufferStub* stub = kv.second;
+    if (stub->decoder() && !stub->decoder()->WasContextLost())
+      return stub;
+  }
+  return nullptr;
+}
+#endif
+
 void GpuChannel::OnCreateOffscreenCommandBuffer(
     const gfx::Size& size,
     const GPUCreateCommandBufferConfig& init_params,

@@ -183,6 +183,10 @@ class CONTENT_EXPORT GpuChannel
   // are completed.
   void HandleOutOfOrderMessage(const IPC::Message& msg);
 
+#if defined(OS_ANDROID)
+  const GpuCommandBufferStub* GetOneStub() const;
+#endif
+
  protected:
   // The message filter on the io thread.
   scoped_refptr<GpuChannelMessageFilter> filter_;

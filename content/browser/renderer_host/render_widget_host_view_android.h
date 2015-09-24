@@ -121,7 +121,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                         const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  void AcceleratedSurfaceInitialized(int route_id) override;
   bool HasAcceleratedSurface(const gfx::Size& desired_size) override;
   void SetBackgroundColor(SkColor color) override;
   void CopyFromCompositingSurface(
@@ -384,8 +383,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Manages selection handle rendering and manipulation.
   // This will always be NULL if |content_view_core_| is NULL.
   scoped_ptr<ui::TouchSelectionController> selection_controller_;
-
-  int accelerated_surface_route_id_;
 
   // Size to use if we have no backing ContentViewCore
   gfx::Size default_size_;

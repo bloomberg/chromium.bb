@@ -710,8 +710,6 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
       latency_info_.end(), latency_info.begin(), latency_info.end());
 }
 
-void ImageTransportSurfaceOverlayMac::WakeUpGpu() {}
-
 void ImageTransportSurfaceOverlayMac::OnGpuSwitched() {
   // Create a new context, and use the GL renderer ID that the new context gets.
   scoped_refptr<ui::IOSurfaceContext> context_on_new_gpu =

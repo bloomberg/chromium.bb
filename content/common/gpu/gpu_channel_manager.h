@@ -111,6 +111,10 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   // channels.
   uint32_t GetProcessedOrderNum() const;
 
+#if defined(OS_ANDROID)
+  void DidAccessGpu();
+#endif
+
  protected:
   virtual scoped_ptr<GpuChannel> CreateGpuChannel(
       gfx::GLShareGroup* share_group,
@@ -155,6 +159,11 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
   void OnUpdateValueState(int client_id,
                           unsigned int target,
                           const gpu::ValueState& state);
+#if defined(OS_ANDROID)
+  void OnWakeUpGpu();
+  void ScheduleWakeUpGpu();
+  void DoWakeUpGpu();
+#endif
   void OnLoseAllContexts();
 
   // Used to send and receive IPC messages from the browser process.
@@ -176,6 +185,12 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
       framebuffer_completeness_cache_;
   scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
+#if defined(OS_ANDROID)
+  // Last time we know the GPU was powered on. Global for tracking across all
+  // transport surfaces.
+  base::TimeTicks last_gpu_access_time_;
+  base::TimeTicks begin_wake_up_time_;
+#endif
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

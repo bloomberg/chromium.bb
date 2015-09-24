@@ -861,6 +861,11 @@ void GpuCommandBufferStub::OnAsyncFlush(
 
   if (pre_state.get_offset != post_state.get_offset)
     ReportState();
+
+#if defined(OS_ANDROID)
+  GpuChannelManager* manager = channel_->gpu_channel_manager();
+  manager->DidAccessGpu();
+#endif
 }
 
 void GpuCommandBufferStub::OnRegisterTransferBuffer(

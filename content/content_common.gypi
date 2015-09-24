@@ -361,8 +361,6 @@
       'common/gpu/media/gpu_video_decode_accelerator.h',
       'common/gpu/media/gpu_video_encode_accelerator.cc',
       'common/gpu/media/gpu_video_encode_accelerator.h',
-      'common/gpu/null_transport_surface.cc',
-      'common/gpu/null_transport_surface.h',
       'common/gpu/stream_texture_android.cc',
       'common/gpu/stream_texture_android.h',
       'common/host_discardable_shared_memory_manager.cc',

@@ -331,8 +331,10 @@ IPC_MESSAGE_ROUTED1(AcceleratedSurfaceMsg_BufferPresented,
                     AcceleratedSurfaceMsg_BufferPresented_Params)
 #endif
 
+#if defined(OS_ANDROID)
 // Tells the GPU process to wake up the GPU because we're about to draw.
-IPC_MESSAGE_ROUTED0(AcceleratedSurfaceMsg_WakeUpGpu)
+IPC_MESSAGE_CONTROL0(GpuMsg_WakeUpGpu)
+#endif
 
 // Tells the GPU process to remove all contexts.
 IPC_MESSAGE_CONTROL0(GpuMsg_Clean)
@@ -425,11 +427,6 @@ IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
                      int /*severity*/,
                      std::string /* header */,
                      std::string /* message */)
-
-// Tells the browser that a new accelerated surface was initialized.
-IPC_MESSAGE_CONTROL2(GpuHostMsg_AcceleratedSurfaceInitialized,
-                     int32 /* surface_id */,
-                     int32 /* route_id */)
 
 
 #if defined(OS_MACOSX)

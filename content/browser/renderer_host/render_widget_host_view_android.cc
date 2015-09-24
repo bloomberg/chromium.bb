@@ -326,7 +326,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
                         this),
       stylus_text_selector_(this),
-      accelerated_surface_route_id_(0),
       using_browser_compositor_(CompositorImpl::IsInitialized()),
       frame_evictor_(new DelegatedFrameEvictor(this)),
       locks_on_frame_count_(0),
@@ -1347,11 +1346,6 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
 #endif  // defined(VIDEO_HOLE)
 }
 
-void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int route_id) {
-  // TODO: remove need for the surface id here
-  accelerated_surface_route_id_ = route_id;
-}
-
 void RenderWidgetHostViewAndroid::ShowInternal() {
   DCHECK(is_showing_);
   if (!host_ || !host_->is_hidden())
@@ -1609,10 +1603,9 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
       input_event.type == blink::WebInputEvent::TouchStart) {
     GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim && gpu_data && accelerated_surface_route_id_ &&
+    if (shim && gpu_data &&
         gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))
-      shim->Send(
-          new AcceleratedSurfaceMsg_WakeUpGpu(accelerated_surface_route_id_));
+      shim->Send(new GpuMsg_WakeUpGpu);
   }
 
   SynchronousCompositorImpl* compositor =

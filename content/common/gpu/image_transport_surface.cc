@@ -12,7 +12,7 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/null_transport_surface.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -31,17 +31,22 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
   if (handle.transport_type == gfx::NULL_TRANSPORT) {
-#if defined(OS_ANDROID)
-    surface = CreateTransportSurface(manager, stub, handle);
-#else
-    surface = new NullTransportSurface(manager, stub, handle);
-#endif
+    GpuChannel* parent_channel = manager->LookupChannel(
+        handle.parent_client_id);
+    if (parent_channel) {
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
+      if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+        stub->channel()->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
+    }
+
+    surface = manager->GetDefaultOffscreenSurface();
   } else {
     surface = CreateNativeSurface(manager, stub, handle);
+    if (!surface.get() || !surface->Initialize())
+      return NULL;
   }
 
-  if (!surface.get() || !surface->Initialize())
-    return NULL;
   return surface;
 }
 
@@ -78,23 +83,22 @@ bool ImageTransportHelper::Initialize() {
       base::Bind(&ImageTransportHelper::SetLatencyInfo,
                  base::Unretained(this)));
 
-  manager_->Send(new GpuHostMsg_AcceleratedSurfaceInitialized(
-      stub_->surface_id(), route_id_));
-
   return true;
 }
 
 bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
+#if defined(OS_MACOSX)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ImageTransportHelper, message)
-#if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
-#endif
-    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_WakeUpGpu, OnWakeUpGpu);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+#else
+  NOTREACHED();
+  return false;
+#endif
 }
 
 #if defined(OS_MACOSX)
@@ -143,10 +147,6 @@ void ImageTransportHelper::OnBufferPresented(
   surface_->OnBufferPresented(params);
 }
 #endif
-
-void ImageTransportHelper::OnWakeUpGpu() {
-  surface_->WakeUpGpu();
-}
 
 void ImageTransportHelper::Resize(gfx::Size size, float scale_factor) {
   surface_->OnResize(size, scale_factor);
@@ -278,10 +278,6 @@ void PassThroughImageTransportSurface::OnResize(gfx::Size size,
 
 gfx::Size PassThroughImageTransportSurface::GetSize() {
   return GLSurfaceAdapter::GetSize();
-}
-
-void PassThroughImageTransportSurface::WakeUpGpu() {
-  NOTREACHED();
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}

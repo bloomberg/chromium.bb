@@ -29,6 +29,17 @@
 
 namespace content {
 
+namespace {
+#if defined(OS_ANDROID)
+// Amount of time we expect the GPU to stay powered up without being used.
+const int kMaxGpuIdleTimeMs = 40;
+// Maximum amount of time we keep pinging the GPU waiting for the client to
+// draw.
+const int kMaxKeepAliveTimeMs = 200;
+#endif
+
+}
+
 GpuChannelManager::GpuChannelManager(
     IPC::SyncChannel* channel,
     GpuWatchdog* watchdog,
@@ -120,6 +131,9 @@ bool GpuChannelManager::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(GpuMsg_DestroyGpuMemoryBuffer, OnDestroyGpuMemoryBuffer)
     IPC_MESSAGE_HANDLER(GpuMsg_LoadedShader, OnLoadedShader)
     IPC_MESSAGE_HANDLER(GpuMsg_UpdateValueState, OnUpdateValueState)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(GpuMsg_WakeUpGpu, OnWakeUpGpu);
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -286,5 +300,52 @@ gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
   }
   return default_offscreen_surface_.get();
 }
+
+#if defined(OS_ANDROID)
+void GpuChannelManager::DidAccessGpu() {
+  last_gpu_access_time_ = base::TimeTicks::Now();
+}
+
+void GpuChannelManager::OnWakeUpGpu() {
+  begin_wake_up_time_ = base::TimeTicks::Now();
+  ScheduleWakeUpGpu();
+}
+
+void GpuChannelManager::ScheduleWakeUpGpu() {
+  base::TimeTicks now = base::TimeTicks::Now();
+  TRACE_EVENT2("gpu", "GpuChannelManager::ScheduleWakeUp",
+               "idle_time", (now - last_gpu_access_time_).InMilliseconds(),
+               "keep_awake_time", (now - begin_wake_up_time_).InMilliseconds());
+  if (now - last_gpu_access_time_ <
+      base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs))
+    return;
+  if (now - begin_wake_up_time_ >
+      base::TimeDelta::FromMilliseconds(kMaxKeepAliveTimeMs))
+    return;
+
+  DoWakeUpGpu();
+
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE, base::Bind(&GpuChannelManager::ScheduleWakeUpGpu,
+                            weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromMilliseconds(kMaxGpuIdleTimeMs));
+}
+
+void GpuChannelManager::DoWakeUpGpu() {
+  const GpuCommandBufferStub* stub = nullptr;
+  for (const auto& kv : gpu_channels_) {
+    const GpuChannel* channel = kv.second;
+    stub = channel->GetOneStub();
+    if (stub) {
+      DCHECK(stub->decoder());
+      break;
+    }
+  }
+  if (!stub || !stub->decoder()->MakeCurrent())
+    return;
+  glFinish();
+  DidAccessGpu();
+}
+#endif
 
 }  // namespace content

@@ -97,7 +97,6 @@ class ImageTransportSurfaceFBO
       const AcceleratedSurfaceMsg_BufferPresented_Params& params) override;
   void OnResize(gfx::Size pixel_size, float scale_factor) override;
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>&) override;
-  void WakeUpGpu() override;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   void OnWillDestroyStub() override;

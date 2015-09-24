@@ -283,10 +283,6 @@ void ImageTransportSurfaceFBO::SetLatencyInfo(
     latency_info_.push_back(latency_info[i]);
 }
 
-void ImageTransportSurfaceFBO::WakeUpGpu() {
-  NOTIMPLEMENTED();
-}
-
 void ImageTransportSurfaceFBO::OnWillDestroyStub() {
   helper_->stub()->RemoveDestructionObserver(this);
   Destroy();
