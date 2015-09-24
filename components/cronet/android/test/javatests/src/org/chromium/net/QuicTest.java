@@ -70,10 +70,9 @@ public class QuicTest extends CronetTestBase {
         assertEquals("quic/1+spdy/3", listener.mNegotiatedProtocol);
     }
 
-    // TODO(sclittle): Re-enable test after fixing http://crbug.com/535462
     @LargeTest
     @Feature({"Cronet"})
-    public void disable_testQuicLoadUrl() throws Exception {
+    public void testQuicLoadUrl() throws Exception {
         String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
         TestUrlRequestListener listener = new TestUrlRequestListener();
 
@@ -90,8 +89,10 @@ public class QuicTest extends CronetTestBase {
         String expectedContent = "This is a simple text file served by QUIC.\n";
         assertEquals(expectedContent, listener.mResponseAsString);
         assertEquals("quic/1+spdy/3", listener.mResponseInfo.getNegotiatedProtocol());
-        assertEquals(
-                expectedContent.length(), listener.mExtendedResponseInfo.getTotalReceivedBytes());
+        // The total received bytes should be larger than the content length, to account for
+        // headers.
+        assertTrue(
+                listener.mExtendedResponseInfo.getTotalReceivedBytes() > expectedContent.length());
 
         // This test takes a long time, since the update will only be scheduled
         // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
@@ -124,8 +125,10 @@ public class QuicTest extends CronetTestBase {
         assertEquals(200, listener2.mResponseInfo.getHttpStatusCode());
         assertEquals(expectedContent, listener2.mResponseAsString);
         assertEquals("quic/1+spdy/3", listener2.mResponseInfo.getNegotiatedProtocol());
-        assertEquals(
-                expectedContent.length(), listener2.mExtendedResponseInfo.getTotalReceivedBytes());
+        // The total received bytes should be larger than the content length, to account for
+        // headers.
+        assertTrue(
+                listener2.mExtendedResponseInfo.getTotalReceivedBytes() > expectedContent.length());
     }
 
     // Returns whether a file contains a particular string.
