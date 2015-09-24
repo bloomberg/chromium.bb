@@ -736,6 +736,7 @@ if (!is_android) {
       "//components/autofill/content/renderer:test_support",
       "//components/captive_portal:test_support",
       "//components/dom_distiller/content:content_browser",
+      "//components/dom_distiller/content:content_renderer",
       "//components/dom_distiller/core:test_support",
       "//components/guest_view/browser:test_support",
       "//components/resources",

@@ -161,6 +161,18 @@
       },
       'includes': [ '../build/protoc.gypi' ]
     },
+    {
+      # GN version: //components/dom_distiller/content:mojo_bindings
+      'target_name': 'dom_distiller_mojo_bindings',
+      'type': 'static_library',
+      'sources': [
+        'dom_distiller/content/common/distiller_javascript_service.mojom',
+        'dom_distiller/content/common/distiller_page_notifier_service.mojom',
+      ],
+      'includes': [
+        '../third_party/mojo/mojom_bindings_generator.gypi',
+      ],
+    },
   ],
   'conditions': [
     ['OS != "ios"', {
@@ -170,17 +182,20 @@
           'target_name': 'dom_distiller_content_browser',
           'type': 'static_library',
           'dependencies': [
+            'dom_distiller_core',
+            'dom_distiller_mojo_bindings',
+            'dom_distiller_protos',
             '../base/base.gyp:base',
             '../content/content.gyp:content_browser',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
             '../net/net.gyp:net',
             '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
             '../ui/gfx/gfx.gyp:gfx',
             '../url/url.gyp:url_lib',
             'components_resources.gyp:components_resources',
             'components_strings.gyp:components_strings',
-            'dom_distiller_core',
-            'dom_distiller_protos',
           ],
           'include_dirs': [
             '..',
@@ -190,6 +205,8 @@
             'dom_distiller/content/browser/distillable_page_utils.h',
             'dom_distiller/content/browser/distillable_page_utils_android.cc',
             'dom_distiller/content/browser/distillable_page_utils_android.h',
+            'dom_distiller/content/browser/distiller_javascript_service_impl.cc',
+            'dom_distiller/content/browser/distiller_javascript_service_impl.h',
             'dom_distiller/content/browser/distiller_javascript_utils.cc',
             'dom_distiller/content/browser/distiller_javascript_utils.h',
             'dom_distiller/content/browser/distiller_page_web_contents.cc',
@@ -209,6 +226,31 @@
             }],
           ],
         },
+        {
+          # GN version: //components/dom_distiller/content:content_renderer
+          'target_name': 'dom_distiller_content_renderer',
+          'type': 'static_library',
+          'dependencies': [
+            'dom_distiller_mojo_bindings',
+            '../base/base.gyp:base',
+            '../content/content.gyp:content_browser',
+            '../gin/gin.gyp:gin',
+            '../mojo/mojo_base.gyp:mojo_environment_chromium',
+            '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'dom_distiller/content/renderer/distiller_js_render_frame_observer.cc',
+            'dom_distiller/content/renderer/distiller_js_render_frame_observer.h',
+            'dom_distiller/content/renderer/distiller_native_javascript.cc',
+            'dom_distiller/content/renderer/distiller_native_javascript.h',
+            'dom_distiller/content/renderer/distiller_page_notifier_service_impl.cc',
+            'dom_distiller/content/renderer/distiller_page_notifier_service_impl.h',
+          ],
+        },
+
       ],
     }],
     ['OS=="ios"', {

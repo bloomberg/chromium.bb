@@ -13,8 +13,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
 #include "components/dom_distiller/content/browser/external_feedback_reporter.h"
+#include "components/dom_distiller/content/common/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -31,9 +33,11 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/service_registry.h"
 #include "grit/components_strings.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
+#include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace dom_distiller {
@@ -117,9 +121,8 @@ void DomDistillerViewerSource::RequestViewerHandle::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   const GURL& navigation = details.entry->GetURL();
-  if (details.is_in_page || (
-      navigation.SchemeIs(expected_scheme_.c_str()) &&
-      expected_request_path_ == navigation.query())) {
+  if (details.is_in_page || (navigation.SchemeIs(expected_scheme_.c_str()) &&
+                             expected_request_path_ == navigation.query())) {
     // In-page navigations, as well as the main view request can be ignored.
     return;
   }
@@ -184,7 +187,8 @@ void DomDistillerViewerSource::StartDataRequest(
     const content::URLDataSource::GotDataCallback& callback) {
   content::RenderFrameHost* render_frame_host =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  if (!render_frame_host) return;
+  if (!render_frame_host)
+    return;
   content::RenderViewHost* render_view_host =
       render_frame_host->GetRenderViewHost();
   DCHECK(render_view_host);
@@ -232,6 +236,18 @@ void DomDistillerViewerSource::StartDataRequest(
       url_utils::GetOriginalUrlFromDistillerUrl(current_url).spec(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetTheme(),
       dom_distiller_service_->GetDistilledPagePrefs()->GetFontFamily());
+
+  // Add mojo service for JavaScript functionality. This is the receiving end
+  // of this particular service.
+  render_frame_host->GetServiceRegistry()->AddService(
+      base::Bind(&CreateDistillerJavaScriptService));
+
+  // Tell the renderer that this is currently a distilled page.
+  DistillerPageNotifierServicePtr page_notifier_service;
+  render_frame_host->GetServiceRegistry()->ConnectToRemoteService(
+      mojo::GetProxy(&page_notifier_service));
+  DCHECK(page_notifier_service);
+  page_notifier_service->NotifyIsDistillerPage();
 
   if (viewer_handle) {
     // The service returned a |ViewerHandle| and guarantees it will call

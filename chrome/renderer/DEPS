@@ -10,6 +10,8 @@ include_rules = [
   "+components/data_reduction_proxy/content/common",
   "+components/data_reduction_proxy/core/common",
   "+components/dom_distiller/core",
+  "+components/dom_distiller/content/common",
+  "+components/dom_distiller/content/renderer",
   "+components/guest_view/renderer",
   "+components/nacl/common",
   "+components/nacl/renderer",

@@ -4,11 +4,23 @@
 
 assert(!is_ios)
 
-# GYP version: components/dom_distiller.gypi:dom_distiller_content
-source_set("content_browser") {
+import("//third_party/mojo/src/mojo/public/tools/bindings/mojom.gni")
+
+# GYP version: components/dom_distiller.gypi:dom_distiller_mojo_bindings
+mojom("mojo_bindings") {
+  sources = [
+    "common/distiller_javascript_service.mojom",
+    "common/distiller_page_notifier_service.mojom",
+  ]
+}
+
+# GYP version: components/dom_distiller.gypi:dom_distiller_content_browser
+static_library("content_browser") {
   sources = [
     "browser/distillable_page_utils.cc",
     "browser/distillable_page_utils.h",
+    "browser/distiller_javascript_service_impl.cc",
+    "browser/distiller_javascript_service_impl.h",
     "browser/distiller_javascript_utils.cc",
     "browser/distiller_javascript_utils.h",
     "browser/distiller_page_web_contents.cc",
@@ -25,12 +37,17 @@ source_set("content_browser") {
     "//content/public/browser",
   ]
   deps = [
+    ":mojo_bindings",
     "//base",
     "//components/resources",
     "//components/strings",
+    "//content/public/browser",
+    "//mojo/environment:chromium",
     "//net",
     "//skia",
     "//sync",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/WebKit/public:blink_headers",
     "//ui/gfx",
     "//url",
   ]
@@ -42,6 +59,28 @@ source_set("content_browser") {
     ]
     deps += [ ":jni_headers" ]
   }
+}
+
+# GYP version: components/dom_distiller.gypi:dom_distiller_content_renderer
+static_library("content_renderer") {
+  sources = [
+    "renderer/distiller_js_render_frame_observer.cc",
+    "renderer/distiller_js_render_frame_observer.h",
+    "renderer/distiller_native_javascript.cc",
+    "renderer/distiller_native_javascript.h",
+    "renderer/distiller_page_notifier_service_impl.cc",
+    "renderer/distiller_page_notifier_service_impl.h",
+  ]
+
+  deps = [
+    ":mojo_bindings",
+    "//base",
+    "//gin",
+    "//mojo/environment:chromium",
+    "//third_party/mojo/src/mojo/public/cpp/bindings",
+    "//third_party/WebKit/public:blink_headers",
+    "//v8",
+  ]
 }
 
 if (is_android) {

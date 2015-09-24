@@ -194,6 +194,14 @@ bool ExecuteScriptAndExtractString(const ToRenderFrameHost& adapter,
                                    const std::string& script,
                                    std::string* result) WARN_UNUSED_RESULT;
 
+// This function behaves similarly to ExecuteScriptAndExtractBool but runs the
+// the script in the specified isolated world.
+bool ExecuteScriptInIsolatedWorldAndExtractBool(
+    const ToRenderFrameHost& adapter,
+    const int world_id,
+    const std::string& script,
+    bool* result) WARN_UNUSED_RESULT;
+
 // Walks the frame tree of the specified WebContents and returns the sole frame
 // that matches the specified predicate function. This function will DCHECK if
 // no frames match the specified predicate, or if more than one frame matches.

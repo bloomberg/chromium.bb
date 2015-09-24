@@ -162,6 +162,43 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
   return true;
 }
 
+// Specifying a prototype so that we can add the WARN_UNUSED_RESULT attribute.
+bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
+                                        const int world_id,
+                                        const std::string& original_script,
+                                        scoped_ptr<base::Value>* result)
+    WARN_UNUSED_RESULT;
+
+bool ExecuteScriptInIsolatedWorldHelper(RenderFrameHost* render_frame_host,
+                                        const int world_id,
+                                        const std::string& original_script,
+                                        scoped_ptr<base::Value>* result) {
+  std::string script =
+      "window.domAutomationController.setAutomationId(0);" + original_script;
+  DOMOperationObserver dom_op_observer(render_frame_host->GetRenderViewHost());
+  render_frame_host->ExecuteJavaScriptInIsolatedWorld(
+      base::UTF8ToUTF16(script),
+      content::RenderFrameHost::JavaScriptResultCallback(), world_id);
+  std::string json;
+  if (!dom_op_observer.WaitAndGetResponse(&json)) {
+    DLOG(ERROR) << "Cannot communicate with DOMOperationObserver.";
+    return false;
+  }
+
+  // Nothing more to do for callers that ignore the returned JS value.
+  if (!result)
+    return true;
+
+  base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
+  *result = reader.ReadToValue(json);
+  if (!*result) {
+    DLOG(ERROR) << reader.GetErrorMessage();
+    return false;
+  }
+
+  return true;
+}
+
 void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
                             ui::KeyboardCode key_code,
                             int native_key_code,
@@ -577,6 +614,22 @@ bool ExecuteScriptAndExtractBool(const ToRenderFrameHost& adapter,
   DCHECK(result);
   scoped_ptr<base::Value> value;
   if (!ExecuteScriptHelper(adapter.render_frame_host(), script, &value) ||
+      !value.get()) {
+    return false;
+  }
+
+  return value->GetAsBoolean(result);
+}
+
+bool ExecuteScriptInIsolatedWorldAndExtractBool(
+    const ToRenderFrameHost& adapter,
+    const int world_id,
+    const std::string& script,
+    bool* result) {
+  DCHECK(result);
+  scoped_ptr<base::Value> value;
+  if (!ExecuteScriptInIsolatedWorldHelper(adapter.render_frame_host(), world_id,
+                                          script, &value) ||
       !value.get()) {
     return false;
   }
