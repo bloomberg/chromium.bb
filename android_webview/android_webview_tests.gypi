@@ -224,4 +224,25 @@
       ],
     },
   ],
+  'conditions': [
+    ['test_isolation_mode != "noop"',
+      {
+        'targets': [
+          {
+            'target_name': 'android_webview_unittests_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'android_webview_unittests_apk',
+            ],
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+            'sources': [
+              'android_webview_unittests_apk.isolate',
+            ],
+          },
+        ]
+      }
+    ],
+  ]
 }
