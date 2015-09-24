@@ -30,6 +30,11 @@ bool OutputSurfaceMojo::BindToClient(cc::OutputSurfaceClient* client) {
   return cc::OutputSurface::BindToClient(client);
 }
 
+void OutputSurfaceMojo::DetachFromClient() {
+  surface_.reset();
+  cc::OutputSurface::DetachFromClient();
+}
+
 void OutputSurfaceMojo::SwapBuffers(cc::CompositorFrame* frame) {
   // TODO(fsamuel, rjkroege): We should probably throttle compositor frames.
   client_->DidSwapBuffers();

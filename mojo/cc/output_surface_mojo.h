@@ -24,6 +24,7 @@ class OutputSurfaceMojo : public cc::OutputSurface,
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void DetachFromClient() override;
 
  private:
   // ViewSurfaceClient implementation:
