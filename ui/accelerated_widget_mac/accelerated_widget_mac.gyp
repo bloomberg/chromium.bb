@@ -27,6 +27,8 @@
         'software_layer.mm',
         'surface_handle_types.cc',
         'surface_handle_types.h',
+        'window_resize_helper_mac.cc',
+        'window_resize_helper_mac.h',
       ],
       'defines': [
         'ACCELERATED_WIDGET_MAC_IMPLEMENTATION',

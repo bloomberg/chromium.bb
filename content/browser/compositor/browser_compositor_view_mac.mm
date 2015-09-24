@@ -8,10 +8,10 @@
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
 #include "content/public/browser/context_factory.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserCompositorMac
@@ -42,9 +42,8 @@ bool WidgetNeedsGLFinishWorkaround() {
 BrowserCompositorMac::BrowserCompositorMac()
     : accelerated_widget_mac_(
           new ui::AcceleratedWidgetMac(WidgetNeedsGLFinishWorkaround())),
-      compositor_(
-          content::GetContextFactory(),
-          RenderWidgetResizeHelper::Get()->task_runner()) {
+      compositor_(content::GetContextFactory(),
+                  ui::WindowResizeHelperMac::Get()->task_runner()) {
   compositor_.SetAcceleratedWidgetAndStartCompositor(
       accelerated_widget_mac_->accelerated_widget());
   compositor_.SetLocksWillTimeOut(false);
@@ -73,6 +72,7 @@ void BrowserCompositorMac::OnCompositingDidCommit(
 
 // static
 scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
+  DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
   if (g_recyclable_browser_compositor.Get())
     return g_recyclable_browser_compositor.Get().Pass();
   return scoped_ptr<BrowserCompositorMac>(new BrowserCompositorMac).Pass();

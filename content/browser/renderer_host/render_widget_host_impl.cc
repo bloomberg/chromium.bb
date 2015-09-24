@@ -79,7 +79,7 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "content/browser/renderer_host/render_widget_resize_helper_mac.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
 using base::Time;
@@ -863,7 +863,7 @@ void RenderWidgetHostImpl::WaitForSurface() {
   TimeTicks timeout_time = start_time + time_left;
   while (1) {
     TRACE_EVENT0("renderer_host", "WaitForSurface::WaitForSingleTaskToRun");
-    if (RenderWidgetResizeHelper::Get()->WaitForSingleTaskToRun(time_left)) {
+    if (ui::WindowResizeHelperMac::Get()->WaitForSingleTaskToRun(time_left)) {
       // For auto-resized views, current_size_ determines the view_size and it
       // may have changed during the handling of an UpdateRect message.
       if (auto_resize_enabled_)

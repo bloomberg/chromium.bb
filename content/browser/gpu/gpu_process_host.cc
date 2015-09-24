@@ -879,7 +879,7 @@ void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
 #if defined(OS_MACOSX)
 void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     const IPC::Message& message) {
-  RenderWidgetResizeHelper::Get()->PostGpuProcessMsg(host_id_, message);
+  RenderWidgetResizeHelper::PostGpuProcessMsg(host_id_, message);
 }
 #endif
 

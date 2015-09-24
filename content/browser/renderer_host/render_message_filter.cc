@@ -149,12 +149,14 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SaveImageFromDataURL,
                         OnSaveImageFromDataURL)
 #if defined(OS_MACOSX)
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
-        RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
-            render_process_id_, message))
-    IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
-        RenderWidgetResizeHelper::Get()->PostRendererProcessMsg(
-            render_process_id_, message))
+    IPC_MESSAGE_HANDLER_GENERIC(
+        ViewHostMsg_SwapCompositorFrame,
+        RenderWidgetResizeHelper::PostRendererProcessMsg(render_process_id_,
+                                                         message))
+    IPC_MESSAGE_HANDLER_GENERIC(
+        ViewHostMsg_UpdateRect,
+        RenderWidgetResizeHelper::PostRendererProcessMsg(render_process_id_,
+                                                         message))
 #endif
     // NB: The SyncAllocateSharedMemory, SyncAllocateGpuMemoryBuffer, and
     // DeletedGpuMemoryBuffer IPCs are handled here for renderer processes. For

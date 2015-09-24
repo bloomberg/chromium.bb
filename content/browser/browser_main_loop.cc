@@ -108,6 +108,7 @@
 #include "content/browser/compositor/browser_compositor_view_mac.h"
 #include "content/browser/in_process_io_surface_manager_mac.h"
 #include "content/browser/theme_helper_mac.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #endif
 
 #if defined(USE_OZONE)
@@ -705,6 +706,13 @@ int BrowserMainLoop::PreCreateThreads() {
                  "BrowserMainLoop::CreateThreads:InitializeAVFoundation");
     AVFoundationGlue::InitializeAVFoundation();
   }
+#endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  // The WindowResizeHelper allows the UI thread to wait on specific renderer
+  // and GPU messages from the IO thread. Initializing it before the IO thread
+  // starts ensures the affected IO thread messages always have somewhere to go.
+  ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif
 
   // 1) Need to initialize in-process GpuDataManager before creating threads.
