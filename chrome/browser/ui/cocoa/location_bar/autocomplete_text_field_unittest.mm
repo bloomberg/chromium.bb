@@ -46,7 +46,6 @@ NSUInteger eventNumber = 0;
 // nifty accessors to create these things and inject them.  It could
 // even provide functions for "Click and drag mouse from point A to
 // point B".
-// TODO(groby): This is very similar to cocoa_testing_utils - unify.
 NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type,
                const NSUInteger clickCount) {
   NSWindow* window([view window]);
