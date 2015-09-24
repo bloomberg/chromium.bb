@@ -19,7 +19,7 @@
 #include "chrome/grit/locale_settings.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
@@ -96,11 +96,8 @@ base::string16 QuotaPermissionRequest::GetMessageText() const {
       (requested_quota_ > kRequestLargeQuotaThreshold
            ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
            : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      url_formatter::FormatUrl(
-          origin_url_, display_languages_,
-          url_formatter::kFormatUrlOmitUsernamePassword |
-              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
-          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+      url_formatter::FormatUrlForSecurityDisplay(origin_url_,
+                                                 display_languages_));
 }
 
 base::string16 QuotaPermissionRequest::GetMessageTextFragment() const {
@@ -222,11 +219,8 @@ base::string16 RequestQuotaInfoBarDelegate::GetMessageText() const {
       (requested_quota_ > kRequestLargeQuotaThreshold
            ? IDS_REQUEST_LARGE_QUOTA_INFOBAR_QUESTION
            : IDS_REQUEST_QUOTA_INFOBAR_QUESTION),
-      url_formatter::FormatUrl(
-          origin_url_, display_languages_,
-          url_formatter::kFormatUrlOmitUsernamePassword |
-              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
-          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+      url_formatter::FormatUrlForSecurityDisplay(origin_url_,
+                                                 display_languages_));
 }
 
 bool RequestQuotaInfoBarDelegate::Accept() {

@@ -7,7 +7,7 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_formatter/elide_url.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,11 +42,7 @@ int GeolocationInfoBarDelegate::GetIconId() const {
 }
 
 base::string16 GeolocationInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_GEOLOCATION_INFOBAR_QUESTION,
-      url_formatter::FormatUrl(
-          requesting_frame_, display_languages_,
-          url_formatter::kFormatUrlOmitUsernamePassword |
-              url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
-          net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+  return l10n_util::GetStringFUTF16(IDS_GEOLOCATION_INFOBAR_QUESTION,
+                                    url_formatter::FormatUrlForSecurityDisplay(
+                                        requesting_frame_, display_languages_));
 }

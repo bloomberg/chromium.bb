@@ -13,7 +13,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_formatter/elide_url.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "jni/FullscreenInfoBarDelegate_jni.h"
@@ -70,7 +70,7 @@ base::string16 FullscreenInfoBarDelegate::GetMessageText() const {
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
   return l10n_util::GetStringFUTF16(
       IDS_FULLSCREEN_INFOBAR_TEXT,
-      url_formatter::FormatUrl(GURL(origin_), language));
+      url_formatter::FormatUrlForSecurityDisplay(origin_, language));
 }
 
 base::string16 FullscreenInfoBarDelegate::GetButtonLabel(

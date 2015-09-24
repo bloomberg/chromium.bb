@@ -15,7 +15,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/infobars/core/infobar.h"
-#include "components/url_formatter/url_formatter.h"
+#include "components/url_formatter/elide_url.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -107,7 +107,7 @@ base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
       PluginFinder::GetInstance()->GetPluginMetadata(plugin));
   return l10n_util::GetStringFUTF16(
       IDS_PEPPER_BROKER_MESSAGE, plugin_metadata->name(),
-      url_formatter::FormatUrl(url_.GetOrigin(), languages_));
+      url_formatter::FormatUrlForSecurityDisplay(url_, languages_));
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
