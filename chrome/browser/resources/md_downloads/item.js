@@ -40,6 +40,12 @@ cr.define('downloads', function() {
         value: true,
       },
 
+      controlledBy_: {
+        computed: 'computeControlledBy_(data_.by_ext_id, data_.by_ext_name)',
+        type: String,
+        value: '',
+      },
+
       i18n_: {
         readOnly: true,
         type: Object,
@@ -101,7 +107,9 @@ cr.define('downloads', function() {
     },
 
     observers: [
-      'observeControlledBy_(data_.by_ext_id, data_.by_ext_name)',
+      // TODO(dbeam): this gets called way more when I observe data_.by_ext_id
+      // and data_.by_ext_name directly. Why?
+      'observeControlledBy_(controlledBy_)',
     ],
 
     ready: function() {
@@ -139,6 +147,16 @@ cr.define('downloads', function() {
     computeCompletelyOnDisk_: function() {
       return this.data_.state == downloads.States.COMPLETE &&
              !this.data_.file_externally_removed;
+    },
+
+    /** @private */
+    computeControlledBy_: function() {
+      if (!this.data_.by_ext_id || !this.data_.by_ext_name)
+        return '';
+
+      var url = 'chrome://extensions#' + this.data_.by_ext_id;
+      var name = this.data_.by_ext_name;
+      return loadTimeData.getStringF('controlledByUrl', url, name);
     },
 
     /** @private */
@@ -251,13 +269,7 @@ cr.define('downloads', function() {
 
     /** @private */
     observeControlledBy_: function() {
-      var html = '';
-      if (this.data_.by_ext_id && this.data_.by_ext_name) {
-        var url = 'chrome://extensions#' + this.data_.by_ext_id;
-        var name = this.data_.by_ext_name;
-        html = loadTimeData.getStringF('controlledByUrl', url, name);
-      }
-      this.$['controlled-by'].innerHTML = html;
+      this.$['controlled-by'].innerHTML = this.controlledBy_;
     },
 
     /** @private */
