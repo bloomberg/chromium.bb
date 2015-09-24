@@ -6,24 +6,12 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace proximity_auth {
 namespace {
-
-class StubConnection : public Connection {
- public:
-  StubConnection() : Connection(RemoteDevice()) {}
-  ~StubConnection() override {}
-
-  void Connect() override {}
-  void Disconnect() override {}
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubConnection);
-};
 
 class TestBluetoothThrottler : public BluetoothThrottlerImpl {
  public:
@@ -52,7 +40,7 @@ class ProximityAuthBluetoothThrottlerImplTest : public testing::Test {
 
   void PerformConnectionStateTransition(Connection::Status old_status,
                                         Connection::Status new_status) {
-    StubConnection connection;
+    FakeConnection connection((RemoteDevice()));
     throttler_.OnConnection(&connection);
     static_cast<ConnectionObserver*>(&throttler_)
         ->OnConnectionStatusChanged(&connection, old_status, new_status);

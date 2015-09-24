@@ -78,6 +78,8 @@ source_set("test_support") {
   sources = [
     "device_to_device_responder_operations.cc",
     "device_to_device_responder_operations.h",
+    "fake_connection.cc",
+    "fake_connection.h",
     "mock_proximity_auth_client.cc",
     "mock_proximity_auth_client.h",
   ]

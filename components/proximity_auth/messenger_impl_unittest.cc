@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/proximity_auth/connection.h"
+#include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/remote_status_update.h"
@@ -62,58 +63,6 @@ class MockSecureContext : public SecureContext {
   DISALLOW_COPY_AND_ASSIGN(MockSecureContext);
 };
 
-class FakeConnection : public Connection {
- public:
-  FakeConnection() : Connection(RemoteDevice()) { Connect(); }
-  ~FakeConnection() override { Disconnect(); }
-
-  void Connect() override { SetStatus(CONNECTED); }
-
-  void Disconnect() override { SetStatus(DISCONNECTED); }
-
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override {
-    ASSERT_FALSE(current_message_);
-    current_message_ = message.Pass();
-  }
-
-  // Completes the current send operation with success |success|.
-  void FinishSendingMessageWithSuccess(bool success) {
-    ASSERT_TRUE(current_message_);
-    // Capture a copy of the message, as OnDidSendMessage() might reentrantly
-    // call SendMessage().
-    scoped_ptr<WireMessage> sent_message = current_message_.Pass();
-    OnDidSendMessage(*sent_message, success);
-  }
-
-  // Simulates receiving a wire message with the given |payload|.
-  void ReceiveMessageWithPayload(const std::string& payload) {
-    pending_payload_ = payload;
-    OnBytesReceived(std::string());
-    pending_payload_.clear();
-  }
-
-  // Returns a message containing the payload set via
-  // ReceiveMessageWithPayload().
-  scoped_ptr<WireMessage> DeserializeWireMessage(
-      bool* is_incomplete_message) override {
-    *is_incomplete_message = false;
-    return make_scoped_ptr(new WireMessage(pending_payload_));
-  }
-
-  WireMessage* current_message() { return current_message_.get(); }
-
- private:
-  // The message currently being sent. Only set between a call to
-  // SendMessageImpl() and FinishSendingMessageWithSuccess().
-  scoped_ptr<WireMessage> current_message_;
-
-  // The payload that should be returned when DeserializeWireMessage() is
-  // called.
-  std::string pending_payload_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConnection);
-};
-
 class MockMessengerObserver : public MessengerObserver {
  public:
   explicit MockMessengerObserver(Messenger* messenger) : messenger_(messenger) {
@@ -143,7 +92,7 @@ class MockMessengerObserver : public MessengerObserver {
 class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
-      : MessengerImpl(make_scoped_ptr(new NiceMock<FakeConnection>()),
+      : MessengerImpl(make_scoped_ptr(new FakeConnection(RemoteDevice())),
                       make_scoped_ptr(new NiceMock<MockSecureContext>())) {}
   ~TestMessenger() override {}
 

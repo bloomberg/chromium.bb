@@ -9,8 +9,8 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "components/proximity_auth/authenticator.h"
-#include "components/proximity_auth/connection.h"
 #include "components/proximity_auth/connection_finder.h"
+#include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
@@ -32,27 +32,6 @@ const char kRemoteDeviceName[] = "remote device";
 const char kRemoteDevicePublicKey[] = "public key";
 const char kRemoteDeviceBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kRemoteDevicePSK[] = "remote device psk";
-
-class StubConnection : public Connection {
- public:
-  StubConnection() : Connection(RemoteDevice()) {
-    SetStatus(Connection::Status::CONNECTED);
-  }
-
-  ~StubConnection() override {}
-
-  // Connection:
-  void Connect() override { NOTREACHED(); }
-
-  void Disconnect() override { SetStatus(Connection::Status::DISCONNECTED); }
-
-  void SendMessageImpl(scoped_ptr<WireMessage> message) override {
-    NOTREACHED();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubConnection);
-};
 
 class StubSecureContext : public SecureContext {
  public:
@@ -80,17 +59,19 @@ class StubSecureContext : public SecureContext {
 
 class FakeConnectionFinder : public ConnectionFinder {
  public:
-  FakeConnectionFinder() : connection_(nullptr) {}
+  FakeConnectionFinder(const RemoteDevice& remote_device)
+      : remote_device_(remote_device), connection_(nullptr) {}
   ~FakeConnectionFinder() override {}
 
   void OnConnectionFound() {
     ASSERT_FALSE(connection_callback_.is_null());
-    scoped_ptr<StubConnection> scoped_connection_(new StubConnection());
+    scoped_ptr<FakeConnection> scoped_connection_(
+        new FakeConnection(remote_device_));
     connection_ = scoped_connection_.get();
     connection_callback_.Run(scoped_connection_.Pass());
   }
 
-  StubConnection* connection() { return connection_; }
+  FakeConnection* connection() { return connection_; }
 
  private:
   // ConnectionFinder:
@@ -99,7 +80,9 @@ class FakeConnectionFinder : public ConnectionFinder {
     connection_callback_ = connection_callback;
   }
 
-  StubConnection* connection_;
+  const RemoteDevice remote_device_;
+
+  FakeConnection* connection_;
 
   ConnectionCallback connection_callback_;
 
@@ -134,12 +117,9 @@ class FakeAuthenticator : public Authenticator {
 // Subclass of RemoteDeviceLifeCycleImpl to make it testable.
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
-  TestableRemoteDeviceLifeCycleImpl()
-      : RemoteDeviceLifeCycleImpl(RemoteDevice(kRemoteDeviceName,
-                                               kRemoteDevicePublicKey,
-                                               kRemoteDeviceBluetoothAddress,
-                                               kRemoteDevicePSK),
-                                  nullptr) {}
+  TestableRemoteDeviceLifeCycleImpl(const RemoteDevice& remote_device)
+      : RemoteDeviceLifeCycleImpl(remote_device, nullptr),
+        remote_device_(remote_device) {}
 
   ~TestableRemoteDeviceLifeCycleImpl() override {}
 
@@ -149,7 +129,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  private:
   scoped_ptr<ConnectionFinder> CreateConnectionFinder() override {
     scoped_ptr<FakeConnectionFinder> scoped_connection_finder(
-        new FakeConnectionFinder());
+        new FakeConnectionFinder(remote_device_));
     connection_finder_ = scoped_connection_finder.get();
     return scoped_connection_finder.Pass();
   }
@@ -160,6 +140,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     return scoped_authenticator.Pass();
   }
 
+  const RemoteDevice remote_device_;
   FakeConnectionFinder* connection_finder_;
   FakeAuthenticator* authenticator_;
 
@@ -173,7 +154,11 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
       public RemoteDeviceLifeCycle::Observer {
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : life_cycle_(RemoteDevice(kRemoteDeviceName,
+                                 kRemoteDevicePublicKey,
+                                 kRemoteDeviceBluetoothAddress,
+                                 kRemoteDevicePSK)),
+        task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
   ~ProximityAuthRemoteDeviceLifeCycleImplTest() override {
@@ -195,7 +180,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
               life_cycle_.GetState());
   }
 
-  StubConnection* OnConnectionFound() {
+  FakeConnection* OnConnectionFound() {
     EXPECT_EQ(RemoteDeviceLifeCycle::State::FINDING_CONNECTION,
               life_cycle_.GetState());
 
