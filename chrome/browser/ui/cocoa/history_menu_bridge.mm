@@ -304,10 +304,12 @@ NSMenuItem* HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
   else if (!item->tabs.size())
     [item->menu_item setImage:default_favicon_.get()];
 
-  // Add a tooltip.
-  NSString* tooltip = [NSString stringWithFormat:@"%@\n%@",
-      base::SysUTF16ToNSString(full_title), base::SysUTF8ToNSString(url)];
-  [item->menu_item setToolTip:tooltip];
+  // Add a tooltip if the history item is for a single tab.
+  if (item->tabs.empty()) {
+    NSString* tooltip = [NSString stringWithFormat:@"%@\n%@",
+        base::SysUTF16ToNSString(full_title), base::SysUTF8ToNSString(url)];
+    [item->menu_item setToolTip:tooltip];
+  }
 
   [menu insertItem:item->menu_item.get() atIndex:index];
   menu_item_map_.insert(std::make_pair(item->menu_item.get(), item));
