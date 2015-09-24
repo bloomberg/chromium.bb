@@ -32,7 +32,6 @@ class LanguageOptionsHandler : public LanguageOptionsHandlerCommon {
 
  private:
   // LanguageOptionsHandlerCommon implementation.
-  base::string16 GetProductName() override;
   void SetApplicationLocale(const std::string& language_code) override;
 
   // Called when the restart button is clicked.

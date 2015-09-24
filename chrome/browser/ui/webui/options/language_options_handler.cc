@@ -20,7 +20,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_ui.h"
@@ -112,10 +111,6 @@ base::ListValue* LanguageOptionsHandler::GetLanguageList() {
   }
 
   return language_list;
-}
-
-base::string16 LanguageOptionsHandler::GetProductName() {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 void LanguageOptionsHandler::SetApplicationLocale(

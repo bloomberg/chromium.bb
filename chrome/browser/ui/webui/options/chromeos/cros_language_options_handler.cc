@@ -180,10 +180,6 @@ base::ListValue*
   return ime_ids_list.release();
 }
 
-base::string16 CrosLanguageOptionsHandler::GetProductName() {
-  return l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
-}
-
 void CrosLanguageOptionsHandler::SetApplicationLocale(
     const std::string& language_code) {
   Profile* profile = Profile::FromWebUI(web_ui());

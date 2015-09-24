@@ -59,9 +59,6 @@ class LanguageOptionsHandlerCommon
   static base::DictionaryValue* GetSpellCheckLanguageCodeSet();
 
  private:
-  // Returns the name of the product (ex. "Chrome" or "Chrome OS").
-  virtual base::string16 GetProductName() = 0;
-
   // Sets the application locale.
   virtual void SetApplicationLocale(const std::string& language_code) = 0;
 

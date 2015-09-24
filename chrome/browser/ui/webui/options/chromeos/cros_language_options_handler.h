@@ -50,7 +50,6 @@ class CrosLanguageOptionsHandler
 
  private:
   // LanguageOptionsHandlerCommon implementation.
-  base::string16 GetProductName() override;
   void SetApplicationLocale(const std::string& language_code) override;
 
   // Called when the sign-out button is clicked.
