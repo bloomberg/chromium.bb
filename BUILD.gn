@@ -367,8 +367,7 @@ if (is_component_ffmpeg) {
     } else if (is_win) {
       # Windows component build needs the .def file to export ffmpeg symbols.
       deps += [ ":ffmpeg_generate_def" ]
-      ldflags +=
-        [ "/DEF:" + rebase_path("$target_gen_dir/ffmpeg.def", root_build_dir) ]
+      sources = [ "$target_gen_dir/ffmpeg.def" ]
     }
   }
 } else {

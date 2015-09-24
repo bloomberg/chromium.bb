@@ -40,6 +40,8 @@ import sys
 
 # Python has enums now, but Goobuntu machines seem to run very old python. From:
 # http://stackoverflow.com/questions/36932/how-can-i-represent-an-enum-in-python
+
+
 def enum(*keys):
   return collections.namedtuple('Enum', keys)(*keys)
 
@@ -109,10 +111,12 @@ GN_SOURCE_END = """]
 # Controls GYP conditional stanza generation.
 Attr = enum('ARCHITECTURE', 'TARGET', 'PLATFORM')
 SUPPORT_MATRIX = {
-  Attr.ARCHITECTURE: set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel']),
-  Attr.TARGET: set(['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']),
-  Attr.PLATFORM: set(['android', 'linux', 'win', 'mac'])
+    Attr.ARCHITECTURE:
+        set(['ia32', 'x64', 'arm', 'arm64', 'arm-neon', 'mipsel']),
+    Attr.TARGET: set(['Chromium', 'Chrome', 'ChromiumOS', 'ChromeOS']),
+    Attr.PLATFORM: set(['android', 'linux', 'win', 'mac'])
 }
+
 
 def NormalizeFilename(name):
   """ Removes leading path separators in an attempt to normalize paths."""
@@ -127,11 +131,11 @@ def CleanObjectFiles(object_files):
   """
   blacklist = [
       'libavcodec/inverse.o',  # Includes libavutil/inverse.c
-      'libavcodec/file_open.o', # Includes libavutil/file_open.c
+      'libavcodec/file_open.o',  # Includes libavutil/file_open.c
       'libavcodec/log2_tab.o',  # Includes libavutil/log2_tab.c
       'libavformat/golomb_tab.o',  # Includes libavcodec/golomb.c
       'libavformat/log2_tab.o',  # Includes libavutil/log2_tab.c
-      'libavformat/file_open.o', # Includes libavutil/file_open.c
+      'libavformat/file_open.o',  # Includes libavutil/file_open.c
 
       # The following files are removed to trim down on binary size.
       # TODO(ihf): Warning, it is *easy* right now to remove more files
@@ -165,24 +169,30 @@ def CleanObjectFiles(object_files):
       object_files.remove(name)
   return object_files
 
+
 def IsAssemblyFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.S', '.asm']
+
 
 def IsGasFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.S']
 
+
 def IsYasmFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.asm']
+
 
 def IsCFile(f):
   _, ext = os.path.splitext(f)
   return ext in ['.c']
 
+
 def IsSourceFile(f):
   return IsAssemblyFile(f) or IsCFile(f)
+
 
 def GetSourceFiles(source_dir):
   """Returns a list of source files for the given source directory.
@@ -266,11 +276,13 @@ def GetSourceFileSet(object_to_sources, object_files):
     source_set.add(object_to_sources[name])
   return source_set
 
+
 class SourceListCondition(object):
   """A SourceListCondition represents a combination of architecture, target, and
   platform where a specific list of sources should be used. Attributes are setup
   using the enum values to facilitate easy iteration over attributes for
   condition reduction."""
+
   def __init__(self, architecture, target, platform):
     """Creates a SourceListCondition
     Args:
@@ -287,6 +299,7 @@ class SourceListCondition(object):
 
   def __repr__(self):
     return '{%s, %s, %s}' % (self.PLATFORM, self.ARCHITECTURE, self.TARGET)
+
 
 class SourceSet(object):
   """A SourceSet represents a set of source files that are built on each of the
@@ -367,8 +380,8 @@ class SourceSet(object):
       else:
         platform_condition = 'OS == "%s"' % condition.PLATFORM
 
-      conjunction_parts = filter(None,
-        [platform_condition, arch_condition, target_condition])
+      conjunction_parts = filter(
+          None, [platform_condition, arch_condition, target_condition])
       conjunctions.append(' and '.join(conjunction_parts))
 
     # If there is more that one clause, wrap various conditions in parens
@@ -438,8 +451,8 @@ class SourceSet(object):
       else:
         platform_condition = 'is_%s' % condition.PLATFORM
 
-      conjunction_parts = filter(None,
-        [platform_condition, arch_condition, target_condition])
+      conjunction_parts = filter(
+          None, [platform_condition, arch_condition, target_condition])
       conjunctions.append(' && '.join(conjunction_parts))
 
     # If there is more that one clause, wrap various conditions in parens
@@ -454,6 +467,7 @@ class SourceSet(object):
     # Output a conditional wrapper around stanzas if necessary.
     if joined_conjuctions:
       stanza += GN_CONDITION_BEGIN % joined_conjuctions
+
       def indent(s):
         return '  %s' % s
     else:
@@ -566,6 +580,7 @@ def GetAllMatchingConditions(conditions, condition_to_match):
 
   return found_matches
 
+
 def GetAttributeValueRange(attribute, condition):
   """Return the range of values for the given attribute, considering
   the values of other attributes in the given condition."""
@@ -584,6 +599,7 @@ def GetAttributeValueRange(attribute, condition):
     values_range.intersection_update(['x64'])
 
   return values_range
+
 
 def DoConditionsSpanValuesRange(conditions, attribute, values_range):
   """Return True if all of the attribute values in values_range are observed
@@ -679,7 +695,7 @@ def ParseOptions():
                     '--print_licenses',
                     dest='print_licenses',
                     default=False,
-                    action="store_true",
+                    action='store_true',
                     help='Print all licenses to console.')
 
   options, args = parser.parse_args()
@@ -721,25 +737,25 @@ def WriteGn(fd, disjoint_sets):
 
 # Lists of files that are exempt from searching in GetIncludeSources.
 IGNORED_INCLUDE_FILES = [
-  # Chromium generated files
-  'config.h',
-  os.path.join('libavutil', 'avconfig.h'),
-  os.path.join('libavutil', 'ffversion.h'),
+    # Chromium generated files
+    'config.h',
+    os.path.join('libavutil', 'avconfig.h'),
+    os.path.join('libavutil', 'ffversion.h'),
 
-  # Current configure values are set such that we don't include these (because
-  # of various defines) and we also don't generate them at all, so we will fail
-  # to find these because they don't exist in our repository.
-  os.path.join('libavcodec', 'aacps_tables.h'),
-  os.path.join('libavcodec', 'aacps_fixed_tables.h'),
-  os.path.join('libavcodec', 'aacsbr_tables.h'),
-  os.path.join('libavcodec', 'aac_tables.h'),
-  os.path.join('libavcodec', 'cabac_tables.h'),
-  os.path.join('libavcodec', 'cbrt_tables.h'),
-  os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
-  os.path.join('libavcodec', 'mpegaudio_tables.h'),
-  os.path.join('libavcodec', 'pcm_tables.h'),
-  os.path.join('libavcodec', 'sinewin_tables.h'),
-  os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
+    # Current configure values are set such that we don't include these (because
+    # of various defines) and we also don't generate them at all, so we will fail
+    # to find these because they don't exist in our repository.
+    os.path.join('libavcodec', 'aacps_tables.h'),
+    os.path.join('libavcodec', 'aacps_fixed_tables.h'),
+    os.path.join('libavcodec', 'aacsbr_tables.h'),
+    os.path.join('libavcodec', 'aac_tables.h'),
+    os.path.join('libavcodec', 'cabac_tables.h'),
+    os.path.join('libavcodec', 'cbrt_tables.h'),
+    os.path.join('libavcodec', 'cbrt_fixed_tables.h'),
+    os.path.join('libavcodec', 'mpegaudio_tables.h'),
+    os.path.join('libavcodec', 'pcm_tables.h'),
+    os.path.join('libavcodec', 'sinewin_tables.h'),
+    os.path.join('libavcodec', 'sinewin_fixed_tables.h'),
 ]
 
 
@@ -747,12 +763,12 @@ IGNORED_INCLUDE_FILES = [
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the
 # licenses are okay to add.
 LICENSE_WHITELIST = [
-  'BSD (3 clause) LGPL (v2.1 or later)',
-  'ISC GENERATED FILE',
-  'LGPL (v2.1 or later)',
-  'LGPL (v2.1 or later) GENERATED FILE',
-  'MIT/X11 (BSD like)',
-  'Public domain LGPL (v2.1 or later)',
+    'BSD (3 clause) LGPL (v2.1 or later)',
+    'ISC GENERATED FILE',
+    'LGPL (v2.1 or later)',
+    'LGPL (v2.1 or later) GENERATED FILE',
+    'MIT/X11 (BSD like)',
+    'Public domain LGPL (v2.1 or later)',
 ]
 
 
@@ -761,10 +777,10 @@ LICENSE_WHITELIST = [
 # DO NOT ADD TO THIS LIST without first confirming with lawyers that the files
 # you're adding have acceptable licenses.
 UNKNOWN_WHITELIST = [
-  # From of Independent JPEG group. No named license, but usage is allowed.
-  os.path.join('libavcodec', 'jrevdct.c'),
-  os.path.join('libavcodec', 'jfdctfst.c'),
-  os.path.join('libavcodec', 'jfdctint_template.c'),
+    # From of Independent JPEG group. No named license, but usage is allowed.
+    os.path.join('libavcodec', 'jrevdct.c'),
+    os.path.join('libavcodec', 'jfdctfst.c'),
+    os.path.join('libavcodec', 'jfdctint_template.c'),
 ]
 
 
@@ -816,7 +832,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
     if not include_match:
       if EXOTIC_INCLUDE_REGEX.search(line):
         print 'WARNING: Investigate whacky include line:', line
-      continue;
+      continue
 
     include_file_path = include_match.group(1)
 
@@ -828,7 +844,7 @@ def GetIncludedSources(file_path, source_dir, include_set):
 
     # Check if file is in current directory.
     if os.path.isfile(include_path_in_current_dir):
-      resolved_include_path = include_path_in_current_dir;
+      resolved_include_path = include_path_in_current_dir
     # Else, check source_dir (should be FFmpeg root).
     elif os.path.isfile(include_path_in_source_dir):
       resolved_include_path = include_path_in_source_dir
@@ -847,37 +863,39 @@ def GetIncludedSources(file_path, source_dir, include_set):
     GetIncludedSources(resolved_include_path, source_dir, include_set)
 
 
-def CheckLicenseForSource(source, source_dir, print_licenses):
+def CheckLicensesForSources(sources, source_dir, print_licenses):
   # Assumed to be two back from source_dir (e.g. third_party/ffmpeg/../..).
   source_root = os.path.abspath(
       os.path.join(source_dir, os.path.pardir, os.path.pardir))
 
   licensecheck_path = os.path.abspath(os.path.join(
-      source_root, 'third_party', 'devscripts', 'licensecheck.pl'));
+      source_root, 'third_party', 'devscripts', 'licensecheck.pl'))
   if not os.path.exists(licensecheck_path):
     exit('Could not find licensecheck.pl: ' + str(licensecheck_path))
 
-  check_process = subprocess.Popen([licensecheck_path,
-                                    '-l', '100',
-                                    os.path.abspath(source)],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
+  check_process = subprocess.Popen(
+      [licensecheck_path, '-m', '-l', '100']
+      + [os.path.abspath(s) for s in sources], stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE)
   stdout, _ = check_process.communicate()
 
   # Get the filename and license out of the stdout. stdout is expected to be
   # "/abspath/to/file: *No copyright* SOME LICENSE".
-  filename, licensename = stdout.split(':', 1)
-  licensename = licensename.replace('*No copyright*', '').strip()
-  rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
+  for line in stdout.strip().splitlines():
+    filename, licensename = line.split('\t', 1)
+    licensename = licensename.replace('*No copyright*', '').strip()
+    rel_file_path = os.path.relpath(filename, os.path.abspath(source_dir))
 
-  if (licensename in LICENSE_WHITELIST or
-     (licensename == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
-    if print_licenses:
-      print filename, ':', licensename
-    return True
+    if (licensename in LICENSE_WHITELIST or
+        (licensename == 'UNKNOWN' and rel_file_path in UNKNOWN_WHITELIST)):
+      if print_licenses:
+        print filename, ':', licensename
+      continue
 
-  print 'UNEXPECTED LICENSE: %s: %s' % (filename, licensename)
-  return False
+    print 'UNEXPECTED LICENSE: %s: %s' % (filename, licensename)
+    return False
+
+  return True
 
 
 def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
@@ -887,24 +905,8 @@ def CheckLicensesForStaticLinking(disjoint_sets, source_dir, print_licenses):
     for source in source_set.sources:
       GetIncludedSources(source, source_dir, sources_to_check)
 
-  # Tracking state to print percentage of licenses checked so far.
-  source_counter = 0
-  num_sources = len(sources_to_check)
-
-  # Check licenses for all included sources.
-  all_checks_passed = True
-  for source in sources_to_check:
-    if not CheckLicenseForSource(source, source_dir, print_licenses):
-      all_checks_passed = False
-
-    # Print percentage done so far (it's kind of slow).
-    source_counter += 1
-    percent_done = int((float(source_counter) * 100 / num_sources))
-    line_ending = '\r' if (source_counter != num_sources) else '\n'
-    sys.stdout.write('Checking licenses: %s%% %s' % (percent_done, line_ending))
-    sys.stdout.flush()
-
-  return all_checks_passed
+  print 'Checking licenses...'
+  return CheckLicensesForSources(sources_to_check, source_dir, print_licenses)
 
 
 def FixObjectBasenameCollisions(disjoint_sets, all_sources):
@@ -920,7 +922,7 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
   detect the presence of a renamed file in all_sources which is overridden and
   warn that it should be removed."""
 
-  SourceRename = collections.namedtuple("SourceRename", "old_name, new_name")
+  SourceRename = collections.namedtuple('SourceRename', 'old_name, new_name')
   known_basenames = set()
   all_renames = set()
 
@@ -947,11 +949,11 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
         known_basenames.add(basename)
 
     for rename in renames:
-      print "fixing basename collision: %s -> %s" % (rename.old_name,
+      print 'fixing basename collision: %s -> %s' % (rename.old_name,
                                                      rename.new_name)
 
       shutil.copy2(rename.old_name, rename.new_name)
-      source_set.sources.remove(rename.old_name);
+      source_set.sources.remove(rename.old_name)
       source_set.sources.add(rename.new_name)
       all_renames.add(rename.new_name)
 
@@ -960,7 +962,7 @@ def FixObjectBasenameCollisions(disjoint_sets, all_sources):
   # collision is now resolved by some external/upstream change.
   for source_name in all_sources:
     if RENAME_PREFIX in source_name and source_name not in all_renames:
-      print "WARNING: %s no longer collides. DELETE ME!" % source_name
+      print 'WARNING: %s no longer collides. DELETE ME!' % source_name
 
 
 def main():
@@ -991,19 +993,24 @@ def main():
                                                           platform)])))
 
   sets = CreatePairwiseDisjointSets(sets)
-  for source_set in sets:
-    ReduceConditionalLogic(source_set)
+
+  # TODO(chcunningham): Logic reduction is not working right; it's incorrectly
+  # treating reducing a few x86 only files to be unconditionally included.  See
+  # http://crbug.com/535788 for details.
+  #
+  # for source_set in sets:
+  #   ReduceConditionalLogic(source_set)
 
   if not sets:
     exit('ERROR: failed to find any source sets. ' +
          'Are build_dir (%s) and/or source_dir (%s) options correct?' %
-              (options.build_dir, options.source_dir))
+         (options.build_dir, options.source_dir))
 
-  FixObjectBasenameCollisions(sets, source_files);
+  FixObjectBasenameCollisions(sets, source_files)
 
   if not CheckLicensesForStaticLinking(sets, source_dir,
                                        options.print_licenses):
-    exit ('GENERATE FAILED: invalid licenses detected.')
+    exit('GENERATE FAILED: invalid licenses detected.')
   print 'License checks passed.'
 
   def WriteOutputFile(outfile, func):
@@ -1011,7 +1018,7 @@ def main():
     print 'Output:', output_name
 
     with open(output_name, 'w') as fd:
-      func(fd, sets);
+      func(fd, sets)
 
   WriteOutputFile('ffmpeg_generated.gni', WriteGn)
   WriteOutputFile('ffmpeg_generated.gypi', WriteGyp)
