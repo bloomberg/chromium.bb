@@ -269,7 +269,6 @@ class HWTestConfig(object):
 
   Some combinations of member settings are invalid:
     * A suite config may not specify both blocking and async.
-    * A suite config may not specify both retry and async.
     * A suite config may not specify both warn_only and critical.
   """
   # This timeout is larger than it needs to be because of autotest overhead.
@@ -284,7 +283,7 @@ class HWTestConfig(object):
                retry=True, max_retries=10, minimum_duts=0, suite_min_duts=0,
                offload_failures_only=False):
     """Constructor -- see members above."""
-    assert not async or (not blocking and not retry)
+    assert not async or not blocking
     assert not warn_only or not critical
     self.suite = suite
     self.num = num

@@ -123,8 +123,6 @@ class HWTestList(object):
     async_kwargs = kwargs.copy()
     async_kwargs.update(async_dict)
     async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
-    async_kwargs['retry'] = False
-    async_kwargs['max_retries'] = None
     async_kwargs['async'] = True
     async_kwargs['suite_min_duts'] = 1
 
