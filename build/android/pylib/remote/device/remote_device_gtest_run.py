@@ -15,6 +15,9 @@ from pylib.remote.device import remote_device_test_run
 
 _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTestActivity.CommandLineFile')
+_EXTRA_SHARD_NANO_TIMEOUT = (
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner'
+        '.ShardNanoTimeout')
 
 
 class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
@@ -48,7 +51,9 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
 
     # pylint: disable=protected-access
     with tempfile.NamedTemporaryFile(suffix='.flags.txt') as flag_file:
-      env_vars = {}
+      env_vars = {
+        _EXTRA_SHARD_NANO_TIMEOUT: int(900e9),
+      }
       filter_string = self._test_instance._GenerateDisabledFilterString(None)
       if filter_string:
         flag_file.write('_ --gtest_filter=%s' % filter_string)

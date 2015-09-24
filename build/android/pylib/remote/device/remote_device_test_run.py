@@ -386,5 +386,5 @@ class RemoteDeviceTestRun(test_run.TestRun):
         # Remote service is reporting a failure, but no failure in results obj.
         if results.DidRunPass():
           results.AddResult(base_test_result.BaseTestResult(
-              'Remote Service detected error.',
+              'Remote service detected error.',
               base_test_result.ResultType.UNKNOWN))
