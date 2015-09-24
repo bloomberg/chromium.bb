@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/DOMArrayPiece.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
+#include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
@@ -23,7 +23,7 @@ class ScriptState;
 // basic data element that provides further information about a peripheral's
 // service.
 //
-// Callbacks providing WebBluetoothGATTCharacteristic objects are handled by
+// Callbacks providing WebBluetoothGATTCharacteristicInit objects are handled by
 // CallbackPromiseAdapter templatized with this class. See this class's
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
@@ -32,11 +32,11 @@ class BluetoothGATTCharacteristic final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    explicit BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristic>);
+    explicit BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
 
     // Interface required by CallbackPromiseAdapter.
-    using WebType = OwnPtr<WebBluetoothGATTCharacteristic>;
-    static BluetoothGATTCharacteristic* take(ScriptPromiseResolver* , PassOwnPtr<WebBluetoothGATTCharacteristic>);
+    using WebType = OwnPtr<WebBluetoothGATTCharacteristicInit>;
+    static BluetoothGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
 
     // Interface required by garbage collection.
     DEFINE_INLINE_TRACE() { }
@@ -47,7 +47,7 @@ public:
     ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
 
 private:
-    OwnPtr<WebBluetoothGATTCharacteristic> m_webCharacteristic;
+    OwnPtr<WebBluetoothGATTCharacteristicInit> m_webCharacteristic;
 };
 
 } // namespace blink

@@ -15,7 +15,7 @@
 namespace blink {
 
 struct WebBluetoothDevice;
-struct WebBluetoothGATTCharacteristic;
+struct WebBluetoothGATTCharacteristicInit;
 struct WebBluetoothGATTRemoteServer;
 struct WebBluetoothGATTService;
 struct WebRequestDeviceOptions;
@@ -30,7 +30,7 @@ using WebBluetoothConnectGATTCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetooth
 using WebBluetoothGetPrimaryServiceCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTService>, const WebBluetoothError&>;
 
 // Success and failure callbacks for getCharacteristic.
-using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTCharacteristic>, const WebBluetoothError&>;
+using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBluetoothGATTCharacteristicInit>, const WebBluetoothError&>;
 
 // Success and failure callbacks for readValue.
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;

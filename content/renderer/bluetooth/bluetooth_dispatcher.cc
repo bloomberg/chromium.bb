@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothError.h"
-#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothGATTService.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
@@ -22,7 +22,7 @@
 using blink::WebBluetoothConnectGATTCallbacks;
 using blink::WebBluetoothDevice;
 using blink::WebBluetoothError;
-using blink::WebBluetoothGATTCharacteristic;
+using blink::WebBluetoothGATTCharacteristicInit;
 using blink::WebBluetoothGATTRemoteServer;
 using blink::WebBluetoothGATTService;
 using blink::WebBluetoothReadValueCallbacks;
@@ -318,7 +318,7 @@ void BluetoothDispatcher::OnGetCharacteristicSuccess(
   BluetoothCharacteristicRequest* request =
       pending_characteristic_requests_.Lookup(request_id);
   request->callbacks->onSuccess(
-      blink::adoptWebPtr(new WebBluetoothGATTCharacteristic(
+      blink::adoptWebPtr(new WebBluetoothGATTCharacteristicInit(
           WebString::fromUTF8(characteristic_instance_id),
           request->service_instance_id, request->characteristic_uuid)));
 

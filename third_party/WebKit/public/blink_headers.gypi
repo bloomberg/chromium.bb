@@ -272,7 +272,7 @@
       "platform/modules/bluetooth/WebBluetooth.h",
       "platform/modules/bluetooth/WebBluetoothDevice.h",
       "platform/modules/bluetooth/WebBluetoothError.h",
-      "platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h",
+      "platform/modules/bluetooth/WebBluetoothGATTCharacteristicInit.h",
       "platform/modules/bluetooth/WebBluetoothGATTRemoteServer.h",
       "platform/modules/bluetooth/WebBluetoothGATTService.h",
       "platform/modules/bluetooth/WebRequestDeviceOptions.h",

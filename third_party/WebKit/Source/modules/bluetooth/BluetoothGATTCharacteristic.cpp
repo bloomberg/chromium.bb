@@ -17,12 +17,12 @@
 
 namespace blink {
 
-BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristic> webCharacteristic)
+BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
     : m_webCharacteristic(webCharacteristic)
 {
 }
 
-BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristic> webCharacteristic)
+BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
 {
     if (!webCharacteristic) {
         return nullptr;
