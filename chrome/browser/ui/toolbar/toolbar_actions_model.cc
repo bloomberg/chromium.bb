@@ -615,7 +615,7 @@ void ToolbarActionsModel::Populate() {
     UMA_HISTOGRAM_COUNTS_100(
         "ExtensionToolbarModel.BrowserActionsVisible",
         visible_icon_count_ == -1
-            ? visible_icon_count_
+            ? base::HistogramBase::kSampleType_MAX
             : visible_icon_count_ - component_actions_count);
 
     if (use_redesign_) {
