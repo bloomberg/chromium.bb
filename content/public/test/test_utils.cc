@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "content/common/site_isolation_policy.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -192,7 +193,9 @@ bool AreAllSitesIsolatedForTesting() {
 }
 
 void IsolateAllSitesForTesting(base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kSitePerProcess);
+  EXPECT_TRUE(SiteIsolationPolicy::IsolateAllSitesForTesting())
+      << "IsolateAllSitesForTesting() called after "
+      << "SiteIsolationPolicy was already used";
 }
 
 MessageLoopRunner::MessageLoopRunner()

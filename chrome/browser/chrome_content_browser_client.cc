@@ -1523,6 +1523,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #endif
       switches::kEnableNetBenchmarking,
       switches::kEnableNewBookmarkApps,
+      switches::kIsolateExtensions,
       switches::kJavaScriptHarmony,
       switches::kMessageLoopHistogrammer,
       switches::kPpapiFlashArgs,

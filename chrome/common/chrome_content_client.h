@@ -80,6 +80,8 @@ class ChromeContentClient : public content::ContentClient {
                                   std::set<GURL>* origins) override;
 
   void AddServiceWorkerSchemes(std::set<std::string>* schemes) override;
+
+  void AddIsolatedSchemes(std::set<std::string>* schemes) override;
 };
 
 #endif  // CHROME_COMMON_CHROME_CONTENT_CLIENT_H_

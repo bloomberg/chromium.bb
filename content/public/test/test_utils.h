@@ -66,12 +66,8 @@ scoped_ptr<base::Value> ExecuteScriptAndGetValue(
 bool AreAllSitesIsolatedForTesting();
 
 // Appends --site-per-process to the command line, enabling tests to exercise
-// site isolation and cross-process iframes.
-//
-// TODO(nick): In some places this method is called from the top of a test
-// body. That's not strictly safe (it's setting a command line after it
-// already may have been read). We should try make that pattern safer, as it
-// makes browser tests easier to write.
+// site isolation and cross-process iframes. This must be called early in
+// the test; the flag will be read on the first real navigation.
 void IsolateAllSitesForTesting(base::CommandLine* command_line);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen

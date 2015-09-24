@@ -64,6 +64,13 @@ class CONTENT_EXPORT SiteIsolationPolicy {
   // should be removed and its callers cleaned up.
   static bool IsSwappedOutStateForbidden();
 
+  // Overrides the default site isolation mode so that all sites are
+  // isolated. Returns true if successful. Can fail if SiteIsolationPolicy
+  // has already been consulted at runtime prior to the override call --
+  // if so, try calling this earlier in the test, maybe before creating
+  // any renderer processes.
+  static bool IsolateAllSitesForTesting();
+
  private:
   SiteIsolationPolicy();  // Not instantiable.
 

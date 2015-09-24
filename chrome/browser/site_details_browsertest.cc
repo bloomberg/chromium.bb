@@ -8,16 +8,19 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/value_builder.h"
@@ -96,7 +99,8 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
         .Set("manifest_version", 2)
         .Set("web_accessible_resources", ListBuilder()
                                              .Append("blank_iframe.html")
-                                             .Append("http_iframe.html"));
+                                             .Append("http_iframe.html")
+                                             .Append("two_http_iframes.html"));
 
     if (has_background_process) {
       manifest.Set("background",
@@ -107,15 +111,31 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
     }
 
     dir->WriteFile(FILE_PATH_LITERAL("blank_iframe.html"),
-                   "<html><body>" + name +
-                       ", blank iframe: "
-                       "<iframe width=40 height=40></iframe></body></html>");
-    GURL iframe_url = embedded_test_server()->GetURL("w.com", "/title1.html");
-    dir->WriteFile(FILE_PATH_LITERAL("http_iframe.html"),
-                   "<html><body>" + name +
-                       ", http:// iframe: "
-                       "<iframe width=40 height=40 src='" +
-                       iframe_url.spec() + "'></iframe></body></html>");
+                   base::StringPrintf("<html><body>%s, blank iframe:"
+                                      "  <iframe width=80 height=80></iframe>"
+                                      "</body></html>",
+                                      name.c_str()));
+    std::string iframe_url =
+        embedded_test_server()
+            ->GetURL("w.com", "/cross_site_iframe_factory.html?w")
+            .spec();
+    std::string iframe_url2 =
+        embedded_test_server()
+            ->GetURL("x.com", "/cross_site_iframe_factory.html?x")
+            .spec();
+    dir->WriteFile(
+        FILE_PATH_LITERAL("http_iframe.html"),
+        base::StringPrintf("<html><body>%s, http:// iframe:"
+                           "  <iframe width=80 height=80 src='%s'></iframe>"
+                           "</body></html>",
+                           name.c_str(), iframe_url.c_str()));
+    dir->WriteFile(FILE_PATH_LITERAL("two_http_iframes.html"),
+                   base::StringPrintf(
+                       "<html><body>%s, two http:// iframes:"
+                       "  <iframe width=80 height=80 src='%s'></iframe>"
+                       "  <iframe width=80 height=80 src='%s'></iframe>"
+                       "</body></html>",
+                       name.c_str(), iframe_url.c_str(), iframe_url2.c_str()));
     dir->WriteManifest(manifest.ToJSON());
 
     const Extension* extension = LoadExtension(dir->unpacked_path());
@@ -124,10 +144,53 @@ class SiteDetailsBrowserTest : public ExtensionBrowserTest {
     return extension;
   }
 
+  const Extension* CreateHostedApp(const std::string& name,
+                                   const GURL& app_url) {
+    scoped_ptr<TestExtensionDir> dir(new TestExtensionDir);
+
+    DictionaryBuilder manifest;
+    manifest.Set("name", name)
+        .Set("version", "1.0")
+        .Set("manifest_version", 2)
+        .Set("app", DictionaryBuilder()
+                        .Set("urls", ListBuilder().Append(app_url.spec()))
+                        .Set("launch", DictionaryBuilder().Set(
+                                           "web_url", app_url.spec())));
+    dir->WriteManifest(manifest.ToJSON());
+
+    const Extension* extension = LoadExtension(dir->unpacked_path());
+    EXPECT_TRUE(extension);
+    temp_dirs_.push_back(dir.release());
+    return extension;
+  }
+
+  int GetRenderProcessCount() {
+    int count = 0;
+    for (content::RenderProcessHost::iterator it(
+             content::RenderProcessHost::AllHostsIterator());
+         !it.IsAtEnd(); it.Advance()) {
+      count++;
+    }
+    return count;
+  }
+
  private:
   ScopedVector<TestExtensionDir> temp_dirs_;
   DISALLOW_COPY_AND_ASSIGN(SiteDetailsBrowserTest);
 };
+
+MATCHER_P(EqualsIfExtensionsIsolated, expected, "") {
+  if (content::AreAllSitesIsolatedForTesting())
+    return arg >= expected;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIsolateExtensions))
+    return arg == expected;
+  return true;
+}
+
+MATCHER_P(EqualsIfSitePerProcess, expected, "") {
+  return !content::AreAllSitesIsolatedForTesting() || expected == arg;
+}
 
 // Test the accuracy of SiteDetails process estimation, in the presence of
 // multiple iframes, navigation, multiple BrowsingInstances, and multiple tabs
@@ -177,6 +240,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(9));
 
   // Navigate to a different, disjoint set of 7 sites.
   GURL pqrstuv_url = embedded_test_server()->GetURL(
@@ -220,6 +285,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(7));
 
   // Open a second tab (different BrowsingInstance) with 4 sites (a through d).
   GURL abcd_url = embedded_test_server()->GetURL(
@@ -262,6 +329,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(2));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(11));
 
   // Open a third tab (different BrowsingInstance) with the same 4 sites.
   AddTabAtIndex(2, abcd_url, ui::PAGE_TRANSITION_TYPED);
@@ -303,6 +372,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(15));
 
   // From the third tab, window.open() a fourth tab in the same
   // BrowsingInstance, to a page using the same four sites "a-d" as third tab,
@@ -357,6 +428,8 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ManyIframes) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfSitePerProcess(16));
 }
 
 IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
@@ -376,6 +449,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), 1);
 
   // Install one script-injecting extension with background page, and an
   // extension with web accessible resources.
@@ -408,6 +482,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
 
   // Test that "one process per extension" applies even when web content has an
   // extension iframe.
@@ -431,6 +506,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
 
   // Tab2 navigates its first iframe to a resource of extension1. This also
   // shouldn't result in a new extension process (it should share with the
@@ -451,6 +527,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
 
   // Tab1 navigates its second iframe to a resource of extension2. This SHOULD
   // result in a new process since extension2 had no existing process.
@@ -470,6 +547,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(4));
 
   // Tab2 navigates its second iframe to a resource of extension2. This should
   // share the existing extension2 process.
@@ -489,6 +567,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(4));
 
   // Install extension3 (identical config to extension2)
   const Extension* extension3 = CreateExtension("Extension Three", false);
@@ -513,6 +592,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(4));
 
   // Navigate tab2 to a different extension3 page containing a web iframe. The
   // iframe should get its own process. The lower bound number indicates that,
@@ -533,6 +613,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(5, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(5));
 
   // Navigate tab1 to an extension3 page with an extension3 iframe. There should
   // be three processes estimated by IsolateExtensions: one for extension3, one
@@ -554,6 +635,7 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(3, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
 
   // Now navigate tab1 to an extension3 page with a web iframe. This could share
   // a process with tab2's iframe (the LowerBound number), or it could get its
@@ -574,4 +656,122 @@ IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensions) {
   EXPECT_THAT(details->uma()->GetAllSamples(
                   "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
               ElementsAre(Bucket(4, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(4));
+}
+
+// Exercises accounting in the case where an extension has two different-site
+// web iframes.
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, ExtensionWithTwoWebIframes) {
+  scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+
+  // Install one script-injecting extension with background page, and an
+  // extension with web accessible resources.
+  const Extension* extension = CreateExtension("Test Extension", false);
+
+  ui_test_utils::NavigateToURL(
+      browser(), extension->GetResourceURL("/two_http_iframes.html"));
+
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  // TODO(nick): https://crbug.com/512560 Make the number below agree with the
+  // estimates above, which assume consolidation of subframe processes.
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(3));
+}
+
+// TODO(nick): This test demonstrates that --isolate-extensions currently
+// isolates hosted apps too. It shouldn't. http://crbug.com/535073
+IN_PROC_BROWSER_TEST_F(SiteDetailsBrowserTest, IsolateExtensionsHostedApps) {
+  GURL app_with_web_iframe_url = embedded_test_server()->GetURL(
+      "app.org", "/cross_site_iframe_factory.html?app.org(b.com)");
+  GURL app_in_web_iframe_url = embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b.com(app.org)");
+
+  // No hosted app is installed: app.org just behaves like a normal domain.
+  ui_test_utils::NavigateToURL(browser(), app_with_web_iframe_url);
+  scoped_refptr<TestMemoryDetails> details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+
+  ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
+
+  // Now install app.org as a hosted app.
+  CreateHostedApp("App", GURL("http://app.org"));
+
+  // Reload the same two pages.
+  ui_test_utils::NavigateToURL(browser(), app_with_web_iframe_url);
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(2));
+
+  ui_test_utils::NavigateToURL(browser(), app_in_web_iframe_url);
+  details = new TestMemoryDetails();
+  details->StartFetchAndWait();
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.CurrentRendererProcessCount"),
+              ElementsAre(Bucket(1, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountEstimate"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountLowerBound"),
+              ElementsAre(Bucket(2, 1)));
+  EXPECT_THAT(details->uma()->GetAllSamples(
+                  "SiteIsolation.IsolateExtensionsProcessCountNoLimit"),
+              ElementsAre(Bucket(2, 1)));
+
+  // TODO(nick): http://crbug.com/535073 ought to mean that the next line is 2.
+  // But it's actually 1. Figure out why.
+  EXPECT_THAT(GetRenderProcessCount(), EqualsIfExtensionsIsolated(1));
 }

@@ -685,6 +685,9 @@ const char kInstantProcess[]                = "instant-process";
 // enabled.
 const char kInvalidationUseGCMChannel[]     = "invalidation-use-gcm-channel";
 
+// Enables site isolation for all chrome-extension:// urls.
+const char kIsolateExtensions[] = "isolate-extensions";
+
 // Disable latest shipping ECMAScript 6 features.
 const char kDisableJavaScriptHarmonyShipping[] =
     "disable-javascript-harmony-shipping";

@@ -2060,12 +2060,18 @@ TEST_F(RenderFrameHostManagerTest,
   }
 }
 
+class RenderFrameHostManagerTestWithSiteIsolation
+    : public RenderFrameHostManagerTest {
+ public:
+  RenderFrameHostManagerTestWithSiteIsolation() {
+    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  }
+};
+
 // Test that a pending RenderFrameHost in a non-root frame tree node is properly
 // deleted when the node is detached. Motivated by http://crbug.com/441357 and
 // http://crbug.com/444955.
-TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
-  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-
+TEST_F(RenderFrameHostManagerTestWithSiteIsolation, DetachPendingChild) {
   const GURL kUrlA("http://www.google.com/");
   const GURL kUrlB("http://webkit.org/");
 
@@ -2186,9 +2192,8 @@ TEST_F(RenderFrameHostManagerTest, DetachPendingChild) {
 // Two tabs in the same process crash. The first tab is reloaded, and the second
 // tab navigates away without reloading. The second tab's navigation shouldn't
 // mess with the first tab's content. Motivated by http://crbug.com/473714.
-TEST_F(RenderFrameHostManagerTest, TwoTabsCrashOneReloadsOneLeaves) {
-  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
-
+TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
+       TwoTabsCrashOneReloadsOneLeaves) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2("http://webkit.org/");
   const GURL kUrl3("http://whatwg.org/");

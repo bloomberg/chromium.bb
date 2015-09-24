@@ -616,3 +616,10 @@ void ChromeContentClient::AddServiceWorkerSchemes(
     std::set<std::string>* schemes) {
   schemes->insert(extensions::kExtensionScheme);
 }
+
+void ChromeContentClient::AddIsolatedSchemes(std::set<std::string>* schemes) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIsolateExtensions)) {
+    schemes->insert(extensions::kExtensionScheme);
+  }
+}

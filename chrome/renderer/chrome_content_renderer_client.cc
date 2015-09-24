@@ -1424,7 +1424,9 @@ bool ChromeContentRendererClient::CrossesExtensionExtents(
     // TODO(nick): Either wire this up to SiteIsolationPolicy, or to state on
     // |opener_frame|/its ancestors.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSitePerProcess))
+            switches::kSitePerProcess) ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kIsolateExtensions))
       old_url = opener_frame->document().url();
     else
       old_url = opener_frame->top()->document().url();

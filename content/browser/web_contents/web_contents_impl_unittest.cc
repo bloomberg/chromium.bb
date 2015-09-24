@@ -2992,6 +2992,14 @@ class LoadingWebContentsObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(LoadingWebContentsObserver);
 };
 
+// Subclass of WebContentsImplTest for cases that need out-of-process iframes.
+class WebContentsImplTestWithSiteIsolation : public WebContentsImplTest {
+ public:
+  WebContentsImplTestWithSiteIsolation() {
+    IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+  }
+};
+
 // Ensure that DidStartLoading/DidStopLoading events balance out properly with
 // interleaving cross-process navigations in multiple subframes.
 // See https://crbug.com/448601 for details of the underlying issue. The
@@ -3001,11 +3009,10 @@ class LoadingWebContentsObserver : public WebContentsObserver {
 //   chance to complete the load.
 // The subframe navigations cause the loading_frames_in_progress_ to drop down
 // to 0, while the loading_progresses_ map is not reset.
-TEST_F(WebContentsImplTest, StartStopEventsBalance) {
+TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // The bug manifests itself in regular mode as well, but browser-initiated
   // navigation of subframes is only possible in --site-per-process mode within
   // unit tests.
-  IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
   const GURL initial_url("about:blank");
   const GURL main_url("http://www.chromium.org");
   const GURL foo_url("http://foo.chromium.org");

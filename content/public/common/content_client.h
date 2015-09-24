@@ -147,6 +147,10 @@ class CONTENT_EXPORT ContentClient {
   // trustworthy schemes should be added.
   virtual void AddServiceWorkerSchemes(std::set<std::string>* schemes) {}
 
+  // Gives the embedder a chance to register schemes for which site isolation
+  // should be enabled.
+  virtual void AddIsolatedSchemes(std::set<std::string>* schemes) {}
+
  private:
   friend class ContentClientInitializer;  // To set these pointers.
   friend class InternalTestInitializer;
