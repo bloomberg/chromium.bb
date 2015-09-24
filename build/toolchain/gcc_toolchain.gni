@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/toolchain.gni")
 
@@ -70,6 +71,8 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #      Whether to forcibly enable or disable component builds for this
 #      toolchain; if not specified, the toolchain will inherit the
 #      default setting.
+#  - is_nacl_glibc
+#      Whether NaCl code is built using Glibc instead of Newlib.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -320,6 +323,7 @@ template("gcc_toolchain") {
                              [
                                "is_clang",
                                "is_component_build",
+                               "is_nacl_glibc",
                              ])
 
       if (defined(invoker.clear_sanitizers) && invoker.clear_sanitizers) {

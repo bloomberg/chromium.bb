@@ -50,6 +50,7 @@ nacl_toolchain("glibc_x86") {
   toolchain_cpu = "x86"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/i686-nacl-"
   is_clang = false
+  is_nacl_glibc = true
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
@@ -63,6 +64,7 @@ nacl_toolchain("glibc_x64") {
   toolchain_cpu = "x64"
   toolprefix = "${os_toolchain_dir}/${toolchain_package}/bin/x86_64-nacl-"
   is_clang = false
+  is_nacl_glibc = true
 
   cc = toolprefix + "gcc"
   cxx = toolprefix + "g++"
