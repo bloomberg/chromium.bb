@@ -100,7 +100,10 @@ def FetchGitRevision(directory, hash_only):
     A VersionInfo object or None on error.
   """
   hsh = ''
-  proc = RunGitCommand(directory, ['rev-parse', 'HEAD'])
+  git_args = ['log', '-1', '--format=%H']
+  if hash_only:
+    git_args.append('--grep=^Cr-Commit-Position:')
+  proc = RunGitCommand(directory, git_args)
   if proc:
     output = proc.communicate()[0].strip()
     if proc.returncode == 0 and output:
@@ -108,7 +111,7 @@ def FetchGitRevision(directory, hash_only):
   if not hsh:
     return None
   pos = ''
-  proc = RunGitCommand(directory, ['cat-file', 'commit', 'HEAD'])
+  proc = RunGitCommand(directory, ['cat-file', 'commit', hsh])
   if proc:
     output = proc.communicate()[0]
     if proc.returncode == 0 and output:
@@ -264,8 +267,8 @@ def main(argv=None):
                     help="In a Git-SVN repo, dig down to the last committed " +
                     "SVN change (historic behaviour).")
   parser.add_option("--git-hash-only", action="store_true",
-                    help="In a Git repo with commit positions, only report " +
-                    "the hash.")
+                    help="In a Git repo with commit positions, report only " +
+                    "the hash of the latest commit with a position.")
   opts, args = parser.parse_args(argv[1:])
 
   out_file = opts.output
