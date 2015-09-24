@@ -30,14 +30,6 @@ class NET_EXPORT HttpNetworkLayer
   explicit HttpNetworkLayer(HttpNetworkSession* session);
   ~HttpNetworkLayer() override;
 
-  // Create a transaction factory that instantiate a network layer over an
-  // existing network session. Network session contains some valuable
-  // information (e.g. authentication data) that we want to share across
-  // multiple network layers. This method exposes the implementation details
-  // of a network layer, use this method with an existing network layer only
-  // when network session is shared.
-  static HttpTransactionFactory* CreateFactory(HttpNetworkSession* session);
-
   // HttpTransactionFactory methods:
   int CreateTransaction(RequestPriority priority,
                         scoped_ptr<HttpTransaction>* trans) override;

@@ -38,14 +38,6 @@ HttpNetworkLayer::~HttpNetworkLayer() {
 #endif
 }
 
-// static
-HttpTransactionFactory* HttpNetworkLayer::CreateFactory(
-    HttpNetworkSession* session) {
-  DCHECK(session);
-
-  return new HttpNetworkLayer(session);
-}
-
 int HttpNetworkLayer::CreateTransaction(RequestPriority priority,
                                         scoped_ptr<HttpTransaction>* trans) {
   if (suspended_)
