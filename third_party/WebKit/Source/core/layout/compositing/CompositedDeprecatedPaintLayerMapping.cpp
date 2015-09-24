@@ -701,8 +701,8 @@ void CompositedDeprecatedPaintLayerMapping::updateGraphicsLayerGeometry(const De
     if (m_childContainmentLayer)
         clippingBox = clipBox(toLayoutBox(layoutObject()));
 
-    updateChildContainmentLayerGeometry(clippingBox, localCompositingBounds);
     updateChildTransformLayerGeometry();
+    updateChildContainmentLayerGeometry(clippingBox, localCompositingBounds);
 
     updateMaskLayerGeometry();
     updateTransformGeometry(snappedOffsetFromCompositedAncestor, relativeCompositingBounds);
@@ -842,11 +842,19 @@ void CompositedDeprecatedPaintLayerMapping::updateChildContainmentLayerGeometry(
     if (!m_childContainmentLayer)
         return;
 
-    m_childContainmentLayer->setPosition(FloatPoint(clippingBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation())));
+    FloatPoint clipPositionInLayoutObjectSpace(clippingBox.location() - localCompositingBounds.location() + roundedIntSize(m_owningLayer.subpixelAccumulation()));
+
+    // If there are layers between the the child containment layer and
+    // m_graphicsLayer (eg, the child transform layer), we must adjust the clip
+    // position to get it in the correct space.
+    FloatPoint clipPositionInParentSpace = clipPositionInLayoutObjectSpace;
+    for (GraphicsLayer* ancestor = m_childContainmentLayer->parent(); ancestor != mainGraphicsLayer(); ancestor = ancestor->parent())
+        clipPositionInParentSpace -= toFloatSize(ancestor->position());
+
+    m_childContainmentLayer->setPosition(clipPositionInParentSpace);
     m_childContainmentLayer->setSize(clippingBox.size());
     m_childContainmentLayer->setOffsetFromLayoutObject(toIntSize(clippingBox.location()));
     if (m_childClippingMaskLayer && !m_scrollingLayer && !layoutObject()->style()->clipPath()) {
-        m_childClippingMaskLayer->setPosition(m_childContainmentLayer->position());
         m_childClippingMaskLayer->setSize(m_childContainmentLayer->size());
         m_childClippingMaskLayer->setOffsetFromLayoutObject(m_childContainmentLayer->offsetFromLayoutObject());
     }
@@ -2305,9 +2313,10 @@ bool CompositedDeprecatedPaintLayerMapping::updateSquashingLayerAssignment(Depre
 void CompositedDeprecatedPaintLayerMapping::removeLayerFromSquashingGraphicsLayer(const DeprecatedPaintLayer* layer)
 {
     size_t layerIndex = 0;
-    for (; layerIndex < m_squashedLayers.size(); ++layerIndex)
+    for (; layerIndex < m_squashedLayers.size(); ++layerIndex) {
         if (m_squashedLayers[layerIndex].paintLayer == layer)
             break;
+    }
 
     // Assert on incorrect mappings between layers and groups
     ASSERT(layerIndex < m_squashedLayers.size());
