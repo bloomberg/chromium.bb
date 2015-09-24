@@ -190,8 +190,9 @@ document.getElementById('feedbackContainer').addEventListener('animationend',
     function(e) {
       var feedbackContainer = document.getElementById('feedbackContainer');
       feedbackContainer.classList.remove("fadeOut");
+      document.getElementById('contentWrap').style.paddingBottom =
+        window.getComputedStyle(feedbackContainer).height;
       feedbackContainer.className += " hidden";
-      document.getElementById('contentWrap').style.paddingBottom = '120px';
       setTimeout(function() {
         // Close the gap where the feedback form was.
         var contentWrap = document.getElementById('contentWrap');

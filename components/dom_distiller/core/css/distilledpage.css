@@ -79,14 +79,10 @@ html {
   font-size: 14px;
 }
 
-@media screen {
-  html {
-    height: 100%;
-  }
-}
-
 body {
-  height: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   line-height: 1.714;
   margin: 0px auto;
   text-rendering: optimizeLegibility;
@@ -389,8 +385,8 @@ body .hidden {
 /* Footer feedback form. */
 #contentWrap {
   display: flex;
-  flex-flow: column;
-  min-height: 100%;
+  flex-direction: column;
+  flex-grow: 1;
   overflow: auto;
   position: relative;
   z-index: 1;
@@ -398,12 +394,11 @@ body .hidden {
 
 .footerFeedback {
   display: flex;
-  flex-flow: column;
+  flex-direction: column;
   font-size: 14px;
   z-index: 2;
   background-color: #4285F4;
   color: #fff;
-  height: 120px;
   width: 100%;
 }
 
