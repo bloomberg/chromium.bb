@@ -60,8 +60,12 @@ BrowserActionsBarBrowserTest::~BrowserActionsBarBrowserTest() {
 
 void BrowserActionsBarBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ToolbarActionsBar::disable_animations_for_testing_ = true;
   ExtensionBrowserTest::SetUpCommandLine(command_line);
+  ToolbarActionsBar::disable_animations_for_testing_ = true;
+  // These tests are deliberately testing behavior without the redesign.
+  // Forcefully disable it.
+  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(), false));
 }
 
 void BrowserActionsBarBrowserTest::SetUpOnMainThread() {
@@ -110,9 +114,11 @@ BrowserActionsBarRedesignBrowserTest::~BrowserActionsBarRedesignBrowserTest() {
 void BrowserActionsBarRedesignBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   BrowserActionsBarBrowserTest::SetUpCommandLine(command_line);
-  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
-      extensions::FeatureSwitch::extension_action_redesign(),
-      true));
+  // Override to force the redesign. Completely clear the previous override
+  // first, since doing so resets the value of the switch.
+  override_redesign_.reset();
+  override_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(), true));
 }
 
 // Test the basic functionality.

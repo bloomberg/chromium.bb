@@ -256,15 +256,20 @@ gfx::Image ExtensionAction::GetDefaultIconImage() const {
   if (default_icon_image_)
     return default_icon_image_->image();
 
-  // If the extension action redesign is enabled, we use a special placeholder
-  // icon (with the first letter of the extension name) rather than the default
-  // (puzzle piece).
-  if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    return extensions::ExtensionIconPlaceholder::CreateImage(
-        extension_misc::EXTENSION_ICON_ACTION, extension_name_);
+  if (placeholder_icon_image_.IsEmpty()) {
+    // If the extension action redesign is enabled, we use a special placeholder
+    // icon (with the first letter of the extension name) rather than the
+    // default (puzzle piece).
+    if (extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()) {
+      placeholder_icon_image_ =
+          extensions::ExtensionIconPlaceholder::CreateImage(
+              extension_misc::EXTENSION_ICON_ACTION, extension_name_);
+    } else {
+      placeholder_icon_image_ = GetDefaultIcon();
+    }
   }
 
-  return GetDefaultIcon();
+  return placeholder_icon_image_;
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {

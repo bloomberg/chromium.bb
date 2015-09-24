@@ -24,6 +24,11 @@
             "group_name": "Button"
         }
     ],
+    "ExtensionActionRedesign": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "ExtensionDeveloperModeWarning": [
         {
             "group_name": "Enabled"

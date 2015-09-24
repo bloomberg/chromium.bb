@@ -54,6 +54,7 @@ class LocationBarBrowserTest : public ExtensionBrowserTest {
 
  private:
   scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_override_;
+  scoped_ptr<extensions::FeatureSwitch::ScopedOverride> enable_redesign_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarBrowserTest);
 };
@@ -63,6 +64,10 @@ void LocationBarBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   // enable the switch.
   enable_override_.reset(new extensions::FeatureSwitch::ScopedOverride(
       extensions::FeatureSwitch::enable_override_bookmarks_ui(), true));
+  // For testing page actions in the location bar, we also have to be sure to
+  // *not* have the redesign turned on.
+  enable_redesign_.reset(new extensions::FeatureSwitch::ScopedOverride(
+      extensions::FeatureSwitch::extension_action_redesign(), false));
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 }
 
