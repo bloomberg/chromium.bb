@@ -111,7 +111,7 @@
                   '|Source/core/frame/DeviceSingleWindowEventController'
     },
     'devtools': {
-      'filepath': 'inspector|DevTools|devtools',
+      'filepath': 'Inspector|inspector|DevTools|devtools',
     },
     'dom': {
       'filepath': 'Source/core/dom/'
