@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
+#include "base/thread_task_runner_handle.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
@@ -14,6 +14,16 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 namespace ui {
+
+namespace {
+
+void PostedSwapResult(const SwapCompletionCallback& callback,
+                      gfx::SwapResult result) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, result));
+}
+
+}  // namespace
 
 GbmSurfaceless::GbmSurfaceless(DrmWindow* window,
                                DrmDeviceManager* drm_device_manager)
@@ -39,7 +49,9 @@ bool GbmSurfaceless::OnSwapBuffers() {
 
 bool GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
-  return window_->SchedulePageFlip(callback);
+  // Wrap the callback and post the result such that everything using the
+  // callback doesn't need to worry about re-entrancy.
+  return window_->SchedulePageFlip(base::Bind(&PostedSwapResult, callback));
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
