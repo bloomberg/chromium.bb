@@ -68,7 +68,7 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
   // from the image assets. Enlarge the button by the theme provided insets.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     ui::ThemeProvider* provider = GetThemeProvider();
-    if (provider && provider->UsingSystemTheme()) {
+    if (provider) {
       gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
       size.Enlarge(insets.width(), insets.height());
     }

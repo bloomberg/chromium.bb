@@ -34,6 +34,7 @@
 #include "extensions/common/extension_set.h"
 #include "grit/theme_resources.h"
 #include "ui/base/layout.h"
+#include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
@@ -77,6 +78,11 @@ const char* kDefaultThemeGalleryID = "hkacjpbfdknhflllbcmjibkdeoafencn";
 // reason to do it at startup.
 // ExtensionService::GarbageCollectExtensions() does something similar.
 const int kRemoveUnusedThemesStartupDelay = 30;
+
+// The filename to be used for a cached theme created while material design is
+// enabled.
+const base::FilePath::CharType kThemePackMaterialDesignFilename[] =
+    FILE_PATH_LITERAL("Cached Theme Material Design.pak");
 
 SkColor IncreaseLightness(SkColor color, double percent) {
   color_utils::HSL result;
@@ -536,9 +542,13 @@ void ThemeService::LoadThemePrefs() {
 
   bool loaded_pack = false;
 
-  // If we don't have a file pack, we're updating from an old version.
+  // If we don't have a file pack, we're updating from an old version, or the
+  // pack was created for an alternative MaterialDesignController::Mode.
   base::FilePath path = prefs->GetFilePath(prefs::kCurrentThemePackFilename);
   if (path != base::FilePath()) {
+    path = path.Append(ui::MaterialDesignController::IsModeMaterial()
+                           ? kThemePackMaterialDesignFilename
+                           : chrome::kThemePackFilename);
     SwapThemeSupplier(BrowserThemePack::BuildFromDataPack(path, current_id));
     loaded_pack = theme_supplier_.get() != nullptr;
   }
@@ -657,12 +667,16 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
 
   // Write the packed file to disk.
   base::FilePath pack_path =
-      extension->path().Append(chrome::kThemePackFilename);
+      extension->path().Append(ui::MaterialDesignController::IsModeMaterial()
+                                   ? kThemePackMaterialDesignFilename
+                                   : chrome::kThemePackFilename);
   service->GetFileTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&WritePackToDiskCallback, pack, pack_path));
 
-  SavePackName(pack_path);
+  // Save only the extension path. The packed file which matches the
+  // MaterialDesignController::Mode will be loaded via LoadThemePrefs().
+  SavePackName(extension->path());
   SwapThemeSupplier(pack);
 }
 

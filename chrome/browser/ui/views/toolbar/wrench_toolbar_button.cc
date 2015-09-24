@@ -52,7 +52,7 @@ gfx::Size WrenchToolbarButton::GetPreferredSize() const {
   if (ui::MaterialDesignController::IsModeMaterial()) {
     gfx::Size size(image()->GetPreferredSize());
     ui::ThemeProvider* provider = GetThemeProvider();
-    if (provider && provider->UsingSystemTheme()) {
+    if (provider) {
       gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
       size.Enlarge(insets.width(), insets.height());
     }
