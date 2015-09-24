@@ -47,6 +47,7 @@ bool IsOmniboxEnabled(Profile* profile);
 
 namespace safe_browsing {
 class IncidentReportingService;
+class SRTFetcher;
 }
 
 namespace speech {
@@ -83,6 +84,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class StackSamplingConfiguration;
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
+  friend class safe_browsing::SRTFetcher;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

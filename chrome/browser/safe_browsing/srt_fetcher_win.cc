@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/srt_field_trial_win.h"
@@ -119,6 +120,8 @@ int LaunchAndWaitForExit(const base::FilePath& exe_path,
   return exit_code;
 }
 
+}  // namespace
+
 // Class that will attempt to download the SRT, showing the SRT notification
 // bubble when the download operation is complete. Instances of SRTFetcher own
 // themselves, they will self-delete on completion of the network request when
@@ -144,7 +147,7 @@ class SRTFetcher : public net::URLFetcherDelegate {
     variations::VariationsHttpHeaderProvider::GetInstance()->AppendHeaders(
         url_fetcher_->GetOriginalURL(),
         io_data->IsOffTheRecord(),
-        io_data->GetMetricsEnabledStateOnIOThread(),
+        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
         &headers);
     url_fetcher_->SetExtraRequestHeaders(headers.ToString());
     url_fetcher_->Start();
@@ -197,6 +200,8 @@ class SRTFetcher : public net::URLFetcherDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(SRTFetcher);
 };
+
+namespace {
 
 // Try to fetch the SRT, and on success, show the prompt to run it.
 void MaybeFetchSRT(Browser* browser, const std::string& reporter_version) {
