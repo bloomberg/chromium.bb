@@ -60,11 +60,20 @@ class PopularSites {
                const std::string& override_filename,
                bool force_download,
                const FinishedCallback& callback);
+
+  // This fetches the popular sites from a given url and is only used for
+  // debugging through the popular-sites-internals page.
+  PopularSites(Profile* profile,
+               const GURL& url,
+               const FinishedCallback& callback);
   ~PopularSites();
 
   const std::vector<Site>& sites() const { return sites_; }
 
  private:
+  void FetchPopularSites(const GURL& url,
+                         net::URLRequestContextGetter* request_context,
+                         bool force_download);
   void OnDownloadDone(const base::FilePath& path, bool success);
   void OnJsonParsed(scoped_ptr<std::vector<Site>> sites);
 

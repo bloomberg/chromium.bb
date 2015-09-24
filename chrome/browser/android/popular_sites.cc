@@ -158,19 +158,33 @@ PopularSites::PopularSites(Profile* profile,
                            bool force_download,
                            const FinishedCallback& callback)
     : callback_(callback), weak_ptr_factory_(this) {
-  base::FilePath path = GetPopularSitesPath();
   // Re-download the file once on every Chrome startup, but use the cached
   // local file afterwards.
   static bool first_time = true;
-  downloader_.reset(new FileDownloader(
-      GetPopularSitesURL(
-          profile, override_country, override_version, override_filename),
-      path, first_time || force_download, profile->GetRequestContext(),
-      base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
+  FetchPopularSites(GetPopularSitesURL(profile, override_country,
+                                       override_version, override_filename),
+                    profile->GetRequestContext(), first_time || force_download);
   first_time = false;
 }
 
+PopularSites::PopularSites(Profile* profile,
+                           const GURL& url,
+                           const FinishedCallback& callback)
+    : callback_(callback), weak_ptr_factory_(this) {
+  FetchPopularSites(url, profile->GetRequestContext(), true);
+}
+
 PopularSites::~PopularSites() {}
+
+void PopularSites::FetchPopularSites(
+    const GURL& url,
+    net::URLRequestContextGetter* request_context,
+    bool force_download) {
+  base::FilePath path = GetPopularSitesPath();
+  downloader_.reset(new FileDownloader(
+      url, path, force_download, request_context,
+      base::Bind(&PopularSites::OnDownloadDone, base::Unretained(this), path)));
+}
 
 void PopularSites::OnDownloadDone(const base::FilePath& path, bool success) {
   if (success) {

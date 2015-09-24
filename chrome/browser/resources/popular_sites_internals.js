@@ -8,7 +8,8 @@ cr.define('chrome.popular_sites_internals', function() {
   function initialize() {
     function submitDownload(event) {
       $('download-result').textContent = '';
-      chrome.send('download', [$('country-input').value,
+      chrome.send('download', [$('url-input').value,
+                               $('country-input').value,
                                $('version-input').value]);
       event.preventDefault();
     }
