@@ -23,6 +23,17 @@ using blink::WebTouchPoint;
 
 namespace content {
 
+namespace {
+
+ui::DomKey GetDomKeyFromEvent(int keycode, int unicode_character) {
+  ui::DomKey key = ui::GetDomKeyFromAndroidEvent(keycode, unicode_character);
+  if (key != ui::DomKey::NONE)
+    return key;
+  return ui::DomKey::UNIDENTIFIED;
+}
+
+}  // namespace
+
 WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
                                                 int modifiers,
                                                 double time_sec,
@@ -34,7 +45,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   WebKeyboardEvent result;
 
   ui::DomCode dom_code = ui::DomCode::NONE;
-  if (scancode != 0)
+  if (scancode)
     dom_code = ui::KeycodeConverter::NativeKeycodeToDomCode(scancode);
   result.type = type;
   result.modifiers = modifiers;
@@ -44,6 +55,7 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(WebInputEvent::Type type,
   result.modifiers |= DomCodeToWebInputEventModifiers(dom_code);
   result.nativeKeyCode = keycode;
   result.domCode = static_cast<int>(dom_code);
+  result.domKey = GetDomKeyFromEvent(keycode, unicode_character);
   result.unmodifiedText[0] = unicode_character;
   if (result.windowsKeyCode == ui::VKEY_RETURN) {
     // This is the same behavior as GTK:
