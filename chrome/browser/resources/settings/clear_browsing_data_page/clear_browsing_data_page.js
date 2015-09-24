@@ -37,5 +37,22 @@ Polymer({
       type: Object,
       notify: true,
     },
+
+    /**
+     * List of options for the dropdown menu.
+     * The order of entries in this array matches the
+     * prefs.browser.clear_data.time_period.value enum.
+     */
+    clearFromOptions_: {
+      readOnly: true,
+      type: Array,
+      value: [
+        loadTimeData.getString('clearDataHour'),
+        loadTimeData.getString('clearDataDay'),
+        loadTimeData.getString('clearDataWeek'),
+        loadTimeData.getString('clearData4Weeks'),
+        loadTimeData.getString('clearDataEverything'),
+      ],
+    },
   },
 });

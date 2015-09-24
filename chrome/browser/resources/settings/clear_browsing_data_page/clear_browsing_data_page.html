@@ -1,11 +1,23 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-menu/paper-menu.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-clear-browsing-data-page">
   <link rel="import" type="css" href="clear_browsing_data_page.css">
   <template>
     <div>
+      <span i18n-content="clearFollowingItemsFrom"></span>
+      <paper-dropdown-menu>
+        <paper-menu class="dropdown-content"
+            selected="{{prefs.browser.clear_data.time_period.value}}">
+          <template is="dom-repeat" items="[[clearFromOptions_]]">
+            <paper-item>[[item]]</paper-item>
+          </template>
+        </paper-menu>
+      </paper-dropdown-menu>
       <cr-settings-checkbox
           pref="{{prefs.browser.clear_data.browsing_history}}"
           i18n-values="label:clearBrowsingHistory">
