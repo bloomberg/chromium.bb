@@ -437,9 +437,6 @@ public:
     int scrollX() const { return scrollPosition().x(); }
     int scrollY() const { return scrollPosition().y(); }
 
-    void cacheCurrentScrollPosition() { m_cachedScrollPosition = scrollPositionDouble(); }
-    DoublePoint cachedScrollPosition() const { return m_cachedScrollPosition; }
-
     // Scroll the actual contents of the view (either blitting or invalidating as needed).
     void scrollContents(const IntSize& scrollDelta);
 
@@ -817,7 +814,6 @@ private:
 
     DoubleSize m_pendingScrollDelta;
     DoublePoint m_scrollPosition;
-    DoublePoint m_cachedScrollPosition;
     IntSize m_contentsSize;
 
     int m_scrollbarsAvoidingResizer;

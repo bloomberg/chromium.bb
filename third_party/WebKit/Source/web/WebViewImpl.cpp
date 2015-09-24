@@ -3372,10 +3372,6 @@ void WebViewImpl::resetScrollAndScaleState(bool immediately)
     pageScaleConstraintsSet().setNeedsReset(true);
     if (immediately)
         refreshPageScaleFactorAfterLayout();
-
-    // Clobber saved scales and scroll offsets.
-    if (FrameView* view = page()->deprecatedLocalMainFrame()->document()->view())
-        view->cacheCurrentScrollPosition();
 }
 
 void WebViewImpl::performMediaPlayerAction(const WebMediaPlayerAction& action,
