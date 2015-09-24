@@ -116,6 +116,7 @@ CREATE TABLE `buildTable` (
   `metadata_url` varchar(240) DEFAULT NULL,
   `summary` varchar(1024) DEFAULT NULL,
   `deadline` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `important` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildbot_generation` (`buildbot_generation`,`builder_name`,`waterfall`,`build_number`),
   KEY `master_build_id` (`master_build_id`),
