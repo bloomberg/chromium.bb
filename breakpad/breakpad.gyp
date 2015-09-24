@@ -199,7 +199,7 @@
             'src/common/language.cc',
             'src/common/mac/arch_utilities.cc',
             'src/common/mac/arch_utilities.h',
-            'src/common/mac/dump_syms.mm',
+            'src/common/mac/dump_syms.cc',
             'src/common/mac/file_id.cc',
             'src/common/mac/macho_id.cc',
             'src/common/mac/macho_reader.cc',
@@ -209,7 +209,7 @@
             'src/common/module.cc',
             'src/common/stabs_reader.cc',
             'src/common/stabs_to_module.cc',
-            'src/tools/mac/dump_syms/dump_syms_tool.mm',
+            'src/tools/mac/dump_syms/dump_syms_tool.cc',
           ],
           'defines': [
             # For src/common/stabs_reader.h.
