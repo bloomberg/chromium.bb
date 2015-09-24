@@ -126,7 +126,6 @@ TEST_F(CSPSourceListTest, WildcardMatching)
     EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com:8000/foo/")));
     EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com:9000/foo/")));
     EXPECT_TRUE(sourceList.matches(KURL(base, "https://foo.example2.com/bar/")));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example2.com/bar/")));
     EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.test/")));
     EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.bar.test/")));
 
@@ -136,6 +135,8 @@ TEST_F(CSPSourceListTest, WildcardMatching)
     EXPECT_FALSE(sourceList.matches(KURL(base, "https://example2.foo.com/bar")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "https://foo.test/")));
     EXPECT_FALSE(sourceList.matches(KURL(base, "http://foo.test.bar/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "https://example2.com/bar/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "http://test/")));
 }
 
 TEST_F(CSPSourceListTest, RedirectMatching)

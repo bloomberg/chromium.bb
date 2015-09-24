@@ -223,7 +223,7 @@ DEFINE_TRACE(ContentSecurityPolicy)
 
 Document* ContentSecurityPolicy::document() const
 {
-    return m_executionContext->isDocument() ? toDocument(m_executionContext) : nullptr;
+    return (m_executionContext && m_executionContext->isDocument()) ? toDocument(m_executionContext) : nullptr;
 }
 
 void ContentSecurityPolicy::copyStateFrom(const ContentSecurityPolicy* other)

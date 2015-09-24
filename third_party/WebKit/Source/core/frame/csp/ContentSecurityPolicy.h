@@ -260,12 +260,13 @@ public:
     static bool isFontResource(const ResourceRequest&);
     static bool isMediaResource(const ResourceRequest&);
 
+    Document* document() const;
+
 private:
     ContentSecurityPolicy();
 
     void applyPolicySideEffectsToExecutionContext();
 
-    Document* document() const;
     SecurityOrigin* securityOrigin() const;
     KURL completeURL(const String&) const;
 

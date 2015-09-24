@@ -838,6 +838,7 @@ public:
         FlexboxPercentageMarginVertical = 956,
         BackspaceNavigatedBack = 957,
         BackspaceNavigatedBackAfterFormInteraction = 958,
+        CSPSourceWildcardWouldMatchExactHost = 959,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

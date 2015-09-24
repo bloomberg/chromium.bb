@@ -43,12 +43,14 @@ TEST_F(CSPSourceTest, WildcardMatching)
     KURL base;
     CSPSource source(csp.get(), "http", "example.com", 0, "/", CSPSource::HasWildcard, CSPSource::HasWildcard);
 
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/foo")));
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:9000/foo/")));
     EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:8000/")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:8000/foo")));
+    EXPECT_TRUE(source.matches(KURL(base, "http://foo.example.com:9000/foo/")));
     EXPECT_TRUE(source.matches(KURL(base, "HTTP://FOO.EXAMPLE.com:8000/foo/BAR")));
 
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:8000/foo")));
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/foo/")));
     EXPECT_FALSE(source.matches(KURL(base, "http://example.foo.com:8000/")));
     EXPECT_FALSE(source.matches(KURL(base, "https://example.foo.com:8000/")));
     EXPECT_FALSE(source.matches(KURL(base, "https://example.com:8000/bar/")));

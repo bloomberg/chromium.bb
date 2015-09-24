@@ -59309,7 +59309,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="927" label="PresentationAvailabilityChangeEventListener"/>
   <int value="928" label="PresentationRequestConstructor"/>
   <int value="929" label="PresentationRequestStart"/>
-  <int value="930" label="PresentationRequestJoin"/>
+  <int value="930" label="PresentationRequestReconnect"/>
   <int value="931" label="PresentationRequestGetAvailability"/>
   <int value="932" label="PresentationRequestSessionConnectEventListener"/>
   <int value="933" label="PresentationSessionClose"/>
@@ -59334,6 +59334,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="952" label="V8Window_Prompt_Method"/>
   <int value="953" label="V8Window_Print_Method"/>
   <int value="954" label="V8Window_RequestIdleCallback_Method"/>
+  <int value="955" label="FlexboxPercentagePaddingVertical"/>
+  <int value="956" label="FlexboxPercentageMarginVertical"/>
+  <int value="957" label="BackspaceNavigatedBack"/>
+  <int value="958" label="BackspaceNavigatedBackAfterFormInteraction"/>
+  <int value="959" label="CSPSourceWildcardWouldMatchExactHost"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
