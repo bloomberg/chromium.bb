@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class CSSBasicShape;
+class CSSBasicShapeValue;
 class CSSImageValue;
 class CSSPrimitiveValue;
 class CSSQuadValue;
@@ -37,7 +37,7 @@ public:
     static bool interpolationRequiresStyleResolve(const CSSSVGDocumentValue&);
     static bool interpolationRequiresStyleResolve(const CSSValueList&);
     static bool interpolationRequiresStyleResolve(const CSSValuePair&);
-    static bool interpolationRequiresStyleResolve(const CSSBasicShape&);
+    static bool interpolationRequiresStyleResolve(const CSSBasicShapeValue&);
     static bool interpolationRequiresStyleResolve(const CSSQuadValue&);
 
 private:

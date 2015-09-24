@@ -27,6 +27,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
+#include "core/css/CSSBasicShapeValue.h"
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCounterValue.h"

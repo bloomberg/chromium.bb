@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/css/CSSPrimitiveValue.h"
 
-#include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSMarkup.h"
@@ -333,13 +332,6 @@ void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSCalcValue> c)
     m_value.calc = c.leakRef();
 }
 
-void CSSPrimitiveValue::init(PassRefPtrWillBeRawPtr<CSSBasicShape> shape)
-{
-    init(UnitType::Shape);
-    m_hasCachedCSSText = false;
-    m_value.shape = shape.leakRef();
-}
-
 CSSPrimitiveValue::~CSSPrimitiveValue()
 {
     cleanup();
@@ -363,12 +355,6 @@ void CSSPrimitiveValue::cleanup()
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
         ASSERT_NOT_REACHED();
-        break;
-    case UnitType::Shape:
-        // We must not call deref() when oilpan is enabled because m_value.shape is traced.
-#if !ENABLE(OILPAN)
-        m_value.shape->deref();
-#endif
         break;
     case UnitType::Number:
     case UnitType::Integer:
@@ -849,7 +835,6 @@ const char* CSSPrimitiveValue::unitTypeToString(UnitType type)
     case UnitType::PropertyID:
     case UnitType::RGBColor:
     case UnitType::Calc:
-    case UnitType::Shape:
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
         break;
@@ -927,9 +912,6 @@ String CSSPrimitiveValue::customCSSText() const
     case UnitType::Calc:
         text = m_value.calc->customCSSText();
         break;
-    case UnitType::Shape:
-        text = m_value.shape->cssText();
-        break;
     case UnitType::CalcPercentageWithNumber:
     case UnitType::CalcPercentageWithLength:
         ASSERT_NOT_REACHED();
@@ -990,8 +972,6 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
         return m_value.rgbcolor == other.m_value.rgbcolor;
     case UnitType::Calc:
         return m_value.calc && other.m_value.calc && m_value.calc->equals(*other.m_value.calc);
-    case UnitType::Shape:
-        return m_value.shape && other.m_value.shape && m_value.shape->equals(*other.m_value.shape);
     case UnitType::Integer:
     case UnitType::Chs:
     case UnitType::CalcPercentageWithNumber:
@@ -1008,9 +988,6 @@ DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue)
     switch (type()) {
     case UnitType::Calc:
         visitor->trace(m_value.calc);
-        break;
-    case UnitType::Shape:
-        visitor->trace(m_value.shape);
         break;
     default:
         break;

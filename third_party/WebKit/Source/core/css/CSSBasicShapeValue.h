@@ -27,10 +27,11 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CSSBasicShapes_h
-#define CSSBasicShapes_h
+#ifndef CSSBasicShapeValue_h
+#define CSSBasicShapeValue_h
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValue.h"
 #include "core/css/CSSValuePair.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/RefPtr.h"
@@ -39,8 +40,7 @@
 
 namespace blink {
 
-class CSSBasicShape : public RefCountedWillBeGarbageCollected<CSSBasicShape> {
-    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(CSSBasicShape);
+class CORE_EXPORT CSSBasicShapeValue : public CSSValue {
 public:
     enum Type {
         CSSBasicShapeEllipseType,
@@ -49,71 +49,81 @@ public:
         CSSBasicShapeInsetType
     };
 
-    virtual Type type() const = 0;
-    virtual String cssText() const = 0;
-    virtual bool equals(const CSSBasicShape&) const = 0;
+    String customCSSText() const;
 
-    bool isEllipse() const { return type() == CSSBasicShapeEllipseType; }
-    bool isPolygon() const { return type() == CSSBasicShapePolygonType; }
-    bool isCircle() const { return type() == CSSBasicShapeCircleType; }
-    bool isInset() const { return type() == CSSBasicShapeInsetType; }
+    bool equals(const CSSBasicShapeValue& other) const;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    Type type() const { return m_type; }
+    bool isEllipse() const { return m_type == CSSBasicShapeEllipseType; }
+    bool isPolygon() const { return m_type == CSSBasicShapePolygonType; }
+    bool isCircle() const { return m_type == CSSBasicShapeCircleType; }
+    bool isInset() const { return m_type == CSSBasicShapeInsetType; }
+
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    CSSBasicShape() { }
+    CSSBasicShapeValue(Type type)
+        : CSSValue(BasicShapeClass)
+        , m_type(type)
+    {
+    }
+
+private:
+    Type m_type;
 };
 
-class CSSBasicShapeCircle final : public CSSBasicShape {
+class CSSBasicShapeCircleValue final : public CSSBasicShapeValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSBasicShapeCircle> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircle); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircleValue); }
 
-    String cssText() const override;
-    bool equals(const CSSBasicShape&) const override;
+    String customShapeCSSText() const;
+    bool equals(const CSSBasicShapeCircleValue&) const;
 
     CSSValue* centerX() const { return m_centerX.get(); }
     CSSValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radius() const { return m_radius.get(); }
 
+    // TODO(sashab): Remove these and pass them as arguments in the constructor.
     void setCenterX(PassRefPtrWillBeRawPtr<CSSValue> centerX) { m_centerX = centerX; }
     void setCenterY(PassRefPtrWillBeRawPtr<CSSValue> centerY) { m_centerY = centerY; }
     void setRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_radius = radius; }
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSBasicShapeCircle() { }
-
-    Type type() const override { return CSSBasicShapeCircleType; }
+    CSSBasicShapeCircleValue()
+        : CSSBasicShapeValue(CSSBasicShapeCircleType)
+        { }
 
     RefPtrWillBeMember<CSSValue> m_centerX;
     RefPtrWillBeMember<CSSValue> m_centerY;
     RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
 };
 
-class CSSBasicShapeEllipse final : public CSSBasicShape {
+class CSSBasicShapeEllipseValue final : public CSSBasicShapeValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipse> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipse); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipseValue); }
 
-    String cssText() const override;
-    bool equals(const CSSBasicShape&) const override;
+    String customShapeCSSText() const;
+    bool equals(const CSSBasicShapeEllipseValue&) const;
 
     CSSValue* centerX() const { return m_centerX.get(); }
     CSSValue* centerY() const { return m_centerY.get(); }
     CSSPrimitiveValue* radiusX() const { return m_radiusX.get(); }
     CSSPrimitiveValue* radiusY() const { return m_radiusY.get(); }
 
+    // TODO(sashab): Remove these and pass them as arguments in the constructor.
     void setCenterX(PassRefPtrWillBeRawPtr<CSSValue> centerX) { m_centerX = centerX; }
     void setCenterY(PassRefPtrWillBeRawPtr<CSSValue> centerY) { m_centerY = centerY; }
     void setRadiusX(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusX) { m_radiusX = radiusX; }
     void setRadiusY(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radiusY) { m_radiusY = radiusY; }
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSBasicShapeEllipse() { }
-
-    Type type() const override { return CSSBasicShapeEllipseType; }
+    CSSBasicShapeEllipseValue()
+        : CSSBasicShapeValue(CSSBasicShapeEllipseType)
+        { }
 
     RefPtrWillBeMember<CSSValue> m_centerX;
     RefPtrWillBeMember<CSSValue> m_centerY;
@@ -121,9 +131,9 @@ private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_radiusY;
 };
 
-class CSSBasicShapePolygon final : public CSSBasicShape {
+class CSSBasicShapePolygonValue final : public CSSBasicShapeValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSBasicShapePolygon> create() { return adoptRefWillBeNoop(new CSSBasicShapePolygon); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> create() { return adoptRefWillBeNoop(new CSSBasicShapePolygonValue); }
 
     void appendPoint(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> x, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> y)
     {
@@ -135,29 +145,28 @@ public:
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> getYAt(unsigned i) const { return m_values.at(i * 2 + 1); }
     const WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>>& values() const { return m_values; }
 
+    // TODO(sashab): Remove this and pass it as an argument in the constructor.
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
 
-    String cssText() const override;
-    bool equals(const CSSBasicShape&) const override;
+    String customShapeCSSText() const;
+    bool equals(const CSSBasicShapePolygonValue&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSBasicShapePolygon()
-        : m_windRule(RULE_NONZERO)
-    {
-    }
-
-    Type type() const override { return CSSBasicShapePolygonType; }
+    CSSBasicShapePolygonValue()
+        : CSSBasicShapeValue(CSSBasicShapePolygonType),
+        m_windRule(RULE_NONZERO)
+    { }
 
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue>> m_values;
     WindRule m_windRule;
 };
 
-class CSSBasicShapeInset final : public CSSBasicShape {
+class CSSBasicShapeInsetValue final : public CSSBasicShapeValue {
 public:
-    static PassRefPtrWillBeRawPtr<CSSBasicShapeInset> create() { return adoptRefWillBeNoop(new CSSBasicShapeInset); }
+    static PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> create() { return adoptRefWillBeNoop(new CSSBasicShapeInsetValue); }
 
     CSSPrimitiveValue* top() const { return m_top.get(); }
     CSSPrimitiveValue* right() const { return m_right.get(); }
@@ -169,6 +178,7 @@ public:
     CSSValuePair* bottomRightRadius() const { return m_bottomRightRadius.get(); }
     CSSValuePair* bottomLeftRadius() const { return m_bottomLeftRadius.get(); }
 
+    // TODO(sashab): Remove these and pass them as arguments in the constructor.
     void setTop(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> top) { m_top = top; }
     void setRight(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> right) { m_right = right; }
     void setBottom(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> bottom) { m_bottom = bottom; }
@@ -197,21 +207,20 @@ public:
         updateShapeSize4Values(value1, value2, value3, value2);
     }
 
-
     void setTopLeftRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_topLeftRadius = radius; }
     void setTopRightRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_topRightRadius = radius; }
     void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomRightRadius = radius; }
     void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSValuePair> radius) { m_bottomLeftRadius = radius; }
 
-    String cssText() const override;
-    bool equals(const CSSBasicShape&) const override;
+    String customShapeCSSText() const;
+    bool equals(const CSSBasicShapeInsetValue&) const;
 
-    DECLARE_VIRTUAL_TRACE();
+    DECLARE_TRACE_AFTER_DISPATCH();
 
 private:
-    CSSBasicShapeInset() { }
-
-    Type type() const override { return CSSBasicShapeInsetType; }
+    CSSBasicShapeInsetValue()
+        : CSSBasicShapeValue(CSSBasicShapeInsetType)
+        { }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_top;
     RefPtrWillBeMember<CSSPrimitiveValue> m_right;
@@ -224,11 +233,13 @@ private:
     RefPtrWillBeMember<CSSValuePair> m_bottomLeftRadius;
 };
 
-DEFINE_TYPE_CASTS(CSSBasicShapeCircle, CSSBasicShape, shape, shape->isCircle(), shape.isCircle());
-DEFINE_TYPE_CASTS(CSSBasicShapeEllipse, CSSBasicShape, shape, shape->isEllipse(), shape.isEllipse());
-DEFINE_TYPE_CASTS(CSSBasicShapePolygon, CSSBasicShape, shape, shape->isPolygon(), shape.isPolygon());
-DEFINE_TYPE_CASTS(CSSBasicShapeInset, CSSBasicShape, shape, shape->isInset(), shape.isInset());
+DEFINE_CSS_VALUE_TYPE_CASTS(CSSBasicShapeValue, isBasicShapeValue());
+
+DEFINE_TYPE_CASTS(CSSBasicShapeCircleValue, CSSBasicShapeValue, shape, shape->isCircle(), shape.isCircle());
+DEFINE_TYPE_CASTS(CSSBasicShapeEllipseValue, CSSBasicShapeValue, shape, shape->isEllipse(), shape.isEllipse());
+DEFINE_TYPE_CASTS(CSSBasicShapePolygonValue, CSSBasicShapeValue, shape, shape->isPolygon(), shape.isPolygon());
+DEFINE_TYPE_CASTS(CSSBasicShapeInsetValue, CSSBasicShapeValue, shape, shape->isInset(), shape.isInset());
 
 } // namespace blink
 
-#endif // CSSBasicShapes_h
+#endif // CSSBasicShapeValue_h

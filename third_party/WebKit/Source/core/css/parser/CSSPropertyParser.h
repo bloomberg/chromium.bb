@@ -33,8 +33,11 @@ namespace blink {
 
 class BorderImageParseContext;
 class CSSBorderImageSliceValue;
-class CSSBasicShape;
-class CSSBasicShapeInset;
+class CSSBasicShapeValue;
+class CSSBasicShapeEllipseValue;
+class CSSBasicShapeCircleValue;
+class CSSBasicShapeInsetValue;
+class CSSBasicShapePolygonValue;
 class CSSFunctionValue;
 class CSSGradientValue;
 class CSSGridLineNamesValue;
@@ -177,13 +180,13 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);
     PassRefPtrWillBeRawPtr<CSSValue> parseBasicShapeAndOrBox();
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseBasicShape();
+    PassRefPtrWillBeRawPtr<CSSBasicShapeValue> parseBasicShape();
     PassRefPtrWillBeRawPtr<CSSPrimitiveValue> parseShapeRadius(CSSParserValue*);
 
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeCircle(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeEllipse(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapePolygon(CSSParserValueList* args);
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseBasicShapeInset(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShapeCircleValue> parseBasicShapeCircle(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShapeEllipseValue> parseBasicShapeEllipse(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShapePolygonValue> parseBasicShapePolygon(CSSParserValueList* args);
+    PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseBasicShapeInset(CSSParserValueList* args);
 
     bool parseFont(bool important);
     bool parseSystemFont(bool important);
@@ -271,7 +274,7 @@ private:
 
     PassRefPtrWillBeRawPtr<CSSValue> createCSSImageValueWithReferrer(const AtomicString& rawValue, const KURL&);
 
-    PassRefPtrWillBeRawPtr<CSSBasicShape> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInset>, CSSParserValueList*);
+    PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue> parseInsetRoundedCorners(PassRefPtrWillBeRawPtr<CSSBasicShapeInsetValue>, CSSParserValueList*);
 
     enum SizeParameterType {
         None,

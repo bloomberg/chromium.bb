@@ -7,7 +7,7 @@
 
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
-#include "core/css/CSSBasicShapes.h"
+#include "core/css/CSSBasicShapeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSQuadValue.h"
@@ -48,6 +48,8 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
     // FIXME: should not require resolving styles for inherit/initial/unset.
     if (value.isCSSWideKeyword())
         return true;
+    if (value.isBasicShapeValue())
+        return interpolationRequiresStyleResolve(toCSSBasicShapeValue(value));
     if (value.isPrimitiveValue())
         return interpolationRequiresStyleResolve(toCSSPrimitiveValue(value));
     if (value.isQuadValue())
@@ -87,9 +89,6 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
             || lengthArray[CSSPrimitiveValue::UnitTypeViewportMin] != 0
             || lengthArray[CSSPrimitiveValue::UnitTypeViewportMax] != 0;
     }
-
-    if (primitiveValue.isShape())
-        return interpolationRequiresStyleResolve(*primitiveValue.getShapeValue());
 
     CSSValueID id = primitiveValue.getValueID();
     bool isColor = ((id >= CSSValueAqua && id <= CSSValueTransparent)
@@ -134,7 +133,7 @@ bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const C
         || interpolationRequiresStyleResolve(pair.second());
 }
 
-bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShape& shape)
+bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSBasicShapeValue& shape)
 {
     // FIXME: Should determine the specific shape, and inspect the members.
     return false;

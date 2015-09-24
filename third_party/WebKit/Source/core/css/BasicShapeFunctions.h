@@ -36,15 +36,15 @@
 
 namespace blink {
 
-class BasicShape;
+class CSSBasicShapeValue;
 class CSSBasicShape;
 class CSSValue;
 class FloatPoint;
 class StyleResolverState;
 class ComputedStyle;
 
-PassRefPtrWillBeRawPtr<CSSValue> valueForBasicShape(const ComputedStyle&, const BasicShape*);
-PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShape*);
+PassRefPtrWillBeRawPtr<CSSBasicShapeValue> valueForBasicShape(const ComputedStyle&, const BasicShape*);
+PassRefPtr<BasicShape> basicShapeForValue(const StyleResolverState&, const CSSBasicShapeValue&);
 FloatPoint floatPointForCenterCoordinate(const BasicShapeCenterCoordinate&, const BasicShapeCenterCoordinate&, FloatSize);
 
 }

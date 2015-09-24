@@ -64,6 +64,7 @@ public:
 
     bool isBaseValueList() const { return m_classType == ValueListClass; }
 
+    bool isBasicShapeValue() const { return m_classType == BasicShapeClass; }
     bool isBorderImageSliceValue() const { return m_classType == BorderImageSliceClass; }
     bool isCanvasValue() const { return m_classType == CanvasClass; }
     bool isCounterValue() const { return m_classType == CounterClass; }
@@ -114,6 +115,7 @@ protected:
     static const size_t ClassTypeBits = 6;
     enum ClassType {
         PrimitiveClass,
+        BasicShapeClass,
         CounterClass,
         QuadClass,
         ValuePairClass,

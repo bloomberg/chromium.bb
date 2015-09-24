@@ -35,7 +35,6 @@
 
 namespace blink {
 
-class CSSBasicShape;
 class CSSCalcValue;
 class CSSToLengthConversionData;
 class Length;
@@ -101,7 +100,6 @@ public:
         Integer,
         Rems,
         Chs,
-        Shape,
         Calc,
         CalcPercentageWithNumber,
         CalcPercentageWithLength,
@@ -185,7 +183,6 @@ public:
     bool isPropertyID() const { return type() == UnitType::PropertyID; }
     bool isPx() const { return typeWithCalcResolved() == UnitType::Pixels; }
     bool isRGBColor() const { return type() == UnitType::RGBColor; }
-    bool isShape() const { return type() == UnitType::Shape; }
     bool isString() const { return type() == UnitType::String; }
     bool isTime() const { return type() == UnitType::Seconds || type() == UnitType::Milliseconds; }
     bool isURI() const { return type() == UnitType::URI; }
@@ -252,7 +249,6 @@ public:
     String getStringValue() const;
     RGBA32 getRGBA32Value() const { ASSERT(isRGBColor()); return m_value.rgbcolor; }
 
-    CSSBasicShape* getShapeValue() const { ASSERT(isShape()); return m_value.shape; }
     CSSCalcValue* cssCalcValue() const { ASSERT(isCalculated()); return m_value.calc; }
     CSSPropertyID getPropertyID() const { ASSERT(isPropertyID()); return m_value.propertyID; }
 
@@ -301,7 +297,6 @@ private:
 
     void init(UnitType);
     void init(const Length&);
-    void init(PassRefPtrWillBeRawPtr<CSSBasicShape>);
     void init(PassRefPtrWillBeRawPtr<CSSCalcValue>);
 
     double computeLengthDouble(const CSSToLengthConversionData&) const;
@@ -314,8 +309,7 @@ private:
         double num;
         StringImpl* string;
         RGBA32 rgbcolor;
-        // FIXME: oilpan: Should be members, but no support for members in unions. Just trace the raw ptr for now.
-        CSSBasicShape* shape;
+        // FIXME: oilpan: Should be a member, but no support for members in unions. Just trace the raw ptr for now.
         CSSCalcValue* calc;
     } m_value;
 };

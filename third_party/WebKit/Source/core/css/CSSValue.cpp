@@ -27,6 +27,7 @@
 #include "config.h"
 #include "core/css/CSSValue.h"
 
+#include "core/css/CSSBasicShapeValue.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSContentDistributionValue.h"
@@ -94,6 +95,8 @@ bool CSSValue::equals(const CSSValue& other) const
 {
     if (m_classType == other.m_classType) {
         switch (classType()) {
+        case BasicShapeClass:
+            return compareCSSValues<CSSBasicShapeValue>(*this, other);
         case BorderImageSliceClass:
             return compareCSSValues<CSSBorderImageSliceValue>(*this, other);
         case CanvasClass:
@@ -162,6 +165,8 @@ bool CSSValue::equals(const CSSValue& other) const
 String CSSValue::cssText() const
 {
     switch (classType()) {
+    case BasicShapeClass:
+        return toCSSBasicShapeValue(this)->customCSSText();
     case BorderImageSliceClass:
         return toCSSBorderImageSliceValue(this)->customCSSText();
     case CanvasClass:
@@ -228,6 +233,9 @@ String CSSValue::cssText() const
 void CSSValue::destroy()
 {
     switch (classType()) {
+    case BasicShapeClass:
+        delete toCSSBasicShapeValue(this);
+        return;
     case BorderImageSliceClass:
         delete toCSSBorderImageSliceValue(this);
         return;
@@ -322,6 +330,9 @@ void CSSValue::destroy()
 void CSSValue::finalizeGarbageCollectedObject()
 {
     switch (classType()) {
+    case BasicShapeClass:
+        toCSSBasicShapeValue(this)->~CSSBasicShapeValue();
+        return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
         return;
@@ -416,6 +427,9 @@ void CSSValue::finalizeGarbageCollectedObject()
 DEFINE_TRACE(CSSValue)
 {
     switch (classType()) {
+    case BasicShapeClass:
+        toCSSBasicShapeValue(this)->traceAfterDispatch(visitor);
+        return;
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->traceAfterDispatch(visitor);
         return;

@@ -1021,7 +1021,7 @@
             'css/BasicShapeFunctions.cpp',
             'css/BinaryDataFontFaceSource.cpp',
             'css/BinaryDataFontFaceSource.h',
-            'css/CSSBasicShapes.cpp',
+            'css/CSSBasicShapeValue.cpp',
             'css/CSSBorderImage.cpp',
             'css/CSSBorderImage.h',
             'css/CSSBorderImageSliceValue.cpp',
