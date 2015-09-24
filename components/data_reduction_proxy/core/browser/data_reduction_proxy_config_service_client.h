@@ -71,7 +71,7 @@ class DataReductionProxyConfigServiceClient
       net::URLRequestContextGetter* url_request_context_getter);
 
   // Sets whether the configuration should be retrieved or not.
-  void SetEnabled(bool enabled) { enabled_ = enabled; }
+  void SetEnabled(bool enabled);
 
   // Request the retrieval of the Data Reduction Proxy configuration. This
   // operation takes place asynchronously.
@@ -105,6 +105,8 @@ class DataReductionProxyConfigServiceClient
   // Constructs a synthetic response based on |params_|.
   std::string ConstructStaticResponse() const;
 
+  base::TimeDelta minimum_refresh_interval_on_success() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
                            TestConstructStaticResponse);
@@ -112,7 +114,21 @@ class DataReductionProxyConfigServiceClient
                            OnIPAddressChange);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
                            OnIPAddressChangeDisabled);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigServiceClientTest,
+                           ClientConfigFieldTrialParams);
   friend class TestDataReductionProxyConfigServiceClient;
+
+  // Returns the duration after which the Data Reduction Proxy configuration
+  // should be retrieved. |backoff_delay| must be non-negative.
+  base::TimeDelta CalculateNextConfigRefreshTime(
+      bool fetch_succeeded,
+      const base::Time& config_expiration,
+      const base::Time& now,
+      const base::TimeDelta& backoff_delay) const;
+
+  // Populates the parameters for the client config field trial if the session
+  // is part of client config field trial.
+  void PopulateClientConfigParams();
 
   // Override of net::NetworkChangeNotifier::IPAddressObserver.
   void OnIPAddressChanged() override;
@@ -210,6 +226,10 @@ class DataReductionProxyConfigServiceClient
   // failed to authenticate, since the new configuration marks |backoff_entry_|
   // with a success, resulting in no net increase in the backoff timer.
   bool previous_request_failed_authentication_;
+
+  // If the config is fetched successfully, next config can be proactively
+  // fetched only after at least |minimum_refresh_interval_on_success_|.
+  base::TimeDelta minimum_refresh_interval_on_success_;
 
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;

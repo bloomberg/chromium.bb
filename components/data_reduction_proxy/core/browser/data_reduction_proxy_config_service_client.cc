@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
@@ -24,6 +25,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -76,6 +78,10 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
     true,            // always_use_initial_delay
 };
 
+// Default value for |minimum_refresh_interval_on_success_|. This is used if
+// the value through client config field trial is unavailable.
+const int64_t kMinDelayOnSuccessMilliseconds = 5 * 60 * 1000;  // 5 minutes
+
 // Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
 std::vector<net::ProxyServer> GetProxiesForHTTP(
     const data_reduction_proxy::ProxyConfig& proxy_config) {
@@ -89,26 +95,6 @@ std::vector<net::ProxyServer> GetProxiesForHTTP(
   }
 
   return proxies;
-}
-
-// Calculate the next time at which the Data Reduction Proxy configuration
-// should be retrieved, based on response success, configuration expiration,
-// and the backoff delay. |backoff_delay| must be non-negative. Note that it is
-// possible for |config_expiration| to be prior to |now|, but on a successful
-// config refresh, |backoff_delay| will be returned.
-base::TimeDelta CalculateNextConfigRefreshTime(
-    bool fetch_succeeded,
-    const base::Time& config_expiration,
-    const base::Time& now,
-    const base::TimeDelta& backoff_delay) {
-  DCHECK(backoff_delay >= base::TimeDelta());
-  if (fetch_succeeded) {
-    base::TimeDelta success_delay = config_expiration - now;
-    if (success_delay > backoff_delay)
-      return success_delay;
-  }
-
-  return backoff_delay;
 }
 
 GURL AddApiKeyToUrl(const GURL& url) {
@@ -154,7 +140,9 @@ DataReductionProxyConfigServiceClient::DataReductionProxyConfigServiceClient(
       use_local_config_(!config_service_url_.is_valid()),
       remote_config_applied_(false),
       url_request_context_getter_(nullptr),
-      previous_request_failed_authentication_(false) {
+      previous_request_failed_authentication_(false),
+      minimum_refresh_interval_on_success_(
+          base::TimeDelta::FromMilliseconds(kMinDelayOnSuccessMilliseconds)) {
   DCHECK(request_options);
   DCHECK(config_values);
   DCHECK(config);
@@ -169,11 +157,51 @@ DataReductionProxyConfigServiceClient::
   net::NetworkChangeNotifier::RemoveIPAddressObserver(this);
 }
 
+base::TimeDelta
+DataReductionProxyConfigServiceClient::CalculateNextConfigRefreshTime(
+    bool fetch_succeeded,
+    const base::Time& config_expiration,
+    const base::Time& now,
+    const base::TimeDelta& backoff_delay) const {
+  DCHECK(backoff_delay >= base::TimeDelta());
+  if (fetch_succeeded) {
+    base::TimeDelta success_delay = config_expiration - now;
+    return std::max(
+        backoff_delay,
+        std::max(success_delay, minimum_refresh_interval_on_success()));
+  }
+
+  return backoff_delay;
+}
+
+void DataReductionProxyConfigServiceClient::PopulateClientConfigParams() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::string field_trial = params::GetClientConfigFieldTrialName();
+
+  uint64_t minimum_refresh_interval_on_success_milliseconds =
+      kMinDelayOnSuccessMilliseconds;
+  std::string variation_value = variations::GetVariationParamValue(
+      field_trial, "minimum_refresh_interval_on_success_msec");
+  if (!variation_value.empty() &&
+      base::StringToUint64(variation_value,
+                           &minimum_refresh_interval_on_success_milliseconds)) {
+    minimum_refresh_interval_on_success_ = base::TimeDelta::FromMilliseconds(
+        minimum_refresh_interval_on_success_milliseconds);
+  }
+}
+
 void DataReductionProxyConfigServiceClient::InitializeOnIOThread(
     net::URLRequestContextGetter* url_request_context_getter) {
   DCHECK(url_request_context_getter);
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   url_request_context_getter_ = url_request_context_getter;
+}
+
+void DataReductionProxyConfigServiceClient::SetEnabled(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (enabled)
+    PopulateClientConfigParams();
+  enabled_ = enabled;
 }
 
 void DataReductionProxyConfigServiceClient::RetrieveConfig() {
@@ -251,6 +279,12 @@ bool DataReductionProxyConfigServiceClient::ShouldRetryDueToAuthFailure(
 
 net::BackoffEntry* DataReductionProxyConfigServiceClient::GetBackoffEntry() {
   return &backoff_entry_;
+}
+
+base::TimeDelta
+DataReductionProxyConfigServiceClient::minimum_refresh_interval_on_success()
+    const {
+  return minimum_refresh_interval_on_success_;
 }
 
 void DataReductionProxyConfigServiceClient::SetConfigRefreshTimer(

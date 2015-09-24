@@ -128,6 +128,10 @@ std::string GetQuicFieldTrialName() {
   return kQuicFieldTrial;
 }
 
+std::string GetClientConfigFieldTrialName() {
+  return kConfigServiceFieldTrial;
+}
+
 bool IsIncludedInUseDataSaverOnVPNFieldTrial() {
   return FieldTrialList::FindFullName("DataReductionProxyUseDataSaverOnVPN") ==
          kEnabled;

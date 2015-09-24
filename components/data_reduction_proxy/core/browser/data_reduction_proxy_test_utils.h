@@ -115,6 +115,9 @@ class TestDataReductionProxyConfigServiceClient
 
   void SetConfigServiceURL(const GURL& service_url);
 
+  using DataReductionProxyConfigServiceClient::
+      minimum_refresh_interval_on_success;
+
  protected:
   // Overrides of DataReductionProxyConfigServiceClient
   base::Time Now() override;

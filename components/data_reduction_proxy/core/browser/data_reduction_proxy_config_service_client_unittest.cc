@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
@@ -21,6 +22,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_server.h"
 #include "net/socket/socket_test_util.h"
@@ -144,21 +146,21 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
     // Set up the various test ClientConfigs.
     ClientConfig config = CreateConfig(
-        kSuccessSessionKey, 60, 0, ProxyServer_ProxyScheme_HTTPS, "origin.net",
+        kSuccessSessionKey, 600, 0, ProxyServer_ProxyScheme_HTTPS, "origin.net",
         443, ProxyServer_ProxyScheme_HTTP, "fallback.net", 80);
     config.SerializeToString(&config_);
     encoded_config_ = EncodeConfig(config);
 
     ClientConfig previous_config =
-        CreateConfig(kOldSuccessSessionKey, 60, 0,
+        CreateConfig(kOldSuccessSessionKey, 600, 0,
                      ProxyServer_ProxyScheme_HTTPS, "old.origin.net", 443,
                      ProxyServer_ProxyScheme_HTTP, "old.fallback.net", 80);
     previous_config.SerializeToString(&previous_config_);
 
     ClientConfig persisted =
-        CreateConfig(kPersistedSessionKey, 60, 0, ProxyServer_ProxyScheme_HTTPS,
-                     "persisted.net", 443, ProxyServer_ProxyScheme_HTTP,
-                     "persisted.net", 80);
+        CreateConfig(kPersistedSessionKey, 600, 0,
+                     ProxyServer_ProxyScheme_HTTPS, "persisted.net", 443,
+                     ProxyServer_ProxyScheme_HTTP, "persisted.net", 80);
     loaded_config_ = EncodeConfig(persisted);
   }
 
@@ -191,7 +193,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
+    EXPECT_EQ(base::TimeDelta::FromMinutes(10), config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
                 testing::ContainerEq(expected_http_proxies));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -205,7 +207,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
         kOldSuccessOrigin, net::ProxyServer::SCHEME_HTTP));
     expected_http_proxies.push_back(net::ProxyServer::FromURI(
         kOldSuccessFallback, net::ProxyServer::SCHEME_HTTP));
-    EXPECT_EQ(base::TimeDelta::FromMinutes(1), config_client()->GetDelay());
+    EXPECT_EQ(base::TimeDelta::FromMinutes(10), config_client()->GetDelay());
     EXPECT_THAT(configurator()->proxies_for_http(),
                 testing::ContainerEq(expected_http_proxies));
     EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -339,7 +341,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, SuccessfulLoopShortDuration) {
       .WillOnce(testing::Invoke(&populator,
                                 &RequestOptionsPopulator::PopulateResponse));
   config_client()->RetrieveConfig();
-  EXPECT_EQ(base::TimeDelta::FromSeconds(10), config_client()->GetDelay());
+  EXPECT_EQ(config_client()->minimum_refresh_interval_on_success(),
+            config_client()->GetDelay());
   EXPECT_THAT(configurator()->proxies_for_http(),
               testing::ContainerEq(enabled_proxies_for_http()));
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
@@ -627,6 +630,42 @@ TEST_F(DataReductionProxyConfigServiceClientTest, ApplySerializedConfigLocal) {
   SetDataReductionProxyEnabled(true);
   config_client()->ApplySerializedConfig(encoded_config());
   EXPECT_TRUE(configurator()->proxies_for_https().empty());
+}
+
+// Tests if the client config field trial parameters are parsed correctly.
+TEST_F(DataReductionProxyConfigServiceClientTest,
+       ClientConfigFieldTrialParams) {
+  const struct {
+    bool field_trial_enabled;
+    base::TimeDelta expected_min_delay;
+
+  } tests[] = {
+      {false, config_client()->minimum_refresh_interval_on_success()},
+      {true, base::TimeDelta::FromMilliseconds(120)},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    variations::testing::ClearAllVariationParams();
+    std::map<std::string, std::string> variation_params;
+
+    if (tests[i].field_trial_enabled) {
+      variation_params["minimum_refresh_interval_on_success_msec"] =
+          base::Int64ToString(tests[i].expected_min_delay.InMilliseconds());
+    }
+
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        params::GetClientConfigFieldTrialName(), "Enabled", variation_params));
+
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        params::GetClientConfigFieldTrialName(), "Enabled");
+
+    config_client()->PopulateClientConfigParams();
+
+    EXPECT_EQ(tests[i].expected_min_delay,
+              config_client()->minimum_refresh_interval_on_success_)
+        << i;
+  }
 }
 
 }  // namespace data_reduction_proxy
