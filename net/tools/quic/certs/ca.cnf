@@ -36,23 +36,11 @@ subjectKeyIdentifier   = hash
 authorityKeyIdentifier = keyid:always
 extendedKeyUsage       = serverAuth,clientAuth
 
-[name_constraint_bad]
-# A leaf cert that will violate the root's imposed name constraints
-basicConstraints       = critical, CA:false
-subjectKeyIdentifier   = hash
-authorityKeyIdentifier = keyid:always
-extendedKeyUsage       = serverAuth,clientAuth
-subjectAltName         = @san_name_constraint_bad
-
 [ca_cert]
 # Extensions to add when signing a request for an intermediate/CA cert
 basicConstraints       = critical, CA:true
 subjectKeyIdentifier   = hash
-#authorityKeyIdentifier = keyid:always
 keyUsage               = critical, keyCertSign, cRLSign
-nameConstraints        = permitted;DNS:mail.example.com
-nameConstraints        = permitted;DNS:mail.example.org
-nameConstraints        = permitted;DNS:www.example.com
 
 [crl_extensions]
 # Extensions to add when signing a CRL
