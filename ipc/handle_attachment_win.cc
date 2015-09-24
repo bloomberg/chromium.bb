@@ -34,12 +34,8 @@ HandleAttachmentWin::BrokerableType HandleAttachmentWin::GetBrokerableType()
 
 HandleAttachmentWin::WireFormat HandleAttachmentWin::GetWireFormat(
     const base::ProcessId& destination) const {
-  WireFormat format;
-  format.handle = HandleToLong(handle_);
-  format.attachment_id = GetIdentifier();
-  format.destination_process = destination;
-  format.permissions = permissions_;
-  return format;
+  return WireFormat(HandleToLong(handle_), destination, permissions_,
+                    GetIdentifier());
 }
 
 }  // namespace internal

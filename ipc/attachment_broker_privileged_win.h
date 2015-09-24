@@ -36,6 +36,10 @@ class IPC_EXPORT AttachmentBrokerPrivilegedWin
   HandleWireFormat DuplicateWinHandle(const HandleWireFormat& wire_format,
                                       base::ProcessId source_process);
 
+  // Copies an existing |wire_format|, but substitutes in a different handle.
+  HandleWireFormat CopyWireFormat(const HandleWireFormat& wire_format,
+                                  int handle);
+
   // If the HANDLE's destination is this process, queue it and notify the
   // observers. Otherwise, send it in an IPC to its destination.
   void RouteDuplicatedHandle(const HandleWireFormat& wire_format);

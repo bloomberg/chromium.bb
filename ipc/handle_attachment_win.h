@@ -20,6 +20,22 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
  public:
   // The wire format for this handle.
   struct IPC_EXPORT WireFormat {
+    // IPC translation requires that classes passed through IPC have a default
+    // constructor.
+    WireFormat()
+        : handle(0),
+          destination_process(0),
+          permissions(HandleWin::INVALID) {}
+
+    WireFormat(int32_t handle,
+               const base::ProcessId& destination_process,
+               HandleWin::Permissions permissions,
+               const AttachmentId& attachment_id)
+        : handle(handle),
+          destination_process(destination_process),
+          permissions(permissions),
+          attachment_id(attachment_id) {}
+
     // The HANDLE that is intended for duplication, or the HANDLE that has been
     // duplicated, depending on context.
     // The type is int32_t instead of HANDLE because HANDLE gets typedefed to
@@ -28,10 +44,13 @@ class IPC_EXPORT HandleAttachmentWin : public BrokerableAttachment {
     // and down-casting. This is performed using the appropriate Windows apis.
     // A value of 0 is equivalent to an invalid handle.
     int32_t handle;
+
     // The id of the destination process that the handle is duplicated into.
     base::ProcessId destination_process;
+
     // The permissions to use when duplicating the handle.
     HandleWin::Permissions permissions;
+
     AttachmentId attachment_id;
   };
 

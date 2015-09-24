@@ -8,11 +8,15 @@
 
 namespace IPC {
 
-BrokerableAttachment::AttachmentId::AttachmentId() {
+// static
+BrokerableAttachment::AttachmentId
+BrokerableAttachment::AttachmentId::CreateIdWithRandomNonce() {
+  AttachmentId id;
   // In order to prevent mutually untrusted processes from stealing resources
   // from one another, the nonce must be secret. This generates a 128-bit,
   // cryptographicaly-strong random number.
-  crypto::RandBytes(nonce, BrokerableAttachment::kNonceSize);
+  crypto::RandBytes(id.nonce, BrokerableAttachment::kNonceSize);
+  return id;
 }
 
 }  // namespace IPC

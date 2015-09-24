@@ -22,7 +22,12 @@ class IPC_EXPORT BrokerableAttachment : public MessageAttachment {
   struct IPC_EXPORT AttachmentId {
     uint8_t nonce[kNonceSize];
 
-    // Default constructor returns an unguessable random nonce.
+    // Generates an AttachmentId with an unguessable, random nonce.
+    static AttachmentId CreateIdWithRandomNonce();
+
+    // Creates an AttachmentId with a zeroed nonce. This should only be used by
+    // the IPC translation system, which requires that classes have a default
+    // constructor.
     AttachmentId();
 
     // Constructs an AttachmentId from a buffer.

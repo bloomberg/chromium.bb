@@ -8,12 +8,21 @@
 
 namespace IPC {
 
+// BrokerableAttachment::AttachmentId ------------------------------------------
 #if !USE_ATTACHMENT_BROKER
-BrokerableAttachment::AttachmentId::AttachmentId() {
-  CHECK(false) << "Not allowed to construct an attachment id if the platform "
-                  "does not support attachment brokering.";
+// static
+BrokerableAttachment::AttachmentId
+BrokerableAttachment::AttachmentId::CreateIdWithRandomNonce() {
+  CHECK(false) << "Platforms that don't support attachment brokering shouldn't "
+                  "be trying to generating a random nonce.";
+  return AttachmentId();
 }
 #endif
+
+BrokerableAttachment::AttachmentId::AttachmentId() {
+  for (size_t i = 0; i < BrokerableAttachment::kNonceSize; ++i)
+    nonce[i] = 0;
+}
 
 BrokerableAttachment::AttachmentId::AttachmentId(const char* start_address,
                                                  size_t size) {
@@ -29,7 +38,10 @@ void BrokerableAttachment::AttachmentId::SerializeToBuffer(char* start_address,
     start_address[i] = nonce[i];
 }
 
-BrokerableAttachment::BrokerableAttachment() {}
+// BrokerableAttachment::BrokerableAttachment ----------------------------------
+
+BrokerableAttachment::BrokerableAttachment()
+    : id_(AttachmentId::CreateIdWithRandomNonce()) {}
 
 BrokerableAttachment::BrokerableAttachment(const AttachmentId& id) : id_(id) {}
 

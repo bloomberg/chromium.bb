@@ -100,25 +100,18 @@ AttachmentBrokerPrivilegedWin::HandleWireFormat
 AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
     const HandleWireFormat& wire_format,
     base::ProcessId source_pid) {
-  HandleWireFormat new_wire_format;
-  new_wire_format.destination_process = wire_format.destination_process;
-  new_wire_format.attachment_id = wire_format.attachment_id;
-  new_wire_format.permissions = wire_format.permissions;
-  new_wire_format.handle = 0;
-
-  HANDLE original_handle = LongToHandle(wire_format.handle);
-
   base::Process source_process =
       base::Process::OpenWithExtraPrivileges(source_pid);
   base::Process dest_process =
       base::Process::OpenWithExtraPrivileges(wire_format.destination_process);
+  int new_wire_format_handle = 0;
   if (source_process.Handle() && dest_process.Handle()) {
     DWORD desired_access = 0;
     DWORD options = 0;
     switch (wire_format.permissions) {
       case HandleWin::INVALID:
         LOG(ERROR) << "Received invalid permissions for duplication.";
-        return new_wire_format;
+        return CopyWireFormat(wire_format, 0);
       case HandleWin::DUPLICATE:
         options = DUPLICATE_SAME_ACCESS;
         break;
@@ -128,14 +121,23 @@ AttachmentBrokerPrivilegedWin::DuplicateWinHandle(
     }
 
     HANDLE new_handle;
+    HANDLE original_handle = LongToHandle(wire_format.handle);
     DWORD result = ::DuplicateHandle(source_process.Handle(), original_handle,
                                      dest_process.Handle(), &new_handle,
                                      desired_access, FALSE, options);
 
-    new_wire_format.handle = (result != 0) ? HandleToLong(new_handle) : 0;
+    new_wire_format_handle = (result != 0) ? HandleToLong(new_handle) : 0;
   }
 
-  return new_wire_format;
+  return CopyWireFormat(wire_format, new_wire_format_handle);
+}
+
+AttachmentBrokerPrivilegedWin::HandleWireFormat
+AttachmentBrokerPrivilegedWin::CopyWireFormat(
+    const HandleWireFormat& wire_format,
+    int handle) {
+  return HandleWireFormat(handle, wire_format.destination_process,
+                          wire_format.permissions, wire_format.attachment_id);
 }
 
 }  // namespace IPC
