@@ -33,6 +33,7 @@ from webkitpy.tool.bot.commitannouncer import CommitAnnouncer, CommitAnnouncerTh
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
 
 _log = logging.getLogger(__name__)
+announce_path = "third_party/WebKit"
 
 
 class CommitAnnouncerCommand(AbstractDeclarativeCommand):
@@ -47,7 +48,7 @@ class CommitAnnouncerCommand(AbstractDeclarativeCommand):
         AbstractDeclarativeCommand.__init__(self, options)
 
     def execute(self, options, args, tool):
-        bot_thread = CommitAnnouncerThread(tool, options.irc_password)
+        bot_thread = CommitAnnouncerThread(tool, announce_path, options.irc_password)
         bot_thread.start()
         _log.info("Bot started")
         try:

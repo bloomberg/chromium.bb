@@ -61,7 +61,7 @@ class Git(SCM):
     def _run_git(self, command_args, **kwargs):
         full_command_args = [self.executable_name] + command_args
         full_kwargs = kwargs
-        if not 'cwd' in full_kwargs:
+        if 'cwd' not in full_kwargs:
             full_kwargs['cwd'] = self.checkout_root
         return self._run(full_command_args, **full_kwargs)
 
@@ -202,7 +202,7 @@ class Git(SCM):
         # Manually modify the timezone since Git doesn't have an option to show it in UTC.
         # Git also truncates milliseconds but we're going to ignore that for now.
         time_with_timezone = datetime.datetime(int(match.group(1)), int(match.group(2)), int(match.group(3)),
-            int(match.group(4)), int(match.group(5)), int(match.group(6)), 0)
+                                               int(match.group(4)), int(match.group(5)), int(match.group(6)), 0)
 
         sign = 1 if match.group(7) == '+' else -1
         time_without_timezone = time_with_timezone - datetime.timedelta(hours=sign * int(match.group(8)), minutes=int(match.group(9)))
@@ -298,6 +298,10 @@ class Git(SCM):
         if format:
             args.append('--format=' + format)
         return self._run_git(args)
+
+    def affected_files(self, commit):
+        output = self._run_git(['log', '-1', '--format=', '--name-only', commit])
+        return output.strip().split('\n')
 
     def _branch_tracking_remote_master(self):
         origin_info = self._run_git(['remote', 'show', 'origin', '-n'])

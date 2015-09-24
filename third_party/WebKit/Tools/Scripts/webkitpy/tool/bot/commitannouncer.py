@@ -38,10 +38,11 @@ _log = logging.getLogger(__name__)
 
 
 class CommitAnnouncer(SingleServerIRCBot):
-    _commit_detail_format = "%H\n%cn\n%s\n%b"  # commit-sha1, author, subject, body
+    _commit_detail_format = "%H\n%ae\n%s\n%b"  # commit-sha1, author email, subject, body
 
-    def __init__(self, tool, irc_password):
+    def __init__(self, tool, announce_path, irc_password):
         SingleServerIRCBot.__init__(self, [(server, port, irc_password)], nickname, nickname)
+        self.announce_path = announce_path
         self.git = Git(cwd=tool.scm().checkout_root, filesystem=tool.filesystem, executive=tool.executive)
         self.commands = {
             'help': self.help,
@@ -61,16 +62,19 @@ class CommitAnnouncer(SingleServerIRCBot):
             self.stop("Failed to update repository!")
             return
         new_commits = self.git.git_commits_since(self.last_commit)
-        if new_commits:
-            self.last_commit = new_commits[-1]
-            for commit in new_commits:
-                commit_detail = self._commit_detail(commit)
-                if commit_detail:
-                    _log.info('%s Posting commit %s' % (self._time(), commit))
-                    _log.info('%s Posted message: %s' % (self._time(), repr(commit_detail)))
-                    self._post(commit_detail)
-                else:
-                    _log.error('Malformed commit log for %s' % commit)
+        if not new_commits:
+            return
+        self.last_commit = new_commits[-1]
+        for commit in new_commits:
+            if not self._should_announce_commit(commit):
+                continue
+            commit_detail = self._commit_detail(commit)
+            if commit_detail:
+                _log.info('%s Posting commit %s' % (self._time(), commit))
+                _log.info('%s Posted message: %s' % (self._time(), repr(commit_detail)))
+                self._post(commit_detail)
+            else:
+                _log.error('Malformed commit log for %s' % commit)
 
     # Bot commands.
 
@@ -141,6 +145,9 @@ class CommitAnnouncer(SingleServerIRCBot):
                 return self.commands[command_name]
         return None
 
+    def _should_announce_commit(self, commit):
+        return any(path.startswith(self.announce_path) for path in self.git.affected_files(commit))
+
     def _commit_detail(self, commit):
         return self._format_commit_detail(self.git.git_commit_detail(commit, self._commit_detail_format))
 
@@ -149,37 +156,36 @@ class CommitAnnouncer(SingleServerIRCBot):
             return ''
 
         commit, email, subject, body = commit_detail.split('\n', 3)
-        review_string = 'Review URL: '
-        svn_string = 'git-svn-id: svn://svn.chromium.org/blink/trunk@'
+        commit_position_re = r'^Cr-Commit-Position: refs/heads/master@\{#(?P<commit_position>\d+)\}'
+        commit_position = None
+        review_id_re = r'^Review URL: https://codereview\.chromium\.org/(?P<review_id>\d+)'
+        review_id = None
         red_flag_strings = ['NOTRY=true', 'TBR=']
-        review_url = ''
-        svn_revision = ''
         red_flags = []
 
         for line in body.split('\n'):
-            if line.startswith(review_string):
-                review_url = line[len(review_string):]
-            if line.startswith(svn_string):
-                tokens = line[len(svn_string):].split()
-                if not tokens:
-                    continue
-                revision = tokens[0]
-                if not revision.isdigit():
-                    continue
-                svn_revision = 'r%s' % revision
+            match = re.search(review_id_re, line)
+            if match:
+                review_id = match.group('review_id')
+
+            match = re.search(commit_position_re, line)
+            if match:
+                commit_position = match.group('commit_position')
+
             for red_flag_string in red_flag_strings:
                 if line.lower().startswith(red_flag_string.lower()):
                     red_flags.append(line.strip())
 
-        if review_url:
-            match = re.search(r'(?P<review_id>\d+)', review_url)
-            if match:
-                review_url = 'http://crrev.com/%s' % match.group('review_id')
-        first_url = review_url if review_url else 'https://chromium.googlesource.com/chromium/blink/+/%s' % commit[:8]
+        position_string = 'master@{#%s}' % commit_position if commit_position else ''
+
+        if review_id:
+            url = 'http://crrev.com/%s' % review_id
+        else:
+            url = 'https://chromium.googlesource.com/chromium/src/+/%s' % commit[:8]
 
         red_flag_message = '\x037%s\x03' % (' '.join(red_flags)) if red_flags else ''
 
-        return ('%s %s %s committed "%s" %s' % (svn_revision, first_url, email, subject, red_flag_message)).strip()
+        return ('%s %s %s committed "%s" %s' % (position_string, url, email, subject, red_flag_message)).strip()
 
     def _post(self, message):
         self.connection.execute_delayed(0, lambda: self.connection.privmsg(channel, self._sanitize_string(message)))
@@ -189,9 +195,9 @@ class CommitAnnouncer(SingleServerIRCBot):
 
 
 class CommitAnnouncerThread(threading.Thread):
-    def __init__(self, tool, irc_password):
+    def __init__(self, tool, announce_path, irc_password):
         threading.Thread.__init__(self)
-        self.bot = CommitAnnouncer(tool, irc_password)
+        self.bot = CommitAnnouncer(tool, announce_path, irc_password)
 
     def run(self):
         self.bot.start()
