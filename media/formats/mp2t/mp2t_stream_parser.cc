@@ -200,6 +200,25 @@ void Mp2tStreamParser::Flush() {
     delete pid_state;
   }
   pids_.clear();
+
+  // Flush is invoked from SourceBuffer.abort/SourceState::ResetParserState, and
+  // MSE spec prohibits emitting new configs in ResetParserState algorithm (see
+  // https://w3c.github.io/media-source/#sourcebuffer-reset-parser-state,
+  // 3.5.2 Reset Parser State states that new frames might be processed only in
+  // PARSING_MEDIA_SEGMENT and therefore doesn't allow emitting new configs,
+  // since that might need to run "init segment received" algorithm).
+  // So before we emit remaining buffers here, we need to trim our buffer queue
+  // so that we leave only buffers with configs that were already sent.
+  for (auto buffer_queue_iter = buffer_queue_chain_.begin();
+       buffer_queue_iter != buffer_queue_chain_.end(); ++buffer_queue_iter) {
+    const BufferQueueWithConfig& queue_with_config = *buffer_queue_iter;
+    if (!queue_with_config.is_config_sent) {
+      DVLOG(LOG_LEVEL_ES) << "Flush: dropping buffers with unsent new configs.";
+      buffer_queue_chain_.erase(buffer_queue_iter, buffer_queue_chain_.end());
+      break;
+    }
+  }
+
   EmitRemainingBuffers();
   buffer_queue_chain_.clear();
 
