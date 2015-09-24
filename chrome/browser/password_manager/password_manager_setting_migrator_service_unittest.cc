@@ -29,6 +29,7 @@ namespace {
 
 const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
 const char kEnabledGroupName[] = "Enable";
+const char kDisabledGroupName[] = "Disable";
 
 enum BooleanPrefState {
   OFF,
@@ -89,9 +90,13 @@ namespace password_manager {
 
 class PasswordManagerSettingMigratorServiceTest : public testing::Test {
  protected:
-  PasswordManagerSettingMigratorServiceTest() : field_trial_list_(nullptr) {}
+  PasswordManagerSettingMigratorServiceTest() {}
+  ~PasswordManagerSettingMigratorServiceTest() override {}
 
-  void SetUp() override { ResetProfile(); }
+  void SetUp() override {
+    ResetProfile();
+    EnforcePasswordManagerSettingMigrationExperiment(kEnabledGroupName);
+  }
 
   void SetupLocalPrefState(const std::string& name, BooleanPrefState state) {
     PrefService* prefs = profile()->GetPrefs();
@@ -111,7 +116,6 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
         profile(), &ProfileSyncServiceMock::BuildMockProfileSyncService);
     ON_CALL(*profile_sync_service(), CanSyncStart())
         .WillByDefault(testing::Return(true));
-    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kEnabledGroupName);
   }
 
   void ExpectValuesForBothPrefValues(bool new_pref_value, bool old_pref_value) {
@@ -133,6 +137,14 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
         content::NotificationService::NoDetails());
   }
 
+  void EnforcePasswordManagerSettingMigrationExperiment(const char* name) {
+    // The existing instance of FieldTrialList should be deleted before creating
+    // new one, so reset() is called in order to do so.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(nullptr));
+    base::FieldTrialList::CreateFieldTrial(kFieldTrialName, name);
+  }
+
   void TestOnLocalChange(const std::string& name, bool value) {
     PrefService* prefs = profile()->GetPrefs();
     prefs->SetBoolean(prefs::kCredentialsEnableService, !value);
@@ -142,10 +154,25 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
     ExpectValuesForBothPrefValues(value, value);
   }
 
+  void TestOnLocalChangeWhenMigrationIsDisabled(const std::string& name,
+                                                bool value) {
+    ResetProfile();
+    EnforcePasswordManagerSettingMigrationExperiment(kDisabledGroupName);
+    PrefService* prefs = profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kCredentialsEnableService, !value);
+    prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, !value);
+    NotifyProfileAdded();
+    prefs->SetBoolean(name, value);
+    if (name == prefs::kPasswordManagerSavingEnabled)
+      ExpectValuesForBothPrefValues(!value, value);
+    else
+      ExpectValuesForBothPrefValues(value, !value);
+  }
+
  private:
-  base::FieldTrialList field_trial_list_;
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorServiceTest);
 };
@@ -171,6 +198,18 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
 }
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
+       DoNotReconcileOnLocalChangeOfNewPrefWhenMigrationIsDisabled) {
+  TestOnLocalChangeWhenMigrationIsDisabled(prefs::kCredentialsEnableService,
+                                           false);
+}
+
+TEST_F(PasswordManagerSettingMigratorServiceTest,
+       DoNotReconcileOnLocalChangeOfLegacyPrefWhenMigrationIsDisabled) {
+  TestOnLocalChangeWhenMigrationIsDisabled(prefs::kPasswordManagerSavingEnabled,
+                                           false);
+}
+
+TEST_F(PasswordManagerSettingMigratorServiceTest,
        ReconcileWhenWhenBothPrefsTypesArrivesFromSync) {
   const struct {
     BooleanPrefState new_pref_local_value;
@@ -180,33 +219,34 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     bool result_value;
   } kTestingTable[] = {
       {EMPTY, EMPTY, EMPTY, EMPTY, true},
-      {OFF, OFF, EMPTY, EMPTY, false},
-      {OFF, OFF, OFF, ON, true},
-      {OFF, OFF, OFF, OFF, false},
-      {OFF, OFF, ON, OFF, true},
-      {ON, OFF, ON, ON, true},
-      {ON, OFF, ON, OFF, false},
-      {ON, OFF, OFF, ON, false},
-      {ON, ON, OFF, EMPTY, false},
-      {ON, ON, ON, EMPTY, true},
-      {ON, ON, EMPTY, OFF, false},
-      {ON, ON, EMPTY, ON, true},
-      {ON, ON, OFF, OFF, false},
-      {ON, ON, OFF, ON, false},
-      {ON, ON, ON, OFF, false},
-      {ON, ON, ON, ON, true},
-      {EMPTY, EMPTY, ON, EMPTY, true},
-      {EMPTY, EMPTY, OFF, EMPTY, false},
-      {EMPTY, EMPTY, EMPTY, ON, true},
       {EMPTY, EMPTY, EMPTY, OFF, false},
-      {OFF, ON, ON, OFF, false},
+      {EMPTY, EMPTY, EMPTY, ON, true},
+      {EMPTY, EMPTY, OFF, EMPTY, false},
+      {EMPTY, EMPTY, ON, EMPTY, true},
+      {OFF, OFF, EMPTY, EMPTY, false},
+      {OFF, OFF, OFF, OFF, false},
+      {OFF, OFF, OFF, ON, true},
+      {OFF, OFF, ON, OFF, true},
       {OFF, ON, OFF, ON, false},
+      {OFF, ON, ON, OFF, false},
       {OFF, ON, ON, ON, true},
       {ON, OFF, EMPTY, EMPTY, false},
+      {ON, OFF, OFF, ON, false},
+      {ON, OFF, ON, OFF, false},
+      {ON, OFF, ON, ON, true},
+      {ON, ON, EMPTY, OFF, false},
+      {ON, ON, EMPTY, ON, true},
+      {ON, ON, OFF, EMPTY, false},
+      {ON, ON, OFF, OFF, false},
+      {ON, ON, OFF, ON, false},
+      {ON, ON, ON, EMPTY, true},
+      {ON, ON, ON, OFF, false},
+      {ON, ON, ON, ON, true},
   };
 
   for (const auto& test_case : kTestingTable) {
     ResetProfile();
+    EnforcePasswordManagerSettingMigrationExperiment(kEnabledGroupName);
     SCOPED_TRACE(testing::Message("Local data = ")
                  << test_case.new_pref_local_value << " "
                  << test_case.old_pref_local_value);
@@ -226,6 +266,65 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                      test_case.old_pref_sync_value);
     ExpectValuesForBothPrefValues(test_case.result_value,
                                   test_case.result_value);
+  }
+}
+
+TEST_F(PasswordManagerSettingMigratorServiceTest,
+       DoNotReconcileWhenWhenBothPrefsTypesArrivesFromSync) {
+  const struct {
+    BooleanPrefState new_pref_local_value;
+    BooleanPrefState old_pref_local_value;
+    BooleanPrefState new_pref_sync_value;
+    BooleanPrefState old_pref_sync_value;
+    bool result_new_pref_value;
+    bool result_old_pref_value;
+  } kTestingTable[] = {
+      {OFF, OFF, OFF, ON, false, true},
+      {OFF, OFF, ON, OFF, true, false},
+      {OFF, OFF, ON, ON, true, true},
+      {OFF, ON, EMPTY, OFF, false, false},
+      {OFF, ON, EMPTY, ON, false, true},
+      {OFF, ON, OFF, EMPTY, false, true},
+      {OFF, ON, OFF, OFF, false, false},
+      {OFF, ON, OFF, ON, false, true},
+      {OFF, ON, ON, EMPTY, true, true},
+      {OFF, ON, ON, OFF, true, false},
+      {OFF, ON, ON, ON, true, true},
+      {ON, OFF, OFF, ON, false, true},
+      {ON, OFF, ON, OFF, true, false},
+      {ON, OFF, ON, ON, true, true},
+      {ON, ON, EMPTY, OFF, true, false},
+      {ON, ON, EMPTY, ON, true, true},
+      {ON, ON, OFF, EMPTY, false, true},
+      {ON, ON, OFF, OFF, false, false},
+      {ON, ON, OFF, ON, false, true},
+      {ON, ON, ON, EMPTY, true, true},
+      {ON, ON, ON, OFF, true, false},
+      {ON, ON, ON, ON, true, true},
+  };
+
+  for (const auto& test_case : kTestingTable) {
+    ResetProfile();
+    EnforcePasswordManagerSettingMigrationExperiment(kDisabledGroupName);
+    SCOPED_TRACE(testing::Message("Local data = ")
+                 << test_case.new_pref_local_value << " "
+                 << test_case.old_pref_local_value);
+    SCOPED_TRACE(testing::Message("Sync data = ")
+                 << test_case.new_pref_sync_value << " "
+                 << test_case.old_pref_sync_value);
+    SetupLocalPrefState(prefs::kPasswordManagerSavingEnabled,
+                        test_case.old_pref_local_value);
+    SetupLocalPrefState(prefs::kCredentialsEnableService,
+                        test_case.new_pref_local_value);
+    NotifyProfileAdded();
+    syncable_prefs::PrefServiceSyncable* prefs =
+        PrefServiceSyncableFromProfile(profile());
+    StartSyncingPref(prefs, prefs::kCredentialsEnableService,
+                     test_case.new_pref_sync_value);
+    StartSyncingPref(prefs, prefs::kPasswordManagerSavingEnabled,
+                     test_case.old_pref_sync_value);
+    ExpectValuesForBothPrefValues(test_case.result_new_pref_value,
+                                  test_case.result_old_pref_value);
   }
 }
 
