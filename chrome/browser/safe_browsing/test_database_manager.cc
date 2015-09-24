@@ -10,6 +10,11 @@
 
 #include "base/logging.h"
 
+bool TestSafeBrowsingDatabaseManager::IsSupported() const {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool TestSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   NOTIMPLEMENTED();
   return false;

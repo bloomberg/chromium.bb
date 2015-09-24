@@ -63,8 +63,10 @@ SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
       request, resource_type, sb_service, DEFER_AT_START,
       SafeBrowsingService::CHECK_ALL_RESOURCE_TYPES);
 #elif defined(SAFE_BROWSING_DB_REMOTE)
-  if (!sb_service->IsAndroidFieldTrialEnabled())
+  if (!sb_service->IsAndroidFieldTrialEnabled() ||
+      !sb_service->database_manager()->IsSupported()) {
     return nullptr;
+  }
 
   // Throttle consults a remote database before processing the response.
   return new SafeBrowsingResourceThrottle(

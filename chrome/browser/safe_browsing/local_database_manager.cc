@@ -310,6 +310,10 @@ LocalSafeBrowsingDatabaseManager::~LocalSafeBrowsingDatabaseManager() {
   DCHECK(!enabled_);
 }
 
+bool LocalSafeBrowsingDatabaseManager::IsSupported() const {
+  return true;
+}
+
 bool LocalSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(url::kFtpScheme) ||
          url.SchemeIs(url::kHttpScheme) ||

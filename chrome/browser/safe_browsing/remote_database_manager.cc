@@ -86,6 +86,10 @@ RemoteSafeBrowsingDatabaseManager::~RemoteSafeBrowsingDatabaseManager() {
   DCHECK(!enabled_);
 }
 
+bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
+  return SafeBrowsingApiHandler::GetInstance() != nullptr;
+}
+
 bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   return url.SchemeIs(url::kHttpsScheme) || url.SchemeIs(url::kHttpScheme) ||
          url.SchemeIs(url::kFtpScheme);
@@ -165,8 +169,8 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
 
   DVLOG(1) << "Checking for client " << client << " and URL " << url;
   SafeBrowsingApiHandler* api_handler = SafeBrowsingApiHandler::GetInstance();
-  // If your build hits this at run time, then you should have either not built
-  // with safe_browsing=3, or set a SafeBrowingApiHandler singleton at startup.
+  // This shouldn't happen since SafeBrowsingResourceThrottle checks
+  // IsSupported() ealier.
   DCHECK(api_handler) << "SafeBrowsingApiHandler was never constructed";
   api_handler->StartURLCheck(
       base::Bind(&ClientRequest::OnRequestDoneWeak, req->GetWeakPtr()), url,

@@ -43,6 +43,10 @@ class SafeBrowsingDatabaseManager
         const std::set<std::string>& threats) {}
   };
 
+  // Returns true if URL-checking is supported on this build+device.
+  // If false, calls to CheckBrowseUrl may dcheck-fail.
+  virtual bool IsSupported() const = 0;
+
   // Returns true if the url's scheme can be checked.
   virtual bool CanCheckUrl(const GURL& url) const = 0;
 
