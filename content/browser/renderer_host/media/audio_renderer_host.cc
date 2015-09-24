@@ -96,6 +96,11 @@ bool IsValidDeviceId(const std::string& device_id) {
   return true;
 }
 
+std::string TranslateDefaultId(const std::string& device_id) {
+  return device_id.empty() ? media::AudioManagerBase::kDefaultDeviceId
+                           : device_id;
+}
+
 }  // namespace
 
 class AudioRendererHost::AudioEntry
@@ -433,9 +438,10 @@ void AudioRendererHost::OnDeviceAuthorized(int stream_id,
     return;
   }
 
-  TranslateDeviceID(
-      device_id, gurl_security_origin,
-      base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id));
+  media_stream_manager_->audio_output_device_enumerator()->Enumerate(base::Bind(
+      &AudioRendererHost::TranslateDeviceID, this, device_id,
+      gurl_security_origin,
+      base::Bind(&AudioRendererHost::OnDeviceIDTranslated, this, stream_id)));
 }
 
 void AudioRendererHost::OnDeviceIDTranslated(
@@ -604,22 +610,42 @@ void AudioRendererHost::OnSwitchDeviceAuthorized(
     return;
   }
 
-  // TODO(guidou): Ensure that output parameters of the new device match the
-  // output parameters of the current device to avoid shared-memory sizing
-  // issues. http://crbug.com/526657
-  TranslateDeviceID(device_id, gurl_security_origin,
-                    base::Bind(&AudioRendererHost::OnSwitchDeviceIDTranslated,
-                               this, stream_id));
+  AudioEntry* entry = LookupById(stream_id);
+  if (!entry) {
+    Send(new AudioMsg_NotifyOutputDeviceSwitched(
+        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL));
+    return;
+  }
+
+  entry->controller()->GetOutputDeviceId(
+      base::Bind(&AudioRendererHost::OnSwitchDeviceCurrentName, this, device_id,
+                 gurl_security_origin, stream_id));
 }
 
-void AudioRendererHost::OnSwitchDeviceIDTranslated(
+void AudioRendererHost::OnSwitchDeviceCurrentName(
+    const std::string& device_id,
+    const GURL& gurl_security_origin,
     int stream_id,
-    bool device_found,
+    const std::string& current_device_unique_id) {
+  media_stream_manager_->audio_output_device_enumerator()->Enumerate(base::Bind(
+      &AudioRendererHost::TranslateDeviceIDAndCheckParams, this, device_id,
+      gurl_security_origin, current_device_unique_id,
+      base::Bind(&AudioRendererHost::OnSwitchDeviceIDTranslatedAndParamsChecked,
+                 this, stream_id)));
+}
+
+void AudioRendererHost::OnSwitchDeviceIDTranslatedAndParamsChecked(
+    int stream_id,
+    bool success,
     const AudioOutputDeviceInfo& device_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!device_found) {
-    Send(new AudioMsg_NotifyOutputDeviceSwitched(
-        stream_id, media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND));
+  if (!success) {
+    media::SwitchOutputDeviceResult result =
+        device_info.unique_id.empty()
+            ? media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_NOT_FOUND
+            : media::SWITCH_OUTPUT_DEVICE_RESULT_ERROR_INTERNAL;
+
+    Send(new AudioMsg_NotifyOutputDeviceSwitched(stream_id, result));
     return;
   }
 
@@ -791,18 +817,7 @@ void AudioRendererHost::AccessChecked(scoped_ptr<MediaStreamUIProxy> ui_proxy,
   callback.Run(have_access);
 }
 
-void AudioRendererHost::TranslateDeviceID(const std::string& device_id,
-                                          const GURL& gurl_security_origin,
-                                          const OutputDeviceInfoCB& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  AudioOutputDeviceEnumerator* enumerator =
-      media_stream_manager_->audio_output_device_enumerator();
-  enumerator->Enumerate(base::Bind(&AudioRendererHost::FinishTranslateDeviceID,
-                                   this, device_id, gurl_security_origin,
-                                   callback));
-}
-
-void AudioRendererHost::FinishTranslateDeviceID(
+void AudioRendererHost::TranslateDeviceID(
     const std::string& device_id,
     const GURL& security_origin,
     const OutputDeviceInfoCB& callback,
@@ -826,6 +841,59 @@ void AudioRendererHost::FinishTranslateDeviceID(
   AudioOutputDeviceInfo device_info = {std::string(), std::string(),
                                        DummyParams()};
   callback.Run(false, device_info);
+}
+
+void AudioRendererHost::TranslateDeviceIDAndCheckParams(
+    const std::string& device_id,
+    const GURL& gurl_security_origin,
+    const std::string& current_device_unique_id,
+    const OutputDeviceInfoCB& callback,
+    const AudioOutputDeviceEnumeration& device_infos) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  std::string current_unique_id = TranslateDefaultId(current_device_unique_id);
+  bool use_default_device =
+      device_id.empty() ||
+      device_id == media::AudioManagerBase::kDefaultDeviceId;
+  AudioOutputDeviceEnumeration::const_iterator current_info =
+      device_infos.end();
+  AudioOutputDeviceEnumeration::const_iterator new_info = device_infos.end();
+
+  for (AudioOutputDeviceEnumeration::const_iterator it = device_infos.begin();
+       it != device_infos.end(); ++it) {
+    if (it->unique_id == current_unique_id)
+      current_info = it;
+
+    if (use_default_device) {
+      if (it->unique_id == media::AudioManagerBase::kDefaultDeviceId)
+        new_info = it;
+    } else if (content::DoesMediaDeviceIDMatchHMAC(salt_callback_,
+                                                   gurl_security_origin,
+                                                   device_id, it->unique_id)) {
+      new_info = it;
+    }
+
+    if (current_info != device_infos.end() && new_info != device_infos.end())
+      break;
+  }
+
+  // Use empty unique ID to indicate that |device_id| was not found
+  if (new_info == device_infos.end()) {
+    AudioOutputDeviceInfo dummy_info = {std::string(), std::string(),
+                                        DummyParams()};
+    callback.Run(false, dummy_info);
+    return;
+  }
+
+  bool success = current_info != device_infos.end() &&
+                 new_info->output_params.sample_rate() ==
+                     current_info->output_params.sample_rate() &&
+                 new_info->output_params.frames_per_buffer() ==
+                     current_info->output_params.frames_per_buffer() &&
+                 new_info->output_params.bits_per_sample() ==
+                     current_info->output_params.bits_per_sample();
+
+  callback.Run(success, *new_info);
 }
 
 bool AudioRendererHost::IsAuthorizationStarted(int stream_id) {
