@@ -269,6 +269,13 @@ bool NavigatorImpl::NavigateToEntry(
     dest_referrer = Referrer();
   }
 
+  // Don't attempt to navigate to non-empty invalid URLs.
+  if (!dest_url.is_valid() && !dest_url.is_empty()) {
+    LOG(WARNING) << "Refusing to load invalid URL: "
+                 << dest_url.possibly_invalid_spec();
+    return false;
+  }
+
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
   if (dest_url.spec().size() > GetMaxURLChars()) {

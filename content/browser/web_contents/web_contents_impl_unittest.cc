@@ -458,7 +458,21 @@ TEST_F(WebContentsImplTest, NavigateToExcessivelyLongURL) {
 
   controller().LoadURL(
       url, Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());
-  EXPECT_EQ(nullptr, controller().GetVisibleEntry());
+  EXPECT_EQ(nullptr, controller().GetPendingEntry());
+}
+
+// Test that we reject NavigateToEntry if the url is invalid.
+TEST_F(WebContentsImplTest, NavigateToInvalidURL) {
+  // Invalid URLs should not trigger a navigation.
+  const GURL invalid_url("view-source:http://example.org/%00");
+  controller().LoadURL(
+      invalid_url, Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());
+  EXPECT_EQ(nullptr, controller().GetPendingEntry());
+
+  // Empty URLs are supported and should start a navigation.
+  controller().LoadURL(
+      GURL(), Referrer(), ui::PAGE_TRANSITION_GENERATED, std::string());
+  EXPECT_NE(nullptr, controller().GetPendingEntry());
 }
 
 // Test that navigating across a site boundary creates a new RenderViewHost
