@@ -104,3 +104,11 @@ l10n.localize = function() {
     }
   }
 };
+
+
+/**
+ * @return {string} The current locale.
+ */
+l10n.getLocale = function() {
+  return chrome.i18n.getMessage('@@ui_locale');
+};

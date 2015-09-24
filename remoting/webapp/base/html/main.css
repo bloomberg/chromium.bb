@@ -105,45 +105,83 @@ button[disabled], button[disabled]:hover, button[disabled]:active {
 }
 
 /* Colored Buttons */
+.kd-button-share,
+.kd-button-default {
+  color: #fff !important;
+  text-shadow: 0px 1px rgba(0,0,0,0.1);
+}
+
+.kd-button-share:active, .kd-button-share:focus:active,
+.kd-button-default:active, .kd-button-default:focus:active {
+  box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
+}
+
+.kd-button-share:hover,
+.kd-button-default:hover {
+  border: 1px solid #404040;
+  text-shadow: 0px 1px rgba(0,0,0,0.3);
+}
+
+.kd-button-share:focus,
+.kd-button-default:focus {
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);
+}
+
+.kd-button-share:focus:hover,
+.kd-button-default:focus:hover {
+  box-shadow:inset 0 0 0 1px #fff, 0px 1px 1px rgba(0,0,0,0.1);
+}
+
+.kd-button-share[disabled],
+.kd-button-share[disabled]:hover,
+.kd-button-share[disabled]:active,
+.kd-button-default[disabled],
+.kd-button-default[disabled]:hover,
+.kd-button-default[disabled]:active {
+  border: 1px solid #505050;
+  opacity: 0.5;
+  text-shadow: 0px 1px rgba(0,0,0,0.1);
+}
+
 .kd-button-share {
   border: 1px solid #29691d;
-  color: #FFF;
-  text-shadow: 0px 1px rgba(0,0,0,0.1);
-  background-image: -webkit-gradient(linear,left top,left bottom,
-                                     from(#3d9400),to(#398a00));
+  background-image: linear-gradient(#3d9400, #398a00);
 }
 
-.kd-button-share:hover {
-  border: 1px solid #404040;
-  color: #FFF;
-  text-shadow: 0px 1px rgba(0,0,0,0.3);
-  background-image: -webkit-gradient(linear,left top,left bottom,
-                                     from(#3d9400),to(#368200));
-}
-
-.kd-button-share:active, .kd-button-share:focus:active {
-  box-shadow: inset 0px 1px 2px rgba(0,0,0,0.3);
-  background-image: -webkit-gradient(linear,left top,left bottom,
-                                     from(#3d9400),to(#368200));
+.kd-button-share:hover,
+.kd-button-share:active,
+.kd-button-share:focus:active {
+  background-image: linear-gradient(#3d9400, #368200);
 }
 
 .kd-button-share:focus {
   border-color:#29691d;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);
-}
-
-.kd-button-share:focus:hover {
-  box-shadow:inset 0 0 0 1px #fff, 0px 1px 1px rgba(0,0,0,0.1);
 }
 
 .kd-button-share[disabled], .kd-button-share[disabled]:hover,
 .kd-button-share[disabled]:active {
-  border: 1px solid #505050;
-  color: #FFF;
-  opacity: 0.5;
+  background-image: linear-gradient(#3d9400, #398a00);
+}
+
+.kd-button-default {
+  border: 1px solid #076bd2;
   text-shadow: 0px 1px rgba(0,0,0,0.1);
-  background-image: -webkit-gradient(linear,left top,left bottom,
-                                     from(#3d9400),to(#398a00));
+  background-image: linear-gradient(#008dfd 0,#0370ea 100%);
+}
+
+.kd-button-default:hover,
+.kd-button-default:active,
+.kd-button-default:focus:active {
+  background: linear-gradient(#008dfd 30%, #0370ea 100%);
+}
+
+.kd-button-default:focus {
+  border-color:#1d2969;
+}
+
+.kd-button-default[disabled], .kd-button-default[disabled]:hover,
+.kd-button-default[disabled]:active {
+  background-image: linear-gradient(#003d94, #00398a);
 }
 
 ::-webkit-scrollbar {
@@ -740,4 +778,16 @@ body:not(.connected) #session-mode {
 #connection-dropped-dialog .restart-timer {
   color: rgb(0, 0, 0);
   font-weight: bold;
+}
+
+.h2-supplemental {
+  color: gray;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  font-size: 80%;
+}
+
+body:not(.os-windows) .windows-only,
+body:not(.os-mac) .mac-only {
+  display: none;
 }

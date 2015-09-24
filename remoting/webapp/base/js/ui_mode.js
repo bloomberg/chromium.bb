@@ -23,6 +23,7 @@ remoting.AppMode = {
   HOME: 'home',
     TOKEN_REFRESH_FAILED: 'home.token-refresh-failed',
     HOST_INSTALL: 'home.host-install',
+      HOST_INSTALL_TOS: 'home.host-install.tos',
       HOST_INSTALL_PROMPT: 'home.host-install.prompt',
       HOST_INSTALL_PENDING: 'home.host-install.pending',
     HOST: 'home.host',

@@ -283,6 +283,12 @@
         <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.
         </message>
+        <message desc="Title of the dialog used to download and install the Chrome Remote Desktop host component." name="IDS_INSTALLER_DOWNLOAD">
+          Download Chrome Remote Desktop Host Installer
+        </message>
+        <message desc="Message shown to inform the user that the product is governed by Google's terms of service and to include a link to view them." name="IDS_HOST_SETUP_TERMS_OF_SERVICE">
+          By downloading the Chrome Remote Desktop Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN">$1<ex>&lt;a href="http://www.google.com/intl/en/policies/terms"&gt;</ex></ph>Terms of Service<ph name="LINK_END">$4<ex>&lt;/a&gt;</ex></ph>.
+        </message>
         <message desc="Message shown when user is asked to manually install the Host components." name="IDS_HOST_SETUP_INSTALL">
           Chrome is downloading the Chrome Remote Desktop Host installer.  Once the download is complete, please run the installer before continuing.
         </message>
@@ -378,6 +384,12 @@
         </message>
         <message desc="Message displayed next to the checkbox that the user can select to allow crash dump collection and reporting." name="IDS_HOST_SETUP_CRASH_REPORTING_MESSAGE">
           Help us improve Chromoting by allowing us to collect usage statistics and crash reports.
+        </message>
+        <message desc="Title of the dialog used to download and install the Chromoting host component." name="IDS_INSTALLER_DOWNLOAD">
+          Download Chromoting Host Installer
+        </message>
+        <message desc="Message shown to inform the user that the product is governed by Google's terms of service and to include a link to view them." name="IDS_HOST_SETUP_TERMS_OF_SERVICE">
+          By downloading the Chromoting Host Installer, you are agreeing to the Google <ph name="LINK_BEGIN">$1<ex>&lt;a href="http://www.google.com/intl/en/policies/terms"&gt;</ex></ph>Terms of Service<ph name="LINK_END">$4<ex>&lt;/a&gt;</ex></ph>.
         </message>
         <message desc="Message shown when user is asked to manually install the Host components." name="IDS_HOST_SETUP_INSTALL">
           Chrome is downloading the Chromoting Host installer.  Once the download is complete, please run the installer before continuing.
@@ -1134,6 +1146,15 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
       </message>
       <message desc="Text shown in tooltip to inform the user that a setting is managed by domain policy." name="IDS_SETTING_MANAGED_BY_POLICY">
         This setting is managed by your domain policy.
+      </message>
+      <message desc="Platform-specific text indicating that a component is for the Windows OS." name="IDS_FOR_PLATFORM_WINDOWS">
+        For Windows (XP and above)
+      </message>
+      <message desc="Platform-specific text indicating that a component is for the Mac OS." name="IDS_FOR_PLATFORM_MAC">
+        For Mac (OS X 10.6 and above)
+      </message>
+      <message desc="Text for the button the user clicks to indicate that they agree to the terms of service and want to proceed with downloading the installer." name="IDS_ACCEPT_AND_INSTALL">
+        Accept and Install
       </message>
 
     </messages>
