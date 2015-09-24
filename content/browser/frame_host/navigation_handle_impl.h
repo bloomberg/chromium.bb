@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -62,9 +63,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const GURL& GetURL() const override;
   net::Error GetNetErrorCode() const override;
   bool IsInMainFrame() const override;
+  RenderFrameHostImpl* GetRenderFrameHost() override;
   bool IsSamePage() override;
-  bool HasCommittedDocument() const override;
-  bool HasCommittedErrorPage() const override;
+  bool HasCommitted() override;
+  bool IsErrorPage() override;
 
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
@@ -83,14 +85,21 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // inform the delegate.
   void DidRedirectNavigation(const GURL& new_url);
 
-  // Called when the navigation was committed. This will update the |state_|
-  // and inform the delegate,
-  void DidCommitNavigation(bool same_page);
+  // Called when the navigation is ready to be committed in
+  // |render_frame_host|. This will update the |state_| and inform the
+  // delegate.
+  void ReadyToCommitNavigation(RenderFrameHostImpl* render_frame_host);
+
+  // Called when the navigation was committed in |render_frame_host|. This will
+  // update the |state_|.
+  void DidCommitNavigation(bool same_page,
+                           RenderFrameHostImpl* render_frame_host);
 
  private:
   // Used to track the state the navigation is currently in.
   enum State {
     DID_START = 0,
+    READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
   };
@@ -104,6 +113,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   net::Error net_error_code_;
   State state_;
   const bool is_main_frame_;
+  RenderFrameHostImpl* render_frame_host_;
   bool is_same_page_;
 
   // Whether the navigation is in the middle of a transfer. Set to false when

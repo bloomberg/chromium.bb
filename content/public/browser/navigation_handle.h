@@ -11,6 +11,7 @@
 class GURL;
 
 namespace content {
+class RenderFrameHost;
 
 // A NavigationHandle tracks information related to a single navigation.
 class CONTENT_EXPORT NavigationHandle {
@@ -28,16 +29,23 @@ class CONTENT_EXPORT NavigationHandle {
   // Whether the navigation is taking place in the main frame or in a subframe.
   virtual bool IsInMainFrame() const = 0;
 
+  // Returns the RenderFrameHost this navigation is taking place in. This can
+  // only be accessed after the navigation is ready to commit.
+  virtual RenderFrameHost* GetRenderFrameHost() = 0;
+
   // Whether the navigation happened in the same page. This is only known
   // after the navigation has committed. It is an error to call this method
   // before the navigation has committed.
   virtual bool IsSamePage() = 0;
 
-  // Whether the navigation has successfully committed a document.
-  virtual bool HasCommittedDocument() const = 0;
+  // Whether the navigation has committed. This returns true for either
+  // successful commits or error pages that replace the previous page
+  // (distinguished by |IsErrorPage|), and false for errors that leave the user
+  // on the previous page.
+  virtual bool HasCommitted() = 0;
 
-  // Whether an error page has committed for the navigation.
-  virtual bool HasCommittedErrorPage() const = 0;
+  // Whether the navigation resulted in an error page.
+  virtual bool IsErrorPage() = 0;
 };
 
 }  // namespace content

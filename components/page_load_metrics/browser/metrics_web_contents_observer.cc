@@ -71,8 +71,10 @@ bool MetricsWebContentsObserver::OnMessageReceived(
   return handled;
 }
 
-void MetricsWebContentsObserver::DidCommitNavigation(
+void MetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted())
+    return;
   if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage())
     RecordTimingHistograms();
   if (IsRelevantNavigation(navigation_handle))
@@ -148,7 +150,7 @@ bool MetricsWebContentsObserver::IsRelevantNavigation(
   const GURL& browser_url = web_contents()->GetLastCommittedURL();
   return navigation_handle->IsInMainFrame() &&
          !navigation_handle->IsSamePage() &&
-         navigation_handle->HasCommittedDocument() &&
+         !navigation_handle->IsErrorPage() &&
          navigation_handle->GetURL().SchemeIsHTTPOrHTTPS() &&
          browser_url.SchemeIsHTTPOrHTTPS();
 }

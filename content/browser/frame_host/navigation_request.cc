@@ -204,6 +204,8 @@ void NavigationRequest::CreateNavigationHandle(NavigatorDelegate* delegate) {
 void NavigationRequest::TransferNavigationHandleOwnership(
     RenderFrameHostImpl* render_frame_host) {
   render_frame_host->SetNavigationHandle(navigation_handle_.Pass());
+  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
+      render_frame_host);
 }
 
 void NavigationRequest::OnRequestRedirected(

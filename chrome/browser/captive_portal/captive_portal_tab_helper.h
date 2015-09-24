@@ -66,10 +66,9 @@ class CaptivePortalTabHelper
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DidCommitNavigation(
-      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidStopLoading() override;
 
   // content::NotificationObserver:
   void Observe(int type,

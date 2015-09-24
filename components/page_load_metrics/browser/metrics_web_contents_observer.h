@@ -34,7 +34,7 @@ class MetricsWebContentsObserver
   // content::WebContentsObserver implementation:
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
-  void DidCommitNavigation(
+  void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
 

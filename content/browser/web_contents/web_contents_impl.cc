@@ -2808,11 +2808,6 @@ void WebContentsImpl::ReadyToCommitNavigation(
                     ReadyToCommitNavigation(navigation_handle));
 }
 
-void WebContentsImpl::DidCommitNavigation(NavigationHandle* navigation_handle) {
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    DidCommitNavigation(navigation_handle));
-}
-
 void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                     DidFinishNavigation(navigation_handle));

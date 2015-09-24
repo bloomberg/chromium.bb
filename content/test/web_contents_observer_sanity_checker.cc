@@ -124,11 +124,10 @@ void WebContentsObserverSanityChecker::FrameDeleted(
 void WebContentsObserverSanityChecker::DidStartNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(!NavigationIsOngoing(navigation_handle));
-  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
 
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK(!navigation_handle->HasCommittedDocument());
-  CHECK(!navigation_handle->HasCommittedErrorPage());
+  CHECK(!navigation_handle->HasCommitted());
+  CHECK(!navigation_handle->IsErrorPage());
 
   ongoing_navigations_.insert(navigation_handle);
 }
@@ -136,51 +135,33 @@ void WebContentsObserverSanityChecker::DidStartNavigation(
 void WebContentsObserverSanityChecker::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(NavigationIsOngoing(navigation_handle));
-  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
 
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK(!navigation_handle->HasCommittedDocument());
-  CHECK(!navigation_handle->HasCommittedErrorPage());
+  CHECK(!navigation_handle->HasCommitted());
+  CHECK(!navigation_handle->IsErrorPage());
 }
 
 void WebContentsObserverSanityChecker::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(NavigationIsOngoing(navigation_handle));
-  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
 
-  CHECK(!navigation_handle->HasCommittedDocument());
-  CHECK(!navigation_handle->HasCommittedErrorPage());
-}
-
-void WebContentsObserverSanityChecker::DidCommitNavigation(
-    NavigationHandle* navigation_handle) {
-  CHECK(NavigationIsOngoing(navigation_handle));
-  CHECK(!NavigationIsOngoingAndCommitted(navigation_handle));
-
-  CHECK_NE(navigation_handle->HasCommittedDocument(),
-           navigation_handle->HasCommittedErrorPage());
-  CHECK_IMPLIES(navigation_handle->HasCommittedDocument(),
-                navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
-                navigation_handle->GetNetErrorCode() != net::OK);
-
-  ongoing_committed_navigations_.insert(navigation_handle);
+  CHECK(!navigation_handle->HasCommitted());
+  CHECK(navigation_handle->GetRenderFrameHost());
 }
 
 void WebContentsObserverSanityChecker::DidFinishNavigation(
     NavigationHandle* navigation_handle) {
   CHECK(NavigationIsOngoing(navigation_handle));
 
-  CHECK_IMPLIES(NavigationIsOngoingAndCommitted(navigation_handle),
-                navigation_handle->HasCommittedDocument() !=
-                    navigation_handle->HasCommittedErrorPage());
-  CHECK_IMPLIES(navigation_handle->HasCommittedDocument(),
-                navigation_handle->GetNetErrorCode() == net::OK);
-  CHECK_IMPLIES(navigation_handle->HasCommittedErrorPage(),
-                navigation_handle->GetNetErrorCode() != net::OK);
+  CHECK_IMPLIES(
+      navigation_handle->HasCommitted() && !navigation_handle->IsErrorPage(),
+      navigation_handle->GetNetErrorCode() == net::OK);
+  CHECK_IMPLIES(
+      navigation_handle->HasCommitted() && navigation_handle->IsErrorPage(),
+      navigation_handle->GetNetErrorCode() != net::OK);
 
-  if (NavigationIsOngoingAndCommitted(navigation_handle))
-    ongoing_committed_navigations_.erase(navigation_handle);
+  CHECK_IMPLIES(navigation_handle->HasCommitted(),
+                navigation_handle->GetRenderFrameHost() != nullptr);
 
   ongoing_navigations_.erase(navigation_handle);
 }
@@ -287,7 +268,6 @@ void WebContentsObserverSanityChecker::WebContentsDestroyed() {
   CHECK(!web_contents_destroyed_);
   web_contents_destroyed_ = true;
   CHECK(ongoing_navigations_.empty());
-  CHECK(ongoing_committed_navigations_.empty());
 }
 
 WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(
@@ -338,12 +318,6 @@ bool WebContentsObserverSanityChecker::NavigationIsOngoing(
     NavigationHandle* navigation_handle) {
   auto it = ongoing_navigations_.find(navigation_handle);
   return it != ongoing_navigations_.end();
-}
-
-bool WebContentsObserverSanityChecker::NavigationIsOngoingAndCommitted(
-    NavigationHandle* navigation_handle) {
-  auto it = ongoing_committed_navigations_.find(navigation_handle);
-  return it != ongoing_committed_navigations_.end();
 }
 
 }  // namespace content

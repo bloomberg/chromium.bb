@@ -25,6 +25,7 @@ NavigationHandleImpl::NavigationHandleImpl(const GURL& url,
       net_error_code_(net::OK),
       state_(DID_START),
       is_main_frame_(is_main_frame),
+      render_frame_host_(nullptr),
       is_same_page_(false),
       is_transferring_(false),
       delegate_(delegate) {
@@ -47,6 +48,13 @@ bool NavigationHandleImpl::IsInMainFrame() const {
   return is_main_frame_;
 }
 
+RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
+  CHECK(state_ >= READY_TO_COMMIT)
+      << "This accessor should only be called "
+         "after the navigation is ready to commit.";
+  return render_frame_host_;
+}
+
 bool NavigationHandleImpl::IsSamePage() {
   DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE)
       << "This accessor should not be called before the navigation has "
@@ -54,11 +62,11 @@ bool NavigationHandleImpl::IsSamePage() {
   return is_same_page_;
 }
 
-bool NavigationHandleImpl::HasCommittedDocument() const {
-  return state_ == DID_COMMIT;
+bool NavigationHandleImpl::HasCommitted() {
+  return state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE;
 }
 
-bool NavigationHandleImpl::HasCommittedErrorPage() const {
+bool NavigationHandleImpl::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
@@ -67,10 +75,21 @@ void NavigationHandleImpl::DidRedirectNavigation(const GURL& new_url) {
   delegate_->DidRedirectNavigation(this);
 }
 
-void NavigationHandleImpl::DidCommitNavigation(bool same_page) {
+void NavigationHandleImpl::ReadyToCommitNavigation(
+    RenderFrameHostImpl* render_frame_host) {
+  CHECK(!render_frame_host_);
+  render_frame_host_ = render_frame_host;
+  state_ = READY_TO_COMMIT;
+  delegate_->ReadyToCommitNavigation(this);
+}
+
+void NavigationHandleImpl::DidCommitNavigation(
+    bool same_page,
+    RenderFrameHostImpl* render_frame_host) {
+  CHECK_IMPLIES(render_frame_host_, render_frame_host_ == render_frame_host);
   is_same_page_ = same_page;
+  render_frame_host_ = render_frame_host;
   state_ = net_error_code_ == net::OK ? DID_COMMIT : DID_COMMIT_ERROR_PAGE;
-  delegate_->DidCommitNavigation(this);
 }
 
 }  // namespace content

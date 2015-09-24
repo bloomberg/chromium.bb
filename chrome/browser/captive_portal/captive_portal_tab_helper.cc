@@ -62,8 +62,7 @@ void CaptivePortalTabHelper::DidStartNavigation(
   // and it committed (either the navigation proper or an error page), it is
   // safe to start tracking the new navigation. Otherwise simulate an abort
   // before reporting the start of the new navigation.
-  if (navigation_handle_ && !navigation_handle_->HasCommittedDocument() &&
-      !navigation_handle_->HasCommittedErrorPage()) {
+  if (navigation_handle_ && !navigation_handle_->HasCommitted()) {
     tab_reloader_->OnAbort();
   }
 
@@ -82,33 +81,33 @@ void CaptivePortalTabHelper::DidRedirectNavigation(
       navigation_handle->GetURL().SchemeIsCryptographic());
 }
 
-void CaptivePortalTabHelper::DidCommitNavigation(
+void CaptivePortalTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(CalledOnValidThread());
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  if (navigation_handle_ != navigation_handle)
+  if (navigation_handle_ != navigation_handle) {
+    // Another navigation is being tracked, so there is no need to update the
+    // TabReloader.
+    if (!navigation_handle->HasCommitted())
+      return;
+    // An untracked navigation just committed. Simulate its start before
+    // informing the TabReloader of its commit.
     DidStartNavigation(navigation_handle);
+  }
 
-  tab_reloader_->OnLoadCommitted(navigation_handle->GetNetErrorCode());
-}
-
-void CaptivePortalTabHelper::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  DCHECK(CalledOnValidThread());
-  if (navigation_handle != navigation_handle_)
-    return;
-  DCHECK(navigation_handle->IsInMainFrame());
-
-  if (!navigation_handle->HasCommittedDocument() &&
-      !navigation_handle->HasCommittedErrorPage()) {
+  if (navigation_handle->HasCommitted()) {
+    tab_reloader_->OnLoadCommitted(navigation_handle->GetNetErrorCode());
+  } else {
     tab_reloader_->OnAbort();
   }
 
-  login_detector_->OnStoppedLoading();
-
   navigation_handle_ = nullptr;
+}
+
+void CaptivePortalTabHelper::DidStopLoading() {
+  login_detector_->OnStoppedLoading();
 }
 
 void CaptivePortalTabHelper::Observe(
