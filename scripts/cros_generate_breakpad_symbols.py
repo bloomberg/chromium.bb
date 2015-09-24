@@ -63,7 +63,8 @@ def ReadSymsHeader(sym_file):
 
 
 def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
-                           strip_cfi=False, num_errors=None):
+                           strip_cfi=False, num_errors=None,
+                           dump_syms_cmd='dump_syms'):
   """Generate the symbols for |elf_file| using |debug_file|
 
   Args:
@@ -72,6 +73,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
     breakpad_dir: The dir to store the output symbol file in
     strip_cfi: Do not generate CFI data
     num_errors: An object to update with the error count (needs a .value member)
+    dump_syms_cmd: Command to use for dumping symbols.
 
   Returns:
     The number of errors that were encountered.
@@ -80,7 +82,7 @@ def GenerateBreakpadSymbol(elf_file, debug_file=None, breakpad_dir=None,
   if num_errors is None:
     num_errors = ctypes.c_int()
 
-  cmd_base = ['dump_syms']
+  cmd_base = [dump_syms_cmd]
   if strip_cfi:
     cmd_base += ['-c']
   # Some files will not be readable by non-root (e.g. set*id /bin/su).
