@@ -33,8 +33,4 @@
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGStringList requiredFeatures;
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGStringList requiredExtensions;
     [RuntimeEnabled=SVG1DOM, MeasureAs=SVG1DOM] readonly attribute SVGStringList systemLanguage;
-
-    // TODO(philipj): The following was part of SVG 1.1:
-    // http://www.w3.org/TR/SVG11/types.html#InterfaceSVGTests
-    [Measure] boolean hasExtension(DOMString extension);
 };

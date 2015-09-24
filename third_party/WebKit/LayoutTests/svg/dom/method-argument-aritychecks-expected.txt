@@ -29,13 +29,6 @@ setStdDeviation(float stdDeviationX, float stdDeviationY)
 PASS gaussian.setStdDeviation() threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': 2 arguments required, but only 0 present..
 PASS gaussian.setStdDeviation(0) threw exception TypeError: Failed to execute 'setStdDeviation' on 'SVGFEGaussianBlurElement': 2 arguments required, but only 1 present..
 PASS gaussian.setStdDeviation(0, 0) did not throw exception.
-
-
-SVGTests
-
-hasExtension(DOMString extension)
-PASS rect.hasExtension() threw exception TypeError: Failed to execute 'hasExtension' on 'SVGGraphicsElement': 1 argument required, but only 0 present..
-PASS rect.hasExtension("foo") did not throw exception.
 PASS successfullyParsed is true
 
 TEST COMPLETE

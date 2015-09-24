@@ -3584,7 +3584,6 @@ interface SVGAnimationElement
     method getCurrentTime
     method getSimpleDuration
     method getStartTime
-    method hasExtension
     setter onbegin
     setter onend
     setter onrepeat
@@ -3619,7 +3618,6 @@ interface SVGCursorElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGDefsElement
     method constructor
 interface SVGDescElement
@@ -4052,7 +4050,6 @@ interface SVGGraphicsElement
     method getCTM
     method getScreenCTM
     method getTransformToElement
-    method hasExtension
 interface SVGImageElement
     getter height
     getter href
@@ -4139,7 +4136,6 @@ interface SVGMaskElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGMatrix
     getter a
     getter b
@@ -4415,7 +4411,6 @@ interface SVGPatternElement
     getter x
     getter y
     method constructor
-    method hasExtension
 interface SVGPoint
     getter x
     getter y

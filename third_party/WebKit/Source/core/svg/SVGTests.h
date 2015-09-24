@@ -38,7 +38,6 @@ public:
     SVGStringListTearOff* requiredFeatures() { return m_requiredFeatures->tearOff(); }
     SVGStringListTearOff* requiredExtensions() { return m_requiredExtensions->tearOff(); }
     SVGStringListTearOff* systemLanguage() { return m_systemLanguage->tearOff(); }
-    bool hasExtension(const String&);
 
     bool isValid(Document&) const;
 

@@ -46,12 +46,6 @@ DEFINE_TRACE(SVGTests)
     visitor->trace(m_systemLanguage);
 }
 
-bool SVGTests::hasExtension(const String&)
-{
-    // FIXME: Implement me!
-    return false;
-}
-
 bool SVGTests::isValid(Document& document) const
 {
     // No need to check requiredFeatures since hasFeature always returns true.
