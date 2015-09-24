@@ -234,11 +234,14 @@ void TabSpecificContentSettings::ServiceWorkerAccessed(int render_process_id,
 
 bool TabSpecificContentSettings::IsContentBlocked(
     ContentSettingsType content_type) const {
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_GEOLOCATION, content_type)
       << "Geolocation settings handled by ContentSettingGeolocationImageModel";
-  DCHECK(content_type != CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, content_type)
       << "Notifications settings handled by "
       << "ContentSettingsNotificationsImageModel";
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type)
+      << "The Mediastream content setting is deprecated. "
+      << "Call IsContentBlocked for camera and microphone settings instead.";
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
@@ -246,7 +249,6 @@ bool TabSpecificContentSettings::IsContentBlocked(
       content_type == CONTENT_SETTINGS_TYPE_COOKIES ||
       content_type == CONTENT_SETTINGS_TYPE_POPUPS ||
       content_type == CONTENT_SETTINGS_TYPE_MIXEDSCRIPT ||
-      content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
       content_type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER ||

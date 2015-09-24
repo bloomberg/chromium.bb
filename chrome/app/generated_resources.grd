@@ -324,9 +324,6 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MOUSELOCK" desc="The label used for mouse lock permission controls in the Website Settings popup.">
         Mouse Lock
       </message>
-      <message name="IDS_WEBSITE_SETTINGS_TYPE_MEDIASTREAM" desc="The label used for media stream permission controls in the Website Settings popup.">
-        Media
-      </message>
       <message name="IDS_WEBSITE_SETTINGS_TYPE_MIC" desc="The label used for the microphone permission controls in the Website Settings popup.">
         Microphone
       </message>

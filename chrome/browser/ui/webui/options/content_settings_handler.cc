@@ -470,7 +470,7 @@ void ContentSettingsHandler::GetLocalizedValues(
   int default_value = CONTENT_SETTING_DEFAULT;
   bool success = default_pref->GetAsInteger(&default_value);
   DCHECK(success);
-  DCHECK_NE(default_value, CONTENT_SETTING_DEFAULT);
+  DCHECK_NE(CONTENT_SETTING_DEFAULT, default_value);
 
   int plugin_ids = default_value == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ?
       IDS_PLUGIN_DETECT_RECOMMENDED_RADIO : IDS_PLUGIN_DETECT_RADIO;
@@ -1320,18 +1320,9 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
 
-  // MEDIASTREAM is deprecated and the two separate settings MEDIASTREAM_CAMERA
-  // and MEDIASTREAM_MIC should be used instead. However, we still only have
-  // one pair of radio buttons that sets both settings.
-  // TODO(msramek): Clean this up once we have the new UI for media.
-  if (content_type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
-    map->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, default_setting);
-    map->SetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, default_setting);
-  } else {
-    map->SetDefaultContentSetting(content_type, default_setting);
-  }
+  // The MEDIASTREAM setting is deprecated and has no UI.
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, content_type);
+  map->SetDefaultContentSetting(content_type, default_setting);
 
   switch (content_type) {
     case CONTENT_SETTINGS_TYPE_COOKIES:
@@ -1366,9 +1357,13 @@ void ContentSettingsHandler::SetContentFilter(const base::ListValue* args) {
       content::RecordAction(
           UserMetricsAction("Options_DefaultMouseLockSettingChanged"));
       break;
-    case CONTENT_SETTINGS_TYPE_MEDIASTREAM:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
       content::RecordAction(
           UserMetricsAction("Options_DefaultMediaStreamMicSettingChanged"));
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      content::RecordAction(
+          UserMetricsAction("Options_DefaultMediaStreamCameraSettingChanged"));
       break;
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       content::RecordAction(
@@ -1417,8 +1412,11 @@ void ContentSettingsHandler::SetException(const base::ListValue* args) {
   CHECK(args->GetString(3, &setting));
 
   ContentSettingsType type = ContentSettingsTypeFromGroupName(type_string);
+
+  // The MEDIASTREAM setting is deprecated and has no UI.
+  DCHECK_NE(CONTENT_SETTINGS_TYPE_MEDIASTREAM, type);
+
   if (type == CONTENT_SETTINGS_TYPE_GEOLOCATION ||
-      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
     NOTREACHED();

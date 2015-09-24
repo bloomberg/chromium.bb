@@ -4712,9 +4712,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The default location setting at profile open.</summary>
 </histogram>
 
+<histogram name="ContentSettings.DefaultMediaStreamCameraSetting"
+    enum="ContentSetting">
+  <owner>msramek@chromium.org</owner>
+  <summary>The default camera setting at profile open.</summary>
+</histogram>
+
+<histogram name="ContentSettings.DefaultMediaStreamMicSetting"
+    enum="ContentSetting">
+  <owner>msramek@chromium.org</owner>
+  <summary>The default microphone setting at profile open.</summary>
+</histogram>
+
 <histogram name="ContentSettings.DefaultMediaStreamSetting"
     enum="ContentSetting">
+  <obsolete>
+    This setting was deprecated in r322364 and replaced with separate settings
+    for camera and microphone. See
+    ContentSettings.DefaultMediaStreamCameraSetting and
+    ContentSettings.DefaultMediaStreamMicSetting.
+  </obsolete>
   <owner>toyoshim@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
   <summary>The default MediaStream setting at profile open.</summary>
 </histogram>
 
