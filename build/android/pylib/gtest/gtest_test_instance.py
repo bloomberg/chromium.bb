@@ -274,22 +274,32 @@ class GtestTestInstance(test_instance.TestInstance):
     Returns:
       A list of base_test_result.BaseTestResults.
     """
+    log = []
+    result_type = None
     results = []
     for l in output:
+      logging.info(l)
       matcher = _RE_TEST_STATUS.match(l)
       if matcher:
-        result_type = None
-        if matcher.group(1) == 'OK':
+        if matcher.group(1) == 'RUN':
+          log = []
+        elif matcher.group(1) == 'OK':
           result_type = base_test_result.ResultType.PASS
         elif matcher.group(1) == 'FAILED':
           result_type = base_test_result.ResultType.FAIL
 
-        if result_type:
-          test_name = matcher.group(2)
-          duration = matcher.group(3) if matcher.group(3) else 0
-          results.append(base_test_result.BaseTestResult(
-              test_name, result_type, duration))
-      logging.info(l)
+      if log is not None:
+        log.append(l)
+
+      if result_type:
+        test_name = matcher.group(2)
+        duration = matcher.group(3) if matcher.group(3) else 0
+        results.append(base_test_result.BaseTestResult(
+            test_name, result_type, duration,
+            log=('\n'.join(log) if log else '')))
+        log = None
+        result_type = None
+
     return results
 
   #override

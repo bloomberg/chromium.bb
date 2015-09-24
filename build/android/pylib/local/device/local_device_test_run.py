@@ -29,6 +29,7 @@ def handle_shard_failures(f):
       logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
     return None
 
+  wrapper.__name__ = f.__name__
   return wrapper
 
 
@@ -42,25 +43,32 @@ class LocalDeviceTestRun(test_run.TestRun):
   def RunTests(self):
     tests = self._GetTests()
 
+    def run_test(dev, test):
+      try:
+        return self._RunTest(dev, test)
+      except device_errors.CommandFailedError:
+        logging.exception('Test failed: %s', test)
+      except device_errors.CommandTimeoutError:
+        logging.exception('Test timed out: %s', test)
+      return None
+
     @handle_shard_failures
     def run_tests_on_device(dev, tests, results):
       for test in tests:
+        result = None
         try:
-          result = self._RunTest(dev, test)
-          if isinstance(result, base_test_result.BaseTestResult):
-            results.AddResult(result)
-          elif isinstance(result, list):
-            results.AddResults(result)
-          else:
-            raise Exception(
-                'Unexpected result type: %s' % type(result).__name__)
-        except:
-          if isinstance(tests, test_collection.TestCollection):
-            tests.add(test)
-          raise
+          result = run_test(dev, test)
         finally:
           if isinstance(tests, test_collection.TestCollection):
+            if not result:
+              tests.add(test)
             tests.test_completed()
+
+        if isinstance(result, base_test_result.BaseTestResult):
+          results.AddResult(result)
+        elif isinstance(result, list):
+          results.AddResults(result)
+
       logging.info('Finished running tests on this device.')
 
     tries = 0
