@@ -2695,6 +2695,7 @@ TEST_F(LayerTreeHostCommonTest,
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                   &task_graph_runner);
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
@@ -2734,7 +2735,7 @@ TEST_F(LayerTreeHostCommonTest,
   root->AddChild(child.Pass());
   root->AddChild(occluding_child.Pass());
   host_impl.active_tree()->SetRootLayer(root.Pass());
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(output_surface.get());
   bool update_lcd_text = false;
   host_impl.active_tree()->UpdateDrawProperties(update_lcd_text);
 

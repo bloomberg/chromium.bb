@@ -210,26 +210,22 @@ void ThreadProxy::RequestNewOutputSurface() {
   layer_tree_host()->RequestNewOutputSurface();
 }
 
-void ThreadProxy::SetOutputSurface(scoped_ptr<OutputSurface> output_surface) {
+void ThreadProxy::SetOutputSurface(OutputSurface* output_surface) {
   Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
-                 impl_thread_weak_ptr_, base::Passed(&output_surface)));
+      FROM_HERE, base::Bind(&ThreadProxy::InitializeOutputSurfaceOnImplThread,
+                            impl_thread_weak_ptr_, output_surface));
 }
 
-scoped_ptr<OutputSurface> ThreadProxy::ReleaseOutputSurface() {
+void ThreadProxy::ReleaseOutputSurface() {
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host()->output_surface_lost());
 
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
   CompletionEvent completion;
-  scoped_ptr<OutputSurface> output_surface;
   Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::ReleaseOutputSurfaceOnImplThread,
-                 impl_thread_weak_ptr_, &completion, &output_surface));
+      FROM_HERE, base::Bind(&ThreadProxy::ReleaseOutputSurfaceOnImplThread,
+                            impl_thread_weak_ptr_, &completion));
   completion.Wait();
-  return output_surface;
 }
 
 void ThreadProxy::DidInitializeOutputSurface(
@@ -1041,12 +1037,12 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
 }
 
 void ThreadProxy::InitializeOutputSurfaceOnImplThread(
-    scoped_ptr<OutputSurface> output_surface) {
+    OutputSurface* output_surface) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeOutputSurfaceOnImplThread");
   DCHECK(IsImplThread());
 
   LayerTreeHostImpl* host_impl = impl().layer_tree_host_impl.get();
-  bool success = host_impl->InitializeRenderer(output_surface.Pass());
+  bool success = host_impl->InitializeRenderer(output_surface);
   RendererCapabilities capabilities;
   if (success) {
     capabilities =
@@ -1065,14 +1061,13 @@ void ThreadProxy::InitializeOutputSurfaceOnImplThread(
 }
 
 void ThreadProxy::ReleaseOutputSurfaceOnImplThread(
-    CompletionEvent* completion,
-    scoped_ptr<OutputSurface>* output_surface) {
+    CompletionEvent* completion) {
   DCHECK(IsImplThread());
 
   // Unlike DidLoseOutputSurfaceOnImplThread, we don't need to call
   // LayerTreeHost::DidLoseOutputSurface since it already knows.
   impl().scheduler->DidLoseOutputSurface();
-  *output_surface = impl().layer_tree_host_impl->ReleaseOutputSurface();
+  impl().layer_tree_host_impl->ReleaseOutputSurface();
   completion->Signal();
 }
 

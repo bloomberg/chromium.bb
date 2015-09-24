@@ -28,6 +28,7 @@ class WebGraphicsContext3DInProcessCommandBufferImpl;
 namespace content {
 
 class InProcessChildThreadParams;
+class SynchronousCompositorContextProvider;
 
 class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
  public:
@@ -74,6 +75,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   scoped_refptr<cc::ContextProvider> CreateContextProviderForCompositor(
       int surface_id,
       CommandBufferContextType type);
+  scoped_refptr<cc::ContextProvider> GetSharedWorkerContextProvider();
   bool CanCreateMainThreadContext();
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       TryCreateStreamTextureFactory();
@@ -87,6 +89,10 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
 
   class VideoContextProvider;
   scoped_refptr<VideoContextProvider> video_context_provider_;
+
+  scoped_refptr<SynchronousCompositorContextProvider> shared_worker_context_;
+  scoped_refptr<cc_blink::ContextProviderWebContext>
+      in_process_shared_worker_context_;
 
   bool use_ipc_command_buffer_;
 

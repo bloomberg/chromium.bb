@@ -112,19 +112,37 @@ void InProcessContextFactory::CreateOutputSurface(
       InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
                                        &image_factory_,
                                        compositor->widget(), "UICompositor");
-  scoped_refptr<InProcessContextProvider> worker_context_provider =
-      InProcessContextProvider::CreateOffscreen(&gpu_memory_buffer_manager_,
-                                                &image_factory_);
+
+  // Try to reuse existing shared worker context provider.
+  bool shared_worker_context_provider_lost = false;
+  if (shared_worker_context_provider_) {
+    // Note: If context is lost, delete reference after releasing the lock.
+    base::AutoLock lock(*shared_worker_context_provider_->GetLock());
+    if (shared_worker_context_provider_->ContextGL()
+            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+      shared_worker_context_provider_lost = true;
+    }
+  }
+  if (!shared_worker_context_provider_ || shared_worker_context_provider_lost) {
+    shared_worker_context_provider_ = InProcessContextProvider::CreateOffscreen(
+        &gpu_memory_buffer_manager_, &image_factory_);
+    if (shared_worker_context_provider_ &&
+        !shared_worker_context_provider_->BindToCurrentThread())
+      shared_worker_context_provider_ = nullptr;
+    if (shared_worker_context_provider_)
+      shared_worker_context_provider_->SetupLock();
+  }
 
   scoped_ptr<cc::OutputSurface> real_output_surface;
 
   if (use_test_surface_) {
     bool flipped_output_surface = false;
     real_output_surface = make_scoped_ptr(new cc::PixelTestOutputSurface(
-        context_provider, worker_context_provider, flipped_output_surface));
+        context_provider, shared_worker_context_provider_,
+        flipped_output_surface));
   } else {
-    real_output_surface = make_scoped_ptr(
-        new DirectOutputSurface(context_provider, worker_context_provider));
+    real_output_surface = make_scoped_ptr(new DirectOutputSurface(
+        context_provider, shared_worker_context_provider_));
   }
 
   if (surface_manager_) {
@@ -136,7 +154,7 @@ void InProcessContextFactory::CreateOutputSurface(
     scoped_ptr<cc::SurfaceDisplayOutputSurface> surface_output_surface(
         new cc::SurfaceDisplayOutputSurface(
             surface_manager_, compositor->surface_id_allocator(),
-            context_provider, worker_context_provider));
+            context_provider, shared_worker_context_provider_));
     display_client->set_surface_output_surface(surface_output_surface.get());
     surface_output_surface->set_display_client(display_client.get());
 

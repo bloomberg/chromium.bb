@@ -172,6 +172,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       proxy_(proxy),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
+      output_surface_(nullptr),
       content_is_suitable_for_gpu_rasterization_(true),
       has_gpu_rasterization_trigger_(false),
       use_gpu_rasterization_(false),
@@ -284,6 +285,13 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   }
 
   CleanUpTileManager();
+  renderer_ = nullptr;
+  resource_provider_ = nullptr;
+
+  if (output_surface_) {
+    output_surface_->DetachFromClient();
+    output_surface_ = nullptr;
+  }
 }
 
 void LayerTreeHostImpl::BeginMainFrameAborted(CommitEarlyOutReason reason) {
@@ -1565,7 +1573,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                                 output_surface_.get(), NULL);
+                                 output_surface_, NULL);
     temp_software_renderer->DrawFrame(&frame->render_passes,
                                       device_scale_factor_,
                                       DeviceViewport(),
@@ -1627,7 +1635,7 @@ bool LayerTreeHostImpl::CanUseGpuRasterization() {
 
   ContextProvider* context_provider =
       output_surface_->worker_context_provider();
-  base::AutoLock context_lock(*context_provider->GetLock());
+  ContextProvider::ScopedContextLock scoped_context(context_provider);
   if (!context_provider->GrContext())
     return false;
 
@@ -2010,18 +2018,18 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
   DCHECK(resource_provider_);
 
   if (output_surface_->capabilities().delegated_rendering) {
-    renderer_ = DelegatingRenderer::Create(this, &settings_.renderer_settings,
-                                           output_surface_.get(),
-                                           resource_provider_.get());
+    renderer_ =
+        DelegatingRenderer::Create(this, &settings_.renderer_settings,
+                                   output_surface_, resource_provider_.get());
   } else if (output_surface_->context_provider()) {
     renderer_ = GLRenderer::Create(
-        this, &settings_.renderer_settings, output_surface_.get(),
+        this, &settings_.renderer_settings, output_surface_,
         resource_provider_.get(), texture_mailbox_deleter_.get(),
         settings_.renderer_settings.highp_threshold_min);
   } else if (output_surface_->software_device()) {
-    renderer_ = SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                                         output_surface_.get(),
-                                         resource_provider_.get());
+    renderer_ =
+        SoftwareRenderer::Create(this, &settings_.renderer_settings,
+                                 output_surface_, resource_provider_.get());
   }
   DCHECK(renderer_);
 
@@ -2150,7 +2158,7 @@ void LayerTreeHostImpl::CleanUpTileManager() {
   single_thread_synchronous_task_graph_runner_ = nullptr;
 }
 
-scoped_ptr<OutputSurface> LayerTreeHostImpl::ReleaseOutputSurface() {
+void LayerTreeHostImpl::ReleaseOutputSurface() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseOutputSurface");
 
   // Since we will create a new resource provider, we cannot continue to use
@@ -2163,11 +2171,16 @@ scoped_ptr<OutputSurface> LayerTreeHostImpl::ReleaseOutputSurface() {
   CleanUpTileManager();
   resource_provider_ = nullptr;
 
-  return output_surface_.Pass();
+  // Detach from the old output surface and reset |output_surface_| pointer
+  // as this surface is going to be destroyed independent of if binding the
+  // new output surface succeeds or not.
+  if (output_surface_) {
+    output_surface_->DetachFromClient();
+    output_surface_ = nullptr;
+  }
 }
 
-bool LayerTreeHostImpl::InitializeRenderer(
-    scoped_ptr<OutputSurface> output_surface) {
+bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
 
   ReleaseOutputSurface();
@@ -2178,9 +2191,9 @@ bool LayerTreeHostImpl::InitializeRenderer(
     return false;
   }
 
-  output_surface_ = output_surface.Pass();
+  output_surface_ = output_surface;
   resource_provider_ = ResourceProvider::Create(
-      output_surface_.get(), shared_bitmap_manager_, gpu_memory_buffer_manager_,
+      output_surface_, shared_bitmap_manager_, gpu_memory_buffer_manager_,
       proxy_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.use_rgba_4444_textures,

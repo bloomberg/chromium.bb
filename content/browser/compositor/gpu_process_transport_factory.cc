@@ -244,11 +244,14 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface) {
     // Try to reuse existing worker context provider.
+    bool shared_worker_context_provider_lost = false;
     if (shared_worker_context_provider_) {
+      // Note: If context is lost, we delete reference after releasing the lock.
       base::AutoLock lock(*shared_worker_context_provider_->GetLock());
       if (shared_worker_context_provider_->ContextGL()
-              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
-        shared_worker_context_provider_ = nullptr;
+              ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+        shared_worker_context_provider_lost = true;
+      }
     }
     scoped_refptr<GpuChannelHost> gpu_channel_host =
         BrowserGpuChannelHostFactory::instance()->GetGpuChannel();
@@ -259,7 +262,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           BROWSER_COMPOSITOR_ONSCREEN_CONTEXT);
       if (context_provider && !context_provider->BindToCurrentThread())
         context_provider = nullptr;
-      if (!shared_worker_context_provider_) {
+      if (!shared_worker_context_provider_ ||
+          shared_worker_context_provider_lost) {
         shared_worker_context_provider_ = ContextProviderCommandBuffer::Create(
             GpuProcessTransportFactory::CreateContextCommon(gpu_channel_host,
                                                             0),
@@ -267,6 +271,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         if (shared_worker_context_provider_ &&
             !shared_worker_context_provider_->BindToCurrentThread())
           shared_worker_context_provider_ = nullptr;
+        if (shared_worker_context_provider_)
+          shared_worker_context_provider_->SetupLock();
       }
     }
 

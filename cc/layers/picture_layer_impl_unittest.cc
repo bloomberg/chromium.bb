@@ -93,6 +93,7 @@ class PictureLayerImplTest : public testing::Test {
  public:
   PictureLayerImplTest()
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
+        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(LowResTilingsSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -107,6 +108,7 @@ class PictureLayerImplTest : public testing::Test {
 
   explicit PictureLayerImplTest(const LayerTreeSettings& settings)
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
+        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(settings,
                    &proxy_,
                    &shared_bitmap_manager_,
@@ -121,7 +123,7 @@ class PictureLayerImplTest : public testing::Test {
   void SetUp() override { InitializeRenderer(); }
 
   virtual void InitializeRenderer() {
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_.InitializeRenderer(output_surface_.get());
   }
 
   void SetupDefaultTrees(const gfx::Size& layer_bounds) {
@@ -359,6 +361,7 @@ class PictureLayerImplTest : public testing::Test {
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
+  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
   int root_id_;
   int id_;
@@ -1627,8 +1630,10 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  host_impl_.InitializeRenderer(
-      FakeOutputSurface::Create3d(context.Pass()).Pass());
+  scoped_ptr<OutputSurface> new_output_surface =
+      FakeOutputSurface::Create3d(context.Pass());
+  host_impl_.InitializeRenderer(new_output_surface.get());
+  output_surface_ = new_output_surface.Pass();
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -1672,8 +1677,10 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.DidLoseOutputSurface();
-  host_impl_.InitializeRenderer(
-      FakeOutputSurface::Create3d(context.Pass()).Pass());
+  scoped_ptr<OutputSurface> new_output_surface =
+      FakeOutputSurface::Create3d(context.Pass());
+  host_impl_.InitializeRenderer(new_output_surface.get());
+  output_surface_ = new_output_surface.Pass();
 
   SetupDrawPropertiesAndUpdateTiles(active_layer_, 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -3925,10 +3932,12 @@ TEST_F(PictureLayerImplTest, SharedQuadStateContainsMaxTilingScale) {
 
 class PictureLayerImplTestWithDelegatingRenderer : public PictureLayerImplTest {
  public:
-  PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {}
+  PictureLayerImplTestWithDelegatingRenderer() : PictureLayerImplTest() {
+    output_surface_ = FakeOutputSurface::CreateDelegating3d();
+  }
 
   void InitializeRenderer() override {
-    host_impl_.InitializeRenderer(FakeOutputSurface::CreateDelegating3d());
+    host_impl_.InitializeRenderer(output_surface_.get());
   }
 };
 

@@ -385,7 +385,9 @@ void LayerTreeHost::SetOutputSurface(scoped_ptr<OutputSurface> surface) {
   DCHECK(output_surface_lost_);
   DCHECK(surface);
 
-  proxy_->SetOutputSurface(surface.Pass());
+  DCHECK(!new_output_surface_);
+  new_output_surface_ = surface.Pass();
+  proxy_->SetOutputSurface(new_output_surface_.get());
 }
 
 scoped_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
@@ -393,7 +395,8 @@ scoped_ptr<OutputSurface> LayerTreeHost::ReleaseOutputSurface() {
   DCHECK(!output_surface_lost_);
 
   DidLoseOutputSurface();
-  return proxy_->ReleaseOutputSurface();
+  proxy_->ReleaseOutputSurface();
+  return current_output_surface_.Pass();
 }
 
 void LayerTreeHost::RequestNewOutputSurface() {
@@ -401,12 +404,20 @@ void LayerTreeHost::RequestNewOutputSurface() {
 }
 
 void LayerTreeHost::DidInitializeOutputSurface() {
+  DCHECK(new_output_surface_);
   output_surface_lost_ = false;
+  current_output_surface_ = new_output_surface_.Pass();
   client_->DidInitializeOutputSurface();
 }
 
 void LayerTreeHost::DidFailToInitializeOutputSurface() {
   DCHECK(output_surface_lost_);
+  DCHECK(new_output_surface_);
+  // Note: It is safe to drop all output surface references here as
+  // LayerTreeHostImpl will not keep a pointer to either the old or
+  // new output surface after failing to initialize the new one.
+  current_output_surface_ = nullptr;
+  new_output_surface_ = nullptr;
   client_->DidFailToInitializeOutputSurface();
 }
 

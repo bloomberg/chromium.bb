@@ -60,9 +60,10 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                             &task_graph_runner);
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(output_surface.get());
 
   // Make sure we're appending quads when there are valid values.
   gfx::Size bitmap_size(100, 100);
@@ -106,9 +107,10 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                             &task_graph_runner);
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(output_surface.get());
 
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);;
@@ -136,9 +138,10 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   FakeImplProxy proxy;
   TestSharedBitmapManager shared_bitmap_manager;
   TestTaskGraphRunner task_graph_runner;
+  scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d();
   FakeUIResourceLayerTreeHostImpl host_impl(&proxy, &shared_bitmap_manager,
                                             &task_graph_runner);
-  host_impl.InitializeRenderer(FakeOutputSurface::Create3d());
+  host_impl.InitializeRenderer(output_surface.get());
 
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);

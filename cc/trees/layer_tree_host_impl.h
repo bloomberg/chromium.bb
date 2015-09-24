@@ -360,14 +360,15 @@ class CC_EXPORT LayerTreeHostImpl
   // Implementation.
   int id() const { return id_; }
   bool CanDraw() const;
-  OutputSurface* output_surface() const { return output_surface_.get(); }
-  scoped_ptr<OutputSurface> ReleaseOutputSurface();
+  OutputSurface* output_surface() const { return output_surface_; }
+  void ReleaseOutputSurface();
+
   std::string LayerTreeAsJson() const;
 
   void FinishAllRendering();
   int RequestedMSAASampleCount() const;
 
-  virtual bool InitializeRenderer(scoped_ptr<OutputSurface> output_surface);
+  virtual bool InitializeRenderer(OutputSurface* output_surface);
   TileManager* tile_manager() { return tile_manager_.get(); }
 
   void SetHasGpuRasterizationTrigger(bool flag) {
@@ -696,7 +697,7 @@ class CC_EXPORT LayerTreeHostImpl
   // request queue.
   std::set<UIResourceId> evicted_ui_resources_;
 
-  scoped_ptr<OutputSurface> output_surface_;
+  OutputSurface* output_surface_;
 
   scoped_ptr<ResourceProvider> resource_provider_;
   bool content_is_suitable_for_gpu_rasterization_;

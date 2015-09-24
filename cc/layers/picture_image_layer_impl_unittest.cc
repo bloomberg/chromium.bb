@@ -43,12 +43,13 @@ class PictureImageLayerImplTest : public testing::Test {
  public:
   PictureImageLayerImplTest()
       : proxy_(base::ThreadTaskRunnerHandle::Get()),
+        output_surface_(FakeOutputSurface::Create3d()),
         host_impl_(PictureLayerImplImageTestSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
                    &task_graph_runner_) {
     host_impl_.CreatePendingTree();
-    host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_.InitializeRenderer(output_surface_.get());
   }
 
   scoped_ptr<TestablePictureImageLayerImpl> CreateLayer(int id,
@@ -93,6 +94,7 @@ class PictureImageLayerImplTest : public testing::Test {
   FakeImplProxy proxy_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
+  scoped_ptr<OutputSurface> output_surface_;
   FakeLayerTreeHostImpl host_impl_;
 };
 

@@ -37,6 +37,7 @@ class MailboxOutputSurface : public CompositorOutputSurface {
   ~MailboxOutputSurface() override;
 
   // cc::OutputSurface implementation.
+  void DetachFromClient() override;
   void EnsureBackbuffer() override;
   void DiscardBackbuffer() override;
   void Reshape(const gfx::Size& size, float scale_factor) override;

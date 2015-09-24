@@ -846,6 +846,7 @@ void RenderThreadImpl::Shutdown() {
   main_thread_compositor_task_runner_ = NULL;
 
   // Context providers must be released prior to destroying the GPU channel.
+  shared_worker_context_provider_ = nullptr;
   gpu_va_context_provider_ = nullptr;
   shared_main_thread_contexts_ = nullptr;
 
@@ -1891,6 +1892,31 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
 
 base::TaskRunner* RenderThreadImpl::GetWorkerTaskRunner() {
   return raster_worker_pool_.get();
+}
+
+scoped_refptr<ContextProviderCommandBuffer>
+RenderThreadImpl::SharedWorkerContextProvider() {
+  DCHECK(IsMainThread());
+  // Try to reuse existing shared worker context provider.
+  bool shared_worker_context_provider_lost = false;
+  if (shared_worker_context_provider_) {
+    // Note: If context is lost, delete reference after releasing the lock.
+    base::AutoLock lock(*shared_worker_context_provider_->GetLock());
+    if (shared_worker_context_provider_->ContextGL()
+            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+      shared_worker_context_provider_lost = true;
+    }
+  }
+  if (!shared_worker_context_provider_ || shared_worker_context_provider_lost) {
+    shared_worker_context_provider_ = ContextProviderCommandBuffer::Create(
+        CreateOffscreenContext3d(), RENDER_WORKER_CONTEXT);
+    if (shared_worker_context_provider_ &&
+        !shared_worker_context_provider_->BindToCurrentThread())
+      shared_worker_context_provider_ = nullptr;
+    if (shared_worker_context_provider_)
+      shared_worker_context_provider_->SetupLock();
+  }
+  return shared_worker_context_provider_;
 }
 
 void RenderThreadImpl::SampleGamepads(blink::WebGamepads* data) {

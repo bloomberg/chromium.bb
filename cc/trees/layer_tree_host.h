@@ -427,6 +427,13 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   int meta_information_sequence_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
+  // |current_output_surface_| can't be updated until we've successfully
+  // initialized a new output surface. |new_output_surface_| contains the
+  // new output surface that is currently being initialized. If initialization
+  // is successful then |new_output_surface_| replaces
+  // |current_output_surface_|.
+  scoped_ptr<OutputSurface> new_output_surface_;
+  scoped_ptr<OutputSurface> current_output_surface_;
   bool output_surface_lost_;
 
   scoped_refptr<Layer> root_layer_;

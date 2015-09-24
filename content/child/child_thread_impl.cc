@@ -590,7 +590,7 @@ scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
   shared_buf.reset(new base::SharedMemory);
   if (!shared_buf->CreateAnonymous(buf_size)) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 #else
   // On POSIX, we need to ask the browser to create the shared memory for us,
@@ -602,11 +602,11 @@ scoped_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
       shared_buf.reset(new base::SharedMemory(shared_mem_handle, false));
     } else {
       NOTREACHED() << "Browser failed to allocate shared memory";
-      return NULL;
+      return nullptr;
     }
   } else {
-    NOTREACHED() << "Browser allocation request message failed";
-    return NULL;
+    // Send is allowed to fail during shutdown. Return null in this case.
+    return nullptr;
   }
 #endif
   return shared_buf;

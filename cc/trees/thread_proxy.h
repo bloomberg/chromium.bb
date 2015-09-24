@@ -155,7 +155,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void FinishAllRendering() override;
   bool IsStarted() const override;
   bool CommitToActiveTree() const override;
-  void SetOutputSurface(scoped_ptr<OutputSurface>) override;
+  void SetOutputSurface(OutputSurface* output_surface) override;
   void SetLayerTreeHostClientReady() override;
   void SetVisible(bool visible) override;
   void SetThrottleFrameProduction(bool throttle) override;
@@ -176,7 +176,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   bool MainFrameWillHappenForTesting() override;
   void SetChildrenNeedBeginFrames(bool children_need_begin_frames) override;
   void SetAuthoritativeVSyncInterval(const base::TimeDelta& interval) override;
-  scoped_ptr<OutputSurface> ReleaseOutputSurface() override;
+  void ReleaseOutputSurface() override;
 
   // LayerTreeHostImplClient implementation
   void UpdateRendererCapabilitiesOnImplThread() override;
@@ -272,11 +272,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
       CompletionEvent* completion,
       bool* has_initialized_output_surface);
   void DeleteContentsTexturesOnImplThread(CompletionEvent* completion);
-  void InitializeOutputSurfaceOnImplThread(
-      scoped_ptr<OutputSurface> output_surface);
-  void ReleaseOutputSurfaceOnImplThread(
-      CompletionEvent* completion,
-      scoped_ptr<OutputSurface>* output_surface);
+  void InitializeOutputSurfaceOnImplThread(OutputSurface* output_surface);
+  void ReleaseOutputSurfaceOnImplThread(CompletionEvent* completion);
   void FinishGLOnImplThread(CompletionEvent* completion);
   void LayerTreeHostClosedOnImplThread(CompletionEvent* completion);
   DrawResult DrawSwapInternal(bool forced_draw);

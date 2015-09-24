@@ -32,13 +32,14 @@ class DelegatedRendererLayerImplTest : public testing::Test {
  public:
   DelegatedRendererLayerImplTest()
       : proxy_(),
-        always_impl_thread_and_main_thread_blocked_(&proxy_) {
+        always_impl_thread_and_main_thread_blocked_(&proxy_),
+        output_surface_(FakeOutputSurface::Create3d()) {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
     host_impl_.reset(new FakeLayerTreeHostImpl(
         settings, &proxy_, &shared_bitmap_manager_, &task_graph_runner_));
-    host_impl_->InitializeRenderer(FakeOutputSurface::Create3d());
+    host_impl_->InitializeRenderer(output_surface_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
@@ -48,6 +49,7 @@ class DelegatedRendererLayerImplTest : public testing::Test {
       always_impl_thread_and_main_thread_blocked_;
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
+  scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 

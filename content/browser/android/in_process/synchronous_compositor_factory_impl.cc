@@ -24,6 +24,7 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/blink/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_surface.h"
@@ -170,8 +171,7 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
   scoped_refptr<cc::ContextProvider> onscreen_context =
       CreateContextProviderForCompositor(surface_id, RENDER_COMPOSITOR_CONTEXT);
   scoped_refptr<cc::ContextProvider> worker_context =
-      CreateContextProviderForCompositor(0, RENDER_WORKER_CONTEXT);
-
+      GetSharedWorkerContextProvider();
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
       onscreen_context, worker_context, routing_id, frame_swap_message_queue));
 }
@@ -211,6 +211,9 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
   // This is half of what RenderWidget uses because synchronous compositor
   // pipeline is only one frame deep. But twice of half for low end here
   // because 16bit texture is not supported.
+  // TODO(reveman): This limit is based on the usage required by async
+  // uploads. Determine what a good limit is now that async uploads are
+  // no longer used.
   unsigned int mapped_memory_reclaim_limit =
       (base::SysInfo::IsLowEndDevice() ? 2 : 6) * 1024 * 1024;
   blink::WebGraphicsContext3D::Attributes attributes = GetDefaultAttribs();
@@ -230,6 +233,67 @@ SynchronousCompositorFactoryImpl::CreateContextProviderForCompositor(
       CreateContextHolder(attributes, GpuThreadService(), mem_limits, true);
   return ContextProviderInProcess::Create(holder.command_buffer.Pass(),
                                           "Child-Compositor");
+}
+
+scoped_refptr<cc::ContextProvider>
+SynchronousCompositorFactoryImpl::GetSharedWorkerContextProvider() {
+  // TODO(reveman): This limit is based on the usage required by async
+  // uploads. Determine what a good limit is now that async uploads are
+  // no longer used.
+  unsigned int mapped_memory_reclaim_limit =
+      (base::SysInfo::IsLowEndDevice() ? 2 : 6) * 1024 * 1024;
+
+  if (use_ipc_command_buffer_) {
+    bool shared_worker_context_lost = false;
+    if (shared_worker_context_) {
+      // Note: If context is lost, we delete reference after releasing the lock.
+      base::AutoLock lock(*shared_worker_context_->GetLock());
+      if (shared_worker_context_->ContextGL()->GetGraphicsResetStatusKHR() !=
+          GL_NO_ERROR) {
+        shared_worker_context_lost = true;
+      }
+    }
+    if (!shared_worker_context_ || shared_worker_context_lost) {
+      WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits mem_limits;
+      mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
+      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context =
+          CreateContext3D(0, GetDefaultAttribs(), mem_limits);
+      shared_worker_context_ =
+          make_scoped_refptr(new SynchronousCompositorContextProvider(
+              context.Pass(), RENDER_WORKER_CONTEXT));
+      if (!shared_worker_context_->BindToCurrentThread())
+        shared_worker_context_ = nullptr;
+      if (shared_worker_context_)
+        shared_worker_context_->SetupLock();
+    }
+
+    return shared_worker_context_;
+  }
+
+  bool in_process_shared_worker_context_lost = false;
+  if (in_process_shared_worker_context_) {
+    // Note: If context is lost, we delete reference after releasing the lock.
+    base::AutoLock lock(*in_process_shared_worker_context_->GetLock());
+    if (in_process_shared_worker_context_->ContextGL()
+            ->GetGraphicsResetStatusKHR() != GL_NO_ERROR) {
+      in_process_shared_worker_context_lost = true;
+    }
+  }
+  if (!in_process_shared_worker_context_ ||
+      in_process_shared_worker_context_lost) {
+    gpu::GLInProcessContextSharedMemoryLimits mem_limits;
+    mem_limits.mapped_memory_reclaim_limit = mapped_memory_reclaim_limit;
+    ContextHolder holder = CreateContextHolder(
+        GetDefaultAttribs(), GpuThreadService(), mem_limits, true);
+    in_process_shared_worker_context_ = ContextProviderInProcess::Create(
+        holder.command_buffer.Pass(), "Child-Worker");
+    if (!in_process_shared_worker_context_->BindToCurrentThread())
+      in_process_shared_worker_context_ = nullptr;
+    if (in_process_shared_worker_context_)
+      in_process_shared_worker_context_->SetupLock();
+  }
+
+  return in_process_shared_worker_context_;
 }
 
 scoped_refptr<StreamTextureFactory>

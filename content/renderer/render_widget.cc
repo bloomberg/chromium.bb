@@ -1018,10 +1018,9 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
       // Cause the compositor to wait and try again.
       return nullptr;
     }
-
-    worker_context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(false), RENDER_WORKER_CONTEXT);
-    if (!worker_context_provider.get()) {
+    worker_context_provider =
+        RenderThreadImpl::current()->SharedWorkerContextProvider();
+    if (!worker_context_provider) {
       // Cause the compositor to wait and try again.
       return nullptr;
     }

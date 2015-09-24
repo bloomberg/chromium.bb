@@ -416,7 +416,6 @@ class LayerTreeHostClientTakeAwayOutputSurface
     scoped_ptr<OutputSurface> surface =
         layer_tree_host()->ReleaseOutputSurface();
     CHECK(surface);
-    surface->context_provider()->DetachFromThread();
     MainThreadTaskRunner()->PostTask(
         FROM_HERE,
         base::Bind(&LayerTreeHostClientTakeAwayOutputSurface::MakeVisible,

@@ -465,7 +465,7 @@ class LayerTreeHostFreeWorkerContextResourcesTest : public LayerTreeHostTest {
     explicit MockSetWorkerContextShouldAggressivelyFreeResourcesOutputSurface(
         bool delegated_rendering)
         : FakeOutputSurface(TestContextProvider::Create(),
-                            TestContextProvider::Create(),
+                            TestContextProvider::CreateWorker(),
                             delegated_rendering) {}
     MOCK_METHOD1(SetWorkerContextShouldAggressivelyFreeResources,
                  void(bool is_visible));
@@ -6257,6 +6257,22 @@ class LayerTreeHostScrollingAndScalingUpdatesLayers : public LayerTreeHostTest {
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostScrollingAndScalingUpdatesLayers);
+
+class LayerTreeHostTestDestroyWhileInitializingOutputSurface
+    : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    // By ending the test immediately we start initialization of an output
+    // surface but destroy the LTH before it completes. This test verifies
+    // that this works correctly and the output surface is destroyed on
+    // the correct thread.
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestDestroyWhileInitializingOutputSurface);
 
 }  // namespace
 }  // namespace cc
