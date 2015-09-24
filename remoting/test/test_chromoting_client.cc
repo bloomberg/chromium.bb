@@ -66,14 +66,13 @@ namespace remoting {
 namespace test {
 
 TestChromotingClient::TestChromotingClient()
-    : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
-      connection_error_code_(protocol::OK) {}
+    : TestChromotingClient(nullptr) {}
 
 TestChromotingClient::TestChromotingClient(
     scoped_ptr<VideoRenderer> video_renderer)
-    : video_renderer_(video_renderer.Pass()) {
-  TestChromotingClient();
-}
+    : connection_to_host_state_(protocol::ConnectionToHost::INITIALIZING),
+      connection_error_code_(protocol::OK),
+      video_renderer_(video_renderer.Pass()) {}
 
 TestChromotingClient::~TestChromotingClient() {
   // Ensure any connections are closed and the members are destroyed in the
