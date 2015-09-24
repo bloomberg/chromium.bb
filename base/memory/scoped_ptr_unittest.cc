@@ -693,3 +693,26 @@ TEST(ScopedPtrTest, LoggingDoesntConvertToBoolean) {
 
   EXPECT_EQ(s2.str(), s1.str());
 }
+
+TEST(ScopedPtrTest, ReferenceCycle) {
+  struct StructB;
+  struct StructA {
+    scoped_ptr<StructB> b;
+  };
+
+  struct StructB {
+    scoped_ptr<StructA> a;
+  };
+
+  // Create a reference cycle.
+  StructA* a = new StructA;
+  a->b.reset(new StructB);
+  a->b->a.reset(a);
+
+  // Break the cycle by calling reset(). This will cause |a| (and hence, |a.b|)
+  // to be deleted before the call to reset() returns. This tests that the
+  // implementation of scoped_ptr::reset() doesn't access |this| after it
+  // deletes the underlying pointer. This behaviour is consistent with the
+  // definition of unique_ptr::reset in C++11.
+  a->b.reset();
+}
