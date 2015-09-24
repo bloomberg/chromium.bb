@@ -467,12 +467,8 @@ void RemoteProducerDataPipeImpl::Disconnect() {
   // buffer around. Currently, we won't free it even if it empties later. (We
   // could do this -- requiring a check on every read -- but that seems to be
   // optimizing for the uncommon case.)
-  if (!consumer_open() || !current_num_bytes_) {
-    // Note: There can only be a two-phase *read* (by the consumer) if we still
-    // have data.
-    DCHECK(!consumer_in_two_phase_read());
+  if (!consumer_open() || !current_num_bytes_)
     DestroyBuffer();
-  }
 }
 
 }  // namespace system
