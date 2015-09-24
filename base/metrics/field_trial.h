@@ -396,22 +396,25 @@ class BASE_EXPORT FieldTrialList {
       uint32 randomization_seed,
       int* default_group_number);
 
-  // The Find() method can be used to test to see if a named Trial was already
+  // The Find() method can be used to test to see if a named trial was already
   // registered, or to retrieve a pointer to it from the global map.
-  static FieldTrial* Find(const std::string& name);
+  static FieldTrial* Find(const std::string& trial_name);
 
   // Returns the group number chosen for the named trial, or
   // FieldTrial::kNotFinalized if the trial does not exist.
-  static int FindValue(const std::string& name);
+  static int FindValue(const std::string& trial_name);
 
   // Returns the group name chosen for the named trial, or the empty string if
   // the trial does not exist. The first call of this function on a given field
   // trial will mark it as active, so that its state will be reported with usage
   // metrics, crashes, etc.
-  static std::string FindFullName(const std::string& name);
+  static std::string FindFullName(const std::string& trial_name);
 
   // Returns true if the named trial has been registered.
-  static bool TrialExists(const std::string& name);
+  static bool TrialExists(const std::string& trial_name);
+
+  // Returns true if the named trial exists and has been activated.
+  static bool IsTrialActive(const std::string& trial_name);
 
   // Creates a persistent representation of active FieldTrial instances for
   // resurrection in another process. This allows randomization to be done in

@@ -116,7 +116,7 @@ class VariationsParamAssociator {
                                 const VariationParams& params) {
     base::AutoLock scoped_lock(lock_);
 
-    if (IsFieldTrialActive(trial_name))
+    if (base::FieldTrialList::IsTrialActive(trial_name))
       return false;
 
     const VariationKey key(trial_name, group_name);
@@ -151,18 +151,6 @@ class VariationsParamAssociator {
 
   VariationsParamAssociator() {}
   ~VariationsParamAssociator() {}
-
-  // Tests whether a field trial is active (i.e. group() has been called on it).
-  // TODO(asvitkine): Expose this as an API on base::FieldTrial.
-  bool IsFieldTrialActive(const std::string& trial_name) {
-    base::FieldTrial::ActiveGroups active_groups;
-    base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-    for (size_t i = 0; i < active_groups.size(); ++i) {
-      if (active_groups[i].trial_name == trial_name)
-        return true;
-    }
-    return false;
-  }
 
   base::Lock lock_;
   std::map<VariationKey, VariationParams> variation_params_;

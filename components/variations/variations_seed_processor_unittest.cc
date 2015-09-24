@@ -66,17 +66,6 @@ Study CreateStudyWithFlagGroups(int default_group_probability,
   return study;
 }
 
-// Tests whether a field trial is active (i.e. group() has been called on it).
-bool IsFieldTrialActive(const std::string& trial_name) {
-  base::FieldTrial::ActiveGroups active_groups;
-  base::FieldTrialList::GetActiveFieldTrialGroups(&active_groups);
-  for (size_t i = 0; i < active_groups.size(); ++i) {
-    if (active_groups[i].trial_name == trial_name)
-      return true;
-  }
-  return false;
-}
-
 class TestOverrideStringCallback {
  public:
   typedef std::map<uint32_t, base::string16> OverrideMap;
@@ -451,18 +440,18 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.
-  EXPECT_FALSE(IsFieldTrialActive("A"));
-  EXPECT_TRUE(IsFieldTrialActive("B"));
-  EXPECT_FALSE(IsFieldTrialActive("C"));
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("A"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("B"));
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive("C"));
 
   EXPECT_EQ("AA", base::FieldTrialList::FindFullName("A"));
   EXPECT_EQ("BB", base::FieldTrialList::FindFullName("B"));
   EXPECT_EQ("CC", base::FieldTrialList::FindFullName("C"));
 
   // Now, all studies should be active.
-  EXPECT_TRUE(IsFieldTrialActive("A"));
-  EXPECT_TRUE(IsFieldTrialActive("B"));
-  EXPECT_TRUE(IsFieldTrialActive("C"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("A"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("B"));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive("C"));
 }
 
 TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
@@ -474,7 +463,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActiveWithFlag) {
   study.set_activation_type(Study_ActivationType_ACTIVATION_AUTO);
 
   EXPECT_TRUE(CreateTrialFromStudy(&study));
-  EXPECT_TRUE(IsFieldTrialActive(kFlagStudyName));
+  EXPECT_TRUE(base::FieldTrialList::IsTrialActive(kFlagStudyName));
 
   EXPECT_EQ(kFlagGroup1Name,
             base::FieldTrialList::FindFullName(kFlagStudyName));
