@@ -1,3 +1,27 @@
-<div style="word-break: break-all; border: solid blue; font-size: 36px; width: 5em;">
+<head>
+    <style type="text/css">
+        @font-face {
+        font-family: notosymbol;
+        src:
+        url("../../third_party/NotoSansSymbol/NotoSansSymbols-Regular-u1d49e,1f1ef.ttf");
+        }
+
+        .breakbox {
+        font-family: notosymbol;
+        word-break: break-all;
+        border: solid blue;
+        font-size: 36px;
+        width: 5em; }
+    </style>
+</head>
+<p>The following box should break the sequence of symbols at the 5 character mark
+and not overflow the blue box. This is because U+1D49 is a number category
+    unicode character, for which break-all applies.</p>
+<div class="breakbox">
     &#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;&#x1d49e;
+</div>
+<p>The following box should not break the sequence of symbols since U+1F1EF is not
+    a letter or number category character.</p>
+<div class="breakbox">
+    &#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;&#x1f1ef;&#x1f1f5;
 </div>
