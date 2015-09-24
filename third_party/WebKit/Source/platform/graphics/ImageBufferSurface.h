@@ -79,10 +79,11 @@ public:
     virtual Platform3DObject getBackingTextureHandleForOverwrite() { return 0; }
     virtual void flush(); // Execute all deferred rendering immediately
     virtual void flushGpu() { flush(); } // Like flush, but flushes all the way down to the GPU context if the surface uses the GPU
+    virtual void prepareSurfaceForPaintingIfNeeded() { }
     virtual bool writePixels(const SkImageInfo& origInfo, const void* pixels, size_t rowBytes, int x, int y);
 
     // May return nullptr if the surface is GPU-backed and the GPU context was lost.
-    virtual PassRefPtr<SkImage> newImageSnapshot() = 0;
+    virtual PassRefPtr<SkImage> newImageSnapshot(AccelerationHint) = 0;
 
     OpacityMode opacityMode() const { return m_opacityMode; }
     const IntSize& size() const { return m_size; }

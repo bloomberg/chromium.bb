@@ -148,19 +148,19 @@ void ImageBuffer::resetCanvas(SkCanvas* canvas) const
         m_client->restoreCanvasMatrixClipStack(canvas);
 }
 
-PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot() const
+PassRefPtr<SkImage> ImageBuffer::newSkImageSnapshot(AccelerationHint hint) const
 {
     if (m_snapshotState == InitialSnapshotState)
         m_snapshotState = DidAcquireSnapshot;
 
     if (!isSurfaceValid())
         return nullptr;
-    return m_surface->newImageSnapshot();
+    return m_surface->newImageSnapshot(hint);
 }
 
-PassRefPtr<Image> ImageBuffer::newImageSnapshot() const
+PassRefPtr<Image> ImageBuffer::newImageSnapshot(AccelerationHint hint) const
 {
-    RefPtr<SkImage> snapshot = newSkImageSnapshot();
+    RefPtr<SkImage> snapshot = newSkImageSnapshot(hint);
     if (!snapshot)
         return nullptr;
     return StaticBitmapImage::create(snapshot);
@@ -180,15 +180,19 @@ WebLayer* ImageBuffer::platformLayer() const
 
 bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, Platform3DObject texture, GLenum internalFormat, GLenum destType, GLint level, bool premultiplyAlpha, bool flipY)
 {
-    if (!m_surface->isAccelerated() || !isSurfaceValid())
-        return false;
-
     if (!Extensions3DUtil::canUseCopyTextureCHROMIUM(GL_TEXTURE_2D, internalFormat, destType, level))
         return false;
 
-    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot();
+    if (!isSurfaceValid())
+        return false;
+
+    RefPtr<const SkImage> textureImage = m_surface->newImageSnapshot(PreferAcceleration);
     if (!textureImage)
         return false;
+
+    if (!m_surface->isAccelerated())
+        return false;
+
 
     ASSERT(textureImage->isTextureBacked()); // isAccelerated() check above should guarantee this
     // Get the texture ID, flushing pending operations if needed.
@@ -287,6 +291,11 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
         return true;
     }
 
+    ASSERT(canvas());
+    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot(PreferNoAcceleration);
+    if (!snapshot)
+        return false;
+
     const bool mayHaveStrayArea =
         m_surface->isAccelerated() // GPU readback may fail silently
         || rect.x() < 0
@@ -303,10 +312,6 @@ bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::Ar
     SkAlphaType alphaType = (multiplied == Premultiplied) ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
     SkImageInfo info = SkImageInfo::Make(rect.width(), rect.height(), kRGBA_8888_SkColorType, alphaType);
 
-    ASSERT(canvas());
-    RefPtr<SkImage> snapshot = m_surface->newImageSnapshot();
-    if (!snapshot)
-        return false;
     snapshot->readPixels(info, result.data(), 4 * rect.width(), rect.x(), rect.y());
     result.transfer(contents);
     return true;

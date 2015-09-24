@@ -68,7 +68,7 @@ bool UnacceleratedImageBufferSurface::isValid() const
     return m_surface;
 }
 
-PassRefPtr<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot()
+PassRefPtr<SkImage> UnacceleratedImageBufferSurface::newImageSnapshot(AccelerationHint)
 {
     return adoptRef(m_surface->newImageSnapshot());
 }

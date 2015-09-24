@@ -1376,7 +1376,8 @@ void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
     RefPtr<Image> image;
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
     if (!imageSource->isVideoElement()) {
-        image = imageSource->getSourceImageForCanvas(&sourceImageStatus);
+        AccelerationHint hint = canvas()->buffer()->isAccelerated() ? PreferAcceleration : PreferNoAcceleration;
+        image = imageSource->getSourceImageForCanvas(&sourceImageStatus, hint);
         if (sourceImageStatus == UndecodableSourceImageStatus)
             exceptionState.throwDOMException(InvalidStateError, "The HTMLImageElement provided is in the 'broken' state.");
         if (!image || !image->width() || !image->height())
@@ -1484,7 +1485,7 @@ CanvasPattern* CanvasRenderingContext2D::createPattern(const CanvasImageSourceUn
 
     SourceImageStatus status;
     CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
-    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status);
+    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(&status, PreferNoAcceleration);
 
     switch (status) {
     case NormalSourceImageStatus:
@@ -1774,6 +1775,10 @@ void CanvasRenderingContext2D::schedulePruneLocalFontCacheIfNeeded()
 
 void CanvasRenderingContext2D::didProcessTask()
 {
+    // The rendering surface needs to be prepared now because it will be too late
+    // to create a layer once we are in the paint invalidation phase.
+    canvas()->prepareSurfaceForPaintingIfNeeded();
+
     pruneLocalFontCache(canvas()->document().canvasFontCache()->maxFonts());
     m_pruneLocalFontCacheScheduled = false;
     Platform::current()->currentThread()->removeTaskObserver(this);
@@ -1998,9 +2003,9 @@ void CanvasRenderingContext2D::drawTextInternal(const String& text, float x, flo
     // The slop built in to this mask rect matches the heuristic used in FontCGWin.cpp for GDI text.
     TextRunPaintInfo textRunPaintInfo(textRun);
     textRunPaintInfo.bounds = FloatRect(location.x() - fontMetrics.height() / 2,
-                                        location.y() - fontMetrics.ascent() - fontMetrics.lineGap(),
-                                        width + fontMetrics.height(),
-                                        fontMetrics.lineSpacing());
+        location.y() - fontMetrics.ascent() - fontMetrics.lineGap(),
+        width + fontMetrics.height(),
+        fontMetrics.lineSpacing());
     if (paintType == CanvasRenderingContext2DState::StrokePaintType)
         inflateStrokeRect(textRunPaintInfo.bounds);
 
