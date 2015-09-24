@@ -33,4 +33,7 @@ message OfflinePageEntry {
 
   // Last access time of the offline archive.
   optional int64 last_access_time = 7;
+
+  // Number of times that the offline archive has been accessed.
+  optional int32 access_count = 8;
 }

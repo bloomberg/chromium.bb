@@ -14,7 +14,8 @@ const int kCurrentVersion = 1;
 
 OfflinePageItem::OfflinePageItem()
     : version(kCurrentVersion),
-      file_size(0) {
+      file_size(0),
+      access_count(0) {
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
@@ -25,7 +26,8 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       bookmark_id(bookmark_id),
       version(kCurrentVersion),
       file_path(file_path),
-      file_size(file_size) {
+      file_size(file_size),
+      access_count(0) {
 }
 
 OfflinePageItem::OfflinePageItem(const GURL& url,
@@ -39,7 +41,8 @@ OfflinePageItem::OfflinePageItem(const GURL& url,
       file_path(file_path),
       file_size(file_size),
       creation_time(creation_time),
-      last_access_time(creation_time) {
+      last_access_time(creation_time),
+      access_count(0) {
 }
 
 OfflinePageItem::~OfflinePageItem() {

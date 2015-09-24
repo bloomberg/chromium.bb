@@ -18,6 +18,8 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.components.offlinepages.SavePageResult;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +94,17 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @MediumTest
+    public void testMarkPageAccessed() throws Exception {
+        loadUrl(TEST_PAGE);
+        savePage(SavePageResult.SUCCESS, TEST_PAGE);
+        OfflinePageItem offlinePage = mOfflinePageBridge.getPageByBookmarkId(BOOKMARK_ID);
+        assertNotNull("Offline page should be available, but it is not.", offlinePage);
+        assertEquals("Offline page access count should be 0.", 0, offlinePage.getAccessCount());
+
+        markPageAccessed(BOOKMARK_ID, 1);
+    }
+
+    @MediumTest
     public void testGetPageByBookmarkId() throws Exception {
         loadUrl(TEST_PAGE);
         savePage(SavePageResult.SUCCESS, TEST_PAGE);
@@ -146,6 +159,24 @@ public class OfflinePageBridgeTest extends ChromeActivityTestCaseBase<ChromeActi
             }
         });
         assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+    }
+
+    private void markPageAccessed(final BookmarkId bookmarkId, final int expectedAccessCount)
+            throws InterruptedException {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.markPageAccessed(bookmarkId);
+            }
+        });
+        assertTrue(CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                OfflinePageItem offlinePage =
+                        mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
+                return offlinePage.getAccessCount() == expectedAccessCount;
+            }
+        }));
     }
 
     private void deletePage(BookmarkId bookmarkId, final int expectedResult)

@@ -48,8 +48,8 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
 
   // OfflinePageMetadataStore overrides:
   void Load(const LoadCallback& callback) override;
-  void AddOfflinePage(const OfflinePageItem& offline_page,
-                      const UpdateCallback& callback) override;
+  void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
+                              const UpdateCallback& callback) override;
   void RemoveOfflinePages(const std::vector<int64>& bookmark_ids,
                           const UpdateCallback& callback) override;
   const OfflinePageItem& last_saved_page() const { return last_saved_page_; }
@@ -95,8 +95,8 @@ void OfflinePageTestStore::Load(const LoadCallback& callback) {
   }
 }
 
-void OfflinePageTestStore::AddOfflinePage(const OfflinePageItem& offline_page,
-                                          const UpdateCallback& callback) {
+void OfflinePageTestStore::AddOrUpdateOfflinePage(
+    const OfflinePageItem& offline_page, const UpdateCallback& callback) {
   last_saved_page_ = offline_page;
   bool result = scenario_ != TestScenario::WRITE_FAILED;
   if (result) {
@@ -370,6 +370,7 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
   EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
   EXPECT_EQ(archiver_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(0, offline_pages[0].access_count);
 }
 
 TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
@@ -503,10 +504,35 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
   EXPECT_EQ(archiver_path, offline_pages[0].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(0, offline_pages[0].access_count);
   EXPECT_EQ(kTestUrl2, offline_pages[1].url);
   EXPECT_EQ(kTestPageBookmarkId2, offline_pages[1].bookmark_id);
   EXPECT_EQ(archiver_path2, offline_pages[1].file_path);
   EXPECT_EQ(kTestFileSize, offline_pages[1].file_size);
+  EXPECT_EQ(0, offline_pages[1].access_count);
+}
+
+TEST_F(OfflinePageModelTest, MarkPageAccessed) {
+  scoped_ptr<OfflinePageTestArchiver> archiver(
+      BuildArchiver(kTestUrl,
+                    OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED)
+          .Pass());
+  model()->SavePage(
+      kTestUrl, kTestPageBookmarkId1, archiver.Pass(),
+      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+  PumpLoop();
+
+  // This will increase access_count by one.
+  model()->MarkPageAccessed(kTestPageBookmarkId1);
+  base::RunLoop().RunUntilIdle();
+
+  const std::vector<OfflinePageItem>& offline_pages = model()->GetAllPages();
+
+  EXPECT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ(kTestPageBookmarkId1, offline_pages[0].bookmark_id);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(1, offline_pages[0].access_count);
 }
 
 TEST_F(OfflinePageModelTest, GetAllPagesStoreEmpty) {
@@ -692,7 +718,7 @@ TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
       GURL(kTestUrl), kTestPageBookmarkId1,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page1.mhtml")),
       kTestFileSize, now - base::TimeDelta::FromDays(40));
-  GetStore()->AddOfflinePage(
+  GetStore()->AddOrUpdateOfflinePage(
       page_1,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
   PumpLoop();
@@ -701,7 +727,7 @@ TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
       GURL(kTestUrl2), kTestPageBookmarkId2,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page2.mhtml")),
       kTestFileSize, now - base::TimeDelta::FromDays(31));
-  GetStore()->AddOfflinePage(
+  GetStore()->AddOrUpdateOfflinePage(
       page_2,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
   PumpLoop();
@@ -710,7 +736,7 @@ TEST_F(OfflinePageModelTest, GetPagesToCleanUp) {
       GURL("http://test.xyz"), 42,
       base::FilePath(FILE_PATH_LITERAL("/test/location/page3.mhtml")),
       kTestFileSize, now - base::TimeDelta::FromDays(29));
-  GetStore()->AddOfflinePage(
+  GetStore()->AddOrUpdateOfflinePage(
       page_3,
       base::Bind(&OfflinePageModelTest::OnStoreUpdateDone, AsWeakPtr()));
   PumpLoop();

@@ -61,7 +61,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
         ConvertUTF8ToJavaString(env, offline_page.url.spec()).obj(),
         offline_page.bookmark_id,
         ConvertUTF8ToJavaString(env, offline_page.GetOfflineURL().spec()).obj(),
-        offline_page.file_size);
+        offline_page.file_size,
+        offline_page.access_count);
   }
 }
 
@@ -126,7 +127,8 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::GetPageByBookmarkId(
       env, ConvertUTF8ToJavaString(env, offline_page->url.spec()).obj(),
       offline_page->bookmark_id,
       ConvertUTF8ToJavaString(env, offline_page->GetOfflineURL().spec()).obj(),
-      offline_page->file_size);
+      offline_page->file_size,
+      offline_page->access_count);
 }
 
 void OfflinePageBridge::SavePage(JNIEnv* env,
@@ -151,6 +153,12 @@ void OfflinePageBridge::SavePage(JNIEnv* env,
   offline_page_model_->SavePage(
       url, bookmark_id, archiver.Pass(),
       base::Bind(&SavePageCallback, j_callback_ref, url));
+}
+
+void OfflinePageBridge::MarkPageAccessed(JNIEnv* env,
+                                         jobject obj,
+                                         jlong bookmark_id) {
+  offline_page_model_->MarkPageAccessed(bookmark_id);
 }
 
 void OfflinePageBridge::DeletePage(JNIEnv* env,

@@ -47,6 +47,8 @@ struct OfflinePageItem {
   base::Time creation_time;
   // The time when the offline archive was last accessed.
   base::Time last_access_time;
+  // Number of times that the offline archive has been accessed.
+  int access_count;
 };
 
 }  // namespace offline_pages

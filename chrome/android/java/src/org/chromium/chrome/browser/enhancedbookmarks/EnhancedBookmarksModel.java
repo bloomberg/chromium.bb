@@ -226,19 +226,25 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
     }
 
     /**
-     * Returns the url used to launch a bookmark.
+     * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as being
+     * accessed.
      *
      * @param bookmarkId ID of the bookmark to launch.
+     * @return The launch URL.
      */
-    public String getBookmarkLaunchUrl(BookmarkId bookmarkId) {
+    public String getLaunchUrlAndMarkAccessed(BookmarkId bookmarkId) {
         String url = getBookmarkById(bookmarkId).getUrl();
-        if (mOfflinePageBridge == null) {
-            return url;
-        }
+        if (mOfflinePageBridge == null) return url;
 
         // Return the offline url for the offline page.
         OfflinePageItem page = mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
-        return page == null ? url : page.getOfflineUrl();
+        if (page == null) return url;
+
+        // Mark that the offline page has been accessed, that will cause last access time and access
+        // count being updated.
+        mOfflinePageBridge.markPageAccessed(bookmarkId);
+
+        return page.getOfflineUrl();
     }
 
     /**

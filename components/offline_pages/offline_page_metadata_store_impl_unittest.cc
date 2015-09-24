@@ -122,7 +122,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageThenLoad) {
 
   OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
-  store->AddOfflinePage(
+  store->AddOrUpdateOfflinePage(
       offline_page,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
@@ -154,7 +154,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageRestartLoad) {
 
   OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
-  store->AddOfflinePage(
+  store->AddOrUpdateOfflinePage(
       offline_page,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
@@ -180,6 +180,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddOfflinePageRestartLoad) {
   EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
   EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
 }
 
 // Tests removing offline page metadata from the store, for which it first adds
@@ -189,7 +190,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, RemoveOfflinePage) {
 
   OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
                                base::FilePath(kFilePath), kFileSize);
-  store->AddOfflinePage(
+  store->AddOrUpdateOfflinePage(
       offline_page,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
@@ -252,7 +253,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
       base::FilePath(FILE_PATH_LITERAL("//other.page.com.mhtml"));
   OfflinePageItem offline_page_2(GURL("https://other.page.com"), 5678LL,
                                  file_path_2, 12345, base::Time::Now());
-  store->AddOfflinePage(
+  store->AddOrUpdateOfflinePage(
       offline_page_1,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
@@ -261,7 +262,7 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(STATUS_TRUE, last_status_);
 
   ClearResults();
-  store->AddOfflinePage(
+  store->AddOrUpdateOfflinePage(
       offline_page_2,
       base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
                  base::Unretained(this), ADD));
@@ -306,6 +307,68 @@ TEST_F(OfflinePageMetadataStoreImplTest, AddRemoveMultipleOfflinePages) {
   EXPECT_EQ(offline_page_2.creation_time, offline_pages_[0].creation_time);
   EXPECT_EQ(offline_page_2.last_access_time,
             offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page_2.access_count, offline_pages_[0].access_count);
+}
+
+// Tests updating offline page metadata from the store.
+TEST_F(OfflinePageMetadataStoreImplTest, UpdateOfflinePage) {
+  scoped_ptr<OfflinePageMetadataStoreImpl> store(BuildStore());
+
+  // First, adds a fresh page.
+  OfflinePageItem offline_page(GURL(kTestURL), kTestBookmarkId,
+                               base::FilePath(kFilePath), kFileSize);
+  store->AddOrUpdateOfflinePage(
+      offline_page,
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
+                         base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+  EXPECT_EQ(1U, offline_pages_.size());
+  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
+  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.version, offline_pages_[0].version);
+  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
+  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
+  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
+  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
+
+  // Then updates some data.
+  offline_page.file_size = kFileSize + 1;
+  offline_page.access_count++;
+  store->AddOrUpdateOfflinePage(
+      offline_page,
+      base::Bind(&OfflinePageMetadataStoreImplTest::UpdateCallback,
+                 base::Unretained(this), ADD));
+  PumpLoop();
+  EXPECT_EQ(ADD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+
+  ClearResults();
+  store->Load(base::Bind(&OfflinePageMetadataStoreImplTest::LoadCallback,
+                         base::Unretained(this)));
+  PumpLoop();
+
+  EXPECT_EQ(LOAD, last_called_callback_);
+  EXPECT_EQ(STATUS_TRUE, last_status_);
+  EXPECT_EQ(1U, offline_pages_.size());
+  EXPECT_EQ(offline_page.url, offline_pages_[0].url);
+  EXPECT_EQ(offline_page.bookmark_id, offline_pages_[0].bookmark_id);
+  EXPECT_EQ(offline_page.version, offline_pages_[0].version);
+  EXPECT_EQ(offline_page.file_path, offline_pages_[0].file_path);
+  EXPECT_EQ(offline_page.file_size, offline_pages_[0].file_size);
+  EXPECT_EQ(offline_page.creation_time, offline_pages_[0].creation_time);
+  EXPECT_EQ(offline_page.last_access_time, offline_pages_[0].last_access_time);
+  EXPECT_EQ(offline_page.access_count, offline_pages_[0].access_count);
 }
 
 }  // namespace

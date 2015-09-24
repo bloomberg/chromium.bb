@@ -112,6 +112,23 @@ void OfflinePageModel::SavePage(const GURL& url,
   pending_archivers_.push_back(archiver.Pass());
 }
 
+void OfflinePageModel::MarkPageAccessed(int64 bookmark_id) {
+  DCHECK(is_loaded_);
+  auto iter = offline_pages_.find(bookmark_id);
+  if (iter == offline_pages_.end())
+    return;
+
+  // Make a copy of the cached item and update it. The cached item should only
+  // be updated upon the successful store operation.
+  OfflinePageItem offline_page_item = iter->second;
+  offline_page_item.last_access_time = base::Time::Now();
+  offline_page_item.access_count++;
+  store_->AddOrUpdateOfflinePage(
+      offline_page_item,
+      base::Bind(&OfflinePageModel::OnUpdateOfflinePageDone,
+                 weak_ptr_factory_.GetWeakPtr(), offline_page_item));
+}
+
 void OfflinePageModel::DeletePageByBookmarkId(
     int64 bookmark_id,
     const DeletePageCallback& callback) {
@@ -216,7 +233,7 @@ void OfflinePageModel::OnCreateArchiveDone(const GURL& requested_url,
 
   OfflinePageItem offline_page_item(url, bookmark_id, file_path, file_size,
                                     base::Time::Now());
-  store_->AddOfflinePage(
+  store_->AddOrUpdateOfflinePage(
       offline_page_item,
       base::Bind(&OfflinePageModel::OnAddOfflinePageDone,
                  weak_ptr_factory_.GetWeakPtr(), archiver, callback,
@@ -238,6 +255,13 @@ void OfflinePageModel::OnAddOfflinePageDone(OfflinePageArchiver* archiver,
   }
   InformSavePageDone(callback, result);
   DeletePendingArchiver(archiver);
+}
+
+void OfflinePageModel::OnUpdateOfflinePageDone(
+    const OfflinePageItem& offline_page_item, bool success) {
+  // Update the item in the cache only upon success.
+  if (success)
+    offline_pages_[offline_page_item.bookmark_id] = offline_page_item;
 }
 
 void OfflinePageModel::BookmarkModelChanged() {

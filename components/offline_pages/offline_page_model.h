@@ -130,6 +130,11 @@ class OfflinePageModel : public KeyedService,
                 scoped_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback);
 
+  // Marks that the offline page related to the passed |bookmark_id| has been
+  // accessed. Its access info, including last access time and access count,
+  // will be updated. Requires that the model is loaded.
+  void MarkPageAccessed(int64 bookmark_id);
+
   // Deletes an offline page related to the passed |bookmark_id|. Requires that
   // the model is loaded.
   void DeletePageByBookmarkId(int64 bookmark_id,
@@ -202,6 +207,9 @@ class OfflinePageModel : public KeyedService,
                                 bool success);
   void InformDeletePageDone(const DeletePageCallback& callback,
                             DeletePageResult result);
+
+  void OnUpdateOfflinePageDone(const OfflinePageItem& offline_page_item,
+                               bool success);
 
   // Persistent store for offline page metadata.
   scoped_ptr<OfflinePageMetadataStore> store_;

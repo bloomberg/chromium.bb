@@ -32,10 +32,10 @@ class OfflinePageMetadataStore {
   // Get all of the offline pages from the store.
   virtual void Load(const LoadCallback& callback) = 0;
 
-  // Asynchronously adds offline page metadata to the store.
+  // Asynchronously adds or updates offline page metadata to the store.
   // Result of the update is passed in callback.
-  virtual void AddOfflinePage(const OfflinePageItem& offline_page,
-                              const UpdateCallback& callback) = 0;
+  virtual void AddOrUpdateOfflinePage(const OfflinePageItem& offline_page,
+                                      const UpdateCallback& callback) = 0;
 
   // Asynchronously removes offline page metadata from the store.
   // Result of the update is passed in callback.

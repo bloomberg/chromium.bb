@@ -161,6 +161,16 @@ public final class OfflinePageBridge {
     }
 
     /**
+     * Marks that an offline page related to a specified bookmark has been accessed.
+     *
+     * @param bookmarkId Bookmark ID for which the offline copy will be deleted.
+     */
+    public void markPageAccessed(BookmarkId bookmarkId) {
+        assert mIsNativeOfflinePageModelLoaded;
+        nativeMarkPageAccessed(mNativeOfflinePageBridge, bookmarkId.getId());
+    }
+
+    /**
      * Deletes an offline page related to a specified bookmark.
      *
      * @param bookmarkId Bookmark ID for which the offline copy will be deleted.
@@ -217,14 +227,15 @@ public final class OfflinePageBridge {
 
     @CalledByNative
     private static void createOfflinePageAndAddToList(List<OfflinePageItem> offlinePagesList,
-            String url, long bookmarkId, String offlineUrl, long fileSize) {
-        offlinePagesList.add(createOfflinePageItem(url, bookmarkId, offlineUrl, fileSize));
+            String url, long bookmarkId, String offlineUrl, long fileSize, int accessCount) {
+        offlinePagesList.add(createOfflinePageItem(url, bookmarkId, offlineUrl, fileSize,
+                accessCount));
     }
 
     @CalledByNative
     private static OfflinePageItem createOfflinePageItem(
-            String url, long bookmarkId, String offlineUrl, long fileSize) {
-        return new OfflinePageItem(url, bookmarkId, offlineUrl, fileSize);
+            String url, long bookmarkId, String offlineUrl, long fileSize, int accessCount) {
+        return new OfflinePageItem(url, bookmarkId, offlineUrl, fileSize, accessCount);
     }
 
     private static native boolean nativeIsOfflinePagesEnabled();
@@ -237,6 +248,7 @@ public final class OfflinePageBridge {
             long nativeOfflinePageBridge, long bookmarkId);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
             WebContents webContents, long bookmarkId);
+    private native void nativeMarkPageAccessed(long nativeOfflinePageBridge, long bookmarkId);
     private native void nativeDeletePage(long nativeOfflinePageBridge,
             DeletePageCallback callback, long bookmarkId);
     private native void nativeDeletePages(

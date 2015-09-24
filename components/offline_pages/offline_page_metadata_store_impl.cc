@@ -43,6 +43,7 @@ void OfflinePageItemToEntry(const OfflinePageItem& item,
   item_proto->set_file_size(item.file_size);
   item_proto->set_creation_time(item.creation_time.ToInternalValue());
   item_proto->set_last_access_time(item.last_access_time.ToInternalValue());
+  item_proto->set_access_count(item.access_count);
 }
 
 bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
@@ -70,6 +71,9 @@ bool OfflinePageItemFromEntry(const offline_pages::OfflinePageEntry& item_proto,
   if (item_proto.has_last_access_time()) {
     item->last_access_time =
         base::Time::FromInternalValue(item_proto.last_access_time());
+  }
+  if (item_proto.has_access_count()) {
+    item->access_count = item_proto.access_count();
   }
   return true;
 }
@@ -155,7 +159,7 @@ void OfflinePageMetadataStoreImpl::Load(const LoadCallback& callback) {
                                         weak_ptr_factory_.GetWeakPtr())));
 }
 
-void OfflinePageMetadataStoreImpl::AddOfflinePage(
+void OfflinePageMetadataStoreImpl::AddOrUpdateOfflinePage(
     const OfflinePageItem& offline_page_item,
     const UpdateCallback& callback) {
   scoped_ptr<ProtoDatabase<OfflinePageEntry>::KeyEntryVector> entries_to_save(

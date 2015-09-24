@@ -51,6 +51,10 @@ class OfflinePageBridge : public OfflinePageModel::Observer {
                 jobject j_web_contents,
                 jlong bookmark_id);
 
+  void MarkPageAccessed(JNIEnv* env,
+                        jobject obj,
+                        jlong bookmark_id);
+
   void DeletePage(JNIEnv* env,
                   jobject obj,
                   jobject j_callback_obj,
