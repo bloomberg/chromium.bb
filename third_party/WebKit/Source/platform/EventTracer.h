@@ -67,6 +67,7 @@ public:
         const unsigned char* categoryEnabledFlag,
         const char* name,
         unsigned long long id,
+        unsigned long long bindId,
         double timestamp,
         int numArgs,
         const char* argNames[],
@@ -74,17 +75,18 @@ public:
         const unsigned long long argValues[],
         PassRefPtr<TraceEvent::ConvertableToTraceFormat>,
         PassRefPtr<TraceEvent::ConvertableToTraceFormat>,
-        unsigned char flags);
+        unsigned flags);
     static TraceEvent::TraceEventHandle addTraceEvent(char phase,
         const unsigned char* categoryEnabledFlag,
         const char* name,
         unsigned long long id,
+        unsigned long long bindId,
         double timestamp,
         int numArgs,
         const char* argNames[],
         const unsigned char argTypes[],
         const unsigned long long argValues[],
-        unsigned char flags);
+        unsigned flags);
     static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
 };
 

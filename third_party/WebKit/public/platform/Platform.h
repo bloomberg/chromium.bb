@@ -546,13 +546,14 @@ public:
         const unsigned char* categoryEnabledFlag,
         const char* name,
         unsigned long long id,
+        unsigned long long bindId,
         double timestamp,
         int numArgs,
         const char** argNames,
         const unsigned char* argTypes,
         const unsigned long long* argValues,
         WebConvertableToTraceFormat* convertableValues,
-        unsigned char flags)
+        unsigned flags)
     {
         return 0;
     }

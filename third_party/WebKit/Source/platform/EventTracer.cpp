@@ -76,25 +76,25 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, double timestamp,
+    const char* name, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char* argNames[], const unsigned char argTypes[],
     const unsigned long long argValues[],
     PassRefPtr<TraceEvent::ConvertableToTraceFormat> convertableValue1,
     PassRefPtr<TraceEvent::ConvertableToTraceFormat> convertableValue2,
-    unsigned char flags)
+    unsigned flags)
 {
     WebConvertableToTraceFormat webConvertableValues[2];
     webConvertableValues[0] = WebConvertableToTraceFormat(convertableValue1);
     webConvertableValues[1] = WebConvertableToTraceFormat(convertableValue2);
-    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, timestamp, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
-    const char* name, unsigned long long id, double timestamp,
+    const char* name, unsigned long long id, unsigned long long bindId, double timestamp,
     int numArgs, const char** argNames, const unsigned char* argTypes,
-    const unsigned long long* argValues, unsigned char flags)
+    const unsigned long long* argValues, unsigned flags)
 {
-    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, timestamp, numArgs, argNames, argTypes, argValues, 0, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, bindId, timestamp, numArgs, argNames, argTypes, argValues, 0, flags);
 }
 
 void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)
