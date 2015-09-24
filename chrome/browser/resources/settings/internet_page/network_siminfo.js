@@ -27,11 +27,10 @@ Polymer({
   properties: {
     /**
      * The network state associated with the element.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -59,7 +58,7 @@ Polymer({
     if (!this.networkState || !this.networkState.Cellular)
       return;
     var simLockStatus = /** @type {CrOnc.SIMLockStatus|undefined} */(
-        CrOnc.getActiveValue(this.networkState, 'Cellular.SIMLockStatus'));
+        this.get('networkState.Cellular.SIMLockStatus'));
     this.pukRequired =
         !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
   },

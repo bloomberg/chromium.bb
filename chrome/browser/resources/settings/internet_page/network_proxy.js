@@ -13,11 +13,10 @@ Polymer({
     /**
      * The current state containing the IP Config properties to display and
      * modify.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -91,16 +90,16 @@ Polymer({
   /**
    * Saved Manual properties so that switching to another type does not loose
    * any set properties while the UI is open.
-   * @type {?CrOnc.ManualProxySettings}
+   * @type {CrOnc.ManualProxySettings|undefined}
    */
-  savedManual_: null,
+  savedManual_: undefined,
 
   /**
    * Saved ExcludeDomains properties so that switching to a non-Manual type does
    * not loose any set exclusions while the UI is open.
-   * @type {?Array<string>}
+   * @type {Array<string>|undefined}
    */
-  savedExcludeDomains_: null,
+  savedExcludeDomains_: undefined,
 
   /**
    * Polymer networkState changed method.
@@ -110,13 +109,14 @@ Polymer({
       return;
 
     var defaultProxy = this.createDefaultProxySettings_();
-    var proxy = /** @type {CrOnc.ProxySettings|undefined} */(
-        CrOnc.getActiveValue(this.networkState, 'ProxySettings')) || {};
+    var proxy = /** @type {CrOnc.ProxySettings} */(
+        this.get('networkState.ProxySettings') || {});
 
     // Ensure that all proxy settings object properties are specified.
     proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_ ||
                            defaultProxy.ExcludeDomains;
-    proxy.Manual = proxy.Manual || this.savedManual_ || {};
+    proxy.Manual = proxy.Manual || this.savedManual_ ||
+        /** @type {CrOnc.ManualProxySettings} */({});
     proxy.Manual.HTTPProxy =
         proxy.Manual.HTTPProxy || defaultProxy.Manual.HTTPProxy;
     proxy.Manual.SecureHTTPProxy =
@@ -171,8 +171,8 @@ Polymer({
         this.set('proxy.Manual.FTPProxy', Object.assign({}, defaultProxy));
         this.set('proxy.Manual.SOCKS', Object.assign({}, defaultProxy));
       }
-      this.savedManual_ = this.proxy.Manual || null;
-      this.savedExcludeDomains_ = this.proxy.ExcludeDomains || null;
+      this.savedManual_ = this.proxy.Manual;
+      this.savedExcludeDomains_ = this.proxy.ExcludeDomains;
     }
     this.fire('proxy-change', {
       field: 'ProxySettings',

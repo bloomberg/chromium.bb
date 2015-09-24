@@ -35,11 +35,10 @@ Polymer({
      * are not defined in NetworkStateProperties are accessed through
      * CrOnc.getActive* which uses [] to access the property, which avoids any
      * type checking (see CrOnc.getProperty for more info).
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -290,7 +289,7 @@ Polymer({
     var carrier = CrOnc.getActiveValue(state, 'Cellular.Carrier');
     if (carrier != CARRIER_VERIZON) {
       var paymentPortal = /** @type {CrOnc.PaymentPortal|undefined} */(
-          CrOnc.getActiveValue(state, 'Cellular.PaymentPortal'));
+          this.get('state.Cellular.PaymentPortal'));
       if (!paymentPortal || !paymentPortal.Url)
         return false;
     }
@@ -425,7 +424,7 @@ Polymer({
     } else if (field == 'StaticIPConfig') {
       if (ipConfigType == CrOnc.IPConfigType.STATIC) {
         var staticIpConfig = /** @type {CrOnc.IPConfigProperties|undefined} */(
-            CrOnc.getActiveValue(this.networkState, 'StaticIPConfig'));
+            this.get('networkState.StaticIPConfig'));
         if (staticIpConfig &&
             this.allPropertiesMatch_(staticIpConfig,
                                      /** @type {!Object} */(value))) {

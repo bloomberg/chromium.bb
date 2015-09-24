@@ -66,8 +66,6 @@ Polymer({
    * Polymer type changed method.
    */
   networkTypeChanged_: function() {
-    if (!this.networkType)
-      return;
     this.refreshNetworks_();
   },
 
@@ -86,6 +84,8 @@ Polymer({
    * @private
    */
   refreshNetworks_: function() {
+    if (!this.networkType)
+      return;
     var filter = {
       networkType: this.networkType,
       visible: false,

@@ -184,7 +184,7 @@ CrOnc.getActivePropertyValue = function(property) {
  * directly so that the closure compiler can do type checking. Removal is
  * dependent on adding a NetworkProperties type to the networking_private.js
  * externs file.
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The property value or
  *     dictionary if it exists, otherwise undefined.
@@ -209,7 +209,7 @@ CrOnc.getProperty = function(state, key) {
 
 /**
  * Calls getProperty with '{state.Type}.key', e.g. WiFi.AutoConnect.
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @param {string} key The type property key, e.g. 'AutoConnect'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The property value or
  *     dictionary if it exists, otherwise undefined.
@@ -222,7 +222,7 @@ CrOnc.getTypeProperty = function(state, key) {
 /**
  * Returns either the active value of a managed property dictionary or the
  * unmanaged value associated with a key.
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @param {string} key The property key which may be nested, e.g. 'Foo.Bar'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The active property
  *     value if it exists, otherwise undefined.
@@ -236,7 +236,7 @@ CrOnc.getActiveValue = function(state, key) {
 
 /**
  * Calls getActiveValue with '{state.Type}.key', e.g. WiFi.AutoConnect.
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @param {string} key The type property key, e.g. 'AutoConnect'.
  * @return {!CrOnc.ManagedNetworkStateProperty|undefined} The active property
  *     value if it exists, otherwise undefined.
@@ -249,7 +249,7 @@ CrOnc.getActiveTypeValue = function(state, key) {
 /**
  * Returns an IPConfigProperties object for |type|. For IPV4, these will be the
  * static properties if IPAddressConfigType is Static and StaticIPConfig is set.
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @param {!CrOnc.IPType} type The IP Config type.
  * @return {?CrOnc.IPConfigProperties} The IP Config object, or undefined if
  *     no properties for |type| are available.
@@ -270,8 +270,8 @@ CrOnc.getIPConfigForType = function(state, type) {
   if (type != CrOnc.IPType.IPV4)
     return result;
 
-  var staticIpConfig = /** @type{CrOnc.IPConfigProperties} */(
-      CrOnc.getActiveValue(state, 'StaticIPConfig'));
+  var staticIpConfig =
+      /** @type{CrOnc.IPConfigProperties} */ (state['StaticIPConfig']);
   if (!staticIpConfig)
     return result;
 
@@ -295,7 +295,7 @@ CrOnc.getIPConfigForType = function(state, type) {
 };
 
 /**
- * @param {?CrOnc.NetworkStateProperties} state The ONC network state.
+ * @param {?CrOnc.NetworkStateProperties|undefined} state The ONC network state.
  * @return {boolean} True if |state| is a Cellular network with a locked SIM.
  */
 CrOnc.isSimLocked = function(state) {

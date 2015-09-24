@@ -35,7 +35,6 @@ Polymer({
      */
     detailGuid: {
       type: String,
-      value: '',
     },
 
     /**
@@ -43,7 +42,6 @@ Polymer({
      */
     knownNetworksType: {
       type: String,
-      value: '',
     },
   },
 

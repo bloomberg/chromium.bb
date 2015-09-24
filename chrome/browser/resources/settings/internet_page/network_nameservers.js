@@ -15,11 +15,10 @@ Polymer({
     /**
      * The current state containing the IP Config properties to display and
      * modify.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 

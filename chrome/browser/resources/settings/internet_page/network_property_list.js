@@ -17,11 +17,10 @@ Polymer({
   properties: {
     /**
      * The network state containing the properties to display.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
-      type: Object,
-      value: null
+      type: Object
     },
 
     /**
@@ -56,6 +55,8 @@ Polymer({
    * @private
    */
   onValueChange_: function(event) {
+    if (!this.networkState)
+      return;
     var field = event.target.id;
     var curValue = CrOnc.getActiveValue(this.networkState, field);
     var newValue = event.target.value;

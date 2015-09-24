@@ -211,9 +211,10 @@ Polymer({
             id,
             function(state) {
               if (chrome.runtime.lastError) {
-                if (chrome.runtime.lastError != 'Error.NetworkUnavailable') {
+                if (chrome.runtime.lastError.message !=
+                    'Error.NetworkUnavailable') {
                   console.error('Unexpected networkingPrivate.getState error:',
-                                chrome.runtime.lastError);
+                                chrome.runtime.lastError, 'For:', id);
                 }
                 return;
               }

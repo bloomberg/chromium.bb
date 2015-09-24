@@ -44,21 +44,19 @@ Polymer({
 
     /**
      * Device state for the network type.
-     * @type {?DeviceStateProperties}
+     * @type {DeviceStateProperties|undefined}
      */
     deviceState: {
       type: Object,
-      value: null,
       observer: 'deviceStateChanged_'
     },
 
     /**
      * Network state for the active network.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null
     },
 
     /**
@@ -97,7 +95,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @param {DeviceStateProperties} deviceState
    * @return {boolean} True if the device state is not set.
    * @private
    */
@@ -106,7 +104,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @param {DeviceStateProperties} deviceState
    * @param {boolean} expanded The expanded state.
    * @return {boolean} Whether or not the scanning spinner should be shown.
    * @private
@@ -116,7 +114,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The state of a device.
+   * @param {DeviceStateProperties|undefined} deviceState
    * @return {boolean} Whether or not the device state is enabled.
    * @private
    */
@@ -125,7 +123,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The device state.
+   * @param {DeviceStateProperties} deviceState
    * @return {string} The class value for the device enabled button.
    * @private
    */
@@ -136,7 +134,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The device state.
+   * @param {DeviceStateProperties} deviceState
    * @param {!Array<!CrOnc.NetworkStateProperties>} networkList
    * @return {string} The class value for the expand button.
    * @private
@@ -147,7 +145,7 @@ Polymer({
   },
 
   /**
-   * @param {?DeviceStateProperties} deviceState The device state.
+   * @param {DeviceStateProperties|undefined} deviceState
    * @param {!Array<!CrOnc.NetworkStateProperties>} networkList
    * @return {boolean} Whether or not to show the UI to expand the list.
    * @private
@@ -160,7 +158,7 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {CrOnc.NetworkStateProperties} state
    * @param {boolean} expanded The expanded state.
    * @return {boolean} True if the 'Known networks' button should be shown.
    * @private

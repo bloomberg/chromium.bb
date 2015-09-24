@@ -17,11 +17,10 @@ Polymer({
     /**
      * The current state containing the IP Config properties to display and
      * modify.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -46,14 +45,13 @@ Polymer({
     /**
      * The currently visible IP Config property dictionary. The 'RoutingPrefix'
      * property is a human-readable mask instead of a prefix length.
-     * @type {?{
+     * @type {{
      *   ipv4: !CrOnc.IPConfigUIProperties,
      *   ipv6: !CrOnc.IPConfigUIProperties
-     * }}
+     * }|undefined}
      */
     ipConfig: {
       type: Object,
-      value: null
     },
 
     /**
@@ -84,7 +82,7 @@ Polymer({
    * Polymer networkState changed method.
    */
   networkStateChanged_: function(newValue, oldValue) {
-    if (!this.networkState || !this.ipConfig)
+    if (!this.networkState)
       return;
 
     if (newValue.GUID != (oldValue && oldValue.GUID))

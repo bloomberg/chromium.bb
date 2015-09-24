@@ -15,11 +15,10 @@ Polymer({
   properties: {
     /**
      * The current state for the network matching |guid|.
-     * @type {?CrOnc.NetworkStateProperties}
+     * @type {CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -45,11 +44,10 @@ Polymer({
      * The user settable properties for a new ('other') APN. The values for
      * AccessPointName, Username, and Password will be set to the currently
      * active APN if it does not match an existing list entry.
-     * @type {?CrOnc.APNProperties}
+     * @type {CrOnc.APNProperties|undefined}
      */
     otherApn: {
       type: Object,
-      value: null
     },
 
     /**
@@ -158,7 +156,7 @@ Polymer({
    */
   getApnList_: function() {
     var apnList = /** @type {Array<!CrOnc.APNProperties>|undefined} */(
-        CrOnc.getActiveValue(this.networkState, 'Cellular.APNList'));
+        this.get('networkState.Cellular.APNList'));
     return apnList || [];
   },
 
@@ -230,7 +228,7 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} networkState
+   * @param {CrOnc.NetworkStateProperties|undefined} networkState
    * @param {string} selectedApn
    * @return {boolean} True if the 'other' APN is currently selected.
    * @private
