@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
+<link rel="import" href="chrome://md-settings/input/input.html">
 <link rel="import" href="chrome://md-settings/radio_group/radio_group.html">
 
 <dom-module id="cr-settings-appearance-page">
@@ -34,8 +34,9 @@
             >[[i18n_.openThisPage]]</paper-radio-button>
       </cr-settings-radio-group>
       <div class="radio-extended">
-        <paper-input no-label-float value="{{prefs.homepage.value}}"
-            label="[[i18n_.onStartupEnterUrl]]"></paper-input>
+        <cr-settings-input no-label-float pref="{{prefs.homepage}}"
+            label="[[i18n_.onStartupEnterUrl]]">
+        </cr-settings-input>
       </div>
     </template>
     <cr-settings-checkbox pref="{{prefs.bookmark_bar.show_on_all_tabs}}"

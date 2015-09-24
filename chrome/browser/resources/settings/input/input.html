@@ -1,0 +1,24 @@
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_events/cr_events.html">
+<link rel="import" href="chrome://md-settings/policy_controllable/policy_controllable.html">
+<link rel="import" href="chrome://md-settings/pref_tracker/pref_tracker.html">
+
+<dom-module id="cr-settings-input">
+  <link rel="import" type="css" href="input.css">
+  <template>
+    <cr-events id="events"></cr-events>
+    <cr-settings-pref-tracker pref="[[pref]]"></cr-settings-pref-tracker>
+
+    <div id="outerDiv" class="layout horizontal center">
+      <paper-input id="input" auto-validate value="{{value}}"
+          error-message="[[errorMessage]]" label="[[label]]"
+          no-label-float="[[noLabelFloat]]" pattern="[[pattern]]"
+          readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
+          on-blur="onBlur_" disabled="[[isDisabled_(disabled, pref)]]">
+      </paper-input>
+      <cr-policy-indicator pref="[[pref]]"></cr-policy-indicator>
+    </div>
+  </template>
+  <script src="input.js"></script>
+</dom-module>

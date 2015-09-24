@@ -173,6 +173,15 @@
       <structure name="IDR_SETTINGS_DOWNLOADS_PAGE_JS"
                  file="downloads_page/downloads_page.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_INPUT_HTML"
+                 file="input/input.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_INPUT_JS"
+                 file="input/input.js"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_INPUT_CSS"
+                 file="input/input.css"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_LANGUAGES_PAGE_CSS"
                  file="languages_page/languages_page.css"
                  type="chrome_html" />

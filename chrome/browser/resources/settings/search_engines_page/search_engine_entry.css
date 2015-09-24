@@ -12,11 +12,11 @@
   display: inline-block;
 }
 
-.inputs > cr-input {
+.inputs > paper-input {
   border-bottom: 1px solid gray;
 }
 
-.inputs > cr-input:not(:last-child) {
+.inputs > paper-input:not(:last-child) {
   border-right: 1px solid gray;
 }
 

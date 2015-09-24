@@ -19,12 +19,12 @@ span {
   font-weight: 500;
 }
 
-#lockedDiv cr-input {
+#lockedDiv paper-input {
   margin-left: 10px;
   width: 80px;
 }
 
-#unlockSimDialog cr-input {
+#unlockSimDialog paper-input {
   margin-left: 5px;
 }
 

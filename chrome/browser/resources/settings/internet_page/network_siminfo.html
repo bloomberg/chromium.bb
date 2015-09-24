@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="network_property_list.html">
 
@@ -50,9 +50,9 @@
         <h2>Enter SIM PIN</h2>
         <div class="layout vertical">
           <div class="layout horizontal">
-            <cr-input id="enterPin" class="pin" no-label-float
+            <paper-input id="enterPin" class="pin" no-label-float
                 label="Enter PIN">
-            </cr-input>
+            </paper-input>
             <paper-button on-tap="sendEnterPin_">Enter</paper-button>
           </div>
         </div>
@@ -72,15 +72,15 @@
         <h2>Change SIM PIN</h2>
         <div class="layout horizontal end">
           <div class="layout vertical">
-            <cr-input id="changePinOld" class="pin" no-label-float
+            <paper-input id="changePinOld" class="pin" no-label-float
                 label="Enter old PIN">
-            </cr-input>
-            <cr-input id="changePinNew1" class="pin" no-label-float
+            </paper-input>
+            <paper-input id="changePinNew1" class="pin" no-label-float
                 label="Enter new PIN">
-            </cr-input>
-            <cr-input id="changePinNew2" class="pin" no-label-float
+            </paper-input>
+            <paper-input id="changePinNew2" class="pin" no-label-float
                 label="Re-enter new PIN">
-            </cr-input>
+            </paper-input>
           </div>
           <paper-button on-tap="sendChangePin_">Change</paper-button>
         </div>
@@ -99,9 +99,9 @@
       <div class="layout vertical">
         <h2>SIM Card is locked.</h2>
         <div class="layout horizontal">
-          <cr-input id="unlockPin" class="pin" no-label-float
+          <paper-input id="unlockPin" class="pin" no-label-float
               label="Enter PIN">
-          </cr-input>
+          </paper-input>
           <paper-button on-tap="sendUnlockPin_">Unlock</paper-button>
         </div>
         <div class="layout horizontal">
@@ -123,17 +123,17 @@
         </span>
         <div class="layout horizontal">
           <div class="layout vertical">
-            <cr-input id="unlockPuk" class="puk" no-label-float
+            <paper-input id="unlockPuk" class="puk" no-label-float
                 label="Enter PIN Unblocking Key">
-            </cr-input>
+            </paper-input>
             <div class="layout horizontal end">
               <div class="layout vertical">
-                <cr-input id="unlockPin1" class="pin" no-label-float
+                <paper-input id="unlockPin1" class="pin" no-label-float
                     label="Enter PIN">
-                </cr-input>
-                <cr-input id="unlockPin2" class="pin" no-label-float
+                </paper-input>
+                <paper-input id="unlockPin2" class="pin" no-label-float
                     label="Re-enter PIN">
-                </cr-input>
+                </paper-input>
               </div>
               <paper-button on-tap="sendUnlockPuk_">Unlock</paper-button>
             </div>

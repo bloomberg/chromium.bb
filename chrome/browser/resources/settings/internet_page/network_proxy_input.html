@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
 
 <dom-module id="network-proxy-input">
@@ -7,13 +7,13 @@
   <template>
     <div id="outer" class="layout horizontal">
       <span class="flex">[[label]]</span>
-      <cr-input no-label-float id="url" disabled="[[!editable]]"
+      <paper-input no-label-float id="url" disabled="[[!editable]]"
           value="{{value.Host}}" on-blur="onValueChange_">
-      </cr-input>
+      </paper-input>
       <span>Port</span>
-      <cr-input no-label-float id="port" disabled="[[!editable]]"
+      <paper-input no-label-float id="port" disabled="[[!editable]]"
          value="{{value.Port}}" on-blur="onValueChange_">
-      </cr-input>
+      </paper-input>
     </div>
   </template>
   <script src="network_proxy_input.js"></script>

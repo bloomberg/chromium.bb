@@ -1,22 +1,24 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 
 <dom-module id="cr-search-engine-entry">
   <link rel="import" type="css" href="search_engine_entry.css">
   <template>
     <div class="entry">
       <div class="inputs">
-        <cr-input id="domainField" class="narrow-input" auto-validate="false"
-            value="{{engine.name}}" on-change="fieldChanged_" disabled required>
-        </cr-input>
-        <cr-input id="keywordField" class="narrow-input" auto-validate="false"
-            value="{{engine.keyword}}" on-change="fieldChanged_" disabled
-            required>
-        </cr-input>
-        <cr-input id="queryURLField" class="wide-input" auto-validate="false"
-            value="{{engine.url}}" on-change="fieldChanged_" disabled required>
-        </cr-input>
+        <paper-input id="domainField" disabled required
+            class="narrow-input" auto-validate="false"
+            value="{{engine.name}}" on-change="fieldChanged_">
+        </paper-input>
+        <paper-input id="keywordField" disabled required
+            class="narrow-input" auto-validate="false"
+            value="{{engine.keyword}}" on-change="fieldChanged_">
+        </paper-input>
+        <paper-input id="queryURLField" disabled required
+            class="wide-input" auto-validate="false"
+            value="{{engine.url}}" on-change="fieldChanged_">
+        </paper-input>
       </div>
       <div class="icons">
         <iron-icon id="checkIcon" icon="check" on-click="makeDefault_" hidden>

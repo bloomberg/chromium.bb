@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-cr-input {
+cr-settings-input {
   /* This ensures that the "Download location" label and the text in the input
    * itself are vertically aligned. */
   margin-bottom: 1em;

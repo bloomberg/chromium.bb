@@ -4,29 +4,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_network_icon.html">
 
 <dom-module id="cr-demo-element">
   <link rel="import" type="css" href="demo_element.css">
   <template>
-    <h3>cr-input</h3>
-    <div class="layout vertical">
-      <div class="layout horizontal">
-        <cr-input label="CrInput1" value="{{inputValues.1}}"></cr-input>
-        <span>InputValue.1=</span>
-        <span>[[inputValues.1]]</span>
-      </div>
-      <div class="layout horizontal">
-        <cr-input label="CrInput2" value="{{inputValues.2}}"></cr-input>
-        <cr-input label="CrInput3" value="{{inputValues.3}}"></cr-input>
-      </div>
-      <cr-input no-label-float label="CrInput4" value="{{inputValues.4}}">
-      </cr-input>
-      <cr-input no-label-float label="CrInput5" value="{{inputValues.5}}">
-      </cr-input>
-    </div>
-
     <h3>cr-collapse</h3>
     <div class="layout vertical">
       <cr-expand-button expanded="{{collapseOpened}}">

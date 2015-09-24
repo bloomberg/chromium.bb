@@ -42,15 +42,6 @@
   <structure name="IDR_CR_ELEMENTS_1_0_CR_EXPAND_BUTTON_JS"
              file="../../webui/resources/cr_elements/v1_0/cr_expand_button/cr_expand_button.js"
              type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_INPUT_CSS"
-             file="../../webui/resources/cr_elements/v1_0/cr_input/cr_input.css"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_INPUT_HTML"
-             file="../../webui/resources/cr_elements/v1_0/cr_input/cr_input.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_1_0_CR_INPUT_JS"
-             file="../../webui/resources/cr_elements/v1_0/cr_input/cr_input.js"
-             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_1_0_CR_NETWORK_ICON_CSS"
              file="../../webui/resources/cr_elements/v1_0/network/cr_network_icon.css"
              type="chrome_html" />

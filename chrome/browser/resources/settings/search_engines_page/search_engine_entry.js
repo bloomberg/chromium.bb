@@ -53,7 +53,7 @@ Polymer({
   /** @private */
   fieldChanged_: function() {
     // NOTE: This currently doesn't fire in response to a change event from the
-    // cr-input, even though it should. This Polymer change should fix the
+    // paper-input, even though it should. This Polymer change should fix the
     // issue:  https://github.com/PolymerElements/paper-input/pull/33
     chrome.searchEnginesPrivate.updateSearchEngine(
         this.engine.guid,
@@ -63,4 +63,3 @@ Polymer({
     this.makeNotEditable_();
   }
 });
-

@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/paper-styles.html">
-<link rel="import" href="chrome://resources/cr_elements/v1_0/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/cr_elements/v1_0/network/cr_onc_types.html">
 <link rel="import" href="network_property_list.html">
 <link rel="import" href="network_proxy_input.html">
@@ -24,9 +24,9 @@
       <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.PAC)]]"
           class="layout horizontal">
         <span>Autoconfiguration URL:</span>
-        <cr-input no-label-float class="flex" value="{{proxy.PAC}}"
+        <paper-input no-label-float class="flex" value="{{proxy.PAC}}"
             on-blur="onProxyInputChange_">
-        </cr-input>
+        </paper-input>
       </div>
 
       <div hidden$="[[!matches_(proxy.Type, ProxySettingsType.WPAD)]]"
@@ -69,8 +69,8 @@
              on-proxy-change="onProxyExclusionsChange_">
         </network-proxy-exclusions>
         <div class="layout horizontal baseline">
-          <cr-input id="proxyExclusion" class="flex" no-label-float>
-          </cr-input>
+          <paper-input id="proxyExclusion" class="flex" no-label-float>
+          </paper-input>
           <paper-button on-tap="onAddProxyExclusion_">
             Add Exception
           </paper-button>
