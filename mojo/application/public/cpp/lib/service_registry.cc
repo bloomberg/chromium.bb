@@ -60,8 +60,9 @@ bool ServiceRegistry::SetServiceConnectorForName(
                                                            interface_name);
     return true;
   }
-  LOG(WARNING) << "CapabilityFilter prevented connection to interface: " <<
-      interface_name;
+  LOG(WARNING) << "CapabilityFilter prevented connection to interface: "
+               << interface_name << " connection_url:" << connection_url_
+               << " remote_url:" << remote_url_;
   return false;
 }
 

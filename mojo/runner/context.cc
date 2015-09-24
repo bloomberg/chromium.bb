@@ -125,8 +125,11 @@ void InitDevToolsServiceIfNeeded(shell::ApplicationManager* manager,
   ServiceProviderPtr devtools_service_provider;
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->set_source(shell::Identity(GURL("mojo:shell")));
-  params->SetTargetURL(GURL("mojo:devtools_service"));
+  params->set_source(shell::Identity(GURL("mojo:shell"), std::string(),
+                                     shell::GetPermissiveCapabilityFilter()));
+  params->SetTarget(shell::Identity(GURL("mojo:devtools_service"),
+                                    std::string(),
+                                    shell::GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&devtools_service_provider));
   manager->ConnectToApplication(params.Pass());
 
@@ -208,7 +211,10 @@ bool Context::Init() {
 
   scoped_ptr<shell::ConnectToApplicationParams> params(
       new shell::ConnectToApplicationParams);
-  params->SetTargetURL(GURL("mojo:tracing"));
+  params->set_source(shell::Identity(GURL("mojo:shell"), std::string(),
+                                     shell::GetPermissiveCapabilityFilter()));
+  params->SetTarget(shell::Identity(GURL("mojo:tracing"), std::string(),
+                                    shell::GetPermissiveCapabilityFilter()));
   params->set_services(GetProxy(&service_provider_ptr));
   params->set_exposed_services(tracing_service_provider_ptr.Pass());
   application_manager_->ConnectToApplication(params.Pass());
