@@ -2312,10 +2312,10 @@ void RenderProcessHostImpl::SetBackgrounded(bool backgrounded) {
     return;
 #endif  // OS_WIN
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  // Same as below, but bound to an experiment (http://crbug.com/458594 on
-  // Windows, http://crbug.com/398103 on the Mac). Enabled by default in the
-  // absence of field trials to get coverage on the perf waterfall.
+#if defined(OS_WIN)
+  // Same as below, but bound to an experiment (http://crbug.com/458594 ).
+  // Enabled by default in the absence of field trials to get coverage on the
+  // perf waterfall.
   base::FieldTrial* trial =
       base::FieldTrialList::Find("BackgroundRendererProcesses");
   if (!trial || !base::StartsWith(trial->group_name(), "Disallow",

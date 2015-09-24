@@ -493,7 +493,6 @@
           'process/process_iterator_openbsd.cc',
           'process/process_iterator_win.cc',
           'process/process_linux.cc',
-          'process/process_mac.cc',
           'process/process_metrics.cc',
           'process/process_metrics.h',
           'process/process_metrics_freebsd.cc',

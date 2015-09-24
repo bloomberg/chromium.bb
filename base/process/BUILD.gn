@@ -41,7 +41,6 @@ source_set("process") {
     "process_iterator_openbsd.cc",
     "process_iterator_win.cc",
     "process_linux.cc",
-    "process_mac.cc",
     "process_metrics.cc",
     "process_metrics.h",
     "process_metrics_freebsd.cc",
