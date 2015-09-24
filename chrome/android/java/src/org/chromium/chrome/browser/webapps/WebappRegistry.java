@@ -14,6 +14,7 @@ import org.chromium.base.annotations.CalledByNative;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Keeps track of web apps which have created a SharedPreference file (through the used of the
@@ -28,6 +29,13 @@ public class WebappRegistry {
 
     static final String REGISTRY_FILE_NAME = "webapp_registry";
     static final String KEY_WEBAPP_SET = "webapp_set";
+    static final String KEY_LAST_CLEANUP = "last_cleanup";
+
+    /** Represents a period of 4 weeks in milliseconds */
+    static final long FULL_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(4L * 7L);
+
+    /** Represents a period of 13 weeks in milliseconds */
+    static final long WEBAPP_UNOPENED_CLEANUP_DURATION = TimeUnit.DAYS.toMillis(13L * 7L);
 
     /**
      * Called when a retrieval of the stored web apps occurs.
@@ -76,6 +84,40 @@ public class WebappRegistry {
             @Override
             protected final void onPostExecute(Set<String> result) {
                 callback.onWebappIdsRetrieved(result);
+            }
+        }.execute();
+    }
+
+    /**
+     * Deletes the data for all "old" web apps. i.e. web apps which have not been opened by the user
+     * in the last 3 months. Cleanup is run, at most, once a month.
+     * @param context     Context to open the registry with.
+     * @param currentTime The current time which will be checked to decide if the task should be run
+     *                    and if a web app should be cleaned up.
+     */
+    static void unregisterOldWebapps(final Context context, final long currentTime) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... nothing) {
+                SharedPreferences preferences = openSharedPreferences(context);
+                long lastCleanup = preferences.getLong(KEY_LAST_CLEANUP, 0);
+                if ((currentTime - lastCleanup) < FULL_CLEANUP_DURATION) return null;
+
+                Set<String> currentWebapps = getRegisteredWebappIds(preferences);
+                Set<String> retainedWebapps = new HashSet<String>(currentWebapps);
+                for (String id : currentWebapps) {
+                    long lastUsed = new WebappDataStorage(context, id).getLastUsedTime();
+                    if ((currentTime - lastUsed) < WEBAPP_UNOPENED_CLEANUP_DURATION) continue;
+
+                    WebappDataStorage.deleteDataForWebapp(context, id);
+                    retainedWebapps.remove(id);
+                }
+
+                preferences.edit()
+                        .putLong(KEY_LAST_CLEANUP, currentTime)
+                        .putStringSet(KEY_WEBAPP_SET, retainedWebapps)
+                        .commit();
+                return null;
             }
         }.execute();
     }

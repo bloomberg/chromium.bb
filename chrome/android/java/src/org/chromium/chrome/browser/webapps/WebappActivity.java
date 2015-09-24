@@ -53,6 +53,7 @@ public class WebappActivity extends FullScreenActivity {
 
     private final WebappInfo mWebappInfo;
     private AsyncTask<Void, Void, Void> mCleanupTask;
+    private boolean mOldWebappCleanupStarted;
 
     private WebContentsObserver mWebContentsObserver;
 
@@ -156,6 +157,13 @@ public class WebappActivity extends FullScreenActivity {
             updateTaskDescription();
         }
         super.onResume();
+
+        // Kick off the old web app cleanup (if we haven't already) now that we have queued the
+        // current web app's storage to be opened.
+        if (!mOldWebappCleanupStarted) {
+            WebappRegistry.unregisterOldWebapps(this, System.currentTimeMillis());
+            mOldWebappCleanupStarted = true;
+        }
     }
 
     @Override

@@ -131,13 +131,12 @@ public class WebappDataStorage {
         new UpdateTask(splashScreenImage).execute();
     }
 
-    /** Package private for use by WebappRegistry */
     void updateLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
         mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).commit();
     }
 
-    private long getLastUsedTime() {
+    long getLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
         return mPreferences.getLong(KEY_LAST_USED, INVALID_LAST_USED);
     }
