@@ -36,47 +36,69 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/mouse_watcher_view_host.h"
 
+using content::DownloadItem;
+
+namespace {
+
 // Max number of download views we'll contain. Any time a view is added and
 // we already have this many download views, one is removed.
-static const size_t kMaxDownloadViews = 15;
+const size_t kMaxDownloadViews = 15;
 
 // Padding from left edge and first download view.
-static const int kLeftPadding = 2;
+const int kLeftPadding = 2;
+const int kStartPaddingMd = 4;
 
 // Padding from right edge and close button/show downloads link.
-static const int kRightPadding = 10;
+const int kRightPadding = 10;
+const int kEndPaddingMd = 6;
 
 // Padding between the show all link and close button.
-static const int kCloseAndLinkPadding = 14;
+const int kCloseAndLinkPadding = 14;
 
 // Padding between the download views.
-static const int kDownloadPadding = 10;
+const int kDownloadPadding = 10;
 
 // Padding between the top/bottom and the content.
-static const int kTopBottomPadding = 2;
+const int kTopBottomPadding = 2;
+const int kTopBottomPaddingMd = 6;
 
 // Padding between the icon and 'show all downloads' link
-static const int kDownloadsTitlePadding = 4;
+const int kDownloadsTitlePadding = 4;
 
 // Border color.
-static const SkColor kBorderColor = SkColorSetRGB(214, 214, 214);
+const SkColor kBorderColor = SkColorSetRGB(214, 214, 214);
 
 // New download item animation speed in milliseconds.
-static const int kNewItemAnimationDurationMs = 800;
+const int kNewItemAnimationDurationMs = 800;
 
 // Shelf show/hide speed.
-static const int kShelfAnimationDurationMs = 120;
+const int kShelfAnimationDurationMs = 120;
 
 // Amount of time to delay if the mouse leaves the shelf by way of entering
 // another window. This is much larger than the normal delay as openning a
 // download is most likely going to trigger a new window to appear over the
 // button. Delay the time so that the user has a chance to quickly close the
 // other app and return to chrome with the download shelf still open.
-static const int kNotifyOnExitTimeMS = 5000;
+const int kNotifyOnExitTimeMS = 5000;
 
-using content::DownloadItem;
+int GetStartPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? kStartPaddingMd
+                                                        : kLeftPadding;
+}
 
-namespace {
+int GetEndPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? kEndPaddingMd
+                                                        : kRightPadding;
+}
+
+int GetBetweenItemPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 0 : kDownloadPadding;
+}
+
+int GetTopBottomPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? kTopBottomPaddingMd
+                                                        : kTopBottomPadding;
+}
 
 // Sets size->width() to view's preferred width + size->width().s
 // Sets size->height() to the max of the view's preferred height and
@@ -88,7 +110,7 @@ void AdjustSize(views::View* view, gfx::Size* size) {
 }
 
 int CenterPosition(int size, int target_size) {
-  return std::max((target_size - size) / 2, kTopBottomPadding);
+  return std::max((target_size - size) / 2, GetTopBottomPadding());
 }
 
 }  // namespace
@@ -173,15 +195,16 @@ content::PageNavigator* DownloadShelfView::GetNavigator() {
 }
 
 gfx::Size DownloadShelfView::GetPreferredSize() const {
-  gfx::Size prefsize(kRightPadding + kLeftPadding + kCloseAndLinkPadding, 0);
+  gfx::Size prefsize(GetEndPadding() + GetStartPadding() + kCloseAndLinkPadding,
+                     0);
   AdjustSize(close_button_, &prefsize);
   AdjustSize(show_all_view_, &prefsize);
   // Add one download view to the preferred size.
   if (!download_views_.empty()) {
     AdjustSize(*download_views_.begin(), &prefsize);
-    prefsize.Enlarge(kDownloadPadding, 0);
+    prefsize.Enlarge(GetBetweenItemPadding(), 0);
   }
-  prefsize.Enlarge(0, kTopBottomPadding + kTopBottomPadding);
+  prefsize.Enlarge(0, 2 * GetTopBottomPadding());
   if (shelf_animation_->is_animating()) {
     prefsize.set_height(static_cast<int>(
         static_cast<double>(prefsize.height()) *
@@ -226,12 +249,12 @@ void DownloadShelfView::Layout() {
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   gfx::Size show_all_size = show_all_view_->GetPreferredSize();
   int max_download_x =
-      std::max<int>(0, width() - kRightPadding - close_button_size.width() -
-                       kCloseAndLinkPadding - show_all_size.width() -
-                       kDownloadsTitlePadding - image_size.width() -
-                       kDownloadPadding);
-  int next_x = show_link_only ? kLeftPadding :
-                                max_download_x + kDownloadPadding;
+      std::max<int>(0, width() - GetEndPadding() - close_button_size.width() -
+                           kCloseAndLinkPadding - show_all_size.width() -
+                           kDownloadsTitlePadding - image_size.width() -
+                           GetBetweenItemPadding());
+  int next_x = show_link_only ? GetStartPadding()
+                              : max_download_x + GetBetweenItemPadding();
   // Align vertically with show_all_view_.
   arrow_image_->SetBounds(next_x,
                           CenterPosition(image_size.height(), height()),
@@ -256,7 +279,7 @@ void DownloadShelfView::Layout() {
     return;
   }
 
-  next_x = kLeftPadding;
+  next_x = GetStartPadding();
   for (auto ri = download_views_.rbegin(); ri != download_views_.rend(); ++ri) {
     gfx::Size view_size = (*ri)->GetPreferredSize();
 
@@ -329,9 +352,10 @@ bool DownloadShelfView::CanFitFirstDownloadItem() {
   // Let's compute the width available for download items, which is the width
   // of the shelf minus the "Show all downloads" link, arrow and close button
   // and the padding.
-  int available_width = width() - kRightPadding - close_button_size.width() -
-      kCloseAndLinkPadding - show_all_size.width() - kDownloadsTitlePadding -
-      image_size.width() - kDownloadPadding - kLeftPadding;
+  int available_width = width() - GetEndPadding() - close_button_size.width() -
+                        kCloseAndLinkPadding - show_all_size.width() -
+                        kDownloadsTitlePadding - image_size.width() -
+                        GetBetweenItemPadding() - GetStartPadding();
   if (available_width <= 0)
     return false;
 

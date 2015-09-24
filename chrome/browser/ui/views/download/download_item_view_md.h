@@ -125,28 +125,6 @@ class DownloadItemViewMd : public views::ButtonListener,
     MALICIOUS_MODE    // Displaying the malicious download warning.
   };
 
-  // The image set associated with the part containing the icon and text.
-  // TODO(estade): these are not drawn, they're just used for vestigial sizing
-  // logic. Remove them.
-  struct BodyImageSet {
-    gfx::ImageSkia* top_left;
-    gfx::ImageSkia* left;
-    gfx::ImageSkia* bottom_left;
-    gfx::ImageSkia* top;
-    gfx::ImageSkia* center;
-    gfx::ImageSkia* bottom;
-    gfx::ImageSkia* top_right;
-    gfx::ImageSkia* right;
-    gfx::ImageSkia* bottom_right;
-  };
-
-  // The image set associated with the drop-down button on the right.
-  struct DropdownImageSet {
-    gfx::ImageSkia* top;
-    gfx::ImageSkia* center;
-    gfx::ImageSkia* bottom;
-  };
-
   void OpenDownload();
 
   // Submits the downloaded file to the safebrowsing download feedback service.
@@ -157,6 +135,10 @@ class DownloadItemViewMd : public views::ButtonListener,
   // If the user has |enabled| uploading, calls SubmitDownloadToFeedbackService.
   // Otherwise, it simply removes the DownloadItem without uploading.
   void PossiblySubmitDownloadToFeedbackService(bool enabled);
+
+  // This function calculates the vertical coordinate to draw the file name text
+  // relative to local bounds.
+  int GetYForFilenameText() const;
 
   // Painting of various download item bits.
   void DrawStatusText(gfx::Canvas* canvas);
@@ -220,16 +202,6 @@ class DownloadItemViewMd : public views::ButtonListener,
                               State to,
                               gfx::SlideAnimation* animation);
 
-  // The different images used for the background.
-  BodyImageSet normal_body_image_set_;
-  BodyImageSet hot_body_image_set_;
-  BodyImageSet pushed_body_image_set_;
-  BodyImageSet dangerous_mode_body_image_set_;
-  BodyImageSet malicious_mode_body_image_set_;
-  DropdownImageSet normal_dropdown_image_set_;
-  DropdownImageSet hot_dropdown_image_set_;
-  DropdownImageSet pushed_dropdown_image_set_;
-
   // The warning icon showns for dangerous downloads.
   const gfx::ImageSkia* warning_icon_;
 
@@ -239,8 +211,11 @@ class DownloadItemViewMd : public views::ButtonListener,
   // Elements of our particular download
   base::string16 status_text_;
 
-  // The font list used to print the file name and status.
+  // The font list used to print the file name and warning text.
   gfx::FontList font_list_;
+
+  // The font list used to print the status text below the file name.
+  gfx::FontList status_font_list_;
 
   // The tooltip.  Only displayed when not showing a warning dialog.
   base::string16 tooltip_text_;
@@ -258,12 +233,6 @@ class DownloadItemViewMd : public views::ButtonListener,
   // Keeps the amount of time spent already animating. Used to keep track of
   // total active time for downloads of unknown size.
   base::TimeDelta previous_progress_elapsed_;
-
-  // The height of the box formed by the background images and its labels.
-  int box_height_;
-
-  // The y coordinate of the box formed by the background images and its labels.
-  int box_y_;
 
   // Whether we are dragging the download button.
   bool dragging_;

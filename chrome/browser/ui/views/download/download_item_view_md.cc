@@ -65,42 +65,50 @@
 using content::DownloadItem;
 using extensions::ExperienceSamplingEvent;
 
-// TODO(paulg): These may need to be adjusted when download progress
-//              animation is added, and also possibly to take into account
-//              different screen resolutions.
-static const int kTextWidth = 140;           // Pixels
-static const int kDangerousTextWidth = 200;  // Pixels
-static const int kVerticalPadding = 3;       // Pixels
-static const int kVerticalTextPadding = 2;   // Pixels
-static const int kTooltipMaxWidth = 800;     // Pixels
+namespace {
 
-// We add some padding before the left image so that the progress animation icon
-// hides the corners of the left image.
-static const int kLeftPadding = 0;  // Pixels.
+// All values in dp.
+const int kTextWidth = 140;
+const int kDangerousTextWidth = 200;
+
+// The normal height of the item which may be exceeded if text is large.
+const int kDefaultHeight = 36;
+
+// The minimum vertical padding above and below contents of the download item.
+// This is only used when the text size is large.
+const int kMinimumVerticalPadding = 2;
+
+// Vertical padding between filename and status text.
+const int kVerticalTextPadding = 1;
+
+const int kTooltipMaxWidth = 800;
+
+// Padding before the icon and at end of the item. TODO(estade): this needs to
+// be used when drawing the non-warning dialog state. Currently we just use the
+// built in padding for the progress indicator.
+const int kStartPadding = 12;
+const int kEndPadding = 19;
 
 // The space between the Save and Discard buttons when prompting for a dangerous
 // download.
-static const int kButtonPadding = 5;  // Pixels.
+const int kButtonPadding = 5;
 
 // The space on the left and right side of the dangerous download label.
-static const int kLabelPadding = 4;  // Pixels.
+const int kLabelPadding = 8;
 
-static const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
+const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
 
 // How long the 'download complete' animation should last for.
-static const int kCompleteAnimationDurationMs = 2500;
+const int kCompleteAnimationDurationMs = 2500;
 
 // How long the 'download interrupted' animation should last for.
-static const int kInterruptedAnimationDurationMs = 2500;
+const int kInterruptedAnimationDurationMs = 2500;
 
 // How long we keep the item disabled after the user clicked it to open the
 // downloaded item.
-static const int kDisabledOnOpenDuration = 3000;
+const int kDisabledOnOpenDuration = 3000;
 
-// Darken light-on-dark download status text by 20% before drawing, thus
-// creating a "muted" version of title text for both dark-on-light and
-// light-on-dark themes.
-static const double kDownloadItemLuminanceMod = 0.8;
+}  // namespace
 
 DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
                                        DownloadShelfView* parent)
@@ -126,86 +134,13 @@ DownloadItemViewMd::DownloadItemViewMd(DownloadItem* download_item,
   download()->AddObserver(this);
   set_context_menu_controller(this);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  BodyImageSet normal_body_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_BOTTOM),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_BOTTOM)};
-  normal_body_image_set_ = normal_body_image_set;
-
-  DropdownImageSet normal_dropdown_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_BOTTOM)};
-  normal_dropdown_image_set_ = normal_dropdown_image_set;
-
-  BodyImageSet hot_body_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_MIDDLE_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_BOTTOM_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_TOP_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_MIDDLE_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_TOP_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_MIDDLE_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_BOTTOM_H)};
-  hot_body_image_set_ = hot_body_image_set;
-
-  DropdownImageSet hot_dropdown_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_TOP_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_MIDDLE_H),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_BOTTOM_H)};
-  hot_dropdown_image_set_ = hot_dropdown_image_set;
-
-  BodyImageSet pushed_body_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_MIDDLE_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_BOTTOM_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_TOP_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_MIDDLE_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_TOP_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_MIDDLE_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_BOTTOM_P)};
-  pushed_body_image_set_ = pushed_body_image_set;
-
-  DropdownImageSet pushed_dropdown_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_TOP_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_MIDDLE_P),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_MENU_BOTTOM_P)};
-  pushed_dropdown_image_set_ = pushed_dropdown_image_set;
-
-  BodyImageSet dangerous_mode_body_image_set = {
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_LEFT_BOTTOM),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_TOP),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_MIDDLE),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_CENTER_BOTTOM),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_TOP_NO_DD),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_MIDDLE_NO_DD),
-      rb.GetImageSkiaNamed(IDR_DOWNLOAD_BUTTON_RIGHT_BOTTOM_NO_DD)};
-  dangerous_mode_body_image_set_ = dangerous_mode_body_image_set;
-
-  malicious_mode_body_image_set_ = normal_body_image_set;
-
   LoadIcon();
 
-  font_list_ = rb.GetFontList(ui::ResourceBundle::BaseFont);
-  box_height_ = std::max<int>(2 * kVerticalPadding + font_list_.GetHeight() +
-                                  kVerticalTextPadding + font_list_.GetHeight(),
-                              2 * kVerticalPadding +
-                                  normal_body_image_set_.top_left->height() +
-                                  normal_body_image_set_.bottom_left->height());
-  box_y_ =
-      std::max(0, (DownloadShelf::kProgressIndicatorSize - box_height_) / 2);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  font_list_ =
+      rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(1);
+  status_font_list_ =
+      rb.GetFontList(ui::ResourceBundle::BaseFont).DeriveWithSizeDelta(-2);
 
   body_hover_animation_.reset(new gfx::SlideAnimation(this));
   drop_hover_animation_.reset(new gfx::SlideAnimation(this));
@@ -360,11 +295,7 @@ void DownloadItemViewMd::Layout() {
   UpdateColorsFromTheme();
 
   if (IsShowingWarningDialog()) {
-    BodyImageSet* body_image_set = (mode_ == DANGEROUS_MODE)
-                                       ? &dangerous_mode_body_image_set_
-                                       : &malicious_mode_body_image_set_;
-    int x = kLeftPadding + body_image_set->top_left->width() +
-            warning_icon_->width() + kLabelPadding;
+    int x = kStartPadding + warning_icon_->width() + kStartPadding;
     int y = (height() - dangerous_download_label_->height()) / 2;
     dangerous_download_label_->SetBounds(x, y,
                                          dangerous_download_label_->width(),
@@ -389,36 +320,28 @@ gfx::Size DownloadItemViewMd::GetPreferredSize() const {
   int width, height;
 
   // First, we set the height to the height of two rows or text plus margins.
-  height =
-      2 * kVerticalPadding + 2 * font_list_.GetHeight() + kVerticalTextPadding;
+  height = std::max(kDefaultHeight,
+                    2 * kMinimumVerticalPadding + font_list_.GetBaseline() +
+                        kVerticalTextPadding + status_font_list_.GetHeight());
   // Then we increase the size if the progress icon doesn't fit.
   height = std::max<int>(height, DownloadShelf::kProgressIndicatorSize);
 
   if (IsShowingWarningDialog()) {
-    const BodyImageSet* body_image_set = (mode_ == DANGEROUS_MODE)
-                                             ? &dangerous_mode_body_image_set_
-                                             : &malicious_mode_body_image_set_;
-    width = kLeftPadding + body_image_set->top_left->width();
-    width += warning_icon_->width() + kLabelPadding;
-    width += dangerous_download_label_->width() + kLabelPadding;
+    width = kStartPadding + warning_icon_->width() + kLabelPadding +
+            dangerous_download_label_->width() + kLabelPadding;
     gfx::Size button_size = GetButtonSize();
     // Make sure the button fits.
-    height = std::max<int>(height, 2 * kVerticalPadding + button_size.height());
+    height = std::max<int>(height,
+                           2 * kMinimumVerticalPadding + button_size.height());
     // Then we make sure the warning icon fits.
-    height =
-        std::max<int>(height, 2 * kVerticalPadding + warning_icon_->height());
+    height = std::max<int>(
+        height, 2 * kMinimumVerticalPadding + warning_icon_->height());
     if (save_button_)
       width += button_size.width() + kButtonPadding;
-    width += button_size.width();
-    width += body_image_set->top_right->width();
-    if (mode_ == MALICIOUS_MODE)
-      width += normal_dropdown_image_set_.top->width();
+    width += button_size.width() + kEndPadding;
   } else {
-    width = kLeftPadding + normal_body_image_set_.top_left->width();
-    width += DownloadShelf::kProgressIndicatorSize;
-    width += kTextWidth;
-    width += normal_body_image_set_.top_right->width();
-    width += normal_dropdown_image_set_.top->width();
+    width = kStartPadding + DownloadShelf::kProgressIndicatorSize + kTextWidth +
+            kEndPadding;
   }
   return gfx::Size(width, height);
 }
@@ -619,33 +542,32 @@ void DownloadItemViewMd::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawFocusRect(GetLocalBounds());
 }
 
+int DownloadItemViewMd::GetYForFilenameText() const {
+  int text_height = font_list_.GetBaseline();
+  if (!status_text_.empty())
+    text_height += kVerticalTextPadding + status_font_list_.GetBaseline();
+  return (height() - text_height) / 2;
+}
+
 void DownloadItemViewMd::DrawStatusText(gfx::Canvas* canvas) {
-  if (status_text_.empty())
+  if (status_text_.empty() || IsShowingWarningDialog())
     return;
 
   int mirrored_x = GetMirroredXWithWidthInView(
       DownloadShelf::kProgressIndicatorSize, kTextWidth);
-  // Add font_list_.height() to compensate for title, which is drawn later.
   int y =
-      box_y_ + kVerticalPadding + font_list_.GetHeight() + kVerticalTextPadding;
-  SkColor file_name_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-  // If text is light-on-dark, lightening it alone will do nothing.
-  // Therefore we mute luminance a wee bit before drawing in this case.
-  if (color_utils::RelativeLuminance(file_name_color) > 0.5)
-    file_name_color =
-        SkColorSetRGB(static_cast<int>(kDownloadItemLuminanceMod *
-                                       SkColorGetR(file_name_color)),
-                      static_cast<int>(kDownloadItemLuminanceMod *
-                                       SkColorGetG(file_name_color)),
-                      static_cast<int>(kDownloadItemLuminanceMod *
-                                       SkColorGetB(file_name_color)));
+      GetYForFilenameText() + font_list_.GetBaseline() + kVerticalTextPadding;
+  SkColor file_name_color = SkColorSetA(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT), 0xC7);
   canvas->DrawStringRect(
-      status_text_, font_list_, file_name_color,
-      gfx::Rect(mirrored_x, y, kTextWidth, font_list_.GetHeight()));
+      status_text_, status_font_list_, file_name_color,
+      gfx::Rect(mirrored_x, y, kTextWidth, status_font_list_.GetHeight()));
 }
 
 void DownloadItemViewMd::DrawFilename(gfx::Canvas* canvas) {
+  if (IsShowingWarningDialog())
+    return;
+
   // Print the text, left aligned and always print the file extension.
   // Last value of x was the end of the right image, just before the button.
   // Note that in dangerous mode we use a label (as the text is multi-line).
@@ -671,19 +593,16 @@ void DownloadItemViewMd::DrawFilename(gfx::Canvas* canvas) {
       DownloadShelf::kProgressIndicatorSize, kTextWidth);
   SkColor file_name_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
-  int y = box_y_ + (status_text_.empty()
-                        ? ((box_height_ - font_list_.GetHeight()) / 2)
-                        : kVerticalPadding);
 
-  canvas->DrawStringRect(
-      filename, font_list_,
-      enabled() ? file_name_color : kFileNameDisabledColor,
-      gfx::Rect(mirrored_x, y, kTextWidth, font_list_.GetHeight()));
+  canvas->DrawStringRect(filename, font_list_,
+                         enabled() ? file_name_color : kFileNameDisabledColor,
+                         gfx::Rect(mirrored_x, GetYForFilenameText(),
+                                   kTextWidth, font_list_.GetHeight()));
 }
 
 void DownloadItemViewMd::DrawIcon(gfx::Canvas* canvas) {
   if (IsShowingWarningDialog()) {
-    int icon_x = kLeftPadding + normal_body_image_set_.top_left->width();
+    int icon_x = kStartPadding;
     int icon_y = (height() - warning_icon_->height()) / 2;
     canvas->DrawImageInt(*warning_icon_, icon_x, icon_y);
     return;
