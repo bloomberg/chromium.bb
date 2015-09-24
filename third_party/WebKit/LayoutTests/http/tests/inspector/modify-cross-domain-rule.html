@@ -65,22 +65,21 @@ function test()
                     InspectorTest.completeTest();
                 } else {
                     dumpProperties(rule.style);
-                    InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback, failureCallback);
+                    InspectorTest.cssModel.setRuleSelector(rule, nodeId, "body", successCallback);
                 }
             }
 
-            function successCallback(rule, doesAffectSelectedNode)
+            function successCallback(success)
             {
+                if (!success) {
+                    InspectorTest.addResult("[!] Failed to change selector");
+                    InspectorTest.completeTest();
+                    return;
+                }
                 InspectorTest.addResult("=== Selector changed ===");
                 InspectorTest.addResult(rule.selectorText() + " {" + rule.style.cssText + "}");
                 InspectorTest.addResult("Selectors matching the (#inspected) node: " + InspectorTest.matchingSelectors(rule));
                 next();
-            }
-
-            function failureCallback()
-            {
-                InspectorTest.addResult("[!] Failed to change selector");
-                InspectorTest.completeTest();
             }
         }
     ]);
