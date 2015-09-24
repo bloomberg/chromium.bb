@@ -7,13 +7,9 @@
 
 #include "base/command_line.h"
 #include "gpu/config/gpu_info_collector.h"
+#include "ui/gl/gl_switches.h"
 
 namespace mus {
-
-namespace {
-const char kOverrideUseGLWithOSMesaForTests[] =
-    "override-use-gl-with-osmesa-for-tests";
-}  // namespace
 
 GpuState::GpuState()
     : control_thread_("gpu_command_buffer_control"),
@@ -21,7 +17,7 @@ GpuState::GpuState()
       share_group_(new gfx::GLShareGroup),
       mailbox_manager_(new gpu::gles2::MailboxManagerImpl) {
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  if (!cmd->HasSwitch(kOverrideUseGLWithOSMesaForTests)) {
+  if (!cmd->HasSwitch(switches::kOverrideUseGLWithOSMesaForTests)) {
     gpu::CollectInfoResult result = gpu::CollectBasicGraphicsInfo(&gpu_info_);
     CHECK(result == gpu::kCollectInfoSuccess);
     result = gpu::CollectContextGraphicsInfo(&gpu_info_);
