@@ -32,7 +32,7 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
 
   MOCK_METHOD0(OnSendData, int());
   MOCK_METHOD2(OnSendDataComplete, int(int, bool*));
-  MOCK_METHOD1(OnHeadersAvailable, void(const SpdyHeaderBlock&));
+  MOCK_METHOD2(OnHeadersAvailable, void(const SpdyHeaderBlock&, size_t));
   MOCK_METHOD2(OnDataReceived, int(const char*, int));
   MOCK_METHOD0(OnDataAvailable, void());
   MOCK_METHOD1(OnClose, void(QuicErrorCode));
@@ -111,7 +111,8 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
-  EXPECT_CALL(delegate_, OnHeadersAvailable(headers_));
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(headers_, uncompressed_headers.length()));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
@@ -134,7 +135,8 @@ TEST_P(QuicReliableClientStreamTest, OnDataAvailable) {
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
-  EXPECT_CALL(delegate_, OnHeadersAvailable(headers_));
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(headers_, uncompressed_headers.length()));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 
@@ -170,7 +172,8 @@ TEST_P(QuicReliableClientStreamTest, OnDataAvailableWithError) {
   stream_->OnStreamHeaders(uncompressed_headers);
   stream_->OnStreamHeadersComplete(false, uncompressed_headers.length());
 
-  EXPECT_CALL(delegate_, OnHeadersAvailable(headers_));
+  EXPECT_CALL(delegate_,
+              OnHeadersAvailable(headers_, uncompressed_headers.length()));
   base::MessageLoop::current()->RunUntilIdle();
   EXPECT_TRUE(stream_->decompressed_headers().empty());
 

@@ -37,6 +37,8 @@ QuicHttpStream::QuicHttpStream(
       response_info_(nullptr),
       response_status_(OK),
       response_headers_received_(false),
+      headers_bytes_received_(0),
+      headers_bytes_sent_(0),
       closed_stream_received_bytes_(0),
       closed_stream_sent_bytes_(0),
       user_buffer_len_(0),
@@ -241,23 +243,27 @@ bool QuicHttpStream::CanReuseConnection() const {
 }
 
 int64_t QuicHttpStream::GetTotalReceivedBytes() const {
-  // TODO(sclittle): Currently, this only includes response body bytes. Change
-  // this to include headers and QUIC overhead as well.
+  // TODO(sclittle): Currently, this only includes headers and response body
+  // bytes. Change this to include QUIC overhead as well.
+  int64_t total_received_bytes = headers_bytes_received_;
   if (stream_) {
-    return stream_->stream_bytes_read();
+    total_received_bytes += stream_->stream_bytes_read();
+  } else {
+    total_received_bytes += closed_stream_received_bytes_;
   }
-
-  return closed_stream_received_bytes_;
+  return total_received_bytes;
 }
 
 int64_t QuicHttpStream::GetTotalSentBytes() const {
-  // TODO(sclittle): Currently, this only includes request body bytes. Change
-  // this to include headers and QUIC overhead as well.
+  // TODO(sclittle): Currently, this only includes request headers and body
+  // bytes. Change this to include QUIC overhead as well.
+  int64_t total_sent_bytes = headers_bytes_sent_;
   if (stream_) {
-    return stream_->stream_bytes_written();
+    total_sent_bytes += stream_->stream_bytes_written();
+  } else {
+    total_sent_bytes += closed_stream_sent_bytes_;
   }
-
-  return closed_stream_sent_bytes_;
+  return total_sent_bytes;
 }
 
 bool QuicHttpStream::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
@@ -286,7 +292,10 @@ void QuicHttpStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }
 
-void QuicHttpStream::OnHeadersAvailable(const SpdyHeaderBlock& headers) {
+void QuicHttpStream::OnHeadersAvailable(const SpdyHeaderBlock& headers,
+                                        size_t frame_len) {
+  headers_bytes_received_ += frame_len;
+
   int rv = ProcessResponseHeaders(headers);
   if (rv != ERR_IO_PENDING && !callback_.is_null()) {
     DoCallback(rv);
@@ -422,9 +431,12 @@ int QuicHttpStream::DoSendHeaders() {
   bool has_upload_data = request_body_stream_ != nullptr;
 
   next_state_ = STATE_SEND_HEADERS_COMPLETE;
-  int rv = stream_->WriteHeaders(request_headers_, !has_upload_data, nullptr);
+  size_t frame_len =
+      stream_->WriteHeaders(request_headers_, !has_upload_data, nullptr);
+  headers_bytes_sent_ += frame_len;
+
   request_headers_.clear();
-  return rv;
+  return static_cast<int>(frame_len);
 }
 
 int QuicHttpStream::DoSendHeadersComplete(int rv) {

@@ -62,7 +62,8 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void SetPriority(RequestPriority priority) override;
 
   // QuicReliableClientStream::Delegate implementation
-  void OnHeadersAvailable(const SpdyHeaderBlock& headers) override;
+  void OnHeadersAvailable(const SpdyHeaderBlock& headers,
+                          size_t frame_len) override;
   void OnDataAvailable() override;
   void OnClose(QuicErrorCode error) override;
   void OnError(int error) override;
@@ -143,6 +144,11 @@ class NET_EXPORT_PRIVATE QuicHttpStream
 
   // Serialized HTTP request.
   std::string request_;
+
+  // Number of bytes received by the headers stream on behalf of this stream.
+  int64_t headers_bytes_received_;
+  // Number of bytes sent by the headers stream on behalf of this stream.
+  int64_t headers_bytes_sent_;
 
   // Number of bytes received when the stream was closed.
   int64_t closed_stream_received_bytes_;

@@ -28,7 +28,8 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
     Delegate() {}
 
     // Called when headers are available.
-    virtual void OnHeadersAvailable(const SpdyHeaderBlock& headers) = 0;
+    virtual void OnHeadersAvailable(const SpdyHeaderBlock& headers,
+                                    size_t frame_len) = 0;
 
     // Called when data is available to be read.
     virtual void OnDataAvailable() = 0;
@@ -90,8 +91,8 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicDataStream {
   using QuicDataStream::HasBufferedData;
 
  private:
-  void NotifyDelegateOfHeadersCompleteLater();
-  void NotifyDelegateOfHeadersComplete();
+  void NotifyDelegateOfHeadersCompleteLater(size_t frame_len);
+  void NotifyDelegateOfHeadersComplete(size_t frame_len);
   void NotifyDelegateOfDataAvailableLater();
   void NotifyDelegateOfDataAvailable();
 

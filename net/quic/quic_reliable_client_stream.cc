@@ -33,7 +33,7 @@ void QuicReliableClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
   QuicDataStream::OnStreamHeadersComplete(fin, frame_len);
   // The delegate will read the headers via a posted task.
-  NotifyDelegateOfHeadersCompleteLater();
+  NotifyDelegateOfHeadersCompleteLater(frame_len);
 }
 
 void QuicReliableClientStream::OnDataAvailable() {
@@ -133,15 +133,17 @@ bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
   return can_write;
 }
 
-void QuicReliableClientStream::NotifyDelegateOfHeadersCompleteLater() {
+void QuicReliableClientStream::NotifyDelegateOfHeadersCompleteLater(
+    size_t frame_len) {
   DCHECK(delegate_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&QuicReliableClientStream::NotifyDelegateOfHeadersComplete,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr(), frame_len));
 }
 
-void QuicReliableClientStream::NotifyDelegateOfHeadersComplete() {
+void QuicReliableClientStream::NotifyDelegateOfHeadersComplete(
+    size_t frame_len) {
   if (!delegate_)
     return;
 
@@ -158,7 +160,7 @@ void QuicReliableClientStream::NotifyDelegateOfHeadersComplete() {
     return;
   }
 
-  delegate_->OnHeadersAvailable(headers);
+  delegate_->OnHeadersAvailable(headers, frame_len);
 }
 
 void QuicReliableClientStream::NotifyDelegateOfDataAvailableLater() {
