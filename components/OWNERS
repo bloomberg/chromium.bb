@@ -115,10 +115,11 @@ per-file favicon*=stevenjb@chromium.org
 per-file feedback.gypi=bsimonnet@chromium.org
 per-file feedback.gypi=zork@chromium.org
 
-per-file gcm*=dimich@chromium.org
-per-file gcm*=jianli@chromium.org
-per-file gcm*=fgorski@chromium.org
-per-file gcm*=zea@chromium.org
+per-file gcm_driver.gypi=dimich@chromium.org
+per-file gcm_driver.gypi=fgorski@chromium.org
+per-file gcm_driver.gypi=jianli@chromium.org
+per-file gcm_driver.gypi=peter@chromium.org
+per-file gcm_driver.gypi=zea@chromium.org
 
 per-file google*=isherman@chromium.org
 per-file google*=pkasting@chromium.org
