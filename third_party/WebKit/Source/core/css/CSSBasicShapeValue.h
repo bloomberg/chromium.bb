@@ -43,7 +43,7 @@ namespace blink {
 // TODO(Oilpan): the GC plugin is not capable of understanding that
 // the traceAfterDispatch() method covers subtypes of CSSBasicShapeValue.
 // Temporarily exempt it from being checked
-class CORE_EXPORT GC_PLUGIN_IGNORE("535448") CSSBasicShapeValue : public CSSValue {
+class GC_PLUGIN_IGNORE("535448") CORE_EXPORT CSSBasicShapeValue : public CSSValue {
 public:
     enum Type {
         CSSBasicShapeEllipseType,
