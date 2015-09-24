@@ -149,6 +149,42 @@ function renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(newName) {
 }
 
 /**
+ * Creates directory from directory tree.
+ */
+function createDirectoryFromDirectoryTree(useKeyboardShortcut) {
+  var windowId;
+  return setupForDirectoryTreeContextMenuTest().then(function(id) {
+    windowId = id;
+    return navigateWithDirectoryTree(windowId, '/photos');
+  }).then(function() {
+    if (useKeyboardShortcut) {
+      return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
+          ['body', 'U+0045' /* e */, true /* ctrl */]);
+    } else {
+      return clickDirectoryTreeContextMenuItem(
+          windowId, '/photos', 'new-folder');
+    }
+  }).then(function() {
+    return remoteCall.callRemoteTestUtil(
+        'inputText', windowId, ['.tree-row > input', 'test']);
+  }).then(function() {
+    return remoteCall.callRemoteTestUtil(
+        'fakeKeyDown', windowId, ['.tree-row > input', 'Enter', false]);
+  }).then(function() {
+    // Confirm that new directory is added to the directory tree.
+    return remoteCall.waitForElement(
+        windowId, '[full-path-for-testing="/photos/test"]');
+  }).then(function() {
+    // Confirm that current directory is not changed at this timing.
+    return remoteCall.waitUntilCurrentDirectoryIsChanged(
+        windowId, '/Downloads/photos');
+  }).then(function() {
+    // Confirm that new directory is actually created by navigating to it.
+    return navigateWithDirectoryTree(windowId, '/photos/test');
+  });
+}
+
+/**
  * Test case for copying a directory from directory tree by using context menu.
  */
 testcase.copyFromDirectoryTreeWithContextMenu = function() {
@@ -291,4 +327,21 @@ testcase.renameDirectoryToEmptyStringFromDirectoryTree = function() {
 testcase.renameDirectoryToExistingOneFromDirectoryTree = function() {
   testPromise(renameDirectoryFromDirectoryTreeAndConfirmAlertDialog(
       'destination'));
+};
+
+/**
+ * Test case for creating directory from directory tree by using context menu.
+ */
+testcase.createDirectoryFromDirectoryTreeWithContextMenu = function() {
+  testPromise(createDirectoryFromDirectoryTree(
+      false /* do not use keyboard shortcut */));
+};
+
+/**
+ * Test case for creating directory from directory tree by using keyboard
+ * shortcut.
+ */
+testcase.createDirectoryFromDirectoryTreeWithKeyboardShortcut = function() {
+  testPromise(createDirectoryFromDirectoryTree(
+      true /* use keyboard shortcut */));
 };

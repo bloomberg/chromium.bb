@@ -163,6 +163,8 @@
       <hr visibleif="full-page">
       <cr-menu-item command="#rename"></cr-menu-item>
       <cr-menu-item command="#delete" i18n-content="DELETE_BUTTON_LABEL"></cr-menu-item>
+      <hr visibleif="saveas-file full-page">
+      <cr-menu-item command="#new-folder" visibleif="saveas-file full-page"></cr-menu-item>
     </cr-menu>
 
     <cr-menu id="sort-menu" class="chrome-menu" menu-item-selector="cr-menu-item">

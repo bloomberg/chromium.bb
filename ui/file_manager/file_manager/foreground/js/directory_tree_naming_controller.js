@@ -50,6 +50,11 @@ function DirectoryTreeNamingController(
   this.inputElement_.spellcheck = false;
   this.inputElement_.addEventListener('keydown', this.onKeyDown_.bind(this));
   this.inputElement_.addEventListener('blur', this.commitRename_.bind(this));
+  this.inputElement_.addEventListener('click', function(event) {
+    // Stop propagation of click event to prevent it being captured by directory
+    // item and current directory is changed to editing item.
+    event.stopPropagation();
+  });
 }
 
 /**
