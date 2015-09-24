@@ -26,7 +26,7 @@
 
 class SimpleWebTaskRunner : public blink::WebTaskRunner {
  public:
-  virtual void postTask(const blink::WebTraceLocation& ignored, Task* task) {
+  void postTask(const blink::WebTraceLocation& ignored, Task* task) override {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&RunIt, task));
   }
 
@@ -75,11 +75,11 @@ class CurrentThreadMock : public blink::WebThread {
 
 class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
  public:
-  virtual ~TestBlinkPlatformSupport();
+  ~TestBlinkPlatformSupport() override;
 
-  virtual void cryptographicallyRandomValues(unsigned char* buffer,
-                                             size_t length) override;
-  virtual const unsigned char* getTraceCategoryEnabledFlag(
+  void cryptographicallyRandomValues(unsigned char* buffer,
+                                     size_t length) override;
+  const unsigned char* getTraceCategoryEnabledFlag(
       const char* categoryName) override;
   blink::WebThread* currentThread() override { return &m_currentThread; }
 
