@@ -125,9 +125,9 @@ def main():
       for split_glob in args.splits:
         splits.extend((f for f in glob.glob(split_glob)))
       device.InstallSplitApk(args.apk_path, splits, reinstall=True,
-                             allow_cached_props=True)
+                             allow_cached_props=True, permissions=())
     else:
-      device.Install(args.apk_path, reinstall=True)
+      device.Install(args.apk_path, reinstall=True, permissions=())
     install_timer.Stop(log=False)
 
   # Push .so and .dex files to the device (if they have changed).
