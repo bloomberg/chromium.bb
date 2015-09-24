@@ -149,10 +149,10 @@ class CC_EXPORT TileTaskRunner {
   virtual void CheckForCompletedTasks() = 0;
 
   // Returns the format to use for the tiles.
-  virtual ResourceFormat GetResourceFormat() const = 0;
+  virtual ResourceFormat GetResourceFormat(bool must_support_alpha) const = 0;
 
   // Determine if the resource requires swizzling.
-  virtual bool GetResourceRequiresSwizzle() const = 0;
+  virtual bool GetResourceRequiresSwizzle(bool must_support_alpha) const = 0;
 
  protected:
   virtual ~TileTaskRunner() {}

@@ -28,7 +28,8 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   static scoped_ptr<TileTaskWorkerPool> Create(
       base::SequencedTaskRunner* task_runner,
       TaskGraphRunner* task_graph_runner,
-      ResourceProvider* resource_provider);
+      ResourceProvider* resource_provider,
+      bool use_rgba_4444_texture_format);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -38,8 +39,8 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
-  ResourceFormat GetResourceFormat() const override;
-  bool GetResourceRequiresSwizzle() const override;
+  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -51,7 +52,8 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
  protected:
   ZeroCopyTileTaskWorkerPool(base::SequencedTaskRunner* task_runner,
                              TaskGraphRunner* task_graph_runner,
-                             ResourceProvider* resource_provider);
+                             ResourceProvider* resource_provider,
+                             bool use_rgba_4444_texture_format);
 
  private:
   void OnTaskSetFinished(TaskSet task_set);
@@ -63,6 +65,8 @@ class CC_EXPORT ZeroCopyTileTaskWorkerPool : public TileTaskWorkerPool,
   const NamespaceToken namespace_token_;
   TileTaskRunnerClient* client_;
   ResourceProvider* resource_provider_;
+
+  bool use_rgba_4444_texture_format_;
 
   TaskSetCollection tasks_pending_;
 

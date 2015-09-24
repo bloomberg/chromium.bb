@@ -2113,7 +2113,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
     *tile_task_worker_pool = ZeroCopyTileTaskWorkerPool::Create(
-        GetTaskRunner(), task_graph_runner, resource_provider_.get());
+        GetTaskRunner(), task_graph_runner, resource_provider_.get(),
+        settings_.renderer_settings.use_rgba_4444_textures);
     return;
   }
 
@@ -2127,7 +2128,8 @@ void LayerTreeHostImpl::CreateResourceAndTileTaskWorkerPool(
       GetTaskRunner(), task_graph_runner, context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_persistent_map_for_gpu_memory_buffers,
-      settings_.max_staging_buffer_usage_in_bytes);
+      settings_.max_staging_buffer_usage_in_bytes,
+      settings_.renderer_settings.use_rgba_4444_textures);
 }
 
 void LayerTreeHostImpl::RecordMainFrameTiming(
@@ -2196,7 +2198,6 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
       output_surface_, shared_bitmap_manager_, gpu_memory_buffer_manager_,
       proxy_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
-      settings_.renderer_settings.use_rgba_4444_textures,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
       settings_.use_image_texture_targets);
 

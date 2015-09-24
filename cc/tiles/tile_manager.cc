@@ -527,7 +527,7 @@ void TileManager::AssignGpuMemoryToTiles(
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->desired_texture_size(), tile_task_runner_->GetResourceFormat());
+          tile->desired_texture_size(), DetermineResourceFormat(tile));
     }
 
     bool tile_is_needed_now = priority.priority_bin == TilePriority::NOW;
@@ -667,12 +667,12 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
   }
   if (resource) {
     resource_content_id = tile->invalidated_id();
-    DCHECK_EQ(tile_task_runner_->GetResourceFormat(), resource->format());
+    DCHECK_EQ(DetermineResourceFormat(tile), resource->format());
     DCHECK_EQ(tile->desired_texture_size().ToString(),
               resource->size().ToString());
   } else {
-    resource = resource_pool_->AcquireResource(
-        tile->desired_texture_size(), tile_task_runner_->GetResourceFormat());
+    resource = resource_pool_->AcquireResource(tile->desired_texture_size(),
+                                               DetermineResourceFormat(tile));
   }
 
   // Create and queue all image decode tasks that this tile depends on.
@@ -737,8 +737,7 @@ void TileManager::UpdateTileDrawInfo(
     DCHECK(resource);
     draw_info.set_use_resource();
     draw_info.resource_ = resource;
-    draw_info.contents_swizzled_ =
-        tile_task_runner_->GetResourceRequiresSwizzle();
+    draw_info.contents_swizzled_ = DetermineResourceRequiresSwizzle(tile);
   }
   DCHECK(draw_info.IsReadyToDraw());
   draw_info.set_was_ever_ready_to_draw();
@@ -917,6 +916,14 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // inline). http://crbug.com/498439
   signals_.ready_to_activate = true;
   signals_check_notifier_.Schedule();
+}
+
+ResourceFormat TileManager::DetermineResourceFormat(const Tile* tile) const {
+  return tile_task_runner_->GetResourceFormat(!tile->is_opaque());
+}
+
+bool TileManager::DetermineResourceRequiresSwizzle(const Tile* tile) const {
+  return tile_task_runner_->GetResourceRequiresSwizzle(!tile->is_opaque());
 }
 
 TileManager::MemoryUsage::MemoryUsage() : memory_bytes_(0), resource_count_(0) {

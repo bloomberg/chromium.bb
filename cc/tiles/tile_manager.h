@@ -154,7 +154,7 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
       TileDrawInfo& draw_info = tiles[i]->draw_info();
       draw_info.resource_ = resource_pool_->AcquireResource(
           tiles[i]->desired_texture_size(),
-          tile_task_runner_->GetResourceFormat());
+          tile_task_runner_->GetResourceFormat(false));
     }
   }
 
@@ -279,6 +279,9 @@ class CC_EXPORT TileManager : public TileTaskRunnerClient {
   bool AreRequiredTilesReadyToDraw(RasterTilePriorityQueue::Type type) const;
   void CheckIfMoreTilesNeedToBePrepared();
   void CheckAndIssueSignals();
+
+  ResourceFormat DetermineResourceFormat(const Tile* tile) const;
+  bool DetermineResourceRequiresSwizzle(const Tile* tile) const;
 
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

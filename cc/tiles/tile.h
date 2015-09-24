@@ -43,7 +43,7 @@ class CC_EXPORT Tile {
           contents_scale(contents_scale) {}
   };
 
-  enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0 };
+  enum TileRasterFlags { USE_PICTURE_ANALYSIS = 1 << 0, IS_OPAQUE = 1 << 1 };
 
   typedef uint64 Id;
 
@@ -64,6 +64,8 @@ class CC_EXPORT Tile {
   bool use_picture_analysis() const {
     return !!(flags_ & USE_PICTURE_ANALYSIS);
   }
+
+  bool is_opaque() const { return !!(flags_ & IS_OPAQUE); }
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 

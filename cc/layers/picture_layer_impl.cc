@@ -642,6 +642,9 @@ ScopedTilePtr PictureLayerImpl::CreateTile(const Tile::CreateInfo& info) {
   if (!is_mask_)
     flags = Tile::USE_PICTURE_ANALYSIS;
 
+  if (contents_opaque())
+    flags |= Tile::IS_OPAQUE;
+
   return layer_tree_impl()->tile_manager()->CreateTile(
       info, id(), layer_tree_impl()->source_frame_number(), flags);
 }

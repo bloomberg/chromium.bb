@@ -335,14 +335,12 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
-    bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size,
     const std::vector<unsigned>& use_image_texture_targets) {
   scoped_ptr<ResourceProvider> resource_provider(new ResourceProvider(
       output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
       blocking_main_thread_task_runner, highp_threshold_min,
-      use_rgba_4444_texture_format, id_allocation_chunk_size,
-      use_image_texture_targets));
+      id_allocation_chunk_size, use_image_texture_targets));
   resource_provider->Initialize();
   return resource_provider;
 }
@@ -1022,7 +1020,6 @@ ResourceProvider::ResourceProvider(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
-    bool use_rgba_4444_texture_format,
     size_t id_allocation_chunk_size,
     const std::vector<unsigned>& use_image_texture_targets)
     : output_surface_(output_surface),
@@ -1042,7 +1039,6 @@ ResourceProvider::ResourceProvider(
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
       best_render_buffer_format_(RGBA_8888),
-      use_rgba_4444_texture_format_(use_rgba_4444_texture_format),
       id_allocation_chunk_size_(id_allocation_chunk_size),
       use_sync_query_(false),
       use_image_texture_targets_(use_image_texture_targets),

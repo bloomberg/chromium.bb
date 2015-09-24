@@ -201,11 +201,13 @@ void GpuTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat() const {
+ResourceFormat GpuTileTaskWorkerPool::GetResourceFormat(
+    bool must_support_alpha) const {
   return rasterizer_->resource_provider()->best_render_buffer_format();
 }
 
-bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
+bool GpuTileTaskWorkerPool::GetResourceRequiresSwizzle(
+    bool must_support_alpha) const {
   // This doesn't require a swizzle because we rasterize to the correct format.
   return false;
 }

@@ -104,7 +104,7 @@ void Display::InitializeRenderer() {
 
   scoped_ptr<ResourceProvider> resource_provider = ResourceProvider::Create(
       output_surface_.get(), bitmap_manager_, gpu_memory_buffer_manager_,
-      nullptr, settings_.highp_threshold_min, settings_.use_rgba_4444_textures,
+      nullptr, settings_.highp_threshold_min,
       settings_.texture_id_allocation_chunk_size,
       std::vector<unsigned>(static_cast<size_t>(gfx::BufferFormat::LAST) + 1,
                             GL_TEXTURE_2D));

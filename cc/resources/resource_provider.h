@@ -86,7 +86,6 @@ class CC_EXPORT ResourceProvider
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       BlockingTaskRunner* blocking_main_thread_task_runner,
       int highp_threshold_min,
-      bool use_rgba_4444_texture_format,
       size_t id_allocation_chunk_size,
       const std::vector<unsigned>& use_image_texture_targets);
   ~ResourceProvider() override;
@@ -94,9 +93,6 @@ class CC_EXPORT ResourceProvider
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
   int max_texture_size() const { return max_texture_size_; }
-  ResourceFormat memory_efficient_texture_format() const {
-    return use_rgba_4444_texture_format_ ? RGBA_4444 : best_texture_format_;
-  }
   ResourceFormat best_texture_format() const { return best_texture_format_; }
   ResourceFormat best_render_buffer_format() const {
     return best_render_buffer_format_;
@@ -448,7 +444,6 @@ class CC_EXPORT ResourceProvider
                    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                    BlockingTaskRunner* blocking_main_thread_task_runner,
                    int highp_threshold_min,
-                   bool use_rgba_4444_texture_format,
                    size_t id_allocation_chunk_size,
                    const std::vector<unsigned>& use_image_texture_targets);
   void Initialize();
@@ -596,7 +591,6 @@ class CC_EXPORT ResourceProvider
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<Fence> current_read_lock_fence_;
-  bool use_rgba_4444_texture_format_;
 
   const size_t id_allocation_chunk_size_;
   scoped_ptr<IdAllocator> texture_id_allocator_;

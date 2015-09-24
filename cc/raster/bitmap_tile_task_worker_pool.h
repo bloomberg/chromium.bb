@@ -38,8 +38,8 @@ class CC_EXPORT BitmapTileTaskWorkerPool : public TileTaskWorkerPool,
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
-  ResourceFormat GetResourceFormat() const override;
-  bool GetResourceRequiresSwizzle() const override;
+  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(

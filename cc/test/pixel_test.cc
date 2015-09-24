@@ -135,8 +135,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
   resource_provider_ = ResourceProvider::Create(
       output_surface_.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0,
-      false, 1, settings_.use_image_texture_targets);
+      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
+      settings_.use_image_texture_targets);
 
   texture_mailbox_deleter_ = make_scoped_ptr(
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
@@ -176,8 +176,8 @@ void PixelTest::SetUpSoftwareRenderer() {
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   resource_provider_ = ResourceProvider::Create(
       output_surface_.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0,
-      false, 1, settings_.use_image_texture_targets);
+      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
+      settings_.use_image_texture_targets);
   renderer_ =
       SoftwareRenderer::Create(this, &settings_.renderer_settings,
                                output_surface_.get(), resource_provider_.get());

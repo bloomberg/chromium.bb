@@ -179,12 +179,15 @@ void BitmapTileTaskWorkerPool::CheckForCompletedTasks() {
   completed_tasks_.clear();
 }
 
-ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat() const {
+ResourceFormat BitmapTileTaskWorkerPool::GetResourceFormat(
+    bool must_support_alpha) const {
   return resource_provider_->best_texture_format();
 }
 
-bool BitmapTileTaskWorkerPool::GetResourceRequiresSwizzle() const {
-  return !PlatformColor::SameComponentOrder(GetResourceFormat());
+bool BitmapTileTaskWorkerPool::GetResourceRequiresSwizzle(
+    bool must_support_alpha) const {
+  return !PlatformColor::SameComponentOrder(
+      GetResourceFormat(must_support_alpha));
 }
 
 scoped_ptr<RasterBuffer> BitmapTileTaskWorkerPool::AcquireBufferForRaster(

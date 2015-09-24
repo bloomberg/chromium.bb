@@ -49,7 +49,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
       ResourceProvider* resource_provider,
       int max_copy_texture_chromium_size,
       bool use_persistent_gpu_memory_buffers,
-      int max_staging_buffer_usage_in_bytes);
+      int max_staging_buffer_usage_in_bytes,
+      bool use_rgba_4444_texture_format);
 
   // Overridden from TileTaskWorkerPool:
   TileTaskRunner* AsTileTaskRunner() override;
@@ -59,8 +60,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   void Shutdown() override;
   void ScheduleTasks(TileTaskQueue* queue) override;
   void CheckForCompletedTasks() override;
-  ResourceFormat GetResourceFormat() const override;
-  bool GetResourceRequiresSwizzle() const override;
+  ResourceFormat GetResourceFormat(bool must_support_alpha) const override;
+  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override;
 
   // Overridden from TileTaskClient:
   scoped_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -91,11 +92,12 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                             ResourceProvider* resource_provider,
                             int max_copy_texture_chromium_size,
                             bool use_persistent_gpu_memory_buffers,
-                            int max_staging_buffer_usage_in_bytes);
+                            int max_staging_buffer_usage_in_bytes,
+                            bool use_rgba_4444_texture_format);
 
  private:
   struct StagingBuffer {
-    explicit StagingBuffer(const gfx::Size& size);
+    StagingBuffer(const gfx::Size& size, ResourceFormat format);
     ~StagingBuffer();
 
     void DestroyGLResources(gpu::gles2::GLES2Interface* gl);
@@ -104,6 +106,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
                       bool is_free) const;
 
     const gfx::Size size;
+    const ResourceFormat format;
     scoped_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
     base::TimeTicks last_usage;
     unsigned texture_id;
@@ -112,7 +115,8 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
     uint64_t content_id;
   };
 
-  void AddStagingBuffer(const StagingBuffer* staging_buffer);
+  void AddStagingBuffer(const StagingBuffer* staging_buffer,
+                        ResourceFormat format);
   void RemoveStagingBuffer(const StagingBuffer* staging_buffer);
   void MarkStagingBufferAsFree(const StagingBuffer* staging_buffer);
   void MarkStagingBufferAsBusy(const StagingBuffer* staging_buffer);
@@ -153,6 +157,7 @@ class CC_EXPORT OneCopyTileTaskWorkerPool
   StagingBufferDeque busy_buffers_;
   int bytes_scheduled_since_last_flush_;
   const int max_staging_buffer_usage_in_bytes_;
+  bool use_rgba_4444_texture_format_;
   int staging_buffer_usage_in_bytes_;
   int free_staging_buffer_usage_in_bytes_;
   const base::TimeDelta staging_buffer_expiration_delay_;
