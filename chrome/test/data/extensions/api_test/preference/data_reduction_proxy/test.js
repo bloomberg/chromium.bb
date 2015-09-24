@@ -130,6 +130,9 @@ chrome.test.runTests([
           }));
     });
   },
+  // DISABLED: crbug.com/535618
+  // Flaky on Mac 10.8, Mac 64 ASAN, and other Mac bots.
+  /*
   function dataUsageReporting() {
     dataReductionProxy.dataUsageReportingEnabled.set({ 'value': true });
 
@@ -142,4 +145,5 @@ chrome.test.runTests([
       }));
     }, 1000);
   }
+  */
 ]);
