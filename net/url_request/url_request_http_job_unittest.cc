@@ -393,6 +393,67 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeader) {
   EXPECT_EQ(0, delegate2.received_before_network_start_count());
 }
 
+// Tests that a user-initiated request is not throttled.
+TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderUserGesture) {
+  MockWrite writes[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.com\r\n"
+                "Connection: keep-alive\r\n"
+                "User-Agent:\r\n"
+                "Accept-Encoding: gzip, deflate\r\n"
+                "Accept-Language: en-us,fr\r\n\r\n")};
+  MockRead reads[] = {MockRead("HTTP/1.1 200 OK\r\n"
+                               "Backoff: 3600\r\n"
+                               "Content-Length: 9\r\n\r\n"),
+                      MockRead("test.html")};
+
+  net::SSLSocketDataProvider ssl_socket_data_provider(net::ASYNC, net::OK);
+  ssl_socket_data_provider.SetNextProto(kProtoHTTP11);
+  ssl_socket_data_provider.cert =
+      ImportCertFromFile(GetTestCertsDirectory(), "unittest.selfsigned.der");
+  socket_factory_.AddSSLSocketDataProvider(&ssl_socket_data_provider);
+
+  StaticSocketDataProvider socket_data(reads, arraysize(reads), writes,
+                                       arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  TestDelegate delegate1;
+  scoped_ptr<URLRequest> request1 =
+      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate1)
+          .Pass();
+
+  request1->Start();
+  ASSERT_TRUE(request1->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_TRUE(request1->status().is_success());
+  EXPECT_EQ("test.html", delegate1.data_received());
+  EXPECT_EQ(1, delegate1.received_before_network_start_count());
+  EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
+
+  // Reset socket data provider to replay socket data.
+  socket_data.Reset();
+
+  // Issue a user-initiated request, backoff logic should not apply.
+  TestDelegate delegate2;
+  scoped_ptr<URLRequest> request2 =
+      context_->CreateRequest(GURL("https://www.example.com"), DEFAULT_PRIORITY,
+                              &delegate2)
+          .Pass();
+  request2->SetLoadFlags(request2->load_flags() | LOAD_MAYBE_USER_GESTURE);
+
+  request2->Start();
+  ASSERT_TRUE(request2->is_pending());
+  base::RunLoop().Run();
+
+  EXPECT_NE(0, request2->load_flags() & LOAD_MAYBE_USER_GESTURE);
+  EXPECT_TRUE(request2->status().is_success());
+  EXPECT_EQ("test.html", delegate2.data_received());
+  EXPECT_EQ(1, delegate2.received_before_network_start_count());
+  EXPECT_EQ(1, manager_.GetNumberOfEntriesForTests());
+}
+
 TEST_F(URLRequestHttpJobWithMockSocketsTest, BackoffHeaderNotSecure) {
   MockWrite writes[] = {MockWrite(kSimpleGetMockWrite)};
   MockRead reads[] = {MockRead(

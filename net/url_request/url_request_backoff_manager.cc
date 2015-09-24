@@ -46,6 +46,9 @@ void URLRequestBackoffManager::UpdateWithResponse(
   if (GetBackoffTime(headers, &result)) {
     new_entries_since_last_gc_++;
     std::string url_id = GetIdFromUrl(url);
+    auto it = url_entries_.find(url_id);
+    if (it != url_entries_.end())
+      delete it->second;
     url_entries_[url_id] =
         new Entry(response_time + result, response_time + result * 1.1);
     GarbageCollectEntriesIfNecessary();

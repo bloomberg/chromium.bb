@@ -309,7 +309,8 @@ void URLRequestHttpJob::NotifyBeforeNetworkStart(bool* defer) {
   if (!request_)
     return;
   if (backoff_manager_) {
-    if (backoff_manager_->ShouldRejectRequest(request()->url(),
+    if ((request_->load_flags() & LOAD_MAYBE_USER_GESTURE) == 0 &&
+        backoff_manager_->ShouldRejectRequest(request()->url(),
                                               request()->request_time())) {
       *defer = true;
       base::MessageLoop::current()->PostTask(
