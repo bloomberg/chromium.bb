@@ -9,7 +9,6 @@ import os
 import sys
 
 from util import build_utils
-from util import md5_check
 from util import proguard_util
 
 
@@ -60,22 +59,13 @@ def main(args):
   proguard.libraryjars(classpath)
 
   input_paths = proguard.GetInputs()
-  python_deps = build_utils.GetPythonDependencies()
 
-  def OnStaleMd5():
-    proguard.CheckOutput()
-
-    if options.depfile:
-      build_utils.WriteDepfile(options.depfile, python_deps + input_paths)
-    if options.stamp:
-      build_utils.Touch(options.stamp)
-
-  md5_check.CallAndRecordIfStale(
-      OnStaleMd5,
-      record_path=options.output_path + '.proguard.md5.stamp',
+  build_utils.CallAndWriteDepfileIfStale(
+      proguard.CheckOutput,
+      options,
       input_paths=input_paths,
-      input_strings=proguard.build() + python_deps,
-      force=not os.path.exists(options.output_path))
+      input_strings=proguard.build(),
+      output_paths=[options.output_path])
 
 
 if __name__ == '__main__':

@@ -8,12 +8,6 @@ import os
 import re
 import sys
 
-from util import build_utils
-
-if build_utils.COLORAMA_ROOT not in sys.path:
-  sys.path.append(build_utils.COLORAMA_ROOT)
-import colorama
-
 
 # When set and a difference is detected, a diff of what changed is printed.
 _PRINT_MD5_DIFFS = int(os.environ.get('PRINT_MD5_DIFFS', 0))
@@ -24,31 +18,50 @@ _TEMP_DIR_PATTERN = re.compile(r'^/tmp/.*?/')
 
 def CallAndRecordIfStale(
     function, record_path=None, input_paths=None, input_strings=None,
-    force=False):
-  """Calls function if the md5sum of the input paths/strings has changed.
+    output_paths=None, force=False):
+  """Calls function if outputs are stale.
 
-  The md5sum of the inputs is compared with the one stored in record_path. If
-  this has changed (or the record doesn't exist), function will be called and
-  the new md5sum will be recorded.
+  Outputs are considered stale if:
+  - any output_paths are missing, or
+  - the contents of any file within input_paths has changed, or
+  - the contents of input_strings has changed.
 
-  If force is True, the function will be called regardless of whether the
-  md5sum is out of date.
+  To debug which files are out-of-date, set the environment variable:
+      PRINT_MD5_DIFFS=1
+
+  Args:
+    function: The function to call.
+    record_path: Path to record metadata.
+      Defaults to output_paths[0] + '.md5.stamp'
+    input_paths: List of paths to calcualte an md5 sum on.
+    input_strings: List of strings to record verbatim.
+    output_paths: List of output paths.
+    force: When True, function is always called.
   """
-  if not input_paths:
-    input_paths = []
-  if not input_strings:
-    input_strings = []
+  assert record_path or output_paths
+  input_paths = input_paths or []
+  input_strings = input_strings or []
+  output_paths = output_paths or []
+  record_path = record_path or output_paths[0] + '.md5.stamp'
   md5_checker = _Md5Checker(
       record_path=record_path,
       input_paths=input_paths,
       input_strings=input_strings)
 
+  missing_outputs = [x for x in output_paths if not os.path.exists(x)]
   is_stale = md5_checker.old_digest != md5_checker.new_digest
-  if force or is_stale:
-    if is_stale and _PRINT_MD5_DIFFS:
-      print '%sDifference found in %s:%s' % (
-          colorama.Fore.YELLOW, record_path, colorama.Fore.RESET)
-      print md5_checker.DescribeDifference()
+
+  if force or missing_outputs or is_stale:
+    if _PRINT_MD5_DIFFS:
+      print '=' * 80
+      print 'Difference found in %s:' % record_path
+      if missing_outputs:
+        print 'Outputs do not exist:\n' + '\n'.join(missing_outputs)
+      elif force:
+        print 'force=True'
+      else:
+        print md5_checker.DescribeDifference()
+      print '=' * 80
     function()
     md5_checker.Write()
 
@@ -106,7 +119,7 @@ class _Md5Checker(object):
       # Include the digest in the overall diff, but not the path
       outer_md5.update(inner_md5.hexdigest())
 
-    for s in input_strings:
+    for s in (str(s) for s in input_strings):
       outer_md5.update(s)
       extended_info.append(s)
 
@@ -118,7 +131,8 @@ class _Md5Checker(object):
     if os.path.exists(self.record_path):
       with open(self.record_path, 'r') as old_record:
         self.old_extended_info = [line.strip() for line in old_record]
-        self.old_digest = self.old_extended_info.pop(0)
+        if self.old_extended_info:
+          self.old_digest = self.old_extended_info.pop(0)
 
   def Write(self):
     with open(self.record_path, 'w') as new_record:

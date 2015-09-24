@@ -12,68 +12,29 @@ import tempfile
 import zipfile
 
 from util import build_utils
-from util import md5_check
 
 
-def DoMultiDex(options, paths):
+def _CreateCombinedMainDexList(main_dex_list_paths):
   main_dex_list = []
-  main_dex_list_files = build_utils.ParseGypList(options.main_dex_list_paths)
-  for m in main_dex_list_files:
+  for m in main_dex_list_paths:
     with open(m) as main_dex_list_file:
       main_dex_list.extend(l for l in main_dex_list_file if l)
-
-  with tempfile.NamedTemporaryFile(suffix='.txt') as combined_main_dex_list:
-    combined_main_dex_list.write('\n'.join(main_dex_list))
-    combined_main_dex_list.flush()
-
-    dex_args = [
-      '--multi-dex',
-      '--minimal-main-dex',
-      '--main-dex-list=%s' % combined_main_dex_list.name
-    ]
-
-    DoDex(options, paths, dex_args=dex_args)
-
-  if options.dex_path.endswith('.zip'):
-    iz = zipfile.ZipFile(options.dex_path, 'r')
-    tmp_dex_path = '%s.tmp.zip' % options.dex_path
-    oz = zipfile.ZipFile(tmp_dex_path, 'w', zipfile.ZIP_DEFLATED)
-    for i in iz.namelist():
-      if i.endswith('.dex'):
-        oz.writestr(i, iz.read(i))
-    os.remove(options.dex_path)
-    os.rename(tmp_dex_path, options.dex_path)
+  return '\n'.join(main_dex_list)
 
 
-def DoDex(options, paths, dex_args=None):
-  dx_binary = os.path.join(options.android_sdk_tools, 'dx')
-  # See http://crbug.com/272064 for context on --force-jumbo.
-  # See https://github.com/android/platform_dalvik/commit/dd140a22d for
-  # --num-threads.
-  dex_cmd = [dx_binary, '--num-threads=8', '--dex', '--force-jumbo',
-             '--output', options.dex_path]
-  if options.no_locals != '0':
-    dex_cmd.append('--no-locals')
-
-  if dex_args:
-    dex_cmd += dex_args
-
-  dex_cmd += paths
-
-  record_path = '%s.md5.stamp' % options.dex_path
-  md5_check.CallAndRecordIfStale(
-      lambda: build_utils.CheckOutput(dex_cmd, print_stderr=False),
-      record_path=record_path,
-      input_paths=paths,
-      input_strings=dex_cmd,
-      force=not os.path.exists(options.dex_path))
-  build_utils.WriteJson(
-      [os.path.relpath(p, options.output_directory) for p in paths],
-      options.dex_path + '.inputs')
+def _RemoveUnwantedFilesFromZip(dex_path):
+  iz = zipfile.ZipFile(dex_path, 'r')
+  tmp_dex_path = '%s.tmp.zip' % dex_path
+  oz = zipfile.ZipFile(tmp_dex_path, 'w', zipfile.ZIP_DEFLATED)
+  for i in iz.namelist():
+    if i.endswith('.dex'):
+      oz.writestr(i, iz.read(i))
+  os.remove(dex_path)
+  os.rename(tmp_dex_path, dex_path)
 
 
-def main():
-  args = build_utils.ExpandFileArgs(sys.argv[1:])
+def _ParseArgs(args):
+  args = build_utils.ExpandFileArgs(args)
 
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -107,34 +68,88 @@ def main():
   required_options = ('android_sdk_tools',)
   build_utils.CheckOptions(options, parser, required=required_options)
 
+  if options.multi_dex and not options.main_dex_list_paths:
+    logging.warning('--multi-dex is unused without --main-dex-list-paths')
+    options.multi_dex = False
+  elif options.main_dex_list_paths and not options.multi_dex:
+    logging.warning('--main-dex-list-paths is unused without --multi-dex')
+
+  if options.main_dex_list_paths:
+    options.main_dex_list_paths = build_utils.ParseGypList(
+        options.main_dex_list_paths)
+  if options.inputs:
+    options.inputs = build_utils.ParseGypList(options.inputs)
+  if options.excluded_paths:
+    options.excluded_paths = build_utils.ParseGypList(options.excluded_paths)
+
+  return options, paths
+
+
+def _OnStaleMd5(options, dex_cmd, paths):
+  if options.multi_dex:
+    combined_main_dex_list = tempfile.NamedTemporaryFile(suffix='.txt')
+    combined_main_dex_list.write(
+        _CreateCombinedMainDexList(options.main_dex_list_paths))
+    combined_main_dex_list.flush()
+    dex_cmd.append('--main-dex-list=%s' % combined_main_dex_list.name)
+
+  dex_cmd += paths
+
+  build_utils.CheckOutput(dex_cmd, print_stderr=False)
+
+  if options.dex_path.endswith('.zip'):
+    _RemoveUnwantedFilesFromZip(options.dex_path)
+
+  build_utils.WriteJson(
+      [os.path.relpath(p, options.output_directory) for p in paths],
+      options.dex_path + '.inputs')
+
+
+def main(args):
+  options, paths = _ParseArgs(args)
   if (options.proguard_enabled == 'true'
       and options.configuration_name == 'Release'):
     paths = [options.proguard_enabled_input_path]
 
   if options.inputs:
-    paths += build_utils.ParseGypList(options.inputs)
+    paths += options.inputs
 
   if options.excluded_paths:
     # Excluded paths are relative to the output directory.
-    exclude_paths = build_utils.ParseGypList(options.excluded_paths)
+    exclude_paths = options.excluded_paths
     paths = [p for p in paths if not
              os.path.relpath(p, options.output_directory) in exclude_paths]
 
-  if options.multi_dex and options.main_dex_list_paths:
-    DoMultiDex(options, paths)
-  else:
-    if options.multi_dex:
-      logging.warning('--multi-dex is unused without --main-dex-list-paths')
-    elif options.main_dex_list_paths:
-      logging.warning('--main-dex-list-paths is unused without --multi-dex')
-    DoDex(options, paths)
+  input_paths = list(paths)
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile,
-        paths + build_utils.GetPythonDependencies())
+  dx_binary = os.path.join(options.android_sdk_tools, 'dx')
+  # See http://crbug.com/272064 for context on --force-jumbo.
+  # See https://github.com/android/platform_dalvik/commit/dd140a22d for
+  # --num-threads.
+  dex_cmd = [dx_binary, '--num-threads=8', '--dex', '--force-jumbo',
+             '--output', options.dex_path]
+  if options.no_locals != '0':
+    dex_cmd.append('--no-locals')
 
+  if options.multi_dex:
+    input_paths.extend(options.main_dex_list_paths)
+    dex_cmd += [
+      '--multi-dex',
+      '--minimal-main-dex',
+    ]
+
+  output_paths = [
+    options.dex_path,
+    options.dex_path + '.inputs',
+  ]
+
+  build_utils.CallAndWriteDepfileIfStale(
+      lambda: _OnStaleMd5(options, dex_cmd, paths),
+      options,
+      input_paths=input_paths,
+      input_strings=dex_cmd,
+      output_paths=output_paths)
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
