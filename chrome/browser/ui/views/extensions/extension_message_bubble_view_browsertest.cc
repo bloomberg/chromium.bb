@@ -56,6 +56,7 @@ class ExtensionMessageBubbleViewBrowserTest
   // ExtensionMessageBubbleBrowserTest:
   void CheckBubble(Browser* browser, AnchorPosition anchor) override;
   void CloseBubble(Browser* browser) override;
+  void CheckBubbleIsNotPresent(Browser* browser) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
@@ -86,6 +87,13 @@ void ExtensionMessageBubbleViewBrowserTest::CloseBubble(Browser* browser) {
   EXPECT_EQ(nullptr, container->active_bubble());
 }
 
+void ExtensionMessageBubbleViewBrowserTest::CheckBubbleIsNotPresent(
+    Browser* browser) {
+  EXPECT_EQ(
+      nullptr,
+      GetToolbarViewForBrowser(browser)->browser_actions()->active_bubble());
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        ExtensionBubbleAnchoredToExtensionAction) {
   TestBubbleAnchoredToExtensionAction();
@@ -109,4 +117,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
                        ExtensionBubbleShowsOnStartup) {
   TestBubbleShowsOnStartup();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
+                       TestUninstallDangerousExtension) {
+  TestUninstallDangerousExtension();
 }

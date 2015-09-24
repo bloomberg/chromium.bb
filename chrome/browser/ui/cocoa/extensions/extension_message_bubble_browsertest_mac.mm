@@ -72,6 +72,7 @@ class ExtensionMessageBubbleBrowserTestMac
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void CheckBubble(Browser* browser, AnchorPosition anchor) override;
   void CloseBubble(Browser* browser) override;
+  void CheckBubbleIsNotPresent(Browser* browser) override;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleBrowserTestMac);
 };
@@ -110,6 +111,14 @@ void ExtensionMessageBubbleBrowserTestMac::CloseBubble(Browser* browser) {
   EXPECT_EQ(nil, [controller activeBubble]);
 }
 
+void ExtensionMessageBubbleBrowserTestMac::CheckBubbleIsNotPresent(
+    Browser* browser) {
+  EXPECT_EQ(
+      nil,
+      [[ToolbarControllerForBrowser(browser) browserActionsController]
+          activeBubble]);
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        ExtensionBubbleAnchoredToExtensionAction) {
   TestBubbleAnchoredToExtensionAction();
@@ -133,4 +142,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
                        ExtensionBubbleShowsOnStartup) {
   TestBubbleShowsOnStartup();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleBrowserTestMac,
+                       TestUninstallDangerousExtension) {
+  TestUninstallDangerousExtension();
 }

@@ -138,16 +138,10 @@ ExtensionMessageBubbleFactory::GetController() {
   }
 
   if (EnableProxyOverrideBubble()) {
-    // TODO(devlin): Move the "GetExtensionOverridingProxy" part into the
-    // proxy bubble controller.
-    const extensions::Extension* extension =
-        extensions::GetExtensionOverridingProxy(browser_->profile());
-    if (extension) {
-      scoped_ptr<extensions::ProxyOverriddenBubbleController> controller(
-         new extensions::ProxyOverriddenBubbleController(browser_));
-      if (controller->ShouldShow(extension->id()))
-        return controller.Pass();
-    }
+    scoped_ptr<extensions::ProxyOverriddenBubbleController> controller(
+        new extensions::ProxyOverriddenBubbleController(browser_));
+    if (controller->ShouldShow())
+      return controller.Pass();
   }
 
   if (EnableDevModeBubble()) {

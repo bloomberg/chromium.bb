@@ -19,10 +19,6 @@ class SettingsApiBubbleController : public ExtensionMessageBubbleController {
   SettingsApiBubbleController(Browser* browser, SettingsApiOverrideType type);
   ~SettingsApiBubbleController() override;
 
-  // Returns true if we should show the bubble for the extension actively
-  // overriding the setting of |type_|.
-  bool ShouldShow();
-
   // ExtensionMessageBubbleController:
   bool CloseOnDeactivate() override;
 

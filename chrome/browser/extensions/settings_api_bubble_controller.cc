@@ -39,7 +39,7 @@ class SettingsApiBubbleDelegate
   ~SettingsApiBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const std::string& extension_id) override;
+  bool ShouldIncludeExtension(const Extension* extension) override;
   void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) override;
@@ -54,6 +54,7 @@ class SettingsApiBubbleDelegate
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
   bool ShouldHighlightExtensions() const override;
+  bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
@@ -81,16 +82,17 @@ SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
 SettingsApiBubbleDelegate::~SettingsApiBubbleDelegate() {}
 
 bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
-    const std::string& extension_id) {
-  const Extension* extension =
-      registry()->GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
-  if (!extension)
-    return false;  // The extension provided is no longer enabled.
-
-  if (HasBubbleInfoBeenAcknowledged(extension_id))
+    const Extension* extension) {
+  // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
+  // the startup pages, so there's no point in showing the bubble now.
+  if (type_ == BUBBLE_TYPE_STARTUP_PAGES &&
+      profile()->GetLastSessionExitType() == Profile::EXIT_CRASHED)
     return false;
 
-  const Extension* override = NULL;
+  if (HasBubbleInfoBeenAcknowledged(extension->id()))
+    return false;
+
+  const Extension* override = nullptr;
   switch (type_) {
     case extensions::BUBBLE_TYPE_HOME_PAGE:
       override = extensions::GetExtensionOverridingHomepage(profile());
@@ -103,10 +105,10 @@ bool SettingsApiBubbleDelegate::ShouldIncludeExtension(
       break;
   }
 
-  if (!override || override->id() != extension->id())
+  if (!override || override != extension)
     return false;
 
-  extension_id_ = extension_id;
+  extension_id_ = extension->id();
   return true;
 }
 
@@ -239,6 +241,10 @@ bool SettingsApiBubbleDelegate::ShouldHighlightExtensions() const {
   return type_ == BUBBLE_TYPE_STARTUP_PAGES;
 }
 
+bool SettingsApiBubbleDelegate::ShouldLimitToEnabledExtensions() const {
+  return true;
+}
+
 void SettingsApiBubbleDelegate::LogExtensionCount(size_t count) {
 }
 
@@ -280,37 +286,6 @@ SettingsApiBubbleController::SettingsApiBubbleController(
       type_(type) {}
 
 SettingsApiBubbleController::~SettingsApiBubbleController() {}
-
-bool SettingsApiBubbleController::ShouldShow() {
-  const Extension* extension = nullptr;
-  switch (type_) {
-    case BUBBLE_TYPE_HOME_PAGE:
-      extension = GetExtensionOverridingHomepage(profile());
-      break;
-    case BUBBLE_TYPE_SEARCH_ENGINE:
-      extension = GetExtensionOverridingSearchEngine(profile());
-      break;
-    case BUBBLE_TYPE_STARTUP_PAGES:
-      extension = GetExtensionOverridingStartupPages(profile());
-      break;
-  }
-
-  if (!extension)
-    return false;
-
-  if (delegate()->HasBubbleInfoBeenAcknowledged(extension->id()))
-    return false;
-
-  if (!delegate()->ShouldIncludeExtension(extension->id()))
-    return false;
-
-  // If the browser is showing the 'Chrome crashed' infobar, it won't be showing
-  // the startup pages, so there's no point in showing the bubble now.
-  if (type_ == BUBBLE_TYPE_STARTUP_PAGES)
-    return profile()->GetLastSessionExitType() != Profile::EXIT_CRASHED;
-
-  return true;
-}
 
 bool SettingsApiBubbleController::CloseOnDeactivate() {
   // Startup bubbles tend to get lost in the focus storm that happens on

@@ -87,7 +87,12 @@ void ExtensionMessageBubbleView::OnWidgetDestroying(views::Widget* widget) {
 ExtensionMessageBubbleView::~ExtensionMessageBubbleView() {}
 
 void ExtensionMessageBubbleView::ShowBubble() {
-  GetWidget()->Show();
+  // Since we delay in showing the bubble, the applicable extension(s) may
+  // have been removed.
+  if (controller_->ShouldShow())
+    GetWidget()->Show();
+  else
+    GetWidget()->Close();
 }
 
 void ExtensionMessageBubbleView::Init() {

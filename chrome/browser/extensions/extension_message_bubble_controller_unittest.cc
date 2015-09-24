@@ -732,7 +732,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
       new TestNtpOverriddenBubbleController(browser()));
 
   // The list will contain one enabled unpacked extension (ext 2).
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   std::vector<base::string16> override_extensions =
       controller->GetExtensionList();
   ASSERT_EQ(1U, override_extensions.size());
@@ -746,7 +746,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   FakeExtensionMessageBubble bubble;
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_DISMISS_BUTTON);
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(0U, controller->link_click_count());
@@ -768,7 +768,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestNtpOverriddenBubbleController(browser()));
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(1U, controller->link_click_count());
@@ -789,7 +789,7 @@ TEST_F(ExtensionMessageBubbleTest, NtpOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
   controller.reset(new TestNtpOverriddenBubbleController(browser()));
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
   bubble.set_controller(controller.get());
@@ -860,14 +860,14 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
       new TestProxyOverriddenBubbleController(browser()));
 
   // The second extension is too new to warn about.
-  EXPECT_FALSE(controller->ShouldShow(kId1));
-  EXPECT_FALSE(controller->ShouldShow(kId2));
+  EXPECT_FALSE(controller->ShouldShow());
+  EXPECT_FALSE(controller->ShouldShow());
   // Lets make it old enough.
   SetInstallTime(kId2, old_enough, prefs);
 
   // The list will contain one enabled unpacked extension (ext 2).
-  EXPECT_TRUE(controller->ShouldShow(kId2));
-  EXPECT_FALSE(controller->ShouldShow(kId3));
+  EXPECT_TRUE(controller->ShouldShow());
+  EXPECT_FALSE(controller->ShouldShow());
   std::vector<base::string16> override_extensions =
       controller->GetExtensionList();
   ASSERT_EQ(1U, override_extensions.size());
@@ -901,7 +901,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_LINK);
   controller.reset(new TestProxyOverriddenBubbleController(browser()));
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   bubble.set_controller(controller.get());
   controller->Show(&bubble);
   EXPECT_EQ(1U, controller->link_click_count());
@@ -922,7 +922,7 @@ TEST_F(ExtensionMessageBubbleTest, MAYBE_ProxyOverriddenControllerTest) {
   bubble.set_action_on_show(
       FakeExtensionMessageBubble::BUBBLE_ACTION_CLICK_ACTION_BUTTON);
   controller.reset(new TestProxyOverriddenBubbleController(browser()));
-  EXPECT_TRUE(controller->ShouldShow(kId2));
+  EXPECT_TRUE(controller->ShouldShow());
   override_extensions = controller->GetExtensionList();
   EXPECT_EQ(1U, override_extensions.size());
   bubble.set_controller(controller.get());

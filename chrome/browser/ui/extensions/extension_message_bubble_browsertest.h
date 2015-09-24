@@ -22,6 +22,7 @@ class ExtensionMessageBubbleBrowserTest
 
   // BrowserActionsBarBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void TearDownOnMainThread() override;
 
   // Checks the position of the bubble present in the given |browser|, when the
   // bubble should be anchored at the given |anchor|.
@@ -29,6 +30,9 @@ class ExtensionMessageBubbleBrowserTest
 
   // Closes the bubble present in the given |browser|.
   virtual void CloseBubble(Browser* browser) = 0;
+
+  // Checks that there is no active bubble for the given |browser|.
+  virtual void CheckBubbleIsNotPresent(Browser* browser) = 0;
 
   // The following are essentially the different tests, but we can't define the
   // tests in this file, since it relies on platform-specific implementation
@@ -48,6 +52,11 @@ class ExtensionMessageBubbleBrowserTest
   // an action.
   // Regression test for crbug.com/485614.
   void TestBubbleAnchoredToWrenchMenuWithOtherAction();
+
+  // Tests that uninstalling the extension between when the bubble is originally
+  // slated to show and when it does show is handled gracefully.
+  // Regression test for crbug.com/531648.
+  void TestUninstallDangerousExtension();
 
   // Tests that the extension bubble will show on startup.
   void PreBubbleShowsOnStartup();

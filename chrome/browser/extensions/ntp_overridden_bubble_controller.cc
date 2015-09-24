@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
@@ -34,7 +35,7 @@ class NtpOverriddenBubbleDelegate
   ~NtpOverriddenBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const std::string& extension_id) override;
+  bool ShouldIncludeExtension(const extensions::Extension* extension) override;
   void AcknowledgeExtension(
       const std::string& extension_id,
       extensions::ExtensionMessageBubbleController::BubbleAction user_action)
@@ -50,7 +51,7 @@ class NtpOverriddenBubbleDelegate
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
   bool ShouldHighlightExtensions() const override;
-  void RestrictToSingleExtension(const std::string& extension_id) override;
+  bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(extensions::ExtensionMessageBubbleController::BubbleAction
                      action) override;
@@ -71,19 +72,21 @@ NtpOverriddenBubbleDelegate::NtpOverriddenBubbleDelegate(
 NtpOverriddenBubbleDelegate::~NtpOverriddenBubbleDelegate() {}
 
 bool NtpOverriddenBubbleDelegate::ShouldIncludeExtension(
-    const std::string& extension_id) {
-  if (!extension_id_.empty() && extension_id_ != extension_id)
+    const extensions::Extension* extension) {
+  if (!extension_id_.empty() && extension_id_ != extension->id())
     return false;
 
-  const extensions::Extension* extension =
-      registry()->GetExtensionById(extension_id,
-                                   extensions::ExtensionRegistry::ENABLED);
-  if (!extension)
-    return false;  // The extension provided is no longer enabled.
+  GURL url(chrome::kChromeUINewTabURL);
+  if (!ExtensionWebUI::HandleChromeURLOverride(&url, profile()))
+    return false;  // No override for newtab found.
 
-  if (HasBubbleInfoBeenAcknowledged(extension_id))
+  if (extension->id() != url.host())
     return false;
 
+  if (HasBubbleInfoBeenAcknowledged(extension->id()))
+    return false;
+
+  extension_id_ = extension->id();
   return true;
 }
 
@@ -144,9 +147,8 @@ bool NtpOverriddenBubbleDelegate::ShouldHighlightExtensions() const {
   return false;
 }
 
-void NtpOverriddenBubbleDelegate::RestrictToSingleExtension(
-    const std::string& extension_id) {
-  extension_id_ = extension_id;
+bool NtpOverriddenBubbleDelegate::ShouldLimitToEnabledExtensions() const {
+  return true;
 }
 
 void NtpOverriddenBubbleDelegate::LogExtensionCount(size_t count) {
@@ -173,15 +175,6 @@ NtpOverriddenBubbleController::NtpOverriddenBubbleController(Browser* browser)
           browser) {}
 
 NtpOverriddenBubbleController::~NtpOverriddenBubbleController() {}
-
-bool NtpOverriddenBubbleController::ShouldShow(
-    const std::string& extension_id) {
-  if (!delegate()->ShouldIncludeExtension(extension_id))
-    return false;
-
-  delegate()->RestrictToSingleExtension(extension_id);
-  return true;
-}
 
 bool NtpOverriddenBubbleController::CloseOnDeactivate() {
   return true;

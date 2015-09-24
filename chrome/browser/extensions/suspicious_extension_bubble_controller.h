@@ -21,11 +21,7 @@ class SuspiciousExtensionBubbleController
   explicit SuspiciousExtensionBubbleController(Browser* browser);
   ~SuspiciousExtensionBubbleController() override;
 
-  // Whether the controller knows of extensions to list in the bubble. Returns
-  // true if so.
-  bool ShouldShow();
-
-  // ExtensionMessageBubbleController methods.
+  // ExtensionMessageBubbleController:
   void Show(ExtensionMessageBubble* bubble) override;
 
  private:

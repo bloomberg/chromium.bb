@@ -102,7 +102,7 @@ void MaybeShowExtensionControlledNewTabPage(
 
   scoped_ptr<NtpOverriddenBubbleController> ntp_overridden_bubble(
       new NtpOverriddenBubbleController(browser));
-  if (!ntp_overridden_bubble->ShouldShow(ntp_url.host()))
+  if (!ntp_overridden_bubble->ShouldShow())
     return;
 
   NtpOverriddenBubbleController* controller = ntp_overridden_bubble.get();

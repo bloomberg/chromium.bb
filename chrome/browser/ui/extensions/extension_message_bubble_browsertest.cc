@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ui/extensions/extension_message_bubble_browsertest.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/extensions/extension_message_bubble_factory.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/test/extension_test_message_listener.h"
 
 ExtensionMessageBubbleBrowserTest::ExtensionMessageBubbleBrowserTest() {
 }
@@ -27,6 +29,12 @@ void ExtensionMessageBubbleBrowserTest::SetUpCommandLine(
           true));
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::OVERRIDE_ENABLED);
+}
+
+void ExtensionMessageBubbleBrowserTest::TearDownOnMainThread() {
+  ExtensionMessageBubbleFactory::set_override_for_tests(
+      ExtensionMessageBubbleFactory::NO_OVERRIDE);
+  BrowserActionsBarBrowserTest::TearDownOnMainThread();
 }
 
 void ExtensionMessageBubbleBrowserTest::TestBubbleAnchoredToExtensionAction() {
@@ -83,6 +91,30 @@ TestBubbleAnchoredToWrenchMenuWithOtherAction() {
 
   CheckBubble(second_browser, ANCHOR_WRENCH_MENU);
   CloseBubble(second_browser);
+}
+
+void ExtensionMessageBubbleBrowserTest::TestUninstallDangerousExtension() {
+  // Load an extension that overrides the proxy setting.
+  ExtensionTestMessageListener listener("registered", false);
+  const extensions::Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("api_test")
+                        .AppendASCII("proxy")
+                        .AppendASCII("register"));
+  // Wait for it to complete.
+  listener.WaitUntilSatisfied();
+
+  // Create a second browser with the extension installed - the bubble will be
+  // set to show.
+  Browser* second_browser = new Browser(
+      Browser::CreateParams(profile(), browser()->host_desktop_type()));
+  ASSERT_TRUE(second_browser);
+  // Uninstall the extension before the bubble is shown. This should not crash,
+  // and the bubble shouldn't be shown.
+  extension_service()->UninstallExtension(
+      extension->id(), extensions::UNINSTALL_REASON_FOR_TESTING,
+      base::Bind(&base::DoNothing), nullptr);
+  base::RunLoop().RunUntilIdle();
+  CheckBubbleIsNotPresent(second_browser);
 }
 
 void ExtensionMessageBubbleBrowserTest::PreBubbleShowsOnStartup() {

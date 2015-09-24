@@ -44,11 +44,6 @@ ExtensionMessageBubbleController::Delegate::Delegate(Profile* profile)
 ExtensionMessageBubbleController::Delegate::~Delegate() {
 }
 
-void ExtensionMessageBubbleController::Delegate::RestrictToSingleExtension(
-    const std::string& extension_id) {
-  NOTIMPLEMENTED();  // Derived classes that need this should implement.
-}
-
 base::string16 ExtensionMessageBubbleController::Delegate::GetLearnMoreLabel()
     const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
@@ -75,6 +70,11 @@ void ExtensionMessageBubbleController::Delegate::SetBubbleInfoBeenAcknowledged(
   prefs->UpdateExtensionPref(extension_id,
                              pref_name,
                              value ? new base::FundamentalValue(value) : NULL);
+}
+
+std::set<Profile*>*
+ExtensionMessageBubbleController::Delegate::GetProfileSet() {
+  return nullptr;
 }
 
 std::string
@@ -109,6 +109,12 @@ Profile* ExtensionMessageBubbleController::profile() {
   return browser_->profile();
 }
 
+bool ExtensionMessageBubbleController::ShouldShow() {
+  std::set<Profile*>* profiles = delegate_->GetProfileSet();
+  return (!profiles || !profiles->count(profile()->GetOriginalProfile())) &&
+         !GetExtensionList().empty();
+}
+
 std::vector<base::string16>
 ExtensionMessageBubbleController::GetExtensionList() {
   ExtensionIdList* list = GetOrCreateExtensionList();
@@ -117,17 +123,13 @@ ExtensionMessageBubbleController::GetExtensionList() {
 
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   std::vector<base::string16> return_value;
-  for (ExtensionIdList::const_iterator it = list->begin();
-       it != list->end(); ++it) {
+  for (const std::string& id : *list) {
     const Extension* extension =
-        registry->GetExtensionById(*it, ExtensionRegistry::EVERYTHING);
-    if (extension) {
+        registry->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
+    // The extension may have been removed, since showing the bubble is an
+    // asynchronous process.
+    if (extension)
       return_value.push_back(base::UTF8ToUTF16(extension->name()));
-    } else {
-      return_value.push_back(
-          base::ASCIIToUTF16(std::string("(unknown name) ") + *it));
-      // TODO(finnur): Add this as a string to the grd, for next milestone.
-    }
   }
   return return_value;
 }
@@ -228,14 +230,16 @@ void ExtensionMessageBubbleController::AcknowledgeExtensions() {
 
 ExtensionIdList* ExtensionMessageBubbleController::GetOrCreateExtensionList() {
   if (!initialized_) {
-    scoped_ptr<const ExtensionSet> extension_set(
-        ExtensionRegistry::Get(profile())->GenerateInstalledExtensionsSet());
-    for (ExtensionSet::const_iterator it = extension_set->begin();
-         it != extension_set->end(); ++it) {
-      std::string id = (*it)->id();
-      if (!delegate_->ShouldIncludeExtension(id))
-        continue;
-      extension_list_.push_back(id);
+    ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+    scoped_ptr<const ExtensionSet> all_extensions;
+    if (!delegate_->ShouldLimitToEnabledExtensions())
+      all_extensions = registry->GenerateInstalledExtensionsSet();
+    const ExtensionSet& extensions_to_check =
+        all_extensions ? *all_extensions : registry->enabled_extensions();
+    for (const scoped_refptr<const Extension>& extension :
+         extensions_to_check) {
+      if (delegate_->ShouldIncludeExtension(extension.get()))
+        extension_list_.push_back(extension->id());
     }
 
     delegate_->LogExtensionCount(extension_list_.size());

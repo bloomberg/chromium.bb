@@ -558,7 +558,9 @@ void ToolbarActionsBar::MaybeShowExtensionBubble(
     // If the toolbar is animating, we can't effectively anchor the bubble,
     // so wait until animation stops.
     pending_extension_bubble_controller_ = controller.Pass();
-  } else {
+  } else if (controller->ShouldShow()) {
+    // We check ShouldShow() above because the affected extensions may have been
+    // removed since the controller was initialized.
     const std::vector<std::string>& affected_extensions =
         controller->GetExtensionIdList();
     ToolbarActionViewController* anchor_action = nullptr;

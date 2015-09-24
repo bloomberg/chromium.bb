@@ -20,10 +20,6 @@ class ProxyOverriddenBubbleController
   explicit ProxyOverriddenBubbleController(Browser* browser);
   ~ProxyOverriddenBubbleController() override;
 
-  // Whether the controller knows that we should show the bubble for extension
-  // with |extension_id|. Returns true if so.
-  bool ShouldShow(const std::string& extension_id);
-
   // ExtensionMessageBubbleController:
   bool CloseOnDeactivate() override;
 

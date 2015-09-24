@@ -39,7 +39,7 @@ class ProxyOverriddenBubbleDelegate
   ~ProxyOverriddenBubbleDelegate() override;
 
   // ExtensionMessageBubbleController::Delegate methods.
-  bool ShouldIncludeExtension(const std::string& extension_id) override;
+  bool ShouldIncludeExtension(const Extension* extension) override;
   void AcknowledgeExtension(
       const std::string& extension_id,
       ExtensionMessageBubbleController::BubbleAction user_action) override;
@@ -54,7 +54,7 @@ class ProxyOverriddenBubbleDelegate
   base::string16 GetDismissButtonLabel() const override;
   bool ShouldShowExtensionList() const override;
   bool ShouldHighlightExtensions() const override;
-  void RestrictToSingleExtension(const std::string& extension_id) override;
+  bool ShouldLimitToEnabledExtensions() const override;
   void LogExtensionCount(size_t count) override;
   void LogAction(
       ExtensionMessageBubbleController::BubbleAction action) override;
@@ -75,17 +75,12 @@ ProxyOverriddenBubbleDelegate::ProxyOverriddenBubbleDelegate(
 ProxyOverriddenBubbleDelegate::~ProxyOverriddenBubbleDelegate() {}
 
 bool ProxyOverriddenBubbleDelegate::ShouldIncludeExtension(
-    const std::string& extension_id) {
-  if (!extension_id_.empty() && extension_id_ != extension_id)
-    return false;
-
-  const Extension* extension =
-      registry()->enabled_extensions().GetByID(extension_id);
-  if (!extension)
-    return false;  // The extension provided is no longer enabled.
+    const Extension* extension) {
+  if (!extension_id_.empty() && extension_id_ != extension->id())
+    return false;  // Only one extension can be controlling the proxy at a time.
 
   const Extension* overriding = GetExtensionOverridingProxy(profile());
-  if (!overriding || overriding->id() != extension_id)
+  if (!overriding || overriding != extension)
     return false;
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
@@ -94,8 +89,11 @@ bool ProxyOverriddenBubbleDelegate::ShouldIncludeExtension(
   if (since_install.InDays() < kDaysSinceInstallMin)
     return false;
 
-  if (HasBubbleInfoBeenAcknowledged(extension_id))
+  if (HasBubbleInfoBeenAcknowledged(extension->id()))
     return false;
+
+  // Found the only extension; restrict to this one.
+  extension_id_ = extension->id();
 
   return true;
 }
@@ -161,9 +159,8 @@ bool ProxyOverriddenBubbleDelegate::ShouldHighlightExtensions() const {
   return true;
 }
 
-void ProxyOverriddenBubbleDelegate::RestrictToSingleExtension(
-    const std::string& extension_id) {
-  extension_id_ = extension_id;
+bool ProxyOverriddenBubbleDelegate::ShouldLimitToEnabledExtensions() const {
+  return true;
 }
 
 void ProxyOverriddenBubbleDelegate::LogExtensionCount(size_t count) {
@@ -189,15 +186,6 @@ ProxyOverriddenBubbleController::ProxyOverriddenBubbleController(
           browser) {}
 
 ProxyOverriddenBubbleController::~ProxyOverriddenBubbleController() {}
-
-bool ProxyOverriddenBubbleController::ShouldShow(
-    const std::string& extension_id) {
-  if (!delegate()->ShouldIncludeExtension(extension_id))
-    return false;
-
-  delegate()->RestrictToSingleExtension(extension_id);
-  return true;
-}
 
 bool ProxyOverriddenBubbleController::CloseOnDeactivate() {
   return false;

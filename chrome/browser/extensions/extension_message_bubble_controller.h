@@ -34,7 +34,7 @@ class ExtensionMessageBubbleController {
     explicit Delegate(Profile* profile);
     virtual ~Delegate();
 
-    virtual bool ShouldIncludeExtension(const std::string& extension_id) = 0;
+    virtual bool ShouldIncludeExtension(const Extension* extension) = 0;
     virtual void AcknowledgeExtension(
         const std::string& extension_id,
         BubbleAction action) = 0;
@@ -65,9 +65,8 @@ class ExtensionMessageBubbleController {
     // the toolbar.
     virtual bool ShouldHighlightExtensions() const = 0;
 
-    // In some cases, we want the delegate only to handle a single extension
-    // and this sets which extension.
-    virtual void RestrictToSingleExtension(const std::string& extension_id);
+    // Returns true if only enabled extensions should be considered.
+    virtual bool ShouldLimitToEnabledExtensions() const = 0;
 
     // Record, through UMA, how many extensions were found.
     virtual void LogExtensionCount(size_t count) = 0;
@@ -77,6 +76,10 @@ class ExtensionMessageBubbleController {
     virtual bool HasBubbleInfoBeenAcknowledged(const std::string& extension_id);
     virtual void SetBubbleInfoBeenAcknowledged(const std::string& extension_id,
                                                bool value);
+
+    // Returns the set of profiles for which this bubble has been shown.
+    // If profiles are not tracked, returns null (default).
+    virtual std::set<Profile*>* GetProfileSet();
 
    protected:
     Profile* profile() { return profile_; }
@@ -108,6 +111,9 @@ class ExtensionMessageBubbleController {
 
   Delegate* delegate() const { return delegate_.get(); }
   Profile* profile();
+
+  // Returns true if the bubble should be displayed.
+  bool ShouldShow();
 
   // Obtains a list of all extensions (by name) the controller knows about.
   std::vector<base::string16> GetExtensionList();
