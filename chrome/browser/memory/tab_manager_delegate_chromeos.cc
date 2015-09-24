@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/oom_priority_manager_delegate_chromeos.h"
+#include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 
 #include "base/memory/memory_pressure_monitor_chromeos.h"
 #include "base/strings/string16.h"
@@ -34,7 +34,7 @@ const int kFocusedTabScoreAdjustIntervalMs = 500;
 
 }  // namespace
 
-OomPriorityManagerDelegate::OomPriorityManagerDelegate()
+TabManagerDelegate::TabManagerDelegate()
     : focused_tab_process_info_(std::make_pair(0, 0)) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -44,16 +44,15 @@ OomPriorityManagerDelegate::OomPriorityManagerDelegate()
                  content::NotificationService::AllBrowserContextsAndSources());
 }
 
-OomPriorityManagerDelegate::~OomPriorityManagerDelegate() {
-}
+TabManagerDelegate::~TabManagerDelegate() {}
 
-int OomPriorityManagerDelegate::GetOomScore(int child_process_host_id) {
+int TabManagerDelegate::GetOomScore(int child_process_host_id) {
   base::AutoLock oom_score_autolock(oom_score_lock_);
   int score = oom_score_map_[child_process_host_id];
   return score;
 }
 
-void OomPriorityManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
+void TabManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::AutoLock oom_score_autolock(oom_score_lock_);
   base::ProcessHandle pid = focused_tab_process_info_.second;
@@ -63,16 +62,15 @@ void OomPriorityManagerDelegate::AdjustFocusedTabScoreOnFileThread() {
       chrome::kLowestRendererOomScore;
 }
 
-void OomPriorityManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
+void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OomPriorityManagerDelegate::AdjustFocusedTabScoreOnFileThread,
+      base::Bind(&TabManagerDelegate::AdjustFocusedTabScoreOnFileThread,
                  base::Unretained(this)));
 }
-void OomPriorityManagerDelegate::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void TabManagerDelegate::Observe(int type,
+                                 const content::NotificationSource& source,
+                                 const content::NotificationDetails& details) {
   base::AutoLock oom_score_autolock(oom_score_lock_);
   switch (type) {
     case content::NOTIFICATION_RENDERER_PROCESS_CLOSED:
@@ -121,8 +119,7 @@ void OomPriorityManagerDelegate::Observe(
             focus_tab_score_adjust_timer_.Start(
                 FROM_HERE,
                 TimeDelta::FromMilliseconds(kFocusedTabScoreAdjustIntervalMs),
-                this,
-                &OomPriorityManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
+                this, &TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout);
         }
       }
       break;
@@ -142,18 +139,16 @@ void OomPriorityManagerDelegate::Observe(
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
 // 3) is the tab currently selected
-void OomPriorityManagerDelegate::AdjustOomPriorities(
-    const TabStatsList& stats_list) {
+void TabManagerDelegate::AdjustOomPriorities(const TabStatsList& stats_list) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&OomPriorityManagerDelegate::AdjustOomPrioritiesOnFileThread,
+      base::Bind(&TabManagerDelegate::AdjustOomPrioritiesOnFileThread,
                  base::Unretained(this), stats_list));
 }
 
 // static
-std::vector<OomPriorityManagerDelegate::ProcessInfo>
-OomPriorityManagerDelegate::GetChildProcessInfos(
-    const TabStatsList& stats_list) {
+std::vector<TabManagerDelegate::ProcessInfo>
+TabManagerDelegate::GetChildProcessInfos(const TabStatsList& stats_list) {
   std::vector<ProcessInfo> process_infos;
   std::set<base::ProcessHandle> already_seen;
   for (TabStatsList::const_iterator iterator = stats_list.begin();
@@ -175,7 +170,7 @@ OomPriorityManagerDelegate::GetChildProcessInfos(
   return process_infos;
 }
 
-void OomPriorityManagerDelegate::AdjustOomPrioritiesOnFileThread(
+void TabManagerDelegate::AdjustOomPrioritiesOnFileThread(
     TabStatsList stats_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::AutoLock oom_score_autolock(oom_score_lock_);

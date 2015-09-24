@@ -60,7 +60,7 @@ class GCMDriver;
 }
 
 namespace memory {
-class OomPriorityManager;
+class TabManager;
 }
 
 namespace message_center {
@@ -250,8 +250,8 @@ class BrowserProcess {
 
   virtual gcm::GCMDriver* gcm_driver() = 0;
 
-  // Returns the out-of-memory priority manager if it exists, null otherwise.
-  virtual memory::OomPriorityManager* GetOomPriorityManager() = 0;
+  // Returns the tab manager if it exists, null otherwise.
+  virtual memory::TabManager* GetTabManager() = 0;
 
   // Returns the default web client state of Chrome (i.e., was it the user's
   // default browser) at the time a previous check was made sometime between

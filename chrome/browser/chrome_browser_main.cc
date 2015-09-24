@@ -60,7 +60,7 @@
 #include "chrome/browser/gpu/gl_string_manager.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
 #include "chrome/browser/metrics/metrics_services_manager.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -1143,14 +1143,13 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 
   three_d_observer_.reset(new ThreeDAPIObserver());
 
-  // Start the out-of-memory priority manager here so that we give the most
-  // amount of time for the other services to start up before we start
-  // adjusting the oom priority.
-  //
-  // On CrOS, it is always enabled. On other platforms, it's behind a flag for
-  // now.
+// Start the tab manager here so that we give the most amount of time for the
+// other services to start up before we start adjusting the oom priority.
+//
+// On CrOS, it is always enabled. On other platforms, it's behind a flag for
+// now.
 #if defined(OS_CHROMEOS)
-  g_browser_process->GetOomPriorityManager()->Start(false);
+  g_browser_process->GetTabManager()->Start(false);
 #elif defined(OS_WIN) || defined(OS_MACOSX)
   const std::string group_name =
       base::FieldTrialList::FindFullName("AutomaticTabDiscarding");
@@ -1158,7 +1157,7 @@ void ChromeBrowserMainParts::PreBrowserStart() {
       base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE)) {
     bool enabled_once = base::StartsWith(group_name, "Enabled_Once",
                                          base::CompareCase::SENSITIVE);
-    g_browser_process->GetOomPriorityManager()->Start(enabled_once);
+    g_browser_process->GetTabManager()->Start(enabled_once);
   }
 #endif
 }

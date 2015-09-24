@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 
 #include <algorithm>
 #include <vector>
@@ -17,7 +17,7 @@
 
 namespace memory {
 
-typedef testing::Test OomPriorityManagerTest;
+typedef testing::Test TabManagerTest;
 
 namespace {
 enum TestIndicies {
@@ -35,7 +35,7 @@ enum TestIndicies {
 
 // Tests the sorting comparator so that we know it's producing the
 // desired order.
-TEST_F(OomPriorityManagerTest, Comparator) {
+TEST_F(TabManagerTest, Comparator) {
   TabStatsList test_list;
   const base::TimeTicks now = base::TimeTicks::Now();
 
@@ -43,6 +43,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     TabStats stats;
+    stats.last_active = now;
     stats.is_pinned = true;
     stats.child_process_host_id = kPinned;
     test_list.push_back(stats);
@@ -50,6 +51,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     TabStats stats;
+    stats.last_active = now;
     stats.is_app = true;
     stats.child_process_host_id = kApp;
     test_list.push_back(stats);
@@ -57,6 +59,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     TabStats stats;
+    stats.last_active = now;
     stats.is_playing_audio = true;
     stats.child_process_host_id = kPlayingAudio;
     test_list.push_back(stats);
@@ -93,6 +96,7 @@ TEST_F(OomPriorityManagerTest, Comparator) {
 
   {
     TabStats stats;
+    stats.last_active = now;
     stats.is_internal_page = true;
     stats.child_process_host_id = kInternalPage;
     test_list.push_back(stats);
@@ -102,13 +106,13 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   // we are actually sorting the array.
   {
     TabStats stats;
+    stats.last_active = now;
     stats.is_selected = true;
     stats.child_process_host_id = kSelected;
     test_list.push_back(stats);
   }
 
-  std::sort(test_list.begin(), test_list.end(),
-            OomPriorityManager::CompareTabStats);
+  std::sort(test_list.begin(), test_list.end(), TabManager::CompareTabStats);
 
   int index = 0;
   EXPECT_EQ(kSelected, test_list[index++].child_process_host_id);
@@ -122,27 +126,22 @@ TEST_F(OomPriorityManagerTest, Comparator) {
   EXPECT_EQ(kInternalPage, test_list[index++].child_process_host_id);
 }
 
-TEST_F(OomPriorityManagerTest, IsInternalPage) {
-  EXPECT_TRUE(
-      OomPriorityManager::IsInternalPage(GURL(chrome::kChromeUIDownloadsURL)));
-  EXPECT_TRUE(
-      OomPriorityManager::IsInternalPage(GURL(chrome::kChromeUIHistoryURL)));
-  EXPECT_TRUE(
-      OomPriorityManager::IsInternalPage(GURL(chrome::kChromeUINewTabURL)));
-  EXPECT_TRUE(
-      OomPriorityManager::IsInternalPage(GURL(chrome::kChromeUISettingsURL)));
+TEST_F(TabManagerTest, IsInternalPage) {
+  EXPECT_TRUE(TabManager::IsInternalPage(GURL(chrome::kChromeUIDownloadsURL)));
+  EXPECT_TRUE(TabManager::IsInternalPage(GURL(chrome::kChromeUIHistoryURL)));
+  EXPECT_TRUE(TabManager::IsInternalPage(GURL(chrome::kChromeUINewTabURL)));
+  EXPECT_TRUE(TabManager::IsInternalPage(GURL(chrome::kChromeUISettingsURL)));
 
 // Debugging URLs are not included.
 #if defined(OS_CHROMEOS)
-  EXPECT_FALSE(
-      OomPriorityManager::IsInternalPage(GURL(chrome::kChromeUIDiscardsURL)));
+  EXPECT_FALSE(TabManager::IsInternalPage(GURL(chrome::kChromeUIDiscardsURL)));
 #endif
-  EXPECT_FALSE(OomPriorityManager::IsInternalPage(
-      GURL(chrome::kChromeUINetInternalsURL)));
+  EXPECT_FALSE(
+      TabManager::IsInternalPage(GURL(chrome::kChromeUINetInternalsURL)));
 
   // Prefix matches are included.
-  EXPECT_TRUE(OomPriorityManager::IsInternalPage(
-      GURL("chrome://settings/fakeSetting")));
+  EXPECT_TRUE(
+      TabManager::IsInternalPage(GURL("chrome://settings/fakeSetting")));
 }
 
 }  // namespace memory

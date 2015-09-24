@@ -30,7 +30,7 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/predictor.h"
@@ -505,8 +505,8 @@ std::string BuildAboutDiscardsRunPage() {
 }
 
 std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
-  memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
-  memory::TabStatsList stats = oom->GetTabStats();
+  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
+  memory::TabStatsList stats = tab_manager->GetTabStats();
   std::vector<std::string> titles;
   titles.reserve(stats.size());
   for (memory::TabStatsList::iterator it = stats.begin(); it != stats.end();
@@ -539,17 +539,17 @@ std::vector<std::string> GetHtmlTabDescriptorsForDiscardPage() {
 std::string AboutDiscards(const std::string& path) {
   std::string output;
   int64 web_content_id;
-  memory::OomPriorityManager* oom = g_browser_process->GetOomPriorityManager();
+  memory::TabManager* tab_manager = g_browser_process->GetTabManager();
 
   std::vector<std::string> path_split = base::SplitString(
       path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (path_split.size() == 2 && path_split[0] == kAboutDiscardsRunCommand &&
       base::StringToInt64(path_split[1], &web_content_id)) {
-    oom->DiscardTabById(web_content_id);
+    tab_manager->DiscardTabById(web_content_id);
     return BuildAboutDiscardsRunPage();
   } else if (path_split.size() == 1 &&
              path_split[0] == kAboutDiscardsRunCommand) {
-    oom->DiscardTab();
+    tab_manager->DiscardTab();
     return BuildAboutDiscardsRunPage();
   }
 
@@ -572,8 +572,8 @@ std::string AboutDiscards(const std::string& path) {
   } else {
     output.append("<p>None found.  Wait 10 seconds, then refresh.</p>");
   }
-  output.append(
-      base::StringPrintf("%d discards this session. ", oom->discard_count()));
+  output.append(base::StringPrintf("%d discards this session. ",
+                                   tab_manager->discard_count()));
   output.append(base::StringPrintf("<a href='%s%s'>Discard tab now</a>",
                                    chrome::kChromeUIDiscardsURL,
                                    kAboutDiscardsRunCommand));

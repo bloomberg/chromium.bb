@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 
 #include <algorithm>
 #include <set>
@@ -42,7 +42,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/memory/oom_priority_manager_delegate_chromeos.h"
+#include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
 #endif
 
 using base::TimeDelta;
@@ -93,37 +93,37 @@ int FindTabStripModelById(int64 target_web_contents_id, TabStripModel** model) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// OomPriorityManager
+// TabManager
 
-OomPriorityManager::OomPriorityManager()
+TabManager::TabManager()
     : discard_count_(0), recent_tab_discard_(false), discard_once_(false) {
 #if defined(OS_CHROMEOS)
-  delegate_.reset(new OomPriorityManagerDelegate);
+  delegate_.reset(new TabManagerDelegate);
 #endif
 }
 
-OomPriorityManager::~OomPriorityManager() {
+TabManager::~TabManager() {
   Stop();
 }
 
-void OomPriorityManager::Start(bool discard_once) {
+void TabManager::Start(bool discard_once) {
   discard_once_ = discard_once;
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
                         TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),
-                        this, &OomPriorityManager::UpdateTimerCallback);
+                        this, &TabManager::UpdateTimerCallback);
   }
   if (!recent_tab_discard_timer_.IsRunning()) {
     recent_tab_discard_timer_.Start(
         FROM_HERE, TimeDelta::FromSeconds(kRecentTabDiscardIntervalSeconds),
-        this, &OomPriorityManager::RecordRecentTabDiscard);
+        this, &TabManager::RecordRecentTabDiscard);
   }
   start_time_ = TimeTicks::Now();
   // Create a |MemoryPressureListener| to listen for memory events.
   base::MemoryPressureMonitor* monitor = base::MemoryPressureMonitor::Get();
   if (monitor) {
-    memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
-        &OomPriorityManager::OnMemoryPressure, base::Unretained(this))));
+    memory_pressure_listener_.reset(new base::MemoryPressureListener(
+        base::Bind(&TabManager::OnMemoryPressure, base::Unretained(this))));
     base::MemoryPressureListener::MemoryPressureLevel level =
         monitor->GetCurrentPressureLevel();
     if (level == base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
@@ -132,7 +132,7 @@ void OomPriorityManager::Start(bool discard_once) {
   }
 }
 
-void OomPriorityManager::Stop() {
+void TabManager::Stop() {
   update_timer_.Stop();
   recent_tab_discard_timer_.Stop();
   memory_pressure_listener_.reset();
@@ -143,7 +143,7 @@ void OomPriorityManager::Stop() {
 // 1) whether or not a tab is pinned
 // 2) last time a tab was selected
 // 3) is the tab currently selected
-TabStatsList OomPriorityManager::GetTabStats() {
+TabStatsList TabManager::GetTabStats() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats_list;
   stats_list.reserve(32);  // 99% of users have < 30 tabs open
@@ -171,7 +171,7 @@ TabStatsList OomPriorityManager::GetTabStats() {
 // TODO(jamescook): This should consider tabs with references to other tabs,
 // such as tabs created with JavaScript window.open().  We might want to
 // discard the entire set together, or use that in the priority computation.
-bool OomPriorityManager::DiscardTab() {
+bool TabManager::DiscardTab() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TabStatsList stats = GetTabStats();
   if (stats.empty())
@@ -187,7 +187,7 @@ bool OomPriorityManager::DiscardTab() {
   return false;
 }
 
-bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
+bool TabManager::DiscardTabById(int64 target_web_contents_id) {
   TabStripModel* model;
   int idx = FindTabStripModelById(target_web_contents_id, &model);
 
@@ -213,38 +213,36 @@ bool OomPriorityManager::DiscardTabById(int64 target_web_contents_id) {
   return true;
 }
 
-void OomPriorityManager::LogMemoryAndDiscardTab() {
+void TabManager::LogMemoryAndDiscardTab() {
   LogMemory("Tab Discards Memory details",
-            base::Bind(&OomPriorityManager::PurgeMemoryAndDiscardTab));
+            base::Bind(&TabManager::PurgeMemoryAndDiscardTab));
 }
 
-void OomPriorityManager::LogMemory(const std::string& title,
-                                   const base::Closure& callback) {
+void TabManager::LogMemory(const std::string& title,
+                           const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   OomMemoryDetails::Log(title, callback);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// OomPriorityManager, private:
+// TabManager, private:
 
 // static
-void OomPriorityManager::PurgeMemoryAndDiscardTab() {
-  if (g_browser_process && g_browser_process->GetOomPriorityManager()) {
-    OomPriorityManager* manager = g_browser_process->GetOomPriorityManager();
+void TabManager::PurgeMemoryAndDiscardTab() {
+  if (g_browser_process && g_browser_process->GetTabManager()) {
+    TabManager* manager = g_browser_process->GetTabManager();
     manager->PurgeBrowserMemory();
     manager->DiscardTab();
   }
 }
 
 // static
-bool OomPriorityManager::IsInternalPage(const GURL& url) {
+bool TabManager::IsInternalPage(const GURL& url) {
   // There are many chrome:// UI URLs, but only look for the ones that users
   // are likely to have open. Most of the benefit is the from NTP URL.
   const char* const kInternalPagePrefixes[] = {
-      chrome::kChromeUIDownloadsURL,
-      chrome::kChromeUIHistoryURL,
-      chrome::kChromeUINewTabURL,
-      chrome::kChromeUISettingsURL,
+      chrome::kChromeUIDownloadsURL, chrome::kChromeUIHistoryURL,
+      chrome::kChromeUINewTabURL, chrome::kChromeUISettingsURL,
   };
   // Prefix-match against the table above. Use strncmp to avoid allocating
   // memory to convert the URL prefix constants into std::strings.
@@ -256,7 +254,7 @@ bool OomPriorityManager::IsInternalPage(const GURL& url) {
   return false;
 }
 
-void OomPriorityManager::RecordDiscardStatistics() {
+void TabManager::RecordDiscardStatistics() {
   // Record a raw count so we can compare to discard reloads.
   discard_count_++;
   UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.DiscardCount", discard_count_, 1,
@@ -301,7 +299,7 @@ void OomPriorityManager::RecordDiscardStatistics() {
   last_discard_time_ = TimeTicks::Now();
 }
 
-void OomPriorityManager::RecordRecentTabDiscard() {
+void TabManager::RecordRecentTabDiscard() {
   // If we are shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
     return;
@@ -314,7 +312,7 @@ void OomPriorityManager::RecordRecentTabDiscard() {
   recent_tab_discard_ = false;
 }
 
-void OomPriorityManager::PurgeBrowserMemory() {
+void TabManager::PurgeBrowserMemory() {
   // Based on experimental evidence, attempts to free memory from renderers
   // have been too slow to use in OOM situations (V8 garbage collection) or
   // do not lead to persistent decreased usage (image/bitmap caches). This
@@ -329,16 +327,16 @@ void OomPriorityManager::PurgeBrowserMemory() {
   }
 }
 
-int OomPriorityManager::GetTabCount() const {
+int TabManager::GetTabCount() const {
   int tab_count = 0;
   for (chrome::BrowserIterator it; !it.done(); it.Next())
     tab_count += it->tab_strip_model()->count();
   return tab_count;
 }
 
-void OomPriorityManager::AddTabStats(BrowserList* browser_list,
-                                     bool active_desktop,
-                                     TabStatsList* stats_list) {
+void TabManager::AddTabStats(BrowserList* browser_list,
+                             bool active_desktop,
+                             TabStatsList* stats_list) {
   // If it's the active desktop, the first window will be the active one.
   // Otherwise, we assume no active windows.
   bool browser_active = active_desktop;
@@ -380,7 +378,7 @@ void OomPriorityManager::AddTabStats(BrowserList* browser_list,
 // This function is called when |update_timer_| fires. It will adjust the clock
 // if needed (if we detect that the machine was asleep) and will fire the stats
 // updating on ChromeOS via the delegate.
-void OomPriorityManager::UpdateTimerCallback() {
+void TabManager::UpdateTimerCallback() {
   // If we shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
     return;
@@ -409,7 +407,7 @@ void OomPriorityManager::UpdateTimerCallback() {
 #endif
 }
 
-bool OomPriorityManager::CanDiscardTab(int64 target_web_contents_id) const {
+bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
   TabStripModel* model;
   int idx = FindTabStripModelById(target_web_contents_id, &model);
 
@@ -430,7 +428,7 @@ bool OomPriorityManager::CanDiscardTab(int64 target_web_contents_id) const {
   return true;
 }
 
-void OomPriorityManager::OnMemoryPressure(
+void TabManager::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {
   // If we are shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
@@ -446,7 +444,7 @@ void OomPriorityManager::OnMemoryPressure(
 }
 
 // static
-bool OomPriorityManager::CompareTabStats(TabStats first, TabStats second) {
+bool TabManager::CompareTabStats(TabStats first, TabStats second) {
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;

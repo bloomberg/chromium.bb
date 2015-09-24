@@ -388,7 +388,7 @@ gcm::GCMDriver* TestingBrowserProcess::gcm_driver() {
   return nullptr;
 }
 
-memory::OomPriorityManager* TestingBrowserProcess::GetOomPriorityManager() {
+memory::TabManager* TestingBrowserProcess::GetTabManager() {
   return nullptr;
 }
 

@@ -148,7 +148,7 @@
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 #endif
 
 #if (defined(OS_WIN) || defined(OS_LINUX)) && !defined(OS_CHROMEOS)
@@ -772,12 +772,12 @@ gcm::GCMDriver* BrowserProcessImpl::gcm_driver() {
   return gcm_driver_.get();
 }
 
-memory::OomPriorityManager* BrowserProcessImpl::GetOomPriorityManager() {
+memory::TabManager* BrowserProcessImpl::GetTabManager() {
   DCHECK(CalledOnValidThread());
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  if (!oom_priority_manager_.get())
-    oom_priority_manager_.reset(new memory::OomPriorityManager());
-  return oom_priority_manager_.get();
+  if (!tab_manager_.get())
+    tab_manager_.reset(new memory::TabManager());
+  return tab_manager_.get();
 #else
   return nullptr;
 #endif

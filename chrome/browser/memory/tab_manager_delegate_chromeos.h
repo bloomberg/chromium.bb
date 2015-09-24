@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_DELEGATE_CHROMEOS_H_
-#define CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_DELEGATE_CHROMEOS_H_
+#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
+#define CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_
 
 #include <utility>
 #include <vector>
@@ -11,23 +11,23 @@
 #include "base/containers/hash_tables.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
 namespace memory {
 
-// The Chrome OS OomPriorityManagerDelegate is responsible for keeping the
+// The Chrome OS TabManagerDelegate is responsible for keeping the
 // renderers' scores up to date in /proc/<pid>/oom_score_adj.
 //
 // Note that AdjustOomPriorities will be called on the UI thread by
-// OomPriorityManager, but the actual work will take place on the file thread
+// TabManager, but the actual work will take place on the file thread
 // (see implementation of AdjustOomPriorities).
-class OomPriorityManagerDelegate : public content::NotificationObserver {
+class TabManagerDelegate : public content::NotificationObserver {
  public:
-  OomPriorityManagerDelegate();
-  ~OomPriorityManagerDelegate() override;
+  TabManagerDelegate();
+  ~TabManagerDelegate() override;
 
   // Return the score of a process.
   int GetOomScore(int child_process_host_id);
@@ -36,7 +36,7 @@ class OomPriorityManagerDelegate : public content::NotificationObserver {
   void AdjustOomPriorities(const TabStatsList& stats_list);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerDelegateTest, GetProcessHandles);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerDelegateTest, GetProcessHandles);
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -74,9 +74,9 @@ class OomPriorityManagerDelegate : public content::NotificationObserver {
   // Holds the focused tab's child process host id.
   ProcessInfo focused_tab_process_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(OomPriorityManagerDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
 };
 
 }  // namespace memory
 
-#endif  // CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_DELEGATE_CHROMEOS_H_
+#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_DELEGATE_CHROMEOS_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_
-#define CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_
+#ifndef CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
+#define CHROME_BROWSER_MEMORY_TAB_MANAGER_H_
 
 #include <utility>
 #include <vector>
@@ -22,10 +22,10 @@ class GURL;
 namespace memory {
 
 #if defined(OS_CHROMEOS)
-class OomPriorityManagerDelegate;
+class TabManagerDelegate;
 #endif
 
-// The OomPriorityManager periodically updates (see
+// The TabManager periodically updates (see
 // |kAdjustmentIntervalSeconds| in the source) the status of renderers
 // which are then used by the algorithm embedded here for priority in being
 // killed upon OOM conditions.
@@ -40,12 +40,12 @@ class OomPriorityManagerDelegate;
 // algorithm as the one used here.
 //
 // Note that the browser tests are only active for platforms that use
-// OomPriorityManager (CrOS only for now) and need to be adjusted accordingly if
+// TabManager (CrOS only for now) and need to be adjusted accordingly if
 // support for new platforms is added.
-class OomPriorityManager {
+class TabManager {
  public:
-  OomPriorityManager();
-  ~OomPriorityManager();
+  TabManager();
+  ~TabManager();
 
   // Number of discard events since Chrome started.
   int discard_count() const { return discard_count_; }
@@ -81,8 +81,8 @@ class OomPriorityManager {
   void LogMemory(const std::string& title, const base::Closure& callback);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, Comparator);
-  FRIEND_TEST_ALL_PREFIXES(OomPriorityManagerTest, IsInternalPage);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
 
   static void PurgeMemoryAndDiscardTab();
 
@@ -160,12 +160,12 @@ class OomPriorityManager {
   bool discard_once_;
 
 #if defined(OS_CHROMEOS)
-  scoped_ptr<OomPriorityManagerDelegate> delegate_;
+  scoped_ptr<TabManagerDelegate> delegate_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(OomPriorityManager);
+  DISALLOW_COPY_AND_ASSIGN(TabManager);
 };
 
 }  // namespace memory
 
-#endif  // CHROME_BROWSER_MEMORY_OOM_PRIORITY_MANAGER_H_
+#endif  // CHROME_BROWSER_MEMORY_TAB_MANAGER_H_

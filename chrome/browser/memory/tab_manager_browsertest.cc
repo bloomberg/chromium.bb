@@ -5,7 +5,7 @@
 #include "base/command_line.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/memory/oom_priority_manager.h"
+#include "chrome/browser/memory/tab_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
@@ -26,7 +26,7 @@ using content::OpenURLParams;
 namespace memory {
 namespace {
 
-class OomPriorityManagerTest : public InProcessBrowserTest {
+class TabManagerTest : public InProcessBrowserTest {
  public:
   // Tab discarding is enabled by default on CrOS, on other platforms, force it
   // by setting the command line flag.
@@ -35,15 +35,13 @@ class OomPriorityManagerTest : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableTabDiscarding);
 #endif
   }
-
 };
 
-IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   using content::WindowedNotificationObserver;
-  OomPriorityManager* oom_priority_manager =
-      g_browser_process->GetOomPriorityManager();
-  ASSERT_TRUE(oom_priority_manager);
-  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  ASSERT_TRUE(tab_manager);
+  EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // Get three tabs open.
   WindowedNotificationObserver load1(
@@ -96,15 +94,15 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
   // Discard a tab.  It should kill the first tab, since it was the oldest
   // and was not selected.
-  EXPECT_TRUE(oom_priority_manager->DiscardTab());
+  EXPECT_TRUE(tab_manager->DiscardTab());
   EXPECT_EQ(3, tsm->count());
   EXPECT_TRUE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_FALSE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
-  EXPECT_TRUE(oom_priority_manager->recent_tab_discard());
+  EXPECT_TRUE(tab_manager->recent_tab_discard());
 
   // Run discard again, make sure it kills the second tab.
-  EXPECT_TRUE(oom_priority_manager->DiscardTab());
+  EXPECT_TRUE(tab_manager->DiscardTab());
   EXPECT_EQ(3, tsm->count());
   EXPECT_TRUE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
@@ -112,7 +110,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
   // Kill the third tab. It should not kill the last tab, since it is active
   // tab.
-  EXPECT_FALSE(oom_priority_manager->DiscardTab());
+  EXPECT_FALSE(tab_manager->DiscardTab());
   EXPECT_TRUE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(0)));
   EXPECT_TRUE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(1)));
   EXPECT_FALSE(TabDiscardState::IsDiscarded(tsm->GetWebContentsAt(2)));
@@ -174,10 +172,9 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
 // Test that the MemoryPressureListener event is properly triggering a tab
 // discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
-IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
-  OomPriorityManager* oom_priority_manager =
-      g_browser_process->GetOomPriorityManager();
-  ASSERT_TRUE(oom_priority_manager);
+IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
+  TabManager* tab_manager = g_browser_process->GetTabManager();
+  ASSERT_TRUE(tab_manager);
 
   // Get three tabs open.
   content::WindowedNotificationObserver load1(
@@ -195,12 +192,12 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
                       NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_TYPED, false);
   browser()->OpenURL(open2);
   load2.Wait();
-  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+  EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // Nothing should happen with a moderate memory pressure event.
   base::MemoryPressureListener::NotifyMemoryPressure(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
+  EXPECT_FALSE(tab_manager->recent_tab_discard());
 
   // A critical memory pressure event should discard a tab.
   base::MemoryPressureListener::NotifyMemoryPressure(
@@ -214,10 +211,10 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPressureListener) {
     base::PlatformThread::Sleep(
         base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
     base::RunLoop().RunUntilIdle();
-    if (oom_priority_manager->recent_tab_discard())
+    if (tab_manager->recent_tab_discard())
       break;
   }
-  EXPECT_TRUE(oom_priority_manager->recent_tab_discard());
+  EXPECT_TRUE(tab_manager->recent_tab_discard());
 }
 
 }  // namespace
