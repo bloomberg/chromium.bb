@@ -11,7 +11,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "cc/debug/invalidation_benchmark.h"
-#include "cc/debug/picture_record_benchmark.h"
 #include "cc/debug/rasterize_and_record_benchmark.h"
 #include "cc/debug/unittest_only_benchmark.h"
 #include "cc/trees/layer_tree_host.h"
@@ -29,8 +28,6 @@ scoped_ptr<MicroBenchmark> CreateBenchmark(
     const MicroBenchmark::DoneCallback& callback) {
   if (name == "invalidation_benchmark") {
     return make_scoped_ptr(new InvalidationBenchmark(value.Pass(), callback));
-  } else if (name == "picture_record_benchmark") {
-    return make_scoped_ptr(new PictureRecordBenchmark(value.Pass(), callback));
   } else if (name == "rasterize_and_record_benchmark") {
     return make_scoped_ptr(
         new RasterizeAndRecordBenchmark(value.Pass(), callback));

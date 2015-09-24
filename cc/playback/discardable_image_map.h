@@ -21,16 +21,14 @@ class SkImage;
 
 namespace cc {
 
-class Picture;
 class DisplayItemList;
 
 typedef std::pair<int, int> ImageMapKey;
 typedef std::vector<skia::PositionImage> Images;
 typedef base::hash_map<ImageMapKey, Images> ImageHashmap;
 
-// This class is used and owned by cc Picture class. It is used to gather images
-// which would happen after record. It takes in |cell_size| to decide how
-// big each grid cell should be.
+// This class is used to gather images which would happen after record. It takes
+// in |cell_size| to decide how big each grid cell should be.
 class CC_EXPORT DiscardableImageMap {
  public:
   explicit DiscardableImageMap(const gfx::Size& cell_size);
@@ -48,7 +46,6 @@ class CC_EXPORT DiscardableImageMap {
     // Default iterator constructor that is used as place holder for invalid
     // Iterator.
     Iterator();
-    Iterator(const gfx::Rect& layer_rect, const Picture* picture);
     Iterator(const gfx::Rect& layer_rect, const DisplayItemList* picture);
     ~Iterator();
 

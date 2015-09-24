@@ -17,12 +17,7 @@ class Size;
 }
 
 namespace cc {
-class Picture;
 class DisplayItemList;
-
-void DrawPicture(unsigned char* buffer,
-                 const gfx::Rect& layer_rect,
-                 scoped_refptr<Picture> picture);
 
 void DrawDisplayList(unsigned char* buffer,
                      const gfx::Rect& layer_rect,

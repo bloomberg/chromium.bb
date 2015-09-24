@@ -12,7 +12,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/picture_debug_util.h"
 #include "cc/debug/traced_display_item_list.h"
-#include "cc/debug/traced_picture.h"
 #include "cc/debug/traced_value.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "cc/playback/largest_display_item.h"

@@ -9,9 +9,9 @@
 
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
-#include "cc/playback/picture.h"
 #include "skia/ext/discardable_image_utils.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -89,15 +89,6 @@ DiscardableImageMap::Iterator::Iterator()
       max_point_(-1, -1),
       current_x_(0),
       current_y_(0) {}
-
-DiscardableImageMap::Iterator::Iterator(const gfx::Rect& rect,
-                                        const Picture* picture)
-    : target_image_map_(&(picture->images_)),
-      current_images_(empty_images_.Pointer()),
-      current_index_(0) {
-  map_layer_rect_ = picture->layer_rect_;
-  PointToFirstImage(rect);
-}
 
 DiscardableImageMap::Iterator::Iterator(const gfx::Rect& rect,
                                         const DisplayItemList* display_list)

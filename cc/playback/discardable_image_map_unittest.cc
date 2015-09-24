@@ -7,8 +7,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
-#include "cc/playback/picture.h"
+#include "cc/base/region.h"
+#include "cc/playback/raster_source.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_display_list_recording_source.h"
 #include "cc/test/skia_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -33,7 +35,7 @@ skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
 }
 
 TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
-  gfx::Rect layer_rect(2048, 2048);
+  gfx::Rect visible_rect(2048, 2048);
 
   gfx::Size tile_grid_size(512, 512);
 
@@ -62,9 +64,13 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
     }
   }
 
-  scoped_refptr<Picture> picture =
-      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
-                      RecordingSource::RECORD_NORMALLY);
+  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  Region invalidation(visible_rect);
+  recording_source.SetGatherDiscardableImages(true);
+  recording_source.UpdateAndExpandInvalidation(
+      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
+      1, RecordingSource::RECORD_NORMALLY);
+  DisplayItemList* display_list = recording_source.display_list();
 
   // Default iterator does not have any pixel refs.
   {
@@ -75,7 +81,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       DiscardableImageMap::Iterator iterator(
-          gfx::Rect(x * 512, y * 512, 500, 500), picture.get());
+          gfx::Rect(x * 512, y * 512, 500, 500), display_list);
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(iterator->image == discardable_image[y][x].get())
@@ -92,7 +98,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
   // Capture 4 pixel refs.
   {
     DiscardableImageMap::Iterator iterator(gfx::Rect(512, 512, 2048, 2048),
-                                           picture.get());
+                                           display_list);
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
     EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500).ToString(),
@@ -115,7 +121,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
   {
     // Copy test.
     DiscardableImageMap::Iterator iterator(gfx::Rect(512, 512, 2048, 2048),
-                                           picture.get());
+                                           display_list);
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
     EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500).ToString(),
@@ -155,7 +161,9 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
 }
 
 TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
-  gfx::Rect layer_rect(1024, 0, 2048, 2048);
+  gfx::Rect visible_rect(1024, 0, 2048, 2048);
+  // Make sure visible rect fits into the layer size.
+  gfx::Size layer_size(visible_rect.right(), visible_rect.bottom());
 
   gfx::Size tile_grid_size(512, 512);
 
@@ -184,9 +192,14 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
     }
   }
 
-  scoped_refptr<Picture> picture =
-      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
-                      RecordingSource::RECORD_NORMALLY);
+  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  Region invalidation(visible_rect);
+  recording_source.set_pixel_record_distance(0);
+  recording_source.SetGatherDiscardableImages(true);
+  recording_source.UpdateAndExpandInvalidation(
+      &content_layer_client, &invalidation, layer_size, visible_rect, 1,
+      RecordingSource::RECORD_NORMALLY);
+  DisplayItemList* display_list = recording_source.display_list();
 
   // Default iterator does not have any pixel refs.
   {
@@ -197,7 +210,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       DiscardableImageMap::Iterator iterator(
-          gfx::Rect(1024 + x * 512, y * 512, 500, 500), picture.get());
+          gfx::Rect(1024 + x * 512, y * 512, 500, 500), display_list);
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(iterator->image == discardable_image[y][x].get());
@@ -213,7 +226,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
   // Capture 4 pixel refs.
   {
     DiscardableImageMap::Iterator iterator(
-        gfx::Rect(1024 + 512, 512, 2048, 2048), picture.get());
+        gfx::Rect(1024 + 512, 512, 2048, 2048), display_list);
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
     EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 512 + 6, 500, 500).ToString(),
@@ -236,7 +249,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
   // Copy test.
   {
     DiscardableImageMap::Iterator iterator(
-        gfx::Rect(1024 + 512, 512, 2048, 2048), picture.get());
+        gfx::Rect(1024 + 512, 512, 2048, 2048), display_list);
     EXPECT_TRUE(iterator);
     EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
     EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 512 + 6, 500, 500).ToString(),
@@ -277,28 +290,28 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
   // Non intersecting rects
   {
     DiscardableImageMap::Iterator iterator(gfx::Rect(0, 0, 1000, 1000),
-                                           picture.get());
+                                           display_list);
     EXPECT_FALSE(iterator);
   }
   {
     DiscardableImageMap::Iterator iterator(gfx::Rect(3500, 0, 1000, 1000),
-                                           picture.get());
+                                           display_list);
     EXPECT_FALSE(iterator);
   }
   {
     DiscardableImageMap::Iterator iterator(gfx::Rect(0, 1100, 1000, 1000),
-                                           picture.get());
+                                           display_list);
     EXPECT_FALSE(iterator);
   }
   {
     DiscardableImageMap::Iterator iterator(gfx::Rect(3500, 1100, 1000, 1000),
-                                           picture.get());
+                                           display_list);
     EXPECT_FALSE(iterator);
   }
 }
 
 TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
-  gfx::Rect layer_rect(2048, 2048);
+  gfx::Rect visible_rect(2048, 2048);
 
   gfx::Size tile_grid_size(512, 512);
 
@@ -327,9 +340,13 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
     }
   }
 
-  scoped_refptr<Picture> picture =
-      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
-                      RecordingSource::RECORD_NORMALLY);
+  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  Region invalidation(visible_rect);
+  recording_source.SetGatherDiscardableImages(true);
+  recording_source.UpdateAndExpandInvalidation(
+      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
+      1, RecordingSource::RECORD_NORMALLY);
+  DisplayItemList* display_list = recording_source.display_list();
 
   // Default iterator does not have any pixel refs.
   {
@@ -340,7 +357,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
       DiscardableImageMap::Iterator iterator(
-          gfx::Rect(x * 512, y * 512 + 256, 1, 1), picture.get());
+          gfx::Rect(x * 512, y * 512 + 256, 1, 1), display_list);
       if ((x + y) & 1) {
         EXPECT_TRUE(iterator) << x << " " << y;
         EXPECT_TRUE(iterator->image == discardable_image[y][x].get());
@@ -355,7 +372,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
 }
 
 TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
-  gfx::Rect layer_rect(2048, 2048);
+  gfx::Rect visible_rect(2048, 2048);
   gfx::Size tile_grid_size(512, 512);
   FakeContentLayerClient content_layer_client;
 
@@ -365,11 +382,15 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
   content_layer_client.add_draw_image(discardable_image.get(), gfx::Point(0, 0),
                                       paint);
 
-  scoped_refptr<Picture> picture =
-      Picture::Create(layer_rect, &content_layer_client, tile_grid_size, true,
-                      RecordingSource::RECORD_NORMALLY);
+  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  Region invalidation(visible_rect);
+  recording_source.SetGatherDiscardableImages(true);
+  recording_source.UpdateAndExpandInvalidation(
+      &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
+      1, RecordingSource::RECORD_NORMALLY);
+  DisplayItemList* display_list = recording_source.display_list();
 
-  DiscardableImageMap::Iterator iterator(gfx::Rect(0, 0, 1, 1), picture.get());
+  DiscardableImageMap::Iterator iterator(gfx::Rect(0, 0, 1, 1), display_list);
   EXPECT_TRUE(iterator);
   EXPECT_TRUE(iterator->image == discardable_image.get());
   EXPECT_EQ(gfx::RectF(0, 0, 1 << 25, 1 << 25).ToString(),

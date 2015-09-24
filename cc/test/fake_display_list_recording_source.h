@@ -120,6 +120,11 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
     playback_allowed_event_ = event;
   }
 
+  DisplayItemList* display_list() const { return display_list_.get(); }
+  void set_pixel_record_distance(int distance) {
+    pixel_record_distance_ = distance;
+  }
+
  private:
   FakeContentLayerClient client_;
   SkPaint default_paint_;

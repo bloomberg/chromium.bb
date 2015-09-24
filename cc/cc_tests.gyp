@@ -84,7 +84,6 @@
       'playback/display_item_list_unittest.cc',
       'playback/display_list_raster_source_unittest.cc',
       'playback/display_list_recording_source_unittest.cc',
-      'playback/picture_unittest.cc',
       'quads/draw_polygon_unittest.cc',
       'quads/draw_quad_unittest.cc',
       'quads/render_pass_unittest.cc',

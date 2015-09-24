@@ -21,8 +21,6 @@ class SkPicture;
 
 namespace cc {
 
-class Picture;
-
 class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
  public:
   struct CC_EXPORT SolidColorAnalysis {
