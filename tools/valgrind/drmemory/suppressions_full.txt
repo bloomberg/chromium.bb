@@ -2003,15 +2003,3 @@ MSVCR120.dll!vsnwprintf_s
 *!base::StringPrintf
 *!content::AccessibilityTreeFormatter::ToString
 *!content::AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree
-
-UNADDRESSABLE ACCESS
-name=bug_534881
-...
-v8.dll!v8::internal::`anonymous namespace'::Invoke
-v8.dll!v8::internal::Execution::Call
-v8.dll!v8::Function::Call
-webcore_shared.dll!blink::V8ScriptRunner::callFunction
-webcore_shared.dll!blink::ScriptController::callFunction
-...
-webcore_shared.dll!blink::LocalDOMWindow::dispatchEvent
-
