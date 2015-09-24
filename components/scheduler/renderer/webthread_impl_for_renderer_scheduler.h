@@ -21,12 +21,12 @@ class SCHEDULER_EXPORT WebThreadImplForRendererScheduler
     : public WebThreadBase {
  public:
   explicit WebThreadImplForRendererScheduler(RendererScheduler* scheduler);
-  virtual ~WebThreadImplForRendererScheduler();
+  ~WebThreadImplForRendererScheduler() override;
 
   // blink::WebThread implementation.
-  blink::WebScheduler* scheduler() const;
+  blink::WebScheduler* scheduler() const override;
   blink::PlatformThreadId threadId() const override;
-  virtual blink::WebTaskRunner* taskRunner();
+  blink::WebTaskRunner* taskRunner() override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* TaskRunner() const override;

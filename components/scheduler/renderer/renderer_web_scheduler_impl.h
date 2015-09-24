@@ -18,8 +18,8 @@ class SCHEDULER_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   ~RendererWebSchedulerImpl() override;
 
   // blink::WebScheduler implementation:
-  virtual void suspendTimerQueue();
-  virtual void resumeTimerQueue();
+  void suspendTimerQueue() override;
+  void resumeTimerQueue() override;
 
  private:
   RendererScheduler* renderer_scheduler_;  // NOT OWNED

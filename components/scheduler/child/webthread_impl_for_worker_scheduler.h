@@ -28,12 +28,12 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
       public base::MessageLoop::DestructionObserver {
  public:
   explicit WebThreadImplForWorkerScheduler(const char* name);
-  virtual ~WebThreadImplForWorkerScheduler();
+  ~WebThreadImplForWorkerScheduler() override;
 
   // blink::WebThread implementation.
-  virtual blink::WebScheduler* scheduler() const;
+  blink::WebScheduler* scheduler() const override;
   blink::PlatformThreadId threadId() const override;
-  virtual blink::WebTaskRunner* taskRunner();
+  blink::WebTaskRunner* taskRunner() override;
 
   // WebThreadBase implementation.
   base::SingleThreadTaskRunner* TaskRunner() const override;

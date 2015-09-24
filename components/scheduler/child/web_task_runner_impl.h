@@ -29,15 +29,15 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   }
 
   // blink::WebTaskRunner implementation:
-  virtual void postTask(const blink::WebTraceLocation& web_location,
-                        blink::WebTaskRunner::Task* task);
+  void postTask(const blink::WebTraceLocation& web_location,
+                blink::WebTaskRunner::Task* task) override;
   // TODO(alexclarke): Remove this when possible.
-  virtual void postDelayedTask(const blink::WebTraceLocation& web_location,
-                               blink::WebTaskRunner::Task* task,
-                               long long delayMs);
-  virtual void postDelayedTask(const blink::WebTraceLocation& web_location,
-                               blink::WebTaskRunner::Task* task,
-                               double delayMs);
+  void postDelayedTask(const blink::WebTraceLocation& web_location,
+                       blink::WebTaskRunner::Task* task,
+                       long long delayMs) override;
+  void postDelayedTask(const blink::WebTraceLocation& web_location,
+                       blink::WebTaskRunner::Task* task,
+                       double delayMs) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
