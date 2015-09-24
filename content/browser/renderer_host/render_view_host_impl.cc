@@ -31,7 +31,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -297,19 +296,6 @@ bool RenderViewHostImpl::CreateRenderView(
   DCHECK(GetProcess()->GetBrowserContext());
 
   set_renderer_initialized(true);
-
-  // If this is not an active RenderView, then we need to create a
-  // handle with NULL_TRANSPORT type. Active RenderViews will implement
-  // GetCompositingSurface() in the RenderWidgetHostView delegate which returns
-  // the appropriate surface type.
-  if (proxy_route_id != MSG_ROUTING_NONE) {
-    GpuSurfaceTracker::Get()->SetSurfaceHandle(
-        surface_id(),
-        gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT));
-  } else {
-    GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id(),
-                                               GetCompositingSurface());
-  }
 
   // Ensure the RenderView starts with a next_page_id larger than any existing
   // page ID it might be asked to render.

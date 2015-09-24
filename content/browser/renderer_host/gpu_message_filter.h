@@ -51,7 +51,6 @@ class GpuMessageFilter : public BrowserMessageFilter {
   void OnEstablishGpuChannel(CauseForGpuLaunch,
                              IPC::Message* reply);
   void OnCreateViewCommandBuffer(
-      int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id,
       IPC::Message* reply);

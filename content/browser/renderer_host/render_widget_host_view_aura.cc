@@ -1400,10 +1400,6 @@ RenderWidgetHostViewAura::AccessibilityGetNativeViewAccessible() {
   return NULL;
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
-  return ImageTransportFactory::GetInstance()->GetSharedSurfaceHandle();
-}
-
 void RenderWidgetHostViewAura::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const SkBitmap& zoomed_bitmap) {

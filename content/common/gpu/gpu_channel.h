@@ -68,11 +68,11 @@ class CONTENT_EXPORT GpuChannel
              GpuWatchdog* watchdog,
              gfx::GLShareGroup* share_group,
              gpu::gles2::MailboxManager* mailbox_manager,
+             gpu::PreemptionFlag* preempting_flag,
              base::SingleThreadTaskRunner* task_runner,
              base::SingleThreadTaskRunner* io_task_runner,
              int client_id,
              uint64_t client_tracing_id,
-             bool software,
              bool allow_future_sync_points,
              bool allow_real_time_streams);
   ~GpuChannel() override;
@@ -116,7 +116,6 @@ class CONTENT_EXPORT GpuChannel
 
   CreateCommandBufferResult CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
-      int32 surface_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
 
@@ -134,7 +133,7 @@ class CONTENT_EXPORT GpuChannel
   // Called to remove a listener for a particular message routing ID.
   void RemoveRoute(int32 route_id);
 
-  gpu::PreemptionFlag* GetPreemptionFlag();
+  void SetPreemptingFlag(gpu::PreemptionFlag* flag);
 
   // If |preemption_flag->IsSet()|, any stub on this channel
   // should stop issuing GL commands. Setting this to NULL stops deferral.
@@ -276,7 +275,6 @@ class CONTENT_EXPORT GpuChannel
 
   gpu::gles2::DisallowedFeatures disallowed_features_;
   GpuWatchdog* watchdog_;
-  bool software_;
 
   size_t num_stubs_descheduled_;
 
@@ -311,6 +309,7 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
                           GpuChannelMessageQueue* message_queue,
                           gpu::SyncPointManager* sync_point_manager,
                           base::SingleThreadTaskRunner* task_runner,
+                          gpu::PreemptionFlag* preempting_flag,
                           bool future_sync_points);
 
   // IPC::MessageFilter implementation.
@@ -325,9 +324,6 @@ class GpuChannelMessageFilter : public IPC::MessageFilter {
   void RemoveChannelFilter(scoped_refptr<IPC::MessageFilter> filter);
 
   void OnMessageProcessed();
-
-  void SetPreemptingFlagAndSchedulingState(gpu::PreemptionFlag* preempting_flag,
-                                           bool a_stub_is_descheduled);
 
   void UpdateStubSchedulingState(bool a_stub_is_descheduled);
 

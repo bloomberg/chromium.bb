@@ -311,8 +311,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // Gets the bounds of the window, in screen coordinates.
   virtual gfx::Rect GetBoundsInRootWindow() = 0;
 
-  virtual gfx::GLSurfaceHandle GetCompositingSurface() = 0;
-
   // Called by the RenderFrameHost when it receives an IPC response to a
   // TextSurroundingSelectionRequest.
   virtual void OnTextSurroundingSelectionResponse(const base::string16& content,

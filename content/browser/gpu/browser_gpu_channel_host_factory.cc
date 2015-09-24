@@ -148,8 +148,13 @@ void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
     reused_gpu_process_ = true;
   }
 
+  bool preempts = true;
+  bool preempted = false;
+  bool allow_future_sync_points = true;
+  bool allow_real_time_streams = true;
   host->EstablishGpuChannel(
-      gpu_client_id_, gpu_client_tracing_id_, true, true, true,
+      gpu_client_id_, gpu_client_tracing_id_, preempts, preempted,
+      allow_future_sync_points, allow_real_time_streams,
       base::Bind(
           &BrowserGpuChannelHostFactory::EstablishRequest::OnEstablishedOnIO,
           this));
@@ -300,7 +305,6 @@ void BrowserGpuChannelHostFactory::CreateViewCommandBufferOnIO(
 
   host->CreateViewCommandBuffer(
       surface,
-      surface_id,
       gpu_client_id_,
       init_params,
       request->route_id,

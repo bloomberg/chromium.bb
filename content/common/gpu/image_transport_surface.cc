@@ -12,7 +12,6 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_messages.h"
-#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -31,15 +30,6 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     const gfx::GLSurfaceHandle& handle) {
   scoped_refptr<gfx::GLSurface> surface;
   if (handle.transport_type == gfx::NULL_TRANSPORT) {
-    GpuChannel* parent_channel = manager->LookupChannel(
-        handle.parent_client_id);
-    if (parent_channel) {
-      const base::CommandLine* command_line =
-          base::CommandLine::ForCurrentProcess();
-      if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
-        stub->channel()->SetPreemptByFlag(parent_channel->GetPreemptionFlag());
-    }
-
     surface = manager->GetDefaultOffscreenSurface();
   } else {
     surface = CreateNativeSurface(manager, stub, handle);
@@ -109,16 +99,13 @@ void ImageTransportHelper::SendAcceleratedSurfaceBuffersSwapped(
                        TRACE_EVENT_SCOPE_THREAD,
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
                        "width", params.size.width());
-  params.surface_id = stub_->surface_id();
+  // On mac, handle_ is a surface id. See
+  // GpuProcessTransportFactory::CreatePerCompositorData
+  params.surface_id = handle_;
   params.route_id = route_id_;
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 #endif
-
-void ImageTransportHelper::SetPreemptByFlag(
-    scoped_refptr<gpu::PreemptionFlag> preemption_flag) {
-  stub_->channel()->SetPreemptByFlag(preemption_flag);
-}
 
 bool ImageTransportHelper::MakeCurrent() {
   gpu::gles2::GLES2Decoder* decoder = Decoder();

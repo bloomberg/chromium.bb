@@ -33,10 +33,9 @@ class TestGpuChannelManager : public GpuChannelManager {
 
  protected:
   scoped_ptr<GpuChannel> CreateGpuChannel(
-      gfx::GLShareGroup* share_group,
-      gpu::gles2::MailboxManager* mailbox_manager,
       int client_id,
       uint64_t client_tracing_id,
+      bool preempts,
       bool allow_future_sync_points,
       bool allow_real_time_streams) override;
 
@@ -50,6 +49,7 @@ class TestGpuChannel : public GpuChannel {
                  GpuChannelManager* gpu_channel_manager,
                  gfx::GLShareGroup* share_group,
                  gpu::gles2::MailboxManager* mailbox_manager,
+                 gpu::PreemptionFlag* preempting_flag,
                  base::SingleThreadTaskRunner* task_runner,
                  base::SingleThreadTaskRunner* io_task_runner,
                  int client_id,

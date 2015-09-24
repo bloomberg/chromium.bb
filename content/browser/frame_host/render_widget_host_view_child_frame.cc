@@ -430,10 +430,6 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
   return false;
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostViewChildFrame::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
-}
-
 #if defined(OS_WIN)
 void RenderWidgetHostViewChildFrame::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {

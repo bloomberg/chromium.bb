@@ -13,7 +13,6 @@
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_data_manager_impl_private.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -22,20 +21,6 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 
 namespace content {
-
-struct GpuMessageFilter::CreateViewCommandBufferRequest {
-  CreateViewCommandBufferRequest(
-      int32 surface_id,
-      const GPUCreateCommandBufferConfig& init_params,
-      scoped_ptr<IPC::Message> reply)
-      : surface_id(surface_id),
-        init_params(init_params),
-        reply(reply.Pass()) {
-  }
-  int32 surface_id;
-  GPUCreateCommandBufferConfig init_params;
-  scoped_ptr<IPC::Message> reply;
-};
 
 GpuMessageFilter::GpuMessageFilter(int render_process_id,
                                    RenderWidgetHelper* render_widget_helper)
@@ -89,63 +74,43 @@ void GpuMessageFilter::OnEstablishGpuChannel(
     gpu_process_id_ = host->host_id();
   }
 
-  bool share_contexts = true;
+  bool preempts = false;
+  bool preempted = true;
+  bool allow_future_sync_points = false;
+  bool allow_real_time_streams = false;
   host->EstablishGpuChannel(
       render_process_id_,
       ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
           render_process_id_),
-      share_contexts, false, false,
+      preempts, preempted, allow_future_sync_points, allow_real_time_streams,
       base::Bind(&GpuMessageFilter::EstablishChannelCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
 void GpuMessageFilter::OnCreateViewCommandBuffer(
-    int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32 route_id,
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
 
-  GpuSurfaceTracker* surface_tracker = GpuSurfaceTracker::Get();
-  gfx::GLSurfaceHandle compositing_surface;
-
-  int renderer_id = 0;
-  int render_widget_id = 0;
-  bool result = surface_tracker->GetRenderWidgetIDForSurface(
-      surface_id, &renderer_id, &render_widget_id);
-  if (result && renderer_id == render_process_id_) {
-    compositing_surface = surface_tracker->GetSurfaceHandle(surface_id);
-  } else {
-    DLOG(ERROR) << "Renderer " << render_process_id_
-                << " tried to access a surface for renderer " << renderer_id;
+  // For the renderer to fall back to software also.
+  GpuProcessHost* host = nullptr;
+  if (GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+    host = GpuProcessHost::FromID(gpu_process_id_);
   }
 
-  if (compositing_surface.parent_client_id &&
-      !GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-    // For the renderer to fall back to software also.
-    compositing_surface = gfx::GLSurfaceHandle();
-  }
-
-  GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
-  if (!host || compositing_surface.is_null()) {
-    // TODO(apatrick): Eventually, this IPC message will be routed to a
-    // GpuProcessStub with a particular routing ID. The error will be set if
-    // the GpuProcessStub with that routing ID is not in the MessageRouter.
+  if (!host) {
     reply->set_reply_error();
     Send(reply.release());
     return;
   }
 
   host->CreateViewCommandBuffer(
-      compositing_surface,
-      surface_id,
-      render_process_id_,
-      init_params,
-      route_id,
+      gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT),
+      render_process_id_, init_params, route_id,
       base::Bind(&GpuMessageFilter::CreateCommandBufferCallback,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&reply)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
 }
 
 void GpuMessageFilter::EstablishChannelCallback(

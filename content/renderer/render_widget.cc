@@ -649,6 +649,7 @@ void RenderWidget::CompleteInit() {
 
   init_complete_ = true;
 
+  // TODO(piman): do we still need the 2-stage initialization? crbug.com/535339
   if (compositor_)
     StartCompositor();
 

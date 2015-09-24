@@ -15,21 +15,29 @@ class GpuChannelTest : public GpuChannelTestCommon {
  public:
   GpuChannelTest() : GpuChannelTestCommon() {}
   ~GpuChannelTest() override {}
+
+  GpuChannel* CreateChannel(int32 client_id, bool allow_real_time_streams) {
+    DCHECK(channel_manager());
+    uint64 kClientTracingId = 1;
+    GpuMsg_EstablishChannel_Params params;
+    params.client_id = client_id;
+    params.client_tracing_id = kClientTracingId;
+    params.preempts = false;
+    params.preempted = false;
+    params.allow_future_sync_points = false;
+    params.allow_real_time_streams = allow_real_time_streams;
+    EXPECT_TRUE(
+        channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
+    return channel_manager()->LookupChannel(client_id);
+  }
 };
 
 TEST_F(GpuChannelTest, CreateViewCommandBuffer) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
-
-  ASSERT_TRUE(channel_manager());
-
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, false)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   gfx::GLSurfaceHandle surface_handle;
-  int32 kSurfaceId = 1;
   int32 kRouteId = 1;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
@@ -39,7 +47,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBuffer) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      surface_handle, kSurfaceId, kClientId, init_params, kRouteId));
+      surface_handle, kClientId, init_params, kRouteId));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
@@ -58,17 +66,10 @@ TEST_F(GpuChannelTest, CreateViewCommandBuffer) {
 
 TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
-
-  ASSERT_TRUE(channel_manager());
-
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, false)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kSurfaceId1 = 1;
   int32 kRouteId1 = 1;
   int32 kStreamId1 = 1;
   GPUCreateCommandBufferConfig init_params;
@@ -79,7 +80,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId1, kClientId, init_params, kRouteId1));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId1));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
@@ -96,7 +97,6 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   ASSERT_TRUE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kSurfaceId2 = 2;
   int32 kRouteId2 = 2;
   int32 kStreamId2 = 2;
 
@@ -107,7 +107,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId2, kClientId, init_params, kRouteId2));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId2));
 
   msg = sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
   ASSERT_TRUE(msg);
@@ -124,17 +124,10 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
 
 TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
-
-  ASSERT_TRUE(channel_manager());
-
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, false)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kSurfaceId1 = 1;
   int32 kRouteId1 = 1;
   int32 kStreamId1 = 1;
   GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
@@ -146,7 +139,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId1, kClientId, init_params, kRouteId1));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId1));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
@@ -163,7 +156,6 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
   ASSERT_TRUE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kSurfaceId2 = 2;
   int32 kRouteId2 = 2;
   int32 kStreamId2 = kStreamId1;
   GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
@@ -175,7 +167,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId2, kClientId, init_params, kRouteId2));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId2));
 
   msg = sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
   ASSERT_TRUE(msg);
@@ -192,17 +184,10 @@ TEST_F(GpuChannelTest, IncompatibleStreamPriorities) {
 
 TEST_F(GpuChannelTest, StreamLifetime) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
-
-  ASSERT_TRUE(channel_manager());
-
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, false)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, false);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kSurfaceId1 = 1;
   int32 kRouteId1 = 1;
   int32 kStreamId1 = 1;
   GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
@@ -214,7 +199,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId1, kClientId, init_params, kRouteId1));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId1));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
@@ -243,7 +228,6 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   ASSERT_FALSE(stub);
 
   // Create second context in same share group but different stream.
-  int32 kSurfaceId2 = 2;
   int32 kRouteId2 = 2;
   int32 kStreamId2 = 2;
   GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
@@ -255,7 +239,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId2, kClientId, init_params, kRouteId2));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId2));
 
   msg = sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
   ASSERT_TRUE(msg);
@@ -272,18 +256,11 @@ TEST_F(GpuChannelTest, StreamLifetime) {
 
 TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
   bool allow_real_time_streams = false;
-
-  ASSERT_TRUE(channel_manager());
-
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, allow_real_time_streams)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, allow_real_time_streams);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kSurfaceId = 1;
   int32 kRouteId = 1;
   int32 kStreamId = 1;
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
@@ -295,7 +272,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId, kClientId, init_params, kRouteId));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);
@@ -314,18 +291,11 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
 
 TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   int32 kClientId = 1;
-  uint64 kClientTracingId = 1;
-
-  ASSERT_TRUE(channel_manager());
-
   bool allow_real_time_streams = true;
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, allow_real_time_streams)));
-  GpuChannel* channel = channel_manager()->LookupChannel(kClientId);
+  GpuChannel* channel = CreateChannel(kClientId, allow_real_time_streams);
   ASSERT_TRUE(channel);
 
   // Create first context.
-  int32 kSurfaceId = 1;
   int32 kRouteId = 1;
   int32 kStreamId = 1;
   GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
@@ -337,7 +307,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
   channel_manager()->OnMessageReceived(GpuMsg_CreateViewCommandBuffer(
-      gfx::GLSurfaceHandle(), kSurfaceId, kClientId, init_params, kRouteId));
+      gfx::GLSurfaceHandle(), kClientId, init_params, kRouteId));
 
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_CommandBufferCreated::ID);

@@ -484,10 +484,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // This is used for various IPC messages, including plugins.
   gfx::NativeViewId GetNativeViewId() const;
 
-  // Retrieves an id for the surface that the renderer can draw to
-  // when accelerated compositing is enabled.
-  gfx::GLSurfaceHandle GetCompositingSurface();
-
   // ---------------------------------------------------------------------------
   // The following methods are overridden by RenderViewHost to send upwards to
   // its delegate.

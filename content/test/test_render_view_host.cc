@@ -192,11 +192,6 @@ void TestRenderWidgetHostView::OnSwapCompositorFrame(
   did_swap_compositor_frame_ = true;
 }
 
-
-gfx::GLSurfaceHandle TestRenderWidgetHostView::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle();
-}
-
 bool TestRenderWidgetHostView::LockMouse() {
   return false;
 }

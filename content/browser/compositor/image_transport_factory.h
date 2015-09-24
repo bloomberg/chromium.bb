@@ -72,7 +72,6 @@ class CONTENT_EXPORT ImageTransportFactory {
   // Gets the image transport factory as a context factory for the compositor.
   virtual ui::ContextFactory* GetContextFactory() = 0;
 
-  virtual gfx::GLSurfaceHandle GetSharedSurfaceHandle() = 0;
   virtual cc::SurfaceManager* GetSurfaceManager() = 0;
 
   // Gets a GLHelper instance, associated with the shared context. This

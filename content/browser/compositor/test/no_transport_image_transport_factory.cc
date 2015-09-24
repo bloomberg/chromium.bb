@@ -32,11 +32,6 @@ ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
   return context_factory_.get();
 }
 
-gfx::GLSurfaceHandle
-NoTransportImageTransportFactory::GetSharedSurfaceHandle() {
-  return gfx::GLSurfaceHandle();
-}
-
 cc::SurfaceManager* NoTransportImageTransportFactory::GetSurfaceManager() {
   return surface_manager_.get();
 }

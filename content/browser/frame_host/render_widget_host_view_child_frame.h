@@ -111,7 +111,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void GetScreenInfo(blink::WebScreenInfo* results) override;
   bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  gfx::GLSurfaceHandle GetCompositingSurface() override;
 #if defined(USE_AURA)
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                               InputEventAckState ack_result) override;

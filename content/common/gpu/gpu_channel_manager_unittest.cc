@@ -28,8 +28,15 @@ TEST_F(GpuChannelManagerTest, EstablishChannel) {
 
   ASSERT_TRUE(channel_manager());
 
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId, kClientTracingId, false, false, false)));
+  GpuMsg_EstablishChannel_Params params;
+  params.client_id = kClientId;
+  params.client_tracing_id = kClientTracingId;
+  params.preempts = false;
+  params.preempted = false;
+  params.allow_future_sync_points = false;
+  params.allow_real_time_streams = false;
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
   EXPECT_EQ((size_t)1, sink()->message_count());
   const IPC::Message* msg =
       sink()->GetUniqueMessageMatching(GpuHostMsg_ChannelEstablished::ID);
@@ -63,13 +70,22 @@ TEST_F(GpuChannelManagerTest, SecureValueStateForwarding) {
   ASSERT_TRUE(channel_manager());
 
   // Initialize gpu channels
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId1, kClientTracingId1, false, false, false)));
+  GpuMsg_EstablishChannel_Params params;
+  params.client_id = kClientId1;
+  params.client_tracing_id = kClientTracingId1;
+  params.preempts = false;
+  params.preempted = false;
+  params.allow_future_sync_points = false;
+  params.allow_real_time_streams = false;
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
   GpuChannel* channel1 = channel_manager()->LookupChannel(kClientId1);
   ASSERT_TRUE(channel1);
 
-  EXPECT_TRUE(channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(
-      kClientId2, kClientTracingId2, false, false, false)));
+  params.client_id = kClientId2;
+  params.client_tracing_id = kClientTracingId2;
+  EXPECT_TRUE(
+      channel_manager()->OnMessageReceived(GpuMsg_EstablishChannel(params)));
   GpuChannel* channel2 = channel_manager()->LookupChannel(kClientId2);
   ASSERT_TRUE(channel2);
 

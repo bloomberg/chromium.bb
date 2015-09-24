@@ -121,9 +121,6 @@ class ImageTransportHelper
       GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params params);
 #endif
 
-  void SetPreemptByFlag(
-      scoped_refptr<gpu::PreemptionFlag> preemption_flag);
-
   // Make the surface's context current.
   bool MakeCurrent();
 

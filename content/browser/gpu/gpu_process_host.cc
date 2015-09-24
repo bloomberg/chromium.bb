@@ -21,6 +21,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
+#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/gpu/shader_disk_cache.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
@@ -609,7 +610,6 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuHostMsg_Initialized, OnInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_ChannelEstablished, OnChannelEstablished)
     IPC_MESSAGE_HANDLER(GpuHostMsg_CommandBufferCreated, OnCommandBufferCreated)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_DestroyCommandBuffer, OnDestroyCommandBuffer)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GpuMemoryBufferCreated,
                         OnGpuMemoryBufferCreated)
     IPC_MESSAGE_HANDLER(GpuHostMsg_DidCreateOffscreenContext,
@@ -646,7 +646,8 @@ void GpuProcessHost::OnChannelConnected(int32 peer_pid) {
 void GpuProcessHost::EstablishGpuChannel(
     int client_id,
     uint64_t client_tracing_id,
-    bool share_context,
+    bool preempts,
+    bool preempted,
     bool allow_future_sync_points,
     bool allow_real_time_streams,
     const EstablishChannelCallback& callback) {
@@ -660,9 +661,14 @@ void GpuProcessHost::EstablishGpuChannel(
     return;
   }
 
-  if (Send(new GpuMsg_EstablishChannel(client_id, client_tracing_id,
-                                       share_context, allow_future_sync_points,
-                                       allow_real_time_streams))) {
+  GpuMsg_EstablishChannel_Params params;
+  params.client_id = client_id;
+  params.client_tracing_id = client_tracing_id;
+  params.preempts = preempts;
+  params.preempted = preempted;
+  params.allow_future_sync_points = allow_future_sync_points;
+  params.allow_real_time_streams = allow_real_time_streams;
+  if (Send(new GpuMsg_EstablishChannel(params))) {
     channel_requests_.push(callback);
   } else {
     DVLOG(1) << "Failed to send GpuMsg_EstablishChannel.";
@@ -677,7 +683,6 @@ void GpuProcessHost::EstablishGpuChannel(
 
 void GpuProcessHost::CreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& compositing_surface,
-    int surface_id,
     int client_id,
     const GPUCreateCommandBufferConfig& init_params,
     int route_id,
@@ -687,11 +692,9 @@ void GpuProcessHost::CreateViewCommandBuffer(
   DCHECK(CalledOnValidThread());
 
   if (!compositing_surface.is_null() &&
-      Send(new GpuMsg_CreateViewCommandBuffer(
-          compositing_surface, surface_id, client_id, init_params, route_id))) {
+      Send(new GpuMsg_CreateViewCommandBuffer(compositing_surface, client_id,
+                                              init_params, route_id))) {
     create_command_buffer_requests_.push(callback);
-    surface_refs_.insert(std::make_pair(surface_id,
-        GpuSurfaceTracker::GetInstance()->GetSurfaceRefForSurface(surface_id)));
   } else {
     // Could distinguish here between compositing_surface being NULL
     // and Send failing, if desired.
@@ -721,12 +724,6 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
       GpuSurfaceTracker::GetInstance()->GetSurfaceHandle(surface_id).handle;
   if (Send(new GpuMsg_CreateGpuMemoryBuffer(params))) {
     create_gpu_memory_buffer_requests_.push(callback);
-    create_gpu_memory_buffer_surface_refs_.push(surface_id);
-    if (surface_id) {
-      surface_refs_.insert(std::make_pair(
-          surface_id, GpuSurfaceTracker::GetInstance()->GetSurfaceRefForSurface(
-                          surface_id)));
-    }
   } else {
     callback.Run(gfx::GpuMemoryBufferHandle());
   }
@@ -796,14 +793,6 @@ void GpuProcessHost::OnCommandBufferCreated(CreateCommandBufferResult result) {
   callback.Run(result);
 }
 
-void GpuProcessHost::OnDestroyCommandBuffer(int32 surface_id) {
-  TRACE_EVENT0("gpu", "GpuProcessHost::OnDestroyCommandBuffer");
-  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
-  if (it != surface_refs_.end()) {
-    surface_refs_.erase(it);
-  }
-}
-
 void GpuProcessHost::OnGpuMemoryBufferCreated(
     const gfx::GpuMemoryBufferHandle& handle) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryBufferCreated");
@@ -815,13 +804,6 @@ void GpuProcessHost::OnGpuMemoryBufferCreated(
       create_gpu_memory_buffer_requests_.front();
   create_gpu_memory_buffer_requests_.pop();
   callback.Run(handle);
-
-  int32 surface_id = create_gpu_memory_buffer_surface_refs_.front();
-  create_gpu_memory_buffer_surface_refs_.pop();
-  SurfaceRefMap::iterator it = surface_refs_.find(surface_id);
-  if (it != surface_refs_.end()) {
-    surface_refs_.erase(it);
-  }
 }
 
 void GpuProcessHost::OnDidCreateOffscreenContext(const GURL& url) {

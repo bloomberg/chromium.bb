@@ -33,6 +33,7 @@ class GLShareGroup;
 }
 
 namespace gpu {
+class PreemptionFlag;
 class SyncPointManager;
 union ValueState;
 namespace gles2 {
@@ -49,6 +50,7 @@ class SyncChannel;
 }
 
 struct GPUCreateCommandBufferConfig;
+struct GpuMsg_EstablishChannel_Params;
 
 namespace content {
 class GpuChannel;
@@ -116,13 +118,19 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 #endif
 
  protected:
-  virtual scoped_ptr<GpuChannel> CreateGpuChannel(
-      gfx::GLShareGroup* share_group,
-      gpu::gles2::MailboxManager* mailbox_manager,
-      int client_id,
-      uint64_t client_tracing_id,
-      bool allow_future_sync_points,
-      bool allow_real_time_streams);
+  virtual scoped_ptr<GpuChannel> CreateGpuChannel(int client_id,
+                                                  uint64_t client_tracing_id,
+                                                  bool preempts,
+                                                  bool allow_future_sync_points,
+                                                  bool allow_real_time_streams);
+
+  gfx::GLShareGroup* share_group() const { return share_group_.get(); }
+  gpu::gles2::MailboxManager* mailbox_manager() const {
+    return mailbox_manager_.get();
+  }
+  gpu::PreemptionFlag* preemption_flag() const {
+    return preemption_flag_.get();
+  }
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
@@ -135,17 +143,11 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
  private:
   // Message handlers.
   bool OnControlMessageReceived(const IPC::Message& msg);
-  void OnEstablishChannel(int client_id,
-                          uint64_t client_tracing_id,
-                          bool share_context,
-                          bool allow_future_sync_points,
-                          bool allow_real_time_streams);
+  void OnEstablishChannel(const GpuMsg_EstablishChannel_Params& params);
   void OnCloseChannel(const IPC::ChannelHandle& channel_handle);
-  void OnVisibilityChanged(
-      int32 render_view_id, int32 client_id, bool visible);
+  void OnVisibilityChanged(int32 render_view_id, int32 client_id, bool visible);
   void OnCreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& window,
-      int32 render_view_id,
       int32 client_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
@@ -176,6 +178,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
 
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
+  scoped_refptr<gpu::PreemptionFlag> preemption_flag_;
   GpuMemoryManager gpu_memory_manager_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   gpu::SyncPointManager* sync_point_manager_;

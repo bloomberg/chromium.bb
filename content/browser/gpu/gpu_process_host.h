@@ -15,7 +15,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -111,7 +110,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // and GPUInfo, we call the callback.
   void EstablishGpuChannel(int client_id,
                            uint64_t client_tracing_id,
-                           bool share_context,
+                           bool preempts,
+                           bool preempted,
                            bool allow_future_sync_points,
                            bool allow_real_time_streams,
                            const EstablishChannelCallback& callback);
@@ -120,7 +120,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // given surface.
   void CreateViewCommandBuffer(
       const gfx::GLSurfaceHandle& compositing_surface,
-      int surface_id,
       int client_id,
       const GPUCreateCommandBufferConfig& init_params,
       int route_id,
@@ -177,7 +176,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnInitialized(bool result, const gpu::GPUInfo& gpu_info);
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(CreateCommandBufferResult result);
-  void OnDestroyCommandBuffer(int32 surface_id);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
   void OnDidCreateOffscreenContext(const GURL& url);
   void OnDidLoseContext(bool offscreen,
@@ -217,9 +215,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // The pending create gpu memory buffer requests we need to reply to.
   std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
-
-  // Surface ids for pending gpu memory buffer request refs.
-  std::queue<int32> create_gpu_memory_buffer_surface_refs_;
 
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;
@@ -275,13 +270,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   ClientIdToShaderCacheMap client_id_to_shader_cache_;
 
   std::string shader_prefix_key_;
-
-  // Keep an extra reference to the SurfaceRef stored in the GpuSurfaceTracker
-  // in this map so that we don't destroy it whilst the GPU process is
-  // drawing to it.
-  typedef std::multimap<int, scoped_refptr<GpuSurfaceTracker::SurfaceRef> >
-      SurfaceRefMap;
-  SurfaceRefMap surface_refs_;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // Unique unguessable token that the GPU process is using to register

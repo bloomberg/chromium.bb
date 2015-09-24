@@ -335,7 +335,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void GetScreenInfo(blink::WebScreenInfo* results) override;
   bool GetScreenColorProfile(std::vector<char>* color_profile) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  gfx::GLSurfaceHandle GetCompositingSurface() override;
 
   bool LockMouse() override;
   void UnlockMouse() override;

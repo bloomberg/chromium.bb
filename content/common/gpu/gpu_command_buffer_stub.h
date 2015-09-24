@@ -74,6 +74,7 @@ class GpuCommandBufferStub
       GpuCommandBufferStub* share_group,
       const gfx::GLSurfaceHandle& handle,
       gpu::gles2::MailboxManager* mailbox_manager,
+      gpu::PreemptionFlag* preempt_by_flag,
       gpu::gles2::SubscriptionRefSet* subscription_ref_set,
       gpu::ValueStateMap* pending_valuebuffer_state,
       const gfx::Size& size,
@@ -82,9 +83,8 @@ class GpuCommandBufferStub
       gfx::GpuPreference gpu_preference,
       int32 stream_id,
       int32 route_id,
-      int32 surface_id,
+      bool offscreen,
       GpuWatchdog* watchdog,
-      bool software,
       const GURL& active_url);
 
   ~GpuCommandBufferStub() override;
@@ -115,9 +115,6 @@ class GpuCommandBufferStub
   // Unique command buffer ID for this command buffer stub.
   uint64_t command_buffer_id() const { return command_buffer_id_; }
 
-  // Identifies the target surface.
-  int32 surface_id() const { return surface_id_; }
-
   // Identifies the various GpuCommandBufferStubs in the GPU process belonging
   // to the same renderer process.
   int32 route_id() const { return route_id_; }
@@ -142,8 +139,6 @@ class GpuCommandBufferStub
   // Associates a sync point to this stub. When the stub is destroyed, it will
   // retire all sync points that haven't been previously retired.
   void AddSyncPoint(uint32 sync_point, bool retire);
-
-  void SetPreemptByFlag(scoped_refptr<gpu::PreemptionFlag> flag);
 
   void SetLatencyInfoCallback(const LatencyInfoCallback& callback);
 
@@ -264,8 +259,7 @@ class GpuCommandBufferStub
   const uint64_t command_buffer_id_;
   const int32 stream_id_;
   const int32 route_id_;
-  const int32 surface_id_;
-  bool software_;
+  const bool offscreen_;
   uint32 last_flush_count_;
 
   scoped_ptr<gpu::CommandBufferService> command_buffer_;

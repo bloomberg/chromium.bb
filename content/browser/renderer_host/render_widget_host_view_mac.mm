@@ -1594,12 +1594,6 @@ gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
   return FlipNSRectToRectScreen(bounds);
 }
 
-gfx::GLSurfaceHandle RenderWidgetHostViewMac::GetCompositingSurface() {
-  // TODO(kbr): may be able to eliminate PluginWindowHandle argument
-  // completely on Mac OS.
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
-}
-
 bool RenderWidgetHostViewMac::LockMouse() {
   if (mouse_locked_)
     return true;

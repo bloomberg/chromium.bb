@@ -448,14 +448,6 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
   return this;
 }
 
-gfx::GLSurfaceHandle GpuProcessTransportFactory::GetSharedSurfaceHandle() {
-  gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
-      gfx::kNullPluginWindow, gfx::NULL_TRANSPORT);
-  handle.parent_client_id =
-      BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
-  return handle;
-}
-
 scoped_ptr<cc::SurfaceIdAllocator>
 GpuProcessTransportFactory::CreateSurfaceIdAllocator() {
   scoped_ptr<cc::SurfaceIdAllocator> allocator =
@@ -570,8 +562,17 @@ GpuProcessTransportFactory::CreatePerCompositorData(
     data->surface_id = 0;
   } else {
     data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+    // On Mac and Android, we can't pass the AcceleratedWidget, which is
+    // process-local, so instead we pass the surface_id, so that we can look up
+    // the AcceleratedWidget on the GPU side or when we receive
+    // GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params.
+    gfx::PluginWindowHandle handle = data->surface_id;
+#else
+    gfx::PluginWindowHandle handle = widget;
+#endif
     tracker->SetSurfaceHandle(data->surface_id,
-                              gfx::GLSurfaceHandle(widget, gfx::NATIVE_DIRECT));
+                              gfx::GLSurfaceHandle(handle, gfx::NATIVE_DIRECT));
   }
 
   per_compositor_data_[compositor] = data;

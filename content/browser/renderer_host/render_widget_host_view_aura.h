@@ -171,7 +171,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() override;
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
-  gfx::GLSurfaceHandle GetCompositingSurface() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;

@@ -309,9 +309,6 @@ void RenderWidgetHostImpl::SetView(RenderWidgetHostViewBase* view) {
                                            view_->GetSurfaceIdNamespace()));
   }
 
-  GpuSurfaceTracker::Get()->SetSurfaceHandle(
-      surface_id_, GetCompositingSurface());
-
   synthetic_gesture_controller_.reset();
 }
 
@@ -335,12 +332,6 @@ gfx::NativeViewId RenderWidgetHostImpl::GetNativeViewId() const {
   if (view_)
     return view_->GetNativeViewId();
   return 0;
-}
-
-gfx::GLSurfaceHandle RenderWidgetHostImpl::GetCompositingSurface() {
-  if (view_)
-    return view_->GetCompositingSurface();
-  return gfx::GLSurfaceHandle();
 }
 
 void RenderWidgetHostImpl::ResetSizeAndRepaintPendingFlags() {
@@ -395,9 +386,6 @@ void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
   renderer_initialized_ = true;
-
-  GpuSurfaceTracker::Get()->SetSurfaceHandle(
-      surface_id_, GetCompositingSurface());
 
   // Send the ack along with the information on placement.
   Send(new ViewMsg_CreatingNew_ACK(routing_id_));
@@ -1273,8 +1261,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   StopHangMonitorTimeout();
 
   if (view_) {
-    GpuSurfaceTracker::Get()->SetSurfaceHandle(surface_id_,
-                                               gfx::GLSurfaceHandle());
     view_->RenderProcessGone(status, exit_code);
     view_ = nullptr;  // The View should be deleted by RenderProcessGone.
     view_weak_.reset();

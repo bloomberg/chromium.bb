@@ -16,6 +16,7 @@
 #include "content/common/gpu/gpu_memory_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/message_router.h"
+#include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
@@ -53,6 +54,8 @@ GpuChannelManager::GpuChannelManager(
       channel_(channel),
       watchdog_(watchdog),
       shutdown_event_(shutdown_event),
+      share_group_(new gfx::GLShareGroup),
+      mailbox_manager_(gpu::gles2::MailboxManager::Create()),
       gpu_memory_manager_(
           this,
           GpuMemoryManager::kDefaultMaxSurfacesWithFrontbufferSoftLimit),
@@ -61,6 +64,10 @@ GpuChannelManager::GpuChannelManager(
       weak_factory_(this) {
   DCHECK(task_runner);
   DCHECK(io_task_runner);
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kUIPrioritizeInGpuProcess))
+    preemption_flag_ = new gpu::PreemptionFlag;
 }
 
 GpuChannelManager::~GpuChannelManager() {
@@ -151,41 +158,29 @@ bool GpuChannelManager::Send(IPC::Message* msg) {
 }
 
 scoped_ptr<GpuChannel> GpuChannelManager::CreateGpuChannel(
-    gfx::GLShareGroup* share_group,
-    gpu::gles2::MailboxManager* mailbox_manager,
     int client_id,
     uint64_t client_tracing_id,
+    bool preempts,
     bool allow_future_sync_points,
     bool allow_real_time_streams) {
-  return make_scoped_ptr(new GpuChannel(
-      this, watchdog_, share_group, mailbox_manager, task_runner_.get(),
-      io_task_runner_.get(), client_id, client_tracing_id, false,
-      allow_future_sync_points, allow_real_time_streams));
+  return make_scoped_ptr(
+      new GpuChannel(this, watchdog_, share_group(), mailbox_manager(),
+                     preempts ? preemption_flag() : nullptr, task_runner_.get(),
+                     io_task_runner_.get(), client_id, client_tracing_id,
+                     allow_future_sync_points, allow_real_time_streams));
 }
 
-void GpuChannelManager::OnEstablishChannel(int client_id,
-                                           uint64_t client_tracing_id,
-                                           bool share_context,
-                                           bool allow_future_sync_points,
-                                           bool allow_real_time_streams) {
-  gfx::GLShareGroup* share_group = nullptr;
-  gpu::gles2::MailboxManager* mailbox_manager = nullptr;
-  if (share_context) {
-    if (!share_group_.get()) {
-      share_group_ = new gfx::GLShareGroup;
-      DCHECK(!mailbox_manager_.get());
-      mailbox_manager_ = gpu::gles2::MailboxManager::Create();
-    }
-    share_group = share_group_.get();
-    mailbox_manager = mailbox_manager_.get();
-  }
-
-  scoped_ptr<GpuChannel> channel = CreateGpuChannel(
-      share_group, mailbox_manager, client_id, client_tracing_id,
-      allow_future_sync_points, allow_real_time_streams);
+void GpuChannelManager::OnEstablishChannel(
+    const GpuMsg_EstablishChannel_Params& params) {
+  DCHECK(!params.preempts || !params.preempted);
+  scoped_ptr<GpuChannel> channel(CreateGpuChannel(
+      params.client_id, params.client_tracing_id, params.preempts,
+      params.allow_future_sync_points, params.allow_real_time_streams));
+  if (params.preempted)
+    channel->SetPreemptByFlag(preemption_flag_.get());
   IPC::ChannelHandle channel_handle = channel->Init(shutdown_event_);
 
-  gpu_channels_.set(client_id, channel.Pass());
+  gpu_channels_.set(params.client_id, channel.Pass());
 
   Send(new GpuHostMsg_ChannelEstablished(channel_handle));
 }
@@ -202,17 +197,14 @@ void GpuChannelManager::OnCloseChannel(
 
 void GpuChannelManager::OnCreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
-    int32 surface_id,
     int32 client_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32 route_id) {
-  DCHECK(surface_id);
   CreateCommandBufferResult result = CREATE_COMMAND_BUFFER_FAILED;
 
   auto it = gpu_channels_.find(client_id);
   if (it != gpu_channels_.end()) {
-    result = it->second->CreateViewCommandBuffer(window, surface_id,
-                                                 init_params, route_id);
+    result = it->second->CreateViewCommandBuffer(window, init_params, route_id);
   }
 
   Send(new GpuHostMsg_CommandBufferCreated(result));

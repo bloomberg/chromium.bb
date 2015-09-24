@@ -179,6 +179,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     GpuCommandBufferStub* share_group,
     const gfx::GLSurfaceHandle& handle,
     gpu::gles2::MailboxManager* mailbox_manager,
+    gpu::PreemptionFlag* preempt_by_flag,
     gpu::gles2::SubscriptionRefSet* subscription_ref_set,
     gpu::ValueStateMap* pending_valuebuffer_state,
     const gfx::Size& size,
@@ -187,9 +188,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     gfx::GpuPreference gpu_preference,
     int32 stream_id,
     int32 route_id,
-    int32 surface_id,
+    bool offscreen,
     GpuWatchdog* watchdog,
-    bool software,
     const GURL& active_url)
     : channel_(channel),
       task_runner_(task_runner),
@@ -203,13 +203,13 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       command_buffer_id_(GetCommandBufferID(channel->client_id(), route_id)),
       stream_id_(stream_id),
       route_id_(route_id),
-      surface_id_(surface_id),
-      software_(software),
+      offscreen_(offscreen),
       last_flush_count_(0),
       last_memory_allocation_valid_(false),
       watchdog_(watchdog),
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
+      preemption_flag_(preempt_by_flag),
       active_url_(active_url),
       total_gpu_memory_(0) {
   active_url_hash_ = base::Hash(active_url.possibly_invalid_spec());
@@ -243,8 +243,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   use_virtualized_gl_context_ |=
       context_group_->feature_info()->UseVirtualizedGLContexts();
 
-  bool is_offscreen = surface_id_ == 0;
-  if (is_offscreen && initial_size_.IsEmpty()) {
+  if (offscreen && initial_size_.IsEmpty()) {
     // If we're an offscreen surface with zero width and/or height, set to a
     // non-zero size so that we have a complete framebuffer for operations like
     // glClear.
@@ -476,8 +475,6 @@ void GpuCommandBufferStub::Destroy() {
       gpu_channel_manager->Send(
           new GpuHostMsg_DidDestroyOffscreenContext(active_url_));
     }
-    gpu_channel_manager->Send(
-        new GpuHostMsg_DestroyCommandBuffer(surface_id()));
   }
 
   memory_manager_client_state_.reset();
@@ -559,14 +556,6 @@ void GpuCommandBufferStub::OnInitialize(
   decoder_->set_engine(scheduler_.get());
 
   if (!handle_.is_null()) {
-#if defined(OS_MACOSX) || defined(UI_COMPOSITOR_IMAGE_TRANSPORT)
-    if (software_) {
-      LOG(ERROR) << "No software support.";
-      OnInitializeFailed(reply_message);
-      return;
-    }
-#endif
-
     surface_ = ImageTransportSurface::CreateSurface(
         channel_->gpu_channel_manager(),
         this,
@@ -643,12 +632,8 @@ void GpuCommandBufferStub::OnInitialize(
   }
 
   // Initialize the decoder with either the view or pbuffer GLContext.
-  if (!decoder_->Initialize(surface_,
-                            context,
-                            !surface_id(),
-                            initial_size_,
-                            disallowed_features_,
-                            requested_attribs_)) {
+  if (!decoder_->Initialize(surface_, context, offscreen_, initial_size_,
+                            disallowed_features_, requested_attribs_)) {
     DLOG(ERROR) << "Failed to initialize decoder.";
     OnInitializeFailed(reply_message);
     return;
@@ -1045,8 +1030,8 @@ void GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback(
       "GpuCommandBufferStub::OnSetClientHasMemoryAllocationChangedCallback");
   if (has_callback) {
     if (!memory_manager_client_state_) {
-      memory_manager_client_state_.reset(GetMemoryManager()->CreateClientState(
-          this, surface_id_ != 0, true));
+      memory_manager_client_state_.reset(
+          GetMemoryManager()->CreateClientState(this, !offscreen_, true));
     }
   } else {
     memory_manager_client_state_.reset();
@@ -1137,13 +1122,6 @@ void GpuCommandBufferStub::AddDestructionObserver(
 void GpuCommandBufferStub::RemoveDestructionObserver(
     DestructionObserver* observer) {
   destruction_observers_.RemoveObserver(observer);
-}
-
-void GpuCommandBufferStub::SetPreemptByFlag(
-    scoped_refptr<gpu::PreemptionFlag> flag) {
-  preemption_flag_ = flag;
-  if (scheduler_)
-    scheduler_->SetPreemptByFlag(preemption_flag_);
 }
 
 bool GpuCommandBufferStub::GetTotalGpuMemory(uint64* bytes) {

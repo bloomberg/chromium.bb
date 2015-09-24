@@ -222,6 +222,7 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
     GpuChannelMessageQueue* message_queue,
     gpu::SyncPointManager* sync_point_manager,
     base::SingleThreadTaskRunner* task_runner,
+    gpu::PreemptionFlag* preempting_flag,
     bool future_sync_points)
     : preemption_state_(IDLE),
       gpu_channel_(gpu_channel),
@@ -230,6 +231,7 @@ GpuChannelMessageFilter::GpuChannelMessageFilter(
       peer_pid_(base::kNullProcessId),
       sync_point_manager_(sync_point_manager),
       task_runner_(task_runner),
+      preempting_flag_(preempting_flag),
       a_stub_is_descheduled_(false),
       future_sync_points_(future_sync_points) {}
 
@@ -366,13 +368,6 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
 
 void GpuChannelMessageFilter::OnMessageProcessed() {
   UpdatePreemptionState();
-}
-
-void GpuChannelMessageFilter::SetPreemptingFlagAndSchedulingState(
-    gpu::PreemptionFlag* preempting_flag,
-    bool a_stub_is_descheduled) {
-  preempting_flag_ = preempting_flag;
-  a_stub_is_descheduled_ = a_stub_is_descheduled;
 }
 
 void GpuChannelMessageFilter::UpdateStubSchedulingState(
@@ -549,27 +544,25 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
                        GpuWatchdog* watchdog,
                        gfx::GLShareGroup* share_group,
                        gpu::gles2::MailboxManager* mailbox,
+                       gpu::PreemptionFlag* preempting_flag,
                        base::SingleThreadTaskRunner* task_runner,
                        base::SingleThreadTaskRunner* io_task_runner,
                        int client_id,
                        uint64_t client_tracing_id,
-                       bool software,
                        bool allow_future_sync_points,
                        bool allow_real_time_streams)
     : gpu_channel_manager_(gpu_channel_manager),
       channel_id_(IPC::Channel::GenerateVerifiedChannelID("gpu")),
+      preempting_flag_(preempting_flag),
       client_id_(client_id),
       client_tracing_id_(client_tracing_id),
       task_runner_(task_runner),
       io_task_runner_(io_task_runner),
-      share_group_(share_group ? share_group : new gfx::GLShareGroup),
-      mailbox_manager_(mailbox
-                           ? scoped_refptr<gpu::gles2::MailboxManager>(mailbox)
-                           : gpu::gles2::MailboxManager::Create()),
+      share_group_(share_group),
+      mailbox_manager_(mailbox),
       subscription_ref_set_(new gpu::gles2::SubscriptionRefSet),
       pending_valuebuffer_state_(new gpu::ValueStateMap),
       watchdog_(watchdog),
-      software_(software),
       num_stubs_descheduled_(0),
       allow_future_sync_points_(allow_future_sync_points),
       allow_real_time_streams_(allow_real_time_streams),
@@ -583,7 +576,7 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   filter_ = new GpuChannelMessageFilter(
       weak_factory_.GetWeakPtr(), message_queue_.get(),
       gpu_channel_manager_->sync_point_manager(), task_runner_.get(),
-      allow_future_sync_points_);
+      preempting_flag, allow_future_sync_points_);
 
   subscription_ref_set_->AddObserver(this);
 }
@@ -694,13 +687,10 @@ void GpuChannel::OnStubSchedulingChanged(GpuCommandBufferStub* stub,
 
 CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
     const gfx::GLSurfaceHandle& window,
-    int32 surface_id,
     const GPUCreateCommandBufferConfig& init_params,
     int32 route_id) {
-  TRACE_EVENT1("gpu",
-               "GpuChannel::CreateViewCommandBuffer",
-               "surface_id",
-               surface_id);
+  TRACE_EVENT1("gpu", "GpuChannel::CreateViewCommandBuffer", "route_id",
+               route_id);
 
   int32 share_group_id = init_params.share_group_id;
   GpuCommandBufferStub* share_group = stubs_.get(share_group_id);
@@ -725,15 +715,13 @@ CreateCommandBufferResult GpuChannel::CreateViewCommandBuffer(
     return CREATE_COMMAND_BUFFER_FAILED;
   }
 
+  bool offscreen = false;
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, task_runner_.get(), share_group, window, mailbox_manager_.get(),
-      subscription_ref_set_.get(), pending_valuebuffer_state_.get(),
-      gfx::Size(), disallowed_features_, init_params.attribs,
-      init_params.gpu_preference, stream_id, route_id, surface_id, watchdog_,
-      software_, init_params.active_url));
-
-  if (preempted_flag_.get())
-    stub->SetPreemptByFlag(preempted_flag_);
+      preempted_flag_.get(), subscription_ref_set_.get(),
+      pending_valuebuffer_state_.get(), gfx::Size(), disallowed_features_,
+      init_params.attribs, init_params.gpu_preference, stream_id, route_id,
+      offscreen, watchdog_, init_params.active_url));
 
   if (!router_.AddRoute(route_id, stub.get())) {
     DLOG(ERROR) << "GpuChannel::CreateViewCommandBuffer(): "
@@ -774,24 +762,10 @@ void GpuChannel::RemoveRoute(int32 route_id) {
   router_.RemoveRoute(route_id);
 }
 
-gpu::PreemptionFlag* GpuChannel::GetPreemptionFlag() {
-  if (!preempting_flag_.get()) {
-    preempting_flag_ = new gpu::PreemptionFlag;
-    io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(
-            &GpuChannelMessageFilter::SetPreemptingFlagAndSchedulingState,
-            filter_, preempting_flag_, num_stubs_descheduled_ > 0));
-  }
-  return preempting_flag_.get();
-}
-
 void GpuChannel::SetPreemptByFlag(
     scoped_refptr<gpu::PreemptionFlag> preempted_flag) {
+  DCHECK(stubs_.empty());
   preempted_flag_ = preempted_flag;
-
-  for (auto& kv : stubs_)
-    kv.second->SetPreemptByFlag(preempted_flag_);
 }
 
 void GpuChannel::OnDestroy() {
@@ -959,15 +933,14 @@ void GpuChannel::OnCreateOffscreenCommandBuffer(
     return;
   }
 
+  bool offscreen = true;
   scoped_ptr<GpuCommandBufferStub> stub(new GpuCommandBufferStub(
       this, task_runner_.get(), share_group, gfx::GLSurfaceHandle(),
-      mailbox_manager_.get(), subscription_ref_set_.get(),
-      pending_valuebuffer_state_.get(), size, disallowed_features_,
-      init_params.attribs, init_params.gpu_preference, init_params.stream_id,
-      route_id, 0, watchdog_, software_, init_params.active_url));
-
-  if (preempted_flag_.get())
-    stub->SetPreemptByFlag(preempted_flag_);
+      mailbox_manager_.get(), preempted_flag_.get(),
+      subscription_ref_set_.get(), pending_valuebuffer_state_.get(), size,
+      disallowed_features_, init_params.attribs, init_params.gpu_preference,
+      init_params.stream_id, route_id, offscreen, watchdog_,
+      init_params.active_url));
 
   if (!router_.AddRoute(route_id, stub.get())) {
     DLOG(ERROR) << "GpuChannel::OnCreateOffscreenCommandBuffer(): "

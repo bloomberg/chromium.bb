@@ -64,7 +64,6 @@ class GpuProcessTransportFactory
 
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
-  gfx::GLSurfaceHandle GetSharedSurfaceHandle() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   GLHelper* GetGLHelper() override;
   void AddObserver(ImageTransportFactoryObserver* observer) override;
