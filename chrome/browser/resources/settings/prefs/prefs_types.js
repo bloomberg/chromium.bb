@@ -6,22 +6,44 @@
  * @fileoverview Types for CrSettingsPrefsElement.
  */
 
-/** @type {{INITIALIZED: string, isInitialized: boolean}} */
-var CrSettingsPrefs;
-
-// TODO(michaelpg): provide a Promise for initialization.
-if (CrSettingsPrefs === undefined) {
-  CrSettingsPrefs = {
+/**
+ * Global state for prefs status.
+ */
+var CrSettingsPrefs = (function() {
+  var CrSettingsPrefsInternal = {
     /**
-     * The name of the event fired when prefs have been fetched and initialized.
-     * @const {string}
+     * Resolves the CrSettingsPrefs.initialized promise.
      */
-    INITIALIZED: 'cr-settings-prefs-initialized',
+    setInitialized: function() {
+      /** @public {boolean} */
+      CrSettingsPrefsInternal.isInitialized = true;
+      CrSettingsPrefsInternal.resolve_();
+    },
 
     /**
-     * Global boolean set to true when all settings have been initialized.
-     * @type {boolean}
+     * Restores state for testing.
      */
-    isInitialized: false,
+    resetForTesting: function() {
+      CrSettingsPrefsInternal.setup_();
+    },
+
+    /**
+     * Called to set up the promise and resolve methods.
+     * @private
+     */
+    setup_: function() {
+      CrSettingsPrefsInternal.isInitialized = false;
+      /**
+       * Promise to be resolved when all settings have been initialized.
+       * @type {!Promise}
+       */
+      CrSettingsPrefsInternal.initialized = new Promise(function(resolve) {
+        CrSettingsPrefsInternal.resolve_ = resolve;
+      });
+    },
   };
-}
+
+  CrSettingsPrefsInternal.setup_();
+
+  return CrSettingsPrefsInternal;
+})();

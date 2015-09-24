@@ -17,24 +17,6 @@
  */
 (function() {
 
-  /**
-   * An array of all the tracker instances.
-   * @type {!Array<!CrSettingsPrefTrackerElement>}
-   */
-  var instances = [];
-
-  /**
-   * Validates all tracker instances.
-   * @private
-   */
-  var validateAll_ = function() {
-    instances.forEach(function(tracker) {
-      tracker.validate_();
-    });
-  };
-
-  document.addEventListener(CrSettingsPrefs.INITIALIZED, validateAll_);
-
   Polymer({
     is: 'cr-settings-pref-tracker',
 
@@ -52,29 +34,26 @@
     /** @override */
     ready: function() {
       this.validate_();
-
-      instances.push(this);
     },
 
     /**
-     * Throws an error if prefs are initialized and the tracked pref is not
-     * found.
+     * Logs an error once prefs are initialized if the tracked pref is
+     * not found.
      * @private
      */
     validate_: function() {
-      this.async(function() {
+      CrSettingsPrefs.initialized.then(function() {
         // Note that null == undefined.
-        if (CrSettingsPrefs.isInitialized && this.pref == null) {
+        if (this.pref == null) {
           // HACK ALERT: This is the best clue we have as to the pref key for
           // this tracker. This value should not be relied upon anywhere or
           // actually used besides for this error message.
-          var parentControlHTML = this.parentNode && this.parentNode.host &&
-              this.parentNode.host.outerHTML;
+          var parentControlHTML = this.domHost && this.domHost.outerHTML;
 
-          throw new Error('Pref not found. Parent control:' +
+          console.error('Pref not found. Parent control:' +
               (parentControlHTML || 'Unknown'));
         }
-      });
+      }.bind(this));
     },
   });
 })();

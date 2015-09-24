@@ -4,17 +4,18 @@
 
 /**
  * @fileoverview
- * 'cr-settings-prefs' models Chrome settings and preferences, listening for
- * changes to Chrome prefs whitelisted in chrome.settingsPrivate.
- * When changing prefs in this element's 'prefs' property via the UI, this
- * element tries to set those preferences in Chrome. Whether or not the calls to
- * settingsPrivate.setPref succeed, 'prefs' is eventually consistent with the
- * Chrome pref store.
+ * 'cr-settings-prefs' exposes a singleton model of Chrome settings and
+ * preferences, which listens to changes to Chrome prefs whitelisted in
+ * chrome.settingsPrivate. When changing prefs in this element's 'prefs'
+ * property via the UI, the singleton model tries to set those preferences in
+ * Chrome. Whether or not the calls to settingsPrivate.setPref succeed, 'prefs'
+ * is eventually consistent with the Chrome pref store.
  *
  * Example:
  *
  *    <cr-settings-prefs prefs="{{prefs}}"></cr-settings-prefs>
- *    <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
+ *    <cr-settings-checkbox pref="{{prefs.homepage_is_newtabpage}}">
+ *    </cr-settings-checkbox>
  *
  * @group Chrome Settings Elements
  * @element cr-settings-prefs
@@ -136,6 +137,120 @@
       },
 
       /**
+       * Singleton element created at startup which provides the prefs model.
+       * @type {!Element}
+       */
+      singleton_: {
+        type: Object,
+        value: document.createElement('cr-settings-prefs-singleton'),
+      },
+    },
+
+    observers: [
+      'prefsChanged_(prefs.*)',
+    ],
+
+    /** @override */
+    ready: function() {
+      this.singleton_.initialize();
+      this.startListening_();
+    },
+
+    /**
+     * Binds this.prefs to the cr-settings-prefs-singleton's shared prefs once
+     * preferences are initialized.
+     * @private
+     */
+    startListening_: function() {
+      CrSettingsPrefs.initialized.then(function() {
+        // Ignore changes to prevent prefsChanged_ from notifying singleton_.
+        this.runWhileIgnoringChanges_(function() {
+          this.prefs = this.singleton_.prefs;
+          this.stopListening_();
+          this.listen(
+              this.singleton_, 'prefs-changed', 'singletonPrefsChanged_');
+        });
+      }.bind(this));
+    },
+
+    /**
+     * Stops listening for changes to cr-settings-prefs-singleton's shared
+     * prefs.
+     * @private
+     */
+    stopListening_: function() {
+      this.unlisten(
+          this.singleton_, 'prefs-changed', 'singletonPrefsChanged_');
+    },
+
+    /**
+     * Handles changes reported by singleton_ by forwarding them to the host.
+     * @private
+     */
+    singletonPrefsChanged_: function(e) {
+      // Ignore changes because we've defeated Polymer's dirty-checking.
+      this.runWhileIgnoringChanges_(function() {
+        // Forward notification to host.
+        this.fire(e.type, e.detail, {bubbles: false});
+      });
+    },
+
+    /**
+     * Forwards changes to this.prefs to cr-settings-prefs-singleton.
+     * @private
+     */
+    prefsChanged_: function(info) {
+      // Ignore changes that came from singleton_ so we don't re-process
+      // changes made in other instances of this element.
+      if (!this.ignoreChanges_)
+        this.singleton_.fire('prefs-changed', info, {bubbles: false});
+    },
+
+    /**
+     * Sets ignoreChanged_ before calling the function to suppress change
+     * events that are manually handled.
+     * @param {!function()} fn
+     * @private
+     */
+    runWhileIgnoringChanges_: function(fn) {
+      assert(!this.ignoreChanges_,
+             'Nested calls to runWhileIgnoringChanges_ are not supported');
+      this.ignoreChanges_ = true;
+      fn.call(this);
+      // We can unset ignoreChanges_ now because change notifications
+      // are synchronous.
+      this.ignoreChanges_ = false;
+    },
+
+    /**
+     * Uninitializes this element to remove it from tests. Also resets
+     * cr-settings-prefs-singleton, allowing newly created elements to
+     * re-initialize it.
+     */
+    resetForTesting: function() {
+      this.stopListening_();
+      this.singleton_.resetForTesting();
+    },
+  });
+
+  /**
+   * Privately used element that contains, listens to and updates the shared
+   * prefs state.
+   */
+  Polymer({
+    is: 'cr-settings-prefs-singleton',
+
+    properties: {
+      /**
+       * Object containing all preferences, for use by Polymer controls.
+       * @type {Object|undefined}
+       */
+      prefs: {
+        type: Object,
+        notify: true,
+      },
+
+      /**
        * Map of pref keys to values representing the state of the Chrome
        * pref store as of the last update from the API.
        * @type {Object<*>}
@@ -147,19 +262,23 @@
       },
     },
 
-    observers: [
-      'prefsChanged_(prefs.*)',
-    ],
+    // Listen for the manually fired prefs-changed event.
+    listeners: {
+      'prefs-changed': 'prefsChanged_',
+    },
 
     settingsApi_: chrome.settingsPrivate,
 
-    /** @override */
-    ready: function() {
+    initialize: function() {
+      // Only initialize once (or after resetForTesting() is called).
+      if (this.initialized_)
+        return;
+      this.initialized_ = true;
+
       // Set window.mockApi to pass a custom settings API, i.e. for tests.
       // TODO(michaelpg): don't use a global.
       if (window.mockApi)
         this.settingsApi_ = window.mockApi;
-      CrSettingsPrefs.isInitialized = false;
 
       this.settingsApi_.onPrefsChanged.addListener(
           this.onSettingsPrivatePrefsChanged_.bind(this));
@@ -169,10 +288,11 @@
 
     /**
      * Polymer callback for changes to this.prefs.
-     * @param {!{path: string, value: *}} change
+     * @param {!CustomEvent} e
+     * @param {!{path: string}} change
      * @private
      */
-    prefsChanged_: function(change) {
+    prefsChanged_: function(e, change) {
       if (!CrSettingsPrefs.isInitialized)
         return;
 
@@ -213,9 +333,7 @@
      */
     onSettingsPrivatePrefsFetched_: function(prefs) {
       this.updatePrefs_(prefs);
-
-      CrSettingsPrefs.isInitialized = true;
-      document.dispatchEvent(new Event(CrSettingsPrefs.INITIALIZED));
+      CrSettingsPrefs.setInitialized();
     },
 
     /**
@@ -248,11 +366,13 @@
         // lastPrefValues_ at the pref's key.
         this.lastPrefValues_[newPrefObj.key] = deepCopy(newPrefObj.value);
 
-        // Add the pref to |prefs|.
-        cr.exportPath(newPrefObj.key, newPrefObj, prefs);
-        // If this.prefs already exists, notify listeners of the change.
-        if (prefs == this.prefs)
-          this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
+        if (!deepEqual(this.get(newPrefObj.key, prefs), newPrefObj)) {
+          // Add the pref to |prefs|.
+          cr.exportPath(newPrefObj.key, newPrefObj, prefs);
+          // If this.prefs already exists, notify listeners of the change.
+          if (prefs == this.prefs)
+            this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);
+        }
       }, this);
       if (!this.prefs)
         this.prefs = prefs;
@@ -279,6 +399,15 @@
           return key;
       }
       return '';
+    },
+
+    /**
+     * Resets the element so it can be re-initialized with a new prefs state.
+     */
+    resetForTesting: function() {
+      this.prefs = undefined;
+      this.lastPrefValues_ = {};
+      this.initialized_ = false;
     },
   });
 })();

@@ -20,7 +20,6 @@ cr.define('cr_settings_prefs', function() {
    */
   function MockSettingsApi() {
     this.prefs = {};
-    this.listener_ = null;
 
     // Hack alert: bind this instance's onPrefsChanged members to this.
     this.onPrefsChanged = {
@@ -32,16 +31,18 @@ cr.define('cr_settings_prefs', function() {
       this.addPref_(testCase.type, testCase.key, testCase.values[0]);
   }
 
+  // Make the listener static because it refers to a singleton.
+  MockSettingsApi.listener_ = null;
+
   MockSettingsApi.prototype = {
     // chrome.settingsPrivate overrides.
     onPrefsChanged: {
       addListener: function(listener) {
-        this.listener_ = listener;
+        MockSettingsApi.listener_ = listener;
       },
 
       removeListener: function(listener) {
-        expectNotEquals(null, this.listener_);
-        this.listener_ = null;
+        MockSettingsApi.listener_ = null;
       },
     },
 
@@ -51,7 +52,9 @@ cr.define('cr_settings_prefs', function() {
       for (var key in this.prefs)
         prefs.push(deepCopy(this.prefs[key]));
 
-      callback(prefs);
+      // Run the callback asynchronously to test that the prefs aren't actually
+      // used before they become available.
+      setTimeout(callback.bind(null, prefs));
     },
 
     setPref: function(key, value, pageId, callback) {
@@ -110,7 +113,7 @@ cr.define('cr_settings_prefs', function() {
         pref.value = change.value;
         prefs.push(deepCopy(pref));
       }
-      this.listener_(prefs);
+      MockSettingsApi.listener_(prefs);
     },
 
     // Private methods for use by the mock API.
@@ -133,7 +136,7 @@ cr.define('cr_settings_prefs', function() {
     suite('CrSettingsPrefs', function() {
       /**
        * Prefs instance created before each test.
-       * @type {CrSettingsPrefs}
+       * @type {CrSettingsPrefsElement|undefined}
        */
       var prefs;
 
@@ -143,7 +146,7 @@ cr.define('cr_settings_prefs', function() {
       /**
        * @param {!Object} prefStore Pref store from <cr-settings-prefs>.
        * @param {string} key Pref key of the pref to return.
-       * @return {(chrome.settingsPrivate.PrefObject|undefined)}
+       * @return {chrome.settingsPrivate.PrefObject|undefined}
        */
       function getPrefFromKey(prefStore, key) {
         var path = key.split('.');
@@ -161,12 +164,12 @@ cr.define('cr_settings_prefs', function() {
        * @param {number} testCaseValueIndex The index of possible values from
        *     the test case to check.
        */
-      function expectMockApiPrefsSet(testCaseValueIndex) {
+      function assertMockApiPrefsSet(testCaseValueIndex) {
         for (var testCase of prefsTestCases) {
           var expectedValue = JSON.stringify(
               testCase.values[testCaseValueIndex]);
           var actualValue = JSON.stringify(mockApi.prefs[testCase.key].value);
-          expectEquals(expectedValue, actualValue);
+          assertEquals(expectedValue, actualValue);
         }
       }
 
@@ -175,40 +178,53 @@ cr.define('cr_settings_prefs', function() {
        * @param {number} testCaseValueIndex The index of possible values from
        *     the test case to check.
        */
-      function expectPrefsSet(testCaseValueIndex) {
+      function assertPrefsSet(testCaseValueIndex) {
         for (var testCase of prefsTestCases) {
           var expectedValue = JSON.stringify(
               testCase.values[testCaseValueIndex]);
           var actualValue = JSON.stringify(
               prefs.get('prefs.' + testCase.key + '.value'));
-          expectEquals(expectedValue, actualValue);
+          assertEquals(expectedValue, actualValue);
         }
       }
 
-      // Initialize a <cr-settings-prefs> element before each test.
-      setup(function(done) {
+      /**
+       * List of CrSettingsPref elements created for testing.
+       * @type {!Array<!CrSettingsPrefs>}
+       */
+      var createdElements = [];
+
+      // Initialize <cr-settings-prefs> elements before each test.
+      setup(function() {
         mockApi = new MockSettingsApi();
         // TODO(michaelpg): don't use global variables to inject the API.
         window.mockApi = mockApi;
 
-        // Create and attach the <cr-settings-prefs> element.
-        PolymerTest.clearBody();
-        prefs = document.createElement('cr-settings-prefs');
-        document.body.appendChild(prefs);
-
-        window.mockApi = undefined;
-
-        // Wait for CrSettingsPrefs.INITIALIZED.
-        if (!CrSettingsPrefs.isInitialized) {
-          var listener = function() {
-            document.removeEventListener(CrSettingsPrefs.INITIALIZED, listener);
-            done();
-          };
-          document.addEventListener(CrSettingsPrefs.INITIALIZED, listener);
-          return;
+        // Create and attach the <cr-settings-prefs> elements. Make several of
+        // them to test that the shared state model scales correctly.
+        createdElements = [];
+        for (var i = 0; i < 100; i++) {
+          var prefsInstance = document.createElement('cr-settings-prefs');
+          document.body.appendChild(prefsInstance);
+          createdElements.push(prefsInstance);
         }
+        // For simplicity, only use one prefs element in the tests. Use an
+        // arbitrary index instead of the first or last element created.
+        prefs = createdElements[42];
 
-        done();
+        // getAllPrefs is asynchronous, so return the prefs promise.
+        return CrSettingsPrefs.initialized;
+      });
+
+      teardown(function() {
+        CrSettingsPrefs.resetForTesting();
+
+        // Reset each <cr-settings-prefs>.
+        for (var i = 0; i < createdElements.length; i++)
+          createdElements[i].resetForTesting();
+
+        PolymerTest.clearBody();
+        window.mockApi = undefined;
       });
 
       test('receives and caches prefs', function() {
@@ -222,7 +238,7 @@ cr.define('cr_settings_prefs', function() {
             continue;
           }
 
-          expectEquals(JSON.stringify(expectedPref),
+          assertEquals(JSON.stringify(expectedPref),
                        JSON.stringify(actualPref));
         }
       });
@@ -234,7 +250,7 @@ cr.define('cr_settings_prefs', function() {
                     deepCopy(testCase.values[1]));
         }
         // Check that setPref has been called for the right values.
-        expectMockApiPrefsSet(1);
+        assertMockApiPrefsSet(1);
 
         // Test that when setPref fails, the pref is reverted locally.
         for (var testCase of prefsTestCases) {
@@ -243,7 +259,7 @@ cr.define('cr_settings_prefs', function() {
                     deepCopy(testCase.values[2]));
         }
 
-        expectPrefsSet(1);
+        assertPrefsSet(1);
 
         // Test that setPref is not called when the pref doesn't change.
         mockApi.disallowSetPref();
@@ -251,7 +267,7 @@ cr.define('cr_settings_prefs', function() {
           prefs.set('prefs.' + testCase.key + '.value',
                     deepCopy(testCase.values[1]));
         }
-        expectMockApiPrefsSet(1);
+        assertMockApiPrefsSet(1);
         mockApi.allowSetPref();
       });
 
@@ -265,7 +281,7 @@ cr.define('cr_settings_prefs', function() {
 
         // Send a set of changes.
         mockApi.sendPrefChanges(prefChanges);
-        expectPrefsSet(1);
+        assertPrefsSet(1);
 
         prefChanges = [];
         for (var testCase of prefsTestCases)
@@ -273,11 +289,11 @@ cr.define('cr_settings_prefs', function() {
 
         // Send a second set of changes.
         mockApi.sendPrefChanges(prefChanges);
-        expectPrefsSet(2);
+        assertPrefsSet(2);
 
         // Send the same set of changes again -- nothing should happen.
         mockApi.sendPrefChanges(prefChanges);
-        expectPrefsSet(2);
+        assertPrefsSet(2);
       });
     });
   }
