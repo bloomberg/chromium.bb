@@ -1,0 +1,5 @@
+include_rules = [
+  "+components/scheduler/child",
+  "+components/scheduler/scheduler_export.h",
+  "+third_party/WebKit/public/platform",
+]
