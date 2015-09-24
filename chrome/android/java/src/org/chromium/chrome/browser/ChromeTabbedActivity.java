@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -23,6 +22,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
@@ -236,7 +236,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
     private void refreshSignIn() {
         if (mIsOnFirstRun) return;
-        android.util.Log.i(TAG, "in refreshSignIn before starting the sign-in processor");
+        Log.i(TAG, "in refreshSignIn before starting the sign-in processor");
         FirstRunSignInProcessor.start(this);
     }
 
@@ -815,10 +815,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
         final boolean isIntentActionMain = getIntent() != null
                 && TextUtils.equals(getIntent().getAction(), Intent.ACTION_MAIN);
-        android.util.Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
+        Log.i(TAG, "begin FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         final Intent freIntent = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
                 this, isIntentActionMain);
-        android.util.Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
+        Log.i(TAG, "end FirstRunFlowSequencer.checkIfFirstRunIsNecessary");
         if (freIntent == null) return;
 
         mIsOnFirstRun = true;
