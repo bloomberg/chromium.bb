@@ -57,8 +57,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   void set_hide_on_outside_click(bool hide_on_outside_click);
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
-                           CloseWidgetAndNoLeaking);
   FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest,
                            ProperlyResetController);
 

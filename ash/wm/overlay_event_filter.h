@@ -63,8 +63,6 @@ class ASH_EXPORT OverlayEventFilter : public ui::EventHandler,
   void OnLockStateChanged(bool locked) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PartialScreenshotViewTest, DontStartOverOverlay);
-
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayEventFilter);

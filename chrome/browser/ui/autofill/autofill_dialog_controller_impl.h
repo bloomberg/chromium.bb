@@ -214,8 +214,6 @@ class AutofillDialogControllerImpl
   void SubmitButtonDelayEndForTesting();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerI18nTest,
-                           CorrectCountryFromInputs);
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,
                            TransactionAmount);
   FRIEND_TEST_ALL_PREFIXES(AutofillDialogControllerTest,

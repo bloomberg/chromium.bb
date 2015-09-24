@@ -204,7 +204,6 @@
       'browser/search/iframe_source_unittest.cc',
       'browser/search/instant_unittest_base.cc',
       'browser/search/instant_unittest_base.h',
-      'browser/search/most_visited_iframe_source_unittest.cc',
       'browser/search/thumbnail_source_unittest.cc',
       'browser/search_engines/search_provider_install_data_unittest.cc',
       'browser/service_process/service_process_control_mac_unittest.mm',

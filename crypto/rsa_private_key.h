@@ -5,17 +5,12 @@
 #ifndef CRYPTO_RSA_PRIVATE_KEY_H_
 #define CRYPTO_RSA_PRIVATE_KEY_H_
 
-#include "build/build_config.h"
-
 #include <list>
 #include <vector>
 
 #include "base/basictypes.h"
+#include "build/build_config.h"
 #include "crypto/crypto_export.h"
-
-#if defined(USE_NSS_CERTS)
-#include "base/gtest_prod_util.h"
-#endif
 
 #if defined(USE_OPENSSL)
 // Forward declaration for openssl/*.h
@@ -34,7 +29,6 @@ namespace crypto {
 // PKCS #8 PrivateKeyInfo and PublicKeyInfo.
 class PrivateKeyInfoCodec {
  public:
-
   // ASN.1 encoding of the AlgorithmIdentifier from PKCS #8.
   static const uint8 kRsaAlgorithmIdentifier[];
 
@@ -73,14 +67,14 @@ class PrivateKeyInfoCodec {
 
   // Accessors to the contents of the integer components of the PrivateKeyInfo
   // structure.
-  std::vector<uint8>* modulus() { return &modulus_; };
-  std::vector<uint8>* public_exponent() { return &public_exponent_; };
-  std::vector<uint8>* private_exponent() { return &private_exponent_; };
-  std::vector<uint8>* prime1() { return &prime1_; };
-  std::vector<uint8>* prime2() { return &prime2_; };
-  std::vector<uint8>* exponent1() { return &exponent1_; };
-  std::vector<uint8>* exponent2() { return &exponent2_; };
-  std::vector<uint8>* coefficient() { return &coefficient_; };
+  std::vector<uint8>* modulus() { return &modulus_; }
+  std::vector<uint8>* public_exponent() { return &public_exponent_; }
+  std::vector<uint8>* private_exponent() { return &private_exponent_; }
+  std::vector<uint8>* prime1() { return &prime1_; }
+  std::vector<uint8>* prime2() { return &prime2_; }
+  std::vector<uint8>* exponent1() { return &exponent1_; }
+  std::vector<uint8>* exponent2() { return &exponent2_; }
+  std::vector<uint8>* coefficient() { return &coefficient_; }
 
  private:
   // Utility wrappers for PrependIntegerImpl that use the class's |big_endian_|
@@ -208,11 +202,6 @@ class CRYPTO_EXPORT RSAPrivateKey {
   bool ExportPublicKey(std::vector<uint8>* output) const;
 
  private:
-#if defined(USE_NSS_CERTS)
-  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FindFromPublicKey);
-  FRIEND_TEST_ALL_PREFIXES(RSAPrivateKeyNSSTest, FailedFindFromPublicKey);
-#endif
-
   // Constructor is private. Use one of the Create*() methods above instead.
   RSAPrivateKey();
 

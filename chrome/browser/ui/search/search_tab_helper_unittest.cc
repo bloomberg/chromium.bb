@@ -353,31 +353,6 @@ TEST_F(SearchTabHelperTest, TitleIsSetForNTP) {
   EXPECT_EQ(title, web_contents()->GetTitle());
 }
 
-class SearchTabHelperWindowTest : public BrowserWithTestWindowTest {
- protected:
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-    TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile(), &TemplateURLServiceFactory::BuildInstanceFor);
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
-    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
-
-    TemplateURLData data;
-    data.SetURL("http://foo.com/url?bar={searchTerms}");
-    data.instant_url = "http://foo.com/instant?"
-        "{google:omniboxStartMarginParameter}{google:forceInstantResults}"
-        "foo=foo#foo=foo&strk";
-    data.new_tab_url = std::string("https://foo.com/newtab?strk");
-    data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
-    data.search_terms_replacement_key = "strk";
-
-    TemplateURL* template_url = new TemplateURL(data);
-    template_url_service->Add(template_url);
-    template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
-  }
-};
-
 class SearchTabHelperPrerenderTest : public InstantUnitTestBase {
  public:
   ~SearchTabHelperPrerenderTest() override {}

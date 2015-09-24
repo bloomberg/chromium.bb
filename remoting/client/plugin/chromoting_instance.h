@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_task_runner_handle.h"
@@ -34,7 +33,6 @@
 #include "remoting/protocol/input_event_tracker.h"
 #include "remoting/protocol/mouse_input_filter.h"
 #include "remoting/protocol/negotiating_client_authenticator.h"
-#include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/third_party_client_authenticator.h"
 
@@ -181,8 +179,6 @@ class ChromotingInstance : public ClientUserInterface,
                                 int histogram_buckets);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ChromotingInstanceTest, TestCaseSetup);
-
   // Used as the |FetchSecretCallback| for IT2Me (or Me2Me from old webapps).
   // Immediately calls |secret_fetched_callback| with |shared_secret|.
   static void FetchSecretFromString(

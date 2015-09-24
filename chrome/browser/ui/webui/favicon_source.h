@@ -105,9 +105,6 @@ class FaviconSource : public content::URLDataSource {
   Profile* profile_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(FaviconSourceTest, InstantParsing);
-  FRIEND_TEST_ALL_PREFIXES(FaviconSourceTest, Parsing);
-
   // Defines the allowed pixel sizes for requested favicons.
   enum IconSize {
     SIZE_16,

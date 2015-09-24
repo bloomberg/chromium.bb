@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -151,19 +150,6 @@ class TranslateHelper : public content::RenderViewObserver {
   virtual double ExecuteScriptAndGetDoubleResult(const std::string& script);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, AdoptHtmlLang);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
-                           CLDAgreeWithLanguageCodeHavingCountryCode);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
-                           CLDDisagreeWithWrongLanguageCode);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest,
-                           InvalidLanguageMetaTagProviding);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeTypoCorrection);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, LanguageCodeSynonyms);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, ResetInvalidLanguageCode);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, SimilarLanguageCode);
-  FRIEND_TEST_ALL_PREFIXES(TranslateHelperTest, WellKnownWrongConfiguration);
-
   enum LanguageDetectionTiming {
     ON_TIME,   // Language detection was performed as soon as it was requested
     DEFERRED,  // Language detection couldn't be performed when it was requested

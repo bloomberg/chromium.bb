@@ -331,11 +331,11 @@ class CONTENT_EXPORT RenderViewImpl
   virtual bool requestPointerLock();
   virtual void requestPointerUnlock();
   virtual bool isPointerLocked();
-  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
-                                     bool event_cancelled) override;
-  virtual void onMouseDown(const blink::WebNode& mouse_down_node) override;
+  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                             bool event_cancelled) override;
+  void onMouseDown(const blink::WebNode& mouse_down_node) override;
 
-  virtual void initializeLayerTreeView() override;
+  void initializeLayerTreeView() override;
 
   // blink::WebViewClient implementation --------------------------------------
 
@@ -361,13 +361,13 @@ class CONTENT_EXPORT RenderViewImpl
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
                                      blink::WebTextDirection sub_text_hint);
-  virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
-                                     const blink::WebString& main_text,
-                                     blink::WebTextDirection main_text_hint,
-                                     const blink::WebString& sub_text,
-                                     blink::WebTextDirection hint) override;
-  virtual void hideValidationMessage() override;
-  virtual void moveValidationMessage(
+  void showValidationMessage(const blink::WebRect& anchor_in_root_view,
+                             const blink::WebString& main_text,
+                             blink::WebTextDirection main_text_hint,
+                             const blink::WebString& sub_text,
+                             blink::WebTextDirection hint) override;
+  void hideValidationMessage() override;
+  void moveValidationMessage(
       const blink::WebRect& anchor_in_root_view) override;
   virtual void setStatusText(const blink::WebString& text);
   virtual void setMouseOverURL(const blink::WebURL& url);
@@ -418,7 +418,7 @@ class CONTENT_EXPORT RenderViewImpl
 
   // blink::WebPageSerializerClient implementation ----------------------------
 
-  virtual void didSerializeDataForFrame(
+  void didSerializeDataForFrame(
       const blink::WebURL& frame_url,
       const blink::WebCString& data,
       PageSerializationStatus status) override;
@@ -560,8 +560,6 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendCandidateWindowEvents);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, RenderFrameClearedAfterClose);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, PaintAfterSwapOut);
-  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, Suppresses);
-  FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, DoesNotSuppress);
 
   typedef std::map<GURL, double> HostZoomLevels;
 

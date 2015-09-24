@@ -102,7 +102,8 @@ class BackgroundContentsService : private content::NotificationObserver,
   // Gets the parent application id for the passed BackgroundContents. Returns
   // an empty string if no parent application found (e.g. passed
   // BackgroundContents has already shut down).
-  const base::string16& GetParentApplicationId(BackgroundContents* contents) const;
+  const base::string16& GetParentApplicationId(
+      BackgroundContents* contents) const;
 
   // Creates a new BackgroundContents using the passed |site| and
   // the |route_id| and begins tracking the object internally so it can be
@@ -130,16 +131,11 @@ class BackgroundContentsService : private content::NotificationObserver,
  private:
   friend class BackgroundContentsServiceTest;
   friend class MockBackgroundContents;
-  friend class TaskManagerNoShowBrowserTest;
 
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            BackgroundContentsCreateDestroy);
   FRIEND_TEST_ALL_PREFIXES(BackgroundContentsServiceTest,
                            TestApplicationIDLinkage);
-  FRIEND_TEST_ALL_PREFIXES(TaskManagerNoShowBrowserTest,
-                           NoticeBGContentsChanges);
-  FRIEND_TEST_ALL_PREFIXES(TaskManagerNoShowBrowserTest,
-                           KillBGContents);
 
   // Registers for various notifications.
   void StartObserving(Profile* profile);

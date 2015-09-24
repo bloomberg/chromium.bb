@@ -54,8 +54,6 @@ class DecoratedTextfield : public views::Textfield,
   void Layout() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DecoratedTextfieldTest, HeightMatchesButton);
-
   // views::ViewTargeterDelegate:
   views::View* TargetForRect(views::View* root, const gfx::Rect& rect) override;
 

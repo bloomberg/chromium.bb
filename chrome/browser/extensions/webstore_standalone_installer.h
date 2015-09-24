@@ -177,7 +177,6 @@ class WebstoreStandaloneInstaller
 
  private:
   friend class base::RefCountedThreadSafe<WebstoreStandaloneInstaller>;
-  FRIEND_TEST_ALL_PREFIXES(WebstoreStandaloneInstallerTest, DomainVerification);
 
   // Several delegate/client interface implementations follow. The normal flow
   // (for successful installs) is:

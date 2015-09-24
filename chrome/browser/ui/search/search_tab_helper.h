@@ -128,12 +128,6 @@ class SearchTabHelper : public content::WebContentsObserver,
                            OnHistorySyncCheckSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnHistorySyncCheckNotSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
-                           OnProvisionalLoadFailRedirectNTPToLocal);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
-                           OnProvisionalLoadFailDontRedirectIfAborted);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperWindowTest,
-                           OnProvisionalLoadFailDontRedirectNonNTP);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,

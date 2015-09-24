@@ -461,8 +461,6 @@ class BrowserView : public BrowserWindow,
   // interface to keep these two classes decoupled and testable.
   friend class BrowserViewLayoutDelegateImpl;
   FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
-  FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
-                           TestAboutChromeViewAccObj);
 
   enum FullscreenMode {
     NORMAL_FULLSCREEN,

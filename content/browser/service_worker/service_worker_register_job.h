@@ -69,11 +69,6 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
   void DoomInstallingWorker();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
-                           AssociateInstallingVersionToDocuments);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostWaitingVersionTest,
-                           DisassociateVersionFromDocuments);
-
   enum Phase {
     INITIAL,
     START,

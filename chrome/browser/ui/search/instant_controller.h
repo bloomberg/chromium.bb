@@ -101,8 +101,6 @@ class InstantController : public InstantPage::Delegate {
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, AcceptingJSSearchDoesNotRunJS);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            ReloadSearchAfterBackReloadsCorrectQuery);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedFirstTabTest,
-                           RedirectToLocalOnLoadFailure);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, KeyboardTogglesVoiceSearch);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, HomeButtonAffectsMargin);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, SearchReusesInstantTab);

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -105,8 +104,6 @@ class NewTabUI : public content::WebUIController,
   };
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(NewTabUITest, UpdateUserPrefsVersion);
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,

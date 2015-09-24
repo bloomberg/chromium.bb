@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/supports_user_data.h"
@@ -101,11 +100,6 @@ class AutocompleteSyncableService
  private:
   friend class ::FakeServerUpdater;
   friend class ::ProfileSyncServiceAutofillTest;
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteSyncableServiceTest,
-                           MergeDataAndStartSyncing);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteSyncableServiceTest, GetAllSyncData);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteSyncableServiceTest, ProcessSyncChanges);
-  FRIEND_TEST_ALL_PREFIXES(AutocompleteSyncableServiceTest, ActOnChange);
 
   // This is a helper map used only in Merge/Process* functions. The lifetime
   // of the iterator is longer than the map object. The bool in the pair is used

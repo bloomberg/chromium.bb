@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_store.h"
@@ -178,13 +177,6 @@ class BASE_PREFS_EXPORT PrefValueStore {
   };
 
   typedef std::map<std::string, base::Value::Type> PrefTypeMap;
-
-  friend class PrefValueStorePolicyRefreshTest;
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest, TestPolicyRefresh);
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest,
-                           TestRefreshPolicyPrefsCompletion);
-  FRIEND_TEST_ALL_PREFIXES(PrefValueStorePolicyRefreshTest,
-                           TestConcurrentPolicyRefresh);
 
   // Returns true if the preference with the given name has a value in the
   // given PrefStoreType, of the same value type as the preference was
