@@ -297,6 +297,9 @@
         "test": "mojo_system_unittests"
       },
       {
+        "test": "mojo_view_manager_lib_unittests"
+      },
+      {
         "test": "nacl_loader_unittests"
       },
       {

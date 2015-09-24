@@ -486,6 +486,9 @@
         "test": "mojo_system_unittests"
       },
       {
+        "test": "mojo_view_manager_lib_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true
         },
