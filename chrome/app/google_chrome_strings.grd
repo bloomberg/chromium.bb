@@ -572,16 +572,6 @@ Google Chrome is unable to recover your settings.
       <message name="IDS_FLAGS_ENABLE_IFRAME_BASED_SIGNIN_DESCRIPTION" desc="Description for the flag to enable iframe-based sign-in flows">
         When enabled, will use an iframe-based Chrome sign-in flow; otherwise uses a webview-based flow.
       </message>
-      <if expr="not chromeos">
-        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chrome. Shown next to a button that says 'Relaunch Now'.">
-          Your changes will take effect the next time you relaunch Google Chrome.
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
-          Your changes will take effect the next time you restart your device.
-        </message>
-      </if>
       <message name="IDS_FLAGS_DEBUG_SHORTCUTS_DESCRIPTION" desc="Description of the 'Debugging keyboard shortcuts' lab.">
         Enables additional keyboard shortcuts that are useful for debugging Google Chrome.
       </message>

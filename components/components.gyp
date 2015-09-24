@@ -33,6 +33,7 @@
     'error_page.gypi',
     'favicon.gypi',
     'favicon_base.gypi',
+    'flags_ui.gypi',
     'gcm_driver.gypi',
     'google.gypi',
     'guest_view.gypi',

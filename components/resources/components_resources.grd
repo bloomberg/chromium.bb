@@ -10,6 +10,7 @@
     <includes>
       <part file="data_reduction_proxy_resources.grdp" />
       <part file="dom_distiller_resources.grdp" />
+      <part file="flags_ui_resources.grdp" />
       <part file="gcm_driver_resources.grdp" />
       <part file="printing_resources.grdp" />
       <part file="proximity_auth_resources.grdp" />

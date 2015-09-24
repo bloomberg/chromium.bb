@@ -49,6 +49,7 @@ source_set("ui") {
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",
     "//components/dom_distiller/webui",
+    "//components/flags_ui",
     "//components/invalidation/impl",
     "//components/omnibox/common",
     "//components/onc",

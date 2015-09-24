@@ -2,6 +2,7 @@ include_rules = [
   "+components/auto_login_parser",
   "+components/bubble",
   "+components/favicon/core",
+  "+components/flags_ui",
   "+components/page_load_metrics/browser",
   "+components/toolbar",
   "+components/url_formatter",

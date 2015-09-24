@@ -153,6 +153,18 @@
           again for improved performance.
         </message>
       </if>
+
+      <!-- About Flags UI -->
+      <if expr="not chromeos">
+        <message name="IDS_FLAGS_UI_RELAUNCH_NOTICE" desc="Notifies the user that he needs to relaunch Chromium. Shown next to a button that says 'Relaunch Now'.">
+          Your changes will take effect the next time you relaunch Chromium.
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_FLAGS_UI_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chromium OS. Shown next to a button that says 'Restart Now'.">
+          Your changes will take effect the next time you restart your device.
+        </message>
+      </if>
     </messages>
   </release>
 </grit>

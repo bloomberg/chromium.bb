@@ -21,14 +21,16 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/generated_resources.h"
+#include "components/flags_ui/flags_ui_constants.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "grit/browser_resources.h"
+#include "grit/components_chromium_strings.h"
+#include "grit/components_google_chrome_strings.h"
+#include "grit/components_resources.h"
+#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -54,25 +56,33 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIFlagsHost);
 
-  source->AddLocalizedString("flagsLongTitle", IDS_FLAGS_LONG_TITLE);
-  source->AddLocalizedString("flagsTableTitle", IDS_FLAGS_TABLE_TITLE);
-  source->AddLocalizedString("flagsNoExperimentsAvailable",
-                             IDS_FLAGS_NO_EXPERIMENTS_AVAILABLE);
-  source->AddLocalizedString("flagsWarningHeader", IDS_FLAGS_WARNING_HEADER);
-  source->AddLocalizedString("flagsBlurb", IDS_FLAGS_WARNING_TEXT);
-  source->AddLocalizedString("channelPromoBeta",
-                             IDS_FLAGS_PROMOTE_BETA_CHANNEL);
-  source->AddLocalizedString("channelPromoDev", IDS_FLAGS_PROMOTE_DEV_CHANNEL);
-  source->AddLocalizedString("flagsUnsupportedTableTitle",
-                             IDS_FLAGS_UNSUPPORTED_TABLE_TITLE);
-  source->AddLocalizedString("flagsNoUnsupportedExperiments",
-                             IDS_FLAGS_NO_UNSUPPORTED_EXPERIMENTS);
-  source->AddLocalizedString("flagsNotSupported", IDS_FLAGS_NOT_AVAILABLE);
-  source->AddLocalizedString("flagsRestartNotice", IDS_FLAGS_RELAUNCH_NOTICE);
-  source->AddLocalizedString("flagsRestartButton", IDS_FLAGS_RELAUNCH_BUTTON);
-  source->AddLocalizedString("resetAllButton", IDS_FLAGS_RESET_ALL_BUTTON);
-  source->AddLocalizedString("disable", IDS_FLAGS_DISABLE);
-  source->AddLocalizedString("enable", IDS_FLAGS_ENABLE);
+  source->AddLocalizedString(flags_ui::kFlagsLongTitle,
+                             IDS_FLAGS_UI_LONG_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsTableTitle,
+                             IDS_FLAGS_UI_TABLE_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsNoExperimentsAvailable,
+                             IDS_FLAGS_UI_NO_EXPERIMENTS_AVAILABLE);
+  source->AddLocalizedString(flags_ui::kFlagsWarningHeader,
+                             IDS_FLAGS_UI_WARNING_HEADER);
+  source->AddLocalizedString(flags_ui::kFlagsBlurb, IDS_FLAGS_UI_WARNING_TEXT);
+  source->AddLocalizedString(flags_ui::kChannelPromoBeta,
+                             IDS_FLAGS_UI_PROMOTE_BETA_CHANNEL);
+  source->AddLocalizedString(flags_ui::kChannelPromoDev,
+                             IDS_FLAGS_UI_PROMOTE_DEV_CHANNEL);
+  source->AddLocalizedString(flags_ui::kFlagsUnsupportedTableTitle,
+                             IDS_FLAGS_UI_UNSUPPORTED_TABLE_TITLE);
+  source->AddLocalizedString(flags_ui::kFlagsNoUnsupportedExperiments,
+                             IDS_FLAGS_UI_NO_UNSUPPORTED_EXPERIMENTS);
+  source->AddLocalizedString(flags_ui::kFlagsNotSupported,
+                             IDS_FLAGS_UI_NOT_AVAILABLE);
+  source->AddLocalizedString(flags_ui::kFlagsRestartNotice,
+                             IDS_FLAGS_UI_RELAUNCH_NOTICE);
+  source->AddLocalizedString(flags_ui::kFlagsRestartButton,
+                             IDS_FLAGS_UI_RELAUNCH_BUTTON);
+  source->AddLocalizedString(flags_ui::kResetAllButton,
+                             IDS_FLAGS_UI_RESET_ALL_BUTTON);
+  source->AddLocalizedString(flags_ui::kDisable, IDS_FLAGS_UI_DISABLE);
+  source->AddLocalizedString(flags_ui::kEnable, IDS_FLAGS_UI_ENABLE);
 
 #if defined(OS_CHROMEOS)
   if (!user_manager::UserManager::Get()->IsCurrentUserOwner() &&
@@ -80,19 +90,19 @@ content::WebUIDataSource* CreateFlagsUIHTMLSource() {
     // Set the strings to show which user can actually change the flags.
     std::string owner;
     chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner, &owner);
-    source->AddString("ownerWarning",
-                      l10n_util::GetStringFUTF16(IDS_SYSTEM_FLAGS_OWNER_ONLY,
+    source->AddString(flags_ui::kOwnerWarning,
+                      l10n_util::GetStringFUTF16(IDS_FLAGS_UI_SYSTEM_OWNER_ONLY,
                                                  base::UTF8ToUTF16(owner)));
   } else {
     // The warning will be only shown on ChromeOS, when the current user is not
     // the owner.
-    source->AddString("ownerWarning", base::string16());
+    source->AddString(flags_ui::kOwnerWarning, base::string16());
   }
 #endif
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("flags.js", IDR_FLAGS_JS);
-  source->SetDefaultResource(IDR_FLAGS_HTML);
+  source->AddResourcePath(flags_ui::kFlagsJS, IDR_FLAGS_UI_FLAGS_JS);
+  source->SetDefaultResource(IDR_FLAGS_UI_FLAGS_HTML);
   return source;
 }
 
@@ -140,16 +150,20 @@ class FlagsDOMHandler : public WebUIMessageHandler {
 };
 
 void FlagsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("requestFlagsExperiments",
+  web_ui()->RegisterMessageCallback(
+      flags_ui::kRequestFlagsExperiments,
       base::Bind(&FlagsDOMHandler::HandleRequestFlagsExperiments,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("enableFlagsExperiment",
+  web_ui()->RegisterMessageCallback(
+      flags_ui::kEnableFlagsExperiment,
       base::Bind(&FlagsDOMHandler::HandleEnableFlagsExperimentMessage,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("restartBrowser",
+  web_ui()->RegisterMessageCallback(
+      flags_ui::kRestartBrowser,
       base::Bind(&FlagsDOMHandler::HandleRestartBrowser,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("resetAllFlags",
+  web_ui()->RegisterMessageCallback(
+      flags_ui::kResetAllFlags,
       base::Bind(&FlagsDOMHandler::HandleResetAllFlags,
                  base::Unretained(this)));
 }
@@ -179,24 +193,25 @@ void FlagsDOMHandler::HandleRequestFlagsExperiments(
                                        access_,
                                        supported_experiments.get(),
                                        unsupported_experiments.get());
-  results.Set("supportedExperiments", supported_experiments.release());
-  results.Set("unsupportedExperiments", unsupported_experiments.release());
-  results.SetBoolean("needsRestart",
+  results.Set(flags_ui::kSupportedExperiments, supported_experiments.release());
+  results.Set(flags_ui::kUnsupportedExperiments,
+              unsupported_experiments.release());
+  results.SetBoolean(flags_ui::kNeedsRestart,
                      about_flags::IsRestartNeededToCommitChanges());
-  results.SetBoolean("showOwnerWarning",
+  results.SetBoolean(flags_ui::kShowOwnerWarning,
                      access_ == about_flags::kGeneralAccessFlagsOnly);
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   version_info::Channel channel = chrome::GetChannel();
-  results.SetBoolean("showBetaChannelPromotion",
+  results.SetBoolean(flags_ui::kShowBetaChannelPromotion,
                      channel == version_info::Channel::STABLE);
-  results.SetBoolean("showDevChannelPromotion",
+  results.SetBoolean(flags_ui::kShowDevChannelPromotion,
                      channel == version_info::Channel::BETA);
 #else
-  results.SetBoolean("showBetaChannelPromotion", false);
-  results.SetBoolean("showDevChannelPromotion", false);
+  results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
+  results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
 #endif
-  web_ui()->CallJavascriptFunction("returnFlagsExperiments", results);
+  web_ui()->CallJavascriptFunction(flags_ui::kReturnFlagsExperiments, results);
 }
 
 void FlagsDOMHandler::HandleEnableFlagsExperimentMessage(
