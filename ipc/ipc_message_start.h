@@ -126,6 +126,7 @@ enum IPCMessageStart {
   AttachmentBrokerMsgStart,
   RenderProcessMsgStart,
   PageLoadMetricsMsgStart,
+  MemoryMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 
