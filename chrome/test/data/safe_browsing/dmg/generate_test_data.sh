@@ -36,16 +36,26 @@ generate_test_data() {
           > "${DMG_SOURCE}/README.txt"
   dd if=/dev/urandom of="${DMG_SOURCE}/random" bs=512 count=4
 
-  DMG_FORMATS="UDRW UDRO UDCO UDZO UDBZ UFBI UDRo UDCo UDTO UDSP"
+  DMG_TEMPLATE_FORMAT="UDRO"
+  DMG_FORMATS="UDRW UDCO UDZO UDBZ UFBI UDTO UDSP"
   DMG_LAYOUTS="SPUD GPTSPUD NONE"
+
+  # First create uncompressed template DMGs in the three partition layouts.
+  for layout in ${DMG_LAYOUTS}; do
+    DMG_NAME="dmg_${DMG_TEMPLATE_FORMAT}_${layout}"
+    hdiutil create -srcfolder "${DMG_SOURCE}" \
+      -format "${DMG_TEMPLATE_FORMAT}" -layout "${layout}" \
+      -volname "${DMG_NAME}" \
+      -ov "${OUT_DIR}/${DMG_NAME}"
+  done
+
+  # Convert each template into the different compression format.
   for format in ${DMG_FORMATS}; do
     for layout in ${DMG_LAYOUTS}; do
+      TEMPLATE_NAME="dmg_${DMG_TEMPLATE_FORMAT}_${layout}.dmg"
       DMG_NAME="dmg_${format}_${layout}"
-      hdiutil create -srcfolder "${DMG_SOURCE}" \
-        -format "${format}" -layout "${layout}" \
-        -volname "${DMG_NAME}" \
-        -ov \
-        "${OUT_DIR}/${DMG_NAME}"
+      hdiutil convert "${OUT_DIR}/${TEMPLATE_NAME}" \
+        -format "${format}" -o "${OUT_DIR}/${DMG_NAME}"
     done
   done
 
