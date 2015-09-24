@@ -152,21 +152,6 @@ function showFeedbackForm(questionText, yesText, noText) {
   document.getElementById('feedbackContainer').classList.remove("hidden");
 }
 
-/**
- * Send feedback about this distilled article.
- * @param good True if the feedback was positive, false if negative.
- */
-function sendFeedback(good) {
-  var img = document.createElement('img');
-  if (good) {
-    img.src = '/feedbackgood';
-  } else {
-    img.src = '/feedbackbad';
-  }
-  img.style.display = "none";
-  document.body.appendChild(img);
-}
-
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('closeReaderView').addEventListener('click',
     function(e) {
@@ -177,12 +162,16 @@ document.getElementById('closeReaderView').addEventListener('click',
     }, true);
 
 document.getElementById('feedbackYes').addEventListener('click', function(e) {
-  sendFeedback(true);
+  if (distiller) {
+    distiller.sendFeedback(true);
+  }
   document.getElementById('feedbackContainer').className += " fadeOut";
 }, true);
 
 document.getElementById('feedbackNo').addEventListener('click', function(e) {
-  sendFeedback(false);
+  if (distiller) {
+    distiller.sendFeedback(false);
+  }
   document.getElementById('feedbackContainer').className += " fadeOut";
 }, true);
 

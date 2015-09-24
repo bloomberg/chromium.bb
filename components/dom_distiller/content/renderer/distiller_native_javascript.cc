@@ -45,14 +45,30 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
           isolate, base::Bind(&DistillerNativeJavaScript::DistillerEcho,
                               base::Unretained(this)))
           ->GetFunction());
+
+  distiller_obj->Set(
+      gin::StringToSymbol(isolate, "sendFeedback"),
+      gin::CreateFunctionTemplate(
+          isolate, base::Bind(&DistillerNativeJavaScript::DistillerSendFeedback,
+                              base::Unretained(this)))
+          ->GetFunction());
 }
 
-std::string DistillerNativeJavaScript::DistillerEcho(
-    const std::string& message) {
+void DistillerNativeJavaScript::EnsureServiceConnected() {
   if (!distiller_js_service_) {
     render_frame_->GetServiceRegistry()->ConnectToRemoteService(
         mojo::GetProxy(&distiller_js_service_));
   }
+}
+
+void DistillerNativeJavaScript::DistillerSendFeedback(bool good) {
+  EnsureServiceConnected();
+  distiller_js_service_->HandleDistillerFeedbackCall(good);
+}
+
+std::string DistillerNativeJavaScript::DistillerEcho(
+    const std::string& message) {
+  EnsureServiceConnected();
   // TODO(mdjones): It is possible and beneficial to have information
   // returned from the browser process with these calls. The problem
   // is waiting blocks this process.

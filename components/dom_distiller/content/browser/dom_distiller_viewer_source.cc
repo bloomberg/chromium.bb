@@ -202,20 +202,6 @@ void DomDistillerViewerSource::StartDataRequest(
     content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
     callback.Run(NULL);
     return;
-  } else if (kFeedbackBad == path) {
-    FeedbackReporter::ReportQuality(false);
-    callback.Run(NULL);
-    if (!external_feedback_reporter_)
-      return;
-    content::WebContents* contents =
-        content::WebContents::FromRenderFrameHost(render_frame_host);
-    external_feedback_reporter_->ReportExternalFeedback(
-        contents, contents->GetURL(), false);
-    return;
-  } else if (kFeedbackGood == path) {
-    FeedbackReporter::ReportQuality(true);
-    callback.Run(NULL);
-    return;
   }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -240,7 +226,9 @@ void DomDistillerViewerSource::StartDataRequest(
   // Add mojo service for JavaScript functionality. This is the receiving end
   // of this particular service.
   render_frame_host->GetServiceRegistry()->AddService(
-      base::Bind(&CreateDistillerJavaScriptService));
+      base::Bind(&CreateDistillerJavaScriptService,
+          render_frame_host,
+          external_feedback_reporter_.get()));
 
   // Tell the renderer that this is currently a distilled page.
   DistillerPageNotifierServicePtr page_notifier_service;

@@ -25,9 +25,15 @@ class DistillerNativeJavaScript {
   void AddJavaScriptObjectToFrame(v8::Local<v8::Context> context);
 
  private:
+  // Make sure the mojo service is connected.
+  void EnsureServiceConnected();
+
   // Native code for "distiller.echo" in JavaScript. This simply returns the
   // provided string.
   std::string DistillerEcho(const std::string& message);
+
+  // Send feedback about distillation quality.
+  void DistillerSendFeedback(bool good);
 
   content::RenderFrame* render_frame_;
   DistillerJavaScriptServicePtr distiller_js_service_;
