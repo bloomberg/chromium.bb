@@ -38,8 +38,10 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/image_button.h"
@@ -69,7 +71,7 @@ const int kTouchWidth = 120;
 
 const int kToolbarOverlap = 1;
 const int kExtraLeftPaddingToBalanceCloseButtonPadding = 2;
-const int kAfterTitleSpacing = 3;
+const int kAfterTitleSpacing = 4;
 
 // When a non-pinned tab becomes a pinned tab the width of the tab animates. If
 // the width of a pinned tab is at least kPinnedTabExtraWidthToRenderAsNormal
@@ -133,6 +135,7 @@ const double kImmersiveTabMinThrobOpacity = 0.66;
 const int kImmersiveLoadingStepCount = 32;
 
 const char kTabCloseButtonName[] = "TabCloseButton";
+const int kTabCloseButtonSize = 16;
 
 void DrawIconAtLocation(gfx::Canvas* canvas,
                         const gfx::ImageSkia& image,
@@ -409,15 +412,15 @@ Tab::Tab(TabController* controller)
       favicon_hiding_offset_(0),
       immersive_loading_step_(0),
       should_display_crashed_favicon_(false),
-      close_button_(NULL),
-      media_indicator_button_(NULL),
+      media_indicator_button_(nullptr),
+      close_button_(nullptr),
       title_(new views::Label()),
       tab_activated_with_last_tap_down_(false),
       hover_controller_(this),
       showing_icon_(false),
       showing_media_indicator_(false),
       showing_close_button_(false),
-      close_button_color_(0) {
+      button_color_(SK_ColorTRANSPARENT) {
   DCHECK(controller);
   InitTabResources();
 
@@ -437,17 +440,24 @@ Tab::Tab(TabController* controller)
   SetEventTargeter(
       scoped_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 
-  // Add the Close Button.
+  media_indicator_button_ = new MediaIndicatorButton(this);
+  AddChildView(media_indicator_button_);
+
   close_button_ = new TabCloseButton(this);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  close_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1));
-  close_button_->SetImage(views::CustomButton::STATE_HOVERED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_H));
-  close_button_->SetImage(views::CustomButton::STATE_PRESSED,
-                          rb.GetImageSkiaNamed(IDR_CLOSE_1_P));
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
+  // The normal image is set by OnButtonColorMaybeChanged() because it depends
+  // on the current theme and active state.  The hovered and pressed images
+  // don't depend on the these, so we can set them here.
+  const gfx::ImageSkia& hovered = gfx::CreateVectorIcon(
+      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
+      SkColorSetARGB(0xFF, 0xDB, 0x44, 0x37));
+  const gfx::ImageSkia& pressed = gfx::CreateVectorIcon(
+      gfx::VectorIconId::TAB_CLOSE_HOVERED_PRESSED, kTabCloseButtonSize,
+      SkColorSetARGB(0xFF, 0xA8, 0x35, 0x2A));
+  close_button_->SetImage(views::CustomButton::STATE_HOVERED, &hovered);
+  close_button_->SetImage(views::CustomButton::STATE_PRESSED, &pressed);
+
   // Disable animation so that the red danger sign shows up immediately
   // to help avoid mis-clicks.
   close_button_->SetAnimationDuration(0);
@@ -459,7 +469,7 @@ Tab::Tab(TabController* controller)
 Tab::~Tab() {
 }
 
-void Tab::set_animation_container(gfx::AnimationContainer* container) {
+void Tab::SetAnimationContainer(gfx::AnimationContainer* container) {
   animation_container_ = container;
   hover_controller_.SetAnimationContainer(container);
 }
@@ -469,7 +479,8 @@ bool Tab::IsActive() const {
 }
 
 void Tab::ActiveStateChanged() {
-  GetMediaIndicatorButton()->UpdateEnabledForMuteToggle();
+  OnButtonColorMaybeChanged();
+  media_indicator_button_->UpdateEnabledForMuteToggle();
 }
 
 bool Tab::IsSelected() const {
@@ -521,7 +532,7 @@ void Tab::SetData(const TabRendererData& data) {
   }
 
   if (data_.media_state != old.media_state)
-    GetMediaIndicatorButton()->TransitionToMediaState(data_.media_state);
+    media_indicator_button_->TransitionToMediaState(data_.media_state);
 
   if (old.pinned != data_.pinned) {
     StopAndDeleteAnimation(pinned_title_change_animation_.Pass());
@@ -727,6 +738,14 @@ bool Tab::GetHitTestMask(gfx::Path* mask) const {
 ////////////////////////////////////////////////////////////////////////////////
 // Tab, views::View overrides:
 
+void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
+  // If this hierarchy changed has resulted in us being part of a widget
+  // hierarchy for the first time, we can now get at the theme provider, and
+  // should recalculate the button color.
+  if (details.is_add)
+    OnButtonColorMaybeChanged();
+}
+
 void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
@@ -797,8 +816,7 @@ void Tab::Layout() {
 
   showing_media_indicator_ = ShouldShowMediaIndicator();
   if (showing_media_indicator_) {
-    views::ImageButton* const button = GetMediaIndicatorButton();
-    const gfx::Size image_size(button->GetPreferredSize());
+    const gfx::Size image_size(media_indicator_button_->GetPreferredSize());
     const int right = showing_close_button_ ?
         close_button_->x() + close_button_->GetInsets().left() : lb.right();
     gfx::Rect bounds(
@@ -807,11 +825,9 @@ void Tab::Layout() {
         image_size.width(),
         image_size.height());
     MaybeAdjustLeftForPinnedTab(&bounds);
-    button->SetBoundsRect(bounds);
-    button->SetVisible(true);
-  } else if (media_indicator_button_) {
-    media_indicator_button_->SetVisible(false);
+    media_indicator_button_->SetBoundsRect(bounds);
   }
+  media_indicator_button_->SetVisible(showing_media_indicator_);
 
   // Size the title to fill the remaining width and use all available height.
   const bool show_title = ShouldRenderAsNormalTab();
@@ -841,6 +857,7 @@ void Tab::Layout() {
 
 void Tab::OnThemeChanged() {
   LoadTabImages();
+  OnButtonColorMaybeChanged();
 }
 
 const char* Tab::GetClassName() const {
@@ -1042,29 +1059,13 @@ void Tab::PaintTab(gfx::Canvas* canvas) {
   const bool show_close_button = ShouldShowCloseBox();
   if (show_icon != showing_icon_ ||
       show_media_indicator != showing_media_indicator_ ||
-      show_close_button != showing_close_button_) {
+      show_close_button != showing_close_button_)
     Layout();
-  }
 
   PaintTabBackground(canvas);
 
-  const SkColor title_color = GetThemeProvider()->GetColor(IsSelected() ?
-      ThemeProperties::COLOR_TAB_TEXT :
-      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
-  title_->SetVisible(ShouldRenderAsNormalTab());
-  title_->SetEnabledColor(title_color);
-
   if (show_icon)
     PaintIcon(canvas);
-
-  // If the close button color has changed, generate a new one.
-  if (!close_button_color_ || title_color != close_button_color_) {
-    close_button_color_ = title_color;
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    close_button_->SetBackground(close_button_color_,
-        rb.GetImageSkiaNamed(IDR_CLOSE_1),
-        rb.GetImageSkiaNamed(IDR_CLOSE_1_MASK));
-  }
 }
 
 void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
@@ -1507,6 +1508,29 @@ bool Tab::IsPerformingCrashAnimation() const {
   return crash_icon_animation_.get() && data_.IsCrashed();
 }
 
+void Tab::OnButtonColorMaybeChanged() {
+  // The theme provider may be null if we're not currently in a widget
+  // hierarchy.
+  ui::ThemeProvider* theme_provider = GetThemeProvider();
+  if (!theme_provider)
+    return;
+
+  const SkColor title_color = theme_provider->GetColor(IsActive() ?
+      ThemeProperties::COLOR_TAB_TEXT :
+      ThemeProperties::COLOR_BACKGROUND_TAB_TEXT);
+  const SkColor new_button_color = SkColorSetA(title_color, 0xA0);
+  if (button_color_ != new_button_color) {
+    button_color_ = new_button_color;
+    title_->SetEnabledColor(title_color);
+    media_indicator_button_->OnParentTabButtonColorChanged();
+    const gfx::ImageSkia& close_button_normal_image = gfx::CreateVectorIcon(
+        gfx::VectorIconId::TAB_CLOSE_NORMAL, kTabCloseButtonSize,
+        button_color_);
+    close_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                            &close_button_normal_image);
+  }
+}
+
 void Tab::ScheduleIconPaint() {
   gfx::Rect bounds = favicon_bounds_;
   if (bounds.IsEmpty())
@@ -1596,14 +1620,6 @@ void Tab::GetTabIdAndFrameId(views::Widget* widget,
     *tab_id = IDR_THEME_TAB_BACKGROUND;
     *frame_id = IDR_THEME_FRAME;
   }
-}
-
-MediaIndicatorButton* Tab::GetMediaIndicatorButton() {
-  if (!media_indicator_button_) {
-    media_indicator_button_ = new MediaIndicatorButton(this);
-    AddChildView(media_indicator_button_);  // Takes ownership.
-  }
-  return media_indicator_button_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -163,49 +163,49 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
 }
 
 gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
-                                     const ui::ThemeProvider* tp) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+                                     SkColor button_color) {
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   switch (media_state) {
 #if !defined(OS_MACOSX)
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
     case TAB_MEDIA_STATE_AUDIO_MUTING: {
-      SkColor icon_color = tp->GetColor(ThemeProperties::COLOR_TAB_ICON);
       return gfx::Image(
           gfx::CreateVectorIcon(media_state == TAB_MEDIA_STATE_AUDIO_PLAYING
                                     ? gfx::VectorIconId::TAB_AUDIO
                                     : gfx::VectorIconId::TAB_AUDIO_MUTING,
-                                16, icon_color));
+                                16, button_color));
     }
 #else
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
-      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
+      return rb->GetNativeImageNamed(IDR_TAB_AUDIO_INDICATOR);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
-      return rb.GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
+      return rb->GetNativeImageNamed(IDR_TAB_AUDIO_MUTING_INDICATOR);
 #endif
     case TAB_MEDIA_STATE_RECORDING:
-      return rb.GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
+      return rb->GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
     case TAB_MEDIA_STATE_CAPTURING:
-      return rb.GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
+      return rb->GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
     case TAB_MEDIA_STATE_NONE:
       break;
   }
   NOTREACHED();
-  return rb.GetNativeImageNamed(IDR_SAD_FAVICON);
+  return gfx::Image();
 }
 
 gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state,
-                                               const ui::ThemeProvider* tp) {
+                                               SkColor button_color) {
   switch (media_state) {
     case TAB_MEDIA_STATE_AUDIO_PLAYING:
-      return GetTabMediaIndicatorImage(TAB_MEDIA_STATE_AUDIO_MUTING, tp);
+      return GetTabMediaIndicatorImage(TAB_MEDIA_STATE_AUDIO_MUTING,
+                                       button_color);
     case TAB_MEDIA_STATE_AUDIO_MUTING:
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
-      return GetTabMediaIndicatorImage(media_state, tp);
+      return GetTabMediaIndicatorImage(media_state, button_color);
   }
   NOTREACHED();
-  return GetTabMediaIndicatorImage(media_state, tp);
+  return GetTabMediaIndicatorImage(media_state, button_color);
 }
 
 scoped_ptr<gfx::Animation> CreateTabMediaIndicatorFadeAnimation(

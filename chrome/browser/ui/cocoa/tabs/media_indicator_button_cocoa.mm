@@ -77,9 +77,9 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 
   if (nextState != TAB_MEDIA_STATE_NONE) {
     [self
-        setImage:chrome::GetTabMediaIndicatorImage(nextState, nil).ToNSImage()];
+        setImage:chrome::GetTabMediaIndicatorImage(nextState, 0).ToNSImage()];
     affordanceImage_.reset(
-        [chrome::GetTabMediaIndicatorAffordanceImage(nextState, nil)
+        [chrome::GetTabMediaIndicatorAffordanceImage(nextState, 0)
                 .ToNSImage() retain]);
   }
 

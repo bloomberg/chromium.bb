@@ -68,8 +68,10 @@ class Tab : public gfx::AnimationDelegate,
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
 
+  SkColor button_color() const { return button_color_; }
+
   // Sets the container all animations run from.
-  void set_animation_container(gfx::AnimationContainer* container);
+  void SetAnimationContainer(gfx::AnimationContainer* container);
 
   // Returns true if this tab is the active tab.
   bool IsActive() const;
@@ -196,6 +198,8 @@ class Tab : public gfx::AnimationDelegate,
   bool GetHitTestMask(gfx::Path* mask) const override;
 
   // views::View:
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void Layout() override;
   void OnThemeChanged() override;
@@ -279,6 +283,11 @@ class Tab : public gfx::AnimationDelegate,
   // Returns true if the crash animation is currently running.
   bool IsPerformingCrashAnimation() const;
 
+  // Recalculates the correct |button_color_| and resets the title, media
+  // indicator, and close button colors if necessary.  This should be called any
+  // time the theme or active state may have changed.
+  void OnButtonColorMaybeChanged();
+
   // Schedules repaint task for icon.
   void ScheduleIconPaint();
 
@@ -295,9 +304,6 @@ class Tab : public gfx::AnimationDelegate,
   void GetTabIdAndFrameId(views::Widget* widget,
                           int* tab_id,
                           int* frame_id) const;
-
-  // Returns |media_indicator_button_|, creating it on-demand.
-  MediaIndicatorButton* GetMediaIndicatorButton();
 
   // Performs a one-time initialization of static resources such as tab images.
   static void InitTabResources();
@@ -358,8 +364,8 @@ class Tab : public gfx::AnimationDelegate,
 
   scoped_refptr<gfx::AnimationContainer> animation_container_;
 
+  MediaIndicatorButton* media_indicator_button_;
   views::ImageButton* close_button_;
-  MediaIndicatorButton* media_indicator_button_;  // NULL until first use.
   views::Label* title_;
 
   bool tab_activated_with_last_tap_down_;
@@ -395,8 +401,8 @@ class Tab : public gfx::AnimationDelegate,
   // detect when it changes and layout appropriately.
   bool showing_close_button_;
 
-  // The current color of the close button.
-  SkColor close_button_color_;
+  // The current color of the media indicator and close button icons.
+  SkColor button_color_;
 
   // As the majority of the tabs are inactive, and painting tabs is slowish,
   // we cache a handful of the inactive tab backgrounds here.

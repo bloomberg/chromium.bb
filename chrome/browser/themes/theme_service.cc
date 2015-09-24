@@ -232,9 +232,6 @@ SkColor ThemeService::GetColor(int id) const {
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.86);
     case Properties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT), 0.40);
-    case Properties::COLOR_TAB_ICON:
-      return color_utils::HSLShift(gfx::kChromeIconGrey,
-                                   GetTint(Properties::TINT_BUTTONS));
     case Properties::COLOR_THROBBER_SPINNING:
     case Properties::COLOR_THROBBER_WAITING: {
       SkColor base_color;
