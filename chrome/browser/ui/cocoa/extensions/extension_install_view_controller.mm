@@ -277,6 +277,14 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 }
 
 - (void)awakeFromNib {
+  // Since linking to 10.10, |outlineView_| needs an explicit background to
+  // ensure subpixel antialiasing is enabled for the permissions text. At the
+  // same time, the animation that shows the prompt breaks whenever the scroll
+  // view is present. Giving the scroll view a layer restores the animation, and
+  // since its contents has an opaque background, subpixel AA isn't affected.
+  [[outlineView_ enclosingScrollView] setWantsLayer:YES];
+  [outlineView_ setBackgroundColor:[NSColor whiteColor]];
+
   // Set control labels.
   [titleField_ setStringValue:base::SysUTF16ToNSString(
       prompt_->GetDialogTitle())];
