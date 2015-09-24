@@ -275,6 +275,23 @@ bool ConsoleObserverDelegate::AddMessageToConsole(
   return false;
 }
 
+// A BrowserMessageFilter that drops SwapOut ACK messages.
+class SwapoutACKMessageFilter : public BrowserMessageFilter {
+ public:
+  SwapoutACKMessageFilter() : BrowserMessageFilter(FrameMsgStart) {}
+
+ protected:
+  ~SwapoutACKMessageFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return message.type() == FrameHostMsg_SwapOut_ACK::ID;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
+};
+
 }  // namespace
 
 //
@@ -3369,6 +3386,66 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       &success));
   EXPECT_TRUE(success);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+// Test for https://crbug.com/515302.  Perform two navigations, A->B->A, and
+// delay the SwapOut ACK from the A->B navigation, so that the second B->A
+// navigation is initiated before the first page receives the SwapOut ACK.
+// Ensure that the RVH(A) that's pending deletion is not reused in that case.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       RenderViewHostPendingDeletionIsNotReused) {
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  NavigateToURL(shell(), a_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderFrameHostImpl* rfh = root->current_frame_host();
+  RenderViewHostImpl* rvh = rfh->render_view_host();
+  RenderFrameDeletedObserver deleted_observer(rfh);
+
+  // Install a BrowserMessageFilter to drop SwapOut ACK messages in A's
+  // process.
+  scoped_refptr<SwapoutACKMessageFilter> filter = new SwapoutACKMessageFilter();
+  rfh->GetProcess()->AddFilter(filter.get());
+
+  // Navigate to B.  This must wait for DidCommitProvisionalLoad, as opposed to
+  // DidStopLoading, since otherwise the SwapOut timer might call OnSwappedOut
+  // and destroy |rvh| before its pending deletion status is checked.
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  TestFrameNavigationObserver commit_observer(root);
+  shell()->LoadURL(b_url);
+  commit_observer.Wait();
+
+  // Since the SwapOut ACK for A->B is dropped, the first page's
+  // RenderFrameHost and RenderViewHost should be pending deletion after the
+  // last navigation.
+  EXPECT_TRUE(root->render_manager()->IsPendingDeletion(rfh));
+  EXPECT_TRUE(rvh->is_pending_deletion());
+
+  // Wait for process A to exit so we can reinitialize it cleanly for the next
+  // navigation. This can be removed once https://crbug.com/535246 is fixed.
+  RenderProcessHostWatcher process_exit_observer(
+      rvh->GetProcess(),
+      RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process_exit_observer.Wait();
+
+  // Start a navigation back to A and check that the RenderViewHost wasn't
+  // reused.
+  TestNavigationObserver navigation_observer(shell()->web_contents());
+  shell()->LoadURL(a_url);
+  RenderViewHostImpl* pending_rvh =
+      root->render_manager()->pending_render_view_host();
+  EXPECT_EQ(rvh->GetSiteInstance(), pending_rvh->GetSiteInstance());
+  EXPECT_NE(rvh, pending_rvh);
+
+  // Simulate that the dropped SwapOut ACK message arrives now on the original
+  // RenderFrameHost, which should now get deleted.
+  rfh->OnSwappedOut();
+  EXPECT_TRUE(deleted_observer.deleted());
+
+  // Make sure the last navigation finishes without crashing.
+  navigation_observer.Wait();
 }
 
 }  // namespace content

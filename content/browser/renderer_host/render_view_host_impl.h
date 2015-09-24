@@ -221,6 +221,16 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool is_active() const { return is_active_; }
   void set_is_active(bool is_active) { is_active_ = is_active; }
 
+  // Tracks whether this RenderViewHost is pending deletion.  This is tracked
+  // separately from the main frame pending deletion state, because the
+  // RenderViewHost's main frame is cleared when the main frame's
+  // RenderFrameHost is marked for deletion.
+  //
+  // TODO(nasko,alexmos): This should not be necessary once swapped-out is
+  // removed.
+  bool is_pending_deletion() const { return is_pending_deletion_; }
+  void set_pending_deletion() { is_pending_deletion_ = true; }
+
   // Tracks whether this RenderViewHost is swapped out, according to its main
   // frame RenderFrameHost.
   void set_is_swapped_out(bool is_swapped_out) {
@@ -442,6 +452,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   // main frame is pending swap out, pending deletion, or swapped out, because
   // it is not visible to the user in any of these cases.
   bool is_active_;
+
+  // True if this RenderViewHost is pending deletion.
+  bool is_pending_deletion_;
 
   // Tracks whether the main frame RenderFrameHost is swapped out.  Unlike
   // is_active_, this is false when the frame is pending swap out or deletion.

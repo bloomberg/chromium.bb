@@ -914,6 +914,11 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
 void RenderFrameHostManager::MoveToPendingDeleteHosts(
     scoped_ptr<RenderFrameHostImpl> render_frame_host) {
+  // If this is the main frame going away, mark the corresponding
+  // RenderViewHost for deletion as well so that we don't try to reuse it.
+  if (render_frame_host->frame_tree_node()->IsMainFrame())
+    render_frame_host->render_view_host()->set_pending_deletion();
+
   // |render_frame_host| will be deleted when its SwapOut ACK is received, or
   // when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).

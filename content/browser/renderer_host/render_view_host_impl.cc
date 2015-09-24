@@ -218,6 +218,7 @@ RenderViewHostImpl::RenderViewHostImpl(
       page_id_(-1),
       nav_entry_id_(0),
       is_active_(!swapped_out),
+      is_pending_deletion_(false),
       is_swapped_out_(swapped_out),
       main_frame_routing_id_(main_frame_routing_id),
       is_waiting_for_close_ack_(false),

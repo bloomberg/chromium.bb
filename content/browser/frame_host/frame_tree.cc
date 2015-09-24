@@ -274,14 +274,13 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(SiteInstance* site_instance,
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
   if (iter != render_view_host_map_.end()) {
-    // If a RenderViewHost's main frame is pending deletion for this
-    // |site_instance|, put it in the map of RenderViewHosts pending shutdown.
-    // Otherwise return the existing RenderViewHost for the SiteInstance.
-    RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
-        iter->second->GetMainFrame());
-    if (main_frame &&
-        main_frame->frame_tree_node()->render_manager()->IsPendingDeletion(
-            main_frame)) {
+    // If a RenderViewHost is pending deletion for this |site_instance|, it
+    // shouldn't be reused, so put it in the map of RenderViewHosts pending
+    // shutdown.  Otherwise, return the existing RenderViewHost for the
+    // SiteInstance.  Note that if swapped-out is forbidden, the
+    // RenderViewHost's main frame has already been cleared, so we cannot rely
+    // on checking whether the main frame is pending deletion.
+    if (iter->second->is_pending_deletion()) {
       render_view_host_pending_shutdown_map_.insert(
           std::make_pair(site_instance->GetId(), iter->second));
       render_view_host_map_.erase(iter);
