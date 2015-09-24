@@ -121,7 +121,7 @@ static void luminanceToAlphaMatrix(SkScalar matrix[kColorMatrixSize])
 
 static SkColorFilter* createColorFilter(ColorMatrixType type, const Vector<float>& values)
 {
-    // Use defaults if values contains too few values. See SVGFEColorMatrixElement::build
+    // Use defaults if values contains too few/many values.
     SkScalar matrix[kColorMatrixSize];
     memset(matrix, 0, kColorMatrixSize * sizeof(SkScalar));
     matrix[0] = matrix[6] = matrix[12] = matrix[18] = 1;
@@ -130,7 +130,7 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const Vector<float
     case FECOLORMATRIX_TYPE_UNKNOWN:
         break;
     case FECOLORMATRIX_TYPE_MATRIX:
-        if (values.size() >= kColorMatrixSize) {
+        if (values.size() == kColorMatrixSize) {
             for (unsigned i = 0; i < kColorMatrixSize; ++i)
                 matrix[i] = values[i];
         }
@@ -140,11 +140,11 @@ static SkColorFilter* createColorFilter(ColorMatrixType type, const Vector<float
         matrix[19] *= SkScalar(255);
         break;
     case FECOLORMATRIX_TYPE_SATURATE:
-        if (values.size())
+        if (values.size() == 1)
             saturateMatrix(values[0], matrix);
         break;
     case FECOLORMATRIX_TYPE_HUEROTATE:
-        if (values.size())
+        if (values.size() == 1)
             hueRotateMatrix(values[0], matrix);
         break;
     case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
@@ -191,13 +191,30 @@ static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type)
     return ts;
 }
 
+static bool valuesIsValidForType(ColorMatrixType type, const Vector<float>& values)
+{
+    switch (type) {
+    case FECOLORMATRIX_TYPE_MATRIX:
+        return values.size() == kColorMatrixSize;
+    case FECOLORMATRIX_TYPE_SATURATE:
+    case FECOLORMATRIX_TYPE_HUEROTATE:
+        return values.size() == 1;
+    case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
+        return values.size() == 0;
+    case FECOLORMATRIX_TYPE_UNKNOWN:
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
 TextStream& FEColorMatrix::externalRepresentation(TextStream& ts, int indent) const
 {
     writeIndent(ts, indent);
     ts << "[feColorMatrix";
     FilterEffect::externalRepresentation(ts);
     ts << " type=\"" << m_type << "\"";
-    if (!m_values.isEmpty()) {
+    if (!m_values.isEmpty() && valuesIsValidForType(m_type, m_values)) {
         ts << " values=\"";
         Vector<float>::const_iterator ptr = m_values.begin();
         const Vector<float>::const_iterator end = m_values.end();
