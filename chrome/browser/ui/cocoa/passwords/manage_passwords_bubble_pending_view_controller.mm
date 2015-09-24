@@ -19,6 +19,8 @@
 
 using namespace password_manager::mac::ui;
 
+const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
+
 @interface ManagePasswordsBubblePendingViewController ()
 - (void)onSaveClicked:(id)sender;
 - (void)onNeverForThisSiteClicked:(id)sender;
@@ -72,6 +74,7 @@ using namespace password_manager::mac::ui;
   // -----------------------------------
   // |  Title                        x |
   // |  username   password            |
+  // |  Smart Lock  welcome (optional) |
   // |                [Never]  [Save]  |
   // -----------------------------------
 
@@ -91,45 +94,46 @@ using namespace password_manager::mac::ui;
   [view addSubview:closeButton_];
 
   // Title.
-  titleView_.reset([[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<HyperlinkTextView> titleView(
+      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
   NSColor* textColor = [NSColor blackColor];
   NSFont* font = ResourceBundle::GetSharedInstance()
                      .GetFontList(ResourceBundle::SmallFont)
                      .GetPrimaryFont()
                      .GetNativeFont();
-  [titleView_ setMessage:base::SysUTF16ToNSString(model_->title())
-                withFont:font
-            messageColor:textColor];
+  [titleView setMessage:base::SysUTF16ToNSString(model_->title())
+               withFont:font
+           messageColor:textColor];
   NSRange titleBrandLinkRange = model_->title_brand_link_range().ToNSRange();
   if (titleBrandLinkRange.length) {
     NSColor* linkColor =
         gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-    [titleView_ addLinkRange:titleBrandLinkRange
-                    withName:@""
-                   linkColor:linkColor];
-    [titleView_.get() setDelegate:self];
+    [titleView addLinkRange:titleBrandLinkRange
+                   withName:@""
+                  linkColor:linkColor];
+    [titleView.get() setDelegate:self];
 
     // Create the link with no underlining.
-    [titleView_ setLinkTextAttributes:nil];
-    NSTextStorage* text = [titleView_ textStorage];
+    [titleView setLinkTextAttributes:nil];
+    NSTextStorage* text = [titleView textStorage];
     [text addAttribute:NSUnderlineStyleAttributeName
                  value:@(NSUnderlineStyleNone)
                  range:titleBrandLinkRange];
   } else {
     // TODO(vasilii): remove if crbug.com/515189 is fixed.
-    [titleView_ setRefusesFirstResponder:YES];
+    [titleView setRefusesFirstResponder:YES];
   }
 
   // Force the text to wrap to fit in the bubble size.
   int titleRightPadding =
       2 * chrome_style::kCloseButtonPadding + NSWidth([closeButton_ frame]);
   int titleWidth = kDesiredBubbleWidth - kFramePadding - titleRightPadding;
-  [titleView_ setVerticallyResizable:YES];
-  [titleView_ setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
-  [[titleView_ textContainer] setLineFragmentPadding:0];
-  [titleView_ sizeToFit];
+  [titleView setVerticallyResizable:YES];
+  [titleView setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
+  [[titleView textContainer] setLineFragmentPadding:0];
+  [titleView sizeToFit];
 
-  [view addSubview:titleView_];
+  [view addSubview:titleView];
 
   // Password item.
   // It should be at least as wide as the box without the padding.
@@ -139,6 +143,19 @@ using namespace password_manager::mac::ui;
            position:password_manager::ui::FIRST_ITEM]);
   NSView* password = [passwordItem_ view];
   [view addSubview:password];
+
+  base::scoped_nsobject<NSTextField> warm_welcome;
+  if (model_->ShouldShowGoogleSmartLockWelcome()) {
+    NSString* label_text =
+        l10n_util::GetNSString(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME);
+    warm_welcome.reset([[self addLabel:label_text
+                                toView:view] retain]);
+    [warm_welcome setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2*kFramePadding,
+                                          MAXFLOAT)];
+    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:warm_welcome];
+    NSColor* color = gfx::SkColorToCalibratedNSColor(kWarmWelcomeColor);
+    [warm_welcome setTextColor:color];
+  }
 
   // Save button.
   saveButton_.reset(
@@ -158,7 +175,7 @@ using namespace password_manager::mac::ui;
 
   // Compute the bubble width using the password item.
   const CGFloat contentWidth =
-      kFramePadding + NSWidth([titleView_ frame]) + titleRightPadding;
+      kFramePadding + NSWidth([titleView frame]) + titleRightPadding;
   const CGFloat width = std::max(kDesiredBubbleWidth, contentWidth);
 
   // Layout the elements, starting at the bottom and moving up.
@@ -173,15 +190,21 @@ using namespace password_manager::mac::ui;
   curX -= kRelatedControlHorizontalPadding + NSWidth([neverButton_ frame]);
   [neverButton_ setFrameOrigin:NSMakePoint(curX, curY)];
 
-  // Password item goes on the next row and is shifted right.
   curX = kFramePadding;
   curY = NSMaxY([saveButton_ frame]) + kUnrelatedControlVerticalPadding;
+  // The Smart Lock warm welcome is placed above after some padding.
+  if (warm_welcome) {
+    [warm_welcome setFrameOrigin:NSMakePoint(curX, curY)];
+    curY = NSMaxY([warm_welcome frame]) + kUnrelatedControlVerticalPadding;
+  }
+
+  // Password item goes on the next row.
   [password setFrameOrigin:NSMakePoint(curX, curY)];
 
   // Title goes at the top after some padding.
   curY = NSMaxY([password frame]) + kUnrelatedControlVerticalPadding;
-  [titleView_ setFrameOrigin:NSMakePoint(curX, curY)];
-  const CGFloat height = NSMaxY([titleView_ frame]) + kFramePadding;
+  [titleView setFrameOrigin:NSMakePoint(curX, curY)];
+  const CGFloat height = NSMaxY([titleView frame]) + kFramePadding;
 
   // The close button is in the corner.
   NSPoint closeButtonOrigin = NSMakePoint(
