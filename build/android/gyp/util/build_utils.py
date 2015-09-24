@@ -197,7 +197,8 @@ def CheckZipPath(name):
     raise Exception('Absolute zip path: %s' % name)
 
 
-def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None):
+def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None,
+               predicate=None):
   if path is None:
     path = os.getcwd()
   elif not os.path.exists(path):
@@ -210,6 +211,8 @@ def ExtractAll(zip_path, path=None, no_clobber=True, pattern=None):
       if pattern is not None:
         if not fnmatch.fnmatch(name, pattern):
           continue
+      if predicate and not predicate(name):
+        continue
       CheckZipPath(name)
       if no_clobber:
         output_path = os.path.join(path, name)
@@ -404,7 +407,8 @@ def ExpandFileArgs(args):
 
 def CallAndWriteDepfileIfStale(function, options, record_path=None,
                                input_paths=None, input_strings=None,
-                               output_paths=None, force=False):
+                               output_paths=None, force=False,
+                               pass_changes=False):
   """Wraps md5_check.CallAndRecordIfStale() and also writes dep & stamp files.
 
   Depfiles and stamp files are automatically added to output_paths when present
@@ -428,8 +432,9 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
   if stamp_file:
     output_paths += [stamp_file]
 
-  def on_stale_md5():
-    function()
+  def on_stale_md5(changes):
+    args = (changes,) if pass_changes else ()
+    function(*args)
     if python_deps is not None:
       WriteDepfile(options.depfile, python_deps + input_paths)
     if stamp_file:
@@ -441,5 +446,6 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
-      force=force)
+      force=force,
+      pass_changes=True)
 

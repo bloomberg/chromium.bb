@@ -33,10 +33,10 @@ def Jar(class_files, classes_dir, jar_path, manifest_file=None):
     build_utils.Touch(jar_path, fail_if_missing=True)
 
 
-def JarDirectory(classes_dir, excluded_classes, jar_path, manifest_file=None):
+def JarDirectory(classes_dir, jar_path, manifest_file=None, predicate=None):
   class_files = build_utils.FindInDirectory(classes_dir, '*.class')
-  class_files = [f for f in class_files
-                 if not build_utils.MatchesGlob(f, excluded_classes)]
+  if predicate:
+    class_files = [f for f in class_files if predicate(f)]
 
   Jar(class_files, classes_dir, jar_path, manifest_file=manifest_file)
 
@@ -51,13 +51,12 @@ def main():
 
   options, _ = parser.parse_args()
 
+  predicate = None
   if options.excluded_classes:
     excluded_classes = build_utils.ParseGypList(options.excluded_classes)
-  else:
-    excluded_classes = []
-  JarDirectory(options.classes_dir,
-               excluded_classes,
-               options.jar_path)
+    predicate = lambda f: not build_utils.MatchesGlob(f, excluded_classes)
+
+  JarDirectory(options.classes_dir, options.jar_path, predicate=predicate)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

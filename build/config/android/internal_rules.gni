@@ -1121,6 +1121,9 @@ template("compile_java") {
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
       "--jar-excluded-classes=$_jar_excluded_patterns",
     ]
+    if (incremental_javac) {
+      args += [ "--incremental" ]
+    }
     if (_supports_android) {
       deps += [ "//build/android:android_ijar" ]
       _android_sdk_ijar = "$root_out_dir/lib.java/android.interface.jar"
