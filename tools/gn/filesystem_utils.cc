@@ -165,54 +165,6 @@ bool FilesystemStringsEqual(const base::FilePath::StringType& a,
 
 }  // namespace
 
-const char* GetExtensionForOutputType(Target::OutputType type,
-                                      Settings::TargetOS os) {
-  switch (os) {
-    case Settings::MAC:
-      switch (type) {
-        case Target::EXECUTABLE:
-          return "";
-        case Target::SHARED_LIBRARY:
-          return "dylib";
-        case Target::STATIC_LIBRARY:
-          return "a";
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    case Settings::WIN:
-      switch (type) {
-        case Target::EXECUTABLE:
-          return "exe";
-        case Target::SHARED_LIBRARY:
-          return "dll.lib";  // Extension of import library.
-        case Target::STATIC_LIBRARY:
-          return "lib";
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    case Settings::LINUX:
-      switch (type) {
-        case Target::EXECUTABLE:
-          return "";
-        case Target::SHARED_LIBRARY:
-          return "so";
-        case Target::STATIC_LIBRARY:
-          return "a";
-        default:
-          NOTREACHED();
-      }
-      break;
-
-    default:
-      NOTREACHED();
-  }
-  return "";
-}
-
 std::string FilePathToUTF8(const base::FilePath::StringType& str) {
 #if defined(OS_WIN)
   return base::WideToUTF8(str);

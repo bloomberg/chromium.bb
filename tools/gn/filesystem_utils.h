@@ -16,15 +16,6 @@ class Err;
 class Location;
 class Value;
 
-// Returns the extension, not including the dot, for the given file type on the
-// given system.
-//
-// Some targets make multiple files (like a .dll and an import library). This
-// function returns the name of the file other targets should depend on and
-// link to (so in this example, the import library).
-const char* GetExtensionForOutputType(Target::OutputType type,
-                                      Settings::TargetOS os);
-
 std::string FilePathToUTF8(const base::FilePath::StringType& str);
 inline std::string FilePathToUTF8(const base::FilePath& path) {
   return FilePathToUTF8(path.value());
