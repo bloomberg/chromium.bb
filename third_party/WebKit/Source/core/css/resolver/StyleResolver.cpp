@@ -1449,7 +1449,7 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
     };
 
     // TODO(timloh): This is weird, the style is being used as its own parent
-    StyleResolverState state(document(), document().documentElement(), style);
+    StyleResolverState state(document(), nullptr, style);
     state.setStyle(style);
 
     for (CSSPropertyID property : properties) {
