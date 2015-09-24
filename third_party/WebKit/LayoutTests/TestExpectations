@@ -2188,3 +2188,7 @@ crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ ImageOnlyFailure ]
 crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Pass Crash ]
+
+crbug.com/535478 [ Debug ] virtual/threaded/inspector/tracing/console-timeline.html [ Pass Timeout ]
+crbug.com/535478 [ Linux Mac ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Timeout ]
+crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Timeout Failure ]
