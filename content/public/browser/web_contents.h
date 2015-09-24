@@ -58,6 +58,7 @@ class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
 struct Manifest;
+struct PageImportanceSignals;
 struct RendererPreferences;
 
 // WebContents is the core class in content/. A WebContents renders web content
@@ -277,6 +278,8 @@ class WebContents : public PageNavigator,
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) = 0;
 #endif
+
+  virtual const PageImportanceSignals& GetPageImportanceSignals() const = 0;
 
   // Tab navigation state ------------------------------------------------------
 

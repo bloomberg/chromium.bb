@@ -401,6 +401,7 @@ class CONTENT_EXPORT RenderViewImpl
   virtual double zoomFactorToZoomLevel(double factor) const;
   virtual blink::WebPageVisibilityState visibilityState() const;
   virtual void draggableRegionsChanged();
+  virtual void pageImportanceSignalsChanged();
 
 #if defined(OS_ANDROID)
   virtual void scheduleContentIntent(const blink::WebURL& intent);

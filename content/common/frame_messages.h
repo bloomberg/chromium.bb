@@ -22,6 +22,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/message_port_types.h"
+#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/common/three_d_api_types.h"
@@ -117,6 +118,9 @@ IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
   IPC_STRUCT_TRAITS_MEMBER(rect)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
+  IPC_STRUCT_TRAITS_MEMBER(had_form_interaction)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_BEGIN(FrameHostMsg_DidFailProvisionalLoadWithError_Params)
   // Error code as reported in the DidFailProvisionalLoad callback.
@@ -1165,6 +1169,10 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
 // non-savable content (i.e. from a non-savable scheme) or if there were
 // errors gathering the links.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
+
+// Sent when the renderer updates hint for importance of a tab.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,
+                    content::PageImportanceSignals)
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 

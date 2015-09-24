@@ -57,6 +57,7 @@
 #include "content/public/common/favicon_url.h"
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
+#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/ssl_status.h"
@@ -151,6 +152,7 @@
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
+#include "third_party/WebKit/public/web/WebPageImportanceSignals.h"
 #include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
@@ -3458,6 +3460,19 @@ void RenderViewImpl::draggableRegionsChanged() {
       RenderViewObserver,
       observers_,
       DraggableRegionsChanged(webview()->mainFrame()));
+}
+
+void RenderViewImpl::pageImportanceSignalsChanged() {
+  if (!webview() || !main_render_frame_)
+    return;
+
+  const auto& web_signals = webview()->pageImportanceSignals();
+
+  PageImportanceSignals signals;
+  signals.had_form_interaction = web_signals->hadFormInteraction();
+
+  main_render_frame_->Send(new FrameHostMsg_UpdatePageImportanceSignals(
+      main_render_frame_->GetRoutingID(), signals));
 }
 
 #if defined(OS_ANDROID)

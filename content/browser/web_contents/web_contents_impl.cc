@@ -642,6 +642,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
                         OnUnregisterProtocolHandler)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
+                        OnUpdatePageImportanceSignals)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
@@ -910,6 +912,10 @@ gfx::NativeViewAccessible accessible_parent) {
     rfh->SetParentNativeViewAccessible(accessible_parent);
 }
 #endif
+
+const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() const {
+  return page_importance_signals_;
+}
 
 const base::string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
@@ -3170,6 +3176,11 @@ void WebContentsImpl::OnUnregisterProtocolHandler(const std::string& protocol,
     return;
 
   delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
+}
+
+void WebContentsImpl::OnUpdatePageImportanceSignals(
+    const PageImportanceSignals& signals) {
+  page_importance_signals_ = signals;
 }
 
 void WebContentsImpl::OnFindReply(int request_id,

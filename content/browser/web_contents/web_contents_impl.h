@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_importance_signals.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
@@ -250,6 +251,7 @@ class CONTENT_EXPORT WebContentsImpl
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
 #endif
+  const PageImportanceSignals& GetPageImportanceSignals() const override;
   const base::string16& GetTitle() const override;
   int32 GetMaxPageID() override;
   int32 GetMaxPageIDForSiteInstance(SiteInstance* site_instance) override;
@@ -861,6 +863,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
+  void OnUpdatePageImportanceSignals(const PageImportanceSignals& signals);
 #if defined(ENABLE_PLUGINS)
   void OnPepperInstanceCreated();
   void OnPepperInstanceDeleted();
@@ -1306,6 +1309,8 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   scoped_ptr<RenderWidgetHostInputEventRouter> rwh_input_event_router_;
+
+  PageImportanceSignals page_importance_signals_;
 
   base::WeakPtrFactory<WebContentsImpl> loading_weak_factory_;
 
