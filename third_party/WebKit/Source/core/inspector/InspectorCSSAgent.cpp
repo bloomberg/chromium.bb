@@ -915,7 +915,7 @@ static bool jsonRangeToSourceRange(ErrorString* errorString, InspectorStyleSheet
     return true;
 }
 
-void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::CSSRule>& result)
+void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& styleSheetId, const RefPtr<JSONObject>& range, const String& selector, RefPtr<TypeBuilder::CSS::SelectorList>& result)
 {
     InspectorStyleSheet* inspectorStyleSheet = assertInspectorStyleSheetForId(errorString, styleSheetId);
     if (!inspectorStyleSheet) {
@@ -931,7 +931,12 @@ void InspectorCSSAgent::setRuleSelector(ErrorString* errorString, const String& 
     bool success = m_domAgent->history()->perform(action, exceptionState);
     if (success) {
         RefPtrWillBeRawPtr<CSSStyleRule> rule = InspectorCSSAgent::asCSSStyleRule(action->takeRule().get());
-        result = buildObjectForRule(rule.get());
+        InspectorStyleSheet* inspectorStyleSheet = inspectorStyleSheetForRule(rule.get());
+        if (!inspectorStyleSheet) {
+            *errorString = "Failed to get inspector style sheet for rule.";
+            return;
+        }
+        result = inspectorStyleSheet->buildObjectForSelectorList(rule.get());
     }
     *errorString = InspectorDOMAgent::toErrorString(exceptionState);
 }
@@ -1304,6 +1309,21 @@ String InspectorCSSAgent::unbindStyleSheet(InspectorStyleSheet* inspectorStyleSh
     return id;
 }
 
+InspectorStyleSheet* InspectorCSSAgent::inspectorStyleSheetForRule(CSSStyleRule* rule)
+{
+    if (!rule)
+        return nullptr;
+
+    // CSSRules returned by StyleResolver::pseudoCSSRulesForElement lack parent pointers if they are coming from
+    // user agent stylesheets. To work around this issue, we use CSSOM wrapper created by inspector.
+    if (!rule->parentStyleSheet()) {
+        if (!m_inspectorUserAgentStyleSheet)
+            m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(CSSDefaultStyleSheets::instance().defaultStyleSheet());
+        rule->setParentStyleSheet(m_inspectorUserAgentStyleSheet.get());
+    }
+    return bindStyleSheet(rule->parentStyleSheet());
+}
+
 InspectorStyleSheet* InspectorCSSAgent::viaInspectorStyleSheet(Document* document, bool createIfAbsent)
 {
     if (!document) {
@@ -1390,17 +1410,11 @@ TypeBuilder::CSS::StyleSheetOrigin::Enum InspectorCSSAgent::detectOrigin(CSSStyl
 
 PassRefPtr<TypeBuilder::CSS::CSSRule> InspectorCSSAgent::buildObjectForRule(CSSStyleRule* rule)
 {
-    if (!rule)
+    InspectorStyleSheet* inspectorStyleSheet = inspectorStyleSheetForRule(rule);
+    if (!inspectorStyleSheet)
         return nullptr;
 
-    // CSSRules returned by StyleResolver::pseudoCSSRulesForElement lack parent pointers if they are coming from
-    // user agent stylesheets. To work around this issue, we use CSSOM wrapper created by inspector.
-    if (!rule->parentStyleSheet()) {
-        if (!m_inspectorUserAgentStyleSheet)
-            m_inspectorUserAgentStyleSheet = CSSStyleSheet::create(CSSDefaultStyleSheets::instance().defaultStyleSheet());
-        rule->setParentStyleSheet(m_inspectorUserAgentStyleSheet.get());
-    }
-    RefPtr<TypeBuilder::CSS::CSSRule> result = bindStyleSheet(rule->parentStyleSheet())->buildObjectForRuleWithoutMedia(rule);
+    RefPtr<TypeBuilder::CSS::CSSRule> result = inspectorStyleSheet->buildObjectForRuleWithoutMedia(rule);
     result->setMedia(buildMediaListChain(rule));
     return result.release();
 }

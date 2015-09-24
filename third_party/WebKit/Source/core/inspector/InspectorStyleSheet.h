@@ -137,6 +137,7 @@ public:
 
     PassRefPtr<TypeBuilder::CSS::CSSStyleSheetHeader> buildObjectForStyleSheetInfo();
     PassRefPtr<TypeBuilder::CSS::CSSRule> buildObjectForRuleWithoutMedia(CSSStyleRule*);
+    PassRefPtr<TypeBuilder::CSS::SelectorList> buildObjectForSelectorList(CSSStyleRule*);
 
     PassRefPtr<TypeBuilder::CSS::SourceRange> ruleHeaderSourceRange(CSSRule*);
     PassRefPtr<TypeBuilder::CSS::SourceRange> mediaQueryExpValueSourceRange(CSSRule*, size_t mediaQueryIndex, size_t mediaQueryExpIndex);
@@ -164,7 +165,6 @@ private:
     bool resourceStyleSheetText(String* result);
     bool inlineStyleSheetText(String* result);
     PassRefPtr<TypeBuilder::Array<TypeBuilder::CSS::Selector>> selectorsFromSource(CSSRuleSourceData*, const String&);
-    PassRefPtr<TypeBuilder::CSS::SelectorList> buildObjectForSelectorList(CSSStyleRule*);
     String url();
     bool hasSourceURL();
     bool startsAtZero();
