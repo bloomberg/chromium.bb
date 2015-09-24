@@ -1385,6 +1385,14 @@ void RenderFrameHostImpl::OnDispatchLoad() {
   proxy->Send(new FrameMsg_DispatchLoad(proxy->GetRoutingID()));
 }
 
+RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
+  return static_cast<RenderWidgetHostViewBase*>(
+      frame_tree_node_->IsMainFrame() ? render_view_host_->GetView()
+                                      : frame_tree_node_->frame_tree()
+                                            ->GetMainFrame()
+                                            ->render_view_host_->GetView());
+}
+
 void RenderFrameHostImpl::OnAccessibilityEvents(
     const std::vector<AccessibilityHostMsg_EventParams>& params,
     int reset_token) {
@@ -1397,10 +1405,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
   }
   accessibility_reset_token_ = 0;
 
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      frame_tree_node_->frame_tree()
-          ->GetMainFrame()
-          ->render_view_host_->GetView());
+  RenderWidgetHostViewBase* view = GetViewForAccessibility();
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view &&
@@ -2003,10 +2008,7 @@ const ui::AXTree* RenderFrameHostImpl::GetAXTreeForTesting() {
 
 BrowserAccessibilityManager*
     RenderFrameHostImpl::GetOrCreateBrowserAccessibilityManager() {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      frame_tree_node_->frame_tree()
-          ->GetMainFrame()
-          ->render_view_host_->GetView());
+  RenderWidgetHostViewBase* view = GetViewForAccessibility();
   if (view &&
       !browser_accessibility_manager_ &&
       !no_create_browser_accessibility_manager_for_testing_) {

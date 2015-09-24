@@ -68,6 +68,7 @@ class RenderViewHostImpl;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;
+class RenderWidgetHostViewBase;
 class ResourceRequestBody;
 class StreamHandle;
 class TimeoutMonitor;
@@ -604,6 +605,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // AXNodeData structure.
   void AXContentNodeDataToAXNodeData(const AXContentNodeData& src,
                                      ui::AXNodeData* dst);
+
+  // Returns the RenderWidgetHostView used for accessibility. For subframes,
+  // this function will return the platform view on the main frame; for main
+  // frames, it will return the current frame's view.
+  RenderWidgetHostViewBase* GetViewForAccessibility();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each
