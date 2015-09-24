@@ -244,16 +244,16 @@
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_BUTTON_RIGHT_TOP_P" file="common/download_button_right_top_pressed.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING" file="legacy/download_icon.png" />
+        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_ERROR" file="legacy/download_error.png" />
+        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD" file="legacy/download_warning_bad.png" />
+        <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED" file="legacy/download_warning_unwanted.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_ERROR" file="common/downloads/download_error.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_INCOGNITO" file="common/downloads/download_icon_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_CANCEL" file="common/downloads/cancel.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_DELETE" file="common/downloads/delete.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_DOWNLOAD" file="common/downloads/download.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_FOLDER" file="common/downloads/folder.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_MENU_PAUSE" file="common/downloads/pause.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD" file="common/downloads/download_warning_bad.png" />
-      <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED" file="common/downloads/download_warning_unwanted.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_PROGRESS_BACKGROUND_32" file="common/download_progress_background32.png" />
       <structure type="chrome_scaled_image" name="IDR_DOWNLOAD_PROGRESS_FOREGROUND_32" file="common/download_progress_foreground32.png" />
       <if expr="chromeos">

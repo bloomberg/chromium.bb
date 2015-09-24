@@ -10,6 +10,7 @@
 
 namespace views {
 
+// TODO(estade): should probably be removed in favor of gfx::kErrorRed.
 VIEWS_EXPORT extern const SkColor kWarningColor;
 
 }  // namespace views

@@ -355,21 +355,13 @@ void DownloadItemNotification::UpdateNotificationData(
 
   notification_->set_title(GetTitle());
   notification_->set_message(GetStatusString());
+  notification_->set_priority(message_center::DEFAULT_PRIORITY);
 
   if (item_->IsDangerous()) {
     notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
-
-    // Show icon.
-    if (model.MightBeMalicious()) {
-      SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD);
-      notification_->set_priority(message_center::DEFAULT_PRIORITY);
-    } else {
-      SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
+    if (!model.MightBeMalicious())
       notification_->set_priority(message_center::HIGH_PRIORITY);
-    }
   } else {
-    notification_->set_priority(message_center::DEFAULT_PRIORITY);
-
     switch (item_->GetState()) {
       case content::DownloadItem::IN_PROGRESS: {
         int percent_complete = item_->PercentComplete();
@@ -381,14 +373,12 @@ void DownloadItemNotification::UpdateNotificationData(
               message_center::NOTIFICATION_TYPE_BASE_FORMAT);
           notification_->set_progress(0);
         }
-        UpdateNotificationIcon();
         break;
       }
       case content::DownloadItem::COMPLETE:
         DCHECK(item_->IsDone());
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
         notification_->set_progress(100);
-        UpdateNotificationIcon();
         break;
       case content::DownloadItem::CANCELLED:
         // Confgirms that a download is cancelled by user action.
@@ -404,12 +394,12 @@ void DownloadItemNotification::UpdateNotificationData(
         // be updated. (same as the case of type = COMPLETE)
         notification_->set_type(message_center::NOTIFICATION_TYPE_BASE_FORMAT);
         notification_->set_progress(0);
-        UpdateNotificationIcon();
         break;
       case content::DownloadItem::MAX_DOWNLOAD_STATE:  // sentinel
         NOTREACHED();
     }
   }
+  UpdateNotificationIcon();
 
   std::vector<message_center::ButtonInfo> notification_actions;
   scoped_ptr<std::vector<DownloadCommands::Command>> actions(
@@ -496,6 +486,20 @@ void DownloadItemNotification::UpdateNotificationData(
 }
 
 void DownloadItemNotification::UpdateNotificationIcon() {
+  if (item_->IsDangerous()) {
+    DownloadItemModel model(item_);
+#if defined(OS_MACOSX)
+    SetNotificationIcon(model.MightBeMalicious()
+                            ? IDR_DOWNLOAD_NOTIFICATION_WARNING_BAD
+                            : IDR_DOWNLOAD_NOTIFICATION_WARNING_UNWANTED);
+#else
+    SetNotificationVectorIcon(
+        gfx::VectorIconId::WARNING,
+        model.MightBeMalicious() ? gfx::kErrorRed : gfx::kAmber);
+#endif
+    return;
+  }
+
   bool is_off_the_record = item_->GetBrowserContext() &&
                            item_->GetBrowserContext()->IsOffTheRecord();
   switch (item_->GetState()) {
@@ -515,8 +519,12 @@ void DownloadItemNotification::UpdateNotificationIcon() {
       break;
 
     case content::DownloadItem::INTERRUPTED:
-      // TODO(estade): vectorize.
+#if defined(OS_MACOSX)
       SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_ERROR);
+#else
+      SetNotificationVectorIcon(gfx::VectorIconId::ERROR_CIRCLE,
+                                gfx::kErrorRed);
+#endif
       break;
 
     case content::DownloadItem::CANCELLED:

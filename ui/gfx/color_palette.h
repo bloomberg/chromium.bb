@@ -11,6 +11,7 @@ namespace gfx {
 
 const SkColor kAmber = SkColorSetRGB(0xFF, 0xC1, 0x07);
 const SkColor kChromeIconGrey = SkColorSetRGB(0x5A, 0x5A, 0x5A);
+const SkColor kErrorRed = SkColorSetRGB(0xE5, 0x1C, 0x23);
 const SkColor kGoogleBlue = SkColorSetRGB(0x42, 0x85, 0xF4);
 
 }  // namespace gfx
