@@ -2923,6 +2923,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DownloadNotification.Close_Dangerous">
+  <owner>yoshiki@chromium.org</owner>
+  <owner>deepak.m1@samsung.com</owner>
+  <description>
+    User closed a download notification, which indicates a dangerous download.
+  </description>
+</action>
+
 <action name="Duplicate">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

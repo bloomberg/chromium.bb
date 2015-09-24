@@ -203,7 +203,8 @@ void DownloadItemNotification::OnNotificationClose() {
   visible_ = false;
 
   if (item_ && item_->IsDangerous() && !item_->IsDone()) {
-    // TODO(yoshiki): Add metrics.
+    content::RecordAction(
+        UserMetricsAction("DownloadNotification.Close_Dangerous"));
     item_->Cancel(true /* by_user */);
     return;
   }
