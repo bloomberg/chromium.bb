@@ -51,6 +51,13 @@ shared_library("blimp_client") {
 }
 
 if (is_android) {
+  blimp_apk_manifest = "$target_gen_dir/blimp_apk_manifest/AndroidManifest.xml"
+
+  jinja_template("blimp_apk_manifest") {
+    input = "android/AndroidManifest.xml.jinja2"
+    output = blimp_apk_manifest
+  }
+
   generate_jni("jni_headers") {
     sources = [
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
@@ -60,32 +67,83 @@ if (is_android) {
     jni_package = "blimp"
   }
 
-  blimp_apk_manifest = "$target_gen_dir/blimp_apk_manifest/AndroidManifest.xml"
-
-  jinja_template("blimp_apk_manifest") {
-    input = "android/AndroidManifest.xml.jinja2"
-    output = blimp_apk_manifest
+  android_resources("blimp_java_resources") {
+    resource_dirs = [ "android/java/res" ]
+    deps = [
+      ":blimp_strings_grd",
+    ]
+    custom_package = "org.chromium.blimp"
   }
 
-  android_resources("blimp_apk_resources") {
-    resource_dirs = [ "android/java/res" ]
-    android_manifest = blimp_apk_manifest
-    deps = [
-      ":blimp_apk_manifest",
+  java_strings_grd("blimp_strings_grd") {
+    grd_file = "android/java/strings/android_blimp_strings.grd"
+    outputs = [
+      "values-am/android_blimp_strings.xml",
+      "values-ar/android_blimp_strings.xml",
+      "values-bg/android_blimp_strings.xml",
+      "values-ca/android_blimp_strings.xml",
+      "values-cs/android_blimp_strings.xml",
+      "values-da/android_blimp_strings.xml",
+      "values-de/android_blimp_strings.xml",
+      "values-el/android_blimp_strings.xml",
+      "values/android_blimp_strings.xml",
+      "values-en-rGB/android_blimp_strings.xml",
+      "values-es/android_blimp_strings.xml",
+      "values-es-rUS/android_blimp_strings.xml",
+      "values-fa/android_blimp_strings.xml",
+      "values-fi/android_blimp_strings.xml",
+      "values-tl/android_blimp_strings.xml",
+      "values-fr/android_blimp_strings.xml",
+      "values-hi/android_blimp_strings.xml",
+      "values-hr/android_blimp_strings.xml",
+      "values-hu/android_blimp_strings.xml",
+      "values-in/android_blimp_strings.xml",
+      "values-it/android_blimp_strings.xml",
+      "values-iw/android_blimp_strings.xml",
+      "values-ja/android_blimp_strings.xml",
+      "values-ko/android_blimp_strings.xml",
+      "values-lt/android_blimp_strings.xml",
+      "values-lv/android_blimp_strings.xml",
+      "values-nl/android_blimp_strings.xml",
+      "values-nb/android_blimp_strings.xml",
+      "values-pl/android_blimp_strings.xml",
+      "values-pt-rBR/android_blimp_strings.xml",
+      "values-pt-rPT/android_blimp_strings.xml",
+      "values-ro/android_blimp_strings.xml",
+      "values-ru/android_blimp_strings.xml",
+      "values-sk/android_blimp_strings.xml",
+      "values-sl/android_blimp_strings.xml",
+      "values-sr/android_blimp_strings.xml",
+      "values-sv/android_blimp_strings.xml",
+      "values-sw/android_blimp_strings.xml",
+      "values-th/android_blimp_strings.xml",
+      "values-tr/android_blimp_strings.xml",
+      "values-uk/android_blimp_strings.xml",
+      "values-vi/android_blimp_strings.xml",
+      "values-zh-rCN/android_blimp_strings.xml",
+      "values-zh-rTW/android_blimp_strings.xml",
     ]
   }
 
-  android_apk("blimp_apk") {
+  android_library("blimp_java") {
+    deps = [
+      ":blimp_java_resources",
+      "//base:base_java",
+    ]
+
     java_files = [
       "android/java/src/org/chromium/blimp/BlimpApplication.java",
       "android/java/src/org/chromium/blimp/BlimpLibraryLoader.java",
       "android/java/src/org/chromium/blimp/BlimpRendererActivity.java",
       "android/java/src/org/chromium/blimp/BlimpView.java",
     ]
+  }
 
+  android_apk("blimp_apk") {
     deps = [
       ":blimp_apk_manifest",
-      ":blimp_apk_resources",
+      ":blimp_java",
+      ":blimp_java_resources",
       ":blimp_client",
       "//base:base_java",
     ]
