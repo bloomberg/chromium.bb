@@ -136,6 +136,7 @@ ImageEditor.prototype.onExitClicked_ = function() {
  * @param {string} title Button title.
  * @param {function(Event)} handler onClick handler.
  * @return {!HTMLElement} A created button.
+ * @private
  */
 ImageEditor.prototype.createToolButton_ = function(name, title, handler) {
   var button = this.mainToolbar_.addButton(
@@ -257,7 +258,7 @@ ImageEditor.prototype.closeSession = function(callback) {
  */
 ImageEditor.prototype.executeWhenReady = function(callback) {
   if (this.commandQueue_) {
-    this.leaveModeGently();
+    this.leaveMode(false /* not to switch mode */);
     this.commandQueue_.executeWhenReady(callback);
   } else {
     if (!this.imageView_.isLoading())
@@ -287,7 +288,7 @@ ImageEditor.prototype.undo = function() {
   }
 
   this.getPrompt().hide();
-  this.leaveMode(false);
+  this.leaveModeInternal_(false, false /* not to switch mode */);
   this.commandQueue_.undo();
   this.updateUndoRedo();
 };
@@ -299,7 +300,7 @@ ImageEditor.prototype.redo = function() {
   if (this.isLocked()) return;
   this.recordToolUse('redo');
   this.getPrompt().hide();
-  this.leaveMode(false);
+  this.leaveModeInternal_(false, false /* not to switch mode */);
   this.commandQueue_.redo();
   this.updateUndoRedo();
 };
@@ -378,6 +379,16 @@ ImageEditor.Mode = function(name, title) {
    * @type {boolean}
    */
   this.instant = false;
+
+  /**
+   * @type {number}
+   */
+  this.paddingTop = 0;
+
+  /**
+   * @type {number}
+   */
+  this.paddingBottom = 0;
 
   /**
    * @type {ImageEditor}
@@ -557,15 +568,17 @@ ImageEditor.prototype.getMode = function() { return this.currentMode_; };
 ImageEditor.prototype.enterMode = function(mode) {
   if (this.isLocked()) return;
 
-  if (this.currentMode_ == mode) {
+  if (this.currentMode_ === mode) {
     // Currently active editor tool clicked, commit if modified.
-    this.leaveMode(this.currentMode_.updated_);
+    this.leaveModeInternal_(
+        this.currentMode_.updated_, false /* not to switch mode */);
     return;
   }
 
   this.recordToolUse(mode.name);
 
-  this.leaveModeGently();
+  this.leaveMode(true /* to switch mode */);
+
   // The above call could have caused a commit which might have initiated
   // an asynchronous command execution. Wait for it to complete, then proceed
   // with the mode set up.
@@ -588,10 +601,22 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
     paperRipple.downAction();
 
   this.currentMode_ = mode;
+
+  // Scale the screen so that it doesn't overlap the toolbars. We should scale
+  // the screen before setup of current mode is called to make the current mode
+  // able to set up with new screen size.
+  if (!this.currentMode_.instant) {
+    this.getViewport().setScreenTop(
+        ImageEditor.Toolbar.HEIGHT + mode.paddingTop);
+    this.getViewport().setScreenBottom(
+        ImageEditor.Toolbar.HEIGHT * 2 + mode.paddingBottom);
+    this.getImageView().applyViewportChange();
+  }
+
   this.currentMode_.setUp();
 
   if (this.currentMode_.instant) {  // Instant tool.
-    this.leaveMode(true);
+    this.leaveModeInternal_(true, false /* not to switch mode */);
     return;
   }
 
@@ -608,7 +633,7 @@ ImageEditor.prototype.setUpMode_ = function(mode) {
  * @private
  */
 ImageEditor.prototype.onDoneClicked_ = function(event) {
-  this.leaveMode(true /* commit */);
+  this.leaveModeInternal_(true /* commit */, false /* not to switch mode */);
 };
 
 /**
@@ -617,19 +642,33 @@ ImageEditor.prototype.onDoneClicked_ = function(event) {
  * @private
  */
 ImageEditor.prototype.onCancelClicked_ = function(event) {
-  this.leaveMode(false /* not commit */);
+  this.leaveModeInternal_(
+      false /* not commit */, false /* not to switch mode */);
 };
 
 /**
  * The user clicked on 'OK' or 'Cancel' or on a different mode button.
  * @param {boolean} commit True if commit is required.
+ * @param {boolean} leaveToSwitchMode True if it leaves to change mode.
+ * @private
  */
-ImageEditor.prototype.leaveMode = function(commit) {
-  if (!this.currentMode_) return;
+ImageEditor.prototype.leaveModeInternal_ = function(commit, leaveToSwitchMode) {
+  if (!this.currentMode_)
+    return;
 
   this.modeToolbar_.show(false);
 
+  // If it leaves to switch mode, do not restore screen size since the next mode
+  // might change screen size. We should avoid to show intermediate animation
+  // which tries to restore screen size.
+  if (!leaveToSwitchMode) {
+    this.getViewport().setScreenTop(ImageEditor.Toolbar.HEIGHT);
+    this.getViewport().setScreenBottom(ImageEditor.Toolbar.HEIGHT);
+    this.getImageView().applyViewportChange();
+  }
+
   this.currentMode_.cleanUpUI();
+
   if (commit) {
     var self = this;
     var command = this.currentMode_.getCommand();
@@ -653,11 +692,13 @@ ImageEditor.prototype.leaveMode = function(commit) {
 
 /**
  * Leave the mode, commit only if required by the current mode.
+ * @param {boolean} leaveToSwitchMode True if it leaves to switch mode.
  */
-ImageEditor.prototype.leaveModeGently = function() {
-  this.leaveMode(!!this.currentMode_ &&
-                 this.currentMode_.updated_ &&
-                 this.currentMode_.implicitCommit);
+ImageEditor.prototype.leaveMode = function(leaveToSwitchMode) {
+  this.leaveModeInternal_(!!this.currentMode_ &&
+      this.currentMode_.updated_ &&
+      this.currentMode_.implicitCommit,
+      leaveToSwitchMode);
 };
 
 /**
@@ -688,7 +729,8 @@ ImageEditor.prototype.onKeyDown = function(event) {
     case 'U+001B': // Escape
     case 'Enter':
       if (this.getMode()) {
-        this.leaveMode(event.keyIdentifier === 'Enter');
+        this.leaveModeInternal_(event.keyIdentifier === 'Enter',
+            false /* not to switch mode */);
         return true;
       }
       break;
@@ -739,10 +781,10 @@ ImageEditor.prototype.onKeyDown = function(event) {
 ImageEditor.prototype.onDoubleTap_ = function(x, y) {
   if (this.getMode()) {
     var action = this.buffer_.getDoubleTapAction(x, y);
-    if (action == ImageBuffer.DoubleTapAction.COMMIT)
-      this.leaveMode(true);
-    else if (action == ImageBuffer.DoubleTapAction.CANCEL)
-      this.leaveMode(false);
+    if (action === ImageBuffer.DoubleTapAction.COMMIT)
+      this.leaveModeInternal_(true, false /* not to switch mode */);
+    else if (action === ImageBuffer.DoubleTapAction.CANCEL)
+      this.leaveModeInternal_(false, false /* not to switch mode */);
   }
 };
 

@@ -1356,6 +1356,7 @@ SlideMode.OVERWRITE_BUBBLE_MAX_TIMES = 5;
 
 /**
  * Handles change event of overwrite original checkbox.
+ * @private
  */
 SlideMode.prototype.onOverwriteOriginalCheckboxChanged_ = function() {
   var items = {};
@@ -1609,7 +1610,7 @@ SlideMode.prototype.toggleEditor = function(opt_event) {
     }.bind(this));
   } else {
     this.editor_.getPrompt().hide();
-    this.editor_.leaveModeGently();
+    this.editor_.leaveMode(false /* not to switch mode */);
 
     this.viewport_.setScreenTop(0);
     this.viewport_.setScreenBottom(0);
