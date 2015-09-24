@@ -27,11 +27,11 @@ class WebGestureCurveImpl : public NON_EXPORTED_BASE(blink::WebGestureCurve) {
       scoped_ptr<GestureCurve> curve,
       const gfx::Vector2dF& initial_offset);
 
-  virtual ~WebGestureCurveImpl();
+  ~WebGestureCurveImpl() override;
 
   // WebGestureCurve implementation.
-  virtual bool apply(double time,
-                     blink::WebGestureCurveTarget* target) override;
+  bool apply(double time,
+             blink::WebGestureCurveTarget* target) override;
 
  private:
   enum class ThreadType {
