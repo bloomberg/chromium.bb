@@ -63,7 +63,6 @@ class FakeSyncService : public sync_driver::SyncService {
   void RegisterDataTypeController(
       sync_driver::DataTypeController* data_type_controller) override;
   void ReenableDatatype(syncer::ModelType type) override;
-  void DeactivateDataType(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatus() const override;
   std::string QuerySyncStatusSummaryString() override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;

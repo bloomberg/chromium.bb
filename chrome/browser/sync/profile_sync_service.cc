@@ -2073,12 +2073,6 @@ base::Value* ProfileSyncService::GetTypeStatusMap() const {
   return result.release();
 }
 
-void ProfileSyncService::DeactivateDataType(syncer::ModelType type) {
-  if (!backend_)
-    return;
-  backend_->DeactivateDataType(type);
-}
-
 void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {
   // If no cached passphrase, or sync backend hasn't started up yet, just exit.
   // If the backend isn't running yet, OnBackendInitialized() will call this

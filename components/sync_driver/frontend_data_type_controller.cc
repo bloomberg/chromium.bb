@@ -95,8 +95,6 @@ void FrontendDataTypeController::Stop() {
 
   CleanUpState();
 
-  sync_client_->GetSyncService()->DeactivateDataType(type());
-
   if (model_associator()) {
     syncer::SyncError error;  // Not used.
     error = model_associator()->DisassociateModels();

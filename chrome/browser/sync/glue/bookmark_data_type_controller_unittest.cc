@@ -156,7 +156,6 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   }
 
   void SetStopExpectations() {
-    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels()).
                 WillOnce(Return(syncer::SyncError()));
   }

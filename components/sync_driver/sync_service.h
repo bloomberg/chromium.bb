@@ -256,9 +256,6 @@ class SyncService : public DataTypeEncryptionHandler {
   // restarts.
   virtual void ReenableDatatype(syncer::ModelType type) = 0;
 
-  // TODO(zea): Remove these and have the dtc's call directly into the SBH.
-  virtual void DeactivateDataType(syncer::ModelType type) = 0;
-
   // Return sync token status.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 

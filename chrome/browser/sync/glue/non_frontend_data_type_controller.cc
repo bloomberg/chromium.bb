@@ -247,13 +247,6 @@ void NonFrontendDataTypeController::Stop() {
   if (state_ == NOT_RUNNING)
     return;
 
-  // Deactivate the date type on the UI thread first to stop processing
-  // sync server changes. This needs to happen before posting task to destroy
-  // processor and associator on backend. Otherwise it could crash if syncer
-  // post work to backend after destruction task and that work is run before
-  // deactivation.
-  sync_client_->GetSyncService()->DeactivateDataType(type());
-
   // Ignore association callback.
   weak_ptr_factory_.InvalidateWeakPtrs();
 

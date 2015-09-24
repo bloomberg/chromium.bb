@@ -146,8 +146,6 @@ void FakeSyncService::RegisterDataTypeController(
 
 void FakeSyncService::ReenableDatatype(syncer::ModelType type) {}
 
-void FakeSyncService::DeactivateDataType(syncer::ModelType type) {}
-
 bool FakeSyncService::IsPassphraseRequired() const {
   return false;
 }

@@ -164,7 +164,6 @@ class SyncNonFrontendDataTypeControllerTest
 
   void SetStopExpectations() {
     EXPECT_CALL(*dtc_mock_.get(), DisconnectProcessor(_));
-    EXPECT_CALL(service_, DeactivateDataType(_));
     EXPECT_CALL(*model_associator_, DisassociateModels()).
                 WillOnce(Return(syncer::SyncError()));
   }
@@ -368,9 +367,6 @@ TEST_F(SyncNonFrontendDataTypeControllerTest,
   SetAssociateExpectations();
   SetActivateExpectations(DataTypeController::OK);
   EXPECT_CALL(*dtc_mock_.get(), RecordUnrecoverableError(_, "Test"));
-  EXPECT_CALL(service_, DisableDatatype(_))
-      .WillOnce(InvokeWithoutArgs(non_frontend_dtc_.get(),
-                                  &NonFrontendDataTypeController::Stop));
   SetStopExpectations();
   EXPECT_EQ(DataTypeController::NOT_RUNNING, non_frontend_dtc_->state());
   Start();
