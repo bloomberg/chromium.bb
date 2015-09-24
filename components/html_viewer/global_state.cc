@@ -109,15 +109,8 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
       new ui::mojo::UIInit(screen_size_in_pixels, device_pixel_ratio));
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 
-  mojo::URLRequestPtr request(mojo::URLRequest::New());
-  request->url = mojo::String::From("mojo:mus");
-  app_->ConnectToService(request.Pass(), &gpu_service_);
-  gpu_service_->GetGpuInfo(base::Bind(&GlobalState::GetGpuInfoCallback,
-                                      base::Unretained(this)));
-
   renderer_scheduler_ = scheduler::RendererScheduler::Create();
-  blink_platform_.reset(
-      new BlinkPlatformImpl(this, app_, renderer_scheduler_.get()));
+  blink_platform_.reset(new BlinkPlatformImpl(app_, renderer_scheduler_.get()));
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8SnapshotFromFD(
       resource_loader_.ReleaseFile(kResourceSnapshotBlob).TakePlatformFile(),
@@ -157,18 +150,6 @@ void GlobalState::InitIfNecessary(const gfx::Size& screen_size_in_pixels,
     std::string flags(command_line->GetSwitchValueASCII(kJavaScriptFlags));
     v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
   }
-}
-
-const mojo::GpuInfo* GlobalState::GetGpuInfo() {
-  if (gpu_service_)
-    CHECK(gpu_service_.WaitForIncomingResponse()) <<"Get GPU info failed!";
-  return gpu_info_.get();
-}
-
-void GlobalState::GetGpuInfoCallback(mojo::GpuInfoPtr gpu_info) {
-  CHECK(gpu_info);
-  gpu_info_ = gpu_info.Pass();
-  gpu_service_.reset();
 }
 
 }  // namespace html_viewer

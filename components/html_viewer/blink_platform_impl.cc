@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/html_viewer/blink_resource_constants.h"
-#include "components/html_viewer/global_state.h"
 #include "components/html_viewer/web_clipboard_impl.h"
 #include "components/html_viewer/web_cookie_jar_impl.h"
 #include "components/html_viewer/web_graphics_context_3d_command_buffer_impl.h"
@@ -69,11 +68,9 @@ class WebWaitableEventImpl : public blink::WebWaitableEvent {
 }  // namespace
 
 BlinkPlatformImpl::BlinkPlatformImpl(
-    GlobalState* global_state,
     mojo::ApplicationImpl* app,
     scheduler::RendererScheduler* renderer_scheduler)
-    : global_state_(global_state),
-      app_(app),
+    : app_(app),
       main_thread_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       main_thread_(new scheduler::WebThreadImplForRendererScheduler(
           renderer_scheduler)) {
@@ -180,10 +177,9 @@ BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3D* share_context,
     blink::WebGLInfo* gl_info) {
-  // TODO(penghuang): Use the app from the right HTMLDocument.
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-      global_state_, app_, GURL(attributes.topDocumentURL), attributes,
-      share_context, gl_info);
+      app_, GURL(attributes.topDocumentURL), attributes, share_context,
+      gl_info);
 }
 
 blink::WebGraphicsContext3D*

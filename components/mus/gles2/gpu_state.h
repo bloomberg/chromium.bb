@@ -11,7 +11,6 @@
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
-#include "gpu/config/gpu_info.h"
 #include "ui/gl/gl_share_group.h"
 
 namespace mus {
@@ -41,10 +40,6 @@ class GpuState : public base::RefCounted<GpuState> {
     return sync_point_manager_.get();
   }
 
-  const gpu::GPUInfo& gpu_info() const {
-    return gpu_info_;
-  }
-
  private:
   friend class base::RefCounted<GpuState>;
   ~GpuState();
@@ -53,7 +48,6 @@ class GpuState : public base::RefCounted<GpuState> {
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
-  gpu::GPUInfo gpu_info_;
 };
 
 }  // namespace mus
