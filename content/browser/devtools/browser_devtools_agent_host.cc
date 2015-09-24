@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/protocol/io_handler.h"
+#include "content/browser/devtools/protocol/memory_handler.h"
 #include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
@@ -23,6 +24,7 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
     scoped_refptr<base::SingleThreadTaskRunner> tethering_task_runner,
     const CreateServerSocketCallback& socket_callback)
     : io_handler_(new devtools::io::IOHandler(GetIOContext())),
+      memory_handler_(new devtools::memory::MemoryHandler()),
       system_info_handler_(new devtools::system_info::SystemInfoHandler()),
       tethering_handler_(
           new devtools::tethering::TetheringHandler(socket_callback,
@@ -35,6 +37,7 @@ BrowserDevToolsAgentHost::BrowserDevToolsAgentHost(
                      base::Unretained(this)))) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetIOHandler(io_handler_.get());
+  dispatcher->SetMemoryHandler(memory_handler_.get());
   dispatcher->SetSystemInfoHandler(system_info_handler_.get());
   dispatcher->SetTetheringHandler(tethering_handler_.get());
   dispatcher->SetTracingHandler(tracing_handler_.get());

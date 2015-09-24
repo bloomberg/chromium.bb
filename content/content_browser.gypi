@@ -608,6 +608,8 @@
       'browser/devtools/protocol/inspector_handler.h',
       'browser/devtools/protocol/io_handler.cc',
       'browser/devtools/protocol/io_handler.h',
+      'browser/devtools/protocol/memory_handler.cc',
+      'browser/devtools/protocol/memory_handler.h',
       'browser/devtools/protocol/network_handler.cc',
       'browser/devtools/protocol/network_handler.h',
       'browser/devtools/protocol/page_handler.cc',
