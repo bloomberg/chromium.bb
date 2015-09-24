@@ -435,7 +435,6 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'ImportLibrary': '$(OutDir)\\lib\\chrome_exe.lib',
               'OutputFile': '$(OutDir)\\initialexe\\chrome.exe',
               'DelayLoadDLLs': [
                 'dbghelp.dll',

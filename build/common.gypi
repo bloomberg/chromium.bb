@@ -5714,7 +5714,6 @@
             ],
             'GenerateDebugInformation': 'true',
             'MapFileName': '$(OutDir)\\$(TargetName).map',
-            'ImportLibrary': '$(OutDir)\\lib\\$(TargetName).lib',
             'FixedBaseAddress': '1',
             # SubSystem values:
             #   0 == not set

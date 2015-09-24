@@ -156,7 +156,6 @@
               },
               'msvs_settings': {
                 'VCLinkerTool': {
-                  'ImportLibrary': '$(OutDir)\\lib\\chrome_dll.lib',
                   # Set /SUBSYSTEM:WINDOWS for chrome.dll (for consistency).
                   'SubSystem': '2',
                   'conditions': [
