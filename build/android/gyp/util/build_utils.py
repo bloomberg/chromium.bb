@@ -16,6 +16,8 @@ import sys
 import tempfile
 import zipfile
 
+# Some clients do not add //build/android/gyp to PYTHONPATH.
+import md5_check  # pylint: disable=relative-import
 
 CHROMIUM_SRC = os.path.normpath(
     os.path.join(os.path.dirname(__file__),
@@ -398,4 +400,46 @@ def ExpandFileArgs(args):
     new_args[i] = arg[:match.start()] + str(expansion)
 
   return new_args
+
+
+def CallAndWriteDepfileIfStale(function, options, record_path=None,
+                               input_paths=None, input_strings=None,
+                               output_paths=None, force=False):
+  """Wraps md5_check.CallAndRecordIfStale() and also writes dep & stamp files.
+
+  Depfiles and stamp files are automatically added to output_paths when present
+  in the |options| argument. They are then created after |function| is called.
+  """
+  if not output_paths:
+    raise Exception('At least one output_path must be specified.')
+  input_paths = list(input_paths or [])
+  input_strings = list(input_strings or [])
+  output_paths = list(output_paths or [])
+
+  python_deps = None
+  if hasattr(options, 'depfile') and options.depfile:
+    python_deps = GetPythonDependencies()
+    # List python deps in input_strings rather than input_paths since the
+    # contents of them does not change what gets written to the depfile.
+    input_strings += python_deps
+    output_paths += [options.depfile]
+
+  stamp_file = hasattr(options, 'stamp') and options.stamp
+  if stamp_file:
+    output_paths += [stamp_file]
+
+  def on_stale_md5():
+    function()
+    if python_deps is not None:
+      WriteDepfile(options.depfile, python_deps + input_paths)
+    if stamp_file:
+      Touch(stamp_file)
+
+  md5_check.CallAndRecordIfStale(
+      on_stale_md5,
+      record_path=record_path,
+      input_paths=input_paths,
+      input_strings=input_strings,
+      output_paths=output_paths,
+      force=force)
 
