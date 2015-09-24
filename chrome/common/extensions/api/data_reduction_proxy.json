@@ -24,6 +24,12 @@
         "$ref": "types.ChromeSetting",
         "value": ["data_reduction.daily_received_length", {"type":"array"}],
         "description": "Each item contains the number of compressed bytes through data reduction proxy per day."
+      },
+      "dataUsageReportingEnabled": {
+        "nocompile": true,
+        "$ref": "types.ChromeSetting",
+        "value": ["data_usage_reporting.enabled", {"type":"boolean"}],
+        "description": "Flag to enable collection and reporting of detailed data usage."
       }
     },
     "functions": [
@@ -38,6 +44,36 @@
             "description": "Callback to call after data savings have been cleared",
             "optional": true,
             "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "getDataUsage",
+        "type": "function",
+        "description": "Get data usage history.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "getDataUsageCallback",
+            "description": "Callback to call with data usage history",
+            "optional": true,
+            "parameters": [
+              {
+                "name": "data_usage",
+                "type": "object",
+                "description": "Data usage history.",
+                "properties": {
+                  "data_usage_buckets": {
+                    "type": "array",
+                    "description": "Data usage for the past 60 days broken down by time intervals. Each element contains data usage for |kDataUsageBucketLengthMins| minutes.",
+                    "items": {
+                      "type": "any",
+                      "description": "Array of per-connection data usage. Each element contains data usage for a connection-type."
+                    }
+                  }
+                }
+              }
+            ]
           }
         ]
       }

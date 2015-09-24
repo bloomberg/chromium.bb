@@ -57721,6 +57721,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1086" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONSTATUS"/>
   <int value="1087" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONDISCONNECT"/>
   <int value="1088" label="EASYUNLOCKPRIVATE_SETUPCONNECTIONSEND"/>
+  <int value="1089" label="DATAREDUCTIONPROXY_GETDATAUSAGE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

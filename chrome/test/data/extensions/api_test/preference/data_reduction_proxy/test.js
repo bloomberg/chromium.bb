@@ -129,5 +129,17 @@ chrome.test.runTests([
               result);
           }));
     });
+  },
+  function dataUsageReporting() {
+    dataReductionProxy.dataUsageReportingEnabled.set({ 'value': true });
+
+    setTimeout(function() {
+      dataReductionProxy.getDataUsage(chrome.test.callbackPass(
+          function(data_usage) {
+            chrome.test.assertTrue('data_usage_buckets' in data_usage);
+            chrome.test.assertEq(17280,
+                                 data_usage['data_usage_buckets'].length);
+      }));
+    }, 1000);
   }
 ]);

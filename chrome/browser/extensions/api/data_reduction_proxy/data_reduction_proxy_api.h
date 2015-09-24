@@ -7,6 +7,10 @@
 
 #include "extensions/browser/extension_function.h"
 
+namespace data_reduction_proxy {
+class DataUsageBucket;
+}
+
 namespace extensions {
 
 class DataReductionProxyClearDataSavingsFunction
@@ -18,6 +22,21 @@ class DataReductionProxyClearDataSavingsFunction
                              DATAREDUCTIONPROXY_CLEARDATASAVINGS)
 
   ResponseAction Run() override;
+};
+
+class DataReductionProxyGetDataUsageFunction
+    : public UIThreadExtensionFunction {
+ private:
+  ~DataReductionProxyGetDataUsageFunction() override{};
+
+  DECLARE_EXTENSION_FUNCTION("dataReductionProxy.getDataUsage",
+                             DATAREDUCTIONPROXY_GETDATAUSAGE)
+
+  ResponseAction Run() override;
+
+  void ReplyWithDataUsage(
+      scoped_ptr<std::vector<data_reduction_proxy::DataUsageBucket>>
+          data_usage);
 };
 
 }  // namespace extensions
