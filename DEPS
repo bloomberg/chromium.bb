@@ -62,7 +62,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
-  'boringssl_revision': '231cb8214511ea5784dd94a59f3e5f5fb7d39f8e',
+  'boringssl_revision': '4c60d356a926b68ac20e8090755799e1525874f0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling nss
   # and whatever else without interference from each other.
