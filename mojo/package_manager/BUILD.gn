@@ -2,8 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 source_set("package_manager") {
   sources = [
+    "content_handler_connection.cc",
+    "content_handler_connection.h",
     "package_manager_impl.cc",
     "package_manager_impl.h",
   ]
@@ -12,5 +16,25 @@ source_set("package_manager") {
     "//mojo/fetcher",
     "//mojo/shell",
     "//mojo/util:filename_util",
+  ]
+}
+
+test("unittests") {
+  output_name = "mojo_package_manager_unittests"
+
+  sources = [
+    "capability_filter_content_handler_unittest.cc",
+    "content_handler_unittest.cc",
+  ]
+
+  deps = [
+    ":package_manager",
+    "//base",
+    "//mojo/application/public/cpp",
+    "//mojo/shell",
+    "//mojo/shell:test_support",
+    "//third_party/mojo/src/mojo/edk/test:run_all_unittests",
+    "//testing/gtest",
+    "//url",
   ]
 }

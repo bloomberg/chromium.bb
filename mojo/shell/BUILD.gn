@@ -19,8 +19,6 @@ source_set("shell") {
     "connect_to_application_params.h",
     "connect_util.cc",
     "connect_util.h",
-    "content_handler_connection.cc",
-    "content_handler_connection.h",
     "data_pipe_peek.cc",
     "data_pipe_peek.h",
     "fetcher.cc",
@@ -57,11 +55,11 @@ source_set("shell") {
   ]
 }
 
-test("mojo_shell_unittests") {
+source_set("test_support") {
+  testonly = true
   sources = [
-    "application_manager_unittest.cc",
-    "capability_filter_unittest.cc",
-    "query_util_unittest.cc",
+    "capability_filter_test.cc",
+    "capability_filter_test.h",
     "test_package_manager.cc",
     "test_package_manager.h",
   ]
@@ -69,6 +67,23 @@ test("mojo_shell_unittests") {
   deps = [
     ":shell",
     ":test_bindings",
+    "//mojo/application/public/cpp",
+    "//mojo/application/public/interfaces",
+    "//testing/gtest",
+  ]
+}
+
+test("mojo_shell_unittests") {
+  sources = [
+    "application_manager_unittest.cc",
+    "capability_filter_unittest.cc",
+    "query_util_unittest.cc",
+  ]
+
+  deps = [
+    ":shell",
+    ":test_bindings",
+    ":test_support",
     "//base",
     "//mojo/application/public/cpp",
     "//third_party/mojo/src/mojo/edk/test:run_all_unittests",

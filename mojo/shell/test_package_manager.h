@@ -5,46 +5,34 @@
 #ifndef MOJO_SHELL_TEST_PACKAGE_MANAGER_H_
 #define MOJO_SHELL_TEST_PACKAGE_MANAGER_H_
 
-#include <map>
-#include <string>
-
 #include "mojo/shell/package_manager.h"
-
-class GURL;
 
 namespace mojo {
 namespace shell {
+namespace test {
 
-// An implementation of PackageManager used by tests to support content handler
-// registration for MIME types.
 class TestPackageManager : public PackageManager {
  public:
   TestPackageManager();
   ~TestPackageManager() override;
 
-  void RegisterContentHandler(const std::string& mime_type,
-                              const GURL& content_handler_url);
-
  private:
-  using MimeTypeToURLMap = std::map<std::string, GURL>;
-
   // Overridden from PackageManager:
   void SetApplicationManager(ApplicationManager* manager) override;
   void FetchRequest(
       URLRequestPtr request,
       const Fetcher::FetchCallback& loader_callback) override;
-  bool HandleWithContentHandler(Fetcher* fetcher,
-                                const GURL& url,
-                                base::TaskRunner* task_runner,
-                                URLResponsePtr* new_response,
-                                GURL* content_handler_url,
-                                std::string* qualifier) override;
-
-  MimeTypeToURLMap mime_type_to_url_;
+  uint32_t HandleWithContentHandler(
+      Fetcher* fetcher,
+      const Identity& source,
+      const GURL& target_url,
+      const CapabilityFilter& target_filter,
+      InterfaceRequest<Application>* application_request) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestPackageManager);
 };
 
+}  // namespace test
 }  // namespace shell
 }  // namespace mojo
 

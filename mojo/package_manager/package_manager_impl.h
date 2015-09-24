@@ -11,11 +11,18 @@
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/shell/package_manager.h"
 
+namespace base {
+class TaskRunner;
+}
+
 namespace mojo {
+class ContentHandler;
 namespace shell {
 class Fetcher;
+class Identity;
 }
 namespace package_manager {
+class ContentHandlerConnection;
 
 // This is the default implementation of shell::PackageManager. It loads
 // http/s urls off the network as well as providing special handling for mojo:
@@ -23,7 +30,12 @@ namespace package_manager {
 class PackageManagerImpl : public shell::PackageManager {
  public:
   // mojo: urls are only supported if |shell_file_root| is non-empty.
-  explicit PackageManagerImpl(const base::FilePath& shell_file_root);
+  // |task_runner| is used by Fetchers created by the PackageManager to complete
+  // file copies needed to obtain library paths that the ApplicationManager can
+  // load. This can be null only in tests where application loading is handled
+  // by custom ApplicationLoader implementations.
+  PackageManagerImpl(const base::FilePath& shell_file_root,
+                     base::TaskRunner* task_runner);
   ~PackageManagerImpl() override;
 
   // Register a content handler to handle content of |mime_type|.
@@ -44,20 +56,37 @@ class PackageManagerImpl : public shell::PackageManager {
  private:
   using ApplicationPackagedAlias = std::map<GURL, std::pair<GURL, std::string>>;
   using MimeTypeToURLMap = std::map<std::string, GURL>;
+  using IdentityToContentHandlerMap =
+      std::map<shell::Identity, ContentHandlerConnection*>;
 
   // Overridden from shell::PackageManager:
   void SetApplicationManager(shell::ApplicationManager* manager) override;
   void FetchRequest(
       URLRequestPtr request,
       const shell::Fetcher::FetchCallback& loader_callback) override;
-  bool HandleWithContentHandler(shell::Fetcher* fetcher,
-                                const GURL& url,
-                                base::TaskRunner* task_runner,
-                                URLResponsePtr* new_response,
-                                GURL* content_handler_url,
-                                std::string* qualifier) override;
+  uint32_t HandleWithContentHandler(
+      shell::Fetcher* fetcher,
+      const shell::Identity& source,
+      const GURL& target_url,
+      const shell::CapabilityFilter& target_filter,
+      InterfaceRequest<Application>* application_request) override;
 
   GURL ResolveURL(const GURL& url);
+  bool ShouldHandleWithContentHandler(
+      shell::Fetcher* fetcher,
+      const GURL& target_url,
+      const shell::CapabilityFilter& target_filter,
+      shell::Identity* content_handler_identity,
+      URLResponsePtr* response) const;
+
+  // Returns a running ContentHandler for |content_handler_identity|, if there
+  // is not one running one is started for |source_identity|.
+  ContentHandlerConnection* GetContentHandler(
+      const shell::Identity& content_handler_identity,
+      const shell::Identity& source_identity);
+
+  void OnContentHandlerConnectionClosed(
+      ContentHandlerConnection* content_handler);
 
   shell::ApplicationManager* application_manager_;
   scoped_ptr<fetcher::URLResolver> url_resolver_;
@@ -66,6 +95,10 @@ class PackageManagerImpl : public shell::PackageManager {
   URLLoaderFactoryPtr url_loader_factory_;
   ApplicationPackagedAlias application_package_alias_;
   MimeTypeToURLMap mime_type_to_url_;
+  IdentityToContentHandlerMap identity_to_content_handler_;
+  // Counter used to assign ids to content handlers.
+  uint32_t content_handler_id_counter_;
+  base::TaskRunner* task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PackageManagerImpl);
 };

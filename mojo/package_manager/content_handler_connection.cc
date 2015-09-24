@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/shell/content_handler_connection.h"
+#include "mojo/package_manager/content_handler_connection.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/application_manager.h"
@@ -10,20 +10,22 @@
 #include "mojo/shell/identity.h"
 
 namespace mojo {
-namespace shell {
+namespace package_manager {
 
 ContentHandlerConnection::ContentHandlerConnection(
-    ApplicationManager* manager,
-    const Identity& source,
-    const Identity& content_handler,
-    uint32_t id)
-    : manager_(manager),
+    shell::ApplicationManager* manager,
+    const shell::Identity& source,
+    const shell::Identity& content_handler,
+    uint32_t id,
+    const ClosedCallback& connection_closed_callback)
+    : connection_closed_callback_(connection_closed_callback),
       identity_(content_handler),
       connection_closed_(false),
       id_(id) {
   ServiceProviderPtr services;
 
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
+  scoped_ptr<shell::ConnectToApplicationParams> params(
+      new shell::ConnectToApplicationParams);
   params->set_source(source);
   params->SetTarget(identity_);
   params->set_services(GetProxy(&services));
@@ -41,7 +43,7 @@ void ContentHandlerConnection::CloseConnection() {
   if (connection_closed_)
     return;
   connection_closed_ = true;
-  manager_->OnContentHandlerConnectionClosed(this);
+  connection_closed_callback_.Run(this);
   delete this;
 }
 
@@ -51,5 +53,5 @@ ContentHandlerConnection::~ContentHandlerConnection() {
   DCHECK(connection_closed_);
 }
 
-}  // namespace shell
+}  // namespace package_manager
 }  // namespace mojo

@@ -10,7 +10,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/shell/application_manager.h"
-#include "mojo/shell/content_handler_connection.h"
 
 namespace mojo {
 namespace shell {

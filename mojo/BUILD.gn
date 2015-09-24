@@ -84,6 +84,7 @@ group("tests") {
 
   if (!is_component_build) {
     deps += [
+      "//mojo/package_manager:unittests",
       "//mojo/runner:apptests",
       "//mojo/runner:mojo_runner_unittests",
       "//mojo/services/network:apptests",

@@ -191,19 +191,18 @@ bool Context::Init() {
       embedder::ProcessType::NONE, task_runners_->shell_runner(), this,
       task_runners_->io_runner(), embedder::ScopedPlatformHandle());
 
-  package_manager_ = new package_manager::PackageManagerImpl(shell_file_root_);
+  package_manager_ = new package_manager::PackageManagerImpl(
+      shell_file_root_, task_runners_->blocking_pool());
   InitContentHandlers(package_manager_, command_line);
-
-  application_manager_.reset(
-      new shell::ApplicationManager(make_scoped_ptr(package_manager_)));
 
   scoped_ptr<shell::NativeRunnerFactory> runner_factory;
   if (command_line.HasSwitch(switches::kEnableMultiprocess))
     runner_factory.reset(new OutOfProcessNativeRunnerFactory(this));
   else
     runner_factory.reset(new InProcessNativeRunnerFactory(this));
-  application_manager_->set_blocking_pool(task_runners_->blocking_pool());
-  application_manager_->set_native_runner_factory(runner_factory.Pass());
+  application_manager_.reset(new shell::ApplicationManager(
+      make_scoped_ptr(package_manager_), runner_factory.Pass(),
+      task_runners_->blocking_pool()));
 
   ServiceProviderPtr service_provider_ptr;
   ServiceProviderPtr tracing_service_provider_ptr;

@@ -54,7 +54,19 @@ class ApplicationManager {
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
+  // Creates an ApplicationManager.
+  // |package_manager| is an instance of an object that handles URL resolution,
+  // fetching and updating of applications. See package_manager.h.
   explicit ApplicationManager(scoped_ptr<PackageManager> package_manager);
+  // |native_runner_factory| is an instance of an object capable of vending
+  // implementations of NativeRunner, e.g. for in or out-of-process execution.
+  // See native_runner.h and RunNativeApplication().
+  // |task_runner| provides access to a thread to perform file copy operations
+  // on. This may be null only in testing environments where applications are
+  // loaded via ApplicationLoader implementations.
+  ApplicationManager(scoped_ptr<PackageManager> package_manager,
+                     scoped_ptr<NativeRunnerFactory> native_runner_factory,
+                     base::TaskRunner* task_runner);
   ~ApplicationManager();
 
   // Loads a service if necessary and establishes a new client connection.
@@ -66,13 +78,7 @@ class ApplicationManager {
   void set_default_loader(scoped_ptr<ApplicationLoader> loader) {
     default_loader_ = loader.Pass();
   }
-  void set_native_runner_factory(
-      scoped_ptr<NativeRunnerFactory> runner_factory) {
-    native_runner_factory_ = runner_factory.Pass();
-  }
-  void set_blocking_pool(base::SequencedWorkerPool* blocking_pool) {
-    blocking_pool_ = blocking_pool;
-  }
+
   // Sets a Loader to be used for a specific url.
   void SetLoaderForURL(scoped_ptr<ApplicationLoader> loader, const GURL& url);
 
@@ -84,16 +90,10 @@ class ApplicationManager {
   // Removes a ApplicationInstance when it encounters an error.
   void OnApplicationInstanceError(ApplicationInstance* instance);
 
-  // Removes a ContentHandler when its connection is closed.
-  void OnContentHandlerConnectionClosed(
-      ContentHandlerConnection* content_handler);
-
   ApplicationInstance* GetApplicationInstance(const Identity& identity) const;
 
  private:
   using IdentityToInstanceMap = std::map<Identity, ApplicationInstance*>;
-  using IdentityToContentHandlerMap =
-      std::map<Identity, ContentHandlerConnection*>;
   using URLToLoaderMap = std::map<GURL, ApplicationLoader*>;
 
   // Takes the contents of |params| only when it returns true.
@@ -116,14 +116,6 @@ class ApplicationManager {
                             const base::FilePath& file_path,
                             bool path_exists);
 
-  void LoadWithContentHandler(
-      const Identity& source,
-      const Identity& content_handler,
-      const Shell::ConnectToApplicationCallback& connect_callback,
-      ApplicationInstance* app,
-      InterfaceRequest<Application> application_request,
-      URLResponsePtr url_response);
-
   // Returns the appropriate loader for |url|, or the default loader if there is
   // no loader configured for the URL.
   ApplicationLoader* GetLoaderForURL(const GURL& url);
@@ -135,15 +127,12 @@ class ApplicationManager {
   // Loaders are chosen in the order they are listed here.
   URLToLoaderMap url_to_loader_;
   scoped_ptr<ApplicationLoader> default_loader_;
-  scoped_ptr<NativeRunnerFactory> native_runner_factory_;
 
   IdentityToInstanceMap identity_to_instance_;
-  IdentityToContentHandlerMap identity_to_content_handler_;
 
-  base::SequencedWorkerPool* blocking_pool_;
+  base::TaskRunner* task_runner_;
+  scoped_ptr<NativeRunnerFactory> native_runner_factory_;
   ScopedVector<NativeRunner> native_runners_;
-  // Counter used to assign ids to content_handlers.
-  uint32_t content_handler_id_counter_;
   base::WeakPtrFactory<ApplicationManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationManager);

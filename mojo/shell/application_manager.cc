@@ -11,10 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/application_instance.h"
-#include "mojo/shell/content_handler_connection.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager.h"
 #include "mojo/shell/query_util.h"
@@ -53,16 +51,23 @@ bool ApplicationManager::TestAPI::HasRunningInstanceForURL(
 ApplicationManager::ApplicationManager(
     scoped_ptr<PackageManager> package_manager)
     : package_manager_(package_manager.Pass()),
-      content_handler_id_counter_(0u),
+      task_runner_(nullptr),
+      weak_ptr_factory_(this) {
+  package_manager_->SetApplicationManager(this);
+}
+
+ApplicationManager::ApplicationManager(
+    scoped_ptr<PackageManager> package_manager,
+    scoped_ptr<NativeRunnerFactory> native_runner_factory,
+    base::TaskRunner* task_runner)
+    : package_manager_(package_manager.Pass()),
+      task_runner_(task_runner),
+      native_runner_factory_(native_runner_factory.Pass()),
       weak_ptr_factory_(this) {
   package_manager_->SetApplicationManager(this);
 }
 
 ApplicationManager::~ApplicationManager() {
-  IdentityToContentHandlerMap identity_to_content_handler(
-      identity_to_content_handler_);
-  for (auto& pair : identity_to_content_handler)
-    pair.second->CloseConnection();
   TerminateShellConnections();
   STLDeleteValues(&url_to_loader_);
 }
@@ -169,38 +174,31 @@ void ApplicationManager::HandleFetchCallback(
   ApplicationInstance* app = nullptr;
   InterfaceRequest<Application> request(CreateInstance(params.Pass(), &app));
 
-
-  GURL content_handler_url;
-  URLResponsePtr new_response;
-  std::string qualifier;
-  if (package_manager_->HandleWithContentHandler(fetcher.get(),
-                                                 target.url(),
-                                                 blocking_pool_,
-                                                 &new_response,
-                                                 &content_handler_url,
-                                                 &qualifier)) {
-    Identity content_handler(content_handler_url, qualifier, target.filter());
-    LoadWithContentHandler(source, content_handler, connect_callback, app,
-                           request.Pass(), new_response.Pass());
-  } else {
-    // TODO(erg): Have a better way of switching the sandbox on. For now, switch
-    // it on hard coded when we're using some of the sandboxable core services.
-    bool start_sandboxed = false;
-    if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kMojoNoSandbox)) {
-      start_sandboxed = (target.url() == GURL("mojo://core_services/") &&
-                            target.qualifier() == "Core") ||
-                        target.url() == GURL("mojo://html_viewer/");
-    }
-
-    connect_callback.Run(Shell::kInvalidContentHandlerID);
-
-    fetcher->AsPath(blocking_pool_,
-                    base::Bind(&ApplicationManager::RunNativeApplication,
-                               weak_ptr_factory_.GetWeakPtr(),
-                               base::Passed(request.Pass()), start_sandboxed,
-                               base::Passed(fetcher.Pass())));
+  uint32_t content_handler_id = package_manager_->HandleWithContentHandler(
+      fetcher.get(), source, target.url(), target.filter(), &request);
+  if (content_handler_id != Shell::kInvalidContentHandlerID) {
+    app->set_requesting_content_handler_id(content_handler_id);
+    connect_callback.Run(content_handler_id);
+    return;
   }
+
+  // TODO(erg): Have a better way of switching the sandbox on. For now, switch
+  // it on hard coded when we're using some of the sandboxable core services.
+  bool start_sandboxed = false;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kMojoNoSandbox)) {
+    start_sandboxed = (target.url() == GURL("mojo://core_services/") &&
+                          target.qualifier() == "Core") ||
+                      target.url() == GURL("mojo://html_viewer/");
+  }
+
+  connect_callback.Run(Shell::kInvalidContentHandlerID);
+
+  fetcher->AsPath(task_runner_,
+                  base::Bind(&ApplicationManager::RunNativeApplication,
+                              weak_ptr_factory_.GetWeakPtr(),
+                              base::Passed(request.Pass()), start_sandboxed,
+                              base::Passed(fetcher.Pass())));
 }
 
 void ApplicationManager::RunNativeApplication(
@@ -227,32 +225,6 @@ void ApplicationManager::RunNativeApplication(
   runner->Start(path, start_sandboxed, application_request.Pass(),
                 base::Bind(&ApplicationManager::CleanupRunner,
                            weak_ptr_factory_.GetWeakPtr(), runner));
-}
-
-void ApplicationManager::LoadWithContentHandler(
-    const Identity& source,
-    const Identity& content_handler,
-    const Shell::ConnectToApplicationCallback& connect_callback,
-    ApplicationInstance* app,
-    InterfaceRequest<Application> application_request,
-    URLResponsePtr url_response) {
-  ContentHandlerConnection* connection = nullptr;
-  // TODO(beng): Figure out the extent to which capability filter should be
-  //             factored into handler identity.
-  IdentityToContentHandlerMap::iterator iter =
-      identity_to_content_handler_.find(content_handler);
-  if (iter != identity_to_content_handler_.end()) {
-    connection = iter->second;
-  } else {
-    connection = new ContentHandlerConnection(
-        this, source, content_handler, ++content_handler_id_counter_);
-    identity_to_content_handler_[content_handler] = connection;
-  }
-
-  app->set_requesting_content_handler_id(connection->id());
-  connection->content_handler()->StartApplication(application_request.Pass(),
-                                                  url_response.Pass());
-  connect_callback.Run(connection->id());
 }
 
 void ApplicationManager::SetLoaderForURL(scoped_ptr<ApplicationLoader> loader,
@@ -282,14 +254,6 @@ void ApplicationManager::OnApplicationInstanceError(
   identity_to_instance_.erase(it);
   if (!on_application_end.is_null())
     on_application_end.Run();
-}
-
-void ApplicationManager::OnContentHandlerConnectionClosed(
-    ContentHandlerConnection* content_handler) {
-  // Remove the mapping to the content handler.
-  auto it = identity_to_content_handler_.find(content_handler->identity());
-  DCHECK(it != identity_to_content_handler_.end());
-  identity_to_content_handler_.erase(it);
 }
 
 void ApplicationManager::CleanupRunner(NativeRunner* runner) {

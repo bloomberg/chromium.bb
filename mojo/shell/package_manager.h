@@ -5,7 +5,9 @@
 #ifndef MOJO_SHELL_PACKAGE_MANAGER_H_
 #define MOJO_SHELL_PACKAGE_MANAGER_H_
 
+#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/capability_filter.h"
 #include "mojo/shell/fetcher.h"
 
 class GURL;
@@ -14,6 +16,7 @@ namespace mojo {
 namespace shell {
 
 class ApplicationManager;
+class Identity;
 
 // A class implementing this interface assists Shell::ConnectToApplication in
 // fetching the applications located therein.
@@ -34,20 +37,20 @@ class PackageManager {
 
   // Determine if a content handler should handle the response received by
   // |fetcher|.
-  // |url| is the url requested initially by a call to ConnectToApplication().
-  // |task_runner| is a base::TaskRunner* that can be used to post callbacks.
-  // |new_response| is the response that should be passed to
-  // ContentHandler::StartApplication(), unchanged if the return value is false.
-  // |content_handler_url| is the url of the content handler application to
-  // run, unchanged if the return value is false.
-  // |qualifier| is the Identity qualifier that the content handler application
-  // instance should be associated with, unchanged if the return value is false.
-  virtual bool HandleWithContentHandler(Fetcher* fetcher,
-                                        const GURL& url,
-                                        base::TaskRunner* task_runner,
-                                        URLResponsePtr* new_response,
-                                        GURL* content_handler_url,
-                                        std::string* qualifier) = 0;
+  // |source| is the identity of the application that issued the request.
+  // |target_url| is the URL of that may be content that could be handled by a
+  // content handler.
+  // |target_filter| is a CapabilityFilter that should be applied if a content
+  // handler is started to handle |target_url|.
+  // |application_request| is a request for an Application implementation that
+  // will be taken by ContentHandler::StartApplication if a content handler ends
+  // up handling |target_url|.
+  virtual uint32_t HandleWithContentHandler(
+      Fetcher* fetcher,
+      const Identity& source,
+      const GURL& target_url,
+      const CapabilityFilter& target_filter,
+      InterfaceRequest<Application>* application_request) = 0;
 };
 
 }  // namespace shell

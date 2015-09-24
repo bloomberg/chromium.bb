@@ -12,58 +12,24 @@
 #include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/application/public/interfaces/service_provider.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher.h"
+#include "mojo/shell/package_manager.h"
 #include "mojo/shell/test.mojom.h"
 #include "mojo/shell/test_package_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace shell {
-namespace {
+namespace test {
 
 const char kTestURLString[] = "test:testService";
 const char kTestAURLString[] = "test:TestA";
 const char kTestBURLString[] = "test:TestB";
-
-const char kTestMimeType[] = "test/mime-type";
-
-class TestMimeTypeFetcher : public Fetcher {
- public:
-  TestMimeTypeFetcher(const FetchCallback& fetch_callback,
-                      const GURL& url,
-                      const std::string& mime_type)
-      : Fetcher(fetch_callback), url_(url), mime_type_(mime_type) {
-    loader_callback_.Run(make_scoped_ptr(this));
-  }
-  ~TestMimeTypeFetcher() override {}
-
-  // Fetcher:
-  const GURL& GetURL() const override { return url_; }
-  GURL GetRedirectURL() const override { return GURL("yyy"); }
-  GURL GetRedirectReferer() const override { return GURL(); }
-  URLResponsePtr AsURLResponse(base::TaskRunner* task_runner,
-                               uint32_t skip) override {
-    return URLResponse::New().Pass();
-  }
-  void AsPath(
-      base::TaskRunner* task_runner,
-      base::Callback<void(const base::FilePath&, bool)> callback) override {}
-  std::string MimeType() override { return mime_type_; }
-  bool HasMojoMagic() override { return false; }
-  bool PeekFirstLine(std::string* line) override { return false; }
-
- private:
-  const GURL url_;
-  const std::string mime_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMimeTypeFetcher);
-};
 
 struct TestContext {
   TestContext() : num_impls(0), num_loader_deletes(0) {}
@@ -125,41 +91,17 @@ class TestClient {
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 
-class TestContentHandler : public ContentHandler, public ApplicationDelegate {
- public:
-  TestContentHandler(ApplicationConnection* connection,
-                     InterfaceRequest<ContentHandler> request)
-      : binding_(this, request.Pass()) {}
-
-  // ContentHandler:
-  void StartApplication(InterfaceRequest<Application> application_request,
-                        URLResponsePtr response) override {
-    apps_.push_back(new ApplicationImpl(this, application_request.Pass()));
-  }
-
- private:
-  StrongBinding<ContentHandler> binding_;
-  ScopedVector<ApplicationImpl> apps_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestContentHandler);
-};
-
 class TestApplicationLoader : public ApplicationLoader,
                               public ApplicationDelegate,
-                              public InterfaceFactory<TestService>,
-                              public InterfaceFactory<ContentHandler> {
+                              public InterfaceFactory<TestService> {
  public:
   TestApplicationLoader()
-      : context_(nullptr), num_loads_(0), create_content_handler_(false) {}
+      : context_(nullptr), num_loads_(0) {}
 
   ~TestApplicationLoader() override {
     if (context_)
       ++context_->num_loader_deletes;
     test_app_.reset();
-  }
-
-  void set_create_content_handler(bool value) {
-    create_content_handler_ = true;
   }
 
   void set_context(TestContext* context) { context_ = context; }
@@ -177,8 +119,6 @@ class TestApplicationLoader : public ApplicationLoader,
   // ApplicationDelegate implementation.
   bool ConfigureIncomingConnection(ApplicationConnection* connection) override {
     connection->AddService<TestService>(this);
-    if (create_content_handler_)
-      connection->AddService<ContentHandler>(this);
     last_requestor_url_ = GURL(connection->GetRemoteApplicationURL());
     return true;
   }
@@ -189,17 +129,10 @@ class TestApplicationLoader : public ApplicationLoader,
     new TestServiceImpl(context_, request.Pass());
   }
 
-  // InterfaceFactory<ContentHandler> implementation.
-  void Create(ApplicationConnection* connection,
-              InterfaceRequest<ContentHandler> request) override {
-    new TestContentHandler(connection, request.Pass());
-  }
-
   scoped_ptr<ApplicationImpl> test_app_;
   TestContext* context_;
   int num_loads_;
   GURL last_requestor_url_;
-  bool create_content_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestApplicationLoader);
 };
@@ -457,37 +390,6 @@ class Tester : public ApplicationDelegate,
   ScopedVector<TestAImpl> a_bindings_;
 };
 
-class AMTestPackageManager : public TestPackageManager {
- public:
-   AMTestPackageManager()
-      : create_test_fetcher_(false),
-        fetcher_url_("xxx"),
-        mime_type_(kTestMimeType) {}
-   ~AMTestPackageManager() override {}
-
-  void set_create_test_fetcher(bool create_test_fetcher) {
-    create_test_fetcher_ = create_test_fetcher;
-  }
-
-  void set_fetcher_url(const GURL& url) { fetcher_url_ = url; }
-
-  void set_mime_type(const std::string& mime_type) { mime_type_ = mime_type; }
-
-  // TestPackageManager:
-  void FetchRequest(URLRequestPtr request,
-                    const Fetcher::FetchCallback& loader_callback) override {
-    if (create_test_fetcher_)
-      new TestMimeTypeFetcher(loader_callback, fetcher_url_, mime_type_);
-  }
-
- private:
-  bool create_test_fetcher_;
-  GURL fetcher_url_;
-  std::string mime_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(AMTestPackageManager);
-};
-
 class ApplicationManagerTest : public testing::Test {
  public:
   ApplicationManagerTest() : tester_context_(&loop_) {}
@@ -496,7 +398,7 @@ class ApplicationManagerTest : public testing::Test {
 
   void SetUp() override {
     application_manager_.reset(new ApplicationManager(
-        make_scoped_ptr(new AMTestPackageManager)));
+        make_scoped_ptr(new TestPackageManager)));
     test_loader_ = new TestApplicationLoader;
     test_loader_->set_context(&context_);
     application_manager_->set_default_loader(
@@ -553,7 +455,7 @@ TEST_F(ApplicationManagerTest, ClientError) {
 
 TEST_F(ApplicationManagerTest, Deletes) {
   {
-    ApplicationManager am(make_scoped_ptr(new AMTestPackageManager));
+    ApplicationManager am(make_scoped_ptr(new TestPackageManager));
     TestApplicationLoader* default_loader = new TestApplicationLoader;
     default_loader->set_context(&context_);
     TestApplicationLoader* url_loader1 = new TestApplicationLoader;
@@ -695,38 +597,6 @@ TEST_F(ApplicationManagerTest, TestEndApplicationClosure) {
   EXPECT_TRUE(called);
 }
 
-TEST(ApplicationManagerTest2, ContentHandlerConnectionGetsRequestorURL) {
-  const GURL content_handler_url("http://test.content.handler");
-  const GURL requestor_url("http://requestor.url");
-  TestContext test_context;
-  base::MessageLoop loop;
-  scoped_ptr<AMTestPackageManager> test_package_manager(
-      new AMTestPackageManager);
-  test_package_manager->set_create_test_fetcher(true);
-  test_package_manager->RegisterContentHandler(kTestMimeType,
-                                               content_handler_url);
-  ApplicationManager application_manager(test_package_manager.Pass());
-  application_manager.set_default_loader(nullptr);
-
-  TestApplicationLoader* loader = new TestApplicationLoader;
-  loader->set_context(&test_context);
-  application_manager.SetLoaderForURL(scoped_ptr<ApplicationLoader>(loader),
-                                      content_handler_url);
-
-  bool called = false;
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->set_source(Identity(requestor_url));
-  params->SetTargetURL(GURL("test:test"));
-  params->set_on_application_end(
-      base::Bind(&QuitClosure, base::Unretained(&called)));
-  application_manager.ConnectToApplication(params.Pass());
-  loop.Run();
-  EXPECT_TRUE(called);
-
-  ASSERT_EQ(1, loader->num_loads());
-  EXPECT_EQ(requestor_url, loader->last_requestor_url());
-}
-
 TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
   // 1 because ApplicationManagerTest connects once at startup.
   EXPECT_EQ(1, test_loader_->num_loads());
@@ -758,145 +628,6 @@ TEST_F(ApplicationManagerTest, SameIdentityShouldNotCauseDuplicateLoad) {
   EXPECT_EQ(4, test_loader_->num_loads());
 }
 
-TEST(ApplicationManagerTest2,
-     MultipleConnectionsToContentHandlerGetSameContentHandlerId) {
-  base::MessageLoop loop;
-  const GURL content_handler_url("http://test.content.handler");
-  const GURL requestor_url("http://requestor.url");
-  TestContext test_context;
-  scoped_ptr<AMTestPackageManager> test_package_manager(
-      new AMTestPackageManager);
-  test_package_manager->set_fetcher_url(GURL("test:test"));
-  test_package_manager->set_create_test_fetcher(true);
-  test_package_manager->RegisterContentHandler(kTestMimeType,
-                                               content_handler_url);
-  ApplicationManager application_manager(test_package_manager.Pass());
-  application_manager.set_default_loader(nullptr);
-
-  TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
-  content_handler_loader->set_create_content_handler(true);
-  content_handler_loader->set_context(&test_context);
-  application_manager.SetLoaderForURL(
-      scoped_ptr<ApplicationLoader>(content_handler_loader),
-      content_handler_url);
-
-  uint32_t content_handler_id;
-  {
-    base::RunLoop run_loop;
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
-      content_handler_id = t;
-      run_loop.Quit();
-    });
-    application_manager.ConnectToApplication(params.Pass());
-    run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
-  }
-
-  uint32_t content_handler_id2;
-  {
-    base::RunLoop run_loop;
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
-      content_handler_id2 = t;
-      run_loop.Quit();
-    });
-    application_manager.ConnectToApplication(params.Pass());
-    run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
-  }
-  EXPECT_EQ(content_handler_id, content_handler_id2);
-}
-
-TEST(ApplicationManagerTest2, DifferedContentHandlersGetDifferentIDs) {
-  base::MessageLoop loop;
-  const GURL content_handler_url("http://test.content.handler");
-  const GURL requestor_url("http://requestor.url");
-  TestContext test_context;
-  AMTestPackageManager* test_package_manager = new AMTestPackageManager;
-  test_package_manager->set_fetcher_url(GURL("test:test"));
-  test_package_manager->set_create_test_fetcher(true);
-  test_package_manager->RegisterContentHandler(kTestMimeType,
-                                               content_handler_url);
-  ApplicationManager application_manager(make_scoped_ptr(test_package_manager));
-  application_manager.set_default_loader(nullptr);
-
-  TestApplicationLoader* content_handler_loader = new TestApplicationLoader;
-  content_handler_loader->set_create_content_handler(true);
-  content_handler_loader->set_context(&test_context);
-  application_manager.SetLoaderForURL(
-      scoped_ptr<ApplicationLoader>(content_handler_loader),
-      content_handler_url);
-
-  uint32_t content_handler_id;
-  {
-    base::RunLoop run_loop;
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test:test"));
-    params->set_connect_callback([&content_handler_id, &run_loop](uint32_t t) {
-      content_handler_id = t;
-      run_loop.Quit();
-    });
-    application_manager.ConnectToApplication(params.Pass());
-    run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id);
-  }
-
-  const std::string mime_type2("test/mime-type2");
-  const GURL content_handler_url2("http://test.content2.handler");
-  test_package_manager->set_fetcher_url(GURL("test2:test2"));
-  test_package_manager->set_mime_type(mime_type2);
-  test_package_manager->RegisterContentHandler(mime_type2,
-                                               content_handler_url2);
-
-  TestApplicationLoader* content_handler_loader2 = new TestApplicationLoader;
-  content_handler_loader->set_create_content_handler(true);
-  content_handler_loader->set_context(&test_context);
-  application_manager.SetLoaderForURL(
-      scoped_ptr<ApplicationLoader>(content_handler_loader2),
-      content_handler_url2);
-
-  uint32_t content_handler_id2;
-  {
-    base::RunLoop run_loop;
-    scoped_ptr<ConnectToApplicationParams> params(
-        new ConnectToApplicationParams);
-    params->set_source(Identity(requestor_url));
-    params->SetTargetURL(GURL("test2:test2"));
-    params->set_connect_callback([&content_handler_id2, &run_loop](uint32_t t) {
-      content_handler_id2 = t;
-      run_loop.Quit();
-    });
-    application_manager.ConnectToApplication(params.Pass());
-    run_loop.Run();
-    EXPECT_NE(Shell::kInvalidContentHandlerID, content_handler_id2);
-  }
-  EXPECT_NE(content_handler_id, content_handler_id2);
-}
-
-TEST_F(ApplicationManagerTest,
-       ConnectWithNoContentHandlerGetsInvalidContentHandlerId) {
-  application_manager_->SetLoaderForURL(
-      scoped_ptr<ApplicationLoader>(new TestApplicationLoader),
-      GURL("test:test"));
-
-  uint32_t content_handler_id = 1u;
-  scoped_ptr<ConnectToApplicationParams> params(new ConnectToApplicationParams);
-  params->SetTargetURL(GURL("test:test"));
-  params->set_connect_callback(
-      [&content_handler_id](uint32_t t) { content_handler_id = t; });
-  application_manager_->ConnectToApplication(params.Pass());
-  EXPECT_EQ(0u, content_handler_id);
-}
-
-}  // namespace
+}  // namespace test
 }  // namespace shell
 }  // namespace mojo

@@ -4,12 +4,15 @@
 
 #include "mojo/package_manager/package_manager_impl.h"
 
+#include "base/bind.h"
+#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/fetcher/about_fetcher.h"
 #include "mojo/fetcher/data_fetcher.h"
 #include "mojo/fetcher/local_fetcher.h"
 #include "mojo/fetcher/network_fetcher.h"
 #include "mojo/fetcher/switches.h"
 #include "mojo/fetcher/update_fetcher.h"
+#include "mojo/package_manager/content_handler_connection.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/query_util.h"
@@ -21,10 +24,13 @@ namespace mojo {
 namespace package_manager {
 
 PackageManagerImpl::PackageManagerImpl(
-    const base::FilePath& shell_file_root)
+    const base::FilePath& shell_file_root,
+    base::TaskRunner* task_runner)
     : application_manager_(nullptr),
       disable_cache_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableCache)) {
+          switches::kDisableCache)),
+      content_handler_id_counter_(0u),
+      task_runner_(task_runner) {
   if (!shell_file_root.empty()) {
     GURL mojo_root_file_url =
         util::FilePathToFileURL(shell_file_root).Resolve(std::string());
@@ -33,6 +39,10 @@ PackageManagerImpl::PackageManagerImpl(
 }
 
 PackageManagerImpl::~PackageManagerImpl() {
+  IdentityToContentHandlerMap identity_to_content_handler(
+      identity_to_content_handler_);
+  for (auto& pair : identity_to_content_handler)
+    pair.second->CloseConnection();
 }
 
 void PackageManagerImpl::RegisterContentHandler(
@@ -115,64 +125,117 @@ void PackageManagerImpl::FetchRequest(
                               url_loader_factory_.get(), loader_callback);
 }
 
-bool PackageManagerImpl::HandleWithContentHandler(shell::Fetcher* fetcher,
-                                                  const GURL& url,
-                                                  base::TaskRunner* task_runner,
-                                                  URLResponsePtr* new_response,
-                                                  GURL* content_handler_url,
-                                                  std::string* qualifier) {
+uint32_t PackageManagerImpl::HandleWithContentHandler(
+    shell::Fetcher* fetcher,
+    const shell::Identity& source,
+    const GURL& target_url,
+    const shell::CapabilityFilter& target_filter,
+    InterfaceRequest<Application>* application_request) {
+  shell::Identity content_handler_identity;
+  URLResponsePtr response;
+  if (ShouldHandleWithContentHandler(fetcher,
+                                     target_url,
+                                     target_filter,
+                                     &content_handler_identity,
+                                     &response)) {
+    ContentHandlerConnection* connection =
+        GetContentHandler(content_handler_identity, source);
+    connection->content_handler()->StartApplication(application_request->Pass(),
+                                                    response.Pass());
+    return connection->id();
+  }
+  return Shell::kInvalidContentHandlerID;
+}
+
+GURL PackageManagerImpl::ResolveURL(const GURL& url) {
+  return url_resolver_.get() ? url_resolver_->ResolveMojoURL(url) : url;
+}
+
+bool PackageManagerImpl::ShouldHandleWithContentHandler(
+  shell::Fetcher* fetcher,
+  const GURL& target_url,
+  const shell::CapabilityFilter& target_filter,
+  shell::Identity* content_handler_identity,
+  URLResponsePtr* response) const {
   // TODO(beng): it seems like some delegate should/would want to have a say in
   //             configuring the qualifier also.
-  bool enable_multi_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
+  // Why can't we use the real qualifier in single process mode? Because of
+  // base::AtExitManager. If you link in ApplicationRunner into your code, and
+  // then we make initialize multiple copies of the application, we end up
+  // with multiple AtExitManagers and will check on the second one being
+  // created.
+  //
+  // Why doesn't that happen when running different apps? Because
+  // your_thing.mojo!base::AtExitManager and
+  // my_thing.mojo!base::AtExitManager are different symbols.
+  bool use_real_qualifier = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableMultiprocess);
 
+  GURL content_handler_url;
   // The response begins with a #!mojo <content-handler-url>.
   std::string shebang;
-  if (fetcher->PeekContentHandler(&shebang, content_handler_url)) {
-    *new_response = fetcher->AsURLResponse(
-        task_runner, static_cast<int>(shebang.size()));
-    *qualifier = enable_multi_process ? (*new_response)->site.To<std::string>()
-                                      : std::string();
+  if (fetcher->PeekContentHandler(&shebang, &content_handler_url)) {
+    *response = fetcher->AsURLResponse(task_runner_,
+                                       static_cast<int>(shebang.size()));
+    *content_handler_identity = shell::Identity(
+        content_handler_url,
+        use_real_qualifier ? (*response)->site.To<std::string>()
+                           : std::string(),
+        target_filter);
     return true;
   }
 
   // The response MIME type matches a registered content handler.
-  MimeTypeToURLMap::iterator iter = mime_type_to_url_.find(fetcher->MimeType());
+  auto iter = mime_type_to_url_.find(fetcher->MimeType());
   if (iter != mime_type_to_url_.end()) {
-    *new_response = fetcher->AsURLResponse(task_runner, 0);
-    *content_handler_url = iter->second;
-    *qualifier = enable_multi_process ? (*new_response)->site.To<std::string>()
-                                      : std::string();
+    *response = fetcher->AsURLResponse(task_runner_, 0);
+    *content_handler_identity = shell::Identity(
+        iter->second,
+        use_real_qualifier ? (*response)->site.To<std::string>()
+                           : std::string(),
+        target_filter);
     return true;
   }
 
   // The response URL matches a registered content handler.
-  auto alias_iter = application_package_alias_.find(url);
+  auto alias_iter = application_package_alias_.find(target_url);
   if (alias_iter != application_package_alias_.end()) {
     // We replace the qualifier with the one our package alias requested.
-    *new_response = URLResponse::New();
-    (*new_response)->url = url.spec();
-
-    // Why can't we use this in single process mode? Because of
-    // base::AtExitManager. If you link in ApplicationRunner into your code, and
-    // then we make initialize multiple copies of the application, we end up
-    // with multiple AtExitManagers and will check on the second one being
-    // created.
-    //
-    // Why doesn't that happen when running different apps? Because
-    // your_thing.mojo!base::AtExitManager and
-    // my_thing.mojo!base::AtExitManager are different symbols.
-    *qualifier = enable_multi_process ? alias_iter->second.second
-                                      : std::string();
-    *content_handler_url = alias_iter->second.first;
+    *response = URLResponse::New();
+    (*response)->url = target_url.spec();
+    *content_handler_identity = shell::Identity(
+        alias_iter->second.first,
+        use_real_qualifier ? alias_iter->second.second : std::string(),
+        target_filter);
     return true;
   }
 
   return false;
 }
 
-GURL PackageManagerImpl::ResolveURL(const GURL& url) {
-  return url_resolver_.get() ? url_resolver_->ResolveMojoURL(url) : url;
+ContentHandlerConnection* PackageManagerImpl::GetContentHandler(
+    const shell::Identity& content_handler_identity,
+    const shell::Identity& source_identity) {
+  auto it = identity_to_content_handler_.find(content_handler_identity);
+  if (it != identity_to_content_handler_.end())
+    return it->second;
+
+  ContentHandlerConnection* connection = new ContentHandlerConnection(
+      application_manager_, source_identity,
+      content_handler_identity,
+      ++content_handler_id_counter_,
+      base::Bind(&PackageManagerImpl::OnContentHandlerConnectionClosed,
+                 base::Unretained(this)));
+  identity_to_content_handler_[content_handler_identity] = connection;
+  return connection;
+}
+
+void PackageManagerImpl::OnContentHandlerConnectionClosed(
+    ContentHandlerConnection* connection) {
+  // Remove the mapping.
+  auto it = identity_to_content_handler_.find(connection->identity());
+  DCHECK(it != identity_to_content_handler_.end());
+  identity_to_content_handler_.erase(it);
 }
 
 }  // namespace package_manager
