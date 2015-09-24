@@ -273,9 +273,9 @@ all_deps :=
 %(make_global_settings)s
 
 CC.target ?= %(CC.target)s
-CFLAGS.target ?= $(CFLAGS)
+CFLAGS.target ?= $(CPPFLAGS) $(CFLAGS)
 CXX.target ?= %(CXX.target)s
-CXXFLAGS.target ?= $(CXXFLAGS)
+CXXFLAGS.target ?= $(CPPFLAGS) $(CXXFLAGS)
 LINK.target ?= %(LINK.target)s
 LDFLAGS.target ?= $(LDFLAGS)
 AR.target ?= $(AR)
@@ -286,9 +286,9 @@ LINK ?= $(CXX.target)
 # TODO(evan): move all cross-compilation logic to gyp-time so we don't need
 # to replicate this environment fallback in make as well.
 CC.host ?= %(CC.host)s
-CFLAGS.host ?=
+CFLAGS.host ?= $(CPPFLAGS_host) $(CFLAGS_host)
 CXX.host ?= %(CXX.host)s
-CXXFLAGS.host ?=
+CXXFLAGS.host ?= $(CPPFLAGS_host) $(CXXFLAGS_host)
 LINK.host ?= %(LINK.host)s
 LDFLAGS.host ?=
 AR.host ?= %(AR.host)s

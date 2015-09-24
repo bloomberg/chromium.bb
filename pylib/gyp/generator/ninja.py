@@ -921,6 +921,11 @@ class NinjaWriter(object):
                   os.environ.get('CFLAGS', '').split() + cflags_c)
       cflags_cc = (os.environ.get('CPPFLAGS', '').split() +
                    os.environ.get('CXXFLAGS', '').split() + cflags_cc)
+    elif self.toolset == 'host':
+      cflags_c = (os.environ.get('CPPFLAGS_host', '').split() +
+                  os.environ.get('CFLAGS_host', '').split() + cflags_c)
+      cflags_cc = (os.environ.get('CPPFLAGS_host', '').split() +
+                   os.environ.get('CXXFLAGS_host', '').split() + cflags_cc)
 
     defines = config.get('defines', []) + extra_defines
     self.WriteVariableList(ninja_file, 'defines',
