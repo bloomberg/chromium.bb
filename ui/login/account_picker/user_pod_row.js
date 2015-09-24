@@ -1942,6 +1942,14 @@ cr.define('login', function() {
     },
 
     /** @override */
+    get mainInput() {
+      if (this.user.needsSignin)
+        return this.passwordElement;
+      else
+        return this.nameElement;
+    },
+
+    /** @override */
     update: function() {
       this.imageElement.src = this.user.userImage;
       this.nameElement.textContent = this.user.displayName;

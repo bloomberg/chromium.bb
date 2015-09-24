@@ -512,6 +512,9 @@ cr.define('cr.login', function() {
     var msg = e.data;
     if (msg.method == 'attemptLogin') {
       this.email_ = msg.email;
+      if (this.authMode == AuthMode.DESKTOP)
+        this.password_ = msg.password;
+
       this.chooseWhatToSync_ = msg.chooseWhatToSync;
       // We need to dispatch only first event, before user enters password.
       this.dispatchEvent(
