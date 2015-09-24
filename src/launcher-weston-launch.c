@@ -249,7 +249,7 @@ launcher_weston_launch_connect(struct weston_launcher **out, struct weston_compo
 	* (struct launcher_weston_launch **) out = launcher;
 	launcher->compositor = compositor;
 	launcher->drm_fd = -1;
-	launcher->fd = weston_environment_get_fd("WESTON_LAUNCH_SOCK");
+	launcher->fd = weston_environment_get_fd("WESTON_LAUNCHER_SOCK");
 	if (launcher->fd != -1) {
 		launcher->tty = weston_environment_get_fd("WESTON_TTY_FD");
 		/* We don't get a chance to read out the original kb
