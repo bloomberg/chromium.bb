@@ -75,6 +75,7 @@ class SyncApiComponentFactory;
 namespace syncer {
 class BaseTransaction;
 class NetworkResources;
+class TypeDebugInfoObserver;
 struct CommitCounters;
 struct StatusCounters;
 struct SyncCredentials;
@@ -291,13 +292,17 @@ class ProfileSyncService : public sync_driver::SyncService,
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
-
-  void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
+  void AddProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer) override;
   void RemoveProtocolEventObserver(
-      browser_sync::ProtocolEventObserver* observer);
-
-  void AddTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
-  void RemoveTypeDebugInfoObserver(syncer::TypeDebugInfoObserver* observer);
+      browser_sync::ProtocolEventObserver* observer) override;
+  void AddTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) override;
+  void RemoveTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) override;
+  base::WeakPtr<syncer::JsController> GetJsController() override;
+  void GetAllNodes(const base::Callback<void(scoped_ptr<base::ListValue>)>&
+                       callback) override;
 
   // Add a sync type preference provider. Each provider may only be added once.
   void AddPreferenceProvider(SyncTypePreferenceProvider* provider);
@@ -307,15 +312,6 @@ class ProfileSyncService : public sync_driver::SyncService,
   void RemovePreferenceProvider(SyncTypePreferenceProvider* provider);
   // Check whether a given sync type preference provider has been added.
   bool HasPreferenceProvider(SyncTypePreferenceProvider* provider) const;
-
-  // Asynchronously fetches base::Value representations of all sync nodes and
-  // returns them to the specified callback on this thread.
-  //
-  // These requests can live a long time and return when you least expect it.
-  // For safety, the callback should be bound to some sort of WeakPtr<> or
-  // scoped_refptr<>.
-  void GetAllNodes(
-      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback);
 
   void RegisterAuthNotifications();
   void UnregisterAuthNotifications();
@@ -419,10 +415,6 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // The profile we are syncing for.
   Profile* profile() const { return profile_; }
-
-  // Returns a weak pointer to the service's JsController.
-  // Overrideable for testing purposes.
-  virtual base::WeakPtr<syncer::JsController> GetJsController();
 
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);

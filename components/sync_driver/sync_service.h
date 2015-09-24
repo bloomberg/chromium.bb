@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sync_driver/data_type_encryption_handler.h"
 #include "components/sync_driver/sync_service_observer.h"
@@ -18,9 +20,15 @@
 
 class GoogleServiceAuthError;
 
+namespace browser_sync {
+class ProtocolEventObserver;
+}
+
 namespace syncer {
 
 class BaseTransaction;
+class JsController;
+class TypeDebugInfoObserver;
 struct SyncStatus;
 struct UserShare;
 
@@ -288,6 +296,28 @@ class SyncService : public DataTypeEncryptionHandler {
 
   virtual std::string unrecoverable_error_message() const = 0;
   virtual tracked_objects::Location unrecoverable_error_location() const = 0;
+
+  virtual void AddProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer) = 0;
+  virtual void RemoveProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer) = 0;
+
+  virtual void AddTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) = 0;
+  virtual void RemoveTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) = 0;
+
+  // Returns a weak pointer to the service's JsController.
+  virtual base::WeakPtr<syncer::JsController> GetJsController() = 0;
+
+  // Asynchronously fetches base::Value representations of all sync nodes and
+  // returns them to the specified callback on this thread.
+  //
+  // These requests can live a long time and return when you least expect it.
+  // For safety, the callback should be bound to some sort of WeakPtr<> or
+  // scoped_refptr<>.
+  virtual void GetAllNodes(
+      const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) = 0;
 
  protected:
   SyncService() {}

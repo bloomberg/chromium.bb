@@ -6,3 +6,4 @@
 
 const char kChromeUIExternalFileHost[] = "external-file";
 const char kChromeUIOmahaHost[] = "omaha";
+const char kChromeUISyncInternalsHost[] = "sync-internals";

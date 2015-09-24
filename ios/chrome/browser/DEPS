@@ -1,6 +1,4 @@
 include_rules = [
-  "+ios/chrome/grit",
-
   "+breakpad/src/client/ios",
   "+breakpad/src/common",
   "+components/autofill/core/browser",
@@ -62,6 +60,7 @@ include_rules = [
   "+ios/net",
   "+ios/public/provider/chrome",
   "+ios/public/provider/components",
+  "+ios/public/provider/web",
   "+ios/web/public",
   "+net",
   "+sync",
@@ -80,6 +79,8 @@ include_rules = [
   # files that can be included to avoid bringing in more code.
   "+skia/ext/skia_utils_ios.h",
 
-  # Generated file for translated strings in components.
+  # Strings and resources.
+  "+grit/components_resources.h",
   "+grit/components_strings.h",
+  "+ios/chrome/grit",
 ]

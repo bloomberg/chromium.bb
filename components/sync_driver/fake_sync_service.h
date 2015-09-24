@@ -74,6 +74,17 @@ class FakeSyncService : public sync_driver::SyncService {
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
+  void AddProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer) override;
+  void RemoveProtocolEventObserver(
+      browser_sync::ProtocolEventObserver* observer) override;
+  void AddTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) override;
+  void RemoveTypeDebugInfoObserver(
+      syncer::TypeDebugInfoObserver* observer) override;
+  base::WeakPtr<syncer::JsController> GetJsController() override;
+  void GetAllNodes(const base::Callback<void(scoped_ptr<base::ListValue>)>&
+                       callback) override;
 
   // DataTypeEncryptionHandler:
   bool IsPassphraseRequired() const override;

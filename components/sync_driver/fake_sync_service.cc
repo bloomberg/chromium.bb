@@ -198,4 +198,23 @@ tracked_objects::Location FakeSyncService::unrecoverable_error_location()
   return tracked_objects::Location();
 }
 
+void FakeSyncService::AddProtocolEventObserver(
+    browser_sync::ProtocolEventObserver* observer) {}
+
+void FakeSyncService::RemoveProtocolEventObserver(
+    browser_sync::ProtocolEventObserver* observer) {}
+
+void FakeSyncService::AddTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+void FakeSyncService::RemoveTypeDebugInfoObserver(
+    syncer::TypeDebugInfoObserver* observer) {}
+
+base::WeakPtr<syncer::JsController> FakeSyncService::GetJsController() {
+  return base::WeakPtr<syncer::JsController>();
+}
+
+void FakeSyncService::GetAllNodes(
+    const base::Callback<void(scoped_ptr<base::ListValue>)>& callback) {}
+
 }  // namespace sync_driver

@@ -15,6 +15,12 @@ chrome/test/functional/special_tabs.py. -->
 <link rel="stylesheet" href="sync_search.css">
 <link rel="stylesheet" href="sync_node_browser.css">
 
+<if expr="is_ios">
+<!-- TODO(jyquinn): Remove this once CRWWebUIPageBuilder can inject it.
+See http://crbug.com/487000 -->
+<script src="chrome://resources/js/ios/web_ui.js"></script>
+</if>
+
 <script src="chrome://resources/js/event_tracker.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://resources/js/cr/event_target.js"></script>
