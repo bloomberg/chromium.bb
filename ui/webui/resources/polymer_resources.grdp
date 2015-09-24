@@ -128,6 +128,12 @@
   <structure name="IDR_POLYMER_1_0_IRON_INPUT_IRON_INPUT_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-input/iron-input.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_LIST_IRON_LIST_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-list/iron-list-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_IRON_LIST_IRON_LIST_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/iron-list/iron-list.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_IRON_MEDIA_QUERY_IRON_MEDIA_QUERY_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-media-query/iron-media-query-extracted.js"
              type="chrome_html" />
