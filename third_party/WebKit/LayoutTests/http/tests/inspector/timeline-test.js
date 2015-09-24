@@ -32,7 +32,9 @@ InspectorTest.timelinePropertyFormatters = {
     nodeId: "formatAsTypeName",
     rootNode: "formatAsTypeName",
     networkTime: "formatAsTypeName",
-    thread: "formatAsTypeName"
+    thread: "formatAsTypeName",
+    allottedMilliseconds: "formatAsTypeName",
+    timedOut: "formatAsTypeName"
 };
 
 InspectorTest.InvalidationFormatters = {
@@ -173,7 +175,10 @@ InspectorTest.printTimelineRecordsWithDetails = function(typeName)
     {
         if (recordType && recordType !== record.type())
             return;
-        InspectorTest.addResult("Text details for " + record.type() + ": " + InspectorTest.detailsTextForTraceEvent(record.traceEvent()));
+        var event = record.traceEvent();
+        InspectorTest.addResult("Text details for " + record.type() + ": " + InspectorTest.detailsTextForTraceEvent(event));
+        if (event.warning)
+            InspectorTest.addResult(record.type() + " has a warning");
     }
 
     InspectorTest.timelineModel().forAllRecords(InspectorTest._printTimlineRecord.bind(InspectorTest, typeName, detailsFormatter.bind(null, typeName)));

@@ -7,6 +7,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestCallback.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -84,14 +85,13 @@ ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallb
     m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     if (timeoutMillis > 0)
         m_scheduler->timerTaskRunner()->postDelayedTask(FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), static_cast<long long>(timeoutMillis));
-
-    // TODO(rmcilroy): Add devtools tracing.
+    TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackRequestEvent::data(executionContext(), id, timeoutMillis));
     return id;
 }
 
 void ScriptedIdleTaskController::cancelCallback(CallbackId id)
 {
-    // TODO(rmcilroy): Add devtools tracing.
+    TRACE_EVENT_INSTANT1("devtools.timeline", "CancelIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackCancelEvent::data(executionContext(), id));
     m_callbacks.remove(id);
 }
 
@@ -119,10 +119,11 @@ void ScriptedIdleTaskController::runCallback(CallbackId id, double deadlineSecon
     if (!callback)
         return;
 
-    double allotedTimeMillis = std::max((deadlineSeconds - monotonicallyIncreasingTime()) * 1000, 0.0);
-    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", allotedTimeMillis, 0, 50, 50);
+    double allottedTimeMillis = std::max((deadlineSeconds - monotonicallyIncreasingTime()) * 1000, 0.0);
+    Platform::current()->histogramCustomCounts("WebCore.ScriptedIdleTaskController.IdleCallbackDeadline", allottedTimeMillis, 0, 50, 50);
 
-    // TODO(rmcilroy): Add devtools tracing.
+    TRACE_EVENT1("devtools.timeline", "FireIdleCallback",
+        "data", InspectorIdleCallbackFireEvent::data(executionContext(), id, allottedTimeMillis, callbackType == IdleDeadline::CallbackType::CalledByTimeout));
     callback->handleEvent(IdleDeadline::create(deadlineSeconds, callbackType));
 
     double overrunMillis = std::max((monotonicallyIncreasingTime() - deadlineSeconds) * 1000, 0.0);

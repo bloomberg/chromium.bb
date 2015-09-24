@@ -1,0 +1,99 @@
+Tests Timeline events emitted when idle callback is scheduled and fired.
+
+RequestIdleCallback Properties:
+{
+    data : {
+        frame : <string>
+        id : <number>
+        stackTrace : <object>
+        timeout : 0
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "RequestIdleCallback"
+}
+Text details for RequestIdleCallback: idle-callback.html:8
+RequestIdleCallback Properties:
+{
+    data : {
+        frame : <string>
+        id : <number>
+        stackTrace : <object>
+        timeout : 0
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "RequestIdleCallback"
+}
+Text details for RequestIdleCallback: idle-callback.html:10
+RequestIdleCallback Properties:
+{
+    data : {
+        frame : <string>
+        id : <number>
+        stackTrace : <object>
+        timeout : 0
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "RequestIdleCallback"
+}
+Text details for RequestIdleCallback: idle-callback.html:13
+CancelIdleCallback Properties:
+{
+    data : {
+        frame : <string>
+        id : <number>
+        stackTrace : <object>
+    }
+    endTime : <number>
+    frameId : <string>
+    stackTrace : <object>
+    startTime : <number>
+    thread : <string>
+    type : "CancelIdleCallback"
+}
+Text details for CancelIdleCallback: idle-callback.html:9
+FireIdleCallback Properties:
+{
+    children : <object>
+    data : {
+        allottedMilliseconds : <number>
+        frame : <string>
+        id : <number>
+        timedOut : <boolean>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FireIdleCallback"
+}
+Text details for FireIdleCallback: idle-callback.html:10
+FireIdleCallback Properties:
+{
+    children : <object>
+    data : {
+        allottedMilliseconds : <number>
+        frame : <string>
+        id : <number>
+        timedOut : <boolean>
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    thread : <string>
+    type : "FireIdleCallback"
+}
+Text details for FireIdleCallback: idle-callback.html:13
+FireIdleCallback has a warning
+

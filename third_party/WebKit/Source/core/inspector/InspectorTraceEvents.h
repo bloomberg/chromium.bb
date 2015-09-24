@@ -188,6 +188,18 @@ namespace InspectorTimerFireEvent {
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int timerId);
 }
 
+namespace InspectorIdleCallbackRequestEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int id, double timeout);
+}
+
+namespace InspectorIdleCallbackCancelEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int id);
+}
+
+namespace InspectorIdleCallbackFireEvent {
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int id, double allottedMilliseconds, bool timedOut);
+}
+
 namespace InspectorAnimationFrameEvent {
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(ExecutionContext*, int callbackId);
 }

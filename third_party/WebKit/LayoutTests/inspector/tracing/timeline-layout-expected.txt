@@ -28,6 +28,7 @@ Layout Properties:
     type : "Layout"
 }
 Text details for Layout: timeline-layout.html:17
+Layout has a warning
 Layout Properties:
 {
     data : {
@@ -51,4 +52,5 @@ Layout Properties:
     type : "Layout"
 }
 Text details for Layout: timeline-layout.html:17
+Layout has a warning
 

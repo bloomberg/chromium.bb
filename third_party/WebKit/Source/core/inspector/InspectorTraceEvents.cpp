@@ -492,6 +492,36 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorAnimationFrameEvent::d
     return value.release();
 }
 
+PassRefPtr<TracedValue> genericIdleCallbackEvent(ExecutionContext* context, int id)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setInteger("id", id);
+    if (LocalFrame* frame = frameForExecutionContext(context))
+        value->setString("frame", toHexString(frame));
+    setCallStack(value.get());
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorIdleCallbackRequestEvent::data(ExecutionContext* context, int id, double timeout)
+{
+    RefPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
+    value->setInteger("timeout", timeout);
+    return value;
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorIdleCallbackCancelEvent::data(ExecutionContext* context, int id)
+{
+    return genericIdleCallbackEvent(context, id);
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorIdleCallbackFireEvent::data(ExecutionContext* context, int id, double allottedMilliseconds, bool timedOut)
+{
+    RefPtr<TracedValue> value = genericIdleCallbackEvent(context, id);
+    value->setDouble("allottedMilliseconds", allottedMilliseconds);
+    value->setBoolean("timedOut", timedOut);
+    return value;
+}
+
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginData(Document* document, unsigned startLine)
 {
     RefPtr<TracedValue> value = TracedValue::create();

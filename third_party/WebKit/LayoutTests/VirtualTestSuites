@@ -170,6 +170,11 @@
     "args": ["--enable-threaded-compositing"]
   },
   {
+    "prefix": "threaded",
+    "base": "inspector/tracing",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
     "prefix": "spv2",
     "base": "paint",
     "args": ["--enable-slimming-paint-v2"]
