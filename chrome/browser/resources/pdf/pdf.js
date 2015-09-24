@@ -135,8 +135,12 @@ function PDFViewer(browserApi) {
   this.passwordScreen_.addEventListener('password-submitted',
                                         this.onPasswordSubmitted_.bind(this));
   this.errorScreen_ = $('error-screen');
-  if (chrome.tabs)
-    this.errorScreen_.reloadFn = chrome.tabs.reload;
+  // Can only reload if we are in a normal tab.
+  if (chrome.tabs && this.browserApi_.getStreamInfo().tabId != -1) {
+    this.errorScreen_.reloadFn = function() {
+      chrome.tabs.reload(this.browserApi_.getStreamInfo().tabId);
+    }.bind(this);
+  }
 
   // Create the viewport.
   var topToolbarHeight =

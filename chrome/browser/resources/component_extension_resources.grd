@@ -172,6 +172,7 @@
         <include name="IDR_PDF_VIEWER_BUTTON_CSS" file="pdf/elements/viewer-button/viewer-button.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_HTML" file="pdf/elements/viewer-button/viewer-button.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BUTTON_JS" file="pdf/elements/viewer-button/viewer-button.js" type="BINDATA" />
+        <include name="IDR_PDF_VIEWER_ERROR_SCREEN_CSS" file="pdf/elements/viewer-error-screen/viewer-error-screen.css" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_HTML" file="pdf/elements/viewer-error-screen/viewer-error-screen.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_JS" file="pdf/elements/viewer-error-screen/viewer-error-screen.js" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_ERROR_SCREEN_LEGACY_CSS" file="pdf/elements/viewer-error-screen-legacy/viewer-error-screen-legacy.css" type="BINDATA" />

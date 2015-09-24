@@ -10,7 +10,18 @@ Polymer({
     reloadFn: {
       type: Object,
       value: null,
+      observer: 'reloadFnChanged_'
     }
+  },
+
+  reloadFnChanged_: function() {
+    // The default margins in paper-dialog don't work well with hiding/showing
+    // the .buttons div. We need to manually manage the bottom margin to get
+    // around this.
+    if (this.reloadFn)
+      this.$['load-failed-message'].classList.remove('last-item');
+    else
+      this.$['load-failed-message'].classList.add('last-item');
   },
 
   show: function() {
