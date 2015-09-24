@@ -29,11 +29,10 @@ TestRenderFrameHostFactory::CreateRenderFrameHost(
     FrameTreeNode* frame_tree_node,
     int32 routing_id,
     int32 widget_routing_id,
-    int32 surface_id,
     int flags) {
   return make_scoped_ptr(new TestRenderFrameHost(
       site_instance, render_view_host, delegate, rwh_delegate, frame_tree,
-      frame_tree_node, routing_id, widget_routing_id, surface_id, flags));
+      frame_tree_node, routing_id, widget_routing_id, flags));
 }
 
 }  // namespace content

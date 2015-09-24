@@ -309,12 +309,10 @@ void TestWebContents::CreateNewWindow(
 
 void TestWebContents::CreateNewWidget(int32 render_process_id,
                                       int32 route_id,
-                                      int32 surface_id,
                                       blink::WebPopupType popup_type) {}
 
 void TestWebContents::CreateNewFullscreenWidget(int32 render_process_id,
-                                                int32 route_id,
-                                                int32 surface_id) {}
+                                                int32 route_id) {}
 
 void TestWebContents::ShowCreatedWindow(int route_id,
                                         WindowOpenDisposition disposition,

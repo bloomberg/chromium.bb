@@ -205,8 +205,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
             SiteInstance* site_instance,
             int32 view_routing_id,
             int32 frame_routing_id,
-            int32 widget_routing_id,
-            int32 surface_id);
+            int32 widget_routing_id);
 
   // Returns the currently active RenderFrameHost.
   //
@@ -645,7 +644,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
                                                         int32 view_routing_id,
                                                         int32 frame_routing_id,
                                                         int32 widget_routing_id,
-                                                        int32 surface_id,
                                                         int flags);
 
   // PlzNavigate

@@ -14,7 +14,6 @@
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/input_messages.h"
@@ -131,10 +130,8 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
  public:
   MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                            RenderProcessHost* process,
-                           int32 routing_id,
-                           int32 surface_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id, surface_id, false) {
-  }
+                           int32 routing_id)
+      : RenderWidgetHostImpl(delegate, process, routing_id, false) {}
 
   MOCK_METHOD0(Focus, void());
   MOCK_METHOD0(Blur, void());
@@ -279,11 +276,9 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
   // Owned by its |cocoa_view()|.
-  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id, false);
+  RenderWidgetHostImpl* rwh =
+      new RenderWidgetHostImpl(&delegate, process_host, routing_id, false);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   view->InitAsFullscreen(rwhv_mac_);
@@ -315,11 +310,9 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
   // Owned by its |cocoa_view()|.
-  RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id, false);
+  RenderWidgetHostImpl* rwh =
+      new RenderWidgetHostImpl(&delegate, process_host, routing_id, false);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   view->InitAsFullscreen(rwhv_mac_);
@@ -698,10 +691,8 @@ TEST_F(RenderWidgetHostViewMacTest, BlurAndFocusOnSetActive) {
 
   // Owned by its |cocoa_view()|.
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
-  MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id);
+  MockRenderWidgetHostImpl* rwh =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, false);
 
   base::scoped_nsobject<CocoaTestHelperWindow> window(
@@ -748,10 +739,8 @@ TEST_F(RenderWidgetHostViewMacTest, ScrollWheelEndEventDelivery) {
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
-  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id);
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // Send an initial wheel event with NSEventPhaseBegan to the view.
@@ -791,10 +780,8 @@ TEST_F(RenderWidgetHostViewMacTest, IgnoreEmptyUnhandledWheelEvent) {
   process_host->Init();
   MockRenderWidgetHostDelegate delegate;
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
-  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id);
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // Add a delegate to the view.
@@ -844,12 +831,10 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
   MockRenderProcessHost* process_host =
       new MockRenderProcessHost(&browser_context);
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
 
   // Owned by its |cocoa_view()|.
-  MockRenderWidgetHostImpl* rwh = new MockRenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id);
+  MockRenderWidgetHostImpl* rwh =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(rwh, true);
 
   // Add a delegate to the view.
@@ -889,10 +874,8 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
       new MockRenderProcessHost(&browser_context);
   MockRenderWidgetHostDelegate delegate;
   int32 routing_id = process_host->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host->GetID(), routing_id);
-  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
-      &delegate, process_host, routing_id, surface_id);
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   EXPECT_TRUE(view->GetBackgroundOpaque());
@@ -968,10 +951,8 @@ TEST_F(RenderWidgetHostViewMacPinchTest, PinchThresholding) {
   process_host_->Init();
   MockRenderWidgetHostDelegate delegate;
   int32 routing_id = process_host_->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process_host_->GetID(), routing_id);
-  MockRenderWidgetHostImpl* host = new MockRenderWidgetHostImpl(
-      &delegate, process_host_, routing_id, surface_id);
+  MockRenderWidgetHostImpl* host =
+      new MockRenderWidgetHostImpl(&delegate, process_host_, routing_id);
   RenderWidgetHostViewMac* view = new RenderWidgetHostViewMac(host, false);
 
   // We'll use this IPC message to ack events.

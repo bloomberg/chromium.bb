@@ -11,8 +11,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
@@ -106,7 +104,6 @@ void RenderWidgetHelper::CreateNewWindow(
     base::ProcessHandle render_process,
     int* route_id,
     int* main_frame_route_id,
-    int* surface_id,
     SessionStorageNamespace* session_storage_namespace) {
   if (params.opener_suppressed || no_javascript_access) {
     // If the opener is supppressed or script access is disallowed, we should
@@ -116,12 +113,9 @@ void RenderWidgetHelper::CreateNewWindow(
     // in OnCreateWindowOnUI, using the params provided here.
     *route_id = MSG_ROUTING_NONE;
     *main_frame_route_id = MSG_ROUTING_NONE;
-    *surface_id = 0;
   } else {
     *route_id = GetNextRoutingID();
     *main_frame_route_id = GetNextRoutingID();
-    *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        render_process_id_, *route_id);
     // Block resource requests until the view is created, since the HWND might
     // be needed if a response ends up creating a plugin.
     resource_dispatcher_host_->BlockRequestsForRoute(
@@ -156,46 +150,37 @@ void RenderWidgetHelper::OnResumeRequestsForView(int route_id) {
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,
                                          blink::WebPopupType popup_type,
-                                         int* route_id,
-                                         int* surface_id) {
+                                         int* route_id) {
   *route_id = GetNextRoutingID();
-  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      render_process_id_, *route_id);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnCreateWidgetOnUI, this, opener_id,
-                 *route_id, *surface_id, popup_type));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&RenderWidgetHelper::OnCreateWidgetOnUI,
+                                     this, opener_id, *route_id, popup_type));
 }
 
 void RenderWidgetHelper::CreateNewFullscreenWidget(int opener_id,
-                                                   int* route_id,
-                                                   int* surface_id) {
+                                                   int* route_id) {
   *route_id = GetNextRoutingID();
-  *surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      render_process_id_, *route_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RenderWidgetHelper::OnCreateFullscreenWidgetOnUI, this,
-                 opener_id, *route_id, *surface_id));
+                 opener_id, *route_id));
 }
 
 void RenderWidgetHelper::OnCreateWidgetOnUI(int32 opener_id,
                                             int32 route_id,
-                                            int32 surface_id,
                                             blink::WebPopupType popup_type) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
-    host->CreateNewWidget(route_id, surface_id, popup_type);
+    host->CreateNewWidget(route_id, popup_type);
 }
 
 void RenderWidgetHelper::OnCreateFullscreenWidgetOnUI(int32 opener_id,
-                                                      int32 route_id,
-                                                      int32 surface_id) {
+                                                      int32 route_id) {
   RenderViewHostImpl* host = RenderViewHostImpl::FromID(
       render_process_id_, opener_id);
   if (host)
-    host->CreateNewFullscreenWidget(route_id, surface_id);
+    host->CreateNewFullscreenWidget(route_id);
 }
 
 }  // namespace content

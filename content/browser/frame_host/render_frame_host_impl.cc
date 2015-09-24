@@ -170,7 +170,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          FrameTreeNode* frame_tree_node,
                                          int32 routing_id,
                                          int32 widget_routing_id,
-                                         int32 surface_id,
                                          int flags)
     : render_view_host_(render_view_host),
       delegate_(delegate),
@@ -212,11 +211,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       &RenderFrameHostImpl::OnSwappedOut, weak_ptr_factory_.GetWeakPtr())));
 
   if (widget_routing_id != MSG_ROUTING_NONE) {
-    render_widget_host_ = new RenderWidgetHostImpl(
-        rwh_delegate, GetProcess(), widget_routing_id, surface_id, hidden);
+    render_widget_host_ = new RenderWidgetHostImpl(rwh_delegate, GetProcess(),
+                                                   widget_routing_id, hidden);
     render_widget_host_->set_owned_by_render_frame_host(true);
-  } else {
-    DCHECK_EQ(0, surface_id);
   }
 }
 
@@ -635,13 +632,11 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
 
   if (render_widget_host_) {
     params.widget_params.routing_id = render_widget_host_->GetRoutingID();
-    params.widget_params.surface_id = render_widget_host_->surface_id();
     params.widget_params.hidden = render_widget_host_->is_hidden();
   } else {
     // MSG_ROUTING_NONE will prevent a new RenderWidget from being created in
     // the renderer process.
     params.widget_params.routing_id = MSG_ROUTING_NONE;
-    params.widget_params.surface_id = 0;
     params.widget_params.hidden = true;
   }
 

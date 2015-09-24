@@ -485,9 +485,6 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // The ID of the main frame hosted in the view.
   IPC_STRUCT_MEMBER(int32, main_frame_routing_id)
 
-  // The ID of the rendering surface.
-  IPC_STRUCT_MEMBER(int32, surface_id)
-
   // The session storage namespace ID this view should use.
   IPC_STRUCT_MEMBER(int64, session_storage_namespace_id)
 
@@ -978,28 +975,25 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
 // Sent by the renderer when it is creating a new window.  The browser creates
 // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
 // MSG_ROUTING_NONE, the view couldn't be created.
-IPC_SYNC_MESSAGE_CONTROL1_4(ViewHostMsg_CreateWindow,
+IPC_SYNC_MESSAGE_CONTROL1_3(ViewHostMsg_CreateWindow,
                             ViewHostMsg_CreateWindow_Params,
                             int /* route_id */,
                             int /* main_frame_route_id */,
-                            int32 /* surface_id */,
                             int64 /* cloned_session_storage_namespace_id */)
 
 // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
 // <select> dropdowns.  This message is sent to the WebContentsImpl that
 // contains the widget being created.
-IPC_SYNC_MESSAGE_CONTROL2_2(ViewHostMsg_CreateWidget,
+IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_CreateWidget,
                             int /* opener_id */,
                             blink::WebPopupType /* popup type */,
-                            int /* route_id */,
-                            int32 /* surface_id */)
+                            int /* route_id */)
 
 // Similar to ViewHostMsg_CreateWidget except the widget is a full screen
 // window.
-IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_CreateFullscreenWidget,
+IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateFullscreenWidget,
                             int /* opener_id */,
-                            int /* route_id */,
-                            int32 /* surface_id */)
+                            int /* route_id */)
 
 // Asks the browser for a unique routing ID.
 IPC_SYNC_MESSAGE_CONTROL0_1(ViewHostMsg_GenerateRoutingID,

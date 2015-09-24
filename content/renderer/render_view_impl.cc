@@ -667,7 +667,6 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
                                 bool was_created_by_renderer) {
   routing_id_ = params.view_id;
-  surface_id_ = params.surface_id;
 
   int opener_view_routing_id;
   WebFrame* opener_frame = RenderFrameImpl::ResolveOpener(
@@ -1594,12 +1593,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 
   int32 routing_id = MSG_ROUTING_NONE;
   int32 main_frame_routing_id = MSG_ROUTING_NONE;
-  int32 surface_id = 0;
   int64 cloned_session_storage_namespace_id = 0;
 
-  RenderThread::Get()->Send(new ViewHostMsg_CreateWindow(
-      params, &routing_id, &main_frame_routing_id, &surface_id,
-      &cloned_session_storage_namespace_id));
+  RenderThread::Get()->Send(
+      new ViewHostMsg_CreateWindow(params, &routing_id, &main_frame_routing_id,
+                                   &cloned_session_storage_namespace_id));
   if (routing_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -1630,7 +1628,6 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.web_preferences = webkit_preferences_;
   view_params.view_id = routing_id;
   view_params.main_frame_routing_id = main_frame_routing_id;
-  view_params.surface_id = surface_id;
   view_params.session_storage_namespace_id =
       cloned_session_storage_namespace_id;
   view_params.swapped_out = false;

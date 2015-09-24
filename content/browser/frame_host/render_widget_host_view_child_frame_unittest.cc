@@ -13,7 +13,6 @@
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/view_messages.h"
@@ -90,10 +89,8 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
     int32 routing_id = process_host->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host->GetID(), routing_id);
-    widget_host_ = new RenderWidgetHostImpl(&delegate_, process_host,
-                                            routing_id, surface_id, false);
+    widget_host_ =
+        new RenderWidgetHostImpl(&delegate_, process_host, routing_id, false);
     view_ = new RenderWidgetHostViewChildFrame(widget_host_);
 
     test_frame_connector_ = new MockCrossProcessFrameConnector();

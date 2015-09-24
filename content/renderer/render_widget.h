@@ -112,7 +112,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Creates a new RenderWidget that will be attached to a RenderFrame.
   static RenderWidget* CreateForFrame(int routing_id,
-                                      int surface_id,
                                       bool hidden,
                                       const blink::WebScreenInfo& screen_info,
                                       CompositorDependencies* compositor_deps,
@@ -122,7 +121,6 @@ class CONTENT_EXPORT RenderWidget
   void CloseForFrame();
 
   int32 routing_id() const { return routing_id_; }
-  int32 surface_id() const { return surface_id_; }
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
@@ -590,8 +588,6 @@ class CONTENT_EXPORT RenderWidget
   // Routing ID that allows us to communicate to the parent browser process
   // RenderWidgetHost. When MSG_ROUTING_NONE, no messages may be sent.
   int32 routing_id_;
-
-  int32 surface_id_;
 
   // Dependencies for initializing a compositor, including flags for optional
   // features.

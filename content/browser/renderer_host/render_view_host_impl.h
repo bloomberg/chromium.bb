@@ -115,7 +115,6 @@ class CONTENT_EXPORT RenderViewHostImpl
                      RenderViewHostDelegate* delegate,
                      RenderWidgetHostDelegate* widget_delegate,
                      int32 routing_id,
-                     int32 surface_id,
                      int32 main_frame_routing_id,
                      bool swapped_out,
                      bool hidden,
@@ -306,11 +305,10 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Creates a new RenderWidget with the given route id.  |popup_type| indicates
   // if this widget is a popup and what kind of popup it is (select, autofill).
   void CreateNewWidget(int32 route_id,
-                       int32 surface_id,
                        blink::WebPopupType popup_type);
 
   // Creates a full screen RenderWidget.
-  void CreateNewFullscreenWidget(int32 route_id, int32 surface_id);
+  void CreateNewFullscreenWidget(int32 route_id);
 
   void set_main_frame_routing_id(int routing_id) {
     main_frame_routing_id_ = routing_id;

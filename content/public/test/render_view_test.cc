@@ -63,7 +63,6 @@ const int32 kRouteId = 5;
 const int32 kMainFrameRouteId = 6;
 const int32 kNewWindowRouteId = 7;
 const int32 kNewFrameRouteId = 10;
-const int32 kSurfaceId = 42;
 
 // Converts |ascii_character| into |key_code| and returns true on success.
 // Handles only the characters needed by tests.
@@ -207,7 +206,6 @@ void RenderViewTest::SetUp() {
   if (!render_thread_)
     render_thread_.reset(new MockRenderThread());
   render_thread_->set_routing_id(kRouteId);
-  render_thread_->set_surface_id(kSurfaceId);
   render_thread_->set_new_window_routing_id(kNewWindowRouteId);
   render_thread_->set_new_frame_routing_id(kNewFrameRouteId);
 
@@ -246,7 +244,6 @@ void RenderViewTest::SetUp() {
   view_params.web_preferences = WebPreferences();
   view_params.view_id = kRouteId;
   view_params.main_frame_routing_id = kMainFrameRouteId;
-  view_params.surface_id = kSurfaceId;
   view_params.session_storage_namespace_id = kInvalidSessionStorageNamespaceId;
   view_params.swapped_out = false;
   view_params.replicated_frame_state = FrameReplicationState();

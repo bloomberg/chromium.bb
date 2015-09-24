@@ -135,8 +135,6 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
             delegate,
             process,
             routing_id,
-            GpuSurfaceTracker::Get()->AddSurfaceForRenderer(process->GetID(),
-                                                            routing_id),
             false),
         unresponsive_timer_fired_(false),
         new_content_rendering_timeout_fired_(false) {

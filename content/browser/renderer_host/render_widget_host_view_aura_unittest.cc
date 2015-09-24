@@ -21,7 +21,6 @@
 #include "content/browser/compositor/resize_lock.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -389,10 +388,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     sink_ = &process_host_->sink();
 
     int32 routing_id = process_host_->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host_->GetID(), routing_id);
-    parent_host_ = new RenderWidgetHostImpl(&delegate_, process_host_,
-                                            routing_id, surface_id, false);
+    parent_host_ =
+        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     parent_view_ = new RenderWidgetHostViewAura(parent_host_,
                                                 is_guest_view_hack_);
     parent_view_->InitAsChild(NULL);
@@ -401,10 +398,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
                                           gfx::Rect());
 
     routing_id = process_host_->GetNextRoutingID();
-    surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host_->GetID(), routing_id);
-    widget_host_ = new RenderWidgetHostImpl(&delegate_, process_host_,
-                                            routing_id, surface_id, false);
+    widget_host_ =
+        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     widget_host_->Init();
     view_ = new FakeRenderWidgetHostViewAura(widget_host_, is_guest_view_hack_);
   }
@@ -1908,10 +1903,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32 routing_id = process_host_->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host_->GetID(), routing_id);
-    hosts[i] = new RenderWidgetHostImpl(&delegate_, process_host_, routing_id,
-                                        surface_id, false);
+    hosts[i] =
+        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
@@ -2074,10 +2067,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithLocking) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32 routing_id = process_host_->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host_->GetID(), routing_id);
-    hosts[i] = new RenderWidgetHostImpl(&delegate_, process_host_, routing_id,
-                                        surface_id, false);
+    hosts[i] =
+        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);
@@ -2145,10 +2136,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // Create a bunch of renderers.
   for (size_t i = 0; i < renderer_count; ++i) {
     int32 routing_id = process_host_->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        process_host_->GetID(), routing_id);
-    hosts[i] = new RenderWidgetHostImpl(&delegate_, process_host_, routing_id,
-                                        surface_id, false);
+    hosts[i] =
+        new RenderWidgetHostImpl(&delegate_, process_host_, routing_id, false);
     hosts[i]->Init();
     views[i] = new FakeRenderWidgetHostViewAura(hosts[i], false);
     views[i]->InitAsChild(NULL);

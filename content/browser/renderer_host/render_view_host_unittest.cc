@@ -6,7 +6,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -76,9 +75,7 @@ TEST_F(RenderViewHostTest, FilterAbout) {
 // Create a full screen popup RenderWidgetHost and View.
 TEST_F(RenderViewHostTest, CreateFullscreenWidget) {
   int32 routing_id = process()->GetNextRoutingID();
-  int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-      process()->GetID(), routing_id);
-  test_rvh()->CreateNewFullscreenWidget(routing_id, surface_id);
+  test_rvh()->CreateNewFullscreenWidget(routing_id);
 }
 
 // Ensure we do not grant bindings to a process shared with unprivileged views.

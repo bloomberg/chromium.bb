@@ -95,7 +95,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
                        int32_t routing_id,
-                       int32_t surface_id,
                        bool hidden);
   ~RenderWidgetHostImpl() override;
 
@@ -171,8 +170,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetView(RenderWidgetHostViewBase* view);
 
   RenderWidgetHostDelegate* delegate() const { return delegate_; }
-
-  int surface_id() const { return surface_id_; }
 
   bool empty() const { return current_size_.IsEmpty(); }
 
@@ -697,9 +694,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // The ID of the corresponding object in the Renderer Instance.
   const int routing_id_;
-
-  // The ID of the surface corresponding to this render widget.
-  int surface_id_;
 
   // Indicates whether a page is loading or not.
   bool is_loading_;

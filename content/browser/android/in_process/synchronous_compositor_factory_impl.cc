@@ -166,10 +166,14 @@ SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
 scoped_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
-    int surface_id,
     scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue) {
+  // TODO(piman): we still need to create a View command buffer until
+  // crbug.com/526196 is fixed. The surface_id doesn't matter, it just needs to
+  // be !0.
+  const int32 kDummySurfaceId = 1;
   scoped_refptr<cc::ContextProvider> onscreen_context =
-      CreateContextProviderForCompositor(surface_id, RENDER_COMPOSITOR_CONTEXT);
+      CreateContextProviderForCompositor(kDummySurfaceId,
+                                         RENDER_COMPOSITOR_CONTEXT);
   scoped_refptr<cc::ContextProvider> worker_context =
       GetSharedWorkerContextProvider();
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(

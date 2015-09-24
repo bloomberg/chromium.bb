@@ -25,35 +25,11 @@ GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {
   return base::Singleton<GpuSurfaceTracker>::get();
 }
 
-int GpuSurfaceTracker::AddSurfaceForRenderer(int renderer_id,
-                                             int render_widget_id) {
-  base::AutoLock lock(lock_);
-  int surface_id = next_surface_id_++;
-  surface_map_[surface_id] =
-      SurfaceInfo(renderer_id, render_widget_id, gfx::kNullAcceleratedWidget,
-                  gfx::GLSurfaceHandle());
-  return surface_id;
-}
-
-int GpuSurfaceTracker::LookupSurfaceForRenderer(int renderer_id,
-                                                int render_widget_id) {
-  base::AutoLock lock(lock_);
-  for (SurfaceMap::iterator it = surface_map_.begin(); it != surface_map_.end();
-       ++it) {
-    const SurfaceInfo& info = it->second;
-    if (info.renderer_id == renderer_id &&
-        info.render_widget_id == render_widget_id) {
-      return it->first;
-    }
-  }
-  return 0;
-}
-
 int GpuSurfaceTracker::AddSurfaceForNativeWidget(
     gfx::AcceleratedWidget widget) {
   base::AutoLock lock(lock_);
   int surface_id = next_surface_id_++;
-  surface_map_[surface_id] = SurfaceInfo(0, 0, widget, gfx::GLSurfaceHandle());
+  surface_map_[surface_id] = SurfaceInfo(widget, gfx::GLSurfaceHandle());
   return surface_id;
 }
 
@@ -99,19 +75,12 @@ std::size_t GpuSurfaceTracker::GetSurfaceCount() {
 }
 
 GpuSurfaceTracker::SurfaceInfo::SurfaceInfo()
-   : renderer_id(0),
-     render_widget_id(0),
-     native_widget(gfx::kNullAcceleratedWidget) { }
+    : native_widget(gfx::kNullAcceleratedWidget) {}
 
 GpuSurfaceTracker::SurfaceInfo::SurfaceInfo(
-    int renderer_id,
-    int render_widget_id,
     const gfx::AcceleratedWidget& native_widget,
     const gfx::GLSurfaceHandle& handle)
-    : renderer_id(renderer_id),
-      render_widget_id(render_widget_id),
-      native_widget(native_widget),
-      handle(handle) {}
+    : native_widget(native_widget), handle(handle) {}
 
 GpuSurfaceTracker::SurfaceInfo::~SurfaceInfo() { }
 

@@ -43,9 +43,9 @@ WebWidget* RenderWidgetFullscreen::CreateWebWidget() {
 bool RenderWidgetFullscreen::Init(int32 opener_id) {
   DCHECK(!webwidget_);
 
-  return RenderWidget::DoInit(opener_id, CreateWebWidget(),
-                              new ViewHostMsg_CreateFullscreenWidget(
-                                  opener_id, &routing_id_, &surface_id_));
+  return RenderWidget::DoInit(
+      opener_id, CreateWebWidget(),
+      new ViewHostMsg_CreateFullscreenWidget(opener_id, &routing_id_));
 }
 
 }  // namespace content

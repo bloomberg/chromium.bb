@@ -33,7 +33,6 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       FrameTreeNode* frame_tree_node,
       int32 routing_id,
       int32 widget_routing_id,
-      int32 surface_id,
       int flags) override;
 
  private:

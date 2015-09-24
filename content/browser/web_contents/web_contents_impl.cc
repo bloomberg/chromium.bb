@@ -1352,7 +1352,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
               params.main_frame_routing_id != MSG_ROUTING_NONE));
   GetRenderManager()->Init(params.browser_context, params.site_instance,
                            params.routing_id, params.main_frame_routing_id,
-                           MSG_ROUTING_NONE, 0 /* surface_id */);
+                           MSG_ROUTING_NONE);
   frame_tree_.root()->SetFrameName(params.main_frame_name);
 
   WebContentsViewDelegate* delegate =
@@ -1827,21 +1827,17 @@ void WebContentsImpl::CreateNewWindow(
 
 void WebContentsImpl::CreateNewWidget(int32 render_process_id,
                                       int32 route_id,
-                                      int32 surface_id,
                                       blink::WebPopupType popup_type) {
-  CreateNewWidget(render_process_id, route_id, surface_id, false, popup_type);
+  CreateNewWidget(render_process_id, route_id, false, popup_type);
 }
 
 void WebContentsImpl::CreateNewFullscreenWidget(int32 render_process_id,
-                                                int32 route_id,
-                                                int32 surface_id) {
-  CreateNewWidget(render_process_id, route_id, surface_id, true,
-                  blink::WebPopupTypeNone);
+                                                int32 route_id) {
+  CreateNewWidget(render_process_id, route_id, true, blink::WebPopupTypeNone);
 }
 
 void WebContentsImpl::CreateNewWidget(int32 render_process_id,
                                       int32 route_id,
-                                      int32 surface_id,
                                       bool is_fullscreen,
                                       blink::WebPopupType popup_type) {
   RenderProcessHost* process = GetRenderProcessHost();
@@ -1860,7 +1856,7 @@ void WebContentsImpl::CreateNewWidget(int32 render_process_id,
   }
 
   RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(this, process, route_id, surface_id, IsHidden());
+      new RenderWidgetHostImpl(this, process, route_id, IsHidden());
   created_widgets_.insert(widget_host);
 
   RenderWidgetHostViewBase* widget_view =

@@ -608,9 +608,8 @@ void RenderFrameImpl::CreateFrame(
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
     CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
-        widget_params.routing_id, widget_params.surface_id,
-        widget_params.hidden, render_frame->render_view_->screen_info(),
-        compositor_deps, web_frame);
+        widget_params.routing_id, widget_params.hidden,
+        render_frame->render_view_->screen_info(), compositor_deps, web_frame);
     // TODO(kenrb): Observing shouldn't be necessary when we sort out
     // WasShown and WasHidden, separating page-level visibility from
     // frame-level visibility.

@@ -199,7 +199,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     RenderViewHostDelegate* delegate,
     RenderWidgetHostDelegate* widget_delegate,
     int32 routing_id,
-    int32 surface_id,
     int32 main_frame_routing_id,
     bool swapped_out,
     bool hidden,
@@ -207,7 +206,6 @@ RenderViewHostImpl::RenderViewHostImpl(
     : RenderWidgetHostImpl(widget_delegate,
                            instance->GetProcess(),
                            routing_id,
-                           surface_id,
                            hidden),
       frames_ref_count_(0),
       delegate_(delegate),
@@ -312,7 +310,6 @@ bool RenderViewHostImpl::CreateRenderView(
   params.web_preferences = GetWebkitPreferences();
   params.view_id = GetRoutingID();
   params.main_frame_routing_id = main_frame_routing_id_;
-  params.surface_id = surface_id();
   params.session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
@@ -992,16 +989,12 @@ void RenderViewHostImpl::CreateNewWindow(
 }
 
 void RenderViewHostImpl::CreateNewWidget(int32 route_id,
-                                         int32 surface_id,
                                          blink::WebPopupType popup_type) {
-  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, surface_id,
-                             popup_type);
+  delegate_->CreateNewWidget(GetProcess()->GetID(), route_id, popup_type);
 }
 
-void RenderViewHostImpl::CreateNewFullscreenWidget(int32 route_id,
-                                                   int32 surface_id) {
-  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id,
-                                       surface_id);
+void RenderViewHostImpl::CreateNewFullscreenWidget(int32 route_id) {
+  delegate_->CreateNewFullscreenWidget(GetProcess()->GetID(), route_id);
 }
 
 void RenderViewHostImpl::OnShowView(int route_id,

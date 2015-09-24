@@ -248,7 +248,6 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                             RenderViewHostDelegate* delegate,
                             RenderWidgetHostDelegate* widget_delegate,
                             int32 routing_id,
-                            int32 surface_id,
                             int32 main_frame_routing_id,
                             bool swapped_out,
                             CaptureTestSourceController* controller)
@@ -256,7 +255,6 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
                            delegate,
                            widget_delegate,
                            routing_id,
-                           surface_id,
                            main_frame_routing_id,
                            swapped_out),
         controller_(controller) {
@@ -313,12 +311,11 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
       RenderViewHostDelegate* delegate,
       RenderWidgetHostDelegate* widget_delegate,
       int32 routing_id,
-      int32 surface_id,
       int32 main_frame_routing_id,
       bool swapped_out) override {
-    return new CaptureTestRenderViewHost(
-        instance, delegate, widget_delegate, routing_id, surface_id,
-        main_frame_routing_id, swapped_out, controller_);
+    return new CaptureTestRenderViewHost(instance, delegate, widget_delegate,
+                                         routing_id, main_frame_routing_id,
+                                         swapped_out, controller_);
   }
  private:
   CaptureTestSourceController* controller_;

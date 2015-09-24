@@ -482,7 +482,6 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
                            bool hidden,
                            bool never_visible)
     : routing_id_(MSG_ROUTING_NONE),
-      surface_id_(0),
       compositor_deps_(compositor_deps),
       webwidget_(nullptr),
       opener_id_(MSG_ROUTING_NONE),
@@ -559,7 +558,6 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
 // static
 RenderWidget* RenderWidget::CreateForFrame(
     int routing_id,
-    int surface_id,
     bool hidden,
     const blink::WebScreenInfo& screen_info,
     CompositorDependencies* compositor_deps,
@@ -569,7 +567,6 @@ RenderWidget* RenderWidget::CreateForFrame(
       new RenderWidget(compositor_deps, blink::WebPopupTypeNone, screen_info,
                        false, hidden, false));
   widget->routing_id_ = routing_id;
-  widget->surface_id_ = surface_id;
   widget->for_oopif_ = true;
   // DoInit increments the reference count on |widget|, keeping it alive after
   // this function returns.
@@ -607,9 +604,9 @@ void RenderWidget::CloseForFrame() {
 }
 
 bool RenderWidget::Init(int32 opener_id) {
-  return DoInit(opener_id, RenderWidget::CreateWebWidget(this),
-                new ViewHostMsg_CreateWidget(opener_id, popup_type_,
-                                             &routing_id_, &surface_id_));
+  return DoInit(
+      opener_id, RenderWidget::CreateWebWidget(this),
+      new ViewHostMsg_CreateWidget(opener_id, popup_type_, &routing_id_));
 }
 
 bool RenderWidget::DoInit(int32 opener_id,
@@ -999,7 +996,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance()) {
-    return factory->CreateOutputSurface(routing_id(), surface_id(),
+    return factory->CreateOutputSurface(routing_id(),
                                         frame_swap_message_queue_);
   }
 #endif
@@ -2389,14 +2386,15 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
     limits.min_transfer_buffer_size = 64 * 1024;
   }
 
+  // TODO(piman): we still need to create a View command buffer until
+  // crbug.com/526196 is fixed. The surface_id doesn't matter, it just needs to
+  // be !0.
+  const int32 kDummySurfaceId = 1;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(surface_id(),
-                                                GetURLForGraphicsContext3D(),
-                                                gpu_channel_host.get(),
-                                                attributes,
-                                                lose_context_when_out_of_memory,
-                                                limits,
-                                                NULL));
+      new WebGraphicsContext3DCommandBufferImpl(
+          kDummySurfaceId, GetURLForGraphicsContext3D(),
+          gpu_channel_host.get(), attributes, lose_context_when_out_of_memory,
+          limits, NULL));
   return context.Pass();
 }
 

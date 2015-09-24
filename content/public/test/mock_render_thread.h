@@ -85,10 +85,6 @@ class MockRenderThread : public RenderThread {
     routing_id_ = id;
   }
 
-  void set_surface_id(int32 id) {
-    surface_id_ = id;
-  }
-
   int32 opener_id() const {
     return opener_id_;
   }
@@ -119,8 +115,7 @@ class MockRenderThread : public RenderThread {
   // The Widget expects to be returned valid route_id.
   void OnCreateWidget(int opener_id,
                       blink::WebPopupType popup_type,
-                      int* route_id,
-                      int* surface_id);
+                      int* route_id);
 
   // The View expects to be returned a valid route_id different from its own.
   // We do not keep track of the newly created widget in MockRenderThread,
@@ -129,7 +124,6 @@ class MockRenderThread : public RenderThread {
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
     int* main_frame_route_id,
-    int* surface_id,
     int64* cloned_session_storage_namespace_id);
 
   // The Frame expects to be returned a valid route_id different from its own.
@@ -148,9 +142,6 @@ class MockRenderThread : public RenderThread {
 
   // Routing id what will be assigned to the Widget.
   int32 routing_id_;
-
-  // Surface id what will be assigned to the Widget.
-  int32 surface_id_;
 
   // Opener id reported by the Widget.
   int32 opener_id_;

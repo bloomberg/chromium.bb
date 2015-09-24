@@ -105,13 +105,11 @@ class RenderWidgetHelper
       base::ProcessHandle render_process,
       int* route_id,
       int* main_frame_route_id,
-      int* surface_id,
       SessionStorageNamespace* session_storage_namespace);
   void CreateNewWidget(int opener_id,
                        blink::WebPopupType popup_type,
-                       int* route_id,
-                       int* surface_id);
-  void CreateNewFullscreenWidget(int opener_id, int* route_id, int* surface_id);
+                       int* route_id);
+  void CreateNewFullscreenWidget(int opener_id, int* route_id);
 
  private:
   friend class base::RefCountedThreadSafe<RenderWidgetHelper>;
@@ -133,13 +131,10 @@ class RenderWidgetHelper
   // Called on the UI thread to finish creating a widget.
   void OnCreateWidgetOnUI(int32 opener_id,
                           int32 route_id,
-                          int32 surface_id,
                           blink::WebPopupType popup_type);
 
   // Called on the UI thread to create a fullscreen widget.
-  void OnCreateFullscreenWidgetOnUI(int32 opener_id,
-                                    int32 route_id,
-                                    int32 surface_id);
+  void OnCreateFullscreenWidgetOnUI(int32 opener_id, int32 route_id);
 
   // Called on the IO thread to resume a paused navigation in the network
   // stack without transferring it to a new renderer process.

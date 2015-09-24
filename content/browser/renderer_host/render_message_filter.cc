@@ -229,7 +229,6 @@ void RenderMessageFilter::OnCreateWindow(
     const ViewHostMsg_CreateWindow_Params& params,
     int* route_id,
     int* main_frame_route_id,
-    int* surface_id,
     int64* cloned_session_storage_namespace_id) {
   bool no_javascript_access;
 
@@ -254,7 +253,6 @@ void RenderMessageFilter::OnCreateWindow(
   if (!can_create_window) {
     *route_id = MSG_ROUTING_NONE;
     *main_frame_route_id = MSG_ROUTING_NONE;
-    *surface_id = 0;
     *cloned_session_storage_namespace_id = 0;
     return;
   }
@@ -270,23 +268,18 @@ void RenderMessageFilter::OnCreateWindow(
                                          PeerHandle(),
                                          route_id,
                                          main_frame_route_id,
-                                         surface_id,
                                          cloned_namespace.get());
 }
 
 void RenderMessageFilter::OnCreateWidget(int opener_id,
                                          blink::WebPopupType popup_type,
-                                         int* route_id,
-                                         int* surface_id) {
-  render_widget_helper_->CreateNewWidget(
-      opener_id, popup_type, route_id, surface_id);
+                                         int* route_id) {
+  render_widget_helper_->CreateNewWidget(opener_id, popup_type, route_id);
 }
 
 void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
-                                                   int* route_id,
-                                                   int* surface_id) {
-  render_widget_helper_->CreateNewFullscreenWidget(
-      opener_id, route_id, surface_id);
+                                                   int* route_id) {
+  render_widget_helper_->CreateNewFullscreenWidget(opener_id, route_id);
 }
 
 void RenderMessageFilter::OnGetProcessMemorySizes(size_t* private_bytes,

@@ -36,16 +36,6 @@ class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
   // Gets the global instance of the surface tracker.
   static GpuSurfaceTracker* Get() { return GetInstance(); }
 
-  // Adds a surface for a given RenderWidgetHost. |renderer_id| is the renderer
-  // process ID, |render_widget_id| is the RenderWidgetHost route id within that
-  // renderer. Returns the surface ID.
-  int AddSurfaceForRenderer(int renderer_id, int render_widget_id);
-
-  // Looks up a surface for a given RenderWidgetHost. Returns the surface
-  // ID, or 0 if not found.
-  // Note: This is an O(N) lookup.
-  int LookupSurfaceForRenderer(int renderer_id, int render_widget_id);
-
   // Adds a surface for a native widget. Returns the surface ID.
   int AddSurfaceForNativeWidget(gfx::AcceleratedWidget widget);
 
@@ -70,13 +60,9 @@ class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
  private:
   struct SurfaceInfo {
     SurfaceInfo();
-    SurfaceInfo(int renderer_id,
-                int render_widget_id,
-                const gfx::AcceleratedWidget& native_widget,
+    SurfaceInfo(const gfx::AcceleratedWidget& native_widget,
                 const gfx::GLSurfaceHandle& handle);
     ~SurfaceInfo();
-    int renderer_id;
-    int render_widget_id;
     gfx::AcceleratedWidget native_widget;
     gfx::GLSurfaceHandle handle;
   };

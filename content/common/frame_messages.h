@@ -320,9 +320,6 @@ IPC_STRUCT_BEGIN(FrameMsg_NewFrame_WidgetParams)
   // is MSG_ROUTING_NONE and the other parameters are not read.
   IPC_STRUCT_MEMBER(int, routing_id)
 
-  // Identifier for the output surface for the new RenderWidget.
-  IPC_STRUCT_MEMBER(int, surface_id)
-
   // Tells the new RenderWidget whether it is initially hidden.
   IPC_STRUCT_MEMBER(bool, hidden)
 IPC_STRUCT_END()

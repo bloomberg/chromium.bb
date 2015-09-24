@@ -594,7 +594,7 @@ RenderViewHostImpl* InterstitialPageImpl::CreateRenderViewHost() {
   // Use the RenderViewHost from our FrameTree.
   frame_tree_.root()->render_manager()->Init(
       browser_context, site_instance.get(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-      MSG_ROUTING_NONE, 0 /* surface_id */);
+      MSG_ROUTING_NONE);
   return frame_tree_.root()->current_frame_host()->render_view_host();
 }
 
@@ -767,14 +767,12 @@ void InterstitialPageImpl::CreateNewWindow(
 
 void InterstitialPageImpl::CreateNewWidget(int32 render_process_id,
                                            int32 route_id,
-                                           int32 surface_id,
                                            blink::WebPopupType popup_type) {
   NOTREACHED() << "InterstitialPage does not support showing drop-downs yet.";
 }
 
 void InterstitialPageImpl::CreateNewFullscreenWidget(int32 render_process_id,
-                                                     int32 route_id,
-                                                     int32 surface_id) {
+                                                     int32 route_id) {
   NOTREACHED()
       << "InterstitialPage does not support showing full screen popups.";
 }

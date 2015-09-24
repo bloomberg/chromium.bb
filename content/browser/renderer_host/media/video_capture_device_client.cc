@@ -42,8 +42,7 @@ namespace {
 #if !defined(OS_ANDROID)
 // Modelled after GpuProcessTransportFactory::CreateContextCommon().
 scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
-    scoped_refptr<content::GpuChannelHost> gpu_channel_host,
-    int surface_id) {
+    scoped_refptr<content::GpuChannelHost> gpu_channel_host) {
   if (!content::GpuDataManagerImpl::GetInstance()->
         CanUseGpuBrowserCompositor()) {
     DLOG(ERROR) << "No accelerated graphics found. Check chrome://gpu";
@@ -61,15 +60,11 @@ scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
     return scoped_ptr<content::WebGraphicsContext3DCommandBufferImpl>();
   }
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateCaptureContext");
-  return make_scoped_ptr(
-      new WebGraphicsContext3DCommandBufferImpl(
-          surface_id,
-          url,
-          gpu_channel_host.get(),
-          attrs,
-          true  /* lose_context_when_out_of_memory */,
-          content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
-          NULL));
+  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+      0, url, gpu_channel_host.get(), attrs,
+      true /* lose_context_when_out_of_memory */,
+      content::WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits(),
+      NULL));
 }
 
 // Modelled after
@@ -85,7 +80,7 @@ CreateOffscreenCommandBufferContext() {
       content::BrowserGpuChannelHostFactory::instance()->
           EstablishGpuChannelSync(cause));
   DCHECK(gpu_channel_host);
-  return CreateContextCommon(gpu_channel_host, 0);
+  return CreateContextCommon(gpu_channel_host);
 }
 #endif
 

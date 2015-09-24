@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -49,10 +48,7 @@ class TextInputClientMacTest : public testing::Test {
     RenderProcessHost* rph =
         process_factory_.CreateRenderProcessHost(&browser_context_, nullptr);
     int32 routing_id = rph->GetNextRoutingID();
-    int32 surface_id = GpuSurfaceTracker::Get()->AddSurfaceForRenderer(
-        rph->GetID(), routing_id);
-    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id,
-                                           surface_id, false));
+    widget_.reset(new RenderWidgetHostImpl(&delegate_, rph, routing_id, false));
   }
 
   // Accessor for the TextInputClientMac instance.

@@ -30,9 +30,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
@@ -146,7 +143,6 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
 RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            RenderProcessHost* process,
                                            int32_t routing_id,
-                                           int32_t surface_id,
                                            bool hidden)
     : view_(NULL),
       hung_renderer_delay_(
@@ -157,7 +153,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       delegate_(delegate),
       process_(process),
       routing_id_(routing_id),
-      surface_id_(surface_id),
       is_loading_(false),
       is_hidden_(hidden),
       repaint_ack_pending_(false),
@@ -183,8 +178,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       weak_factory_(this) {
   CHECK(delegate_);
   CHECK_NE(MSG_ROUTING_NONE, routing_id_);
-  DCHECK_EQ(surface_id_, GpuSurfaceTracker::Get()->LookupSurfaceForRenderer(
-                             process_->GetID(), routing_id_));
 
   std::pair<RoutingIDWidgetMap::iterator, bool> result =
       g_routing_id_widget_map.Get().insert(std::make_pair(
@@ -223,9 +216,6 @@ RenderWidgetHostImpl::~RenderWidgetHostImpl() {
   if (view_weak_)
     view_weak_->RenderWidgetHostGone();
   SetView(NULL);
-
-  GpuSurfaceTracker::Get()->RemoveSurface(surface_id_);
-  surface_id_ = 0;
 
   process_->RemoveRoute(routing_id_);
   g_routing_id_widget_map.Get().erase(

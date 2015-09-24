@@ -40,7 +40,6 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
-      int surface_id,
       scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
       override;
   InputHandlerManagerClient* GetInputHandlerManagerClient() override;

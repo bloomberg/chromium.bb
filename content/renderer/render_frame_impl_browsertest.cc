@@ -20,7 +20,6 @@ namespace {
 const int32 kSubframeRouteId = 20;
 const int32 kSubframeWidgetRouteId = 21;
 const int32 kFrameProxyRouteId = 22;
-const int32 kSubframeSurfaceId = 43;
 }  // namespace
 
 namespace content {
@@ -39,7 +38,6 @@ class RenderFrameImplTest : public RenderViewTest {
 
     FrameMsg_NewFrame_WidgetParams widget_params;
     widget_params.routing_id = kSubframeWidgetRouteId;
-    widget_params.surface_id = kSubframeSurfaceId;
     widget_params.hidden = false;
 
     IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
