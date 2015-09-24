@@ -75,7 +75,7 @@ public:
 
     // Gets the active configuration of the device.
     // Ownership of the WebUSBDeviceGetConfigurationCallbacks is transferred to the client.
-    virtual void getConfiguration(WebUSBDeviceGetConfigurationCallbacks*) { }
+    virtual void getConfiguration(WebUSBDeviceGetConfigurationCallbacks*) = 0;
 
     // Sets the active configuration for the device.
     // Ownership of the WebUSBDeviceSetConfigurationCallbacks is transferred to the client.
