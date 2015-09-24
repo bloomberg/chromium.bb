@@ -7,7 +7,6 @@
 #include "chrome/browser/ssl/ssl_error_classification.h"
 
 #include "base/build_time.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -190,7 +189,8 @@ void SSLErrorClassification::RecordUMAStatistics(
         RecordSSLInterstitialCause(overridable, CLOCK_PAST);
       } else if (IsUserClockInTheFuture(base::Time::NowFromSystemTime())) {
         RecordSSLInterstitialCause(overridable, CLOCK_FUTURE);
-      } else if (cert_.HasExpired() && TimePassedSinceExpiry().InDays() < 28) {
+      } else if (cert_.HasExpired() &&
+                 (current_time_ - cert_.valid_expiry()).InDays() < 28) {
         RecordSSLInterstitialCause(overridable, EXPIRED_RECENTLY);
       }
       break;
@@ -237,11 +237,6 @@ void SSLErrorClassification::RecordUMAStatistics(
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl.connection_type",
                             net::NetworkChangeNotifier::GetConnectionType(),
                             net::NetworkChangeNotifier::CONNECTION_LAST);
-}
-
-base::TimeDelta SSLErrorClassification::TimePassedSinceExpiry() const {
-  base::TimeDelta delta = current_time_ - cert_.valid_expiry();
-  return delta;
 }
 
 bool SSLErrorClassification::IsUserClockInThePast(const base::Time& time_now) {

@@ -48,12 +48,6 @@ class SSLErrorClassification : public content::NotificationObserver {
   // On other platforms, returns false always.
   static bool MaybeWindowsLacksSHA256Support();
 
-  // Returns true if any one of the following conditions hold:
-  // 1.|hostname| is an IP Address in an IANA-reserved range.
-  // 2.|hostname| is a not-yet-assigned by ICANN gTLD.
-  // 3.|hostname| is a dotless domain.
-  static bool IsHostnameNonUniqueOrDotless(const std::string& hostname);
-
   // Returns true if the site's hostname differs from one of the DNS
   // names in the certificate (CN or SANs) only by the presence or
   // absence of the single-label prefix "www". E.g.: (The first domain
@@ -67,38 +61,26 @@ class SSLErrorClassification : public content::NotificationObserver {
                                    const std::vector<std::string>& dns_names,
                                    std::string* www_match_host_name);
 
-  // A function which calculates the severity score when the ssl error is
-  // |CERT_DATE_INVALID|. The calculated score is between 0.0 and 1.0, higher
-  // being more severe, indicating how severe the certificate's
-  // date invalid error is.
-  void InvalidDateSeverityScore();
-
-  // A function which calculates the severity score when the ssl error is
-  // |CERT_COMMON_NAME_INVALID|. The calculated score is between 0.0 and 1.0,
-  // higher being more severe, indicating how severe the certificate's common
-  // name invalid error is.
-  void InvalidCommonNameSeverityScore();
-
-  // A function which calculates the severity score when the ssl error is
-  // |CERT_AUTHORITY_INVALID|, returns a score between 0.0 and 1.0, higher
-  // values being more severe, indicating how severe the certificate's
-  // authority invalid error is.
-  void InvalidAuthoritySeverityScore();
-
   void RecordUMAStatistics(bool overridable) const;
   void RecordCaptivePortalUMAStatistics(bool overridable) const;
-  base::TimeDelta TimePassedSinceExpiry() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SSLErrorClassificationTest, TestDateInvalidScore);
   FRIEND_TEST_ALL_PREFIXES(SSLErrorClassificationTest, TestNameMismatch);
   FRIEND_TEST_ALL_PREFIXES(SSLErrorClassificationTest,
                            TestHostNameHasKnownTLD);
+  FRIEND_TEST_ALL_PREFIXES(SSLErrorClassificationTest, TestPrivateURL);
 
   typedef std::vector<std::string> Tokens;
 
   // Returns true if the hostname has a known Top Level Domain.
   static bool IsHostNameKnownTLD(const std::string& host_name);
+
+  // Returns true if any one of the following conditions hold:
+  // 1.|hostname| is an IP Address in an IANA-reserved range.
+  // 2.|hostname| is a not-yet-assigned by ICANN gTLD.
+  // 3.|hostname| is a dotless domain.
+  static bool IsHostnameNonUniqueOrDotless(const std::string& hostname);
 
   // Returns true if GetWWWSubDomainMatch finds a www mismatch.
   bool IsWWWSubDomainMatch() const;
@@ -149,28 +131,21 @@ class SSLErrorClassification : public content::NotificationObserver {
 
   static Tokens Tokenize(const std::string& name);
 
-  float CalculateScoreTimePassedSinceExpiry() const;
-  float CalculateScoreEnvironments() const;
-
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
   content::WebContents* web_contents_;
-  // This stores the current time.
   base::Time current_time_;
   const GURL request_url_;
   int cert_error_;
-  // This stores the certificate.
   const net::X509Certificate& cert_;
-  // Is captive portal detection enabled?
   bool captive_portal_detection_enabled_;
   // Did the probe complete before the interstitial was closed?
   bool captive_portal_probe_completed_;
   // Did the captive portal probe receive an error or get a non-HTTP response?
   bool captive_portal_no_response_;
-  // Was a captive portal detected?
   bool captive_portal_detected_;
 
   content::NotificationRegistrar registrar_;
