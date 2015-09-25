@@ -32,6 +32,10 @@ that have a dependency on the native binary
 
 <p>Every few hours, the browser checks whether any installed extensions or apps have an update URL. For each one, it makes a request to that URL looking for an update manifest XML file. If the update manifest mentions a version that is more recent than what's installed, the browser downloads and installs the new version. As with manual updates, the new <code>.crx</code> file must be signed with the same private key as the currently installed version.</p>
 
+<p class="note">
+<b>Note:</b>
+In order to maintain user privacy, Google Chrome does not send any Cookie headers with autoupdate manifest requests, and ignores any Set-Cookie headers in the responses to those requests.
+</p>
 
 <h2 id="update_url">Update URL</h2>
 <p>If you're hosting your own extension or app, you need to add the "update_url" field to your <a href="manifest"><code>manifest.json</code></a> file,
