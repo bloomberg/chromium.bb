@@ -42,9 +42,11 @@ WebLayerImpl::~WebLayerImpl() {
 }
 
 void WebLayerImpl::setBounds(const WebSize& size) {
+  gfx::Size size_in_pixels =
+      gfx::ScaleToCeiledSize(gfx::Size(size), device_pixel_ratio_);
   static_cast<cc::SurfaceLayer*>(layer())->
       SetSurfaceId(cc::SurfaceId(view_->id()),
-                   device_pixel_ratio_, size);
+                   device_pixel_ratio_, size_in_pixels);
   cc_blink::WebLayerImpl::setBounds(size);
 }
 
