@@ -45,8 +45,6 @@ if util.IsLinux():
 
 
 _NEGATIVE_FILTER = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=213
-    'ChromeDriverTest.testClickElementInSubFrame',
     # This test is flaky since it uses setTimeout.
     # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
     'ChromeDriverTest.testAlert',
