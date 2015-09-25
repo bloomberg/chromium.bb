@@ -77,13 +77,13 @@ class TaskQueueManagerPerfTest : public testing::Test {
   }
 
   void Benchmark(const std::string& trace, const base::Closure& test_task) {
-    base::TimeTicks start = base::TimeTicks::Now();
-    base::TimeTicks now;
+    base::ThreadTicks start = base::ThreadTicks::Now();
+    base::ThreadTicks now;
     unsigned long long num_iterations = 0;
     do {
       test_task.Run();
       message_loop_->Run();
-      now = base::TimeTicks::Now();
+      now = base::ThreadTicks::Now();
       num_iterations++;
     } while (now - start < base::TimeDelta::FromSeconds(5));
     perf_test::PrintResult(
@@ -103,6 +103,8 @@ class TaskQueueManagerPerfTest : public testing::Test {
 };
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
+  if (!base::ThreadTicks::IsSupported())
+    return;
   Initialize(1u);
 
   max_tasks_in_flight_ = 200;
@@ -112,6 +114,8 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
 }
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
+  if (!base::ThreadTicks::IsSupported())
+    return;
   Initialize(4u);
 
   max_tasks_in_flight_ = 200;
@@ -121,6 +125,8 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
 }
 
 TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
+  if (!base::ThreadTicks::IsSupported())
+    return;
   Initialize(8u);
 
   max_tasks_in_flight_ = 200;
