@@ -51,12 +51,12 @@ you from doing the following:</p>
 
 <pre>
 default-src 'self';
-connect-src *;
+connect-src * data: blob: filesystem:;
 style-src 'self' data: chrome-extension-resource: 'unsafe-inline';
 img-src 'self' data: chrome-extension-resource:;
 frame-src 'self' data: chrome-extension-resource:;
 font-src 'self' data: chrome-extension-resource:;
-media-src *;
+media-src * data: blob: filesystem:;
 </pre>
 
 <p>

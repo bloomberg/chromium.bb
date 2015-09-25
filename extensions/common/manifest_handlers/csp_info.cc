@@ -34,7 +34,7 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     // Platform apps can only use local resources by default.
     "default-src 'self' blob: filesystem: chrome-extension-resource:;"
     // For remote resources, they can fetch them via XMLHttpRequest.
-    " connect-src *;"
+    " connect-src * data: blob: filesystem:;"
     // And serve them via data: or same-origin (blob:, filesystem:) URLs
     " style-src " PLATFORM_APP_LOCAL_CSP_SOURCES " 'unsafe-inline';"
     " img-src " PLATFORM_APP_LOCAL_CSP_SOURCES ";"
@@ -45,7 +45,7 @@ const char kDefaultPlatformAppContentSecurityPolicy[] =
     //    spotty connectivity.
     // 2. Fetching via XHR and serving via blob: URLs currently does not allow
     //    streaming or partial buffering.
-    " media-src *;";
+    " media-src * data: blob: filesystem:;";
 
 int GetValidatorOptions(Extension* extension) {
   int options = csp_validator::OPTIONS_NONE;

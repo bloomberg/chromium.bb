@@ -135,12 +135,12 @@ which is always the following and cannot be changed for Chrome Apps:
 
 <pre>
 default-src 'self';
-connect-src *;
+connect-src * data: blob: filesystem:;
 style-src 'self' blob: data: filesystem: 'unsafe-inline';
 img-src 'self' blob: data: filesystem:;
 frame-src 'self' blob: data: filesystem:;
 font-src 'self' blob: data: filesystem:;
-media-src *;
+media-src * data: blob: filesystem:;
 </pre>
 
 <h2 id="manifest"> Specifying offline_enabled </h2>

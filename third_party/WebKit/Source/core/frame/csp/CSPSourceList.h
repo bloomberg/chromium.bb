@@ -50,6 +50,8 @@ private:
     void addSourceNonce(const String& nonce);
     void addSourceHash(const ContentSecurityPolicyHashAlgorithm&, const DigestValue& hash);
 
+    bool hasSourceMatchInList(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
+
     ContentSecurityPolicy* m_policy;
     Vector<CSPSource> m_list;
     String m_directiveName;
