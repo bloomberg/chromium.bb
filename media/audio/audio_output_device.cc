@@ -327,6 +327,7 @@ void AudioOutputDevice::OnDeviceAuthorized(
     if (start_on_authorized_)
       CreateStreamOnIOThread(audio_parameters_);
   } else {
+    ipc_->CloseStream();
     OnIPCClosed();
     if (callback_)
       callback_->OnRenderError();

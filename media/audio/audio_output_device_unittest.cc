@@ -35,7 +35,8 @@ namespace media {
 
 namespace {
 
-const std::string kNonDefaultDeviceId("fake-device-id");
+const std::string kNonDefaultDeviceId("valid-nondefault-device-id");
+const std::string kUnauthorizedDeviceId("unauthorized-device-id");
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
@@ -92,7 +93,7 @@ class AudioOutputDeviceTest
   AudioOutputDeviceTest();
   ~AudioOutputDeviceTest();
 
-  void ReceiveAuthorization();
+  void ReceiveAuthorization(bool success);
   void StartAudioDevice();
   void CreateStream();
   void ExpectRenderCallback();
@@ -111,6 +112,7 @@ class AudioOutputDeviceTest
   MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_
   scoped_refptr<AudioOutputDevice> audio_device_;
   MockSwitchOutputDeviceCallback switch_output_device_callback_;
+  bool successful_auth_;
 
  private:
   int CalculateMemorySize();
@@ -128,7 +130,7 @@ int AudioOutputDeviceTest::CalculateMemorySize() {
   return AudioBus::CalculateMemorySize(default_audio_parameters_);
 }
 
-AudioOutputDeviceTest::AudioOutputDeviceTest() {
+AudioOutputDeviceTest::AudioOutputDeviceTest() : successful_auth_(false) {
   default_audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LINEAR,
                                   CHANNEL_LAYOUT_STEREO, 48000, 16, 1024);
   SetDevice(std::string());  // Use default device
@@ -143,27 +145,35 @@ void AudioOutputDeviceTest::SetDevice(const std::string& device_id) {
   audio_device_ = new AudioOutputDevice(
       scoped_ptr<AudioOutputIPC>(audio_output_ipc_), io_loop_.task_runner(), 0,
       device_id, url::Origin());
-  audio_device_->RequestDeviceAuthorization();
   EXPECT_CALL(*audio_output_ipc_,
               RequestDeviceAuthorization(audio_device_.get(), 0, device_id, _));
+  audio_device_->RequestDeviceAuthorization();
   io_loop_.RunUntilIdle();
 
   // Simulate response from browser
-  ReceiveAuthorization();
+  bool successful_auth = device_id != kUnauthorizedDeviceId;
+  ReceiveAuthorization(successful_auth);
 
   audio_device_->Initialize(default_audio_parameters_,
                             &callback_);
 }
 
-void AudioOutputDeviceTest::ReceiveAuthorization() {
-  audio_device_->OnDeviceAuthorized(true, default_audio_parameters_);
+void AudioOutputDeviceTest::ReceiveAuthorization(bool success) {
+  successful_auth_ = success;
+  if (!successful_auth_)
+    EXPECT_CALL(*audio_output_ipc_, CloseStream());
+
+  audio_device_->OnDeviceAuthorized(success, default_audio_parameters_);
   io_loop_.RunUntilIdle();
 }
 
 void AudioOutputDeviceTest::StartAudioDevice() {
-  audio_device_->Start();
-  EXPECT_CALL(*audio_output_ipc_, CreateStream(audio_device_.get(), _));
+  if (successful_auth_)
+    EXPECT_CALL(*audio_output_ipc_, CreateStream(audio_device_.get(), _));
+  else
+    EXPECT_CALL(callback_, OnRenderError());
 
+  audio_device_->Start();
   io_loop_.RunUntilIdle();
 }
 
@@ -224,10 +234,10 @@ void AudioOutputDeviceTest::WaitUntilRenderCallback() {
 }
 
 void AudioOutputDeviceTest::StopAudioDevice() {
+  if (successful_auth_)
+    EXPECT_CALL(*audio_output_ipc_, CloseStream());
+
   audio_device_->Stop();
-
-  EXPECT_CALL(*audio_output_ipc_, CloseStream());
-
   io_loop_.RunUntilIdle();
 }
 
@@ -318,8 +328,14 @@ TEST_P(AudioOutputDeviceTest, NonDefaultStartStopStartStop) {
               RequestDeviceAuthorization(audio_device_.get(), 0, _, _));
   StartAudioDevice();
   // Simulate reply from browser
-  ReceiveAuthorization();
+  ReceiveAuthorization(true);
 
+  StopAudioDevice();
+}
+
+TEST_P(AudioOutputDeviceTest, UnauthorizedDevice) {
+  SetDevice(kUnauthorizedDeviceId);
+  StartAudioDevice();
   StopAudioDevice();
 }
 
