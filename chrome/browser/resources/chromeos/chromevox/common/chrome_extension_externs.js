@@ -514,3 +514,8 @@ chrome.automation.AutomationNode.prototype.containerLiveBusy;
  * @param {Object} findParams
  */
 chrome.automation.AutomationNode.prototype.find = function(findParams) {};
+
+/**
+ * @type {string}
+ */
+chrome.automation.AutomationNode.prototype.inputType;

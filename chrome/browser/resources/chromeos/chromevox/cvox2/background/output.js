@@ -357,6 +357,22 @@ Output.STATE_INFO_ = {
 };
 
 /**
+ * Maps input types to message IDs.
+ * @const {Object<string>}
+ * @private
+ */
+Output.INPUT_TYPE_MESSAGE_IDS_ = {
+  'email': 'input_type_email',
+  'file': 'input_type_file',
+  'number': 'input_type_number',
+  'password': 'input_type_password',
+  'search': 'input_type_search',
+  'tel': 'input_type_tel',
+  'text': 'input_type_text',
+  'url': 'input_type_url',
+};
+
+/**
  * Rules specifying format of AutomationNodes for output.
  * @type {!Object<Object<Object<string>>>}
  */
@@ -458,7 +474,7 @@ Output.RULES = {
     },
     textField: {
       speak: '$name $value $if(' +
-          '$inputType, @input_type_+$inputType, @input_type_text)',
+          '$inputType, $inputType, $role)',
       braille: ''
     },
     toolbar: {
@@ -886,6 +902,15 @@ Output.prototype = {
             console.error('Missing role info for ' + node.role);
           }
           this.append_(buff, msg, options);
+        } else if (token == 'inputType') {
+          if (!node.inputType)
+            return;
+          options.annotation.push(token);
+          var msgId = Output.INPUT_TYPE_MESSAGE_IDS_[node.inputType] ||
+              'input_type_text';
+          if (this.formatOptions_.braille)
+            msgId = msgId + '_brl';
+          this.append_(buff, cvox.ChromeVox.msgs.getMsg(msgId), options);
         } else if (token == 'tableRowIndex' ||
             token == 'tableCellColumnIndex') {
           var value = node[token];

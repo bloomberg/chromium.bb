@@ -243,7 +243,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
       '<input type="tel"></input>'          +
       '<input type="number"></input>' +
       '<input type="time"></input>' +
-      '<input type="date"></input>',
+      '<input type="date"></input>' +
+      '<input type="invalidType"</input>',
     function(root) {
       var expected = {string_: '', 'spans_': [
               {value: 'name', start: 0, end: 0},
@@ -254,7 +255,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
               // Selection span.
               {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
 
-              {value: 'value', start: 1, end: 1}
+              {value: 'value', start: 1, end: 1},
+              {value: 'inputType', start: 2}
       ]};
 
       var expectedSpeechValues = [
@@ -272,7 +274,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
             {value: 'role', start: 2, end: 14}]},
         {string_: '||Date control', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
-            {value: 'role', start: 2, end: 14}]}
+            {value: 'role', start: 2, end: 14}]},
+        "||Edit text"
       ];
       // TODO(plundblad): Some of these are wrong, there should be an initial
       // space for the cursor in edit fields.
@@ -283,7 +286,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
         ' #ed',
         ' spnbtn',
         {string_: 'time'},
-        {string_: 'date'}
+        {string_: 'date'},
+        ' ed'
       ];
       assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
 
@@ -295,6 +299,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
           assertEqualsJSON(expectedValue, o.speechOutputForTest);
         } else {
           expected.string_ = expectedValue;
+          expected.spans_[4].end = expectedValue.length;
           assertEqualsJSON(expected, o.speechOutputForTest);
         }
         el = el.nextSibling;
