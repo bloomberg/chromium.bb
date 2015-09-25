@@ -33,7 +33,7 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
  public:
   static const int kMainWorldId = 0;
   explicit DOMActivityLogger(const std::string& extension_id);
-  virtual ~DOMActivityLogger();
+  ~DOMActivityLogger() override;
 
   // Check (using the WebKit API) if there is no logger attached to the world
   // corresponding to world_id, and if so, construct a new logger and attach it.
@@ -48,28 +48,28 @@ class DOMActivityLogger: public blink::WebDOMActivityLogger {
   // log.
   // These methods don't have the override keyword due to the complexities it
   // introduces when changes blink apis.
-  virtual void logGetter(const blink::WebString& api_name,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-  virtual void logSetter(const blink::WebString& api_name,
-                         const v8::Local<v8::Value>& new_value,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
+  void logGetter(const blink::WebString& api_name,
+                 const blink::WebURL& url,
+                 const blink::WebString& title) override;
+  void logSetter(const blink::WebString& api_name,
+                 const v8::Local<v8::Value>& new_value,
+                 const blink::WebURL& url,
+                 const blink::WebString& title) override;
   virtual void logSetter(const blink::WebString& api_name,
                          const v8::Local<v8::Value>& new_value,
                          const v8::Local<v8::Value>& old_value,
                          const blink::WebURL& url,
                          const blink::WebString& title);
-  virtual void logMethod(const blink::WebString& api_name,
-                         int argc,
-                         const v8::Local<v8::Value>* argv,
-                         const blink::WebURL& url,
-                         const blink::WebString& title);
-  virtual void logEvent(const blink::WebString& event_name,
-                        int argc,
-                        const blink::WebString* argv,
-                        const blink::WebURL& url,
-                        const blink::WebString& title);
+  void logMethod(const blink::WebString& api_name,
+                 int argc,
+                 const v8::Local<v8::Value>* argv,
+                 const blink::WebURL& url,
+                 const blink::WebString& title) override;
+  void logEvent(const blink::WebString& event_name,
+                int argc,
+                const blink::WebString* argv,
+                const blink::WebURL& url,
+                const blink::WebString& title) override;
 
   // Helper function to actually send the message across IPC.
   void SendDomActionMessage(const std::string& api_call,
