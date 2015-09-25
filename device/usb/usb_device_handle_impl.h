@@ -68,7 +68,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        const TransferCallback& callback) override;
 
   void IsochronousTransfer(UsbEndpointDirection direction,
-                           uint8_t endpoint,
+                           uint8_t endpoint_number,
                            scoped_refptr<net::IOBuffer> buffer,
                            size_t length,
                            unsigned int packets,
@@ -77,7 +77,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                            const TransferCallback& callback) override;
 
   void GenericTransfer(UsbEndpointDirection direction,
-                       uint8_t endpoint,
+                       uint8_t endpoint_number,
                        scoped_refptr<net::IOBuffer> buffer,
                        size_t length,
                        unsigned int timeout,
@@ -143,27 +143,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       scoped_refptr<base::TaskRunner> callback_task_runner,
       const TransferCallback& callback);
 
-  void BulkTransferInternal(
-      UsbEndpointDirection direction,
-      uint8_t endpoint,
-      scoped_refptr<net::IOBuffer> buffer,
-      size_t length,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      const TransferCallback& callback);
-
-  void InterruptTransferInternal(
-      UsbEndpointDirection direction,
-      uint8_t endpoint,
-      scoped_refptr<net::IOBuffer> buffer,
-      size_t length,
-      unsigned int timeout,
-      scoped_refptr<base::TaskRunner> callback_task_runner,
-      const TransferCallback& callback);
-
   void IsochronousTransferInternal(
-      UsbEndpointDirection direction,
-      uint8_t endpoint,
+      uint8_t endpoint_address,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int packets,
@@ -173,8 +154,7 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
       const TransferCallback& callback);
 
   void GenericTransferInternal(
-      UsbEndpointDirection direction,
-      uint8_t endpoint,
+      uint8_t endpoint_address,
       scoped_refptr<net::IOBuffer> buffer,
       size_t length,
       unsigned int timeout,
