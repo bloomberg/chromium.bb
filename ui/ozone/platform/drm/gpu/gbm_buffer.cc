@@ -55,10 +55,10 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
   TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
                gbm->device_path().value(), "size", size.ToString());
   bool use_scanout = (usage == gfx::BufferUsage::SCANOUT);
-  unsigned flags = GBM_BO_USE_RENDERING;
+  unsigned flags = 0;
   // GBM_BO_USE_SCANOUT is the hint of x-tiling.
   if (use_scanout)
-    flags |= GBM_BO_USE_SCANOUT;
+    flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
   gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
                              GetGbmFormatFromBufferFormat(format), flags);
   if (!bo)
