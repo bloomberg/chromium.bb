@@ -32,6 +32,7 @@ import sys
 import xml.dom.minidom
 
 from util import build_utils
+from util import md5_check
 
 import write_ordered_libraries
 
@@ -323,27 +324,40 @@ def main(argv):
       manifest.CheckInstrumentation(manifest.GetPackageName())
 
     library_paths = []
-    java_libraries_list = []
-    if options.native_libs:
-      libraries = build_utils.ParseGypList(options.native_libs)
-      if libraries:
+    java_libraries_list_holder = [None]
+    libraries = build_utils.ParseGypList(options.native_libs or '[]')
+    if libraries:
+      def recompute_ordered_libraries():
         libraries_dir = os.path.dirname(libraries[0])
         write_ordered_libraries.SetReadelfPath(options.readelf_path)
         write_ordered_libraries.SetLibraryDirs([libraries_dir])
-        all_native_library_deps = (
+        all_deps = (
             write_ordered_libraries.GetSortedTransitiveDependenciesForBinaries(
                 libraries))
         # Create a java literal array with the "base" library names:
         # e.g. libfoo.so -> foo
-        java_libraries_list = '{%s}' % ','.join(
-            ['"%s"' % s[3:-3] for s in all_native_library_deps])
-        library_paths = map(
-            write_ordered_libraries.FullLibraryPath, all_native_library_deps)
+        java_libraries_list_holder[0] = ('{%s}' % ','.join(
+            ['"%s"' % s[3:-3] for s in all_deps]))
+        library_paths.extend(
+            write_ordered_libraries.FullLibraryPath(x) for x in all_deps)
 
-      config['native'] = {
-        'libraries': library_paths,
-        'java_libraries_list': java_libraries_list
-      }
+      # This step takes about 600ms on a z620 for chrome_apk, so it's worth
+      # caching.
+      md5_check.CallAndRecordIfStale(
+          recompute_ordered_libraries,
+          record_path=options.build_config + '.nativelibs.md5.stamp',
+          input_paths=libraries,
+          output_paths=[options.build_config])
+      if not library_paths:
+        prev_config = build_utils.ReadJson(options.build_config)
+        java_libraries_list_holder[0] = (
+            prev_config['native']['java_libraries_list'])
+        library_paths.extend(prev_config['native']['libraries'])
+
+    config['native'] = {
+      'libraries': library_paths,
+      'java_libraries_list': java_libraries_list_holder[0],
+    }
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 
