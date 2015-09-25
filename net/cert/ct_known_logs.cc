@@ -4,24 +4,16 @@
 
 #include "net/cert/ct_known_logs.h"
 
-#include <algorithm>
+#include <string>
 
 #include "base/macros.h"
-#include "crypto/sha2.h"
+#include "base/strings/string_piece.h"
 #include "net/cert/ct_known_logs_static.h"
 #include "net/cert/ct_log_verifier.h"
 
 namespace net {
 
 namespace ct {
-
-namespace {
-
-int log_ids_compare(const char* log_id, const char* lookup_id) {
-  return strncmp(log_id, lookup_id, crypto::kSHA256Length) < 0;
-}
-
-}  // namespace
 
 std::vector<scoped_refptr<CTLogVerifier>> CreateLogVerifiersForKnownLogs() {
   std::vector<scoped_refptr<CTLogVerifier>> verifiers;
@@ -33,23 +25,6 @@ std::vector<scoped_refptr<CTLogVerifier>> CreateLogVerifiersForKnownLogs() {
   }
 
   return verifiers;
-}
-
-bool IsLogOperatedByGoogle(base::StringPiece log_id) {
-  // No callers should provide a log_id that's not of the expected length
-  // (log IDs are SHA-256 hashes of the key and are always 32 bytes).
-  // Without this DCHECK (i.e. in production) this function would always
-  // return false.
-  DCHECK_EQ(log_id.size(), arraysize(kGoogleLogIDs[0]) - 1);
-
-  auto p = std::lower_bound(kGoogleLogIDs, kGoogleLogIDs + kNumGoogleLogs,
-                            log_id.data(), &log_ids_compare);
-  if ((p == kGoogleLogIDs + kNumGoogleLogs) ||
-      log_id != base::StringPiece(*p, crypto::kSHA256Length)) {
-    return false;
-  }
-
-  return true;
 }
 
 }  // namespace ct

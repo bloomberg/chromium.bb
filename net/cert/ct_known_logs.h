@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -21,8 +20,6 @@ namespace ct {
 // and trusted logs.
 NET_EXPORT std::vector<scoped_refptr<CTLogVerifier>>
 CreateLogVerifiersForKnownLogs();
-
-NET_EXPORT bool IsLogOperatedByGoogle(base::StringPiece log_id);
 
 }  // namespace ct
 
