@@ -284,7 +284,7 @@ KURL HTMLVideoElement::posterImageURL() const
     return document().completeURL(url);
 }
 
-PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* status) const
+PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
 {
     if (!hasAvailableVideoFrame()) {
         *status = InvalidSourceImageStatus;
@@ -292,6 +292,7 @@ PassRefPtr<Image> HTMLVideoElement::getSourceImageForCanvas(SourceImageStatus* s
     }
 
     IntSize intrinsicSize(videoWidth(), videoHeight());
+    // FIXME: Not sure if we dhould we be doing anything with the AccelerationHint argument here?
     OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(intrinsicSize);
     if (!imageBuffer) {
         *status = InvalidSourceImageStatus;

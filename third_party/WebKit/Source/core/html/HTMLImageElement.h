@@ -97,7 +97,7 @@ public:
     virtual void ensurePrimaryContent();
 
     // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
     bool wouldTaintOrigin(SecurityOrigin*) const override;
     FloatSize elementSize() const override;
     FloatSize defaultDestinationSize() const override;

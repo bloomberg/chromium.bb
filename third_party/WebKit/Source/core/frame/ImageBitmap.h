@@ -44,7 +44,7 @@ public:
     ~ImageBitmap() override;
 
     // CanvasImageSource implementation
-    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*) const override;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint) const override;
     bool wouldTaintOrigin(SecurityOrigin*) const override { return false; }
     void adjustDrawRects(FloatRect* srcRect, FloatRect* dstRect) const override;
     FloatSize elementSize() const override;

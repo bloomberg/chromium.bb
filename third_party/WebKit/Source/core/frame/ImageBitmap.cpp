@@ -89,7 +89,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvas->size()));
     m_bitmapRect = IntRect(IntPoint(std::max(0, -cropRect.x()), std::max(0, -cropRect.y())), srcRect.size());
     ASSERT(canvas->isPaintable());
-    m_bitmap = cropImage(canvas->copiedImage(BackBuffer), cropRect);
+    m_bitmap = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration), cropRect);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
@@ -196,7 +196,7 @@ PassRefPtr<Image> ImageBitmap::bitmapImage() const
     return m_bitmap;
 }
 
-PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status) const
+PassRefPtr<Image> ImageBitmap::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint) const
 {
     *status = NormalSourceImageStatus;
     return bitmapImage();

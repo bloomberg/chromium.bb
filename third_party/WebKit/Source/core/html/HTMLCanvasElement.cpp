@@ -476,6 +476,13 @@ const AtomicString HTMLCanvasElement::imageSourceURL() const
     return AtomicString(toDataURLInternal("image/png", 0, FrontBuffer));
 }
 
+void HTMLCanvasElement::prepareSurfaceForPaintingIfNeeded() const
+{
+    ASSERT(m_context && m_context->is2d()); // This function is called by the 2d context
+    if (buffer())
+        m_imageBuffer->prepareSurfaceForPaintingIfNeeded();
+}
+
 ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) const
 {
     ImageData* imageData;
@@ -487,7 +494,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) cons
 
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
         imageData = ImageData::create(m_size);
-        RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot();
+        RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration);
         if (snapshot) {
             SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
             snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
@@ -501,7 +508,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) cons
         return imageData;
 
     ASSERT(m_context->is2d());
-    RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot();
+    RefPtr<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration);
     if (snapshot) {
         SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
         snapshot->readPixels(imageInfo, imageData->data()->data(), imageInfo.minRowBytes(), 0, 0);
@@ -672,7 +679,7 @@ PassOwnPtr<ImageBufferSurface> HTMLCanvasElement::createImageBufferSurface(const
     if (shouldAccelerate(deviceSize)) {
         if (document().settings())
             *msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();
-        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, opacityMode, *msaaSampleCount));
+        OwnPtr<ImageBufferSurface> surface = adoptPtr(new Canvas2DImageBufferSurface(deviceSize, *msaaSampleCount, opacityMode, Canvas2DLayerBridge::EnableAcceleration));
         if (surface->isValid())
             return surface.release();
     }
@@ -836,7 +843,7 @@ void HTMLCanvasElement::ensureUnacceleratedImageBuffer()
     m_didFailToCreateImageBuffer = !m_imageBuffer;
 }
 
-PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffer) const
+PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffer, AccelerationHint hint) const
 {
     if (!isPaintable())
         return nullptr;
@@ -848,7 +855,7 @@ PassRefPtr<Image> HTMLCanvasElement::copiedImage(SourceDrawingBuffer sourceBuffe
     if (m_context->is3d())
         needToUpdate |= m_context->paintRenderingResultsToCanvas(sourceBuffer);
     if (needToUpdate && buffer()) {
-        m_copiedImage = buffer()->newImageSnapshot();
+        m_copiedImage = buffer()->newImageSnapshot(hint);
         updateExternallyAllocatedMemory();
     }
     return m_copiedImage;
@@ -903,7 +910,7 @@ void HTMLCanvasElement::didMoveToNewDocument(Document& oldDocument)
     HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
-PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* status) const
+PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* status, AccelerationHint hint) const
 {
     if (!width() || !height()) {
         *status = ZeroSizeCanvasSourceImageStatus;
@@ -924,7 +931,7 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(SourceImageStatus* 
         m_context->paintRenderingResultsToCanvas(BackBuffer);
     }
 
-    RefPtr<SkImage> image = buffer()->newSkImageSnapshot();
+    RefPtr<SkImage> image = buffer()->newSkImageSnapshot(hint);
     if (image) {
         *status = NormalSourceImageStatus;
         return StaticBitmapImage::create(image.release());

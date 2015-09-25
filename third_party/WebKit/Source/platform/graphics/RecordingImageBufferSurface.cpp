@@ -97,11 +97,11 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas()
 
 }
 
-PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot()
+PassRefPtr<SkImage> RecordingImageBufferSurface::newImageSnapshot(AccelerationHint hint)
 {
     if (!m_fallbackSurface)
         fallBackToRasterCanvas();
-    return m_fallbackSurface->newImageSnapshot();
+    return m_fallbackSurface->newImageSnapshot(hint);
 }
 
 SkCanvas* RecordingImageBufferSurface::canvas()

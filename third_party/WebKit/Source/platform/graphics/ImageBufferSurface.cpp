@@ -73,7 +73,7 @@ void ImageBufferSurface::clear()
 
 void ImageBufferSurface::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect, SkXfermode::Mode op)
 {
-    RefPtr<SkImage> snapshot = newImageSnapshot();
+    RefPtr<SkImage> snapshot = newImageSnapshot(PreferNoAcceleration);
     if (!snapshot)
         return;
 

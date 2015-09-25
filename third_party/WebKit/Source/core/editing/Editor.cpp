@@ -425,7 +425,7 @@ static PassRefPtr<Image> imageFromNode(const Node& node)
         return nullptr;
 
     if (layoutObject->isCanvas())
-        return toHTMLCanvasElement(node).copiedImage(FrontBuffer);
+        return toHTMLCanvasElement(node).copiedImage(FrontBuffer, PreferNoAcceleration);
 
     if (layoutObject->isImage()) {
         LayoutImage* layoutImage = toLayoutImage(layoutObject);
