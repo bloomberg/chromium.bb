@@ -209,8 +209,9 @@ class CONTENT_EXPORT AppCacheResponseWriter
   // negative error code or the number of bytes written. The 'callback' is a
   // required parameter. The contents of 'info_buf' are not modified.
   // Should only be called where there is no Write operation in progress.
-  void WriteInfo(HttpResponseInfoIOBuffer* info_buf,
-                 const net::CompletionCallback& callback);
+  // (virtual for testing)
+  virtual void WriteInfo(HttpResponseInfoIOBuffer* info_buf,
+                         const net::CompletionCallback& callback);
 
   // Writes data to storage. Always returns the result of the write
   // asynchronously through the 'callback'. Returns the number of bytes written
@@ -220,8 +221,10 @@ class CONTENT_EXPORT AppCacheResponseWriter
   // the number of bytes written. The 'callback' is a required parameter.
   // The contents of 'buf' are not modified.
   // Should only be called where there is no Write operation in progress.
-  void WriteData(net::IOBuffer* buf, int buf_len,
-                 const net::CompletionCallback& callback);
+  // (virtual for testing)
+  virtual void WriteData(net::IOBuffer* buf,
+                         int buf_len,
+                         const net::CompletionCallback& callback);
 
   // Returns true if there is a write pending.
   bool IsWritePending() { return IsIOPending(); }
