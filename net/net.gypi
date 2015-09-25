@@ -91,8 +91,6 @@
       'cert/internal/verify_signed_data.h',
       'cert/pem_tokenizer.cc',
       'cert/pem_tokenizer.h',
-      'cert/sha256_legacy_support_nss_win.cc',
-      'cert/sha256_legacy_support_openssl_win.cc',
       'cert/sha256_legacy_support_win.cc',
       'cert/sha256_legacy_support_win.h',
       'cert/signed_certificate_timestamp.cc',

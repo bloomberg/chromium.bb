@@ -182,9 +182,6 @@ if (!is_nacl) {
         "cert/cert_verify_proc_nss.h",
       ]
     }
-    if (is_win) {
-      net_shared_sources -= [ "cert/sha256_legacy_support_nss_win.cc" ]
-    }
     if (!use_nss_certs && !is_ios) {
       net_shared_sources -= [ "cert/x509_util_nss.h" ]
     }
@@ -218,25 +215,6 @@ if (!is_nacl) {
       "ssl/threaded_ssl_private_key.cc",
       "ssl/threaded_ssl_private_key.h",
     ]
-    if (is_mac) {
-      net_shared_sources -= [ "ssl/ssl_platform_key_mac.cc" ]
-    }
-    if (is_android) {
-      net_shared_sources -= [ "ssl/ssl_platform_key_android.cc" ]
-    }
-    if (is_win) {
-      net_shared_sources -= [
-        "cert/sha256_legacy_support_openssl_win.cc",
-        "ssl/ssl_platform_key_win.cc",
-      ]
-    }
-    if (use_nss_certs) {
-      net_shared_sources -= [
-        "ssl/client_key_store.cc",
-        "ssl/client_key_store.h",
-        "ssl/ssl_platform_key_nss.cc",
-      ]
-    }
   }
 
   if (!use_openssl_certs) {
