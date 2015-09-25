@@ -56,8 +56,6 @@
       'color_chooser/color_chooser_listener.h',
       'color_chooser/color_chooser_view.cc',
       'color_chooser/color_chooser_view.h',
-      'color_constants.cc',
-      'color_constants.h',
       'context_menu_controller.h',
       'controls/button/blue_button.cc',
       'controls/button/blue_button.h',

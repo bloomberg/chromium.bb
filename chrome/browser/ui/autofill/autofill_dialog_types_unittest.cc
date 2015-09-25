@@ -6,17 +6,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "ui/views/color_constants.h"
-#endif
-
 namespace autofill {
-
-#if defined(TOOLKIT_VIEWS)
-TEST(AutofillDialogTypesTest, WarningColorMatches) {
-  EXPECT_EQ(kWarningColor, views::kWarningColor);
-}
-#endif
 
 // Tests for correct parsing of anchor text ranges.
 TEST(AutofillDialogTypesTest, DialogNotificationLink) {
