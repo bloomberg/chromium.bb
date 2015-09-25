@@ -8,7 +8,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
@@ -25,20 +24,16 @@ import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 /**
  * Handler for application level tasks to be completed on deferred startup.
  */
 public class DeferredStartupHandler {
-    // Constants for trial of moderate binding support.
-    private static final String MODERATE_BINDING_TRIAL_NAME = "MobileModerateBinding";
-    private static final String MODERATE_BINDING_LOW_REDUCE_RATIO_PARAM = "low_reduce_ratio";
-    private static final String MODERATE_BINDING_HIGH_REDUCE_RATIO_PARAM = "high_reduce_ratio";
-    private static final String MODERATE_BINDING_ENABLED_PARAM = "enabled";
-    private static final String MODERATE_BINDING_SWITCH_PREFIX = "moderate-binding-";
-    private static final float DEFAULT_MODERATE_BINDING_REDUCE_RATIO = 0.25f;
+    // Low reduce ratio of moderate binding.
+    private static final float MODERATE_BINDING_LOW_REDUCE_RATIO = 0.25f;
+    // High reduce ratio of moderate binding.
+    private static final float MODERATE_BINDING_HIGH_REDUCE_RATIO = 0.5f;
 
     private static DeferredStartupHandler sDeferredStartupHandler;
     private boolean mDeferredStartupComplete;
@@ -142,33 +137,12 @@ public class DeferredStartupHandler {
         }
     }
 
-    private static String getModerateBindingConfigValue(String param) {
-        String switchName = MODERATE_BINDING_SWITCH_PREFIX + param;
-        if (CommandLine.getInstance().hasSwitch(switchName)) {
-            return CommandLine.getInstance().getSwitchValue(switchName);
-        }
-        return VariationsAssociatedData.getVariationParamValue(MODERATE_BINDING_TRIAL_NAME, param);
-    }
-
     private static void startModerateBindingManagementIfNeeded(Context context) {
-        // Ensures that a low memory device isn't included in the field trial experimental.
+        // Moderate binding doesn't apply to low end devices.
         if (SysUtils.isLowEndDevice()) return;
 
-        String enabledValue = getModerateBindingConfigValue(MODERATE_BINDING_ENABLED_PARAM);
-        if (!Boolean.parseBoolean(enabledValue)) return;
-
-        String lowReduceRatioValue =
-                getModerateBindingConfigValue(MODERATE_BINDING_LOW_REDUCE_RATIO_PARAM);
-        String highReduceRatioValue =
-                getModerateBindingConfigValue(MODERATE_BINDING_HIGH_REDUCE_RATIO_PARAM);
-        float lowReduceRatio =
-                parseFloat(lowReduceRatioValue, DEFAULT_MODERATE_BINDING_REDUCE_RATIO);
-        float highReduceRatio =
-                parseFloat(highReduceRatioValue, DEFAULT_MODERATE_BINDING_REDUCE_RATIO * 2);
-        highReduceRatio = Math.max(0, Math.min(1, highReduceRatio));
-        lowReduceRatio = Math.max(0, Math.min(highReduceRatio, lowReduceRatio));
         ChildProcessLauncher.startModerateBindingManagement(
-                context, lowReduceRatio, highReduceRatio);
+                context, MODERATE_BINDING_LOW_REDUCE_RATIO, MODERATE_BINDING_HIGH_REDUCE_RATIO);
     }
 
     /**
