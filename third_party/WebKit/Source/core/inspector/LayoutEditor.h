@@ -42,7 +42,6 @@ public:
     void commitChanges();
     void nextSelector();
     void previousSelector();
-    String currentSelectorInfo();
     void rebuild() const;
     DECLARE_TRACE();
 
@@ -52,8 +51,10 @@ private:
     PassRefPtr<JSONObject> createValueDescription(const String&) const;
     void appendAnchorFor(JSONArray*, const String&, const String&, const FloatPoint&, const FloatPoint&) const;
     bool setCSSPropertyValueInCurrentRule(const String&);
-    bool currentStyleIsInline();
+    bool currentStyleIsInline() const;
+    void pushSelectorInfoInOverlay() const;
     void evaluateInOverlay(const String&, PassRefPtr<JSONValue>) const;
+    PassRefPtr<JSONObject> currentSelectorInfo() const;
 
     RefPtrWillBeMember<Element> m_element;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;

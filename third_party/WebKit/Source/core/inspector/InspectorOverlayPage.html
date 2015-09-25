@@ -788,6 +788,14 @@ function showLayoutEditor(info)
     window.layoutEditor.setState(info);
 }
 
+function setSelectorInLayoutEditor(selectorInfo)
+{
+    if (!window.layoutEditor)
+        return;
+
+    window.layoutEditor.setSelector(selectorInfo);
+}
+
 function LayoutEditor(mainCanvas)
 {
     this._boundConsumeEvent = this._consumeEvent.bind(this);
@@ -856,15 +864,13 @@ LayoutEditor.prototype = {
         document.addEventListener("click", this._boundStrayClick);
         document.addEventListener("keydown", this._boundKeyDown);
         document.addEventListener("mousewheel", this._boundMouseWheel);
-        this._showSelectorTooltip();
     },
 
-    _showSelectorTooltip: function()
+    setSelector: function(selectorInfo)
     {
         this._tooltipElement.style.visibility = "visible";
         this._tooltipElement.style.left = "100px";
         this._tooltipElement.style.top = "100px";
-        var selectorInfo = JSON.parse(InspectorOverlayHost.currentSelectorInfo());
         var medias = selectorInfo.medias ? selectorInfo.medias.map(function (media) {return "@media " + media + ""}) : "";
         this._tooltipElement.textContent = (medias ? medias.join(", ") + " { " : "") + selectorInfo.selector + ( medias ? " } " : "");
         this._tooltipElement.style.backgroundColor = "#eee";
@@ -1124,8 +1130,6 @@ LayoutEditor.prototype = {
             InspectorOverlayHost.previousSelector();
         else
             InspectorOverlayHost.nextSelector();
-
-        this._showSelectorTooltip();
     },
 
     _consumeEvent: function(event)

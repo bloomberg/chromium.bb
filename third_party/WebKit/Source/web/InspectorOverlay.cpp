@@ -595,12 +595,6 @@ void InspectorOverlay::overlayPreviousSelector()
     m_layoutEditor->previousSelector();
 }
 
-String InspectorOverlay::overlayCurrentSelectorInfo()
-{
-    ASSERT(m_layoutEditor);
-    return m_layoutEditor->currentSelectorInfo();
-}
-
 void InspectorOverlay::overlayClearSelection(bool commitChanges)
 {
     ASSERT(m_layoutEditor);

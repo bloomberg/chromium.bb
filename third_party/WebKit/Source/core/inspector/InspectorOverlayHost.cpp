@@ -89,14 +89,6 @@ void InspectorOverlayHost::previousSelector()
         m_listener->overlayPreviousSelector();
 }
 
-String InspectorOverlayHost::currentSelectorInfo()
-{
-    if (m_listener)
-        return m_listener->overlayCurrentSelectorInfo();
-
-    return String();
-}
-
 DEFINE_TRACE(InspectorOverlayHost)
 {
     visitor->trace(m_listener);

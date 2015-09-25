@@ -40,5 +40,4 @@
     void clearSelection(boolean commitChanges);
     void nextSelector();
     void previousSelector();
-    DOMString currentSelectorInfo();
 };

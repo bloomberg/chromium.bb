@@ -54,7 +54,6 @@ public:
     void clearSelection(bool commitChanges);
     void nextSelector();
     void previousSelector();
-    String currentSelectorInfo();
 
     class Listener : public WillBeGarbageCollectedMixin {
     public:
@@ -67,7 +66,6 @@ public:
         virtual void overlayClearSelection(bool commitChanges) = 0;
         virtual void overlayNextSelector() = 0;
         virtual void overlayPreviousSelector() = 0;
-        virtual String overlayCurrentSelectorInfo() = 0;
     };
     void setListener(Listener* listener) { m_listener = listener; }
 

@@ -264,6 +264,7 @@ void LayoutEditor::rebuild() const
     InspectorHighlight highlight(m_element.get(), chosenNodeHighlightConfig(), false);
     object->setObject("nodeHighlight", highlight.asJSONObject());
     evaluateInOverlay("showLayoutEditor", object.release());
+    pushSelectorInfoInOverlay();
 }
 
 RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
@@ -358,7 +359,7 @@ void LayoutEditor::commitChanges()
     m_domAgent->markUndoableState(&errorString);
 }
 
-bool LayoutEditor::currentStyleIsInline()
+bool LayoutEditor::currentStyleIsInline() const
 {
     return m_currentRuleIndex == m_matchedRules->length();
 }
@@ -369,6 +370,7 @@ void LayoutEditor::nextSelector()
         return;
 
     m_currentRuleIndex--;
+    pushSelectorInfoInOverlay();
 }
 
 void LayoutEditor::previousSelector()
@@ -377,9 +379,14 @@ void LayoutEditor::previousSelector()
         return;
 
     m_currentRuleIndex++;
+    pushSelectorInfoInOverlay();
+}
+void LayoutEditor::pushSelectorInfoInOverlay() const
+{
+    evaluateInOverlay("setSelectorInLayoutEditor", currentSelectorInfo());
 }
 
-String LayoutEditor::currentSelectorInfo()
+PassRefPtr<JSONObject> LayoutEditor::currentSelectorInfo() const
 {
     RefPtr<JSONObject> object = JSONObject::create();
     String currentSelectorText = currentStyleIsInline() ? "inline style" : toCSSStyleRule(m_matchedRules->item(m_currentRuleIndex))->selectorText();
@@ -387,7 +394,7 @@ String LayoutEditor::currentSelectorInfo()
 
     Document* ownerDocument = m_element->ownerDocument();
     if (!ownerDocument->isActive() || currentStyleIsInline())
-        return object->toJSONString();
+        return object.release();
 
     bool hasSameSelectors = false;
     for (unsigned i = 0; i < m_matchedRules->length(); i++) {
@@ -411,7 +418,7 @@ String LayoutEditor::currentSelectorInfo()
     RefPtrWillBeRawPtr<StaticElementList> elements = ownerDocument->querySelectorAll(AtomicString(currentSelectorText), exceptionState);
 
     if (!elements || exceptionState.hadException())
-        return object->toJSONString();
+        return object.release();
 
     RefPtr<JSONArray> highlights = JSONArray::create();
     InspectorHighlightConfig config = affectedNodesHighlightConfig();
@@ -425,7 +432,7 @@ String LayoutEditor::currentSelectorInfo()
     }
 
     object->setArray("nodes", highlights.release());
-    return object->toJSONString();
+    return object.release();
 }
 
 bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)

@@ -99,7 +99,6 @@ private:
     void overlayClearSelection(bool) override;
     void overlayNextSelector() override;
     void overlayPreviousSelector() override;
-    String overlayCurrentSelectorInfo() override;
 
     // InspectorProfilerAgent::Client implementation.
     void profilingStarted() override;
