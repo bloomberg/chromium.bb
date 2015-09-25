@@ -98,6 +98,15 @@ TEST_F(PositionTest, ToPositionInComposedTreeWithInactiveInsertionPoint)
     EXPECT_EQ(PositionInComposedTree(anchor, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(anchor.get(), 1)));
 }
 
+// This test comes from "editing/style/block-style-progress-crash.html".
+TEST_F(PositionTest, ToPositionInComposedTreeWithNotDistributed)
+{
+    setBodyContent("<progress id=sample>foo</progress>");
+    Element* sample = document().getElementById("sample");
+
+    EXPECT_EQ(PositionInComposedTree(sample, PositionAnchorType::AfterChildren), toPositionInComposedTree(Position(sample, 0)));
+}
+
 TEST_F(PositionTest, ToPositionInComposedTreeWithShadowRoot)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b>22</p>";

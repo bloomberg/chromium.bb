@@ -385,7 +385,6 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
     if (pos.isNull())
         return PositionInComposedTree();
 
-    PositionInComposedTree position;
     if (pos.isOffsetInAnchor()) {
         Node* anchor = pos.anchorNode();
         if (anchor->offsetInCharacters())
@@ -404,7 +403,14 @@ PositionInComposedTree toPositionInComposedTree(const Position& pos)
                 return PositionInComposedTree(anchor->shadowHost(), offset);
             return PositionInComposedTree(anchor, offset);
         }
-        return PositionInComposedTree(ComposedTreeTraversal::parent(*child), ComposedTreeTraversal::index(*child));
+        if (Node* parent = ComposedTreeTraversal::parent(*child))
+            return PositionInComposedTree(parent, ComposedTreeTraversal::index(*child));
+        // When |pos| isn't appeared in composed tree, we map |pos| to after
+        // children of shadow host.
+        // e.g. "foo",0 in <progress>foo</progress>
+        if (anchor->isShadowRoot())
+            return PositionInComposedTree(anchor->shadowHost(), PositionAnchorType::AfterChildren);
+        return PositionInComposedTree(anchor, PositionAnchorType::AfterChildren);
     }
 
     return PositionInComposedTree(pos.anchorNode(), pos.anchorType());
