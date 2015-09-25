@@ -56,6 +56,9 @@ def _ParseArgs(args):
                     help='Exclude locals list from the dex file.')
   parser.add_option('--multi-dex', default=False, action='store_true',
                     help='Create multiple dex files.')
+  parser.add_option('--incremental',
+                    action='store_true',
+                    help='Enable incremental builds when possible.')
   parser.add_option('--inputs', help='A list of additional input paths.')
   parser.add_option('--excluded-paths',
                     help='A list of paths to exclude from the dex file.')
@@ -85,21 +88,55 @@ def _ParseArgs(args):
   return options, paths
 
 
-def _OnStaleMd5(options, dex_cmd, paths):
-  if options.multi_dex:
-    combined_main_dex_list = tempfile.NamedTemporaryFile(suffix='.txt')
-    combined_main_dex_list.write(
-        _CreateCombinedMainDexList(options.main_dex_list_paths))
-    combined_main_dex_list.flush()
-    dex_cmd.append('--main-dex-list=%s' % combined_main_dex_list.name)
+def _AllSubpathsAreClassFiles(paths, changes):
+  for path in paths:
+    if any(not p.endswith('.class') for p in changes.IterChangedSubpaths(path)):
+      return False
+  return True
 
-  dex_cmd += paths
 
-  build_utils.CheckOutput(dex_cmd, print_stderr=False)
+def _RunDx(changes, options, dex_cmd, paths):
+  with build_utils.TempDir() as classes_temp_dir:
+    # --multi-dex is incompatible with --incremental.
+    if options.multi_dex:
+      combined_main_dex_list = tempfile.NamedTemporaryFile(suffix='.txt')
+      combined_main_dex_list.write(
+          _CreateCombinedMainDexList(options.main_dex_list_paths))
+      combined_main_dex_list.flush()
+      dex_cmd.append('--main-dex-list=%s' % combined_main_dex_list.name)
+    else:
+      # Use --incremental when .class files are added or modified (never when
+      # removed).
+      # --incremental tells dx to merge all newly dex'ed .class files with
+      # what that already exist in the output dex file (existing classes are
+      # replaced).
+      if options.incremental and changes.AddedOrModifiedOnly():
+        changed_inputs = set(changes.IterChangedPaths())
+        changed_paths = [p for p in paths if p in changed_inputs]
+        if not changed_paths:
+          return
+        # When merging in other dex files, there's no easy way to know if
+        # classes were removed from them.
+        if _AllSubpathsAreClassFiles(changed_paths, changes):
+          dex_cmd.append('--incremental')
+          for path in changed_paths:
+            changed_subpaths = set(changes.IterChangedSubpaths(path))
+            # Not a fundamental restriction, but it's the case right now and it
+            # simplifies the logic to assume so.
+            assert changed_subpaths, 'All inputs should be zip files.'
+            build_utils.ExtractAll(path, path=classes_temp_dir,
+                                   predicate=lambda p: p in changed_subpaths)
+          paths = [classes_temp_dir]
+
+    dex_cmd += paths
+    build_utils.CheckOutput(dex_cmd, print_stderr=False)
 
   if options.dex_path.endswith('.zip'):
     _RemoveUnwantedFilesFromZip(options.dex_path)
 
+
+def _OnStaleMd5(changes, options, dex_cmd, paths):
+  _RunDx(changes, options, dex_cmd, paths)
   build_utils.WriteJson(
       [os.path.relpath(p, options.output_directory) for p in paths],
       options.dex_path + '.inputs')
@@ -143,12 +180,18 @@ def main(args):
     options.dex_path + '.inputs',
   ]
 
+  # An escape hatch to be able to check if incremental dexing is causing
+  # problems.
+  force = int(os.environ.get('DISABLE_INCREMENTAL_DX', 0))
+
   build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options, dex_cmd, paths),
+      lambda changes: _OnStaleMd5(changes, options, dex_cmd, paths),
       options,
       input_paths=input_paths,
       input_strings=dex_cmd,
-      output_paths=output_paths)
+      output_paths=output_paths,
+      force=force,
+      pass_changes=True)
 
 
 if __name__ == '__main__':

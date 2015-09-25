@@ -199,6 +199,10 @@ template("dex") {
       rebased_output,
     ]
 
+    if (incremental_dx) {
+      args += [ "--incremental" ]
+    }
+
     if (defined(invoker.no_locals) && invoker.no_locals) {
       args += [ "--no-locals=1" ]
     }

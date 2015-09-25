@@ -72,6 +72,9 @@ if (is_android) {
 
     # Speed up incremental compiles by compiling only changed files.
     incremental_javac = false
+
+    # Speed up dexing using dx --incremental.
+    incremental_dx = false
   }
 
   # Host stuff -----------------------------------------------------------------
