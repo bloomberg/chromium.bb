@@ -45,8 +45,6 @@ const size_t kMaxTextLength = 10000;
 const size_t kMaxScripts = 5;
 
 // Returns true if characters of |block_code| may trigger font fallback.
-// Dingbats and emoticons can be rendered through the color emoji font file,
-// therefore it needs to be trigerred as fallbacks. See crbug.com/448909
 bool IsUnusualBlockCode(UBlockCode block_code) {
   return block_code == UBLOCK_GEOMETRIC_SHAPES ||
          block_code == UBLOCK_MISCELLANEOUS_SYMBOLS;
@@ -58,38 +56,10 @@ bool IsBracket(UChar32 character) {
   return std::find(kBrackets, kBracketsEnd, character) != kBracketsEnd;
 }
 
-// Returns the boundary between a special and a regular character. Special
-// characters are brackets or characters that satisfy |IsUnusualBlockCode|.
-size_t FindRunBreakingCharacter(const base::string16& text,
-                                size_t run_start,
-                                size_t run_break) {
-  const int32 run_length = static_cast<int32>(run_break - run_start);
-  base::i18n::UTF16CharIterator iter(text.c_str() + run_start, run_length);
-  const UChar32 first_char = iter.get();
-  // The newline character should form a single run so that the line breaker
-  // can handle them easily.
-  if (first_char == '\n')
-    return run_start + 1;
-
-  const UBlockCode first_block = ublock_getCode(first_char);
-  const bool first_block_unusual = IsUnusualBlockCode(first_block);
-  const bool first_bracket = IsBracket(first_char);
-
-  while (iter.Advance() && iter.array_pos() < run_length) {
-    const UChar32 current_char = iter.get();
-    const UBlockCode current_block = ublock_getCode(current_char);
-    const bool block_break = current_block != first_block &&
-        (first_block_unusual || IsUnusualBlockCode(current_block));
-    if (block_break || current_char == '\n' ||
-        first_bracket != IsBracket(current_char)) {
-      return run_start + iter.array_pos();
-    }
-  }
-  return run_break;
-}
-
 // If the given scripts match, returns the one that isn't USCRIPT_INHERITED,
-// i.e. the more specific one. Otherwise returns USCRIPT_INVALID_CODE.
+// i.e. the more specific one. Otherwise returns USCRIPT_INVALID_CODE. This
+// function is used to split runs between characters of different script codes,
+// unless either character has USCRIPT_INHERITED property. See crbug.com/448909.
 UScriptCode ScriptIntersect(UScriptCode first, UScriptCode second) {
   if (first == second || second == USCRIPT_INHERITED)
     return first;
@@ -137,6 +107,54 @@ void ScriptSetIntersect(UChar32 codepoint,
   }
 
   *result_size = out_size;
+}
+
+// Returns true if |first_char| and |current_char| both have "COMMON" script
+// property but only one of them is an ASCII character. By doing this ASCII
+// characters will be put into a separate run and be rendered using its default
+// font. See crbug.com/530021 and crbug.com/533721 for more details.
+bool AsciiBreak(UChar32 first_char, UChar32 current_char) {
+  if (isascii(first_char) == isascii(current_char))
+    return false;
+
+  size_t scripts_size = 1;
+  UScriptCode scripts[kMaxScripts] = { USCRIPT_COMMON };
+  ScriptSetIntersect(first_char, scripts, &scripts_size);
+  if (scripts_size == 0)
+    return false;
+  ScriptSetIntersect(current_char, scripts, &scripts_size);
+  return scripts_size != 0;
+}
+
+// Returns the boundary between a special and a regular character. Special
+// characters are brackets or characters that satisfy |IsUnusualBlockCode|.
+size_t FindRunBreakingCharacter(const base::string16& text,
+                                size_t run_start,
+                                size_t run_break) {
+  const int32 run_length = static_cast<int32>(run_break - run_start);
+  base::i18n::UTF16CharIterator iter(text.c_str() + run_start, run_length);
+  const UChar32 first_char = iter.get();
+  // The newline character should form a single run so that the line breaker
+  // can handle them easily.
+  if (first_char == '\n')
+    return run_start + 1;
+
+  const UBlockCode first_block = ublock_getCode(first_char);
+  const bool first_block_unusual = IsUnusualBlockCode(first_block);
+  const bool first_bracket = IsBracket(first_char);
+
+  while (iter.Advance() && iter.array_pos() < run_length) {
+    const UChar32 current_char = iter.get();
+    const UBlockCode current_block = ublock_getCode(current_char);
+    const bool block_break = current_block != first_block &&
+        (first_block_unusual || IsUnusualBlockCode(current_block));
+    if (block_break || current_char == '\n' ||
+        first_bracket != IsBracket(current_char) ||
+        AsciiBreak(first_char, current_char)) {
+      return run_start + iter.array_pos();
+    }
+  }
+  return run_break;
 }
 
 // Find the longest sequence of characters from 0 and up to |length| that

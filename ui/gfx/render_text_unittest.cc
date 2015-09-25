@@ -2832,6 +2832,20 @@ TEST_F(RenderTextTest, HarfBuzz_BreakRunsByEmoji) {
   EXPECT_EQ(Range(4, 5), run_list->runs()[3]->range);
 }
 
+TEST_F(RenderTextTest, HarfBuzz_BreakRunsByAscii) {
+  RenderTextHarfBuzz render_text;
+
+  // \xF0\x9F\x90\xB1 (U+1F431) is a cat face. It should be put into a separate
+  // run from the ASCII period character.
+  render_text.SetText(UTF8ToUTF16("\xF0\x9F\x90\xB1."));
+  render_text.EnsureLayout();
+  internal::TextRunList* run_list = render_text.GetRunList();
+  ASSERT_EQ(2U, run_list->size());
+  // U+1F431 is represented as a surrogate pair in UTF16.
+  EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
+  EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
+}
+
 TEST_F(RenderTextTest, GlyphBounds) {
   const wchar_t* kTestStrings[] = {
       L"asdf 1234 qwer", L"\x0647\x0654", L"\x0645\x0631\x062D\x0628\x0627"
