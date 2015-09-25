@@ -1,0 +1,11 @@
+For the bug that click on the green strip in the scrollable iframe will not make the iframe get the focus. crbug.com/531929
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
+

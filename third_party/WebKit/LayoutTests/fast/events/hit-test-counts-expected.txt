@@ -31,7 +31,7 @@ Event entirely over one iframe nested in another
 ---------------------
 Initial: 0+0 0+0 0+0
 MouseMove: 1+0 1+0 1+0
-MouseDown: 1+1 1+1 1+1
+MouseDown: 1+1 1+1 1+2
 MouseUp: 0+1 0+1 0+1
 Wheel: 0+1 0+1 0+1
 TouchStart: 1+0 1+0 0+1
@@ -49,7 +49,7 @@ Event near boundary of two iframes
 ---------------------
 Initial: 0+0 0+0 0+0
 MouseMove: 1+0 1+0 0+0
-MouseDown: 1+1 1+1 0+0
+MouseDown: 1+1 1+2 0+0
 MouseUp: 0+1 0+1 0+0
 Wheel: 0+1 0+1 0+0
 TouchStart: 1+0 0+1 0+0
