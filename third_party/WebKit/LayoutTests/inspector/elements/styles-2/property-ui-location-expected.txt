@@ -1,7 +1,7 @@
 Verifies WebInspector.cssWorkspaceBinding.propertyUILocation functionality
 
-background-image: url(); -> empty-background-url.css:1:4
-color: blue; -> property-ui-location.html:8:4
-margin: 10px; -> source-url.css:0:13
 font-family: arial; -> source-url.css:2:4
+margin: 10px; -> source-url.css:0:13
+color: blue; -> property-ui-location.html:8:4
+background-image: url(); -> empty-background-url.css:1:4
 

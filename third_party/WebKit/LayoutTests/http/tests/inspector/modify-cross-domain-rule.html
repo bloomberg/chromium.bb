@@ -8,7 +8,7 @@
 function test()
 {
     var nodeId;
-    var allRules;
+    var nodeStyles;
     var rule;
     var matchedRules;
 
@@ -35,24 +35,25 @@ function test()
                 InspectorTest.cssModel.matchedStylesPromise(nodeId, false, false).then(callback);
             }
 
-            function callback(rules)
+            function callback(matchedResult)
             {
-                if (!rules || !rules.matchedCSSRules || !rules.matchedCSSRules.length) {
+                if (!matchedResult) {
                     InspectorTest.addResult("[!] No rules found");
                     InspectorTest.completeTest();
                     return;
                 }
 
-                allRules = rules.matchedCSSRules;
+                nodeStyles = matchedResult.nodeStyles();
                 next();
             }
         },
 
         function testAddProperty(next)
         {
-            for (var i = 0; i < allRules.length; ++i) {
-                if (allRules[i].isRegular()) {
-                    rule = allRules[i];
+            for (var i = 0; i < nodeStyles.length; ++i) {
+                var style = nodeStyles[i];
+                if (style.parentRule && style.parentRule.isRegular()) {
+                    rule = style.parentRule;
                     break;
                 }
             }

@@ -27,14 +27,16 @@ function test()
 
     function onNodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id, true, false).then(onMatchedStyles);
+        InspectorTest.cssModel.matchedStylesPromise(node.id).then(onMatchedStyles);
     }
 
-    function onMatchedStyles(styles)
+    function onMatchedStyles(matchedResult)
     {
-        var rules = styles.matchedCSSRules;
-        for (var rule of rules) {
-            var properties = rule.style.allProperties;
+        var styles = matchedResult.nodeStyles();
+        for (var style of styles) {
+            if (style.type !== WebInspector.CSSStyleDeclaration.Type.Regular)
+                continue;
+            var properties = style.allProperties;
             for (var property of properties) {
                 if (!property.range)
                     continue;

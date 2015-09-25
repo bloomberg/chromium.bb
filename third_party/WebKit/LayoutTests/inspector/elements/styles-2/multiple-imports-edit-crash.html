@@ -20,14 +20,14 @@ function test()
 
     function nodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id, true, false).then(matchedStylesCallback);
+        InspectorTest.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
     }
 
     var styleSheetId;
 
-    function matchedStylesCallback(styles)
+    function matchedStylesCallback(matchedResult)
     {
-        styleSheetId = styles.matchedCSSRules[1].styleSheetId;
+        styleSheetId = matchedResult.nodeStyles()[1].styleSheetId;
         InspectorTest.addResult("Setting stylesheet text...");
         InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(../styles/resources/multiple-imports-edit-crash-1.css);\n@import url(../styles/resources/multiple-imports-edit-crash-2.css);\n#inspected { color: black }\n");

@@ -11,14 +11,14 @@ function test()
 
     function nodeFound(node)
     {
-        InspectorTest.cssModel.matchedStylesPromise(node.id, true, false).then(matchedStylesCallback);
+        InspectorTest.cssModel.matchedStylesPromise(node.id).then(matchedStylesCallback);
     }
 
     var styleSheetId;
 
-    function matchedStylesCallback(styles)
+    function matchedStylesCallback(matchedResult)
     {
-        styleSheetId = styles.matchedCSSRules[1].styleSheetId;
+        styleSheetId = matchedResult.nodeStyles()[1].styleSheetId;
         InspectorTest.CSSAgent.setStyleSheetText(styleSheetId,
             "@import url(\"import-pseudoclass-crash-empty.css\");\n\n:last-child { color: #000001; }\n").then(modifiedCallback);
     }

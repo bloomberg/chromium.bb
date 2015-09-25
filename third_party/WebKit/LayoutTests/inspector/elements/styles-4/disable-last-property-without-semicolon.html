@@ -12,15 +12,15 @@ function test()
     InspectorTest.runTestSuite([
         function initFormattedStyle(next)
         {
-            function callback(styles)
+            function callback(matchedResult)
             {
-                if (!styles) {
+                if (!matchedResult) {
                     InspectorTest.addResult("empty styles");
                     InspectorTest.completeTest();
                     return;
                 }
 
-                formattedStyle = styles.matchedCSSRules[1].style;
+                formattedStyle = matchedResult.nodeStyles()[1];
                 next();
             }
 
