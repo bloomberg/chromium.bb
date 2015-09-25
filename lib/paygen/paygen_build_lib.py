@@ -274,6 +274,39 @@ def _GenerateSinglePayload(payload, work_dir, sign, au_generator_uri, dry_run):
         dry_run=dry_run)
 
 
+class PayloadManager(object):
+  """Helper class for classifying discovered payloads."""
+
+  def __init__(self):
+    self.payloads = []
+
+  def Add(self, labels, payloads, skip=False, exists=False):
+    for p in payloads:
+      self.payloads.append(gspaths.Payload(tgt_image=p.tgt_image,
+                                           src_image=p.src_image,
+                                           uri=p.uri, labels=labels,
+                                           skip=skip, exists=exists))
+
+  def Get(self, labels):
+    """Retrieve all payloads that have label sets that contain |labels|.
+
+    Args:
+      labels: A list of strings.
+
+    Returns:
+      A list of gspath.Payload objects that define |labels|.
+
+    Raises:
+      ValueError if |labels| is not a list.
+    """
+    if not isinstance(labels, list):
+      raise ValueError('PayloadManager.Get expects a list of labels.'
+                       ' Given %s' % type(labels))
+    labels = set(labels)
+    return [p for p in self.payloads
+            if set(p['labels']).issuperset(labels)]
+
+
 class _PaygenBuild(object):
   """This class is responsible for generating the payloads for a given build.
 
@@ -369,6 +402,20 @@ class _PaygenBuild(object):
     self._archive_build = None
     self._archive_build_uri = None
     self._au_generator_uri = au_generator_uri
+
+    # Cached goldeneye data.
+    self.cachedFsisJson = {}
+    self.cachedOmahaJson = {}
+
+  def _GetFsisJson(self):
+    if not self.cachedFsisJson:
+      self.cachedFsisJson = json.loads(gslib.Cat(FSI_URI))
+    return self.cachedFsisJson
+
+  def _GetOmahaJson(self):
+    if not self.cachedOmahaJson:
+      self.cachedOmahaJson = json.loads(gslib.Cat(OMAHA_URI))
+    return self.cachedOmahaJson
 
   def _GetFlagURI(self, flag):
     """Find the URI of the lock file associated with this build.
@@ -551,7 +598,7 @@ class _PaygenBuild(object):
 
     return images
 
-  def _DiscoverActiveFsiBuilds(self):
+  def _DiscoverFsiBuildsForDeltas(self):
     """Read fsi_images in release.conf.
 
     fsi_images is a list of chromeos versions. We assume each one is
@@ -572,7 +619,7 @@ class _PaygenBuild(object):
     if self._build.channel != 'stable-channel':
       return results
 
-    contents = json.loads(gslib.Cat(FSI_URI))
+    contents = self._GetFsisJson()
 
     for fsi in contents.get('fsis', []):
       fsi_active = fsi['board']['is_active']
@@ -588,7 +635,39 @@ class _PaygenBuild(object):
 
     return results
 
-  def _DiscoverAllFsiBuilds(self):
+  def _DiscoverAllFsiBuildsForDeltaTesting(self):
+    """Pull FSI list from Golden Eye.
+
+    Finds all FSI builds that are known to support deltas and to be
+    lab stable for testing purposes.
+
+    Returns:
+      A list of gspaths.Build instances for each build so discovered. The list
+      may be empty.
+    """
+    results = []
+
+    contents = self._GetFsisJson()
+
+    for fsi in contents.get('fsis', []):
+      fsi_active = fsi['board']['is_active']
+      fsi_board = fsi['board']['public_codename']
+      fsi_version = fsi['chrome_os_version']
+      fsi_support_delta = fsi['is_delta_supported']
+      fsi_lab_stable = fsi['is_lab_stable']
+
+      conditions = [fsi_board == self._build.board, fsi_active,
+                    fsi_support_delta, fsi_lab_stable]
+
+      if all(conditions):
+        results.append(gspaths.Build(version=fsi_version,
+                                     board=fsi_board,
+                                     channel=self._build.channel,
+                                     bucket=self._build.bucket))
+
+    return results
+
+  def _DiscoverAllFsiBuildsForFullTesting(self):
     """Pull FSI list from Golden Eye.
 
     Returns a list of chromeos versions. We assume each one is
@@ -602,7 +681,8 @@ class _PaygenBuild(object):
       may be empty.
     """
     results = []
-    contents = json.loads(gslib.Cat(FSI_URI))
+
+    contents = self._GetFsisJson()
 
     for fsi in contents.get('fsis', []):
       fsi_board = fsi['board']['public_codename']
@@ -632,7 +712,7 @@ class _PaygenBuild(object):
     # does not maintain the '-channel' ending.
     channel_name = self._build.channel.replace('-channel', '')
 
-    contents = json.loads(gslib.Cat(OMAHA_URI))
+    contents = self._GetOmahaJson()
     for nmo in contents.get('omaha_data', []):
       nmo_board = nmo['board']['public_codename']
       nmo_channel = nmo['channel']
@@ -762,9 +842,7 @@ class _PaygenBuild(object):
     and may be otherwise detrimental to the release schedule.
 
     Returns:
-      A list of tuples of the form (payload, skip), where payload is an
-      instance of gspath.Payload and skip is a Boolean that says whether it
-      should be skipped (i.e. not generated).
+      A PayloadManager instance.
 
     Raises:
       BuildNotReady: If the current build doesn't seem to have all of it's
@@ -773,12 +851,14 @@ class _PaygenBuild(object):
       BuildCorrupt: If current or previous builds have unexpected images.
       ImageMissing: Raised if expected images are missing for previous builds.
     """
-    # Initiate a list that will contain lists of payload subsets, along with a
-    # Boolean stating whether or not we need to skip generating them.
-    payload_sublists_skip = []
+    images = []
+    previous_images = []
+    fsi_images = []
+
+    payload_manager = PayloadManager()
 
     try:
-      # When discovering the images for our current build, they might
+      # When discovering the images for our current build, they might not be
       # discoverable right away (GS eventual consistency). So, we retry.
       images = retry_util.RetryException(ImageMissing, 3,
                                          self._DiscoverImages, self._build,
@@ -792,27 +872,32 @@ class _PaygenBuild(object):
 
     _LogList('Images found', images)
 
-    # Discover active FSI builds we need deltas from.
-    fsi_builds = self._DiscoverActiveFsiBuilds()
+    # Discover active FSI builds. We need these for generating deltas.
+    fsi_builds = self._DiscoverFsiBuildsForDeltas()
     if fsi_builds:
       _LogList('Active FSI builds considered', fsi_builds)
     else:
       logging.info('No active FSI builds found')
 
-    # Discover other previous builds we need deltas from.
+    # Discover previous, non-FSI, builds that we also must generate deltas for.
     previous_builds = [b for b in self._DiscoverNmoBuild()
                        if b not in fsi_builds]
     if previous_builds:
-      _LogList('Other previous builds considered', previous_builds)
+      _LogList('Previous, non-FSI, builds considered', previous_builds)
     else:
       logging.info('No other previous builds found')
 
-    # Discover the images from those previous builds, and put them into
-    # a single list. Raises ImageMissing if no images are found.
-    previous_images = []
-    for b in previous_builds:
+    # Discover and filter FSI images.
+    for fsi in fsi_builds:
+      fsi_images += self._DiscoverImages(fsi)
+      fsi_images += self._DiscoverTestImageArchives(fsi)
+
+    fsi_images = _FilterForBasic(fsi_images) + _FilterForTest(fsi_images)
+
+    # Discover and filter previous images.
+    for p in previous_builds:
       try:
-        previous_images += self._DiscoverImages(b)
+        previous_images += self._DiscoverImages(p)
       except ImageMissing as e:
         # Temporarily allow generation of delta payloads to fail because of
         # a missing previous build until crbug.com/243916 is addressed.
@@ -831,71 +916,98 @@ class _PaygenBuild(object):
         # signed deltas will be generated from this build, we don't need to
         # generate test deltas from it.
         continue
+      previous_images += self._DiscoverTestImageArchives(p)
 
-      previous_images += self._DiscoverTestImageArchives(b)
+    previous_images = (
+        _FilterForBasic(previous_images) + _FilterForTest(previous_images))
 
-    for b in fsi_builds:
-      previous_images += self._DiscoverImages(b)
-      previous_images += self._DiscoverTestImageArchives(b)
+    # Discover full payloads for all non-test images in the current build.
+    skip_full = self._skip_full_payloads or self._skip_nontest_payloads
+    payload_manager.Add(
+        ['full'],
+        self._DiscoverRequiredFullPayloads(_FilterForImages(images)),
+        skip=skip_full)
 
-    # Only consider base (signed) and test previous images.
-    filtered_previous_images = _FilterForBasic(previous_images)
-    filtered_previous_images += _FilterForTest(previous_images)
-    previous_images = filtered_previous_images
-
-    # Generate full payloads for all non-test images in the current build.
-    # Include base, NPO, premp, and mp (if present).
-    payload_sublists_skip.append(
-        (self._skip_full_payloads or self._skip_nontest_payloads,
-         self._DiscoverRequiredFullPayloads(_FilterForImages(images))))
+    # Discover delta payloads.
+    skip_deltas = self._skip_delta_payloads or self._skip_nontest_payloads
 
     # Deltas for current -> NPO (pre-MP and MP).
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_nontest_payloads,
-         self._DiscoverRequiredNpoDeltas(_FilterForPremp(images))))
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_nontest_payloads,
-         self._DiscoverRequiredNpoDeltas(_FilterForMp(images))))
+    delta_npo_labels = ['delta', 'npo']
+    payload_manager.Add(
+        delta_npo_labels,
+        self._DiscoverRequiredNpoDeltas(_FilterForPremp(images)),
+        skip=skip_deltas)
+    payload_manager.Add(
+        delta_npo_labels,
+        self._DiscoverRequiredNpoDeltas(_FilterForMp(images)),
+        skip=skip_deltas)
 
     # Deltas for previous -> current (pre-MP and MP).
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_nontest_payloads,
-         self._DiscoverRequiredFromPreviousDeltas(
-             _FilterForPremp(_FilterForBasic(images)),
-             _FilterForPremp(previous_images))))
-    payload_sublists_skip.append(
-        (self._skip_delta_payloads or self._skip_nontest_payloads,
-         self._DiscoverRequiredFromPreviousDeltas(
-             _FilterForMp(_FilterForBasic(images)),
-             _FilterForMp(previous_images))))
+    delta_previous_labels = ['delta', 'previous']
+    payload_manager.Add(
+        delta_previous_labels,
+        self._DiscoverRequiredFromPreviousDeltas(
+            _FilterForPremp(_FilterForBasic(images)),
+            _FilterForPremp(previous_images)),
+        skip=skip_deltas)
+    payload_manager.Add(
+        delta_previous_labels,
+        self._DiscoverRequiredFromPreviousDeltas(
+            _FilterForMp(_FilterForBasic(images)),
+            _FilterForMp(previous_images)),
+        skip=skip_deltas)
 
-    # Only discover test payloads if Autotest is not disabled.
+    # Deltats for fsi -> current (pre-MP and MP).
+    delta_fsi_labels = ['delta', 'fsi']
+    payload_manager.Add(
+        delta_fsi_labels,
+        self._DiscoverRequiredFromPreviousDeltas(
+            _FilterForPremp(_FilterForBasic(images)),
+            _FilterForPremp(fsi_images)),
+        skip=skip_deltas)
+    payload_manager.Add(
+        delta_fsi_labels,
+        self._DiscoverRequiredFromPreviousDeltas(
+            _FilterForMp(_FilterForBasic(images)),
+            _FilterForMp(fsi_images)),
+        skip=skip_deltas)
+
+    # Discover test payloads if Autotest is not disabled.
     if self._control_dir:
-      # Full test payloads.
-      payload_sublists_skip.append(
-          (self._skip_full_payloads or self._skip_test_payloads,
-           self._DiscoverRequiredFullPayloads(_FilterForTest(images))))
+      skip_test_full = self._skip_full_payloads or self._skip_test_payloads
+      skip_test_deltas = self._skip_delta_payloads or self._skip_test_payloads
 
-      # Delta for current -> NPO (test payloads).
-      payload_sublists_skip.append(
-          (self._skip_delta_payloads or self._skip_test_payloads,
-           self._DiscoverRequiredTestNpoDeltas(_FilterForTest(images))))
+      # Full test payloads.
+      payload_manager.Add(
+          ['test', 'full'],
+          self._DiscoverRequiredFullPayloads(_FilterForTest(images)),
+          skip=skip_test_full)
+
+      # Deltas for current -> NPO (test payloads).
+      payload_manager.Add(
+          ['test', 'delta', 'npo'],
+          self._DiscoverRequiredTestNpoDeltas(_FilterForTest(images)),
+          skip=skip_test_deltas)
 
       # Deltas for previous -> current (test payloads).
-      payload_sublists_skip.append(
-          (self._skip_delta_payloads or self._skip_test_payloads,
-           self._DiscoverRequiredFromPreviousDeltas(
-               _FilterForTest(images), _FilterForTest(previous_images))))
+      payload_manager.Add(
+          ['test', 'delta', 'previous'],
+          self._DiscoverRequiredFromPreviousDeltas(
+              _FilterForTest(images), _FilterForTest(previous_images)),
+          skip=skip_test_deltas)
 
-    # Organize everything into a single list of (payload, skip) pairs; also, be
-    # sure to fill in a URL for each payload.
-    payloads_skip = []
-    for (do_skip, payloads) in payload_sublists_skip:
-      for payload in payloads:
-        paygen_payload_lib.FillInPayloadUri(payload)
-        payloads_skip.append((payload, do_skip))
+      # Deltas for fsi -> current (test payloads).
+      payload_manager.Add(
+          ['test', 'delta', 'fsi'],
+          self._DiscoverRequiredFromPreviousDeltas(
+              _FilterForTest(images), _FilterForTest(fsi_images)),
+          skip=skip_test_deltas)
 
-    return payloads_skip
+    # Set the payload URIs.
+    for p in payload_manager.Get([]):
+      paygen_payload_lib.FillInPayloadUri(p)
+
+    return payload_manager
 
   def _GeneratePayloads(self, payloads, lock=None):
     """Generate the payloads called for by a list of payload definitions.
@@ -1188,49 +1300,70 @@ class _PaygenBuild(object):
     logging.info('No FSIs with artifacts, not scheduling FSI update test.')
     return []
 
-  def _CreatePayloadTests(self, payloads):
+  def _CreatePayloadTests(self, payload_manager):
     """Returns a list of test configurations for a given list of payloads.
 
     Args:
-      payloads: A list of (already generated) build payloads.
+      payload_manager: A PayloadManager instance.
 
     Returns:
       A list of PayloadTest objects defining payload test cases.
     """
     payload_tests = []
-    for payload in payloads:
+
+    for p in payload_manager.Get([]):
       # We are only testing test payloads.
-      if payload.tgt_image.get('image_type', 'signed') == 'signed':
+      if not 'test' in p.labels:
         continue
 
-      # Distinguish between delta (source version encoded) and full payloads.
-      if payload.src_image is None:
+      # Distinguish between delta and full payloads.
+      if not 'delta' in p.labels:
         # Create a full update test from NMO, if we are newer.
         if not self._previous_version:
           logging.warning('No previous build, not testing full update %s from '
-                          'NMO', payload)
+                          'NMO', p)
         elif gspaths.VersionGreater(
-            self._previous_version, payload.tgt_image.version):
+            self._previous_version, p.tgt_image.version):
           logging.warning(
               'NMO (%s) is newer than target (%s), skipping NMO full '
-              'update test.', self._previous_version, payload)
+              'update test.', self._previous_version, p)
         else:
           payload_tests.append(self.PayloadTest(
-              payload, src_channel=self._build.channel,
+              p, src_channel=self._build.channel,
               src_version=self._previous_version))
 
         # Create a full update test from the current version to itself.
         payload_tests.append(self.PayloadTest(
-            payload,
+            p,
             src_channel=self._build.channel,
             src_version=self._build.version))
 
         # Create a full update test from oldest viable FSI.
         payload_tests += self._CreateFsiPayloadTests(
-            payload, self._DiscoverAllFsiBuilds())
+            p, self._DiscoverAllFsiBuildsForFullTesting())
       else:
         # Create a delta update test.
-        payload_tests.append(self.PayloadTest(payload))
+
+        # FSI deltas are included only if they are lab stable.
+        if 'fsi' in p.labels:
+          fsi_image = p.src_image
+          is_lab_stable = False
+
+          for build in self._DiscoverAllFsiBuildsForDeltaTesting():
+            if all([fsi_image.board == build.board,
+                    fsi_image.channel == build.channel,
+                    fsi_image.version == build.version,
+                    fsi_image.bucket == build.bucket]):
+              is_lab_stable = True
+              break
+
+          if not is_lab_stable:
+            logging.warning(
+                'FSI delta payload (%s) is not lab stable, skipping '
+                'delta update test', p)
+            continue
+
+        payload_tests.append(self.PayloadTest(p))
 
     return payload_tests
 
@@ -1273,7 +1406,7 @@ class _PaygenBuild(object):
 
         logging.info('Starting: %s', self._build)
 
-        payloads_skip = self._DiscoverRequiredPayloads()
+        payload_manager = self._DiscoverRequiredPayloads()
 
         # Assume we can finish the build until we find a reason we can't.
         can_finish = True
@@ -1285,41 +1418,40 @@ class _PaygenBuild(object):
         # URI accordingly. In doing so we're creating a list of all payload
         # objects and their skip/exist attributes. We're also recording whether
         # this run will be skipping any actual work.
-        payloads_attrs = []
-        for payload, skip in payloads_skip:
+        for p in payload_manager.Get([]):
           if self._output_dir:
             # output_dir means we are forcing all payloads to be generated
             # with a new destination.
             result = [os.path.join(self._output_dir,
-                                   os.path.basename(payload.uri))]
+                                   os.path.basename(p.uri))]
             exists = False
           else:
-            result = paygen_payload_lib.FindExistingPayloads(payload)
+            result = paygen_payload_lib.FindExistingPayloads(p)
             exists = bool(result)
 
           if result:
-            paygen_payload_lib.SetPayloadUri(payload, result[0])
-          elif skip:
+            paygen_payload_lib.SetPayloadUri(p, result[0])
+          elif p['skip']:
             can_finish = False
 
-          payloads_attrs.append((payload, skip, exists))
+          p['exists'] = exists
 
         # Display payload generation list, including payload name and whether
         # or not it already exists or will be skipped.
         log_items = []
-        for payload, skip, exists in payloads_attrs:
-          desc = str(payload)
-          if exists:
+        for p in payload_manager.Get([]):
+          desc = str(p)
+          if p['exists']:
             desc += ' (exists)'
-          elif skip:
+          elif p['skip']:
             desc += ' (skipped)'
           log_items.append(desc)
 
         _LogList('All payloads for the build', log_items)
 
         # Generate new payloads.
-        new_payloads = [payload for payload, skip, exists in payloads_attrs
-                        if not (skip or exists)]
+        new_payloads = [p for p in payload_manager.Get([])
+                        if not (p['skip'] or p['exists'])]
         if new_payloads:
           logging.info('Generating %d new payload(s)', len(new_payloads))
           self._GeneratePayloads(new_payloads, build_lock)
@@ -1344,8 +1476,7 @@ class _PaygenBuild(object):
 
             # We have a control file directory and all payloads have been
             # generated. Lets create the list of tests to conduct.
-            payload_tests = self._CreatePayloadTests(
-                [payload for payload, _, _ in payloads_attrs])
+            payload_tests = self._CreatePayloadTests(payload_manager)
             if payload_tests:
               logging.info('Initiating %d payload tests', len(payload_tests))
               self._drm(self._AutotestPayloads, payload_tests)

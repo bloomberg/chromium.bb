@@ -138,9 +138,19 @@ class Payload(utils.RestrictedAttrDict):
     src_image: A representation of image it updates from. None for
                Full updates, or the same type as tgt_image otherwise.
     uri: The URI of the payload. This can be any format understood by urilib.
+    labels: A list of strings. Labels are used to catalogue payloads.
+    skip: A boolean. If true, we skip generating this payload.
+    exists: A boolean. If true, artifacts for this build already exist.
   """
   _name = 'Payload definition'
-  _slots = ('tgt_image', 'src_image', 'uri')
+  _slots = ('tgt_image', 'src_image', 'uri', 'labels', 'skip', 'exists')
+
+  def __init__(self, labels=None, skip=False, exists=False, *args, **kwargs):
+    kwargs.update(labels=labels, skip=skip, exists=exists)
+    super(Payload, self).__init__(*args, **kwargs)
+
+    if self['labels'] is None:
+      self['labels'] = []
 
   def __str__(self):
     if self.uri:
