@@ -210,6 +210,7 @@ cc::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
   gfx::Transform target_transform;
   cc::SurfaceId target_surface_id =
       hittest.GetTargetSurfaceAtPoint(surface_id_, point, &target_transform);
+  *transformed_point = point;
   if (!target_surface_id.is_null())
     target_transform.TransformPoint(transformed_point);
   return target_surface_id;

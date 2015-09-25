@@ -460,14 +460,17 @@ class RenderWidgetHostMouseEventMonitor {
   }
   bool EventWasReceived() { return event_received; }
   void ResetEventReceived() { event_received = false; }
+  const blink::WebMouseEvent& event() const { return event_; }
 
  private:
-  bool MouseEventCallback(const blink::WebMouseEvent& /* event */) {
+  bool MouseEventCallback(const blink::WebMouseEvent& event) {
     event_received = true;
+    event_ = event;
     return false;
   }
   RenderWidgetHost* host_;
   bool event_received;
+  blink::WebMouseEvent event_;
 };
 
 // Test that mouse events are being routed to the correct RenderWidgetHostView
@@ -559,6 +562,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
   }
 
   EXPECT_TRUE(child_frame_monitor.EventWasReceived());
+  EXPECT_EQ(23, child_frame_monitor.event().x);
+  EXPECT_EQ(23, child_frame_monitor.event().y);
   EXPECT_FALSE(main_frame_monitor.EventWasReceived());
 
   child_frame_monitor.ResetEventReceived();
@@ -576,6 +581,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_SurfaceHitTestTest) {
 
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_EQ(1, main_frame_monitor.event().x);
+  EXPECT_EQ(1, main_frame_monitor.event().y);
 }
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
