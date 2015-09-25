@@ -1433,6 +1433,11 @@ EVENT_TYPE(QUIC_SESSION)
 //   }
 EVENT_TYPE(QUIC_SESSION_CLOSE_ON_ERROR)
 
+// Session verification of a certificate from the server failed.
+//   {
+//   }
+EVENT_TYPE(QUIC_SESSION_CERTIFICATE_VERIFY_FAILED)
+
 // Session verified a certificate from the server.
 //   {
 //     "subjects": <list of DNS names that the certificate is valid for>,

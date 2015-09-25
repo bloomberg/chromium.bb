@@ -725,6 +725,10 @@ void QuicConnectionLogger::UpdateReceivedFrameCounts(
 
 void QuicConnectionLogger::OnCertificateVerified(
     const CertVerifyResult& result) {
+  if (result.cert_status == CERT_STATUS_INVALID) {
+    net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_CERTIFICATE_VERIFY_FAILED);
+    return;
+  }
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CERTIFICATE_VERIFIED,
       base::Bind(&NetLogQuicCertificateVerifiedCallback, result.verified_cert));
