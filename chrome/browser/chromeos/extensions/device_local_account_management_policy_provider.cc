@@ -99,6 +99,7 @@ const char* const kPublicSessionWhitelist[] = {
     // Testing extensions:
     "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
     "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
+    "oflckobdemeldmjddmlbaiaookhhcngo",  // Citrix Receiver QA version
 };
 
 }  // namespace
