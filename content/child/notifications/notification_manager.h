@@ -41,26 +41,26 @@ class NotificationManager : public blink::WebNotificationManager,
   void WillStopCurrentWorkerThread() override;
 
   // blink::WebNotificationManager implementation.
-  virtual void show(const blink::WebSecurityOrigin& origin,
-                    const blink::WebNotificationData& notification_data,
-                    blink::WebNotificationDelegate* delegate);
-  virtual void showPersistent(
+  void show(const blink::WebSecurityOrigin& origin,
+            const blink::WebNotificationData& notification_data,
+            blink::WebNotificationDelegate* delegate) override;
+  void showPersistent(
       const blink::WebSecurityOrigin& origin,
       const blink::WebNotificationData& notification_data,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebNotificationShowCallbacks* callbacks);
-  virtual void getNotifications(
+      blink::WebNotificationShowCallbacks* callbacks) override;
+  void getNotifications(
       const blink::WebString& filter_tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebNotificationGetCallbacks* callbacks);
-  virtual void close(blink::WebNotificationDelegate* delegate);
-  virtual void closePersistent(const blink::WebSecurityOrigin& origin,
-                               int64_t persistent_notification_id);
-  virtual void notifyDelegateDestroyed(
-      blink::WebNotificationDelegate* delegate);
-  virtual blink::WebNotificationPermission checkPermission(
-      const blink::WebSecurityOrigin& origin);
-  virtual size_t maxActions();
+      blink::WebNotificationGetCallbacks* callbacks) override;
+  void close(blink::WebNotificationDelegate* delegate) override;
+  void closePersistent(const blink::WebSecurityOrigin& origin,
+                       int64_t persistent_notification_id) override;
+  void notifyDelegateDestroyed(blink::WebNotificationDelegate* delegate)
+      override;
+  blink::WebNotificationPermission checkPermission(
+      const blink::WebSecurityOrigin& origin) override;
+  size_t maxActions() override;
 
   // Called by the NotificationDispatcher.
   bool OnMessageReceived(const IPC::Message& message);

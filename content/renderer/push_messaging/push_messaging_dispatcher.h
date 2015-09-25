@@ -33,17 +33,17 @@ class PushMessagingDispatcher : public RenderFrameObserver,
                                 public blink::WebPushClient {
  public:
   explicit PushMessagingDispatcher(RenderFrame* render_frame);
-  virtual ~PushMessagingDispatcher();
+  ~PushMessagingDispatcher() override;
 
  private:
   // RenderFrame::Observer implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // WebPushClient implementation.
-  virtual void subscribe(
+  void subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
-      blink::WebPushSubscriptionCallbacks* callbacks);
+      blink::WebPushSubscriptionCallbacks* callbacks) override;
 
   void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,

@@ -12,52 +12,48 @@ WebNotificationManagerImpl::WebNotificationManagerImpl() {}
 
 WebNotificationManagerImpl::~WebNotificationManagerImpl() {}
 
-void WebNotificationManagerImpl::show(const blink::WebSecurityOrigin&,
-                                      const blink::WebNotificationData&,
-                                      blink::WebNotificationDelegate*) {
+void WebNotificationManagerImpl::show(
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebNotificationData& notification_data,
+    blink::WebNotificationDelegate* delegate) {
   NOTIMPLEMENTED();
 }
 
 void WebNotificationManagerImpl::showPersistent(
-    const blink::WebSecurityOrigin&,
-    const blink::WebNotificationData&,
-    blink::WebServiceWorkerRegistration*,
-    blink::WebNotificationShowCallbacks*) {
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebNotificationData& notification_data,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebNotificationShowCallbacks* callbacks) {
   NOTIMPLEMENTED();
 }
 
 void WebNotificationManagerImpl::getNotifications(
-    const blink::WebString& filterTag,
-    blink::WebServiceWorkerRegistration*,
-    blink::WebNotificationGetCallbacks*) {
+    const blink::WebString& filter_tag,
+    blink::WebServiceWorkerRegistration* service_worker_registration,
+    blink::WebNotificationGetCallbacks* callbacks) {
   NOTIMPLEMENTED();
 }
 
-void WebNotificationManagerImpl::close(blink::WebNotificationDelegate*) {
-  NOTIMPLEMENTED();
-}
-
-void WebNotificationManagerImpl::closePersistent(
-    const blink::WebSecurityOrigin&,
-    int64_t persistentNotificationId) {
+void WebNotificationManagerImpl::close(
+    blink::WebNotificationDelegate* delegate) {
   NOTIMPLEMENTED();
 }
 
 void WebNotificationManagerImpl::closePersistent(
-    const blink::WebSecurityOrigin&,
-    const blink::WebString& persistentNotificationId) {
+    const blink::WebSecurityOrigin& origin,
+    int64_t persistent_notification_id) {
   NOTIMPLEMENTED();
 }
 
 void WebNotificationManagerImpl::notifyDelegateDestroyed(
-    blink::WebNotificationDelegate*) {
+    blink::WebNotificationDelegate* delegate) {
   NOTIMPLEMENTED();
 }
 
 blink::WebNotificationPermission WebNotificationManagerImpl::checkPermission(
-    const blink::WebSecurityOrigin&) {
+    const blink::WebSecurityOrigin& origin) {
   NOTIMPLEMENTED();
-  return blink::WebNotificationPermission();
+  return blink::WebNotificationPermissionDenied;
 }
 
 size_t WebNotificationManagerImpl::maxActions() {

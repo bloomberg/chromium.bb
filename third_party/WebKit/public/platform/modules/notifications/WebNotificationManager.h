@@ -60,8 +60,7 @@ public:
     virtual WebNotificationPermission checkPermission(const WebSecurityOrigin&) = 0;
 
     // Returns the maximum number of actions supported by the embedder.
-    // TODO(johnme): Make pure virtual.
-    virtual size_t maxActions() { return 0; }
+    virtual size_t maxActions() = 0;
 };
 
 } // namespace blink

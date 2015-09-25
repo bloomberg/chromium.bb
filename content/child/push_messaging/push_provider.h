@@ -42,20 +42,20 @@ class PushProvider : public blink::WebPushProvider,
   void WillStopCurrentWorkerThread() override;
 
   // blink::WebPushProvider implementation.
-  virtual void subscribe(
+  void subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
-      blink::WebPushSubscriptionCallbacks* callbacks);
-  virtual void unsubscribe(
+      blink::WebPushSubscriptionCallbacks* callbacks) override;
+  void unsubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebPushUnsubscribeCallbacks* callbacks);
-  virtual void getSubscription(
+      blink::WebPushUnsubscribeCallbacks* callbacks) override;
+  void getSubscription(
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebPushSubscriptionCallbacks* callbacks);
-  virtual void getPermissionStatus(
+      blink::WebPushSubscriptionCallbacks* callbacks) override;
+  void getPermissionStatus(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
-      blink::WebPushPermissionStatusCallbacks* callbacks);
+      blink::WebPushPermissionStatusCallbacks* callbacks) override;
 
   // Called by the PushDispatcher.
   bool OnMessageReceived(const IPC::Message& message);
