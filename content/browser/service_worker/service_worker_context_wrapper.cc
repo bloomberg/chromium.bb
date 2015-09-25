@@ -291,27 +291,6 @@ void ServiceWorkerContextWrapper::StartServiceWorker(
       base::Bind(&StartActiveWorkerOnIO, callback));
 }
 
-void ServiceWorkerContextWrapper::SimulateSkipWaiting(int64_t version_id) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::SimulateSkipWaiting, this,
-                   version_id));
-    return;
-  }
-  if (!context_core_)
-    return;
-  ServiceWorkerVersion* version = GetLiveVersion(version_id);
-  if (!version || version->skip_waiting())
-    return;
-  ServiceWorkerRegistration* registration =
-      GetLiveRegistration(version->registration_id());
-  if (!registration || version != registration->waiting_version())
-    return;
-  version->set_skip_waiting(true);
-  registration->ActivateWaitingVersionWhenReady();
-}
-
 void ServiceWorkerContextWrapper::SetForceUpdateOnPageLoad(
     int64_t registration_id,
     bool force_update_on_page_load) {

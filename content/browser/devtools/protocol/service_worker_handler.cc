@@ -411,19 +411,6 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   return Response::OK();
 }
 
-Response ServiceWorkerHandler::SkipWaiting(const std::string& version_id) {
-  if (!enabled_)
-    return Response::OK();
-  if (!context_)
-    return CreateContextErrorResponse();
-
-  int64 id = kInvalidServiceWorkerVersionId;
-  if (!base::StringToInt64(version_id, &id))
-    return CreateInvalidVersionIdErrorResponse();
-  context_->SimulateSkipWaiting(id);
-  return Response::OK();
-}
-
 Response ServiceWorkerHandler::SetDebugOnStart(bool debug_on_start) {
   ServiceWorkerDevToolsManager::GetInstance()
       ->set_debug_service_worker_on_start(debug_on_start);
