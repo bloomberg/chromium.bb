@@ -5,6 +5,9 @@
 #ifndef UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACELESS_H_
 #define UI_OZONE_PLATFORM_DRM_GPU_GBM_SURFACELESS_H_
 
+#include <vector>
+
+#include "ui/ozone/platform/drm/gpu/overlay_plane.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
 namespace gfx {
@@ -15,6 +18,7 @@ namespace ui {
 
 class DrmDeviceManager;
 class DrmWindow;
+class GbmSurfaceFactory;
 
 // In surfaceless mode drawing and displaying happens directly through
 // NativePixmap buffers. CC would call into SurfaceFactoryOzone to allocate the
@@ -22,8 +26,12 @@ class DrmWindow;
 // presentation.
 class GbmSurfaceless : public SurfaceOzoneEGL {
  public:
-  GbmSurfaceless(DrmWindow* window, DrmDeviceManager* drm_device_manager);
+  GbmSurfaceless(DrmWindow* window,
+                 DrmDeviceManager* drm_device_manager,
+                 GbmSurfaceFactory* surface_manager);
   ~GbmSurfaceless() override;
+
+  void QueueOverlayPlane(const OverlayPlane& plane);
 
   // SurfaceOzoneEGL:
   intptr_t GetNativeWindow() override;
@@ -36,6 +44,8 @@ class GbmSurfaceless : public SurfaceOzoneEGL {
  protected:
   DrmWindow* window_;
   DrmDeviceManager* drm_device_manager_;
+  GbmSurfaceFactory* surface_manager_;
+  std::vector<OverlayPlane> planes_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmSurfaceless);
 };

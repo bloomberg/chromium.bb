@@ -16,6 +16,8 @@
 #include "ui/gfx/native_pixmap_handle_ozone.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_device.h"
+#include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
+#include "ui/ozone/platform/drm/gpu/gbm_surfaceless.h"
 
 namespace ui {
 
@@ -72,9 +74,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
 }
 
 GbmPixmap::GbmPixmap(const scoped_refptr<GbmBuffer>& buffer,
-                     ScreenManager* screen_manager)
-    : buffer_(buffer), screen_manager_(screen_manager) {
-}
+                     GbmSurfaceFactory* surface_manager)
+    : buffer_(buffer), surface_manager_(surface_manager) {}
 
 bool GbmPixmap::Initialize() {
   // We want to use the GBM API because it's going to call into libdrm
@@ -145,7 +146,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
     }
   }
 
-  screen_manager_->GetWindow(widget)->QueueOverlayPlane(OverlayPlane(
+  surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
       buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
   return true;
 }

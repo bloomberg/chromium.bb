@@ -83,13 +83,8 @@ class OZONE_EXPORT DrmWindow {
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
 
-  // Queue overlay planes and page flips.
-  // If hardware display controller is available, forward the information
-  // immediately, otherwise queue up on the window and forward when the hardware
-  // is once again ready.
-  void QueueOverlayPlane(const OverlayPlane& plane);
-
-  bool SchedulePageFlip(const SwapCompletionCallback& callback);
+  void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+                        const SwapCompletionCallback& callback);
   bool TestPageFlip(const std::vector<OverlayCheck_Params>& planes,
                     ScanoutBufferGenerator* buffer_generator);
 
@@ -132,9 +127,6 @@ class OZONE_EXPORT DrmWindow {
   int cursor_frame_ = 0;
   int cursor_frame_delay_ms_ = 0;
 
-  // Planes and flips currently being queued in the absence of hardware display
-  // controller.
-  OverlayPlaneList pending_planes_;
   OverlayPlaneList last_submitted_planes_;
 
   bool force_buffer_reallocation_ = false;

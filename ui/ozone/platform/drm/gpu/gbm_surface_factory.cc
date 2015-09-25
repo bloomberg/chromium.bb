@@ -35,6 +35,22 @@ void GbmSurfaceFactory::InitializeGpu(DrmDeviceManager* drm_device_manager,
   screen_manager_ = screen_manager;
 }
 
+void GbmSurfaceFactory::RegisterSurface(gfx::AcceleratedWidget widget,
+                                        GbmSurfaceless* surface) {
+  widget_to_surface_map_.insert(std::make_pair(widget, surface));
+}
+
+void GbmSurfaceFactory::UnregisterSurface(gfx::AcceleratedWidget widget) {
+  widget_to_surface_map_.erase(widget);
+}
+
+GbmSurfaceless* GbmSurfaceFactory::GetSurface(
+    gfx::AcceleratedWidget widget) const {
+  auto it = widget_to_surface_map_.find(widget);
+  DCHECK(it != widget_to_surface_map_.end());
+  return it->second;
+}
+
 intptr_t GbmSurfaceFactory::GetNativeDisplay() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return EGL_DEFAULT_DISPLAY;
@@ -87,7 +103,7 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return make_scoped_ptr(new GbmSurfaceless(screen_manager_->GetWindow(widget),
-                                            drm_device_manager_));
+                                            drm_device_manager_, this));
 }
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
@@ -109,7 +125,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
   if (!buffer.get())
     return nullptr;
 
-  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer, screen_manager_));
+  scoped_refptr<GbmPixmap> pixmap(new GbmPixmap(buffer, this));
   if (!pixmap->Initialize())
     return nullptr;
 

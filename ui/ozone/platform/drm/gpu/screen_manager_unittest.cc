@@ -494,8 +494,9 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->OnBoundsChanged(GetPrimaryBounds());
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
       drm_, gfx::BufferFormat::BGRA_8888, GetPrimaryBounds().size());
-  window->QueueOverlayPlane(ui::OverlayPlane(buffer));
-  window->SchedulePageFlip(base::Bind(&EmptySwapCallback));
+  window->SchedulePageFlip(
+      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer)),
+      base::Bind(&EmptySwapCallback));
   screen_manager_->AddWindow(1, window.Pass());
 
   screen_manager_->AddDisplayController(drm_, kPrimaryCrtc, kPrimaryConnector);

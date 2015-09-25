@@ -122,30 +122,25 @@ void DrmWindow::MoveCursor(const gfx::Point& location) {
     controller_->MoveCursor(location);
 }
 
-void DrmWindow::QueueOverlayPlane(const OverlayPlane& plane) {
-  pending_planes_.push_back(plane);
-}
-
-bool DrmWindow::SchedulePageFlip(const SwapCompletionCallback& callback) {
+void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
+                                 const SwapCompletionCallback& callback) {
   if (force_buffer_reallocation_) {
-    // Clear pending planes otherwise the next call to queue planes will just
-    // add on top.
-    pending_planes_.clear();
     force_buffer_reallocation_ = false;
     callback.Run(gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS);
-    return true;
+    return;
   }
 
-  last_submitted_planes_.clear();
-  last_submitted_planes_.swap(pending_planes_);
+  last_submitted_planes_ = planes;
 
-  if (controller_) {
-    return controller_->SchedulePageFlip(last_submitted_planes_,
-                                         false /* test_only */, callback);
+  if (!controller_) {
+    callback.Run(gfx::SwapResult::SWAP_ACK);
+    return;
   }
 
-  callback.Run(gfx::SwapResult::SWAP_ACK);
-  return true;
+  if (!controller_->SchedulePageFlip(last_submitted_planes_,
+                                     false /* test_only */, callback)) {
+    callback.Run(gfx::SwapResult::SWAP_FAILED);
+  }
 }
 
 bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,

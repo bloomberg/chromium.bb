@@ -11,6 +11,7 @@
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 #include "ui/ozone/platform/drm/gpu/gbm_buffer.h"
+#include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 
 namespace ui {
@@ -26,11 +27,20 @@ void PostedSwapResult(const SwapCompletionCallback& callback,
 }  // namespace
 
 GbmSurfaceless::GbmSurfaceless(DrmWindow* window,
-                               DrmDeviceManager* drm_device_manager)
-    : window_(window), drm_device_manager_(drm_device_manager) {
+                               DrmDeviceManager* drm_device_manager,
+                               GbmSurfaceFactory* surface_manager)
+    : window_(window),
+      drm_device_manager_(drm_device_manager),
+      surface_manager_(surface_manager) {
+  surface_manager_->RegisterSurface(window_->GetAcceleratedWidget(), this);
 }
 
 GbmSurfaceless::~GbmSurfaceless() {
+  surface_manager_->UnregisterSurface(window_->GetAcceleratedWidget());
+}
+
+void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
+  planes_.push_back(plane);
 }
 
 intptr_t GbmSurfaceless::GetNativeWindow() {
@@ -51,7 +61,9 @@ bool GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
   // Wrap the callback and post the result such that everything using the
   // callback doesn't need to worry about re-entrancy.
-  return window_->SchedulePageFlip(base::Bind(&PostedSwapResult, callback));
+  window_->SchedulePageFlip(planes_, base::Bind(&PostedSwapResult, callback));
+  planes_.clear();
+  return true;
 }
 
 scoped_ptr<gfx::VSyncProvider> GbmSurfaceless::CreateVSyncProvider() {
