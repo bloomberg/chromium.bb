@@ -332,7 +332,8 @@ class SchemaVersionedMySQLConnection(object):
     if self._meta is not None:
       return
     self._meta = MetaData()
-    self._meta.reflect(bind=self._GetEngine())
+    fn = lambda: self._meta.reflect(bind=self._GetEngine())
+    self._RunFunctorWithRetries(fn)
 
   def _Insert(self, table, values):
     """Create and execute a one-row INSERT query.
@@ -524,6 +525,10 @@ class SchemaVersionedMySQLConnection(object):
     f = lambda: engine.execute(query, *args, **kwargs)
     logging.info('Running cidb query on pid %s, repr(query) starts with %s',
                  os.getpid(), repr(query)[:100])
+    return self._RunFunctorWithRetries(f)
+
+  def _RunFunctorWithRetries(self, functor):
+    """Run the given |functor| with correct retry parameters."""
     return retry_stats.RetryWithStats(
         retry_stats.CIDB,
         handler=_IsRetryableException,
@@ -532,7 +537,7 @@ class SchemaVersionedMySQLConnection(object):
         backoff_factor=self.query_retry_args.backoff_factor,
         success_functor=_RetrySuccessHandler,
         raise_first_exception_on_failure=False,
-        functor=f)
+        functor=functor)
 
   def _GetEngine(self):
     """Get the sqlalchemy engine for this process.
