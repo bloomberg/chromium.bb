@@ -63,7 +63,46 @@ enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 // missing child wrapper" step in CSS mandates in
 // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes.
 //
-// TODO(jchaffraix): Explain more of the class structure.
+// LayoutTable assumes a pretty strict structure that is mandated by CSS:
+// (note that this structure in HTML is enforced by the HTML5 Parser).
+//
+//                 LayoutTable
+//                 |        |
+//  LayoutTableSection    LayoutTableCaption
+//                 |
+//      LayoutTableRow
+//                 |
+//     LayoutTableCell
+//
+// This means that we have to generate some anonymous table wrappers in order to
+// satisfy the structure. See again
+// http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes.
+// The anonymous table wrappers are inserted in LayoutTable::addChild,
+// LayoutTableSection::addChild, LayoutTableRow::addChild and
+// LayoutObject::addChild.
+//
+// Note that this yields to interesting issues in the insertion code. The DOM
+// code is unaware of the anonymous LayoutObjects and thus can insert
+// LayoutObjects into a different part of the layout tree. An example is:
+//
+// <!DOCTYPE html>
+// <style>
+// tablerow { display: table-row; }
+// tablecell { display: table-cell; border: 5px solid purple; }
+// </style>
+// <tablerow id="firstRow">
+//     <tablecell>Short first row.</tablecell>
+// </tablerow>
+// <tablecell id="cell">Long second row, shows the table structure.</tablecell>
+//
+// The page generates a single anonymous table (LayoutTable) and table row group
+// (LayoutTableSection) to wrap the <tablerow> (#firstRow) and an anonymous
+// table row (LayoutTableRow) for the second <tablecell>.
+// It is possible for JavaScript to insert a new element between these 2
+// <tablecell> (using Node.insertBefore), requiring us to split the anonymous
+// table (or the anonymous table row group) in 2. Also note that even
+// though the second <tablecell> and <tablerow> are siblings in the DOM tree,
+// they are not in the layout tree.
 class CORE_EXPORT LayoutTable final : public LayoutBlock {
 public:
     explicit LayoutTable(Element*);

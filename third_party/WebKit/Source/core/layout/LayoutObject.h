@@ -119,12 +119,16 @@ const int showTreeCharacterOffset = 39;
 // LayoutObject is the base class for all layout tree objects.
 //
 // LayoutObjects form a tree structure that is a close mapping of the DOM tree.
-// The root of the LayoutObject tree is the LayoutView, which is the LayoutObject associated
-// with the Document.
+// The root of the LayoutObject tree is the LayoutView, which is
+// the LayoutObject associated with the Document.
 //
-// Some LayoutObjects don't have an associated Node and are called "anonymous" (see the constructor
-// below). Anonymous LayoutObjects exists for several purposes but are usually required by CSS. A
-// good example is anonymous table parts (http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes).
+// Some LayoutObjects don't have an associated Node and are called "anonymous"
+// (see the constructor below). Anonymous LayoutObjects exist for several
+// purposes but are usually required by CSS. A good example is anonymous table
+// parts (see LayoutTable for the expected structure). Anonymous LayoutObjects
+// are generated when a new child is added to the tree in addChild(). See the
+// function for some important information on this.
+//
 // Also some Node don't have an associated LayoutObjects e.g. if display: none is set. For more
 // detail, see LayoutObject::createObject that creates the right LayoutObject based on the style.
 //
@@ -291,6 +295,31 @@ public:
     //////////////////////////////////////////
     virtual bool canHaveChildren() const { return virtualChildren(); }
     virtual bool isChildAllowed(LayoutObject*, const ComputedStyle&) const { return true; }
+
+    // This function is called whenever a child is inserted under |this|.
+    //
+    // The main purpose of this function is to generate a consistent layout
+    // tree, which means generating the missing anonymous objects. Most of the
+    // time there'll be no anonymous objects to generate.
+    //
+    // The following invariants are true on the input:
+    // - |newChild->node()| is a child of |this->node()|, if |this| is not
+    //   anonymous. If |this| is anonymous, the invariant holds with the
+    //   enclosing non-anonymous LayoutObject.
+    // - |beforeChild->node()| (if |beforeChild| is provided and not anonymous)
+    //   is a sibling of |newChild->node()| (if |newChild| is not anonymous).
+    //
+    // The reason for these invariants is that insertions are performed on the
+    // DOM tree. Because the layout tree may insert extra anonymous renderers,
+    // the previous invariants are only guaranteed for the DOM tree. In
+    // particular, |beforeChild| may not be a direct child when it's wrapped in
+    // anonymous wrappers.
+    //
+    // Classes inserting anonymous LayoutObjects in the tree are expected to
+    // check for the anonymous wrapper case with:
+    //                    beforeChild->parent() != this
+    // See LayoutTable::addChild and LayoutBlock::addChild.
+    // TODO(jchaffraix): |newChild| cannot be nullptr and should be a reference.
     virtual void addChild(LayoutObject* newChild, LayoutObject* beforeChild = nullptr);
     virtual void addChildIgnoringContinuation(LayoutObject* newChild, LayoutObject* beforeChild = nullptr) { return addChild(newChild, beforeChild); }
     virtual void removeChild(LayoutObject*);
