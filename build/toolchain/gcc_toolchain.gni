@@ -4,6 +4,8 @@
 
 import("//build/config/nacl/config.gni")
 import("//build/config/sanitizers/sanitizers.gni")
+import("//build/toolchain/ccache.gni")
+import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
 # This value will be inherited in the toolchain below.
@@ -73,6 +75,12 @@ concurrent_links = exec_script("get_concurrent_links.py", [], "value")
 #      default setting.
 #  - is_nacl_glibc
 #      Whether NaCl code is built using Glibc instead of Newlib.
+#  - use_ccache
+#      Override the global use_ccache setting, useful to opt-out of ccache in
+#      a particular toolchain by setting use_ccache = false in it.
+#  - use_goma
+#      Override the global use_goma setting, useful to opt-out of goma in a
+#      particular toolchain by setting use_gome = false in it.
 template("gcc_toolchain") {
   toolchain(target_name) {
     assert(defined(invoker.cc), "gcc_toolchain() must specify a \"cc\" value")
@@ -84,6 +92,21 @@ template("gcc_toolchain") {
     assert(defined(invoker.toolchain_os),
            "gcc_toolchain() must specify a \"toolchain_os\"")
 
+    if (defined(invoker.use_ccache)) {
+      use_ccache = invoker.use_ccache
+    }
+    if (defined(invoker.use_goma)) {
+      use_goma = invoker.use_goma
+    }
+    if (use_goma) {
+      assert(!use_ccache, "Goma and ccache can't be used together.")
+      compiler_prefix = "$goma_dir/gomacc "
+    } else if (use_ccache) {
+      compiler_prefix = "ccache "
+    } else {
+      compiler_prefix = ""
+    }
+
     # This define changes when the toolchain changes, forcing a rebuild.
     # Nothing should ever use this define.
     if (defined(invoker.rebuild_define)) {
@@ -92,11 +115,8 @@ template("gcc_toolchain") {
       rebuild_string = ""
     }
 
-    # We can't do string interpolation ($ in strings) on things with dots in
-    # them. To allow us to use $cc below, for example, we create copies of
-    # these values in our scope.
-    cc = invoker.cc
-    cxx = invoker.cxx
+    cc = compiler_prefix + invoker.cc
+    cxx = compiler_prefix + invoker.cxx
     ar = invoker.ar
     ld = invoker.ld
     if (defined(invoker.readelf)) {

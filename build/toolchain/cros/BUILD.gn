@@ -31,4 +31,6 @@ gcc_toolchain("target") {
   toolchain_cpu = "${target_cpu}"
   toolchain_os = "linux"
   is_clang = is_clang
+  use_ccache = false
+  use_goma = false
 }
