@@ -275,17 +275,10 @@
       'common/media_galleries/picasa_types.h',
       'common/media_galleries/pmp_constants.h',
     ],
-    'chrome_common_networking_private_sources_openssl' : [
+    'chrome_common_networking_private_sources' : [
       'common/extensions/api/networking_private/networking_private_crypto.cc',
       'common/extensions/api/networking_private/networking_private_crypto.h',
-      'common/extensions/api/networking_private/networking_private_crypto_openssl.cc',
     ],
-    'chrome_common_networking_private_sources_nss' : [
-      'common/extensions/api/networking_private/networking_private_crypto.cc',
-      'common/extensions/api/networking_private/networking_private_crypto.h',
-      'common/extensions/api/networking_private/networking_private_crypto_nss.cc',
-    ],
-
     'chrome_common_mac_sources': [
       'common/media_galleries/iphoto_library.cc',
       'common/media_galleries/iphoto_library.h',
@@ -382,14 +375,11 @@
         ['OS=="win" or OS=="mac"', {
           'sources': [ '<@(chrome_common_win_mac_sources)' ],
         }],
-        ['(OS=="win" or OS=="mac" or chromeos==1) and use_openssl==1', {
-          'sources': [ '<@(chrome_common_networking_private_sources_openssl)' ],
+        ['OS=="win" or OS=="mac" or chromeos==1', {
+          'sources': [ '<@(chrome_common_networking_private_sources)' ],
           'dependencies': [
             '../third_party/boringssl/boringssl.gyp:boringssl',
           ],
-        }],
-        ['(OS=="win" or OS=="mac" or chromeos==1) and use_openssl!=1', {
-          'sources': [ '<@(chrome_common_networking_private_sources_nss)' ],
         }],
         ['OS=="mac"', {
           'sources': [ '<@(chrome_common_mac_sources)' ],
