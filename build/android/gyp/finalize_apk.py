@@ -65,7 +65,9 @@ def AlignApk(zipalign_path, unaligned_path, final_path):
   build_utils.CheckOutput(align_cmd)
 
 
-def main():
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
+
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
@@ -86,14 +88,27 @@ def main():
 
   options, _ = parser.parse_args()
 
-  FinalizeApk(options)
+  input_paths = [
+    options.unsigned_apk_path,
+    options.key_path,
+  ]
 
-  if options.depfile:
-    build_utils.WriteDepfile(
-        options.depfile, build_utils.GetPythonDependencies())
+  if options.load_library_from_zip:
+    input_paths.append(options.rezip_apk_jar_path)
 
-  if options.stamp:
-    build_utils.Touch(options.stamp)
+  input_strings = [
+    options.load_library_from_zip,
+    options.key_name,
+    options.key_passwd,
+  ]
+
+  build_utils.CallAndWriteDepfileIfStale(
+      lambda: FinalizeApk(options),
+      options,
+      record_path=options.unsigned_apk_path + '.finalize.md5.stamp',
+      input_paths=input_paths,
+      input_strings=input_strings,
+      output_paths=[options.final_apk_path])
 
 
 def FinalizeApk(options):
@@ -129,4 +144,4 @@ def FinalizeApk(options):
 
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))
