@@ -17,6 +17,7 @@ import optparse
 import os
 import re
 import shutil
+import sys
 import zipfile
 
 from util import build_utils
@@ -71,7 +72,7 @@ DENSITY_SPLITS = {
 }
 
 
-def ParseArgs():
+def _ParseArgs(args):
   """Parses command line options.
 
   Returns:
@@ -99,6 +100,7 @@ def ParseArgs():
       action='store_true',
       help='Make a resource package that can be loaded as shared library')
   parser.add_option('--resource-zips',
+                    default='[]',
                     help='zip files containing resources to be packaged')
   parser.add_option('--asset-dir',
                     help='directories containing assets to be packaged')
@@ -109,14 +111,15 @@ def ParseArgs():
       action='store_true',
       help='Enables density splits')
   parser.add_option('--language-splits',
+                    default='[]',
                     help='GYP list of languages to create splits for')
 
   parser.add_option('--apk-path',
                     help='Path to output (partial) apk.')
 
-  (options, args) = parser.parse_args()
+  options, positional_args = parser.parse_args(args)
 
-  if args:
+  if positional_args:
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
@@ -126,6 +129,8 @@ def ParseArgs():
 
   build_utils.CheckOptions(options, parser, required=required_options)
 
+  options.resource_zips = build_utils.ParseGypList(options.resource_zips)
+  options.language_splits = build_utils.ParseGypList(options.language_splits)
   return options
 
 
@@ -176,15 +181,22 @@ def PackageArgsForExtractedZip(d):
   return package_command
 
 
-def RenameDensitySplits(apk_path):
-  """Renames all density splits to have shorter / predictable names."""
+def _GenerateDensitySplitPaths(apk_path):
   for density, config in DENSITY_SPLITS.iteritems():
     src_path = '%s_%s' % (apk_path, '_'.join(config))
     dst_path = '%s_%s' % (apk_path, density)
-    if src_path != dst_path:
-      if os.path.exists(dst_path):
-        os.unlink(dst_path)
-      os.rename(src_path, dst_path)
+    yield src_path, dst_path
+
+
+def _GenerateLanguageSplitOutputPaths(apk_path, languages):
+  for lang in languages:
+    yield '%s_%s' % (apk_path, lang)
+
+
+def RenameDensitySplits(apk_path):
+  """Renames all density splits to have shorter / predictable names."""
+  for src_path, dst_path in _GenerateDensitySplitPaths(apk_path):
+    shutil.move(src_path, dst_path)
 
 
 def CheckForMissedConfigs(apk_path, check_density, languages):
@@ -204,38 +216,52 @@ def CheckForMissedConfigs(apk_path, check_density, languages):
                            'config (trigger=%s)') % (name, trigger.pattern))
 
 
-def main():
-  options = ParseArgs()
-  android_jar = os.path.join(options.android_sdk, 'android.jar')
-  aapt = options.aapt_path
+def _ConstructMostAaptArgs(options):
+  package_command = [
+      options.aapt_path,
+      'package',
+      '--version-code', options.version_code,
+      '--version-name', options.version_name,
+      '-M', options.android_manifest,
+      '--no-crunch',
+      '-f',
+      '--auto-add-overlay',
+      '-I', os.path.join(options.android_sdk, 'android.jar'),
+      '-F', options.apk_path,
+      '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN,
+  ]
 
+  if options.no_compress:
+    for ext in options.no_compress.split(','):
+      package_command += ['-0', ext]
+
+  if options.shared_resources:
+    package_command.append('--shared-lib')
+
+  if options.app_as_shared_lib:
+    package_command.append('--app-as-shared-lib')
+
+  if options.asset_dir and os.path.exists(options.asset_dir):
+    package_command += ['-A', options.asset_dir]
+
+  if options.create_density_splits:
+    for config in DENSITY_SPLITS.itervalues():
+      package_command.extend(('--split', ','.join(config)))
+
+  if options.language_splits:
+    for lang in options.language_splits:
+      package_command.extend(('--split', lang))
+
+  if 'Debug' in options.configuration_name:
+    package_command += ['--debug-mode']
+
+  return package_command
+
+
+def _OnStaleMd5(package_command, options):
   with build_utils.TempDir() as temp_dir:
-    package_command = [aapt,
-                       'package',
-                       '--version-code', options.version_code,
-                       '--version-name', options.version_name,
-                       '-M', options.android_manifest,
-                       '--no-crunch',
-                       '-f',
-                       '--auto-add-overlay',
-                       '-I', android_jar,
-                       '-F', options.apk_path,
-                       '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN,
-                       ]
-
-    if options.no_compress:
-      for ext in options.no_compress.split(','):
-        package_command += ['-0', ext]
-    if options.shared_resources:
-      package_command.append('--shared-lib')
-    if options.app_as_shared_lib:
-      package_command.append('--app-as-shared-lib')
-
-    if options.asset_dir and os.path.exists(options.asset_dir):
-      package_command += ['-A', options.asset_dir]
-
     if options.resource_zips:
-      dep_zips = build_utils.ParseGypList(options.resource_zips)
+      dep_zips = options.resource_zips
       for z in dep_zips:
         subdir = os.path.join(temp_dir, os.path.basename(z))
         if os.path.exists(subdir):
@@ -243,34 +269,44 @@ def main():
         build_utils.ExtractAll(z, path=subdir)
         package_command += PackageArgsForExtractedZip(subdir)
 
-    if options.create_density_splits:
-      for config in DENSITY_SPLITS.itervalues():
-        package_command.extend(('--split', ','.join(config)))
-
-    language_splits = None
-    if options.language_splits:
-      language_splits = build_utils.ParseGypList(options.language_splits)
-      for lang in language_splits:
-        package_command.extend(('--split', lang))
-
-    if 'Debug' in options.configuration_name:
-      package_command += ['--debug-mode']
-
     build_utils.CheckOutput(
         package_command, print_stdout=False, print_stderr=False)
 
-    if options.create_density_splits or language_splits:
-      CheckForMissedConfigs(
-          options.apk_path, options.create_density_splits, language_splits)
+    if options.create_density_splits or options.language_splits:
+      CheckForMissedConfigs(options.apk_path, options.create_density_splits,
+                            options.language_splits)
 
     if options.create_density_splits:
       RenameDensitySplits(options.apk_path)
 
-    if options.depfile:
-      build_utils.WriteDepfile(
-          options.depfile,
-          build_utils.GetPythonDependencies())
+
+def main(args):
+  args = build_utils.ExpandFileArgs(args)
+  options = _ParseArgs(args)
+
+  package_command = _ConstructMostAaptArgs(options)
+
+  output_paths = [ options.apk_path ]
+
+  if options.create_density_splits:
+    for _, dst_path in _GenerateDensitySplitPaths(options.apk_path):
+      output_paths.append(dst_path)
+  output_paths.extend(
+      _GenerateLanguageSplitOutputPaths(options.apk_path,
+                                        options.language_splits))
+
+  input_paths = [ options.android_manifest ] + options.resource_zips
+  if options.asset_dir and os.path.exists(options.asset_dir):
+    for root, _, filenames in os.walk(options.asset_dir):
+      input_paths.extend(os.path.join(root, f) for f in filenames)
+
+  build_utils.CallAndWriteDepfileIfStale(
+      lambda: _OnStaleMd5(package_command, options),
+      options,
+      input_paths=input_paths,
+      input_strings=package_command,
+      output_paths=output_paths)
 
 
 if __name__ == '__main__':
-  main()
+  main(sys.argv[1:])
