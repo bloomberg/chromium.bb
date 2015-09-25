@@ -95,7 +95,24 @@ weston_SOURCES =					\
 	shared/timespec-util.h				\
 	shared/zalloc.h					\
 	shared/platform.h				\
-	src/weston-egl-ext.h
+	src/weston-egl-ext.h				\
+	src/systemd-notify.h
+
+if SYSTEMD_NOTIFY_SUPPORT
+module_LTLIBRARIES += systemd-notify.la
+systemd_notify_la_LDFLAGS = -module -avoid-version
+systemd_notify_la_LIBADD = $(SYSTEMD_DAEMON_LIBS)
+systemd_notify_la_CFLAGS =			\
+	$(SYSTEMD_DAEMON_LIBS)			\
+	$(PIXMAN_CFLAGS)			\
+	$(AM_CFLAGS)
+systemd_notify_la_SOURCES =			\
+	src/systemd-notify.c			\
+	src/systemd-notify.h			\
+	shared/helpers.h			\
+	shared/zalloc.h				\
+	compositor.h
+endif
 
 nodist_weston_SOURCES =					\
 	protocol/screenshooter-protocol.c		\

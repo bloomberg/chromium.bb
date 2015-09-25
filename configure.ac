@@ -565,6 +565,18 @@ if test x$wayland_scanner = x; then
 	wayland_scanner=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
 fi
 
+AC_ARG_ENABLE(systemd_notify,
+              AS_HELP_STRING([--enable-systemd-notify],
+                             [Enables systemd notifications to
+                              notify systemd about weston state
+                              and update watchdog.]),,
+              enable_systemd_notify=no)
+AM_CONDITIONAL(SYSTEMD_NOTIFY_SUPPORT, test x$enable_systemd_notify = xyes)
+if test "x$enable_systemd_notify" = "xyes"; then
+  AC_DEFINE([SYSTEMD_NOTIFY_SUPPORT], [1], [Build the systemd sd_notify support])
+  PKG_CHECK_MODULES(SYSTEMD_DAEMON, [libsystemd])
+fi
+
 AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
 
 AM_CONDITIONAL([HAVE_GIT_REPO], [test -f $srcdir/.git/logs/HEAD])
@@ -590,6 +602,7 @@ AC_MSG_RESULT([
 
 	weston-launch utility		${enable_weston_launch}
 	systemd-login support		${have_systemd_login}
+	systemd notify support		${enable_systemd_notify}
 
 	DRM Compositor			${enable_drm_compositor}
 	X11 Compositor			${enable_x11_compositor}

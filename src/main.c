@@ -46,6 +46,7 @@
 #include "../shared/helpers.h"
 #include "git-version.h"
 #include "version.h"
+#include "systemd-notify.h"
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
