@@ -95,6 +95,8 @@ scoped_ptr<Authenticator> RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
 
 void RemoteDeviceLifeCycleImpl::TransitionToState(
     RemoteDeviceLifeCycle::State new_state) {
+  PA_LOG(INFO) << "Life cycle transition: " << static_cast<int>(state_)
+               << " => " << static_cast<int>(new_state);
   RemoteDeviceLifeCycle::State old_state = state_;
   state_ = new_state;
   FOR_EACH_OBSERVER(Observer, observers_,

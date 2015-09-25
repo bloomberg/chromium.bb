@@ -16,6 +16,7 @@
 #include "components/proximity_auth/logging/log_buffer.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/proximity_auth_client.h"
+#include "components/proximity_auth/remote_device_life_cycle.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace base {
@@ -28,14 +29,8 @@ class ExternalDeviceInfo;
 
 namespace proximity_auth {
 
-class Authenticator;
-class BluetoothConnection;
-class BluetoothThrottler;
-class BluetoothLowEnergyDeviceWhitelist;
-class Connection;
-class ConnectionFinder;
-class MessengerImpl;
 class ReachablePhoneFlow;
+class RemoteDeviceLifeCycle;
 struct RemoteStatusUpdate;
 class SecureContext;
 
@@ -44,7 +39,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
                                   public LogBuffer::Observer,
                                   public CryptAuthEnrollmentManager::Observer,
                                   public CryptAuthDeviceManager::Observer,
-                                  public ConnectionObserver,
+                                  public RemoteDeviceLifeCycle::Observer,
                                   public MessengerObserver {
  public:
   // |client_| is not owned and must outlive this instance.
@@ -105,26 +100,6 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void OnPSKDerived(const cryptauth::ExternalDeviceInfo& unlock_key,
                     const std::string& persistent_symmetric_key);
 
-  // Tries to create a classic Bluetooth connection to the unlock key.
-  void FindBluetoothClassicConnection(const RemoteDevice& remote_device);
-
-  // Tries to create a Bluetooth Low Energy connection to the unlock key.
-  void FindBluetoothLowEnergyConnection(const RemoteDevice& remote_device);
-
-  // Called when |connection_finder_| finds a connection.
-  void OnConnectionFound(scoped_ptr<Connection> connection);
-
-  // Callback when |authenticator_| completes authentication.
-  void OnAuthenticationResult(Authenticator::Result result,
-                              scoped_ptr<SecureContext> secure_context);
-
-  // Creates the client which parses status updates.
-  void CreateStatusUpdateMessenger();
-
-  // Returns the active connection, whether it's owned the |this| instance or
-  // |client_|.
-  Connection* GetConnection();
-
   // Converts an ExternalDeviceInfo proto to a JSON dictionary used in
   // JavaScript.
   scoped_ptr<base::DictionaryValue> ExternalDeviceInfoToDictionary(
@@ -134,12 +109,12 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   scoped_ptr<base::DictionaryValue> IneligibleDeviceToDictionary(
       const cryptauth::IneligibleDevice& ineligible_device);
 
-  // ConnectionObserver:
-  void OnConnectionStatusChanged(Connection* connection,
-                                 Connection::Status old_status,
-                                 Connection::Status new_status) override;
-  void OnMessageReceived(const Connection& connection,
-                         const WireMessage& message) override;
+  // Cleans up the connection to the selected remote device.
+  void CleanUpRemoteDeviceLifeCycle();
+
+  // RemoteDeviceLifeCycle::Observer:
+  void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
+                               RemoteDeviceLifeCycle::State new_state) override;
 
   // MessengerObserver:
   void OnRemoteStatusUpdate(const RemoteStatusUpdate& status_update) override;
@@ -172,14 +147,8 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
   scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
-  scoped_ptr<BluetoothLowEnergyDeviceWhitelist> ble_device_whitelist_;
   RemoteDevice selected_remote_device_;
-  scoped_ptr<BluetoothThrottler> bluetooth_throttler_;
-  scoped_ptr<ConnectionFinder> connection_finder_;
-  scoped_ptr<Connection> connection_;
-  scoped_ptr<Authenticator> authenticator_;
-  scoped_ptr<SecureContext> secure_context_;
-  scoped_ptr<MessengerImpl> messenger_;
+  scoped_ptr<RemoteDeviceLifeCycle> life_cycle_;
   scoped_ptr<RemoteStatusUpdate> last_remote_status_update_;
 
   base::WeakPtrFactory<ProximityAuthWebUIHandler> weak_ptr_factory_;

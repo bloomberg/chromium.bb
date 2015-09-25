@@ -40,7 +40,6 @@ void BluetoothConnectionFinder::Find(
   }
 
   DCHECK(start_time_.is_null());
-  PA_LOG(WARNING) << "Finding Bluetooth connection...";
 
   start_time_ = base::TimeTicks::Now();
   connection_callback_ = connection_callback;
