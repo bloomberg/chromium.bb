@@ -415,8 +415,11 @@ def main(args):
                          'If a directory with the same name as the tar.gz '
                          'file already exists, is deleted (to get a '
                          'clean state in case of update.)')
-  parser.add_option('-v', '--verbose', action='store_true',
-                    help='Output extra diagnostic and progress information.')
+  parser.add_option('-v', '--verbose', action='store_true', default=True,
+                    help='DEPRECATED: Defaults to True.  Use --no-verbose '
+                         'to suppress.')
+  parser.add_option('-q', '--quiet', action='store_false', dest='verbose',
+                    help='Suppresses diagnostic and progress information.')
 
   (options, args) = parser.parse_args()
 
