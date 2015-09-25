@@ -23,7 +23,7 @@ using Stream = DevToolsIOContext::Stream;
 Stream::Stream()
     : base::RefCountedDeleteOnMessageLoop<Stream>(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)),
-      handle_(base::IntToString(++s_last_stream_handle)),
+      handle_(base::UintToString(++s_last_stream_handle)),
       had_errors_(false),
       last_read_pos_(0) {}
 

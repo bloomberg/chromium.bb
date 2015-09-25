@@ -237,7 +237,7 @@ TEST_F(NotificationIdGeneratorTest, NumericTagAmbiguity) {
   EXPECT_NE(
       generator()->GenerateForPersistentNotification(
           origin(),
-          base::IntToString(kPersistentNotificationId),
+          base::Int64ToString(kPersistentNotificationId),
           kPersistentNotificationId),
       generator()->GenerateForPersistentNotification(
           origin(), "" /* tag */, kPersistentNotificationId));

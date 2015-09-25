@@ -169,7 +169,7 @@ Response EmulationHandler::SetDeviceMetricsOverride(
   if (optional_scale && (*optional_scale <= 0 || *optional_scale > max_scale)) {
     return Response::InvalidParams(
         "scale must be positive, not greater than " +
-        base::IntToString(max_scale));
+        base::DoubleToString(max_scale));
   }
 
   blink::WebDeviceEmulationParams params;

@@ -78,7 +78,7 @@ scoped_refptr<AudioChunk> AudioEncoder::GetEncodedDataAndClear() {
 
 std::string AudioEncoder::GetMimeType() {
   return std::string(kContentTypeFLAC) +
-      base::IntToString(FLAC__stream_encoder_get_sample_rate(encoder_));
+      base::UintToString(FLAC__stream_encoder_get_sample_rate(encoder_));
 }
 
 int AudioEncoder::GetBitsPerSample() {

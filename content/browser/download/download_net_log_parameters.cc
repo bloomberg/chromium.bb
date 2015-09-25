@@ -49,7 +49,7 @@ scoped_ptr<base::Value> ItemActivatedNetLogCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   dict->SetString("type", download_type_names[download_type]);
-  dict->SetString("id", base::Int64ToString(download_item->GetId()));
+  dict->SetString("id", base::UintToString(download_item->GetId()));
   dict->SetString("original_url", download_item->GetOriginalUrl().spec());
   dict->SetString("final_url", download_item->GetURL().spec());
   dict->SetString("file_name", *file_name);

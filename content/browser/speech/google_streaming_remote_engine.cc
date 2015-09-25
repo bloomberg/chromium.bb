@@ -339,8 +339,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   upstream_args.push_back(
       config_.filter_profanities ? "pFilter=2" : "pFilter=0");
   if (config_.max_hypotheses > 0U) {
-    int max_alternatives = std::min(kMaxMaxAlternatives,
-                                    config_.max_hypotheses);
+    uint32 max_alternatives =
+        std::min(kMaxMaxAlternatives, config_.max_hypotheses);
     upstream_args.push_back("maxAlternatives=" +
                             base::UintToString(max_alternatives));
   }

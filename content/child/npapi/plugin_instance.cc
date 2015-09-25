@@ -533,7 +533,7 @@ void PluginInstance::RequestRead(NPStream* stream, NPByteRange* range_list) {
     range_info += base::IntToString(range_list->offset);
     range_info.push_back('-');
     range_info +=
-        base::IntToString(range_list->offset + range_list->length - 1);
+        base::UintToString(range_list->offset + range_list->length - 1);
     range_list = range_list->next;
     if (range_list)
       range_info.push_back(',');

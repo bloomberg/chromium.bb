@@ -496,7 +496,7 @@ void PeerConnectionTracker::TrackAddIceCandidate(
   string value =
       "sdpMid: " +
       base::UTF16ToUTF8(base::StringPiece16(candidate.sdpMid())) + ", " +
-      "sdpMLineIndex: " + base::IntToString(candidate.sdpMLineIndex()) +
+      "sdpMLineIndex: " + base::UintToString(candidate.sdpMLineIndex()) +
       ", " + "candidate: " +
       base::UTF16ToUTF8(base::StringPiece16(candidate.candidate()));
 
