@@ -218,7 +218,7 @@ std::string SocketPermissionEntry::GetHostPatternAsString() const {
   if (pattern_.port == kWildcardPortNumber)
     result.append(1, kColon).append(kWildcard);
   else
-    result.append(1, kColon).append(base::IntToString(pattern_.port));
+    result.append(1, kColon).append(base::UintToString(pattern_.port));
 
   return result;
 }

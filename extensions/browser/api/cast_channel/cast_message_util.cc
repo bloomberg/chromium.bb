@@ -122,9 +122,9 @@ std::string AuthMessageToString(const DeviceAuthMessage& message) {
   }
   if (message.has_response()) {
     out += "response: {signature: (";
-    out += base::UintToString(message.response().signature().length());
+    out += base::SizeTToString(message.response().signature().length());
     out += " bytes), certificate: (";
-    out += base::UintToString(
+    out += base::SizeTToString(
         message.response().client_auth_certificate().length());
     out += " bytes)}";
   }

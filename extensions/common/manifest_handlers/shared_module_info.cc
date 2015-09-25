@@ -146,7 +146,7 @@ bool SharedModuleInfo::Parse(const Extension* extension,
         if (!whitelist->GetString(i, &extension_id) ||
             !crx_file::id_util::IdIsValid(extension_id)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidExportWhitelistString, base::IntToString(i));
+              errors::kInvalidExportWhitelistString, base::SizeTToString(i));
           return false;
         }
         export_whitelist_.insert(extension_id);
@@ -170,8 +170,8 @@ bool SharedModuleInfo::Parse(const Extension* extension,
       imports_.push_back(ImportInfo());
       if (!import_entry->GetString(keys::kId, &extension_id) ||
           !crx_file::id_util::IdIsValid(extension_id)) {
-        *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidImportId, base::IntToString(i));
+        *error = ErrorUtils::FormatErrorMessageUTF16(errors::kInvalidImportId,
+                                                     base::SizeTToString(i));
         return false;
       }
       imports_.back().extension_id = extension_id;
@@ -179,14 +179,14 @@ bool SharedModuleInfo::Parse(const Extension* extension,
         std::string min_version;
         if (!import_entry->GetString(keys::kMinimumVersion, &min_version)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidImportVersion, base::IntToString(i));
+              errors::kInvalidImportVersion, base::SizeTToString(i));
           return false;
         }
         imports_.back().minimum_version = min_version;
         Version v(min_version);
         if (!v.IsValid()) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidImportVersion, base::IntToString(i));
+              errors::kInvalidImportVersion, base::SizeTToString(i));
           return false;
         }
       }

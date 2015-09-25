@@ -71,7 +71,7 @@ bool ManifestPermissionSet::ParseFromJSON(
       if (!permissions->GetDictionary(i, &dict) || dict->size() != 1) {
         if (error) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidPermission, base::IntToString(i));
+              errors::kInvalidPermission, base::SizeTToString(i));
           return false;
         }
         LOG(WARNING) << "Permission is not a string or single key dict.";

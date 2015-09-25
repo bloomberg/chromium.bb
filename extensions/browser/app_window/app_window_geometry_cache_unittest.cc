@@ -410,7 +410,7 @@ TEST_F(AppWindowGeometryCacheTest, MaxWindows) {
   gfx::Rect bounds(4, 5, 31, 43);
   gfx::Rect screen_bounds(0, 0, 1600, 900);
   for (size_t i = 0; i < AppWindowGeometryCache::kMaxCachedWindows + 1; ++i) {
-    std::string window_id = "window_" + base::IntToString(i);
+    std::string window_id = "window_" + base::SizeTToString(i);
     cache_->SaveGeometry(
         extension_id, window_id, bounds, screen_bounds, ui::SHOW_STATE_NORMAL);
   }
@@ -419,7 +419,7 @@ TEST_F(AppWindowGeometryCacheTest, MaxWindows) {
   EXPECT_FALSE(cache_->GetGeometry(extension_id, "window_0", NULL, NULL, NULL));
   // All other windows should still exist.
   for (size_t i = 1; i < AppWindowGeometryCache::kMaxCachedWindows + 1; ++i) {
-    std::string window_id = "window_" + base::IntToString(i);
+    std::string window_id = "window_" + base::SizeTToString(i);
     EXPECT_TRUE(cache_->GetGeometry(extension_id, window_id, NULL, NULL, NULL));
   }
 }

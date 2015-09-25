@@ -118,14 +118,14 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
     const base::DictionaryValue* partition = NULL;
     if (!partition_list->GetDictionary(i, &partition)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidWebviewPartition, base::IntToString(i));
+          errors::kInvalidWebviewPartition, base::SizeTToString(i));
       return false;
     }
 
     std::string partition_pattern;
     if (!partition->GetString(keys::kWebviewName, &partition_pattern)) {
       *error = ErrorUtils::FormatErrorMessageUTF16(
-          errors::kInvalidWebviewPartitionName, base::IntToString(i));
+          errors::kInvalidWebviewPartitionName, base::SizeTToString(i));
       return false;
     }
 
@@ -151,7 +151,7 @@ bool WebviewHandler::Parse(Extension* extension, base::string16* error) {
       std::string relative_path;
       if (!url_list->GetString(i, &relative_path)) {
         *error = ErrorUtils::FormatErrorMessageUTF16(
-            errors::kInvalidWebviewAccessibleResource, base::IntToString(i));
+            errors::kInvalidWebviewAccessibleResource, base::SizeTToString(i));
         return false;
       }
       URLPattern pattern(URLPattern::SCHEME_EXTENSION,
