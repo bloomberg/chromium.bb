@@ -89,7 +89,7 @@ IndexedDBExperimental status=experimental
 InputDeviceCapabilities status=stable
 InputModeAttribute status=experimental
 KeyboardEventCode status=experimental
-KeyboardEventKey status=test
+KeyboardEventKey status=experimental
 LangAttributeAwareFormControlUI
 LinkPreconnect status=stable
 LinkPreload status=experimental
