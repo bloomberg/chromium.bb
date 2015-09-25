@@ -41,6 +41,7 @@
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
+    'gyp_official': ['gyp', 'official'],
     'gyp_official_goma': ['gyp', 'official', 'goma'],
     'gyp_official_goma_chromeos': ['gyp', 'official', 'goma', 'chromeos'],
     'gyp_official_goma_x86': ['gyp', 'official', 'goma', 'x86'],
@@ -315,6 +316,9 @@
   #
   # TODO(crbug.com/481692): Add in remaining bots on the waterfalls.
   'masters': {
+    'chrome': {
+      'precise64': 'gyp_official',
+    },
     'chromium.chrome': {
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
       'Google Chrome Linux': 'gyp_official_goma_x86',
