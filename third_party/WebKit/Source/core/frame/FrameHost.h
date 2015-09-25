@@ -105,7 +105,6 @@ public:
 
     WebFrameHostScheduler* frameHostScheduler() const { return m_frameHostScheduler.get(); }
 
-
 private:
     explicit FrameHost(Page&);
 
@@ -115,7 +114,7 @@ private:
     const OwnPtrWillBeMember<VisualViewport> m_visualViewport;
     const OwnPtrWillBeMember<EventHandlerRegistry> m_eventHandlerRegistry;
     const OwnPtrWillBeMember<ConsoleMessageStorage> m_consoleMessageStorage;
-    const OwnPtrWillBeMember<WebFrameHostScheduler> m_frameHostScheduler;
+    const OwnPtr<WebFrameHostScheduler> m_frameHostScheduler;
 
     AtomicString m_overrideEncoding;
     int m_subframeCount;
