@@ -232,6 +232,13 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
       "spellCheckListTitle", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_LIST_TITLE);
   html_source->AddLocalizedString(
       "manageSpellCheck", IDS_SETTINGS_LANGUAGES_SPELL_CHECK_MANAGE);
+  html_source->AddLocalizedString(
+      "manageLanguagesPageTitle",
+      IDS_SETTINGS_LANGUAGES_MANAGE_LANGUAGES_TITLE);
+  html_source->AddLocalizedString(
+      "allLanguages", IDS_SETTINGS_LANGUAGES_ALL_LANGUAGES);
+  html_source->AddLocalizedString(
+      "enabledLanguages", IDS_SETTINGS_LANGUAGES_ENABLED_LANGUAGES);
 }
 
 void AddOnStartupStrings(content::WebUIDataSource* html_source) {

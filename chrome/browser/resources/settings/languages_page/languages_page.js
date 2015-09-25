@@ -9,10 +9,21 @@
  * @group Chrome Settings Elements
  * @element cr-settings-languages-page
  */
+(function() {
+'use strict';
+
 Polymer({
   is: 'cr-settings-languages-page',
 
   properties: {
+    /**
+     * The current active route.
+     */
+    currentRoute: {
+      type: Object,
+      notify: true,
+    },
+
     /**
      * Preferences state.
      */
@@ -21,102 +32,66 @@ Polymer({
       notify: true,
     },
 
-    dummyLanguages_: {
-      type: Array,
-      value: function() {
-        return [{code: 'en', displayName: 'English', supportsSpellcheck: true},
-                {code: 'es', displayName: 'Spanish', supportsSpellcheck: true},
-                {code: 'ru', displayName: 'Russian', supportsSpellcheck: true},
-                {code: 'ar', displayName: 'Arabic'}];
-      },
-    },
-
-    dummyInputMethods_: {
-      type: Array,
-      value: function() {
-        return [{id: 'us', name: 'US Keyboard'},
-                {id: 'fr', name: 'French Keyboard'}];
-      },
-    },
-
-    dummyAppLocale_: {
-      type: String,
-      value: 'en',
-    },
-
-    dummyCurrentInputMethod_: {
-      type: String,
-      value: 'us',
-    },
-
-    dummySpellcheckDictionaries_: {
-      type: Array,
-      value: function() {
-        return ['en', 'es', 'ru'];
-      },
-    },
-
-    route: String,
-
     /**
-     * Whether the page is a subpage.
+     * Read-only reference to the languages model provided by the
+     * 'cr-settings-languages' instance.
+     * @type {LanguagesModel|undefined}
      */
-    subpage: {
-      type: Boolean,
-      value: false,
-      readOnly: true
-    },
-
-    /**
-     * ID of the page.
-     */
-    PAGE_ID: {
-      type: String,
-      value: 'languages',
-      readOnly: true
-    },
-
-    /**
-     * Title for the page header and navigation menu.
-     */
-    pageTitle: {
-      type: String,
-      value: function() {
-        return loadTimeData.getString('languagesPageTitle');
-      },
-    },
-
-    /**
-     * Name of the 'iron-icon' to be shown in the settings-page-header.
-     */
-    icon: {
-      type: String,
-      value: 'language',
-      readOnly: true
+    languages: {
+      type: Object,
+      notify: true,
     },
   },
 
   /**
-   * @param {!Array<!Language>} languages
-   * @return {!Array<!Language>} The languages from |languages| which support
-   *     spell check.
+   * Handler for clicking a language on the main page, which selects the
+   * language as the prospective UI language on Chrome OS and Windows.
+   * @param {!{model: !{item: !LanguageInfo}}} e
+   */
+  onLanguageTap_: function(e) {
+    // Set the prospective UI language. This won't take effect until a restart.
+    if (e.model.item.language.supportsUI)
+      this.$.languages.setUILanguage(e.model.item.language.code);
+  },
+
+  /**
+   * Handler for enabling or disabling spell check.
+   * @param {!{target: Element, model: !{item: !LanguageInfo}}} e
+   */
+  onSpellCheckChange_: function(e) {
+    this.$.languages.toggleSpellCheck(e.model.item.language.code,
+                                      e.target.checked);
+  },
+
+  /** @private */
+  onBackTap_: function() {
+    this.$.pages.back();
+  },
+
+  /**
+   * Opens the Manage Languages page.
    * @private
    */
-  getSpellcheckLanguages_: function(languages) {
-    return languages.filter(function(language) {
-      return language.supportsSpellcheck;
-    });
+  onManageLanguagesTap_: function() {
+    this.$.pages.setSubpageChain(['manage-languages']);
+    // HACK(michaelpg): This is necessary to show the list when navigating to
+    // the sub-page. Remove when PolymerElements/neon-animation#60 is fixed.
+    /** @type {{_render: function()}} */(this.$.manageLanguagesPage.$.list)
+        ._render();
   },
 
   /**
    * @param {string} languageCode The language code identifying a language.
-   * @param {string} dummyAppLocale A fake app locale.
+   * @param {string} appLocale The prospective UI language.
    * @return {boolean} True if the given language matches the app locale pref
-   *     (which may be different from the actual app locale if it was changed).
+   *     (which may be different from the actual app locale).
    * @private
    */
-  isUILanguage_: function(languageCode, dummyAppLocale) {
-    return languageCode == dummyAppLocale;
+  isUILanguage_: function(languageCode, appLocale) {
+    // Check the current language if the locale pref hasn't been set.
+    if (!appLocale)
+      appLocale = navigator.language;
+    return languageCode == appLocale;
   },
 
   /**
@@ -129,15 +104,5 @@ Polymer({
     assert(cr.isChromeOS);
     return id == currentId;
   },
-
-  /**
-   * @param {string} languageCode The language code identifying a language.
-   * @param {!Array<string>} spellcheckDictionaries The list of languages
-   *     for which spell check is enabled.
-   * @return {boolean} True if spell check is enabled for the language.
-   * @private
-   */
-  isSpellcheckEnabled_: function(languageCode, spellcheckDictionaries) {
-    return spellcheckDictionaries.indexOf(languageCode) != -1;
-  },
 });
+})();

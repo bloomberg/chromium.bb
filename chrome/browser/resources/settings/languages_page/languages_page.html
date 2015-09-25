@@ -2,63 +2,81 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
+<link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
+<link rel="import" href="languages.html">
+<link rel="import" href="manage_languages_page.html">
 
 <dom-module id="cr-settings-languages-page">
   <link rel="import" type="css"
       href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="languages_page.css">
   <template>
-    <h2 i18n-content="languagesListTitle"></h2>
-    <div class="item-list">
-      <template is="dom-repeat" items="{{dummyLanguages_}}">
-        <paper-item>
-          <div class="flex">[[item.displayName]]</div>
-          <iron-icon icon="done"
-              hidden$="[[
-                  !isUILanguage_(item.code, dummyAppLocale_)]]">
-          </iron-icon>
-          <paper-icon-button icon="settings"></paper-icon-button>
-        </paper-item>
-      </template>
-    </div>
-    <div class="manage">
-      <paper-button i18n-content="manageLanguages"></paper-button>
-    </div>
+    <cr-settings-languages id="languages" languages="{{languages}}">
+    </cr-settings-languages>
+    <cr-settings-animated-pages id="pages" current-route="{{currentRoute}}"
+        section="languages">
+      <neon-animatable id="">
+        <h2 i18n-content="languagesListTitle"></h2>
+        <div class="item-list">
+          <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+            <paper-item on-tap="onLanguageTap_">
+              <div class="flex">[[item.language.displayName]]</div>
+              <iron-icon icon="done"
+                  hidden$="[[!isUILanguage_(item.language.code, prefs.intl.app_locale.value)]]">
+              </iron-icon>
+              <paper-icon-button icon="settings"></paper-icon-button>
+            </paper-item>
+          </template>
+        </div>
+        <div class="manage">
+          <paper-button i18n-content="manageLanguages"
+              on-tap="onManageLanguagesTap_"></paper-button>
+        </div>
 <if expr="chromeos">
-    <h2 i18n-content="inputMethodsListTitle"></h2>
-    <div class="item-list">
-      <template is="dom-repeat" items="{{dummyInputMethods_}}">
-        <paper-item>
-          <div class="flex">[[item.name]]</div>
-          <iron-icon icon="done"
-              hidden$="[[
-                  !isCurrentInputMethod_(item.id, dummyCurrentInputMethod_)]]">
-          </iron-icon>
-          <paper-icon-button icon="settings"></paper-icon-button>
-        </paper-item>
-      </template>
-    </div>
-    <div class="manage">
-      <paper-button i18n-content="manageInputMethods"></paper-button>
-    </div>
+        <h2 i18n-content="inputMethodsListTitle"></h2>
+        <div class="item-list">
+          <template is="dom-repeat" items="{{languages.inputMethods}}">
+            <paper-item>
+              <div class="flex">[[item.name]]</div>
+              <iron-icon icon="done"
+                  hidden$="[[
+                      !isCurrentInputMethod_(item.id, languages.currentInputMethod)]]">
+              </iron-icon>
+              <paper-icon-button icon="settings"></paper-icon-button>
+            </paper-item>
+          </template>
+        </div>
+        <div class="manage">
+          <paper-button i18n-content="manageInputMethods"></paper-button>
+        </div>
 </if>
-    <h2 i18n-content="spellCheckListTitle"></h2>
-    <div class="layout vertical">
-      <template is="dom-repeat"
-          items="{{getSpellcheckLanguages_(dummyLanguages_)}}">
-        <paper-checkbox checked="{{isSpellcheckEnabled_(item.code,
-            dummySpellcheckDictionaries_)}}"
-            >[[item.displayName]]</paper-checkbox>
-      </template>
-    </div>
-    <div class="manage">
-      <paper-button>Custom spelling</paper-button>
-    </div>
+        <h2 i18n-content="spellCheckListTitle"></h2>
+        <div class="layout vertical">
+          <template is="dom-repeat" items="{{languages.enabledLanguages}}">
+            <paper-checkbox hidden="[[!item.language.supportsSpellcheck]]"
+                checked="[[item.state.spellCheckEnabled]]"
+                on-change="onSpellCheckChange_"
+                >[[item.language.displayName]]</paper-checkbox>
+          </template>
+        </div>
+        <div class="manage">
+          <paper-button i18n-content="manageSpellCheck"></paper-button>
+        </div>
+      </neon-animatable>
+      <neon-animatable id="manage-languages">
+        <settings-subheader i18n-values="page-title:manageLanguagesPageTitle">
+        </settings-subheader>
+        <cr-settings-manage-languages-page id="manageLanguagesPage"
+            prefs="{{prefs}}"></cr-settings-manage-languages-page>
+      </neon-animatable>
+    </cr-settings-animated-pages>
   </template>
   <script src="languages_page.js"></script>
 </dom-module>

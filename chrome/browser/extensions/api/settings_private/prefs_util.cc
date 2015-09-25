@@ -73,6 +73,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["homepage"] = settings_private::PrefType::PREF_TYPE_URL;
   (*s_whitelist)["homepage_is_newtabpage"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["intl.app_locale"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["net.network_prediction_options"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["safebrowsing.enabled"] =
@@ -81,12 +83,14 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["search.suggest_enabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)["spellcheck.use_spelling_service"] =
-      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["session.restore_on_startup"] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)["session.startup_urls"] =
       settings_private::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)["spellcheck.dictionaries"] =
+      settings_private::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)["spellcheck.use_spelling_service"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.browsing_history"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["browser.clear_data.download_history"] =
@@ -137,6 +141,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.clock.use_24hour_clock"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)["settings.language.preferred_languages"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)["settings.touchpad.enable_tap_dragging"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["cros.metrics.reportingEnabled"] =
@@ -145,6 +151,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["settings.internet.wake_on_wifi_ssid"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+#else
+  (*s_whitelist)["intl.accept_languages"] =
+      settings_private::PrefType::PREF_TYPE_STRING;
 #endif
 
   return *s_whitelist;

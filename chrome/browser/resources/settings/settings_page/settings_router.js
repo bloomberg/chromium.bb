@@ -146,6 +146,13 @@ Polymer({
       subpage: ['known-networks'],
       subpageTitles: ['internetKnownNetworksPageTitle'],
     },
+    {
+      url: '/languages',
+      page: 'advanced',
+      section: 'languages',
+      subpage: ['manage-languages'],
+      subpageTitles: ['manageLanguagesPageTitle'],
+    },
   ],
 
   /**
