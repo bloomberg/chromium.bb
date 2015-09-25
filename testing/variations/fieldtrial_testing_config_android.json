@@ -119,11 +119,6 @@
             "group_name": "Enabled"
         }
     ],
-    "MenuTrimming": [
-        {
-            "group_name": "Enabled"
-        }
-    ],
     "MobileModerateBinding": [
         {
             "group_name": "Ratio_25_50"
