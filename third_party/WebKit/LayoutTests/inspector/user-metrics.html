@@ -11,7 +11,7 @@ function test()
     InspectorFrontendHost.recordEnumeratedHistogram = function(name, code)
     {
         if (name === "DevTools.ActionTaken")
-            InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics._ActionCodes, code));
+            InspectorTest.addResult("Action taken: " + nameOf(WebInspector.UserMetrics.Action, code));
         else if (name === "DevTools.PanelShown")
             InspectorTest.addResult("Panel shown: " + nameOf(WebInspector.UserMetrics._PanelCodes, code));
     }
@@ -26,9 +26,9 @@ function test()
     }
 
     InspectorTest.addResult("recordActionTaken:");
-    InspectorTest.dump(WebInspector.UserMetrics._ActionCodes);
-    WebInspector.userMetrics.WindowDocked.record();
-    WebInspector.userMetrics.WindowUndocked.record();
+    InspectorTest.dump(WebInspector.UserMetrics.Action);
+    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.WindowDocked);
+    WebInspector.userMetrics.actionTaken(WebInspector.UserMetrics.Action.WindowUndocked);
 
     InspectorTest.addResult("\nrecordPanelShown:");
     InspectorTest.dump(WebInspector.UserMetrics._PanelCodes);
