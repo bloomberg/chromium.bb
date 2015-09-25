@@ -238,24 +238,31 @@ void LayoutSVGResourceContainer::registerResource()
     extensions.addResource(m_id, this);
 
     // Update cached resources of pending clients.
-    const SVGDocumentExtensions::SVGPendingElements::const_iterator end = clients->end();
-    for (SVGDocumentExtensions::SVGPendingElements::const_iterator it = clients->begin(); it != end; ++it) {
-        ASSERT((*it)->hasPendingResources());
-        extensions.clearHasPendingResourcesIfPossible(*it);
-        LayoutObject* layoutObject = (*it)->layoutObject();
+    for (const auto& pendingClient : *clients) {
+        ASSERT(pendingClient->hasPendingResources());
+        extensions.clearHasPendingResourcesIfPossible(pendingClient);
+        LayoutObject* layoutObject = pendingClient->layoutObject();
         if (!layoutObject)
             continue;
+
+        const ComputedStyle& style = layoutObject->styleRef();
 
         // If the client has a layer (is a non-SVGElement) we need to signal
         // invalidation in the same way as is done in markAllClientLayersForInvalidation above.
         if (layoutObject->hasLayer() && resourceType() == FilterResourceType) {
-            toLayoutBoxModelObject(layoutObject)->layer()->filterNeedsPaintInvalidation();
-            continue;
+            if (style.hasFilter())
+                toLayoutBoxModelObject(layoutObject)->layer()->filterNeedsPaintInvalidation();
+            // If this is the SVG root, we could have both 'filter' and
+            // '-webkit-filter' applied, so we need to do the invalidation
+            // below as well, unless we can optimistically determine that
+            // 'filter' does not apply to the element in question.
+            if (!layoutObject->isSVGRoot() || !style.svgStyle().hasFilter())
+                continue;
         }
 
         StyleDifference diff;
         diff.setNeedsFullLayout();
-        SVGResourcesCache::clientStyleChanged(layoutObject, diff, layoutObject->styleRef());
+        SVGResourcesCache::clientStyleChanged(layoutObject, diff, style);
         layoutObject->setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReason::SvgResourceInvalidated);
     }
 }
