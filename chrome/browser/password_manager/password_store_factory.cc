@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/os_crypt/os_crypt_switches.h"
@@ -24,6 +23,7 @@
 #include "components/password_manager/core/browser/affiliation_service.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/login_database.h"
+#include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -69,7 +69,8 @@ const char kLibsecretFieldTrialDisabledGroupName[] = "Disabled";
 
 base::FilePath GetAffiliationDatabasePath(Profile* profile) {
   DCHECK(profile);
-  return profile->GetPath().Append(chrome::kAffiliationDatabaseFileName);
+  return profile->GetPath().Append(
+      password_manager::kAffiliationDatabaseFileName);
 }
 
 bool ShouldAffiliationBasedMatchingBeActive(Profile* profile) {
@@ -233,7 +234,8 @@ KeyedService* PasswordStoreFactory::BuildServiceInstanceFor(
   // Given that LoginDatabase::Init() takes ~100ms on average; it will be called
   // by PasswordStore::Init() on the background thread to avoid UI jank.
   base::FilePath login_db_file_path = profile->GetPath();
-  login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);
+  login_db_file_path =
+      login_db_file_path.Append(password_manager::kLoginDataFileName);
   scoped_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(login_db_file_path));
 

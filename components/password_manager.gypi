@@ -83,6 +83,8 @@
         'password_manager/core/browser/password_manager.h',
         'password_manager/core/browser/password_manager_client.cc',
         'password_manager/core/browser/password_manager_client.h',
+        'password_manager/core/browser/password_manager_constants.cc',
+        'password_manager/core/browser/password_manager_constants.h',
         'password_manager/core/browser/password_manager_driver.h',
         'password_manager/core/browser/password_manager_internals_service.cc',
         'password_manager/core/browser/password_manager_internals_service.h',
