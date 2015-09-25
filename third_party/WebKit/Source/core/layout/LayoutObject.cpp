@@ -1826,6 +1826,16 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style)
     updateImage(oldStyle ? oldStyle->borderImage().image() : 0, m_style->borderImage().image());
     updateImage(oldStyle ? oldStyle->maskBoxImage().image() : 0, m_style->maskBoxImage().image());
 
+    StyleImage* newContentImage = m_style->contentData() && m_style->contentData()->isImage() ?
+        toImageContentData(m_style->contentData())->image() : nullptr;
+    StyleImage* oldContentImage = oldStyle && oldStyle->contentData() && oldStyle->contentData()->isImage() ?
+        toImageContentData(oldStyle->contentData())->image() : nullptr;
+    updateImage(oldContentImage, newContentImage);
+
+    StyleImage* newBoxReflectMaskImage = m_style->boxReflect() ? m_style->boxReflect()->mask().image() : nullptr;
+    StyleImage* oldBoxReflectMaskImage = oldStyle && oldStyle->boxReflect() ? oldStyle->boxReflect()->mask().image() : nullptr;
+    updateImage(oldBoxReflectMaskImage, newBoxReflectMaskImage);
+
     updateShapeImage(oldStyle ? oldStyle->shapeOutside() : 0, m_style->shapeOutside());
 
     bool doesNotNeedLayoutOrPaintInvalidation = !m_parent;
@@ -2461,6 +2471,12 @@ void LayoutObject::willBeDestroyed()
 
         if (StyleImage* maskBoxImage = m_style->maskBoxImage().image())
             maskBoxImage->removeClient(this);
+
+        if (m_style->contentData() && m_style->contentData()->isImage())
+            toImageContentData(m_style->contentData())->image()->removeClient(this);
+
+        if (m_style->boxReflect() && m_style->boxReflect()->mask().image())
+            m_style->boxReflect()->mask().image()->removeClient(this);
 
         removeShapeImageClient(m_style->shapeOutside());
     }

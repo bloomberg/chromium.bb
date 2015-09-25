@@ -1537,7 +1537,7 @@ public:
     static float initialShapeImageThreshold() { return 0; }
 
     bool hasContent() const { return contentData(); }
-    const ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
+    ContentData* contentData() const { return rareNonInheritedData->m_content.get(); }
     bool contentDataEquivalent(const ComputedStyle* otherStyle) const { return const_cast<ComputedStyle*>(this)->rareNonInheritedData->contentDataEquivalent(*const_cast<ComputedStyle*>(otherStyle)->rareNonInheritedData); }
     void clearContent();
     void setContent(const String&, bool add = false);

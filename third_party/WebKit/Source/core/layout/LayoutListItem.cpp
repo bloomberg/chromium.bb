@@ -63,6 +63,14 @@ void LayoutListItem::styleDidChange(StyleDifference diff, const ComputedStyle* o
         m_marker->destroy();
         m_marker = nullptr;
     }
+
+    StyleImage* oldImage = oldStyle ? oldStyle->listStyleImage() : nullptr;
+    if (oldImage != style()->listStyleImage()) {
+        if (oldImage)
+            oldImage->removeClient(this);
+        if (style()->listStyleImage())
+            style()->listStyleImage()->addClient(this);
+    }
 }
 
 void LayoutListItem::willBeDestroyed()
@@ -71,7 +79,11 @@ void LayoutListItem::willBeDestroyed()
         m_marker->destroy();
         m_marker = nullptr;
     }
+
     LayoutBlockFlow::willBeDestroyed();
+
+    if (style() && style()->listStyleImage())
+        style()->listStyleImage()->removeClient(this);
 }
 
 void LayoutListItem::insertedIntoTree()
