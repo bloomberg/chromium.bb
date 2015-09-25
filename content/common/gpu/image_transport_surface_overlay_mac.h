@@ -66,7 +66,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
 
   void UpdateRootAndPartialDamagePlanes(
       const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes,
-      const gfx::Rect& dip_damage_rect);
+      const gfx::RectF& dip_damage_rect);
   void UpdateOverlayPlanes(
       const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes);
   void UpdateCALayerTree();

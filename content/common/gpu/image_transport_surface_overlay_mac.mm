@@ -74,6 +74,10 @@ void CheckGLErrors(const char* msg) {
 void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 }
 
+gfx::RectF ConvertRectToDIPF(float scale_factor, const gfx::Rect& rect) {
+  return gfx::ScaleRect(gfx::RectF(rect), 1.0f / scale_factor);
+}
+
 }  // namespace
 
 @interface CALayer(Private)
@@ -93,7 +97,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
   OverlayPlane(Type type,
                int z_order,
                base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
-               const gfx::Rect& dip_frame_rect,
+               const gfx::RectF& dip_frame_rect,
                const gfx::RectF& contents_rect)
       : type(type),
         z_order(z_order),
@@ -109,7 +113,7 @@ class ImageTransportSurfaceOverlayMac::OverlayPlane {
 
   // The IOSurface to set the CALayer's contents to.
   const base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-  const gfx::Rect dip_frame_rect;
+  const gfx::RectF dip_frame_rect;
   const gfx::RectF contents_rect;
 
   bool layer_needs_update;
@@ -378,8 +382,8 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   {
     // Sort the input planes by z-index and type, and remove any overlays from
     // the damage rect.
-    gfx::Rect dip_damage_rect =
-        gfx::ConvertRectToDIP(swap->scale_factor, swap->pixel_damage_rect);
+    gfx::RectF dip_damage_rect = ConvertRectToDIPF(
+        swap->scale_factor, swap->pixel_damage_rect);
     std::sort(swap->overlay_planes.begin(), swap->overlay_planes.end(),
               OverlayPlane::Compare);
     for (auto& plane : swap->overlay_planes) {
@@ -432,7 +436,7 @@ void ImageTransportSurfaceOverlayMac::UpdateOverlayPlanes(
 
 void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
     const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes,
-    const gfx::Rect& dip_damage_rect) {
+    const gfx::RectF& dip_damage_rect) {
   std::list<linked_ptr<OverlayPlane>> old_partial_damage_planes;
   old_partial_damage_planes.swap(current_partial_damage_planes_);
   linked_ptr<OverlayPlane> new_root_plane = new_overlay_planes.front();
@@ -449,14 +453,14 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
   // Walk though the existing partial damage layers and see if there is one that
   // is appropriate to re-use.
   if (!plane_for_swap.get() && !dip_damage_rect.IsEmpty()) {
-    gfx::Rect plane_to_reuse_dip_enlarged_rect;
+    gfx::RectF plane_to_reuse_dip_enlarged_rect;
 
     // Find the last partial damage plane to re-use the CALayer from. Grow the
     // new rect for this layer to include this damage, and all nearby partial
     // damage layers.
     linked_ptr<OverlayPlane> plane_to_reuse;
     for (auto& old_plane : old_partial_damage_planes) {
-      gfx::Rect dip_enlarged_rect = old_plane->dip_frame_rect;
+      gfx::RectF dip_enlarged_rect = old_plane->dip_frame_rect;
       dip_enlarged_rect.Union(dip_damage_rect);
 
       // Compute the fraction of the pixels that would not be updated by this
@@ -471,8 +475,7 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
     }
 
     if (plane_to_reuse.get()) {
-      gfx::RectF enlarged_contents_rect =
-          gfx::RectF(plane_to_reuse_dip_enlarged_rect);
+      gfx::RectF enlarged_contents_rect = plane_to_reuse_dip_enlarged_rect;
       enlarged_contents_rect.Scale(
           1. / new_root_plane->dip_frame_rect.width(),
           1. / new_root_plane->dip_frame_rect.height());
@@ -509,7 +512,7 @@ void ImageTransportSurfaceOverlayMac::UpdateRootAndPartialDamagePlanes(
   for (auto& old_plane : old_partial_damage_planes) {
     // Intersect the planes' frames with the new root plane to ensure that
     // they don't get kept alive inappropriately.
-    gfx::Rect old_plane_frame_rect = old_plane->dip_frame_rect;
+    gfx::RectF old_plane_frame_rect = old_plane->dip_frame_rect;
     old_plane_frame_rect.Intersect(new_root_plane->dip_frame_rect);
 
     if (plane_for_swap.get() &&
@@ -664,7 +667,7 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
 
   OverlayPlane::Type type = z_order == 0 ?
       OverlayPlane::ROOT : OverlayPlane::OVERLAY;
-  gfx::Rect dip_frame_rect = gfx::ConvertRectToDIP(
+  gfx::RectF dip_frame_rect = ConvertRectToDIPF(
       scale_factor_, bounds_rect);
   gfx::RectF contents_rect = crop_rect;
 

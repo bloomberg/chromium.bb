@@ -12,21 +12,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
-namespace {
-
-gfx::Rect AlignPixelRectToDIP(float scale_factor, const gfx::Rect& pixel_rect) {
-  gfx::Rect dip_rect =
-      gfx::ScaleToEnclosingRect(pixel_rect, 1.0f / scale_factor);
-  gfx::Rect new_pixel_rect = gfx::ScaleToEnclosingRect(dip_rect, scale_factor);
-  return new_pixel_rect;
-}
-
-bool IsPixelRectAlignedToDIP(float scale_factor, const gfx::Rect& pixel_rect) {
-  return (pixel_rect == AlignPixelRectToDIP(scale_factor, pixel_rect));
-}
-
-}  // namespace
-
 namespace cc {
 
 OverlayStrategySandwich::~OverlayStrategySandwich() {}
@@ -53,8 +38,6 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
   // rect needs to be DIP-aligned, or we cannot use it.
   const gfx::Rect candidate_pixel_rect =
       gfx::ToNearestRect(candidate.display_rect);
-  if (!IsPixelRectAlignedToDIP(device_scale_factor, candidate_pixel_rect))
-    return DID_NOT_CREATE_OVERLAY;
 
   // Don't allow overlapping overlays for now.
   for (const OverlayCandidate& other_candidate : *candidate_list) {
@@ -73,11 +56,9 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
       continue;
     // Compute the quad's bounds in display space, and ensure that it is rounded
     // up to be DIP-aligned.
-    gfx::Rect unaligned_pixel_covered_rect = MathUtil::MapEnclosingClippedRect(
+    gfx::Rect pixel_covered_rect = MathUtil::MapEnclosingClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
         overlap_iter->rect);
-    gfx::Rect pixel_covered_rect =
-        AlignPixelRectToDIP(device_scale_factor, unaligned_pixel_covered_rect);
 
     // Include the intersection of that quad with the candidate's quad in the
     // covered region.
@@ -94,10 +75,8 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
   // Add an overlay of the primary surface for any part of the candidate's
   // quad that was covered.
   std::vector<gfx::Rect> pixel_covered_rects;
-  for (Region::Iterator it(pixel_covered_region); it.has_rect(); it.next()) {
-    DCHECK(IsPixelRectAlignedToDIP(device_scale_factor, it.rect()));
+  for (Region::Iterator it(pixel_covered_region); it.has_rect(); it.next())
     pixel_covered_rects.push_back(it.rect());
-  }
   for (const gfx::Rect& pixel_covered_rect : pixel_covered_rects) {
     OverlayCandidate main_image_on_top;
     main_image_on_top.display_rect = gfx::RectF(pixel_covered_rect);
