@@ -237,12 +237,12 @@ PASS Interfaces for meter
 PASS Interfaces for METER 
 PASS Interfaces for ruby 
 PASS Interfaces for RUBY 
-FAIL Interfaces for rb assert_equals: Element rb should have HTMLElement as its primary interface. expected "[object HTMLElement]" but got "[object HTMLUnknownElement]"
-FAIL Interfaces for RB assert_equals: Element RB should have HTMLElement as its primary interface. expected "[object HTMLElement]" but got "[object HTMLUnknownElement]"
+PASS Interfaces for rb 
+PASS Interfaces for RB 
 PASS Interfaces for rt 
 PASS Interfaces for RT 
-FAIL Interfaces for rtc assert_equals: Element rtc should have HTMLElement as its primary interface. expected "[object HTMLElement]" but got "[object HTMLUnknownElement]"
-FAIL Interfaces for RTC assert_equals: Element RTC should have HTMLElement as its primary interface. expected "[object HTMLElement]" but got "[object HTMLUnknownElement]"
+PASS Interfaces for rtc 
+PASS Interfaces for RTC 
 PASS Interfaces for rp 
 PASS Interfaces for RP 
 PASS Interfaces for figure 

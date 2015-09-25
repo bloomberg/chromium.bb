@@ -103,10 +103,10 @@ plaintext interfaceName=HTMLElement
 pre
 progress interfaceName=HTMLProgressElement
 q interfaceName=HTMLQuoteElement
-rb interfaceName=HTMLUnknownElement
+rb interfaceName=HTMLElement
 rp interfaceName=HTMLElement
 rt interfaceName=HTMLRTElement, JSInterfaceName=HTMLElement
-rtc interfaceName=HTMLUnknownElement
+rtc interfaceName=HTMLElement
 ruby interfaceName=HTMLRubyElement, JSInterfaceName=HTMLElement
 s interfaceName=HTMLElement
 samp interfaceName=HTMLElement
