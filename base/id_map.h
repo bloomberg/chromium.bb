@@ -5,9 +5,9 @@
 #ifndef BASE_ID_MAP_H_
 #define BASE_ID_MAP_H_
 
+#include <stdint.h>
 #include <set>
 
-#include "base/basictypes.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/threading/non_thread_safe.h"
@@ -30,10 +30,12 @@ enum IDMapOwnershipSemantics {
 //
 // This class does not have a virtual destructor, do not inherit from it when
 // ownership semantics are set to own because pointers will leak.
-template<typename T, IDMapOwnershipSemantics OS = IDMapExternalPointer>
+template <typename T,
+          IDMapOwnershipSemantics OS = IDMapExternalPointer,
+          typename K = int32_t>
 class IDMap : public base::NonThreadSafe {
  public:
-  typedef int32 KeyType;
+  using KeyType = K;
 
  private:
   typedef base::hash_map<KeyType, T*> HashTable;
@@ -249,10 +251,8 @@ class IDMap : public base::NonThreadSafe {
 
   void Compact() {
     DCHECK_EQ(0, iteration_depth_);
-    for (std::set<KeyType>::const_iterator i = removed_ids_.begin();
-         i != removed_ids_.end(); ++i) {
-      Remove(*i);
-    }
+    for (const auto& i : removed_ids_)
+      Remove(i);
     removed_ids_.clear();
   }
 

@@ -355,4 +355,16 @@ TEST(IDMapTest, OwningPointersDeletesThemOnDestruct) {
   EXPECT_EQ(owned_del_count, kCount);
 }
 
+TEST(IDMapTest, Int64KeyType) {
+  IDMap<TestObject, IDMapExternalPointer, int64_t> map;
+  TestObject obj1;
+  const int64_t kId1 = 999999999999999999;
+
+  map.AddWithID(&obj1, kId1);
+  EXPECT_EQ(&obj1, map.Lookup(kId1));
+
+  map.Remove(kId1);
+  EXPECT_TRUE(map.IsEmpty());
+}
+
 }  // namespace
