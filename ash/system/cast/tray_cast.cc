@@ -638,7 +638,7 @@ void TrayCast::OnReceiversUpdated(
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (HasCastExtension()) {
+  if (HasCastExtension() && !receivers_and_activities_.empty()) {
     if (default_) {
       if (is_casting_)
         default_->ActivateCastView();

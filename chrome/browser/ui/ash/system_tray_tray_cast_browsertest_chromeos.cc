@@ -175,6 +175,26 @@ IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastChromeOSTest,
   UninstallExtension(extension->id());
 }
 
+// Verifies that the cast tray is hidden if there are no available receivers,
+// even if there is an extension installed that doesn't honor the private API.
+IN_PROC_BROWSER_TEST_F(
+    SystemTrayTrayCastChromeOSTest,
+    CastTrayIsHiddenWhenThereIsAnOldExtensionButNoReceivers) {
+  const extensions::Extension* extension = LoadCastTestExtension();
+
+  // Remove the updateDevices listener. This means that the extension will
+  // act like an extension before the private-API migration.
+  ExecuteJavaScript(extension,
+                    "chrome.cast.devicesPrivate.updateDevicesRequested."
+                    "removeListener(sendDevices);");
+
+  ash::TrayCastTestAPI tray(GetTrayCast(extension));
+  EXPECT_TRUE(tray.IsTrayInitialized());
+  EXPECT_FALSE(tray.IsTrayVisible());
+
+  UninstallExtension(extension->id());
+}
+
 // Verifies that the cast tray is displayed when there are receivers available.
 IN_PROC_BROWSER_TEST_F(SystemTrayTrayCastChromeOSTest,
                        CastTrayIsDisplayedWhenThereIsAnExtensionWithReceivers) {
