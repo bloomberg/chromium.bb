@@ -29,6 +29,9 @@
         'version_info/version_info.cc',
         'version_info/version_info.h',
       ],
+      'export_dependent_settings': [
+        'generate_version_info',
+      ],
     },
     {
       # GN version: //components/version_info:generate_version
