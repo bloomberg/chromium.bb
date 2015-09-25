@@ -227,6 +227,7 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
         m_paintLayer.setPreviousScrollOffsetAccumulationForPainting(paintingInfoArg.scrollOffsetAccumulation);
 
     if (!isPaintingOverlayScrollbars
+        && !paintingInfoArg.disableSubsequenceCache
         && !(paintingInfoArg.globalPaintFlags() & GlobalPaintFlattenCompositingLayers)
         && !(paintFlags & PaintLayerPaintingReflection)
         && !(paintFlags & PaintLayerPaintingRootBackgroundOnly)) {
@@ -236,6 +237,10 @@ DeprecatedPaintLayerPainter::PaintResult DeprecatedPaintLayerPainter::paintLayer
     }
 
     DeprecatedPaintLayerPaintingInfo paintingInfo = paintingInfoArg;
+
+    if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()
+        && (m_paintLayer.layoutObject()->hasOverflowClip() || m_paintLayer.layoutObject()->hasClip()))
+        paintingInfo.disableSubsequenceCache = true;
 
     // Ensure our lists are up-to-date.
     m_paintLayer.stackingNode()->updateLayerListsIfNeeded();
