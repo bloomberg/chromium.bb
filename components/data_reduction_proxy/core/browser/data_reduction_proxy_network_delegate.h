@@ -75,7 +75,7 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   base::Value* SessionNetworkStatsInfoToValue() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyNetworkDelegateTest, TotalLengths);
+  friend class DataReductionProxyNetworkDelegateTest;
 
   // Called as the proxy is being resolved for |url|. Allows the delegate to
   // override the proxy resolution decision made by ProxyService. The delegate
@@ -116,10 +116,10 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
                            const std::string& mime_type);
 
   // Total size of all content that has been received over the network.
-  int64 received_content_length_;
+  int64 total_received_bytes_;
 
   // Total original size of all content before it was transferred.
-  int64 original_content_length_;
+  int64 total_original_received_bytes_;
 
   // All raw Data Reduction Proxy pointers must outlive |this|.
   DataReductionProxyConfig* data_reduction_proxy_config_;

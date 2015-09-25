@@ -103,8 +103,8 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
     net::NetLog* net_log,
     DataReductionProxyEventCreator* event_creator)
     : LayeredNetworkDelegate(network_delegate.Pass()),
-      received_content_length_(0),
-      original_content_length_(0),
+      total_received_bytes_(0),
+      total_original_received_bytes_(0),
       data_reduction_proxy_config_(config),
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
@@ -137,9 +137,9 @@ DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("session_received_content_length",
-                  base::Int64ToString(received_content_length_));
+                  base::Int64ToString(total_received_bytes_));
   dict->SetString("session_original_content_length",
-                  base::Int64ToString(original_content_length_));
+                  base::Int64ToString(total_original_received_bytes_));
   return dict;
 }
 
@@ -227,6 +227,20 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         GetAdjustedOriginalContentLength(request_type,
                                          original_content_length,
                                          received_content_length);
+    int64 data_used = request->GetTotalReceivedBytes();
+    // TODO(kundaji): Investigate why |compressed_size| can sometimes be
+    // less than |received_content_length|. Bug http://crbug/536139.
+    if (data_used < received_content_length)
+      data_used = received_content_length;
+
+    int64 original_size = data_used;
+    if (request_type == VIA_DATA_REDUCTION_PROXY) {
+      // TODO(kundaji): Remove headers added by data reduction proxy when
+      // computing original size. http://crbug/535701.
+      original_size = request->response_info().headers->raw_headers().size() +
+                      adjusted_original_content_length;
+    }
+
     std::string mime_type;
     if (request->status().status() == net::URLRequestStatus::SUCCESS)
       request->GetMimeType(&mime_type);
@@ -237,9 +251,8 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
       data_usage_host = request->url().HostNoBrackets();
     }
 
-    AccumulateDataUsage(received_content_length,
-                        adjusted_original_content_length, request_type,
-                        data_usage_host, mime_type);
+    AccumulateDataUsage(data_used, original_size, request_type, data_usage_host,
+                        mime_type);
 
     DCHECK(data_reduction_proxy_config_);
 
@@ -260,6 +273,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
           *request, data_reduction_proxy_io_data_->IsEnabled(),
           configurator_->GetProxyConfig());
     }
+
     DVLOG(2) << __FUNCTION__
         << " received content length: " << received_content_length
         << " original content length: " << original_content_length
@@ -280,8 +294,8 @@ void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
         data_used, original_size, data_reduction_proxy_io_data_->IsEnabled(),
         request_type, data_usage_host, mime_type);
   }
-  received_content_length_ += data_used;
-  original_content_length_ += original_size;
+  total_received_bytes_ += data_used;
+  total_original_received_bytes_ += original_size;
 }
 
 void OnResolveProxyHandler(const GURL& url,

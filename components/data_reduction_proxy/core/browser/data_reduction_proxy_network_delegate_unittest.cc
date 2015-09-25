@@ -121,6 +121,15 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
               test_context_->settings()->WasLoFiModeActiveOnMainFrame());
   }
 
+  int64 total_received_bytes() {
+    return data_reduction_proxy_network_delegate_->total_received_bytes_;
+  }
+
+  int64 total_original_received_bytes() {
+    return data_reduction_proxy_network_delegate_
+        ->total_original_received_bytes_;
+  }
+
  protected:
   scoped_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
@@ -603,6 +612,30 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NullRequest) {
   data_reduction_proxy_network_delegate_->NotifyBeforeSendProxyHeaders(
       nullptr, data_reduction_proxy_info, &headers);
   EXPECT_TRUE(headers.HasHeader(kChromeProxyHeader));
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternal) {
+  const int64 kResponseContentLength = 140;
+  const int64 kOriginalContentLength = 200;
+
+  set_network_delegate(data_reduction_proxy_network_delegate_.get());
+
+  std::string raw_headers =
+      "HTTP/1.1 200 OK\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\n"
+      "Via: 1.1 Chrome-Compression-Proxy\n"
+      "x-original-content-length: " +
+      base::Int64ToString(kOriginalContentLength) + "\n";
+
+  HeadersToRaw(&raw_headers);
+
+  FetchURLRequest(GURL("http://www.google.com/"), raw_headers,
+                  kResponseContentLength);
+
+  EXPECT_EQ(kResponseContentLength, total_received_bytes());
+  EXPECT_EQ(kOriginalContentLength + static_cast<long>(raw_headers.size()),
+            total_original_received_bytes());
 }
 
 }  // namespace data_reduction_proxy
