@@ -7,6 +7,7 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/VisiblePosition.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/line/InlineBox.h"
 #include <ostream> // NOLINT
 
@@ -307,6 +308,24 @@ TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContent)
 
     EXPECT_TRUE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*two->firstChild(), 2)));
     EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*two->firstChild(), 2)));
+}
+
+TEST_F(VisibleUnitsTest, isEndOfEditableOrNonEditableContentWithInput)
+{
+    const char* bodyContent = "<input id=sample value=ab>cde";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    Node* text = toHTMLTextFormControlElement(document().getElementById("sample"))->innerEditorElement()->firstChild();
+
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*text, 0)));
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*text, 0)));
+
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*text, 1)));
+    EXPECT_FALSE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*text, 1)));
+
+    EXPECT_TRUE(isEndOfEditableOrNonEditableContent(createVisiblePositionInDOMTree(*text, 2)));
+    EXPECT_TRUE(isEndOfEditableOrNonEditableContent(createVisiblePositionInComposedTree(*text, 2)));
 }
 
 TEST_F(VisibleUnitsTest, isEndOfLine)

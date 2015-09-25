@@ -45,6 +45,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -1794,20 +1795,26 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
     return createVisiblePosition(lastPositionInNode(highestRoot));
 }
 
-template <typename Strategy>
-static bool isEndOfEditableOrNonEditableContentAlgorithm(const VisiblePositionTemplate<Strategy>& p)
-{
-    return p.isNotNull() && nextPositionOf(p).isNull();
-}
-
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)
 {
-    return isEndOfEditableOrNonEditableContentAlgorithm<EditingStrategy>(position);
+    return position.isNotNull() && nextPositionOf(position).isNull();
 }
 
+// TODO(yosin) We should rename |isEndOfEditableOrNonEditableContent()| what
+// this function does, e.g. |isLastVisiblePositionOrEndOfInnerEditor()|.
 bool isEndOfEditableOrNonEditableContent(const VisiblePositionInComposedTree& position)
 {
-    return isEndOfEditableOrNonEditableContentAlgorithm<EditingInComposedTreeStrategy>(position);
+    if (position.isNull())
+        return false;
+    const VisiblePositionInComposedTree nextPosition = nextPositionOf(position);
+    if (nextPosition.isNull())
+        return true;
+    // In DOM version, following condition, the last position of inner editor
+    // of INPUT/TEXTAREA element, by |nextPosition().isNull()|, because of
+    // an inner editor is an only leaf node.
+    if (!nextPosition.deepEquivalent().isAfterAnchor())
+        return false;
+    return isHTMLTextFormControlElement(nextPosition.deepEquivalent().anchorNode());
 }
 
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c, TextDirection direction)
