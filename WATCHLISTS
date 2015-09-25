@@ -873,6 +873,323 @@
                   '|content/public/browser/host_zoom_map.h' \
                   '|content/public/browser/storage_partition.h'
     },
+
+    'blink': {
+      'filepath': 'third_party/WebKit/',
+    },
+    'blink_accessibility': {
+      'filepath': 'third_party/WebKit/.*(accessibility|AXObjectCache|WebAX)'
+    },
+    'blink_animation': {
+      'filepath': 'third_party/WebKit/.*([Aa]nimat|[Tt]ransition)',
+    },
+    'blink_app_banner': {
+      'filepath': 'third_party/WebKit/Source/modules/app_banner' \
+                  '|third_party/WebKit/public/platform/modules/app_banner',
+    },
+    'blink_audio': {
+      'filepath': 'third_party/WebKit/Source/platform/audio' \
+                  '|third_party/WebKit/Source/modules/webaudio',
+    },
+    'blink_battery_status': {
+      'filepath': 'third_party/WebKit/Source/modules/battery/' \
+                  '|third_party/WebKit/LayoutTests/battery-status/' \
+                  '|third_party/WebKit/Source/core/frame/PlatformEvent(Controller|Dispatcher)'
+    },
+    'blink_bidi': {
+      'filepath': 'third_party/WebKit/Source/platform/text/.*Bidi' \
+                  '|third_party/WebKit/Source/core/rendering/.*Bidi',
+    },
+    'blink_bindings': {
+      'filepath': 'third_party/WebKit/Source/bindings',
+    },
+    'blink_bluetooth': {
+      'filepath': 'third_party/WebKit/.*[Bb]luetooth'
+    },
+    'blink_canvas2d': {
+      'filepath': 'third_party/WebKit/Source/core/html/canvas' \
+                  '|third_party/WebKit/Source/core/html/HTMLCanvasElement' \
+                  '|third_party/WebKit/Source/modules/canvas2d' \
+                  '|third_party/WebKit/Source/platform/graphics/Canvas2D',
+    },
+    'blink_clipboard': {
+      'filepath': 'third_party/WebKit/Source/core/clipboard' \
+                  '|third_party/WebKit/Source/core/page/.*Drag' \
+                  '|third_party/WebKit/Source/platform/.*Drag' \
+                  '|third_party/WebKit/Source/platform/clipboard' \
+                  '|third_party/WebKit/Source/web/.*Drag' \
+                  '|third_party/WebKit/public/platform/.*Drag' \
+                  '|third_party/WebKit/public/web/.*Drag',
+    },
+    'blink_content_security_policy': {
+      'filepath': 'third_party/WebKit/Source/core/frame/csp' \
+                  '|third_party/WebKit/Source/core/events/SecurityPolicyViolationEvent' \
+                  '|third_party/WebKit/LayoutTests/http/tests/security/contentSecurityPolicy'
+    },
+    'blink_css': {
+      'filepath': 'third_party/WebKit/Source/core/css',
+    },
+    'blink_css_grid_layout': {
+      'filepath': 'third_party/WebKit/Source/core/layout/.*Grid' \
+                  '|third_party/WebKit/Source/core/paint/.*Grid' \
+                  '|third_party/WebKit/Source/core/css/.*Grid' \
+                  '|third_party/WebKit/LayoutTests/fast/css-grid-layout/' \
+                  '|third_party/WebKit/LayoutTests/ietestcenter/css3/grid/' \
+                  '|third_party/WebKit/LayoutTests/platform/.*/fast/css-grid-layout/' \
+                  '|third_party/WebKit/LayoutTests/platform/.*/ietestcenter/css3/grid/'
+    },
+    'blink_css_flexbox': {
+      'filepath': 'third_party/WebKit/Source/core/rendering/.*Flex' \
+                  '|third_party/WebKit/LayoutTests/fast/deprecated-flexbox/' \
+                  '|third_party/WebKit/LayoutTests/css3/flexbox/' \
+                  '|third_party/WebKit/LayoutTests/ietestcenter/css3/flexbox/'
+    },
+    'blink_css_fragmentation_tests': {
+      'filepath': 'third_party/WebKit/LayoutTests/fast/multicol/' \
+                  '|third_party/WebKit/LayoutTests/fast/pagination/'
+    },
+    'blink_css_regions': {
+      'filepath': 'third_party/WebKit/Source/core/rendering/.*(Region|FlowThread)' \
+                  '|third_party/WebKit/Source/core/dom/NodeRendering' \
+                  '|third_party/WebKit/Source/core/dom/.*NamedFlow' \
+                  '|third_party/WebKit/Source/core/css/.*Region' \
+                  '|third_party/WebKit/LayoutTests/compositing/regions/' \
+                  '|third_party/WebKit/LayoutTests/fast/regions/' \
+                  '|third_party/WebKit/LayoutTests/platform/chromium.*/fast/regions/'
+    },
+    'blink_custom_elements': {
+      'filepath': 'third_party/WebKit/Source/core/dom/CustomElement' \
+                  '|third_party/WebKit/Source/bindings/v8/.*CustomElement',
+    },
+    'blink_device_light': {
+      'filepath': 'third_party/WebKit/Source/modules/device_light/' \
+                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceLight/'
+    },
+    'blink_device_orientation': {
+      'filepath': 'third_party/WebKit/Source/modules/device_orientation/' \
+                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceMotion/' \
+                  '|third_party/WebKit/LayoutTests/fast/dom/DeviceOrientation/' \
+                  '|third_party/WebKit/Source/core/frame/PlatformEvent(Controller|Dispatcher)' \
+                  '|third_party/WebKit/Source/core/frame/DeviceSingleWindowEventController'
+    },
+    'blink_devtools': {
+      'filepath': 'third_party/WebKit/.*(inspector|DevTools|devtools)',
+    },
+    'blink_dom': {
+      'filepath': 'third_party/WebKit/Source/core/dom/'
+    },
+    'blink_events': {
+      'filepath': 'third_party/WebKit/Source/core/page/.*Event' \
+                  '|third_party/WebKit/Source/core/dom/.*Event' \
+                  '|third_party/WebKit/Source/core/css/.*Event' \
+                  '|third_party/WebKit/Source/platform/.*Event'
+    },
+    'blink_fetch': {
+      'filepath': 'third_party/WebKit/Source/core/fetch',
+    },
+    'blink_heap': {
+      'filepath': 'third_party/WebKit/Source/platform/heap' \
+                  '|third_party/WebKit/Source/wtf/Partition.*'
+    },
+    'blink_html': {
+      'filepath': 'third_party/WebKit/Source/core/html/'
+    },
+    'blink_loader': {
+      'filepath': 'third_party/WebKit/Source/core/loader',
+    },
+    'blink_notifications': {
+      'filepath': 'third_party/WebKit/LayoutTests/http/tests/notifications' \
+                  '|third_party/WebKit/Source/modules/notifications' \
+                  '|third_party/WebKit/public/platform/modules/notifications'
+    },
+    'blink_owners': {
+      'filepath': 'third_party/WebKit/.*OWNERS',
+    },
+    'blink_paint': {
+      'filepath': 'third_party/WebKit/Source/core/paint/'
+    },
+    'blink_permissions': {
+      'filepath': 'third_party/WebKit/Source/modules/permissions/' \
+                  '|third_party/WebKit/public/platform/modules/permissions/',
+    },
+    'blink_preloadScanner': {
+      'filepath': 'third_party/WebKit/Source/core/html/parser/HTMLPreloadScanner',
+    },
+    'blink_public_api': {
+      'filepath': 'third_party/WebKit/public'
+    },
+    'blink_push_messaging': {
+      'filepath': 'third_party/WebKit/LayoutTests/http/tests/push_messaging' \
+                  '|third_party/WebKit/Source/modules/push_messaging' \
+                  '|third_party/WebKit/public/platform/modules/push_messaging'
+    },
+    'blink_platform_graphics': {
+      'filepath': 'third_party/WebKit/Source/platform/fonts' \
+                  '|third_party/WebKit/Source/platform/geometry' \
+                  '|third_party/WebKit/Source/platform/graphics'
+    },
+    'blink_indexed_db': {
+      'filepath': 'third_party/WebKit/Source/modules/indexeddb/' \
+                  '|third_party/WebKit/Source/web/.*IDB' \
+                  '|third_party/WebKit/LayoutTests/storage/indexeddb' \
+                  '|third_party/WebKit/public/platform/.*IDB'
+    },
+    'blink_layout': {
+      'filepath': 'third_party/WebKit/Source/core/layout' \
+                  '|third_party/WebKit/Source/core/rendering'
+    },
+    'blink_layers': {
+      'filepath': 'third_party/WebKit/Source/core/page/scrolling/ScrollingCoordinator' \
+                  '|third_party/WebKit/Source/platform/graphics/GraphicsLayer' \
+                  '|third_party/WebKit/Source/core/layout/Layer'
+    },
+    'blink_prerender': {
+      'filepath': 'third_party/WebKit/.*(Prerender|loader/LinkLoader|html/HTMLLinkElement)'
+    },
+    'blink_client_hints': {
+      'filepath': 'third_party/WebKit/Source/core/loader/AcceptClientHints*' \
+                  '|third_party/WebKit/Source/core/loader/FrameFetchContext*' \
+                  '|third_party/WebKit/Source/core/fetch/FetchContext*' \
+                  '|third_party/WebKit/Source/core/fetch/ImageResource*' \
+                  '|third_party/WebKit/Source/core/fetch/ResourceFetcher*'
+    },
+    'blink_track': {
+      'filepath': 'third_party/WebKit/Source/core/html/track/' \
+                  '|third_party/WebKit/Source/core/loader/TextTrack' \
+                  '|third_party/WebKit/Source/core/html/HTMLMediaElement' \
+                  '|third_party/WebKit/Source/core/html/HTMLTrackElement' \
+                  '|third_party/WebKit/Source/core/html/shadow/MediaControl' \
+                  '|third_party/WebKit/Source/core/css/mediaControl' \
+                  '|third_party/WebKit/LayoutTests/media/track/'
+    },
+    'blink_media': {
+      'filepath': 'third_party/WebKit/Source/core/css/mediaControls' \
+                  '|third_party/WebKit/Source/core/html/.*(Audio|Media|Video)' \
+                  '|third_party/WebKit/Source/core/html/shadow/MediaControl' \
+                  '|third_party/WebKit/Source/core/layout/LayoutMedia' \
+                  '|third_party/WebKit/Source/core/layout/LayoutTextTrackContainerElement' \
+                  '|third_party/WebKit/Source/modules/(encryptedmedia|mediasource)' \
+                  '|third_party/WebKit/Source/platform/drm/' \
+                  '|third_party/WebKit/Source/platform/graphics/media/' \
+                  '|third_party/WebKit/Source/web/.*Media' \
+                  '|third_party/WebKit/LayoutTests/media/' \
+                  '|third_party/WebKit/public/.*Media'
+    },
+    'blink_media_queries': {
+      'filepath': 'third_party/WebKit/Source/core/css/CSSMediaRule' \
+                    '|third_party/WebKit/Source/core/css/MediaList' \
+                    '|third_party/WebKit/Source/core/css/MediaQuery' \
+                    '|third_party/WebKit/Source/core/css/parser/MediaQuery'
+    },
+    'blink_navigator_content_utils': {
+      'filepath': 'third_party/WebKit/Source/modules/navigatorcontentutils' \
+                  '|third_party/WebKit/LayoutTests/fast/dom/navigatorcontentutils'
+    },
+    'blink_out_of_process_frames': {
+      'filepath': 'third_party/WebKit/Source/core/frame/FrameOwner' \
+                  '|third_party/WebKit/Source/web/WebFrame' \
+                  '|third_party/WebKit/Source/web/WebRemoteFrameImpl'
+    },
+    'blink_fileapi': {
+      'filepath': 'third_party/WebKit/Source/modules/filesystem/' \
+                  '|third_party/WebKit/Source/core/fileapi/' \
+                  '|third_party/WebKit/Source/platform/.*File' \
+                  '|third_party/WebKit/Source/web/.*File' \
+                  '|third_party/WebKit/LayoutTests/fast/file' \
+                  '|third_party/WebKit/public/.*File'
+    },
+    'blink_quota': {
+      'filepath': 'third_party/WebKit/Source/modules/quota/' \
+                  '|third_party/WebKit/Source/web/.*Quota' \
+                  '|third_party/WebKit/public/.*Quota'
+    },
+    'blink_mediastream': {
+      'filepath': 'third_party/WebKit/Source/modules/mediastream/' \
+                  '|third_party/WebKit/Source/platform/mediastream/' \
+                  '|third_party/WebKit/Source/platform/exported/WebMediaStream' \
+                  '|third_party/WebKit/Source/platform/exported/WebRTC' \
+                  '|third_party/WebKit/LayoutTests/fast/mediastream/'
+    },
+    'blink_geolocation': {
+      'filepath': 'third_party/WebKit/LayoutTests/fast/dom/Geolocation/' \
+                  '|third_party/WebKit/Source/modules/geolocation/' \
+                  '|third_party/WebKit/Source/web/.*Geolocation' \
+                  '|third_party/WebKit/public/web/.*Geolocation'
+    },
+    'blink_htmlparser': {
+      'filepath': 'third_party/WebKit/Source/core/html/parser/'
+    },
+    'blink_screen_orientation': {
+      'filepath': 'third_party/WebKit/Source/modules/screen_orientation/' \
+                  '|third_party/WebKit/public/platform/modules/screen_orientation',
+    },
+    'blink_scheduler': {
+      'filepath': 'third_party/WebKit/Source/platform/scheduler' \
+                  '|third_party/WebKit/Source/core/html/parser/.*Scheduler'
+    },
+    'blink_serviceworkers' : {
+      'filepath': 'third_party/WebKit/Source/modules/serviceworkers' \
+                  '|third_party/WebKit/LayoutTests/http/tests/serviceworker'
+    },
+    'blink_serviceworkers_tests' : {
+      'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker'
+    },
+    'blink_sheriff_o_matic' : {
+      'filepath': 'third_party/WebKit/Tools/GardeningServer'
+    },
+    'blink_spellcheck' : {
+      'filepath': 'third_party/WebKit/Source/core/editing/spellcheck'
+    },
+    'blink_style': {
+      'filepath': 'third_party/WebKit/.*(style/|Style)',
+    },
+    'blink_svg': {
+      'filepath': 'third_party/WebKit/Source/core/(layout/)?svg',
+    },
+    'blink_test_runner': {
+      'filepath': 'third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner',
+    },
+    'blink_vibration': {
+      'filepath': 'third_party/WebKit/LayoutTests/vibration/' \
+                  '|third_party/WebKit/Source/modules/vibration/'
+    },
+    'blink_viewport_interaction': {
+      'filepath': 'third_party/WebKit/Source/core/css/.*Viewport' \
+                  '|third_party/WebKit/Source/core/dom/ViewportArguments' \
+                  '|third_party/WebKit/Source/core/html/HTMLMetaElement' \
+                  '|third_party/WebKit/Source/core/page/FrameView' \
+                  '|third_party/WebKit/Source/core/page/scrolling'
+    },
+    'blink_w3ctests': {
+      'filepath': 'third_party/WebKit/LayoutTests/imported/' \
+                  '|third_party/WebKit/Tools/Scripts/webkitpy/w3c/'
+    },
+    'blink_web_idl': {
+      'filepath': 'third_party/WebKit/Source/core/.*\.idl'
+    },
+    'blink_webcomponents': {
+      'filepath': 'third_party/WebKit/Source/core/dom/shadow/' \
+                  '|third_party/WebKit/Source/core/dom/custom/' \
+                  '|third_party/WebKit/Source/core/html/imports/' \
+                  '|third_party/WebKit/Source/bindings/v8/custom/V8CustomElementConstructorCustom' \
+                  '|third_party/WebKit/Source/bindings/v8/CustomElementHelpers'
+    },
+    'blink_webp': {
+      'filepath': 'third_party/WebKit/Source/platform/image-decoders/webp' \
+                  '|third_party/WebKit/Source/platform/image-encoders/skia/WEBP'
+    },
+    'blink_websockets': {
+      'filepath': 'third_party/WebKit/Source/modules/websockets/'
+    },
+    'blink_workers': {
+      'filepath': 'third_party/WebKit/Source/core/workers',
+    },
+    'blink_wtf': {
+      'filepath': 'third_party/WebKit/Source/wtf',
+    },
+    'blink_xmlhttprequest': {
+      'filepath': 'third_party/WebKit/Source/core/xmlhttprequest/'
+    }
   },
 
   'WATCHLISTS': {
@@ -1169,5 +1486,192 @@
             'sadrul@chromium.org',
             'yusukes+watch@chromium.org'],
     'zoom': ['wjmaclean@chromium.org'],
+
+    'blink': ['blink-reviews@chromium.org'],
+    'blink_accessibility': ['dmazzoni@chromium.org',
+                           'aboxhall@chromium.org',
+                           'nektar@chromium.org',
+                           'je_julie.kim@chromium.org'],
+    'blink_animation': ['alexis.menard@intel.com',
+                         'ericwilligers@chromium.org',
+                         'rjwright@chromium.org',
+                         'shans@chromium.org',
+                         'blink-reviews-animation@chromium.org'],
+    'blink_app_banner': [ 'mlamouri+watch-blink@chromium.org' ],
+    'blink_audio': ['rtoy@chromium.org'],
+    'blink_battery_status': [ 'timvolodine@chromium.org',
+                              'mlamouri+watch-blink@chromium.org' ],
+    'blink_bidi': [ 'leviw+bidiwatch@chromium.org' ],
+    'blink_bindings': [ 'blink-reviews-bindings@chromium.org' ],
+    'blink_bluetooth': [ 'scheib+watch@chromium.org' ],
+    'blink_canvas2d': [ 'cabanier@adobe.com',
+                        'dongseong.hwang@intel.com',
+                        'junov@chromium.org' ],
+    'blink_clipboard': [ 'dcheng@chromium.org', ],
+    'blink_content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
+    'blink_css': [ 'alexis.menard@intel.com',
+                   'apavlov+blink@chromium.org',
+                   'dglazkov+blink@chromium.org',
+                   'rob.buis@samsung.com',
+                   'blink-reviews-css@chromium.org' ],
+    'blink_css_grid_layout': [ 'svillar@igalia.com',
+                               'jfernandez@igalia.com',
+                               'rego@igalia.com' ],
+    'blink_css_flexbox': [ 'cbiesinger@chromium.org' ],
+    'blink_css_fragmentation_tests': [ 'mstensho@opera.com' ],
+    'blink_css_regions': [ 'ChromiumBugTracker@adobe.com' ],
+    'blink_custom_elements': [ 'dominicc+watchlist@chromium.org',
+                               'dglazkov+blink@chromium.org' ],
+    'blink_dom': [ 'eae+blinkwatch@chromium.org',
+                   'dglazkov+blink@chromium.org',
+                   'sigbjornf@opera.com',
+                   'rob.buis@samsung.com',
+                   'blink-reviews-dom@chromium.org' ],
+    'blink_device_light': [ 'timvolodine@chromium.org',
+                            'mlamouri+watch-blink@chromium.org' ],
+    'blink_device_orientation': [ 'timvolodine@chromium.org',
+                                  'mvanouwerkerk+watch@chromium.org',
+                                  'ch.dumez@samsung.com',
+                                  'mlamouri+watch-blink@chromium.org' ],
+    'blink_devtools': [ 'pfeldman+blink@chromium.org',
+                        'apavlov+blink@chromium.org',
+                        'lushnikov+blink@chromium.org',
+                        'yurys+blink@chromium.org',
+                        'caseq+blink@chromium.org',
+                        'sergeyv+blink@chromium.org',
+                        'kozyatinskiy+blink@chromium.org',
+                        'devtools-reviews@chromium.org' ],
+    'blink_events': [ 'eae+blinkwatch@chromium.org',
+                      'dglazkov+blink@chromium.org',
+                      'blink-reviews-events@chromium.org' ],
+    'blink_fetch': [ 'japhet@chromium.org',
+                     'gavinp+loader@chromium.org',
+                     'tyoshino+watch@chromium.org',
+                     'kinuko+watch@chromium.org' ],
+    'blink_layers': [ 'blink-layers+watch@chromium.org' ],
+    'blink_loader': [ 'japhet@chromium.org',
+                      'gavinp+loader@chromium.org',
+                      'tyoshino+watch@chromium.org',
+                      'kinuko+watch@chromium.org' ],
+    'blink_owners': [ 'abarth@chromium.org'],
+    'blink_platform_graphics': [ 'schenney@chromium.org',
+                                 'danakj@chromium.org',
+                                 'pdr+graphicswatchlist@chromium.org',
+                                 'cabanier@adobe.com',
+                                 'dschulze@chromium.org',
+                                 'rob.buis@samsung.com',
+                                 'fmalita@chromium.org',
+                                 'jbroman@chromium.org',
+                                 'dongseong.hwang@intel.com',
+                                 'drott+blinkwatch@chromium.org',
+                                 'junov@chromium.org' ],
+    'blink_heap': [ 'ager@chromium.org',
+                    'haraken@chromium.org',
+                    'kouhei+heap@chromium.org',
+                    'oilpan-reviews@chromium.org' ],
+    'blink_html': [ 'dglazkov+blink@chromium.org',
+                    'blink-reviews-html@chromium.org' ],
+    'blink_public_api': [ 'dglazkov+blink@chromium.org' ],
+    'blink_indexed_db': ['dgrogan@chromium.org',
+                         'jsbell+idb@chromium.org',
+                         'cmumford@chromium.org'],
+    'blink_layout': [ 'pdr+renderingwatchlist@chromium.org',
+                      'eae+blinkwatch@chromium.org',
+                      'jchaffraix+rendering@chromium.org',
+                      'leviw+renderwatch@chromium.org',
+                      'zoltan@webkit.org',
+                      'szager+layoutwatch@chromium.org',
+                      'blink-reviews-layout@chromium.org' ],
+    'blink_paint' : [ 'blink-reviews-paint@chromium.org',
+                      'slimming-paint-reviews@chromium.org',
+                      'dongseong.hwang@intel.com' ],
+    'blink_permissions': [ 'mlamouri+watch-blink@chromium.org' ],
+    'blink_prerender': [ 'gavinp+prerender@chromium.org',
+                         'yoav@yoav.ws' ],
+    'blink_preloadScanner': [ 'yoav@yoav.ws' ],
+    'blink_push_messaging': [ 'johnme+watch@chromium.org',
+                              'mvanouwerkerk+watch@chromium.org',
+                              'peter+watch@chromium.org' ],
+    'blink_client_hints': [ 'yoav@yoav.ws' ],
+    'blink_scheduler': [ 'scheduler-bugs@chromium.org' ],
+    'blink_track': [ 'vcarbune@chromium.org',
+                     'silviapf@chromium.org',
+                     'philipj@opera.com',
+                     'glenn@chromium.org',
+                     'fs@opera.com',
+                     'eric.carlson@apple.com' ],
+    'blink_media': [ 'feature-media-reviews@chromium.org',
+                     'philipj@opera.com',
+                     'eric.carlson@apple.com',
+                     'mlamouri+watch-blink@chromium.org' ],
+    'blink_media_queries': [ 'kenneth.christiansen@gmail.com',
+                             'yoav@yoav.ws' ],
+    'blink_fileapi': [ 'kinuko+fileapi@chromium.org',
+                       'tzik@chromium.org',
+                       'nhiroki@chromium.org' ],
+    'blink_quota': [ 'kinuko+fileapi@chromium.org',
+                     'tzik@chromium.org',
+                     'nhiroki@chromium.org' ],
+    'blink_viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
+    'blink_webcomponents': [ 'webcomponents-bugzilla@chromium.org',
+                             'dglazkov+blink@chromium.org' ],
+    'blink_mediastream': [ 'tommyw+watchlist@chromium.org' ],
+    'blink_navigator_content_utils': [ 'gyuyoung.kim@chromium.org' ],
+    'blink_notifications': [ 'peter+watch@chromium.org' ],
+    'blink_geolocation': [ 'mvanouwerkerk+watch@chromium.org',
+                           'timvolodine@chromium.org',
+                           'mlamouri+watch-blink@chromium.org' ],
+    'blink_htmlparser': [ 'kinuko+watch@chromium.org' ],
+    'blink_vibration': [ 'mvanouwerkerk+watch@chromium.org',
+                         'mlamouri+watch-blink@chromium.org' ],
+    'blink_serviceworkers': [ 'jsbell+serviceworker@chromium.org',
+                              'kinuko+serviceworker@chromium.org',
+                              'tzik@chromium.org',
+                              'nhiroki@chromium.org',
+                              'horo+watch@chromium.org',
+                              'falken@chromium.org',
+                              'michaeln@chromium.org',
+                              'serviceworker-reviews@chromium.org' ],
+    'blink_serviceworkers_tests': [ 'kenjibaheux+watch@chromium.org' ],
+    'blink_sheriff_o_matic': [ 'jochen@chromium.org',
+                               'szager@chromium.org',
+                               'dsinclair@chromium.org',
+                               'ojan@chromium.org',
+                               'leviw@chromium.org',
+                               'michaelpg@chromium.org',
+                               'cbiesinger@chromium.org',
+                               'teravest@chromium.org' ],
+    'blink_spellcheck' : [ 'groby+blinkspell@chromium.org' ],
+    'blink_style': [ 'blink-reviews-style@chromium.org' ],
+    'blink_svg': [ 'schenney@chromium.org',
+                   'pdr+svgwatchlist@chromium.org',
+                   'fmalita@chromium.org',
+                   'dschulze@chromium.org',
+                   'rob.buis@samsung.com',
+                   'fs@opera.com',
+                   'gyuyoung.kim@chromium.org',
+                   'kouhei+svg@chromium.org' ],
+    'blink_test_runner': [ 'jochen+watch@chromium.org',
+                           'mlamouri+watch-blink@chromium.org' ],
+    'blink_w3ctests' : [ 'blink-reviews-w3ctests@chromium.org' ],
+    'blink_webp': [ 'urvang@chromium.org',
+                    'jzern@chromium.org',
+                    'skal@google.com',
+                    'vikasa@google.com' ],
+    'blink_out_of_process_frames': [ 'dcheng@chromium.org',
+                                     'mlamouri+watch-blink@chromium.org' ],
+    'blink_screen_orientation': [ 'mlamouri+watch-blink@chromium.org' ],
+    'blink_web_idl': [ 'ch.dumez@samsung.com',
+                       'vivekg@chromium.org',
+                       'vivek.vg@samsung.com' ],
+    'blink_websockets': [ 'tyoshino+watch@chromium.org',
+                          'yhirano+watch@chromium.org' ],
+    'blink_workers': [ 'blink-worker-reviews@chromium.org',
+                       'kinuko+worker@chromium.org',
+                       'horo+watch@chromium.org',
+                       'falken@chromium.org' ],
+    'blink_wtf': [ 'mikhail.pozdnyakov@intel.com',
+                   'blink-reviews-wtf@chromium.org' ],
+    'blink_xmlhttprequest': [ 'tyoshino+watch@chromium.org' ],
   },
 }
