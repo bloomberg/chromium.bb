@@ -2830,7 +2830,6 @@ bool EventHandler::sendContextMenuEventForKey(Element* overrideTargetElement)
 
     PlatformMouseEvent mouseEvent(locationInRootFrame, globalPosition, RightButton, eventType, 1, false, false, false, false, PlatformMouseEvent::RealOrIndistinguishable, WTF::currentTime());
 
-    handleMousePressEvent(mouseEvent);
     return sendContextMenuEvent(mouseEvent, overrideTargetElement);
 }
 
