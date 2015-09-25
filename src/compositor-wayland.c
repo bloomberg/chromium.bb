@@ -48,6 +48,7 @@
 #include "shared/cairo-util.h"
 #include "fullscreen-shell-client-protocol.h"
 #include "presentation_timing-server-protocol.h"
+#include "linux-dmabuf.h"
 
 #define WINDOW_TITLE "Weston Compositor"
 
@@ -2021,6 +2022,12 @@ wayland_backend_create(struct weston_compositor *compositor, int use_pixman,
 		goto err_display;
 
 	wl_event_source_check(b->parent.wl_source);
+
+	if (compositor->renderer->import_dmabuf) {
+		if (linux_dmabuf_setup(compositor) < 0)
+			weston_log("Error: initializing dmabuf "
+			           "support failed.\n");
+	}
 
 	compositor->backend = &b->base;
 	return b;
