@@ -54,6 +54,8 @@ const char kFillOnAccountSelectFieldTrialEnabledWithHighlightGroup[] =
     "EnableWithHighlight";
 const char kFillOnAccountSelectFieldTrialEnabledWithNoHighlightGroup[] =
     "EnableWithNoHighlight";
+const char kDummyUsernameField[] = "anonymous_username";
+const char kDummyPasswordField[] = "anonymous_password";
 
 // Maps element names to the actual elements to simplify form filling.
 typedef std::map<base::string16, blink::WebInputElement> FormInputElementMap;
@@ -76,12 +78,58 @@ bool FillDataContainsFillableUsername(const PasswordFormFillData& fill_data) {
 bool IsNamedElementVisible(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const base::string16& name) {
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    if (control_elements[i].nameForAutofill() == name) {
-      return IsWebNodeVisible(control_elements[i]);
+  for (const blink::WebFormControlElement& control_element : control_elements) {
+    if (control_element.nameForAutofill() == name) {
+      return IsWebNodeVisible(control_element);
     }
   }
   return false;
+}
+
+// Returns true if password form has username and password fields with either
+// same or no name and id attributes supplied.
+bool DoesFormContainAmbiguousOrEmptyNames(
+    const PasswordFormFillData& fill_data) {
+  return (fill_data.username_field.name == fill_data.password_field.name) ||
+         (fill_data.password_field.name ==
+              base::ASCIIToUTF16(kDummyPasswordField) &&
+          (!FillDataContainsFillableUsername(fill_data) ||
+           fill_data.username_field.name ==
+               base::ASCIIToUTF16(kDummyUsernameField)));
+}
+
+bool IsPasswordField(const FormFieldData& field) {
+  return (field.form_control_type == "password");
+}
+
+// Returns true if any password field within |control_elements| is supplied with
+// either |autocomplete='current-password'| or |autocomplete='new-password'|
+// attribute.
+bool HasPasswordWithAutocompleteAttribute(
+    const std::vector<blink::WebFormControlElement>& control_elements) {
+  for (const blink::WebFormControlElement& control_element : control_elements) {
+    if (!control_element.hasHTMLTagName("input"))
+      continue;
+
+    const blink::WebInputElement input_element =
+        control_element.toConst<blink::WebInputElement>();
+    if (input_element.isPasswordField() &&
+        (HasAutocompleteAttributeValue(input_element, "current-password") ||
+         HasAutocompleteAttributeValue(input_element, "new-password")))
+      return true;
+  }
+
+  return false;
+}
+
+// Returns the |field|'s autofillable name. If |ambiguous_or_empty_names| is set
+// to true returns a dummy name instead.
+base::string16 FieldName(const FormFieldData& field,
+                         bool ambiguous_or_empty_names) {
+  return ambiguous_or_empty_names
+             ? IsPasswordField(field) ? base::ASCIIToUTF16(kDummyPasswordField)
+                                      : base::ASCIIToUTF16(kDummyUsernameField)
+             : field.name;
 }
 
 // Utility function to find the unique entry of |control_elements| for the
@@ -91,33 +139,53 @@ bool IsNamedElementVisible(
 bool FindFormInputElement(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const FormFieldData& field,
+    bool ambiguous_or_empty_names,
     FormInputElementMap* result) {
   // Match the first input element, if any.
-  // If more than one match is made, then we have ambiguity (due to misuse
-  // of "name" attribute) so is it considered not found.
   bool found_input = false;
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    if (control_elements[i].nameForAutofill() != field.name)
+  bool is_password_field = IsPasswordField(field);
+  bool does_password_field_has_ambigous_or_empty_name =
+      ambiguous_or_empty_names && is_password_field;
+  bool ambiguous_and_multiple_password_fields_with_autocomplete =
+      does_password_field_has_ambigous_or_empty_name &&
+      HasPasswordWithAutocompleteAttribute(control_elements);
+  base::string16 field_name = FieldName(field, ambiguous_or_empty_names);
+  for (const blink::WebFormControlElement& control_element : control_elements) {
+    if (!ambiguous_or_empty_names &&
+        control_element.nameForAutofill() != field_name) {
+      continue;
+    }
+
+    if (!control_element.hasHTMLTagName("input"))
       continue;
 
-    if (!control_elements[i].hasHTMLTagName("input"))
+    // Only fill saved passwords into password fields and usernames into text
+    // fields.
+    const blink::WebInputElement input_element =
+        control_element.toConst<blink::WebInputElement>();
+    if (input_element.isPasswordField() != is_password_field)
       continue;
+
+    // For change password form with ambiguous or empty names keep only the
+    // first password field having |autocomplete='current-password'| attribute
+    // set. Also make sure we avoid keeping password fields having
+    // |autocomplete='new-password'| attribute set.
+    if (ambiguous_and_multiple_password_fields_with_autocomplete &&
+        !HasAutocompleteAttributeValue(input_element, "current-password")) {
+      continue;
+    }
 
     // Check for a non-unique match.
     if (found_input) {
+      // For change password form keep only the first password field entry.
+      if (does_password_field_has_ambigous_or_empty_name)
+        continue;
+
       found_input = false;
       break;
     }
 
-    // Only fill saved passwords into password fields and usernames into
-    // text fields.
-    const blink::WebInputElement input_element =
-        control_elements[i].toConst<blink::WebInputElement>();
-    if (input_element.isPasswordField() !=
-        (field.form_control_type == "password"))
-      continue;
-
-    (*result)[field.name] = input_element;
+    (*result)[field_name] = input_element;
     found_input = true;
   }
 
@@ -179,15 +247,19 @@ bool ShouldHighlightFields() {
 bool FindFormInputElements(
     const std::vector<blink::WebFormControlElement>& control_elements,
     const PasswordFormFillData& data,
+    bool ambiguous_or_empty_names,
     FormInputElementMap* result) {
-  return FindFormInputElement(control_elements, data.password_field, result) &&
+  return FindFormInputElement(control_elements, data.password_field,
+                              ambiguous_or_empty_names, result) &&
          (!FillDataContainsFillableUsername(data) ||
-          FindFormInputElement(control_elements, data.username_field, result));
+          FindFormInputElement(control_elements, data.username_field,
+                               ambiguous_or_empty_names, result));
 }
 
 // Helper to locate form elements identified by |data|.
 void FindFormElements(content::RenderFrame* render_frame,
                       const PasswordFormFillData& data,
+                      bool ambiguous_or_empty_names,
                       FormElementsList* results) {
   DCHECK(results);
 
@@ -211,7 +283,8 @@ void FindFormElements(content::RenderFrame* render_frame,
     std::vector<blink::WebFormControlElement> control_elements =
         ExtractAutofillableElementsInForm(fe);
     FormInputElementMap cur_map;
-    if (FindFormInputElements(control_elements, data, &cur_map))
+    if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
+                              &cur_map))
       results->push_back(cur_map);
   }
   // If the element to be filled are not in a <form> element, the "action" and
@@ -222,7 +295,8 @@ void FindFormElements(content::RenderFrame* render_frame,
   std::vector<blink::WebFormControlElement> control_elements =
       GetUnownedAutofillableFormFieldElements(doc.all(), nullptr);
   FormInputElementMap unowned_elements_map;
-  if (FindFormInputElements(control_elements, data, &unowned_elements_map))
+  if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
+                            &unowned_elements_map))
     results->push_back(unowned_elements_map);
 }
 
@@ -245,7 +319,7 @@ bool IsElementAutocompletable(const blink::WebInputElement& element) {
 }
 
 // Return true if either password_value or new_password_value is not empty and
-// not default.i
+// not default.
 bool FormContainsNonDefaultPasswordValue(const PasswordForm& password_form) {
   return (!password_form.password_value.empty() &&
           !password_form.password_value_is_default) ||
@@ -453,6 +527,13 @@ bool FillFormOnPasswordReceived(
 
   bool form_contains_fillable_username_field =
       FillDataContainsFillableUsername(fill_data);
+  bool ambiguous_or_empty_names =
+      DoesFormContainAmbiguousOrEmptyNames(fill_data);
+  base::string16 username_field_name;
+  if (form_contains_fillable_username_field)
+    username_field_name =
+        FieldName(fill_data.username_field, ambiguous_or_empty_names);
+
   // If the form contains an autocompletable username field, try to set the
   // username to the preferred name, but only if:
   //   (a) The fill-on-account-select flag is not set, and
@@ -469,7 +550,7 @@ bool FillFormOnPasswordReceived(
   // in the "no highlighting" group.
   //
   // In all other cases, do nothing.
-  bool form_has_fillable_username = form_contains_fillable_username_field &&
+  bool form_has_fillable_username = !username_field_name.empty() &&
                                     IsElementAutocompletable(username_element);
 
   if (ShouldFillOnAccountSelect()) {
@@ -863,8 +944,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
       !IsElementAutocompletable(password_info->password_field))
     return true;
 
-  if (element.nameForAutofill().isEmpty())
+  if (element.nameForAutofill().isEmpty() &&
+      !DoesFormContainAmbiguousOrEmptyNames(password_info->fill_data)) {
     return false;  // If the field has no name, then we won't have values.
+  }
 
   // Don't attempt to autofill with values that are too large.
   if (element.value().length() > kMaximumTextSizeForAutocomplete)
@@ -1236,24 +1319,31 @@ void PasswordAutofillAgent::LegacyDidStartProvisionalLoad(
 void PasswordAutofillAgent::OnFillPasswordForm(
     int key,
     const PasswordFormFillData& form_data) {
-
+  bool ambiguous_or_empty_names =
+      DoesFormContainAmbiguousOrEmptyNames(form_data);
   FormElementsList forms;
-  FindFormElements(render_frame(), form_data, &forms);
+  FindFormElements(render_frame(), form_data, ambiguous_or_empty_names, &forms);
   FormElementsList::iterator iter;
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
     // Attach autocomplete listener to enable selecting alternate logins.
     blink::WebInputElement username_element, password_element;
 
-    // Check whether the password form has a username input field.
+    base::string16 username_field_name, password_field_name;
+    password_field_name =
+        FieldName(form_data.password_field, ambiguous_or_empty_names);
     bool form_contains_fillable_username_field =
         FillDataContainsFillableUsername(form_data);
-    if (form_contains_fillable_username_field) {
-      username_element =
-          (*iter)[form_data.username_field.name];
+    if (form_contains_fillable_username_field)
+      username_field_name =
+          FieldName(form_data.username_field, ambiguous_or_empty_names);
+
+    // Check whether the password form has a username input field.
+    if (!username_field_name.empty()) {
+      username_element = (*iter)[username_field_name];
     }
 
     // No password field, bail out.
-    if (form_data.password_field.name.empty())
+    if (password_field_name.empty())
       break;
 
     // We might have already filled this form if there are two <form> elements
@@ -1264,7 +1354,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
     // Get pointer to password element. (We currently only support single
     // password forms).
-    password_element = (*iter)[form_data.password_field.name];
+    password_element = (*iter)[password_field_name];
 
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.

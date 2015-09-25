@@ -65,6 +65,11 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
     const ModifiedValues* nonscript_modified_values,
     const FormsPredictionsMap* form_predictions);
 
+// Checks in a case-insensitive way if the autocomplete attribute for the given
+// |element| is present and has the specified |value_in_lowercase|.
+bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
+                                   const char* value_in_lowercase);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CONTENT_RENDERER_PASSWORD_FORM_CONVERSION_UTILS_H__

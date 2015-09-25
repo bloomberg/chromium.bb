@@ -2213,4 +2213,275 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 #endif
 
+// Test whether the password form with the username and password fields having
+// ambiguity in id attribute gets autofilled correctly.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    AutofillSuggetionsForPasswordFormWithAmbiguousIdAttribute) {
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  autofill::PasswordForm login_form;
+  login_form.signon_realm = embedded_test_server()->base_url().spec();
+  login_form.action = embedded_test_server()->GetURL("/password/done.html");
+  login_form.username_value = base::ASCIIToUTF16("myusername");
+  login_form.password_value = base::ASCIIToUTF16("mypassword");
+  password_store->AddLogin(login_form);
+
+  // Logins are added asynchronously to the password store. Spin the message
+  // loop to make sure the |password_store| had a chance to store the
+  // |login_form|.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // Now, navigate to the password form having ambiguous Ids for username and
+  // password fields and verify whether username and password is autofilled.
+  NavigateToFile("/password/ambiguous_password_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  std::string get_username =
+      "window.domAutomationController.send("
+      "  document.getElementById('ambiguous_form').elements[0].value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_username, &actual_username));
+  EXPECT_EQ("myusername", actual_username);
+
+  std::string get_password =
+      "window.domAutomationController.send("
+      "  document.getElementById('ambiguous_form').elements[1].value);";
+  std::string actual_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_password, &actual_password));
+  EXPECT_EQ("mypassword", actual_password);
+}
+
+// Test whether the password form having username and password fields without
+// name and id attribute gets autofilled correctly.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    AutofillSuggetionsForPasswordFormWithoutNameOrIdAttribute) {
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  autofill::PasswordForm login_form;
+  login_form.signon_realm = embedded_test_server()->base_url().spec();
+  login_form.action = embedded_test_server()->GetURL("/password/done.html");
+  login_form.username_value = base::ASCIIToUTF16("myusername");
+  login_form.password_value = base::ASCIIToUTF16("mypassword");
+  password_store->AddLogin(login_form);
+
+  // Logins are added asynchronously to the password store. Spin the message
+  // loop to make sure the |password_store| had a chance to store the
+  // |login_form|.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // Now, navigate to the password form having no Ids for username and password
+  // fields and verify whether username and password is autofilled.
+  NavigateToFile("/password/ambiguous_password_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  std::string get_username =
+      "window.domAutomationController.send("
+      "  document.getElementById('no_name_id_form').elements[0].value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_username, &actual_username));
+  EXPECT_EQ("myusername", actual_username);
+
+  std::string get_password =
+      "window.domAutomationController.send("
+      "  document.getElementById('no_name_id_form').elements[1].value);";
+  std::string actual_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_password, &actual_password));
+  EXPECT_EQ("mypassword", actual_password);
+}
+
+// Test whether the change password form having username and password fields
+// without name and id attribute gets autofilled correctly.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       AutofillSuggetionsForChangePwdWithEmptyNames) {
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  autofill::PasswordForm login_form;
+  login_form.signon_realm = embedded_test_server()->base_url().spec();
+  login_form.action = embedded_test_server()->GetURL("/password/done.html");
+  login_form.username_value = base::ASCIIToUTF16("myusername");
+  login_form.password_value = base::ASCIIToUTF16("mypassword");
+  password_store->AddLogin(login_form);
+
+  // Logins are added asynchronously to the password store. Spin the message
+  // loop to make sure the |password_store| had a chance to store the
+  // |login_form|.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // Now, navigate to the password form having no Ids for username and password
+  // fields and verify whether username and password is autofilled.
+  NavigateToFile("/password/ambiguous_password_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  std::string get_username =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_autocomplete').elements[0].value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_username, &actual_username));
+  EXPECT_EQ("myusername", actual_username);
+
+  std::string get_password =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_autocomplete').elements[1].value);";
+  std::string actual_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_password, &actual_password));
+  EXPECT_EQ("mypassword", actual_password);
+
+  std::string get_new_password =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_autocomplete').elements[2].value);";
+  std::string new_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_new_password, &new_password));
+  EXPECT_EQ("", new_password);
+}
+
+// Test whether the change password form having username and password fields
+// with empty names but having |autocomplete='current-password'| gets autofilled
+// correctly.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    AutofillSuggetionsForChangePwdWithEmptyNamesAndAutocomplete) {
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  autofill::PasswordForm login_form;
+  login_form.signon_realm = embedded_test_server()->base_url().spec();
+  login_form.action = embedded_test_server()->GetURL("/password/done.html");
+  login_form.username_value = base::ASCIIToUTF16("myusername");
+  login_form.password_value = base::ASCIIToUTF16("mypassword");
+  password_store->AddLogin(login_form);
+
+  // Logins are added asynchronously to the password store. Spin the message
+  // loop to make sure the |password_store| had a chance to store the
+  // |login_form|.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // Now, navigate to the password form having no Ids for username and password
+  // fields and verify whether username and password is autofilled.
+  NavigateToFile("/password/ambiguous_password_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  std::string get_username =
+      "window.domAutomationController.send("
+      "  document.getElementById('change_pwd').elements[0].value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_username, &actual_username));
+  EXPECT_EQ("myusername", actual_username);
+
+  std::string get_password =
+      "window.domAutomationController.send("
+      "  document.getElementById('change_pwd').elements[1].value);";
+  std::string actual_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_password, &actual_password));
+  EXPECT_EQ("mypassword", actual_password);
+
+  std::string get_new_password =
+      "window.domAutomationController.send("
+      "  document.getElementById('change_pwd').elements[2].value);";
+  std::string new_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_new_password, &new_password));
+  EXPECT_EQ("", new_password);
+}
+
+// Test whether the change password form having username and password fields
+// with empty names but having only new password fields having
+// |autocomplete='new-password'| atrribute do not get autofilled.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    AutofillSuggetionsForChangePwdWithEmptyNamesButOnlyNewPwdField) {
+  // At first let us save credentials to the PasswordManager.
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::IMPLICIT_ACCESS);
+  autofill::PasswordForm login_form;
+  login_form.signon_realm = embedded_test_server()->base_url().spec();
+  login_form.action = embedded_test_server()->GetURL("/password/done.html");
+  login_form.username_value = base::ASCIIToUTF16("myusername");
+  login_form.password_value = base::ASCIIToUTF16("mypassword");
+  password_store->AddLogin(login_form);
+
+  // Logins are added asynchronously to the password store. Spin the message
+  // loop to make sure the |password_store| had a chance to store the
+  // |login_form|.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+
+  // Now, navigate to the password form having no Ids for username and password
+  // fields and verify whether username and password is autofilled.
+  NavigateToFile("/password/ambiguous_password_form.html");
+
+  // Let the user interact with the page, so that DOM gets modification events,
+  // needed for autofilling fields.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::ButtonLeft, gfx::Point(1, 1));
+
+  std::string get_username =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_old_pwd').elements[0].value);";
+  std::string actual_username;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_username, &actual_username));
+  EXPECT_EQ("", actual_username);
+
+  std::string get_new_password =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_old_pwd').elements[1].value);";
+  std::string new_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_new_password, &new_password));
+  EXPECT_EQ("", new_password);
+
+  std::string get_retype_password =
+      "window.domAutomationController.send("
+      "  document.getElementById("
+      "    'change_pwd_but_no_old_pwd').elements[2].value);";
+  std::string retyped_password;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      RenderViewHost(), get_retype_password, &retyped_password));
+  EXPECT_EQ("", retyped_password);
+}
+
 }  // namespace password_manager

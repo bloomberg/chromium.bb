@@ -138,15 +138,6 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
   synthetic_form->document = web_form.document();
 }
 
-// Checks in a case-insensitive way if the autocomplete attribute for the given
-// |element| is present and has the specified |value_in_lowercase|.
-bool HasAutocompleteAttributeValue(const WebInputElement& element,
-                                   const char* value_in_lowercase) {
-  return base::LowerCaseEqualsASCII(
-      base::StringPiece16(element.getAttribute("autocomplete")),
-      value_in_lowercase);
-}
-
 // Helper to determine which password is the main (current) one, and which is
 // the new password (e.g., on a sign-up or change password form), if any.
 bool LocateSpecificPasswords(std::vector<WebInputElement> passwords,
@@ -663,6 +654,13 @@ scoped_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
   password_form->action = password_form->origin;
 
   return password_form.Pass();
+}
+
+bool HasAutocompleteAttributeValue(const blink::WebInputElement& element,
+                                   const char* value_in_lowercase) {
+  return base::LowerCaseEqualsASCII(
+      base::StringPiece16(element.getAttribute("autocomplete")),
+      value_in_lowercase);
 }
 
 }  // namespace autofill

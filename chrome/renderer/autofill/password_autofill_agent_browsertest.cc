@@ -2085,4 +2085,169 @@ TEST_F(PasswordAutofillAgentTest,
   ASSERT_FALSE(message);
 }
 
+// Tests that credential suggestions are autofilled on a password (and change
+// password) forms having either ambiguous or empty name.
+TEST_F(PasswordAutofillAgentTest,
+       SuggestionsOnFormContainingAmbiguousOrEmptyNames) {
+  const char kEmpty[] = "";
+  const char kDummyUsernameField[] = "anonymous_username";
+  const char kDummyPasswordField[] = "anonymous_password";
+  const char kFormContainsEmptyNamesHTML[] =
+      "<FORM name='WithoutNameIdForm' action='http://www.bidule.com' >"
+      "  <INPUT type='text' placeholder='username'/>"
+      "  <INPUT type='password' placeholder='Password'/>"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const char kFormContainsAmbiguousNamesHTML[] =
+      "<FORM name='AmbiguousNameIdForm' action='http://www.bidule.com' >"
+      "  <INPUT type='text' id='credentials' placeholder='username' />"
+      "  <INPUT type='password' id='credentials' placeholder='Password' />"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const char kChangePasswordFormContainsEmptyNamesHTML[] =
+      "<FORM name='ChangePwd' action='http://www.bidule.com' >"
+      "  <INPUT type='text' placeholder='username' />"
+      "  <INPUT type='password' placeholder='Old Password' "
+      "    autocomplete='current-password' />"
+      "  <INPUT type='password' placeholder='New Password' "
+      "    autocomplete='new-password' />"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const char kChangePasswordFormButNoUsername[] =
+      "<FORM name='ChangePwdButNoUsername' action='http://www.bidule.com' >"
+      "  <INPUT type='password' placeholder='Old Password' "
+      "    autocomplete='current-password' />"
+      "  <INPUT type='password' placeholder='New Password' "
+      "    autocomplete='new-password' />"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const char kChangePasswordFormButNoOldPassword[] =
+      "<FORM name='ChangePwdButNoOldPwd' action='http://www.bidule.com' >"
+      "  <INPUT type='text' placeholder='username' />"
+      "  <INPUT type='password' placeholder='New Password' "
+      "    autocomplete='new-password' />"
+      "  <INPUT type='password' placeholder='Retype Password' "
+      "    autocomplete='new-password' />"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const char kChangePasswordFormButNoAutocompleteAttribute[] =
+      "<FORM name='ChangePwdButNoAutocomplete' action='http://www.bidule.com'>"
+      "  <INPUT type='text' placeholder='username' />"
+      "  <INPUT type='password' placeholder='Old Password' />"
+      "  <INPUT type='password' placeholder='New Password' />"
+      "  <INPUT type='submit' />"
+      "</FORM>";
+
+  const struct {
+    const char* html_form;
+    bool is_possible_change_password_form;
+    bool does_trigger_autocomplete_on_fill;
+    const char* fill_data_username_field_name;
+    const char* fill_data_password_field_name;
+    const char* expected_username_suggestions;
+    const char* expected_password_suggestions;
+    bool expected_is_username_autofillable;
+    bool expected_is_password_autofillable;
+  } test_cases[] = {
+      // Password form without name or id attributes specified for the input
+      // fields.
+      {kFormContainsEmptyNamesHTML, false, true, kDummyUsernameField,
+       kDummyPasswordField, kAliceUsername, kAlicePassword, true, true},
+
+      // Password form with ambiguous name or id attributes specified for the
+      // input fields.
+      {kFormContainsAmbiguousNamesHTML, false, true, "credentials",
+       "credentials", kAliceUsername, kAlicePassword, true, true},
+
+      // Change password form without name or id attributes specified for the
+      // input fields and |autocomplete='current-password'| attribute for old
+      // password field.
+      {kChangePasswordFormContainsEmptyNamesHTML, true, true,
+       kDummyUsernameField, kDummyPasswordField, kAliceUsername, kAlicePassword,
+       true, true},
+
+      // Change password form without username field.
+      {kChangePasswordFormButNoUsername, true, true, kEmpty,
+       kDummyPasswordField, kEmpty, kAlicePassword, false, true},
+
+      // Change password form without name or id attributes specified for the
+      // input fields and |autocomplete='new-password'| attribute for new
+      // password fields. This form *do not* trigger |OnFillPasswordForm| from
+      // browser.
+      {kChangePasswordFormButNoOldPassword, true, false, kDummyUsernameField,
+       kDummyPasswordField, kEmpty, kEmpty, false, false},
+
+      // Change password form without name or id attributes specified for the
+      // input fields but |autocomplete='current-password'| or
+      // |autocomplete='new-password'| attributes are missing for old and new
+      // password fields respectively.
+      {kChangePasswordFormButNoAutocompleteAttribute, true, true,
+       kDummyUsernameField, kDummyPasswordField, kAliceUsername, kAlicePassword,
+       true, true},
+  };
+
+  for (const auto& test_case : test_cases) {
+    SCOPED_TRACE(testing::Message() << "html_form: " << test_case.html_form
+                                    << ", fill_data_username_field_name: "
+                                    << test_case.fill_data_username_field_name
+                                    << ", fill_data_password_field_name: "
+                                    << test_case.fill_data_password_field_name);
+
+    // Load a password form.
+    LoadHTML(test_case.html_form);
+
+    // Get the username and password form input elelments.
+    blink::WebDocument document = GetMainFrame()->document();
+    blink::WebVector<blink::WebFormElement> forms;
+    document.forms(forms);
+    blink::WebFormElement form_element = forms[0];
+    std::vector<blink::WebFormControlElement> control_elements =
+        ExtractAutofillableElementsInForm(form_element);
+    bool has_fillable_username =
+        (kEmpty != test_case.fill_data_username_field_name);
+    if (has_fillable_username) {
+      username_element_ = control_elements[0].to<blink::WebInputElement>();
+      password_element_ = control_elements[1].to<blink::WebInputElement>();
+    } else {
+      password_element_ = control_elements[0].to<blink::WebInputElement>();
+    }
+
+    UpdateOriginForHTML(test_case.html_form);
+    if (test_case.does_trigger_autocomplete_on_fill) {
+      // Prepare |fill_data_| to trigger autocomplete.
+      fill_data_.is_possible_change_password_form =
+          test_case.is_possible_change_password_form;
+      fill_data_.username_field.name =
+          ASCIIToUTF16(test_case.fill_data_username_field_name);
+      fill_data_.password_field.name =
+          ASCIIToUTF16(test_case.fill_data_password_field_name);
+      fill_data_.additional_logins.clear();
+      fill_data_.other_possible_usernames.clear();
+
+      ClearUsernameAndPasswordFields();
+
+      // Simulate the browser sending back the login info, it triggers the
+      // autocomplete.
+      SimulateOnFillPasswordForm(fill_data_);
+
+      if (has_fillable_username) {
+        SimulateSuggestionChoice(username_element_);
+      } else {
+        SimulateSuggestionChoice(password_element_);
+      }
+
+      // The username and password should now have been autocompleted.
+      CheckTextFieldsDOMState(test_case.expected_username_suggestions,
+                              test_case.expected_is_username_autofillable,
+                              test_case.expected_password_suggestions,
+                              test_case.expected_is_password_autofillable);
+    }
+  }
+}
+
 }  // namespace autofill
