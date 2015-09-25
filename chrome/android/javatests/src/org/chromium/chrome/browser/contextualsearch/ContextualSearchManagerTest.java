@@ -31,6 +31,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -93,9 +94,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         if (mManager != null) {
             mPanelDelegate = mManager.getContextualSearchPanelDelegate();
             mFakeServer = new ContextualSearchFakeServer(mManager,
-                    mPanelDelegate.getContentController());
+                    mManager.getOverlayContentDelegate());
+            mPanelDelegate.setOverlayPanelContent(mFakeServer);
             mManager.setNetworkCommunicator(mFakeServer);
-            mPanelDelegate.setContentController(mFakeServer);
             mSelectionController = mManager.getSelectionController();
             mPolicy = ContextualSearchPolicy.getInstance(getActivity());
 
@@ -314,11 +315,11 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Fakes navigation of the Content View with the given httpResult code.
      * The URL of the navigation is the one requested previously.
-     * @param httpResultCode The result to fake.
+     * @param isFailure If the request resulted in a failure.
      */
-    private void fakeContentViewDidNavigate(int httpResultCode) {
+    private void fakeContentViewDidNavigate(boolean isFailure) {
         String url = mFakeServer.getLoadedUrl();
-        mManager.handleDidNavigateMainFrame(url, httpResultCode);
+        mManager.getOverlayContentDelegate().onMainFrameNavigation(url, isFailure);
     }
 
     /**
@@ -840,7 +841,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, mFakeServer.loadedUrlCount());
 
         // When the second request succeeds, we should not issue a new request.
-        fakeContentViewDidNavigate(200);
+        fakeContentViewDidNavigate(false);
         assertLoadedLowPriorityUrl();
         assertEquals(1, mFakeServer.loadedUrlCount());
 
@@ -870,7 +871,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertEquals(1, mFakeServer.loadedUrlCount());
 
         // When the second request fails, we should not issue a new request.
-        fakeContentViewDidNavigate(500);
+        fakeContentViewDidNavigate(true);
         assertLoadedLowPriorityUrl();
         assertEquals(1, mFakeServer.loadedUrlCount());
 
@@ -1855,8 +1856,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                assertTrue(
-                        mManager.shouldInterceptNavigation(externalNavHandler, navigationParams));
+                assertFalse(
+                        mManager.getOverlayContentDelegate().shouldInterceptNavigation(
+                                externalNavHandler, navigationParams));
             }
         });
         assertEquals(1, mActivityMonitor.getHits());
@@ -1886,9 +1888,10 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                assertFalse(mManager.shouldInterceptNavigation(
+                OverlayContentDelegate delegate = mManager.getOverlayContentDelegate();
+                assertTrue(delegate.shouldInterceptNavigation(
                         externalNavHandler, initialNavigationParams));
-                assertTrue(mManager.shouldInterceptNavigation(
+                assertFalse(delegate.shouldInterceptNavigation(
                         externalNavHandler, redirectedNavigationParams));
             }
         });
@@ -1913,8 +1916,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                assertTrue(
-                        mManager.shouldInterceptNavigation(externalNavHandler, navigationParams));
+                assertFalse(
+                        mManager.getOverlayContentDelegate().shouldInterceptNavigation(
+                                externalNavHandler, navigationParams));
             }
         });
         assertEquals(0, mActivityMonitor.getHits());

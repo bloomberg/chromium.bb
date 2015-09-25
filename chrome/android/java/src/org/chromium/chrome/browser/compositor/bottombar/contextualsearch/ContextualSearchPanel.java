@@ -9,28 +9,18 @@ import android.os.Handler;
 import android.view.View.MeasureSpec;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.WebContentsFactory;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchContentController;
-import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
-import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
-import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
-import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.ui.base.WindowAndroid;
 
 /**
  * Controls the Contextual Search Panel.
  */
 public class ContextualSearchPanel extends ContextualSearchPanelAnimation
-        implements ContextualSearchPanelDelegate, ContextualSearchContentController {
+        implements ContextualSearchPanelDelegate {
 
     /**
      * State of the Contextual Search Panel.
@@ -73,54 +63,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     private static final long INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS = 40;
 
     /**
-     * The ContentViewCore that this panel will display.
-     */
-    private ContentViewCore mContentViewCore;
-
-    /**
-     * The pointer to the native version of this class.
-     */
-    private long mNativeContextualSearchPanelPtr;
-
-    /**
-     * Used for progress bar handling.
-     */
-    private final WebContentsDelegateAndroid mWebContentsDelegate;
-
-    /**
      * The activity this panel is in.
      */
     private ChromeActivity mActivity;
-
-    /**
-     * The window android for the above activity.
-     */
-    private WindowAndroid mWindowAndroid;
-
-    /**
-     * Observes the ContentViewCore for this panel.
-     */
-    private WebContentsObserver mWebContentsObserver;
-
-    /**
-     * Used to detect if a URL was loaded in the ContentViewCore.
-     */
-    private boolean mDidLoadAnyUrl;
-
-    /**
-     * Used to track if the ContentViewCore is showing.
-     */
-    private boolean mIsContentViewShowing;
-
-    /**
-     * This is primarily used for injecting test functionaluty into the panel for creating and
-     * destroying ContentViewCores.
-     */
-    private ContextualSearchContentController mContentController;
-
-    // http://crbug.com/522266 : An instance of InterceptNavigationDelegateImpl should be kept in
-    // java layer. Otherwise, the instance could be garbage-collected unexpectedly.
-    private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
 
     /**
      * The delay after which the hide progress will be hidden.
@@ -152,6 +97,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     private ContextualSearchPanelHost mSearchPanelHost;
 
+    /**
+     * Container for content the panel will show.
+     */
+    private OverlayPanelContent mOverlayPanelContent;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -162,41 +112,65 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
         super(context, updateHost);
-        nativeInit();
+    }
 
-        // TODO(mdjones): The following is for testing purposes, refactor the need for this out.
-        mContentController = this;
+    /**
+     * Create a new OverlayPanelContent object. This can be overridden for tests.
+     */
+    public OverlayPanelContent createNewOverlayPanelContent() {
+        OverlayPanelContent overlayPanelContent = new OverlayPanelContent(
+                getManagementDelegate().getOverlayContentDelegate(), new PanelProgressObserver(),
+                mActivity);
 
-        mWebContentsDelegate = new WebContentsDelegateAndroid() {
-            @Override
-            public void onLoadStarted() {
-                super.onLoadStarted();
-                setProgressBarCompletion(0);
-                setProgressBarVisible(true);
-                requestUpdate();
-            }
+        // Adds a ContentViewClient to override the default fullscreen size.
+        if (!isFullscreenSizePanel()) {
+            overlayPanelContent.setContentViewClient(new ContentViewClient() {
+                @Override
+                public int getDesiredWidthMeasureSpec() {
+                    return MeasureSpec.makeMeasureSpec(
+                            getSearchContentViewWidthPx(),
+                            MeasureSpec.EXACTLY);
+                }
 
-            @Override
-            public void onLoadStopped() {
-                super.onLoadStopped();
-                // Hides the Progress Bar after a delay to make sure it is rendered for at least
-                // a few frames, otherwise its completion won't be visually noticeable.
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        setProgressBarVisible(false);
-                        requestUpdate();
-                    }
-                }, HIDE_PROGRESS_BAR_DELAY);
-            }
+                @Override
+                public int getDesiredHeightMeasureSpec() {
+                    return MeasureSpec.makeMeasureSpec(
+                            getSearchContentViewHeightPx(),
+                            MeasureSpec.EXACTLY);
+                }
+            });
+        }
 
-            @Override
-            public void onLoadProgressChanged(int progress) {
-                super.onLoadProgressChanged(progress);
-                setProgressBarCompletion(progress);
-                requestUpdate();
-            }
-        };
+        return overlayPanelContent;
+    }
+
+    /**
+     * Default loading animation for a panel.
+     */
+    public class PanelProgressObserver extends OverlayContentProgressObserver {
+
+        public void onProgressBarStarted() {
+            setProgressBarCompletion(0);
+            setProgressBarVisible(true);
+            requestUpdate();
+        }
+
+        public void onProgressBarUpdated(int progress) {
+            setProgressBarCompletion(progress);
+            requestUpdate();
+        }
+
+        public void onProgressBarFinished() {
+            // Hides the Progress Bar after a delay to make sure it is rendered for at least
+            // a few frames, otherwise its completion won't be visually noticeable.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    setProgressBarVisible(false);
+                    requestUpdate();
+                }
+            }, HIDE_PROGRESS_BAR_DELAY);
+        }
     }
 
     // ============================================================================================
@@ -236,7 +210,9 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     protected void onClose(StateChangeReason reason) {
-        mContentController.destroyContentView();
+        if (mOverlayPanelContent != null) {
+            mOverlayPanelContent.destroyContentView();
+        }
         getManagementDelegate().onCloseContextualSearch(reason);
     }
 
@@ -265,7 +241,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         if (ty > 0 && getPanelState() == PanelState.MAXIMIZED) {
             // Resets the Search Content View scroll position when swiping the Panel down
             // after being maximized.
-            resetSearchContentViewScroll();
+            mOverlayPanelContent.resetContentViewScroll();
         }
 
         // Negative ty value means an upward movement so subtracting ty means expanding the panel.
@@ -450,175 +426,25 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     // ============================================================================================
-    // ContextualSearchContentController
+    // Utilities
     // ============================================================================================
 
-    @Override
-    public void createNewContentView() {
-        // If the ContentViewCore has already been created, but never used,
-        // then there's no need to create a new one.
-        if (mContentViewCore != null && !mDidLoadAnyUrl) {
-            return;
-        }
-
-        mContentController.destroyContentView();
-        mContentViewCore = new ContentViewCore(mActivity);
-
-        // Adds a ContentViewClient to override the default fullscreen size.
-        if (!isFullscreenSizePanel()) {
-            mContentViewCore.setContentViewClient(new ContentViewClient() {
-                @Override
-                public int getDesiredWidthMeasureSpec() {
-                    return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewWidthPx(),
-                            MeasureSpec.EXACTLY);
-                }
-
-                @Override
-                public int getDesiredHeightMeasureSpec() {
-                    return MeasureSpec.makeMeasureSpec(
-                            getSearchContentViewHeightPx(),
-                            MeasureSpec.EXACTLY);
-                }
-            });
-        }
-
-        ContentView cv = ContentView.createContentView(mActivity, mContentViewCore);
-        // Creates an initially hidden WebContents which gets shown when the panel is opened.
-        mContentViewCore.initialize(cv, cv,
-                WebContentsFactory.createWebContents(false, true), mWindowAndroid);
-
-        // Transfers the ownership of the WebContents to the native ContextualSearchManager.
-        nativeSetWebContents(mNativeContextualSearchPanelPtr, mContentViewCore,
-                mWebContentsDelegate);
-
-        mWebContentsObserver =
-                new WebContentsObserver(mContentViewCore.getWebContents()) {
-                    @Override
-                    public void didStartLoading(String url) {
-                        getManagementDelegate().onStartedLoading();
-                    }
-
-                    @Override
-                    public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-                            boolean isMainFrame, String validatedUrl, boolean isErrorPage,
-                            boolean isIframeSrcdoc) {
-                        if (isMainFrame) getManagementDelegate().onExternalNavigation(validatedUrl);
-                    }
-
-                    @Override
-                    public void didNavigateMainFrame(String url, String baseUrl,
-                            boolean isNavigationToDifferentPage, boolean isNavigationInPage,
-                            int httpResultCode) {
-                        getManagementDelegate().handleDidNavigateMainFrame(url, httpResultCode);
-                        mDidLoadAnyUrl = false;
-                    }
-
-                    @Override
-                    public void didFinishLoad(long frameId, String validatedUrl,
-                            boolean isMainFrame) {
-                        getManagementDelegate().onSearchResultsLoaded();
-                    }
-                };
-
-        mInterceptNavigationDelegate = new InterceptNavigationDelegateImpl();
-        nativeSetInterceptNavigationDelegate(mNativeContextualSearchPanelPtr,
-                mInterceptNavigationDelegate, mContentViewCore.getWebContents());
-
-        getManagementDelegate().onContentViewCreated(mContentViewCore);
-    }
-
-    @Override
-    public void destroyContentView() {
-        // TODO(mdjones): This should not be a public API.
-        if (mContentViewCore != null) {
-            nativeDestroyWebContents(mNativeContextualSearchPanelPtr);
-            mContentViewCore.getWebContents().destroy();
-            mContentViewCore.destroy();
-            mContentViewCore = null;
-            if (mWebContentsObserver != null) {
-                mWebContentsObserver.destroy();
-                mWebContentsObserver = null;
-            }
-
-            getManagementDelegate().onContentViewDestroyed();
-        }
-
-        // This should be called last here. The setSearchContentViewVisibility method
-        // will change the visibility the SearchContentView but also set the value of the
-        // internal property mIsSearchContentViewShowing. If we call this after deleting
-        // the SearchContentView, it will be faster, because only the internal property
-        // will be changed, since there will be no need to change the visibility of the
-        // SearchContentView.
-        //
-        // Also, this should be called outside the block above because tests will not
-        // create a ContentView, therefore if this call is placed inside the block,
-        // it will not be called on tests, which will cause some tests to fail.
-        setSearchContentViewVisibility(false);
-    }
-
-    @Override
-    public void loadUrl(String url) {
-        createNewPanelContentView();
-
-        if (mContentViewCore != null && mContentViewCore.getWebContents() != null) {
-            mDidLoadAnyUrl = true;
-            mContentViewCore.getWebContents().getNavigationController().loadUrl(
-                    new LoadUrlParams(url));
-        }
-    }
-
-    public void resetSearchContentViewScroll() {
-        if (mContentViewCore != null) {
-            mContentViewCore.scrollTo(0, 0);
-        }
-    }
-
+    /**
+     * @return The vertical scroll position of the content.
+     */
     public float getSearchContentViewVerticalScroll() {
-        return mContentViewCore != null
-                ? mContentViewCore.computeVerticalScrollOffset() : -1.f;
+        return mOverlayPanelContent.getContentViewVerticalScroll();
     }
 
     /**
-     * Sets the visibility of the Search Content View.
-     * @param isVisible True to make it visible.
+     * @return A new OverlayPanelContent if the instance was null or the existing one.
      */
-    public void setSearchContentViewVisibility(boolean isVisible) {
-        if (mIsContentViewShowing == isVisible) return;
-
-        mIsContentViewShowing = isVisible;
-        getManagementDelegate().onContentViewVisibilityChanged(isVisible);
-
-        if (isVisible) {
-            // The CVC is created with the search request, but if none was made we'll need
-            // one in order to display an empty panel.
-            if (mContentViewCore == null) {
-                createNewPanelContentView();
-            }
-            if (mContentViewCore != null) mContentViewCore.onShow();
-            setWasSearchContentViewSeen();
-        } else {
-            if (mContentViewCore != null) mContentViewCore.onHide();
+    public OverlayPanelContent getOverlayPanelContent() {
+        // Only create the content when necessary
+        if (mOverlayPanelContent == null) {
+            mOverlayPanelContent = createNewOverlayPanelContent();
         }
-    }
-
-    // ============================================================================================
-    // InterceptNavigationDelegateImpl
-    // ============================================================================================
-
-    // Used to intercept intent navigations.
-    // TODO(jeremycho): Consider creating a Tab with the Panel's ContentViewCore,
-    // which would also handle functionality like long-press-to-paste.
-    private class InterceptNavigationDelegateImpl implements InterceptNavigationDelegate {
-        final ExternalNavigationHandler mExternalNavHandler = new ExternalNavigationHandler(
-                mActivity);
-        @Override
-        public boolean shouldIgnoreNavigation(NavigationParams navigationParams) {
-            // TODO(mdjones): Rather than passing the two navigation params, instead consider
-            // passing a boolean to make this API simpler.
-            return getManagementDelegate().shouldInterceptNavigation(mExternalNavHandler,
-                    navigationParams);
-        }
+        return mOverlayPanelContent;
     }
 
     // ============================================================================================
@@ -719,6 +545,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         super.setDidSearchInvolvePromo();
     }
 
+    @Override
     public void setWasSearchContentViewSeen() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         super.setWasSearchContentViewSeen();
@@ -774,43 +601,23 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public boolean isContentViewShowing() {
-        return mIsContentViewShowing;
+        return mOverlayPanelContent != null && mOverlayPanelContent.isContentViewShowing();
     }
 
     @Override
     public void setChromeActivity(ChromeActivity activity) {
         mActivity = activity;
-        mWindowAndroid = mActivity.getWindowAndroid();
-    }
-
-    @Override
-    public void createNewPanelContentView() {
-        mContentController.createNewContentView();
     }
 
     @Override
     public void loadUrlInPanel(String url) {
-        mContentController.loadUrl(url);
-    }
-
-    @Override
-    public void setContentController(ContextualSearchContentController controller) {
-        mContentController = controller;
-    }
-
-    @VisibleForTesting
-    @Override
-    public ContextualSearchContentController getContentController() {
-        return this;
-    }
-
-    @Override
-    public boolean didLoadAnyUrl() {
-        return mDidLoadAnyUrl;
+        getOverlayPanelContent().loadUrl(url);
     }
 
     @Override
     public void updateTopControlState() {
+        if (mOverlayPanelContent == null) return;
+
         if (isFullscreenSizePanel()) {
             // Consider the ContentView height to be fullscreen, and inform the system that
             // the Toolbar is always visible (from the Compositor's perspective), even though
@@ -819,51 +626,48 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             // minus the Toolbar height.
             //
             // This is necessary to fix the bugs: crbug.com/510205 and crbug.com/510206
-            mContentViewCore.getWebContents().updateTopControlsState(false, true, false);
+            mOverlayPanelContent.updateTopControlsState(false, true, false);
         } else {
-            mContentViewCore.getWebContents().updateTopControlsState(true, false, false);
+            mOverlayPanelContent.updateTopControlsState(true, false, false);
         }
     }
 
-    // ============================================================================================
-    // Methods for managing this panel's ContentViewCore.
-    // ============================================================================================
-
-    @CalledByNative
-    public void clearNativePanelContentPtr() {
-        assert mNativeContextualSearchPanelPtr != 0;
-        mNativeContextualSearchPanelPtr = 0;
-    }
-
-    @CalledByNative
-    public void setNativePanelContentPtr(long nativePtr) {
-        assert mNativeContextualSearchPanelPtr == 0;
-        mNativeContextualSearchPanelPtr = nativePtr;
+    @Override
+    public boolean didLoadAnyUrl() {
+        return mOverlayPanelContent != null && mOverlayPanelContent.didLoadAnyUrl();
     }
 
     @Override
     public ContentViewCore getContentViewCore() {
-        return mContentViewCore;
+        // Expose OverlayPanelContent method.
+        return mOverlayPanelContent != null ? mOverlayPanelContent.getContentViewCore() : null;
     }
 
     @Override
     public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {
-        nativeRemoveLastHistoryEntry(mNativeContextualSearchPanelPtr, historyUrl, urlTimeMs);
+        if (mOverlayPanelContent == null) return;
+        // Expose OverlayPanelContent method.
+        mOverlayPanelContent.removeLastHistoryEntry(historyUrl, urlTimeMs);
     }
 
-    @VisibleForTesting
+    @Override
+    public void setSearchContentViewVisibility(boolean isVisible) {
+        getOverlayPanelContent().setVisibility(isVisible);
+    }
+
+    /**
+     * Destroy the native components associated with this panel's content.
+     */
     public void destroy() {
-        nativeDestroy(mNativeContextualSearchPanelPtr);
+        // It is possible that an OverlayPanelContent was never created for this panel.
+        if (mOverlayPanelContent != null) {
+            mOverlayPanelContent.destroy();
+        }
     }
 
-    // Native calls.
-    protected native long nativeInit();
-    private native void nativeDestroy(long nativeContextualSearchPanel);
-    private native void nativeRemoveLastHistoryEntry(
-            long nativeContextualSearchPanel, String historyUrl, long urlTimeMs);
-    private native void nativeSetWebContents(long nativeContextualSearchPanel,
-            ContentViewCore contentViewCore, WebContentsDelegateAndroid delegate);
-    private native void nativeDestroyWebContents(long nativeContextualSearchPanel);
-    private native void nativeSetInterceptNavigationDelegate(long nativeContextualSearchPanel,
-            InterceptNavigationDelegate delegate, WebContents webContents);
+    @Override
+    @VisibleForTesting
+    public void setOverlayPanelContent(OverlayPanelContent panelContent) {
+        mOverlayPanelContent = panelContent;
+    }
 }

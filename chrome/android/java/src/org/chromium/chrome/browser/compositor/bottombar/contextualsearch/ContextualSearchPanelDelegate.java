@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchContentController;
 import org.chromium.content.browser.ContentViewCore;
 
 /**
@@ -167,23 +167,6 @@ public interface ContextualSearchPanelDelegate {
     boolean isContentViewShowing();
 
     /**
-     * Create a new ContentViewCore for this panel.
-     */
-    void createNewPanelContentView();
-
-    /**
-     * Set the ContextualSearchContentController (for testing).
-     */
-    @VisibleForTesting
-    void setContentController(ContextualSearchContentController controller);
-
-    /**
-     * @return The current content controller.
-     */
-    @VisibleForTesting
-    ContextualSearchContentController getContentController();
-
-    /**
      * @return True if the panel loaded a URL.
      */
     boolean didLoadAnyUrl();
@@ -192,4 +175,21 @@ public interface ContextualSearchPanelDelegate {
      * Sets the top control state based on the internals of the panel.
      */
     void updateTopControlState();
+
+    /**
+     * Notify the panel that the ContentViewCore was seen.
+     */
+    void setWasSearchContentViewSeen();
+
+    /**
+     * Sets the visibility of the Search Content View.
+     * @param isVisible True to make it visible.
+     */
+    void setSearchContentViewVisibility(boolean isVisible);
+
+    /**
+     * @param panelContent The OverlayPanelContent that this panel should use.
+     */
+    @VisibleForTesting
+    void setOverlayPanelContent(OverlayPanelContent panelContent);
 }

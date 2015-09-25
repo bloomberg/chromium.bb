@@ -18,6 +18,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanelDelegate;
@@ -105,6 +106,12 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private boolean mDidBasePageLoadJustStart;
     private boolean mWasActivatedByTap;
     private boolean mIsInitialized;
+
+    /**
+     * This boolean is used for loading content after a long-press when content is not immediately
+     * loaded.
+     */
+    private boolean mShouldLoadDelayedSearch;
 
     private boolean mIsShowingPromo;
     private boolean mDidLogPromoOutcome;
@@ -466,8 +473,16 @@ public class ContextualSearchManager extends ContextualSearchObservable
             removeLastSearchVisit();
         }
 
+        mSearchPanelDelegate.setSearchContentViewVisibility(false);
+
         boolean isTap = mSelectionController.getSelectionType() == SelectionType.TAP;
         boolean didRequestSurroundings = false;
+
+        if (isTap) {
+            // If the user action was not a long-press, immediately start loading content.
+            mShouldLoadDelayedSearch = false;
+        }
+
         if (isTap && mPolicy.shouldPreviousTapResolve(
                 mNetworkCommunicator.getBasePageUrl())) {
             mNetworkCommunicator.startSearchTermResolutionRequest(
@@ -757,6 +772,134 @@ public class ContextualSearchManager extends ContextualSearchObservable
         return mPolicy.isTapSupported();
     }
 
+    // ============================================================================================
+    // OverlayContentDelegate
+    // ============================================================================================
+
+    @Override
+    public OverlayContentDelegate getOverlayContentDelegate() {
+        return new SearchOverlayContentDelegate();
+    }
+
+    /**
+     * Implementation of OverlayContentDelegate. Made public for testing purposes.
+     */
+    public class SearchOverlayContentDelegate extends OverlayContentDelegate {
+
+        public SearchOverlayContentDelegate() {}
+
+        @Override
+        public void onMainFrameLoadStarted(String url) {
+            onExternalNavigation(url);
+        }
+
+        @Override
+        public void onMainFrameNavigation(String url, boolean isFailure) {
+            if (shouldPromoteSearchNavigation()) {
+                onExternalNavigation(url);
+            } else {
+                // Could be just prefetching, check if that failed.
+                onContextualSearchRequestNavigation(isFailure);
+            }
+        }
+
+        @Override
+        public void onContentLoadStarted(String url) {
+            mDidPromoteSearchNavigation = false;
+        }
+
+        @Override
+        public void onContentLoadFinished() {
+            if (mSearchRequest == null) return;
+
+            mSearchPanelDelegate.onSearchResultsLoaded(mSearchRequest.wasPrefetch());
+
+            // Any time we place a page in a ContentViewCore, clear history if needed.
+            // This prevents error URLs from appearing in the Tab's history stack.
+            // Also please note that clearHistory() will not
+            // clear the current entry (search results page in this case),
+            // and it will not work properly if there are pending navigations.
+            // That's why we need to clear the history here, after the navigation
+            // is completed.
+            boolean shouldClearHistory = mSearchRequest.getHasFailed();
+            if (shouldClearHistory && mSearchPanelDelegate.getContentViewCore() != null) {
+                mSearchPanelDelegate.getContentViewCore().getWebContents().getNavigationController()
+                        .clearHistory();
+            }
+        }
+
+        @Override
+        public void onVisibilityChanged(boolean isVisible) {
+            if (isVisible) {
+                mWereSearchResultsSeen = true;
+                // If there's no current request, then either a search term resolution
+                // is in progress or we should do a verbatim search now.
+                if (mSearchRequest == null
+                        && mPolicy.shouldCreateVerbatimRequest(mSelectionController,
+                                mNetworkCommunicator.getBasePageUrl())) {
+                    mSearchRequest = new ContextualSearchRequest(
+                            mSelectionController.getSelectedText());
+                    mDidLoadResolvedSearchRequest = false;
+                }
+                if ((mSearchRequest != null && !mDidLoadResolvedSearchRequest)
+                        || mShouldLoadDelayedSearch) {
+                    // mShouldLoadDelayedSearch is used in the long-press case to load content.
+                    // Since content is now created and destroyed for each request, was impossible
+                    // to know if content was already loaded or recently needed to be; this is for
+                    // the case where it needed to be.
+                    mSearchRequest.setNormalPriority();
+                    loadSearchUrl();
+                }
+                mShouldLoadDelayedSearch = true;
+                mPolicy.updateCountersForOpen();
+            }
+        }
+
+        @Override
+        public void onContentViewCreated(ContentViewCore contentViewCore) {
+            // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
+            mSearchContentViewDelegate.setContextualSearchContentViewCore(contentViewCore);
+        }
+
+        @Override
+        public void onContentViewDestroyed() {
+            if (mSearchContentViewDelegate != null) {
+                mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
+            }
+        }
+
+        @Override
+        public void onContentViewSeen() {
+            mSearchPanelDelegate.setWasSearchContentViewSeen();
+        }
+
+        @Override
+        public boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
+                NavigationParams navigationParams) {
+            mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
+                    navigationParams.isRedirect,
+                    navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
+                    mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
+            ExternalNavigationParams params = new ExternalNavigationParams.Builder(
+                    navigationParams.url, false, navigationParams.referrer,
+                    navigationParams.pageTransitionType, navigationParams.isRedirect)
+                    .setApplicationMustBeInForeground(true)
+                    .setRedirectHandler(mTabRedirectHandler)
+                    .setIsMainFrame(navigationParams.isMainFrame)
+                    .build();
+            if (externalNavHandler.shouldOverrideUrlLoading(params)
+                    != OverrideUrlLoadingResult.NO_OVERRIDE) {
+                mSearchPanelDelegate.maximizePanelThenPromoteToTab(StateChangeReason.TAB_PROMOTION,
+                        INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
+                return false;
+            }
+            if (navigationParams.isExternalProtocol) {
+                return false;
+            }
+            return true;
+        }
+    }
+
     // --------------------------------------------------------------------------------------------
     // Search Content View
     // --------------------------------------------------------------------------------------------
@@ -832,72 +975,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     /**
-     * Called when the Search Content view has finished loading to record how long it takes the SERP
-     * to load after opening the panel.
-     */
-    @Override
-    public void onSearchResultsLoaded() {
-        if (mSearchRequest == null) return;
-
-        mSearchPanelDelegate.onSearchResultsLoaded(mSearchRequest.wasPrefetch());
-
-        // Any time we place a page in a ContentViewCore, clear history if needed.
-        // This prevents error URLs from appearing in the Tab's history stack.
-        // Also please note that clearHistory() will not
-        // clear the current entry (search results page in this case),
-        // and it will not work properly if there are pending navigations.
-        // That's why we need to clear the history here, after the navigation
-        // is completed.
-        boolean shouldClearHistory = mSearchRequest.getHasFailed();
-        if (shouldClearHistory && mSearchPanelDelegate.getContentViewCore() != null) {
-            mSearchPanelDelegate.getContentViewCore().getWebContents().getNavigationController()
-                    .clearHistory();
-        }
-    }
-
-    @Override
-    public void handleDidNavigateMainFrame(String url, int httpResultCode) {
-        if (shouldPromoteSearchNavigation()) {
-            onExternalNavigation(url);
-        } else {
-            // Could be just prefetching, check if that failed.
-            boolean isFailure = isHttpFailureCode(httpResultCode);
-            onContextualSearchRequestNavigation(isFailure);
-        }
-    }
-
-    @Override
-    public void onStartedLoading() {
-        mDidPromoteSearchNavigation = false;
-    }
-
-    @Override
-    public boolean shouldInterceptNavigation(
-            ExternalNavigationHandler externalNavHandler, NavigationParams navigationParams) {
-        mTabRedirectHandler.updateNewUrlLoading(navigationParams.pageTransitionType,
-                navigationParams.isRedirect,
-                navigationParams.hasUserGesture || navigationParams.hasUserGestureCarryover,
-                mActivity.getLastUserInteractionTime(), TabRedirectHandler.INVALID_ENTRY_INDEX);
-        ExternalNavigationParams params = new ExternalNavigationParams.Builder(
-                navigationParams.url, false, navigationParams.referrer,
-                navigationParams.pageTransitionType, navigationParams.isRedirect)
-                .setApplicationMustBeInForeground(true)
-                .setRedirectHandler(mTabRedirectHandler)
-                .setIsMainFrame(navigationParams.isMainFrame)
-                .build();
-        if (externalNavHandler.shouldOverrideUrlLoading(params)
-                != OverrideUrlLoadingResult.NO_OVERRIDE) {
-            mSearchPanelDelegate.maximizePanelThenPromoteToTab(StateChangeReason.TAB_PROMOTION,
-                    INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS);
-            return true;
-        }
-        if (navigationParams.isExternalProtocol) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * @return Whether the given HTTP result code represents a failure or not.
      */
     private boolean isHttpFailureCode(int httpResultCode) {
@@ -920,7 +997,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
      * Auto-promotes the panel into a separate tab if that's not already being done.
      * @param url The URL we are navigating to.
      */
-    @Override
     public void onExternalNavigation(String url) {
         mSearchPanelDelegate.updateTopControlState();
 
@@ -935,19 +1011,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
             // maximizing animation.
             mDidPromoteSearchNavigation = true;
             mSearchPanelDelegate.maximizePanelThenPromoteToTab(StateChangeReason.SERP_NAVIGATION);
-        }
-    }
-
-    @Override
-    public void onContentViewCreated(ContentViewCore contentView) {
-        // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
-        mSearchContentViewDelegate.setContextualSearchContentViewCore(contentView);
-    }
-
-    @Override
-    public void onContentViewDestroyed() {
-        if (mSearchContentViewDelegate != null) {
-            mSearchContentViewDelegate.releaseContextualSearchContentViewCore();
         }
     }
 
@@ -1026,7 +1089,10 @@ public class ContextualSearchManager extends ContextualSearchObservable
                 ? mSearchPanelDelegate.getContentViewCore().computeVerticalScrollOffset() : -1.f;
     }
 
-    @Override
+    /**
+     * This is called when the search panel is shown or is hidden.
+     * @param isVisible True if the panel is now visible.
+     */
     public void onContentViewVisibilityChanged(boolean isVisible) {
         if (isVisible) {
             mWereSearchResultsSeen = true;
@@ -1039,10 +1105,16 @@ public class ContextualSearchManager extends ContextualSearchObservable
                         mSelectionController.getSelectedText());
                 mDidLoadResolvedSearchRequest = false;
             }
-            if (mSearchRequest != null && !mDidLoadResolvedSearchRequest) {
+            if ((mSearchRequest != null && !mDidLoadResolvedSearchRequest)
+                    || mShouldLoadDelayedSearch) {
+                // mShouldLoadDelayedSearch is used in the long-press case to load content. Since
+                // content is now created and destroyed for each request, was impossible to know if
+                // content was already loaded or recently needed to be; this is for the case where
+                // it needed to be.
                 mSearchRequest.setNormalPriority();
                 loadSearchUrl();
             }
+            mShouldLoadDelayedSearch = true;
             mPolicy.updateCountersForOpen();
         }
     }

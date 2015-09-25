@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/bottombar/contextualsearch/contextual_search_panel.h"
+#include "chrome/browser/android/bottombar/overlay_panel_content.h"
 
 #include <set>
 
@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -22,7 +21,7 @@
 #include "components/web_contents_delegate_android/web_contents_delegate_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
-#include "jni/ContextualSearchPanel_jni.h"
+#include "jni/OverlayPanelContent_jni.h"
 #include "net/url_request/url_fetcher_impl.h"
 
 using content::ContentViewCore;
@@ -37,23 +36,21 @@ void OnHistoryDeletionDone() {
 
 }  // namespace
 
-// This class manages the native behavior of the Contextual Search feature.
-// Instances of this class are owned by the Java ContextualSearchPanel.
-ContextualSearchPanel::ContextualSearchPanel(JNIEnv* env, jobject obj) {
+// This class manages the native behavior of the panel.
+// Instances of this class are owned by the Java OverlayPanelContentl.
+OverlayPanelContent::OverlayPanelContent(JNIEnv* env, jobject obj) {
   java_manager_.Reset(env, obj);
-  Java_ContextualSearchPanel_setNativePanelContentPtr(
-      env, obj, reinterpret_cast<intptr_t>(this));
 }
 
-ContextualSearchPanel::~ContextualSearchPanel() {
+OverlayPanelContent::~OverlayPanelContent() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContextualSearchPanel_clearNativePanelContentPtr(
+  Java_OverlayPanelContent_clearNativePanelContentPtr(
       env, java_manager_.obj());
 }
 
-void ContextualSearchPanel::Destroy(JNIEnv* env, jobject obj) { delete this; }
+void OverlayPanelContent::Destroy(JNIEnv* env, jobject obj) { delete this; }
 
-void ContextualSearchPanel::RemoveLastHistoryEntry(
+void OverlayPanelContent::RemoveLastHistoryEntry(
     JNIEnv* env,
     jobject obj,
     jstring search_url,
@@ -83,7 +80,7 @@ void ContextualSearchPanel::RemoveLastHistoryEntry(
   }
 }
 
-void ContextualSearchPanel::SetWebContents(JNIEnv* env,
+void OverlayPanelContent::SetWebContents(JNIEnv* env,
                                              jobject obj,
                                              jobject jcontent_view_core,
                                              jobject jweb_contents_delegate) {
@@ -110,14 +107,14 @@ void ContextualSearchPanel::SetWebContents(JNIEnv* env,
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 
-void ContextualSearchPanel::DestroyWebContents(JNIEnv* env, jobject jobj) {
+void OverlayPanelContent::DestroyWebContents(JNIEnv* env, jobject jobj) {
   DCHECK(web_contents_.get());
   web_contents_.reset();
   // |web_contents_delegate_| may already be NULL at this point.
   web_contents_delegate_.reset();
 }
 
-void ContextualSearchPanel::SetInterceptNavigationDelegate(
+void OverlayPanelContent::SetInterceptNavigationDelegate(
     JNIEnv* env,
     jobject obj,
     jobject delegate,
@@ -131,11 +128,11 @@ void ContextualSearchPanel::SetInterceptNavigationDelegate(
           env, delegate)));
 }
 
-bool RegisterContextualSearchPanel(JNIEnv* env) {
+bool RegisterOverlayPanelContent(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
 jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  ContextualSearchPanel* manager = new ContextualSearchPanel(env, obj);
-  return reinterpret_cast<intptr_t>(manager);
+  OverlayPanelContent* content = new OverlayPanelContent(env, obj);
+  return reinterpret_cast<intptr_t>(content);
 }

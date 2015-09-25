@@ -13,6 +13,7 @@ import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.eventfilter.MockEventFilterHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
@@ -125,30 +126,34 @@ public class ContextualSearchEventFilterTest extends InstrumentationTestCase
     // --------------------------------------------------------------------------------------------
 
     /**
-     * MockContextualSearchPanel overrides all of the methods that depend on native code as they
-     * are not supported in these tests.
+     * MockContextualSearchPanel stops creation of ContentViewCores.
      */
     public static class MockContextualSearchPanel extends ContextualSearchPanel {
+
         public MockContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
             super(context, updateHost);
         }
 
         @Override
-        protected long nativeInit() {
-            return 0;
+        public OverlayPanelContent createNewOverlayPanelContent() {
+            return new MockOverlayPanelContent();
         }
 
-        @Override
-        public void destroy() {}
+        /**
+         * Override creation and destruction of the ContentViewCore as they rely on native methods.
+         */
+        private static class MockOverlayPanelContent extends OverlayPanelContent {
+            public MockOverlayPanelContent() {}
 
-        @Override
-        public void createNewContentView() {}
+            @Override
+            public void createNewContentView() {}
 
-        @Override
-        public void destroyContentView() {}
+            @Override
+            public void destroyContentView() {}
 
-        @Override
-        public void removeLastHistoryEntry(String historyUrl, long urlTimeMs) {}
+            @Override
+            public void removeLastHistoryEntry(String url, long timeInMs) {}
+        }
     }
 
     // --------------------------------------------------------------------------------------------

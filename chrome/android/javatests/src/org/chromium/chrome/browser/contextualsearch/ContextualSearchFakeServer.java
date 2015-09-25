@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,11 +20,10 @@ import javax.annotation.Nullable;
  *              be something like ContextualSearchFakeEnvironment.
  */
 @VisibleForTesting
-class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator,
-        ContextualSearchContentController {
+class ContextualSearchFakeServer extends OverlayPanelContent
+        implements ContextualSearchNetworkCommunicator {
 
     private final ContextualSearchNetworkCommunicator mBaseManager;
-    private final ContextualSearchContentController mContentController;
     private String mLoadedUrl;
     private String mSearchTermRequested;
     private boolean mShouldUseHttps;
@@ -35,9 +36,9 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator,
      */
     @VisibleForTesting
     ContextualSearchFakeServer(ContextualSearchNetworkCommunicator baseManager,
-            ContextualSearchContentController contentController) {
+            OverlayContentDelegate observer) {
         mBaseManager = baseManager;
-        mContentController = contentController;
+        setOverlayObserver(observer);
     }
 
     @Override
@@ -52,7 +53,7 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator,
         mLoadedUrlCount++;
         // This will not actually load a URL because no Search Content View will be created
         // when under test -- see comments in createNewSearchContentView.
-        mContentController.loadUrl(url);
+        super.loadUrl(url);
     }
 
     @Override
@@ -90,7 +91,12 @@ class ContextualSearchFakeServer implements ContextualSearchNetworkCommunicator,
     @Override
     public void destroyContentView() {
         mIsSearchContentViewCreated = false;
-        mContentController.destroyContentView();
+        super.destroyContentView();
+    }
+
+    @Override
+    public void removeLastHistoryEntry(String url, long timeInMs) {
+        // Override to prevent call to native code.
     }
 
     /**

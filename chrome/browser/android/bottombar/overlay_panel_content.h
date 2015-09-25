@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_BOTTOMBAR_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_PANEL_H_
-#define CHROME_BROWSER_ANDROID_BOTTOMBAR_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_PANEL_H_
+#ifndef CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_
+#define CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_
 
 #include "base/android/jni_android.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -18,15 +18,15 @@ class WebContentsDelegateAndroid;
 }  // namespace web_contents_delegate_android
 
 // Manages the native extraction and request logic for Contextual Search,
-// and interacts with the Java ContextualSearchPanel for UX.
+// and interacts with the Java OverlayPanelContent for UX.
 // Most of the work is done by the associated ContextualSearchDelegate.
-class ContextualSearchPanel {
+class OverlayPanelContent {
  public:
   // Constructs a native manager associated with the Java manager.
-  ContextualSearchPanel(JNIEnv* env, jobject obj);
-  virtual ~ContextualSearchPanel();
+  OverlayPanelContent(JNIEnv* env, jobject obj);
+  virtual ~OverlayPanelContent();
 
-  // Called by the Java ContextualSearchPanel when it is being destroyed.
+  // Called by the Java OverlayPanelContent when it is being destroyed.
   void Destroy(JNIEnv* env, jobject obj);
 
   // Removes a search URL from history. |search_start_time_ms| represents the
@@ -37,7 +37,7 @@ class ContextualSearchPanel {
                               jlong search_start_time_ms);
 
   // Takes ownership of the WebContents associated with the given
-  // |ContentViewCore| which holds the Contextual Search Results.
+  // |ContentViewCore| which holds the panel content.
   void SetWebContents(JNIEnv* env, jobject obj, jobject jcontent_view_core,
                       jobject jweb_contents_delegate);
 
@@ -51,7 +51,7 @@ class ContextualSearchPanel {
                                       jobject jweb_contents);
 
  private:
-  // Our global reference to the Java ContextualSearchPanel.
+  // Our global reference to the Java OverlayPanelContent.
   base::android::ScopedJavaGlobalRef<jobject> java_manager_;
 
   // Used if we need to clear history.
@@ -62,9 +62,9 @@ class ContextualSearchPanel {
   scoped_ptr<web_contents_delegate_android::WebContentsDelegateAndroid>
       web_contents_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(ContextualSearchPanel);
+  DISALLOW_COPY_AND_ASSIGN(OverlayPanelContent);
 };
 
-bool RegisterContextualSearchPanel(JNIEnv* env);
+bool RegisterOverlayPanelContent(JNIEnv* env);
 
-#endif  // CHROME_BROWSER_ANDROID_BOTTOMBAR_CONTEXTUALSEARCH_CONTEXTUAL_SEARCH_PANEL_H_
+#endif  // CHROME_BROWSER_ANDROID_BOTTOMBAR_OVERLAY_PANEL_CONTENT_H_
