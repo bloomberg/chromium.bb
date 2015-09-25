@@ -819,6 +819,16 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     root_pass->damage_rect = root_pass->output_rect;
   }
 
+  // Because the active tree could be drawn again if this fails for some reason,
+  // clear all of the copy request flags so that sanity checks for the counts
+  // succeed.
+  if (!active_tree_->LayersWithCopyOutputRequest().empty()) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        active_tree_->root_layer(), [](LayerImpl* layer) {
+          layer->set_num_layer_or_descendant_with_copy_request(0);
+        });
+  }
+
   // Grab this region here before iterating layers. Taking copy requests from
   // the layers while constructing the render passes will dirty the render
   // surface layer list and this unoccluded region, flipping the dirty bit to

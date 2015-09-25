@@ -525,7 +525,24 @@ void LayerTreeImpl::ClearViewportLayers() {
   outer_viewport_scroll_layer_id_ = Layer::INVALID_ID;
 }
 
+#if DCHECK_IS_ON()
+int SanityCheckCopyRequestCounts(LayerImpl* layer) {
+  int count = layer->HasCopyRequest() ? 1 : 0;
+  for (size_t i = 0; i < layer->children().size(); ++i) {
+    count += SanityCheckCopyRequestCounts(layer->child_at(i));
+  }
+  DCHECK_EQ(count, layer->num_layer_or_descendants_with_copy_request())
+      << ", id: " << layer->id();
+  return count;
+}
+#endif
+
 bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
+#if DCHECK_IS_ON()
+  if (root_layer())
+    SanityCheckCopyRequestCounts(root_layer());
+#endif
+
   if (!needs_update_draw_properties_)
     return true;
 

@@ -260,7 +260,15 @@ void Layer::SetParent(Layer* layer) {
       layer->AddDependentNeedsPushProperties();
   }
 
+  if (parent_) {
+    parent_->UpdateNumCopyRequestsForSubtree(
+        -num_layer_or_descendants_with_copy_request_);
+  }
   parent_ = layer;
+  if (parent_) {
+    parent_->UpdateNumCopyRequestsForSubtree(
+        num_layer_or_descendants_with_copy_request_);
+  }
   SetLayerTreeHost(parent_ ? parent_->layer_tree_host() : nullptr);
 
   if (!layer_tree_host_)
@@ -414,16 +422,17 @@ void Layer::RequestCopyOfOutput(
     return;
   copy_requests_.push_back(request.Pass());
   if (had_no_copy_requests) {
-    bool copy_request_added = true;
-    UpdateNumCopyRequestsForSubtree(copy_request_added);
+    UpdateNumCopyRequestsForSubtree(1);
   }
   SetNeedsCommit();
 }
 
-void Layer::UpdateNumCopyRequestsForSubtree(bool add) {
-  int change = add ? 1 : -1;
+void Layer::UpdateNumCopyRequestsForSubtree(int delta) {
+  if (!delta)
+    return;
   for (Layer* layer = this; layer; layer = layer->parent()) {
-    layer->num_layer_or_descendants_with_copy_request_ += change;
+    layer->num_layer_or_descendants_with_copy_request_ += delta;
+    layer->SetNeedsPushProperties();
     DCHECK_GE(layer->num_layer_or_descendants_with_copy_request_, 0);
   }
 }
@@ -1211,6 +1220,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetShouldFlattenTransform(should_flatten_transform_);
   layer->set_should_flatten_transform_from_property_tree(
       should_flatten_transform_from_property_tree_);
+  layer->set_num_layer_or_descendant_with_copy_request(
+      num_layer_or_descendants_with_copy_request_);
   layer->set_is_clipped(is_clipped_);
   layer->set_draw_blend_mode(draw_blend_mode_);
   layer->SetUseParentBackfaceVisibility(use_parent_backface_visibility_);
@@ -1300,7 +1311,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (!copy_requests_.empty() && layer_tree_host_)
     layer_tree_host_->property_trees()->needs_rebuild = true;
   if (had_copy_requests)
-    UpdateNumCopyRequestsForSubtree(false);
+    UpdateNumCopyRequestsForSubtree(-1);
+
   copy_requests_.clear();
   layer->PassCopyRequests(&main_thread_copy_requests);
 

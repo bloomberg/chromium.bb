@@ -6636,7 +6636,9 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   requests.push_back(CopyOutputRequest::CreateRequest(
       base::Bind(&ShutdownReleasesContext_Callback)));
 
-  host_impl_->active_tree()->root_layer()->PassCopyRequests(&requests);
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+  root->PassCopyRequests(&requests);
+  root->set_num_layer_or_descendant_with_copy_request(1);
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
