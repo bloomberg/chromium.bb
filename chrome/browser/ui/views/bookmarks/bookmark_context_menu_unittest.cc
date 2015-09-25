@@ -25,6 +25,7 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -59,11 +60,7 @@ class TestingPageNavigator : public PageNavigator {
 
 class BookmarkContextMenuTest : public testing::Test {
  public:
-  BookmarkContextMenuTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        model_(NULL) {
-  }
+  BookmarkContextMenuTest() : model_(nullptr) {}
 
   void SetUp() override {
     profile_.reset(new TestingProfile());
@@ -79,14 +76,10 @@ class BookmarkContextMenuTest : public testing::Test {
     ui::Clipboard::DestroyClipboardForCurrentThread();
 
     BrowserThread::GetBlockingPool()->FlushForTesting();
-    // Flush the message loop to make application verifiers happy.
-    message_loop_.RunUntilIdle();
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* model_;
   TestingPageNavigator navigator_;

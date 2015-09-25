@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -14,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
@@ -25,17 +24,12 @@ using base::Time;
 using base::TimeDelta;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using content::BrowserThread;
 
 // Base class for bookmark editor tests. Creates a BookmarkModel and populates
 // it with test data.
 class BookmarkEditorViewTest : public testing::Test {
  public:
-  BookmarkEditorViewTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        model_(NULL) {
-  }
+  BookmarkEditorViewTest() : model_(nullptr) {}
 
   void SetUp() override {
     profile_.reset(new TestingProfile());
@@ -45,10 +39,6 @@ class BookmarkEditorViewTest : public testing::Test {
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
 
     AddTestData();
-  }
-
-  void TearDown() override {
-    message_loop_.RunUntilIdle();
   }
 
  protected:
@@ -112,9 +102,7 @@ class BookmarkEditorViewTest : public testing::Test {
 
   views::TreeView* tree_view() { return editor_->tree_view_; }
 
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
   BookmarkModel* model_;
   scoped_ptr<TestingProfile> profile_;

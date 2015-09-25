@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -22,6 +21,7 @@
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -46,11 +46,7 @@ class TestingPageNavigator : public PageNavigator {
 
 class BookmarkContextMenuControllerTest : public testing::Test {
  public:
-  BookmarkContextMenuControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_),
-        model_(NULL) {
-  }
+  BookmarkContextMenuControllerTest() : model_(nullptr) {}
 
   void SetUp() override {
     TestingProfile::Builder builder;
@@ -63,9 +59,6 @@ class BookmarkContextMenuControllerTest : public testing::Test {
 
   void TearDown() override {
     ui::Clipboard::DestroyClipboardForCurrentThread();
-
-    // Flush the message loop to make application verifiers happy.
-    message_loop_.RunUntilIdle();
   }
 
   // Creates the following structure:
@@ -93,9 +86,7 @@ class BookmarkContextMenuControllerTest : public testing::Test {
   }
 
  protected:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
   BookmarkModel* model_;
   TestingPageNavigator navigator_;
