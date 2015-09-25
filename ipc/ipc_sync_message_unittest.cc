@@ -75,14 +75,18 @@ class TestMessageReceiver {
     *out3 = false;
   }
 
-  void On_3_1(int in1, bool in2, std::string in3, bool* out1) {
+  void On_3_1(int in1, bool in2, const std::string& in3, bool* out1) {
     DCHECK_EQ(1, in1);
     DCHECK(!in2);
     DCHECK_EQ("3_1", in3);
     *out1 = true;
   }
 
-  void On_3_2(std::string in1, bool in2, int in3, bool* out1, int* out2) {
+  void On_3_2(const std::string& in1,
+              bool in2,
+              int in3,
+              bool* out1,
+              int* out2) {
     DCHECK_EQ("3_2", in1);
     DCHECK(!in2);
     DCHECK_EQ(2, in3);
@@ -90,7 +94,11 @@ class TestMessageReceiver {
     *out2 = 32;
   }
 
-  void On_3_3(int in1, std::string in2, bool in3, std::string* out1, int* out2,
+  void On_3_3(int in1,
+              const std::string& in2,
+              bool in3,
+              std::string* out1,
+              int* out2,
               bool* out3) {
     DCHECK_EQ(3, in1);
     DCHECK_EQ("3_3", in2);
@@ -100,8 +108,13 @@ class TestMessageReceiver {
     *out3 = false;
   }
 
-  void On_3_4(bool in1, int in2, std::string in3, int* out1, bool* out2,
-              std::string* out3, bool* out4) {
+  void On_3_4(bool in1,
+              int in2,
+              const std::string& in3,
+              int* out1,
+              bool* out2,
+              std::string* out3,
+              bool* out4) {
     DCHECK(in1);
     DCHECK_EQ(3, in2);
     DCHECK_EQ("3_4", in3);
