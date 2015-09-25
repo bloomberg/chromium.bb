@@ -23,7 +23,6 @@
 
 #include "base/basictypes.h"
 #include "base/containers/scoped_ptr_map.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/gfx_export.h"
@@ -34,11 +33,6 @@ typedef struct CGColorSpace* CGColorSpaceRef;
 #endif
 
 class SkBitmap;
-
-namespace {
-class ImageTest;
-class ImageMacTest;
-}
 
 namespace gfx {
 struct ImagePNGRep;
@@ -193,9 +187,6 @@ class GFX_EXPORT Image {
   // Internal class that holds all the representations. This allows the Image to
   // be cheaply copied.
   scoped_refptr<internal::ImageStorage> storage_;
-
-  friend class ::ImageTest;
-  friend class ::ImageMacTest;
 };
 
 }  // namespace gfx

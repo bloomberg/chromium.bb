@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -85,9 +86,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   PrivacyMode privacy_mode() const { return privacy_mode_; }
 
-  const BoundNetLog& net_log() const{
-    return net_log_;
-  }
+  const BoundNetLog& net_log() const { return net_log_; }
 
  private:
   QuicStreamFactory* factory_;
@@ -294,7 +293,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                          const BoundNetLog& net_log);
 
   // Returns a newly created QuicHttpStream owned by the caller.
-  scoped_ptr<QuicHttpStream> CreateFromSession(QuicChromiumClientSession*);
+  scoped_ptr<QuicHttpStream> CreateFromSession(
+      QuicChromiumClientSession* session);
 
   bool OnResolution(const QuicServerId& server_id,
                     const AddressList& address_list);

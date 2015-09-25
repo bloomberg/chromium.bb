@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/status_icons/status_tray.h"
 

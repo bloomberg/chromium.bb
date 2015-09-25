@@ -5,7 +5,6 @@
 #ifndef REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
 #define REMOTING_HOST_CHROMOTING_HOST_CONTEXT_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 

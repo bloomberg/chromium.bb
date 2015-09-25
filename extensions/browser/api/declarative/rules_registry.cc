@@ -232,7 +232,7 @@ void RulesRegistry::GetRules(const std::string& extension_id,
 }
 
 void RulesRegistry::GetRules(const std::string& extension_id,
-                             RulesDictionary& rules,
+                             const RulesDictionary& rules,
                              std::vector<linked_ptr<api::events::Rule>>* out) {
   for (const auto& i : rules) {
     const RulesDictionaryKey& key = i.first;

@@ -7,7 +7,6 @@
 
 #include "base/base_export.h"
 #include "base/files/scoped_file.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/memory/memory_pressure_monitor.h"

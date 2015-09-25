@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SYNC_INTERNAL_API_SYNC_MANAGER_H_
-#define SYNC_INTERNAL_API_SYNC_MANAGER_H_
+#ifndef SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
+#define SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_
 
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "net/base/network_change_notifier.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/all_status.h"
@@ -349,4 +350,4 @@ class SYNC_EXPORT_PRIVATE SyncManagerImpl
 
 }  // namespace syncer
 
-#endif  // SYNC_INTERNAL_API_SYNC_MANAGER_H_
+#endif  // SYNC_INTERNAL_API_SYNC_MANAGER_IMPL_H_

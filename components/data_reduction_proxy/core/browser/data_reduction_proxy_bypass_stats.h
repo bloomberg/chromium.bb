@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_STATS_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/network_change_notifier.h"

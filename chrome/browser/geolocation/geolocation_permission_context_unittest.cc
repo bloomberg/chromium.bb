@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
 #include "base/synchronization/waitable_event.h"
@@ -189,7 +190,7 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
       web_contents, id, requesting_frame, user_gesture,
       base::Bind(&GeolocationPermissionContextTests::PermissionResponse,
                  base::Unretained(this), id));
-   content::RunAllBlockingPoolTasksUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(

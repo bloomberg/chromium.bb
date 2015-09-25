@@ -5,6 +5,7 @@
 #ifndef UI_GFX_RENDER_TEXT_HARFBUZZ_H_
 #define UI_GFX_RENDER_TEXT_HARFBUZZ_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/harfbuzz-ng/src/hb.h"

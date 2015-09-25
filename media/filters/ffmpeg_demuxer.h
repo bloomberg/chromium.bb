@@ -27,7 +27,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"

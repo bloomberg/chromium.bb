@@ -6,7 +6,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/begin_frame_args_test.h"

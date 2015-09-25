@@ -6,6 +6,7 @@
 #define COMPONENTS_VARIATIONS_VARIATIONS_REQUEST_SCHEDULER_MOBILE_H_
 
 #include "base/bind.h"
+#include "base/gtest_prod_util.h"
 #include "components/variations/variations_request_scheduler.h"
 
 class PrefService;

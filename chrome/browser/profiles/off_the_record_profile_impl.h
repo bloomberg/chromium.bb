@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/profiles/off_the_record_profile_io_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"

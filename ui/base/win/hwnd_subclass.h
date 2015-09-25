@@ -8,7 +8,6 @@
 #include <windows.h>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/base/ui_base_export.h"
 #include "ui/base/view_prop.h"

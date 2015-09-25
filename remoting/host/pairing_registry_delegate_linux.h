@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_PROTOCOL_PAIRING_REGISTRY_DELEGATE_LINUX_H_
-#define REMOTING_PROTOCOL_PAIRING_REGISTRY_DELEGATE_LINUX_H_
+#ifndef REMOTING_HOST_PAIRING_REGISTRY_DELEGATE_LINUX_H_
+#define REMOTING_HOST_PAIRING_REGISTRY_DELEGATE_LINUX_H_
 
 #include "remoting/protocol/pairing_registry.h"
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 
 namespace base {
 class ListValue;
@@ -47,4 +48,4 @@ class PairingRegistryDelegateLinux
 
 }  // namespace remoting
 
-#endif  // REMOTING_PROTOCOL_PAIRING_REGISTRY_DELEGATE_LINUX_H_
+#endif  // REMOTING_HOST_PAIRING_REGISTRY_DELEGATE_LINUX_H_

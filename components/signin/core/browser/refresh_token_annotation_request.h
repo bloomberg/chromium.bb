@@ -6,6 +6,7 @@
 #define COMPONENTS_SIGNIN_CORE_BROWSER_REFRESH_TOKEN_ANNOTATION_REQUEST_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/threading/non_thread_safe.h"
 #include "google_apis/gaia/oauth2_api_call_flow.h"
 #include "google_apis/gaia/oauth2_token_service.h"

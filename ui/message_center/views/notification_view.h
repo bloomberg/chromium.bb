@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -132,4 +133,4 @@ class MESSAGE_CENTER_EXPORT NotificationView
 
 }  // namespace message_center
 
-#endif // UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_H_
+#endif  // UI_MESSAGE_CENTER_VIEWS_NOTIFICATION_VIEW_H_

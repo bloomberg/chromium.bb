@@ -9,7 +9,6 @@
 #include <map>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -185,4 +184,4 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
 }  // namespace message_center
 
-#endif // UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
+#endif  // UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_

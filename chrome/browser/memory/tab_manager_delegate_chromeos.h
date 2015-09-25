@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/process/process.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/memory/tab_manager.h"

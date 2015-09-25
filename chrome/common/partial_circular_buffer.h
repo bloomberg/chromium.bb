@@ -6,7 +6,6 @@
 #define CHROME_COMMON_PARTIAL_CIRCULAR_BUFFER_H_
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 
 // A wrapper around a memory buffer that allows circular read and write with a
 // selectable wrapping position. Buffer layout (after wrap; H is header):

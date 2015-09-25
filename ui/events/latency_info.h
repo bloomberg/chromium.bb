@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/containers/small_map.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"

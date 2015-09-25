@@ -6,13 +6,12 @@
 #define CONTENT_RENDERER_MEDIA_MEDIA_STREAM_VIDEO_CAPTURER_SOURCE_H_
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/media/video_capture.h"
 #include "content/renderer/media/media_stream_video_source.h"
 
-namespace media{
+namespace media {
 class VideoCapturerSource;
 }  // namespace media
 

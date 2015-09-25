@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GCP20_PROTOTYPE_PRINTER_H_
-#define GCP20_PROTOTYPE_PRINTER_H_
+#ifndef CLOUD_PRINT_GCP20_PROTOTYPE_PRINTER_H_
+#define CLOUD_PRINT_GCP20_PROTOTYPE_PRINTER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "cloud_print/gcp20/prototype/cloud_print_requester.h"
 #include "cloud_print/gcp20/prototype/cloud_print_xmpp_listener.h"
@@ -252,5 +253,5 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   DISALLOW_COPY_AND_ASSIGN(Printer);
 };
 
-#endif  // GCP20_PROTOTYPE_PRINTER_H_
+#endif  // CLOUD_PRINT_GCP20_PROTOTYPE_PRINTER_H_
 

@@ -278,7 +278,7 @@ class WindowSize {
       max_ = size_;
   }
 
-  bool is_at_capacity(bool shrinking) {
+  bool is_at_capacity(bool shrinking) const {
     return size_ == (shrinking ? min_ : max_);
   }
 
@@ -630,7 +630,7 @@ int WorkspaceWindowResizer::CalculateAttachedSizes(
 
   int leftover_pixels = 0;
   while (grow_attached_by != 0) {
-    int leftovers = GrowFairly(grow_attached_by, window_sizes);
+    int leftovers = GrowFairly(grow_attached_by, &window_sizes);
     if (leftovers == grow_attached_by) {
       leftover_pixels = leftovers;
       break;
@@ -644,14 +644,14 @@ int WorkspaceWindowResizer::CalculateAttachedSizes(
   return leftover_pixels;
 }
 
-int WorkspaceWindowResizer::GrowFairly(
-    int pixels,
-    std::vector<WindowSize>& sizes) const {
+int WorkspaceWindowResizer::GrowFairly(int pixels,
+                                       std::vector<WindowSize>* sizes) const {
   bool shrinking = pixels < 0;
   std::vector<WindowSize*> nonfull_windows;
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    if (!sizes[i].is_at_capacity(shrinking))
-      nonfull_windows.push_back(&sizes[i]);
+  for (size_t i = 0; i < sizes->size(); ++i) {
+    WindowSize& current_window_size = (*sizes)[i];
+    if (!current_window_size.is_at_capacity(shrinking))
+      nonfull_windows.push_back(&current_window_size);
   }
   std::vector<float> ratios;
   CalculateGrowthRatios(nonfull_windows, &ratios);

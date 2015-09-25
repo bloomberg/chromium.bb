@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "components/sessions/core/session_id.h"
 #include "sync/api/sync_change_processor.h"
 
@@ -40,7 +39,7 @@ namespace browser_sync {
 
 class TabNodePool {
  public:
-   TabNodePool();
+  TabNodePool();
   ~TabNodePool();
   enum InvalidTab {
     kInvalidTabID = -1

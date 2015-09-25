@@ -5,6 +5,7 @@
 #ifndef UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 #define UI_VIEWS_WINDOW_DIALOG_CLIENT_VIEW_H_
 
+#include "base/gtest_prod_util.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"
@@ -68,7 +69,7 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
 
  protected:
   // For testing.
-  DialogClientView(View* contents_view);
+  explicit DialogClientView(View* contents_view);
 
   // Returns the DialogDelegate for the window. Virtual for testing.
   virtual DialogDelegate* GetDialogDelegate() const;

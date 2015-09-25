@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/browser_thread.h"
@@ -196,7 +195,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // Same as GetRules but returns all rules owned by |extension_id| for a given
   // |rules| dictionary.
   void GetRules(const std::string& extension_id,
-                RulesDictionary& rules,
+                const RulesDictionary& rules,
                 std::vector<linked_ptr<api::events::Rule>>* out);
 
   // Common processing after extension's rules have changed.

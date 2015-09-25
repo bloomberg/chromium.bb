@@ -9,7 +9,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/threading/thread_checker.h"
 #include "printing/metafile.h"

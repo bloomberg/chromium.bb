@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/render_text.h"

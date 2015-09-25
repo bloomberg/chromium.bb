@@ -32,11 +32,15 @@
 using std::string;
 
 namespace {
+
 const char kUploadURL[] = "https://clients2.google.com/cr/staging_report";
 const char kUploadContentType[] = "multipart/form-data";
 const char kMultipartBoundary[] =
     "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
 const int kHttpResponseOk = 200;
+
+// Allow up to 10MB for trace upload
+const int kMaxUploadBytes = 10000000;
 
 }  // namespace
 

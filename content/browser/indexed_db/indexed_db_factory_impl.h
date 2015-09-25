@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 
 namespace content {

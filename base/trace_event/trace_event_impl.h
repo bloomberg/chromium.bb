@@ -14,7 +14,6 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
@@ -111,7 +110,7 @@ class BASE_EXPORT TraceEvent {
 
   void UpdateDuration(const TraceTicks& now, const ThreadTicks& thread_now);
 
-  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead*);
+  void EstimateTraceMemoryOverhead(TraceEventMemoryOverhead* overhead);
 
   // Serialize event data to JSON
   void AppendAsJSON(

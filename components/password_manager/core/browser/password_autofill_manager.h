@@ -7,7 +7,6 @@
 
 #include <map>
 
-#include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"

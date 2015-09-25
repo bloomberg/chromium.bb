@@ -5,7 +5,6 @@
 #include "chrome/browser/notifications/notification_permission_context.h"
 
 #include "base/bind.h"
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"

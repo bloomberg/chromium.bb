@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UPGRADE_DETECTOR_H_
 #define CHROME_BROWSER_UPGRADE_DETECTOR_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "ui/base/idle/idle.h"

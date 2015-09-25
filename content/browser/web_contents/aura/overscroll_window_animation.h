@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_WINDOW_ANIMATION_H_
 #define CONTENT_BROWSER_WEB_CONTENTS_AURA_OVERSCROLL_WINDOW_ANIMATION_H_
 
-#include "base/gtest_prod_util.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/common/content_export.h"
 #include "ui/compositor/layer_animation_observer.h"

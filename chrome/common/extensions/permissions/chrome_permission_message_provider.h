@@ -8,7 +8,6 @@
 #include <set>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 

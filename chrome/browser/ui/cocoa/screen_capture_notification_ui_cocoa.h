@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_UI_COCOA_SCREEN_CAPTURE_NOTIFICATION_UI_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_SCREEN_CAPTURE_NOTIFICATION_UI_COCOA_H_
+
 #import <Cocoa/Cocoa.h>
 
 #include <string>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
@@ -45,3 +47,5 @@ class ScreenCaptureNotificationUICocoa : public ScreenCaptureNotificationUI {
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUICocoa);
 };
+
+#endif  // CHROME_BROWSER_UI_COCOA_SCREEN_CAPTURE_NOTIFICATION_UI_COCOA_H_

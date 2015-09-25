@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback_list.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/translate/core/browser/language_state.h"

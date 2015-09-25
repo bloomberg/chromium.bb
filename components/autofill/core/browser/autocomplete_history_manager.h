@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/prefs/pref_member.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -45,7 +46,6 @@ class BackgroundAppBrowserTest: public ExtensionBrowserTest {};
 // Tests that if we reload a background app, we don't get a popup bubble
 // telling us that a new background app has been installed.
 IN_PROC_BROWSER_TEST_F(BackgroundAppBrowserTest, ReloadBackgroundApp) {
-
   // Pass this in to the browser test.
   scoped_ptr<BackgroundModeManager> test_background_mode_manager(
       new TestBackgroundModeManager(

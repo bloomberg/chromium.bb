@@ -20,6 +20,7 @@
 #include "ash/wm/workspace/workspace_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -65,7 +66,6 @@ class ASH_EXPORT ShelfLayoutManager
       public SnapToPixelLayoutManager,
       public SessionStateObserver {
  public:
-
   // We reserve a small area on the edge of the workspace area to ensure that
   // the resize handle at the edge of the window can be hit.
   static const int kWorkspaceAreaVisibleInset;

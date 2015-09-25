@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/containers/small_map.h"
-#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/media/router/media_sink.h"

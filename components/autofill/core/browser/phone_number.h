@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/phone_number_i18n.h"

@@ -11,7 +11,6 @@
 #include "ash/system/tray/tray_image_item.h"
 #include "ash/system/tray/tray_notification_view.h"
 #include "ash/system/tray/view_click_listener.h"
-#include "base/gtest_prod_util.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/button.h"
 

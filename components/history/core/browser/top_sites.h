@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/observer_list.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/history/core/browser/history_types.h"

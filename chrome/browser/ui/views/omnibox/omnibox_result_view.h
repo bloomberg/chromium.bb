@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "third_party/skia/include/core/SkColor.h"

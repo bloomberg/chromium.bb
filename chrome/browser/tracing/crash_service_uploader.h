@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -21,13 +20,6 @@ namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
 }  // namespace net
-
-namespace {
-
-// Allow up to 10MB for trace upload
-const int kMaxUploadBytes = 10000000;
-
-}  // namespace
 
 // TraceCrashServiceUploader uploads traces to the Chrome crash service.
 class TraceCrashServiceUploader : public content::TraceUploader,

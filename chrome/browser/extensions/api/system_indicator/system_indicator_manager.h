@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/threading/thread_checker.h"

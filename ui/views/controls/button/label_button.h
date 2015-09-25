@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_LABEL_BUTTON_H_
 
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"

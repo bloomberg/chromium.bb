@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "net/base/io_buffer.h"

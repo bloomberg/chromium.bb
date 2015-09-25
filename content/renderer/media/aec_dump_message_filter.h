@@ -5,7 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_AEC_DUMP_MESSAGE_FILTER_H_
 #define CONTENT_RENDERER_MEDIA_AEC_DUMP_MESSAGE_FILTER_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/renderer/render_thread_impl.h"

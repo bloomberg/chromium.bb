@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_STATUS_ICONS_STATUS_TRAY_H_
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 

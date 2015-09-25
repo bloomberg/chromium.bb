@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/threading/non_thread_safe.h"
@@ -157,7 +156,7 @@ class NET_EXPORT_PRIVATE DnsConfigService
     DNS_CONFIG_WATCH_MAX,
   };
 
- // Immediately attempts to read the current configuration.
+  // Immediately attempts to read the current configuration.
   virtual void ReadNow() = 0;
   // Registers system watchers. Returns true iff succeeds.
   virtual bool StartWatching() = 0;

@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_IMAGE_SKIA_OPERATIONS_H_
-#define UI_GFX_IMAGE_SKIA_OPERATIONS_H_
+#ifndef UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
+#define UI_GFX_IMAGE_IMAGE_SKIA_OPERATIONS_H_
 
-#include "base/gtest_prod_util.h"
 #include "skia/ext/image_operations.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/gfx_export.h"

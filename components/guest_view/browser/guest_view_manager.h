@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -260,18 +259,19 @@ class GuestViewManager : public content::BrowserPluginGuestManager,
 
   // |view_destruction_callback_map_| maps from embedder process ID to view ID
   // to a vector of callback functions to be called when that view is destroyed.
-  using Callbacks = std::vector<base::Closure> ;
-  using CallbacksForEachViewID = std::map<int, Callbacks> ;
-  using CallbacksForEachEmbedderID = std::map<int, CallbacksForEachViewID> ;
+  using Callbacks = std::vector<base::Closure>;
+  using CallbacksForEachViewID = std::map<int, Callbacks>;
+  using CallbacksForEachEmbedderID = std::map<int, CallbacksForEachViewID>;
   CallbacksForEachEmbedderID view_destruction_callback_map_;
 
   // This is used to ensure that an EmbedderRenderProcessHostObserver will not
   // call into this GuestViewManager after it has been destroyed.
   base::WeakPtrFactory<GuestViewManager> weak_ptr_factory_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GuestViewManager);
 };
 
 }  // namespace guest_view
 
-#endif  // COMPONETS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_H_
+#endif  // COMPONENTS_GUEST_VIEW_BROWSER_GUEST_VIEW_MANAGER_H_

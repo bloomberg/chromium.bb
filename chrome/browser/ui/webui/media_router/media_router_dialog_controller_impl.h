@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_WEBUI_MEDIA_ROUTER_MEDIA_ROUTER_DIALOG_CONTROLLER_IMPL_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
@@ -16,10 +17,6 @@ FORWARD_DECLARE_TEST(MediaRouterActionUnitTest, IconPressedState);
 class MediaRouterAction;
 
 namespace media_router {
-
-namespace {
-class MediaRouterDialogDelegate;
-}
 
 // A desktop implementation of MediaRouterDialogController.
 // This class is not thread safe and must be called on the UI thread.

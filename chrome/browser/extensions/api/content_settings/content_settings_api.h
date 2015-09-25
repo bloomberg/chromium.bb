@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_API_H_
 
+#include "base/gtest_prod_util.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
 class PluginFinder;

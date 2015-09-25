@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/signin/core/browser/signin_error_controller.h"

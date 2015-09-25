@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
 #define CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
 
+#include "base/gtest_prod_util.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/output/copy_output_result.h"

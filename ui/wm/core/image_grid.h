@@ -6,7 +6,6 @@
 #define UI_WM_CORE_IMAGE_GRID_H_
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_delegate.h"
@@ -62,7 +61,7 @@ class WM_EXPORT ImageGrid {
   // Helper class for use by tests.
   class WM_EXPORT TestAPI {
    public:
-    TestAPI(ImageGrid* grid) : grid_(grid) {}
+    explicit TestAPI(ImageGrid* grid) : grid_(grid) {}
 
     gfx::Rect top_left_clip_rect() const {
       return grid_->top_left_painter_->clip_rect_;
@@ -129,7 +128,7 @@ class WM_EXPORT ImageGrid {
   // Delegate responsible for painting a specific image on a layer.
   class ImagePainter : public ui::LayerDelegate {
    public:
-    ImagePainter(const gfx::ImageSkia& image) : image_(image) {}
+    explicit ImagePainter(const gfx::ImageSkia& image) : image_(image) {}
     ~ImagePainter() override {}
 
     // Clips |layer| to |clip_rect|.  Triggers a repaint if the clipping

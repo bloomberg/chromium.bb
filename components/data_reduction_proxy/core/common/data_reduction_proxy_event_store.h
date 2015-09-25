@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_storage_delegate.h"
@@ -31,7 +30,7 @@ class DataReductionProxyEventStore
   static void AddConstants(base::DictionaryValue* constants_dict);
 
   // Constructs a DataReductionProxyEventStore object
-  explicit DataReductionProxyEventStore();
+  DataReductionProxyEventStore();
 
   virtual ~DataReductionProxyEventStore();
 

@@ -7,6 +7,7 @@
 
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 
+#include "base/gtest_prod_util.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/service_worker/service_worker_database.h"
