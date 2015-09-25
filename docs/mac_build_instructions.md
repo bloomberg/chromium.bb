@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-*   A Mac running 10.8+.
+*   A Mac running 10.9+.
 *   http://developer.apple.com/tools/xcode/XCode, 5+
 *   Install
     [gclient](http://dev.chromium.org/developers/how-tos/install-depot-tools),
@@ -12,11 +12,14 @@
     [depot_tools](http://dev.chromium.org/developers/how-tos/depottools) package
     ([download](http://dev.chromium.org/developers/how-tos/install-depot-tools)).
     gclient is a wrapper around svn that we use to manage our working copies.
-*   Install [git](http://code.google.com/p/git-osx-installer/) on OSX 10.8. The
-    system git shipping with OS X 10.9 / Xcode 5 works well too.
-*   (optional -- required if you don't have some commands such as svn natively)
-    Install Xcode's "Command Line Tools" via Xcode menu -> Preferences ->
+*   Install Xcode's "Command Line Tools" via Xcode menu -> Preferences ->
     Downloads
+*   The OSX 10.10 SDK. Run
+    ```sh
+    ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
+    ```
+    to check whether you have it. If you don't have it, you need to get one from
+    an install of Xcode 6, and place it in the above directory.
 
 ## Getting the code
 
