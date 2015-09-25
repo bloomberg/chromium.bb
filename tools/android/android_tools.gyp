@@ -7,6 +7,7 @@
     # Intermediate target grouping the android tools needed to run native
     # unittests and instrumentation test apks.
     {
+      # GN: //tools/android:android_tools
       'target_name': 'android_tools',
       'type': 'none',
       'dependencies': [

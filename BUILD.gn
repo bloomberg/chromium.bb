@@ -222,6 +222,7 @@ group("both_gn_and_gyp") {
       "//chrome/android:chrome_public_test_apk",
       "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
       "//third_party/errorprone:chromium_errorprone",
+      "//tools/android:android_tools",
       "//tools/imagediff($host_toolchain)",
 
       # TODO(GYP): Remove these when the components_unittests work.
