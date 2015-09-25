@@ -47,10 +47,6 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* 
             return nullptr;
         mergeInputs.append(mergeEffect);
     }
-
-    if (mergeInputs.isEmpty())
-        return nullptr;
-
     return effect.release();
 }
 

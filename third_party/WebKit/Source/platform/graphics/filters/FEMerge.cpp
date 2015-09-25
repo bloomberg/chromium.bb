@@ -60,7 +60,6 @@ TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const
     ts << "[feMerge";
     FilterEffect::externalRepresentation(ts);
     unsigned size = numberOfEffectInputs();
-    ASSERT(size > 0);
     ts << " mergeNodes=\"" << size << "\"]\n";
     for (unsigned i = 0; i < size; ++i)
         inputEffect(i)->externalRepresentation(ts, indent + 1);
