@@ -1814,15 +1814,6 @@ crbug.com/521764 [ Win10 ] http/tests/security/suborigins/suborigin-valid-names.
 crbug.com/521764 [ Win10 ] http/tests/xmlhttprequest/xmlhttprequest-post-crash.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] ietestcenter/css3/text/textshadow-002.htm [ ImageOnlyFailure Timeout ]
 crbug.com/521764 [ Win10 ] ietestcenter/css3/text/textshadow-010.htm [ ImageOnlyFailure Timeout ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/browsers/history/the-history-interface/007.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-candidate-insert-before.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-in-sync-event.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-play.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-src.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-source.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-remove-src.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-source-media.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/selectors/pseudo-classes/focus.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/console/console-format-table.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/editor/text-editor-search-switch-editor.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] inspector/elements/styles-4/styles-should-not-force-sync-style-recalc.html [ Failure Pass ]
@@ -1912,8 +1903,6 @@ crbug.com/521764 [ Win10 ] fast/scroll-behavior/overflow-scroll-root-frame-anima
 crbug.com/521764 [ Win10 ] http/tests/inspector/network/network-image-404.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] http/tests/inspector/network/network-xhr-redirect-body.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] http/tests/loading/redirect-methods.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-pause.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests25.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/console/console-copy-treeoutline.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/console/console-tests.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/tracing/timeline-auto-record.html [ Failure Pass ]
@@ -2146,9 +2135,6 @@ crbug.com/524826 [ Win10 ] compositing/squashing/squashing-reflection-disallowed
 
 crbug.com/526752 [ Win10 ] fast/css/fontfaceset-check-platform-fonts.html [ Failure Pass ]
 
-crbug.com/534423 [ Debug ] fast/frames/sandboxed-iframe-navigation-parent.html [ Crash Pass ]
-crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Crash Pass ]
-
 crbug.com/534429 fast/events/mouseclick-target-and-positioning.html [ Failure Pass ]
 crbug.com/534429 fast/events/platform-wheelevent-paging-x-in-scrolling-page.html [ Failure Pass ]
 crbug.com/534429 fast/events/popup-allowed-from-gesture-initiated-event.html [ Failure Pass ]
@@ -2179,7 +2165,6 @@ crbug.com/527009 fast/dom/plugin-attributes-enumeration.html [ NeedsManualRebase
 crbug.com/527743 [ Win10 ] paint/masks/table-cell-masks.html [ Pass Timeout ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ ImageOnlyFailure ]
-crbug.com/534423 [ Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests2.html [ Pass Crash ]
 
 crbug.com/535478 [ Debug ] virtual/threaded/inspector/tracing/console-timeline.html [ Pass Timeout ]
 crbug.com/535478 [ Linux Mac ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Timeout ]
