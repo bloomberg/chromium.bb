@@ -340,6 +340,17 @@ void LayoutBoxModelObject::addLayerHitTestRects(LayerHitTestRects& rects, const 
     }
 }
 
+static bool hasPercentageTransform(const ComputedStyle& style)
+{
+    if (TransformOperation* translate = style.translate()) {
+        if (translate->dependsOnBoxSize())
+            return true;
+    }
+    return style.transform().dependsOnBoxSize()
+        || (style.transformOriginX() != Length(50, Percent) && style.transformOriginX().hasPercent())
+        || (style.transformOriginY() != Length(50, Percent) && style.transformOriginY().hasPercent());
+}
+
 void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidationState)
 {
     ASSERT(!needsLayout());
@@ -361,6 +372,11 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
     PaintInvalidationState childTreeWalkState(paintInvalidationState, *this, newPaintInvalidationContainer);
     if (reason == PaintInvalidationLocationChange)
         childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+
+    // Workaround for crbug.com/533277.
+    if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
+        childTreeWalkState.setForceSubtreeInvalidationWithinContainer();
+
     invalidatePaintOfSubtreesIfNeeded(childTreeWalkState);
 }
 
