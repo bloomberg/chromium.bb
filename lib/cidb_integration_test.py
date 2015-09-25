@@ -169,6 +169,11 @@ class CIDBMigrationsTest(CIDBIntegrationTest):
 
   def testWaterfallMigration(self):
     """Test that migrating waterfall from enum to varchar preserves value."""
+    self.skipTest('Skipped obsolete waterfall migration test.')
+    # This test no longer runs. It was used only to confirm the correctness of
+    # migration #41. In #43, the InsertBuild API changes in a way that is not
+    # compatible with this test.
+    # The test code remains in place for demonstration purposes only.
     db = self._PrepareFreshDatabase(40)
     build_id = db.InsertBuild('my builder', 'chromiumos', _random(),
                               'my config', 'my bot hostname')
@@ -196,7 +201,7 @@ class CIDBAPITest(CIDBIntegrationTest):
     self.assertEqual(type(current_db_time), datetime.datetime)
 
   def testBuildMessages(self):
-    db = self._PrepareFreshDatabase(42)
+    db = self._PrepareFreshDatabase(43)
     self.assertEqual([], db.GetBuildMessages(1))
     master_build_id = db.InsertBuild('builder name',
                                      constants.WATERFALL_TRYBOT,
@@ -278,9 +283,9 @@ def GetTestDataSeries(test_data_path):
 class DataSeries0Test(CIDBIntegrationTest):
   """Simulate a set of 630 master/slave CQ builds."""
 
-  def testCQWithSchema39(self):
-    """Run the CQ test with schema version 39."""
-    self._PrepareFreshDatabase(39)
+  def testCQWithSchema44(self):
+    """Run the CQ test with schema version 44."""
+    self._PrepareFreshDatabase(44)
     self._runCQTest()
 
   def _runCQTest(self):
@@ -466,7 +471,8 @@ class DataSeries0Test(CIDBIntegrationTest):
 
       def simulate_slave(slave_metadata):
         build_id = _SimulateBuildStart(db, slave_metadata,
-                                       master_build_id)
+                                       master_build_id,
+                                       important=True)
         _SimulateCQBuildFinish(db, slave_metadata, build_id)
         logging.debug('Simulated slave build %s on pid %s', build_id,
                       os.getpid())
@@ -624,7 +630,7 @@ class DataSeries1Test(CIDBIntegrationTest):
   """Simulate a single set of canary builds."""
 
   def runTest(self):
-    """Simulate a single set of canary builds with database schema v28."""
+    """Simulate a single set of canary builds with database schema v44."""
     metadatas = GetTestDataSeries(SERIES_1_TEST_DATA_PATH)
     self.assertEqual(len(metadatas), 18, 'Did not load expected amount of '
                                          'test data')
@@ -632,7 +638,7 @@ class DataSeries1Test(CIDBIntegrationTest):
     # Migrate db to specified version. As new schema versions are added,
     # migrations to later version can be applied after the test builds are
     # simulated, to test that db contents are correctly migrated.
-    self._PrepareFreshDatabase(39)
+    self._PrepareFreshDatabase(44)
 
     bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
 
@@ -719,7 +725,7 @@ def _TranslateStatus(status):
   return status
 
 
-def _SimulateBuildStart(db, metadata, master_build_id=None):
+def _SimulateBuildStart(db, metadata, master_build_id=None, important=None):
   """Returns build_id for the inserted buildTable entry."""
   metadata_dict = metadata.GetDict()
   # TODO(akeshet): We are pretending that all these builds were on the internal
@@ -733,7 +739,8 @@ def _SimulateBuildStart(db, metadata, master_build_id=None):
                             metadata_dict['build-number'],
                             metadata_dict['bot-config'],
                             metadata_dict['bot-hostname'],
-                            master_build_id)
+                            master_build_id,
+                            important=important)
 
   return build_id
 

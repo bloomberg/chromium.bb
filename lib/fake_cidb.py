@@ -44,7 +44,8 @@ class FakeCIDBConnection(object):
 
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED):
+                  timeout_seconds=None, status=constants.BUILDER_STATUS_PASSED,
+                  important=None):
     """Insert a build row.
 
     Note this API slightly differs from cidb as we pass status to avoid having
@@ -67,7 +68,8 @@ class FakeCIDBConnection(object):
            'master_build_id' : master_build_id,
            'deadline': deadline,
            'status': status,
-           'finish_time': datetime.datetime.now()}
+           'finish_time': datetime.datetime.now(),
+           'important': important}
     self.buildTable.append(row)
     return build_id
 
@@ -82,7 +84,8 @@ class FakeCIDBConnection(object):
          'full_version': versions.get('full'),
          'sdk_version': d.get('sdk-versions'),
          'toolchain_url': d.get('toolchain-url'),
-         'build_type': d.get('build_type')})
+         'build_type': d.get('build_type'),
+         'important': d.get('important')})
     return 1
 
   def InsertCLActions(self, build_id, cl_actions, timestamp=None):

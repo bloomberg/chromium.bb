@@ -47,7 +47,7 @@ def WriteBasicMetadata(builder_run):
 
   In particular, this method does not write any metadata values that depend
   on the builder config, as the config may be modified by patches that are
-  applied before the final reexectuion.
+  applied before the final reexectuion. (exception: the config's name itself)
 
   This method is safe to run more than once (for instance, once per cbuildbot
   execution) because it will write the same data each time.
@@ -135,6 +135,15 @@ class BuildStartStage(generic_stages.BuilderStage):
                                 self._run.config['doc'])
 
     WriteBasicMetadata(self._run)
+
+    # This is a heuristic value for |important|, since patches that get applied
+    # later in the build might change the config. We write it now anyway,
+    # because in case the build fails before Sync, it is better to have this
+    # heuristic value than None. In BuildReexectuionFinishedStage, we re-write
+    # the definitive value.
+    self._run.attrs.metadata.UpdateWithDict(
+        {'important': self._run.config['important']})
+
     d = self._run.attrs.metadata.GetDict()
 
     # BuildStartStage should only run once per build. But just in case it
@@ -165,7 +174,8 @@ class BuildStartStage(generic_stages.BuilderStage):
             build_config=d['bot-config'],
             bot_hostname=d['bot-hostname'],
             master_build_id=d['master_build_id'],
-            timeout_seconds=self._GetBuildTimeoutSeconds())
+            timeout_seconds=self._GetBuildTimeoutSeconds(),
+            important=d['important'])
         self._run.attrs.metadata.UpdateWithDict({'build_id': build_id,
                                                  'db_type': db_type})
         logging.info('Inserted build_id %s into cidb database type %s.',
@@ -316,6 +326,7 @@ class BuildReexecutionFinishedStage(generic_stages.BuilderStage,
         'boards': config['boards'],
         'child-configs': child_configs,
         'build_type': config['build_type'],
+        'important': config['important'],
 
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),

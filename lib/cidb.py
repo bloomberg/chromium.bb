@@ -585,10 +585,10 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     """
     return self._Execute('SELECT NOW()').fetchall()[0][0]
 
-  @minimum_schema(32)
+  @minimum_schema(43)
   def InsertBuild(self, builder_name, waterfall, build_number,
                   build_config, bot_hostname, master_build_id=None,
-                  timeout_seconds=None):
+                  timeout_seconds=None, important=None):
     """Insert a build row.
 
     Args:
@@ -600,6 +600,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       master_build_id: (Optional) primary key of master build to this build.
       timeout_seconds: (Optional) If provided, total time allocated for this
           build. A deadline is recorded in cidb for the current build to end.
+      important: (Optional) If provided, the |important| value for this build.
     """
     values = {
         'builder_name': builder_name,
@@ -609,7 +610,9 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         'build_config': build_config,
         'bot_hostname': bot_hostname,
         'start_time': sqlalchemy.func.current_timestamp(),
-        'master_build_id': master_build_id}
+        'master_build_id': master_build_id,
+        'important': important,
+    }
     if timeout_seconds is not None:
       now = self.GetTime()
       duration = datetime.timedelta(seconds=timeout_seconds)
@@ -778,7 +781,8 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                          'full_version': versions.get('full'),
                          'sdk_version': d.get('sdk-versions'),
                          'toolchain_url': d.get('toolchain-url'),
-                         'build_type': d.get('build_type')})
+                         'build_type': d.get('build_type'),
+                         'important': d.get('important')})
 
   @minimum_schema(32)
   def ExtendDeadline(self, build_id, timeout_seconds):
@@ -900,7 +904,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
         (status, build_id, child_config))
 
 
-  @minimum_schema(2)
+  @minimum_schema(43)
   def GetBuildStatus(self, build_id):
     """Gets the status of the build.
 
@@ -914,7 +918,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     statuses = self.GetBuildStatuses([build_id])
     return statuses[0] if statuses else None
 
-  @minimum_schema(2)
+  @minimum_schema(43)
   def GetBuildStatuses(self, build_ids):
     """Gets the statuses of the builds.
 
@@ -924,17 +928,17 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Returns:
       A list of dictionary with keys (id, build_config, start_time,
       finish_time, status, waterfall, build_number, builder_name,
-      platform_version, full_version), or None if no build with this
-      id was found.
+      platform_version, full_version, important), or None if no build
+      with this id was found.
     """
     return self._SelectWhere(
         'buildTable',
         'id IN (%s)' % ','.join(str(int(x)) for x in build_ids),
         ['id', 'build_config', 'start_time', 'finish_time', 'status',
          'waterfall', 'build_number', 'builder_name', 'platform_version',
-         'full_version'])
+         'full_version', 'important'])
 
-  @minimum_schema(2)
+  @minimum_schema(43)
   def GetSlaveStatuses(self, master_build_id):
     """Gets the statuses of slave builders to given build.
 
@@ -944,12 +948,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
     Returns:
       A list containing, for each slave build (row) found, a dictionary
-      with keys (id, build_config, start_time, finish_time, status).
+      with keys (id, build_config, start_time, finish_time, status, important).
     """
     return self._SelectWhere('buildTable',
                              'master_build_id = %d' % master_build_id,
                              ['id', 'build_config', 'start_time',
-                              'finish_time', 'status'])
+                              'finish_time', 'status', 'important'])
 
   @minimum_schema(30)
   def GetSlaveStages(self, master_build_id):
@@ -974,7 +978,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     columns = bs_table_columns + ['build_config']
     return [dict(zip(columns, values)) for values in results]
 
-  @minimum_schema(36)
+  @minimum_schema(44)
   def GetSlaveFailures(self, master_build_id):
     """Gets the failure entries for slave builds to given build.
 
@@ -987,13 +991,13 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       (id, build_stage_id, outer_failure_id, exception_type, exception_message,
        exception_category, extra_info, timestamp, stage_name, board,
        stage_status, build_id, master_build_id, builder_name, waterfall,
-       build_number, build_config, build_status).
+       build_number, build_config, build_status, important).
     """
     columns = ['id', 'build_stage_id', 'outer_failure_id', 'exception_type',
                'exception_message', 'exception_category', 'extra_info',
                'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
                'master_build_id', 'builder_name', 'waterfall', 'build_number',
-               'build_config', 'build_status']
+               'build_config', 'build_status', 'important']
     columns_string = ', '.join(columns)
     results = self._Execute('SELECT %s FROM failureView '
                             'WHERE master_build_id = %s ' %
@@ -1032,7 +1036,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     deadline_past = (r[0][0] == 0)
     return 0 if deadline_past else abs(time_remaining.total_seconds())
 
-  @minimum_schema(2)
+  @minimum_schema(43)
   def GetBuildHistory(self, build_config, num_results,
                       ignore_build_id=None, start_date=None, end_date=None,
                       starting_build_number=None):
@@ -1060,11 +1064,12 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
       A sorted list of dicts containing up to |number| dictionaries for
       build statuses in descending order. Valid keys in the dictionary are
       [id, build_config, buildbot_generation, waterfall, build_number,
-      start_time, finish_time, platform_version, full_version, status].
+      start_time, finish_time, platform_version, full_version, status,
+      important].
     """
     columns = ['id', 'build_config', 'buildbot_generation', 'waterfall',
                'build_number', 'start_time', 'finish_time', 'platform_version',
-               'full_version', 'status']
+               'full_version', 'status', 'important']
 
     where_clauses = ['build_config = "%s"' % build_config]
     if start_date is not None:
