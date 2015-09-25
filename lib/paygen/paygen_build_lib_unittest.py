@@ -1353,7 +1353,6 @@ DOC = "Faux doc"
     control_contents = osutils.ReadFile(cf)
 
     self.assertEqual(control_contents, '''name = 'paygen_foo'
-image_type = 'test'
 update_type = 'delta'
 source_release = '1.2.3'
 target_release = '1.2.3'

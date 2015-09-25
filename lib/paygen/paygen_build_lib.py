@@ -1009,7 +1009,6 @@ class _PaygenBuild(object):
     test = test_params.TestConfig(
         self._archive_board,
         suite_name,               # Name of the test (use the suite name).
-        False,                    # Using test images.
         bool(payload.src_image),  # Whether this is a delta.
         src_version,
         payload.tgt_image.version,
