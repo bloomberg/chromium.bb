@@ -136,8 +136,6 @@ void PermissionServiceImpl::RequestPermissions(
     const mojo::String& origin,
     bool user_gesture,
     const PermissionsStatusCallback& callback) {
-  NOTIMPLEMENTED();
-
   // TODO(lalitm,mlamouri): this is returning the current permission statuses
   // in order for the call to successfully return. It will be changed later.
   // See https://crbug.com/516626
