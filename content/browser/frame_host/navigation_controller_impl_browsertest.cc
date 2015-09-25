@@ -862,6 +862,29 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Verify that empty GURL navigations are not classified as SAME_PAGE.
+// See https://crbug.com/534980.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NavigationTypeClassification_EmptyGURL) {
+  GURL url1(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  NavigateToURL(shell(), url1);
+
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+
+  {
+    // Load an (invalid) empty GURL.  Blink will treat this as an inert commit,
+    // but we don't want it to show up as SAME_PAGE.
+    FrameNavigateParamsCapturer capturer(root);
+    NavigateFrameToURL(root, GURL());
+    capturer.Wait();
+    EXPECT_EQ(ui::PAGE_TRANSITION_LINK, capturer.params().transition);
+    EXPECT_EQ(NAVIGATION_TYPE_NEW_PAGE, capturer.details().type);
+  }
+}
+
 // Verify that navigations for NAVIGATION_TYPE_NEW_SUBFRAME and
 // NAVIGATION_TYPE_AUTO_SUBFRAME are properly classified.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,

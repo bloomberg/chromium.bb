@@ -915,7 +915,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   // TODO(creis): This check won't pass for subframes until we create entries
   // for subframe navigations.
   if (!rfh->GetParent())
-    CHECK(active_entry->site_instance() == rfh->GetSiteInstance());
+    CHECK_EQ(active_entry->site_instance(), rfh->GetSiteInstance());
 
   // Remember the bindings the renderer process has at this point, so that
   // we do not grant this entry additional bindings if we come back to it.
@@ -1003,12 +1003,20 @@ NavigationType NavigationControllerImpl::ClassifyNavigation(
   if (pending_entry_ && pending_entry_index_ == -1 &&
       pending_entry_->GetUniqueID() == params.nav_entry_id) {
     // In this case, we have a pending entry for a load of a new URL but Blink
-    // didn't do a new navigation (params.did_create_new_entry). This happens
-    // when you press enter in the URL bar to reload. We will create a pending
-    // entry, but Blink will convert it to a reload since it's the same page and
-    // not create a new entry for it (the user doesn't want to have a new
-    // back/forward entry when they do this). Therefore we want to just ignore
-    // the pending entry and go back to where we were (the "existing entry").
+    // didn't do a new navigation (params.did_create_new_entry). First check to
+    // make sure Blink didn't treat a new cross-process navigation as inert, and
+    // thus set params.did_create_new_entry to false. In that case, we must
+    // treat it as NEW since the SiteInstance doesn't match the entry.
+    if (GetLastCommittedEntry()->site_instance() != rfh->GetSiteInstance())
+      return NAVIGATION_TYPE_NEW_PAGE;
+
+    // Otherwise, this happens when you press enter in the URL bar to reload. We
+    // will create a pending entry, but Blink will convert it to a reload since
+    // it's the same page and not create a new entry for it (the user doesn't
+    // want to have a new back/forward entry when they do this). Therefore we
+    // want to just ignore the pending entry and go back to where we were (the
+    // "existing entry").
+    // TODO(creis,avi): Eliminate SAME_PAGE in https://crbug.com/536102.
     return NAVIGATION_TYPE_SAME_PAGE;
   }
 
@@ -1193,9 +1201,13 @@ void NavigationControllerImpl::RendererDidNavigateToSamePage(
   // ClassifyNavigation. All we need to do is update the existing entry.
   NavigationEntryImpl* existing_entry = GetLastCommittedEntry();
 
+  // If we classified this correctly, the SiteInstance should not have changed.
+  CHECK_EQ(existing_entry->site_instance(), rfh->GetSiteInstance());
+
   // We assign the entry's unique ID to be that of the new one. Since this is
   // always the result of a user action, we want to dismiss infobars, etc. like
   // a regular user-initiated navigation.
+  DCHECK_EQ(pending_entry_->GetUniqueID(), params.nav_entry_id);
   existing_entry->set_unique_id(pending_entry_->GetUniqueID());
 
   // The URL may have changed due to redirects.
