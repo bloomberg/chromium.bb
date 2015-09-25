@@ -4,32 +4,21 @@
 
 #include "chrome/browser/ui/views/new_task_manager_view.h"
 
-#include <map>
-
-#include "base/i18n/number_formatting.h"
 #include "base/prefs/pref_service.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
-#include "chrome/browser/task_management/task_manager_interface.h"
 #include "chrome/browser/task_management/task_manager_observer.h"
+#include "chrome/browser/ui/task_manager/task_manager_columns.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/nacl/browser/nacl_browser.h"
-#include "content/public/common/result_codes.h"
-#include "third_party/WebKit/public/web/WebCache.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/table_model_observer.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
-#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/layout/layout_constants.h"
 #include "ui/views/view.h"
@@ -53,40 +42,6 @@ namespace {
 
 NewTaskManagerView* g_task_manager_view = nullptr;
 
-#if defined(OS_MACOSX)
-// Match Activity Monitor's default refresh rate.
-const int64 kRefreshTimeMS = 2000;
-
-// Activity Monitor shows %cpu with one decimal digit -- be consistent with
-// that.
-const char kCpuTextFormatString[] = "%.1f";
-#else
-const int64 kRefreshTimeMS = 1000;
-const char kCpuTextFormatString[] = "%.0f";
-#endif  // defined(OS_MACOSX)
-
-// The columns that are shared by a group will show the value of the column
-// only once per group.
-bool IsSharedByGroup(int column_id) {
-  switch (column_id) {
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
-    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
-      return true;
-    default:
-      return false;
-  }
-}
-
 // Opens the "about:memory" for the "stats for nerds" link.
 void OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   Profile* profile = ProfileManager::GetLastUsedProfileAllowedByPolicy();
@@ -107,723 +62,7 @@ void OpenAboutMemory(chrome::HostDesktopType desktop_type) {
   chrome::Navigate(&params);
 }
 
-// Used to sort various column values.
-template <class T>
-int ValueCompare(T value1, T value2) {
-  if (value1 == value2)
-    return 0;
-  return value1 < value2 ? -1 : 1;
-}
-
-// Used when one or both of the results to compare are unavailable.
-int OrderUnavailableValue(bool v1, bool v2) {
-  if (!v1 && !v2)
-    return 0;
-  return v1 ? 1 : -1;
-}
-
-// A class to stringify the task manager's values into string16s and to
-// cache the common strings that will be reused many times like "N/A" and so on.
-class TaskManagerValuesStringifier {
- public:
-  TaskManagerValuesStringifier()
-      : n_a_string_(l10n_util::GetStringUTF16(IDS_TASK_MANAGER_NA_CELL_TEXT)),
-        zero_string_(base::ASCIIToUTF16("0")),
-        asterisk_string_(base::ASCIIToUTF16("*")),
-        unknown_string_(l10n_util::GetStringUTF16(
-            IDS_TASK_MANAGER_UNKNOWN_VALUE_TEXT)) {
-  }
-
-  ~TaskManagerValuesStringifier() {}
-
-  base::string16 GetCpuUsageText(double cpu_usage) {
-    return base::UTF8ToUTF16(base::StringPrintf(kCpuTextFormatString,
-                                                cpu_usage));
-  }
-
-  base::string16 GetMemoryUsageText(int64 memory_usage, bool has_duplicates) {
-    if (memory_usage == -1)
-      return n_a_string_;
-
-#if defined(OS_MACOSX)
-    // System expectation is to show "100 kB", "200 MB", etc.
-    // TODO(thakis): [This TODO has been taken as is from the old task manager]:
-    // Switch to metric units (as opposed to powers of two).
-    base::string16 memory_text = ui::FormatBytes(memory_usage);
-#else
-    base::string16 memory_text = base::FormatNumber(memory_usage / 1024);
-    // Adjust number string if necessary.
-    base::i18n::AdjustStringForLocaleDirection(&memory_text);
-    memory_text = l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_MEM_CELL_TEXT,
-                                             memory_text);
-#endif  // defined(OS_MACOSX)
-
-    if (has_duplicates)
-      memory_text += asterisk_string_;
-
-    return memory_text;
-  }
-
-  base::string16 GetIdleWakeupsText(int idle_wakeups) {
-    if (idle_wakeups == -1)
-      return n_a_string_;
-
-    return base::FormatNumber(idle_wakeups);
-  }
-
-  base::string16 GetNaClPortText(int nacl_port) {
-    if (nacl_port == nacl::kGdbDebugStubPortUnused)
-      return n_a_string_;
-
-    if (nacl_port == nacl::kGdbDebugStubPortUnknown)
-      return unknown_string_;
-
-    return base::IntToString16(nacl_port);
-  }
-
-  base::string16 GetWindowsHandlesText(int64 current, int64 peak) {
-    return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_HANDLES_CELL_TEXT,
-                                      base::Int64ToString16(current),
-                                      base::Int64ToString16(peak));
-  }
-
-  base::string16 GetNetworkUsageText(int64 network_usage) {
-    if (network_usage == -1)
-      return n_a_string_;
-
-    if (network_usage == 0)
-      return zero_string_;
-
-    base::string16 net_byte = ui::FormatSpeed(network_usage);
-    // Force number string to have LTR directionality.
-    return base::i18n::GetDisplayStringInLTRDirectionality(net_byte);
-  }
-
-  base::string16 GetProcessIdText(base::ProcessId proc_id) {
-    return base::IntToString16(proc_id);
-  }
-
-  base::string16 FormatAllocatedAndUsedMemory(int64 allocated, int64 used) {
-    return l10n_util::GetStringFUTF16(
-        IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
-        ui::FormatBytesWithUnits(allocated, ui::DATA_UNITS_KIBIBYTE, false),
-        ui::FormatBytesWithUnits(used, ui::DATA_UNITS_KIBIBYTE, false));
-  }
-
-  base::string16 GetWebCacheStatText(
-      const blink::WebCache::ResourceTypeStat& stat) {
-    return FormatAllocatedAndUsedMemory(stat.size, stat.liveSize);
-  }
-
-  const base::string16& n_a_string() const { return n_a_string_; }
-  const base::string16& zero_string() const { return zero_string_; }
-  const base::string16& asterisk_string() const { return asterisk_string_; }
-  const base::string16& unknown_string() const { return unknown_string_; }
-
- private:
-  // The localized string "N/A".
-  const base::string16 n_a_string_;
-
-  // The value 0 as a string "0".
-  const base::string16 zero_string_;
-
-  // The string "*" that is used to show that there exists duplicates in the
-  // GPU memory.
-  const base::string16 asterisk_string_;
-
-  // The string "Unknown".
-  const base::string16 unknown_string_;
-
-  DISALLOW_COPY_AND_ASSIGN(TaskManagerValuesStringifier);
-};
-
 }  // namespace
-
-////////////////////////////////////////////////////////////////////////////////
-
-// IMPORTANT: Do NOT change the below list without changing the COLUMN_LIST
-// macro below.
-const TableColumnData kColumns[] = {
-  { IDS_TASK_MANAGER_TASK_COLUMN, ui::TableColumn::LEFT, -1, 1, true, true,
-    true },
-  { IDS_TASK_MANAGER_PROFILE_NAME_COLUMN, ui::TableColumn::LEFT, -1, 0, true,
-    true, false },
-  { IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, true },
-  { IDS_TASK_MANAGER_SHARED_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-  { IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-  { IDS_TASK_MANAGER_CPU_COLUMN, ui::TableColumn::RIGHT, -1, 0, true, false,
-    true },
-  { IDS_TASK_MANAGER_NET_COLUMN, ui::TableColumn::RIGHT, -1, 0, true, false,
-    true },
-  { IDS_TASK_MANAGER_PROCESS_ID_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    true, true },
-
-#if defined(OS_WIN)
-  { IDS_TASK_MANAGER_GDI_HANDLES_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-  { IDS_TASK_MANAGER_USER_HANDLES_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-#endif
-
-  { IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN, ui::TableColumn::RIGHT, -1, 0,
-    true, false, false },
-  { IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN, ui::TableColumn::RIGHT, -1,
-    0, true, false, false },
-  { IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN, ui::TableColumn::RIGHT, -1, 0,
-    true, false, false },
-  { IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-  { IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN, ui::TableColumn::RIGHT, -1, 0,
-    true, false, false },
-
-#if !defined(DISABLE_NACL)
-  { IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN, ui::TableColumn::RIGHT, -1, 0,
-    true, true, false },
-#endif  // !defined(DISABLE_NACL)
-
-  { IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN, ui::TableColumn::RIGHT,
-    -1, 0, true, false, false },
-
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-  // TODO(port): Port the idle wakeups per second to platforms other than Linux
-  // and MacOS (http://crbug.com/120488).
-  { IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN, ui::TableColumn::RIGHT, -1, 0, true,
-    false, false },
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX)
-};
-
-const size_t kColumnsSize = arraysize(kColumns);
-
-const char kSortColumnIdKey[] = "sort_column_id";
-const char kSortIsAscendingKey[] = "sort_is_ascending";
-
-// We can't use the integer IDs of the columns converted to strings as session
-// restore keys. These integer values can change from one build to another as
-// they are generated. Instead we use the literal string value of the column
-// ID symbol (i.e. for the ID IDS_TASK_MANAGER_TASK_COLUMN, we use the literal
-// string "IDS_TASK_MANAGER_TASK_COLUMN". The following macros help us
-// efficiently get the literal ID for the integer value.
-#define COLUMNS_LITS(def) \
-  def(IDS_TASK_MANAGER_TASK_COLUMN) \
-  def(IDS_TASK_MANAGER_PROFILE_NAME_COLUMN) \
-  def(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) \
-  def(IDS_TASK_MANAGER_SHARED_MEM_COLUMN) \
-  def(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) \
-  def(IDS_TASK_MANAGER_CPU_COLUMN) \
-  def(IDS_TASK_MANAGER_NET_COLUMN) \
-  def(IDS_TASK_MANAGER_PROCESS_ID_COLUMN) \
-  def(IDS_TASK_MANAGER_GDI_HANDLES_COLUMN) \
-  def(IDS_TASK_MANAGER_USER_HANDLES_COLUMN) \
-  def(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN) \
-  def(IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN) \
-  def(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN) \
-  def(IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN) \
-  def(IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN) \
-  def(IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN) \
-  def(IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN) \
-  def(IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN)
-// Add to the above list in the macro any new IDs added in the future. Also
-// remove the removed ones.
-
-#define COLUMN_ID_AS_STRING(col_id) case col_id: return std::string(#col_id);
-
-std::string GetColumnIdAsString(int column_id) {
-  switch (column_id) {
-    COLUMNS_LITS(COLUMN_ID_AS_STRING)
-    default:
-      NOTREACHED();
-      return std::string();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-// The table model of the task manager table view that will observe the
-// task manager backend and adapt its interface to match the requirements of the
-// TableView.
-class NewTaskManagerView::TableModel
-    : public TaskManagerObserver,
-      public ui::TableModel,
-      public views::TableGrouper {
- public:
-  explicit TableModel(int64 refresh_flags);
-  ~TableModel() override;
-
-  // ui::TableModel:
-  int RowCount() override;
-  base::string16 GetText(int row, int column) override;
-  gfx::ImageSkia GetIcon(int row) override;
-  void SetObserver(ui::TableModelObserver* observer) override;
-  int CompareValues(int row1, int row2, int column_id) override;
-
-  // views::TableGrouper:
-  void GetGroupRange(int model_index, views::GroupRange* range) override;
-
-  // task_management::TaskManagerObserver:
-  void OnTaskAdded(TaskId id) override;
-  void OnTaskToBeRemoved(TaskId id) override;
-  void OnTasksRefreshed(const TaskIdList& task_ids) override;
-
-  // Start / stop observing the task manager.
-  void StartUpdating();
-  void StopUpdating();
-
-  // Activates the browser tab associated with the process in the specified
-  // |row_index|.
-  void ActivateTask(int row_index);
-
-  // Kills the process on which the task at |row_index| is running.
-  void KillTask(int row_index);
-
-  // Based on the given |visibility| and the |column_id|, a particular refresh
-  // type will be enabled or disabled. Multiple columns can map to the same
-  // refresh type, for that we need |table| to determine if any is visible.
-  void UpdateRefreshTypes(views::TableView* table,
-                          int column_id,
-                          bool visibility);
-
-
-  // Checks if the task at |row_index| is running on the browser process.
-  bool IsBrowserProcess(int row_index) const;
-
- private:
-  void OnRefresh();
-
-  // Checks whether the task at |row_index| is the first task in its process
-  // group of tasks.
-  bool IsTaskFirstInGroup(int row_index) const;
-
-  // The table model observer that will be set by the table view of the task
-  // manager.
-  ui::TableModelObserver* table_model_observer_;
-
-  // The sorted list of task IDs by process ID then by task ID.
-  std::vector<TaskId> tasks_;
-
-  // The owned task manager values stringifier that will be used to convert the
-  // values to string16.
-  TaskManagerValuesStringifier stringifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(TableModel);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// NewTaskManagerView::TableModel Implementation:
-////////////////////////////////////////////////////////////////////////////////
-
-NewTaskManagerView::TableModel::TableModel(int64 refresh_flags)
-    : TaskManagerObserver(base::TimeDelta::FromMilliseconds(kRefreshTimeMS),
-                          refresh_flags),
-      table_model_observer_(nullptr) {
-}
-
-NewTaskManagerView::TableModel::~TableModel() {
-}
-
-int NewTaskManagerView::TableModel::RowCount() {
-  return static_cast<int>(tasks_.size());
-}
-
-base::string16 NewTaskManagerView::TableModel::GetText(int row, int column) {
-  if (IsSharedByGroup(column) && !IsTaskFirstInGroup(row))
-    return base::string16();
-
-  switch (column) {
-    case IDS_TASK_MANAGER_TASK_COLUMN:
-      return observed_task_manager()->GetTitle(tasks_[row]);
-
-    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
-      return observed_task_manager()->GetProfileName(tasks_[row]);
-
-    case IDS_TASK_MANAGER_NET_COLUMN:
-      return stringifier_.GetNetworkUsageText(
-          observed_task_manager()->GetNetworkUsage(tasks_[row]));
-
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-      return stringifier_.GetCpuUsageText(
-          observed_task_manager()->GetCpuUsage(tasks_[row]));
-
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-      return stringifier_.GetMemoryUsageText(
-          observed_task_manager()->GetPrivateMemoryUsage(tasks_[row]), false);
-
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-      return stringifier_.GetMemoryUsageText(
-          observed_task_manager()->GetSharedMemoryUsage(tasks_[row]), false);
-
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
-      return stringifier_.GetMemoryUsageText(
-          observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row]), false);
-
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-      return stringifier_.GetProcessIdText(
-          observed_task_manager()->GetProcessId(tasks_[row]));
-
-    case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
-      int64 current, peak;
-      observed_task_manager()->GetGDIHandles(tasks_[row], &current, &peak);
-      return stringifier_.GetWindowsHandlesText(current, peak);
-    }
-
-    case IDS_TASK_MANAGER_USER_HANDLES_COLUMN: {
-      int64 current, peak;
-      observed_task_manager()->GetUSERHandles(tasks_[row], &current, &peak);
-      return stringifier_.GetWindowsHandlesText(current, peak);
-    }
-
-    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
-      return stringifier_.GetIdleWakeupsText(
-          observed_task_manager()->GetIdleWakeupsPerSecond(tasks_[row]));
-
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
-      if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
-        return stringifier_.GetWebCacheStatText(stats.images);
-      return stringifier_.n_a_string();
-    }
-
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
-      if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
-        return stringifier_.GetWebCacheStatText(stats.scripts);
-      return stringifier_.n_a_string();
-    }
-
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats;
-      if (observed_task_manager()->GetWebCacheStats(tasks_[row], &stats))
-        return stringifier_.GetWebCacheStatText(stats.cssStyleSheets);
-      return stringifier_.n_a_string();
-    }
-
-    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN: {
-      bool has_duplicates = false;
-      return stringifier_.GetMemoryUsageText(
-          observed_task_manager()->GetGpuMemoryUsage(tasks_[row],
-                                                     &has_duplicates),
-          has_duplicates);
-    }
-
-    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
-      return stringifier_.GetMemoryUsageText(
-          observed_task_manager()->GetSqliteMemoryUsed(tasks_[row]), false);
-
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
-      int64 v8_allocated, v8_used;
-      if (observed_task_manager()->GetV8Memory(tasks_[row],
-                                               &v8_allocated,
-                                               &v8_used)) {
-        return stringifier_.FormatAllocatedAndUsedMemory(v8_allocated,
-                                                          v8_used);
-      }
-      return stringifier_.n_a_string();
-    }
-
-    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
-      return stringifier_.GetNaClPortText(
-          observed_task_manager()->GetNaClDebugStubPort(tasks_[row]));
-
-    default:
-      NOTREACHED();
-      return base::string16();
-  }
-}
-
-gfx::ImageSkia NewTaskManagerView::TableModel::GetIcon(int row) {
-  return observed_task_manager()->GetIcon(tasks_[row]);
-}
-
-void NewTaskManagerView::TableModel::SetObserver(
-    ui::TableModelObserver* observer) {
-  table_model_observer_ = observer;
-}
-
-int NewTaskManagerView::TableModel::CompareValues(int row1,
-                                                  int row2,
-                                                  int column_id) {
-  switch (column_id) {
-    case IDS_TASK_MANAGER_TASK_COLUMN:
-    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
-      return ui::TableModel::CompareValues(row1, row2, column_id);
-
-    case IDS_TASK_MANAGER_NET_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetNetworkUsage(tasks_[row1]),
-          observed_task_manager()->GetNetworkUsage(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-      return ValueCompare(observed_task_manager()->GetCpuUsage(tasks_[row1]),
-                          observed_task_manager()->GetCpuUsage(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetPrivateMemoryUsage(tasks_[row1]),
-          observed_task_manager()->GetPrivateMemoryUsage(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetSharedMemoryUsage(tasks_[row1]),
-          observed_task_manager()->GetSharedMemoryUsage(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row1]),
-          observed_task_manager()->GetPhysicalMemoryUsage(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetNaClDebugStubPort(tasks_[row1]),
-          observed_task_manager()->GetNaClDebugStubPort(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-      return ValueCompare(observed_task_manager()->GetProcessId(tasks_[row1]),
-                          observed_task_manager()->GetProcessId(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN: {
-      int64 current1, peak1, current2, peak2;
-      observed_task_manager()->GetGDIHandles(tasks_[row1], &current1, &peak1);
-      observed_task_manager()->GetGDIHandles(tasks_[row2], &current2, &peak2);
-      return ValueCompare(current1, current2);
-    }
-
-    case IDS_TASK_MANAGER_USER_HANDLES_COLUMN: {
-      int64 current1, peak1, current2, peak2;
-      observed_task_manager()->GetUSERHandles(tasks_[row1], &current1, &peak1);
-      observed_task_manager()->GetUSERHandles(tasks_[row2], &current2, &peak2);
-      return ValueCompare(current1, current2);
-    }
-
-    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetIdleWakeupsPerSecond(tasks_[row1]),
-          observed_task_manager()->GetIdleWakeupsPerSecond(tasks_[row2]));
-
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN: {
-      blink::WebCache::ResourceTypeStats stats1;
-      blink::WebCache::ResourceTypeStats stats2;
-      bool row1_stats_valid =
-          observed_task_manager()->GetWebCacheStats(tasks_[row1], &stats1);
-      bool row2_stats_valid =
-          observed_task_manager()->GetWebCacheStats(tasks_[row2], &stats2);
-      if (!row1_stats_valid || !row2_stats_valid)
-        return OrderUnavailableValue(row1_stats_valid, row2_stats_valid);
-
-      switch (column_id) {
-        case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-          return ValueCompare(stats1.images.size, stats2.images.size);
-        case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-          return ValueCompare(stats1.scripts.size, stats2.scripts.size);
-        case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-          return ValueCompare(stats1.cssStyleSheets.size,
-                              stats2.cssStyleSheets.size);
-        default:
-          NOTREACHED();
-          return 0;
-      }
-    }
-
-    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN: {
-      bool has_duplicates;
-      return ValueCompare(
-          observed_task_manager()->GetGpuMemoryUsage(tasks_[row1],
-                                                     &has_duplicates),
-          observed_task_manager()->GetGpuMemoryUsage(tasks_[row2],
-                                                     &has_duplicates));
-    }
-
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN: {
-      int64 allocated1, allocated2, used1, used2;
-      observed_task_manager()->GetV8Memory(tasks_[row1], &allocated1, &used1);
-      observed_task_manager()->GetV8Memory(tasks_[row2], &allocated2, &used2);
-      return ValueCompare(allocated1, allocated2);
-    }
-
-    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
-      return ValueCompare(
-          observed_task_manager()->GetSqliteMemoryUsed(tasks_[row1]),
-          observed_task_manager()->GetSqliteMemoryUsed(tasks_[row2]));
-
-    default:
-      NOTREACHED();
-      return 0;
-  }
-}
-
-void NewTaskManagerView::TableModel::GetGroupRange(int model_index,
-                                             views::GroupRange* range) {
-  int i = model_index;
-  for ( ; i >= 0; --i) {
-    if (IsTaskFirstInGroup(i))
-      break;
-  }
-
-  CHECK_GE(i, 0);
-
-  range->start = i;
-  range->length = observed_task_manager()->GetNumberOfTasksOnSameProcess(
-      tasks_[model_index]);
-}
-
-void NewTaskManagerView::TableModel::OnTaskAdded(TaskId id) {
-  // For the table view scrollbar to behave correctly we must inform it that
-  // a new task has been added.
-
-  // We will get a newly sorted list from the task manager as opposed to just
-  // adding |id| to |tasks_| because we want to keep |tasks_| sorted by proc IDs
-  // and then by Task IDs.
-  tasks_ = observed_task_manager()->GetTaskIdsList();
-  if (table_model_observer_)
-    table_model_observer_->OnItemsAdded(RowCount() - 1, 1);
-}
-
-void NewTaskManagerView::TableModel::OnTaskToBeRemoved(TaskId id) {
-  auto index = std::find(tasks_.begin(), tasks_.end(), id);
-  if (index == tasks_.end())
-    return;
-  auto removed_index = index - tasks_.begin();
-  tasks_.erase(index);
-  if (table_model_observer_)
-    table_model_observer_->OnItemsRemoved(removed_index, 1);
-}
-
-void NewTaskManagerView::TableModel::OnTasksRefreshed(
-    const TaskIdList& task_ids) {
-  tasks_ = task_ids;
-  OnRefresh();
-}
-
-void NewTaskManagerView::TableModel::StartUpdating() {
-  TaskManagerInterface::GetTaskManager()->AddObserver(this);
-  tasks_ = observed_task_manager()->GetTaskIdsList();
-  OnRefresh();
-}
-
-void NewTaskManagerView::TableModel::StopUpdating() {
-  observed_task_manager()->RemoveObserver(this);
-}
-
-void NewTaskManagerView::TableModel::ActivateTask(int row_index) {
-  observed_task_manager()->ActivateTask(tasks_[row_index]);
-}
-
-void NewTaskManagerView::TableModel::KillTask(int row_index) {
-  base::ProcessId proc_id = observed_task_manager()->GetProcessId(
-      tasks_[row_index]);
-
-  DCHECK_NE(proc_id, base::GetCurrentProcId());
-
-  base::Process process = base::Process::Open(proc_id);
-  process.Terminate(content::RESULT_CODE_KILLED, false);
-}
-
-void NewTaskManagerView::TableModel::UpdateRefreshTypes(views::TableView* table,
-                                                        int column_id,
-                                                        bool visibility) {
-  bool new_visibility = visibility;
-  RefreshType type = REFRESH_TYPE_NONE;
-  switch (column_id) {
-    case IDS_TASK_MANAGER_PROFILE_NAME_COLUMN:
-    case IDS_TASK_MANAGER_TASK_COLUMN:
-    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
-      return;  // The data is these columns do not change.
-
-    case IDS_TASK_MANAGER_NET_COLUMN:
-      type = REFRESH_TYPE_NETWORK_USAGE;
-      break;
-
-    case IDS_TASK_MANAGER_CPU_COLUMN:
-      type = REFRESH_TYPE_CPU;
-      break;
-
-    case IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN:
-    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
-    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
-      type = REFRESH_TYPE_MEMORY;
-      if (table->IsColumnVisible(IDS_TASK_MANAGER_PHYSICAL_MEM_COLUMN) ||
-          table->IsColumnVisible(IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN) ||
-          table->IsColumnVisible(IDS_TASK_MANAGER_SHARED_MEM_COLUMN)) {
-        new_visibility = true;
-      }
-      break;
-
-    case IDS_TASK_MANAGER_GDI_HANDLES_COLUMN:
-    case IDS_TASK_MANAGER_USER_HANDLES_COLUMN:
-      type = REFRESH_TYPE_HANDLES;
-      if (table->IsColumnVisible(IDS_TASK_MANAGER_GDI_HANDLES_COLUMN) ||
-          table->IsColumnVisible(IDS_TASK_MANAGER_USER_HANDLES_COLUMN)) {
-        new_visibility = true;
-      }
-      break;
-
-    case IDS_TASK_MANAGER_IDLE_WAKEUPS_COLUMN:
-      type = REFRESH_TYPE_IDLE_WAKEUPS;
-      break;
-
-    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-      type = REFRESH_TYPE_WEBCACHE_STATS;
-      if (table->IsColumnVisible(IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN) ||
-          table->IsColumnVisible(
-              IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN) ||
-          table->IsColumnVisible(IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN)) {
-        new_visibility = true;
-      }
-      break;
-
-    case IDS_TASK_MANAGER_VIDEO_MEMORY_COLUMN:
-      type = REFRESH_TYPE_GPU_MEMORY;
-      break;
-
-    case IDS_TASK_MANAGER_SQLITE_MEMORY_USED_COLUMN:
-      type = REFRESH_TYPE_SQLITE_MEMORY;
-      break;
-
-    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-      type = REFRESH_TYPE_V8_MEMORY;
-      break;
-
-    case IDS_TASK_MANAGER_NACL_DEBUG_STUB_PORT_COLUMN:
-      type = REFRESH_TYPE_NACL;
-      break;
-
-    default:
-      NOTREACHED();
-      return;
-  }
-
-  if (new_visibility)
-    AddRefreshType(type);
-  else
-    RemoveRefreshType(type);
-}
-
-bool NewTaskManagerView::TableModel::IsBrowserProcess(int row_index) const {
-  return observed_task_manager()->GetProcessId(tasks_[row_index]) ==
-      base::GetCurrentProcId();
-}
-
-void NewTaskManagerView::TableModel::OnRefresh() {
-  if (table_model_observer_)
-    table_model_observer_->OnItemsChanged(0, RowCount());
-}
-
-bool NewTaskManagerView::TableModel::IsTaskFirstInGroup(int row_index) const {
-  if (row_index == 0)
-    return true;
-
-  return observed_task_manager()->GetProcessId(tasks_[row_index - 1]) !=
-      observed_task_manager()->GetProcessId(tasks_[row_index]);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NewTaskManagerView Implementation:
-////////////////////////////////////////////////////////////////////////////////
 
 NewTaskManagerView::~NewTaskManagerView() {
   // Delete child views now, while our table model still exists.
@@ -891,6 +130,32 @@ void NewTaskManagerView::Show(Browser* browser) {
 void NewTaskManagerView::Hide() {
   if (g_task_manager_view)
     g_task_manager_view->GetWidget()->Close();
+}
+
+bool NewTaskManagerView::IsColumnVisible(int column_id) const {
+  return tab_table_->IsColumnVisible(column_id);
+}
+
+void NewTaskManagerView::SetColumnVisibility(int column_id,
+                                             bool new_visibility) {
+  tab_table_->SetColumnVisibility(column_id, new_visibility);
+}
+
+bool NewTaskManagerView::IsTableSorted() const {
+  return tab_table_->is_sorted();
+}
+
+TableSortDescriptor
+NewTaskManagerView::GetSortDescriptor() const {
+  if (!IsTableSorted())
+    return TableSortDescriptor();
+
+  const auto& descriptor = tab_table_->sort_descriptors().front();
+  return TableSortDescriptor(descriptor.column_id, descriptor.ascending);
+}
+
+void NewTaskManagerView::ToggleSortOrder(int visible_column_index) {
+  tab_table_->ToggleSortOrder(visible_column_index);
 }
 
 void NewTaskManagerView::Layout() {
@@ -998,12 +263,17 @@ void NewTaskManagerView::WindowClosing() {
     // owned by the Views hierarchy.
     g_task_manager_view = nullptr;
   }
-  StoreColumnsSettings();
+  table_model_->StoreColumnsSettings();
   table_model_->StopUpdating();
 }
 
 bool NewTaskManagerView::UseNewStyleForThisDialog() const {
   return false;
+}
+
+void NewTaskManagerView::GetGroupRange(int model_index,
+                                       views::GroupRange* range) {
+  table_model_->GetRowsGroupRange(model_index, &range->start, &range->length);
 }
 
 void NewTaskManagerView::OnSelectionChanged() {
@@ -1073,15 +343,11 @@ bool NewTaskManagerView::GetAcceleratorForCommandId(
 }
 
 void NewTaskManagerView::ExecuteCommand(int id, int event_flags) {
-  ToggleColumnVisibility(id);
+  table_model_->ToggleColumnVisibility(id);
 }
 
 NewTaskManagerView::NewTaskManagerView(chrome::HostDesktopType desktop_type)
-    : table_model_(
-        new NewTaskManagerView::TableModel(REFRESH_TYPE_CPU |
-                                           REFRESH_TYPE_MEMORY |
-                                           REFRESH_TYPE_NETWORK_USAGE)),
-      kill_button_(nullptr),
+    : kill_button_(nullptr),
       about_memory_link_(nullptr),
       tab_table_(nullptr),
       tab_table_parent_(nullptr),
@@ -1096,8 +362,6 @@ NewTaskManagerView* NewTaskManagerView::GetInstanceForTests() {
 }
 
 void NewTaskManagerView::Init() {
-  columns_settings_.reset(new base::DictionaryValue);
-
   // Create the table columns.
   for (size_t i = 0; i < kColumnsSize; ++i) {
     const auto& col_data = kColumns[i];
@@ -1109,14 +373,19 @@ void NewTaskManagerView::Init() {
   }
 
   // Create the table view.
-  tab_table_ = new views::TableView(
-      table_model_.get(), columns_, views::ICON_AND_TEXT, false);
-  tab_table_->SetGrouper(table_model_.get());
+  tab_table_ = new views::TableView(nullptr, columns_, views::ICON_AND_TEXT,
+                                    false);
+  table_model_.reset(new TaskManagerTableModel(REFRESH_TYPE_CPU |
+                                               REFRESH_TYPE_MEMORY |
+                                               REFRESH_TYPE_NETWORK_USAGE,
+                                               this));
+  tab_table_->SetModel(table_model_.get());
+  tab_table_->SetGrouper(this);
   tab_table_->SetObserver(this);
   tab_table_->set_context_menu_controller(this);
   set_context_menu_controller(this);
 
-  RetrieveSavedColumnsSettingsAndUpdateTable();
+  table_model_->RetrieveSavedColumnsSettingsAndUpdateTable();
 
   kill_button_ = new views::LabelButton(this,
       l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
@@ -1153,93 +422,6 @@ void NewTaskManagerView::RetriveSavedAlwaysOnTopState() {
     g_browser_process->local_state()->GetDictionary(GetWindowName());
   if (dictionary)
     dictionary->GetBoolean("always_on_top", &is_always_on_top_);
-}
-
-void NewTaskManagerView::RetrieveSavedColumnsSettingsAndUpdateTable() {
-  if (!g_browser_process->local_state())
-    return;
-
-  const base::DictionaryValue* dictionary =
-      g_browser_process->local_state()->GetDictionary(
-          prefs::kTaskManagerColumnVisibility);
-  if (!dictionary)
-    return;
-
-  // Do a best effort of retrieving the correct settings from the local state.
-  // Use the default settings of the value if it fails to be retrieved.
-  std::string sorted_col_id;
-  bool sort_is_ascending = true;
-  dictionary->GetString(kSortColumnIdKey, &sorted_col_id);
-  dictionary->GetBoolean(kSortIsAscendingKey, &sort_is_ascending);
-
-  int current_visible_column_index = 0;
-  for (size_t i = 0; i < kColumnsSize; ++i) {
-    const int col_id = kColumns[i].id;
-    const std::string col_id_key(GetColumnIdAsString(col_id));
-
-    if (col_id_key.empty())
-      continue;
-
-    bool col_visibility = kColumns[i].default_visibility;
-    dictionary->GetBoolean(col_id_key, &col_visibility);
-
-    // If the above GetBoolean() fails, the |col_visibility| remains at the
-    // default visibility.
-    columns_settings_->SetBoolean(col_id_key, col_visibility);
-    tab_table_->SetColumnVisibility(col_id, col_visibility);
-    table_model_->UpdateRefreshTypes(tab_table_, col_id, col_visibility);
-
-    if (col_visibility) {
-      if (sorted_col_id == col_id_key) {
-        if (sort_is_ascending == kColumns[i].initial_sort_is_ascending) {
-          tab_table_->ToggleSortOrder(current_visible_column_index);
-        } else {
-          // Unfortunately the API of ui::TableView doesn't provide a clean way
-          // to sort by a particular column ID and a sort direction. If the
-          // retrieved sort direction is different than the initial one, we have
-          // to toggle the sort order twice!
-          // Note that the function takes the visible_column_index rather than
-          // a column ID.
-          tab_table_->ToggleSortOrder(current_visible_column_index);
-          tab_table_->ToggleSortOrder(current_visible_column_index);
-        }
-      }
-
-      ++current_visible_column_index;
-    }
-  }
-}
-
-void NewTaskManagerView::StoreColumnsSettings() {
-  PrefService* local_state = g_browser_process->local_state();
-  if (!local_state)
-    return;
-
-  DictionaryPrefUpdate dict_update(local_state,
-                                   prefs::kTaskManagerColumnVisibility);
-
-  base::DictionaryValue::Iterator it(*columns_settings_);
-  while (!it.IsAtEnd()) {
-    dict_update->Set(it.key(), it.value().CreateDeepCopy());
-    it.Advance();
-  }
-
-  // Store the current sort status to be restored again at startup.
-  if (tab_table_->sort_descriptors().empty()) {
-    dict_update->SetString(kSortColumnIdKey, "");
-  } else {
-    const auto& sort_descriptor = tab_table_->sort_descriptors().front();
-    dict_update->SetString(kSortColumnIdKey,
-                           GetColumnIdAsString(sort_descriptor.column_id));
-    dict_update->SetBoolean(kSortIsAscendingKey, sort_descriptor.ascending);
-  }
-}
-
-void NewTaskManagerView::ToggleColumnVisibility(int column_id) {
-  bool new_visibility = !tab_table_->IsColumnVisible(column_id);
-  tab_table_->SetColumnVisibility(column_id, new_visibility);
-  columns_settings_->SetBoolean(GetColumnIdAsString(column_id), new_visibility);
-  table_model_->UpdateRefreshTypes(tab_table_, column_id, new_visibility);
 }
 
 }  // namespace task_management

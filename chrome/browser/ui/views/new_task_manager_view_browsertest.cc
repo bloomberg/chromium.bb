@@ -6,6 +6,8 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/task_manager/task_manager_columns.h"
+#include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "chrome/browser/ui/views/new_task_manager_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -48,7 +50,7 @@ class NewTaskManagerViewTest : public InProcessBrowserTest {
 
   void ToggleColumnVisibility(NewTaskManagerView* view, int col_id) {
     DCHECK(view);
-    view->ToggleColumnVisibility(col_id);
+    view->table_model_->ToggleColumnVisibility(col_id);
   }
 
  private:
@@ -108,7 +110,8 @@ IN_PROC_BROWSER_TEST_F(NewTaskManagerViewTest, ColumnsSettingsAreRestored) {
       table->ToggleSortOrder(static_cast<int>(i));
       table->ToggleSortOrder(static_cast<int>(i));
       is_sorted = true;
-      return;
+      sorted_col_id = column.id;
+      break;
     }
   }
 

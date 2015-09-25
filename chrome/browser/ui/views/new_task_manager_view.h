@@ -8,12 +8,14 @@
 #include <vector>
 
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/task_manager/task_manager_table_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -26,48 +28,14 @@ class View;
 
 namespace task_management {
 
-// A collection of data to be used in the construction of a task manager table
-// column.
-struct TableColumnData {
-  // The generated ID of the column. These can change from one build to another.
-  // Their values are controlled by the generation from generated_resources.grd.
-  int id;
-
-  // The alignment of the text displayed in this column.
-  ui::TableColumn::Alignment align;
-
-  // |width| and |percent| used to define the size of the column. See
-  // ui::TableColumn::width and ui::TableColumn::percent for details.
-  int width;
-  float percent;
-
-  // Is the column sortable.
-  bool sortable;
-
-  // Is the initial sort order ascending?
-  bool initial_sort_is_ascending;
-
-  // The default visibility of this column at startup of the table if no
-  // visibility is stored for it in the prefs.
-  bool default_visibility;
-};
-
-// The task manager table columns and their properties.
-extern const TableColumnData kColumns[];
-extern const size_t kColumnsSize;
-
-// Session Restore Keys.
-extern const char kSortColumnIdKey[];
-extern const char kSortIsAscendingKey[];
-
-// Returns the |column_id| as a string value to be used as keys in the user
-// preferences.
-std::string GetColumnIdAsString(int column_id);
+class TaskManagerTableModel;
 
 // The new task manager UI container.
 class NewTaskManagerView
-    : public views::ButtonListener,
+    : public TableViewDelegate,
+      public views::ButtonListener,
       public views::DialogDelegateView,
+      public views::TableGrouper,
       public views::TableViewObserver,
       public views::LinkListener,
       public views::ContextMenuController,
@@ -80,6 +48,13 @@ class NewTaskManagerView
 
   // Hides the Task Manager if it is showing.
   static void Hide();
+
+  // task_management::TableViewDelegate:
+  bool IsColumnVisible(int column_id) const override;
+  void SetColumnVisibility(int column_id, bool new_visibility) override;
+  bool IsTableSorted() const override;
+  TableSortDescriptor GetSortDescriptor() const override;
+  void ToggleSortOrder(int visible_column_index) override;
 
   // views::View:
   void Layout() override;
@@ -101,6 +76,9 @@ class NewTaskManagerView
   int GetDialogButtons() const override;
   void WindowClosing() override;
   bool UseNewStyleForThisDialog() const override;
+
+  // views::TableGrouper:
+  void GetGroupRange(int model_index, views::GroupRange* range) override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -124,7 +102,6 @@ class NewTaskManagerView
 
  private:
   friend class NewTaskManagerViewTest;
-  class TableModel;
 
   explicit NewTaskManagerView(chrome::HostDesktopType desktop_type);
 
@@ -142,25 +119,9 @@ class NewTaskManagerView
   // Restores saved "always on top" state from a previous session.
   void RetriveSavedAlwaysOnTopState();
 
-  // Restores the saved columns settings from a previous session into
-  // |columns_settings_| and updates the table view.
-  void RetrieveSavedColumnsSettingsAndUpdateTable();
-
-  // Stores the current values in |column_settings_| to the user prefs so that
-  // it can be restored later next time the task manager view is opened.
-  void StoreColumnsSettings();
-
-  void ToggleColumnVisibility(int column_id);
-
-  scoped_ptr<NewTaskManagerView::TableModel> table_model_;
+  scoped_ptr<TaskManagerTableModel> table_model_;
 
   scoped_ptr<views::MenuRunner> menu_runner_;
-
-  // Contains either the column settings retrieved from user preferences if it
-  // exists, or the default column settings.
-  // The columns settings are the visible columns and the last sorted column
-  // and the direction of the sort.
-  scoped_ptr<base::DictionaryValue> columns_settings_;
 
   // We need to own the text of the menu, the Windows API does not copy it.
   base::string16 always_on_top_menu_text_;
