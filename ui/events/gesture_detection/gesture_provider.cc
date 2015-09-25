@@ -404,7 +404,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     Send(CreateGesture(show_press_details, e));
   }
 
-  bool OnSingleTapUp(const MotionEvent& e) override {
+  bool OnSingleTapUp(const MotionEvent& e, int tap_count) override {
     // This is a hack to address the issue where user hovers
     // over a link for longer than double_tap_timeout_, then
     // OnSingleTapConfirmed() is not triggered. But we still
@@ -414,15 +414,15 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
     if (!ignore_single_tap_) {
       if (e.GetEventTime() - current_down_time_ >
           config_.gesture_detector_config.double_tap_timeout) {
-        return OnSingleTapConfirmed(e);
+        return OnSingleTapImpl(e, tap_count);
       } else if (!IsDoubleTapEnabled()) {
         // If double-tap has been disabled, there is no need to wait
         // for the double-tap timeout.
-        return OnSingleTapConfirmed(e);
+        return OnSingleTapImpl(e, tap_count);
       } else {
         // Notify Blink about this tapUp event anyway, when none of the above
         // conditions applied.
-        Send(CreateTapGesture(ET_GESTURE_TAP_UNCONFIRMED, e));
+        Send(CreateTapGesture(ET_GESTURE_TAP_UNCONFIRMED, e, 1));
       }
     }
 
@@ -439,17 +439,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
   // DoubleTapListener implementation.
   bool OnSingleTapConfirmed(const MotionEvent& e) override {
-    // Long taps in the edges of the screen have their events delayed by
-    // ContentViewHolder for tab swipe operations. As a consequence of the delay
-    // this method might be called after receiving the up event.
-    // These corner cases should be ignored.
-    if (ignore_single_tap_)
-      return true;
-
-    ignore_single_tap_ = true;
-
-    Send(CreateTapGesture(ET_GESTURE_TAP, e));
-    return true;
+    return OnSingleTapImpl(e, 1);
   }
 
   bool OnDoubleTap(const MotionEvent& e) override {
@@ -464,7 +454,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
 
       case MotionEvent::ACTION_UP:
         if (!IsPinchInProgress() && !IsScrollInProgress()) {
-          Send(CreateTapGesture(ET_GESTURE_DOUBLE_TAP, e));
+          Send(CreateTapGesture(ET_GESTURE_DOUBLE_TAP, e, 1));
           return true;
         }
         break;
@@ -492,7 +482,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                                  float raw_y,
                                  size_t touch_point_count,
                                  const gfx::RectF& bounding_box,
-                                 int flags) {
+                                 int flags) const {
     return GestureEventData(details,
                             motion_event_id,
                             primary_tool_type,
@@ -516,7 +506,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                                  float raw_y,
                                  size_t touch_point_count,
                                  const gfx::RectF& bounding_box,
-                                 int flags) {
+                                 int flags) const {
     return GestureEventData(GestureEventDetails(type),
                             motion_event_id,
                             primary_tool_type,
@@ -531,7 +521,7 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   }
 
   GestureEventData CreateGesture(const GestureEventDetails& details,
-                                 const MotionEvent& event) {
+                                 const MotionEvent& event) const {
     return GestureEventData(details,
                             event.GetPointerId(),
                             event.GetToolType(),
@@ -545,20 +535,21 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                             event.GetFlags());
   }
 
-  GestureEventData CreateGesture(EventType type, const MotionEvent& event) {
+  GestureEventData CreateGesture(EventType type,
+                                 const MotionEvent& event) const {
     return CreateGesture(GestureEventDetails(type), event);
   }
 
-  GestureEventData CreateTapGesture(EventType type, const MotionEvent& event) {
-    // Set the tap count to 1 even for ET_GESTURE_DOUBLE_TAP, in order to be
-    // consistent with double tap behavior on a mobile viewport. See
-    // crbug.com/234986 for context.
+  GestureEventData CreateTapGesture(EventType type,
+                                    const MotionEvent& event,
+                                    int tap_count) const {
+    DCHECK_GE(tap_count, 0);
     GestureEventDetails details(type);
-    details.set_tap_count(1);
+    details.set_tap_count(tap_count);
     return CreateGesture(details, event);
   }
 
-  gfx::RectF GetBoundingBox(const MotionEvent& event, EventType type) {
+  gfx::RectF GetBoundingBox(const MotionEvent& event, EventType type) const {
     // Can't use gfx::RectF::Union, as it ignores touches with a radius of 0.
     float left = std::numeric_limits<float>::max();
     float top = std::numeric_limits<float>::max();
@@ -613,6 +604,20 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   bool IsPinchInProgress() const { return pinch_event_sent_; }
 
  private:
+  bool OnSingleTapImpl(const MotionEvent& e, int tap_count) {
+    // Long taps in the edges of the screen have their events delayed by
+    // ContentViewHolder for tab swipe operations. As a consequence of the delay
+    // this method might be called after receiving the up event.
+    // These corner cases should be ignored.
+    if (ignore_single_tap_)
+      return true;
+
+    ignore_single_tap_ = true;
+
+    Send(CreateTapGesture(ET_GESTURE_TAP, e, tap_count));
+    return true;
+  }
+
   bool IsScaleGestureDetectionInProgress() const {
     return scale_gesture_detector_.IsInProgress();
   }

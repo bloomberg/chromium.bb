@@ -53,7 +53,7 @@ class CONTENT_EXPORT StylusTextSelector : public ui::SimpleGestureListener {
   FRIEND_TEST_ALL_PREFIXES(StylusTextSelectorTest, ShouldStartTextSelection);
 
   // SimpleGestureListener implementation.
-  bool OnSingleTapUp(const ui::MotionEvent& e) override;
+  bool OnSingleTapUp(const ui::MotionEvent& e, int tap_count) override;
   bool OnScroll(const ui::MotionEvent& e1,
                 const ui::MotionEvent& e2,
                 float distance_x,

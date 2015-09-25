@@ -2794,8 +2794,10 @@ void RenderWidgetHostViewAura::HandleGestureForTouchSelection(
       }
       break;
     case ui::ET_GESTURE_TAP:
-      if (selection_controller_->WillHandleTapEvent(event->location_f()))
+      if (selection_controller_->WillHandleTapEvent(
+              event->location_f(), event->details().tap_count())) {
         event->SetHandled();
+      }
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       selection_controller_client_->OnScrollStarted();

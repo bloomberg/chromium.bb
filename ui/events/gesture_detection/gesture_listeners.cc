@@ -13,7 +13,8 @@ bool SimpleGestureListener::OnDown(const MotionEvent& e) {
 void SimpleGestureListener::OnShowPress(const MotionEvent& e) {
 }
 
-bool SimpleGestureListener::OnSingleTapUp(const MotionEvent& e) {
+bool SimpleGestureListener::OnSingleTapUp(const MotionEvent& e,
+                                          int repeat_count) {
   return false;
 }
 

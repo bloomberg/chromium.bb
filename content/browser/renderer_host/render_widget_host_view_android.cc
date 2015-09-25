@@ -1564,7 +1564,8 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 
       case blink::WebInputEvent::GestureTap:
         if (selection_controller_->WillHandleTapEvent(
-                gfx::PointF(gesture_event.x, gesture_event.y))) {
+                gfx::PointF(gesture_event.x, gesture_event.y),
+                gesture_event.data.tap.tapCount)) {
           return INPUT_EVENT_ACK_STATE_CONSUMED;
         }
         break;

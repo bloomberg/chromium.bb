@@ -103,7 +103,7 @@ bool StylusTextSelector::OnTouchEvent(const MotionEvent& event) {
   return true;
 }
 
-bool StylusTextSelector::OnSingleTapUp(const MotionEvent& e) {
+bool StylusTextSelector::OnSingleTapUp(const MotionEvent& e, int tap_count) {
   DCHECK(text_selection_triggered_);
   DCHECK(!dragging_);
   client_->OnStylusSelectTap(e.GetEventTime(), e.GetX(), e.GetY());

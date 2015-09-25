@@ -82,7 +82,9 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
 
   // To be called before forwarding a tap event. This allows automatically
   // showing the insertion handle from subsequent bounds changes.
-  bool WillHandleTapEvent(const gfx::PointF& location);
+  // |tap_count| is tap index in a repeated sequence, i.e., 1 for the first
+  // tap, 2 for the second tap, etc...
+  bool WillHandleTapEvent(const gfx::PointF& location, int tap_count);
 
   // To be called before forwarding a longpress event. This allows automatically
   // showing the selection or insertion handles from subsequent bounds changes.
@@ -133,7 +135,7 @@ class UI_TOUCH_SELECTION_EXPORT TouchSelectionController
  private:
   friend class TouchSelectionControllerTestApi;
 
-  enum InputEventType { TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
+  enum InputEventType { TAP, REPEATED_TAP, LONG_PRESS, INPUT_EVENT_TYPE_NONE };
 
   // TouchHandleClient implementation.
   void OnDragBegin(const TouchSelectionDraggable& draggable,

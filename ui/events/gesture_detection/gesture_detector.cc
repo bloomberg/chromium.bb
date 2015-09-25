@@ -55,8 +55,8 @@ GestureDetector::Config::Config()
       two_finger_tap_enabled(false),
       two_finger_tap_max_separation(300),
       two_finger_tap_timeout(base::TimeDelta::FromMilliseconds(700)),
-      velocity_tracker_strategy(VelocityTracker::Strategy::STRATEGY_DEFAULT) {
-}
+      single_tap_repeat_interval(1),
+      velocity_tracker_strategy(VelocityTracker::Strategy::STRATEGY_DEFAULT) {}
 
 GestureDetector::Config::~Config() {}
 
@@ -129,6 +129,9 @@ GestureDetector::GestureDetector(
       always_in_bigger_tap_region_(false),
       two_finger_tap_allowed_for_gesture_(false),
       is_double_tapping_(false),
+      is_down_candidate_for_repeated_single_tap_(false),
+      current_single_tap_repeat_count_(0),
+      single_tap_repeat_interval_(1),
       last_focus_x_(0),
       last_focus_y_(0),
       down_focus_x_(0),
@@ -234,14 +237,16 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       two_finger_tap_allowed_for_gesture_ = false;
     } break;
 
-    case MotionEvent::ACTION_DOWN:
+    case MotionEvent::ACTION_DOWN: {
+      bool is_repeated_tap =
+          current_down_event_ && previous_up_event_ &&
+          IsRepeatedTap(*current_down_event_, *previous_up_event_, ev);
       if (double_tap_listener_) {
+        is_down_candidate_for_repeated_single_tap_ = false;
         bool had_tap_message = timeout_handler_->HasTimeout(TAP);
         if (had_tap_message)
           timeout_handler_->StopTimeout(TAP);
-        if (current_down_event_ && previous_up_event_ && had_tap_message &&
-            IsConsideredDoubleTap(
-                *current_down_event_, *previous_up_event_, ev)) {
+        if (is_repeated_tap && had_tap_message) {
           // This is a second tap.
           is_double_tapping_ = true;
           // Give a callback with the first tap of the double-tap.
@@ -253,6 +258,8 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           DCHECK(double_tap_timeout_ > base::TimeDelta());
           timeout_handler_->StartTimeout(TAP);
         }
+      } else {
+        is_down_candidate_for_repeated_single_tap_ = is_repeated_tap;
       }
 
       down_focus_x_ = last_focus_x_ = focus_x;
@@ -273,7 +280,7 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
       if (longpress_enabled_)
         timeout_handler_->StartTimeout(LONG_PRESS);
       handled |= listener_->OnDown(ev);
-      break;
+    } break;
 
     case MotionEvent::ACTION_MOVE:
       {
@@ -343,12 +350,20 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev) {
           DCHECK(double_tap_listener_);
           handled |= double_tap_listener_->OnDoubleTapEvent(ev);
         } else if (always_in_tap_region_) {
-          handled = listener_->OnSingleTapUp(ev);
+          if (is_down_candidate_for_repeated_single_tap_) {
+            current_single_tap_repeat_count_ =
+                (1 + current_single_tap_repeat_count_) %
+                single_tap_repeat_interval_;
+          } else {
+            current_single_tap_repeat_count_ = 0;
+          }
+          handled = listener_->OnSingleTapUp(
+              ev, 1 + current_single_tap_repeat_count_);
           if (defer_confirm_single_tap_ && double_tap_listener_ != NULL) {
             double_tap_listener_->OnSingleTapConfirmed(ev);
           }
         } else {
-
+          current_single_tap_repeat_count_ = 0;
           // A fling must travel the minimum tap distance.
           const int pointer_id = ev.GetPointerId(0);
           velocity_tracker_.ComputeCurrentVelocity(1000, max_fling_velocity_);
@@ -428,6 +443,9 @@ void GestureDetector::Init(const Config& config) {
   two_finger_tap_distance_square_ = config.two_finger_tap_max_separation *
                                     config.two_finger_tap_max_separation;
   two_finger_tap_timeout_ = config.two_finger_tap_timeout;
+
+  DCHECK_GE(config.single_tap_repeat_interval, 1);
+  single_tap_repeat_interval_ = config.single_tap_repeat_interval;
 }
 
 void GestureDetector::OnShowPressTimeout() {
@@ -463,18 +481,25 @@ void GestureDetector::CancelTaps() {
   always_in_tap_region_ = false;
   always_in_bigger_tap_region_ = false;
   defer_confirm_single_tap_ = false;
+  is_down_candidate_for_repeated_single_tap_ = false;
+  current_single_tap_repeat_count_ = 0;
 }
 
-bool GestureDetector::IsConsideredDoubleTap(
-    const MotionEvent& first_down,
-    const MotionEvent& first_up,
-    const MotionEvent& second_down) const {
+bool GestureDetector::IsRepeatedTap(const MotionEvent& first_down,
+                                    const MotionEvent& first_up,
+                                    const MotionEvent& second_down) const {
   if (!always_in_bigger_tap_region_)
     return false;
 
   const base::TimeDelta delta_time =
       second_down.GetEventTime() - first_up.GetEventTime();
-  if (delta_time < double_tap_min_time_ || delta_time > double_tap_timeout_)
+  if (delta_time > double_tap_timeout_)
+    return false;
+
+  // Only use the min time when in double-tap detection mode. For repeated
+  // single taps the risk of accidental repeat detection (e.g., from fingernail
+  // interference) is minimal.
+  if (double_tap_listener_ && delta_time < double_tap_min_time_)
     return false;
 
   const float delta_x = first_down.GetX() - second_down.GetX();

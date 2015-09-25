@@ -37,6 +37,7 @@ class GestureConfigurationAndroid : public GestureConfiguration {
     set_long_press_time_in_ms(ViewConfiguration::GetLongPressTimeoutInMs());
     set_max_distance_between_taps_for_double_tap(
         ViewConfiguration::GetDoubleTapSlopInDips());
+    set_max_tap_count(2);
     set_max_fling_velocity(
         ViewConfiguration::GetMaximumFlingVelocityInDipsPerSecond());
     set_max_gesture_bounds_length(kMaxGestureBoundsLengthDips);

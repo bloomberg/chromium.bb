@@ -69,6 +69,11 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
     // Maximum time the second pointer can be active for a two finger tap.
     base::TimeDelta two_finger_tap_timeout;
 
+    // Single tap count repetition length. Defaults to 1 (no repetition count).
+    // Note that when double-tap detection is enabled, the single tap repeat
+    // count will always be 1.
+    int single_tap_repeat_interval;
+
     VelocityTracker::Strategy velocity_tracker_strategy;
   };
 
@@ -98,9 +103,9 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void OnTapTimeout();
   void Cancel();
   void CancelTaps();
-  bool IsConsideredDoubleTap(const MotionEvent& first_down,
-                             const MotionEvent& first_up,
-                             const MotionEvent& second_down) const;
+  bool IsRepeatedTap(const MotionEvent& first_down,
+                     const MotionEvent& first_up,
+                     const MotionEvent& second_down) const;
   bool HandleSwipeIfNeeded(const MotionEvent& up, float vx, float vy);
 
   class TimeoutGestureHandler;
@@ -133,6 +138,17 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   // True when the user is still touching for the second tap (down, move, and
   // up events). Can only be true if there is a double tap listener attached.
   bool is_double_tapping_;
+
+  // Whether the current ACTION_DOWN event meets the criteria for being a
+  // repeated tap. Note that it will be considered a repeated tap only if the
+  // corresponding ACTION_UP yields a valid tap and double-tap detection is
+  // disabled.
+  bool is_down_candidate_for_repeated_single_tap_;
+
+  // The number of repeated taps in the current sequence, i.e., for the initial
+  // tap this is 0, for the first *repeated* tap 1, etc...
+  int current_single_tap_repeat_count_;
+  int single_tap_repeat_interval_;
 
   float last_focus_x_;
   float last_focus_y_;

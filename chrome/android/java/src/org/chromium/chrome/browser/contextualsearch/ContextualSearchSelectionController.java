@@ -197,6 +197,8 @@ public class ContextualSearchSelectionController {
                 mWasTapGestureDetected = false;
                 mSelectionType = SelectionType.LONG_PRESS;
                 shouldHandleSelection = true;
+                // Since we're showing pins, we don't care if the previous tap was invalid anymore.
+                unscheduleInvalidTapNotification();
                 break;
             case SelectionEventType.SELECTION_HANDLES_CLEARED:
                 mHandler.handleSelectionDismissal();

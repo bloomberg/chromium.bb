@@ -35,6 +35,7 @@ GestureConfiguration::GestureConfiguration()
       gesture_begin_end_types_enabled_(false),
       long_press_time_in_ms_(1000),
       max_distance_between_taps_for_double_tap_(20),
+      max_tap_count_(3),
       max_distance_for_two_finger_tap_in_pixels_(300),
       max_fling_velocity_(17000.0f),
       max_gesture_bounds_length_(0),

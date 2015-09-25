@@ -38,11 +38,6 @@ class EVENTS_EXPORT GestureProviderAura : public GestureProviderClient {
   void OnGestureEvent(const GestureEventData& gesture) override;
 
  private:
-  bool IsConsideredDoubleTap(const GestureEventData& previous_tap,
-                             const GestureEventData& current_tap) const;
-
-  scoped_ptr<GestureEventData> previous_tap_;
-
   GestureProviderAuraClient* client_;
   MotionEventAura pointer_state_;
   FilteredGestureProvider filtered_gesture_provider_;

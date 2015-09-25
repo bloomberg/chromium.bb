@@ -22,6 +22,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -1032,11 +1033,18 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         clickWordNode("states");
         assertEquals("States", getSelectedText());
         waitForPanelToPeekAndAssert();
+        // Avoid issues with double-tap detection by ensuring sequential taps
+        // aren't treated as such. Double-tapping can also select words much as
+        // longpress, in turn showing the pins and preventing contextual tap
+        // refinement from nearby taps. The double-tap timeout is sufficiently
+        // short that this shouldn't conflict with tap refinement by the user.
+        Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         // Because sequential taps never hide the bar, we we can't wait for it to peek.
         // Instead we use clickNode (which doesn't wait) instead of clickWordNode and wait
         // for the selection to change.
         clickNode("states-near");
         waitForSelectionToBe("StatesNear");
+        Thread.sleep(ViewConfiguration.getDoubleTapTimeout());
         clickNode("states");
         waitForSelectionToBe("States");
     }

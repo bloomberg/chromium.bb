@@ -174,13 +174,19 @@ bool TouchSelectionController::WillHandleTouchEvent(const MotionEvent& event) {
   return false;
 }
 
-bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location) {
+bool TouchSelectionController::WillHandleTapEvent(const gfx::PointF& location,
+                                                  int tap_count) {
   if (WillHandleTapOrLongPress(location))
     return true;
 
-  response_pending_input_event_ = TAP;
-  if (active_status_ != SELECTION_ACTIVE)
-    activate_selection_automatically_ = false;
+  if (tap_count > 1) {
+    response_pending_input_event_ = REPEATED_TAP;
+    ShowSelectionHandlesAutomatically();
+  } else {
+    response_pending_input_event_ = TAP;
+    if (active_status_ != SELECTION_ACTIVE)
+      activate_selection_automatically_ = false;
+  }
   ShowInsertionHandleAutomatically();
   if (selection_empty_ && !config_.show_on_tap_for_empty_editable)
     DeactivateInsertion();
@@ -428,8 +434,9 @@ bool TouchSelectionController::WillHandleTapOrLongPress(
 void TouchSelectionController::OnInsertionChanged() {
   DeactivateSelection();
 
-  if (response_pending_input_event_ == TAP && selection_empty_ &&
-      !config_.show_on_tap_for_empty_editable) {
+  if ((response_pending_input_event_ == TAP ||
+       response_pending_input_event_ == REPEATED_TAP) &&
+      selection_empty_ && !config_.show_on_tap_for_empty_editable) {
     HideAndDisallowShowingAutomatically();
     return;
   }
@@ -512,7 +519,8 @@ bool TouchSelectionController::ActivateSelectionIfNecessary() {
   // intervening SELECTION_HANDLES_CLEARED update to avoid unnecessary state
   // changes.
   if (active_status_ == INACTIVE ||
-      response_pending_input_event_ == LONG_PRESS) {
+      response_pending_input_event_ == LONG_PRESS ||
+      response_pending_input_event_ == REPEATED_TAP) {
     if (active_status_ == SELECTION_ACTIVE) {
       // The active selection session finishes with the start of the new one.
       LogSelectionEnd();

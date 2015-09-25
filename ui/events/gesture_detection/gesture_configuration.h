@@ -72,6 +72,8 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   void set_max_distance_for_two_finger_tap_in_pixels(float val) {
     max_distance_for_two_finger_tap_in_pixels_ = val;
   }
+  int max_tap_count() const { return max_tap_count_; }
+  void set_max_tap_count(int count) { max_tap_count_ = count; }
   float max_fling_velocity() const { return max_fling_velocity_; }
   void set_max_fling_velocity(float val) { max_fling_velocity_ = val; }
   float max_gesture_bounds_length() const {
@@ -223,6 +225,10 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   bool gesture_begin_end_types_enabled_;
   int long_press_time_in_ms_;
   float max_distance_between_taps_for_double_tap_;
+
+  // The max length of a repeated tap sequence, e.g., to support double-click
+  // only this is 2, to support triple-click it's 3.
+  int max_tap_count_;
 
   // The maximum allowed distance between two fingers for a two finger tap. If
   // the distance between two fingers is greater than this value, we will not

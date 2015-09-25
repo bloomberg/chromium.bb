@@ -266,6 +266,12 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
     SetUpWithConfig(config);
   }
 
+  void SetSingleTapRepeatInterval(int repeat_interval) {
+    GestureProvider::Config config = GetDefaultConfig();
+    config.gesture_detector_config.single_tap_repeat_interval = repeat_interval;
+    SetUpWithConfig(config);
+  }
+
   bool HasDownEvent() const { return gesture_provider_->current_down_event(); }
 
  protected:
@@ -2521,6 +2527,117 @@ TEST_F(GestureProviderTest, BoundingBoxForShowPressAndTapGesture) {
   EXPECT_EQ(1, GetMostRecentGestureEvent().details.touch_points());
   EXPECT_EQ(gfx::RectF(0, 0, 20, 20),
             GetMostRecentGestureEvent().details.bounding_box_f());
+}
+
+TEST_F(GestureProviderTest, SingleTapRepeat) {
+  SetSingleTapRepeatInterval(3);
+
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  // A second tap after the double-tap timeout window will not increment
+  // the tap count.
+  event_time += GetDoubleTapTimeout() + kOneMicrosecond;
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  // A secondary tap within the tap repeat period should increment
+  // the tap count.
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(2, GetMostRecentGestureEvent().details.tap_count());
+
+  // A secondary tap within the tap repeat location threshold should increment
+  // the tap count.
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, kFakeCoordX,
+                            kFakeCoordY + GetTouchSlop() / 2);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(3, GetMostRecentGestureEvent().details.tap_count());
+
+  // The tap count should reset after hitting the repeat length.
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  // If double-tap is enabled, the tap repeat count should always be 1.
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(true);
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  RunTasksAndWait(GetDoubleTapTimeout());
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  RunTasksAndWait(GetDoubleTapTimeout());
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+}
+
+TEST_F(GestureProviderTest, SingleTapRepeatLengthOfOne) {
+  SetSingleTapRepeatInterval(1);
+
+  gesture_provider_->SetDoubleTapSupportForPlatformEnabled(false);
+
+  base::TimeTicks event_time = base::TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  gesture_provider_->OnTouchEvent(event);
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  // Repeated taps should still produce a tap count of 1 if the
+  // tap repeat length is 1.
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
+
+  event_time += GetValidDoubleTapDelay();
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN, kFakeCoordX,
+                            kFakeCoordY + GetTouchSlop() / 2);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  event = ObtainMotionEvent(event_time, MotionEvent::ACTION_UP);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP, GetMostRecentGestureEventType());
+  EXPECT_EQ(1, GetMostRecentGestureEvent().details.tap_count());
 }
 
 }  // namespace ui
