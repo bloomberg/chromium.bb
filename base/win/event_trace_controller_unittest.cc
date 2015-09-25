@@ -17,6 +17,7 @@
 #include "base/win/event_trace_controller.h"
 #include "base/win/event_trace_provider.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -179,8 +180,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   base::DeleteFile(temp, false);
 }
 
-// Disable until bug 525297 is fixed (hangs on Windows 7?)
-TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
+TEST_F(EtwTraceControllerTest, EnableDisable) {
   TestingProvider provider(test_provider_);
 
   EXPECT_EQ(ERROR_SUCCESS, provider.Register());
@@ -227,11 +227,15 @@ TEST_F(EtwTraceControllerTest, DISABLED_EnableDisable) {
 
   EXPECT_HRESULT_SUCCEEDED(controller.Stop(NULL));
 
-  provider.WaitForCallback();
+  // Windows 7 does not call the callback when Stop() is called so we
+  // can't wait, and enable_level and enable_flags are not zeroed.
+  if (base::win::GetVersion() >= VERSION_WIN8) {
+    provider.WaitForCallback();
 
-  // Session should have wound down.
-  EXPECT_EQ(0, provider.enable_level());
-  EXPECT_EQ(0, provider.enable_flags());
+    // Session should have wound down.
+    EXPECT_EQ(0, provider.enable_level());
+    EXPECT_EQ(0, provider.enable_flags());
+  }
 }
 
 }  // namespace win

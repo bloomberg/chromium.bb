@@ -46,7 +46,8 @@ EtwTraceController::EtwTraceController() : session_(NULL) {
 }
 
 EtwTraceController::~EtwTraceController() {
-  Stop(NULL);
+  if (session_)
+    Stop(NULL);
 }
 
 HRESULT EtwTraceController::Start(const wchar_t* session_name,
