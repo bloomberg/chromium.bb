@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -33,7 +32,6 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
@@ -52,7 +50,8 @@ public class WebappActivity extends FullScreenActivity {
     private static final long MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL = 1000;
 
     private final WebappInfo mWebappInfo;
-    private AsyncTask<Void, Void, Void> mCleanupTask;
+    private final WebappDirectoryManager mDirectoryManager;
+
     private boolean mOldWebappCleanupStarted;
 
     private WebContentsObserver mWebContentsObserver;
@@ -70,6 +69,7 @@ public class WebappActivity extends FullScreenActivity {
      */
     public WebappActivity() {
         mWebappInfo = WebappInfo.createEmpty();
+        mDirectoryManager = new WebappDirectoryManager();
     }
 
     @Override
@@ -110,9 +110,6 @@ public class WebappActivity extends FullScreenActivity {
         WebappInfo info = WebappInfo.create(getIntent());
         if (info != null) mWebappInfo.copy(info);
 
-        mCleanupTask = new WebappDirectoryManager(getActivityDirectory(),
-                WEBAPP_SCHEME, FeatureUtilities.isDocumentModeEligible(this));
-
         ScreenOrientationProvider.lockOrientation((byte) mWebappInfo.orientation(), this);
         super.preInflationStartup();
     }
@@ -134,13 +131,13 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        if (mCleanupTask.getStatus() == AsyncTask.Status.PENDING) mCleanupTask.execute();
+        mDirectoryManager.cleanUpDirectories(this, getId());
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
-        mCleanupTask.cancel(true);
+        mDirectoryManager.cancelCleanup();
         if (getActivityTab() != null) getActivityTab().saveState(getActivityDirectory());
         if (getFullscreenManager() != null) {
             getFullscreenManager().setPersistentFullscreenMode(false);
@@ -340,14 +337,19 @@ public class WebappActivity extends FullScreenActivity {
         DocumentUtils.updateTaskDescription(this, title, icon, color, mBrandColor == null);
     }
 
+    /** Returns a unique identifier for this WebappActivity. */
+    protected String getId() {
+        return mWebappInfo.id();
+    }
+
     /**
      * Get the active directory by this web app.
      *
      * @return The directory used for the current web app.
      */
     @Override
-    protected File getActivityDirectory() {
-        return WebappDirectoryManager.getWebappDirectory(mWebappInfo.id());
+    protected final File getActivityDirectory() {
+        return mDirectoryManager.getWebappDirectory(this, getId());
     }
 
     @VisibleForTesting

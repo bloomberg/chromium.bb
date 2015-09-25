@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 
@@ -18,7 +19,6 @@ import org.chromium.chrome.browser.WebappAuthenticator;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 
 import java.lang.ref.WeakReference;
@@ -58,7 +58,7 @@ public class WebappLauncherActivity extends Activity {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
 
                 String activityName = WebappActivity.class.getName();
-                if (!FeatureUtilities.isDocumentModeEligible(this)) {
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                     // Specifically assign the app to a particular WebappActivity instance.
                     int activityIndex = ActivityAssigner.instance(this).assign(webappId);
                     activityName += String.valueOf(activityIndex);

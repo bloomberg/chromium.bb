@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import android.content.Context;
 import android.util.Base64;
 
+import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 
@@ -213,7 +214,7 @@ public class TestTabModelDirectory {
     public TestTabModelDirectory(
             Context context, String baseDirectoryName, String subdirectoryName) throws Exception {
         mTestingDirectory = new File(context.getCacheDir(), baseDirectoryName);
-        if (mTestingDirectory.exists()) recursivelyDelete(mTestingDirectory);
+        if (mTestingDirectory.exists()) FileUtils.recursivelyDeleteFile(mTestingDirectory);
         if (!mTestingDirectory.mkdirs()) {
             Log.e(TAG, "Failed to create: " + mTestingDirectory.getName());
         }
@@ -242,7 +243,7 @@ public class TestTabModelDirectory {
 
     /** Nukes all the testing data. */
     public void tearDown() throws Exception {
-        recursivelyDelete(mTestingDirectory);
+        FileUtils.recursivelyDeleteFile(mTestingDirectory);
     }
 
     /** Returns the base data directory. */
@@ -261,18 +262,5 @@ public class TestTabModelDirectory {
         } finally {
             StreamUtil.closeQuietly(outputStream);
         }
-    }
-
-    private void recursivelyDelete(File currentFile) throws Exception {
-        if (currentFile.isDirectory()) {
-            File[] files = currentFile.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    recursivelyDelete(file);
-                }
-            }
-        }
-
-        if (!currentFile.delete()) Log.e(TAG, "Failed to delete: " + currentFile);
     }
 }
