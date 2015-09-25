@@ -156,16 +156,14 @@ struct CC_EXPORT ClipNodeData {
   ClipNodeData();
 
   gfx::RectF clip;
-  gfx::RectF combined_clip;
+  gfx::RectF combined_clip_in_target_space;
   gfx::RectF clip_in_target_space;
   int transform_id;
   int target_id;
-  // This value is true for clip nodes created by layers that do not apply any
-  // clip themselves, but own a render surface that inherits the parent
-  // target space clip.
-  bool inherit_parent_target_space_clip;
-  bool requires_tight_clip_rect;
-  bool render_surface_is_clipped;
+  bool use_only_parent_clip : 1;
+  bool layer_clipping_uses_only_local_clip : 1;
+  bool layer_visibility_uses_only_local_clip : 1;
+  bool render_surface_is_clipped : 1;
 };
 
 typedef TreeNode<ClipNodeData> ClipNode;

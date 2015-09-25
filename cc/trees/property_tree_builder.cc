@@ -140,18 +140,34 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
         gfx::RectF(gfx::PointF() + layer->offset_to_transform_parent(),
                    gfx::SizeF(layer->bounds()));
     node.data.transform_id = transform_parent->transform_tree_index();
-    node.data.target_id =
-        data_for_children->effect_tree->Node(data_for_children->render_target)
-            ->data.transform_id;
+    if (layer->has_render_surface()) {
+      node.data.target_id =
+          data_from_ancestor.effect_tree->Node(data_for_children->render_target)
+              ->data.transform_id;
+    } else {
+      node.data.target_id =
+          data_for_children->effect_tree->Node(data_for_children->render_target)
+              ->data.transform_id;
+    }
     node.owner_id = layer->id();
-    node.data.inherit_parent_target_space_clip = !layer_clips_subtree &&
-                                                 layer->has_render_surface() &&
-                                                 ancestor_clips_subtree;
-    node.data.requires_tight_clip_rect =
-        ancestor_clips_subtree &&
-        (!layer->has_render_surface() ||
-         (!layer_clips_subtree && layer->num_unclipped_descendants()));
 
+    if (ancestor_clips_subtree) {
+      node.data.use_only_parent_clip = !layer_clips_subtree;
+      // If the layer has render surface, the target has changed and so we use
+      // only the local clip for layer clipping.
+      node.data.layer_clipping_uses_only_local_clip =
+          layer->has_render_surface();
+    } else {
+      node.data.use_only_parent_clip = false;
+      node.data.layer_clipping_uses_only_local_clip = true;
+    }
+
+    // If render surface clips subtree and has unclipped descendants, the
+    // surface isn't clipped and we don't want to use ancestor's clips while
+    // calculating visible rect.
+    node.data.layer_visibility_uses_only_local_clip =
+        layer->has_render_surface() && layer->num_unclipped_descendants() &&
+        layer_clips_subtree;
     node.data.render_surface_is_clipped = layer->has_render_surface() &&
                                           ancestor_clips_subtree &&
                                           !layer->num_unclipped_descendants();

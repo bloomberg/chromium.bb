@@ -101,8 +101,9 @@ void TransformNodeData::update_post_local_transform(
 ClipNodeData::ClipNodeData()
     : transform_id(-1),
       target_id(-1),
-      inherit_parent_target_space_clip(false),
-      requires_tight_clip_rect(true),
+      use_only_parent_clip(false),
+      layer_clipping_uses_only_local_clip(false),
+      layer_visibility_uses_only_local_clip(false),
       render_surface_is_clipped(false) {}
 
 EffectNodeData::EffectNodeData()
