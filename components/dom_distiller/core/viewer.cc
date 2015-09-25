@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
+#include "components/dom_distiller/core/experiments.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
 #include "components/dom_distiller/core/proto/distilled_page.pb.h"
 #include "components/dom_distiller/core/task_tracker.h"
@@ -180,12 +181,19 @@ const std::string GetUnsafeIncrementalDistilledPageJs(
 }
 
 const std::string GetErrorPageJs() {
+  std::string title(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE));
+  std::string page_update(GetSetTitleJs(title));
+
   base::StringValue value(l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
   std::string output;
   base::JSONWriter::Write(value, &output);
-  std::string page_update("addToPage(");
-  page_update += output + ");";
+  page_update += "addToPage(" + output + ");";
+  page_update += GetSetTextDirectionJs(std::string("auto"));
+  if (ShouldShowFeedbackForm()) {
+    page_update += GetShowFeedbackFormJs();
+  }
   return page_update;
 }
 

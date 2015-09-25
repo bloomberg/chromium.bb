@@ -35,12 +35,6 @@ void DomDistillerRequestViewBase::FlagAsErrorPage() {
   SendJavaScript(viewer::GetJavaScript());
   SendJavaScript(viewer::GetErrorPageJs());
 
-  std::string title(l10n_util::GetStringUTF8(
-      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT));
-  SendJavaScript(viewer::GetSetTitleJs(title));
-
-  SendJavaScript(viewer::GetSetTextDirectionJs(std::string("auto")));
-  SendJavaScript(viewer::GetShowFeedbackFormJs());
   is_error_page_ = true;
 }
 

@@ -63,6 +63,10 @@ const char kGetContent[] =
     "window.domAutomationController.send("
         "document.getElementById('content').innerHTML)";
 
+const char kGetTitle[] =
+    "window.domAutomationController.send("
+        "document.title)";
+
 const char kGetBodyClass[] =
     "window.domAutomationController.send("
         "document.body.className)";
@@ -231,9 +235,13 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest,
 
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      contents, kGetContent , &result));
+      contents, kGetContent, &result));
   EXPECT_THAT(result, HasSubstr(l10n_util::GetStringUTF8(
       IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_CONTENT)));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      contents, kGetTitle, &result));
+  EXPECT_THAT(result, HasSubstr(l10n_util::GetStringUTF8(
+      IDS_DOM_DISTILLER_VIEWER_FAILED_TO_FIND_ARTICLE_TITLE)));
 }
 
 // The DomDistillerViewerSource renders untrusted content, so ensure no bindings
