@@ -2885,7 +2885,16 @@ def CMDland(parser, args):
   return SendUpstream(parser, args, 'land')
 
 
-@subcommand.usage('<patch url or issue id>')
+def ParseIssueNum(arg):
+  """Parses the issue number from args if present otherwise returns None."""
+  if re.match(r'\d+', arg):
+    return arg
+  if arg.startswith('http'):
+    return re.sub(r'.*/(\d+)/?', r'\1', arg)
+  return None
+
+
+@subcommand.usage('<patch url or issue id or issue url>')
 def CMDpatch(parser, args):
   """Patches in a code review."""
   parser.add_option('-b', dest='newbranch',
@@ -2907,7 +2916,13 @@ def CMDpatch(parser, args):
   if len(args) != 1:
     parser.print_help()
     return 1
-  issue_arg = args[0]
+
+  issue_arg = ParseIssueNum(args[0])
+  # The patch URL works because ParseIssueNum won't do any substitution
+  # as the re.sub pattern fails to match and just returns it.
+  if issue_arg == None:
+    parser.print_help()
+    return 1
 
   # We don't want uncommitted changes mixed up with the patch.
   if git_common.is_dirty_git_tree('patch'):
@@ -3565,11 +3580,8 @@ def CMDcheckout(parser, args):
     parser.print_help()
     return 1
 
-  if re.match(r'\d+', args[0]):
-    target_issue = args[0]
-  elif args[0].startswith('http'):
-    target_issue = re.sub(r'.*/(\d+)/?', r'\1', args[0])
-  else:
+  target_issue = ParseIssueNum(args[0])
+  if target_issue == None:
     parser.print_help()
     return 1
 
