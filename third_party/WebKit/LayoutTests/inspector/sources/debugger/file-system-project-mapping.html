@@ -233,7 +233,7 @@ function test()
                 InspectorTest.addResult("Adding file system.");
                 InspectorTest.addMockFileSystem(fileSystemPath)
                 InspectorTest.addResult("Adding file system mapping.");
-                WebInspector.isolatedFileSystemManager.mapping().addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
+                WebInspector.fileSystemMapping.addMappingForResource(scriptURL, fileSystemPath, filePath.substr(1));
                 InspectorTest.addFilesToMockFileSystem(fileSystemPath, files);
                 // Now that we've set everything up, we need to reload a page to remove all network resources.
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(function() {}, 7);

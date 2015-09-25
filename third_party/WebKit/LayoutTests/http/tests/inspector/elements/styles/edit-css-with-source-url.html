@@ -37,7 +37,7 @@ function test()
 
             InspectorTest.addResult("Adding file system mapping.");
             var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            WebInspector.isolatedFileSystemManager.mapping().addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
+            WebInspector.fileSystemMapping.addFileMapping(fileSystemPath, "http://localhost:8000/inspector/elements/styles/", "/");
             var uiSourceCode = WebInspector.workspace.uiSourceCode(fileSystemProjectId, "foo.css");
             InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
 

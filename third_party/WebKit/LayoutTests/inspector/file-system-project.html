@@ -54,8 +54,8 @@ function test()
             fs1.reportCreated();
             fs2.reportCreated();
             InspectorTest.addResult("Adding file mappings.");
-            WebInspector.isolatedFileSystemManager.mapping().addFileMapping("/var/www", "http://localhost/", "/localhost/");
-            WebInspector.isolatedFileSystemManager.mapping().addFileMapping("/foo/bar", "http://www.example.com/", "/");
+            WebInspector.fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
+            WebInspector.fileSystemMapping.addFileMapping("/foo/bar", "http://www.example.com/", "/");
 
             InspectorTest.addResult("Adding files to file systems.");
 

@@ -71,7 +71,7 @@ function test()
 
     function checkAndDumpFileSystemMapping(fileSystemMapping)
     {
-        var fileSystemPaths = fileSystemMapping.fileSystemPaths();
+        var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
         InspectorTest.addResult("Testing file system mapping.");
         InspectorTest.addResult("    file system paths:");
         for (var i = 0; i < fileSystemPaths.length; ++i) {
@@ -87,7 +87,7 @@ function test()
 
     // At first create file system mapping and clear it.
     var fileSystemMapping = new WebInspector.FileSystemMapping();
-    var fileSystemPaths = fileSystemMapping.fileSystemPaths();
+    var fileSystemPaths = Object.keys(fileSystemMapping._fileSystemMappings);
     for (var i = 0; i < fileSystemPaths.length; ++i)
         fileSystemMapping.removeFileSystem(fileSystemPaths[i]);
     
