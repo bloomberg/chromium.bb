@@ -29696,6 +29696,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageImportanceSignals.HadFormInteraction.OnCommitLoad"
+    enum="HadFormInteraction">
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    Number of pages that had any HTML form interaction before next page load.
+  </summary>
+</histogram>
+
 <histogram name="PageLoad.Timing.NavigationToDOMContentLoadedEventFired"
     units="milliseconds">
   <owner>bmcquade@chromium.org</owner>
@@ -60891,6 +60899,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="MIME type indicated GZIP content"/>
   <int value="2" label="Explicit download with GZIP filename extension"/>
   <int value="3" label="Unhandled MIME type with a GZIP filename extension"/>
+</enum>
+
+<enum name="HadFormInteraction" type="int">
+  <int value="0" label="No form interaction"/>
+  <int value="1" label="Observed form interaction"/>
 </enum>
 
 <enum name="HIDContinueScenarioType" type="int">
