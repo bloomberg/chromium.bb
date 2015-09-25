@@ -100,6 +100,9 @@ public class ToolbarPhone extends ToolbarLayout
     private View mUrlActionsContainer;
     private ImageView mToolbarShadow;
 
+    private final int mProgressBackBackgroundColor;
+    private final int mProgressBackBackgroundColorWhite;
+
     private ObjectAnimator mTabSwitcherModeAnimation;
     private ObjectAnimator mDelayedTabSwitcherModeAnimation;
 
@@ -239,6 +242,10 @@ public class ToolbarPhone extends ToolbarLayout
         // Insets used for the PhoneLocatioBar background drawable.
         mLocationBarInsets = getResources().getDimensionPixelSize(R.dimen.location_bar_margin_top)
                 + getResources().getDimensionPixelSize(R.dimen.location_bar_margin_bottom);
+        mProgressBackBackgroundColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.progress_bar_background);
+        mProgressBackBackgroundColorWhite = ApiCompatibilityUtils.getColor(getResources(),
+                R.color.progress_bar_background_white);
     }
 
     @Override
@@ -1819,6 +1826,8 @@ public class ToolbarPhone extends ToolbarLayout
                 visualStateChanged = true;
             } else {
                 updateToolbarBackground(VisualState.BRAND_COLOR);
+                getProgressBar().setBackgroundColor(
+                        ColorUtils.getLightProgressbarBackground(currentPrimaryColor));
             }
         }
 
@@ -1837,16 +1846,16 @@ public class ToolbarPhone extends ToolbarLayout
         mUseLightToolbarDrawables = false;
         mUnfocusedLocationBarUsesTransparentBg = false;
         mUrlBackgroundAlpha = 255;
-        int progressBarBackgroundColorResource = R.color.progress_bar_background;
+        int progressBarBackgroundColor = mProgressBackBackgroundColor;
         updateToolbarBackground(mVisualState);
         if (isInTabSwitcherMode) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarBackgroundColorResource = R.color.progress_bar_background_white;
+            progressBarBackgroundColor = mProgressBackBackgroundColorWhite;
         } else if (isIncognito()) {
             mUseLightToolbarDrawables = true;
             mUrlBackgroundAlpha = LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA;
-            progressBarBackgroundColorResource = R.color.progress_bar_background_white;
+            progressBarBackgroundColor = mProgressBackBackgroundColorWhite;
         } else if (mVisualState == VisualState.BRAND_COLOR) {
             mUseLightToolbarDrawables =
                     ColorUtils.shoudUseLightForegroundOnBackground(currentPrimaryColor);
@@ -1854,12 +1863,17 @@ public class ToolbarPhone extends ToolbarLayout
                     !ColorUtils.shouldUseOpaqueTextboxBackground(currentPrimaryColor);
             mUrlBackgroundAlpha = mUnfocusedLocationBarUsesTransparentBg
                     ? LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA : 255;
-            progressBarBackgroundColorResource = mUseLightToolbarDrawables
-                    ? R.color.progress_bar_background_white : R.color.progress_bar_background;
+            progressBarBackgroundColor =
+                    ColorUtils.getLightProgressbarBackground(currentPrimaryColor);
         }
 
-        getProgressBar().setBackgroundColor(
-                ApiCompatibilityUtils.getColor(getResources(), progressBarBackgroundColorResource));
+        getProgressBar().setBackgroundColor(progressBarBackgroundColor);
+        int progressBarForegroundColor = ApiCompatibilityUtils.getColor(getResources(),
+                mUseLightToolbarDrawables
+                ? R.color.progress_bar_foreground_white
+                : R.color.progress_bar_foreground);
+        getProgressBar().setForegroundColor(progressBarForegroundColor);
+
         ColorStateList dark =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
         ColorStateList white =
