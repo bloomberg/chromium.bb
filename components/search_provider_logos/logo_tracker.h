@@ -120,6 +120,7 @@ class LogoTracker : public net::URLFetcherDelegate {
   // |wants_cta| determines if the url should return a call to action image.
   // Note: |parse_logo_response_func| and |append_queryparams_func| must be
   // suitable for running multiple times, concurrently, and on multiple threads.
+  // TODO(ianwen): remove wants_cta from parameter.
   void SetServerAPI(const GURL& logo_url,
                     const ParseLogoResponse& parse_logo_response_func,
                     const AppendQueryparamsToLogoURL& append_queryparams_func,

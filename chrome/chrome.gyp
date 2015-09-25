@@ -608,6 +608,7 @@
             '../third_party/android_tools/android_tools.gyp:android_support_v13_javalib',
             '../third_party/android_tools/android_tools.gyp:google_play_services_javalib',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_javalib',
+            '../third_party/gif_player/gif_player.gyp:gif_player_java',
             '../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
             '../ui/android/ui_android.gyp:ui_java',
           ],

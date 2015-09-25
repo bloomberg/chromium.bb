@@ -54,6 +54,8 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
 
 import java.util.Locale;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * The native new tab page, represented by some basic data such as title and url, and an Android
  * View that displays the page.
@@ -199,9 +201,10 @@ public class NewTabPageView extends FrameLayout
                 FaviconAvailabilityCallback callback);
 
         /**
-         * Navigates to a URL chosen by the search provider when the user clicks on the logo.
+         * Called when the user clicks on the logo.
+         * @param isAnimatedLogoShowing Whether the animated GIF logo is playing.
          */
-        void openLogoLink();
+        void onLogoClicked(boolean isAnimatedLogoShowing);
 
         /**
          * Gets the default search provider's logo and calls logoObserver with the result.
@@ -538,6 +541,20 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
+     * Starts playing the given animated GIF logo.
+     */
+    void playAnimatedLogo(BaseGifImage gifImage) {
+        mSearchProviderLogoView.playAnimatedLogo(gifImage);
+    }
+
+    /**
+     * @return Whether the GIF animation is playing in the logo.
+     */
+    boolean isAnimatedLogoShowing() {
+        return mSearchProviderLogoView.isAnimatedLogoShowing();
+    }
+
+    /**
      * @return Whether URL focus animations are currently disabled.
      */
     boolean urlFocusAnimationsDisabled() {
@@ -700,7 +717,7 @@ public class NewTabPageView extends FrameLayout
      *         InvalidationAwareThumbnailProvider#captureThumbnail(Canvas)
      */
     void captureThumbnail(Canvas canvas) {
-        mSearchProviderLogoView.endAnimation();
+        mSearchProviderLogoView.endFadeAnimation();
         ViewUtils.captureBitmap(this, canvas);
         mSnapshotWidth = getWidth();
         mSnapshotHeight = getHeight();

@@ -55,6 +55,8 @@ import org.chromium.ui.base.PageTransition;
 
 import java.util.concurrent.TimeUnit;
 
+import jp.tomorrowkey.android.gifplayer.BaseGifImage;
+
 /**
  * Provides functionality when the user interacts with the NTP.
  */
@@ -87,6 +89,7 @@ public class NewTabPage
     private boolean mSearchProviderHasLogo;
     private final boolean mOptOutPromoShown;
     private String mOnLogoClickUrl;
+    private String mAnimatedLogoUrl;
     private FakeboxDelegate mFakeboxDelegate;
 
     // The timestamp at which the constructor was called.
@@ -350,10 +353,20 @@ public class NewTabPage
         }
 
         @Override
-        public void openLogoLink() {
+        public void onLogoClicked(boolean isAnimatedLogoShowing) {
             if (mIsDestroyed) return;
-            if (mOnLogoClickUrl == null) return;
-            mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
+
+            if (!isAnimatedLogoShowing && mAnimatedLogoUrl != null) {
+                mLogoBridge.getAnimatedLogo(new LogoBridge.AnimatedLogoCallback() {
+                    @Override
+                    public void onAnimatedLogoAvailable(BaseGifImage animatedLogoImage) {
+                        if (mIsDestroyed) return;
+                        mNewTabPageView.playAnimatedLogo(animatedLogoImage);
+                    }
+                }, mAnimatedLogoUrl);
+            } else if (mOnLogoClickUrl != null) {
+                mTab.loadUrl(new LoadUrlParams(mOnLogoClickUrl, PageTransition.LINK));
+            }
         }
 
         @Override
@@ -364,6 +377,7 @@ public class NewTabPage
                 public void onLogoAvailable(Logo logo, boolean fromCache) {
                     if (mIsDestroyed) return;
                     mOnLogoClickUrl = logo != null ? logo.onClickUrl : null;
+                    mAnimatedLogoUrl = logo != null ? logo.animatedLogoUrl : null;
                     logoObserver.onLogoAvailable(logo, fromCache);
                 }
             };
