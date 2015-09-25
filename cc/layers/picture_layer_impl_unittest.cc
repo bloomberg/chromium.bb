@@ -224,6 +224,8 @@ class PictureLayerImplTest : public testing::Test {
     host_impl_.pending_tree()->PushPageScaleFromMainThread(1.f, 0.00001f,
                                                            100000.f);
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
+    pending_tree->SetDeviceScaleFactor(
+        host_impl_.active_tree()->device_scale_factor());
 
     // Steal from the recycled tree if possible.
     scoped_ptr<LayerImpl> pending_root = pending_tree->DetachLayerTree();
@@ -265,7 +267,7 @@ class PictureLayerImplTest : public testing::Test {
       float maximum_animation_contents_scale,
       float starting_animation_contents_scale,
       bool animating_transform_to_screen) {
-    host_impl_.SetDeviceScaleFactor(device_scale_factor);
+    layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
     host_impl_.active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
 
     gfx::Transform scale_transform;
@@ -352,6 +354,16 @@ class PictureLayerImplTest : public testing::Test {
     for (size_t i = 0; i < tiles.size(); ++i)
       EXPECT_FALSE(tiles[i]->required_for_activation()) << "i: " << i;
     EXPECT_GT(tiles.size(), 0u);
+  }
+
+  void SetInitialDeviceScaleFactor(float device_scale_factor) {
+    // Device scale factor is a per-tree property. However, tests can't directly
+    // set the pending tree's device scale factor before the pending tree is
+    // created, and setting it after SetupPendingTreeInternal is too late, since
+    // draw properties will already have been updated on the tree. To handle
+    // this, we initially set only the active tree's device scale factor, and we
+    // copy this over to the pending tree inside SetupPendingTreeInternal.
+    host_impl_.active_tree()->SetDeviceScaleFactor(device_scale_factor);
   }
 
  protected:
@@ -1458,7 +1470,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
 
   gfx::Size layer_bounds(1000, 1000);
 
-  host_impl_.SetDeviceScaleFactor(1.3f);
+  SetInitialDeviceScaleFactor(1.3f);
 
   scoped_refptr<FakeDisplayListRasterSource> valid_raster_source =
       FakeDisplayListRasterSource::CreateFilled(layer_bounds);
@@ -1648,7 +1660,7 @@ TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
   gfx::Size tile_size(400, 400);
   gfx::Size layer_bounds(700, 650);
   gfx::Rect layer_rect(layer_bounds);
-  host_impl_.SetDeviceScaleFactor(2.f);
+  SetInitialDeviceScaleFactor(2.f);
 
   gfx::Rect recorded_viewport(20, 30, 40, 50);
   scoped_refptr<FakeDisplayListRasterSource> active_raster_source =
@@ -2003,7 +2015,7 @@ TEST_F(PictureLayerImplTest,
   gfx::Size viewport_size(400, 400);
 
   host_impl_.SetViewportSize(viewport_size);
-  host_impl_.SetDeviceScaleFactor(2.f);
+  SetInitialDeviceScaleFactor(2.f);
 
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
 
@@ -2452,7 +2464,7 @@ TEST_F(PictureLayerImplTest, SyncTilingAfterGpuRasterizationToggles) {
 
 TEST_F(PictureLayerImplTest, HighResCreatedWhenBoundsShrink) {
   // Put 0.5 as high res.
-  host_impl_.SetDeviceScaleFactor(0.5f);
+  SetInitialDeviceScaleFactor(0.5f);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
       FakeDisplayListRasterSource::CreateFilled(gfx::Size(10, 10));
@@ -4263,7 +4275,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
   gfx::Rect invalidation_rect(230, 230, 152, 152);
 
   host_impl_.SetViewportSize(viewport_size);
-  host_impl_.SetDeviceScaleFactor(2.f);
+  SetInitialDeviceScaleFactor(2.f);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
       FakeDisplayListRasterSource::CreateFilled(layer_bounds);
@@ -4672,7 +4684,7 @@ TEST_F(PictureLayerImplTest, ScrollPastLiveTilesRectAndBack) {
   gfx::Size viewport_size(100, 100);
 
   host_impl_.SetViewportSize(viewport_size);
-  host_impl_.SetDeviceScaleFactor(1.f);
+  SetInitialDeviceScaleFactor(1.f);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
       FakeDisplayListRasterSource::CreateFilled(layer_bounds);
@@ -4726,7 +4738,7 @@ TEST_F(PictureLayerImplTest, ScrollPropagatesToPending) {
   gfx::Size viewport_size(100, 100);
 
   host_impl_.SetViewportSize(viewport_size);
-  host_impl_.SetDeviceScaleFactor(1.f);
+  SetInitialDeviceScaleFactor(1.f);
 
   SetupDefaultTrees(layer_bounds);
 
@@ -4753,7 +4765,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
   gfx::Size viewport_size(100, 100);
 
   host_impl_.SetViewportSize(viewport_size);
-  host_impl_.SetDeviceScaleFactor(1.f);
+  SetInitialDeviceScaleFactor(1.f);
 
   scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
       FakeDisplayListRasterSource::CreateFilledLCD(layer_bounds);

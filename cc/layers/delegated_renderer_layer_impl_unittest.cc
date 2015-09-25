@@ -613,7 +613,7 @@ class DelegatedRendererLayerImplTestTransform
         delegated_device_scale_factor_(2.f) {}
 
   void SetUpTest() {
-    host_impl_->SetDeviceScaleFactor(2.f);
+    host_impl_->active_tree()->SetDeviceScaleFactor(2.f);
 
     scoped_ptr<LayerImpl> root_layer = LayerImpl::Create(
         host_impl_->active_tree(), 1);

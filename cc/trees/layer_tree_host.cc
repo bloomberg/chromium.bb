@@ -316,7 +316,10 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   RecordGpuRasterizationHistogram();
 
   host_impl->SetViewportSize(device_viewport_size_);
-  host_impl->SetDeviceScaleFactor(device_scale_factor_);
+  // TODO(senorblanco): Move this up so that it happens before GPU rasterization
+  // properties are set, since those trigger an update of GPU rasterization
+  // status, which depends on the device scale factor. (crbug.com/535700)
+  sync_tree->SetDeviceScaleFactor(device_scale_factor_);
   host_impl->SetDebugState(debug_state_);
   if (pending_page_scale_animation_) {
     sync_tree->SetPendingPageScaleAnimation(

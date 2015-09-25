@@ -84,7 +84,6 @@ class CC_EXPORT LayerTreeImpl {
   FrameRateCounter* frame_rate_counter() const;
   MemoryHistory* memory_history() const;
   gfx::Size device_viewport_size() const;
-  float device_scale_factor() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;
   bool IsPendingTree() const;
@@ -195,6 +194,9 @@ class CC_EXPORT LayerTreeImpl {
 
   SyncedProperty<ScaleGroup>* page_scale_factor();
   const SyncedProperty<ScaleGroup>* page_scale_factor() const;
+
+  void SetDeviceScaleFactor(float device_scale_factor);
+  float device_scale_factor() const { return device_scale_factor_; }
 
   void set_hide_pinch_scrollbars_near_min_scale(bool hide) {
     hide_pinch_scrollbars_near_min_scale_ = hide;
@@ -428,6 +430,8 @@ class CC_EXPORT LayerTreeImpl {
   float min_page_scale_factor_;
   float max_page_scale_factor_;
   bool hide_pinch_scrollbars_near_min_scale_;
+
+  float device_scale_factor_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

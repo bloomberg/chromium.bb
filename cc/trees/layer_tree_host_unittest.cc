@@ -958,6 +958,69 @@ class LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestNoExtraCommitFromScrollbarInvalidate);
 
+class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
+ public:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->layer_transforms_should_scale_layer_contents = true;
+  }
+
+  void SetupTree() override {
+    root_layer_ = Layer::Create(layer_settings());
+    root_layer_->SetBounds(gfx::Size(10, 20));
+
+    child_layer_ = FakePictureLayer::Create(layer_settings(), &client_);
+    child_layer_->SetBounds(gfx::Size(10, 10));
+    root_layer_->AddChild(child_layer_);
+
+    layer_tree_host()->SetRootLayer(root_layer_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    if (layer_tree_host()->source_frame_number() == 1)
+      layer_tree_host()->SetDeviceScaleFactor(4.f);
+  }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->sync_tree()->source_frame_number() == 1) {
+      EXPECT_EQ(4.f, host_impl->sync_tree()->device_scale_factor());
+      if (host_impl->pending_tree()) {
+        // The active tree's device scale factor shouldn't change until
+        // activation.
+        EXPECT_EQ(1.f, host_impl->active_tree()->device_scale_factor());
+      }
+    }
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    if (host_impl->active_tree()->source_frame_number() == 0) {
+      EXPECT_EQ(1.f, host_impl->active_tree()->device_scale_factor());
+    } else {
+      gfx::Rect root_damage_rect =
+          frame_data->render_passes.back()->damage_rect;
+      EXPECT_EQ(gfx::Rect(host_impl->active_tree()->root_layer()->bounds()),
+                root_damage_rect);
+      EXPECT_EQ(4.f, host_impl->active_tree()->device_scale_factor());
+      EndTest();
+    }
+
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> root_layer_;
+  scoped_refptr<Layer> child_layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
+
 class LayerTreeHostTestSetNextCommitForcesRedraw : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetNextCommitForcesRedraw()
@@ -1580,7 +1643,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     // Should only do one commit.
     EXPECT_EQ(0, impl->active_tree()->source_frame_number());
     // Device scale factor should come over to impl.
-    EXPECT_NEAR(impl->device_scale_factor(), 1.5f, 0.00001f);
+    EXPECT_NEAR(impl->active_tree()->device_scale_factor(), 1.5f, 0.00001f);
 
     // Both layers are on impl.
     ASSERT_EQ(1u, impl->active_tree()->root_layer()->children().size());
@@ -1618,8 +1681,8 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     EXPECT_FLOAT_EQ(1.5f, child->MaximumTilingContentsScale());
 
     gfx::Transform scale_transform;
-    scale_transform.Scale(impl->device_scale_factor(),
-                          impl->device_scale_factor());
+    scale_transform.Scale(impl->active_tree()->device_scale_factor(),
+                          impl->active_tree()->device_scale_factor());
 
     // The root layer is scaled by 2x.
     gfx::Transform root_screen_space_transform = scale_transform;

@@ -1499,7 +1499,7 @@ TEST_F(LayerTreeImplTest,
       root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
-  host_impl().SetDeviceScaleFactor(device_scale_factor);
+  host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);
@@ -1958,7 +1958,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
       root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
-  host_impl().SetDeviceScaleFactor(device_scale_factor);
+  host_impl().active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl().active_tree()->PushPageScaleFromMainThread(
       page_scale_factor, page_scale_factor, page_scale_factor);
   host_impl().active_tree()->SetPageScaleOnActiveTree(page_scale_factor);

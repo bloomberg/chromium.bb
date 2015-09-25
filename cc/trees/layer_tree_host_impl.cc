@@ -208,7 +208,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       debug_rect_history_(DebugRectHistory::Create()),
       texture_mailbox_deleter_(new TextureMailboxDeleter(GetTaskRunner())),
       max_memory_needed_bytes_(0),
-      device_scale_factor_(1.f),
       resourceless_software_draw_(false),
       animation_registrar_(),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
@@ -511,7 +510,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
     return false;
 
   gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, device_scale_factor_);
+      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
 
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
@@ -540,7 +539,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
 bool LayerTreeHostImpl::HaveWheelEventHandlersAt(
     const gfx::Point& viewport_point) {
   gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, device_scale_factor_);
+      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
 
   LayerImpl* layer_impl =
       active_tree_->FindLayerWithWheelHandlerThatIsHitByPoint(
@@ -567,7 +566,7 @@ static ScrollBlocksOn EffectiveScrollBlocksOn(LayerImpl* layer) {
 bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
     const gfx::Point& viewport_point) {
   gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, device_scale_factor_);
+      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
 
   // First check if scrolling at this point is required to block on any
   // touch event handlers.  Note that we must start at the innermost layer
@@ -1474,7 +1473,7 @@ void LayerTreeHostImpl::OnCanDrawStateChangedForTree() {
 
 CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   CompositorFrameMetadata metadata;
-  metadata.device_scale_factor = device_scale_factor_;
+  metadata.device_scale_factor = active_tree_->device_scale_factor();
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
   metadata.root_layer_size = active_tree_->ScrollableSize();
@@ -1584,17 +1583,13 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     scoped_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
                                  output_surface_, NULL);
-    temp_software_renderer->DrawFrame(&frame->render_passes,
-                                      device_scale_factor_,
-                                      DeviceViewport(),
-                                      DeviceClip(),
-                                      disable_picture_quad_image_filtering);
+    temp_software_renderer->DrawFrame(
+        &frame->render_passes, active_tree_->device_scale_factor(),
+        DeviceViewport(), DeviceClip(), disable_picture_quad_image_filtering);
   } else {
     renderer_->DrawFrame(&frame->render_passes,
-                         device_scale_factor_,
-                         DeviceViewport(),
-                         DeviceClip(),
-                         false);
+                         active_tree_->device_scale_factor(), DeviceViewport(),
+                         DeviceClip(), false);
   }
   // The render passes should be consumed by the renderer.
   DCHECK(frame->render_passes.empty());
@@ -1632,7 +1627,11 @@ void LayerTreeHostImpl::FinishAllRendering() {
 
 int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   if (settings_.gpu_rasterization_msaa_sample_count == -1) {
-    return device_scale_factor_ >= 2.0f ? 4 : 8;
+    // Use the most up-to-date version of device_scale_factor that we have.
+    float device_scale_factor = pending_tree_
+                                    ? pending_tree_->device_scale_factor()
+                                    : active_tree_->device_scale_factor();
+    return device_scale_factor >= 2.0f ? 4 : 8;
   }
 
   return settings_.gpu_rasterization_msaa_sample_count;
@@ -2274,14 +2273,6 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
       gfx::RectF(gfx::SizeF(device_viewport_size)));
 }
 
-void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {
-  if (device_scale_factor == device_scale_factor_)
-    return;
-  device_scale_factor_ = device_scale_factor;
-
-  SetFullRootLayerDamage();
-}
-
 const gfx::Rect LayerTreeHostImpl::ViewportRectForTilePriority() const {
   if (viewport_rect_for_tile_priority_.IsEmpty())
     return DeviceViewport();
@@ -2436,7 +2427,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
   ClearCurrentlyScrollingLayer();
 
   gfx::PointF device_viewport_point =
-      gfx::ScalePoint(viewport_point, device_scale_factor_);
+      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
@@ -2524,7 +2515,8 @@ gfx::Vector2dF LayerTreeHostImpl::ScrollLayerWithViewportSpaceDelta(
   // layers, we may need to explicitly handle uninvertible transforms here.
   DCHECK(did_invert);
 
-  float scale_from_viewport_to_screen_space = device_scale_factor_;
+  float scale_from_viewport_to_screen_space =
+      active_tree_->device_scale_factor();
   gfx::PointF screen_space_point =
       gfx::ScalePoint(viewport_point, scale_from_viewport_to_screen_space);
 
@@ -2848,8 +2840,8 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
-  gfx::PointF device_viewport_point = gfx::ScalePoint(viewport_point,
-                                                      device_scale_factor_);
+  gfx::PointF device_viewport_point =
+      gfx::ScalePoint(viewport_point, active_tree_->device_scale_factor());
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
   if (HandleMouseOverScrollbar(layer_impl, device_viewport_point))
@@ -2893,7 +2885,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
                  DeviceSpaceDistanceToLayer(device_viewport_point, *it));
 
   animation_controller->DidMouseMoveNear(distance_to_scrollbar /
-                                         device_scale_factor_);
+                                         active_tree_->device_scale_factor());
 }
 
 bool LayerTreeHostImpl::HandleMouseOverScrollbar(LayerImpl* layer_impl,

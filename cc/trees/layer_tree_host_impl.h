@@ -446,9 +446,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetViewportSize(const gfx::Size& device_viewport_size);
   gfx::Size device_viewport_size() const { return device_viewport_size_; }
 
-  void SetDeviceScaleFactor(float device_scale_factor);
-  float device_scale_factor() const { return device_scale_factor_; }
-
   const gfx::Transform& DrawTransform() const;
 
   scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
@@ -769,10 +766,6 @@ class CC_EXPORT LayerTreeHostImpl
   // viewport, scrolling viewport and device viewport), but it can be
   // overridden.
   gfx::Size device_viewport_size_;
-
-  // Conversion factor from CSS pixels to physical pixels when
-  // pageScaleFactor=1.
-  float device_scale_factor_;
 
   // Optional top-level constraints that can be set by the OutputSurface.
   // - external_transform_ applies a transform above the root layer

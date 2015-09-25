@@ -2321,7 +2321,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   gfx::Size content_size(1000, 1000);
 
   CreateHostImpl(settings, CreateOutputSurface());
-  host_impl_->SetDeviceScaleFactor(device_scale_factor);
+  host_impl_->active_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl_->SetViewportSize(device_viewport_size);
 
   scoped_ptr<LayerImpl> root =
@@ -4553,7 +4553,7 @@ TEST_F(LayerTreeHostImplTest, ScrollViewportRounding) {
   SetupScrollAndContentsLayers(gfx::Size(width, height));
   host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
       gfx::Size(width * scale - 1, height * scale));
-  host_impl_->SetDeviceScaleFactor(scale);
+  host_impl_->active_tree()->SetDeviceScaleFactor(scale);
   host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 0.5f, 4.f);
 
   LayerImpl* inner_viewport_scroll_layer =
@@ -5493,8 +5493,9 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
       if (quad->material != DrawQuad::TEXTURE_CONTENT)
         continue;
       const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
-      gfx::SizeF gutter_texture_size_pixels = gfx::ScaleSize(
-          gfx::SizeF(gutter_texture_size_), host_impl_->device_scale_factor());
+      gfx::SizeF gutter_texture_size_pixels =
+          gfx::ScaleSize(gfx::SizeF(gutter_texture_size_),
+                         host_impl_->active_tree()->device_scale_factor());
       EXPECT_EQ(texture_quad->uv_top_left.x(),
                 texture_quad->rect.x() / gutter_texture_size_pixels.width());
       EXPECT_EQ(texture_quad->uv_top_left.y(),
@@ -5509,7 +5510,8 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   gfx::Size DipSizeToPixelSize(const gfx::Size& size) {
-    return gfx::ScaleToRoundedSize(size, host_impl_->device_scale_factor());
+    return gfx::ScaleToRoundedSize(
+        size, host_impl_->active_tree()->device_scale_factor());
   }
 
   DrawQuad::Material gutter_quad_material_;
@@ -5539,7 +5541,7 @@ TEST_F(LayerTreeHostImplViewportCoveredTest, ViewportCoveredScaled) {
   bool always_draw = false;
   CreateHostImpl(DefaultSettings(), CreateFakeOutputSurface(always_draw));
 
-  host_impl_->SetDeviceScaleFactor(2.f);
+  host_impl_->active_tree()->SetDeviceScaleFactor(2.f);
   host_impl_->SetViewportSize(DipSizeToPixelSize(viewport_size_));
   SetupActiveTreeLayers();
   TestLayerCoversFullViewport();
@@ -5622,7 +5624,7 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
 
   LayerTreeHostImpl::FrameData frame;
   host_impl_->SetViewportSize(gfx::Size(10, 10));
-  host_impl_->SetDeviceScaleFactor(1.f);
+  host_impl_->active_tree()->SetDeviceScaleFactor(1.f);
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   EXPECT_TRUE(provider->TestContext3d()->reshape_called());
@@ -5642,7 +5644,7 @@ TEST_F(LayerTreeHostImplTest, ReshapeNotCalledUntilDraw) {
   host_impl_->DidDrawAllLayers(frame);
   provider->TestContext3d()->clear_reshape_called();
 
-  host_impl_->SetDeviceScaleFactor(2.f);
+  host_impl_->active_tree()->SetDeviceScaleFactor(2.f);
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   EXPECT_TRUE(provider->TestContext3d()->reshape_called());
@@ -6279,13 +6281,13 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   // Due to precision issues (especially on Android), sometimes far
   // away quads can end up thinking they need AA.
   float device_scale_factor = 4.f / 3.f;
-  host_impl_->SetDeviceScaleFactor(device_scale_factor);
   gfx::Size root_size(2000, 1000);
   gfx::Size device_viewport_size =
       gfx::ScaleToCeiledSize(root_size, device_scale_factor);
   host_impl_->SetViewportSize(device_viewport_size);
 
   host_impl_->CreatePendingTree();
+  host_impl_->pending_tree()->SetDeviceScaleFactor(device_scale_factor);
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f / 16.f,
                                                           16.f);
 

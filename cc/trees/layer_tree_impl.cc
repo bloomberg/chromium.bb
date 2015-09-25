@@ -57,6 +57,7 @@ LayerTreeImpl::LayerTreeImpl(
       min_page_scale_factor_(0),
       max_page_scale_factor_(0),
       hide_pinch_scrollbars_near_min_scale_(false),
+      device_scale_factor_(1.f),
       elastic_overscroll_(elastic_overscroll),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
@@ -66,8 +67,7 @@ LayerTreeImpl::LayerTreeImpl(
       render_surface_layer_list_id_(0),
       top_controls_shrink_blink_size_(false),
       top_controls_height_(0),
-      top_controls_shown_ratio_(top_controls_shown_ratio) {
-}
+      top_controls_shown_ratio_(top_controls_shown_ratio) {}
 
 LayerTreeImpl::~LayerTreeImpl() {
   BreakSwapPromises(IsActiveTree() ? SwapPromise::SWAP_FAILS
@@ -215,6 +215,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   // tree so only the limits need to be provided.
   target_tree->PushPageScaleFactorAndLimits(nullptr, min_page_scale_factor(),
                                             max_page_scale_factor());
+  target_tree->SetDeviceScaleFactor(device_scale_factor());
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->pending_page_scale_animation_ =
@@ -440,6 +441,15 @@ void LayerTreeImpl::DidUpdatePageScale() {
 
   ForceScrollbarParameterUpdateAfterScaleChange(PageScaleLayer());
   HideInnerViewportScrollbarsIfNeeded();
+}
+
+void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
+  if (device_scale_factor == device_scale_factor_)
+    return;
+  device_scale_factor_ = device_scale_factor;
+
+  if (IsActiveTree())
+    layer_tree_host_impl_->SetFullRootLayerDamage();
 }
 
 void LayerTreeImpl::HideInnerViewportScrollbarsIfNeeded() {
@@ -855,10 +865,6 @@ MemoryHistory* LayerTreeImpl::memory_history() const {
 
 gfx::Size LayerTreeImpl::device_viewport_size() const {
   return layer_tree_host_impl_->device_viewport_size();
-}
-
-float LayerTreeImpl::device_scale_factor() const {
-  return layer_tree_host_impl_->device_scale_factor();
 }
 
 DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
