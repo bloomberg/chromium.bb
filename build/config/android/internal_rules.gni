@@ -483,15 +483,12 @@ template("package_apk") {
                              "public_deps",
                              "testonly",
                            ])
-    script = "//build/android/gyp/ant.py"
-    _ant_script = "//build/android/ant/apk-package.xml"
-
+    script = "//build/android/gyp/apkbuilder.py"
     depfile = "$target_gen_dir/$target_name.d"
     data_deps = [ "//tools/android/md5sum" ]  # Used when deploying APKs
 
     inputs = [
       invoker.resource_packaged_apk_path,
-      _ant_script,
     ]
     if (defined(invoker.dex_path)) {
       inputs += [ invoker.dex_path ]
@@ -502,39 +499,27 @@ template("package_apk") {
       invoker.output_apk_path,
     ]
 
-    _rebased_emma_jar = ""
     _rebased_resource_packaged_apk_path =
         rebase_path(invoker.resource_packaged_apk_path, root_build_dir)
     _rebased_packaged_apk_path =
         rebase_path(invoker.output_apk_path, root_build_dir)
-    _rebased_native_libs_dir =
-        rebase_path(invoker.native_libs_dir, root_build_dir)
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
-      "--",
-      "-quiet",
-      "-DANDROID_SDK_ROOT=$rebased_android_sdk_root",
-      "-DANDROID_SDK_TOOLS=$rebased_android_sdk_build_tools",
-      "-DRESOURCE_PACKAGED_APK_NAME=$_rebased_resource_packaged_apk_path",
-      "-DCONFIGURATION_NAME=$android_configuration_name",
-      "-DNATIVE_LIBS_DIR=$_rebased_native_libs_dir",
-      "-DOUT_DIR=",
-      "-DUNSIGNED_APK_PATH=$_rebased_packaged_apk_path",
-      "-DEMMA_INSTRUMENT=0",
-      "-DEMMA_DEVICE_JAR=$_rebased_emma_jar",
-      "-Dbasedir=.",
-      "-buildfile",
-      rebase_path(_ant_script, root_build_dir),
+      "--resource-apk=$_rebased_resource_packaged_apk_path",
+      "--output-apk=$_rebased_packaged_apk_path",
     ]
     if (defined(invoker.dex_path)) {
       _rebased_dex_path = rebase_path(invoker.dex_path, root_build_dir)
+      args += [ "--dex-file=$_rebased_dex_path" ]
+    }
+    if (defined(invoker.native_libs_dir)) {
+      _rebased_native_libs_dir =
+          rebase_path(invoker.native_libs_dir, root_build_dir)
       args += [
-        "-DDEX_FILE_PATH=$_rebased_dex_path",
-        "-DHAS_CODE=true",
+        "--native-libs-dir=$_rebased_native_libs_dir/$android_app_abi",
+        "--android-abi=$android_app_abi",
       ]
-    } else {
-      args += [ "-DHAS_CODE=false" ]
     }
   }
 }
@@ -630,11 +615,6 @@ template("create_apk") {
   _incremental_deps = []
   if (defined(invoker.incremental_deps)) {
     _incremental_deps = invoker.incremental_deps
-  }
-
-  _native_libs_dir = "//build/android/empty/res"
-  if (defined(invoker.native_libs_dir)) {
-    _native_libs_dir = invoker.native_libs_dir
   }
 
   if (defined(invoker.asset_location)) {
@@ -801,12 +781,13 @@ template("create_apk") {
 
   package_target = "${target_name}__package"
   package_apk(package_target) {
+    forward_variables_from(invoker, [ "native_libs_dir" ])
     deps = _deps + [ ":${_package_resources_target_name}" ]
 
     if (defined(_dex_path)) {
       dex_path = _dex_path
     }
-    native_libs_dir = _native_libs_dir
+
     output_apk_path = _packaged_apk_path
     resource_packaged_apk_path = _resource_packaged_apk_path
   }
@@ -825,7 +806,6 @@ template("create_apk") {
     }
 
     # TODO(agrieve): Add a placeholder .so for http://crbug.com/384638
-    native_libs_dir = "//build/android/empty/res"
     output_apk_path = _incremental_packaged_apk_path
     resource_packaged_apk_path = _incremental_resource_packaged_apk_path
   }
