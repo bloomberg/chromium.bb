@@ -35,7 +35,7 @@ import java.util.Queue;
  * |WAIT_UNTIL_NEXT_PRECACHE_MS| have passed since the last time precaching was done.
  */
 public class PrecacheServiceLauncher extends BroadcastReceiver {
-    private static final String TAG = "cr.Precache";
+    private static final String TAG = "Precache";
 
     @VisibleForTesting
     static final String PREF_IS_PRECACHING_ENABLED = "precache.is_precaching_enabled";

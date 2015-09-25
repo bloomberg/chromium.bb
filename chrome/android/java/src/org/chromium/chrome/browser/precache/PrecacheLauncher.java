@@ -17,7 +17,7 @@ import java.util.EnumSet;
 
 /** Class that interacts with the PrecacheManager to control precache cycles. */
 public abstract class PrecacheLauncher {
-    private static final String TAG = "cr.Precache";
+    private static final String TAG = "Precache";
 
     private static final PrecacheLauncher sInstance = new PrecacheLauncher() {
         /** A null implementation, as it is not needed by clients of sInstance. */

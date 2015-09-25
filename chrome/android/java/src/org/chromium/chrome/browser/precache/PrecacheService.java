@@ -30,7 +30,7 @@ import org.chromium.content.browser.BrowserStartupController;
  * either precaching finishes successfully, or the conditions are no longer met.
  */
 public class PrecacheService extends Service {
-    private static final String TAG = "cr.Precache";
+    private static final String TAG = "Precache";
 
     public static final String ACTION_START_PRECACHE =
             "org.chromium.chrome.browser.precache.PrecacheService.START_PRECACHE";
