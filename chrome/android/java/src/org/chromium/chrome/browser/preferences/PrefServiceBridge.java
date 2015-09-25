@@ -6,14 +6,12 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ContentSettingsType;
-import org.chromium.chrome.browser.UrlUtilities;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.ContentSettingException;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
@@ -22,7 +20,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * PrefServiceBridge is a singleton which provides access to some native preferences. Ideally
@@ -157,55 +154,6 @@ public final class PrefServiceBridge {
                     PreferenceManager.getDefaultSharedPreferences(context);
             sharedPreferences.edit().putBoolean(LOCATION_AUTO_ALLOWED, true).apply();
         }
-    }
-
-    /**
-     * Whether the geo header is allowed to be sent for the current URL.
-     * @param context The Context used to get the device location.
-     * @param url The URL of the request with which this header will be sent.
-     * @param isIncognito Whether the request will happen in an incognito tab.
-     */
-    public static boolean isGeoHeaderEnabledForUrl(
-            Context context, String url, boolean isIncognito) {
-        // TODO(finnur): delete this method once GeolocationHeader has been upstreamed.
-        // Only send the Geo header in normal mode.
-        if (isIncognito) return false;
-
-        // Only send the Geo header to Google domains.
-        if (!UrlUtilities.nativeIsGoogleSearchUrl(url)) return false;
-
-        Uri uri = Uri.parse(url);
-        if (!HTTPS_SCHEME.equals(uri.getScheme())) return false;
-
-        // Only send Geo header if the user hasn't disabled geolocation for url.
-        if (isLocationDisabledForUrl(uri)) return false;
-
-        return true;
-    }
-
-    /**
-     * Returns true if the user has disabled sharing their location with url (e.g. via the
-     * geolocation infobar). If the user has not chosen a preference for url and url uses the https
-     * scheme, this considers the user's preference for url with the http scheme instead.
-     */
-    public static boolean isLocationDisabledForUrl(Uri uri) {
-        // TODO(finnur): Delete this method once GeolocationHeader has been upstreamed.
-        GeolocationInfo locationSettings = new GeolocationInfo(uri.toString(), null, false);
-        ContentSetting locationPermission = locationSettings.getContentSetting();
-
-        // If no preference has been chosen and the scheme is https, fall back to the preference for
-        // this same host over http with no explicit port number.
-        if (locationPermission == null || locationPermission == ContentSetting.ASK) {
-            String scheme = uri.getScheme();
-            if (scheme != null && scheme.toLowerCase(Locale.US).equals("https")
-                    && uri.getAuthority() != null && uri.getUserInfo() == null) {
-                String urlWithHttp = "http://" + uri.getHost();
-                locationSettings = new GeolocationInfo(urlWithHttp, null, false);
-                locationPermission = locationSettings.getContentSetting();
-            }
-        }
-
-        return locationPermission == ContentSetting.BLOCK;
     }
 
     /**

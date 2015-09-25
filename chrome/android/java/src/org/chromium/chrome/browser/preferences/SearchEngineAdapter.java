@@ -26,6 +26,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;
 import org.chromium.chrome.browser.preferences.website.GeolocationInfo;
 import org.chromium.chrome.browser.preferences.website.SingleWebsitePreferences;
@@ -309,7 +310,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         ContentSetting locationPermission = locationSettings.getContentSetting();
         // Handle the case where the geoHeader being sent when no permission has been specified.
         if (locationPermission == ContentSetting.ASK && checkGeoHeader) {
-            return PrefServiceBridge.isGeoHeaderEnabledForUrl(mContext, url, false);
+            return GeolocationHeader.isGeoHeaderEnabledForUrl(mContext, url, false);
         }
         return locationPermission == ContentSetting.ALLOW;
     }

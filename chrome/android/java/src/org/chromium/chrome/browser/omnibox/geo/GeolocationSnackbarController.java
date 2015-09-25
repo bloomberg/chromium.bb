@@ -114,7 +114,7 @@ public class GeolocationSnackbarController implements SnackbarController {
         // Don't show the snackbar if location is disabled for google.com, since X-Geo won't be sent
         // unless the user explicitly reenables location for google.com.
         Uri searchUri = Uri.parse(TemplateUrlService.getInstance().getUrlForSearchQuery("foo"));
-        if (GeolocationHeader.isLocationDisabledForUrl(searchUri)) return true;
+        if (GeolocationHeader.isLocationDisabledForUrl(searchUri, false)) return true;
 
         return false;
     }

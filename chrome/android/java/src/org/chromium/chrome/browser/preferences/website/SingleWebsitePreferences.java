@@ -26,7 +26,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlUtilities;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 
 import java.net.URI;
@@ -463,7 +463,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private boolean hasXGeoLocationPermission(Context context) {
         String searchUrl = TemplateUrlService.getInstance().getUrlForSearchQuery("foo");
         return mSite.getAddress().matches(searchUrl)
-                && PrefServiceBridge.isGeoHeaderEnabledForUrl(context, searchUrl, false);
+                && GeolocationHeader.isGeoHeaderEnabledForUrl(context, searchUrl, false);
     }
 
     /**
