@@ -1067,7 +1067,6 @@
       'browser/ui/panels/panel_resize_browsertest.cc',
     ],
     'chrome_interactive_ui_test_panels_views_sources': [
-      'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
       'browser/ui/views/panels/panel_view_browsertest.cc',
     ],
      # Cross-platform views interactive tests ready for toolkit-views on Mac.

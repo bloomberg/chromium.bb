@@ -127,6 +127,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   int id_;
 };
 
+#if defined(OS_CHROMEOS)
 TEST_F(MessagePopupCollectionTest, DismissOnClick) {
 
   std::string id1 = AddNotification();
@@ -150,6 +151,36 @@ TEST_F(MessagePopupCollectionTest, DismissOnClick) {
   EXPECT_FALSE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
 }
+
+#else
+
+TEST_F(MessagePopupCollectionTest, NotDismissedOnClick) {
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  WaitForTransitionsDone();
+
+  EXPECT_EQ(2u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  MessageCenter::Get()->ClickOnNotification(id2);
+  collection()->DoUpdateIfPossible();
+
+  EXPECT_EQ(2u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  MessageCenter::Get()->ClickOnNotificationButton(id1, 0);
+  collection()->DoUpdateIfPossible();
+  EXPECT_EQ(2u, GetToastCounts());
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  GetWidget(id1)->CloseNow();
+  GetWidget(id2)->CloseNow();
+}
+
+#endif  // OS_CHROMEOS
 
 TEST_F(MessagePopupCollectionTest, ShutdownDuringShowing) {
   std::string id1 = AddNotification();
@@ -421,6 +452,25 @@ TEST_F(MessagePopupCollectionTest, DetectMouseHoverWithUserClose) {
   WaitForTransitionsDone();
   views::WidgetDelegateView* toast2 = GetToast(id2);
   EXPECT_TRUE(toast2 != NULL);
+
+  CloseAllToasts();
+  WaitForTransitionsDone();
+}
+
+TEST_F(MessagePopupCollectionTest, ManyPopupNotifications) {
+  // Add the max visible popup notifications +1, ensure the correct num visible.
+  size_t notifications_to_add = 3 + 1;
+  std::vector<std::string> ids(notifications_to_add);
+  for (size_t i = 0; i < notifications_to_add; ++i) {
+    ids[i] = AddNotification();
+  }
+
+  WaitForTransitionsDone();
+
+  for (size_t i = 0; i < notifications_to_add - 1; ++i) {
+    EXPECT_TRUE(IsToastShown(ids[i])) << "Should show the " << i << "th ID";
+  }
+  EXPECT_FALSE(IsToastShown(ids[notifications_to_add - 1]));
 
   CloseAllToasts();
   WaitForTransitionsDone();

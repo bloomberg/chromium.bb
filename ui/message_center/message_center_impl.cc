@@ -727,8 +727,10 @@ void MessageCenterImpl::DisableNotificationsByNotifier(
 void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   if (FindVisibleNotificationById(id) == NULL)
     return;
+#if defined(OS_CHROMEOS)
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
+#endif
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
@@ -741,8 +743,10 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
                                                   int button_index) {
   if (FindVisibleNotificationById(id) == NULL)
     return;
+#if defined(OS_CHROMEOS)
   if (HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
+#endif
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   if (delegate.get())
@@ -756,10 +760,14 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
   if (FindVisibleNotificationById(id) == NULL)
     return;
+#if !defined(OS_CHROMEOS)
+  return this->RemoveNotification(id, false);
+#else
   notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
   notification_cache_.RecountUnread();
   FOR_EACH_OBSERVER(
       MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
+#endif  // defined(OS_CHROMEOS)
 }
 
 void MessageCenterImpl::DisplayedNotification(

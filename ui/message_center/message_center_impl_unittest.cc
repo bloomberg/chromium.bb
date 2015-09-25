@@ -847,6 +847,7 @@ TEST_F(MessageCenterImplTest, QueuedDirectUpdates) {
   EXPECT_EQ(new_size, buttons[1].icon.Size());
 }
 
+#if defined(OS_CHROMEOS)
 TEST_F(MessageCenterImplTest, CachedUnreadCount) {
   message_center()->AddNotification(
       scoped_ptr<Notification>(CreateSimpleNotification("id1")));
@@ -879,6 +880,7 @@ TEST_F(MessageCenterImplTest, CachedUnreadCount) {
   message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
   EXPECT_EQ(0u, message_center()->UnreadNotificationCount());
 }
+#endif  // OS_CHROMEOS
 
 TEST_F(MessageCenterImplTest, ForceNotificationFlushAdd) {
   std::string id("id1");

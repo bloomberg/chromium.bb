@@ -82,7 +82,9 @@ namespace notifications {
     DOMString? contextMessage;
 
     // Priority ranges from -2 to 2. -2 is lowest priority. 2 is highest. Zero
-    // is default.
+    // is default.  On platforms that don't support a notification center
+    // (Windows, Linux & Mac), -2 and -1 result in an error as notifications
+    // with those priorities will not be shown at all.
     long? priority;
 
     // A timestamp associated with the notification, in milliseconds past the

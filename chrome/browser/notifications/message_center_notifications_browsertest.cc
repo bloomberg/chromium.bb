@@ -132,10 +132,6 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
   }
 };
 
-// TODO(rsesek): Implement Message Center on Mac and get these tests passing
-// for real. http://crbug.com/179904
-#if !defined(OS_MACOSX)
-
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {
   EXPECT_TRUE(manager());
   EXPECT_TRUE(message_center());
@@ -218,14 +214,10 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate2->Release();
 }
 
-IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, QueueWhenCenterVisible) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
+// Notification center is only used on ChromeOS.
+#if defined(OS_CHROMEOS)
 
+IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, QueueWhenCenterVisible) {
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -257,12 +249,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, QueueWhenCenterVisible) {
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
                        UpdateNonProgressNotificationWhenCenterVisible) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
 
   TestAddObserver observer(message_center());
 
@@ -293,12 +279,6 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
 IN_PROC_BROWSER_TEST_F(
     MessageCenterNotificationsTest,
     UpdateNonProgressToProgressNotificationWhenCenterVisible) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
 
   TestAddObserver observer(message_center());
 
@@ -326,21 +306,8 @@ IN_PROC_BROWSER_TEST_F(
   delegate->Release();
 }
 
-#if defined(OS_WIN)
-#define MAYBE_UpdateProgressNotificationWhenCenterVisible DISABLED_UpdateProgressNotificationWhenCenterVisible
-#else
-#define MAYBE_UpdateProgressNotificationWhenCenterVisible UpdateProgressNotificationWhenCenterVisible
-#endif
-
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
-                       MAYBE_UpdateProgressNotificationWhenCenterVisible) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshBrowserTests))
-    return;
-#endif
-
+                       UpdateProgressNotificationWhenCenterVisible) {
   TestAddObserver observer(message_center());
 
   TestDelegate* delegate;
@@ -365,4 +332,4 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest,
   delegate->Release();
 }
 
-#endif  // !defined(OS_MACOSX)
+#endif  // defined(OS_CHROMEOS)

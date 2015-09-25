@@ -10,8 +10,8 @@ const red_dot = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA" +
 
 function createBigImageUrl() {
   var canvas = document.createElement('canvas');
-  canvas.width = 5000;
-  canvas.height = 5000;
+  canvas.width = 1000;
+  canvas.height = 1000;
   var ctx = canvas.getContext('2d');
   ctx.fillStyle = "rgb(200, 0, 0)";
   ctx.fillRect(10, 20, 30, 40);
