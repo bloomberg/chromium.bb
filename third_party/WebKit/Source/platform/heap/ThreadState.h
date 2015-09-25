@@ -780,6 +780,7 @@ private:
     size_t m_gcForbiddenCount;
     int m_persistentAllocated;
     int m_persistentFreed;
+    int m_pageNavigationCount;
     BaseHeap* m_heaps[NumberOfHeaps];
 
     int m_vectorBackingHeapIndex;

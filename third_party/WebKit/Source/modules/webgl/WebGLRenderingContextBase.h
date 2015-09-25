@@ -512,7 +512,16 @@ protected:
     Timer<WebGLRenderingContextBase> m_restoreTimer;
 
     bool m_markedCanvasDirty;
-    PersistentHeapHashSetWillBeHeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
+#if ENABLE(OILPAN)
+    HeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
+#else
+    // The hash set isn't traced, hence the references are effectively
+    // weakly kept. Each WebGLContextObject is responsible for detaching
+    // itself upon finalization if the WebGLRenderingContextBase hasn't been
+    // finalized already and detached them via detachAndRemoveAllObjects().
+    GC_PLUGIN_IGNORE("534524")
+    HashSet<WebGLContextObject*> m_contextObjects;
+#endif
 
     PersistentWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
     PersistentWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;

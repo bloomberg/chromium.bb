@@ -39,6 +39,10 @@ WebGLContextObject::WebGLContextObject(WebGLRenderingContextBase* context)
 
 WebGLContextObject::~WebGLContextObject()
 {
+#if !ENABLE(OILPAN)
+    if (m_context)
+        m_context->removeContextObject(this);
+#endif
 }
 
 void WebGLContextObject::detachContext()

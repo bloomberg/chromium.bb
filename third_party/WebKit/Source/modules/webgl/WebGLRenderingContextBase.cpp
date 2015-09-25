@@ -6692,7 +6692,9 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState)
 
 DEFINE_TRACE(WebGLRenderingContextBase)
 {
+#if ENABLE(OILPAN)
     visitor->trace(m_contextObjects);
+#endif
     visitor->trace(m_contextLostCallbackAdapter);
     visitor->trace(m_errorMessageCallbackAdapter);
     visitor->trace(m_boundArrayBuffer);
