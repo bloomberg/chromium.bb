@@ -57,7 +57,7 @@ def IsPathSection(section):
   # If section ends in one of the '=+?!' characters, it's applied to a section
   # without the trailing characters.  '/' is notably absent from this list,
   # because there's no way for a regular expression to be treated as a path.
-  while section[-1:] in '=+?!':
+  while section and section[-1:] in '=+?!':
     section = section[:-1]
 
   if section in path_sections:
