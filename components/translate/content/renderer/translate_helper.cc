@@ -24,12 +24,12 @@
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -41,7 +41,7 @@
 using base::ASCIIToUTF16;
 using blink::WebDocument;
 using blink::WebElement;
-using blink::WebFrame;
+using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebNodeList;
 using blink::WebScriptSource;
@@ -76,16 +76,17 @@ bool g_cld_callback_set = false;
 // Obtain a new CLD data provider. Defined as a standalone method for ease of
 // use in constructor initialization list.
 scoped_ptr<translate::RendererCldDataProvider> CreateDataProvider(
-    content::RenderViewObserver* render_view_observer) {
+    content::RenderFrameObserver* render_frame_observer) {
   translate::RendererCldUtils::ConfigureDefaultDataProvider();
   return scoped_ptr<translate::RendererCldDataProvider>(
-      translate::RendererCldDataProviderFactory::Get()->
-      CreateRendererCldDataProvider(render_view_observer));
+      translate::RendererCldDataProviderFactory::Get()
+          ->CreateRendererCldDataProvider(render_frame_observer));
 }
 
 // Returns whether the page associated with |document| is a candidate for
 // translation.  Some pages can explictly specify (via a meta-tag) that they
 // should not be translated.
+// TODO(dglazkov): This logic should be moved into Blink.
 bool HasNoTranslateMeta(WebDocument* document) {
   WebElement head = document->head();
   if (head.isNull() || !head.hasChildNodes())
@@ -130,11 +131,11 @@ namespace translate {
 ////////////////////////////////////////////////////////////////////////////////
 // TranslateHelper, public:
 //
-TranslateHelper::TranslateHelper(content::RenderView* render_view,
+TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
                                  int world_id,
                                  int extension_group,
                                  const std::string& extension_scheme)
-    : content::RenderViewObserver(render_view),
+    : content::RenderFrameObserver(render_frame),
       page_seq_no_(0),
       translation_pending_(false),
       cld_data_provider_(CreateDataProvider(this)),
@@ -145,8 +146,7 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
       world_id_(world_id),
       extension_group_(extension_group),
       extension_scheme_(extension_scheme),
-      weak_method_factory_(this) {
-}
+      weak_method_factory_(this) {}
 
 TranslateHelper::~TranslateHelper() {
   CancelPendingTranslation();
@@ -155,8 +155,8 @@ TranslateHelper::~TranslateHelper() {
 
 void TranslateHelper::PrepareForUrl(const GURL& url) {
   ++page_seq_no_;
-  Send(new ChromeViewHostMsg_TranslateAssignedSequenceNumber(
-      routing_id(), page_seq_no_));
+  Send(new ChromeFrameHostMsg_TranslateAssignedSequenceNumber(routing_id(),
+                                                              page_seq_no_));
   deferred_page_capture_ = false;
   deferred_page_seq_no_ = -1;
   deferred_contents_.clear();
@@ -198,7 +198,7 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   // language of the intended audience (a distinction really only
   // relevant for things like langauge textbooks).  This distinction
   // shouldn't affect translation.
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame || page_seq_no_ != page_seq_no)
     return;
 
@@ -254,10 +254,8 @@ void TranslateHelper::PageCapturedImpl(int page_seq_no,
   // translate-internals tab exists.
   details.contents = contents;
 
-  Send(new ChromeViewHostMsg_TranslateLanguageDetermined(
-      routing_id(),
-      details,
-      !details.has_notranslate && !language.empty()));
+  Send(new ChromeFrameHostMsg_TranslateLanguageDetermined(
+      routing_id(), details, !details.has_notranslate && !language.empty()));
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -309,7 +307,7 @@ base::TimeDelta TranslateHelper::AdjustDelay(int delayInMs) {
 }
 
 void TranslateHelper::ExecuteScript(const std::string& script) {
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame)
     return;
 
@@ -320,7 +318,7 @@ void TranslateHelper::ExecuteScript(const std::string& script) {
 
 bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
                                                     bool fallback) {
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame)
     return fallback;
 
@@ -339,7 +337,7 @@ bool TranslateHelper::ExecuteScriptAndGetBoolResult(const std::string& script,
 
 std::string TranslateHelper::ExecuteScriptAndGetStringResult(
     const std::string& script) {
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame)
     return std::string();
 
@@ -362,7 +360,7 @@ std::string TranslateHelper::ExecuteScriptAndGetStringResult(
 
 double TranslateHelper::ExecuteScriptAndGetDoubleResult(
     const std::string& script) {
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame)
     return 0.0;
 
@@ -385,8 +383,8 @@ double TranslateHelper::ExecuteScriptAndGetDoubleResult(
 bool TranslateHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(TranslateHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_TranslatePage, OnTranslatePage)
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_RevertTranslation, OnRevertTranslation)
+    IPC_MESSAGE_HANDLER(ChromeFrameMsg_TranslatePage, OnTranslatePage)
+    IPC_MESSAGE_HANDLER(ChromeFrameMsg_RevertTranslation, OnRevertTranslation)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   if (!handled) {
@@ -399,7 +397,7 @@ void TranslateHelper::OnTranslatePage(int page_seq_no,
                                       const std::string& translate_script,
                                       const std::string& source_lang,
                                       const std::string& target_lang) {
-  WebFrame* main_frame = GetMainFrame();
+  WebLocalFrame* main_frame = render_frame()->GetWebFrame();
   if (!main_frame || page_seq_no_ != page_seq_no)
     return;  // We navigated away, nothing to do.
 
@@ -426,15 +424,12 @@ void TranslateHelper::OnTranslatePage(int page_seq_no,
 
   // Set up v8 isolated world with proper content-security-policy and
   // security-origin.
-  WebFrame* frame = GetMainFrame();
-  if (frame) {
-    frame->setIsolatedWorldContentSecurityPolicy(
-        world_id_, WebString::fromUTF8(kContentSecurityPolicy));
+  main_frame->setIsolatedWorldContentSecurityPolicy(
+      world_id_, WebString::fromUTF8(kContentSecurityPolicy));
 
-    GURL security_origin = GetTranslateSecurityOrigin();
-    frame->setIsolatedWorldSecurityOrigin(
-        world_id_, WebSecurityOrigin::create(security_origin));
-  }
+  GURL security_origin = GetTranslateSecurityOrigin();
+  main_frame->setIsolatedWorldSecurityOrigin(
+      world_id_, WebSecurityOrigin::create(security_origin));
 
   if (!IsTranslateLibAvailable()) {
     // Evaluate the script to add the translation related method to the global
@@ -461,9 +456,8 @@ void TranslateHelper::OnRevertTranslation(int page_seq_no) {
 }
 
 void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
-  // If this is not the same page, the translation has been canceled.  If the
-  // view is gone, the page is closing.
-  if (page_seq_no_ != page_seq_no || !render_view()->GetWebView())
+  // If this is not the same page, the translation has been canceled.
+  if (page_seq_no_ != page_seq_no)
     return;
 
   // First check if there was an error.
@@ -502,11 +496,9 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
         ExecuteScriptAndGetDoubleResult("cr.googleTranslate.translationTime"));
 
     // Notify the browser we are done.
-    render_view()->Send(
-        new ChromeViewHostMsg_PageTranslated(render_view()->GetRoutingID(),
-                                             actual_source_lang,
-                                             target_lang_,
-                                             TranslateErrors::NONE));
+    render_frame()->Send(new ChromeFrameHostMsg_PageTranslated(
+        render_frame()->GetRoutingID(), actual_source_lang, target_lang_,
+        TranslateErrors::NONE));
     return;
   }
 
@@ -519,7 +511,7 @@ void TranslateHelper::CheckTranslateStatus(int page_seq_no) {
 
 void TranslateHelper::TranslatePageImpl(int page_seq_no, int count) {
   DCHECK_LT(count, kMaxTranslateInitCheckAttempts);
-  if (page_seq_no_ != page_seq_no || !render_view()->GetWebView())
+  if (page_seq_no_ != page_seq_no)
     return;
 
   if (!IsTranslateLibReady()) {
@@ -559,18 +551,8 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
     TranslateErrors::Type error) {
   translation_pending_ = false;
   // Notify the browser there was an error.
-  render_view()->Send(new ChromeViewHostMsg_PageTranslated(
-      render_view()->GetRoutingID(), source_lang_, target_lang_, error));
-}
-
-WebFrame* TranslateHelper::GetMainFrame() {
-  WebView* web_view = render_view()->GetWebView();
-
-  // When the tab is going to be closed, the web_view can be NULL.
-  if (!web_view)
-    return NULL;
-
-  return web_view->mainFrame();
+  render_frame()->Send(new ChromeFrameHostMsg_PageTranslated(
+      render_frame()->GetRoutingID(), source_lang_, target_lang_, error));
 }
 
 void TranslateHelper::CancelCldDataPolling() {

@@ -28,12 +28,12 @@ IPC_STRUCT_TRAITS_BEGIN(translate::LanguageDetectionDetails)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------
-// RenderView messages
+// RenderFrame messages
 // These are messages sent from the browser to the renderer process.
 
 // Tells the renderer to translate the page contents from one language to
 // another.
-IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
+IPC_MESSAGE_ROUTED4(ChromeFrameMsg_TranslatePage,
                     int /* page_seq_no */,
                     std::string, /* the script injected in the page */
                     std::string, /* BCP 47/RFC 5646 language code the page
@@ -43,26 +43,25 @@ IPC_MESSAGE_ROUTED4(ChromeViewMsg_TranslatePage,
 
 // Tells the renderer to revert the text of translated page to its original
 // contents.
-IPC_MESSAGE_ROUTED1(ChromeViewMsg_RevertTranslation,
-                    int /* page id */)
+IPC_MESSAGE_ROUTED1(ChromeFrameMsg_RevertTranslation, int /* page id */)
 
 //-----------------------------------------------------------------------------
 // Host messages
 // These are messages sent from the renderer to the browser process.
 
 // Notification that the current page was assigned a sequence number.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
+IPC_MESSAGE_ROUTED1(ChromeFrameHostMsg_TranslateAssignedSequenceNumber,
                     int /* page_seq_no */)
 
 // Notification that the language for the tab has been determined.
 IPC_MESSAGE_ROUTED2(
-    ChromeViewHostMsg_TranslateLanguageDetermined,
+    ChromeFrameHostMsg_TranslateLanguageDetermined,
     translate::LanguageDetectionDetails /* details about lang detection */,
     bool /* whether the page needs translation */)
 
 // Notifies the browser that a page has been translated.
 IPC_MESSAGE_ROUTED3(
-    ChromeViewHostMsg_PageTranslated,
+    ChromeFrameHostMsg_PageTranslated,
     std::string /* the original language */,
     std::string /* the translated language */,
     translate::TranslateErrors::Type /* the error type if available */)

@@ -18,8 +18,8 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -86,23 +86,24 @@ void PhishingClassifierFilter::OnSetPhishingModel(const std::string& model) {
 
 // static
 PhishingClassifierDelegate* PhishingClassifierDelegate::Create(
-    content::RenderView* render_view, PhishingClassifier* classifier) {
+    content::RenderFrame* render_frame,
+    PhishingClassifier* classifier) {
   // Private constructor and public static Create() method to facilitate
   // stubbing out this class for binary-size reduction purposes.
-  return new PhishingClassifierDelegate(render_view, classifier);
+  return new PhishingClassifierDelegate(render_frame, classifier);
 }
 
 PhishingClassifierDelegate::PhishingClassifierDelegate(
-    content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     PhishingClassifier* classifier)
-    : content::RenderViewObserver(render_view),
+    : content::RenderFrameObserver(render_frame),
       last_main_frame_transition_(ui::PAGE_TRANSITION_LINK),
       have_page_text_(false),
       is_classifying_(false) {
   g_delegates.Get().insert(this);
   if (!classifier) {
-    classifier = new PhishingClassifier(render_view,
-                                        new FeatureExtractorClock());
+    classifier =
+        new PhishingClassifier(render_frame, new FeatureExtractorClock());
   }
 
   classifier_.reset(classifier);
@@ -118,8 +119,6 @@ PhishingClassifierDelegate::~PhishingClassifierDelegate() {
 
 void PhishingClassifierDelegate::SetPhishingScorer(
     const safe_browsing::Scorer* scorer) {
-  if (!render_view()->GetWebView())
-    return;  // RenderView is tearing down.
   if (is_classifying_) {
     // If there is a classification going on right now it means we're
     // actually replacing an existing scorer with a new model.  In
@@ -143,7 +142,9 @@ void PhishingClassifierDelegate::OnStartPhishingDetection(const GURL& url) {
 }
 
 void PhishingClassifierDelegate::DidCommitProvisionalLoad(
-    blink::WebLocalFrame* frame, bool is_new_navigation) {
+    bool is_new_navigation,
+    bool is_same_page_navigation) {
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   // A new page is starting to load, so cancel classificaiton.
   //
   // TODO(bryner): We shouldn't need to cancel classification if the navigation
@@ -157,9 +158,10 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   CancelPendingClassification(navigation_state->WasWithinSamePage()
                                   ? NAVIGATE_WITHIN_PAGE
                                   : NAVIGATE_AWAY);
-  if (frame == render_view()->GetWebView()->mainFrame()) {
-    last_main_frame_transition_ = navigation_state->GetTransitionType();
-  }
+  if (frame->parent())
+    return;
+
+  last_main_frame_transition_ = navigation_state->GetTransitionType();
 }
 
 void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
@@ -173,7 +175,7 @@ void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
   // Note: Currently, if the url hasn't changed, we won't restart
   // classification in this case.  We may want to adjust this.
   CancelPendingClassification(PAGE_RECAPTURED);
-  last_finished_load_url_ = GetToplevelUrl();
+  last_finished_load_url_ = render_frame()->GetWebFrame()->document().url();
   classifier_page_text_.swap(*page_text);
   have_page_text_ = true;
   MaybeStartClassification();
@@ -216,10 +218,6 @@ void PhishingClassifierDelegate::ClassificationDone(
     RenderThread::Get()->Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
         routing_id(), verdict.SerializeAsString()));
   }
-}
-
-GURL PhishingClassifierDelegate::GetToplevelUrl() {
-  return render_view()->GetWebView()->mainFrame()->document().url();
 }
 
 void PhishingClassifierDelegate::MaybeStartClassification() {

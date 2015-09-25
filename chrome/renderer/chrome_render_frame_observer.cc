@@ -9,15 +9,21 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
+#include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "components/printing/common/print_messages.h"
 #include "components/printing/renderer/print_web_view_helper.h"
+#include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "extensions/common/constants.h"
 #include "net/base/net_util.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
@@ -25,9 +31,9 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
+#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -36,8 +42,28 @@
 
 using blink::WebDataSource;
 using blink::WebElement;
+using blink::WebLocalFrame;
 using blink::WebNode;
+using blink::WebNodeList;
+using blink::WebString;
 using content::SSLStatus;
+using content::RenderFrame;
+
+// Delay in milliseconds that we'll wait before capturing the page contents.
+static const int kDelayForCaptureMs = 500;
+
+// Typically, we capture the page data once the page is loaded.
+// Sometimes, the page never finishes to load, preventing the page capture
+// To workaround this problem, we always perform a capture after the following
+// delay.
+static const int kDelayForForcedCaptureMs = 6000;
+
+// Maximum number of characters in the document to index.
+// Any text beyond this point will be clipped.
+static const size_t kMaxIndexChars = 65535;
+
+// Constants for UMA statistic collection.
+static const char kTranslateCaptureText[] = "Translate.CaptureText";
 
 namespace {
 
@@ -79,9 +105,90 @@ SkBitmap Downscale(const blink::WebImage& image,
 
 }  // namespace
 
+PageInfo::PageInfo(PageInfoReceiver* context)
+    : context_(context), capture_timer_(false, false) {
+  DCHECK(context_);
+}
+
+// TODO(dglazkov): Refactor to remove the RenderFrame* argument.
+void PageInfo::CapturePageInfoLater(CaptureType capture_type,
+                                    RenderFrame* render_frame,
+                                    base::TimeDelta delay) {
+  capture_timer_.Start(
+      FROM_HERE, delay,
+      base::Bind(&PageInfo::CapturePageInfo, base::Unretained(this),
+                 render_frame, capture_type));
+}
+
+bool PageInfo::IsErrorPage(WebLocalFrame* frame) {
+  WebDataSource* ds = frame->dataSource();
+  return ds && ds->hasUnreachableURL();
+}
+
+void PageInfo::CapturePageInfo(RenderFrame* render_frame,
+                               CaptureType capture_type) {
+  if (!render_frame)
+    return;
+
+  WebLocalFrame* frame = render_frame->GetWebFrame();
+  if (!frame)
+    return;
+
+  // Don't index/capture pages that are in view source mode.
+  if (frame->isViewSourceModeEnabled())
+    return;
+
+  if (IsErrorPage(frame))
+    return;
+
+  // Don't index/capture pages that are being prerendered.
+  if (prerender::PrerenderHelper::IsPrerendering(render_frame)) {
+    return;
+  }
+
+  // Retrieve the frame's full text (up to kMaxIndexChars), and pass it to the
+  // translate helper for language detection and possible translation.
+  base::string16 contents;
+  base::TimeTicks capture_begin_time = base::TimeTicks::Now();
+  CaptureText(frame, &contents);
+  UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
+                      base::TimeTicks::Now() - capture_begin_time);
+  context_->PageCaptured(&contents, capture_type);
+}
+
+void PageInfo::CaptureText(WebLocalFrame* frame, base::string16* content) {
+  content->clear();
+
+  // Get the contents of the frame.
+  *content = frame->contentAsText(kMaxIndexChars);
+
+  // When the contents are clipped to the maximum, we don't want to have a
+  // partial word indexed at the end that might have been clipped. Therefore,
+  // terminate the string at the last space to ensure no words are clipped.
+  if (content->size() == kMaxIndexChars) {
+    size_t last_space_index = content->find_last_of(base::kWhitespaceUTF16);
+    if (last_space_index != base::string16::npos)
+      content->resize(last_space_index);
+  }
+}
+
 ChromeRenderFrameObserver::ChromeRenderFrameObserver(
     content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {
+    : content::RenderFrameObserver(render_frame),
+      translate_helper_(nullptr),
+      phishing_classifier_(nullptr),
+      page_info_(this) {
+  // Don't do anything for subframes.
+  if (render_frame->GetWebFrame()->parent())
+    return;
+
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (!command_line.HasSwitch(switches::kDisableClientSidePhishingDetection))
+    OnSetClientSidePhishingDetection(true);
+  translate_helper_ = new translate::TranslateHelper(
+      render_frame, chrome::ISOLATED_WORLD_ID_TRANSLATE, 0,
+      extensions::kExtensionScheme);
 }
 
 ChromeRenderFrameObserver::~ChromeRenderFrameObserver() {
@@ -102,6 +209,8 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
                         OnRequestReloadImageForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestThumbnailForContextNode,
                         OnRequestThumbnailForContextNode)
+    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
+                        OnSetClientSidePhishingDetection)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerPromptRequest,
@@ -180,6 +289,17 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
     helper->PrintNode(render_frame()->GetContextMenuNode());
 }
 
+void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
+    bool enable_phishing_detection) {
+#if defined(FULL_SAFE_BROWSING) && !defined(OS_CHROMEOS)
+  phishing_classifier_ =
+      enable_phishing_detection
+          ? safe_browsing::PhishingClassifierDelegate::Create(render_frame(),
+                                                              nullptr)
+          : nullptr;
+#endif
+}
+
 void ChromeRenderFrameObserver::DidFinishDocumentLoad() {
   // If the navigation is to a localhost URL (and the flag is set to
   // allow localhost SSL misconfigurations), print a warning to the
@@ -238,4 +358,102 @@ void ChromeRenderFrameObserver::OnAppBannerDebugMessageRequest(
     const std::string& message) {
   render_frame()->GetWebFrame()->addMessageToConsole(blink::WebConsoleMessage(
       blink::WebConsoleMessage::LevelDebug, base::UTF8ToUTF16(message)));
+}
+
+void ChromeRenderFrameObserver::DidFinishLoad() {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+  // Don't do anything for subframes.
+  if (frame->parent())
+    return;
+
+  GURL osdd_url = frame->document().openSearchDescriptionURL();
+  if (!osdd_url.is_empty()) {
+    Send(new ChromeViewHostMsg_PageHasOSDD(
+        routing_id(), frame->document().url(), osdd_url,
+        search_provider::AUTODETECTED_PROVIDER));
+  }
+
+  // Don't capture pages including refresh meta tag.
+  if (HasRefreshMetaTag(frame))
+    return;
+
+  page_info_.CapturePageInfoLater(
+      FINAL_CAPTURE, render_frame(),
+      base::TimeDelta::FromMilliseconds(
+          render_frame()->GetRenderView()->GetContentStateImmediately()
+              ? 0
+              : kDelayForCaptureMs));
+}
+
+void ChromeRenderFrameObserver::DidStartProvisionalLoad() {
+  // Let translate_helper do any preparatory work for loading a URL.
+  if (!translate_helper_)
+    return;
+
+  translate_helper_->PrepareForUrl(
+      render_frame()->GetWebFrame()->document().url());
+}
+
+void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
+    bool is_new_navigation,
+    bool is_same_page_navigation) {
+  WebLocalFrame* frame = render_frame()->GetWebFrame();
+
+  // Don't do anything for subframes.
+  if (frame->parent())
+    return;
+
+  // Don't capture pages being not new, or including refresh meta tag.
+  if (!is_new_navigation || HasRefreshMetaTag(frame))
+    return;
+
+  base::debug::SetCrashKeyValue(
+      crash_keys::kViewCount,
+      base::SizeTToString(content::RenderView::GetRenderViewCount()));
+
+  page_info_.CapturePageInfoLater(
+      PRELIMINARY_CAPTURE, render_frame(),
+      base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
+}
+
+bool ChromeRenderFrameObserver::HasRefreshMetaTag(WebLocalFrame* frame) {
+  if (!frame)
+    return false;
+  WebElement head = frame->document().head();
+  if (head.isNull() || !head.hasChildNodes())
+    return false;
+
+  const WebString tag_name(base::ASCIIToUTF16("meta"));
+  const WebString attribute_name(base::ASCIIToUTF16("http-equiv"));
+
+  WebNodeList children = head.childNodes();
+  for (size_t i = 0; i < children.length(); ++i) {
+    WebNode node = children.item(i);
+    if (!node.isElementNode())
+      continue;
+    WebElement element = node.to<WebElement>();
+    if (!element.hasHTMLTagName(tag_name))
+      continue;
+    WebString value = element.getAttribute(attribute_name);
+    if (value.isNull() ||
+        !base::LowerCaseEqualsASCII(base::StringPiece16(value), "refresh"))
+      continue;
+    return true;
+  }
+  return false;
+}
+
+void ChromeRenderFrameObserver::PageCaptured(base::string16* content,
+                                             CaptureType capture_type) {
+  if (translate_helper_)
+    translate_helper_->PageCaptured(*content);
+
+  TRACE_EVENT0("renderer", "ChromeRenderViewObserver::CapturePageInfo");
+
+#if defined(FULL_SAFE_BROWSING)
+  // Will swap out the string.
+  if (phishing_classifier_)
+    phishing_classifier_->PageCaptured(content,
+                                       capture_type == PRELIMINARY_CAPTURE);
+#endif
 }

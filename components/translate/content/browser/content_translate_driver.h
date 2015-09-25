@@ -92,7 +92,8 @@ class ContentTranslateDriver : public TranslateDriver,
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
   // IPC handlers.
   void OnTranslateAssignedSequenceNumber(int page_seq_no);

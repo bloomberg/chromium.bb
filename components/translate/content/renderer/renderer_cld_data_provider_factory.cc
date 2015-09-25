@@ -6,7 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 
 namespace {
 
@@ -25,7 +25,7 @@ namespace translate {
 
 scoped_ptr<RendererCldDataProvider>
 RendererCldDataProviderFactory::CreateRendererCldDataProvider(
-    content::RenderViewObserver* render_view_observer) {
+    content::RenderFrameObserver* render_frame_observer) {
   return scoped_ptr<RendererCldDataProvider>(
       new RendererCldDataProvider());
 }

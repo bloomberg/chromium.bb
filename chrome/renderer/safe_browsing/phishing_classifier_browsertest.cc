@@ -22,9 +22,9 @@
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "crypto/sha2.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -99,10 +99,9 @@ class PhishingClassifierTest : public InProcessBrowserTest {
 
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    classifier_.reset(new PhishingClassifier(
-        content::RenderView::FromRoutingID(
-            web_contents->GetRenderViewHost()->GetRoutingID()),
-        clock_));
+    content::RenderFrame* render_frame = content::RenderFrame::FromRoutingID(
+        web_contents->GetMainFrame()->GetRoutingID());
+    classifier_.reset(new PhishingClassifier(render_frame, clock_));
   }
 
   void TearDownOnMainThread() override {
@@ -116,7 +115,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
                              float* phishy_score,
                              FeatureMap* features) {
     ClientPhishingRequest verdict;
-    // The classifier accesses the RenderView and must run in the RenderThread.
+    // The classifier accesses the RenderFrame and must run in the RenderThread.
     PostTaskToInProcessRendererAndWait(
         base::Bind(&PhishingClassifierTest::DoRunPhishingClassifier,
                    base::Unretained(this),

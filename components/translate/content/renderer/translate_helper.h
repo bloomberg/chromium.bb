@@ -13,12 +13,12 @@
 #include "base/time/time.h"
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 #include "components/translate/core/common/translate_errors.h"
-#include "content/public/renderer/render_view_observer.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "url/gurl.h"
 
 namespace blink {
 class WebDocument;
-class WebFrame;
+class WebLocalFrame;
 }
 
 namespace content {
@@ -76,9 +76,9 @@ namespace translate {
 // be killed without the chance to clean up or transmit these histograms,
 // leading to dropped metrics. To work around this, this method forces an IPC
 // message to be sent to the browser process immediately.
-class TranslateHelper : public content::RenderViewObserver {
+class TranslateHelper : public content::RenderFrameObserver {
  public:
-  explicit TranslateHelper(content::RenderView* render_view,
+  explicit TranslateHelper(content::RenderFrame* render_frame,
                            int world_id,
                            int extension_group,
                            const std::string& extension_scheme);
@@ -160,7 +160,7 @@ class TranslateHelper : public content::RenderViewObserver {
   // Converts language code to the one used in server supporting list.
   static void ConvertLanguageCodeSynonym(std::string* code);
 
-  // RenderViewObserver implementation.
+  // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // Informs us that the page's text has been extracted.
@@ -185,7 +185,7 @@ class TranslateHelper : public content::RenderViewObserver {
 
   // Convenience method to access the main frame.  Can return NULL, typically
   // if the page is being closed.
-  blink::WebFrame* GetMainFrame();
+  blink::WebLocalFrame* GetMainFrame();
 
   // Do not ask for CLD data any more.
   void CancelCldDataPolling();

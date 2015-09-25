@@ -8,6 +8,7 @@
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "components/translate/core/common/translate_constants.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -20,12 +21,11 @@ using testing::_;
 
 class TestTranslateHelper : public translate::TranslateHelper {
  public:
-  explicit TestTranslateHelper(content::RenderView* render_view)
-      : translate::TranslateHelper(
-            render_view,
-            chrome::ISOLATED_WORLD_ID_TRANSLATE,
-            0,
-            extensions::kExtensionScheme) {}
+  explicit TestTranslateHelper(content::RenderFrame* render_frame)
+      : translate::TranslateHelper(render_frame,
+                                   chrome::ISOLATED_WORLD_ID_TRANSLATE,
+                                   0,
+                                   extensions::kExtensionScheme) {}
 
   base::TimeDelta AdjustDelay(int delayInMs) override {
     // Just returns base::TimeDelta() which has initial value 0.
@@ -62,7 +62,7 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
  protected:
   void SetUp() override {
     ChromeRenderViewTest::SetUp();
-    translate_helper_ = new TestTranslateHelper(view_);
+    translate_helper_ = new TestTranslateHelper(view_->GetMainRenderFrame());
   }
 
   void TearDown() override {
@@ -73,13 +73,14 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
   bool GetPageTranslatedMessage(std::string* original_lang,
                                 std::string* target_lang,
                                 translate::TranslateErrors::Type* error) {
-    const IPC::Message* message = render_thread_->sink().
-        GetUniqueMessageMatching(ChromeViewHostMsg_PageTranslated::ID);
+    const IPC::Message* message =
+        render_thread_->sink().GetUniqueMessageMatching(
+            ChromeFrameHostMsg_PageTranslated::ID);
     if (!message)
       return false;
     base::Tuple<std::string, std::string, translate::TranslateErrors::Type>
         translate_param;
-    ChromeViewHostMsg_PageTranslated::Read(message, &translate_param);
+    ChromeFrameHostMsg_PageTranslated::Read(message, &translate_param);
     if (original_lang)
       *original_lang = base::get<0>(translate_param);
     if (target_lang)
@@ -325,10 +326,10 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
 
   LoadHTML("<html><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_TRUE(base::get<1>(params)) << "Page should be translatable.";
   render_thread_->sink().ClearMessages();
 
@@ -336,9 +337,9 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   LoadHTML("<html><head><meta name=\"google\" value=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_FALSE(base::get<1>(params)) << "Page should not be translatable.";
   render_thread_->sink().ClearMessages();
 
@@ -346,9 +347,9 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   LoadHTML("<html><head><meta name=\"google\" content=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_FALSE(base::get<1>(params)) << "Page should not be translatable.";
 }
 
@@ -362,10 +363,10 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("es", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
@@ -374,9 +375,9 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
            "content=\" fr , es,en \">"
            "</head><body>A random page with random content.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("fr", base::get<0>(params).adopted_language);
 }
 
@@ -390,10 +391,10 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTagCase) {
   LoadHTML("<html><head><meta http-equiv=\"Content-Language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("es", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
@@ -402,9 +403,9 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTagCase) {
            "content=\" fr , es,en \">"
            "</head><body>A random page with random content.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("fr", base::get<0>(params).adopted_language);
 }
 
@@ -419,19 +420,19 @@ TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
   LoadHTML("<html><head><meta http-equiv='Content-Language' content='EN_us'>"
            "</head><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("en", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
   LoadHTML("<html><head><meta http-equiv='Content-Language' content='ZH_tw'>"
            "</head><body>A random page with random content.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("zh-TW", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 }
@@ -442,10 +443,10 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"zh\">"
            "</head><body>This page is in Chinese.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Param params;
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("zh", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
@@ -454,18 +455,18 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"fr\">"
            "</head><body>This page is in French.</body></html>");
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("fr", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
   GoBack(back_state);
 
   message = render_thread_->sink().GetUniqueMessageMatching(
-      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+      ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
-  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  ChromeFrameHostMsg_TranslateLanguageDetermined::Read(message, &params);
   EXPECT_EQ("zh", base::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 }

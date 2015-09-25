@@ -17,7 +17,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
 #include "net/http/http_status_code.h"
@@ -103,21 +103,15 @@ void ContentTranslateDriver::TranslatePage(int page_seq_no,
                                            const std::string& source_lang,
                                            const std::string& target_lang) {
   content::WebContents* web_contents = navigation_controller_->GetWebContents();
-  web_contents->GetRenderViewHost()->Send(
-      new ChromeViewMsg_TranslatePage(
-          web_contents->GetRenderViewHost()->GetRoutingID(),
-          page_seq_no,
-          translate_script,
-          source_lang,
-          target_lang));
+  web_contents->GetMainFrame()->Send(new ChromeFrameMsg_TranslatePage(
+      web_contents->GetMainFrame()->GetRoutingID(), page_seq_no,
+      translate_script, source_lang, target_lang));
 }
 
 void ContentTranslateDriver::RevertTranslation(int page_seq_no) {
   content::WebContents* web_contents = navigation_controller_->GetWebContents();
-  web_contents->GetRenderViewHost()->Send(
-      new ChromeViewMsg_RevertTranslation(
-          web_contents->GetRenderViewHost()->GetRoutingID(),
-          page_seq_no));
+  web_contents->GetMainFrame()->Send(new ChromeFrameMsg_RevertTranslation(
+      web_contents->GetMainFrame()->GetRoutingID(), page_seq_no));
 }
 
 bool ContentTranslateDriver::IsOffTheRecord() {
@@ -212,14 +206,16 @@ void ContentTranslateDriver::DidNavigateAnyFrame(
       details.is_in_page, details.is_main_frame, reload);
 }
 
-bool ContentTranslateDriver::OnMessageReceived(const IPC::Message& message) {
+bool ContentTranslateDriver::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ContentTranslateDriver, message)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateAssignedSequenceNumber,
-                      OnTranslateAssignedSequenceNumber)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_TranslateLanguageDetermined,
-                      OnLanguageDetermined)
-  IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageTranslated, OnPageTranslated)
+    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_TranslateAssignedSequenceNumber,
+                        OnTranslateAssignedSequenceNumber)
+    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_TranslateLanguageDetermined,
+                        OnLanguageDetermined)
+    IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_PageTranslated, OnPageTranslated)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;

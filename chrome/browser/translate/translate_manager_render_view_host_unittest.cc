@@ -98,7 +98,7 @@ class TranslateManagerRenderViewHostTest
   void SimulateNavigation(const GURL& url,
                           const std::string& lang,
                           bool page_translatable) {
-    if (rvh()->GetMainFrame()->GetLastCommittedURL() == url)
+    if (main_rfh()->GetLastCommittedURL() == url)
       Reload();
     else
       NavigateAndCommit(url);
@@ -109,20 +109,17 @@ class TranslateManagerRenderViewHostTest
                                              bool page_translatable) {
     translate::LanguageDetectionDetails details;
     details.adopted_language = lang;
-    content::RenderViewHostTester::TestOnMessageReceived(
-        rvh(),
-        ChromeViewHostMsg_TranslateLanguageDetermined(
-            0, details, page_translatable));
+    main_rfh()->OnMessageReceived(
+        ChromeFrameHostMsg_TranslateLanguageDetermined(0, details,
+                                                       page_translatable));
   }
 
   void SimulateOnPageTranslated(int routing_id,
                                 const std::string& source_lang,
                                 const std::string& target_lang,
                                 translate::TranslateErrors::Type error) {
-    content::RenderViewHostTester::TestOnMessageReceived(
-        rvh(),
-        ChromeViewHostMsg_PageTranslated(
-            routing_id, source_lang, target_lang, error));
+    main_rfh()->OnMessageReceived(ChromeFrameHostMsg_PageTranslated(
+        routing_id, source_lang, target_lang, error));
   }
 
   void SimulateOnPageTranslated(const std::string& source_lang,
@@ -134,11 +131,11 @@ class TranslateManagerRenderViewHostTest
   bool GetTranslateMessage(std::string* original_lang,
                            std::string* target_lang) {
     const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-        ChromeViewMsg_TranslatePage::ID);
+        ChromeFrameMsg_TranslatePage::ID);
     if (!message)
       return false;
     base::Tuple<int, std::string, std::string, std::string> translate_param;
-    ChromeViewMsg_TranslatePage::Read(message, &translate_param);
+    ChromeFrameMsg_TranslatePage::Read(message, &translate_param);
     // Ignore get<0>(translate_param) which is the page seq no.
     // Ignore get<1>(translate_param) which is the script injected in the page.
     if (original_lang)
@@ -1034,7 +1031,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ServerReportsUnsupportedLanguage) {
   process()->sink().ClearMessages();
   infobar->MessageInfoBarButtonPressed();
   const IPC::Message* message = process()->sink().GetFirstMessageMatching(
-      ChromeViewMsg_RevertTranslation::ID);
+      ChromeFrameMsg_RevertTranslation::ID);
   EXPECT_TRUE(message != NULL);
   // And it should have removed the infobar.
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);
@@ -1554,7 +1551,7 @@ TEST_F(TranslateManagerRenderViewHostTest, ScriptExpires) {
   // If we don't simulate the URL fetch, the TranslateManager should be waiting
   // for the script and no message should have been sent to the renderer.
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
-                  ChromeViewMsg_TranslatePage::ID) == NULL);
+                  ChromeFrameMsg_TranslatePage::ID) == NULL);
   // Now simulate the URL fetch.
   SimulateTranslateScriptURLFetch(true);
   // Now the message should have been sent.

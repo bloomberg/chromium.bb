@@ -23,13 +23,13 @@
 #include "chrome/renderer/safe_browsing/phishing_term_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/phishing_url_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "content/public/renderer/render_view.h"
+#include "content/public/renderer/render_frame.h"
 #include "crypto/sha2.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
@@ -38,9 +38,9 @@ namespace safe_browsing {
 const float PhishingClassifier::kInvalidScore = -1.0;
 const float PhishingClassifier::kPhishyThreshold = 0.5;
 
-PhishingClassifier::PhishingClassifier(content::RenderView* render_view,
+PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame,
                                        FeatureExtractorClock* clock)
-    : render_view_(render_view),
+    : render_frame_(render_frame),
       scorer_(NULL),
       clock_(clock),
       weak_factory_(this) {
@@ -105,17 +105,7 @@ void PhishingClassifier::BeginClassification(
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {
-  blink::WebView* web_view = render_view_->GetWebView();
-  if (!web_view) {
-    RunFailureCallback();
-    return;
-  }
-
-  blink::WebFrame* frame = web_view->mainFrame();
-  if (!frame) {
-    RunFailureCallback();
-    return;
-  }
+  blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
 
   // Check whether the URL is one that we should classify.
   // Currently, we only classify http: URLs that are GET requests.
@@ -175,16 +165,7 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
 
 void PhishingClassifier::TermExtractionFinished(bool success) {
   if (success) {
-    blink::WebView* web_view = render_view_->GetWebView();
-    if (!web_view) {
-      RunFailureCallback();
-      return;
-    }
-    blink::WebFrame* main_frame = web_view->mainFrame();
-    if (!main_frame) {
-      RunFailureCallback();
-      return;
-    }
+    blink::WebLocalFrame* main_frame = render_frame_->GetWebFrame();
 
     // Hash all of the features so that they match the model, then compute
     // the score.
