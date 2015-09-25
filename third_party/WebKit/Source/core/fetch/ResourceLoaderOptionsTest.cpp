@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ResourceLoaderOptionsTest_h
-#define ResourceLoaderOptionsTest_h
-
 #include "config.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 
@@ -92,5 +89,3 @@ TEST(ResourceLoaderOptionsTest, DeepCopy)
 } // namespace
 
 } // namespace blink
-
-#endif // ResourceLoaderOptionsTest_h

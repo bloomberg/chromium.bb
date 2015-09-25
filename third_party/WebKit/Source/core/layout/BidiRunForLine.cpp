@@ -21,9 +21,6 @@
  *
  */
 
-#ifndef BidiRunForLine_h
-#define BidiRunForLine_h
-
 #include "config.h"
 #include "core/layout/BidiRunForLine.h"
 
@@ -81,7 +78,7 @@ static LayoutObject* firstLayoutObjectForDirectionalityDetermination(
 }
 
 TextDirection determinePlaintextDirectionality(LayoutObject* root,
-    LayoutObject* current = 0, unsigned pos = 0)
+    LayoutObject* current, unsigned pos)
 {
     LayoutObject* firstLayoutObject = firstLayoutObjectForDirectionalityDetermination(root, current);
     InlineIterator iter(LineLayoutItem(root), LineLayoutItem(firstLayoutObject), firstLayoutObject == current ? pos : 0);
@@ -227,5 +224,3 @@ void constructBidiRunsForLine(InlineBidiResolver& topResolver,
 }
 
 } // namespace blink
-
-#endif // BidiRunForLine_h
