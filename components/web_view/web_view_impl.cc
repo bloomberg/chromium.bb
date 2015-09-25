@@ -60,6 +60,21 @@ WebViewImpl::~WebViewImpl() {
 }
 
 void WebViewImpl::OnLoad() {
+  // Frames are uniqued based on the id of the associated View. By creating a
+  // new View each time through we ensure the renderers get a clean id, rather
+  // than one they may know about and try to incorrectly use.
+  if (content_) {
+    content_->Destroy();
+    DCHECK(!content_);
+  }
+
+  content_ = root_->connection()->CreateView();
+  content_->SetBounds(*mojo::Rect::From(
+      gfx::Rect(0, 0, root_->bounds().width, root_->bounds().height)));
+  root_->AddChild(content_);
+  content_->SetVisible(true);
+  content_->AddObserver(this);
+
   scoped_ptr<PendingWebViewLoad> pending_load(pending_load_.Pass());
   scoped_ptr<FrameConnection> frame_connection(
       pending_load->frame_connection());
@@ -114,12 +129,6 @@ void WebViewImpl::OnEmbed(mus::View* root) {
   DCHECK(root->connection()->IsEmbedRoot());
   root->AddObserver(this);
   root_ = root;
-  content_ = root->connection()->CreateView();
-  content_->SetBounds(*mojo::Rect::From(gfx::Rect(0, 0, root->bounds().width,
-                                                  root->bounds().height)));
-  root->AddChild(content_);
-  content_->SetVisible(true);
-  content_->AddObserver(this);
 
   if (pending_load_ && pending_load_->is_content_handler_id_valid())
     OnLoad();
@@ -139,7 +148,8 @@ void WebViewImpl::OnViewBoundsChanged(mus::View* view,
     mojo::Rect rect;
     rect.width = new_bounds.width;
     rect.height = new_bounds.height;
-    content_->SetBounds(rect);
+    if (content_)
+      content_->SetBounds(rect);
   }
 }
 

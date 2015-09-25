@@ -16,6 +16,7 @@
 #include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
+#include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
@@ -78,6 +79,7 @@ void FrameConnection::Init(mojo::ApplicationImpl* app,
 
   mojo::Array<mojo::String> network_service_interfaces;
   network_service_interfaces.push_back(mojo::CookieStore::Name_);
+  network_service_interfaces.push_back(mojo::NetworkService::Name_);
   network_service_interfaces.push_back(mojo::URLLoaderFactory::Name_);
   network_service_interfaces.push_back(mojo::WebSocketFactory::Name_);
   filter->filter.insert("mojo:network_service",

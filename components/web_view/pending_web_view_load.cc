@@ -26,9 +26,9 @@ void PendingWebViewLoad::Init(mojo::URLRequestPtr request) {
 
 void PendingWebViewLoad::OnGotContentHandlerID() {
   is_content_handler_id_valid_ = true;
-  if (web_view_->content_)
+  if (web_view_->root_)
     web_view_->OnLoad();
-  // The else case is handled by WebViewImpl when it gets the View (|content_|).
+  // The else case is handled by WebViewImpl when it gets the View (|root_|).
 }
 
 }  // namespace web_view
