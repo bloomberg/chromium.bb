@@ -269,35 +269,29 @@ const base::DictionaryValue* GetPolicyForNetworkFromPref(
     const char* pref_name,
     const NetworkState& network) {
   if (!pref_service) {
-    VLOG(2) << "No pref service";
-    return NULL;
+    DLOG(ERROR) << "No pref service";
+    return nullptr;
   }
 
-  const PrefService::Preference* preference =
+  const PrefService::Preference* const preference =
       pref_service->FindPreference(pref_name);
   if (!preference) {
-    VLOG(2) << "No preference " << pref_name;
+    DVLOG(2) << "No preference " << pref_name;
     // The preference may not exist in tests.
-    return NULL;
+    return nullptr;
   }
 
   // User prefs are not stored in this Preference yet but only the policy.
-  //
-  // The policy server incorrectly configures the OpenNetworkConfiguration user
-  // policy as Recommended. To work around that, we handle the Recommended and
-  // the Mandatory value in the same way.
-  // TODO(pneubeck): Remove this workaround, once the server is fixed. See
-  // http://crbug.com/280553 .
-  if (preference->IsDefaultValue()) {
-    VLOG(2) << "Preference has no recommended or mandatory value.";
+  if (!preference->IsManaged()) {
+    DVLOG(2) << "Preference has no mandatory value.";
     // No policy set.
-    return NULL;
+    return nullptr;
   }
-  VLOG(2) << "Preference with policy found.";
-  const base::Value* onc_policy_value = preference->GetValue();
+  DVLOG(2) << "Preference with policy found.";
+  const base::Value* const onc_policy_value = preference->GetValue();
   DCHECK(onc_policy_value);
 
-  const base::ListValue* onc_policy = NULL;
+  const base::ListValue* onc_policy = nullptr;
   onc_policy_value->GetAsList(&onc_policy);
   DCHECK(onc_policy);
 
