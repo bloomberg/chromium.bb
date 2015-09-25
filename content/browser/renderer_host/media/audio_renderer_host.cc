@@ -823,9 +823,8 @@ void AudioRendererHost::TranslateDeviceID(
     const OutputDeviceInfoCB& callback,
     const AudioOutputDeviceEnumeration& device_infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool use_default_device = device_id.empty() && security_origin.is_empty();
   for (const AudioOutputDeviceInfo& device_info : device_infos) {
-    if (use_default_device) {
+    if (device_id.empty()) {
       if (device_info.unique_id == media::AudioManagerBase::kDefaultDeviceId) {
         callback.Run(true, device_info);
         return;
@@ -837,7 +836,7 @@ void AudioRendererHost::TranslateDeviceID(
       return;
     }
   }
-  DCHECK(!use_default_device);  // Default device must always be found
+  DCHECK(!device_id.empty());  // Default device must always be found
   AudioOutputDeviceInfo device_info = {std::string(), std::string(),
                                        DummyParams()};
   callback.Run(false, device_info);
