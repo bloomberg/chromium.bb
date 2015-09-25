@@ -79,6 +79,8 @@ public:
 private:
     virtual void fired() = 0;
 
+    virtual WebTaskRunner* timerTaskRunner();
+
     NO_LAZY_SWEEP_SANITIZE_ADDRESS
     virtual bool canFire() const { return true; }
 

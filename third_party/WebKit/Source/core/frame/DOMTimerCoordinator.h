@@ -14,6 +14,7 @@ namespace blink {
 class DOMTimer;
 class ExecutionContext;
 class ScheduledAction;
+class WebTaskRunner;
 
 // Maintains a set of DOMTimers for a given page or
 // worker. DOMTimerCoordinator assigns IDs to timers; these IDs are
@@ -24,7 +25,7 @@ class DOMTimerCoordinator {
     DISALLOW_ALLOCATION();
     WTF_MAKE_NONCOPYABLE(DOMTimerCoordinator);
 public:
-    DOMTimerCoordinator();
+    explicit DOMTimerCoordinator(WebTaskRunner*);
 
     // Creates and installs a new timer. Returns the assigned ID.
     int installNewTimeout(ExecutionContext*, PassOwnPtrWillBeRawPtr<ScheduledAction>, int timeout, bool singleShot);
@@ -49,6 +50,10 @@ public:
     // deeper timer nesting level, see DOMTimer::DOMTimer.
     void setTimerNestingLevel(int level) { m_timerNestingLevel = level; }
 
+    void setTimerTaskRunner(WebTaskRunner* timerTaskRunner) { m_timerTaskRunner = timerTaskRunner; }
+
+    WebTaskRunner* timerTaskRunner() const { return m_timerTaskRunner; }
+
     DECLARE_TRACE(); // Oilpan.
 
 private:
@@ -59,6 +64,7 @@ private:
 
     int m_circularSequentialID;
     int m_timerNestingLevel;
+    WebTaskRunner* m_timerTaskRunner; // NOT OWNED
 };
 
 } // namespace blink

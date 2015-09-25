@@ -6,6 +6,7 @@
 
 #include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
+#include "components/scheduler/renderer/web_frame_host_scheduler_impl.h"
 
 namespace scheduler {
 
@@ -27,6 +28,11 @@ void RendererWebSchedulerImpl::suspendTimerQueue() {
 
 void RendererWebSchedulerImpl::resumeTimerQueue() {
   renderer_scheduler_->ResumeTimerQueue();
+}
+
+blink::WebFrameHostScheduler*
+RendererWebSchedulerImpl::createFrameHostScheduler() {
+  return new WebFrameHostSchedulerImpl(renderer_scheduler_);
 }
 
 }  // namespace scheduler

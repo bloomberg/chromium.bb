@@ -24,18 +24,17 @@ SchedulerHelper::SchedulerHelper(
                                disabled_by_default_verbose_tracing_category)),
       control_task_runner_(NewTaskQueue(
           TaskQueue::Spec("control_tq")
-              .SetWakeupPolicy(
-                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
+              .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
               .SetShouldNotifyObservers(false))),
       control_after_wakeup_task_runner_(NewTaskQueue(
           TaskQueue::Spec("control_after_wakeup_tq")
               .SetPumpPolicy(TaskQueue::PumpPolicy::AFTER_WAKEUP)
-              .SetWakeupPolicy(
-                  TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
+              .SetWakeupPolicy(TaskQueue::WakeupPolicy::DONT_WAKE_OTHER_QUEUES)
               .SetShouldNotifyObservers(false))),
       default_task_runner_(NewTaskQueue(TaskQueue::Spec("default_tq")
                                             .SetShouldMonitorQuiescence(true))),
       time_source_(new base::DefaultTickClock),
+      observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
           disabled_by_default_tracing_category) {
@@ -54,6 +53,8 @@ SchedulerHelper::~SchedulerHelper() {
 
 void SchedulerHelper::Shutdown() {
   CheckOnValidThread();
+  if (task_queue_manager_)
+    task_queue_manager_->SetObserver(nullptr);
   task_queue_manager_.reset();
   main_task_runner_->RestoreDefaultTaskRunner();
 }
@@ -122,6 +123,19 @@ void SchedulerHelper::RemoveTaskObserver(
   CheckOnValidThread();
   if (task_queue_manager_)
     task_queue_manager_->RemoveTaskObserver(task_observer);
+}
+
+void SchedulerHelper::SetObserver(Observer* observer) {
+  CheckOnValidThread();
+  observer_ = observer;
+  DCHECK(task_queue_manager_);
+  task_queue_manager_->SetObserver(this);
+}
+
+void SchedulerHelper::OnUnregisterTaskQueue(
+    const scoped_refptr<internal::TaskQueueImpl>& queue) {
+  if (observer_)
+    observer_->OnUnregisterTaskQueue(queue);
 }
 
 }  // namespace scheduler

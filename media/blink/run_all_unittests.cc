@@ -7,6 +7,11 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/web_task_runner_impl.h"
+#include "components/scheduler/renderer/renderer_scheduler_impl.h"
+#include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
+#include "components/scheduler/test/lazy_scheduler_message_loop_delegate_for_tests.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebScheduler.h"
@@ -24,53 +29,38 @@
 #include "gin/v8_initializer.h"
 #endif
 
-class SimpleWebTaskRunner : public blink::WebTaskRunner {
- public:
-  void postTask(const blink::WebTraceLocation& ignored, Task* task) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(&RunIt, task));
-  }
-
-  void postDelayedTask(const blink::WebTraceLocation&,
-                       Task* task,
-                       long long delayMs) override {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&RunIt, base::Owned(task)),
-        base::TimeDelta::FromMilliseconds(delayMs));
-  };
-
- private:
-  static void RunIt(Task* task) { task->run(); }
-};
-
-class SimpleWebScheduler : public blink::WebScheduler {
- public:
-  SimpleWebScheduler(blink::WebTaskRunner* task_runner)
-      : task_runner_(task_runner) {}
-  blink::WebTaskRunner* loadingTaskRunner() override { return task_runner_; }
-
-  blink::WebTaskRunner* timerTaskRunner() override { return task_runner_; }
-
- private:
-  blink::WebTaskRunner* task_runner_;
-};
-
 class CurrentThreadMock : public blink::WebThread {
  public:
-  CurrentThreadMock() : m_taskRunner(), m_webScheduler(&m_taskRunner) {}
+  CurrentThreadMock()
+      : task_runner_delegate_(
+            scheduler::LazySchedulerMessageLoopDelegateForTests::Create()),
+        scheduler_(
+            new scheduler::RendererSchedulerImpl(task_runner_delegate_.get())),
+        web_scheduler_(
+            new scheduler::RendererWebSchedulerImpl(scheduler_.get())),
+        web_task_runner_(
+            new scheduler::WebTaskRunnerImpl(scheduler_->DefaultTaskRunner())) {
+  }
 
-  ~CurrentThreadMock() override {}
+  ~CurrentThreadMock() override {
+    scheduler_->Shutdown();
+  }
 
-  blink::WebTaskRunner* taskRunner() override { return &m_taskRunner; }
+  blink::WebTaskRunner* taskRunner() override { return web_task_runner_.get(); }
 
   bool isCurrentThread() const override { return true; }
 
   blink::PlatformThreadId threadId() const override { return 17; }
 
-  blink::WebScheduler* scheduler() const override { return &m_webScheduler; }
+  blink::WebScheduler* scheduler() const override {
+    return web_scheduler_.get();
+  }
 
  private:
-  SimpleWebTaskRunner m_taskRunner;
-  mutable SimpleWebScheduler m_webScheduler;
+  scoped_refptr<scheduler::SchedulerTaskRunnerDelegate> task_runner_delegate_;
+  scoped_ptr<scheduler::RendererScheduler> scheduler_;
+  scoped_ptr<blink::WebScheduler> web_scheduler_;
+  scoped_ptr<blink::WebTaskRunner> web_task_runner_;
 };
 
 class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {

@@ -215,6 +215,7 @@
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/Functional.h"
@@ -439,6 +440,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_timeline(AnimationTimeline::create(this))
     , m_templateDocumentHost(nullptr)
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
+    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner())
     , m_hasViewportUnits(false)
     , m_styleRecalcElementCounter(0)
     , m_parserSyncPolicy(AllowAsynchronousParsing)
@@ -449,6 +451,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         provideContextFeaturesToDocumentFrom(*this, *m_frame->page());
 
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
+        m_timers.setTimerTaskRunner(m_frame->frameScheduler()->timerTaskRunner());
         FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
     } else if (m_importsController) {
         m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
@@ -2203,6 +2206,8 @@ void Document::detach(const AttachContext& context)
     // thinking they should have access to a valid frame when they don't.
     if (m_importsController)
         HTMLImportsController::removeFrom(*this);
+
+    m_timers.setTimerTaskRunner(Platform::current()->currentThread()->scheduler()->timerTaskRunner());
 
     // This is required, as our LocalFrame might delete itself as soon as it detaches
     // us. However, this violates Node::detach() semantics, as it's never
@@ -4839,6 +4844,7 @@ void Document::didUpdateSecurityOrigin()
 {
     if (!m_frame)
         return;
+    m_frame->updateFrameSecurityOrigin();
     m_frame->script().updateSecurityOrigin(securityOrigin());
 }
 

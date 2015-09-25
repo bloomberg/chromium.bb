@@ -39,12 +39,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       compositor_task_runner_(
           helper_.NewTaskQueue(TaskQueue::Spec("compositor_tq")
                                    .SetShouldMonitorQuiescence(true))),
-      loading_task_runner_(
-          helper_.NewTaskQueue(TaskQueue::Spec("loading_tq")
-                                   .SetShouldMonitorQuiescence(true))),
-      timer_task_runner_(
-          helper_.NewTaskQueue(TaskQueue::Spec("timer_tq")
-                                   .SetShouldMonitorQuiescence(true))),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -60,11 +54,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       base::Bind(&RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded,
                  weak_factory_.GetWeakPtr()));
 
-  loading_task_runner_->AddTaskObserver(
-      &MainThreadOnly().loading_task_cost_estimator);
-
-  timer_task_runner_->AddTaskObserver(
-      &MainThreadOnly().timer_task_cost_estimator);
+  default_loading_task_runner_ = NewLoadingTaskRunner("default_loading_tq");
+  default_timer_task_runner_ = NewTimerTaskRunner("default_timer_tq");
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
@@ -73,16 +64,24 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   // Make sure that we don't initially assume there is no idle time.
   MainThreadOnly().short_idle_period_duration.InsertSample(
       cc::BeginFrameArgs::DefaultInterval());
+
+  helper_.SetObserver(this);
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
-  timer_task_runner_->RemoveTaskObserver(
-      &MainThreadOnly().timer_task_cost_estimator);
-  loading_task_runner_->RemoveTaskObserver(
-      &MainThreadOnly().loading_task_cost_estimator);
+
+  for (const scoped_refptr<TaskQueue>& loading_queue : loading_task_runners_) {
+    loading_queue->RemoveTaskObserver(
+        &MainThreadOnly().loading_task_cost_estimator);
+  }
+  for (const scoped_refptr<TaskQueue>& timer_queue : timer_task_runners_) {
+    timer_queue->RemoveTaskObserver(
+        &MainThreadOnly().timer_task_cost_estimator);
+  }
+
   // Ensure the renderer scheduler was shut down explicitly, because otherwise
   // we could end up having stale pointers to the Blink heap which has been
   // terminated by this point.
@@ -149,12 +148,51 @@ RendererSchedulerImpl::IdleTaskRunner() {
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererSchedulerImpl::LoadingTaskRunner() {
   helper_.CheckOnValidThread();
-  return loading_task_runner_;
+  return default_loading_task_runner_;
 }
 
 scoped_refptr<TaskQueue> RendererSchedulerImpl::TimerTaskRunner() {
   helper_.CheckOnValidThread();
-  return timer_task_runner_;
+  return default_timer_task_runner_;
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
+    const char* name) {
+  helper_.CheckOnValidThread();
+  scoped_refptr<TaskQueue> loading_task_queue(helper_.NewTaskQueue(
+      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
+  loading_task_runners_.insert(loading_task_queue);
+  loading_task_queue->SetQueuePriority(
+      MainThreadOnly().current_policy.loading_queue_priority);
+  loading_task_queue->AddTaskObserver(
+      &MainThreadOnly().loading_task_cost_estimator);
+  return loading_task_queue;
+}
+
+scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
+    const char* name) {
+  helper_.CheckOnValidThread();
+  scoped_refptr<TaskQueue> timer_task_queue(helper_.NewTaskQueue(
+      TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
+  timer_task_runners_.insert(timer_task_queue);
+  timer_task_queue->SetQueuePriority(
+      MainThreadOnly().current_policy.timer_queue_priority);
+  timer_task_queue->AddTaskObserver(
+      &MainThreadOnly().timer_task_cost_estimator);
+  return timer_task_queue;
+}
+
+void RendererSchedulerImpl::OnUnregisterTaskQueue(
+    const scoped_refptr<TaskQueue>& task_queue) {
+  if (loading_task_runners_.find(task_queue) != loading_task_runners_.end()) {
+    task_queue->RemoveTaskObserver(
+        &MainThreadOnly().loading_task_cost_estimator);
+    loading_task_runners_.erase(task_queue);
+  } else if (timer_task_runners_.find(task_queue) !=
+             timer_task_runners_.end()) {
+    task_queue->RemoveTaskObserver(&MainThreadOnly().timer_task_cost_estimator);
+    timer_task_runners_.erase(task_queue);
+  }
 }
 
 bool RendererSchedulerImpl::CanExceedIdleDeadlineIfRequired() const {
@@ -623,8 +661,12 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   compositor_task_runner_->SetQueuePriority(
       new_policy.compositor_queue_priority);
-  loading_task_runner_->SetQueuePriority(new_policy.loading_queue_priority);
-  timer_task_runner_->SetQueuePriority(new_policy.timer_queue_priority);
+  for (const scoped_refptr<TaskQueue>& loading_queue : loading_task_runners_) {
+    loading_queue->SetQueuePriority(new_policy.loading_queue_priority);
+  }
+  for (const scoped_refptr<TaskQueue>& timer_queue : timer_task_runners_) {
+    timer_queue->SetQueuePriority(new_policy.timer_queue_priority);
+  }
 
   // TODO(alexclarke): We shouldn't have to prioritize the default queue, but it
   // appears to be necessary since the order of loading tasks and IPCs (which
@@ -715,7 +757,12 @@ RendererSchedulerImpl::GetTimerTaskCostEstimatorForTesting() {
 void RendererSchedulerImpl::SuspendTimerQueue() {
   MainThreadOnly().timer_queue_suspend_count++;
   ForceUpdatePolicy();
-  DCHECK(!timer_task_runner_->IsQueueEnabled());
+#ifndef NDEBUG
+  DCHECK(!default_timer_task_runner_->IsQueueEnabled());
+  for (const auto& runner : timer_task_runners_) {
+    DCHECK(!runner->IsQueueEnabled());
+  }
+#endif
 }
 
 void RendererSchedulerImpl::ResumeTimerQueue() {

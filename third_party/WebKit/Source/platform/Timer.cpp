@@ -87,6 +87,11 @@ double TimerBase::nextFireInterval() const
     return m_nextFireTime - current;
 }
 
+WebTaskRunner* TimerBase::timerTaskRunner()
+{
+    return m_webScheduler->timerTaskRunner();
+}
+
 void TimerBase::setNextFireTime(double now, double delay)
 {
     ASSERT(m_thread == currentThread());
@@ -110,7 +115,7 @@ void TimerBase::setNextFireTime(double now, double delay)
             long long delayMs = static_cast<long long>(ceil((newTime - now) * 1000.0));
             if (delayMs < 0)
                 delayMs = 0;
-            m_webScheduler->timerTaskRunner()->postDelayedTask(m_location, m_cancellableTimerTask, delayMs);
+            timerTaskRunner()->postDelayedTask(m_location, m_cancellableTimerTask, delayMs);
         }
     }
 }

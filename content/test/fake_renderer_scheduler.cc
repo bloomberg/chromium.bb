@@ -35,6 +35,16 @@ scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::TimerTaskRunner() {
   return nullptr;
 }
 
+scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::NewLoadingTaskRunner(
+    const char* name) {
+  return nullptr;
+}
+
+scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::NewTimerTaskRunner(
+    const char* name) {
+  return nullptr;
+}
+
 void FakeRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 

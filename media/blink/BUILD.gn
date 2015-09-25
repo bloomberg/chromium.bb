@@ -92,6 +92,8 @@ test("media_blink_unittests") {
     "//base/test:test_support",
     "//cc",
     "//cc/blink",
+    "//components/scheduler:scheduler",
+    "//components/scheduler:test_support",
     "//gin",
     "//media",
     "//media:shared_memory_support",

@@ -18,7 +18,7 @@ namespace scheduler {
 class SchedulerTaskRunnerDelegate;
 
 // Common scheduler functionality for default tasks.
-class SCHEDULER_EXPORT SchedulerHelper {
+class SCHEDULER_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
  public:
   // Category strings must have application lifetime (statics or
   // literals). They may not include " chars.
@@ -26,7 +26,11 @@ class SCHEDULER_EXPORT SchedulerHelper {
                   const char* tracing_category,
                   const char* disabled_by_default_tracing_category,
                   const char* disabled_by_default_verbose_tracing_category);
-  ~SchedulerHelper();
+  ~SchedulerHelper() override;
+
+  // TaskQueueManager::Observer implementation:
+  void OnUnregisterTaskQueue(
+      const scoped_refptr<internal::TaskQueueImpl>& queue) override;
 
   // Returns the default task runner.
   scoped_refptr<TaskQueue> DefaultTaskRunner();
@@ -62,6 +66,20 @@ class SCHEDULER_EXPORT SchedulerHelper {
   // Creates a new TaskQueue with the given |spec|.
   scoped_refptr<TaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);
 
+  class SCHEDULER_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when |queue| is unregistered.
+    virtual void OnUnregisterTaskQueue(
+        const scoped_refptr<TaskQueue>& queue) = 0;
+  };
+
+  // Called once to set the Observer. This function is called on the main
+  // thread. If |observer| is null, then no callbacks will occur.
+  // Note |observer| is expected to outlive the SchedulerHelper.
+  void SetObserver(Observer* observer);
+
   // Accessor methods.
   base::TimeTicks Now() const;
   base::TimeTicks NextPendingDelayedTaskRunTime() const;
@@ -84,6 +102,7 @@ class SCHEDULER_EXPORT SchedulerHelper {
 
   scoped_ptr<base::TickClock> time_source_;
 
+  Observer* observer_;  // NOT OWNED
   const char* tracing_category_;
   const char* disabled_by_default_tracing_category_;
 

@@ -10,9 +10,10 @@
 
 namespace blink {
 
-DOMTimerCoordinator::DOMTimerCoordinator()
+DOMTimerCoordinator::DOMTimerCoordinator(WebTaskRunner* timerTaskRunner)
     : m_circularSequentialID(0)
     , m_timerNestingLevel(0)
+    , m_timerTaskRunner(timerTaskRunner)
 {
 }
 

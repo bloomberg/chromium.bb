@@ -72,6 +72,8 @@ class TreeScope;
 class ScriptController;
 class SpellChecker;
 class TreeScope;
+class WebFrameHostScheduler;
+class WebFrameScheduler;
 template <typename Strategy> class PositionWithAffinityTemplate;
 
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public WillBeHeapSupplementable<LocalFrame> {
@@ -182,6 +184,10 @@ public:
 
     // ========
 
+    // Returns the frame scheduler, creating one if needed.
+    WebFrameScheduler* frameScheduler();
+    void updateFrameSecurityOrigin();
+
 private:
     LocalFrame(FrameLoaderClient*, FrameHost*, FrameOwner*);
 
@@ -211,6 +217,7 @@ private:
     const OwnPtrWillBeMember<EventHandler> m_eventHandler;
     const OwnPtrWillBeMember<FrameConsole> m_console;
     const OwnPtrWillBeMember<InputMethodController> m_inputMethodController;
+    OwnPtr<WebFrameScheduler> m_frameScheduler;
 
 #if ENABLE(OILPAN)
     // Oilpan: in order to reliably finalize plugin elements with

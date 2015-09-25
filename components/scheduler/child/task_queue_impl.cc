@@ -56,7 +56,7 @@ TaskQueueImpl::Task::Task(const tracked_objects::Location& posted_from,
 void TaskQueueImpl::UnregisterTaskQueue() {
   if (!task_queue_manager_)
     return;
-  task_queue_manager_->UnregisterTaskQueue(make_scoped_refptr(this));
+  task_queue_manager_->UnregisterTaskQueue(this);
 
   {
     base::AutoLock lock(lock_);

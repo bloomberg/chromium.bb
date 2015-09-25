@@ -70,6 +70,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {
@@ -146,6 +147,11 @@ public:
         visitor->trace(m_window);
         visitor->trace(m_stackTrace);
         SuspendableTimer::trace(visitor);
+    }
+
+    WebTaskRunner* timerTaskRunner() override
+    {
+        return m_window->frame()->frameScheduler()->timerTaskRunner();
     }
 
 private:

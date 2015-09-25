@@ -34,6 +34,7 @@ TaskQueueManager::TaskQueueManager(
           disabled_by_default_tracing_category),
       disabled_by_default_verbose_tracing_category_(
           disabled_by_default_verbose_tracing_category),
+      observer_(nullptr),
       deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
@@ -73,12 +74,20 @@ scoped_refptr<internal::TaskQueueImpl> TaskQueueManager::NewTaskQueue(
   return queue;
 }
 
+void TaskQueueManager::SetObserver(Observer* observer) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  observer_ = observer;
+}
+
 void TaskQueueManager::UnregisterTaskQueue(
     scoped_refptr<internal::TaskQueueImpl> task_queue) {
   TRACE_EVENT1(disabled_by_default_tracing_category_,
               "TaskQueueManager::UnregisterTaskQueue",
               "queue_name", task_queue->GetName());
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (observer_)
+    observer_->OnUnregisterTaskQueue(task_queue);
+
   // Add |task_queue| to |queues_to_delete_| so we can prevent it from being
   // freed while any of our structures hold hold a raw pointer to it.
   queues_to_delete_.insert(task_queue);
@@ -352,7 +361,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     queue->NotifyWillProcessTask(pending_task);
   }
   TRACE_EVENT1(disabled_by_default_tracing_category_,
-               "Run Task From Queue", "queue", queue->GetName());
+               "TaskQueueManager::RunTask", "queue", queue->GetName());
   task_annotator_.RunTask("TaskQueueManager::PostTask", pending_task);
 
   // Detect if the TaskQueueManager just got deleted.  If this happens we must

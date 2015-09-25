@@ -64,6 +64,8 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebScheduler.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -78,6 +80,7 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)
+    , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner())
     , m_timeOrigin(timeOrigin)
     , m_messageStorage(ConsoleMessageStorage::create())
     , m_workerExceptionUniqueIdentifier(0)

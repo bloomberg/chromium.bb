@@ -44,7 +44,15 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   virtual scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() = 0;
 
   // Returns the timer task runner.  This queue is intended for DOM Timers.
+  // TODO(alexclarke): Get rid of this default timer queue.
   virtual scoped_refptr<TaskQueue> TimerTaskRunner() = 0;
+
+  // Returns a new loading task runner. This queue is intended for tasks related
+  // to resource dispatch, foreground HTML parsing, etc...
+  virtual scoped_refptr<TaskQueue> NewLoadingTaskRunner(const char* name) = 0;
+
+  // Returns a new timer task runner. This queue is intended for DOM Timers.
+  virtual scoped_refptr<TaskQueue> NewTimerTaskRunner(const char* name) = 0;
 
   // Called to notify about the start of an extended period where no frames
   // need to be drawn. Must be called from the main thread.

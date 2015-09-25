@@ -79,6 +79,8 @@ private:
     // Retuns timer fire time rounded to the next multiple of timer alignment interval.
     double alignedFireTime(double) const override;
 
+    WebTaskRunner* timerTaskRunner() override;
+
     int m_timeoutID;
     int m_nestingLevel;
     OwnPtrWillBeMember<ScheduledAction> m_action;

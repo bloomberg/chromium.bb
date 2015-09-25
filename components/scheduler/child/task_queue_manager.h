@@ -88,6 +88,20 @@ class SCHEDULER_EXPORT TaskQueueManager
   scoped_refptr<internal::TaskQueueImpl> NewTaskQueue(
       const TaskQueue::Spec& spec);
 
+  class SCHEDULER_EXPORT Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when |queue| is unregistered.
+    virtual void OnUnregisterTaskQueue(
+        const scoped_refptr<internal::TaskQueueImpl>& queue) = 0;
+  };
+
+  // Called once to set the Observer. This function is called on the main
+  // thread. If |observer| is null, then no callbacks will occur.
+  // Note |observer| is expected to outlive the SchedulerHelper.
+  void SetObserver(Observer* observer);
+
  private:
   friend class internal::LazyNow;
   friend class internal::TaskQueueImpl;
@@ -235,6 +249,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   const char* disabled_by_default_tracing_category_;
   const char* disabled_by_default_verbose_tracing_category_;
 
+  Observer* observer_;  // NOT OWNED
   scoped_refptr<DeletionSentinel> deletion_sentinel_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
 

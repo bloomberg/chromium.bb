@@ -183,4 +183,27 @@ TEST_F(SchedulerHelperTest,
   RunUntilIdle();
 }
 
+namespace {
+
+class MockObserver : public SchedulerHelper::Observer {
+ public:
+  MOCK_METHOD1(OnUnregisterTaskQueue,
+               void(const scoped_refptr<TaskQueue>& queue));
+};
+
+}  // namespace
+
+TEST_F(SchedulerHelperTest, OnUnregisterTaskQueue) {
+  MockObserver observer;
+  scheduler_helper_->SetObserver(&observer);
+
+  scoped_refptr<TaskQueue> task_queue =
+      scheduler_helper_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+
+  EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
+  task_queue->UnregisterTaskQueue();
+
+  scheduler_helper_->SetObserver(nullptr);
+}
+
 }  // namespace scheduler

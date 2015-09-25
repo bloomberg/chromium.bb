@@ -50,6 +50,8 @@
 #include "platform/MemoryPurgeController.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebFrameHostScheduler.h"
 
 namespace blink {
 
@@ -387,10 +389,14 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
         return;
     m_visibilityState = visibilityState;
 
-    if (visibilityState == PageVisibilityStateVisible)
+    // TODO(alexclarke): Move throttling of timers to chromium.
+    if (visibilityState == PageVisibilityStateVisible) {
+        m_frameHost->frameHostScheduler()->setPageInBackground(false);
         setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
-    else
+    } else {
+        m_frameHost->frameHostScheduler()->setPageInBackground(true);
         setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
+    }
 
     if (!isInitialState)
         notifyPageVisibilityChanged();

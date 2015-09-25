@@ -73,6 +73,9 @@
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/text/TextStream.h"
+#include "public/platform/WebFrameHostScheduler.h"
+#include "public/platform/WebFrameScheduler.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/StdLibExtras.h"
@@ -282,6 +285,7 @@ void LocalFrame::detach(FrameDetachType type)
     m_loader.stopAllLoaders();
     m_loader.dispatchUnloadEvent();
     detachChildren();
+    m_frameScheduler.clear();
 
     // All done if detaching the subframes brought about a detach of this frame also.
     if (!client())
@@ -856,6 +860,25 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client, FrameHost* host, FrameO
         m_instrumentingAgents = InstrumentingAgents::create();
     else
         m_instrumentingAgents = localFrameRoot()->m_instrumentingAgents;
+}
+
+WebFrameScheduler* LocalFrame::frameScheduler()
+{
+    if (!m_frameScheduler.get())
+        m_frameScheduler = adoptPtr(host()->frameHostScheduler()->createFrameScheduler());
+
+    ASSERT(m_frameScheduler.get());
+    return m_frameScheduler.get();
+}
+
+void LocalFrame::updateFrameSecurityOrigin()
+{
+    SecurityContext* context = securityContext();
+    if (!context)
+        return;
+
+    WebSecurityOrigin securityOrigin(context->securityOrigin());
+    frameScheduler()->setFrameOrigin(&securityOrigin);
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(LocalFrame);

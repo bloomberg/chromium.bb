@@ -1266,4 +1266,29 @@ TEST_F(TaskQueueManagerTest, DeferredNonNestableTaskDoesNotTriggerWakeUp) {
   ASSERT_THAT(run_order, ElementsAre(1));
 }
 
+namespace {
+
+class MockObserver : public TaskQueueManager::Observer {
+ public:
+  MOCK_METHOD1(OnUnregisterTaskQueue,
+               void(const scoped_refptr<internal::TaskQueueImpl>& queue));
+};
+
+}  // namespace
+
+TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
+  Initialize(0u);
+
+  MockObserver observer;
+  manager_->SetObserver(&observer);
+
+  scoped_refptr<internal::TaskQueueImpl> task_queue =
+      manager_->NewTaskQueue(TaskQueue::Spec("test_queue"));
+
+  EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
+  task_queue->UnregisterTaskQueue();
+
+  manager_->SetObserver(nullptr);
+}
+
 }  // namespace scheduler

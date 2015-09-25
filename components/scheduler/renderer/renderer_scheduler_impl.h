@@ -24,8 +24,10 @@ class ConvertableToTraceFormat;
 
 namespace scheduler {
 
-class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
-                                               public IdleHelper::Delegate {
+class SCHEDULER_EXPORT RendererSchedulerImpl
+    : public RendererScheduler,
+      public IdleHelper::Delegate,
+      public SchedulerHelper::Observer {
  public:
   RendererSchedulerImpl(
       scoped_refptr<SchedulerTaskRunnerDelegate> main_task_runner);
@@ -37,6 +39,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() override;
   scoped_refptr<TaskQueue> TimerTaskRunner() override;
+  scoped_refptr<TaskQueue> NewLoadingTaskRunner(const char* name) override;
+  scoped_refptr<TaskQueue> NewTimerTaskRunner(const char* name) override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void BeginFrameNotExpectedSoon() override;
   void DidCommitFrameToCompositor() override;
@@ -61,6 +65,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) override;
+
+  // TaskQueueManager::Observer implementation:
+  void OnUnregisterTaskQueue(const scoped_refptr<TaskQueue>& queue) override;
 
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
@@ -206,8 +213,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl : public RendererScheduler,
 
   const scoped_refptr<TaskQueue> control_task_runner_;
   const scoped_refptr<TaskQueue> compositor_task_runner_;
-  const scoped_refptr<TaskQueue> loading_task_runner_;
-  const scoped_refptr<TaskQueue> timer_task_runner_;
+  std::set<scoped_refptr<TaskQueue>> loading_task_runners_;
+  std::set<scoped_refptr<TaskQueue>> timer_task_runners_;
+  scoped_refptr<TaskQueue> default_loading_task_runner_;
+  scoped_refptr<TaskQueue> default_timer_task_runner_;
 
   base::Closure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
