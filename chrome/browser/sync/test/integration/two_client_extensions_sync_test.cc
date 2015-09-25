@@ -53,8 +53,14 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // Disabled as an E2ETest crbug.com/532202
+// Flaky on Mac: http://crbug.com/535996
+#if defined(OS_MACOSX)
+#define MAYBE_StartWithDifferentExtensions DISABLED_StartWithDifferentExtensions
+#else
+#define MAYBE_StartWithDifferentExtensions StartWithDifferentExtensions
+#endif
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       StartWithDifferentExtensions) {
+                       MAYBE_StartWithDifferentExtensions) {
   ASSERT_TRUE(SetupClients());
 
   int extension_index = 0;
