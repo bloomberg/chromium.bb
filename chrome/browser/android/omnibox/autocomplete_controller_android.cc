@@ -405,7 +405,7 @@ AutocompleteControllerAndroid::ClassifyPage(const GURL& gurl,
   const std::string& url = gurl.spec();
 
   if (gurl.SchemeIs(content::kChromeUIScheme) &&
-      gurl.host() == chrome::kChromeUINewTabHost) {
+      gurl.host_piece() == chrome::kChromeUINewTabHost) {
     return OmniboxEventProto::NTP;
   }
 

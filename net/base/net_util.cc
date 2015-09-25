@@ -64,7 +64,7 @@ namespace net {
 
 namespace {
 
-std::string NormalizeHostname(const std::string& host) {
+std::string NormalizeHostname(base::StringPiece host) {
   std::string result = base::ToLowerASCII(host);
   if (!result.empty() && *result.rbegin() == '.')
     result.resize(result.size() - 1);
@@ -168,7 +168,7 @@ base::string16 StripWWW(const base::string16& text) {
 
 base::string16 StripWWWFromHost(const GURL& url) {
   DCHECK(url.is_valid());
-  return StripWWW(base::ASCIIToUTF16(url.host()));
+  return StripWWW(base::ASCIIToUTF16(url.host_piece()));
 }
 
 int SetNonBlocking(int fd) {
@@ -429,7 +429,7 @@ void GetIdentityFromURL(const GURL& url,
 }
 
 std::string GetHostOrSpecFromURL(const GURL& url) {
-  return url.has_host() ? TrimEndingDot(url.host()) : url.spec();
+  return url.has_host() ? TrimEndingDot(url.host_piece()) : url.spec();
 }
 
 GURL SimplifyUrlForRequest(const GURL& url) {
@@ -541,7 +541,7 @@ int GetPortFromSockaddr(const struct sockaddr* address, socklen_t address_len) {
   return base::NetToHost16(*port_field);
 }
 
-bool ResolveLocalHostname(const std::string& host,
+bool ResolveLocalHostname(base::StringPiece host,
                           uint16_t port,
                           AddressList* address_list) {
   static const unsigned char kLocalhostIPv4[] = {127, 0, 0, 1};
@@ -570,7 +570,7 @@ bool ResolveLocalHostname(const std::string& host,
   return true;
 }
 
-bool IsLocalhost(const std::string& host) {
+bool IsLocalhost(base::StringPiece host) {
   std::string normalized_host = NormalizeHostname(host);
   if (IsLocalHostname(normalized_host) || IsLocal6Hostname(normalized_host))
     return true;
@@ -602,7 +602,7 @@ bool IsLocalhost(const std::string& host) {
   return false;
 }
 
-bool IsLocalhostTLD(const std::string& host) {
+bool IsLocalhostTLD(base::StringPiece host) {
   return IsNormalizedLocalhostTLD(NormalizeHostname(host));
 }
 
@@ -621,9 +621,12 @@ bool HasGoogleHost(const GURL& url) {
       ".googleapis.com",
       ".ytimg.com",
   };
-  const std::string& host = url.host();
+  base::StringPiece host = url.host_piece();
   for (const char* suffix : kGoogleHostSuffixes) {
-    if (base::EndsWith(host, suffix, base::CompareCase::INSENSITIVE_ASCII))
+    // Here it's possible to get away with faster case-sensitive comparisons
+    // because the list above is all lowercase, and a GURL's host name will
+    // always be canonicalized to lowercase as well.
+    if (base::EndsWith(host, suffix, base::CompareCase::SENSITIVE))
       return true;
   }
   return false;

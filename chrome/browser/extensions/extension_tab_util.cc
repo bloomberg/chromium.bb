@@ -576,8 +576,9 @@ bool ExtensionTabUtil::IsKillURL(const GURL& url) {
   if (!fixed_url.SchemeIs(content::kChromeUIScheme))
     return false;
 
+  base::StringPiece fixed_host = fixed_url.host_piece();
   for (size_t i = 0; i < arraysize(kill_hosts); ++i) {
-    if (fixed_url.host() == kill_hosts[i])
+    if (fixed_host == kill_hosts[i])
       return true;
   }
 

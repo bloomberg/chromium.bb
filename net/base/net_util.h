@@ -202,7 +202,7 @@ NET_EXPORT_PRIVATE int GetPortFromSockaddr(const struct sockaddr* address,
 // hostname and false otherwise. Special IPv6 names (e.g. "localhost6")
 // will resolve to an IPv6 address only, whereas other names will
 // resolve to both IPv4 and IPv6.
-NET_EXPORT_PRIVATE bool ResolveLocalHostname(const std::string& host,
+NET_EXPORT_PRIVATE bool ResolveLocalHostname(base::StringPiece host,
                                              uint16_t port,
                                              AddressList* address_list);
 
@@ -212,9 +212,9 @@ NET_EXPORT_PRIVATE bool ResolveLocalHostname(const std::string& host,
 // Note that this function does not check for IP addresses other than
 // the above, although other IP addresses may point to the local
 // machine.
-NET_EXPORT_PRIVATE bool IsLocalhost(const std::string& host);
+NET_EXPORT_PRIVATE bool IsLocalhost(base::StringPiece host);
 
-NET_EXPORT_PRIVATE bool IsLocalhostTLD(const std::string& host);
+NET_EXPORT_PRIVATE bool IsLocalhostTLD(base::StringPiece host);
 
 // Returns true if the url's host is a Google server. This should only be used
 // for histograms and shouldn't be used to affect behavior.

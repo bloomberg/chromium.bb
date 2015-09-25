@@ -115,8 +115,8 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
   if (!url.is_valid())
     return;
 
-  const std::string& scheme = url.scheme();
-  const std::string& host = url.host();
+  base::StringPiece scheme = url.scheme_piece();
+  base::StringPiece host = url.host_piece();
 
   // A valid GURL never returns PORT_INVALID.
   int port = url.EffectiveIntPort();
@@ -126,8 +126,8 @@ SchemeHostPort::SchemeHostPort(const GURL& url) : port_(0) {
   if (!IsValidInput(scheme, host, port))
     return;
 
-  scheme_ = scheme;
-  host_ = host;
+  scheme.CopyToString(&scheme_);
+  host.CopyToString(&host_);
   port_ = port;
 }
 

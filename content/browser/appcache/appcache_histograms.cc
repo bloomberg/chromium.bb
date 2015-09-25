@@ -10,7 +10,7 @@
 namespace content {
 
 static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
-  if (origin_url.host() == "docs.google.com")
+  if (origin_url.host_piece() == "docs.google.com")
     return ".Docs";
   return std::string();
 }

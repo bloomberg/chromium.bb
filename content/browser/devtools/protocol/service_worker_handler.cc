@@ -144,7 +144,7 @@ scoped_refptr<ServiceWorkerDevToolsAgentHost> GetMatchingServiceWorker(
   scoped_refptr<ServiceWorkerDevToolsAgentHost> best_host;
   std::string best_scope;
   for (auto host : agent_hosts) {
-    if (host->GetURL().host() != url.host())
+    if (host->GetURL().host_piece() != url.host_piece())
       continue;
     std::string path = host->GetURL().path();
     std::string file = host->GetURL().ExtractFileName();

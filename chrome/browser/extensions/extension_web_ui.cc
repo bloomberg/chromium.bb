@@ -75,7 +75,7 @@ void UnregisterAndReplaceOverrideForWebContents(const std::string& page,
     return;
 
   GURL url = web_contents->GetURL();
-  if (!url.SchemeIs(content::kChromeUIScheme) || url.host() != page)
+  if (!url.SchemeIs(content::kChromeUIScheme) || url.host_piece() != page)
     return;
 
   // Don't use Reload() since |url| isn't the same as the internal URL that

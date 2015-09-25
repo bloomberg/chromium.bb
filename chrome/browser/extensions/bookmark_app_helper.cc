@@ -167,8 +167,8 @@ void GenerateIcons(
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
   if (!domain_and_registry.empty()) {
     icon_letter = domain_and_registry[0];
-  } else if (!app_url.host().empty()) {
-    icon_letter = app_url.host()[0];
+  } else if (app_url.has_host()) {
+    icon_letter = app_url.host_piece()[0];
   }
 
   // If no color has been specified, use a dark gray so it will stand out on the

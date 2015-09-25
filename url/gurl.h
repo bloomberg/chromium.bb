@@ -17,6 +17,30 @@
 #include "url/url_constants.h"
 #include "url/url_export.h"
 
+// Represents a URL.
+//
+// A parsed canonicalized URL will be guaranteed UTF-8. Only the ref (if
+// specified) can be non-ASCII, the host, path, etc. will be guaranteed ASCII
+// and any non-ASCII characters will be encoded and % escaped.
+//
+// The string representation of a URL is called the spec(). Getting the
+// spec will assert if the URL is invalid to help protect against malicious
+// URLs. If you want the "best effort" canonicalization of an invalid URL, you
+// can use possibly_invalid_spec(). Test validity with is_valid(). Data and
+// javascript URLs use GetContent() to extract the data.
+//
+// This class has existence checkers and getters for the various components of
+// a URL. Existence is different than being nonempty. "http://www.google.com/?"
+// has a query that just happens to be empty, and has_query() will return true
+// while the query getters will return the empty string.
+//
+// Prefer not to modify a URL using string operations (though sometimes this is
+// unavoidable). Instead, use ReplaceComponents which can replace or delete
+// multiple parts of a URL in one step, doesn't re-canonicalize unchanged
+// sections, and avoids some screw-ups. An example is creating a URL with a
+// path that contains a literal '#'. Using string concatenation will generate a
+// URL with a truncated path and a reference fragment, while ReplaceComponents
+// will know to escape this and produce the desired result.
 class URL_EXPORT GURL {
  public:
   typedef url::StringPieceReplacements<std::string> Replacements;
@@ -29,15 +53,9 @@ class URL_EXPORT GURL {
   // to reallocating the string. It does not re-parse.
   GURL(const GURL& other);
 
-  // The narrow version requires the input be UTF-8. Invalid UTF-8 input will
-  // result in an invalid URL.
-  //
-  // The wide version should also take an encoding parameter so we know how to
-  // encode the query parameters. It is probably sufficient for the narrow
-  // version to assume the query parameter encoding should be the same as the
-  // input encoding.
-  explicit GURL(const std::string& url_string /*, output_param_encoding*/);
-  explicit GURL(const base::string16& url_string /*, output_param_encoding*/);
+  // The strings to this contructor should be UTF-8 / UTF-16.
+  explicit GURL(const std::string& url_string);
+  explicit GURL(const base::string16& url_string);
 
   // Constructor for URLs that have already been parsed and canonicalized. This
   // is used for conversions from KURL, for example. The caller must supply all
@@ -188,10 +206,9 @@ class URL_EXPORT GURL {
   bool IsStandard() const;
 
   // Returns true if the given parameter (should be lower-case ASCII to match
-  // the canonicalized scheme) is the scheme for this URL. This call is more
-  // efficient than getting the scheme and comparing it because no copies or
-  // object constructions are done.
-  bool SchemeIs(const char* lower_ascii_scheme) const;
+  // the canonicalized scheme) is the scheme for this URL. Do not include a
+  // colon.
+  bool SchemeIs(base::StringPiece lower_ascii_scheme) const;
 
   // Returns true if the scheme is "http" or "https".
   bool SchemeIsHTTPOrHTTPS() const;
@@ -235,66 +252,97 @@ class URL_EXPORT GURL {
   // as cheap as a simple getter because it re-parses the hostname to verify.
   bool HostIsIPAddress() const;
 
-  // Getters for various components of the URL. The returned string will be
-  // empty if the component is empty or is not present.
-  std::string scheme() const {  // Not including the colon. See also SchemeIs.
+  // Not including the colon. If you are comparing schemes, prefer SchemeIs.
+  bool has_scheme() const {
+    return parsed_.scheme.len >= 0;
+  }
+  std::string scheme() const {
     return ComponentString(parsed_.scheme);
+  }
+  base::StringPiece scheme_piece() const {
+    return ComponentStringPiece(parsed_.scheme);
+  }
+
+  bool has_username() const {
+    return parsed_.username.len >= 0;
   }
   std::string username() const {
     return ComponentString(parsed_.username);
   }
-  std::string password() const {
-    return ComponentString(parsed_.password);
-  }
-  // Note that this may be a hostname, an IPv4 address, or an IPv6 literal
-  // surrounded by square brackets, like "[2001:db8::1]".  To exclude these
-  // brackets, use HostNoBrackets() below.
-  std::string host() const {
-    return ComponentString(parsed_.host);
-  }
-  std::string port() const {  // Returns -1 if "default"
-    return ComponentString(parsed_.port);
-  }
-  std::string path() const {  // Including first slash following host
-    return ComponentString(parsed_.path);
-  }
-  std::string query() const {  // Stuff following '?'
-    return ComponentString(parsed_.query);
-  }
-  std::string ref() const {  // Stuff following '#'
-    return ComponentString(parsed_.ref);
+  base::StringPiece username_piece() const {
+    return ComponentStringPiece(parsed_.username);
   }
 
-  // Existence querying. These functions will return true if the corresponding
-  // URL component exists in this URL. Note that existence is different than
-  // being nonempty. http://www.google.com/? has a query that just happens to
-  // be empty, and has_query() will return true.
-  bool has_scheme() const {
-    return parsed_.scheme.len >= 0;
-  }
-  bool has_username() const {
-    return parsed_.username.len >= 0;
-  }
   bool has_password() const {
     return parsed_.password.len >= 0;
   }
+  std::string password() const {
+    return ComponentString(parsed_.password);
+  }
+  base::StringPiece password_piece() const {
+    return ComponentStringPiece(parsed_.password);
+  }
+
+  // The host may be a hostname, an IPv4 address, or an IPv6 literal surrounded
+  // by square brackets, like "[2001:db8::1]". To exclude these brackets, use
+  // HostNoBrackets() below.
   bool has_host() const {
     // Note that hosts are special, absence of host means length 0.
     return parsed_.host.len > 0;
   }
+  std::string host() const {
+    return ComponentString(parsed_.host);
+  }
+  base::StringPiece host_piece() const {
+    return ComponentStringPiece(parsed_.host);
+  }
+
+  // The port if one is explicitly specified. Most callers will want IntPort()
+  // or EffectiveIntPort() instead of these. The getters will not include the
+  // ':'.
   bool has_port() const {
     return parsed_.port.len >= 0;
   }
+  std::string port() const {
+    return ComponentString(parsed_.port);
+  }
+  base::StringPiece port_piece() const {
+    return ComponentStringPiece(parsed_.port);
+  }
+
+  // Including first slash following host, up to the query. The URL
+  // "http://www.google.com/" has a path of "/".
   bool has_path() const {
-    // Note that http://www.google.com/" has a path, the path is "/". This can
-    // return false only for invalid or nonstandard URLs.
     return parsed_.path.len >= 0;
   }
+  std::string path() const {
+    return ComponentString(parsed_.path);
+  }
+  base::StringPiece path_piece() const {
+    return ComponentStringPiece(parsed_.path);
+  }
+
+  // Stuff following '?' up to the ref. The getters will not include the '?'.
   bool has_query() const {
     return parsed_.query.len >= 0;
   }
+  std::string query() const {
+    return ComponentString(parsed_.query);
+  }
+  base::StringPiece query_piece() const {
+    return ComponentStringPiece(parsed_.query);
+  }
+
+  // Stuff following '#' to the end of the string. This will be UTF-8 encoded
+  // (not necessarily ASCII). The getters will not include the '#'.
   bool has_ref() const {
     return parsed_.ref.len >= 0;
+  }
+  std::string ref() const {
+    return ComponentString(parsed_.ref);
+  }
+  base::StringPiece ref_piece() const {
+    return ComponentStringPiece(parsed_.ref);
   }
 
   // Returns a parsed version of the port. Can also be any of the special
@@ -335,11 +383,12 @@ class URL_EXPORT GURL {
 
   // Returns a reference to a singleton empty GURL. This object is for callers
   // who return references but don't have anything to return in some cases.
-  // This function may be called from any thread.
+  // If you just want an empty URL for normal use, prefer GURL(). This function
+  // may be called from any thread.
   static const GURL& EmptyGURL();
 
-  // Returns the inner URL of a nested URL [currently only non-null for
-  // filesystem: URLs].
+  // Returns the inner URL of a nested URL (currently only non-null for
+  // filesystem URLs).
   const GURL* inner_url() const {
     return inner_url_.get();
   }
@@ -364,6 +413,11 @@ class URL_EXPORT GURL {
       return std::string();
     return std::string(spec_, comp.begin, comp.len);
   }
+  base::StringPiece ComponentStringPiece(const url::Component& comp) const {
+    if (comp.len <= 0)
+      return base::StringPiece();
+    return base::StringPiece(&spec_[comp.begin], comp.len);
+  }
 
   // The actual text of the URL, in canonical ASCII form.
   std::string spec_;
@@ -378,8 +432,6 @@ class URL_EXPORT GURL {
 
   // Used for nested schemes [currently only filesystem:].
   scoped_ptr<GURL> inner_url_;
-
-  // TODO bug 684583: Add encoding for query params.
 };
 
 // Stream operator so GURL can be used in assertion statements.

@@ -141,7 +141,8 @@ bool GetHPKPReport(const HostPortPair& host_port_pair,
 // results in a pinning violation which results in a report being sent
 // to A.com, etc.)
 bool IsReportUriValidForHost(const GURL& report_uri, const std::string& host) {
-  return (report_uri.host() != host || !report_uri.SchemeIsCryptographic());
+  return (report_uri.host_piece() != host ||
+          !report_uri.SchemeIsCryptographic());
 }
 
 bool CheckPinsAndMaybeSendReport(

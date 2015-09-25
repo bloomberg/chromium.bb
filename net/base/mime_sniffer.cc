@@ -458,13 +458,12 @@ static bool SniffForOfficeDocs(const char* content,
     return false;
 
   OfficeDocType type = DOC_TYPE_NONE;
+  base::StringPiece url_path = url.path_piece();
   for (size_t i = 0; i < arraysize(kOfficeExtensionTypes); ++i) {
-    std::string url_path = url.path();
-
     if (url_path.length() < kOfficeExtensionTypes[i].extension_len)
       continue;
 
-    base::StringPiece extension = base::StringPiece(url_path).substr(
+    base::StringPiece extension = url_path.substr(
         url_path.length() - kOfficeExtensionTypes[i].extension_len);
     if (base::EqualsCaseInsensitiveASCII(
             extension,
@@ -760,15 +759,10 @@ static bool SniffCRX(const char* content,
   };
 
   // Only consider files that have the extension ".crx".
-  static const char kCRXExtension[] = ".crx";
-  // Ignore null by subtracting 1.
-  static const int kExtensionLength = arraysize(kCRXExtension) - 1;
-  if (url.path().rfind(kCRXExtension, std::string::npos, kExtensionLength) ==
-      url.path().size() - kExtensionLength) {
+  if (base::EndsWith(url.path_piece(), ".crx", base::CompareCase::SENSITIVE))
     counter->Add(1);
-  } else {
+  else
     return false;
-  }
 
   *have_enough_content &= TruncateSize(kBytesRequiredForMagic, &size);
   if (CheckForMagicNumbers(content, size,

@@ -370,13 +370,13 @@ bool GURL::IsStandard() const {
   return url::IsStandard(spec_.data(), parsed_.scheme);
 }
 
-bool GURL::SchemeIs(const char* lower_ascii_scheme) const {
+bool GURL::SchemeIs(base::StringPiece lower_ascii_scheme) const {
+  DCHECK(base::IsStringASCII(lower_ascii_scheme));
+  DCHECK(base::ToLowerASCII(lower_ascii_scheme) == lower_ascii_scheme);
+
   if (parsed_.scheme.len <= 0)
-    return lower_ascii_scheme == NULL;
-  return base::LowerCaseEqualsASCII(
-      base::StringPiece(spec_.data() + parsed_.scheme.begin,
-                        parsed_.scheme.len),
-      lower_ascii_scheme);
+    return lower_ascii_scheme.empty();
+  return scheme_piece() == lower_ascii_scheme;
 }
 
 bool GURL::SchemeIsHTTPOrHTTPS() const {

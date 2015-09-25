@@ -214,8 +214,8 @@ SdchProblemCode SdchManager::CanFetchDictionary(
    */
   // Item (1) above implies item (2). Spec should be updated.
   // I take "host name match" to be "is identical to"
-  if (referring_url.host() != dictionary_url.host() ||
-      referring_url.scheme() != dictionary_url.scheme())
+  if (referring_url.host_piece() != dictionary_url.host_piece() ||
+      referring_url.scheme_piece() != dictionary_url.scheme_piece())
     return SDCH_DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST;
 
   // TODO(jar): Remove this failsafe conservative hack which is more restrictive
