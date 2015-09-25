@@ -14,10 +14,7 @@ namespace IPC {
 
 // static
 void AttachmentBroker::SetGlobal(AttachmentBroker* broker) {
-  // TODO(erikchen): There should be a CHECK here to make sure that
-  // |g_attachment_broker| is nullptr. Right now, this causes problems with
-  // --single_process and similar testing conditions. I'm temporarily removing
-  // this CHECK. http://crbug.com/534539.
+  CHECK(!g_attachment_broker);
   g_attachment_broker = broker;
 }
 
