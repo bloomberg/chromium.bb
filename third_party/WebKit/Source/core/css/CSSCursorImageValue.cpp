@@ -28,7 +28,6 @@
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleImage.h"
-#include "core/style/StylePendingImage.h"
 #include "core/svg/SVGCursorElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/SVGURIReference.h"
@@ -49,7 +48,7 @@ CSSCursorImageValue::CSSCursorImageValue(PassRefPtrWillBeRawPtr<CSSValue> imageV
     , m_imageValue(imageValue)
     , m_hotSpotSpecified(hotSpotSpecified)
     , m_hotSpot(hotSpot)
-    , m_accessedImage(false)
+    , m_isCachePending(true)
 {
 }
 
@@ -117,13 +116,30 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
     return false;
 }
 
-StyleImage* CSSCursorImageValue::cachedImage(Document* document, float deviceScaleFactor)
+bool CSSCursorImageValue::isCachePending(float deviceScaleFactor) const
+{
+    // Need to delegate completely so that changes in device scale factor can be handled appropriately.
+    if (m_imageValue->isImageSetValue())
+        return toCSSImageSetValue(*m_imageValue).isCachePending(deviceScaleFactor);
+    return m_isCachePending;
+}
+
+StyleImage* CSSCursorImageValue::cachedImage(float deviceScaleFactor)
+{
+    ASSERT(!isCachePending(deviceScaleFactor));
+
+    if (m_imageValue->isImageSetValue())
+        return toCSSImageSetValue(*m_imageValue).cachedImageSet(deviceScaleFactor);
+    return m_cachedImage.get();
+}
+
+StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScaleFactor)
 {
     if (m_imageValue->isImageSetValue())
-        return toCSSImageSetValue(m_imageValue.get())->cachedImageSet(document, deviceScaleFactor);
+        return toCSSImageSetValue(*m_imageValue).cacheImageSet(document, deviceScaleFactor);
 
-    if (!m_accessedImage) {
-        m_accessedImage = true;
+    if (m_isCachePending) {
+        m_isCachePending = false;
 
         // For SVG images we need to lazily substitute in the correct URL. Rather than attempt
         // to change the URL of the CSSImageValue (which would then change behavior like cssText),
@@ -134,31 +150,19 @@ StyleImage* CSSCursorImageValue::cachedImage(Document* document, float deviceSca
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *document)) {
                 RefPtrWillBeRawPtr<CSSImageValue> svgImageValue = CSSImageValue::create(document->completeURL(cursorElement->href()->currentValue()->value()));
                 svgImageValue->setReferrer(imageValue->referrer());
-                StyleFetchedImage* cachedImage = svgImageValue->cachedImage(document);
-                m_image = cachedImage;
+                StyleFetchedImage* cachedImage = svgImageValue->cacheImage(document);
+                m_cachedImage = cachedImage;
                 return cachedImage;
             }
         }
 
         if (m_imageValue->isImageValue())
-            m_image = toCSSImageValue(m_imageValue.get())->cachedImage(document);
+            m_cachedImage = toCSSImageValue(*m_imageValue).cacheImage(document);
     }
 
-    if (m_image && m_image->isImageResource())
-        return toStyleFetchedImage(m_image);
+    if (m_cachedImage && m_cachedImage->isImageResource())
+        return toStyleFetchedImage(m_cachedImage);
     return nullptr;
-}
-
-StyleImage* CSSCursorImageValue::cachedOrPendingImage(float deviceScaleFactor)
-{
-    // Need to delegate completely so that changes in device scale factor can be handled appropriately.
-    if (m_imageValue->isImageSetValue())
-        return toCSSImageSetValue(m_imageValue.get())->cachedOrPendingImageSet(deviceScaleFactor);
-
-    if (!m_image)
-        m_image = StylePendingImage::create(this);
-
-    return m_image.get();
 }
 
 bool CSSCursorImageValue::isSVGCursor() const
@@ -173,15 +177,15 @@ bool CSSCursorImageValue::isSVGCursor() const
 
 String CSSCursorImageValue::cachedImageURL()
 {
-    if (!m_image || !m_image->isImageResource())
+    if (!m_cachedImage || !m_cachedImage->isImageResource())
         return String();
-    return toStyleFetchedImage(m_image)->cachedImage()->url().string();
+    return toStyleFetchedImage(m_cachedImage)->cachedImage()->url().string();
 }
 
 void CSSCursorImageValue::clearImageResource()
 {
-    m_image = nullptr;
-    m_accessedImage = false;
+    m_cachedImage = nullptr;
+    m_isCachePending = true;
 }
 
 #if !ENABLE(OILPAN)
@@ -200,7 +204,7 @@ bool CSSCursorImageValue::equals(const CSSCursorImageValue& other) const
 DEFINE_TRACE_AFTER_DISPATCH(CSSCursorImageValue)
 {
     visitor->trace(m_imageValue);
-    visitor->trace(m_image);
+    visitor->trace(m_cachedImage);
     CSSValue::traceAfterDispatch(visitor);
 }
 

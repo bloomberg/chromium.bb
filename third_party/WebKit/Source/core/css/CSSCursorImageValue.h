@@ -46,8 +46,9 @@ public:
     String customCSSText() const;
 
     bool updateIfSVGCursorIsUsed(Element*);
-    StyleImage* cachedImage(Document*, float deviceScaleFactor);
-    StyleImage* cachedOrPendingImage(float deviceScaleFactor);
+    bool isCachePending(float deviceScaleFactor) const;
+    StyleImage* cachedImage(float deviceScaleFactor);
+    StyleImage* cacheImage(Document*, float deviceScaleFactor);
 
 #if !ENABLE(OILPAN)
     void removeReferencedElement(SVGElement*);
@@ -68,8 +69,8 @@ private:
 
     bool m_hotSpotSpecified;
     IntPoint m_hotSpot;
-    RefPtrWillBeMember<StyleImage> m_image;
-    bool m_accessedImage;
+    bool m_isCachePending;
+    RefPtrWillBeMember<StyleImage> m_cachedImage;
 
 #if !ENABLE(OILPAN)
     HashSet<SVGElement*> m_referencedElements;

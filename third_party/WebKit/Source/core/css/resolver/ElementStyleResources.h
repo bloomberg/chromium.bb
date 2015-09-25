@@ -41,8 +41,8 @@ class FilterOperation;
 class StyleImage;
 class TextLinkColors;
 
+using PendingImagePropertySet = HashSet<CSSPropertyID>;
 using PendingSVGDocumentMap = WillBeHeapHashMap<RawPtrWillBeMember<FilterOperation>, RefPtrWillBeMember<CSSSVGDocumentValue>>;
-using PendingImagePropertyMap = WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<CSSValue>>;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.
@@ -59,7 +59,7 @@ public:
     PassRefPtrWillBeRawPtr<StyleImage> setOrPendingFromValue(CSSPropertyID, CSSImageSetValue*);
     PassRefPtrWillBeRawPtr<StyleImage> cursorOrPendingFromValue(CSSPropertyID, CSSCursorImageValue*);
 
-    const PendingImagePropertyMap& pendingImageProperties() const { return m_pendingImageProperties; }
+    const PendingImagePropertySet& pendingImageProperties() const { return m_pendingImageProperties; }
     const PendingSVGDocumentMap& pendingSVGDocuments() const { return m_pendingSVGDocuments; }
 
     void clearPendingImageProperties();
@@ -71,7 +71,7 @@ public:
     void addPendingSVGDocument(FilterOperation*, CSSSVGDocumentValue*);
 
 private:
-    PendingImagePropertyMap m_pendingImageProperties;
+    PendingImagePropertySet m_pendingImageProperties;
     PendingSVGDocumentMap m_pendingSVGDocuments;
     float m_deviceScaleFactor;
 };
