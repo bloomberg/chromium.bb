@@ -1546,6 +1546,9 @@
         "test": "mojo_public_application_unittests"
       },
       {
+        "test": "mojo_public_bindings_unittests"
+      },
+      {
         "test": "mojo_public_environment_unittests"
       },
       {

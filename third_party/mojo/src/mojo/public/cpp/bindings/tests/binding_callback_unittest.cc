@@ -291,9 +291,13 @@ TEST_F(BindingCallbackTest, DeleteCallbackBeforeBindingDeathTest) {
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   // Delete the callback without running it. This should cause a crash in debug
   // builds due to a DCHECK.
-  EXPECT_DEATH_IF_SUPPORTED(server_impl.DeleteCallback(),
-                            "Check failed: !callback_was_dropped.");
-#endif
+  std::string regex("Check failed: !callback_was_dropped.");
+#if defined(OS_WIN)
+  // TODO(msw): Fix MOJO_DCHECK logs and EXPECT_DEATH* on Win: crbug.com/535014
+  regex.clear();
+#endif  // OS_WIN
+  EXPECT_DEATH_IF_SUPPORTED(server_impl.DeleteCallback(), regex.c_str());
+#endif  // !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
 }
 
 }  // namespace
