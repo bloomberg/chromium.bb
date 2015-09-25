@@ -369,28 +369,20 @@ TEST(SharedMemoryTest, ShareReadOnly) {
     EXPECT_EQ(0, munmap(writable, readonly_shmem.mapped_size()));
 
 #elif defined(OS_WIN)
-  EXPECT_EQ(NULL, MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, 0))
+  EXPECT_EQ(NULL, MapViewOfFile(handle.GetHandle(), FILE_MAP_WRITE, 0, 0, 0))
       << "Shouldn't be able to map memory writable.";
 
   HANDLE temp_handle;
-  BOOL rv = ::DuplicateHandle(GetCurrentProcess(),
-                              handle,
-                              GetCurrentProcess(),
-                              &temp_handle,
-                              FILE_MAP_ALL_ACCESS,
-                              false,
-                              0);
+  BOOL rv = ::DuplicateHandle(GetCurrentProcess(), handle.GetHandle(),
+                              GetCurrentProcess(), &temp_handle,
+                              FILE_MAP_ALL_ACCESS, false, 0);
   EXPECT_EQ(FALSE, rv)
       << "Shouldn't be able to duplicate the handle into a writable one.";
   if (rv)
     win::ScopedHandle writable_handle(temp_handle);
-  rv = ::DuplicateHandle(GetCurrentProcess(),
-                         handle,
-                         GetCurrentProcess(),
-                         &temp_handle,
-                         FILE_MAP_READ,
-                         false,
-                         0);
+  rv = ::DuplicateHandle(GetCurrentProcess(), handle.GetHandle(),
+                         GetCurrentProcess(), &temp_handle, FILE_MAP_READ,
+                         false, 0);
   EXPECT_EQ(TRUE, rv)
       << "Should be able to duplicate the handle into a readable one.";
   if (rv)

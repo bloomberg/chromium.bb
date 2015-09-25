@@ -744,13 +744,12 @@ scoped_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
     VLOG(1) << "Mojo Channel is enabled on host";
 
     return IPC::ChannelProxy::Create(
-        IPC::ChannelMojo::CreateServerFactory(
-            mojo_task_runner, channel_id),
+        IPC::ChannelMojo::CreateServerFactory(mojo_task_runner, channel_id),
         this, runner.get());
   }
 
-  return IPC::ChannelProxy::Create(
-      channel_id, IPC::Channel::MODE_SERVER, this, runner.get());
+  return IPC::ChannelProxy::Create(channel_id, IPC::Channel::MODE_SERVER, this,
+                                   runner.get());
 }
 
 void RenderProcessHostImpl::CreateMessageFilters() {

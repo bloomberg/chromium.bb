@@ -26,11 +26,7 @@ class SURFACE_EXPORT TransportDIB {
 
 // A Handle is the type which can be sent over the wire so that the remote
 // side can map the transport DIB.
-#if defined(OS_WIN)
-  typedef HANDLE Handle;
-#else  // OS_POSIX
   typedef base::SharedMemoryHandle Handle;
-#endif
 
   // Returns a default, invalid handle, that is meant to indicate a missing
   // Transport DIB.

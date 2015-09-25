@@ -8,6 +8,7 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
+#include "base/process/process_handle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/windows_version.h"
@@ -304,11 +305,12 @@ int DispatchCall(int argc, wchar_t **argv) {
   // If the caller shared a shared memory handle with us attempt to open it
   // in read only mode and sleep infinitely if we succeed.
   if (0 == _wcsicmp(argv[3], L"shared_memory_handle")) {
-    base::SharedMemoryHandle shared_handle = NULL;
-    base::StringToUint(
-        argv[4], reinterpret_cast<unsigned int*>(&shared_handle));
-    if (shared_handle == NULL)
+    HANDLE raw_handle = nullptr;
+    base::StringToUint(argv[4], reinterpret_cast<unsigned int*>(&raw_handle));
+    if (raw_handle == nullptr)
       return SBOX_TEST_INVALID_PARAMETER;
+    base::SharedMemoryHandle shared_handle(raw_handle,
+                                           base::GetCurrentProcId());
     base::SharedMemory read_only_view(shared_handle, true);
     if (!read_only_view.Map(0))
       return SBOX_TEST_INVALID_PARAMETER;

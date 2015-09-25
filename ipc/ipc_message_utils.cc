@@ -20,12 +20,13 @@
 #include "ipc/ipc_platform_file_attachment_posix.h"
 #endif
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 #include "base/memory/shared_memory_handle.h"
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
 #if defined(OS_WIN)
 #include <tchar.h>
+#include "ipc/handle_win.h"
 #endif
 
 namespace IPC {
@@ -591,6 +592,58 @@ void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
     l->append(base::StringPrintf("Mechanism POSIX Fd"));
     ParamTraits<base::FileDescriptor>::Log(p.GetFileDescriptor(), l);
   }
+}
+#elif defined(OS_WIN)
+void ParamTraits<base::SharedMemoryHandle>::Write(Message* m,
+                                                  const param_type& p) {
+  // Longs on windows are 32 bits.
+  uint32_t pid = p.GetPID();
+  m->WriteUInt32(pid);
+  m->WriteBool(p.NeedsBrokering());
+
+  if (p.NeedsBrokering()) {
+    HandleWin handle_win(p.GetHandle(), HandleWin::DUPLICATE);
+    ParamTraits<HandleWin>::Write(m, handle_win);
+  } else {
+    m->WriteInt(HandleToLong(p.GetHandle()));
+  }
+}
+
+bool ParamTraits<base::SharedMemoryHandle>::Read(const Message* m,
+                                                 base::PickleIterator* iter,
+                                                 param_type* r) {
+  uint32_t pid_int;
+  if (!iter->ReadUInt32(&pid_int))
+    return false;
+  base::ProcessId pid = pid_int;
+
+  bool needs_brokering;
+  if (!iter->ReadBool(&needs_brokering))
+    return false;
+
+  if (needs_brokering) {
+    HandleWin handle_win;
+    if (!ParamTraits<HandleWin>::Read(m, iter, &handle_win))
+      return false;
+    *r = base::SharedMemoryHandle(handle_win.get_handle(), pid);
+    return true;
+  }
+
+  int handle_int;
+  if (!iter->ReadInt(&handle_int))
+    return false;
+  HANDLE handle = LongToHandle(handle_int);
+  *r = base::SharedMemoryHandle(handle, pid);
+  return true;
+}
+
+void ParamTraits<base::SharedMemoryHandle>::Log(const param_type& p,
+                                                std::string* l) {
+  LogParam(p.GetPID(), l);
+  l->append(" ");
+  LogParam(p.GetHandle(), l);
+  l->append(" needs brokering: ");
+  LogParam(p.NeedsBrokering(), l);
 }
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 

@@ -418,14 +418,11 @@ void WebPluginProxy::CreateCanvasFromHandle(
     const TransportDIB::Handle& dib_handle,
     const gfx::Rect& window_rect,
     skia::RefPtr<skia::PlatformCanvas>* canvas) {
-  *canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(window_rect.width(),
-                                 window_rect.height(),
-                                 true,
-                                 dib_handle,
-                                 skia::RETURN_NULL_ON_FAILURE));
+  *canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
+      window_rect.width(), window_rect.height(), true, dib_handle.GetHandle(),
+      skia::RETURN_NULL_ON_FAILURE));
   // The canvas does not own the section so we need to close it now.
-  CloseHandle(dib_handle);
+  dib_handle.Close();
 }
 
 void WebPluginProxy::SetWindowlessBuffers(

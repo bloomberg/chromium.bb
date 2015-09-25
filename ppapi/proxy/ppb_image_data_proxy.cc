@@ -375,7 +375,8 @@ PlatformImageData::PlatformImageData(const HostResource& resource,
                                      ImageHandle handle)
     : ImageData(resource, PPB_ImageData_Shared::PLATFORM, desc) {
 #if defined(OS_WIN)
-  transport_dib_.reset(TransportDIB::CreateWithHandle(handle));
+  transport_dib_.reset(TransportDIB::CreateWithHandle(
+      base::SharedMemoryHandle(handle, base::GetCurrentProcId())));
 #else
   transport_dib_.reset(TransportDIB::Map(handle));
 #endif  // defined(OS_WIN)
@@ -627,7 +628,11 @@ void PPB_ImageData_Proxy::OnHostMsgCreatePlatform(
                       desc, &image_handle, &byte_count);
   result->SetHostResource(instance, resource);
   if (resource) {
+#if defined(OS_WIN)
+    *result_image_handle = image_handle.GetHandle();
+#else
     *result_image_handle = image_handle;
+#endif
   } else {
     *result_image_handle = PlatformImageData::NullHandle();
   }

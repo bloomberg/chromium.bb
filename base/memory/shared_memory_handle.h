@@ -9,6 +9,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
+#include "base/process/process_handle.h"
 #elif defined(OS_MACOSX)
 #include <sys/types.h>
 #include "base/base_export.h"
@@ -25,10 +26,50 @@ class Pickle;
 
 // SharedMemoryHandle is a platform specific type which represents
 // the underlying OS handle to a shared memory segment.
-#if defined(OS_WIN)
-typedef HANDLE SharedMemoryHandle;
-#elif defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 typedef FileDescriptor SharedMemoryHandle;
+#elif defined(OS_WIN)
+class BASE_EXPORT SharedMemoryHandle {
+ public:
+  // The default constructor returns an invalid SharedMemoryHandle.
+  SharedMemoryHandle();
+  SharedMemoryHandle(HANDLE h, base::ProcessId pid);
+
+  // Standard copy constructor. The new instance shares the underlying OS
+  // primitives.
+  SharedMemoryHandle(const SharedMemoryHandle& handle);
+
+  // Standard assignment operator. The updated instance shares the underlying
+  // OS primitives.
+  SharedMemoryHandle& operator=(const SharedMemoryHandle& handle);
+
+  // Comparison operators.
+  bool operator==(const SharedMemoryHandle& handle) const;
+  bool operator!=(const SharedMemoryHandle& handle) const;
+
+  // Closes the underlying OS resources.
+  void Close() const;
+
+  // Whether the underlying OS primitive is valid.
+  bool IsValid() const;
+
+  // Whether |pid_| is the same as the current process's id.
+  bool BelongsToCurrentProcess() const;
+
+  // Whether handle_ needs to be duplicated into the destination process when
+  // an instance of this class is passed over a Chrome IPC channel.
+  bool NeedsBrokering() const;
+
+  HANDLE GetHandle() const;
+  base::ProcessId GetPID() const;
+
+ private:
+  HANDLE handle_;
+
+  // The process in which |handle_| is valid and can be used. If |handle_| is
+  // invalid, this will be kNullProcessId.
+  base::ProcessId pid_;
+};
 #else
 class BASE_EXPORT SharedMemoryHandle {
  public:

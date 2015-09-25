@@ -84,7 +84,7 @@ void PepperPlatformAudioInput::OnStreamCreated(
     int length,
     int total_segments) {
 #if defined(OS_WIN)
-  DCHECK(handle);
+  DCHECK(handle.IsValid());
   DCHECK(socket_handle);
 #else
   DCHECK(base::SharedMemory::IsHandleValid(handle));

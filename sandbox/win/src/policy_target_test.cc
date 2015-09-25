@@ -376,8 +376,8 @@ TEST(PolicyTargetTest, ShareHandleTest) {
   GetModuleFileNameW(NULL, prog_name, MAX_PATH);
 
   TargetPolicy* policy = broker->CreatePolicy();
-  void* shared_handle = policy->AddHandleToShare(
-      read_only_view.handle());
+  void* shared_handle =
+      policy->AddHandleToShare(read_only_view.handle().GetHandle());
 
   base::string16 arguments(L"\"");
   arguments += prog_name;

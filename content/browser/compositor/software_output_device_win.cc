@@ -114,7 +114,7 @@ SkCanvas* SoftwareOutputDeviceWin::BeginPaint(const gfx::Rect& damage_rect) {
   if (!contents_) {
     HANDLE shared_section = NULL;
     if (backing_)
-      shared_section = backing_->GetSharedMemory()->handle();
+      shared_section = backing_->GetSharedMemory()->handle().GetHandle();
     contents_ = skia::AdoptRef(skia::CreatePlatformCanvas(
         viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
         shared_section, skia::CRASH_ON_FAILURE));

@@ -545,7 +545,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
           uint32_t size = iter->size();
           nacl_desc.reset(new NaClDescWrapper(NaClDescImcShmMake(
 #if defined(OS_WIN)
-              shm_handle,
+              shm_handle.GetHandle(),
 #else
               base::SharedMemory::GetFdFromSharedMemoryHandle(shm_handle),
 #endif

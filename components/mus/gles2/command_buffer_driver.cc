@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/process/process_handle.h"
 #include "components/mus/gles2/command_buffer_type_conversions.h"
 #include "components/mus/gles2/gpu_memory_tracker.h"
 #include "components/mus/gles2/gpu_state.h"
@@ -243,7 +244,8 @@ void CommandBufferDriver::CreateImage(int32_t id,
   }
 
 #if defined(OS_WIN)
-  gfx_handle.handle = platform_handle;
+  gfx_handle.handle =
+      base::SharedMemoryHandle(platform_handle, base::GetCurrentProcId());
 #else
   gfx_handle.handle = base::FileDescriptor(platform_handle, false);
 #endif

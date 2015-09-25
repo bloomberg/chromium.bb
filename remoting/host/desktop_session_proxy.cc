@@ -55,7 +55,7 @@ class DesktopSessionProxy::IpcSharedBufferCore
     if (!shared_memory_.Map(size)) {
       LOG(ERROR) << "Failed to map a shared buffer: id=" << id
 #if defined(OS_WIN)
-                 << ", handle=" << handle
+                 << ", handle=" << handle.GetHandle()
 #else
                  << ", handle.fd="
                  << base::SharedMemory::GetFdFromSharedMemoryHandle(handle)
@@ -69,7 +69,7 @@ class DesktopSessionProxy::IpcSharedBufferCore
   void* memory() { return shared_memory_.memory(); }
   webrtc::SharedMemory::Handle handle() {
 #if defined(OS_WIN)
-    return shared_memory_.handle();
+    return shared_memory_.handle().GetHandle();
 #else
     return base::SharedMemory::GetFdFromSharedMemoryHandle(
         shared_memory_.handle());
@@ -484,7 +484,12 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
     uint32 size) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+#if defined(OS_WIN)
+  base::SharedMemoryHandle shm_handle =
+      base::SharedMemoryHandle(handle, base::GetCurrentProcId());
+#else
   base::SharedMemoryHandle shm_handle = base::SharedMemoryHandle(handle);
+#endif
   scoped_refptr<IpcSharedBufferCore> shared_buffer =
       new IpcSharedBufferCore(id, shm_handle, desktop_process_.Handle(), size);
 

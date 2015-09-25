@@ -149,9 +149,9 @@ TEST(Blit, WithSharedMemory) {
   base::SharedMemory shared_mem;
   ASSERT_TRUE(shared_mem.CreateAnonymous(kCanvasWidth * kCanvasHeight));
   base::SharedMemoryHandle section = shared_mem.handle();
-  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(
-      skia::CreatePlatformCanvas(kCanvasWidth, kCanvasHeight, true, section,
-                                 skia::RETURN_NULL_ON_FAILURE));
+  skia::RefPtr<SkCanvas> canvas = skia::AdoptRef(skia::CreatePlatformCanvas(
+      kCanvasWidth, kCanvasHeight, true, section.GetHandle(),
+      skia::RETURN_NULL_ON_FAILURE));
   ASSERT_TRUE(canvas);
   shared_mem.Close();
 

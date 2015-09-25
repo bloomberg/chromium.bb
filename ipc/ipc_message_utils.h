@@ -62,9 +62,9 @@ class TimeTicks;
 class TraceTicks;
 struct FileDescriptor;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 class SharedMemoryHandle;
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 }
 
 namespace IPC {
@@ -484,7 +484,7 @@ struct IPC_EXPORT ParamTraits<base::FileDescriptor> {
 };
 #endif  // defined(OS_POSIX)
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 template <>
 struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
   typedef base::SharedMemoryHandle param_type;
@@ -492,7 +492,7 @@ struct IPC_EXPORT ParamTraits<base::SharedMemoryHandle> {
   static bool Read(const Message* m, base::PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
 };
-#endif
+#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
 template <>
 struct IPC_EXPORT ParamTraits<base::FilePath> {

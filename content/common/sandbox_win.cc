@@ -733,8 +733,8 @@ base::Process StartSandboxedProcess(
 
       base::SharedMemory direct_write_font_cache_section;
       if (direct_write_font_cache_section.Open(name, true)) {
-        void* shared_handle =
-            policy->AddHandleToShare(direct_write_font_cache_section.handle());
+        void* shared_handle = policy->AddHandleToShare(
+            direct_write_font_cache_section.handle().GetHandle());
         cmd_line->AppendSwitchASCII(switches::kFontCacheSharedHandle,
             base::UintToString(reinterpret_cast<unsigned int>(shared_handle)));
       }

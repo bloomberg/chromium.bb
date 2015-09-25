@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/shared_memory.h"
+#include "base/process/process_handle.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_message_filter.h"
 #include "ipc/ipc_test_sink.h"
@@ -96,7 +97,8 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
   // VideoCaptureMsg_NewBuffer
   const base::SharedMemoryHandle handle =
 #if defined(OS_WIN)
-      reinterpret_cast<base::SharedMemoryHandle>(10);
+      base::SharedMemoryHandle(reinterpret_cast<HANDLE>(10),
+                               base::GetCurrentProcId());
 #else
       base::SharedMemoryHandle(10, true);
 #endif

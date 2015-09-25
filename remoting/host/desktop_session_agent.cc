@@ -88,7 +88,7 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
       : SharedMemory(memory->memory(),
                      size,
 #if defined(OS_WIN)
-                     memory->handle(),
+                     memory->handle().GetHandle(),
 #else
                      base::SharedMemory::GetFdFromSharedMemoryHandle(
                          memory->handle()),

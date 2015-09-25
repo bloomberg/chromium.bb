@@ -208,7 +208,10 @@ base::SharedMemoryHandle PpapiThread::ShareSharedMemoryHandleWithRemote(
 #if defined(OS_WIN)
   if (peer_handle_.IsValid()) {
     DCHECK(is_broker_);
-    return IPC::GetFileHandleForProcess(handle, peer_handle_.Get(), false);
+    IPC::PlatformFileForTransit platform_file = IPC::GetFileHandleForProcess(
+        handle.GetHandle(), peer_handle_.Get(), false);
+    base::ProcessId pid = base::GetProcId(peer_handle_.Get());
+    return base::SharedMemoryHandle(platform_file, pid);
   }
 #endif
 

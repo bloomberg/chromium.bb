@@ -37,6 +37,7 @@ source_set("memory") {
     "shared_memory_android.cc",
     "shared_memory_handle.h",
     "shared_memory_handle_mac.cc",
+    "shared_memory_handle_win.cc",
     "shared_memory_mac.cc",
     "shared_memory_nacl.cc",
     "shared_memory_posix.cc",

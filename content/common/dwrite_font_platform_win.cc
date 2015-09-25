@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include <dwrite.h>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -937,10 +938,13 @@ bool FontCollectionLoader::LoadCacheFile() {
   if (font_cache_handle_string.empty())
     return false;
 
-  base::SharedMemoryHandle font_cache_handle = NULL;
-  base::StringToUint(font_cache_handle_string,
-                     reinterpret_cast<unsigned int*>(&font_cache_handle));
-  DCHECK(font_cache_handle);
+  unsigned int handle_uint;
+  base::StringToUint(font_cache_handle_string, &handle_uint);
+  DCHECK(handle_uint);
+  if (handle_uint > static_cast<unsigned int>(std::numeric_limits<long>::max()))
+    return false;
+  base::SharedMemoryHandle font_cache_handle(LongToHandle(handle_uint),
+                                             base::GetCurrentProcId());
 
   base::SharedMemory* shared_mem = new base::SharedMemory(
       font_cache_handle, true);

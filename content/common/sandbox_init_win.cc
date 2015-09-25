@@ -46,8 +46,15 @@ bool BrokerDuplicateSharedMemoryHandle(
     const base::SharedMemoryHandle& source_handle,
     base::ProcessId target_process_id,
     base::SharedMemoryHandle* target_handle) {
-  return BrokerDuplicateHandle(source_handle, target_process_id, target_handle,
-                               0, DUPLICATE_SAME_ACCESS);
+  HANDLE duped_handle;
+  if (!BrokerDuplicateHandle(source_handle.GetHandle(), target_process_id,
+                             &duped_handle,
+                             FILE_GENERIC_READ | FILE_GENERIC_WRITE, 0)) {
+    return false;
+  }
+
+  *target_handle = base::SharedMemoryHandle(duped_handle, target_process_id);
+  return true;
 }
 
 }  // namespace content

@@ -334,14 +334,8 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
       return base::SharedMemory::NULLHandle();
     peer_pid = channel_->GetPeerPID();
   }
-#if defined(OS_WIN)
-  bool success =
-      BrokerDuplicateHandle(source_handle, peer_pid, &target_handle,
-                            FILE_GENERIC_READ | FILE_GENERIC_WRITE, 0);
-#elif defined(OS_MACOSX)
   bool success = BrokerDuplicateSharedMemoryHandle(source_handle, peer_pid,
                                                    &target_handle);
-#endif
   if (!success)
     return base::SharedMemory::NULLHandle();
 

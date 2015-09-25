@@ -571,8 +571,7 @@ void ChannelWin::OnIOCompleted(
 scoped_ptr<Channel> Channel::Create(const IPC::ChannelHandle& channel_handle,
                                     Mode mode,
                                     Listener* listener) {
-  return scoped_ptr<Channel>(
-      new ChannelWin(channel_handle, mode, listener));
+  return scoped_ptr<Channel>(new ChannelWin(channel_handle, mode, listener));
 }
 
 // static

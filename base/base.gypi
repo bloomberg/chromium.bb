@@ -361,6 +361,7 @@
           'memory/shared_memory_android.cc',
           'memory/shared_memory_handle.h',
           'memory/shared_memory_handle_mac.cc',
+          'memory/shared_memory_handle_win.cc',
           'memory/shared_memory_mac.cc',
           'memory/shared_memory_nacl.cc',
           'memory/shared_memory_posix.cc',

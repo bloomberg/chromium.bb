@@ -201,8 +201,8 @@ TEST_F(IPCChannelPosixTest, BasicListen) {
   IPC::ChannelHandle handle(kChannelName);
   SetUpSocket(&handle, IPC::Channel::MODE_NAMED_SERVER);
   unlink(handle.name.c_str());
-  scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
+  scoped_ptr<IPC::ChannelPosix> channel(
+      new IPC::ChannelPosix(handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
   ASSERT_TRUE(channel->Connect());
   ASSERT_TRUE(channel->AcceptsConnections());
   ASSERT_FALSE(channel->HasAcceptedConnection());
@@ -229,8 +229,8 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
 
   // Make sure that we can use the socket that is created for us by
   // a standard channel.
-  scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
-      socket_name, IPC::Channel::MODE_SERVER, NULL));
+  scoped_ptr<IPC::ChannelPosix> channel2(
+      new IPC::ChannelPosix(socket_name, IPC::Channel::MODE_SERVER, NULL));
   ASSERT_TRUE(channel2->Connect());
   ASSERT_FALSE(channel2->AcceptsConnections());
 }
@@ -362,8 +362,8 @@ TEST_F(IPCChannelPosixTest, MAYBE_ResetState) {
 TEST_F(IPCChannelPosixTest, BadChannelName) {
   // Test empty name
   IPC::ChannelHandle handle("");
-  scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
+  scoped_ptr<IPC::ChannelPosix> channel(
+      new IPC::ChannelPosix(handle, IPC::Channel::MODE_NAMED_SERVER, NULL));
   ASSERT_FALSE(channel->Connect());
 
   // Test name that is too long.
@@ -376,8 +376,8 @@ TEST_F(IPCChannelPosixTest, BadChannelName) {
                              "leading-edge_processes";
   EXPECT_GE(strlen(kTooLongName), IPC::kMaxSocketNameLength);
   IPC::ChannelHandle handle2(kTooLongName);
-  scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
-      handle2, IPC::Channel::MODE_NAMED_SERVER, NULL));
+  scoped_ptr<IPC::ChannelPosix> channel2(
+      new IPC::ChannelPosix(handle2, IPC::Channel::MODE_NAMED_SERVER, NULL));
   EXPECT_FALSE(channel2->Connect());
 }
 
@@ -428,8 +428,8 @@ TEST_F(IPCChannelPosixTest, DoubleServer) {
   IPCChannelPosixTestListener listener(false);
   IPCChannelPosixTestListener listener2(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
-  scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_SERVER, &listener));
+  scoped_ptr<IPC::ChannelPosix> channel(
+      new IPC::ChannelPosix(chan_handle, IPC::Channel::MODE_SERVER, &listener));
   scoped_ptr<IPC::ChannelPosix> channel2(new IPC::ChannelPosix(
       chan_handle, IPC::Channel::MODE_SERVER, &listener2));
   ASSERT_TRUE(channel->Connect());
@@ -440,8 +440,8 @@ TEST_F(IPCChannelPosixTest, BadMode) {
   // Test setting up two servers with a bad mode.
   IPCChannelPosixTestListener listener(false);
   IPC::ChannelHandle chan_handle(GetConnectionSocketName());
-  scoped_ptr<IPC::ChannelPosix> channel(new IPC::ChannelPosix(
-      chan_handle, IPC::Channel::MODE_NONE, &listener));
+  scoped_ptr<IPC::ChannelPosix> channel(
+      new IPC::ChannelPosix(chan_handle, IPC::Channel::MODE_NONE, &listener));
   ASSERT_FALSE(channel->Connect());
 }
 

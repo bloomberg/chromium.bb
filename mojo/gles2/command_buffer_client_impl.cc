@@ -272,7 +272,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   base::SharedMemoryHandle dupd_handle =
       base::SharedMemory::DuplicateHandle(handle.handle);
 #if defined(OS_WIN)
-  HANDLE platform_handle = dupd_handle;
+  HANDLE platform_handle = dupd_handle.GetHandle();
 #else
   int platform_handle = dupd_handle.fd;
 #endif
