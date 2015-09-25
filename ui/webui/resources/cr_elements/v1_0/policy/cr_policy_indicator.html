@@ -9,7 +9,8 @@
     <div class="layout horizontal">
       <iron-icon id="indicator"
           hidden$="[[!isIndicatorVisible_(indicatorType)]]"
-          icon="[[getIcon_(indicatorType)]]">
+          icon="[[getIcon_(indicatorType)]]"
+          title="[[getTooltipText_(indicatorType, pref)]]">
       </iron-icon>
     </div>
   </template>

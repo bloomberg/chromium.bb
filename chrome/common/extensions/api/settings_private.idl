@@ -34,6 +34,11 @@ namespace settingsPrivate {
     // policy.
     PolicySource? policySource;
 
+    // The owner name if policySource == OWNER.
+    // The primary user name if policySource == PRIMARY_USER.
+    // The extension name if policySource == EXTENSION.
+    DOMString? policySourceName;
+
     // The policy enforcement of the pref; must be specified if policySource is
     // also present.
     PolicyEnforcement? policyEnforcement;

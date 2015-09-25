@@ -23,6 +23,27 @@ namespace {
 // the following name. These names must be kept in sync.
 const char kLocalizedStringsFile[] = "strings.js";
 
+void AddCommonStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("basicPageTitle", IDS_SETTINGS_BASIC);
+  html_source->AddLocalizedString("advancedPageTitle", IDS_SETTINGS_ADVANCED);
+  html_source->AddLocalizedString("addLabel", IDS_ADD);
+#if defined(OS_CHROMEOS)
+  html_source->AddLocalizedString("controlledSettingShared",
+                                  IDS_OPTIONS_CONTROLLED_SETTING_SHARED);
+  html_source->AddLocalizedString("controlledSettingOwner",
+                                  IDS_OPTIONS_CONTROLLED_SETTING_OWNER);
+#endif
+  html_source->AddLocalizedString("controlledSettingPolicy",
+                                  IDS_OPTIONS_CONTROLLED_SETTING_POLICY);
+  html_source->AddLocalizedString("controlledSettingRecommendedMatches",
+                                  IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED);
+  html_source->AddLocalizedString(
+      "controlledSettingRecommendedDiffers",
+      IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION);
+  html_source->AddLocalizedString("controlledSettingExtension",
+                                  IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION);
+}
+
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY);
@@ -158,10 +179,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
                                   IDS_SETTINGS_CLEAR_DATA_4WEEKS);
   html_source->AddLocalizedString("clearDataEverything",
                                   IDS_SETTINGS_CLEAR_DATA_EVERYTHING);
-}
-
-void AddCommonStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("addLabel", IDS_ADD);
 }
 
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
@@ -458,16 +475,12 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
 namespace settings {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
-  html_source->AddLocalizedString("basicPageTitle",
-                                  IDS_SETTINGS_BASIC);
-  html_source->AddLocalizedString("advancedPageTitle",
-                                  IDS_SETTINGS_ADVANCED);
+  AddCommonStrings(html_source);
 
   AddA11yStrings(html_source);
   AddAppearanceStrings(html_source);
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);
-  AddCommonStrings(html_source);
   AddDownloadsStrings(html_source);
   AddDateTimeStrings(html_source);
 #if defined(OS_CHROMEOS)

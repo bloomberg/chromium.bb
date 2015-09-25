@@ -3156,9 +3156,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_CONTROLLED_SETTING_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
     This setting is managed by the device owner, <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>
-  <message name="IDS_OPTION_DISABLED_BY_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by enterprise policy.">
-    This option is controlled by enterprise policy. Please contact your administrator for more information.
-  </message>
   <message name="IDS_OPTIONS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
     This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>

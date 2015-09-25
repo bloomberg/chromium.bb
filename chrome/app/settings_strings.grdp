@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
+  <!-- Policy Indicators -->
+  <message name="IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings indicator tooltip when a setting's value is enforced by an extension.">
+    This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph> 
+  </message>
+
   <!-- Accessibility Page -->
   <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility

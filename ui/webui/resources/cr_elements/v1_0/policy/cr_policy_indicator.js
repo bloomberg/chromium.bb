@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
- * @element cr-policy-indicator
+ * @fileoverview Polymer element for indicating policies that apply to an
+ * element controlling a settings preference.
  */
+
+(function() {
 
 /** @enum {string} */
 var IndicatorType = {
@@ -18,6 +20,7 @@ var IndicatorType = {
   USER_POLICY: 'userPolicy',
 };
 
+/** @element cr-policy-indicator */
 Polymer({
   is: 'cr-policy-indicator',
 
@@ -35,9 +38,7 @@ Polymer({
     indicatorType: {type: String, value: IndicatorType.NONE},
   },
 
-  observers: [
-    'prefPolicyChanged_(pref.policySource, pref.policyEnforcement)'
-  ],
+  observers: ['prefPolicyChanged_(pref.policySource, pref.policyEnforcement)'],
 
   /**
    * Polymer observer for pref.
@@ -94,6 +95,41 @@ Polymer({
         return 'social:domain';
     }
     assertNotReached();
+  },
+
+  /**
+   * @param {string} id The id of the string to translate.
+   * @param {string=} opt_name An optional name argument.
+   * @return The translated string.
+   */
+  i18n_: function (id, opt_name) {
+    return loadTimeData.getStringF(id, opt_name);
+  },
+
+  /**
+   * @param {IndicatorType} type The type of indicator.
+   * @param {!chrome.settingsPrivate.PrefObject} pref
+   * @return {string} The tooltip text for |type|.
+   * @private
+   */
+  getTooltipText_: function(type, pref) {
+    var name = pref.policySourceName || '';
+    switch (type) {
+      case IndicatorType.PRIMARY_USER:
+        return this.i18n_('controlledSettingShared', name);
+      case IndicatorType.OWNER:
+        return this.i18n_('controlledSettingOwner', name);
+      case IndicatorType.USER_POLICY:
+      case IndicatorType.DEVICE_POLICY:
+        return this.i18n_('controlledSettingPolicy');
+      case IndicatorType.EXTENSION:
+        return this.i18n_('controlledSettingExtension', name);
+      case IndicatorType.RECOMMENDED:
+        if (pref.value == pref.recommendedValue)
+          return this.i18n_('controlledSettingRecommendedMatches');
+        return this.i18n_('controlledSettingRecommendedDiffers');
+    }
     return '';
   }
 });
+})();

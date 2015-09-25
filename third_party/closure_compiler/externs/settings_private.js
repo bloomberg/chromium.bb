@@ -55,6 +55,7 @@ chrome.settingsPrivate.PolicyEnforcement = {
  *   type: !chrome.settingsPrivate.PrefType,
  *   value: *,
  *   policySource: (!chrome.settingsPrivate.PolicySource|undefined),
+ *   policySourceName: (string|undefined),
  *   policyEnforcement: (!chrome.settingsPrivate.PolicyEnforcement|undefined),
  *   recommendedValue: (*|undefined),
  *   extensionId: (string|undefined),

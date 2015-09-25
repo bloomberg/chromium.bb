@@ -14,6 +14,7 @@
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/common/extension.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -216,6 +217,8 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_PRIMARY_USER;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
+    pref_object->policy_source_name.reset(new std::string(
+        user_manager::UserManager::Get()->GetPrimaryUser()->email()));
     return pref_object.Pass();
   }
   if (IsPrefEnterpriseManaged(name)) {
@@ -256,20 +259,27 @@ scoped_ptr<settings_private::PrefObject> PrefsUtil::GetPref(
         settings_private::PolicySource::POLICY_SOURCE_OWNER;
     pref_object->policy_enforcement =
         settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
+    pref_object->policy_source_name.reset(
+        new std::string(user_manager::UserManager::Get()->GetOwnerEmail()));
     return pref_object.Pass();
   }
 #endif
 
   if (pref && pref->IsExtensionControlled()) {
-    pref_object->policy_source =
-        settings_private::PolicySource::POLICY_SOURCE_EXTENSION;
-    pref_object->policy_enforcement =
-        settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
     std::string extension_id =
         ExtensionPrefValueMapFactory::GetForBrowserContext(profile_)
             ->GetExtensionControllingPref(pref->name());
-    pref_object->extension_id.reset(new std::string(extension_id));
-    return pref_object.Pass();
+    const Extension* extension = ExtensionRegistry::Get(profile_)->
+        GetExtensionById(extension_id, ExtensionRegistry::ENABLED);
+    if (extension) {
+      pref_object->policy_source =
+          settings_private::PolicySource::POLICY_SOURCE_EXTENSION;
+      pref_object->policy_enforcement =
+          settings_private::PolicyEnforcement::POLICY_ENFORCEMENT_ENFORCED;
+      pref_object->extension_id.reset(new std::string(extension_id));
+      pref_object->policy_source_name.reset(new std::string(extension->name()));
+      return pref_object.Pass();
+    }
   }
   if (pref && (!pref->IsUserModifiable() || IsPrefSupervisorControlled(name))) {
     // TODO(stevenjb): Investigate whether either of these should be badged.
