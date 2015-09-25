@@ -163,41 +163,6 @@ bool DisplayItemList::paintOffsetWasInvalidated(DisplayItemClient client) const
 }
 #endif
 
-void DisplayItemList::recordPaintOffset(DisplayItemClient client, const LayoutPoint& paintOffset)
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
-    m_previousPaintOffsets.set(client, paintOffset);
-}
-
-bool DisplayItemList::paintOffsetIsUnchanged(DisplayItemClient client, const LayoutPoint& paintOffset) const
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
-    PreviousPaintOffsets::const_iterator it = m_previousPaintOffsets.find(client);
-    if (it == m_previousPaintOffsets.end())
-        return false;
-    return paintOffset == it->value;
-}
-
-void DisplayItemList::removeUnneededPaintOffsetEntries()
-{
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
-
-    // This function is only needed temporarily while paint offsets are stored
-    // in a map on the list itself. Because we don't always get notified when
-    // a display item client is removed, we need to infer it to prevent the
-    // paint offset map from growing indefinitely. This is achieved by just
-    // removing any paint offset clients that are no longer in the full list.
-
-    HashSet<DisplayItemClient> paintOffsetClientsToRemove;
-    for (auto& client : m_previousPaintOffsets.keys())
-        paintOffsetClientsToRemove.add(client);
-    for (auto& item : m_currentDisplayItems)
-        paintOffsetClientsToRemove.remove(item.client());
-
-    for (auto& client : paintOffsetClientsToRemove)
-        m_previousPaintOffsets.remove(client);
-}
-
 size_t DisplayItemList::findMatchingItemFromIndex(const DisplayItem::Id& id, const DisplayItemIndicesByClientMap& displayItemIndicesByClient, const DisplayItems& list)
 {
     DisplayItemIndicesByClientMap::const_iterator it = displayItemIndicesByClient.find(id.client);
@@ -309,8 +274,6 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
         m_currentDisplayItems.swap(m_newDisplayItems);
         m_validlyCachedClientsDirty = true;
         m_numCachedItems = 0;
-        if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
-            removeUnneededPaintOffsetEntries();
         return;
     }
 
@@ -391,9 +354,6 @@ void DisplayItemList::commitNewDisplayItems(DisplayListDiff*)
     m_validlyCachedClientsDirty = true;
     m_currentDisplayItems.swap(updatedList);
     m_numCachedItems = 0;
-
-    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
-        removeUnneededPaintOffsetEntries();
 
 #if ENABLE(ASSERT)
     m_clientsWithPaintOffsetInvalidations.clear();

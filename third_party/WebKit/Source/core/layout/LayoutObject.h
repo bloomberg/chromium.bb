@@ -1167,6 +1167,17 @@ public:
         m_previousPositionFromPaintInvalidationBacking = positionFromPaintInvalidationBacking;
     }
 
+    bool paintOffsetChanged(const LayoutPoint& newPaintOffset) const
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        return m_previousPositionFromPaintInvalidationBacking != uninitializedPaintOffset() && m_previousPositionFromPaintInvalidationBacking != newPaintOffset;
+    }
+    void setPreviousPaintOffset(const LayoutPoint& paintOffset) const
+    {
+        ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
+        m_previousPositionFromPaintInvalidationBacking = paintOffset;
+    }
+
     PaintInvalidationReason fullPaintInvalidationReason() const { return m_bitfields.fullPaintInvalidationReason(); }
     bool shouldDoFullPaintInvalidation() const { return m_bitfields.fullPaintInvalidationReason() != PaintInvalidationNone; }
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason = PaintInvalidationFull);
@@ -1425,6 +1436,8 @@ private:
 
     const LayoutBoxModelObject* invalidatePaintRectangleInternal(const LayoutRect&) const;
 
+    static LayoutPoint uninitializedPaintOffset() { return LayoutPoint(LayoutUnit::max(), LayoutUnit::max()); }
+
     RefPtr<ComputedStyle> m_style;
 
     // Oilpan: raw pointer back to the owning Node is considered safe.
@@ -1670,7 +1683,10 @@ private:
     // This stores the position in the paint invalidation backing's coordinate.
     // It is used to detect layoutObject shifts that forces a full invalidation.
     // This point does *not* account for composited scrolling. See adjustInvalidationRectForCompositedScrolling().
-    LayoutPoint m_previousPositionFromPaintInvalidationBacking;
+    // For slimmingPaintOffsetCaching, this stores the previous paint offset.
+    // TODO(wangxianzhu): Rename this to m_previousPaintOffset when we enable slimmingPaintOffsetCaching.
+    // TODO(wangxianzhu): Better mutation control for painting.
+    mutable LayoutPoint m_previousPositionFromPaintInvalidationBacking;
 };
 
 // FIXME: remove this once the layout object lifecycle ASSERTS are no longer hit.

@@ -22,6 +22,8 @@ public:
 
     void paint(LayoutBoxModelObject*, const PaintInfo&, const LayoutPoint&) const;
 
+    void invalidateLineBoxPaintOffsets(const PaintInfo&) const;
+
 private:
     LineBoxList& m_lineBoxList;
 };

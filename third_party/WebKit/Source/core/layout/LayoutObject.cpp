@@ -239,6 +239,10 @@ LayoutObject::LayoutObject(Node* node)
 #endif
     , m_bitfields(node)
 {
+    // TODO(wangxianzhu): Move this into initialization list when we enable the feature by default.
+    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled())
+        m_previousPositionFromPaintInvalidationBacking = uninitializedPaintOffset();
+
 #ifndef NDEBUG
     layoutObjectCounter.increment();
 #endif

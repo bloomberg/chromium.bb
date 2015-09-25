@@ -14,6 +14,7 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
 
@@ -60,6 +61,26 @@ void LineBoxListPainter::paint(LayoutBoxModelObject* layoutObject, const PaintIn
             curr->paint(info, paintOffset, root.lineTop(), root.lineBottom());
         }
     }
+}
+
+static void invalidateLineBoxPaintOffsetsInternal(DisplayItemList* displayItemList, InlineFlowBox* inlineBox)
+{
+    displayItemList->invalidatePaintOffset(*inlineBox);
+    for (InlineBox* child = inlineBox->firstChild(); child; child = child->nextOnLine()) {
+        if (!child->lineLayoutItem().isText() && child->boxModelObject().hasSelfPaintingLayer())
+            continue;
+        if (child->isInlineFlowBox())
+            invalidateLineBoxPaintOffsetsInternal(displayItemList, toInlineFlowBox(child));
+        else
+            displayItemList->invalidatePaintOffset(*child);
+    }
+}
+
+void LineBoxListPainter::invalidateLineBoxPaintOffsets(const PaintInfo& paintInfo) const
+{
+    DisplayItemList* displayItemList = paintInfo.context->displayItemList();
+    for (InlineFlowBox* curr = m_lineBoxList.firstLineBox(); curr; curr = curr->nextLineBox())
+        invalidateLineBoxPaintOffsetsInternal(displayItemList, curr);
 }
 
 } // namespace blink

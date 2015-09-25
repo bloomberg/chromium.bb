@@ -13,10 +13,10 @@
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DeprecatedPaintLayer.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -32,9 +32,9 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (paintInfo.phase == PaintPhaseMask) {
-        if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineFlowBox, paintInfo.phase, paintOffset))
+        if (DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineFlowBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase)))
             return;
-        LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, paintInfo.phase, pixelSnappedIntRect(overflowRect), paintOffset);
+        DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::paintPhaseToDrawingType(paintInfo.phase), pixelSnappedIntRect(overflowRect));
         paintMask(paintInfo, paintOffset);
         return;
     }
@@ -199,10 +199,10 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     if (!shouldPaintBoxDecorationBackground)
         return;
 
-    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, paintOffset))
+    if (DrawingRecorder::useCachedDrawingIfPossible(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground))
         return;
 
-    LayoutObjectDrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(cullRect), paintOffset);
+    DrawingRecorder recorder(*paintInfo.context, m_inlineFlowBox, DisplayItem::BoxDecorationBackground, pixelSnappedIntRect(cullRect));
 
     LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();
 

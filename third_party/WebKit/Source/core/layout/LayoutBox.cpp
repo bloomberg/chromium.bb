@@ -3986,6 +3986,12 @@ PaintInvalidationReason LayoutBox::paintInvalidationReason(const LayoutBoxModelO
     if (oldBorderBoxSize == newBorderBoxSize)
         return invalidationReason;
 
+    // LayoutBox::incrementallyInvalidatePaint() depends on positionFromPaintInvalidationBacking
+    // which is not available when slimmingPaintOffsetCachingEnabled.
+    if (RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && (style()->hasBoxDecorations() || style()->hasBackground()))
+        return PaintInvalidationBorderBoxChange;
+
+    // TODO(wangxianzhu): Remove incremental invalidation when we remove rect-based paint invalidation.
     // See another hasNonCompositedScrollbars() callsite above.
     if (hasNonCompositedScrollbars())
         return PaintInvalidationBorderBoxChange;

@@ -51,7 +51,7 @@ DrawingRecorder::DrawingRecorder(GraphicsContext& context, const DisplayItemClie
         return;
 
     // Must check DrawingRecorder::useCachedDrawingIfPossible before creating the DrawingRecorder.
-    ASSERT((RuntimeEnabledFeatures::slimmingPaintV2Enabled() && context.displayItemList()->paintOffsetWasInvalidated(displayItemClient.displayItemClient()))
+    ASSERT((RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && context.displayItemList()->paintOffsetWasInvalidated(displayItemClient.displayItemClient()))
         || RuntimeEnabledFeatures::slimmingPaintUnderInvalidationCheckingEnabled()
         || !useCachedDrawingIfPossible(m_context, m_displayItemClient, m_displayItemType));
 

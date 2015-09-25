@@ -75,11 +75,6 @@ public:
     bool paintOffsetWasInvalidated(DisplayItemClient) const;
 #endif
 
-    // Record a new paint offset.
-    // TODO(pdr): Remove these once the paint offset cache is on LayoutObject.
-    void recordPaintOffset(DisplayItemClient, const LayoutPoint&);
-    bool paintOffsetIsUnchanged(DisplayItemClient, const LayoutPoint&) const;
-
     // These methods are called during painting.
     template <typename DisplayItemClass, typename... Args>
     DisplayItemClass& createAndAppend(Args&&... args)
@@ -175,11 +170,6 @@ private:
 
     void updateValidlyCachedClientsIfNeeded() const;
 
-    // Update the recorded paint offsets to remove any items that no longer have
-    // corresponding cached display items.
-    // TODO(pdr): Remove this once the paint offset cache is on LayoutObject.
-    void removeUnneededPaintOffsetEntries();
-
 #ifndef NDEBUG
     WTF::String displayItemsAsDebugString(const DisplayItems&) const;
 #endif
@@ -232,13 +222,6 @@ private:
 
     unsigned m_nextScope;
     Vector<unsigned> m_scopeStack;
-
-    // Cache of LayoutObject paint offsets.
-    // TODO(pdr): This should be on LayoutObject itself and is only on the display
-    // item list temporarily until paint invalidation for v2 frees up space on
-    // LayoutObject.
-    using PreviousPaintOffsets = HashMap<DisplayItemClient, LayoutPoint>;
-    PreviousPaintOffsets m_previousPaintOffsets;
 
 #if ENABLE(ASSERT)
     // This is used to check duplicated ids during add(). We could also check during
