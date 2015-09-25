@@ -9,22 +9,15 @@
 #if defined(USE_OPENSSL)
 #include <openssl/des.h>
 #include "crypto/openssl_util.h"
-#elif defined(USE_NSS_CERTS)
-#include <nss.h>
-#include <pk11pub.h>
-#include "crypto/nss_util.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_IOS)
 #include <CommonCrypto/CommonCryptor.h>
-#elif defined(OS_WIN)
-#include <windows.h>
-#include <wincrypt.h>
-#include "crypto/scoped_capi_types.h"
+#else
+#error "Unknown platform"
 #endif
 
-// The Mac and Windows (CryptoAPI) versions of DESEncrypt are our own code.
-// DESSetKeyParity, DESMakeKey, and the Linux (NSS) version of DESEncrypt are
-// based on mozilla/security/manager/ssl/src/nsNTLMAuthModule.cpp,
-// CVS rev. 1.14.
+// The iOS version of DESEncrypt is our own code.
+// DESSetKeyParity and DESMakeKey are based on
+// mozilla/security/manager/ssl/src/nsNTLMAuthModule.cpp, CVS rev. 1.14.
 
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
@@ -100,64 +93,7 @@ void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
                   reinterpret_cast<DES_cblock*>(hash), &ks, DES_ENCRYPT);
 }
 
-#elif defined(USE_NSS_CERTS)
-
-void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
-  CK_MECHANISM_TYPE cipher_mech = CKM_DES_ECB;
-  PK11SlotInfo* slot = NULL;
-  PK11SymKey* symkey = NULL;
-  PK11Context* ctxt = NULL;
-  SECItem key_item;
-  SECItem* param = NULL;
-  SECStatus rv;
-  unsigned int n;
-
-  crypto::EnsureNSSInit();
-
-  slot = PK11_GetInternalSlot();
-  if (!slot)
-    goto done;
-
-  key_item.data = const_cast<uint8*>(key);
-  key_item.len = 8;
-  symkey = PK11_ImportSymKey(slot, cipher_mech,
-                             PK11_OriginUnwrap, CKA_ENCRYPT,
-                             &key_item, NULL);
-  if (!symkey)
-    goto done;
-
-  // No initialization vector required.
-  param = PK11_ParamFromIV(cipher_mech, NULL);
-  if (!param)
-    goto done;
-
-  ctxt = PK11_CreateContextBySymKey(cipher_mech, CKA_ENCRYPT,
-                                    symkey, param);
-  if (!ctxt)
-    goto done;
-
-  rv = PK11_CipherOp(ctxt, hash, reinterpret_cast<int*>(&n), 8,
-                     const_cast<uint8*>(src), 8);
-  if (rv != SECSuccess)
-    goto done;
-
-  // TODO(wtc): Should this be PK11_Finalize?
-  rv = PK11_DigestFinal(ctxt, hash+8, &n, 0);
-  if (rv != SECSuccess)
-    goto done;
-
- done:
-  if (ctxt)
-    PK11_DestroyContext(ctxt, PR_TRUE);
-  if (symkey)
-    PK11_FreeSymKey(symkey);
-  if (param)
-    SECITEM_FreeItem(param, PR_TRUE);
-  if (slot)
-    PK11_FreeSlot(slot);
-}
-
-#elif defined(OS_MACOSX)
+#elif defined(OS_IOS)
 
 void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
   CCCryptorStatus status;
@@ -166,53 +102,6 @@ void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
                    key, 8, NULL, src, 8, hash, 8, &data_out_moved);
   DCHECK(status == kCCSuccess);
   DCHECK(data_out_moved == 8);
-}
-
-#elif defined(OS_WIN)
-
-void DESEncrypt(const uint8* key, const uint8* src, uint8* hash) {
-  crypto::ScopedHCRYPTPROV provider;
-  if (!CryptAcquireContext(provider.receive(), NULL, NULL, PROV_RSA_FULL,
-                           CRYPT_VERIFYCONTEXT))
-    return;
-
-  {
-    // Import the DES key.
-    struct KeyBlob {
-      BLOBHEADER header;
-      DWORD key_size;
-      BYTE key_data[8];
-    };
-    KeyBlob key_blob;
-    key_blob.header.bType = PLAINTEXTKEYBLOB;
-    key_blob.header.bVersion = CUR_BLOB_VERSION;
-    key_blob.header.reserved = 0;
-    key_blob.header.aiKeyAlg = CALG_DES;
-    key_blob.key_size = 8;  // 64 bits
-    memcpy(key_blob.key_data, key, 8);
-
-    crypto::ScopedHCRYPTKEY key;
-    BOOL import_ok = CryptImportKey(provider,
-                                    reinterpret_cast<BYTE*>(&key_blob),
-                                    sizeof key_blob, 0, 0, key.receive());
-    // Destroy the copy of the key.
-    SecureZeroMemory(key_blob.key_data, sizeof key_blob.key_data);
-    if (!import_ok)
-      return;
-
-    // No initialization vector required.
-    DWORD cipher_mode = CRYPT_MODE_ECB;
-    if (!CryptSetKeyParam(key, KP_MODE, reinterpret_cast<BYTE*>(&cipher_mode),
-                          0))
-      return;
-
-    // CryptoAPI requires us to copy the plaintext to the output buffer first.
-    CopyMemory(hash, src, 8);
-    // Pass a 'Final' of FALSE, otherwise CryptEncrypt appends one additional
-    // block of padding to the data.
-    DWORD hash_len = 8;
-    CryptEncrypt(key, 0, FALSE, 0, hash, &hash_len, 8);
-  }
 }
 
 #endif
