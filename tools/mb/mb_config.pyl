@@ -206,7 +206,7 @@
       # GN binary; ideally we could just turn glib off, but that doesn't
       # actually work, so we need to pretend to be doing an ozone build
       # in order for the flag to actually take effect.
-      'gn_args': 'use_ozone=true use_glib=false',
+      'gn_args': 'use_ozone=true',
     },
 
     'gn': {'type': 'gn'},
