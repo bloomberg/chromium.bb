@@ -1899,7 +1899,6 @@ crbug.com/521764 [ Win10 ] animations/svg-attribute-interpolation/svg-stitchTile
 crbug.com/521764 [ Win10 ] animations/svg-attribute-interpolation/svg-tableValues-interpolation.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/canvas/webgl/framebuffer-bindings-unaffected-on-resize.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] fast/dom/Range/range-clone-contents.html [ Failure Pass ]
-crbug.com/521764 [ Win10 ] imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] inspector/sources/debugger-pause/pause-in-inline-script.html [ Pass Timeout ]
 crbug.com/521764 [ Win10 ] plugins/no-mime-with-valid-extension.html [ Failure Pass ]
 crbug.com/521764 [ Win10 ] plugins/plugin-cancel-sync-xhr.html [ Pass Timeout ]

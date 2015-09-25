@@ -345,6 +345,14 @@ imported/web-platform-tests/html/semantics/document-metadata/the-base-element/ba
 # The test doesn't handle ':' after a drive letter in file: URL on Windows.
 imported/web-platform-tests/html/browsers/history/the-location-interface/location_hostname.html [ Skip ]
 
+# crbug.com/535615: Pathnames are too long for Windows.
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-fragment-into-document.html
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-parent-into-document.html
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-networkState.html
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-insert-source-not-in-document.html
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-from-document-networkState.html
+imported/web-platform-tests/html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-pointer-remove-source-after.html
+
 # It contains only manual SVG tests.
 imported/web-platform-tests/html/editing/dnd/svg [ Skip ]
 
