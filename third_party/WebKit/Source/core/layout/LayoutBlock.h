@@ -101,7 +101,7 @@ enum ContainingBlockState { NewContainingBlock, SameContainingBlock };
 //     // Handle normal flow children.
 //     ...
 // }
-// for (LayoutObject positionedObject : positionedObjects()) {
+// for (LayoutBox* positionedObject : positionedObjects()) {
 //     // Handle out-of-flow positioned objects.
 //     ...
 // }

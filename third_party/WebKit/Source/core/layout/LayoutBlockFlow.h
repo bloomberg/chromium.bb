@@ -54,6 +54,25 @@ class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
 template <class Run> class BidiRunList;
 
+// LayoutBlockFlow is the class that implements a block container in CSS 2.1.
+// http://www.w3.org/TR/CSS21/visuren.html#block-boxes
+//
+// LayoutBlockFlows are the only LayoutObject allowed to own floating objects
+// (aka floats): http://www.w3.org/TR/CSS21/visuren.html#floats .
+//
+// Floats are inserted into |m_floatingObjects| (see FloatingObjects for more
+// information on how floats are modelled) during layout. This happens either as
+// part of laying out blocks (layoutBlockChildren) or line layout (LineBreaker
+// class). This is because floats can be part of an inline or a block context.
+//
+// An interesting feature of floats is that they can intrude into the next
+// block(s). This means that |m_floatingObjects| can potentially contain
+// pointers to a previous sibling LayoutBlockFlow's float.
+//
+// LayoutBlockFlow is also the only LayoutObject to own a line box tree and
+// perform inline layout. See LayoutBlockFlowLine.cpp for these parts.
+//
+// TODO(jchaffraix): We need some float and line box expert to expand on this.
 class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 public:
     explicit LayoutBlockFlow(ContainerNode*);
