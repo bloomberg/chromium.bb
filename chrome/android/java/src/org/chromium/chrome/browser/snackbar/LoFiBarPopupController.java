@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.content.Context;
 
+import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.tab.Tab;
@@ -22,6 +24,7 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
     private static final int DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS = 6000;
     private final SnackbarManager mSnackbarManager;
     private final Context mContext;
+    private final boolean mDisabled;
     private Tab mTab;
 
     /**
@@ -32,12 +35,14 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
     public LoFiBarPopupController(Context context, SnackbarManager snackbarManager) {
         mSnackbarManager = snackbarManager;
         mContext = context;
+        mDisabled = CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_LOFI_SNACKBAR);
     }
 
     /**
      * @param tab The tab. Saved to reload the page.
      */
     public void showLoFiBar(Tab tab) {
+        if (mDisabled) return;
         mTab = tab;
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_reduction_lo_fi_snackbar_message), this)

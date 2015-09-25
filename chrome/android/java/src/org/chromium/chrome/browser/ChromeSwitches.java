@@ -82,6 +82,11 @@ public abstract class ChromeSwitches {
      */
     public static final String DISABLE_READER_MODE_BOTTOM_BAR = "disable-reader-mode-bottom-bar";
 
+    /**
+     * Disable Lo-Fi snackbar.
+     */
+    public static final String DISABLE_LOFI_SNACKBAR = "disable-lo-fi-snackbar";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////
