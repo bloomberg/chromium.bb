@@ -157,14 +157,15 @@ void RenderTextMac::OnLayoutTextAttributeChanged(bool text_changed) {
       UpdateDisplayText(0);
     }
   }
-  line_.reset();
-  attributes_.reset();
-  runs_.clear();
-  runs_valid_ = false;
+  InvalidateStyle();
 }
 
 void RenderTextMac::OnDisplayTextAttributeChanged() {
   OnLayoutTextAttributeChanged(true);
+}
+
+void RenderTextMac::OnTextColorChanged() {
+  InvalidateStyle();
 }
 
 void RenderTextMac::EnsureLayout() {
@@ -177,27 +178,26 @@ void RenderTextMac::EnsureLayout() {
   string_size_ = GetCTLineSize(line_.get(), &common_baseline_);
 }
 
-void RenderTextMac::DrawVisualText(Canvas* canvas) {
+void RenderTextMac::DrawVisualText(internal::SkiaTextRenderer* renderer) {
   DCHECK(line_);
   if (!runs_valid_)
     ComputeRuns();
 
-  internal::SkiaTextRenderer renderer(canvas);
-  ApplyFadeEffects(&renderer);
-  ApplyTextShadows(&renderer);
+  ApplyFadeEffects(renderer);
+  ApplyTextShadows(renderer);
 
   for (size_t i = 0; i < runs_.size(); ++i) {
     const TextRun& run = runs_[i];
-    renderer.SetForegroundColor(run.foreground);
-    renderer.SetTextSize(run.text_size);
-    renderer.SetFontFamilyWithStyle(run.font_name, run.font_style);
-    renderer.DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
-                         run.glyphs.size());
-    renderer.DrawDecorations(run.origin.x(), run.origin.y(), run.width,
-                             run.underline, run.strike, run.diagonal_strike);
+    renderer->SetForegroundColor(run.foreground);
+    renderer->SetTextSize(run.text_size);
+    renderer->SetFontFamilyWithStyle(run.font_name, run.font_style);
+    renderer->DrawPosText(&run.glyph_positions[0], &run.glyphs[0],
+                          run.glyphs.size());
+    renderer->DrawDecorations(run.origin.x(), run.origin.y(), run.width,
+                              run.underline, run.strike, run.diagonal_strike);
   }
 
-  renderer.EndDiagonalStrike();
+  renderer->EndDiagonalStrike();
 }
 
 RenderTextMac::TextRun::TextRun()
@@ -424,6 +424,13 @@ void RenderTextMac::ComputeRuns() {
     run_origin.offset(run_width, 0);
   }
   runs_valid_ = true;
+}
+
+void RenderTextMac::InvalidateStyle() {
+  line_.reset();
+  attributes_.reset();
+  runs_.clear();
+  runs_valid_ = false;
 }
 
 }  // namespace gfx

@@ -51,8 +51,9 @@ class GFX_EXPORT RenderTextMac : public RenderText {
   bool IsValidCursorIndex(size_t index) override;
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;
+  void OnTextColorChanged() override;
   void EnsureLayout() override;
-  void DrawVisualText(Canvas* canvas) override;
+  void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Mac_ElidedText);
@@ -99,6 +100,9 @@ class GFX_EXPORT RenderTextMac : public RenderText {
 
   // Updates |runs_| based on |line_| and sets |runs_valid_| to true.
   void ComputeRuns();
+
+  // Clears cached style. Doesn't update display text (e.g. eliding).
+  void InvalidateStyle();
 
   // The Core Text line of text. Created by |EnsureLayout()|.
   base::ScopedCFTypeRef<CTLineRef> line_;

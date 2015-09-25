@@ -709,10 +709,12 @@ void RenderText::SetCompositionRange(const Range& composition_range) {
 
 void RenderText::SetColor(SkColor value) {
   colors_.SetValue(value);
+  OnTextColorChanged();
 }
 
 void RenderText::ApplyColor(SkColor value, const Range& range) {
   colors_.ApplyValue(value, range);
+  OnTextColorChanged();
 }
 
 void RenderText::SetBaselineStyle(BaselineStyle value) {
@@ -808,8 +810,10 @@ void RenderText::Draw(Canvas* canvas) {
   if (cursor_enabled() && cursor_visible() && focused())
     DrawCursor(canvas, selection_model_);
 
-  if (!text().empty())
-    DrawVisualText(canvas);
+  if (!text().empty()) {
+    internal::SkiaTextRenderer renderer(canvas);
+    DrawVisualText(&renderer);
+  }
 
   if (clip_to_display_rect())
     canvas->Restore();
@@ -1017,6 +1021,9 @@ void RenderText::SetSelectionModel(const SelectionModel& model) {
   DCHECK_LE(model.selection().GetMax(), text().length());
   selection_model_ = model;
   cached_bounds_and_offset_valid_ = false;
+}
+
+void RenderText::OnTextColorChanged() {
 }
 
 void RenderText::UpdateDisplayText(float text_width) {

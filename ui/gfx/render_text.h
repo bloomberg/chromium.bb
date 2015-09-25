@@ -38,10 +38,12 @@ class SkShader;
 class SkTypeface;
 
 namespace gfx {
+namespace test {
+class RenderTextTestApi;
+}
 
 class Canvas;
 class Font;
-class RenderTextTest;
 
 namespace internal {
 
@@ -78,6 +80,8 @@ class GFX_EXPORT SkiaTextRenderer {
   void DrawStrike(int x, int y, int width) const;
 
  private:
+  friend class test::RenderTextTestApi;
+
   // Helper class to draw a diagonal line with multiple pieces of different
   // lengths and colors; to support text selection appearances.
   class DiagonalStrike {
@@ -559,11 +563,14 @@ class GFX_EXPORT RenderText {
   // Notifies that attributes that affect the display text shape have changed.
   virtual void OnDisplayTextAttributeChanged() = 0;
 
+  // Called when the text color changes.
+  virtual void OnTextColorChanged();
+
   // Ensure the text is laid out, lines are computed, and |lines_| is valid.
   virtual void EnsureLayout() = 0;
 
   // Draw the text.
-  virtual void DrawVisualText(Canvas* canvas) = 0;
+  virtual void DrawVisualText(internal::SkiaTextRenderer* renderer) = 0;
 
   // Update the display text.
   void UpdateDisplayText(float text_width);
@@ -615,7 +622,7 @@ class GFX_EXPORT RenderText {
                                  LogicalCursorDirection caret_affinity);
 
  private:
-  friend class RenderTextTest;
+  friend class test::RenderTextTestApi;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, DefaultStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, SetStyles);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, ApplyStyles);

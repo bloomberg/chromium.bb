@@ -165,10 +165,9 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void OnLayoutTextAttributeChanged(bool text_changed) override;
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
-  void DrawVisualText(Canvas* canvas) override;
+  void DrawVisualText(internal::SkiaTextRenderer* renderer) override;
 
  private:
-  friend class RenderTextTest;
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_HorizontalAlignment);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_WordWrapBehavior);
@@ -194,9 +193,6 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void set_glyph_width_for_test(float test_width) {
     glyph_width_for_test_ = test_width;
   }
-
-  // The actual implementation of the text drawing.
-  void DrawVisualTextInternal(internal::SkiaTextRenderer* renderer);
 
   // Return the run index that contains the argument; or the length of the
   // |runs_| vector if argument exceeds the text length or width.

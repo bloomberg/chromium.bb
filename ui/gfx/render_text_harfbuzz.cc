@@ -1087,13 +1087,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
   }
 }
 
-void RenderTextHarfBuzz::DrawVisualText(Canvas* canvas) {
-  internal::SkiaTextRenderer renderer(canvas);
-  DrawVisualTextInternal(&renderer);
-}
-
-void RenderTextHarfBuzz::DrawVisualTextInternal(
-    internal::SkiaTextRenderer* renderer) {
+void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer) {
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
   DCHECK(!update_display_text_);

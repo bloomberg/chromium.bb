@@ -41,6 +41,28 @@ using base::WideToUTF16;
 using base::WideToUTF8;
 
 namespace gfx {
+namespace test {
+
+class RenderTextTestApi {
+ public:
+  RenderTextTestApi(RenderText* render_text) : render_text_(render_text) {}
+
+  static SkPaint& GetRendererPaint(internal::SkiaTextRenderer* renderer) {
+    return renderer->paint_;
+  }
+
+  void DrawVisualText(internal::SkiaTextRenderer* renderer) {
+    render_text_->EnsureLayout();
+    render_text_->DrawVisualText(renderer);
+  }
+
+ private:
+  RenderText* render_text_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderTextTestApi);
+};
+
+}  // namespace test
 
 namespace {
 
@@ -96,9 +118,10 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
 class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
  public:
   struct TextLog {
-    TextLog() : glyph_count(0u) {}
+    TextLog() : glyph_count(0u), color(SK_ColorTRANSPARENT) {}
     PointF origin;
     size_t glyph_count;
+    SkColor color;
   };
 
   struct DecorationLog {
@@ -143,6 +166,8 @@ class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
             PointF(SkScalarToFloat(pos[i].x()), SkScalarToFloat(pos[i].y())));
       }
     }
+    log_entry.color =
+        test::RenderTextTestApi::GetRendererPaint(this).getColor();
     text_log_.push_back(log_entry);
     internal::SkiaTextRenderer::DrawPosText(pos, glyphs, glyph_count);
   }
@@ -205,8 +230,7 @@ class TestRectangleBuffer {
 
 }  // namespace
 
-class RenderTextTest : public testing::Test {
-};
+using RenderTextTest = testing::Test;
 
 TEST_F(RenderTextTest, DefaultStyles) {
   // Check the default styles applied to new instances and adjusted text.
@@ -2138,7 +2162,7 @@ TEST_F(RenderTextTest, Multiline_NormalWidth) {
     SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
     render_text.SetText(WideToUTF16(kTestStrings[i].text));
     render_text.EnsureLayout();
-    render_text.DrawVisualTextInternal(&renderer);
+    render_text.DrawVisualText(&renderer);
 
     ASSERT_EQ(2U, render_text.lines_.size());
     ASSERT_EQ(1U, render_text.lines_[0].segments.size());
@@ -2567,7 +2591,7 @@ TEST_F(RenderTextTest, HarfBuzz_HorizontalPositions) {
       EXPECT_EQ(1U, run_list->logical_to_visual(1));
     }
 
-    render_text.DrawVisualTextInternal(&renderer);
+    render_text.DrawVisualText(&renderer);
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
     renderer.GetTextLogAndReset(&text_log);
@@ -3120,5 +3144,43 @@ TEST_F(RenderTextTest, Mac_ElidedText) {
   EXPECT_NE(0, glyph_count);
 }
 #endif
+
+// Ensure color changes are picked up by the RenderText implementation.
+TEST_F(RenderTextTest, ColorChange) {
+  RenderTextHarfBuzz render_text_harfbuzz;
+#if defined(OS_MACOSX)
+  RenderTextMac render_text_mac;
+#endif
+
+  RenderText* backend[] = {
+    &render_text_harfbuzz,
+#if defined(OS_MACOSX)
+    &render_text_mac,
+#endif
+  };
+
+  Canvas canvas;
+  TestSkiaTextRenderer renderer(&canvas);
+
+  for (size_t i = 0; i < arraysize(backend); ++i) {
+    SCOPED_TRACE(testing::Message() << "backend: " << i);
+    test::RenderTextTestApi test_api(backend[i]);
+    backend[i]->SetText(ASCIIToUTF16("x"));
+    test_api.DrawVisualText(&renderer);
+
+    std::vector<TestSkiaTextRenderer::TextLog> text_log;
+
+    renderer.GetTextLogAndReset(&text_log);
+    EXPECT_EQ(1u, text_log.size());
+    EXPECT_EQ(SK_ColorBLACK, text_log[0].color);
+
+    backend[i]->SetColor(SK_ColorRED);
+    test_api.DrawVisualText(&renderer);
+
+    renderer.GetTextLogAndReset(&text_log);
+    EXPECT_EQ(1u, text_log.size());
+    EXPECT_EQ(SK_ColorRED, text_log[0].color);
+  }
+}
 
 }  // namespace gfx
