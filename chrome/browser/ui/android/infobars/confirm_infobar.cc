@@ -104,8 +104,7 @@ void ConfirmInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
     RemoveSelf();
 }
 
-void ConfirmInfoBar::ProcessButton(int action,
-                                   const std::string& action_value) {
+void ConfirmInfoBar::ProcessButton(int action) {
   if (!owner())
     return; // We're closing; don't call anything, it might access the owner.
 

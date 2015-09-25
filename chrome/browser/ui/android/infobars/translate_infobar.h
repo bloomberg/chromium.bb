@@ -33,7 +33,7 @@ class TranslateInfoBar : public InfoBarAndroid {
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
       JNIEnv* env) override;
-  void ProcessButton(int action, const std::string& action_value) override;
+  void ProcessButton(int action) override;
   void PassJavaInfoBar(InfoBarAndroid* source) override;
   void SetJavaInfoBar(
       const base::android::JavaRef<jobject>& java_info_bar) override;

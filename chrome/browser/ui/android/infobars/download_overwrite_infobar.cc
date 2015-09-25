@@ -44,8 +44,7 @@ DownloadOverwriteInfoBar::CreateRenderInfoBar(JNIEnv* env) {
   return java_infobar;
 }
 
-void DownloadOverwriteInfoBar::ProcessButton(int action,
-                                             const std::string& action_value) {
+void DownloadOverwriteInfoBar::ProcessButton(int action) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
 

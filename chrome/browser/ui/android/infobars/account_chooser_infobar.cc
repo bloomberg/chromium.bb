@@ -144,8 +144,7 @@ void AccountChooserInfoBar::OnCredentialClicked(JNIEnv* env,
   RemoveSelf();
 }
 
-void AccountChooserInfoBar::ProcessButton(int action,
-                                          const std::string& action_value) {
+void AccountChooserInfoBar::ProcessButton(int action) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   GetDelegate()->ChooseCredential(

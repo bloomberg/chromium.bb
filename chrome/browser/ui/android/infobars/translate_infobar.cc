@@ -46,8 +46,7 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       delegate->triggered_from_menu(), java_languages.obj());
 }
 
-void TranslateInfoBar::ProcessButton(int action,
-                                     const std::string& action_value) {
+void TranslateInfoBar::ProcessButton(int action) {
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
 

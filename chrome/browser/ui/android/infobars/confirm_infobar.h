@@ -25,7 +25,7 @@ class ConfirmInfoBar : public InfoBarAndroid {
       JNIEnv* env) override;
 
  private:
-  void ProcessButton(int action, const std::string& action_value) override;
+  void ProcessButton(int action) override;
 
   base::android::ScopedJavaGlobalRef<jobject> java_confirm_delegate_;
 

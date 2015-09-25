@@ -211,7 +211,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
 
     private void onTranslateInfoBarButtonClicked(int action) {
         onOptionsChanged();
-        onButtonClicked(action, "");
+        onButtonClicked(action);
     }
 
     @Override

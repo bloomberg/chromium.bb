@@ -55,10 +55,7 @@ class InfoBarAndroid : public infobars::InfoBar {
   void ReassignJavaInfoBar(InfoBarAndroid* replacement);
 
   virtual void OnLinkClicked(JNIEnv* env, jobject obj) {}
-  void OnButtonClicked(JNIEnv* env,
-                       jobject obj,
-                       jint action,
-                       jstring action_value);
+  void OnButtonClicked(JNIEnv* env, jobject obj, jint action);
   void OnCloseButtonClicked(JNIEnv* env, jobject obj);
 
   void CloseJavaInfoBar();
@@ -74,8 +71,8 @@ class InfoBarAndroid : public infobars::InfoBar {
  protected:
   // Derived classes must implement this method to process the corresponding
   // action.
-  virtual void ProcessButton(int action,
-                             const std::string& action_value) = 0;
+  virtual void ProcessButton(int action) = 0;
+
   void CloseInfoBar();
   InfoBarAndroid* infobar_android() { return this; }
 

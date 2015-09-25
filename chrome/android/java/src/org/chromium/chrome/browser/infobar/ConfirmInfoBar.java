@@ -203,6 +203,6 @@ public class ConfirmInfoBar extends InfoBar {
         }
 
         int action = isPrimaryButton ? ActionType.OK : ActionType.CANCEL;
-        onButtonClicked(action, "");
+        onButtonClicked(action);
     }
 }

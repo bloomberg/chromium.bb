@@ -51,9 +51,7 @@ void GeneratedPasswordSavedInfoBar::OnLinkClicked(JNIEnv* env, jobject obj) {
   RemoveSelf();
 }
 
-void GeneratedPasswordSavedInfoBar::ProcessButton(
-    int action,
-    const std::string& action_value) {
+void GeneratedPasswordSavedInfoBar::ProcessButton(int action) {
   if (!owner())
     return;
 

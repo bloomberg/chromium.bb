@@ -54,7 +54,7 @@ public class DownloadOverwriteInfoBar extends InfoBar {
     public void onButtonClicked(boolean isPrimaryButton) {
         int action = isPrimaryButton ? ActionType.OVERWRITE
                                      : ActionType.CREATE_NEW_FILE;
-        onButtonClicked(action, "");
+        onButtonClicked(action);
     }
 
     private CharSequence getMessageText(Context context) {

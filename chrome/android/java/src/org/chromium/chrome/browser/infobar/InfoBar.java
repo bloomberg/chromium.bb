@@ -205,12 +205,10 @@ public abstract class InfoBar implements InfoBarView {
 
     /**
      * Performs some action related to the button being clicked.
-     *
      * @param action The type of action defined as ACTION_* in this class.
-     * @param actionValue An additional string associated with the action if any. "" if none.
      */
-    protected void onButtonClicked(int action, String actionValue) {
-        if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action, actionValue);
+    protected void onButtonClicked(int action) {
+        if (mNativeInfoBarPtr != 0) nativeOnButtonClicked(mNativeInfoBarPtr, action);
     }
 
     @Override
@@ -244,7 +242,6 @@ public abstract class InfoBar implements InfoBarView {
     }
 
     private native void nativeOnLinkClicked(long nativeInfoBarAndroid);
-    private native void nativeOnButtonClicked(
-            long nativeInfoBarAndroid, int action, String actionValue);
+    private native void nativeOnButtonClicked(long nativeInfoBarAndroid, int action);
     private native void nativeOnCloseButtonClicked(long nativeInfoBarAndroid);
 }
