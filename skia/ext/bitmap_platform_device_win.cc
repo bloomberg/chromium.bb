@@ -7,6 +7,7 @@
 
 #include "base/debug/gdi_debug_util_win.h"
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "skia/ext/bitmap_platform_device_win.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkMatrix.h"
@@ -108,7 +109,12 @@ void BitmapPlatformDevice::LoadConfig() {
 }
 
 static void DeleteHBitmapCallback(void* addr, void* context) {
-  DeleteObject(static_cast<HBITMAP>(context));
+  // If context is not NULL then it's a valid HBITMAP to delete.
+  // Otherwise we just unmap the pixel memory.
+  if (context)
+    DeleteObject(static_cast<HBITMAP>(context));
+  else
+    UnmapViewOfFile(addr);
 }
 
 static bool InstallHBitmapPixels(SkBitmap* bitmap, int width, int height,
@@ -133,10 +139,25 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
     bool do_clear) {
 
   void* data;
-  HBITMAP hbitmap = CreateHBitmap(width, height, is_opaque, shared_section,
-                                  &data);
-  if (!hbitmap)
-    return NULL;
+  HBITMAP hbitmap = NULL;
+
+  // This function contains an implementation of a Skia platform bitmap for
+  // drawing and compositing graphics. The original implementation uses Windows
+  // GDI to create the backing bitmap memory, however it's possible for a
+  // process to not have access to GDI which will cause this code to fail. It's
+  // possible to detect when GDI is unavailable and instead directly map the
+  // shared memory as the bitmap.
+  if (base::win::IsUser32AndGdi32Available()) {
+    hbitmap = CreateHBitmap(width, height, is_opaque, shared_section, &data);
+    if (!hbitmap)
+      return NULL;
+  } else {
+    DCHECK(shared_section != NULL);
+    data = MapViewOfFile(shared_section, FILE_MAP_WRITE, 0, 0,
+                         PlatformCanvasStrideForWidth(width) * height);
+    if (!data)
+      return NULL;
+  }
 
   SkBitmap bitmap;
   if (!InstallHBitmapPixels(&bitmap, width, height, is_opaque, data, hbitmap))
@@ -179,13 +200,15 @@ BitmapPlatformDevice::BitmapPlatformDevice(
       transform_(SkMatrix::I()) {
   // The data object is already ref'ed for us by create().
   SkDEBUGCODE(begin_paint_count_ = 0);
-  SetPlatformDevice(this, this);
-  // Initialize the clip region to the entire bitmap.
-  BITMAP bitmap_data;
-  if (GetObject(hbitmap_, sizeof(BITMAP), &bitmap_data)) {
-    SkIRect rect;
-    rect.set(0, 0, bitmap_data.bmWidth, bitmap_data.bmHeight);
-    clip_region_ = SkRegion(rect);
+  if (hbitmap) {
+    SetPlatformDevice(this, this);
+    // Initialize the clip region to the entire bitmap.
+    BITMAP bitmap_data;
+    if (GetObject(hbitmap_, sizeof(BITMAP), &bitmap_data)) {
+      SkIRect rect;
+      rect.set(0, 0, bitmap_data.bmWidth, bitmap_data.bmHeight);
+      clip_region_ = SkRegion(rect);
+    }
   }
 }
 
