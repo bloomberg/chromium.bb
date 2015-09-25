@@ -19,9 +19,10 @@ namespace page_load_metrics {
 
 namespace {
 
-base::TimeDelta ClampDelta(double event_ms, double start_ms) {
-  double delta = event_ms - start_ms;
-  return base::TimeDelta::FromMillisecondsD(delta < 0 ? 0 : delta);
+base::TimeDelta ClampDelta(double event, double start) {
+  if (event - start < 0)
+    event = start;
+  return base::Time::FromDoubleT(event) - base::Time::FromDoubleT(start);
 }
 
 } //  namespace
