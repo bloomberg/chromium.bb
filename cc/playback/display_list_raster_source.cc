@@ -161,7 +161,7 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
   analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
 }
 
-void DisplayListRasterSource::GatherDiscardableImages(
+void DisplayListRasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
     std::vector<skia::PositionImage>* images) const {
   DCHECK_EQ(0u, images->size());

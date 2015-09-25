@@ -206,7 +206,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  bool IsGatherPixelRefsEnabled() override;
+  bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
 
   // Synchronously establish a channel to the GPU plugin if not previously
@@ -626,7 +626,7 @@ class CONTENT_EXPORT RenderThreadImpl
   bool is_persistent_gpu_memory_buffer_enabled_;
   bool is_elastic_overscroll_enabled_;
   std::vector<unsigned> use_image_texture_targets_;
-  bool is_gather_pixel_refs_enabled_;
+  bool are_image_decode_tasks_enabled_;
   bool is_threaded_animation_enabled_;
 
   class PendingRenderFrameConnect

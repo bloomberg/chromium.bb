@@ -44,7 +44,7 @@ namespace cc {
 DisplayListRecordingSource::DisplayListRecordingSource(
     const gfx::Size& grid_cell_size)
     : slow_down_raster_scale_factor_for_debug_(0),
-      gather_images_(false),
+      generate_discardable_images_metadata_(false),
       requires_clear_(false),
       is_solid_color_(false),
       clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
@@ -184,8 +184,8 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
 
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
-  if (gather_images_)
-    display_list_->GatherDiscardableImages(grid_cell_size_);
+  if (generate_discardable_images_metadata_)
+    display_list_->GenerateDiscardableImagesMetadata(grid_cell_size_);
 
   return true;
 }
@@ -203,9 +203,9 @@ void DisplayListRecordingSource::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
 }
 
-void DisplayListRecordingSource::SetGatherDiscardableImages(
-    bool gather_images) {
-  gather_images_ = gather_images;
+void DisplayListRecordingSource::SetGenerateDiscardableImagesMetadata(
+    bool generate_metadata) {
+  generate_discardable_images_metadata_ = generate_metadata;
 }
 
 void DisplayListRecordingSource::SetBackgroundColor(SkColor background_color) {

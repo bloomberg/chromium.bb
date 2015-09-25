@@ -66,7 +66,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
 
   FakeDisplayListRecordingSource recording_source(tile_grid_size);
   Region invalidation(visible_rect);
-  recording_source.SetGatherDiscardableImages(true);
+  recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
       1, RecordingSource::RECORD_NORMALLY);
@@ -195,7 +195,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
   FakeDisplayListRecordingSource recording_source(tile_grid_size);
   Region invalidation(visible_rect);
   recording_source.set_pixel_record_distance(0);
-  recording_source.SetGatherDiscardableImages(true);
+  recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, layer_size, visible_rect, 1,
       RecordingSource::RECORD_NORMALLY);
@@ -342,7 +342,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
 
   FakeDisplayListRecordingSource recording_source(tile_grid_size);
   Region invalidation(visible_rect);
-  recording_source.SetGatherDiscardableImages(true);
+  recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
       1, RecordingSource::RECORD_NORMALLY);
@@ -384,7 +384,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
 
   FakeDisplayListRecordingSource recording_source(tile_grid_size);
   Region invalidation(visible_rect);
-  recording_source.SetGatherDiscardableImages(true);
+  recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
       &content_layer_client, &invalidation, visible_rect.size(), visible_rect,
       1, RecordingSource::RECORD_NORMALLY);

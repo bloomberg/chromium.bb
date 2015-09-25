@@ -192,7 +192,7 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
                                    gfx::Point(260, 0));
   recording_source->add_draw_image(discardable_image[1][1].get(),
                                    gfx::Point(260, 260));
-  recording_source->SetGatherDiscardableImages(true);
+  recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
   scoped_refptr<DisplayListRasterSource> raster =
@@ -202,7 +202,7 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   // Tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionImage> images;
-    raster->GatherDiscardableImages(gfx::Rect(0, 0, 256, 256), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[0][0].get(), images[0].image);
     EXPECT_EQ(gfx::RectF(32, 32).ToString(),
@@ -211,7 +211,7 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     std::vector<skia::PositionImage> images;
-    raster->GatherDiscardableImages(gfx::Rect(260, 260, 256, 256), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_EQ(discardable_image[1][1].get(), images[0].image);
     EXPECT_EQ(gfx::RectF(260, 260, 32, 32).ToString(),
@@ -220,13 +220,13 @@ TEST(DisplayListRasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   // Ensure there's no discardable pixel refs in the empty cell
   {
     std::vector<skia::PositionImage> images;
-    raster->GatherDiscardableImages(gfx::Rect(0, 256, 256, 256), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256), &images);
     EXPECT_EQ(0u, images.size());
   }
   // Layer sized iterators. These should find three pixel ref.
   {
     std::vector<skia::PositionImage> images;
-    raster->GatherDiscardableImages(gfx::Rect(0, 0, 512, 512), &images);
+    raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), &images);
     EXPECT_EQ(3u, images.size());
     EXPECT_EQ(discardable_image[0][0].get(), images[0].image);
     EXPECT_EQ(discardable_image[0][1].get(), images[1].image);

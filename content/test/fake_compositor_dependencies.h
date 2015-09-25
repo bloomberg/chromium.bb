@@ -39,7 +39,7 @@ class FakeCompositorDependencies : public CompositorDependencies {
   scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id) override;
   cc::TaskGraphRunner* GetTaskGraphRunner() override;
-  bool IsGatherPixelRefsEnabled() override;
+  bool AreImageDecodeTasksEnabled() override;
   bool IsThreadedAnimationEnabled() override;
 
  private:

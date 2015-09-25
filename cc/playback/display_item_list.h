@@ -76,7 +76,7 @@ class CC_EXPORT DisplayItemList
 
   void EmitTraceSnapshot() const;
 
-  void GatherDiscardableImages(const gfx::Size& grid_cell_size);
+  void GenerateDiscardableImagesMetadata(const gfx::Size& grid_cell_size);
 
  private:
   DisplayItemList(gfx::Rect layer_rect,

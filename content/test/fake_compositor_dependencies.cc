@@ -94,7 +94,7 @@ cc::TaskGraphRunner* FakeCompositorDependencies::GetTaskGraphRunner() {
   return &task_graph_runner_;
 }
 
-bool FakeCompositorDependencies::IsGatherPixelRefsEnabled() {
+bool FakeCompositorDependencies::AreImageDecodeTasksEnabled() {
   return false;
 }
 

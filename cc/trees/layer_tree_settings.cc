@@ -67,7 +67,7 @@ LayerTreeSettings::LayerTreeSettings()
       use_occlusion_for_tile_prioritization(false),
       record_full_layer(false),
       verify_property_trees(false),
-      gather_images(false),
+      image_decode_tasks_enabled(false),
       use_compositor_animation_timelines(false),
       wait_for_beginframe_interval(true),
       max_staging_buffer_usage_in_bytes(32 * 1024 * 1024) {}

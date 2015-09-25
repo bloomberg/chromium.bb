@@ -720,8 +720,6 @@ void RenderThreadImpl::Init() {
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&RenderThreadImpl::OnMemoryPressure, base::Unretained(this))));
 
-  is_gather_pixel_refs_enabled_ = false;
-
   int num_raster_threads = 0;
   std::string string_value =
       command_line.GetSwitchValueASCII(switches::kNumRasterThreads);
@@ -730,11 +728,10 @@ void RenderThreadImpl::Init() {
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
-  // Note: Currently, gathering of pixel refs when using a single
-  // raster thread doesn't provide any benefit. This might change
-  // in the future but we avoid it for now to reduce the cost of
-  // Picture::Create.
-  is_gather_pixel_refs_enabled_ = num_raster_threads > 1;
+  // Note: Currently, enabling image decode tasks only provides a benefit if
+  // there's more than one raster thread. This might change in the future but we
+  // avoid it for now to reduce the cost of recording.
+  are_image_decode_tasks_enabled_ = num_raster_threads > 1;
 
   base::SimpleThread::Options thread_options;
 #if defined(OS_ANDROID) || defined(OS_LINUX)
@@ -1543,8 +1540,8 @@ cc::TaskGraphRunner* RenderThreadImpl::GetTaskGraphRunner() {
   return raster_worker_pool_->GetTaskGraphRunner();
 }
 
-bool RenderThreadImpl::IsGatherPixelRefsEnabled() {
-  return is_gather_pixel_refs_enabled_;
+bool RenderThreadImpl::AreImageDecodeTasksEnabled() {
+  return are_image_decode_tasks_enabled_;
 }
 
 bool RenderThreadImpl::IsThreadedAnimationEnabled() {

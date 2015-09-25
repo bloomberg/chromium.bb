@@ -69,7 +69,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Populate the given list with all images that may overlap the given
   // rect in layer space.
-  virtual void GatherDiscardableImages(
+  virtual void GetDiscardableImagesInRect(
       const gfx::Rect& layer_rect,
       std::vector<skia::PositionImage>* images) const = 0;
 

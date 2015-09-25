@@ -34,7 +34,8 @@ class CC_EXPORT DiscardableImageMap {
   explicit DiscardableImageMap(const gfx::Size& cell_size);
   ~DiscardableImageMap();
 
-  void GatherImagesFromPicture(SkPicture* picture, const gfx::Rect& layer_rect);
+  void GenerateDiscardableImagesMetadata(SkPicture* picture,
+                                         const gfx::Rect& layer_rect);
 
   bool empty() const { return data_hash_map_.empty(); }
 

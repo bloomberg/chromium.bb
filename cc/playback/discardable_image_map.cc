@@ -22,8 +22,9 @@ DiscardableImageMap::DiscardableImageMap(const gfx::Size& cell_size)
 
 DiscardableImageMap::~DiscardableImageMap() {}
 
-void DiscardableImageMap::GatherImagesFromPicture(SkPicture* picture,
-                                                  const gfx::Rect& layer_rect) {
+void DiscardableImageMap::GenerateDiscardableImagesMetadata(
+    SkPicture* picture,
+    const gfx::Rect& layer_rect) {
   DCHECK(picture);
 
   int min_x = std::numeric_limits<int>::max();
@@ -32,6 +33,8 @@ void DiscardableImageMap::GatherImagesFromPicture(SkPicture* picture,
   int max_y = 0;
 
   skia::DiscardableImageList images;
+  // TODO(vmpstr): Remove DiscardableImageUtils, and instead move the gathering
+  // code to be in this file. https://codereview.chromium.org/1353193002/.
   skia::DiscardableImageUtils::GatherDiscardableImages(picture, &images);
   for (skia::DiscardableImageList::const_iterator it = images.begin();
        it != images.end(); ++it) {

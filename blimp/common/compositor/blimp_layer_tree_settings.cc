@@ -141,12 +141,12 @@ void PopulateCommonLayerTreeSettings(cc::LayerTreeSettings* settings) {
         &settings->use_image_texture_targets);
   }
 
-  settings->gather_images = false;
+  settings->image_decode_tasks_enabled = false;
   if (cmd.HasSwitch(switches::kNumRasterThreads)) {
     int num_raster_threads = 0;
     GetSwitchValueAsInt(cmd, switches::kNumRasterThreads, 0,
                         std::numeric_limits<int>::max(), &num_raster_threads);
-    settings->gather_images = num_raster_threads > 1;
+    settings->image_decode_tasks_enabled = num_raster_threads > 1;
   }
 
   if (cmd.HasSwitch(cc::switches::kTopControlsShowThreshold)) {

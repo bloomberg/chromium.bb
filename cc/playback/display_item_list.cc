@@ -269,7 +269,8 @@ void DisplayItemList::EmitTraceSnapshot() const {
           DisplayItemsTracingEnabled()));
 }
 
-void DisplayItemList::GatherDiscardableImages(const gfx::Size& grid_cell_size) {
+void DisplayItemList::GenerateDiscardableImagesMetadata(
+    const gfx::Size& grid_cell_size) {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(picture_);
@@ -278,7 +279,7 @@ void DisplayItemList::GatherDiscardableImages(const gfx::Size& grid_cell_size) {
   if (!picture_->willPlayBackBitmaps())
     return;
 
-  images_->GatherImagesFromPicture(picture_.get(), layer_rect_);
+  images_->GenerateDiscardableImagesMetadata(picture_.get(), layer_rect_);
 }
 
 }  // namespace cc
