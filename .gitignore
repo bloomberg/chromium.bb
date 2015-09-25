@@ -49,3 +49,7 @@
 
 # Ignore virtualenv created during bootstrapping.
 /ENV
+
+# Ignore intermediate isolate files
+*.isolated
+*.isolated.state
