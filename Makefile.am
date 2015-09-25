@@ -111,7 +111,7 @@ systemd_notify_la_SOURCES =			\
 	src/systemd-notify.h			\
 	shared/helpers.h			\
 	shared/zalloc.h				\
-	compositor.h
+	src/compositor.h
 endif
 
 nodist_weston_SOURCES =					\
