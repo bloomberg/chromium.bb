@@ -63,7 +63,7 @@ void AutofillPopupBaseView::DoShow() {
     views::Widget* widget = new views::Widget;
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
     params.delegate = this;
-    params.parent = container_view();
+    params.parent = parent_widget_->GetNativeView();
     widget->Init(params);
     widget->SetContentsView(this);
 
