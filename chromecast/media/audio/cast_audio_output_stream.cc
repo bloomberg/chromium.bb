@@ -152,6 +152,8 @@ void CastAudioOutputStream::Start(AudioSourceCallback* source_callback) {
   VLOG(1) << __FUNCTION__ << " : " << this;
   audio_worker_->Start(base::Bind(&CastAudioOutputStream::PushFrame,
                                   weak_factory_.GetWeakPtr(), source_callback));
+
+  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
 }
 
 void CastAudioOutputStream::Stop() {
@@ -188,8 +190,6 @@ void CastAudioOutputStream::PushFrame(AudioSourceCallback* source_callback) {
                  << " skipped because audio device is busy.";
     return;
   }
-
-  metrics::CastMetricsHelper::GetInstance()->LogTimeToFirstAudio();
 
   int frame_count = source_callback->OnMoreData(audio_bus_.get(), 0);
   DCHECK_EQ(frame_count, audio_bus_->frames());
