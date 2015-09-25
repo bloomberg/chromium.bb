@@ -1360,8 +1360,6 @@
                   'penghuang+watch-mandoline@chromium.org'],
     'manifest': ['mlamouri+watch-manifest@chromium.org'],
     'md_settings': ['dbeam+watch-settings@chromium.org',
-                    'jhawkins+watch-md-settings@chromium.org',
-                    'jlklein+watch-md-settings@chromium.org',
                     'michaelpg+watch-md-settings@chromium.org',
                     'stevenjb+watch-md-settings@chromium.org'],
     'media': ['feature-media-reviews@chromium.org'],
