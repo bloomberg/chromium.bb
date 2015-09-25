@@ -200,7 +200,8 @@ SET character_set_client = utf8;
   `final` tinyint NOT NULL,
   `metadata_url` tinyint NOT NULL,
   `summary` tinyint NOT NULL,
-  `deadline` tinyint NOT NULL
+  `deadline` tinyint NOT NULL,
+  `important` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -268,7 +269,8 @@ SET character_set_client = utf8;
   `build_final` tinyint NOT NULL,
   `metadata_url` tinyint NOT NULL,
   `summary` tinyint NOT NULL,
-  `deadline` tinyint NOT NULL
+  `deadline` tinyint NOT NULL,
+  `important` tinyint NOT NULL
 ) ENGINE=MyISAM */;
 SET character_set_client = @saved_cs_client;
 
@@ -306,7 +308,7 @@ CREATE TABLE `schemaVersionTable` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `clActionView` AS select `c`.`id` AS `id`,`c`.`build_id` AS `build_id`,`c`.`change_number` AS `change_number`,`c`.`patch_number` AS `patch_number`,`c`.`change_source` AS `change_source`,`c`.`action` AS `action`,`c`.`reason` AS `reason`,`c`.`timestamp` AS `timestamp`,`b`.`last_updated` AS `last_updated`,`b`.`master_build_id` AS `master_build_id`,`b`.`buildbot_generation` AS `buildbot_generation`,`b`.`builder_name` AS `builder_name`,`b`.`waterfall` AS `waterfall`,`b`.`build_number` AS `build_number`,`b`.`build_config` AS `build_config`,`b`.`bot_hostname` AS `bot_hostname`,`b`.`start_time` AS `start_time`,`b`.`finish_time` AS `finish_time`,`b`.`status` AS `status`,`b`.`build_type` AS `build_type`,`b`.`chrome_version` AS `chrome_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`platform_version` AS `platform_version`,`b`.`full_version` AS `full_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`toolchain_url` AS `toolchain_url`,`b`.`final` AS `final`,`b`.`metadata_url` AS `metadata_url`,`b`.`summary` AS `summary`,`b`.`deadline` AS `deadline` from (`clActionTable` `c` join `buildTable` `b` on((`c`.`build_id` = `b`.`id`))) */;
+/*!50001 VIEW `clActionView` AS select `c`.`id` AS `id`,`c`.`build_id` AS `build_id`,`c`.`change_number` AS `change_number`,`c`.`patch_number` AS `patch_number`,`c`.`change_source` AS `change_source`,`c`.`action` AS `action`,`c`.`reason` AS `reason`,`c`.`timestamp` AS `timestamp`,`b`.`last_updated` AS `last_updated`,`b`.`master_build_id` AS `master_build_id`,`b`.`buildbot_generation` AS `buildbot_generation`,`b`.`builder_name` AS `builder_name`,`b`.`waterfall` AS `waterfall`,`b`.`build_number` AS `build_number`,`b`.`build_config` AS `build_config`,`b`.`bot_hostname` AS `bot_hostname`,`b`.`start_time` AS `start_time`,`b`.`finish_time` AS `finish_time`,`b`.`status` AS `status`,`b`.`build_type` AS `build_type`,`b`.`chrome_version` AS `chrome_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`platform_version` AS `platform_version`,`b`.`full_version` AS `full_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`toolchain_url` AS `toolchain_url`,`b`.`final` AS `final`,`b`.`metadata_url` AS `metadata_url`,`b`.`summary` AS `summary`,`b`.`deadline` AS `deadline`,`b`.`important` AS `important` from (`clActionTable` `c` join `buildTable` `b` on((`c`.`build_id` = `b`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -322,7 +324,7 @@ CREATE TABLE `schemaVersionTable` (
 /*!50001 SET collation_connection      = utf8_general_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `failureView` AS select `f`.`id` AS `id`,`f`.`build_stage_id` AS `build_stage_id`,`f`.`outer_failure_id` AS `outer_failure_id`,`f`.`exception_type` AS `exception_type`,`f`.`exception_message` AS `exception_message`,`f`.`exception_category` AS `exception_category`,`f`.`extra_info` AS `extra_info`,`f`.`timestamp` AS `timestamp`,`bs`.`name` AS `stage_name`,`bs`.`board` AS `board`,`bs`.`status` AS `stage_status`,`bs`.`last_updated` AS `stage_last_updated`,`bs`.`start_time` AS `stage_start_time`,`bs`.`finish_time` AS `stage_finish_time`,`bs`.`final` AS `stage_final`,`b`.`id` AS `build_id`,`b`.`last_updated` AS `build_last_updated`,`b`.`master_build_id` AS `master_build_id`,`b`.`buildbot_generation` AS `buildbot_generation`,`b`.`builder_name` AS `builder_name`,`b`.`waterfall` AS `waterfall`,`b`.`build_number` AS `build_number`,`b`.`build_config` AS `build_config`,`b`.`bot_hostname` AS `bot_hostname`,`b`.`start_time` AS `build_start_time`,`b`.`finish_time` AS `build_finish_time`,`b`.`status` AS `build_status`,`b`.`build_type` AS `build_type`,`b`.`chrome_version` AS `chrome_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`platform_version` AS `platform_version`,`b`.`full_version` AS `full_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`toolchain_url` AS `toolchain_url`,`b`.`final` AS `build_final`,`b`.`metadata_url` AS `metadata_url`,`b`.`summary` AS `summary`,`b`.`deadline` AS `deadline` from ((`failureTable` `f` join `buildStageTable` `bs` on((`f`.`build_stage_id` = `bs`.`id`))) join `buildTable` `b` on((`bs`.`build_id` = `b`.`id`))) */;
+/*!50001 VIEW `failureView` AS select `f`.`id` AS `id`,`f`.`build_stage_id` AS `build_stage_id`,`f`.`outer_failure_id` AS `outer_failure_id`,`f`.`exception_type` AS `exception_type`,`f`.`exception_message` AS `exception_message`,`f`.`exception_category` AS `exception_category`,`f`.`extra_info` AS `extra_info`,`f`.`timestamp` AS `timestamp`,`bs`.`name` AS `stage_name`,`bs`.`board` AS `board`,`bs`.`status` AS `stage_status`,`bs`.`last_updated` AS `stage_last_updated`,`bs`.`start_time` AS `stage_start_time`,`bs`.`finish_time` AS `stage_finish_time`,`bs`.`final` AS `stage_final`,`b`.`id` AS `build_id`,`b`.`last_updated` AS `build_last_updated`,`b`.`master_build_id` AS `master_build_id`,`b`.`buildbot_generation` AS `buildbot_generation`,`b`.`builder_name` AS `builder_name`,`b`.`waterfall` AS `waterfall`,`b`.`build_number` AS `build_number`,`b`.`build_config` AS `build_config`,`b`.`bot_hostname` AS `bot_hostname`,`b`.`start_time` AS `build_start_time`,`b`.`finish_time` AS `build_finish_time`,`b`.`status` AS `build_status`,`b`.`build_type` AS `build_type`,`b`.`chrome_version` AS `chrome_version`,`b`.`milestone_version` AS `milestone_version`,`b`.`platform_version` AS `platform_version`,`b`.`full_version` AS `full_version`,`b`.`sdk_version` AS `sdk_version`,`b`.`toolchain_url` AS `toolchain_url`,`b`.`final` AS `build_final`,`b`.`metadata_url` AS `metadata_url`,`b`.`summary` AS `summary`,`b`.`deadline` AS `deadline`,`b`.`important` AS `important` from ((`failureTable` `f` join `buildStageTable` `bs` on((`f`.`build_stage_id` = `bs`.`id`))) join `buildTable` `b` on((`bs`.`build_id` = `b`.`id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
