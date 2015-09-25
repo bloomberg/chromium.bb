@@ -25,10 +25,4 @@ shared_library("chromium_android_linker") {
     "//build/config/sanitizers:deps",
     "//third_party/android_crazy_linker",
   ]
-
-  # TODO(GYP):
-  # The crazy linker is never instrumented.
-  #'cflags!': [
-  #'-finstrument-functions',
-  #],
 }

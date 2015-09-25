@@ -4593,23 +4593,17 @@
           }],
           ['order_profiling!=0 and OS=="android"', {
             'target_conditions' : [
-              # crazy_linker has an upstream gyp file we can't edit, and we
-              # don't want to instrument it.
-              ['_toolset=="target" and _target_name!="crazy_linker"', {
+              ['_toolset=="target"', {
                 'cflags': [
                   '-finstrument-functions',
                   # Allow mmx intrinsics to inline, so that the
                   # compiler can expand the intrinsics.
                   '-finstrument-functions-exclude-file-list=mmintrin.h',
-                ],
-                'defines': ['CYGPROFILE_INSTRUMENTATION'],
-              }],
-              ['_toolset=="target"', {
-                'cflags': [
                   # Avoids errors with current NDK:
                   # "third_party/android_tools/ndk/toolchains/arm-linux-androideabi-4.6/prebuilt/linux-x86_64/bin/../lib/gcc/arm-linux-androideabi/4.6/include/arm_neon.h:3426:3: error: argument must be a constant"
                   '-finstrument-functions-exclude-file-list=arm_neon.h,SaturatedArithmeticARM.h',
                 ],
+                'defines': ['CYGPROFILE_INSTRUMENTATION'],
               }],
             ],
           }],
