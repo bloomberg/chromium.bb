@@ -38,13 +38,12 @@ public:
     // Protocol method implementations
     void getPlaybackRate(ErrorString*, double* playbackRate) override;
     void setPlaybackRate(ErrorString*, double playbackRate) override;
-    void setCurrentTime(ErrorString*, double currentTime) override;
     void setTiming(ErrorString*, const String& animationId, double duration, double delay) override;
+    void seekAnimations(ErrorString*, const RefPtr<JSONArray>& animationIds, double currentTime) override;
 
     // API for InspectorInstrumentation
     void didCreateAnimation(unsigned);
     void didStartAnimation(Animation*);
-    void didCancelAnimation(Animation*);
     void didClearDocumentOfWindowObject(LocalFrame*);
 
     // API for InspectorFrontend
@@ -64,11 +63,14 @@ private:
     PassRefPtr<TypeBuilder::Animation::Animation> buildObjectForAnimation(Animation&, AnimationType, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
     double normalizedStartTime(Animation&);
     AnimationTimeline& referenceTimeline();
+    Animation* animationClone(Animation*);
 
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
+    PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;
+    bool m_isCloning;
 };
 
 }

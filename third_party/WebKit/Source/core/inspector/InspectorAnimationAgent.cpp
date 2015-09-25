@@ -36,6 +36,7 @@ InspectorAnimationAgent::InspectorAnimationAgent(InspectorPageAgent* pageAgent, 
     : InspectorBaseAgent<InspectorAnimationAgent, InspectorFrontend::Animation>("Animation")
     , m_pageAgent(pageAgent)
     , m_domAgent(domAgent)
+    , m_isCloning(false)
 {
 }
 
@@ -61,6 +62,7 @@ void InspectorAnimationAgent::disable(ErrorString*)
     m_instrumentingAgents->setInspectorAnimationAgent(nullptr);
     m_idToAnimation.clear();
     m_idToAnimationType.clear();
+    m_idToAnimationClone.clear();
 }
 
 void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
@@ -68,6 +70,7 @@ void InspectorAnimationAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
     if (frame == m_pageAgent->inspectedFrame()) {
         m_idToAnimation.clear();
         m_idToAnimationType.clear();
+        m_idToAnimationClone.clear();
     }
 }
 
@@ -189,14 +192,34 @@ void InspectorAnimationAgent::setPlaybackRate(ErrorString*, double playbackRate)
     }
 }
 
-void InspectorAnimationAgent::setCurrentTime(ErrorString*, double currentTime)
+Animation* InspectorAnimationAgent::animationClone(Animation* animation)
 {
-    double timeDelta = currentTime - referenceTimeline().currentTime();
-    for (Frame* frame = m_pageAgent->inspectedFrame(); frame; frame = frame->tree().traverseNext(m_pageAgent->inspectedFrame())) {
-        if (frame->isLocalFrame()) {
-            AnimationTimeline& timeline = toLocalFrame(frame)->document()->timeline();
-            timeline.setCurrentTime(timeline.currentTime() + timeDelta);
+    const String id = String::number(animation->sequenceNumber());
+    if (!m_idToAnimationClone.get(id)) {
+        // TODO(samli): Clone the AnimationEffect as well.
+        Animation* clone = Animation::create(animation->effect(), animation->timeline());
+        m_idToAnimationClone.set(id, clone);
+        m_idToAnimation.set(String::number(clone->sequenceNumber()), clone);
+    }
+    return m_idToAnimationClone.get(id);
+}
+
+void InspectorAnimationAgent::seekAnimations(ErrorString* errorString, const RefPtr<JSONArray>& animationIds, double currentTime)
+{
+    for (const auto& id : *animationIds) {
+        String animationId;
+        if (!(id->asString(&animationId))) {
+            *errorString = "Invalid argument type";
+            return;
         }
+        Animation* animation = assertAnimation(errorString, animationId);
+        if (!animation)
+            return;
+        m_isCloning = true;
+        Animation* clone = animationClone(animation);
+        m_isCloning = false;
+        clone->play();
+        clone->setCurrentTime(currentTime);
     }
 }
 
@@ -236,6 +259,8 @@ void InspectorAnimationAgent::setTiming(ErrorString* errorString, const String& 
 
 void InspectorAnimationAgent::didCreateAnimation(unsigned sequenceNumber)
 {
+    if (m_isCloning)
+        return;
     frontend()->animationCreated(String::number(sequenceNumber));
 }
 
@@ -245,14 +270,6 @@ void InspectorAnimationAgent::didStartAnimation(Animation* animation)
     if (m_idToAnimation.get(animationId))
         return;
     frontend()->animationStarted(buildObjectForAnimation(*animation));
-}
-
-void InspectorAnimationAgent::didCancelAnimation(Animation* animation)
-{
-    const String& animationId = String::number(animation->sequenceNumber());
-    if (!m_idToAnimation.get(animationId))
-        return;
-    frontend()->animationCanceled(animationId);
 }
 
 void InspectorAnimationAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
@@ -292,6 +309,7 @@ DEFINE_TRACE(InspectorAnimationAgent)
     visitor->trace(m_domAgent);
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
+    visitor->trace(m_idToAnimationClone);
 #endif
     InspectorBaseAgent::trace(visitor);
 }

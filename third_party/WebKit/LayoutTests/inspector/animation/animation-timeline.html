@@ -33,11 +33,6 @@ function startAnimationWithEndDelay()
     player = node.animate([{ width: "100px" }, { width: "200px" }], { duration: 20000, delay: 100, endDelay: 200 });
 }
 
-function cancelAnimation()
-{
-    player.cancel();
-}
-
 function startAnimationWithStepTiming()
 {
     player = node.animate([{ width: "100px", easing: "step(5, end)" }, { width: "200px", easing: "step-start" }], 200);
@@ -93,17 +88,6 @@ function test()
         timeline._redraw();
         InspectorTest.addResult(">>>> Animation with start and end delay");
         InspectorTest.dumpAnimationTimeline(timeline);
-        InspectorTest.addSniffer(WebInspector.AnimationTimeline.prototype, "_cancelAnimation", step4);
-        InspectorTest.evaluateInPage("cancelAnimation()");
-    }
-
-    function step4()
-    {
-        InspectorTest.addResult(">>>> Animation canceled");
-        // Force redraw since the draw is async scheduled
-        timeline._redraw();
-        InspectorTest.dumpAnimationTimeline(timeline);
-        timeline._reset();
         InspectorTest.waitForAnimationAdded(step5);
         InspectorTest.evaluateInPage("startAnimationWithStepTiming()");
     }

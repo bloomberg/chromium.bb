@@ -19,19 +19,18 @@ function cancelAnimation()
 function test()
 {
     InspectorTest.eventHandler["Animation.animationCreated"] = onCreated;
-    InspectorTest.eventHandler["Animation.animationCanceled"] = onCanceled;
+    InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
     InspectorTest.sendCommand("Animation.enable", {});
     InspectorTest.evaluateInPage("startAnimation()", function() {});
 
     function onCreated()
     {
         InspectorTest.log("Animation created");
-        InspectorTest.evaluateInPage("cancelAnimation()", function() {});
     }
 
-    function onCanceled()
+    function onStarted()
     {
-        InspectorTest.log("Animation canceled");
+        InspectorTest.log("Animation started");
         InspectorTest.completeTest();
     }
 }

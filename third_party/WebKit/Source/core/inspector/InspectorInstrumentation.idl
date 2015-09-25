@@ -418,9 +418,6 @@ interface InspectorInstrumentation {
 
     [Animation, Inline=FastReturn]
     void didStartAnimation(Document*, Animation* player);
-
-    [Animation, Inline=FastReturn]
-    void didCancelAnimation(Document*, Animation* player);
 }
 
 interface InspectorConsoleInstrumentation {
