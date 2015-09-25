@@ -129,6 +129,7 @@ struct weston_wm {
 		xcb_atom_t		 net_wm_moveresize;
 		xcb_atom_t		 net_supporting_wm_check;
 		xcb_atom_t		 net_supported;
+		xcb_atom_t		 net_active_window;
 		xcb_atom_t		 motif_wm_hints;
 		xcb_atom_t		 clipboard;
 		xcb_atom_t		 clipboard_manager;
@@ -141,6 +142,7 @@ struct weston_wm {
 		xcb_atom_t		 compound_text;
 		xcb_atom_t		 text;
 		xcb_atom_t		 string;
+		xcb_atom_t		 window;
 		xcb_atom_t		 text_plain_utf8;
 		xcb_atom_t		 text_plain;
 		xcb_atom_t		 xdnd_selection;

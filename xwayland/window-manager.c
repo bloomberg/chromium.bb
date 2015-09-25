@@ -163,6 +163,9 @@ static struct weston_wm_window *
 get_wm_window(struct weston_surface *surface);
 
 static void
+weston_wm_set_net_active_window(struct weston_wm *wm, xcb_window_t window);
+
+static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window);
 
 static void
@@ -782,6 +785,12 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 		window = get_wm_window(surface);
 	}
 
+	if (window) {
+		weston_wm_set_net_active_window(wm, window->id);
+	} else {
+		weston_wm_set_net_active_window(wm, XCB_WINDOW_NONE);
+	}
+
 	weston_wm_send_focus_window(wm, window);
 
 	if (wm->focus_window) {
@@ -795,6 +804,9 @@ weston_wm_window_activate(struct wl_listener *listener, void *data)
 			frame_set_flag(wm->focus_window->frame, FRAME_FLAG_ACTIVE);
 		weston_wm_window_schedule_repaint(wm->focus_window);
 	}
+
+	xcb_flush(wm->conn);
+
 }
 
 static void
@@ -1986,6 +1998,13 @@ weston_wm_handle_event(int fd, uint32_t mask, void *data)
 }
 
 static void
+weston_wm_set_net_active_window(struct weston_wm *wm, xcb_window_t window) {
+	xcb_change_property(wm->conn, XCB_PROP_MODE_REPLACE,
+			wm->screen->root, wm->atom.net_active_window,
+			wm->atom.window, 32, 1, &window);
+}
+
+static void
 weston_wm_get_visual_and_colormap(struct weston_wm *wm)
 {
 	xcb_depth_iterator_t d_iter;
@@ -2061,6 +2080,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "_NET_SUPPORTING_WM_CHECK",
 					F(atom.net_supporting_wm_check) },
 		{ "_NET_SUPPORTED",     F(atom.net_supported) },
+		{ "_NET_ACTIVE_WINDOW",     F(atom.net_active_window) },
 		{ "_MOTIF_WM_HINTS",	F(atom.motif_wm_hints) },
 		{ "CLIPBOARD",		F(atom.clipboard) },
 		{ "CLIPBOARD_MANAGER",	F(atom.clipboard_manager) },
@@ -2074,6 +2094,7 @@ weston_wm_get_resources(struct weston_wm *wm)
 		{ "COMPOUND_TEXT",	F(atom.compound_text) },
 		{ "TEXT",		F(atom.text) },
 		{ "STRING",		F(atom.string) },
+		{ "WINDOW",		F(atom.window) },
 		{ "text/plain;charset=utf-8",	F(atom.text_plain_utf8) },
 		{ "text/plain",		F(atom.text_plain) },
 		{ "XdndSelection",	F(atom.xdnd_selection) },
@@ -2213,7 +2234,7 @@ weston_wm_create(struct weston_xserver *wxs, int fd)
 	struct wl_event_loop *loop;
 	xcb_screen_iterator_t s;
 	uint32_t values[1];
-	xcb_atom_t supported[5];
+	xcb_atom_t supported[6];
 
 	wm = zalloc(sizeof *wm);
 	if (wm == NULL)
@@ -2266,6 +2287,7 @@ weston_wm_create(struct weston_xserver *wxs, int fd)
 	supported[2] = wm->atom.net_wm_state_fullscreen;
 	supported[3] = wm->atom.net_wm_state_maximized_vert;
 	supported[4] = wm->atom.net_wm_state_maximized_horz;
+	supported[5] = wm->atom.net_active_window;
 	xcb_change_property(wm->conn,
 			    XCB_PROP_MODE_REPLACE,
 			    wm->screen->root,
@@ -2273,6 +2295,8 @@ weston_wm_create(struct weston_xserver *wxs, int fd)
 			    XCB_ATOM_ATOM,
 			    32, /* format */
 			    ARRAY_LENGTH(supported), supported);
+
+	weston_wm_set_net_active_window(wm, XCB_WINDOW_NONE);
 
 	weston_wm_selection_init(wm);
 
