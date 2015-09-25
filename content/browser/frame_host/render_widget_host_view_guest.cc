@@ -629,6 +629,23 @@ RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
       guest_->GetOwnerRenderWidgetHostView());
 }
 
+void RenderWidgetHostViewGuest::WheelEventAck(
+    const blink::WebMouseWheelEvent& event,
+    InputEventAckState ack_result) {
+  if (ack_result == INPUT_EVENT_ACK_STATE_NOT_CONSUMED)
+    guest_->ResendEventToEmbedder(event);
+}
+
+void RenderWidgetHostViewGuest::GestureEventAck(
+    const blink::WebGestureEvent& event,
+    InputEventAckState ack_result) {
+  bool not_consumed = INPUT_EVENT_ACK_STATE_NOT_CONSUMED == ack_result;
+  // GestureScrollBegin/End are always consumed by the guest, so we only
+  // forward GestureScrollUpdate.
+  if (event.type == blink::WebInputEvent::GestureScrollUpdate && not_consumed)
+    guest_->ResendEventToEmbedder(event);
+}
+
 void RenderWidgetHostViewGuest::OnHandleInputEvent(
     RenderWidgetHostImpl* embedder,
     int browser_plugin_instance_id,
@@ -683,8 +700,22 @@ void RenderWidgetHostViewGuest::OnHandleInputEvent(
   }
 
   if (blink::WebInputEvent::isGestureEventType(event->type)) {
-    host_->ForwardGestureEvent(
-        *static_cast<const blink::WebGestureEvent*>(event));
+    const blink::WebGestureEvent& gesture_event =
+        *static_cast<const blink::WebGestureEvent*>(event);
+
+    // We don't forward inertial GestureScrollUpdates to the guest anymore
+    // since it now receives GestureFlingStart and will have its own fling
+    // curve generating GestureScrollUpdate events for it.
+    // TODO(wjmaclean): Should we try to avoid creating a fling curve in the
+    // embedder renderer in this case? BrowserPlugin can return 'true' for
+    // handleInputEvent() on a GestureFlingStart, and we could use this as
+    // a signal to let the guest handle the fling, though we'd need to be
+    // sure other plugins would behave appropriately (i.e. return 'false').
+    if (gesture_event.type == blink::WebInputEvent::GestureScrollUpdate &&
+        gesture_event.data.scrollUpdate.inertial) {
+      return;
+    }
+    host_->ForwardGestureEvent(gesture_event);
     return;
   }
 }

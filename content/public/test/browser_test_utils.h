@@ -113,6 +113,16 @@ void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point);
 
+// Simulate a mouse wheel event.
+void SimulateMouseWheelEvent(WebContents* web_contents,
+                             const gfx::Point& point,
+                             const gfx::Vector2d& delta);
+
+// Sends a simple, three-event (Begin/Update/End) gesture scroll.
+void SimulateGestureScrollSequence(WebContents* web_contents,
+                                   const gfx::Point& point,
+                                   const gfx::Vector2dF& delta);
+
 // Taps the screen at |point|.
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point);
 

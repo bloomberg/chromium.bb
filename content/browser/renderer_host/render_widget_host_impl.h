@@ -795,6 +795,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // not sent to the renderer.
   bool has_touch_handler_;
 
+  // TODO(wjmaclean) Remove the code for supporting resending gesture events
+  // when WebView transitions to OOPIF and BrowserPlugin is removed.
+  // http://crbug.com/533069
+  bool is_in_gesture_scroll_;
+
   scoped_ptr<SyntheticGestureController> synthetic_gesture_controller_;
 
   scoped_ptr<TouchEmulator> touch_emulator_;

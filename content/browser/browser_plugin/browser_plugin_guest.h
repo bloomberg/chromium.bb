@@ -256,6 +256,8 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
             const blink::WebFindOptions& options);
   bool StopFinding(StopFindAction action);
 
+  void ResendEventToEmbedder(const blink::WebInputEvent& event);
+
  protected:
 
   // BrowserPluginGuest is a WebContentsObserver of |web_contents| and

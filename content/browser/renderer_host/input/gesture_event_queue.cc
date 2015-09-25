@@ -125,6 +125,7 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
       scrolling_in_progress_ = true;
       debouncing_deferral_queue_.clear();
       return true;
+
     case WebInputEvent::GesturePinchBegin:
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:

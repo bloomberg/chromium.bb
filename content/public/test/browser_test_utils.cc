@@ -446,6 +446,49 @@ void SimulateMouseEvent(WebContents* web_contents,
   web_contents->GetRenderViewHost()->ForwardMouseEvent(mouse_event);
 }
 
+void SimulateMouseWheelEvent(WebContents* web_contents,
+                             const gfx::Point& point,
+                             const gfx::Vector2d& delta) {
+  blink::WebMouseWheelEvent wheel_event;
+  wheel_event.type = blink::WebInputEvent::MouseWheel;
+  wheel_event.x = point.x();
+  wheel_event.y = point.y();
+  wheel_event.deltaX = delta.x();
+  wheel_event.deltaY = delta.y();
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+  widget_host->ForwardWheelEvent(wheel_event);
+}
+
+void SimulateGestureScrollSequence(WebContents* web_contents,
+                                   const gfx::Point& point,
+                                   const gfx::Vector2dF& delta) {
+  RenderWidgetHostImpl* widget_host =
+      RenderWidgetHostImpl::From(web_contents->GetRenderViewHost());
+
+  blink::WebGestureEvent scroll_begin;
+  scroll_begin.type = blink::WebGestureEvent::GestureScrollBegin;
+  scroll_begin.x = point.x();
+  scroll_begin.y = point.y();
+  widget_host->ForwardGestureEvent(scroll_begin);
+
+  blink::WebGestureEvent scroll_update;
+  scroll_update.type = blink::WebGestureEvent::GestureScrollUpdate;
+  scroll_update.x = point.x();
+  scroll_update.y = point.y();
+  scroll_update.data.scrollUpdate.deltaX = delta.x();
+  scroll_update.data.scrollUpdate.deltaY = delta.y();
+  scroll_update.data.scrollUpdate.velocityX = 0;
+  scroll_update.data.scrollUpdate.velocityY = 0;
+  widget_host->ForwardGestureEvent(scroll_update);
+
+  blink::WebGestureEvent scroll_end;
+  scroll_end.type = blink::WebGestureEvent::GestureScrollEnd;
+  scroll_end.x = point.x() + delta.x();
+  scroll_end.y = point.y() + delta.y();
+  widget_host->ForwardGestureEvent(scroll_end);
+}
+
 void SimulateTapAt(WebContents* web_contents, const gfx::Point& point) {
   blink::WebGestureEvent tap;
   tap.type = blink::WebGestureEvent::GestureTap;

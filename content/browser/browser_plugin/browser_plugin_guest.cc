@@ -459,6 +459,37 @@ bool BrowserPluginGuest::StopFinding(StopFindAction action) {
   return delegate_->StopFinding(action);
 }
 
+void BrowserPluginGuest::ResendEventToEmbedder(
+    const blink::WebInputEvent& event) {
+  if (!attached() || !owner_web_contents_)
+    return;
+
+  DCHECK(browser_plugin_instance_id_);
+  RenderWidgetHostImpl* host =
+      embedder_web_contents()->GetMainFrame()->GetRenderWidgetHost();
+
+  gfx::Vector2d offset_from_embedder = guest_window_rect_.OffsetFromOrigin();
+  if (event.type == blink::WebInputEvent::GestureScrollUpdate) {
+    blink::WebGestureEvent resent_gesture_event;
+    memcpy(&resent_gesture_event, &event, sizeof(blink::WebGestureEvent));
+    resent_gesture_event.x += offset_from_embedder.x();
+    resent_gesture_event.y += offset_from_embedder.y();
+    // Mark the resend source with the browser plugin's instance id, so the
+    // correct browser_plugin will know to ignore the event.
+    resent_gesture_event.resendingPluginId = browser_plugin_instance_id_;
+    host->ForwardGestureEvent(resent_gesture_event);
+  } else if (event.type == blink::WebInputEvent::MouseWheel) {
+    blink::WebMouseWheelEvent resent_wheel_event;
+    memcpy(&resent_wheel_event, &event, sizeof(blink::WebMouseWheelEvent));
+    resent_wheel_event.x += offset_from_embedder.x();
+    resent_wheel_event.y += offset_from_embedder.y();
+    resent_wheel_event.resendingPluginId = browser_plugin_instance_id_;
+    host->ForwardWheelEvent(resent_wheel_event);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
 WebContentsImpl* BrowserPluginGuest::GetWebContents() const {
   return static_cast<WebContentsImpl*>(web_contents());
 }

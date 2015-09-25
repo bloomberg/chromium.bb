@@ -135,6 +135,30 @@ class RenderWidgetHostIteratorImpl : public RenderWidgetHostIterator {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostIteratorImpl);
 };
 
+inline blink::WebGestureEvent CreateScrollBeginForWrapping(
+    const blink::WebGestureEvent& gesture_event) {
+  DCHECK(gesture_event.type == blink::WebInputEvent::GestureScrollUpdate);
+
+  blink::WebGestureEvent wrap_gesture_scroll_begin;
+  wrap_gesture_scroll_begin.type = blink::WebInputEvent::GestureScrollBegin;
+  wrap_gesture_scroll_begin.data.scrollBegin.deltaXHint = 0;
+  wrap_gesture_scroll_begin.data.scrollBegin.deltaYHint = 0;
+  wrap_gesture_scroll_begin.resendingPluginId = gesture_event.resendingPluginId;
+
+  return wrap_gesture_scroll_begin;
+}
+
+inline blink::WebGestureEvent CreateScrollEndForWrapping(
+    const blink::WebGestureEvent& gesture_event) {
+  DCHECK(gesture_event.type == blink::WebInputEvent::GestureScrollUpdate);
+
+  blink::WebGestureEvent wrap_gesture_scroll_end;
+  wrap_gesture_scroll_end.type = blink::WebInputEvent::GestureScrollEnd;
+  wrap_gesture_scroll_end.resendingPluginId = gesture_event.resendingPluginId;
+
+  return wrap_gesture_scroll_end;
+}
+
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,6 +196,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       pending_mouse_lock_request_(false),
       allow_privileged_mouse_lock_(false),
       has_touch_handler_(false),
+      is_in_gesture_scroll_(false),
       next_browser_snapshot_id_(1),
       owned_by_render_frame_host_(false),
       is_focused_(false),
@@ -976,12 +1001,41 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
   if (IgnoreInputEvents())
     return;
 
+  // TODO(wjmaclean) Remove the code for supporting resending gesture events
+  // when WebView transitions to OOPIF and BrowserPlugin is removed.
+  // http://crbug.com/533069
+  if (gesture_event.type == blink::WebInputEvent::GestureScrollBegin) {
+    DCHECK(!is_in_gesture_scroll_);
+    is_in_gesture_scroll_ = true;
+  } else if (gesture_event.type == blink::WebInputEvent::GestureScrollEnd ||
+             gesture_event.type == blink::WebInputEvent::GestureFlingStart) {
+    DCHECK(is_in_gesture_scroll_ ||
+           (gesture_event.type == blink::WebInputEvent::GestureFlingStart &&
+            gesture_event.sourceDevice ==
+                blink::WebGestureDevice::WebGestureDeviceTouchpad));
+    is_in_gesture_scroll_ = false;
+  }
+
+  bool scroll_update_needs_wrapping =
+      gesture_event.type == blink::WebInputEvent::GestureScrollUpdate &&
+      gesture_event.resendingPluginId != -1 && !is_in_gesture_scroll_;
+
+  if (scroll_update_needs_wrapping) {
+    ForwardGestureEventWithLatencyInfo(
+        CreateScrollBeginForWrapping(gesture_event), ui::LatencyInfo());
+  }
+
   if (delegate_->PreHandleGestureEvent(gesture_event))
     return;
 
   GestureEventWithLatencyInfo gesture_with_latency(gesture_event, ui_latency);
   latency_tracker_.OnInputEvent(gesture_event, &gesture_with_latency.latency);
   input_router_->SendGestureEvent(gesture_with_latency);
+
+  if (scroll_update_needs_wrapping) {
+    ForwardGestureEventWithLatencyInfo(
+        CreateScrollEndForWrapping(gesture_event), ui::LatencyInfo());
+  }
 }
 
 void RenderWidgetHostImpl::ForwardEmulatedTouchEvent(
