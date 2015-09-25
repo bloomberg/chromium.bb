@@ -346,20 +346,20 @@ void ImageBuffer::putByteArray(Multiply multiplied, const unsigned char* source,
     m_surface->writePixels(info, srcAddr, srcBytesPerRow, destX, destY);
 }
 
-bool ImageDataBuffer::encodeImage(const String& mimeType, const double* quality, Vector<char>* output) const
+bool ImageDataBuffer::encodeImage(const String& mimeType, const double& quality, Vector<char>* output) const
 {
     Vector<unsigned char>* encodedImage = reinterpret_cast<Vector<unsigned char>*>(output);
 
     if (mimeType == "image/jpeg") {
         int compressionQuality = JPEGImageEncoder::DefaultCompressionQuality;
-        if (quality && *quality >= 0.0 && *quality <= 1.0)
-            compressionQuality = static_cast<int>(*quality * 100 + 0.5);
+        if (quality >= 0.0 && quality <= 1.0)
+            compressionQuality = static_cast<int>(quality * 100 + 0.5);
         if (!JPEGImageEncoder::encode(*this, compressionQuality, encodedImage))
             return false;
     } else if (mimeType == "image/webp") {
         int compressionQuality = WEBPImageEncoder::DefaultCompressionQuality;
-        if (quality && *quality >= 0.0 && *quality <= 1.0)
-            compressionQuality = static_cast<int>(*quality * 100 + 0.5);
+        if (quality >= 0.0 && quality <= 1.0)
+            compressionQuality = static_cast<int>(quality * 100 + 0.5);
         if (!WEBPImageEncoder::encode(*this, compressionQuality, encodedImage))
             return false;
     } else {
@@ -371,7 +371,7 @@ bool ImageDataBuffer::encodeImage(const String& mimeType, const double* quality,
     return true;
 }
 
-String ImageDataBuffer::toDataURL(const String& mimeType, const double* quality) const
+String ImageDataBuffer::toDataURL(const String& mimeType, const double& quality) const
 {
     ASSERT(MIMETypeRegistry::isSupportedImageMIMETypeForEncoding(mimeType));
 

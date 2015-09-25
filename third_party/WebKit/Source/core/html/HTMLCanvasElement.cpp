@@ -46,6 +46,8 @@
 #include "core/paint/DeprecatedPaintLayer.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/Task.h"
+#include "platform/ThreadSafeFunctional.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
@@ -56,7 +58,6 @@
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/Functional.h"
 #include <math.h>
 #include <v8.h>
 
@@ -77,6 +78,10 @@ const int MaxCanvasArea = 32768 * 8192; // Maximum canvas area in CSS pixels
 
 // In Skia, we will also limit width/height to 32767.
 const int MaxSkiaDim = 32767; // Maximum width/height in CSS pixels.
+
+// A default value of quality argument for toDataURL and toBlob
+// It is in an invalid range (outside 0.0 - 1.0) so that it will not be misinterpreted as a user-input value
+const int UndefinedQualityValue = -1.0;
 
 bool canCreateImageBuffer(const IntSize& size)
 {
@@ -126,6 +131,15 @@ HTMLCanvasElement::~HTMLCanvasElement()
     // Ensure these go away before the ImageBuffer.
     m_context.clear();
 #endif
+}
+
+WebThread* HTMLCanvasElement::getToBlobThreadInstance()
+{
+    DEFINE_STATIC_LOCAL(OwnPtr<WebThread>, s_toBlobThread, ());
+    if (!s_toBlobThread) {
+        s_toBlobThread = adoptPtr(Platform::current()->createThread("Async toBlob"));
+    }
+    return s_toBlobThread.get();
 }
 
 void HTMLCanvasElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -517,7 +531,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer) cons
     return imageData;
 }
 
-String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer sourceBuffer) const
+String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer sourceBuffer) const
 {
     if (!isPaintable())
         return String("data:,");
@@ -536,52 +550,67 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
     }
-    double quality;
-    double* qualityPtr = nullptr;
+    double quality = UndefinedQualityValue;
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
         if (v8Value->IsNumber()) {
             quality = v8Value.As<v8::Number>()->Value();
-            qualityPtr = &quality;
         }
     }
-    return toDataURLInternal(mimeType, qualityPtr, BackBuffer);
+    return toDataURLInternal(mimeType, quality, BackBuffer);
 }
 
-void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState) const
+void HTMLCanvasElement::encodeImageAsync(DOMUint8ClampedArray* imageData, IntSize imageSize, FileCallback* callback, const String& mimeType, double quality)
+{
+    OwnPtr<Vector<char>> encodedImage(adoptPtr(new Vector<char>()));
+
+    if (!ImageDataBuffer(imageSize, imageData->data()).encodeImage(mimeType, quality, encodedImage.get())) {
+        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
+    } else {
+        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, threadSafeBind(&HTMLCanvasElement::createBlobAndCall, encodedImage.release(), mimeType, AllowCrossThreadAccess(callback)));
+    }
+}
+
+void HTMLCanvasElement::createBlobAndCall(PassOwnPtr<Vector<char>> encodedImage, const String& mimeType, FileCallback* callback)
+{
+    // The main thread takes ownership of encoded image vector
+    OwnPtr<Vector<char>> enc(encodedImage);
+
+    File* resultBlob = File::create(enc->data(), enc->size(), mimeType);
+    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
+}
+
+void HTMLCanvasElement::toBlob(FileCallback* callback, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState& exceptionState)
 {
     if (!originClean()) {
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return;
     }
 
-    File* resultBlob = nullptr;
     if (!isPaintable()) {
         // If the canvas element's bitmap has no pixels
+        Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, nullptr));
         return;
     }
 
-    double quality;
-    double* qualityPtr = nullptr;
+    double quality = UndefinedQualityValue;
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
         if (v8Value->IsNumber()) {
             quality = v8Value.As<v8::Number>()->Value();
-            qualityPtr = &quality;
         }
     }
 
     String encodingMimeType = toEncodingMimeType(mimeType);
 
     ImageData* imageData = toImageData(BackBuffer);
+    // imageData unref its data, which we still keep alive for the async toBlob thread
     ScopedDisposal<ImageData> disposer(imageData);
 
-    // Perform image encoding
-    Vector<char> encodedImage;
-    ImageDataBuffer(imageData->size(), imageData->data()->data()).encodeImage(encodingMimeType, qualityPtr, &encodedImage);
-    resultBlob = File::create(encodedImage.data(), encodedImage.size(), encodingMimeType);
+    // Add a ref to keep image data alive until completion of encoding
+    RefPtr<DOMUint8ClampedArray> imageDataRef(imageData->data());
 
-    Platform::current()->mainThread()->taskRunner()->postTask(FROM_HERE, bind(&FileCallback::handleEvent, callback, resultBlob));
+    getToBlobThreadInstance()->taskRunner()->postTask(FROM_HERE, new Task(threadSafeBind(&HTMLCanvasElement::encodeImageAsync, AllowCrossThreadAccess(imageDataRef.release().leakRef()), imageData->size(), AllowCrossThreadAccess(callback), encodingMimeType, quality)));
 }
 
 SecurityOrigin* HTMLCanvasElement::securityOrigin() const

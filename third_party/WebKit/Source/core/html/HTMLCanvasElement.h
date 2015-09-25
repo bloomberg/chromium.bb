@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 #include "core/CoreExport.h"
+#include "core/dom/DOMTypedArray.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentVisibilityObserver.h"
 #include "core/fileapi/FileCallback.h"
@@ -42,6 +43,7 @@
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/graphics/ImageBufferClient.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebThread.h"
 
 #define CanvasDefaultInterpolationQuality InterpolationLow
 
@@ -77,6 +79,8 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement, public DocumentV
 public:
     DECLARE_NODE_FACTORY(HTMLCanvasElement);
     ~HTMLCanvasElement() override;
+
+    static WebThread* getToBlobThreadInstance();
 
     void addObserver(CanvasObserver*);
     void removeObserver(CanvasObserver*);
@@ -114,7 +118,7 @@ public:
     String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
     String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
 
-    void toBlob(FileCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
+    void toBlob(FileCallback*, const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&);
     void toBlob(FileCallback* callback, const String& mimeType, ExceptionState& exceptionState) { return toBlob(callback, mimeType, ScriptValue(), exceptionState); }
 
     // Used for rendering
@@ -211,7 +215,10 @@ private:
     bool paintsIntoCanvasBuffer() const;
 
     ImageData* toImageData(SourceDrawingBuffer) const;
-    String toDataURLInternal(const String& mimeType, const double* quality, SourceDrawingBuffer) const;
+    String toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer) const;
+
+    static void encodeImageAsync(DOMUint8ClampedArray* imagedata, IntSize imageSize, FileCallback*, const String& mimeType, double quality);
+    static void createBlobAndCall(PassOwnPtr<Vector<char>> encodedImage, const String& mimeType, FileCallback*);
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<CanvasObserver>> m_observers;
 

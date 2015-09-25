@@ -154,8 +154,8 @@ private:
 
 struct ImageDataBuffer {
     ImageDataBuffer(const IntSize& size, const unsigned char* data) : m_data(data), m_size(size) { }
-    String PLATFORM_EXPORT toDataURL(const String& mimeType, const double* quality) const;
-    bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double* quality, Vector<char>* output) const;
+    String PLATFORM_EXPORT toDataURL(const String& mimeType, const double& quality) const;
+    bool PLATFORM_EXPORT encodeImage(const String& mimeType, const double& quality, Vector<char>* output) const;
     const unsigned char* pixels() const { return m_data; }
     int height() const { return m_size.height(); }
     int width() const { return m_size.width(); }
