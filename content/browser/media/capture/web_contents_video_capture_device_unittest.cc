@@ -268,7 +268,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
   // TestRenderViewHost overrides.
   void CopyFromBackingStore(const gfx::Rect& src_rect,
                             const gfx::Size& accelerated_dst_size,
-                            ReadbackRequestCallback& callback,
+                            const ReadbackRequestCallback& callback,
                             const SkColorType color_type) override {
     gfx::Size size = controller_->GetCopyResultSize();
     SkColor color = controller_->GetSolidColor();
@@ -317,6 +317,7 @@ class CaptureTestRenderViewHostFactory : public RenderViewHostFactory {
                                          routing_id, main_frame_routing_id,
                                          swapped_out, controller_);
   }
+
  private:
   CaptureTestSourceController* controller_;
 
@@ -343,15 +344,15 @@ class StubClient : public media::VideoCaptureDevice::Client {
                     int rotation,
                     const base::TimeTicks& timestamp));
   MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void (const uint8* y_data,
-                     const uint8* u_data,
-                     const uint8* v_data,
-                     size_t y_stride,
-                     size_t u_stride,
-                     size_t v_stride,
-                     const media::VideoCaptureFormat& frame_format,
-                     int clockwise_rotation,
-                     const base::TimeTicks& timestamp));
+               void(const uint8* y_data,
+                    const uint8* u_data,
+                    const uint8* v_data,
+                    size_t y_stride,
+                    size_t u_stride,
+                    size_t v_stride,
+                    const media::VideoCaptureFormat& frame_format,
+                    int clockwise_rotation,
+                    const base::TimeTicks& timestamp));
 
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 

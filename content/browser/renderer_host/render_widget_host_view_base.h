@@ -267,7 +267,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       const SkColorType preferred_color_type) = 0;
 
   // Copies the contents of the compositing surface, populating the given
@@ -405,7 +405,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // The current selection range relative to the start of the web page.
   gfx::Range selection_range_;
 
-protected:
+ protected:
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;
 

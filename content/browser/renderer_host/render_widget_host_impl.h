@@ -128,7 +128,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void SetActive(bool active) override;
   void CopyFromBackingStore(const gfx::Rect& src_rect,
                             const gfx::Size& accelerated_dst_size,
-                            ReadbackRequestCallback& callback,
+                            const ReadbackRequestCallback& callback,
                             const SkColorType preferred_color_type) override;
   bool CanCopyFromBackingStore() override;
 #if defined(OS_ANDROID)

@@ -132,7 +132,7 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
   // Only ARGB888 and RGB565 supported as of now.
   bool format_support = ((preferred_color_type == kAlpha_8_SkColorType) ||
@@ -549,7 +549,7 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
 void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty()) {
     callback.Run(SkBitmap(), content::READBACK_FAILED);
@@ -577,7 +577,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
 }
 
 static void CopyFromCompositingSurfaceFinished(
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
@@ -601,7 +601,7 @@ static void CopyFromCompositingSurfaceFinished(
 void DelegatedFrameHost::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
@@ -655,7 +655,7 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
 void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType preferred_color_type,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   SkColorType color_type = preferred_color_type;
   if (color_type != kN32_SkColorType && color_type != kAlpha_8_SkColorType) {

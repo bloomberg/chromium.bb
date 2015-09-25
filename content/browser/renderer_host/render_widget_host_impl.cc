@@ -725,7 +725,7 @@ void RenderWidgetHostImpl::ViewDestroyed() {
 void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_subrect,
     const gfx::Size& accelerated_dst_size,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
   if (view_) {
     TRACE_EVENT0("browser",

@@ -126,7 +126,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       const SkColorType preferred_color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
@@ -229,7 +229,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void GetScaledContentBitmap(float scale,
                               SkColorType preferred_color_type,
                               gfx::Rect src_subrect,
-                              ReadbackRequestCallback& result_callback);
+                              const ReadbackRequestCallback& result_callback);
 
   scoped_refptr<cc::Layer> CreateDelegatedLayer() const;
 
@@ -281,20 +281,20 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Size& dst_size_in_pixel,
       SkColorType color_type,
       const base::TimeTicks& start_time,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResultForDelegatedReadback(
       const gfx::Size& dst_size_in_pixel,
       SkColorType color_type,
       const base::TimeTicks& start_time,
       scoped_refptr<cc::Layer> readback_layer,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 
   // DevTools ScreenCast support for Android WebView.
   void SynchronousCopyContents(const gfx::Rect& src_subrect_in_pixel,
                                const gfx::Size& dst_size_in_pixel,
-                               ReadbackRequestCallback& callback,
+                               const ReadbackRequestCallback& callback,
                                const SkColorType color_type);
 
   // If we have locks on a frame during a ContentViewCore swap or a context
@@ -413,6 +413,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_ANDROID_H_

@@ -62,7 +62,7 @@ void ContentReadbackHandler::GetContentBitmap(JNIEnv* env,
       ContentViewCore::GetNativeContentViewCore(env, content_view_core);
   DCHECK(view);
 
-  ReadbackRequestCallback result_callback =
+  const ReadbackRequestCallback result_callback =
       base::Bind(&ContentReadbackHandler::OnFinishReadback,
                  weak_factory_.GetWeakPtr(),
                  readback_id);
@@ -80,7 +80,7 @@ void ContentReadbackHandler::GetCompositorBitmap(JNIEnv* env,
       reinterpret_cast<ui::WindowAndroid*>(native_window_android);
   DCHECK(window_android);
 
-  ReadbackRequestCallback result_callback =
+  const ReadbackRequestCallback result_callback =
       base::Bind(&ContentReadbackHandler::OnFinishReadback,
                  weak_factory_.GetWeakPtr(),
                  readback_id);

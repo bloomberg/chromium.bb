@@ -66,9 +66,12 @@ using base::android::ScopedJavaLocalRef;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 
-// Describes the type and enabled state of a select popup item.
+namespace content {
+
 namespace {
 
+// Describes the type and enabled state of a select popup item.
+//
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.content.browser.input
 enum PopupItemType {
@@ -81,12 +84,6 @@ enum PopupItemType {
   // Popup item is enabled
   POPUP_ITEM_TYPE_ENABLED,
 };
-
-} //namespace
-
-namespace content {
-
-namespace {
 
 const void* kContentViewUserDataKey = &kContentViewUserDataKey;
 
@@ -150,7 +147,7 @@ int ToGestureEventType(WebInputEvent::Type type) {
       NOTREACHED() << "Invalid source gesture type: "
                    << WebInputEventTraits::GetName(type);
       return -1;
-  };
+  }
 }
 
 }  // namespace
@@ -630,7 +627,7 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
     SkColorType preferred_color_type,
     const gfx::Rect& src_subrect,
-    ReadbackRequestCallback& result_callback) {
+    const ReadbackRequestCallback& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view || preferred_color_type == kUnknown_SkColorType) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);

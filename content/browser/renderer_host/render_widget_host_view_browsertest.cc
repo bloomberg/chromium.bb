@@ -207,7 +207,7 @@ class CompositingRenderWidgetHostViewBrowserTest
     : public RenderWidgetHostViewBrowserTest,
       public testing::WithParamInterface<CompositingMode> {
  public:
-  explicit CompositingRenderWidgetHostViewBrowserTest()
+  CompositingRenderWidgetHostViewBrowserTest()
       : compositing_mode_(GetParam()) {}
 
   void SetUp() override {
@@ -623,7 +623,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                                    output_size.height()));
         }
 
-        ReadbackRequestCallback callback =
+        const ReadbackRequestCallback callback =
             base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
                            ReadbackRequestCallbackTest,
                        base::Unretained(this),

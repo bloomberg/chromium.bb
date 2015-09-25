@@ -236,7 +236,7 @@ GLHelper* GetPostReadbackGLHelper() {
 }
 
 void CopyFromCompositingSurfaceFinished(
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
     const base::TimeTicks& start_time,
@@ -404,7 +404,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
     SkColorType preferred_color_type,
     gfx::Rect src_subrect,
-    ReadbackRequestCallback& result_callback) {
+    const ReadbackRequestCallback& result_callback) {
   if (!host_ || host_->is_hidden() || !IsSurfaceAvailableForCopy()) {
     result_callback.Run(SkBitmap(), READBACK_SURFACE_UNAVAILABLE);
     return;
@@ -735,7 +735,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   // scroll-inducing touch events. Note that Android's Choreographer ensures
   // that BeginFrame requests made during ACTION_MOVE dispatch will be honored
   // in the same vsync phase.
-  if (observing_root_window_&& result.did_generate_scroll)
+  if (observing_root_window_ && result.did_generate_scroll)
     RequestVSyncUpdate(BEGIN_FRAME);
 
   return true;
@@ -861,7 +861,7 @@ void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
   if (!host_ || host_->is_hidden()) {
@@ -1262,7 +1262,7 @@ RenderWidgetHostViewAndroid::CreateDrawable() {
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   gfx::Size input_size_in_pixel;
   if (src_subrect_in_pixel.IsEmpty())
@@ -1886,7 +1886,7 @@ void RenderWidgetHostViewAndroid::
         SkColorType color_type,
         const base::TimeTicks& start_time,
         scoped_refptr<cc::Layer> readback_layer,
-        ReadbackRequestCallback& callback,
+        const ReadbackRequestCallback& callback,
         scoped_ptr<cc::CopyOutputResult> result) {
   readback_layer->RemoveFromParent();
   PrepareTextureCopyOutputResult(
@@ -1898,7 +1898,7 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     SkColorType color_type,
     const base::TimeTicks& start_time,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, SkBitmap(), READBACK_FAILED));
@@ -2005,4 +2005,4 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
   results->isMonochrome = (results->depthPerComponent == 0);
 }
 
-} // namespace content
+}  // namespace content

@@ -1100,7 +1100,7 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    ReadbackRequestCallback& callback,
+    const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);

@@ -24,8 +24,8 @@ enum ReadbackResponse {
   READBACK_BITMAP_ALLOCATION_FAILURE,
 };
 
-typedef const base::Callback<void(const SkBitmap&, ReadbackResponse)>
-    ReadbackRequestCallback;
+using ReadbackRequestCallback =
+    base::Callback<void(const SkBitmap&, ReadbackResponse)>;
 
 }  // namespace content
 

@@ -235,7 +235,7 @@ void RenderWidgetHostViewChildFrame::UnlockCompositingSurface() {
 void RenderWidgetHostViewChildFrame::SurfaceDrawn(uint32 output_surface_id,
                                                   cc::SurfaceDrawStatus drawn) {
   cc::CompositorFrameAck ack;
-  DCHECK(ack_pending_count_ > 0);
+  DCHECK_GT(ack_pending_count_, 0U);
   if (!surface_returned_resources_.empty())
     ack.resources.swap(surface_returned_resources_);
   if (host_) {
@@ -309,7 +309,7 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
                  output_surface_id);
   ack_pending_count_++;
   // If this value grows very large, something is going wrong.
-  DCHECK(ack_pending_count_ < 1000);
+  DCHECK_LT(ack_pending_count_, 1000U);
   surface_factory_->SubmitCompositorFrame(surface_id_, frame.Pass(),
                                           ack_callback);
 }
@@ -326,7 +326,7 @@ bool RenderWidgetHostViewChildFrame::GetScreenColorProfile(
   if (!frame_connector_)
     return false;
   DCHECK(color_profile->empty());
-  NOTIMPLEMENTED(); // TODO(port): Implement.
+  NOTIMPLEMENTED();
   return false;
 }
 
@@ -403,13 +403,13 @@ bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
       const NativeWebKeyboardEvent& event) {
   return false;
 }
-#endif // defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
-    const gfx::Rect& src_subrect,
+    const gfx::Rect& /* src_subrect */,
     const gfx::Size& /* dst_size */,
-    ReadbackRequestCallback& callback,
-    const SkColorType preferred_color_type) {
+    const ReadbackRequestCallback& callback,
+    const SkColorType /* preferred_color_type */) {
   callback.Run(SkBitmap(), READBACK_FAILED);
 }
 
@@ -439,7 +439,7 @@ gfx::NativeViewId RenderWidgetHostViewChildFrame::GetParentForWindowlessPlugin()
     const {
   return NULL;
 }
-#endif // defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
 // cc::SurfaceFactoryClient implementation.
 void RenderWidgetHostViewChildFrame::ReturnResources(

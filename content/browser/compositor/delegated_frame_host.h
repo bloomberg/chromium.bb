@@ -85,7 +85,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       public cc::SurfaceFactoryClient,
       public base::SupportsWeakPtr<DelegatedFrameHost> {
  public:
-  DelegatedFrameHost(DelegatedFrameHostClient* client);
+  explicit DelegatedFrameHost(DelegatedFrameHostClient* client);
   ~DelegatedFrameHost() override;
 
   // ui::CompositorObserver implementation.
@@ -141,7 +141,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // expects pixels.
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
-                                  ReadbackRequestCallback& callback,
+                                  const ReadbackRequestCallback& callback,
                                   const SkColorType preferred_color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
@@ -210,17 +210,17 @@ class CONTENT_EXPORT DelegatedFrameHost
   static void CopyFromCompositingSurfaceHasResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareBitmapCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      ReadbackRequestCallback& callback,
+      const ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceHasResultForVideo(
       base::WeakPtr<DelegatedFrameHost> rwhva,

@@ -29,6 +29,7 @@ class WindowAndroid;
 }
 
 namespace content {
+
 class WebContents;
 
 // Native side of the ContentViewCore.java, which is the primary way of
@@ -56,7 +57,7 @@ class CONTENT_EXPORT ContentViewCore {
       float scale,
       SkColorType color_type,
       const gfx::Rect& src_rect,
-      ReadbackRequestCallback& result_callback) = 0;
+      const ReadbackRequestCallback& result_callback) = 0;
   virtual float GetDpiScale() const = 0;
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 
@@ -68,7 +69,7 @@ class CONTENT_EXPORT ContentViewCore {
                                 int end_offset)>& callback) = 0;
 
  protected:
-  virtual ~ContentViewCore() {};
+  virtual ~ContentViewCore() {}
 };
 
 };  // namespace content

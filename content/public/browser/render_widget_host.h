@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   // asynchronously.
   virtual void CopyFromBackingStore(const gfx::Rect& src_rect,
                                     const gfx::Size& accelerated_dst_size,
-                                    ReadbackRequestCallback& callback,
+                                    const ReadbackRequestCallback& callback,
                                     const SkColorType color_type) = 0;
   // Ensures that the view does not drop the backing store even when hidden.
   virtual bool CanCopyFromBackingStore() = 0;
