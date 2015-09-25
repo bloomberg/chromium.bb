@@ -1116,6 +1116,7 @@ TEST_F(KernelProxyErrorTest, ReadError) {
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Read 0 bytes.
                       Return(1234)));       // Returned error 1234.
 
+  EXPECT_CALL(*mock_node, GetType()).WillRepeatedly(Return(S_IFDIR));
   EXPECT_CALL(*mock_node, Destroy()).Times(1);
 
   int fd = ki_open("/dummy", O_RDONLY, 0);
