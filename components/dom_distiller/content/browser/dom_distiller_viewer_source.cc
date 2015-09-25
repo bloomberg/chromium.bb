@@ -30,7 +30,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/service_registry.h"
@@ -198,10 +197,6 @@ void DomDistillerViewerSource::StartDataRequest(
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
     return;
-  } else if (kViewerViewOriginalPath == path) {
-    content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
-    callback.Run(NULL);
-    return;
   }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -255,9 +250,6 @@ std::string DomDistillerViewerSource::GetMimeType(
     const std::string& path) const {
   if (kViewerCssPath == path) {
     return "text/css";
-  }
-  if (kViewerJsPath == path) {
-    return "text/javascript";
   }
   return "text/html";
 }

@@ -155,10 +155,9 @@ function showFeedbackForm(questionText, yesText, noText) {
 // Add a listener to the "View Original" link to report opt-outs.
 document.getElementById('closeReaderView').addEventListener('click',
     function(e) {
-      var img = document.createElement('img');
-      img.src = "/vieworiginal";
-      img.style.display = "none";
-      document.body.appendChild(img);
+      if (distiller) {
+        distiller.closePanel();
+      }
     }, true);
 
 document.getElementById('feedbackYes').addEventListener('click', function(e) {

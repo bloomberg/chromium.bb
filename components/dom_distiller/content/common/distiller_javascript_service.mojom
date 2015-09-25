@@ -13,4 +13,8 @@ interface DistillerJavaScriptService {
 
   // Handle the "distiller.sendFeedback" function.
   HandleDistillerFeedbackCall(bool good);
+
+  // Handle closing the overlay panel that contains Reader Mode; the
+  // "distiller.close" function.
+  HandleDistillerClosePanelCall();
 };

@@ -24,7 +24,6 @@ class DomDistillerViewerSourceTest : public testing::Test {
 TEST_F(DomDistillerViewerSourceTest, TestMimeType) {
   EXPECT_EQ("text/css", source_.get()->GetMimeType(kViewerCssPath));
   EXPECT_EQ("text/html", source_.get()->GetMimeType("anythingelse"));
-  EXPECT_EQ("text/javascript", source_.get()->GetMimeType(kViewerJsPath));
 
 }
 

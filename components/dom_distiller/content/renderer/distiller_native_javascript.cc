@@ -39,19 +39,37 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
   v8::Local<v8::Object> distiller_obj =
       GetOrCreateDistillerObject(isolate, context->Global());
 
-  distiller_obj->Set(
-      gin::StringToSymbol(isolate, "echo"),
-      gin::CreateFunctionTemplate(
-          isolate, base::Bind(&DistillerNativeJavaScript::DistillerEcho,
-                              base::Unretained(this)))
-          ->GetFunction());
+  BindFunctionToObject(
+      distiller_obj,
+      "echo",
+      base::Bind(
+          &DistillerNativeJavaScript::DistillerEcho, base::Unretained(this)));
 
-  distiller_obj->Set(
-      gin::StringToSymbol(isolate, "sendFeedback"),
-      gin::CreateFunctionTemplate(
-          isolate, base::Bind(&DistillerNativeJavaScript::DistillerSendFeedback,
-                              base::Unretained(this)))
-          ->GetFunction());
+  BindFunctionToObject(
+      distiller_obj,
+      "sendFeedback",
+      base::Bind(
+          &DistillerNativeJavaScript::DistillerSendFeedback,
+          base::Unretained(this)));
+
+  BindFunctionToObject(
+      distiller_obj,
+      "closePanel",
+      base::Bind(
+          &DistillerNativeJavaScript::DistillerClosePanel,
+          base::Unretained(this)));
+}
+
+template<typename Sig>
+void DistillerNativeJavaScript::BindFunctionToObject(
+    v8::Local<v8::Object> javascript_object,
+    const std::string& name,
+    const base::Callback<Sig> callback) {
+  // Get the isolate associated with this object.
+  v8::Isolate* isolate = javascript_object->GetIsolate();
+  javascript_object->Set(
+      gin::StringToSymbol(isolate, name),
+      gin::CreateFunctionTemplate(isolate, callback)->GetFunction());
 }
 
 void DistillerNativeJavaScript::EnsureServiceConnected() {
@@ -64,6 +82,11 @@ void DistillerNativeJavaScript::EnsureServiceConnected() {
 void DistillerNativeJavaScript::DistillerSendFeedback(bool good) {
   EnsureServiceConnected();
   distiller_js_service_->HandleDistillerFeedbackCall(good);
+}
+
+void DistillerNativeJavaScript::DistillerClosePanel() {
+  EnsureServiceConnected();
+  distiller_js_service_->HandleDistillerClosePanelCall();
 }
 
 std::string DistillerNativeJavaScript::DistillerEcho(

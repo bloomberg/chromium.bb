@@ -25,6 +25,11 @@ class DistillerNativeJavaScript {
   void AddJavaScriptObjectToFrame(v8::Local<v8::Context> context);
 
  private:
+  // Add a function to the provided object.
+  template<typename Sig>
+  void BindFunctionToObject(v8::Local<v8::Object> javascript_object,
+                            const std::string& name,
+                            const base::Callback<Sig> callback);
   // Make sure the mojo service is connected.
   void EnsureServiceConnected();
 
@@ -34,6 +39,9 @@ class DistillerNativeJavaScript {
 
   // Send feedback about distillation quality.
   void DistillerSendFeedback(bool good);
+
+  // Close the UI panel and record the action.
+  void DistillerClosePanel();
 
   content::RenderFrame* render_frame_;
   DistillerJavaScriptServicePtr distiller_js_service_;

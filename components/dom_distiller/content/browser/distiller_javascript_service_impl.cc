@@ -5,6 +5,7 @@
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/external_feedback_reporter.h"
 #include "components/dom_distiller/core/feedback_reporter.h"
+#include "content/public/browser/user_metrics.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/string.h"
 
 namespace dom_distiller {
@@ -38,6 +39,10 @@ void DistillerJavaScriptServiceImpl::HandleDistillerFeedbackCall(
   external_feedback_reporter_->ReportExternalFeedback(
       contents, contents->GetURL(), false);
   return;
+}
+
+void DistillerJavaScriptServiceImpl::HandleDistillerClosePanelCall() {
+  content::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
 }
 
 void CreateDistillerJavaScriptService(

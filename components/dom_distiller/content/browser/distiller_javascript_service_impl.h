@@ -30,6 +30,9 @@ class DistillerJavaScriptServiceImpl : public DistillerJavaScriptService {
   // Send UMA feedback and start the external feedback reporter if one exists.
   void HandleDistillerFeedbackCall(bool good) override;
 
+  // Make a call into Android to close the overlay panel containing reader mode.
+  void HandleDistillerClosePanelCall() override;
+
  private:
   mojo::StrongBinding<DistillerJavaScriptService> binding_;
   content::RenderFrameHost* render_frame_host_;
