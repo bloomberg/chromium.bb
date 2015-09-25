@@ -156,16 +156,8 @@ ExtensionContextMenuModel::ExtensionContextMenuModel(
       browser_(browser),
       profile_(browser->profile()),
       delegate_(delegate),
-      action_type_(NO_ACTION),
-      extension_items_count_(0) {
+      action_type_(NO_ACTION) {
   InitMenu(extension, button_visibility);
-
-  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
-      delegate_ &&
-      !is_component_) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
-  }
 }
 
 ExtensionContextMenuModel::ExtensionContextMenuModel(const Extension* extension,
@@ -188,23 +180,33 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
     return extension_items_->IsCommandIdEnabled(command_id);
-  } else if (command_id == CONFIGURE) {
-    return OptionsPageInfo::HasOptionsPage(extension);
-  } else if (command_id == NAME) {
-    // The NAME links to the Homepage URL. If the extension doesn't have a
-    // homepage, we just disable this menu item. We also disable for component
-    // extensions, because it doesn't make sense to link to a webstore page or
-    // chrome://extensions.
-    return ManifestURL::GetHomepageURL(extension).is_valid() && !is_component_;
-  } else if (command_id == INSPECT_POPUP) {
-    content::WebContents* web_contents = GetActiveWebContents();
-    if (!web_contents)
-      return false;
+  }
 
-    return extension_action_ &&
-        extension_action_->HasPopup(SessionTabHelper::IdForTab(web_contents));
-  } else if (command_id == UNINSTALL) {
-    return !IsExtensionRequiredByPolicy(extension, profile_);
+  switch (command_id) {
+    case NAME:
+      // The NAME links to the Homepage URL. If the extension doesn't have a
+      // homepage, we just disable this menu item. We also disable for component
+      // extensions, because it doesn't make sense to link to a webstore page or
+      // chrome://extensions.
+      return ManifestURL::GetHomepageURL(extension).is_valid() &&
+             !is_component_;
+    case CONFIGURE:
+      return OptionsPageInfo::HasOptionsPage(extension);
+    case INSPECT_POPUP: {
+      content::WebContents* web_contents = GetActiveWebContents();
+      return web_contents && extension_action_ &&
+             extension_action_->HasPopup(
+                 SessionTabHelper::IdForTab(web_contents));
+    }
+    case UNINSTALL:
+      return !IsExtensionRequiredByPolicy(extension, profile_);
+    // The following, if they are present, are always enabled.
+    case TOGGLE_VISIBILITY:
+    case MANAGE:
+    case ALWAYS_RUN:
+      return true;
+    default:
+      NOTREACHED() << "Unknown command" << command_id;
   }
   return true;
 }
@@ -222,11 +224,9 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
 
   if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
       command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
-    content::WebContents* web_contents =
-        browser_->tab_strip_model()->GetActiveWebContents();
     DCHECK(extension_items_);
-    extension_items_->ExecuteCommand(
-        command_id, web_contents, content::ContextMenuParams());
+    extension_items_->ExecuteCommand(command_id, GetActiveWebContents(),
+                                     content::ContextMenuParams());
     return;
   }
 
@@ -280,15 +280,12 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
-  ExtensionActionManager* extension_action_manager =
-      ExtensionActionManager::Get(profile_);
-  extension_action_ = extension_action_manager->GetBrowserAction(*extension);
-  if (!extension_action_) {
-    extension_action_ = extension_action_manager->GetPageAction(*extension);
-    if (extension_action_)
-      action_type_ = PAGE_ACTION;
-  } else {
-    action_type_ = BROWSER_ACTION;
+  extension_action_ =
+      ExtensionActionManager::Get(profile_)->GetExtensionAction(*extension);
+  if (extension_action_) {
+    action_type_ = extension_action_->action_type() == ActionInfo::TYPE_PAGE
+                       ? PAGE_ACTION
+                       : BROWSER_ACTION;
   }
 
   extension_items_.reset(new ContextMenuMatcher(
@@ -341,6 +338,12 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(MANAGE, IDS_MANAGE_EXTENSION);
   }
+
+  if (profile_->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode) &&
+      delegate_ && !is_component_) {
+    AddSeparator(ui::NORMAL_SEPARATOR);
+    AddItemWithStringId(INSPECT_POPUP, IDS_EXTENSION_ACTION_INSPECT_POPUP);
+  }
 }
 
 const Extension* ExtensionContextMenuModel::GetExtension() const {
@@ -349,19 +352,16 @@ const Extension* ExtensionContextMenuModel::GetExtension() const {
 }
 
 void ExtensionContextMenuModel::AppendExtensionItems() {
-  extension_items_->Clear();
-
   MenuManager* menu_manager = MenuManager::Get(profile_);
-  if (!menu_manager ||
+  if (!menu_manager ||  // Null in unit tests
       !menu_manager->MenuItems(MenuItem::ExtensionKey(extension_id_)))
     return;
 
   AddSeparator(ui::NORMAL_SEPARATOR);
 
-  extension_items_count_ = 0;
+  int index = 0;
   extension_items_->AppendExtensionItems(MenuItem::ExtensionKey(extension_id_),
-                                         base::string16(),
-                                         &extension_items_count_,
+                                         base::string16(), &index,
                                          true);  // is_action_menu
 }
 
