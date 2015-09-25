@@ -17,6 +17,7 @@
 #include "cc/scheduler/scheduler.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/proxy.h"
+#include "cc/trees/threaded_channel.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -25,13 +26,20 @@ class SingleThreadTaskRunner;
 namespace cc {
 
 class BeginFrameSource;
+class ChannelImpl;
+class ChannelMain;
 class ContextProvider;
 class InputHandlerClient;
 class LayerTreeHost;
+class ProxyImpl;
+class ProxyMain;
 class Scheduler;
 class ScopedThreadProxy;
+class ThreadedChannel;
 
 class CC_EXPORT ThreadProxy : public Proxy,
+                              public ProxyMain,
+                              public ProxyImpl,
                               NON_EXPORTED_BASE(LayerTreeHostImplClient),
                               NON_EXPORTED_BASE(SchedulerClient) {
  public:
@@ -85,6 +93,10 @@ class CC_EXPORT ThreadProxy : public Proxy,
     bool defer_commits;
 
     RendererCapabilities renderer_capabilities_main_thread_copy;
+
+    // TODO(khushalsagar): Make this scoped_ptr<ChannelMain> when ProxyMain
+    // and ProxyImpl are split.
+    ChannelMain* channel_main;
 
     base::WeakPtrFactory<ThreadProxy> weak_factory;
   };
@@ -144,6 +156,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
     BeginFrameArgs last_processed_begin_main_frame_args;
 
     scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl;
+
+    ChannelImpl* channel_impl;
+
     base::WeakPtrFactory<ThreadProxy> weak_factory;
   };
 
@@ -231,6 +246,16 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SendBeginFramesToChildren(const BeginFrameArgs& args) override;
   void SendBeginMainFrameNotExpectedSoon() override;
 
+  // ProxyMain implementation
+  base::WeakPtr<ProxyMain> GetMainWeakPtr() override;
+  void SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) override;
+  void DidCompleteSwapBuffers() override;
+
+  // ProxyImpl implementation
+  base::WeakPtr<ProxyImpl> GetImplWeakPtr() override;
+  void SetThrottleFrameProductionOnImpl(bool throttle) override;
+  void SetLayerTreeHostClientReadyOnImpl() override;
+
  protected:
   ThreadProxy(
       LayerTreeHost* layer_tree_host,
@@ -246,7 +271,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
       scoped_ptr<BeginMainFrameAndCommitState> begin_main_frame_state);
   void BeginMainFrameNotExpectedSoon();
   void DidCommitAndDrawFrame();
-  void DidCompleteSwapBuffers();
   void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);
   void DidLoseOutputSurface();
   void RequestNewOutputSurface();
@@ -265,9 +289,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void BeginMainFrameAbortedOnImplThread(CommitEarlyOutReason reason);
   void FinishAllRenderingOnImplThread(CompletionEvent* completion);
   void InitializeImplOnImplThread(CompletionEvent* completion);
-  void SetLayerTreeHostClientReadyOnImplThread();
   void SetVisibleOnImplThread(CompletionEvent* completion, bool visible);
-  void SetThrottleFrameProductionOnImplThread(bool throttle);
   void HasInitializedOutputSurfaceOnImplThread(
       CompletionEvent* completion,
       bool* has_initialized_output_surface);
@@ -301,6 +323,9 @@ class CC_EXPORT ThreadProxy : public Proxy,
   // Use accessors instead of this variable directly.
   CompositorThreadOnly compositor_thread_vars_unsafe_;
   CompositorThreadOnly& impl();
+
+  // TODO(khushalsagar): Remove this. Temporary variable to hold the channel.
+  scoped_ptr<ThreadedChannel> threaded_channel_;
 
   base::WeakPtr<ThreadProxy> main_thread_weak_ptr_;
   base::WeakPtr<ThreadProxy> impl_thread_weak_ptr_;

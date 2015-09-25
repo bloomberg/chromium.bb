@@ -71,6 +71,10 @@ ThreadProxy::ThreadProxy(
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(this->layer_tree_host());
+  // TODO(khushalsagar): Move this to LayerTreeHost#InitializeThreaded once
+  // ThreadProxy is split. LayerTreeHost creates the channel and passes it to
+  // ProxyMain#SetChannel.
+  SetChannel(ThreadedChannel::Create(this, main_task_runner, impl_task_runner));
 }
 
 ThreadProxy::MainThreadOnly::MainThreadOnly(ThreadProxy* proxy,
@@ -123,6 +127,11 @@ ThreadProxy::~ThreadProxy() {
   DCHECK(!main().started);
 }
 
+void ThreadProxy::SetChannel(scoped_ptr<ThreadedChannel> threaded_channel) {
+  threaded_channel_ = threaded_channel.Pass();
+  main().channel_main = threaded_channel_.get();
+}
+
 void ThreadProxy::FinishAllRendering() {
   DCHECK(Proxy::IsMainThread());
   DCHECK(!main().defer_commits);
@@ -151,13 +160,10 @@ bool ThreadProxy::CommitToActiveTree() const {
 
 void ThreadProxy::SetLayerTreeHostClientReady() {
   TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReady");
-  Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::SetLayerTreeHostClientReadyOnImplThread,
-                 impl_thread_weak_ptr_));
+  main().channel_main->SetLayerTreeHostClientReadyOnImpl();
 }
 
-void ThreadProxy::SetLayerTreeHostClientReadyOnImplThread() {
+void ThreadProxy::SetLayerTreeHostClientReadyOnImpl() {
   TRACE_EVENT0("cc", "ThreadProxy::SetLayerTreeHostClientReadyOnImplThread");
   impl().scheduler->SetCanStart();
 }
@@ -187,13 +193,10 @@ void ThreadProxy::SetVisibleOnImplThread(CompletionEvent* completion,
 void ThreadProxy::SetThrottleFrameProduction(bool throttle) {
   TRACE_EVENT1("cc", "ThreadProxy::SetThrottleFrameProduction", "throttle",
                throttle);
-  Proxy::ImplThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::SetThrottleFrameProductionOnImplThread,
-                 impl_thread_weak_ptr_, throttle));
+  main().channel_main->SetThrottleFrameProductionOnImpl(throttle);
 }
 
-void ThreadProxy::SetThrottleFrameProductionOnImplThread(bool throttle) {
+void ThreadProxy::SetThrottleFrameProductionOnImpl(bool throttle) {
   TRACE_EVENT1("cc", "ThreadProxy::SetThrottleFrameProductionOnImplThread",
                "throttle", throttle);
   impl().scheduler->SetThrottleFrameProduction(throttle);
@@ -355,9 +358,7 @@ void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
                "ThreadProxy::DidSwapBuffersCompleteOnImplThread");
   DCHECK(IsImplThread());
   impl().scheduler->DidSwapBuffersComplete();
-  Proxy::MainThreadTaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
+  impl().channel_impl->DidCompleteSwapBuffers();
 }
 
 void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -1016,6 +1017,11 @@ void ThreadProxy::SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) {
 void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   TRACE_EVENT0("cc", "ThreadProxy::InitializeImplOnImplThread");
   DCHECK(IsImplThread());
+
+  // TODO(khushalsagar): ThreadedChannel will create ProxyImpl here and pass a
+  // reference to itself.
+  impl().channel_impl = threaded_channel_.get();
+
   impl().layer_tree_host_impl =
       layer_tree_host()->CreateLayerTreeHostImpl(this);
 
@@ -1247,6 +1253,14 @@ void ThreadProxy::PostFrameTimingEvents(
   DCHECK(IsMainThread());
   layer_tree_host()->RecordFrameTimingEvents(composite_events.Pass(),
                                              main_frame_events.Pass());
+}
+
+base::WeakPtr<ProxyMain> ThreadProxy::GetMainWeakPtr() {
+  return main_thread_weak_ptr_;
+}
+
+base::WeakPtr<ProxyImpl> ThreadProxy::GetImplWeakPtr() {
+  return impl_thread_weak_ptr_;
 }
 
 }  // namespace cc
