@@ -308,10 +308,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
         minimum_duts=self.suite_config.minimum_duts,
         suite_min_duts=self.suite_config.suite_min_duts,
         offload_failures_only=self.suite_config.offload_failures_only,
-        debug=debug,
-        # TODO(akeshet) revert this CL, a temporary fix while we do a push to
-        # prod in the lab.
-        subsystems=None)
+        debug=debug, subsystems=subsystems)
 
 
 class AUTestStage(HWTestStage):
