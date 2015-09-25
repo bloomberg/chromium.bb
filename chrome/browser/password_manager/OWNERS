@@ -7,6 +7,7 @@ stuartmorgan@chromium.org
 vabr@chromium.org
 
 per-file account_chooser_infobar_delegate_android.*=melandory@chromium.org
+per-file account_chooser_dialog_android.*=melandory@chromium.org
 
 per-file credential_android.*=melandory@chromium.org
 

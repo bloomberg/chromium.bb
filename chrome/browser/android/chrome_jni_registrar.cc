@@ -93,6 +93,7 @@
 #include "chrome/browser/media/android/router/media_router_dialog_controller_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
 #include "chrome/browser/notifications/notification_ui_manager_android.h"
+#include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #include "chrome/browser/password_manager/credential_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/platform_util.h"
@@ -176,6 +177,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     // Register JNI for chrome classes.
     {"AccessibilityUtils", AccessibilityUtil::Register},
     {"AccountChooserInfoBar", RegisterAccountChooserInfoBar},
+    {"AccountChooserDialogAndroid", RegisterAccountChooserDialogAndroid},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
     {"AccountTrackerService", AccountTrackerServiceAndroid::Register},
     {"AddToHomescreenDialogHelper",

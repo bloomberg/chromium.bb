@@ -28,7 +28,7 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/password_manager/account_chooser_infobar_delegate_android.h"
+#include "chrome/browser/password_manager/account_chooser_dialog_android.h"
 #endif
 
 using autofill::PasswordFormMap;
@@ -85,7 +85,11 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
 void ManagePasswordsUIController::
     UpdateAndroidAccountChooserInfoBarVisibility() {
 #if defined(OS_ANDROID)
-  AccountChooserInfoBarDelegateAndroid::Create(web_contents(), this);
+  // Deletes itself on the event from Java counterpart, when user interacts with
+  // dialog.
+  AccountChooserDialogAndroid* acccount_chooser_dialog =
+      new AccountChooserDialogAndroid(web_contents(), this);
+  acccount_chooser_dialog->ShowDialog();
   should_pop_up_bubble_ = false;
 #endif
 }
