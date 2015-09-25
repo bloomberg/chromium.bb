@@ -13,9 +13,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "net/cert/ct_ev_whitelist.h"
+#include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
@@ -41,6 +43,11 @@ bool IsBuildTimely() {
   // We consider built-in information to be timely for 10 weeks.
   return (base::Time::Now() - build_time).InDays() < 70 /* 10 weeks */;
 #endif
+}
+
+bool IsGoogleIssuedSCT(
+    const scoped_refptr<ct::SignedCertificateTimestamp>& sct) {
+  return ct::IsLogOperatedByGoogle(sct->log_id);
 }
 
 // Returns a rounded-down months difference of |start| and |end|,
@@ -75,12 +82,10 @@ void RoundedDownMonthDifference(const base::Time& start,
 
 bool HasRequiredNumberOfSCTs(const X509Certificate& cert,
                              const ct::CTVerifyResult& ct_result) {
-  // TODO(eranm): Count the number of *independent* SCTs once the information
-  // about log operators is available, crbug.com/425174
   size_t num_valid_scts = ct_result.verified_scts.size();
-  size_t num_embedded_scts =
+  size_t num_embedded_scts = base::checked_cast<size_t>(
       std::count_if(ct_result.verified_scts.begin(),
-                    ct_result.verified_scts.end(), IsEmbeddedSCT);
+                    ct_result.verified_scts.end(), IsEmbeddedSCT));
 
   size_t num_non_embedded_scts = num_valid_scts - num_embedded_scts;
   // If at least two valid SCTs were delivered by means other than embedding
@@ -117,10 +122,22 @@ bool HasRequiredNumberOfSCTs(const X509Certificate& cert,
   return num_embedded_scts >= num_required_embedded_scts;
 }
 
+// Returns true if |verified_scts| contains SCTs from at least one log that is
+// operated by Google and at least one log that is not operated by Google. This
+// is required for SCTs after July 1st, 2015, as documented at
+// http://dev.chromium.org/Home/chromium-security/root-ca-policy/EVCTPlanMay2015edition.pdf
+bool HasEnoughDiverseSCTs(const ct::SCTList& verified_scts) {
+  size_t num_google_issued_scts = base::checked_cast<size_t>(std::count_if(
+      verified_scts.begin(), verified_scts.end(), IsGoogleIssuedSCT));
+  return (num_google_issued_scts > 0) &&
+         (verified_scts.size() != num_google_issued_scts);
+}
+
 enum CTComplianceStatus {
   CT_NOT_COMPLIANT = 0,
   CT_IN_WHITELIST = 1,
   CT_ENOUGH_SCTS = 2,
+  CT_NOT_ENOUGH_DIVERSE_SCTS = 3,
   CT_COMPLIANCE_MAX,
 };
 
@@ -134,6 +151,9 @@ const char* ComplianceStatusToString(CTComplianceStatus status) {
       break;
     case CT_ENOUGH_SCTS:
       return "ENOUGH_SCTS";
+      break;
+    case CT_NOT_ENOUGH_DIVERSE_SCTS:
+      return "NOT_ENOUGH_DIVERSE_SCTS";
       break;
     case CT_COMPLIANCE_MAX:
       break;
@@ -206,6 +226,23 @@ scoped_ptr<base::Value> NetLogComplianceCheckResultCallback(
   return dict.Pass();
 }
 
+// Returns true if all SCTs in |verified_scts| were issued on, or after, the
+// date specified in kDiverseSCTRequirementStartDate
+bool AllSCTsPastDistinctSCTRequirementEnforcementDate(
+    const ct::SCTList& verified_scts) {
+  // The date when diverse SCTs requirement is effective from.
+  // 2015-07-01 00:00:00 UTC.
+  base::Time kDiverseSCTRequirementStartDate =
+      base::Time::FromInternalValue(13080182400000000);
+
+  for (const auto& it : verified_scts) {
+    if (it->timestamp < kDiverseSCTRequirementStartDate)
+      return false;
+  }
+
+  return true;
+}
+
 bool IsCertificateInWhitelist(const X509Certificate& cert,
                               const ct::EVCertsWhitelist* ev_whitelist) {
   bool cert_in_ev_whitelist = false;
@@ -241,12 +278,19 @@ void CheckCTEVPolicyCompliance(X509Certificate* cert,
     return;
   }
 
-  if (HasRequiredNumberOfSCTs(*cert, ct_result)) {
-    result->status = CT_ENOUGH_SCTS;
+  if (!HasRequiredNumberOfSCTs(*cert, ct_result)) {
+    result->status = CT_NOT_COMPLIANT;
     return;
   }
 
-  result->status = CT_NOT_COMPLIANT;
+  if (AllSCTsPastDistinctSCTRequirementEnforcementDate(
+          ct_result.verified_scts) &&
+      !HasEnoughDiverseSCTs(ct_result.verified_scts)) {
+    result->status = CT_NOT_ENOUGH_DIVERSE_SCTS;
+    return;
+  }
+
+  result->status = CT_ENOUGH_SCTS;
 }
 
 }  // namespace
