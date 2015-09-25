@@ -5345,7 +5345,6 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition)
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -5357,7 +5356,6 @@ TEST_P(ParameterizedWebFrameTest, SlowSpellcheckMarkerPosition)
     NonThrowableExceptionState exceptionState;
     document->execCommand("InsertText", false, "wellcome ", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
-    webInputElement.setSelectionRange(0, 0);
     document->execCommand("InsertText", false, "he", exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
@@ -5400,7 +5398,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultErasesMarkers)
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 
@@ -5432,7 +5429,6 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument)
     webViewHelper.webView()->setSpellCheckClient(&spellcheck);
 
     WebLocalFrameImpl* frame = toWebLocalFrameImpl(webViewHelper.webView()->mainFrame());
-    WebInputElement webInputElement = frame->document().getElementById("data").to<WebInputElement>();
     Document* document = frame->frame()->document();
     Element* element = document->getElementById("data");
 

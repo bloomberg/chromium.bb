@@ -38,7 +38,7 @@ namespace blink {
 class HTMLTextAreaElement;
 
 // Provides access to some properties of a DOM textarea element node.
-class WebTextAreaElement : public WebFormControlElement {
+class WebTextAreaElement final : public WebFormControlElement {
 public:
     WebTextAreaElement() : WebFormControlElement() { }
     WebTextAreaElement(const WebTextAreaElement& element) : WebFormControlElement(element) { }
@@ -56,6 +56,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLTextAreaElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebTextAreaElement);
 
 } // namespace blink
 

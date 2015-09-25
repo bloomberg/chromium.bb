@@ -114,6 +114,8 @@ public:
 #endif
 };
 
+DECLARE_WEB_NODE_TYPE_CASTS(WebFormControlElement);
+
 } // namespace blink
 
 #endif

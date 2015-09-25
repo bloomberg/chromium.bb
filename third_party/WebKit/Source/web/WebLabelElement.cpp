@@ -48,6 +48,8 @@ WebLabelElement::WebLabelElement(const PassRefPtrWillBeRawPtr<HTMLLabelElement>&
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebLabelElement, isHTMLLabelElement(constUnwrap<Node>()));
+
 WebLabelElement& WebLabelElement::operator=(const PassRefPtrWillBeRawPtr<HTMLLabelElement>& elem)
 {
     m_private = elem;

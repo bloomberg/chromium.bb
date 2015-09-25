@@ -40,7 +40,7 @@ namespace blink {
 class HTMLSelectElement;
 
 // Provides readonly access to some properties of a DOM select element node.
-class WebSelectElement : public WebFormControlElement {
+class WebSelectElement final : public WebFormControlElement {
 public:
     WebSelectElement() : WebFormControlElement() { }
     WebSelectElement(const WebSelectElement& element) : WebFormControlElement(element) { }
@@ -60,6 +60,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLSelectElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebSelectElement);
 
 } // namespace blink
 

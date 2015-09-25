@@ -104,6 +104,8 @@ WebFormElement::WebFormElement(const PassRefPtrWillBeRawPtr<HTMLFormElement>& e)
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebFormElement, isHTMLFormElement(constUnwrap<Node>()));
+
 WebFormElement& WebFormElement::operator=(const PassRefPtrWillBeRawPtr<HTMLFormElement>& e)
 {
     m_private = e;

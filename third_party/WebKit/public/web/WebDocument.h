@@ -145,6 +145,8 @@ public:
 #endif
 };
 
+DECLARE_WEB_NODE_TYPE_CASTS(WebDocument);
+
 } // namespace blink
 
 #endif

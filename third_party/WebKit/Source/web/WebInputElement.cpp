@@ -149,6 +149,8 @@ WebInputElement::WebInputElement(const PassRefPtrWillBeRawPtr<HTMLInputElement>&
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebInputElement, isHTMLInputElement(constUnwrap<Node>()));
+
 WebInputElement& WebInputElement::operator=(const PassRefPtrWillBeRawPtr<HTMLInputElement>& elem)
 {
     m_private = elem;

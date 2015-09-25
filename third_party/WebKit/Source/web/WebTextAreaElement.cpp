@@ -43,6 +43,8 @@ WebTextAreaElement::WebTextAreaElement(const PassRefPtrWillBeRawPtr<HTMLTextArea
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebTextAreaElement, isHTMLTextAreaElement(constUnwrap<Node>()));
+
 WebTextAreaElement& WebTextAreaElement::operator=(const PassRefPtrWillBeRawPtr<HTMLTextAreaElement>& element)
 {
     m_private = element;

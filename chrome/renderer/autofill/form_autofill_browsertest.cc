@@ -1019,7 +1019,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     lastname.setAutofilled(true);
     WebInputElement month = GetInputElementById("month");
     month.setAutofilled(true);
-    WebInputElement textarea = GetInputElementById("textarea");
+    WebFormControlElement textarea = GetFormControlElementById("textarea");
     textarea.setAutofilled(true);
 
     // Set the value of the disabled text input element.
@@ -2001,6 +2001,30 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.form_control_type = "month";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
+}
+
+TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {
+  LoadHTML("<form id=form>"
+           "  <label for='progress'>Progress:</label>"
+           "  <progress id='progress'></progress>"
+           "  <label for='firstname'>First name:</label>"
+           "  <input type='text' id='firstname' value='John'>"
+           "</form>");
+
+  WebFrame* frame = GetMainFrame();
+  ASSERT_NE(nullptr, frame);
+
+  WebFormElement web_form = frame->document().getElementById("form")
+      .to<WebFormElement>();
+  ASSERT_FALSE(web_form.isNull());
+
+  FormData form;
+  EXPECT_TRUE(WebFormElementToFormData(web_form, WebFormControlElement(),
+                                       EXTRACT_NONE, &form, nullptr));
+
+  const std::vector<FormFieldData>& fields = form.fields;
+  ASSERT_EQ(1U, fields.size());
+  EXPECT_EQ(ASCIIToUTF16("firstname"), fields[0].name);
 }
 
 // We should not be able to serialize a form with too many fillable fields.

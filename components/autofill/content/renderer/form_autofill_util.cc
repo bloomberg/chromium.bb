@@ -927,11 +927,10 @@ void MatchLabelsAndFields(
   for (WebElement item = labels.firstItem(); !item.isNull();
        item = labels.nextItem()) {
     WebLabelElement label = item.to<WebLabelElement>();
-    WebFormControlElement field_element =
-        label.correspondingControl().to<WebFormControlElement>();
+    WebElement control = label.correspondingControl();
     FormFieldData* field_data = nullptr;
 
-    if (field_element.isNull()) {
+    if (control.isNull()) {
       // Sometimes site authors will incorrectly specify the corresponding
       // field element's name rather than its id, so we compensate here.
       base::string16 element_name = label.getAttribute(kFor);
@@ -950,12 +949,12 @@ void MatchLabelsAndFields(
           }
         }
       }
-    } else if (!field_element.isFormControlElement() ||
-               field_element.formControlType() == kHidden) {
-      continue;
-    } else {
+    } else if (control.isFormControlElement()) {
+      WebFormControlElement form_control = control.to<WebFormControlElement>();
+      if (form_control.formControlType() == kHidden)
+        continue;
       // Typical case: look up |field_data| in |element_map|.
-      auto iter = element_map->find(field_element);
+      auto iter = element_map->find(form_control);
       if (iter == element_map->end())
         continue;
       field_data = iter->second;

@@ -54,6 +54,8 @@ WebSelectElement::WebSelectElement(const PassRefPtrWillBeRawPtr<HTMLSelectElemen
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebSelectElement, isHTMLSelectElement(constUnwrap<Node>()));
+
 WebSelectElement& WebSelectElement::operator=(const PassRefPtrWillBeRawPtr<HTMLSelectElement>& element)
 {
     m_private = element;

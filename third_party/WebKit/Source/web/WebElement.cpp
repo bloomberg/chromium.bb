@@ -180,6 +180,8 @@ WebElement::WebElement(const PassRefPtrWillBeRawPtr<Element>& elem)
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebElement, isElementNode());
+
 WebElement& WebElement::operator=(const PassRefPtrWillBeRawPtr<Element>& elem)
 {
     m_private = elem;

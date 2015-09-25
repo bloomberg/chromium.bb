@@ -43,7 +43,7 @@ class DocumentType;
 class WebString;
 
 // Provides readonly access to some properties of a DOM document type.
-class WebDocumentType : public WebNode {
+class WebDocumentType final : public WebNode {
 public:
     WebDocumentType() { }
     WebDocumentType(const WebDocumentType& e) : WebNode(e) { }
@@ -63,6 +63,8 @@ public:
     operator PassRefPtrWillBeRawPtr<DocumentType>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebDocumentType);
 
 } // namespace blink
 

@@ -598,14 +598,12 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale)
 
     // Image is at top left quandrant, so should not hit it.
     WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
     EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult.reset();
 
     // Scale page up 2x so image should occupy the whole viewport.
     webView->setPageScaleFactor(2.0f);
     WebHitTestResult positiveResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 }
@@ -621,21 +619,18 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScaleAndPan)
 
     // Image is at top left quandrant, so should not hit it.
     WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
     EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult.reset();
 
     // Scale page up 2x so image should occupy the whole viewport.
     webView->setPageScaleFactor(2.0f);
     WebHitTestResult positiveResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 
     // Pan around the zoomed in page so the image is not visible in viewport.
     webView->setVisualViewportOffset(WebFloatPoint(100, 100));
     WebHitTestResult negativeResult2 = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult2.reset();
 }
@@ -650,21 +645,18 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapArea)
 
     // Image is at top left quandrant, so should not hit it.
     WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
     EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult.reset();
 
     // The tap area is 20 by 20 square, centered at 55, 55.
     WebSize tapArea(20, 20);
     WebHitTestResult positiveResult = webView->hitTestResultForTap(hitPoint, tapArea);
-    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 
     // Move the hit point the image is just outside the tapped area now.
     hitPoint = WebPoint(61, 61);
     WebHitTestResult negativeResult2 = webView->hitTestResultForTap(hitPoint, tapArea);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult2.reset();
 }
@@ -680,14 +672,12 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan)
 
     // Image is at top left quandrant, so should not hit it.
     WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
     EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult.reset();
 
     // The tap area is 20 by 20 square, centered at 55, 55.
     WebSize tapArea(20, 20);
     WebHitTestResult positiveResult = webView->hitTestResultForTap(hitPoint, tapArea);
-    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
     EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
     positiveResult.reset();
 
@@ -695,7 +685,6 @@ TEST_F(WebViewTest, HitTestResultForTapWithTapAreaPageScaleAndPan)
     webView->setPageScaleFactor(2.0f);
     webView->setVisualViewportOffset(WebFloatPoint(100, 100));
     WebHitTestResult negativeResult2 = webView->hitTestResultForTap(hitPoint, tapArea);
-    ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
     EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
     negativeResult2.reset();
 }

@@ -41,7 +41,7 @@ class WebFormControlElement;
 
 // A container for passing around a reference to a form element. Provides some
 // information about the form.
-class WebFormElement : public WebElement {
+class WebFormElement final : public WebElement {
 public:
     ~WebFormElement() { reset(); }
 
@@ -82,6 +82,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLFormElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebFormElement);
 
 } // namespace blink
 

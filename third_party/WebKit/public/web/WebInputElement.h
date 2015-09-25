@@ -39,7 +39,7 @@ class HTMLInputElement;
 class WebElementCollection;
 
 // Provides readonly access to some properties of a DOM input element node.
-class WebInputElement : public WebFormControlElement {
+class WebInputElement final : public WebFormControlElement {
 public:
     WebInputElement() : WebFormControlElement() { }
     WebInputElement(const WebInputElement& element) : WebFormControlElement(element) { }
@@ -90,6 +90,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLInputElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebInputElement);
 
 // This returns 0 if the specified WebElement is not a WebInputElement.
 BLINK_EXPORT WebInputElement* toWebInputElement(WebElement*);

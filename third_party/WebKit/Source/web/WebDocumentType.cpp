@@ -47,6 +47,8 @@ WebDocumentType::WebDocumentType(const PassRefPtrWillBeRawPtr<DocumentType>& ele
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebDocumentType, constUnwrap<Node>()->nodeType() == Node::DOCUMENT_TYPE_NODE);
+
 WebDocumentType& WebDocumentType::operator=(const PassRefPtrWillBeRawPtr<DocumentType>& elem)
 {
     m_private = elem;

@@ -39,7 +39,7 @@ namespace blink {
 class HTMLOptionElement;
 
 // Provides readonly access to some properties of a DOM option element node.
-class WebOptionElement : public WebElement {
+class WebOptionElement final : public WebElement {
 public:
     WebOptionElement() : WebElement() { }
     WebOptionElement(const WebOptionElement& element) : WebElement(element) { }
@@ -65,6 +65,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLOptionElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebOptionElement);
 
 } // namespace blink
 

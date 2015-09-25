@@ -75,24 +75,6 @@ public:
 
     bool isNull() const { return m_private.isNull(); }
 
-    enum NodeType {
-        ElementNode = 1,
-        AttributeNode = 2,
-        TextNode = 3,
-        CDataSectionNode = 4,
-        // EntityReferenceNodes are impossible to create in Blink.
-        // EntityNodes are impossible to create in Blink.
-        ProcessingInstructionsNode = 7,
-        CommentNode = 8,
-        DocumentNode = 9,
-        DocumentTypeNode = 10,
-        DocumentFragmentNode = 11,
-        // NotationNodes are impossible to create in Blink.
-        // XPathNamespaceNodes are impossible to create in Blink.
-        ShadowRootNode = 14
-    };
-
-    BLINK_EXPORT NodeType nodeType() const;
     BLINK_EXPORT WebNode parentNode() const;
     BLINK_EXPORT WebString nodeValue() const;
     BLINK_EXPORT WebDocument document() const;
@@ -103,6 +85,7 @@ public:
     BLINK_EXPORT bool hasChildNodes() const;
     BLINK_EXPORT WebNodeList childNodes();
     BLINK_EXPORT bool isLink() const;
+    BLINK_EXPORT bool isDocumentNode() const;
     BLINK_EXPORT bool isCommentNode() const;
     BLINK_EXPORT bool isTextNode() const;
     BLINK_EXPORT bool isFocusable() const;
@@ -129,27 +112,14 @@ public:
     BLINK_EXPORT bool isInsideFocusableElementOrARIAWidget() const;
     BLINK_EXPORT WebAXObject accessibilityObject();
 
-    template<typename T> T to()
-    {
-        T res;
-        res.WebNode::assign(*this);
-        return res;
-    }
-
-    template<typename T> const T toConst() const
-    {
-        T res;
-        res.WebNode::assign(*this);
-        return res;
-    }
+    template<typename T> T to();
+    template<typename T> const T toConst() const;
 
 #if BLINK_IMPLEMENTATION
     WebNode(const PassRefPtrWillBeRawPtr<Node>&);
     WebNode& operator=(const PassRefPtrWillBeRawPtr<Node>&);
     operator PassRefPtrWillBeRawPtr<Node>() const;
-#endif
 
-#if BLINK_IMPLEMENTATION
     template<typename T> T* unwrap()
     {
         return static_cast<T*>(m_private.get());
@@ -164,6 +134,30 @@ public:
 protected:
     WebPrivatePtr<Node> m_private;
 };
+
+#define DECLARE_WEB_NODE_TYPE_CASTS(type) \
+template<> \
+BLINK_EXPORT type WebNode::to<type>(); \
+template<> \
+BLINK_EXPORT const type WebNode::toConst<type>() const;
+
+#if BLINK_IMPLEMENTATION
+#define DEFINE_WEB_NODE_TYPE_CASTS(type, predicate) \
+template<> \
+type WebNode::to<type>() { \
+    ASSERT_WITH_SECURITY_IMPLICATION(isNull() || (predicate)); \
+    type result; \
+    result.WebNode::assign(*this); \
+    return result; \
+} \
+template<> \
+const type WebNode::toConst<type>() const { \
+    ASSERT_WITH_SECURITY_IMPLICATION(isNull() || (predicate)); \
+    type result; \
+    result.WebNode::assign(*this); \
+    return result; \
+}
+#endif
 
 inline bool operator==(const WebNode& a, const WebNode& b)
 {

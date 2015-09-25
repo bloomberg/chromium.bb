@@ -88,6 +88,8 @@ public:
 #endif
 };
 
+DECLARE_WEB_NODE_TYPE_CASTS(WebElement);
+
 } // namespace blink
 
 #endif

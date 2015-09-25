@@ -42,7 +42,7 @@ namespace blink {
 class HTMLLabelElement;
 
 // Provides readonly access to some properties of a DOM label element node.
-class WebLabelElement : public WebElement {
+class WebLabelElement final : public WebElement {
 public:
     WebLabelElement() : WebElement() { }
     WebLabelElement(const WebLabelElement& element) : WebElement(element) { }
@@ -63,6 +63,8 @@ public:
     operator PassRefPtrWillBeRawPtr<HTMLLabelElement>() const;
 #endif
 };
+
+DECLARE_WEB_NODE_TYPE_CASTS(WebLabelElement);
 
 } // namespace blink
 

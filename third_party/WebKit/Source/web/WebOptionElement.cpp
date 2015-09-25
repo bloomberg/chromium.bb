@@ -74,6 +74,8 @@ WebOptionElement::WebOptionElement(const PassRefPtrWillBeRawPtr<HTMLOptionElemen
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebOptionElement, isHTMLOptionElement(constUnwrap<Node>()));
+
 WebOptionElement& WebOptionElement::operator=(const PassRefPtrWillBeRawPtr<HTMLOptionElement>& elem)
 {
     m_private = elem;

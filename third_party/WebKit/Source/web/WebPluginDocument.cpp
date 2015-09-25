@@ -57,6 +57,8 @@ WebPluginDocument::WebPluginDocument(const PassRefPtrWillBeRawPtr<PluginDocument
 {
 }
 
+DEFINE_WEB_NODE_TYPE_CASTS(WebPluginDocument, isDocumentNode() && constUnwrap<Document>()->isPluginDocument());
+
 WebPluginDocument& WebPluginDocument::operator=(const PassRefPtrWillBeRawPtr<PluginDocument>& elem)
 {
     m_private = elem;
