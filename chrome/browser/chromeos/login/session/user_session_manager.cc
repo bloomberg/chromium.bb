@@ -836,7 +836,7 @@ void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {
 }
 
 void UserSessionManager::StopChildStatusObserving(Profile* profile) {
-  if (!waiting_for_child_account_status_ &&
+  if (waiting_for_child_account_status_ &&
       !SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
     InitializeStartUrls();
   }
@@ -1185,7 +1185,7 @@ void UserSessionManager::InitializeStartUrls() const {
 
   if (can_show_getstarted_guide && should_show_getstarted_guide) {
     // Don't open default Chrome window if we're going to launch the first-run
-    // app. Because we dont' want the first-run app to be hidden in the
+    // app. Because we don't want the first-run app to be hidden in the
     // background.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kSilentLaunch);
