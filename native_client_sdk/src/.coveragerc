@@ -1,5 +1,5 @@
 [run]
-omit=*ntpath*,*third_party*,*lastchange.py,*_test.py,test_all.py
+omit=*/site-packages/*,*/find_chrome.py,*ntpath*,*third_party*,*lastchange.py,*_test.py,test_all.py
 data_file = ../../out/coverage
 
 [html]

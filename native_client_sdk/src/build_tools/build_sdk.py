@@ -865,77 +865,6 @@ def BuildStepArchiveSDKTools():
   Archive('nacl_sdk.zip', OUT_DIR, step_link=False)
 
 
-def BuildStepSyncNaClPorts():
-  """Pull the pinned revision of naclports from SVN."""
-  buildbot_common.BuildStep('Sync naclports')
-
-  # In case a previous non-gclient checkout exists, remove it.
-  # TODO(sbc): remove this once all the build machines
-  # have removed the old checkout
-  if (os.path.exists(NACLPORTS_DIR) and
-      not os.path.exists(os.path.join(NACLPORTS_DIR, 'src'))):
-    buildbot_common.RemoveDir(NACLPORTS_DIR)
-
-  if not os.path.exists(NACLPORTS_DIR):
-    buildbot_common.MakeDir(NACLPORTS_DIR)
-    # checkout new copy of naclports
-    cmd = ['gclient', 'config', '--name=src', NACLPORTS_URL]
-    buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
-
-  # sync to required revision
-  cmd = ['gclient', 'sync', '-R', '-r', 'src@' + str(NACLPORTS_REV)]
-  buildbot_common.Run(cmd, cwd=NACLPORTS_DIR)
-
-
-def BuildStepBuildNaClPorts(pepper_ver, pepperdir):
-  """Build selected naclports in all configurations."""
-  # TODO(sbc): currently naclports doesn't know anything about
-  # Debug builds so the Debug subfolders are all empty.
-
-  env = dict(os.environ)
-  env['NACL_SDK_ROOT'] = pepperdir
-  env['PEPPER_DIR'] = os.path.basename(pepperdir)  # pepper_NN
-  env['NACLPORTS_NO_ANNOTATE'] = "1"
-  env['NACLPORTS_NO_UPLOAD'] = "1"
-  env['BUILDBOT_GOT_REVISION'] = str(NACLPORTS_REV)
-
-  build_script = 'build_tools/buildbot_sdk_bundle.sh'
-  buildbot_common.BuildStep('Build naclports')
-
-  naclports_src = os.path.join(NACLPORTS_DIR, 'src')
-  bundle_dir = os.path.join(naclports_src, 'out', 'sdk_bundle')
-  out_dir = os.path.join(bundle_dir, 'pepper_%s' % pepper_ver)
-
-  # Remove the sdk_bundle directory to remove stale files from previous builds.
-  buildbot_common.RemoveDir(bundle_dir)
-
-  buildbot_common.Run([build_script], env=env, cwd=naclports_src)
-
-  # Some naclports do not include a standalone LICENSE/COPYING file
-  # so we explicitly list those here for inclusion.
-  extra_licenses = ('tinyxml/readme.txt',
-                    'jpeg-8d/README',
-                    'zlib-1.2.3/README')
-  src_root = os.path.join(naclports_src, 'out', 'build')
-  output_license = os.path.join(out_dir, 'ports', 'LICENSE')
-  GenerateNotice(src_root, output_license, extra_licenses)
-  readme = os.path.join(out_dir, 'ports', 'README')
-  oshelpers.Copy(['-v', os.path.join(SDK_SRC_DIR, 'README.naclports'), readme])
-
-
-def BuildStepTarNaClPorts(pepper_ver, tarfile):
-  """Create tar archive containing headers and libs from naclports build."""
-  buildbot_common.BuildStep('Tar naclports Bundle')
-  buildbot_common.MakeDir(os.path.dirname(tarfile))
-  pepper_dir = 'pepper_%s' % pepper_ver
-  archive_dirs = [os.path.join(pepper_dir, 'ports')]
-
-  ports_out = os.path.join(NACLPORTS_DIR, 'src', 'out', 'sdk_bundle')
-  cmd = [sys.executable, CYGTAR, '-C', ports_out, '-cjf', tarfile]
-  cmd += archive_dirs
-  buildbot_common.Run(cmd, cwd=NACL_DIR)
-
-
 def BuildStepBuildAppEngine(pepperdir, chrome_revision):
   """Build the projects found in src/gonacl_appengine/src"""
   buildbot_common.BuildStep('Build GoNaCl AppEngine Projects')
@@ -961,8 +890,6 @@ def main(args):
       action='store_true')
   parser.add_argument('--release', help='PPAPI release version.',
       dest='release', default=None)
-  parser.add_argument('--build-ports',
-      help='Build naclport bundle.', action='store_true')
   parser.add_argument('--build-app-engine',
       help='Build AppEngine demos.', action='store_true')
   parser.add_argument('--experimental',
@@ -1018,7 +945,6 @@ def main(args):
 
   if buildbot_common.IsSDKBuilder():
     options.archive = True
-    options.build_ports = True
     # TODO(binji): re-enable app_engine build when the linux builder stops
     # breaking when trying to git clone from github.
     # See http://crbug.com/412969.
@@ -1033,7 +959,6 @@ def main(args):
   # Changes for experimental bionic builder
   if options.bionic:
     toolchains.append('arm_bionic')
-    options.build_ports = False
     options.build_app_engine = False
 
   print 'Building: ' + ' '.join(toolchains)
@@ -1137,13 +1062,6 @@ def main(args):
   if platform == 'linux':
     BuildStepBuildPNaClComponent(pepper_ver, chrome_revision)
 
-    if options.build_ports:
-      ports_tarfile = os.path.join(OUT_DIR, 'naclports.tar.bz2')
-      BuildStepSyncNaClPorts()
-      BuildStepBuildNaClPorts(pepper_ver, pepperdir)
-      if options.tar:
-        BuildStepTarNaClPorts(pepper_ver, ports_tarfile)
-
   if options.build_app_engine and platform == 'linux':
     BuildStepBuildAppEngine(pepperdir, chrome_revision)
 
@@ -1157,9 +1075,6 @@ def main(args):
                            tarfile)
     # Only archive sdk_tools/naclport/pnacl_component on linux.
     if platform == 'linux':
-      if options.build_ports:
-        BuildStepArchiveBundle('naclports', pepper_ver, chrome_revision,
-                               nacl_revision, ports_tarfile)
       BuildStepArchiveSDKTools()
       BuildStepArchivePNaClComponent(chrome_revision)
 

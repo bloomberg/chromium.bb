@@ -428,8 +428,9 @@ class VersionFinder(object):
       expected_archives = set(GetPlatformArchiveName(p) for p in self.platforms)
 
     if self.extra_archives:
-      for extra_archive, extra_archive_min_version in self.extra_archives:
-        if CompareVersions(version, extra_archive_min_version) >= 0:
+      for extra_archive, min_version, max_version in self.extra_archives:
+        if (CompareVersions(version, min_version) >= 0 and
+            CompareVersions(version, max_version) < 0):
           expected_archives.add(extra_archive)
     found_archives = set(GetCanonicalArchiveName(a) for a in archive_urls)
     missing_archives = expected_archives - found_archives
@@ -792,8 +793,8 @@ def Run(delegate, platforms, extra_archives, fixed_bundle_versions=None):
     delegate: The Delegate object to use for reading Urls, files, etc.
     platforms: A sequence of platforms to consider, e.g.
         ('mac', 'linux', 'win')
-      extra_archives: A sequence of tuples: (archive_basename, minimum_version),
-          e.g. [('foo.tar.bz2', '18.0.1000.0'), ('bar.tar.bz2', '19.0.1100.20')]
+      extra_archives: A sequence of tuples: (archive_basename, minimum_version,
+          max_version), e.g. [('foo.tar.bz2', '18.0.1000.0', '19.0.0.0)]
           These archives must exist to consider a version for inclusion, as
           long as that version is greater than the archive's minimum version.
     fixed_bundle_versions: A sequence of tuples (bundle_name, version_string).
@@ -933,8 +934,9 @@ def main(args):
         logger.addHandler(gsutil_logging_handler)
 
       # Only look for naclports archives >= 27. The old ports bundles don't
-      # include license information.
-      extra_archives = [('naclports.tar.bz2', '27.0.0.0')]
+      # include license information.  The naclports bundle was removed in
+      # pepper_47.
+      extra_archives = [(NACLPORTS_ARCHIVE_NAME, '27.0.0.0', '47.0.0.0')]
       Run(delegate, ('mac', 'win', 'linux'), extra_archives,
           fixed_bundle_versions)
     except Exception:
