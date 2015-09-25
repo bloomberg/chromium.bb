@@ -18,7 +18,7 @@ namespace safe_browsing {
 
 namespace {
 
-const void* kPingKey = &kPingKey;
+const void* const kPingKey = &kPingKey;
 
 class DownloadFeedbackPings : public base::SupportsUserData::Data {
  public:

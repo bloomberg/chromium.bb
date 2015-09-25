@@ -63,7 +63,7 @@ class Loader : public base::RefCountedThreadSafe<Loader> {
   // of set_default_build_config. The implementation of that function uses this
   // constant as a property key to get the Label* out of the scope where the
   // label should be stored.
-  static const void* kDefaultToolchainKey;
+  static const void* const kDefaultToolchainKey;
 
  protected:
   friend class base::RefCountedThreadSafe<Loader>;

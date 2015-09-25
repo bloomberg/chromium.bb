@@ -24,9 +24,10 @@ namespace android_webview {
 
 namespace {
 
-const void* kRequestAlreadyQueriedDataKey = &kRequestAlreadyQueriedDataKey;
+const void* const kRequestAlreadyQueriedDataKey =
+    &kRequestAlreadyQueriedDataKey;
 
-} // namespace
+}  // namespace
 
 AwRequestInterceptor::AwRequestInterceptor() {
 }
@@ -86,4 +87,4 @@ net::URLRequestJob* AwRequestInterceptor::MaybeInterceptRequest(
       aw_web_resource_response.Pass(), request, network_delegate);
 }
 
-} // namespace android_webview
+}  // namespace android_webview

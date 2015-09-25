@@ -85,7 +85,7 @@ enum PopupItemType {
   POPUP_ITEM_TYPE_ENABLED,
 };
 
-const void* kContentViewUserDataKey = &kContentViewUserDataKey;
+const void* const kContentViewUserDataKey = &kContentViewUserDataKey;
 
 int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   DCHECK(host);
@@ -93,8 +93,7 @@ int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
   DCHECK(render_process);
   if (render_process->HasConnection())
     return render_process->GetHandle();
-  else
-    return 0;
+  return 0;
 }
 
 ScopedJavaLocalRef<jobject> CreateJavaRect(

@@ -23,7 +23,7 @@ using content::OpenURLParams;
 
 namespace {
 
-const void* kDialogStatusKey = &kDialogStatusKey;
+const void* const kDialogStatusKey = &kDialogStatusKey;
 
 class DialogStatusData : public base::SupportsUserData::Data {
  public:

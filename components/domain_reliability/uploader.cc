@@ -23,7 +23,7 @@ namespace domain_reliability {
 
 namespace {
 
-const char* kJsonMimeType = "application/json; charset=utf-8";
+const char kJsonMimeType[] = "application/json; charset=utf-8";
 
 class UploadUserData : public base::SupportsUserData::Data {
  public:
@@ -31,7 +31,7 @@ class UploadUserData : public base::SupportsUserData::Data {
     return base::Bind(&UploadUserData::CreateUploadUserData);
   }
 
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 
  private:
   static base::SupportsUserData::Data* CreateUploadUserData() {
@@ -39,8 +39,8 @@ class UploadUserData : public base::SupportsUserData::Data {
   }
 };
 
-const void* UploadUserData::kUserDataKey =
-    static_cast<const void*>(&UploadUserData::kUserDataKey);
+const void* const UploadUserData::kUserDataKey =
+    &UploadUserData::kUserDataKey;
 
 class DomainReliabilityUploaderImpl
     : public DomainReliabilityUploader, net::URLFetcherDelegate {

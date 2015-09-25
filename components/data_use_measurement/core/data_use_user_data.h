@@ -60,7 +60,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
   ServiceName service_name() const { return service_name_; }
 
   // The key for retrieving back this type of user data.
-  static const void* kUserDataKey;
+  static const void* const kUserDataKey;
 
  private:
   const ServiceName service_name_;
@@ -68,6 +68,6 @@ class DataUseUserData : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(DataUseUserData);
 };
 
-}  // data_use_measurement namespace
+}  // namespace data_use_measurement
 
 #endif  // COMPONENTS_DATA_USE_MEASUREMENT_CORE_DATA_USE_USER_DATA_H_

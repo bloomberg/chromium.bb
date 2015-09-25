@@ -31,7 +31,7 @@ namespace {
 
 const int kMaxValidityOfUserGestureCarryoverInSeconds = 10;
 
-const void* kInterceptNavigationDelegateUserDataKey =
+const void* const kInterceptNavigationDelegateUserDataKey =
     &kInterceptNavigationDelegateUserDataKey;
 
 bool CheckIfShouldIgnoreNavigationOnUIThread(WebContents* source,

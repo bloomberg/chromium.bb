@@ -15,7 +15,7 @@ namespace android_webview {
 
 namespace {
 
-const void* kAwContentsClientBridgeBase = &kAwContentsClientBridgeBase;
+const void* const kAwContentsClientBridgeBase = &kAwContentsClientBridgeBase;
 
 // This class is invented so that the UserData registry that we inject the
 // AwContentsClientBridgeBase object does not own and destroy it.
@@ -37,7 +37,7 @@ class UserData : public base::SupportsUserData::Data {
   DISALLOW_COPY_AND_ASSIGN(UserData);
 };
 
-} // namespace
+}  // namespace
 
 // static
 void AwContentsClientBridgeBase::Associate(

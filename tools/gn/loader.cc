@@ -79,7 +79,7 @@ struct LoaderImpl::ToolchainRecord {
 
 // -----------------------------------------------------------------------------
 
-const void* Loader::kDefaultToolchainKey = &kDefaultToolchainKey;
+const void* const Loader::kDefaultToolchainKey = &kDefaultToolchainKey;
 
 Loader::Loader() {
 }
@@ -350,7 +350,7 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
     //
     // In this case, we should have exactly one entry in the map with an empty
     // label. We now need to fix up the naming so it refers to the "real" one.
-    CHECK(toolchain_records_.size() == 1);
+    CHECK_EQ(1U, toolchain_records_.size());
     ToolchainRecordMap::iterator empty_label = toolchain_records_.find(Label());
     CHECK(empty_label != toolchain_records_.end());
 
@@ -398,7 +398,7 @@ void LoaderImpl::DidLoadBuildConfig(const Label& label) {
 }
 
 void LoaderImpl::DecrementPendingLoads() {
-  DCHECK(pending_loads_ > 0);
+  DCHECK_GT(pending_loads_, 0);
   pending_loads_--;
   if (pending_loads_ == 0 && !complete_callback_.is_null())
     complete_callback_.Run();

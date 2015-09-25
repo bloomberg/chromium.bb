@@ -36,15 +36,15 @@ struct PartnerModelKeeper {
 base::LazyInstance<PartnerModelKeeper> g_partner_model_keeper =
     LAZY_INSTANCE_INITIALIZER;
 
-const void* kPartnerBookmarksShimUserDataKey =
+const void* const kPartnerBookmarksShimUserDataKey =
     &kPartnerBookmarksShimUserDataKey;
 
 // Dictionary keys for entries in the kPartnerBookmarksMapping pref.
-static const char kMappingUrl[] = "url";
-static const char kMappingProviderTitle[] = "provider_title";
-static const char kMappingTitle[] = "mapped_title";
+const char kMappingUrl[] = "url";
+const char kMappingProviderTitle[] = "provider_title";
+const char kMappingTitle[] = "mapped_title";
 
-static bool g_disable_partner_bookmarks_editing = false;
+bool g_disable_partner_bookmarks_editing = false;
 
 }  // namespace
 

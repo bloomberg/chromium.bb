@@ -14,8 +14,8 @@ DataUseUserData::DataUseUserData(ServiceName service_name)
 DataUseUserData::~DataUseUserData() {}
 
 // static
-const void* DataUseUserData::kUserDataKey =
-    static_cast<const void*>(&DataUseUserData::kUserDataKey);
+const void* const DataUseUserData::kUserDataKey =
+    &DataUseUserData::kUserDataKey;
 
 // static
 base::SupportsUserData::Data* DataUseUserData::Create(

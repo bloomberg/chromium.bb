@@ -37,7 +37,8 @@ using content::NavigationEntry;
 using content::WebContents;
 
 namespace {
-const void* kWhitelistKey = &kWhitelistKey;
+
+const void* const kWhitelistKey = &kWhitelistKey;
 
 class WhitelistUrlSet : public base::SupportsUserData::Data {
  public:

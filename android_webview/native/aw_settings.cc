@@ -50,13 +50,13 @@ void PopulateFixedWebPreferences(WebPreferences* web_prefs) {
   web_prefs->should_clear_document_background = false;
 }
 
-};  // namespace
+const void* const kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
 
-const void* kAwSettingsUserDataKey = &kAwSettingsUserDataKey;
+};  // namespace
 
 class AwSettingsUserData : public base::SupportsUserData::Data {
  public:
-  AwSettingsUserData(AwSettings* ptr) : settings_(ptr) {}
+  explicit AwSettingsUserData(AwSettings* ptr) : settings_(ptr) {}
 
   static AwSettings* GetSettings(content::WebContents* web_contents) {
     if (!web_contents)

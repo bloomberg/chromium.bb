@@ -36,13 +36,14 @@ const int64 kFallbackTickTimeoutInMilliseconds = 100;
 const size_t kMemoryMultiplier = 20;
 const size_t kBytesPerPixel = 4;
 const size_t kMemoryAllocationStep = 5 * 1024 * 1024;
-uint64 g_memory_override_in_bytes = 0u;
+uint64_t g_memory_override_in_bytes = 0u;
 
-const void* kBrowserViewRendererUserDataKey = &kBrowserViewRendererUserDataKey;
+const void* const kBrowserViewRendererUserDataKey =
+    &kBrowserViewRendererUserDataKey;
 
 class BrowserViewRendererUserData : public base::SupportsUserData::Data {
  public:
-  BrowserViewRendererUserData(BrowserViewRenderer* ptr) : bvr_(ptr) {}
+  explicit BrowserViewRendererUserData(BrowserViewRenderer* ptr) : bvr_(ptr) {}
 
   static BrowserViewRenderer* GetBrowserViewRenderer(
       content::WebContents* web_contents) {
