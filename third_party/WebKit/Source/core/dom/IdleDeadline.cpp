@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/dom/IdleDeadline.h"
 
+#include "core/timing/PerformanceBase.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
@@ -21,7 +22,7 @@ double IdleDeadline::timeRemaining() const
     if (timeRemaining < 0)
         timeRemaining = 0;
 
-    return timeRemaining * 1000;
+    return 1000.0 * PerformanceBase::clampTimeResolution(timeRemaining);
 }
 
 } // namespace blink

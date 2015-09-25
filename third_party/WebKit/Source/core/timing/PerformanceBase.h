@@ -65,6 +65,8 @@ public:
 
     double timeOrigin() const { return m_timeOrigin; }
 
+    static double clampTimeResolution(double timeSeconds);
+
     PerformanceEntryVector getEntries() const;
     PerformanceEntryVector getEntriesByType(const String& entryType);
     PerformanceEntryVector getEntriesByName(const String& name, const String& entryType);

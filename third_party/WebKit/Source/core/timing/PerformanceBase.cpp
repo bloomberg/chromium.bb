@@ -415,11 +415,17 @@ void PerformanceBase::deliverObservationsTimerFired(Timer<PerformanceBase>*)
     }
 }
 
+// static
+double PerformanceBase::clampTimeResolution(double timeSeconds)
+{
+    const double resolutionSeconds = 0.000005;
+    return floor(timeSeconds / resolutionSeconds) * resolutionSeconds;
+}
+
 double PerformanceBase::now() const
 {
     double nowSeconds = monotonicallyIncreasingTime() - m_timeOrigin;
-    const double resolutionSeconds = 0.000005;
-    return 1000.0 * floor(nowSeconds / resolutionSeconds) * resolutionSeconds;
+    return 1000.0 * clampTimeResolution(nowSeconds);
 }
 
 DEFINE_TRACE(PerformanceBase)
