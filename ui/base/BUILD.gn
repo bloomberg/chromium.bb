@@ -399,7 +399,7 @@ component("base") {
   }
 
   if (is_linux) {
-    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 
   if (use_glib) {

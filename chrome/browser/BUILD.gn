@@ -799,11 +799,11 @@ source_set("browser") {
     sources +=
         rebase_path(gypi_values.chrome_browser_linux_sources, ".", "//chrome")
     if (use_aura) {
-      configs += [
-        "//build/config/linux:dbus",
-        "//build/config/linux:fontconfig",
+      configs += [ "//build/config/linux:dbus" ]
+      deps += [
+        "//build/linux:fontconfig",
+        "//dbus",
       ]
-      deps += [ "//dbus" ]
     }
     if (use_x11) {
       configs += [ "//build/config/linux:x11" ]

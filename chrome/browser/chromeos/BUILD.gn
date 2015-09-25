@@ -16,10 +16,7 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 source_set("chromeos") {
   assert(enable_extensions, "ChromeOS Chrome has to be built with extensions")
 
-  configs += [
-    "//build/config/compiler:wexit_time_destructors",
-    "//build/config/linux:fontconfig",
-  ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   public_deps = [
     "//ash/resources",
@@ -43,6 +40,7 @@ source_set("chromeos") {
     ":device_policy_proto",
     "//ash",
     "//ash:ash_with_content",
+    "//build/linux:fontconfig",
     "//components/drive",
     "//components/login",
     "//components/session_manager/core",

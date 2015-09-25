@@ -255,7 +255,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_linux) {
-    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 
   if (use_x11) {

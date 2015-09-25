@@ -127,8 +127,10 @@ source_set("extensions") {
   }
 
   if (is_linux) {
-    configs += [ "//build/config/linux:fontconfig" ]
-    deps += [ "//dbus" ]
+    deps += [
+      "//build/linux:fontconfig",
+      "//dbus",
+    ]
     if (use_x11) {
       configs += [ "//build/config/linux:x11" ]
       deps += [

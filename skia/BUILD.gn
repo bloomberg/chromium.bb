@@ -462,14 +462,15 @@ component("skia") {
   ]
 
   if (is_linux) {
-    configs += [
-      "//build/config/linux:fontconfig",
-      "//build/config/linux:freetype2",
-    ]
+    configs += [ "//build/config/linux:freetype2" ]
+
     if (use_pango) {
       configs += [ "//build/config/linux:pangocairo" ]
     }
-    deps += [ "//third_party/icu:icuuc" ]
+    deps += [
+      "//build/linux:fontconfig",
+      "//third_party/icu:icuuc",
+    ]
   }
 
   if (is_android) {

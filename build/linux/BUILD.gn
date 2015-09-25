@@ -11,6 +11,8 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
                           "scope",
                           [ "system.gyp" ])
 
+use_system_fontconfig = !is_chromecast
+
 # If brlapi isn't needed, don't require it to be installed.
 if (use_brlapi) {
   config("brlapi_config") {
@@ -102,4 +104,14 @@ group("udev") {
     ":udev0_loader",
     ":udev1_loader",
   ]
+}
+
+group("fontconfig") {
+  if (use_system_fontconfig) {
+    public_configs = [ "//build/config/linux:fontconfig" ]
+  } else {
+    public_deps = [
+      "//third_party/fontconfig",
+    ]
+  }
 }

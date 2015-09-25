@@ -299,7 +299,7 @@ source_set("browser") {
   }
 
   if (is_linux && use_aura) {
-    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 
   if (use_x11) {

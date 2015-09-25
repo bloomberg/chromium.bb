@@ -376,7 +376,7 @@ component("gfx") {
 
   # Linux.
   if (is_linux) {
-    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 
   # Chrome OS
@@ -531,7 +531,7 @@ source_set("test_support") {
     ]
   }
   if (is_linux) {
-    configs += [ "//build/config/linux:fontconfig" ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 }
 
