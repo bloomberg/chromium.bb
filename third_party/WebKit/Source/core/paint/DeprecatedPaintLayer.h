@@ -716,7 +716,10 @@ private:
     // Our (x,y) coordinates are in our parent layer's coordinate space.
     LayoutPoint m_location;
 
-    // The layer's width/height
+    // The layer's size.
+    //
+    // If the associated LayoutBoxModelObject is a LayoutBox, it's its border
+    // box. Otherwise, this is the LayoutInline's lines' bounding box.
     IntSize m_size;
 
     // Cached normal flow values for absolute positioned elements with static left/top values.

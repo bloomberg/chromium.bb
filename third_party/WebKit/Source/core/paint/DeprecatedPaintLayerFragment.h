@@ -32,6 +32,17 @@
 
 namespace blink {
 
+// DeprecatedPaintLayerFragment is the representation of a fragment.
+// https://drafts.csswg.org/css-break/#fragment
+//
+// Fragments are a paint/hit-testing only concept in Blink.
+// Every box has at least one fragment, even if it is not paginated/fragmented.
+// If a box has more than one fragment (i.e. is paginated by an ancestor), the
+// fragments are called "paginated fragments". Note that this is a Blink
+// vocabulary extension and doesn't come from the specification.
+//
+// The fragments are collected by calling DeprecatedPaintLayer::collectFragments
+// on every box once per paint/hit-testing operation.
 struct DeprecatedPaintLayerFragment {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -56,15 +67,55 @@ public:
         foregroundRect.intersect(rect);
     }
 
+    // Set on all fragments.
+    //
+    // The DeprecatedPaintLayer's size in the associated ClipRectsContext's
+    // rootLayer coordinate system. See DeprecatedPaintLayer::m_size for the
+    // exact rectangle.
+    //
+    // TODO(jchaffraix): We should store the rootLayer here to ensure we don't
+    // mix coordinate systems by mistake.
     LayoutRect layerBounds;
+
+    // Set on all fragments.
+    //
+    // The rectangle used to clip the background.
+    //
+    // The rectangle is the rectangle-to-paint if no clip applies to the
+    // fragment. It is the intersection between the visual overflow rect
+    // and any overflow clips or 'clip' properties. It is also intersected with
+    // |paginationClip| if it is present.
+    //
+    // See DeprecatedPaintLayerClipper::calculateRects.
     ClipRect backgroundRect;
+
+    // Set on all fragments.
+    //
+    // The rectangle used to clip the content (foreground).
+    //
+    // The rectangle is the rectangle-to-paint if no clip applies to the
+    // fragment. If there is an overflow clip, the rectangle-to-paint is
+    // intersected with the border box rect without the scrollbars (content gets
+    // clipped at their edge). Also any enclosing 'clip' properties get applied
+    // to the intersected rectangle. It is also intersected with
+    // |paginationClip| if it is present.
+    //
+    // See DeprecatedPaintLayerClipper::calculateRects.
     ClipRect foregroundRect;
 
-    // Unique to paginated fragments. The physical translation to apply to shift the layer when painting/hit-testing.
+    // Only set on paginated fragments.
+    //
+    // The physical translation to apply to shift the layer when
+    // painting/hit-testing.
     LayoutPoint paginationOffset;
 
-    // Also unique to paginated fragments. An additional clip that applies to the layer. It is in layer-local
-    // (physical) coordinates.
+    // Only set on paginated fragments.
+    //
+    // This is the additional clip from the fragmentainer (i.e. column or
+    // page) that applies to the layer. |backgroundRect| and |foregroundRect|
+    // are intersected with it (see collectFragments).
+    //
+    // It is in layer-local (physical) coordinates.
     LayoutRect paginationClip;
 };
 
