@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/renderer/media/webrtc/track_observer.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/libjingle/source/talk/media/base/videoframe.h"
@@ -49,22 +50,25 @@ class MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate
   // |frame_callback_| is accessed on the IO thread.
   VideoCaptureDeliverFrameCB frame_callback_;
 
+  // Timestamp of the first received frame.
+  base::TimeDelta start_timestamp_;
   // WebRTC Chromium timestamp diff
-  int64_t time_diff_us_;
+  const base::TimeDelta time_diff_;
 };
 
 MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::
     RemoteVideoSourceDelegate(
         scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
         const VideoCaptureDeliverFrameCB& new_frame_callback)
-    : io_task_runner_(io_task_runner), frame_callback_(new_frame_callback) {
-  // TODO(qiangchen): There can be two differences between clocks: 1)
-  // the offset, 2) the rate (i.e., one clock runs faster than the other).
-  // See http://crbug/516700
-  time_diff_us_ =
-      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds() -
-      webrtc::TickTime::MicrosecondTimestamp();
-}
+    : io_task_runner_(io_task_runner),
+      frame_callback_(new_frame_callback),
+      start_timestamp_(media::kNoTimestamp()),
+      // TODO(qiangchen): There can be two differences between clocks: 1)
+      // the offset, 2) the rate (i.e., one clock runs faster than the other).
+      // See http://crbug/516700
+      time_diff_(base::TimeTicks::Now() - base::TimeTicks() -
+                 base::TimeDelta::FromMicroseconds(
+                     webrtc::TickTime::MicrosecondTimestamp())) {}
 
 MediaStreamRemoteVideoSource::
 RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
@@ -72,22 +76,25 @@ RemoteVideoSourceDelegate::~RemoteVideoSourceDelegate() {
 
 void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
     const cricket::VideoFrame* incoming_frame) {
-  base::TimeTicks render_time =
-      base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(incoming_frame->GetTimeStamp() / 1000 +
-                                        time_diff_us_);
+  const base::TimeDelta incoming_timestamp = base::TimeDelta::FromMicroseconds(
+      incoming_frame->GetTimeStamp() / rtc::kNumNanosecsPerMicrosec);
+  const base::TimeTicks render_time =
+      base::TimeTicks() + incoming_timestamp + time_diff_;
 
   TRACE_EVENT1("webrtc", "RemoteVideoSourceDelegate::RenderFrame",
                "Ideal Render Instant", render_time.ToInternalValue());
 
-  base::TimeDelta timestamp = base::TimeDelta::FromMicroseconds(
-      incoming_frame->GetElapsedTime() / rtc::kNumNanosecsPerMicrosec);
+  CHECK_NE(media::kNoTimestamp(), incoming_timestamp);
+  if (start_timestamp_ == media::kNoTimestamp())
+    start_timestamp_ = incoming_timestamp;
+  const base::TimeDelta elapsed_timestamp =
+      incoming_timestamp - start_timestamp_;
 
   scoped_refptr<media::VideoFrame> video_frame;
   if (incoming_frame->GetNativeHandle() != NULL) {
     video_frame =
         static_cast<media::VideoFrame*>(incoming_frame->GetNativeHandle());
-    video_frame->set_timestamp(timestamp);
+    video_frame->set_timestamp(elapsed_timestamp);
   } else {
     const cricket::VideoFrame* frame =
         incoming_frame->GetCopyWithRotationApplied();
@@ -108,7 +115,7 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
         frame->GetYPitch(), frame->GetUPitch(), frame->GetVPitch(),
         const_cast<uint8_t*>(frame->GetYPlane()),
         const_cast<uint8_t*>(frame->GetUPlane()),
-        const_cast<uint8_t*>(frame->GetVPlane()), timestamp);
+        const_cast<uint8_t*>(frame->GetVPlane()), elapsed_timestamp);
     video_frame->AddDestructionObserver(
         base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
   }
