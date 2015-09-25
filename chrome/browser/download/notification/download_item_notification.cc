@@ -506,8 +506,12 @@ void DownloadItemNotification::UpdateNotificationIcon() {
     case content::DownloadItem::IN_PROGRESS:
     case content::DownloadItem::COMPLETE:
       if (is_off_the_record) {
-        // TODO(estade): vectorize.
+#if defined(OS_MACOSX)
         SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_INCOGNITO);
+#else
+        SetNotificationVectorIcon(gfx::VectorIconId::FILE_DOWNLOAD_INCOGNITO,
+                                  gfx::kChromeIconGrey);
+#endif
       } else {
 #if defined(OS_MACOSX)
         SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);

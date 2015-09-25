@@ -43,6 +43,7 @@ CommandType CommandFromString(const std::string& source) {
   RETURN_IF_IS(CUBIC_TO);
   RETURN_IF_IS(R_CUBIC_TO);
   RETURN_IF_IS(CIRCLE);
+  RETURN_IF_IS(ROUND_RECT);
   RETURN_IF_IS(CLOSE);
   RETURN_IF_IS(CANVAS_DIMENSIONS);
   RETURN_IF_IS(CLIP);
@@ -208,6 +209,16 @@ void PaintPath(Canvas* canvas,
         SkScalar y = path_elements[++i].arg;
         SkScalar r = path_elements[++i].arg;
         path.addCircle(x, y, r);
+        break;
+      }
+
+      case ROUND_RECT: {
+        SkScalar x = path_elements[++i].arg;
+        SkScalar y = path_elements[++i].arg;
+        SkScalar w = path_elements[++i].arg;
+        SkScalar h = path_elements[++i].arg;
+        SkScalar radius = path_elements[++i].arg;
+        path.addRoundRect(SkRect::MakeXYWH(x, y, w, h), radius, radius);
         break;
       }
 

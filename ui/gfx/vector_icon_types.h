@@ -43,6 +43,7 @@ enum CommandType {
   CUBIC_TO,
   R_CUBIC_TO,
   CIRCLE,
+  ROUND_RECT,
   CLOSE,
   // Sets the dimensions of the canvas in dip. (Default is kReferenceSizeDip.)
   CANVAS_DIMENSIONS,
