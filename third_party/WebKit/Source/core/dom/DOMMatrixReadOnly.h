@@ -14,32 +14,32 @@ namespace blink {
 
 class DOMMatrix;
 
-class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappable {
+class DOMMatrixReadOnly : public GarbageCollectedFinalized<DOMMatrixReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    double a() const { return m_matrix.m11(); }
-    double b() const { return m_matrix.m12(); }
-    double c() const { return m_matrix.m21(); }
-    double d() const { return m_matrix.m22(); }
-    double e() const { return m_matrix.m41(); }
-    double f() const { return m_matrix.m42(); }
+    double a() const { return m_matrix->m11(); }
+    double b() const { return m_matrix->m12(); }
+    double c() const { return m_matrix->m21(); }
+    double d() const { return m_matrix->m22(); }
+    double e() const { return m_matrix->m41(); }
+    double f() const { return m_matrix->m42(); }
 
-    double m11() const { return m_matrix.m11(); }
-    double m12() const { return m_matrix.m12(); }
-    double m13() const { return m_matrix.m13(); }
-    double m14() const { return m_matrix.m14(); }
-    double m21() const { return m_matrix.m21(); }
-    double m22() const { return m_matrix.m22(); }
-    double m23() const { return m_matrix.m23(); }
-    double m24() const { return m_matrix.m24(); }
-    double m31() const { return m_matrix.m31(); }
-    double m32() const { return m_matrix.m32(); }
-    double m33() const { return m_matrix.m33(); }
-    double m34() const { return m_matrix.m34(); }
-    double m41() const { return m_matrix.m41(); }
-    double m42() const { return m_matrix.m42(); }
-    double m43() const { return m_matrix.m43(); }
-    double m44() const { return m_matrix.m44(); }
+    double m11() const { return m_matrix->m11(); }
+    double m12() const { return m_matrix->m12(); }
+    double m13() const { return m_matrix->m13(); }
+    double m14() const { return m_matrix->m14(); }
+    double m21() const { return m_matrix->m21(); }
+    double m22() const { return m_matrix->m22(); }
+    double m23() const { return m_matrix->m23(); }
+    double m24() const { return m_matrix->m24(); }
+    double m31() const { return m_matrix->m31(); }
+    double m32() const { return m_matrix->m32(); }
+    double m33() const { return m_matrix->m33(); }
+    double m34() const { return m_matrix->m34(); }
+    double m41() const { return m_matrix->m41(); }
+    double m42() const { return m_matrix->m42(); }
+    double m43() const { return m_matrix->m43(); }
+    double m44() const { return m_matrix->m44(); }
 
     bool is2D() const;
     bool isIdentity() const;
@@ -54,12 +54,16 @@ public:
     PassRefPtr<DOMFloat32Array> toFloat32Array() const;
     PassRefPtr<DOMFloat64Array> toFloat64Array() const;
 
-    const TransformationMatrix& matrix() const { return m_matrix; }
+    const TransformationMatrix& matrix() const { return *m_matrix; }
 
     DEFINE_INLINE_TRACE() { }
 
 protected:
-    TransformationMatrix m_matrix;
+    // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
+    // supports 16-byte alignment but Oilpan doesn't. So we use an OwnPtr
+    // to allocate TransformationMatrix on PartitionAlloc.
+    // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
+    OwnPtr<TransformationMatrix> m_matrix;
     bool m_is2D;
 };
 

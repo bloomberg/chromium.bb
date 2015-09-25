@@ -625,6 +625,7 @@ static void slerp(double qa[4], const double qb[4], double t)
 
 TransformationMatrix::TransformationMatrix(const AffineTransform& t)
 {
+    checkAlignment();
     setMatrix(t.a(), t.b(), t.c(), t.d(), t.e(), t.f());
 }
 

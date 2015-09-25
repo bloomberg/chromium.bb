@@ -48,11 +48,12 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::create(ExecutionContext* executionC
 }
 
 CSSMatrix::CSSMatrix(const TransformationMatrix& m)
-    : m_matrix(m)
+    : m_matrix(adoptPtr(new TransformationMatrix(m)))
 {
 }
 
 CSSMatrix::CSSMatrix(const String& s, ExceptionState& exceptionState)
+    : m_matrix(adoptPtr(new TransformationMatrix))
 {
     setMatrixValue(s, exceptionState);
 }
@@ -82,11 +83,8 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         // if a param has a percentage ('%')
         if (operations.dependsOnBoxSize())
             exceptionState.throwDOMException(SyntaxError, "The transformation depends on the box size, which is not supported.");
-        TransformationMatrix t;
-        operations.apply(FloatSize(0, 0), t);
-
-        // set the matrix
-        m_matrix = t;
+        m_matrix = adoptPtr(new TransformationMatrix);
+        operations.apply(FloatSize(0, 0), *m_matrix);
     } else { // There is something there but parsing failed.
         exceptionState.throwDOMException(SyntaxError, "Failed to parse '" + string + "'.");
     }
@@ -98,17 +96,17 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::multiply(CSSMatrix* secondMatrix) c
     if (!secondMatrix)
         return nullptr;
 
-    return CSSMatrix::create(TransformationMatrix(m_matrix).multiply(secondMatrix->m_matrix));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).multiply(*secondMatrix->m_matrix));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::inverse(ExceptionState& exceptionState) const
 {
-    if (!m_matrix.isInvertible()) {
+    if (!m_matrix->isInvertible()) {
         exceptionState.throwDOMException(NotSupportedError, "The matrix is not invertable.");
         return nullptr;
     }
 
-    return CSSMatrix::create(m_matrix.inverse());
+    return CSSMatrix::create(m_matrix->inverse());
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, double z) const
@@ -119,7 +117,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::translate(double x, double y, doubl
         y = 0;
     if (std::isnan(z))
         z = 0;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).translate3d(x, y, z));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).translate3d(x, y, z));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY, double scaleZ) const
@@ -130,7 +128,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::scale(double scaleX, double scaleY,
         scaleY = scaleX;
     if (std::isnan(scaleZ))
         scaleZ = 1;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).scale3d(scaleX, scaleY, scaleZ));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).scale3d(scaleX, scaleY, scaleZ));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, double rotZ) const
@@ -148,7 +146,7 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotate(double rotX, double rotY, do
         rotY = 0;
     if (std::isnan(rotZ))
         rotZ = 0;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(rotX, rotY, rotZ));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).rotate3d(rotX, rotY, rotZ));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y, double z, double angle) const
@@ -163,33 +161,33 @@ PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::rotateAxisAngle(double x, double y,
         angle = 0;
     if (!x && !y && !z)
         z = 1;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).rotate3d(x, y, z, angle));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).rotate3d(x, y, z, angle));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewX(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).skewX(angle));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).skewX(angle));
 }
 
 PassRefPtrWillBeRawPtr<CSSMatrix> CSSMatrix::skewY(double angle) const
 {
     if (std::isnan(angle))
         angle = 0;
-    return CSSMatrix::create(TransformationMatrix(m_matrix).skewY(angle));
+    return CSSMatrix::create(TransformationMatrix(*m_matrix).skewY(angle));
 }
 
 String CSSMatrix::toString() const
 {
     // FIXME - Need to ensure valid CSS floating point values (https://bugs.webkit.org/show_bug.cgi?id=20674)
-    if (m_matrix.isAffine())
-        return String::format("matrix(%f, %f, %f, %f, %f, %f)", m_matrix.a(), m_matrix.b(), m_matrix.c(), m_matrix.d(), m_matrix.e(), m_matrix.f());
+    if (m_matrix->isAffine())
+        return String::format("matrix(%f, %f, %f, %f, %f, %f)", m_matrix->a(), m_matrix->b(), m_matrix->c(), m_matrix->d(), m_matrix->e(), m_matrix->f());
     return String::format("matrix3d(%f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f)",
-    m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
-    m_matrix.m21(), m_matrix.m22(), m_matrix.m23(), m_matrix.m24(),
-    m_matrix.m31(), m_matrix.m32(), m_matrix.m33(), m_matrix.m34(),
-    m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44());
+    m_matrix->m11(), m_matrix->m12(), m_matrix->m13(), m_matrix->m14(),
+    m_matrix->m21(), m_matrix->m22(), m_matrix->m23(), m_matrix->m24(),
+    m_matrix->m31(), m_matrix->m32(), m_matrix->m33(), m_matrix->m34(),
+    m_matrix->m41(), m_matrix->m42(), m_matrix->m43(), m_matrix->m44());
 }
 
 } // namespace blink

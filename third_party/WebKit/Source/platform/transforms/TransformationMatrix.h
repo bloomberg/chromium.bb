@@ -31,6 +31,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/IntPoint.h"
+#include "wtf/Alignment.h"
 #include "wtf/CPU.h"
 #include "wtf/FastAllocBase.h"
 
@@ -46,6 +47,9 @@ class FloatBox;
 #define TRANSFORMATION_MATRIX_USE_X86_64_SSE2
 #endif
 
+// TransformationMatrix must not be allocated on Oilpan's heap since
+// Oilpan doesn't (yet) have an ability to allocate the TransformationMatrix
+// with 16-byte alignment. PartitionAlloc has the ability.
 class PLATFORM_EXPORT TransformationMatrix {
     WTF_MAKE_FAST_ALLOCATED(TransformationMatrix);
 public:
@@ -60,15 +64,28 @@ public:
     typedef double Matrix4[4][4];
 #endif
 
-    TransformationMatrix() { makeIdentity(); }
+    TransformationMatrix()
+    {
+        checkAlignment();
+        makeIdentity();
+    }
     TransformationMatrix(const AffineTransform& t);
-    TransformationMatrix(const TransformationMatrix& t) { *this = t; }
-    TransformationMatrix(double a, double b, double c, double d, double e, double f) { setMatrix(a, b, c, d, e, f); }
+    TransformationMatrix(const TransformationMatrix& t)
+    {
+        checkAlignment();
+        *this = t;
+    }
+    TransformationMatrix(double a, double b, double c, double d, double e, double f)
+    {
+        checkAlignment();
+        setMatrix(a, b, c, d, e, f);
+    }
     TransformationMatrix(double m11, double m12, double m13, double m14,
                          double m21, double m22, double m23, double m24,
                          double m31, double m32, double m33, double m34,
                          double m41, double m42, double m43, double m44)
     {
+        checkAlignment();
         setMatrix(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44);
     }
 
@@ -347,6 +364,15 @@ private:
     {
         if (m && m != m_matrix)
             memcpy(m_matrix, m, sizeof(Matrix4));
+    }
+
+    void checkAlignment()
+    {
+#if CPU(APPLE_ARMV7S) || defined(TRANSFORMATION_MATRIX_USE_X86_64_SSE2)
+        // m_matrix can cause this class to require higher than usual alignment.
+        // Make sure the allocator handles this.
+        ASSERT((reinterpret_cast<uintptr_t>(this) & (WTF_ALIGN_OF(TransformationMatrix) - 1)) == 0);
+#endif
     }
 
     Matrix4 m_matrix;

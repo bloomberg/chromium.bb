@@ -36,7 +36,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 
-class CSSMatrix final : public RefCountedWillBeGarbageCollected<CSSMatrix>, public ScriptWrappable {
+class CSSMatrix final : public RefCountedWillBeGarbageCollectedFinalized<CSSMatrix>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSMatrix> create(const TransformationMatrix& m)
@@ -45,53 +45,53 @@ public:
     }
     static PassRefPtrWillBeRawPtr<CSSMatrix> create(ExecutionContext*, const String&, ExceptionState&);
 
-    double a() const { return m_matrix.a(); }
-    double b() const { return m_matrix.b(); }
-    double c() const { return m_matrix.c(); }
-    double d() const { return m_matrix.d(); }
-    double e() const { return m_matrix.e(); }
-    double f() const { return m_matrix.f(); }
+    double a() const { return m_matrix->a(); }
+    double b() const { return m_matrix->b(); }
+    double c() const { return m_matrix->c(); }
+    double d() const { return m_matrix->d(); }
+    double e() const { return m_matrix->e(); }
+    double f() const { return m_matrix->f(); }
 
-    void setA(double f) { m_matrix.setA(f); }
-    void setB(double f) { m_matrix.setB(f); }
-    void setC(double f) { m_matrix.setC(f); }
-    void setD(double f) { m_matrix.setD(f); }
-    void setE(double f) { m_matrix.setE(f); }
-    void setF(double f) { m_matrix.setF(f); }
+    void setA(double f) { m_matrix->setA(f); }
+    void setB(double f) { m_matrix->setB(f); }
+    void setC(double f) { m_matrix->setC(f); }
+    void setD(double f) { m_matrix->setD(f); }
+    void setE(double f) { m_matrix->setE(f); }
+    void setF(double f) { m_matrix->setF(f); }
 
-    double m11() const { return m_matrix.m11(); }
-    double m12() const { return m_matrix.m12(); }
-    double m13() const { return m_matrix.m13(); }
-    double m14() const { return m_matrix.m14(); }
-    double m21() const { return m_matrix.m21(); }
-    double m22() const { return m_matrix.m22(); }
-    double m23() const { return m_matrix.m23(); }
-    double m24() const { return m_matrix.m24(); }
-    double m31() const { return m_matrix.m31(); }
-    double m32() const { return m_matrix.m32(); }
-    double m33() const { return m_matrix.m33(); }
-    double m34() const { return m_matrix.m34(); }
-    double m41() const { return m_matrix.m41(); }
-    double m42() const { return m_matrix.m42(); }
-    double m43() const { return m_matrix.m43(); }
-    double m44() const { return m_matrix.m44(); }
+    double m11() const { return m_matrix->m11(); }
+    double m12() const { return m_matrix->m12(); }
+    double m13() const { return m_matrix->m13(); }
+    double m14() const { return m_matrix->m14(); }
+    double m21() const { return m_matrix->m21(); }
+    double m22() const { return m_matrix->m22(); }
+    double m23() const { return m_matrix->m23(); }
+    double m24() const { return m_matrix->m24(); }
+    double m31() const { return m_matrix->m31(); }
+    double m32() const { return m_matrix->m32(); }
+    double m33() const { return m_matrix->m33(); }
+    double m34() const { return m_matrix->m34(); }
+    double m41() const { return m_matrix->m41(); }
+    double m42() const { return m_matrix->m42(); }
+    double m43() const { return m_matrix->m43(); }
+    double m44() const { return m_matrix->m44(); }
 
-    void setM11(double f) { m_matrix.setM11(f); }
-    void setM12(double f) { m_matrix.setM12(f); }
-    void setM13(double f) { m_matrix.setM13(f); }
-    void setM14(double f) { m_matrix.setM14(f); }
-    void setM21(double f) { m_matrix.setM21(f); }
-    void setM22(double f) { m_matrix.setM22(f); }
-    void setM23(double f) { m_matrix.setM23(f); }
-    void setM24(double f) { m_matrix.setM24(f); }
-    void setM31(double f) { m_matrix.setM31(f); }
-    void setM32(double f) { m_matrix.setM32(f); }
-    void setM33(double f) { m_matrix.setM33(f); }
-    void setM34(double f) { m_matrix.setM34(f); }
-    void setM41(double f) { m_matrix.setM41(f); }
-    void setM42(double f) { m_matrix.setM42(f); }
-    void setM43(double f) { m_matrix.setM43(f); }
-    void setM44(double f) { m_matrix.setM44(f); }
+    void setM11(double f) { m_matrix->setM11(f); }
+    void setM12(double f) { m_matrix->setM12(f); }
+    void setM13(double f) { m_matrix->setM13(f); }
+    void setM14(double f) { m_matrix->setM14(f); }
+    void setM21(double f) { m_matrix->setM21(f); }
+    void setM22(double f) { m_matrix->setM22(f); }
+    void setM23(double f) { m_matrix->setM23(f); }
+    void setM24(double f) { m_matrix->setM24(f); }
+    void setM31(double f) { m_matrix->setM31(f); }
+    void setM32(double f) { m_matrix->setM32(f); }
+    void setM33(double f) { m_matrix->setM33(f); }
+    void setM34(double f) { m_matrix->setM34(f); }
+    void setM41(double f) { m_matrix->setM41(f); }
+    void setM42(double f) { m_matrix->setM42(f); }
+    void setM43(double f) { m_matrix->setM43(f); }
+    void setM44(double f) { m_matrix->setM44(f); }
 
     void setMatrixValue(const String&, ExceptionState&);
 
@@ -142,7 +142,7 @@ public:
     // the skew values on the left (result = skewY(angle) * this)
     PassRefPtrWillBeRawPtr<CSSMatrix> skewY(double angle) const;
 
-    const TransformationMatrix& transform() const { return m_matrix; }
+    const TransformationMatrix& transform() const { return *m_matrix; }
 
     String toString() const;
 
@@ -152,7 +152,11 @@ protected:
     CSSMatrix(const TransformationMatrix&);
     CSSMatrix(const String&, ExceptionState&);
 
-    TransformationMatrix m_matrix;
+    // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
+    // supports 16-byte alignment but Oilpan doesn't. So we use an OwnPtr
+    // to allocate TransformationMatrix on PartitionAlloc.
+    // TODO(oilpan): Oilpan should support 16-byte aligned allocations.
+    OwnPtr<TransformationMatrix> m_matrix;
 };
 
 } // namespace blink

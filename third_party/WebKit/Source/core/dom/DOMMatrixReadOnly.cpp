@@ -14,7 +14,7 @@ bool DOMMatrixReadOnly::is2D() const
 
 bool DOMMatrixReadOnly::isIdentity() const
 {
-    return m_matrix.isIdentity();
+    return m_matrix->isIdentity();
 }
 
 DOMMatrix* DOMMatrixReadOnly::multiply(DOMMatrix* other)
@@ -46,10 +46,10 @@ DOMMatrix* DOMMatrixReadOnly::scaleNonUniform(double sx, double sy, double sz,
 PassRefPtr<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const
 {
     float array[] = {
-        static_cast<float>(m_matrix.m11()), static_cast<float>(m_matrix.m12()), static_cast<float>(m_matrix.m13()), static_cast<float>(m_matrix.m14()),
-        static_cast<float>(m_matrix.m21()), static_cast<float>(m_matrix.m22()), static_cast<float>(m_matrix.m23()), static_cast<float>(m_matrix.m24()),
-        static_cast<float>(m_matrix.m31()), static_cast<float>(m_matrix.m32()), static_cast<float>(m_matrix.m33()), static_cast<float>(m_matrix.m34()),
-        static_cast<float>(m_matrix.m41()), static_cast<float>(m_matrix.m42()), static_cast<float>(m_matrix.m43()), static_cast<float>(m_matrix.m44())
+        static_cast<float>(m_matrix->m11()), static_cast<float>(m_matrix->m12()), static_cast<float>(m_matrix->m13()), static_cast<float>(m_matrix->m14()),
+        static_cast<float>(m_matrix->m21()), static_cast<float>(m_matrix->m22()), static_cast<float>(m_matrix->m23()), static_cast<float>(m_matrix->m24()),
+        static_cast<float>(m_matrix->m31()), static_cast<float>(m_matrix->m32()), static_cast<float>(m_matrix->m33()), static_cast<float>(m_matrix->m34()),
+        static_cast<float>(m_matrix->m41()), static_cast<float>(m_matrix->m42()), static_cast<float>(m_matrix->m43()), static_cast<float>(m_matrix->m44())
     };
 
     return DOMFloat32Array::create(array, 16);
@@ -58,10 +58,10 @@ PassRefPtr<DOMFloat32Array> DOMMatrixReadOnly::toFloat32Array() const
 PassRefPtr<DOMFloat64Array> DOMMatrixReadOnly::toFloat64Array() const
 {
     double array[] = {
-        m_matrix.m11(), m_matrix.m12(), m_matrix.m13(), m_matrix.m14(),
-        m_matrix.m21(), m_matrix.m22(), m_matrix.m23(), m_matrix.m24(),
-        m_matrix.m31(), m_matrix.m32(), m_matrix.m33(), m_matrix.m34(),
-        m_matrix.m41(), m_matrix.m42(), m_matrix.m43(), m_matrix.m44()
+        m_matrix->m11(), m_matrix->m12(), m_matrix->m13(), m_matrix->m14(),
+        m_matrix->m21(), m_matrix->m22(), m_matrix->m23(), m_matrix->m24(),
+        m_matrix->m31(), m_matrix->m32(), m_matrix->m33(), m_matrix->m34(),
+        m_matrix->m41(), m_matrix->m42(), m_matrix->m43(), m_matrix->m44()
     };
 
     return DOMFloat64Array::create(array, 16);
