@@ -105,9 +105,7 @@ void AutofillPopupBaseView::DoHide() {
 void AutofillPopupBaseView::OnWidgetBoundsChanged(views::Widget* widget,
                                                   const gfx::Rect& new_bounds) {
   DCHECK_EQ(widget, parent_widget_);
-#if defined(OS_WIN)
   HideController();
-#endif
 }
 
 void AutofillPopupBaseView::RemoveObserver() {
