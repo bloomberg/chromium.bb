@@ -29,6 +29,7 @@ class WebContents;
 }
 
 namespace internals {
+GURL GetResetSettingsURL();
 GURL GetWelcomePageURL();
 }  // namespace internals
 
@@ -145,12 +146,21 @@ class StartupBrowserCreatorImpl {
   // Adds additional startup URLs to the specified vector.
   void AddStartupURLs(std::vector<GURL>* startup_urls) const;
 
+  // Adds special URLs to the specified vector. These URLs are triggered by
+  // special-case logic, such as profile reset or presentation of the welcome
+  // page.
+  void AddSpecialURLs(std::vector<GURL>* startup_urls) const;
+
   // Initializes |welcome_run_type_| for this launch. Also persists state to
   // suppress injecting the welcome page for future launches.
   void InitializeWelcomeRunType(const std::vector<GURL>& urls_to_open);
 
   // Record Rappor metrics on startup URLs.
   void RecordRapporOnStartupURLs(const std::vector<GURL>& urls_to_open);
+
+  // Checks whether |profile_| has a reset trigger set and then clears the
+  // reset trigger.
+  bool CheckAndClearProfileResetTrigger() const;
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;

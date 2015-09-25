@@ -1235,6 +1235,11 @@
       'browser/profile_resetter/profile_resetter.h',
       'browser/profile_resetter/resettable_settings_snapshot.cc',
       'browser/profile_resetter/resettable_settings_snapshot.h',
+      'browser/profile_resetter/triggered_profile_resetter.cc',
+      'browser/profile_resetter/triggered_profile_resetter_win.cc',
+      'browser/profile_resetter/triggered_profile_resetter.h',
+      'browser/profile_resetter/triggered_profile_resetter_factory.cc',
+      'browser/profile_resetter/triggered_profile_resetter_factory.h',
       'browser/profiles/avatar_menu.cc',
       'browser/profiles/avatar_menu.h',
       'browser/profiles/profile_shortcut_manager.cc',
@@ -1298,6 +1303,7 @@
       'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     'chrome_browser_non_win_sources': [
+      'browser/profile_resetter/triggered_profile_resetter_stub.cc',
       'browser/profiles/profile_shortcut_manager_stub.cc',
     ],
     # Sources (generally "desktop OS importers") used only on Mac & Windows.

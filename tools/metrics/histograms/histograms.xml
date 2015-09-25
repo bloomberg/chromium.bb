@@ -35587,6 +35587,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Total size of the profile data (excluding sub-folders).</summary>
 </histogram>
 
+<histogram name="Profile.TriggeredReset" enum="BooleanReset">
+  <owner>robertshield@chromium.org</owner>
+  <summary>
+    Indicates whether a profile had a reset trigger that caused it to launch a
+    reset flow. The presence of this trigger is recorded during profile
+    creation.
+  </summary>
+</histogram>
+
 <histogram name="Profile.Update" enum="ProfileType">
   <owner>rlp@chromium.org</owner>
   <summary>Times a profile name and/or avatar was updated.</summary>
@@ -52763,6 +52772,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="BooleanReported" type="int">
   <int value="0" label="Not reported"/>
   <int value="1" label="Reported"/>
+</enum>
+
+<enum name="BooleanReset" type="int">
+  <int value="0" label="Not reset"/>
+  <int value="1" label="Reset"/>
 </enum>
 
 <enum name="BooleanReused" type="int">

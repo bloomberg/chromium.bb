@@ -127,6 +127,10 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#endif
+
 #if defined(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #endif
@@ -324,6 +328,9 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   TemplateURLServiceFactory::GetInstance();
 #if defined(ENABLE_THEMES)
   ThemeServiceFactory::GetInstance();
+#endif
+#if defined(OS_WIN)
+  TriggeredProfileResetterFactory::GetInstance();
 #endif
   WebDataServiceFactory::GetInstance();
 }

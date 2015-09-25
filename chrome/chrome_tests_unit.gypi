@@ -1501,6 +1501,7 @@
       'browser/power/process_power_collector_unittest.cc',
       'browser/process_singleton_posix_unittest.cc',
       'browser/profile_resetter/profile_resetter_unittest.cc',
+      'browser/profile_resetter/triggered_profile_resetter_win_unittest.cc',
       'browser/renderer_context_menu/render_view_context_menu_unittest.cc',
       'browser/search/instant_service_unittest.cc',
       'browser/search/search_unittest.cc',

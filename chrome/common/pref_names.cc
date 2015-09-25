@@ -39,6 +39,14 @@ const char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const char kHomePage[] = "homepage";
 
+#if defined(OS_WIN)
+// This is a timestamp of the last time this profile was reset by a third party
+// tool. On Windows, a third party tool may set a registry value that will be
+// compared to this value and if different will result in a profile reset
+// prompt. See triggered_profile_resetter.h for more information.
+const char kLastProfileResetTimestamp[] = "profile.last_reset_timestamp";
+#endif
+
 // An integer that keeps track of the profile icon version. This allows us to
 // determine the state of the profile icon for icon format changes.
 const char kProfileIconVersion[] = "profile.icon_version";
