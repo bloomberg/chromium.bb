@@ -825,6 +825,8 @@ jboolean TabAndroid::HasOfflineCopy(JNIEnv* env, jobject obj) {
   offline_pages::OfflinePageModel* offline_page_model =
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           GetProfile());
+  if (!offline_page_model)
+    return false;
   const offline_pages::OfflinePageItem* offline_page =
       offline_page_model->GetPageByBookmarkId(bookmark_id);
   return offline_page && !offline_page->file_path.empty();
