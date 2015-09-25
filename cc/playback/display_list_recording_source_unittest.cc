@@ -77,7 +77,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
 
   // Tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(2u, images.size());
@@ -91,7 +91,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
 
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -102,7 +102,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
 
   // The rotated bitmap would still be in the top right tile.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -115,7 +115,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   // pixel ref bitmap[0][0], 1 pixel ref for bitmap[1][0], and 4 pixel refs for
   // bitmap[1][1].
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(6u, images.size());
@@ -291,7 +291,7 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
   // If recording source do not gather images, raster source is not going to
   // get images.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(recorded_viewport, &images);
     EXPECT_TRUE(images.empty());
   }
@@ -311,21 +311,21 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
 
   // Tile sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -370,21 +370,21 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
 
   // Tile sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Shifted tile sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -423,7 +423,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -434,7 +434,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -445,7 +445,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128),
                                               &images);
     EXPECT_TRUE(images.empty());
@@ -453,7 +453,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 
   // Layer sized iterators. These should find all 3 images.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(3u, images.size());
@@ -510,7 +510,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
 
   // Tile sized iterators. These should find only one image.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -520,7 +520,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   }
   // Shifted tile sized iterators. These should find only one image.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
@@ -530,14 +530,14 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   }
   // Ensure there's no discardable images in the empty cell
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 256, 256, 256),
                                               &images);
     EXPECT_TRUE(images.empty());
   }
   // Layer sized iterators. These should find three images.
   {
-    std::vector<skia::PositionImage> images;
+    std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512),
                                               &images);
     EXPECT_EQ(3u, images.size());

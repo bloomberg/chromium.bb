@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/traced_value.h"
-#include "skia/ext/discardable_image_utils.h"
+#include "cc/playback/discardable_image_map.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -71,7 +71,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // rect in layer space.
   virtual void GetDiscardableImagesInRect(
       const gfx::Rect& layer_rect,
-      std::vector<skia::PositionImage>* images) const = 0;
+      std::vector<PositionImage>* images) const = 0;
 
   // Return true iff this raster source can raster the given rect in layer
   // space.

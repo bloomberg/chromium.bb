@@ -59,7 +59,7 @@ ImageDecodeController::ImageDecodeController() {}
 ImageDecodeController::~ImageDecodeController() {}
 
 scoped_refptr<ImageDecodeTask> ImageDecodeController::GetTaskForImage(
-    const skia::PositionImage& image,
+    const PositionImage& image,
     int layer_id,
     uint64_t prepare_tiles_id) {
   uint32_t generation_id = image.image->uniqueID();

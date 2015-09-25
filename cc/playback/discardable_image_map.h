@@ -12,7 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "skia/ext/discardable_image_utils.h"
+#include "cc/playback/position_image.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,21 +23,19 @@ namespace cc {
 
 class DisplayItemList;
 
-typedef std::pair<int, int> ImageMapKey;
-typedef std::vector<skia::PositionImage> Images;
-typedef base::hash_map<ImageMapKey, Images> ImageHashmap;
-
 // This class is used to gather images which would happen after record. It takes
 // in |cell_size| to decide how big each grid cell should be.
 class CC_EXPORT DiscardableImageMap {
  public:
+  using Images = std::vector<PositionImage>;
+
   explicit DiscardableImageMap(const gfx::Size& cell_size);
   ~DiscardableImageMap();
 
   void GenerateDiscardableImagesMetadata(SkPicture* picture,
                                          const gfx::Rect& layer_rect);
 
-  bool empty() const { return data_hash_map_.empty(); }
+  bool empty() const { return data_map_.empty(); }
 
   // This iterator imprecisely returns the set of images that are needed to
   // raster this layer rect from this picture.  Internally, images are
@@ -50,12 +48,12 @@ class CC_EXPORT DiscardableImageMap {
     Iterator(const gfx::Rect& layer_rect, const DisplayItemList* picture);
     ~Iterator();
 
-    const skia::PositionImage* operator->() const {
+    const PositionImage* operator->() const {
       DCHECK_LT(current_index_, current_images_->size());
       return &(*current_images_)[current_index_];
     }
 
-    const skia::PositionImage& operator*() const {
+    const PositionImage& operator*() const {
       DCHECK_LT(current_index_, current_images_->size());
       return (*current_images_)[current_index_];
     }
@@ -84,7 +82,10 @@ class CC_EXPORT DiscardableImageMap {
   gfx::Point max_pixel_cell_;
   gfx::Size cell_size_;
 
-  ImageHashmap data_hash_map_;
+  using ImageMapKey = std::pair<int, int>;
+  using ImageMap = base::hash_map<ImageMapKey, Images>;
+
+  ImageMap data_map_;
 };
 
 }  // namespace cc

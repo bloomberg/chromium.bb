@@ -8,8 +8,8 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "cc/playback/discardable_image_map.h"
 #include "cc/raster/tile_task_runner.h"
-#include "skia/ext/discardable_image_utils.h"
 #include "skia/ext/refptr.h"
 
 namespace cc {
@@ -19,10 +19,9 @@ class ImageDecodeController {
   ImageDecodeController();
   ~ImageDecodeController();
 
-  scoped_refptr<ImageDecodeTask> GetTaskForImage(
-      const skia::PositionImage& image,
-      int layer_id,
-      uint64_t prepare_tiles_id);
+  scoped_refptr<ImageDecodeTask> GetTaskForImage(const PositionImage& image,
+                                                 int layer_id,
+                                                 uint64_t prepare_tiles_id);
 
   // Note that this function has to remain thread safe.
   void DecodeImage(const SkImage* image);

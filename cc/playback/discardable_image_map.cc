@@ -9,11 +9,93 @@
 
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
-#include "skia/ext/discardable_image_utils.h"
+#include "third_party/skia/include/utils/SkNWayCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
+
+namespace {
+
+SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
+  SkRect dst;
+  matrix.mapRect(&dst, src);
+  return dst;
+}
+
+// We're using an NWay canvas with no added canvases, so in effect
+// non-overridden functions are no-ops.
+class GatherDiscardableImageCanvas : public SkNWayCanvas {
+ public:
+  GatherDiscardableImageCanvas(int width,
+                               int height,
+                               std::vector<PositionImage>* image_set)
+      : SkNWayCanvas(width, height),
+        image_set_(image_set),
+        canvas_bounds_(SkRect::MakeIWH(width, height)) {}
+
+ protected:
+  // we need to "undo" the behavior of SkNWayCanvas, which will try to forward
+  // it.
+  void onDrawPicture(const SkPicture* picture,
+                     const SkMatrix* matrix,
+                     const SkPaint* paint) override {
+    SkCanvas::onDrawPicture(picture, matrix, paint);
+  }
+
+  void onDrawImage(const SkImage* image,
+                   SkScalar x,
+                   SkScalar y,
+                   const SkPaint* paint) override {
+    const SkMatrix& ctm = this->getTotalMatrix();
+    AddImage(image, MapRect(ctm, SkRect::MakeXYWH(x, y, image->width(),
+                                                  image->height())),
+             ctm, paint);
+  }
+
+  void onDrawImageRect(const SkImage* image,
+                       const SkRect* src,
+                       const SkRect& dst,
+                       const SkPaint* paint,
+                       SrcRectConstraint) override {
+    const SkMatrix& ctm = this->getTotalMatrix();
+    SkRect src_storage;
+    if (!src) {
+      src_storage = SkRect::MakeIWH(image->width(), image->height());
+      src = &src_storage;
+    }
+    SkMatrix matrix;
+    matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
+    matrix.postConcat(ctm);
+    AddImage(image, MapRect(ctm, dst), matrix, paint);
+  }
+
+  void onDrawImageNine(const SkImage* image,
+                       const SkIRect& center,
+                       const SkRect& dst,
+                       const SkPaint* paint) override {
+    AddImage(image, dst, this->getTotalMatrix(), paint);
+  }
+
+ private:
+  void AddImage(const SkImage* image,
+                const SkRect& rect,
+                const SkMatrix& matrix,
+                const SkPaint* paint) {
+    if (rect.intersects(canvas_bounds_) && image->isLazyGenerated()) {
+      SkFilterQuality filter_quality = kNone_SkFilterQuality;
+      if (paint) {
+        filter_quality = paint->getFilterQuality();
+      }
+      image_set_->push_back(PositionImage(image, rect, matrix, filter_quality));
+    }
+  }
+
+  std::vector<PositionImage>* image_set_;
+  const SkRect canvas_bounds_;
+};
+
+}  // namespace
 
 DiscardableImageMap::DiscardableImageMap(const gfx::Size& cell_size)
     : cell_size_(cell_size) {
@@ -32,19 +114,22 @@ void DiscardableImageMap::GenerateDiscardableImagesMetadata(
   int max_x = 0;
   int max_y = 0;
 
-  skia::DiscardableImageList images;
-  // TODO(vmpstr): Remove DiscardableImageUtils, and instead move the gathering
-  // code to be in this file. https://codereview.chromium.org/1353193002/.
-  skia::DiscardableImageUtils::GatherDiscardableImages(picture, &images);
-  for (skia::DiscardableImageList::const_iterator it = images.begin();
-       it != images.end(); ++it) {
+  std::vector<PositionImage> images;
+  {
+    SkIRect picture_bounds = picture->cullRect().roundOut();
+    GatherDiscardableImageCanvas canvas(picture_bounds.right(),
+                                        picture_bounds.bottom(), &images);
+    canvas.drawPicture(picture);
+  }
+
+  for (auto& position_image : images) {
     // The image rect is in space relative to the picture, but it can extend far
     // beyond the picture itself (since it represents the rect of actual image
     // contained within the picture, not clipped to picture bounds). We only
     // care about image queries that intersect the picture, so insert only into
     // the intersection of the two rects.
     gfx::Rect rect_clipped_to_picture = gfx::IntersectRects(
-        gfx::ToEnclosingRect(gfx::SkRectToRectF(it->image_rect)),
+        gfx::ToEnclosingRect(gfx::SkRectToRectF(position_image.image_rect)),
         gfx::Rect(layer_rect.size()));
 
     gfx::Point min(MathUtil::UncheckedRoundDown(rect_clipped_to_picture.x(),
@@ -62,13 +147,12 @@ void DiscardableImageMap::GenerateDiscardableImagesMetadata(
     // information. However, since picture pile / display list also returns this
     // information, it would be nice to express it relative to the layer, not
     // relative to the particular implementation of the raster source.
-    skia::PositionImage position_image = *it;
     position_image.image_rect.offset(layer_rect.x(), layer_rect.y());
 
     for (int y = min.y(); y <= max.y(); y += cell_size_.height()) {
       for (int x = min.x(); x <= max.x(); x += cell_size_.width()) {
         ImageMapKey key(x, y);
-        data_hash_map_[key].push_back(position_image);
+        data_map_[key].push_back(position_image);
       }
     }
 
@@ -82,7 +166,8 @@ void DiscardableImageMap::GenerateDiscardableImagesMetadata(
   max_pixel_cell_ = gfx::Point(max_x, max_y);
 }
 
-base::LazyInstance<Images> DiscardableImageMap::Iterator::empty_images_;
+base::LazyInstance<DiscardableImageMap::Images>
+    DiscardableImageMap::Iterator::empty_images_;
 
 DiscardableImageMap::Iterator::Iterator()
     : target_image_map_(NULL),
@@ -128,9 +213,8 @@ DiscardableImageMap::Iterator& DiscardableImageMap::Iterator::operator++() {
 
     // If there are no pixel refs at this grid cell, keep incrementing.
     ImageMapKey key(current_x_, current_y_);
-    ImageHashmap::const_iterator iter =
-        target_image_map_->data_hash_map_.find(key);
-    if (iter == target_image_map_->data_hash_map_.end())
+    ImageMap::const_iterator iter = target_image_map_->data_map_.find(key);
+    if (iter == target_image_map_->data_map_.end())
       continue;
 
     // We found a non-empty list: store it and get the first pixel ref.

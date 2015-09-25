@@ -677,10 +677,10 @@ scoped_refptr<RasterTask> TileManager::CreateRasterTask(
 
   // Create and queue all image decode tasks that this tile depends on.
   ImageDecodeTask::Vector decode_tasks;
-  std::vector<skia::PositionImage> images;
+  std::vector<PositionImage> images;
   prioritized_tile.raster_source()->GetDiscardableImagesInRect(
       tile->enclosing_layer_rect(), &images);
-  for (const skia::PositionImage& image : images) {
+  for (const auto& image : images) {
     decode_tasks.push_back(image_decode_controller_.GetTaskForImage(
         image, tile->layer_id(), prepare_tiles_count_));
   }

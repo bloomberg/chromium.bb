@@ -284,7 +284,6 @@ component("skia") {
     "ext/analysis_canvas.cc",
     "ext/benchmarking_canvas.cc",
     "ext/convolver.cc",
-    "ext/discardable_image_utils.cc",
     "ext/event_tracer_impl.cc",
     "ext/fontmgr_default_win.cc",
     "ext/google_logging.cc",

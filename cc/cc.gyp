@@ -364,6 +364,7 @@
         'playback/float_clip_display_item.h',
         'playback/largest_display_item.cc',
         'playback/largest_display_item.h',
+        'playback/position_image.h',
         'playback/raster_source.h',
         'playback/raster_source_helper.cc',
         'playback/raster_source_helper.h',

@@ -163,7 +163,7 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
 
 void DisplayListRasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
-    std::vector<skia::PositionImage>* images) const {
+    std::vector<PositionImage>* images) const {
   DCHECK_EQ(0u, images->size());
 
   DiscardableImageMap::Iterator iterator(layer_rect, display_list_.get());

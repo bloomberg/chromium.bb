@@ -44,7 +44,6 @@
     'ext/platform_device_linux.cc',
     'ext/platform_device_mac.cc',
     'ext/platform_device_win.cc',
-    'ext/discardable_image_utils.cc',
     'ext/recursive_gaussian_convolution.cc',
     'ext/SkDiscardableMemory_chrome.cc',
     'ext/SkMemory_new_handler.cpp',
