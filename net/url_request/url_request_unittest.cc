@@ -26,6 +26,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -257,6 +259,21 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 #endif
+
+// Test power monitor source that can simulate entering suspend mode. Can't use
+// the one in base/ because it insists on bringing its own MessageLoop.
+class TestPowerMonitorSource : public base::PowerMonitorSource {
+ public:
+  TestPowerMonitorSource() {}
+  ~TestPowerMonitorSource() override {}
+
+  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
+
+  bool IsOnBatteryPowerImpl() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
+};
 
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
@@ -3895,6 +3912,27 @@ TEST_F(URLRequestTestHTTP, UnexpectedServerAuthTest) {
     EXPECT_TRUE(r->proxy_server().IsEmpty());
     EXPECT_EQ(ERR_TUNNEL_CONNECTION_FAILED, r->status().error());
   }
+}
+
+// Tests that a request is cancelled while entering suspend mode.
+TEST_F(URLRequestTestHTTP, CancelOnSuspend) {
+  TestPowerMonitorSource* power_monitor_source = new TestPowerMonitorSource();
+  base::PowerMonitor power_monitor(make_scoped_ptr(power_monitor_source));
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  // Request that won't complete any time soon.
+  GURL url(test_server_.GetURL("slow?600"));
+  scoped_ptr<URLRequest> r(
+      default_context_.CreateRequest(url, DEFAULT_PRIORITY, &d));
+  r->Start();
+
+  power_monitor_source->Suspend();
+  // Wait for the suspend notification to cause the request to fail.
+  base::RunLoop().Run();
+  EXPECT_EQ(URLRequestStatus::CANCELED, r->status().status());
+  EXPECT_TRUE(d.request_failed());
+  EXPECT_EQ(1, default_network_delegate_.completed_requests());
 }
 
 TEST_F(URLRequestTestHTTP, GetTest_NoCache) {
