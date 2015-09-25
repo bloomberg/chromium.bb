@@ -304,11 +304,7 @@ void InspectorOverlay::hideHighlight()
     m_highlightNode.clear();
     m_eventTargetNode.clear();
     m_highlightQuad.clear();
-
-    if (m_layoutEditor && m_inspectModeHighlightConfig)
-        highlightNode(m_layoutEditor->element(), *m_inspectModeHighlightConfig, false);
-    else
-        scheduleUpdate();
+    scheduleUpdate();
 }
 
 void InspectorOverlay::highlightNode(Node* node, const InspectorHighlightConfig& highlightConfig, bool omitTooltip)
@@ -384,6 +380,8 @@ void InspectorOverlay::rebuildOverlayPage()
     drawQuadHighlight();
     drawPausedInDebuggerMessage();
     drawViewSize();
+    if (m_layoutEditor && !m_highlightNode)
+        m_layoutEditor->rebuild();
 }
 
 static PassRefPtr<JSONObject> buildObjectForSize(const IntSize& size)
@@ -406,11 +404,6 @@ void InspectorOverlay::drawNodeHighlight()
 
     RefPtr<JSONObject> highlightJSON = highlight.asJSONObject();
     evaluateInOverlay("drawHighlight", highlightJSON.release());
-    if (m_layoutEditor && m_highlightNode == m_layoutEditor->element()) {
-        RefPtr<JSONObject> layoutEditorInfo = m_layoutEditor->buildJSONInfo();
-        if (layoutEditorInfo)
-            evaluateInOverlay("showLayoutEditor", layoutEditorInfo.release());
-    }
 }
 
 void InspectorOverlay::drawQuadHighlight()
@@ -541,6 +534,9 @@ void InspectorOverlay::onTimer(Timer<InspectorOverlay>*)
 
 void InspectorOverlay::clear()
 {
+    if (m_layoutEditor)
+        m_layoutEditor.clear();
+
     if (m_overlayPage) {
         m_overlayPage->willBeDestroyed();
         m_overlayPage.clear();
@@ -736,9 +732,9 @@ void InspectorOverlay::inspect(Node* node)
         m_domAgent->inspect(node);
 
     if (node && node->isElementNode() && m_inspectMode == InspectorDOMAgent::ShowLayoutEditor && !m_layoutEditor) {
-        m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent);
+        m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent, &overlayMainFrame()->script());
         toChromeClientImpl(m_webViewImpl->page()->chromeClient()).setCursorOverridden(true);
-        highlightNode(node, *m_inspectModeHighlightConfig, false);
+        hideHighlight();
     }
 }
 

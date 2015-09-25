@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/inspector/LayoutEditor.h"
 
+#include "bindings/core/v8/ScriptController.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSImportRule.h"
 #include "core/css/CSSMediaRule.h"
@@ -21,6 +22,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/JSONValues.h"
+#include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
 
@@ -155,6 +157,14 @@ InspectorHighlightConfig affectedNodesHighlightConfig()
     return config;
 }
 
+InspectorHighlightConfig chosenNodeHighlightConfig()
+{
+    InspectorHighlightConfig config;
+    config.padding = Color(147, 196, 125, 140);
+    config.margin = Color(246, 178, 107, 168);
+    return config;
+}
+
 void collectMediaQueriesFromRule(CSSRule* rule, Vector<String>& mediaArray)
 {
     MediaList* mediaList;
@@ -193,10 +203,11 @@ void buildMediaListChain(CSSRule* rule, Vector<String>& mediaArray)
 
 } // namespace
 
-LayoutEditor::LayoutEditor(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent)
+LayoutEditor::LayoutEditor(Element* element, InspectorCSSAgent* cssAgent, InspectorDOMAgent* domAgent, ScriptController* scriptController)
     : m_element(element)
     , m_cssAgent(cssAgent)
     , m_domAgent(domAgent)
+    , m_scriptController(scriptController)
     , m_changingProperty(CSSPropertyInvalid)
     , m_propertyInitialValue(0)
     , m_isDirty(false)
@@ -223,11 +234,11 @@ DEFINE_TRACE(LayoutEditor)
     visitor->trace(m_element);
     visitor->trace(m_cssAgent);
     visitor->trace(m_domAgent);
+    visitor->trace(m_scriptController);
     visitor->trace(m_matchedRules);
 }
 
-
-PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
+void LayoutEditor::rebuild() const
 {
     FloatQuad content, padding, border, margin;
     InspectorHighlight::buildNodeQuads(m_element.get(), &content, &padding, &border, &margin);
@@ -250,7 +261,9 @@ PassRefPtr<JSONObject> LayoutEditor::buildJSONInfo() const
     appendAnchorFor(anchors.get(), "margin", "margin-left", marginHandles.p4(), orthogonals.p4());
 
     object->setArray("anchors", anchors.release());
-    return object.release();
+    InspectorHighlight highlight(m_element.get(), chosenNodeHighlightConfig(), false);
+    object->setObject("nodeHighlight", highlight.asJSONObject());
+    evaluateInOverlay("showLayoutEditor", object.release());
 }
 
 RefPtrWillBeRawPtr<CSSPrimitiveValue> LayoutEditor::getPropertyCSSValue(CSSPropertyID property) const
@@ -441,6 +454,15 @@ bool LayoutEditor::setCSSPropertyValueInCurrentRule(const String& value)
     String errorString;
     m_cssAgent->setCSSPropertyValue(&errorString, m_element.get(), style, m_changingProperty, value, forceImportant);
     return errorString.isEmpty();
+}
+
+void LayoutEditor::evaluateInOverlay(const String& method, PassRefPtr<JSONValue> argument) const
+{
+    ScriptForbiddenScope::AllowUserAgentScript allowScript;
+    RefPtr<JSONArray> command = JSONArray::create();
+    command->pushString(method);
+    command->pushValue(argument);
+    m_scriptController->executeScriptInMainWorld("dispatch(" + command->toJSONString() + ")", ScriptController::ExecuteScriptWhenScriptsDisabled);
 }
 
 } // namespace blink

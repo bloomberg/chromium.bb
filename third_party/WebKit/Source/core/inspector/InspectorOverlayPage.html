@@ -618,7 +618,7 @@ function _drawRulers(context, bounds, rulerAtRight, rulerAtBottom)
     context.restore();
 }
 
-function drawPath(context, commands, fillColor, outlineColor, bounds, name)
+function drawPath(context, commands, fillColor, outlineColor, bounds)
 {
     var commandsIndex = 0;
 
@@ -678,13 +678,7 @@ function drawPath(context, commands, fillColor, outlineColor, bounds, name)
     }
 
     context.restore();
-
-    if (name) {
-        if (!window.hoverableAreas)
-            window.hoverableAreas = new Map();
-
-        window.hoverableAreas.set(name, path);
-    }
+    return path;
 }
 
 function drawHighlight(highlight, context)
@@ -703,9 +697,11 @@ function drawHighlight(highlight, context)
         bottommostYForX: {}
     };
 
+    var areasDescription = new Map();
     for (var paths = highlight.paths.slice(); paths.length;) {
         var path = paths.pop();
-        drawPath(context, path.path, path.fillColor, path.outlineColor, bounds, path.name);
+        var canvasPath = drawPath(context, path.path, path.fillColor, path.outlineColor, bounds);
+        areasDescription.set(path.name, canvasPath);
         if (paths.length) {
             context.save();
             context.globalCompositeOperation = "destination-out";
@@ -730,6 +726,8 @@ function drawHighlight(highlight, context)
            _drawElementTitle(context, highlight.elementInfo, bounds);
     }
     context.restore();
+
+    return areasDescription;
 }
 
 function setPlatform(platform)
@@ -799,6 +797,7 @@ function LayoutEditor(mainCanvas)
     this._boundMouseWheel = this._onMouseWheel.bind(this);
 
     this._anchorsByType = new Map();
+    this._hoverableAreas = new Map();
     this._editorElement = document.getElementById("editor");
     this._tooltipElement = document.getElementById("selector-tooltip");
     this._matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
@@ -810,10 +809,10 @@ function LayoutEditor(mainCanvas)
 }
 
 LayoutEditor.prototype = {
-
     reset: function()
     {
         this._anchorsByType.clear();
+        this._hoverableAreas.clear();
 
         resetCanvas(this._matchedNodesCanvas);
         this._resetLabelCanvas();
@@ -832,6 +831,8 @@ LayoutEditor.prototype = {
 
     setState: function(info)
     {
+        this._hoverableAreas = drawHighlight(info.nodeHighlight, this._mainContext);
+
         this._editorElement.style.visibility = "visible";
         var anchors = info.anchors;
         this._anchorsByType.clear();
@@ -1085,12 +1086,11 @@ LayoutEditor.prototype = {
     _onMouseMove: function(event)
     {
         event.preventDefault();
-        // TODO: remove hoverableAreas from window
-        if (!window.hoverableAreas)
+        if (!this._hoverableAreas.size)
             return;
         var types = ["padding", "margin"];
         for (var type of types) {
-            var path = hoverableAreas.get(type);
+            var path = this._hoverableAreas.get(type);
             if (path && this._mainContext.isPointInPath(path, deviceScaleFactor * event.x, deviceScaleFactor * event.y)) {
                 this._showLabels(type);
                 return;
@@ -1201,6 +1201,7 @@ document.addEventListener("keydown", onDocumentKeyDown);
       <div id="dimensions"><span id="material-node-width"></span>&#xD7;<span id="material-node-height"></span></div>
     </div>
     <div id="element-tooltip-arrow"></div>
+</div>
 <div id="editor" class="fill"></div>
 <div id="selector-tooltip"></div>
 <div id="log"></div>
