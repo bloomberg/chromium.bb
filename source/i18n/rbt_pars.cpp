@@ -1102,7 +1102,7 @@ void TransliteratorParser::parseRules(const UnicodeString& rule,
 
             for (int32_t j = 0; j < data->variablesLength; j++) {
                 data->variables[j] =
-                    ((UnicodeSet*)variablesVector.elementAt(j));
+                    ((UnicodeFunctor*)variablesVector.elementAt(j));
             }
             
             data->variableNames.removeAll();

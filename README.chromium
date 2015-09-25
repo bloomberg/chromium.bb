@@ -317,3 +317,8 @@ This directory contains the source code of ICU 54.1 for C/C++.
 
 22. Fix -Wmicrosoft-unqulified-friend warning
    - patches/stringthreadtest.patch
+
+23. Fix 'bad cast' found in Transliterator with a cfi build
+   - patches/xlit_badcast.patch  ; speculative
+   - upstream bug (yet to be resolved)
+     http://bugs.icu-project.org/trac/ticket/11937
