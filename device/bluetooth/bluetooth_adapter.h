@@ -82,6 +82,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceChanged(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
 
+    // Called when address property of the device |device| known to the adapter
+    // |adapter| change due to pairing.
+    virtual void DeviceAddressChanged(BluetoothAdapter* adapter,
+                                      BluetoothDevice* device,
+                                      const std::string& old_address) {}
+
     // Called when the device |device| is removed from the adapter |adapter|,
     // either as a result of a discovered device being lost between discovering
     // phases or pairing information deleted. |device| should not be

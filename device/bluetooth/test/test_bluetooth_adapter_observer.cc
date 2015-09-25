@@ -33,6 +33,7 @@ void TestBluetoothAdapterObserver::Reset() {
   last_discovering_ = false;
   device_added_count_ = 0;
   device_changed_count_ = 0;
+  device_address_changed_count_ = 0;
   device_removed_count_ = 0;
   last_device_ = NULL;
   last_device_address_.clear();
@@ -107,6 +108,17 @@ void TestBluetoothAdapterObserver::DeviceChanged(BluetoothAdapter* adapter,
   EXPECT_EQ(adapter_.get(), adapter);
 
   ++device_changed_count_;
+  last_device_ = device;
+  last_device_address_ = device->GetAddress();
+
+  QuitMessageLoop();
+}
+
+void TestBluetoothAdapterObserver::DeviceAddressChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    const std::string& old_address) {
+  ++device_address_changed_count_;
   last_device_ = device;
   last_device_address_ = device->GetAddress();
 

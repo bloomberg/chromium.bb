@@ -2172,6 +2172,35 @@ TEST_F(BluetoothChromeOSTest, DeviceNameChanged) {
   EXPECT_EQ(base::UTF8ToUTF16(new_name), devices[0]->GetName());
 }
 
+TEST_F(BluetoothChromeOSTest, DeviceAddressChanged) {
+  // Simulate a change of address of a device.
+  GetAdapter();
+
+  BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
+  ASSERT_EQ(2U, devices.size());
+  ASSERT_EQ(FakeBluetoothDeviceClient::kPairedDeviceAddress,
+            devices[0]->GetAddress());
+  ASSERT_EQ(base::UTF8ToUTF16(FakeBluetoothDeviceClient::kPairedDeviceName),
+            devices[0]->GetName());
+
+  // Install an observer; expect the DeviceAddressChanged method to be called
+  // when we change the alias of the device.
+  TestBluetoothAdapterObserver observer(adapter_);
+
+  FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
+
+  static const char* kNewAddress = "D9:1F:FC:11:22:33";
+  properties->address.ReplaceValue(kNewAddress);
+
+  EXPECT_EQ(1, observer.device_address_changed_count());
+  EXPECT_EQ(1, observer.device_changed_count());
+  EXPECT_EQ(devices[0], observer.last_device());
+
+  EXPECT_EQ(std::string(kNewAddress), devices[0]->GetAddress());
+}
+
 TEST_F(BluetoothChromeOSTest, DeviceUuidsChanged) {
   // Simulate a change of advertised services of a device.
   GetAdapter();

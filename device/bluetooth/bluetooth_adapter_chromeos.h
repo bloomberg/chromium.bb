@@ -119,6 +119,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // its D-Bus properties. |device| is owned by the caller and cannot be NULL.
   void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
+  // Announce to observers a device address change.
+  void NotifyDeviceAddressChanged(BluetoothDeviceChromeOS* device,
+                                  const std::string& old_address);
+
   // The following methods are used to send various GATT observer events to
   // observers.
   void NotifyGattServiceAdded(BluetoothRemoteGattServiceChromeOS* service);

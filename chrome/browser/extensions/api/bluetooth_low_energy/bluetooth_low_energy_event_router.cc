@@ -890,6 +890,16 @@ void BluetoothLowEnergyEventRouter::GattDiscoveryCompleteForService(
   EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
 }
 
+void BluetoothLowEnergyEventRouter::DeviceAddressChanged(
+    BluetoothAdapter* adapter,
+    BluetoothDevice* device,
+    const std::string& old_address) {
+  for (auto& iter : service_id_to_device_address_) {
+    if (iter.second == old_address)
+      service_id_to_device_address_[iter.first] = device->GetAddress();
+  }
+}
+
 void BluetoothLowEnergyEventRouter::GattServiceChanged(
     BluetoothAdapter* adapter,
     BluetoothGattService* service) {

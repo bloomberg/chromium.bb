@@ -441,6 +441,22 @@ void BluetoothAdapterChromeOS::DevicePropertyChanged(
       DBusThreadManager::Get()->GetBluetoothDeviceClient()->
           GetProperties(object_path);
 
+  if (property_name == properties->address.name()) {
+    for (auto iter = devices_.begin(); iter != devices_.end(); ++iter) {
+      if (iter->second->GetAddress() == device_chromeos->GetAddress()) {
+        std::string old_address = iter->first;
+        VLOG(1) << "Device changed address, old: " << old_address
+                << " new: " << device_chromeos->GetAddress();
+        devices_.erase(iter);
+
+        DCHECK(devices_.find(device_chromeos->GetAddress()) == devices_.end());
+        devices_[device_chromeos->GetAddress()] = device_chromeos;
+        NotifyDeviceAddressChanged(device_chromeos, old_address);
+        break;
+      }
+    }
+  }
+
   if (property_name == properties->bluetooth_class.name() ||
       property_name == properties->address.name() ||
       property_name == properties->alias.name() ||
@@ -867,6 +883,15 @@ void BluetoothAdapterChromeOS::NotifyDeviceChanged(
 
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceChanged(this, device));
+}
+
+void BluetoothAdapterChromeOS::NotifyDeviceAddressChanged(
+    BluetoothDeviceChromeOS* device,
+    const std::string& old_address) {
+  DCHECK(device->adapter_ == this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceAddressChanged(this, device, old_address));
 }
 
 void BluetoothAdapterChromeOS::NotifyGattServiceAdded(

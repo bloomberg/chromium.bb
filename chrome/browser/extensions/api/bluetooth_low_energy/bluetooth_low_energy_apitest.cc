@@ -1313,4 +1313,38 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, StartStopNotifications) {
       mock_adapter_, device0_.get(), service0_.get());
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTest, AddressChange) {
+  ResultCatcher catcher;
+  catcher.RestrictToBrowserContext(browser()->profile());
+
+  event_router()->GattServiceAdded(mock_adapter_, device0_.get(),
+                                   service0_.get());
+
+  EXPECT_CALL(*mock_adapter_, GetDevice(_))
+      .WillRepeatedly(Return(device0_.get()));
+  EXPECT_CALL(*device0_, GetGattService(kTestServiceId0))
+      .WillRepeatedly(Return(service0_.get()));
+
+  const std::string kTestLeDeviceNewAddress0 = std::string("11:22:33:44:55:77");
+  EXPECT_CALL(*device0_, GetAddress())
+      .WillRepeatedly(Return(kTestLeDeviceNewAddress0));
+
+  std::string old_address;
+  event_router()->DeviceAddressChanged(mock_adapter_, device0_.get(),
+                                       kTestLeDeviceAddress0);
+
+  // Load and wait for setup.
+  ExtensionTestMessageListener listener("ready", true);
+  listener.set_failure_message("fail");
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("bluetooth_low_energy/address_change")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  listener.Reply("go");
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  event_router()->GattServiceRemoved(mock_adapter_, device0_.get(),
+                                     service0_.get());
+}
+
 }  // namespace
