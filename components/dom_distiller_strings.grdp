@@ -37,9 +37,6 @@
   <message name="IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE" desc="The text to show in place of a reading list article title while the article is loading.">
     Reader Mode
   </message>
-  <message name="IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE" desc="The text to show in place of a reading list article title if there is no data found.">
-    Failed to display article.
-  </message>
   <message name="IDS_DOM_DISTILLER_VIEWER_NO_DATA_CONTENT" desc="The text to show in place of reading list article content if there is no data found.">
     No data found.
   </message>

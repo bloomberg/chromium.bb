@@ -91,11 +91,6 @@ const std::string GetFontCssClass(DistilledPagePrefs::FontFamily font_family) {
   return kSansSerifCssClass;
 }
 
-void EnsureNonEmptyTitle(std::string* title) {
-  if (title->empty())
-    *title = l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE);
-}
-
 void EnsureNonEmptyContent(std::string* content) {
   UMA_HISTOGRAM_BOOLEAN("DomDistiller.PageHasDistilledData", !content->empty());
   if (content->empty()) {
@@ -130,7 +125,7 @@ std::string ReplaceHtmlTemplateValues(
                           GetFontCssClass(font_family));                  // $3
 
   substitutions.push_back(
-      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_NO_DATA_TITLE));  // $4
+      l10n_util::GetStringUTF8(IDS_DOM_DISTILLER_VIEWER_LOADING_TITLE));  // $4
   substitutions.push_back(
       l10n_util::GetStringUTF8(
           IDS_DOM_DISTILLER_JAVASCRIPT_DISABLED_CONTENT));                // $5
@@ -198,7 +193,6 @@ const std::string GetErrorPageJs() {
 }
 
 const std::string GetSetTitleJs(std::string title) {
-  EnsureNonEmptyTitle(&title);
   base::StringValue value(title);
   std::string output;
   base::JSONWriter::Write(value, &output);
