@@ -37,10 +37,6 @@ ONC_EXPORT extern const char kAugmentationSharedSetting[];
 ONC_EXPORT extern const char kAugmentationUserEditable[];
 ONC_EXPORT extern const char kAugmentationDeviceEditable[];
 
-// This is no ONC key or value but used for logging only.
-// TODO(pneubeck): Remove.
-ONC_EXPORT extern const char kNetworkConfiguration[];
-
 // Common keys/values.
 ONC_EXPORT extern const char kRecommended[];
 ONC_EXPORT extern const char kRemove[];
