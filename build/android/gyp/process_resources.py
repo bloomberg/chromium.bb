@@ -33,7 +33,7 @@ TextSymbolsEntry = collections.namedtuple('RTextEntry',
     ('java_type', 'resource_type', 'name', 'value'))
 
 
-def _ParseArgs(args):
+def ParseArgs(args):
   """Parses command line options.
 
   Returns:
@@ -103,9 +103,9 @@ def _ParseArgs(args):
 
   parser.add_option('--stamp', help='File to touch on success')
 
-  options, positional_args = parser.parse_args(args)
+  (options, args) = parser.parse_args(args)
 
-  if positional_args:
+  if args:
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
@@ -121,23 +121,6 @@ def _ParseArgs(args):
 
   if (options.R_dir is None) == (options.srcjar_out is None):
     raise Exception('Exactly one of --R-dir or --srcjar-out must be specified.')
-
-  options.resource_dirs = build_utils.ParseGypList(options.resource_dirs)
-  options.dependencies_res_zips = (
-      build_utils.ParseGypList(options.dependencies_res_zips))
-
-  # Don't use [] as default value since some script explicitly pass "".
-  if options.extra_res_packages:
-    options.extra_res_packages = (
-        build_utils.ParseGypList(options.extra_res_packages))
-  else:
-    options.extra_res_packages = []
-
-  if options.extra_r_text_files:
-    options.extra_r_text_files = (
-        build_utils.ParseGypList(options.extra_r_text_files))
-  else:
-    options.extra_r_text_files = []
 
   return options
 
@@ -340,9 +323,15 @@ def CombineZips(zip_files, output_path):
   build_utils.MergeZips(output_path, zip_files, path_transform=path_transform)
 
 
-def _OnStaleMd5(options):
+def main():
+  args = build_utils.ExpandFileArgs(sys.argv[1:])
+
+  options = ParseArgs(args)
   android_jar = os.path.join(options.android_sdk, 'android.jar')
   aapt = options.aapt_path
+
+  input_files = []
+
   with build_utils.TempDir() as temp_dir:
     deps_dir = os.path.join(temp_dir, 'deps')
     build_utils.MakeDirectory(deps_dir)
@@ -352,7 +341,7 @@ def _OnStaleMd5(options):
     gen_dir = os.path.join(temp_dir, 'gen')
     build_utils.MakeDirectory(gen_dir)
 
-    input_resource_dirs = options.resource_dirs
+    input_resource_dirs = build_utils.ParseGypList(options.resource_dirs)
 
     if not options.v14_skip:
       for resource_dir in input_resource_dirs:
@@ -360,7 +349,8 @@ def _OnStaleMd5(options):
             resource_dir,
             v14_dir)
 
-    dep_zips = options.dependencies_res_zips
+    dep_zips = build_utils.ParseGypList(options.dependencies_res_zips)
+    input_files += dep_zips
     dep_subdirs = []
     for z in dep_zips:
       subdir = os.path.join(deps_dir, os.path.basename(z))
@@ -405,8 +395,8 @@ def _OnStaleMd5(options):
     if options.extra_res_packages:
       CreateExtraRJavaFiles(
           gen_dir,
-          options.extra_res_packages,
-          options.extra_r_text_files,
+          build_utils.ParseGypList(options.extra_res_packages),
+          build_utils.ParseGypList(options.extra_r_text_files),
           options.shared_resources,
           options.include_all_resources)
 
@@ -445,52 +435,13 @@ def _OnStaleMd5(options):
       else:
         open(options.r_text_out, 'w').close()
 
+  if options.depfile:
+    input_files += build_utils.GetPythonDependencies()
+    build_utils.WriteDepfile(options.depfile, input_files)
 
-def main(args):
-  args = build_utils.ExpandFileArgs(args)
-  options = _ParseArgs(args)
-
-  possible_output_paths = [
-    options.resource_zip_out,
-    options.all_resources_zip_out,
-    options.r_text_out,
-    options.srcjar_out,
-  ]
-  output_paths = [x for x in possible_output_paths if x]
-
-  # List python deps in input_strings rather than input_paths since the contents
-  # of them does not change what gets written to the depsfile.
-  input_strings = options.extra_res_packages + [
-    options.aapt_path,
-    options.android_sdk,
-    options.app_as_shared_lib,
-    options.custom_package,
-    options.include_all_resources,
-    options.non_constant_id,
-    options.shared_resources,
-    options.v14_skip,
-  ]
-
-  input_paths = [ options.android_manifest ]
-  input_paths.extend(options.dependencies_res_zips)
-  input_paths.extend(options.extra_r_text_files)
-
-  if options.proguard_file:
-    input_paths.append(options.proguard_file)
-
-  for d in options.resource_dirs:
-    for root, _, filenames in os.walk(d):
-      input_paths.extend(os.path.join(root, f) for f in filenames)
-
-  build_utils.CallAndWriteDepfileIfStale(
-      lambda: _OnStaleMd5(options),
-      options,
-      input_paths=input_paths,
-      input_strings=input_strings,
-      output_paths=output_paths,
-      # TODO(agrieve): Remove R_dir when it's no longer used (used only by GYP).
-      force=options.R_dir)
+  if options.stamp:
+    build_utils.Touch(options.stamp)
 
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  main()
