@@ -23,7 +23,7 @@ using base::win::RegKey;
 
 class TriggeredProfileResetterTest : public testing::Test {
  protected:
-  void SetUp() {
+  void SetUp() override {
     override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
 
     // Activate the triggered reset field trial for these tests.
