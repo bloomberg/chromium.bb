@@ -12,7 +12,7 @@
       'target_name': 'error_prone_annotation_jar',
       'type': 'none',
       'variables': {
-        'jar_path': 'lib/error_prone_annotation-2.0.1.jar',
+        'jar_path': 'lib/error_prone_annotation-2.0.5.jar',
       },
       'includes': [
         '../../build/host_prebuilt_jar.gypi',
@@ -23,18 +23,7 @@
       'target_name': 'error_prone_annotations_jar',
       'type': 'none',
       'variables': {
-        'jar_path': 'lib/error_prone_annotations-2.0.1.jar',
-      },
-      'includes': [
-        '../../build/host_prebuilt_jar.gypi',
-      ]
-    },
-    {
-      # GN: //third_party/errorprone:javacutil_java
-      'target_name': 'javacutil_jar',
-      'type': 'none',
-      'variables': {
-        'jar_path': 'lib/javacutil-1.8.10.jar',
+        'jar_path': 'lib/error_prone_annotations-2.0.5.jar',
       },
       'includes': [
         '../../build/host_prebuilt_jar.gypi',
@@ -52,19 +41,29 @@
       ]
     },
     {
+      # GN: //third_party/errorprone:javac_java
+      'target_name': 'javac_jar',
+      'type': 'none',
+      'variables': {
+        'jar_path': 'lib/javac-1.9.0-dev-r2644-1.jar',
+      },
+      'includes': [
+        '../../build/host_prebuilt_jar.gypi',
+      ]
+    },
+    {
       # GN: //third_party/errorprone:chromium_errorprone
       'target_name': 'chromium_errorprone',
       'type': 'none',
       'variables': {
-        'jar_path': 'lib/error_prone_core-2.0.1.jar',
+        'jar_path': 'lib/error_prone_core-2.0.5.jar',
       },
       'dependencies': [
-        '../../build/android/setup.gyp:sun_tools_java',
         '../../third_party/findbugs/findbugs.gyp:format_string_jar',
         'error_prone_annotation_jar',
         'error_prone_annotations_jar',
-        'javacutil_jar',
         'dataflow_jar',
+        'javac_jar',
       ],
       'includes': [
         '../../build/host_prebuilt_jar.gypi',

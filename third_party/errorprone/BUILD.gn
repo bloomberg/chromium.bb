@@ -6,17 +6,17 @@ import("//build/config/android/rules.gni")
 
 # GYP: //third_party/errorprone/errorprone.gyp:error_prone_annotation_jar
 java_prebuilt("error_prone_annotation_java") {
-  jar_path = "lib/error_prone_annotation-2.0.1.jar"
+  jar_path = "lib/error_prone_annotation-2.0.5.jar"
 }
 
 # GYP: //third_party/errorprone/errorprone.gyp:error_prone_annotations_jar
 java_prebuilt("error_prone_annotations_java") {
-  jar_path = "lib/error_prone_annotations-2.0.1.jar"
+  jar_path = "lib/error_prone_annotations-2.0.5.jar"
 }
 
-# GYP: //third_party/errorprone/errorprone.gyp:javacutil_jar
-java_prebuilt("javacutil_java") {
-  jar_path = "lib/javacutil-1.8.10.jar"
+# GYP: //third_party/errorprone/errorprone.gyp:javac_jar
+java_prebuilt("javac_java") {
+  jar_path = "lib/javac-1.9.0-dev-r2644-1.jar"
 }
 
 # GYP: //third_party/errorprone/errorprone.gyp:dataflow_jar
@@ -26,13 +26,12 @@ java_prebuilt("dataflow_java") {
 
 # GYP: //third_party/errorprone/errorprone.gyp:chromium_errorprone
 java_prebuilt("chromium_errorprone") {
-  jar_path = "lib/error_prone_core-2.0.1.jar"
+  jar_path = "lib/error_prone_core-2.0.5.jar"
   deps = [
     ":dataflow_java",
     ":error_prone_annotation_java",
     ":error_prone_annotations_java",
-    ":javacutil_java",
-    "//build/android:sun_tools_java",
+    ":javac_java",
     "//third_party/findbugs:format_string_java",
   ]
   main_class = "com.google.errorprone.ErrorProneCompiler"
