@@ -4,7 +4,6 @@
 
 #include "content/browser/media/android/browser_demuxer_android.h"
 
-#include "base/command_line.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "media/base/android/media_codec_player.h"
 #include "media/base/media_switches.h"
@@ -56,12 +55,8 @@ class BrowserDemuxerAndroid::Internal : public media::DemuxerAndroid {
 
 BrowserDemuxerAndroid::BrowserDemuxerAndroid()
     : BrowserMessageFilter(MediaPlayerMsgStart) {
-  bool enable_media_thread =
-      base::CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kEnableMediaThreadForMediaPlayback);
-
   task_runner_ =
-      enable_media_thread ?
+      media::MediaPlayerAndroid::UseMediaThread() ?
       media::GetMediaTaskRunner().get() :
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI).get();
 

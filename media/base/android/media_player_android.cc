@@ -5,11 +5,15 @@
 #include "media/base/android/media_player_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
+#include "media/base/media_switches.h"
 
 namespace media {
 
@@ -83,6 +87,19 @@ void MediaPlayerAndroid::AttachListener(jobject j_media_player) {
 
 void MediaPlayerAndroid::DetachListener() {
   listener_->ReleaseMediaPlayerListenerResources();
+}
+
+// static
+bool MediaPlayerAndroid::UseMediaThread() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("EnableMediaThreadForMediaPlayback");
+
+  if (base::CommandLine::ForCurrentProcess()->
+      HasSwitch(switches::kEnableMediaThreadForMediaPlayback)) {
+    return true;
+  }
+
+  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
 void MediaPlayerAndroid::DestroyListenerOnUIThread() {

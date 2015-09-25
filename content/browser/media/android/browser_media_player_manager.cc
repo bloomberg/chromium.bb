@@ -5,7 +5,6 @@
 #include "content/browser/media/android/browser_media_player_manager.h"
 
 #include "base/android/scoped_java_ref.h"
-#include "base/command_line.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
@@ -31,7 +30,6 @@
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
-#include "media/base/media_switches.h"
 
 using media::MediaCodecPlayer;
 using media::MediaPlayerAndroid;
@@ -166,8 +164,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     }
 
     case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      if (base::CommandLine::ForCurrentProcess()->
-          HasSwitch(switches::kEnableMediaThreadForMediaPlayback)) {
+      if (MediaPlayerAndroid::UseMediaThread()) {
         return new MediaCodecPlayer(
             media_player_params.player_id,
             weak_ptr_factory_.GetWeakPtr(),
