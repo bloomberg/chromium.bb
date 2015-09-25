@@ -110,6 +110,26 @@ QUnit.test('copyWithoutNullFields(null) returns a new empty object',
         base.copyWithoutNullFields(undefined));
 });
 
+QUnit.test('copyWithoutNullFields does a deep copy',
+  function(assert) {
+    var obj = {
+      a: 'foo',
+      b: { c: 'bar' }
+    };
+    var copy = base.copyWithoutNullFields(obj);
+    assert.notEqual(obj.b, copy['b']);
+});
+
+QUnit.test('mergeWithoutNullFields(null) leaves the destination unchanged',
+  function(assert) {
+    var obj = { 'a': 1 };
+    var reference = base.deepCopy(obj);
+    base.mergeWithoutNullFields(obj, null);
+    assert.deepEqual(obj, reference);
+    base.mergeWithoutNullFields(obj, undefined);
+    assert.deepEqual(obj, reference);
+});
+
 QUnit.test('isEmptyObject works',
   function(assert) {
     assert.ok(base.isEmptyObject({}));

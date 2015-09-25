@@ -188,17 +188,27 @@ base.deepCopy = function(value) {
  * @template T
  */
 base.copyWithoutNullFields = function(input) {
-  /** @const {!Object} */
   var result = {};
-  if (input) {
-    for (var field in input) {
-      var value = /** @type {*} */ (input[field]);
+  base.mergeWithoutNullFields(result, input);
+  return result;
+};
+
+/**
+ * Merge non-null fields of |src| into |dest|.
+ *
+ * @param {!Object<T>} dest
+ * @param {Object<?T>|undefined} src
+ * @template T
+ */
+base.mergeWithoutNullFields = function(dest, src) {
+  if (src) {
+    for (var field in src) {
+      var value = /** @type {*} */ (src[field]);
       if (value != null) {
-        result[field] = value;
+        dest[field] = base.deepCopy(value);
       }
     }
   }
-  return result;
 };
 
 /**

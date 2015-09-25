@@ -45,6 +45,8 @@ var MockDesktopConnectedView = function() {};
 MockDesktopConnectedView.prototype.setVideoFrameRecorder = function() {};
 /** @override */
 MockDesktopConnectedView.prototype.dispose = function() {};
+/** @override */
+MockDesktopConnectedView.prototype.setRemapKeys = function() {};
 
 /**
  * A test driver that mocks out the UI components that are required by the

@@ -90,6 +90,7 @@ remoting_webapp_unittests_js_files = [
   "base/js/dns_blackhole_checker_unittest.js",
   "base/js/error_unittest.js",
   "base/js/fallback_signal_strategy_unittest.js",
+  "base/js/host_options_unittest.js",
   "base/js/identity_unittest.js",
   "base/js/ipc_unittest.js",
   "base/js/l10n_unittest.js",
@@ -201,7 +202,7 @@ remoting_webapp_shared_js_core_files = [
 # Host JavaScript files.
 remoting_webapp_shared_js_host_files = [
   "base/js/host.js",
-  "base/js/host_settings.js",
+  "base/js/host_options.js",
 ]
 
 # Logging and stats JavaScript files.

@@ -111,7 +111,7 @@ remoting.DesktopConnectedView.prototype.getResizeToClient = function() {
  *     (Windows, Command) key.
  */
 remoting.DesktopConnectedView.prototype.getMapRightCtrl = function() {
-  return this.host_.options.remapKeys[0x0700e4] === 0x0700e7;
+  return this.host_.options.getRemapKeys()[0x0700e4] === 0x0700e7;
 };
 
 remoting.DesktopConnectedView.prototype.toggleStats = function() {
@@ -255,12 +255,13 @@ remoting.DesktopConnectedView.prototype.setMapRightCtrl = function(enable) {
     return;  // In case right Ctrl is mapped, but not to right Meta.
   }
 
+  var remapKeys = this.host_.options.getRemapKeys();
   if (enable) {
-    this.host_.options.remapKeys[0x0700e4] = 0x0700e7;
+    remapKeys[0x0700e4] = 0x0700e7;
   } else {
-    delete this.host_.options.remapKeys[0x0700e4]
+    delete remapKeys[0x0700e4]
   }
-  this.setRemapKeys(this.host_.options.remapKeys);
+  this.setRemapKeys(remapKeys);
 };
 
 /**
@@ -287,14 +288,13 @@ remoting.DesktopConnectedView.prototype.sendPrintScreen = function() {
  * Sets and stores the key remapping setting for the current host. If set,
  * these mappings override the defaults for the client platform.
  *
- * @param {!Object} remappings
+ * @param {string|!Object} remappings
  */
 remoting.DesktopConnectedView.prototype.setRemapKeys = function(remappings) {
-  this.plugin_.setRemapKeys(remappings);
   // Save the new remapping setting.
-  this.host_.options.remapKeys =
-      /** @type {!Object} */ (base.deepCopy(remappings));
+  this.host_.options.setRemapKeys(remappings);
   this.host_.options.save();
+  this.plugin_.setRemapKeys(this.host_.options.getRemapKeys());
 };
 
 /** @param {remoting.VideoFrameRecorder} recorder */

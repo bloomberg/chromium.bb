@@ -159,8 +159,7 @@ remoting.Me2MeActivity.prototype.createCredentialsProvider_ = function() {
 
   return new remoting.CredentialsProvider({
     fetchPin: requestPin,
-    pairingInfo: /** @type{remoting.PairingInfo} */ (
-        base.deepCopy(host.options.pairingInfo)),
+    pairingInfo: host.options.getPairingInfo(),
     fetchThirdPartyToken: fetchThirdPartyToken
   });
 };
@@ -367,8 +366,8 @@ remoting.PinDialog.prototype.requestPairingIfNecessary = function(plugin) {
      * @param {string} sharedSecret
      */
     var onPairingComplete = function(clientId, sharedSecret) {
-      that.host_.options.pairingInfo.clientId = clientId;
-      that.host_.options.pairingInfo.sharedSecret = sharedSecret;
+      that.host_.options.setPairingInfo({'clientId': clientId,
+                                         'sharedSecret': sharedSecret});
       that.host_.options.save();
     };
 

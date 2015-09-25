@@ -21,7 +21,7 @@ var remoting = remoting || {};
  * @param {HTMLElement} rootElement The outer element with id=scroller that we
  *   are showing scrollbars on.
  * @param {remoting.HostDesktop} hostDesktop
- * @param {remoting.Host.Options} hostOptions
+ * @param {remoting.HostOptions} hostOptions
  *
  * @constructor
  * @implements {base.Disposable}
@@ -55,7 +55,7 @@ remoting.DesktopViewport = function(rootElement, hostDesktop, hostOptions) {
         this.hostDesktop_, remoting.HostDesktop.Events.sizeChanged,
         this.onDesktopSizeChanged_.bind(this)));
 
-  if (this.hostOptions_.resizeToClient) {
+  if (this.hostOptions_.getResizeToClient()) {
     this.resizeHostDesktop_();
   } else {
     this.onDesktopSizeChanged_();
@@ -73,14 +73,14 @@ remoting.DesktopViewport.prototype.dispose = function() {
  * @return {boolean} True if shrink-to-fit is enabled; false otherwise.
  */
 remoting.DesktopViewport.prototype.getShrinkToFit = function() {
-  return this.hostOptions_.shrinkToFit;
+  return this.hostOptions_.getShrinkToFit();
 };
 
 /**
  * @return {boolean} True if resize-to-client is enabled; false otherwise.
  */
 remoting.DesktopViewport.prototype.getResizeToClient = function() {
-  return this.hostOptions_.resizeToClient;
+  return this.hostOptions_.getResizeToClient();
 };
 
 /**
@@ -133,14 +133,14 @@ remoting.DesktopViewport.prototype.getBumpScrollerForTesting = function() {
  */
 remoting.DesktopViewport.prototype.setScreenMode =
     function(shrinkToFit, resizeToClient) {
-  if (resizeToClient && !this.hostOptions_.resizeToClient) {
+  if (resizeToClient && !this.hostOptions_.getResizeToClient()) {
     this.resizeHostDesktop_();
   }
 
   // If enabling shrink, reset bump-scroll offsets.
-  var needsScrollReset = shrinkToFit && !this.hostOptions_.shrinkToFit;
-  this.hostOptions_.shrinkToFit = shrinkToFit;
-  this.hostOptions_.resizeToClient = resizeToClient;
+  var needsScrollReset = shrinkToFit && !this.hostOptions_.getShrinkToFit();
+  this.hostOptions_.setShrinkToFit(shrinkToFit);
+  this.hostOptions_.setResizeToClient(resizeToClient);
   this.hostOptions_.save();
   this.updateScrollbarVisibility_();
 
@@ -231,7 +231,7 @@ remoting.DesktopViewport.prototype.onResize = function() {
 
   // Defer notifying the host of the change until the window stops resizing, to
   // avoid overloading the control channel with notifications.
-  if (this.hostOptions_.resizeToClient) {
+  if (this.hostOptions_.getResizeToClient()) {
     var kResizeRateLimitMs = 250;
     var clientArea = this.getClientArea();
     this.resizeTimer_ = window.setTimeout(this.resizeHostDesktop_.bind(this),
@@ -262,9 +262,10 @@ remoting.DesktopViewport.prototype.getClientArea = function() {
  */
 remoting.DesktopViewport.prototype.resizeHostDesktop_ = function() {
   var clientArea = this.getClientArea();
-  this.hostDesktop_.resize(clientArea.width * this.hostOptions_.desktopScale,
-                           clientArea.height * this.hostOptions_.desktopScale,
-                           window.devicePixelRatio);
+  this.hostDesktop_.resize(
+      clientArea.width * this.hostOptions_.getDesktopScale(),
+      clientArea.height * this.hostOptions_.getDesktopScale(),
+      window.devicePixelRatio);
 };
 
 /**
@@ -301,7 +302,7 @@ remoting.DesktopViewport.prototype.updateScrollbarVisibility_ = function() {
 
   var needsScrollY = false;
   var needsScrollX = false;
-  if (!this.hostOptions_.shrinkToFit) {
+  if (!this.hostOptions_.getShrinkToFit()) {
     // Determine whether or not horizontal or vertical scrollbars are
     // required, taking into account their width.
     var clientArea = this.getClientArea();
@@ -332,8 +333,8 @@ remoting.DesktopViewport.prototype.updateDimensions_ = function() {
                      y: dimensions.yDpi };
   var newSize = remoting.Viewport.choosePluginSize(
       this.getClientArea(), window.devicePixelRatio,
-      desktopSize, desktopDpi, this.hostOptions_.desktopScale,
-      remoting.fullscreen.isActive(), this.hostOptions_.shrinkToFit);
+      desktopSize, desktopDpi, this.hostOptions_.getDesktopScale(),
+      remoting.fullscreen.isActive(), this.hostOptions_.getShrinkToFit());
 
   // Resize the plugin if necessary.
   console.log('plugin dimensions:' + newSize.width + 'x' + newSize.height);
@@ -355,7 +356,7 @@ remoting.DesktopViewport.prototype.resetScroll_ = function() {
  * @param {number} desktopScale Scale factor to apply.
  */
 remoting.DesktopViewport.prototype.setDesktopScale = function(desktopScale) {
-  this.hostOptions_.desktopScale = desktopScale;
+  this.hostOptions_.setDesktopScale(desktopScale);
 
   // onResize() will update the plugin size and scrollbars for the new
   // scaled plugin dimensions, and send a client resolution notification.

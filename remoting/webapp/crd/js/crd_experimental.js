@@ -53,7 +53,6 @@ remoting.experimental.setRemapKeys = function(remappings) {
   var drApp = /** @type {remoting.DesktopRemoting} */ (remoting.app);
   if (drApp instanceof remoting.DesktopRemoting) {
     var connectedView = drApp.getConnectedViewForTesting();
-    connectedView.setRemapKeys(
-        remoting.Host.Options.convertRemapKeys(remappings));
+    connectedView.setRemapKeys(remappings);
   }
 };
