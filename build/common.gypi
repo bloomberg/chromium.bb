@@ -110,9 +110,14 @@
               'use_aura%': 1,
             }],
 
-            ['chromecast==1 and OS!="android"', {
-              'embedded%': 1,
-              'use_ozone%': 1,
+            ['chromecast==1', {
+              'use_libpci': 0,
+              'conditions': [
+                ['OS!="android"', {
+                  'embedded%': 1,
+                  'use_ozone%': 1,
+                }],
+              ],
             }],
 
             # Ozone uses Aura.

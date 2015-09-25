@@ -7,7 +7,7 @@ import("//build/config/ui.gni")
 
 declare_args() {
   # Use the PCI lib to collect GPU information on Linux.
-  use_libpci = true
+  use_libpci = !is_chromecast
 }
 
 group("config") {
