@@ -41,7 +41,7 @@ function test()
     fileSystemMapping.addFileSystem("/var/www");
     fileSystemMapping.addFileMapping("/var/www", "http://localhost/", "/localhost/");
     var workspace = new WebInspector.Workspace(fileSystemMapping);
-    var networkMapping = new WebInspector.NetworkMapping(workspace, fileSystemMapping);
+    var networkMapping = new WebInspector.NetworkMapping(workspace, WebInspector.fileSystemWorkspaceBinding, fileSystemMapping);
 
     function dumpHasMappingForURL(url)
     {

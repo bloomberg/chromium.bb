@@ -10,7 +10,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 
     InspectorTest.testTargetManager = new WebInspector.TargetManager();
     InspectorTest.testWorkspace = new WebInspector.Workspace(InspectorTest.testFileSystemMapping);
-    InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, InspectorTest.testFileSystemMapping);
+    InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testWorkspace, WebInspector.fileSystemWorkspaceBinding, InspectorTest.testFileSystemMapping);
     InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
