@@ -171,6 +171,10 @@ class FormStructure {
   AutofillField* field(size_t index);
   size_t field_count() const;
 
+  // Returns the number of fields that are part of the form signature and that
+  // are included in queries to the Autofill server.
+  size_t active_field_count() const;
+
   // Returns the number of fields that are able to be autofilled.
   size_t autofill_count() const { return autofill_count_; }
 
@@ -229,8 +233,6 @@ class FormStructure {
   // Returns true if field should be skipped when talking to Autofill server.
   bool ShouldSkipField(const FormFieldData& field) const;
 
-  size_t active_field_count() const;
-
   // The name of the form.
   base::string16 form_name_;
 
@@ -246,8 +248,8 @@ class FormStructure {
   // A vector of all the input fields in the form.
   ScopedVector<AutofillField> fields_;
 
-  // The number of fields counted towards form signature and request to Autofill
-  // server.
+  // The number of fields that are part of the form signature and that are
+  // included in queries to the Autofill server.
   size_t active_field_count_;
 
   // The names of the form input elements, that are part of the form signature.

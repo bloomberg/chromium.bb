@@ -7,6 +7,7 @@
 #include <list>
 
 #include "base/prefs/pref_service.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -349,6 +350,53 @@ TEST_F(AutofillDownloadTest, QueryAndUploadTest) {
       *(form_structures[0]), true, ServerFieldTypeSet(), std::string()));
   fetcher = factory.GetFetcherByID(6);
   EXPECT_EQ(NULL, fetcher);
+}
+
+TEST_F(AutofillDownloadTest, QueryTooManyFieldsTest) {
+  // Create and register factory.
+  net::TestURLFetcherFactory factory;
+
+  // Create a query that contains too many fields for the server.
+  std::vector<FormData> forms(21);
+  ScopedVector<FormStructure> form_structures;
+  for (auto& form : forms) {
+    for (size_t i = 0; i < 5; ++i) {
+      FormFieldData field;
+      field.label = base::IntToString16(i);
+      field.name = base::IntToString16(i);
+      field.form_control_type = "text";
+      form.fields.push_back(field);
+    }
+    FormStructure* form_structure = new FormStructure(form);
+    form_structures.push_back(form_structure);
+  }
+
+  // Check whether the query is aborted.
+  EXPECT_FALSE(download_manager_.StartQueryRequest(form_structures.get()));
+}
+
+TEST_F(AutofillDownloadTest, QueryNotTooManyFieldsTest) {
+  // Create and register factory.
+  net::TestURLFetcherFactory factory;
+
+  // Create a query that contains a lot of fields, but not too many for the
+  // server.
+  std::vector<FormData> forms(25);
+  ScopedVector<FormStructure> form_structures;
+  for (auto& form : forms) {
+    for (size_t i = 0; i < 4; ++i) {
+      FormFieldData field;
+      field.label = base::IntToString16(i);
+      field.name = base::IntToString16(i);
+      field.form_control_type = "text";
+      form.fields.push_back(field);
+    }
+    FormStructure* form_structure = new FormStructure(form);
+    form_structures.push_back(form_structure);
+  }
+
+  // Check that the query is not aborted.
+  EXPECT_TRUE(download_manager_.StartQueryRequest(form_structures.get()));
 }
 
 TEST_F(AutofillDownloadTest, CacheQueryTest) {
