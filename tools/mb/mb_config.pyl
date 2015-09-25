@@ -47,6 +47,7 @@
     'gyp_official_bot_minimal_symbols': ['gyp', 'official', 'minimal_symbols', 'goma'],
     'gyp_official_bot_minimal_symbols_android': ['gyp', 'official', 'minimal_symbols', 'goma', 'android'],
     'gyp_official_bot_minimal_symbols_android_arm64': ['gyp', 'official', 'minimal_symbols', 'goma', 'android', 'arm64'],
+    'gyp_official_bot_minimal_symbols_x64': ['gyp', 'official', 'minimal_symbols', 'goma', 'x64'],
     'gyp_official_bot_minimal_symbols_x86': ['gyp', 'official', 'minimal_symbols', 'goma', 'x86'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
@@ -295,6 +296,11 @@
       'gyp_defines': 'tsan=1',
     },
 
+    'x64': {
+      'gn_args': 'target_cpu="x64"',
+      'gyp_defines': 'target_arch=x64',
+    },
+
     'x86': {
       'gn_args': 'target_cpu="x86"',
       'gyp_defines': 'target_arch=ia32',
@@ -358,7 +364,7 @@
       'Android Builder': 'gyp_official_bot_minimal_symbols_android',
       'Android arm64 Builder': 'gyp_official_bot_minimal_symbols_android_arm64',
       'Win Builder': 'gyp_official_bot_minimal_symbols_x86',
-      'Win x64 Builder': 'gyp_official_bot_minimal_symbols',
+      'Win x64 Builder': 'gyp_official_bot_minimal_symbols_x64',
       'Mac Builder': 'gyp_official_bot',
       'Linux Builder': 'gyp_official_bot',
     },
