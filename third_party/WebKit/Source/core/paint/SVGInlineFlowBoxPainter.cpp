@@ -40,7 +40,7 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
         }
     }
 
-    if (m_svgInlineFlowBox.layoutObject().styleRef().hasOutline()) {
+    if (m_svgInlineFlowBox.lineLayoutItem().styleRef().hasOutline()) {
         PaintInfo outlinePaintInfo(paintInfo);
         outlinePaintInfo.phase = PaintPhaseSelfOutline;
         ObjectPainter(m_svgInlineFlowBox.layoutObject()).paintOutline(outlinePaintInfo, paintOffset);

@@ -555,7 +555,7 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             LayoutBox* currBox = toLayoutBox(curr);
             if (currBox->inlineBoxWrapper()) {
                 RootInlineBox& rootBox = currBox->inlineBoxWrapper()->root();
-                int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
+                int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
                     yield(LayoutRect(currBox->inlineBoxWrapper()->x() - currBox->marginLeft(), logicalTop, currBox->size().width() + currBox->marginWidth(), logicalHeight));
@@ -570,7 +570,7 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             } else {
                 for (InlineFlowBox* childLine = currInline->firstLineBox(); childLine; childLine = childLine->nextLineBox()) {
                     RootInlineBox& rootBox = childLine->root();
-                    int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
+                    int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                     int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                     if (isHorizontal) {
                         yield(LayoutRect(childLine->x() - childLine->marginLogicalLeft(),
@@ -589,7 +589,7 @@ void LayoutInline::generateCulledLineBoxRects(GeneratorContext& yield, const Lay
             LayoutText* currText = toLayoutText(curr);
             for (InlineTextBox* childText = currText->firstTextBox(); childText; childText = childText->nextTextBox()) {
                 RootInlineBox& rootBox = childText->root();
-                int logicalTop = rootBox.logicalTop() + (rootBox.layoutObject().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
+                int logicalTop = rootBox.logicalTop() + (rootBox.lineLayoutItem().style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent() - container->style(rootBox.isFirstLineStyle())->font().fontMetrics().ascent());
                 int logicalHeight = container->style(rootBox.isFirstLineStyle())->font().fontMetrics().height();
                 if (isHorizontal)
                     yield(LayoutRect(childText->x(), logicalTop, childText->logicalWidth(), logicalHeight));

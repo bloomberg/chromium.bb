@@ -485,7 +485,7 @@ static inline void computeExpansionForJustifiedText(BidiRun* firstRun, BidiRun* 
 void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign, const RootInlineBox* rootInlineBox, BidiRun* trailingSpaceRun, LayoutUnit& logicalLeft, LayoutUnit& totalLogicalWidth, LayoutUnit& availableLogicalWidth, unsigned expansionOpportunityCount)
 {
     TextDirection direction;
-    if (rootInlineBox && rootInlineBox->layoutObject().style()->unicodeBidi() == Plaintext)
+    if (rootInlineBox && rootInlineBox->lineLayoutItem().style()->unicodeBidi() == Plaintext)
         direction = rootInlineBox->direction();
     else
         direction = style()->direction();
@@ -1722,7 +1722,7 @@ bool LayoutBlockFlow::lineBoxHasBRWithClearance(RootInlineBox* curr)
     if (!curr->endsWithBreak())
         return false;
     InlineBox* lastBox = style()->isLeftToRightDirection() ? curr->lastLeafChild() : curr->firstLeafChild();
-    return lastBox && lastBox->layoutObject().isBR() && lastBox->layoutObject().style()->clear() != CNONE;
+    return lastBox && lastBox->lineLayoutItem().isBR() && lastBox->lineLayoutItem().style()->clear() != CNONE;
 }
 
 void LayoutBlockFlow::determineEndPosition(LineLayoutState& layoutState, RootInlineBox* startLine, InlineIterator& cleanLineStart, BidiStatus& cleanLineBidiStatus)

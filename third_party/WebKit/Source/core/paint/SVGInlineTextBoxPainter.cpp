@@ -43,7 +43,7 @@ void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(m_svgInlineTextBox.truncation() == cNoTruncation);
 
-    if (m_svgInlineTextBox.layoutObject().style()->visibility() != VISIBLE)
+    if (m_svgInlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE)
         return;
 
     // We're explicitly not supporting composition & custom underlines and custom highlighters -- unlike InlineTextBox.
@@ -146,7 +146,7 @@ void SVGInlineTextBoxPainter::paintTextFragments(const PaintInfo& paintInfo, Lay
 
 void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInfo)
 {
-    if (m_svgInlineTextBox.layoutObject().style()->visibility() != VISIBLE)
+    if (m_svgInlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE)
         return;
 
     ASSERT(!paintInfo.isPrinting());
@@ -154,7 +154,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     if (paintInfo.phase == PaintPhaseSelection || !shouldPaintSelection(paintInfo))
         return;
 
-    Color backgroundColor = m_svgInlineTextBox.layoutObject().selectionBackgroundColor();
+    Color backgroundColor = m_svgInlineTextBox.lineLayoutItem().selectionBackgroundColor();
     if (!backgroundColor.alpha())
         return;
 
@@ -162,7 +162,7 @@ void SVGInlineTextBoxPainter::paintSelectionBackground(const PaintInfo& paintInf
     if (!textShouldBePainted(textLayoutObject))
         return;
 
-    const ComputedStyle& style = m_svgInlineTextBox.parent()->layoutObject().styleRef();
+    const ComputedStyle& style = m_svgInlineTextBox.parent()->lineLayoutItem().styleRef();
 
     int startPosition, endPosition;
     m_svgInlineTextBox.selectionStartEnd(startPosition, endPosition);
@@ -231,7 +231,7 @@ static inline float thicknessForDecoration(TextDecoration, const Font& font)
 
 void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo, TextDecoration decoration, const SVGTextFragment& fragment)
 {
-    if (m_svgInlineTextBox.layoutObject().style()->textDecorationsInEffect() == TextDecorationNone)
+    if (m_svgInlineTextBox.lineLayoutItem().style()->textDecorationsInEffect() == TextDecorationNone)
         return;
 
     if (fragment.width <= 0)

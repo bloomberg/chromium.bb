@@ -11,6 +11,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/api/LineLayoutBox.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
@@ -109,7 +110,7 @@ void BlockPainter::paintInlineBox(InlineBox& inlineBox, const PaintInfo& paintIn
         return;
 
     LayoutPoint childPoint = paintOffset;
-    if (inlineBox.parent()->layoutObject().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
+    if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = inlineBox.layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
 
     paintAsInlineBlock(inlineBox.layoutObject(), paintInfo, childPoint);
