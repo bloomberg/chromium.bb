@@ -328,7 +328,7 @@ void RemoteDOMWindow::cancelAnimationFrame(int id)
     ASSERT_NOT_REACHED();
 }
 
-int RemoteDOMWindow::requestIdleCallback(IdleRequestCallback*, double timeoutMillis)
+int RemoteDOMWindow::requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&)
 {
     ASSERT_NOT_REACHED();
     return 0;

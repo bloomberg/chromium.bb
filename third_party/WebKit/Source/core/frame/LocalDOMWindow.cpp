@@ -1292,10 +1292,10 @@ void LocalDOMWindow::cancelAnimationFrame(int id)
         document->cancelAnimationFrame(id);
 }
 
-int LocalDOMWindow::requestIdleCallback(IdleRequestCallback* callback, double timeoutMillis)
+int LocalDOMWindow::requestIdleCallback(IdleRequestCallback* callback, const IdleRequestOptions& options)
 {
     if (Document* document = this->document())
-        return document->requestIdleCallback(callback, timeoutMillis);
+        return document->requestIdleCallback(callback, options);
     return 0;
 }
 

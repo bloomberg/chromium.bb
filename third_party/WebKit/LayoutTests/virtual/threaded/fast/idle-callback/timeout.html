@@ -8,8 +8,8 @@
 <script>
 
 async_test(function() {
-  // Check whether requestIdleCallback with a timeout works when the event loop
-  // is busy.
+  // Check whether requestIdleCallback without a timeout doesn't get run when
+  // the event loop is busy.
   var busy_raf_loop_iterations_remaining = 10;  // Should take 20 * 40 = 400ms
   var idle_callback_scheduled;
   var idle_callback = this.step_func(function(deadline) {
@@ -36,8 +36,8 @@ async_test(function() {
 }, 'requestIdleCallback not scheduled when event loop is busy.');
 
 async_test(function() {
-  // Check whether requestIdleCallback with a timeout works when the event loop
-  // is busy.
+  // Check whether requestIdleCallback with a timeout works runs even when the
+  // event loop is busy.
   var busy_raf_loop_iterations_remaining = 10;  // Should take 20 * 40 = 400ms
   var timeout = 200;
   var idle_callback_scheduled;
@@ -54,7 +54,7 @@ async_test(function() {
     var start_time = performance.now();
     if (!idle_callback_scheduled) {
       idle_callback_scheduled = start_time;
-      requestIdleCallback(idle_callback, timeout);
+      requestIdleCallback(idle_callback, { timeout: timeout });
     }
 
     // Use up the whole frame budget.

@@ -17,6 +17,7 @@ namespace blink {
 
 class ExecutionContext;
 class IdleRequestCallback;
+class IdleRequestOptions;
 
 class ScriptedIdleTaskController : public RefCountedWillBeGarbageCollectedFinalized<ScriptedIdleTaskController>, public ActiveDOMObject {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
@@ -31,7 +32,7 @@ public:
 
     using CallbackId = int;
 
-    int registerCallback(IdleRequestCallback*, double timeoutMillis);
+    int registerCallback(IdleRequestCallback*, const IdleRequestOptions&);
     void cancelCallback(CallbackId);
 
     // ActiveDOMObject interface.

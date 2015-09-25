@@ -5158,9 +5158,9 @@ ScriptedIdleTaskController& Document::ensureScriptedIdleTaskController()
     return *m_scriptedIdleTaskController;
 }
 
-int Document::requestIdleCallback(IdleRequestCallback* callback, double timeoutMillis)
+int Document::requestIdleCallback(IdleRequestCallback* callback, const IdleRequestOptions& options)
 {
-    return ensureScriptedIdleTaskController().registerCallback(callback, timeoutMillis);
+    return ensureScriptedIdleTaskController().registerCallback(callback, options);
 }
 
 void Document::cancelIdleCallback(int id)

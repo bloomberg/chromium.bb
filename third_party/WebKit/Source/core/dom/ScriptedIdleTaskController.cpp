@@ -7,6 +7,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IdleRequestCallback.h"
+#include "core/dom/IdleRequestOptions.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
@@ -76,15 +77,16 @@ DEFINE_TRACE(ScriptedIdleTaskController)
     ActiveDOMObject::trace(visitor);
 }
 
-ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallback(IdleRequestCallback* callback, double timeoutMillis)
+ScriptedIdleTaskController::CallbackId ScriptedIdleTaskController::registerCallback(IdleRequestCallback* callback, const IdleRequestOptions& options)
 {
     CallbackId id = ++m_nextCallbackId;
     m_callbacks.set(id, callback);
+    long long timeoutMillis = options.timeout();
 
     RefPtr<internal::IdleRequestCallbackWrapper> callbackWrapper = internal::IdleRequestCallbackWrapper::create(id, this);
     m_scheduler->postIdleTask(FROM_HERE, WTF::bind<double>(&internal::IdleRequestCallbackWrapper::idleTaskFired, callbackWrapper));
     if (timeoutMillis > 0)
-        m_scheduler->timerTaskRunner()->postDelayedTask(FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), static_cast<long long>(timeoutMillis));
+        m_scheduler->timerTaskRunner()->postDelayedTask(FROM_HERE, WTF::bind(&internal::IdleRequestCallbackWrapper::timeoutFired, callbackWrapper), timeoutMillis);
     TRACE_EVENT_INSTANT1("devtools.timeline", "RequestIdleCallback", TRACE_EVENT_SCOPE_THREAD, "data", InspectorIdleCallbackRequestEvent::data(executionContext(), id, timeoutMillis));
     return id;
 }

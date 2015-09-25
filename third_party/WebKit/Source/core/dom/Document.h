@@ -124,6 +124,7 @@ class HTMLLinkElement;
 class HTMLScriptElement;
 class HitTestRequest;
 class IdleRequestCallback;
+class IdleRequestOptions;
 class InputDeviceCapabilities;
 class LayoutPoint;
 class LiveNodeListBase;
@@ -915,7 +916,7 @@ public:
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 
-    int requestIdleCallback(IdleRequestCallback*, double timeoutMillis);
+    int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&);
     void cancelIdleCallback(int id);
 
     EventTarget* errorEventTarget() final;
