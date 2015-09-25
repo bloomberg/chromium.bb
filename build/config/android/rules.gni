@@ -1314,7 +1314,6 @@ template("android_apk") {
   }
 
   _final_deps = []
-  _incremental_final_deps = []
 
   process_resources_target = "${_template_name}__process_resources"
   process_resources(process_resources_target) {
@@ -1451,7 +1450,8 @@ template("android_apk") {
   }
 
   if (_native_libs != []) {
-    action("${_template_name}__prepare_native") {
+    _prepare_native_target_name = "${_template_name}__prepare_native"
+    action(_prepare_native_target_name) {
       forward_variables_from(invoker,
                              [
                                "data_deps",
@@ -1509,18 +1509,23 @@ template("android_apk") {
   }
 
   _final_deps += [ ":${_template_name}__create" ]
-  _incremental_final_deps += [ ":${_template_name}__create_incremental" ]
   create_apk("${_template_name}__create") {
-    forward_variables_from(invoker, [ "language_splits" ])
+    deps = []
+    forward_variables_from(invoker,
+                           [
+                             "asset_location",
+                             "deps",
+                             "extensions_to_not_compress",
+                             "language_splits",
+                           ])
     apk_path = _final_apk_path
     android_manifest = _android_manifest
     resources_zip = _all_resources_zip_path
     dex_path = final_dex_path
     load_library_from_apk = _load_library_from_apk
     create_density_splits = _create_density_splits
-    if (defined(invoker.extensions_to_not_compress)) {
-      extensions_to_not_compress = invoker.extensions_to_not_compress
-    } else {
+
+    if (!defined(extensions_to_not_compress)) {
       # Allow icu data, v8 snapshots, and pak files to be loaded directly from
       # the .apk.
       # Note: These are actually suffix matches, not necessarily extensions.
@@ -1534,31 +1539,19 @@ template("android_apk") {
     keystore_path = _keystore_path
     keystore_password = _keystore_password
 
+    # Incremental apk does not use native libs nor final dex.
+    incremental_deps =
+        deps + _android_manifest_deps + [ ":$process_resources_target" ]
+
     # This target generates the input file _all_resources_zip_path.
-    deps = _android_manifest_deps + [
-             ":$process_resources_target",
-             ":$final_dex_target_name",
-           ]
-    incremental_deps = _android_manifest_deps + [ ":$process_resources_target" ]
-    if (defined(invoker.deps)) {
-      deps += invoker.deps
-      incremental_deps += invoker.deps
-    }
-
-    if (defined(invoker.asset_location)) {
-      asset_location = invoker.asset_location
-
-      # We don't know the exact dependencies that create the assets in
-      # |asset_location|; we depend on all caller deps until a better solution
-      # is figured out (http://crbug.com/433330).
-      if (defined(invoker.deps)) {
-        deps += invoker.deps
-      }
-    }
+    deps += _android_manifest_deps + [
+              ":$process_resources_target",
+              ":$final_dex_target_name",
+            ]
 
     if (_native_libs != [] && !_create_abi_split) {
       native_libs_dir = _native_libs_dir
-      deps += [ ":${_template_name}__prepare_native" ]
+      deps += [ ":$_prepare_native_target_name" ]
     }
   }
 
@@ -1575,8 +1568,6 @@ template("android_apk") {
     _apk_rule = "${_template_name}__split_apk_abi_${android_app_abi}"
     _final_deps += [ ":$_apk_rule" ]
 
-    # Don't add this to _incremental_final_deps since for incremental installs
-    # we skip abi splits altogether.
     create_apk(_apk_rule) {
       apk_path = "${_final_apk_path_no_ext}-abi-${android_app_abi}.apk"
       base_path = "$gen_dir/$_apk_rule"
@@ -1594,7 +1585,7 @@ template("android_apk") {
 
       native_libs_dir = _native_libs_dir
       deps = [
-        ":${_template_name}__prepare_native",
+        ":${_prepare_native_target_name}",
         ":${_manifest_rule}",
       ]
       incremental_deps = deps
@@ -1602,7 +1593,6 @@ template("android_apk") {
   }
 
   _create_incremental_script_rule_name = "${_template_name}__incremental_script"
-  _incremental_final_deps += [ ":${_create_incremental_script_rule_name}" ]
   action(_create_incremental_script_rule_name) {
     script = "//build/android/incremental_install/create_install_script.py"
     depfile = "$target_gen_dir/$target_name.d"
@@ -1649,8 +1639,21 @@ template("android_apk") {
   group("${target_name}_incremental") {
     data_deps = []
     forward_variables_from(invoker, [ "data_deps" ])
+
+    # device/commands is used by the installer script to push files via .zip.
     data_deps += [ "//build/android/pylib/device/commands" ]
-    public_deps = _incremental_final_deps
+
+    # Since the _incremental.apk does not include use .so nor .dex from the
+    # actual target, but instead loads them at runtime, we need to explicitly
+    # depend on them here.
+    public_deps = [
+      ":${_template_name}__create_incremental",
+      ":${_create_incremental_script_rule_name}",
+      ":${java_target}",
+    ]
+    if (_native_libs != []) {
+      public_deps += [ ":$_prepare_native_target_name" ]
+    }
   }
 }
 
