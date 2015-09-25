@@ -1039,8 +1039,6 @@ source_set("test_support") {
     "notifications/notification_test_util.h",
     "password_manager/mock_password_store_service.cc",
     "password_manager/mock_password_store_service.h",
-    "password_manager/null_password_store_service.cc",
-    "password_manager/null_password_store_service.h",
     "password_manager/password_manager_test_base.cc",
     "password_manager/password_manager_test_base.h",
     "password_manager/test_password_store_service.cc",
