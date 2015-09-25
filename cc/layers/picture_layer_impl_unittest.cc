@@ -1500,7 +1500,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
   active_mask->GetContentsResourceId(&mask_resource_id, &mask_texture_size);
   EXPECT_NE(0u, mask_resource_id);
   gfx::Size expected_mask_texture_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(active_mask->bounds(), 1.3f));
+      gfx::ScaleToCeiledSize(active_mask->bounds(), 1.3f);
   EXPECT_EQ(mask_texture_size, expected_mask_texture_size);
 }
 

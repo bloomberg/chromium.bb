@@ -146,8 +146,8 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   // At non-integer scale factors, the ratio of dimensions in DIP is not
   // necessarily the same as the ratio in physical pixels due to rounding.  Set
   // the transform on each of the layers based on dimensions in pixels.
-  gfx::Size center_size_in_pixels = gfx::ToFlooredSize(gfx::ScaleSize(
-      gfx::Size(center_width, center_height), layer_->device_scale_factor()));
+  gfx::Size center_size_in_pixels = gfx::ScaleToFlooredSize(
+      gfx::Size(center_width, center_height), layer_->device_scale_factor());
 
   if (top_layer_.get()) {
     if (center_width > 0) {

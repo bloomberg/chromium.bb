@@ -358,9 +358,9 @@ class LayerTreeHostScrollbarDamageTest : public LayerTreeHostDamageTest {
     root_layer->AddChild(scrollbar_layer);
 
     gfx::RectF content_rect(content_layer->position(),
-                            content_layer->bounds());
+                            gfx::SizeF(content_layer->bounds()));
     gfx::RectF scrollbar_rect(scrollbar_layer->position(),
-                              scrollbar_layer->bounds());
+                              gfx::SizeF(scrollbar_layer->bounds()));
     EXPECT_FALSE(content_rect.Intersects(scrollbar_rect));
 
     LayerTreeHostDamageTest::SetupTree();

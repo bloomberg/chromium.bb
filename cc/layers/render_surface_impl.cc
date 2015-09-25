@@ -222,9 +222,9 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
     gfx::Vector2dF owning_layer_draw_scale =
         MathUtil::ComputeTransform2dScaleComponents(
             owning_layer_->draw_transform(), 1.f);
-    gfx::SizeF unclipped_mask_target_size =
-        gfx::ScaleSize(owning_layer_->bounds(), owning_layer_draw_scale.x(),
-                       owning_layer_draw_scale.y());
+    gfx::SizeF unclipped_mask_target_size = gfx::ScaleSize(
+        gfx::SizeF(owning_layer_->bounds()), owning_layer_draw_scale.x(),
+        owning_layer_draw_scale.y());
     mask_uv_scale = gfx::Vector2dF(
         content_rect_.width() / unclipped_mask_target_size.width(),
         content_rect_.height() / unclipped_mask_target_size.height());

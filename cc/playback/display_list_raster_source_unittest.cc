@@ -263,7 +263,7 @@ TEST(DisplayListRasterSourceTest, RasterFullContents) {
           recording_source.get(), false);
 
   gfx::Size content_bounds(
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+      gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
   // Simulate drawing into different tiles at different offsets.
   int step_x = std::ceil(content_bounds.width() / raster_divisions);
@@ -328,7 +328,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialContents) {
           recording_source.get(), false);
 
   gfx::Size content_bounds(
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+      gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(content_bounds.width(), content_bounds.height());
@@ -424,7 +424,7 @@ TEST(DisplayListRasterSourceTest, RasterPartialClear) {
           recording_source.get(), false);
 
   gfx::Size content_bounds(
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+      gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(content_bounds.width(), content_bounds.height());
@@ -471,8 +471,8 @@ TEST(DisplayListRasterSourceTest, RasterPartialClear) {
   // We're going to playback from alpha(18) white rectangle into a smaller area
   // of the recording resulting in a smaller lighter white rectangle over a
   // darker white background rectangle.
-  playback_rect = gfx::Rect(
-      gfx::ToCeiledSize(gfx::ScaleSize(partial_bounds, contents_scale)));
+  playback_rect =
+      gfx::Rect(gfx::ScaleToCeiledSize(partial_bounds, contents_scale));
   raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
                            contents_scale);
 
@@ -505,7 +505,7 @@ TEST(DisplayListRasterSourceTest, RasterContentsTransparent) {
       DisplayListRasterSource::CreateFromDisplayListRecordingSource(
           recording_source.get(), false);
   gfx::Size content_bounds(
-      gfx::ToCeiledSize(gfx::ScaleSize(layer_bounds, contents_scale)));
+      gfx::ScaleToCeiledSize(layer_bounds, contents_scale));
 
   gfx::Rect canvas_rect(content_bounds);
   canvas_rect.Inset(0, 0, -1, -1);

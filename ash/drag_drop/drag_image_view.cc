@@ -117,8 +117,8 @@ void DragImageView::OnPaint(gfx::Canvas* canvas) {
     }
     // The drag image already has device scale factor applied. But
     // |widget_size_| is in DIP units.
-    gfx::Size scaled_widget_size = gfx::ToRoundedSize(
-        gfx::ScaleSize(widget_size_, device_scale));
+    gfx::Size scaled_widget_size =
+        gfx::ScaleToRoundedSize(widget_size_, device_scale);
     gfx::ImageSkiaRep image_rep = GetImage().GetRepresentation(device_scale);
     if (image_rep.is_null())
       return;

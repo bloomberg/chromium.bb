@@ -2638,15 +2638,16 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   PictureDrawQuad* green_quad1 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  green_quad1->SetNew(top_right_green_shared_quad_state, green_rect1,
-                      gfx::Rect(), green_rect1, gfx::RectF(green_rect1.size()),
-                      green_rect1.size(), nearest_neighbor, texture_format,
-                      green_rect1, 1.f, green_raster_source);
+  green_quad1->SetNew(
+      top_right_green_shared_quad_state, green_rect1, gfx::Rect(), green_rect1,
+      gfx::RectF(gfx::SizeF(green_rect1.size())), green_rect1.size(),
+      nearest_neighbor, texture_format, green_rect1, 1.f, green_raster_source);
 
   PictureDrawQuad* green_quad2 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad2->SetNew(top_right_green_shared_quad_state, green_rect2,
-                      gfx::Rect(), green_rect2, gfx::RectF(green_rect2.size()),
+                      gfx::Rect(), green_rect2,
+                      gfx::RectF(gfx::SizeF(green_rect2.size())),
                       green_rect2.size(), nearest_neighbor, texture_format,
                       green_rect2, 1.f, green_raster_source.Pass());
 

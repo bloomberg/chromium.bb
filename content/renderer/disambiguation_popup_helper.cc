@@ -68,7 +68,7 @@ gfx::Rect CropZoomArea(const gfx::Rect& zoom_rect,
   gfx::Size max_size = viewport_size;
   max_size.Enlarge(-2 * kDisambiguationPopupBoundsMargin,
                    -2 * kDisambiguationPopupBoundsMargin);
-  max_size = ToCeiledSize(ScaleSize(max_size, 1.0 / scale));
+  max_size = gfx::ScaleToCeiledSize(max_size, 1.0 / scale);
 
   int left = touch_point.x() - zoom_rect.x();
   int right = zoom_rect.right() - touch_point.x();

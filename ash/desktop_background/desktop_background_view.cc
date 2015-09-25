@@ -57,9 +57,8 @@ class LayerControlView : public views::View {
     DisplayManager* display_manager = Shell::GetInstance()->display_manager();
     DisplayInfo info = display_manager->GetDisplayInfo(display.id());
     float ui_scale = info.GetEffectiveUIScale();
-    gfx::SizeF pixel_size = display.size();
-    pixel_size.Scale(1.0f / ui_scale);
-    gfx::Size rounded_size = gfx::ToFlooredSize(pixel_size);
+    gfx::Size rounded_size =
+        gfx::ScaleToFlooredSize(display.size(), 1.f / ui_scale);
     DCHECK_EQ(1, child_count());
     views::View* child = child_at(0);
     child->SetBounds(0, 0, rounded_size.width(), rounded_size.height());

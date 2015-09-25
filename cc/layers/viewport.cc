@@ -67,8 +67,8 @@ Viewport::ScrollResult Viewport::ScrollBy(const gfx::Vector2dF& delta,
 }
 
 void Viewport::SnapPinchAnchorIfWithinMargin(const gfx::Point& anchor) {
-  gfx::SizeF viewport_size =
-      host_impl_->active_tree()->InnerViewportContainerLayer()->bounds();
+  gfx::SizeF viewport_size = gfx::SizeF(
+      host_impl_->active_tree()->InnerViewportContainerLayer()->bounds());
 
   if (anchor.x() < kPinchZoomSnapMarginDips)
     pinch_anchor_adjustment_.set_x(-anchor.x());

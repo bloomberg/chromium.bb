@@ -1419,8 +1419,8 @@ void RenderWidgetHostViewAura::ShowDisambiguationPopup(
 
   float scale = static_cast<float>(zoomed_bitmap.width()) /
                 static_cast<float>(rect_pixels.width());
-  gfx::Size zoomed_size(gfx::ToCeiledSize(
-      gfx::ScaleSize(disambiguation_target_rect_.size(), scale)));
+  gfx::Size zoomed_size =
+      gfx::ScaleToCeiledSize(disambiguation_target_rect_.size(), scale);
 
   // Save of a copy of the |last_scroll_offset_| for comparison when the copy
   // callback fires, to ensure that we haven't scrolled.

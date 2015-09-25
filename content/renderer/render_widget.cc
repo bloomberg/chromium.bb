@@ -414,8 +414,8 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   widget_->SetDeviceScaleFactor(applied_device_scale_factor);
   widget_->view_screen_rect_ = applied_widget_rect_;
 
-  gfx::Size physical_backing_size = gfx::ToCeiledSize(gfx::ScaleSize(
-      original_size_, original_screen_info_.deviceScaleFactor));
+  gfx::Size physical_backing_size = gfx::ScaleToCeiledSize(
+      original_size_, original_screen_info_.deviceScaleFactor);
   widget_->Resize(applied_widget_rect_.size(),
                   physical_backing_size,
                   top_controls_shrink_blink_size,
@@ -1360,8 +1360,7 @@ void RenderWidget::didAutoResize(const WebSize& new_size) {
 }
 
 void RenderWidget::AutoResizeCompositor()  {
-  physical_backing_size_ = gfx::ToCeiledSize(gfx::ScaleSize(size_,
-      device_scale_factor_));
+  physical_backing_size_ = gfx::ScaleToCeiledSize(size_, device_scale_factor_);
   if (compositor_)
     compositor_->setViewportSize(size_, physical_backing_size_);
 }

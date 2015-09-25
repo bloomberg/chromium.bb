@@ -44,7 +44,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
       DisplayItemList::Create(layer_rect, settings);
 
   gfx::PointF offset(8.f, 9.f);
-  gfx::RectF recording_rect(offset, layer_rect.size());
+  gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(recording_rect)));
   canvas->translate(offset.x(), offset.y());
@@ -89,7 +89,7 @@ TEST(DisplayItemListTest, ClipItem) {
       DisplayItemList::Create(layer_rect, settings);
 
   gfx::PointF first_offset(8.f, 9.f);
-  gfx::RectF first_recording_rect(first_offset, layer_rect.size());
+  gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
@@ -103,7 +103,8 @@ TEST(DisplayItemListTest, ClipItem) {
   item2->SetNew(clip_rect, std::vector<SkRRect>());
 
   gfx::PointF second_offset(2.f, 3.f);
-  gfx::RectF second_recording_rect(second_offset, layer_rect.size());
+  gfx::RectF second_recording_rect(second_offset,
+                                   gfx::SizeF(layer_rect.size()));
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
@@ -151,7 +152,7 @@ TEST(DisplayItemListTest, TransformItem) {
       DisplayItemList::Create(layer_rect, settings);
 
   gfx::PointF first_offset(8.f, 9.f);
-  gfx::RectF first_recording_rect(first_offset, layer_rect.size());
+  gfx::RectF first_recording_rect(first_offset, gfx::SizeF(layer_rect.size()));
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(first_recording_rect)));
   canvas->translate(first_offset.x(), first_offset.y());
@@ -166,7 +167,8 @@ TEST(DisplayItemListTest, TransformItem) {
   item2->SetNew(transform);
 
   gfx::PointF second_offset(2.f, 3.f);
-  gfx::RectF second_recording_rect(second_offset, layer_rect.size());
+  gfx::RectF second_recording_rect(second_offset,
+                                   gfx::SizeF(layer_rect.size()));
   canvas = skia::SharePtr(
       recorder.beginRecording(gfx::RectFToSkRect(second_recording_rect)));
   canvas->translate(second_offset.x(), second_offset.y());
@@ -262,7 +264,7 @@ TEST(DisplayItemListTest, CompactingItems) {
   unsigned char pixels[4 * 100 * 100] = {0};
 
   gfx::PointF offset(8.f, 9.f);
-  gfx::RectF recording_rect(offset, layer_rect.size());
+  gfx::RectF recording_rect(offset, gfx::SizeF(layer_rect.size()));
 
   DisplayItemListSettings no_caching_settings;
   no_caching_settings.use_cached_picture = false;

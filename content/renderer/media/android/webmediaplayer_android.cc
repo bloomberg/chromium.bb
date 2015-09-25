@@ -1433,7 +1433,7 @@ bool WebMediaPlayerAndroid::UpdateBoundaryRectangle() {
 
   // Compute the geometry of video frame layer.
   cc::Layer* layer = video_weblayer_->layer();
-  gfx::RectF rect(layer->bounds());
+  gfx::RectF rect(gfx::SizeF(layer->bounds()));
   while (layer) {
     rect.Offset(layer->position().OffsetFromOrigin());
     layer = layer->parent();

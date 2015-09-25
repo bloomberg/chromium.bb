@@ -370,14 +370,14 @@ void InkDropAnimation::SetOpacity(float opacity) {
 }
 
 void InkDropAnimation::CalculateCircleTransforms(
-    const gfx::SizeF& size,
+    const gfx::Size& size,
     InkDropTransforms* transforms_out) const {
   CalculateRectTransforms(size, std::min(size.width(), size.height()) / 2.0f,
                           transforms_out);
 }
 
 void InkDropAnimation::CalculateRectTransforms(
-    const gfx::SizeF& size,
+    const gfx::Size& size,
     float corner_radius,
     InkDropTransforms* transforms_out) const {
   DCHECK_GE(size.width() / 2.0f, corner_radius)

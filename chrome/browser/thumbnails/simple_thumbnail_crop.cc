@@ -90,7 +90,7 @@ gfx::Size SimpleThumbnailCrop::GetCopySizeForThumbnail(
     scale_factor = ui::SCALE_FACTOR_200P;
   }
   float scale = GetScaleForScaleFactor(scale_factor);
-  return gfx::ToFlooredSize(gfx::ScaleSize(thumbnail_size, scale));
+  return gfx::ScaleToFlooredSize(thumbnail_size, scale);
 }
 
 gfx::Rect SimpleThumbnailCrop::GetClippingRect(const gfx::Size& source_size,
@@ -141,7 +141,7 @@ gfx::Size SimpleThumbnailCrop::ComputeTargetSizeAtMaximumScale(
   // TODO(mazda|oshima): Update thumbnail when the max scale factor changes.
   // crbug.com/159157.
   float max_scale_factor = gfx::ImageSkia::GetMaxSupportedScale();
-  return gfx::ToFlooredSize(gfx::ScaleSize(given_size, max_scale_factor));
+  return gfx::ScaleToFlooredSize(given_size, max_scale_factor);
 }
 
 SimpleThumbnailCrop::~SimpleThumbnailCrop() {

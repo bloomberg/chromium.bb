@@ -690,8 +690,8 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalViewSize() const {
     const gfx::NativeView view = rwhv->GetNativeView();
     const float scale = ui::GetScaleFactorForNativeView(view);
     if (scale > 1.0f) {
-      const gfx::Size shrunk_size(
-          gfx::ToFlooredSize(gfx::ScaleSize(optimal_size, 1.0f / scale)));
+      const gfx::Size shrunk_size =
+          gfx::ScaleToFlooredSize(optimal_size, 1.0f / scale);
       if (shrunk_size.width() > 0 && shrunk_size.height() > 0)
         optimal_size = shrunk_size;
     }

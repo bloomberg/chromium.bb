@@ -162,7 +162,7 @@ static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
     ClipNode* clip_node = clip_tree->Node(layer->clip_tree_index());
     if (clip_node) {
       DCHECK_EQ(layer->id(), clip_node->owner_id);
-      gfx::Size bounds = layer->bounds();
+      gfx::SizeF bounds = gfx::SizeF(layer->bounds());
       if (clip_node->data.clip.size() != bounds) {
         clip_node->data.clip.set_size(bounds);
         clip_tree->set_needs_update(true);
@@ -719,7 +719,7 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
                                      ? OuterViewportScrollLayer()
                                      : InnerViewportScrollLayer();
   if (!root_scroll_layer || root_scroll_layer->children().empty())
-    return gfx::Size();
+    return gfx::SizeF();
 
   gfx::SizeF content_size =
       root_scroll_layer->children()[0]->BoundsForScrolling();

@@ -4,6 +4,8 @@
 
 #include "ui/ozone/demo/renderer_base.h"
 
+#include <cmath>
+
 namespace ui {
 
 namespace {

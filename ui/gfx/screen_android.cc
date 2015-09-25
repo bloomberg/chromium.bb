@@ -40,9 +40,8 @@ class ScreenAndroid : public Screen {
                   device_info.GetPhysicalDisplayHeight()
                       ? device_info.GetPhysicalDisplayHeight()
                       : device_info.GetDisplayHeight());
-    const gfx::Rect bounds_in_dip =
-        gfx::Rect(gfx::ToCeiledSize(gfx::ScaleSize(
-            bounds_in_pixels.size(), 1.0f / device_scale_factor)));
+    const gfx::Rect bounds_in_dip = gfx::Rect(gfx::ScaleToCeiledSize(
+        bounds_in_pixels.size(), 1.0f / device_scale_factor));
     gfx::Display display(0, bounds_in_dip);
     if (!gfx::Display::HasForceDeviceScaleFactor())
       display.set_device_scale_factor(device_scale_factor);

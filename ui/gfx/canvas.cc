@@ -25,7 +25,7 @@ namespace gfx {
 Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
     : image_scale_(image_scale),
       canvas_(NULL) {
-  Size pixel_size = ToCeiledSize(ScaleSize(size, image_scale));
+  Size pixel_size = ScaleToCeiledSize(size, image_scale);
   owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
                                                             pixel_size.height(),
                                                             is_opaque));
@@ -71,7 +71,7 @@ void Canvas::RecreateBackingCanvas(const Size& size,
                                    float image_scale,
                                    bool is_opaque) {
   image_scale_ = image_scale;
-  Size pixel_size = ToFlooredSize(ScaleSize(size, image_scale));
+  Size pixel_size = ScaleToFlooredSize(size, image_scale);
   owned_canvas_ = skia::AdoptRef(skia::CreatePlatformCanvas(pixel_size.width(),
                                                             pixel_size.height(),
                                                             is_opaque));

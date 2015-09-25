@@ -357,7 +357,7 @@ void Layer::SetBounds(const gfx::Size& size) {
   if (ClipNode* clip_node = layer_tree_host_->property_trees()->clip_tree.Node(
           clip_tree_index())) {
     if (clip_node->owner_id == id()) {
-      clip_node->data.clip.set_size(size);
+      clip_node->data.clip.set_size(gfx::SizeF(size));
       layer_tree_host_->property_trees()->clip_tree.set_needs_update(true);
     }
   }

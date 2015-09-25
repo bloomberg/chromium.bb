@@ -2316,8 +2316,8 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   settings.scrollbar_animator = LayerTreeSettings::THINNING;
 
   gfx::Size viewport_size(300, 200);
-  gfx::Size device_viewport_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(viewport_size, device_scale_factor));
+  gfx::Size device_viewport_size =
+      gfx::ScaleToFlooredSize(viewport_size, device_scale_factor);
   gfx::Size content_size(1000, 1000);
 
   CreateHostImpl(settings, CreateOutputSurface());
@@ -3642,12 +3642,14 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsAspectRatio) {
             host_impl_->active_tree()->OuterViewportContainerLayer();
   LayerImpl* inner_container =
             host_impl_->active_tree()->InnerViewportContainerLayer();
-  EXPECT_EQ(gfx::Size(100, 100+25), inner_container->BoundsForScrolling());
+  EXPECT_EQ(gfx::SizeF(100.f, 100.f + 25.f),
+            inner_container->BoundsForScrolling());
 
   // Outer viewport should match inner's aspect ratio. The bounds are ceiled.
   float aspect_ratio = inner_container->BoundsForScrolling().width() /
                        inner_container->BoundsForScrolling().height();
-  gfx::Size expected = gfx::ToCeiledSize(gfx::SizeF(200, 200 / aspect_ratio));
+  gfx::SizeF expected =
+      gfx::SizeF(gfx::ToCeiledSize(gfx::SizeF(200, 200 / aspect_ratio)));
   EXPECT_EQ(expected, outer_container->BoundsForScrolling());
   EXPECT_EQ(expected,
             host_impl_->InnerViewportScrollLayer()->BoundsForScrolling());
@@ -4712,7 +4714,7 @@ TEST_F(LayerTreeHostImplTest, RootLayerScrollOffsetDelegation) {
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
   CreateScrollAndContentsLayers(host_impl_->pending_tree(), new_size);
   host_impl_->ActivateSyncTree();
-  EXPECT_EQ(new_size, scroll_watcher.scrollable_size());
+  EXPECT_EQ(gfx::SizeF(new_size), scroll_watcher.scrollable_size());
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
   host_impl_.reset();
@@ -5492,7 +5494,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
         continue;
       const TextureDrawQuad* texture_quad = TextureDrawQuad::MaterialCast(quad);
       gfx::SizeF gutter_texture_size_pixels = gfx::ScaleSize(
-          gutter_texture_size_, host_impl_->device_scale_factor());
+          gfx::SizeF(gutter_texture_size_), host_impl_->device_scale_factor());
       EXPECT_EQ(texture_quad->uv_top_left.x(),
                 texture_quad->rect.x() / gutter_texture_size_pixels.width());
       EXPECT_EQ(texture_quad->uv_top_left.y(),
@@ -5507,8 +5509,7 @@ class LayerTreeHostImplViewportCoveredTest : public LayerTreeHostImplTest {
   }
 
   gfx::Size DipSizeToPixelSize(const gfx::Size& size) {
-    return gfx::ToRoundedSize(
-        gfx::ScaleSize(size, host_impl_->device_scale_factor()));
+    return gfx::ScaleToRoundedSize(size, host_impl_->device_scale_factor());
   }
 
   DrawQuad::Material gutter_quad_material_;
@@ -6281,7 +6282,7 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   host_impl_->SetDeviceScaleFactor(device_scale_factor);
   gfx::Size root_size(2000, 1000);
   gfx::Size device_viewport_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(root_size, device_scale_factor));
+      gfx::ScaleToCeiledSize(root_size, device_scale_factor);
   host_impl_->SetViewportSize(device_viewport_size);
 
   host_impl_->CreatePendingTree();

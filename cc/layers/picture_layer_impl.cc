@@ -197,7 +197,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     DCHECK(raster_source_->HasRecordings());
     gfx::Rect quad_content_rect = shared_quad_state->visible_quad_layer_rect;
     gfx::Size texture_size = quad_content_rect.size();
-    gfx::RectF texture_rect = gfx::RectF(texture_size);
+    gfx::RectF texture_rect = gfx::RectF(gfx::SizeF(texture_size));
 
     PictureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
@@ -980,8 +980,8 @@ void PictureLayerImpl::RecalculateRasterScales() {
     float maximum_scale = draw_properties().maximum_animation_contents_scale;
     float starting_scale = draw_properties().starting_animation_contents_scale;
     if (maximum_scale) {
-      gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(
-          gfx::ScaleSize(raster_source_->GetSize(), maximum_scale));
+      gfx::Size bounds_at_maximum_scale =
+          gfx::ScaleToCeiledSize(raster_source_->GetSize(), maximum_scale);
       int64 maximum_area = static_cast<int64>(bounds_at_maximum_scale.width()) *
                            static_cast<int64>(bounds_at_maximum_scale.height());
       gfx::Size viewport = layer_tree_impl()->device_viewport_size();
@@ -991,8 +991,8 @@ void PictureLayerImpl::RecalculateRasterScales() {
         can_raster_at_maximum_scale = true;
     }
     if (starting_scale && starting_scale > maximum_scale) {
-      gfx::Size bounds_at_starting_scale = gfx::ToCeiledSize(
-          gfx::ScaleSize(raster_source_->GetSize(), starting_scale));
+      gfx::Size bounds_at_starting_scale =
+          gfx::ScaleToCeiledSize(raster_source_->GetSize(), starting_scale);
       int64 start_area = static_cast<int64>(bounds_at_starting_scale.width()) *
                          static_cast<int64>(bounds_at_starting_scale.height());
       gfx::Size viewport = layer_tree_impl()->device_viewport_size();
@@ -1021,8 +1021,8 @@ void PictureLayerImpl::RecalculateRasterScales() {
 
   // If this layer would create zero or one tiles at this content scale,
   // don't create a low res tiling.
-  gfx::Size raster_bounds = gfx::ToCeiledSize(
-      gfx::ScaleSize(raster_source_->GetSize(), raster_contents_scale_));
+  gfx::Size raster_bounds =
+      gfx::ScaleToCeiledSize(raster_source_->GetSize(), raster_contents_scale_);
   gfx::Size tile_size = CalculateTileSize(raster_bounds);
   bool tile_covers_bounds = tile_size.width() >= raster_bounds.width() &&
                             tile_size.height() >= raster_bounds.height();

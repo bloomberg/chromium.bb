@@ -325,7 +325,7 @@ void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   gfx::Rect scaled_visible_layer_rect =
       gfx::ScaleToEnclosingRect(visible_layer_rect(), scale);
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
@@ -984,8 +984,8 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
         layer_tree_impl()->property_trees()->clip_tree.Node(clip_tree_index());
     if (clip_node) {
       DCHECK(id() == clip_node->owner_id);
-      clip_node->data.clip =
-          gfx::RectF(gfx::PointF() + offset_to_transform_parent(), bounds());
+      clip_node->data.clip = gfx::RectF(
+          gfx::PointF() + offset_to_transform_parent(), gfx::SizeF(bounds()));
       layer_tree_impl()->property_trees()->clip_tree.set_needs_update(true);
     }
 
@@ -1528,8 +1528,9 @@ gfx::ScrollOffset LayerImpl::MaxScrollOffset() const {
   }
 
   gfx::SizeF scaled_scroll_bounds =
-      gfx::ToFlooredSize(gfx::ScaleSize(BoundsForScrolling(), scale_factor));
-  scaled_scroll_bounds = gfx::ToFlooredSize(scaled_scroll_bounds);
+      gfx::ScaleSize(BoundsForScrolling(), scale_factor);
+  scaled_scroll_bounds.SetSize(std::floor(scaled_scroll_bounds.width()),
+                               std::floor(scaled_scroll_bounds.height()));
 
   gfx::ScrollOffset max_offset(
       scaled_scroll_bounds.width() - scroll_clip_layer_->bounds().width(),
@@ -1902,7 +1903,7 @@ gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
   scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
                                            gfx::Rect(scaled_bounds));
 }

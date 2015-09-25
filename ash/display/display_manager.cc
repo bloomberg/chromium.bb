@@ -1299,8 +1299,8 @@ gfx::Display DisplayManager::CreateMirroringDisplayFromDisplayInfoById(
 
   gfx::Display new_display(display_info.id());
   new_display.SetScaleAndBounds(
-      1.0f, gfx::Rect(origin, gfx::ToFlooredSize(gfx::ScaleSize(
-                                  display_info.size_in_pixel(), scale))));
+      1.0f, gfx::Rect(origin, gfx::ScaleToFlooredSize(
+                                  display_info.size_in_pixel(), scale)));
   new_display.set_touch_support(display_info.touch_support());
   return new_display;
 }

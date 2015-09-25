@@ -745,8 +745,7 @@ int ContentViewCoreImpl::GetTopControlsHeightPix() const {
 }
 
 gfx::Size ContentViewCoreImpl::GetViewportSizeDip() const {
-  return gfx::ToCeiledSize(
-      gfx::ScaleSize(GetViewportSizePix(), 1.0f / dpi_scale()));
+  return gfx::ScaleToCeiledSize(GetViewportSizePix(), 1.0f / dpi_scale());
 }
 
 bool ContentViewCoreImpl::DoTopControlsShrinkBlinkSize() const {

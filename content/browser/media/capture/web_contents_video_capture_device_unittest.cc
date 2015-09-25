@@ -1061,10 +1061,10 @@ TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
     // the |oddball_size| is always the expected size; whereas for the
     // variable-resolution cases, the |standard_size| is the expected size.
     // Also, adjust to account for the device scale factor.
-    gfx::Size capture_preferred_size = gfx::ToFlooredSize(gfx::ScaleSize(
-        policy == media::RESOLUTION_POLICY_FIXED_RESOLUTION ?
-            oddball_size : standard_size,
-        1.0f / GetDeviceScaleFactor()));
+    gfx::Size capture_preferred_size = gfx::ScaleToFlooredSize(
+        policy == media::RESOLUTION_POLICY_FIXED_RESOLUTION ? oddball_size
+                                                            : standard_size,
+        1.0f / GetDeviceScaleFactor());
     ASSERT_NE(capture_preferred_size, web_contents()->GetPreferredSize());
 
     // Start the WebContentsVideoCaptureDevice.

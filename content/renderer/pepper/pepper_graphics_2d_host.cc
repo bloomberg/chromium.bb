@@ -332,8 +332,7 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->clipRect(sk_invalidate_rect);
   gfx::Size pixel_image_size(image_data_->width(), image_data_->height());
-  gfx::Size image_size =
-      gfx::ToFlooredSize(gfx::ScaleSize(pixel_image_size, scale_));
+  gfx::Size image_size = gfx::ScaleToFlooredSize(pixel_image_size, scale_);
 
   PepperPluginInstance* plugin_instance =
       renderer_ppapi_host_->GetPluginInstance(pp_instance());

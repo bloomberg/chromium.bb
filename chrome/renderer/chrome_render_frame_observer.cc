@@ -31,6 +31,7 @@
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
 using blink::WebDataSource;
@@ -59,7 +60,7 @@ SkBitmap Downscale(const blink::WebImage& image,
       image_size.height() <= thumbnail_max_size_pixels.height())
     return image.getSkBitmap();
 
-  gfx::SizeF scaled_size = image_size;
+  gfx::SizeF scaled_size = gfx::SizeF(image_size);
 
   if (scaled_size.width() > thumbnail_max_size_pixels.width()) {
     scaled_size.Scale(thumbnail_max_size_pixels.width() / scaled_size.width());

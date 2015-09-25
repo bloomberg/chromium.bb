@@ -3692,14 +3692,14 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
                                   parent->draw_transform());
 
   // Verify results of transformed parent rects
-  gfx::RectF parent_bounds(parent->bounds());
+  gfx::RectF parent_bounds(gfx::SizeF(parent->bounds()));
 
   gfx::RectF parent_draw_rect =
       MathUtil::MapClippedRect(parent->draw_transform(), parent_bounds);
   gfx::RectF parent_screen_space_rect =
       MathUtil::MapClippedRect(parent->screen_space_transform(), parent_bounds);
 
-  gfx::RectF expected_parent_draw_rect(parent->bounds());
+  gfx::RectF expected_parent_draw_rect(gfx::SizeF(parent->bounds()));
   expected_parent_draw_rect.Scale(device_scale_factor);
   EXPECT_FLOAT_RECT_EQ(expected_parent_draw_rect, parent_draw_rect);
   EXPECT_FLOAT_RECT_EQ(expected_parent_draw_rect, parent_screen_space_rect);
@@ -3720,7 +3720,7 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
 
   // Verify results of transformed child and child_empty rects. They should
   // match.
-  gfx::RectF child_bounds(child->bounds());
+  gfx::RectF child_bounds(gfx::SizeF(child->bounds()));
 
   gfx::RectF child_draw_rect =
       MathUtil::MapClippedRect(child->draw_transform(), child_bounds);
@@ -3732,7 +3732,8 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   gfx::RectF child_empty_screen_space_rect = MathUtil::MapClippedRect(
       child_empty->screen_space_transform(), child_bounds);
 
-  gfx::RectF expected_child_draw_rect(child->position(), child->bounds());
+  gfx::RectF expected_child_draw_rect(child->position(),
+                                      gfx::SizeF(child->bounds()));
   expected_child_draw_rect.Scale(device_scale_factor);
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_draw_rect);
   EXPECT_FLOAT_RECT_EQ(expected_child_draw_rect, child_screen_space_rect);

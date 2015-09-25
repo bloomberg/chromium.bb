@@ -9,6 +9,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/android/resources/system_ui_resource_type.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace content {
@@ -248,7 +249,7 @@ void EdgeEffectL::ApplyToLayers(Edge edge,
   const float displacement = Clamp(displacement_, 0.f, 1.f) - 0.5f;
   const float displacement_offset_x = bounds_.width() * displacement * 0.5f;
   const float image_offset_x = (bounds_.width() - image_bounds.width()) * 0.5f;
-  gfx::RectF image_rect(image_bounds);
+  gfx::RectF image_rect = gfx::RectF(gfx::SizeF(image_bounds));
   image_rect.Offset(image_offset_x - displacement_offset_x, -std::abs(offset));
 
   // Clip the image rect against the viewport. If either rect is empty there's

@@ -29,11 +29,9 @@ static bool CanRectFBeSafelyRoundedToRect(const gfx::RectF& r) {
     return false;
 
   // Ensure that the values are actually integers.
-  if (gfx::ToFlooredPoint(r.origin()) == r.origin() &&
-      gfx::ToFlooredSize(r.size()) == r.size())
-    return true;
-
-  return false;
+  gfx::RectF floored_rect(std::floor(r.x()), std::floor(r.y()),
+                          std::floor(r.width()), std::floor(r.height()));
+  return floored_rect == r;
 }
 
 void LayerTestCommon::VerifyQuadsExactlyCoverRect(const QuadList& quads,

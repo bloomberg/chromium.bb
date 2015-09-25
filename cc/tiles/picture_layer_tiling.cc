@@ -74,12 +74,12 @@ PictureLayerTiling::PictureLayerTiling(
       has_eventually_rect_tiles_(false),
       all_tiles_done_(true) {
   DCHECK(!raster_source->IsSolidColor());
-  gfx::Size content_bounds = gfx::ToCeiledSize(
-      gfx::ScaleSize(raster_source_->GetSize(), contents_scale));
+  gfx::Size content_bounds =
+      gfx::ScaleToCeiledSize(raster_source_->GetSize(), contents_scale);
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
 
-  DCHECK(!gfx::ToFlooredSize(gfx::ScaleSize(raster_source_->GetSize(),
-                                            contents_scale)).IsEmpty())
+  DCHECK(!gfx::ScaleToFlooredSize(raster_source_->GetSize(), contents_scale)
+              .IsEmpty())
       << "Tiling created with scale too small as contents become empty."
       << " Layer bounds: " << raster_source_->GetSize().ToString()
       << " Contents scale: " << contents_scale;
@@ -211,7 +211,7 @@ void PictureLayerTiling::SetRasterSourceAndResize(
   raster_source_.swap(raster_source);
   gfx::Size new_layer_bounds = raster_source_->GetSize();
   gfx::Size content_bounds =
-      gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
+      gfx::ScaleToCeiledSize(new_layer_bounds, contents_scale_);
   gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
 
   if (tile_size != tiling_data_.max_texture_size()) {

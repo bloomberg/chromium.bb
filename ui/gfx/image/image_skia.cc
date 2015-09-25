@@ -59,8 +59,8 @@ ImageSkiaRep ScaleImageSkiaRep(const ImageSkiaRep& rep, float target_scale) {
   if (rep.is_null() || rep.scale() == target_scale)
     return rep;
 
-  gfx::Size scaled_size = ToCeiledSize(
-      gfx::ScaleSize(rep.pixel_size(), target_scale / rep.scale()));
+  gfx::Size scaled_size =
+      gfx::ScaleToCeiledSize(rep.pixel_size(), target_scale / rep.scale());
   return ImageSkiaRep(skia::ImageOperations::Resize(
       rep.sk_bitmap(),
       skia::ImageOperations::RESIZE_LANCZOS3,

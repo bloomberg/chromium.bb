@@ -33,7 +33,6 @@ class GFX_EXPORT RectF {
       : origin_(origin), size_(size) {}
 
   explicit RectF(const Rect& r)
-      // TODO(danakj): Change these to checked_cast?
       : RectF(static_cast<float>(r.x()),
               static_cast<float>(r.y()),
               static_cast<float>(r.width()),

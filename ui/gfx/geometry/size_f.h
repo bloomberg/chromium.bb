@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -21,6 +22,10 @@ class GFX_EXPORT SizeF {
   SizeF(float width, float height)
       : width_(fmaxf(0, width)), height_(fmaxf(0, height)) {}
   ~SizeF() {}
+
+  explicit SizeF(const Size& size)
+      : SizeF(static_cast<float>(size.width()),
+              static_cast<float>(size.height())) {}
 
   float width() const { return width_; }
   float height() const { return height_; }

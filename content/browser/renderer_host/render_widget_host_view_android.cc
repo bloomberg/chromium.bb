@@ -418,8 +418,8 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
   float device_scale_factor = display.device_scale_factor();
   DCHECK_GT(device_scale_factor, 0);
-  gfx::Size dst_size(gfx::ToCeiledSize(
-      gfx::ScaleSize(src_subrect.size(), scale / device_scale_factor)));
+  gfx::Size dst_size(
+      gfx::ScaleToCeiledSize(src_subrect.size(), scale / device_scale_factor));
   src_subrect = gfx::ConvertRectToDIP(device_scale_factor, src_subrect);
 
   CopyFromCompositingSurface(src_subrect, dst_size, result_callback,

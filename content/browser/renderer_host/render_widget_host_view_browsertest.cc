@@ -844,8 +844,7 @@ IN_PROC_BROWSER_TEST_P(
   gfx::Size html_rect_size(200, 150);
   gfx::Rect copy_rect(200, 150);
   // Scale the output size so that, internally, scaling is not occurring.
-  gfx::Size output_size =
-      gfx::ToRoundedSize(gfx::ScaleSize(copy_rect.size(), scale()));
+  gfx::Size output_size = gfx::ScaleToRoundedSize(copy_rect.size(), scale());
   bool video_frame = false;
   PerformTestWithLeftRightRects(html_rect_size,
                                 copy_rect,
@@ -862,8 +861,7 @@ IN_PROC_BROWSER_TEST_P(
       gfx::Rect(gfx::Rect(html_rect_size).CenterPoint() - gfx::Vector2d(45, 30),
                 gfx::Size(90, 60));
   // Scale the output size so that, internally, scaling is not occurring.
-  gfx::Size output_size =
-      gfx::ToRoundedSize(gfx::ScaleSize(copy_rect.size(), scale()));
+  gfx::Size output_size = gfx::ScaleToRoundedSize(copy_rect.size(), scale());
   bool video_frame = false;
   PerformTestWithLeftRightRects(html_rect_size,
                                 copy_rect,
@@ -891,8 +889,7 @@ IN_PROC_BROWSER_TEST_P(
   gfx::Size html_rect_size(200, 150);
   gfx::Rect copy_rect(200, 150);
   // Scale the output size so that, internally, scaling is not occurring.
-  gfx::Size output_size =
-      gfx::ToRoundedSize(gfx::ScaleSize(copy_rect.size(), scale()));
+  gfx::Size output_size = gfx::ScaleToRoundedSize(copy_rect.size(), scale());
   bool video_frame = true;
   PerformTestWithLeftRightRects(html_rect_size,
                                 copy_rect,
@@ -909,8 +906,7 @@ IN_PROC_BROWSER_TEST_P(
       gfx::Rect(gfx::Rect(html_rect_size).CenterPoint() - gfx::Vector2d(45, 30),
                 gfx::Size(90, 60));
   // Scale the output size so that, internally, scaling is not occurring.
-  gfx::Size output_size =
-      gfx::ToRoundedSize(gfx::ScaleSize(copy_rect.size(), scale()));
+  gfx::Size output_size = gfx::ScaleToRoundedSize(copy_rect.size(), scale());
   bool video_frame = true;
   PerformTestWithLeftRightRects(html_rect_size,
                                 copy_rect,

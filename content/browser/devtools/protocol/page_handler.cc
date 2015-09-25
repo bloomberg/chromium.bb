@@ -397,8 +397,9 @@ void PageHandler::InnerSwapCompositorFrame() {
 
   gfx::SizeF viewport_size_dip = gfx::ScaleSize(
       metadata.scrollable_viewport_size, metadata.page_scale_factor);
-  gfx::SizeF screen_size_dip = gfx::ScaleSize(view->GetPhysicalBackingSize(),
-                                              1 / metadata.device_scale_factor);
+  gfx::SizeF screen_size_dip =
+      gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
+                     1 / metadata.device_scale_factor);
 
   blink::WebScreenInfo screen_info;
   view->GetScreenInfo(&screen_info);
@@ -472,8 +473,9 @@ void PageHandler::ScreencastFrameEncoded(
   if (!view)
     return;
 
-  gfx::SizeF screen_size_dip = gfx::ScaleSize(
-      view->GetPhysicalBackingSize(), 1 / metadata.device_scale_factor);
+  gfx::SizeF screen_size_dip =
+      gfx::ScaleSize(gfx::SizeF(view->GetPhysicalBackingSize()),
+                     1 / metadata.device_scale_factor);
   scoped_refptr<ScreencastFrameMetadata> param_metadata =
       ScreencastFrameMetadata::Create()
           ->set_page_scale_factor(metadata.page_scale_factor)

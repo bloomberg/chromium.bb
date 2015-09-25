@@ -4,6 +4,8 @@
 
 #include "ui/gfx/platform_font_mac.h"
 
+#include <cmath>
+
 #include <Cocoa/Cocoa.h>
 
 #include "base/basictypes.h"

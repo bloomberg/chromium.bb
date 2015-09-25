@@ -116,8 +116,8 @@ gfx::Transform TestScreen::GetUIScaleTransform() const {
 void TestScreen::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
   DCHECK_EQ(host_->window(), window);
-  display_.SetSize(gfx::ToFlooredSize(
-      gfx::ScaleSize(new_bounds.size(), display_.device_scale_factor())));
+  display_.SetSize(gfx::ScaleToFlooredSize(new_bounds.size(),
+                                           display_.device_scale_factor()));
 }
 
 void TestScreen::OnWindowDestroying(Window* window) {

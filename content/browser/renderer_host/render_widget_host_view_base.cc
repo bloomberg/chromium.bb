@@ -403,8 +403,8 @@ gfx::Size RenderWidgetHostViewBase::GetPhysicalBackingSize() const {
   gfx::NativeView view = GetNativeView();
   gfx::Display display =
       gfx::Screen::GetScreenFor(view)->GetDisplayNearestWindow(view);
-  return gfx::ToCeiledSize(gfx::ScaleSize(GetRequestedRendererSize(),
-                                          display.device_scale_factor()));
+  return gfx::ScaleToCeiledSize(GetRequestedRendererSize(),
+                                display.device_scale_factor());
 }
 
 bool RenderWidgetHostViewBase::DoTopControlsShrinkBlinkSize() const {

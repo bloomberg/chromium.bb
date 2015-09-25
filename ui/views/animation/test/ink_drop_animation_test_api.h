@@ -5,7 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
 #define UI_VIEWS_ANIMATION_TEST_INK_DROP_ANIMATION_TEST_API_H_
 
-#include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace views {
 class InkDropAnimation;
@@ -22,9 +22,9 @@ class InkDropAnimationTestApi {
   ~InkDropAnimationTestApi();
 
   // Wrapper functions the wrapped InkDropedAnimation:
-  void CalculateCircleTransforms(const gfx::SizeF size,
+  void CalculateCircleTransforms(const gfx::Size& size,
                                  InkDropTransforms* transforms_out) const;
-  void CalculateRectTransforms(const gfx::SizeF size,
+  void CalculateRectTransforms(const gfx::Size& size,
                                float corner_radius,
                                InkDropTransforms* transforms_out) const;
 

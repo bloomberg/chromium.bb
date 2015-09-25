@@ -44,7 +44,7 @@ TEST_F(DisambiguationPopupHelperUnittest, ClipByViewport) {
   EXPECT_TRUE(gfx::Rect(kVisibleContentSize_).Contains(zoom_rect));
   EXPECT_LE(kDisambiguationPopupMinScale, scale);
 
-  gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
+  gfx::Size scaled_size = gfx::ScaleToCeiledSize(zoom_rect.size(), scale);
   EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 
@@ -62,7 +62,7 @@ TEST_F(DisambiguationPopupHelperUnittest, MiniTarget) {
   EXPECT_EQ(kDisambiguationPopupMaxScale, scale);
   EXPECT_TRUE(zoom_rect.Contains(target_rects[0]));
 
-  gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
+  gfx::Size scaled_size = gfx::ScaleToCeiledSize(zoom_rect.size(), scale);
   EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 
@@ -81,7 +81,7 @@ TEST_F(DisambiguationPopupHelperUnittest, LongLinks) {
   EXPECT_EQ(kDisambiguationPopupMaxScale, scale);
   EXPECT_TRUE(zoom_rect.Contains(tap_rect));
 
-  gfx::Size scaled_size = ToCeiledSize(ScaleSize(zoom_rect.size(), scale));
+  gfx::Size scaled_size = gfx::ScaleToCeiledSize(zoom_rect.size(), scale);
   EXPECT_TRUE(gfx::Rect(kScreenSize_).Contains(gfx::Rect(scaled_size)));
 }
 

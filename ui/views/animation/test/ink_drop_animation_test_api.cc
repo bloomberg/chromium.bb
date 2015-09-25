@@ -15,12 +15,12 @@ InkDropAnimationTestApi::InkDropAnimationTestApi(
 InkDropAnimationTestApi::~InkDropAnimationTestApi() {}
 
 void InkDropAnimationTestApi::CalculateCircleTransforms(
-    const gfx::SizeF size,
+    const gfx::Size& size,
     InkDropTransforms* transforms_out) const {
   ink_drop_animation_->CalculateCircleTransforms(size, transforms_out);
 }
 void InkDropAnimationTestApi::CalculateRectTransforms(
-    const gfx::SizeF size,
+    const gfx::Size& size,
     float corner_radius,
     InkDropTransforms* transforms_out) const {
   ink_drop_animation_->CalculateRectTransforms(size, corner_radius,

@@ -143,7 +143,7 @@ void TabListSceneLayer::PutLayer(JNIEnv* env,
       toolbar_y_offset, side_border_scale, attach_content, inset_border);
 
   if (attach_content) {
-    gfx::RectF self(own_tree_->position(), own_tree_->bounds());
+    gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
     gfx::RectF content(x, y, width, height);
 
     content_obscures_self_ |= content.Contains(self);

@@ -24,9 +24,8 @@ void ThumbnailLayer::SetThumbnail(Thumbnail* thumbnail) {
 
 void ThumbnailLayer::Clip(const gfx::Rect& clipping) {
   last_clipping_ = clipping;
-  gfx::Size clipped_content =
-      gfx::ToCeiledSize(gfx::Size(content_size_.width() - clipping.x(),
-                                  content_size_.height() - clipping.y()));
+  gfx::Size clipped_content = gfx::Size(content_size_.width() - clipping.x(),
+                                        content_size_.height() - clipping.y());
   clipped_content.SetToMin(clipping.size());
   layer_->SetBounds(clipped_content);
 

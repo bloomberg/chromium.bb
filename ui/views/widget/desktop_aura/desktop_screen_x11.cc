@@ -325,9 +325,8 @@ std::vector<gfx::Display> DesktopScreenX11::BuildDisplaysFromXRandRInfo() {
             gfx::ToFlooredPoint(
                 gfx::ScalePoint(intersection_in_pixels.origin(),
                                 1.0f / display.device_scale_factor())),
-            gfx::ToFlooredSize(
-                gfx::ScaleSize(intersection_in_pixels.size(),
-                               1.0f / display.device_scale_factor()))));
+            gfx::ScaleToFlooredSize(intersection_in_pixels.size(),
+                                    1.0f / display.device_scale_factor())));
       }
 
       switch (crtc->rotation) {

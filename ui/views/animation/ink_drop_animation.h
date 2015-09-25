@@ -97,12 +97,12 @@ class VIEWS_EXPORT InkDropAnimation {
 
   // Updates all of the Transforms in |transforms_out| for a circle of the given
   // |size|.
-  void CalculateCircleTransforms(const gfx::SizeF& size,
+  void CalculateCircleTransforms(const gfx::Size& size,
                                  InkDropTransforms* transforms_out) const;
 
   // Updates all of the Transforms in |transforms_out| for a rounded rectangle
   // of the given |size| and |corner_radius|.
-  void CalculateRectTransforms(const gfx::SizeF& size,
+  void CalculateRectTransforms(const gfx::Size& size,
                                float corner_radius,
                                InkDropTransforms* transforms_out) const;
 

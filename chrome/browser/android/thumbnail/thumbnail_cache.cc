@@ -914,8 +914,8 @@ std::pair<SkBitmap, float> ThumbnailCache::CreateApproximation(
   SkAutoLockPixels bitmap_lock(bitmap);
   float new_scale = 1.f / kApproximationScaleFactor;
 
-  gfx::Size dst_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(gfx::Size(bitmap.width(), bitmap.height()), new_scale));
+  gfx::Size dst_size = gfx::ScaleToFlooredSize(
+      gfx::Size(bitmap.width(), bitmap.height()), new_scale);
   SkBitmap dst_bitmap;
   dst_bitmap.allocPixels(SkImageInfo::Make(dst_size.width(),
                                            dst_size.height(),

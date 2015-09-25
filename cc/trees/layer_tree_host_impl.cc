@@ -460,7 +460,7 @@ void LayerTreeHostImpl::StartPageScaleAnimation(
   gfx::ScrollOffset scroll_total = active_tree_->TotalScrollOffset();
   gfx::SizeF scaled_scrollable_size = active_tree_->ScrollableSize();
   gfx::SizeF viewport_size =
-      active_tree_->InnerViewportContainerLayer()->bounds();
+      gfx::SizeF(active_tree_->InnerViewportContainerLayer()->bounds());
 
   // Easing constants experimentally determined.
   scoped_ptr<TimingFunction> timing_function =
@@ -2261,7 +2261,7 @@ void LayerTreeHostImpl::SetViewportSize(const gfx::Size& device_viewport_size) {
   SetFullRootLayerDamage();
   active_tree_->set_needs_update_draw_properties();
   active_tree_->property_trees()->clip_tree.SetViewportClip(
-      gfx::RectF(device_viewport_size));
+      gfx::RectF(gfx::SizeF(device_viewport_size)));
 }
 
 void LayerTreeHostImpl::SetDeviceScaleFactor(float device_scale_factor) {

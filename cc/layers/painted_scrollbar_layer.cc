@@ -94,7 +94,7 @@ float PaintedScrollbarLayer::ClampScaleToMaxTextureSize(float scale) {
   // If the scaled bounds() is bigger than the max texture size of the
   // device, we need to clamp it by rescaling, since this is used
   // below to set the texture size.
-  gfx::Size scaled_bounds = gfx::ToCeiledSize(gfx::ScaleSize(bounds(), scale));
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   if (scaled_bounds.width() > MaxTextureSize() ||
       scaled_bounds.height() > MaxTextureSize()) {
     if (scaled_bounds.width() > scaled_bounds.height())
@@ -218,9 +218,9 @@ void PaintedScrollbarLayer::UpdateInternalContentScale() {
   bool changed = false;
   changed |= UpdateProperty(ClampScaleToMaxTextureSize(scale),
                             &internal_contents_scale_);
-  changed |= UpdateProperty(
-      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), internal_contents_scale_)),
-      &internal_content_bounds_);
+  changed |=
+      UpdateProperty(gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_),
+                     &internal_content_bounds_);
   if (changed) {
     // If the content scale or bounds change, repaint.
     SetNeedsDisplay();

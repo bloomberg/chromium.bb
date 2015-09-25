@@ -10,7 +10,7 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/android/resources/ui_resource_client_android.h"
-#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace base {
 class Time;

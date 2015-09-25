@@ -14,44 +14,40 @@
 
 namespace gfx {
 
-gfx::Point ConvertPointToDIP(float scale_factor,
-                             const gfx::Point& point_in_pixel) {
-  return gfx::ToFlooredPoint(
-      gfx::ScalePoint(point_in_pixel, 1.0f / scale_factor));
+Point ConvertPointToDIP(float scale_factor, const Point& point_in_pixel) {
+  return ToFlooredPoint(ScalePoint(point_in_pixel, 1.0f / scale_factor));
 }
 
-gfx::PointF ConvertPointToDIP(float scale_factor,
-                              const gfx::PointF& point_in_pixel) {
-  return gfx::ScalePoint(point_in_pixel, 1.0f / scale_factor);
+PointF ConvertPointToDIP(float scale_factor, const PointF& point_in_pixel) {
+  return ScalePoint(point_in_pixel, 1.0f / scale_factor);
 }
 
-gfx::Size ConvertSizeToDIP(float scale_factor, const gfx::Size& size_in_pixel) {
-  return gfx::ToFlooredSize(gfx::ScaleSize(size_in_pixel, 1.0f / scale_factor));
+Size ConvertSizeToDIP(float scale_factor, const Size& size_in_pixel) {
+  return ScaleToFlooredSize(size_in_pixel, 1.0f / scale_factor);
 }
 
-gfx::Rect ConvertRectToDIP(float scale_factor, const gfx::Rect& rect_in_pixel) {
-  return gfx::ToFlooredRectDeprecated(
-      gfx::ScaleRect(gfx::RectF(rect_in_pixel), 1.0f / scale_factor));
+Rect ConvertRectToDIP(float scale_factor, const Rect& rect_in_pixel) {
+  return ToFlooredRectDeprecated(
+      ScaleRect(RectF(rect_in_pixel), 1.0f / scale_factor));
 }
 
-gfx::Point ConvertPointToPixel(float scale_factor,
-                               const gfx::Point& point_in_dip) {
-  return gfx::ToFlooredPoint(gfx::ScalePoint(point_in_dip, scale_factor));
+Point ConvertPointToPixel(float scale_factor, const Point& point_in_dip) {
+  return ToFlooredPoint(ScalePoint(point_in_dip, scale_factor));
 }
 
-gfx::Size ConvertSizeToPixel(float scale_factor, const gfx::Size& size_in_dip) {
-  return gfx::ToFlooredSize(gfx::ScaleSize(size_in_dip, scale_factor));
+Size ConvertSizeToPixel(float scale_factor, const Size& size_in_dip) {
+  return ScaleToFlooredSize(size_in_dip, scale_factor);
 }
 
-gfx::Rect ConvertRectToPixel(float scale_factor, const gfx::Rect& rect_in_dip) {
+Rect ConvertRectToPixel(float scale_factor, const Rect& rect_in_dip) {
   // Use ToEnclosingRect() to ensure we paint all the possible pixels
   // touched. ToEnclosingRect() floors the origin, and ceils the max
   // coordinate. To do otherwise (such as flooring the size) potentially
   // results in rounding down and not drawing all the pixels that are
   // touched.
-  return gfx::ToEnclosingRect(
-      gfx::RectF(gfx::ScalePoint(rect_in_dip.origin(), scale_factor),
-                 gfx::ScaleSize(rect_in_dip.size(), scale_factor)));
+  return ToEnclosingRect(
+      RectF(ScalePoint(rect_in_dip.origin(), scale_factor),
+            ScaleSize(gfx::SizeF(rect_in_dip.size()), scale_factor)));
 }
 
 }  // namespace gfx

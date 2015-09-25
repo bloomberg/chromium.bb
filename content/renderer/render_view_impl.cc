@@ -3589,7 +3589,7 @@ bool RenderViewImpl::didTapMultipleTargets(
       break;
     case TAP_MULTIPLE_TARGETS_STRATEGY_POPUP: {
       gfx::Size canvas_size =
-          gfx::ToCeiledSize(gfx::ScaleSize(zoom_rect.size(), new_total_scale));
+          gfx::ScaleToCeiledSize(zoom_rect.size(), new_total_scale);
       cc::SharedBitmapManager* manager =
           RenderThreadImpl::current()->shared_bitmap_manager();
       scoped_ptr<cc::SharedBitmap> shared_bitmap =
@@ -3666,8 +3666,7 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
   params.screen_info.deviceScaleFactor = factor;
   params.new_size = size();
   params.visible_viewport_size = visible_viewport_size_;
-  params.physical_backing_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(size(), factor));
+  params.physical_backing_size = gfx::ScaleToCeiledSize(size(), factor);
   params.top_controls_shrink_blink_size = false;
   params.top_controls_height = 0.f;
   params.resizer_rect = WebRect();

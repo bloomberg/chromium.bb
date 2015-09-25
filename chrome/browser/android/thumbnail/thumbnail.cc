@@ -57,7 +57,7 @@ void Thumbnail::SetBitmap(const SkBitmap& bitmap) {
   retrieved_ = false;
   ClearUIResourceId();
   scaled_content_size_ =
-      gfx::ScaleSize(gfx::Size(bitmap.width(), bitmap.height()), 1.f / scale_);
+      gfx::ScaleSize(gfx::SizeF(bitmap.width(), bitmap.height()), 1.f / scale_);
   scaled_data_size_ = scaled_content_size_;
   bitmap_ = cc::UIResourceBitmap(bitmap);
 }
@@ -70,8 +70,8 @@ void Thumbnail::SetCompressedBitmap(skia::RefPtr<SkPixelRef> compressed_bitmap,
   ClearUIResourceId();
   gfx::Size data_size(compressed_bitmap->info().width(),
                       compressed_bitmap->info().height());
-  scaled_content_size_ = gfx::ScaleSize(content_size, 1.f / scale_);
-  scaled_data_size_ = gfx::ScaleSize(data_size, 1.f / scale_);
+  scaled_content_size_ = gfx::ScaleSize(gfx::SizeF(content_size), 1.f / scale_);
+  scaled_data_size_ = gfx::ScaleSize(gfx::SizeF(data_size), 1.f / scale_);
   bitmap_ = cc::UIResourceBitmap(compressed_bitmap, data_size);
 }
 

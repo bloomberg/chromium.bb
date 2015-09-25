@@ -352,7 +352,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
 
   const bool need_transform =
       video_rotation != VIDEO_ROTATION_0 ||
-      dest_rect.size() != video_frame->visible_rect().size() ||
+      dest_rect.size() != gfx::SizeF(video_frame->visible_rect().size()) ||
       !dest_rect.origin().IsOrigin();
   if (need_transform) {
     canvas->save();

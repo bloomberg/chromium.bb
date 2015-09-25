@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/gfx_export.h"
 
 #if defined(OS_WIN)
@@ -62,10 +61,6 @@ class GFX_EXPORT Size {
 
   bool IsEmpty() const { return !width() || !height(); }
 
-  operator SizeF() const {
-    return SizeF(static_cast<float>(width()), static_cast<float>(height()));
-  }
-
   std::string ToString() const;
 
  private:
@@ -85,6 +80,20 @@ inline bool operator!=(const Size& lhs, const Size& rhs) {
 // the gfx_test_support target. Depend on that to use this in your unit test.
 // This should not be used in production code - call ToString() instead.
 void PrintTo(const Size& size, ::std::ostream* os);
+
+// Helper methods to scale a gfx::Size to a new gfx::Size.
+GFX_EXPORT Size ScaleToCeiledSize(const Size& size,
+                                  float x_scale,
+                                  float y_scale);
+GFX_EXPORT Size ScaleToCeiledSize(const Size& size, float x_scale);
+GFX_EXPORT Size ScaleToFlooredSize(const Size& size,
+                                   float x_scale,
+                                   float y_scale);
+GFX_EXPORT Size ScaleToFlooredSize(const Size& size, float x_scale);
+GFX_EXPORT Size ScaleToRoundedSize(const Size& size,
+                                   float x_scale,
+                                   float y_scale);
+GFX_EXPORT Size ScaleToRoundedSize(const Size& size, float x_scale);
 
 }  // namespace gfx
 

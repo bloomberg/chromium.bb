@@ -773,7 +773,7 @@ VisualCursorDirection RenderText::GetVisualDirectionOfLogicalEnd() {
 }
 
 SizeF RenderText::GetStringSizeF() {
-  return GetStringSize();
+  return gfx::SizeF(GetStringSize());
 }
 
 float RenderText::GetContentWidthF() {

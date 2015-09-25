@@ -31,9 +31,8 @@ static gfx::Rect ViewportInLayerSpace(
   if (!transform.GetInverse(&inverse))
     return gfx::Rect();
 
-  gfx::RectF viewport_in_layer_space = MathUtil::ProjectClippedRect(
-      inverse, gfx::RectF(gfx::Point(0, 0), device_viewport));
-  return ToEnclosingRect(viewport_in_layer_space);
+  return MathUtil::ProjectEnclosingClippedRect(inverse,
+                                               gfx::Rect(device_viewport));
 }
 
 class TestablePictureLayerTiling : public PictureLayerTiling {
@@ -504,7 +503,7 @@ TEST_F(PictureLayerTilingIteratorTest, IteratorCoversLayerBoundsBothScale) {
 
   float scale = 6.7f;
   gfx::Size bounds(800, 600);
-  gfx::Rect full_rect(gfx::ToCeiledSize(gfx::ScaleSize(bounds, scale)));
+  gfx::Rect full_rect(gfx::ScaleToCeiledSize(bounds, scale));
   Initialize(gfx::Size(256, 512), 5.2f, bounds);
   VerifyTilesExactlyCoverRect(scale, full_rect);
   VerifyTilesExactlyCoverRect(scale, gfx::Rect(2014, 1579, 867, 1033));

@@ -519,7 +519,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   SkBitmap filter_bitmap;
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-        quad->filters, content_texture->size());
+        quad->filters, gfx::SizeF(content_texture->size()));
     // TODO(ajuma): Apply the filter in the same pass as the content where
     // possible (e.g. when there's no origin offset). See crbug.com/308201.
     filter_bitmap = ApplyImageFilter(filter.get(), quad, content);
@@ -731,7 +731,7 @@ skia::RefPtr<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
 
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters,
-      gfx::Size(backdrop_bitmap.width(), backdrop_bitmap.height()));
+      gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()));
   SkBitmap filter_backdrop_bitmap =
       ApplyImageFilter(filter.get(), quad, &backdrop_bitmap);
 

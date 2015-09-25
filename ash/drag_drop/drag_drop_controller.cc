@@ -52,7 +52,7 @@ gfx::Rect AdjustDragImageBoundsForScaleAndOffset(
     float scale,
     gfx::Vector2d* drag_image_offset) {
   gfx::PointF final_origin = drag_image_bounds.origin();
-  gfx::SizeF final_size = drag_image_bounds.size();
+  gfx::SizeF final_size = gfx::SizeF(drag_image_bounds.size());
   final_size.Scale(scale);
   drag_image_offset->set_x(drag_image_offset->x() * scale);
   drag_image_offset->set_y(drag_image_offset->y() * scale);

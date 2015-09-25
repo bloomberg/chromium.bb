@@ -18,15 +18,14 @@ int TestSizeF(const SizeF& s) {
 }  // namespace
 
 TEST(SizeTest, ToSizeF) {
-  // Check that implicit conversion from integer to float compiles.
+  // Check that explicit conversion from integer to float compiles.
   Size a(10, 20);
-  float width = TestSizeF(a);
+  float width = TestSizeF(gfx::SizeF(a));
   EXPECT_EQ(width, a.width());
 
   SizeF b(10, 20);
 
-  EXPECT_EQ(a, b);
-  EXPECT_EQ(b, a);
+  EXPECT_EQ(b, gfx::SizeF(a));
 }
 
 TEST(SizeTest, ToFlooredSize) {

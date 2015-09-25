@@ -132,7 +132,7 @@ bool HeadsUpDisplayLayerImpl::WillDraw(DrawMode draw_mode,
 
   internal_contents_scale_ = GetIdealContentsScale();
   internal_content_bounds_ =
-      gfx::ToCeiledSize(gfx::ScaleSize(bounds(), internal_contents_scale_));
+      gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_);
 
   ReleaseUnmatchedSizeResources(resource_provider);
   AcquireResource(resource_provider);

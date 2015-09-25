@@ -206,7 +206,7 @@ class EmptyImageSource: public gfx::ImageSkiaSource {
   }
 
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    gfx::Size pixel_size = gfx::ToFlooredSize(gfx::ScaleSize(size_, scale));
+    gfx::Size pixel_size = gfx::ScaleToFlooredSize(size_, scale);
     SkBitmap empty_bitmap = GetEmptyBitmap(pixel_size);
     return gfx::ImageSkiaRep(empty_bitmap, scale);
   }

@@ -48,8 +48,8 @@ void ScaleAndRotateCursorBitmapAndHotpoint(float scale,
   if (scale == 1.0f)
     return;
 
-  gfx::Size scaled_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(gfx::Size(bitmap->width(), bitmap->height()), scale));
+  gfx::Size scaled_size = gfx::ScaleToFlooredSize(
+      gfx::Size(bitmap->width(), bitmap->height()), scale);
 
   *bitmap = skia::ImageOperations::Resize(
       *bitmap,

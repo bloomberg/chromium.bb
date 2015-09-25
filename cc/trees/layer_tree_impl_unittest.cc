@@ -118,7 +118,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   host_impl->active_tree()->SetRootLayer(root.Pass());
   host_impl->UpdateNumChildrenAndDrawPropertiesForActiveTree();
   EXPECT_EQ(
-      gfx::RectF(bounds),
+      gfx::RectF(gfx::SizeF(bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
   EXPECT_EQ(gfx::Rect(bounds),
             host_impl->RootLayer()->visible_rect_from_property_trees());
@@ -128,7 +128,7 @@ TEST_F(LayerTreeImplTest, UpdateViewportAndHitTest) {
   gfx::Point test_point(51, 51);
   host_impl->active_tree()->FindLayerThatIsHitByPoint(test_point);
   EXPECT_EQ(
-      gfx::RectF(new_bounds),
+      gfx::RectF(gfx::SizeF(new_bounds)),
       host_impl->active_tree()->property_trees()->clip_tree.ViewportClip());
   EXPECT_EQ(gfx::Rect(new_bounds),
             host_impl->RootLayer()->visible_rect_from_property_trees());
@@ -1495,8 +1495,8 @@ TEST_F(LayerTreeImplTest,
 
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
-  gfx::Size scaled_bounds_for_root = gfx::ToCeiledSize(
-      gfx::ScaleSize(root->bounds(), device_scale_factor * page_scale_factor));
+  gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
+      root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
   host_impl().SetDeviceScaleFactor(device_scale_factor);
@@ -1954,8 +1954,8 @@ TEST_F(LayerTreeImplTest, SelectionBoundsForScaledLayers) {
 
   float device_scale_factor = 3.f;
   float page_scale_factor = 5.f;
-  gfx::Size scaled_bounds_for_root = gfx::ToCeiledSize(
-      gfx::ScaleSize(root->bounds(), device_scale_factor * page_scale_factor));
+  gfx::Size scaled_bounds_for_root = gfx::ScaleToCeiledSize(
+      root->bounds(), device_scale_factor * page_scale_factor);
   host_impl().SetViewportSize(scaled_bounds_for_root);
 
   host_impl().SetDeviceScaleFactor(device_scale_factor);

@@ -114,7 +114,7 @@ TEST_F(InkDropAnimationTest,
 
   InkDropAnimationTestApi::InkDropTransforms transforms;
   test_api.CalculateCircleTransforms(
-      gfx::SizeF(kTransformedSize, kTransformedSize), &transforms);
+      gfx::Size(kTransformedSize, kTransformedSize), &transforms);
 
   // Transform variables to reduce verbosity of actual verification code.
   const gfx::Transform kTopLeftTransform =
@@ -220,7 +220,7 @@ TEST_F(InkDropAnimationTest,
 
   InkDropAnimationTestApi::InkDropTransforms transforms;
   test_api.CalculateRectTransforms(
-      gfx::SizeF(kTransformedWidth, kTransformedHeight), kTransformedRadius,
+      gfx::Size(kTransformedWidth, kTransformedHeight), kTransformedRadius,
       &transforms);
 
   // Transform variables to reduce verbosity of actual verification code.

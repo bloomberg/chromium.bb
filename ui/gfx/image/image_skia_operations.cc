@@ -26,7 +26,7 @@ namespace gfx {
 namespace {
 
 gfx::Size DIPToPixelSize(gfx::Size dip_size, float scale) {
-  return ToCeiledSize(ScaleSize(dip_size, scale));
+  return ScaleToCeiledSize(dip_size, scale);
 }
 
 gfx::Rect DIPToPixelBounds(gfx::Rect dip_bounds, float scale) {

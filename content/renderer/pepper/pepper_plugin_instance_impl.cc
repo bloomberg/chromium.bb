@@ -1523,7 +1523,7 @@ void PepperPluginInstanceImpl::UpdateLayerTransform() {
   // plugin to be rendered, then flickering behavior occurs as in
   // crbug.com/353453.
   gfx::SizeF graphics_2d_size_in_dip =
-      gfx::ScaleSize(bound_graphics_2d_platform_->Size(),
+      gfx::ScaleSize(gfx::SizeF(bound_graphics_2d_platform_->Size()),
                      bound_graphics_2d_platform_->GetScale());
   gfx::Size plugin_size_in_dip(view_data_.rect.size.width,
                                view_data_.rect.size.height);

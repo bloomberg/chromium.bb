@@ -476,11 +476,10 @@ gfx::Image CreateHSLShiftedImage(const gfx::Image& image,
 SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
                                        ui::ScaleFactor source_scale_factor,
                                        ui::ScaleFactor desired_scale_factor) {
-  gfx::Size scaled_size = gfx::ToCeiledSize(
-      gfx::ScaleSize(gfx::Size(source_bitmap.width(),
-                               source_bitmap.height()),
-                     ui::GetScaleForScaleFactor(desired_scale_factor) /
-                     ui::GetScaleForScaleFactor(source_scale_factor)));
+  gfx::Size scaled_size = gfx::ScaleToCeiledSize(
+      gfx::Size(source_bitmap.width(), source_bitmap.height()),
+      ui::GetScaleForScaleFactor(desired_scale_factor) /
+          ui::GetScaleForScaleFactor(source_scale_factor));
   SkBitmap scaled_bitmap;
   scaled_bitmap.allocN32Pixels(scaled_size.width(), scaled_size.height());
   scaled_bitmap.eraseARGB(0, 0, 0, 0);

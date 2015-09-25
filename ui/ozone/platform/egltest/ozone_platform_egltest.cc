@@ -59,7 +59,7 @@ void ScaleTouchEvent(TouchEvent* event, const gfx::SizeF& size) {
   for (const auto& device :
        DeviceDataManager::GetInstance()->touchscreen_devices()) {
     if (device.id == event->source_device_id()) {
-      gfx::SizeF touchscreen_size = device.size;
+      gfx::SizeF touchscreen_size = gfx::SizeF(device.size);
       gfx::PointF location = event->location_f();
 
       location.Scale(size.width() / touchscreen_size.width(),
@@ -194,8 +194,10 @@ bool EgltestWindow::CanDispatchEvent(const ui::PlatformEvent& ne) {
 uint32_t EgltestWindow::DispatchEvent(const ui::PlatformEvent& native_event) {
   DCHECK(native_event);
   Event* event = static_cast<Event*>(native_event);
-  if (event->IsTouchEvent())
-    ScaleTouchEvent(static_cast<TouchEvent*>(event), bounds_.size());
+  if (event->IsTouchEvent()) {
+    ScaleTouchEvent(static_cast<TouchEvent*>(event),
+                    gfx::SizeF(bounds_.size()));
+  }
 
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,

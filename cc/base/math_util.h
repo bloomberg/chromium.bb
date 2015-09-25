@@ -30,6 +30,7 @@ namespace gfx {
 class QuadF;
 class Rect;
 class RectF;
+class SizeF;
 class Transform;
 class Vector2dF;
 class Vector2d;

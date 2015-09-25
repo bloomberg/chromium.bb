@@ -271,8 +271,9 @@ static gfx::Rect TranslateRectToTargetSpace(const LayerImpl& ancestor_layer,
       ComputeChangeOfBasisTranslation(ancestor_layer, descendant_layer);
   if (direction == TRANSLATE_RECT_DIRECTION_TO_DESCENDANT)
     translation.Scale(-1.f);
+  gfx::RectF rect_f = gfx::RectF(rect);
   return gfx::ToEnclosingRect(
-      gfx::RectF(rect.origin() + translation, rect.size()));
+      gfx::RectF(rect_f.origin() + translation, rect_f.size()));
 }
 
 // Attempts to update the clip rects for the given layer. If the layer has a

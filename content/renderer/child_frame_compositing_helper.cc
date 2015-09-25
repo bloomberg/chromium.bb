@@ -161,8 +161,8 @@ void ChildFrameCompositingHelper::CheckSizeAndAdjustLayerProperties(
     // The container size is in DIP, so is the layer size.
     // Buffer size is in physical pixels, so we need to adjust
     // it by the device scale factor.
-    gfx::Size device_scale_adjusted_size = gfx::ToFlooredSize(
-        gfx::ScaleSize(buffer_size_, 1.0f / device_scale_factor));
+    gfx::Size device_scale_adjusted_size =
+        gfx::ScaleToFlooredSize(buffer_size_, 1.0f / device_scale_factor);
     layer->SetBounds(device_scale_adjusted_size);
   }
 

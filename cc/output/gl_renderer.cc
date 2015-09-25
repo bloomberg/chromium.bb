@@ -854,7 +854,7 @@ skia::RefPtr<SkImage> GLRenderer::ApplyBackgroundFilters(
     ScopedResource* background_texture) {
   DCHECK(ShouldApplyBackgroundFilters(quad));
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-      quad->background_filters, background_texture->size());
+      quad->background_filters, gfx::SizeF(background_texture->size()));
 
   skia::RefPtr<SkImage> background_with_filters = ApplyImageFilter(
       ScopedUseGrContext::Create(this, frame), resource_provider_, quad->rect,
@@ -970,7 +970,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   bool use_color_matrix = false;
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-        quad->filters, contents_texture->size());
+        quad->filters, gfx::SizeF(contents_texture->size()));
     if (filter) {
       skia::RefPtr<SkColorFilter> cf;
 
@@ -1291,7 +1291,7 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
     const gfx::QuadF& tile_quad,
     const gfx::QuadF* clip_region,
     const DrawQuad* quad) {
-  gfx::RectF tile_rect = gfx::RectF(quad->visible_rect);
+  auto tile_rect = gfx::RectF(quad->visible_rect);
 
   gfx::PointF bottom_right = tile_quad.p3();
   gfx::PointF bottom_left = tile_quad.p4();
@@ -1354,7 +1354,7 @@ float GetTotalQuadError(const gfx::QuadF* clipped_quad,
 // correctly. This is necessary because we check the edges of this
 // quad against the expected left/right/top/bottom for anti-aliasing.
 void AlignQuadToBoundingBox(gfx::QuadF* clipped_quad) {
-  gfx::QuadF bounding_quad = gfx::QuadF(clipped_quad->BoundingBox());
+  auto bounding_quad = gfx::QuadF(clipped_quad->BoundingBox());
   gfx::QuadF best_rotation = *clipped_quad;
   float least_error_amount = GetTotalQuadError(clipped_quad, &bounding_quad);
   for (size_t i = 1; i < 4; ++i) {
@@ -1533,7 +1533,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   if (!device_transform.IsInvertible())
     return;
 
-  gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
+  auto local_quad = gfx::QuadF(gfx::RectF(tile_rect));
 
   gfx::QuadF device_layer_quad;
   bool use_aa = false;
@@ -1598,7 +1598,7 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
     // quad_rect.
     gfx::RectF centered_rect(
         gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
-        tile_rect.size());
+        gfx::SizeF(tile_rect.size()));
     DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                      centered_rect, uniforms.matrix_location);
   } else {
@@ -1729,7 +1729,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_, quad->texture_size);
 
-  gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
+  auto local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
   SetupQuadForClippingAndAntialiasing(device_transform, quad, &aa_quad,
                                       clip_region, &local_quad, edge);
@@ -1797,7 +1797,7 @@ void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
   // it. This is why this centered rect is used and not the original quad_rect.
   gfx::RectF centered_rect(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
-      tile_rect.size());
+      gfx::SizeF(tile_rect.size()));
   DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
                    centered_rect, uniforms.matrix_location);
 }
@@ -2110,7 +2110,7 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
   // un-antialiased quad should have and which vertex this is and the float
   // quad passed in via uniform is the actual geometry that gets used to draw
   // it. This is why this centered rect is used and not the original quad_rect.
-  gfx::RectF tile_rect = gfx::RectF(quad->rect);
+  auto tile_rect = gfx::RectF(quad->rect);
   gl_->UniformMatrix3fv(yuv_matrix_location, 1, 0, yuv_to_rgb);
   gl_->Uniform3fv(yuv_adj_location, 1, yuv_adjust);
 

@@ -130,7 +130,7 @@ gfx::SizeF TouchEmulator::InitCursorFromResource(
 #endif
 
   cursor->InitFromCursorInfo(cursor_info);
-  return gfx::ScaleSize(cursor_image.Size(), 1.f / scale);
+  return gfx::ScaleSize(gfx::SizeF(cursor_image.Size()), 1.f / scale);
 }
 
 bool TouchEmulator::HandleMouseEvent(const WebMouseEvent& mouse_event) {

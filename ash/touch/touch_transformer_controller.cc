@@ -67,13 +67,13 @@ gfx::Transform TouchTransformerController::GetTouchTransform(
     const DisplayInfo& touch_display,
     const ui::TouchscreenDevice& touchscreen,
     const gfx::Size& framebuffer_size) const {
-  gfx::SizeF current_size = display.bounds_in_native().size();
-  gfx::SizeF touch_native_size = touch_display.GetNativeModeSize();
+  auto current_size = gfx::SizeF(display.bounds_in_native().size());
+  auto touch_native_size = gfx::SizeF(touch_display.GetNativeModeSize());
 #if defined(USE_OZONE)
-  gfx::SizeF touch_area = touchscreen.size;
+  auto touch_area = gfx::SizeF(touchscreen.size);
 #elif defined(USE_X11)
   // On X11 touches are reported in the framebuffer coordinate space.
-  gfx::SizeF touch_area = framebuffer_size;
+  auto touch_area = gfx::SizeF(framebuffer_size);
 #endif
 
   gfx::Transform ctm;

@@ -12,6 +12,8 @@
 #include "printing/print_settings.h"
 #include "printing/printing_context_linux.h"
 #include "printing/units.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace {
 
