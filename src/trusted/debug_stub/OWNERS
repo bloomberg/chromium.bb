@@ -3,6 +3,3 @@ bradnelson@chromium.org
 gdeepti@chromium.org
 mcgrathr@chromium.org
 mseaborn@chromium.org
-
-# For build file review
-per-file *.gn=bradnelson@chromium.org

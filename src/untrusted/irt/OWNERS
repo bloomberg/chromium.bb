@@ -2,6 +2,3 @@ set noparent
 # Please keep these in alphabetical order
 mcgrathr@chromium.org
 mseaborn@chromium.org
-
-# For build file review
-per-file *.gn=bradnelson@chromium.org
