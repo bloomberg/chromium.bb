@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/memory_profiler_allocation_context.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_buffer.h"
 #include "base/trace_event/trace_event.h"
@@ -1320,6 +1321,15 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     }
   }
 
+  if (base::trace_event::AllocationContextTracker::capture_enabled()) {
+    if (phase == TRACE_EVENT_PHASE_BEGIN || phase == TRACE_EVENT_PHASE_COMPLETE)
+      base::trace_event::AllocationContextTracker::PushPseudoStackFrame(name);
+    else if (phase == TRACE_EVENT_PHASE_END)
+      // The pop for |TRACE_EVENT_PHASE_COMPLETE| events
+      // is in |TraceLog::UpdateTraceEventDuration|.
+      base::trace_event::AllocationContextTracker::PopPseudoStackFrame(name);
+  }
+
   return handle;
 }
 
@@ -1424,6 +1434,11 @@ void TraceLog::UpdateTraceEventDuration(
     if (trace_options() & kInternalEchoToConsole) {
       console_message =
           EventToConsoleMessage(TRACE_EVENT_PHASE_END, now, trace_event);
+    }
+
+    if (base::trace_event::AllocationContextTracker::capture_enabled()) {
+      // The corresponding push is in |AddTraceEventWithThreadIdAndTimestamp|.
+      base::trace_event::AllocationContextTracker::PopPseudoStackFrame(name);
     }
   }
 
