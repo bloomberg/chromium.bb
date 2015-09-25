@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/passwords/manage_passwords_bubble_controller.h"
 
 #include "base/mac/scoped_nsobject.h"
+#include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
@@ -99,22 +100,45 @@
   if (button)
     [window setDefaultButtonCell:[button cell]];
 
-  // Update the anchor.
-  BrowserWindowController* controller = [BrowserWindowController
-      browserWindowControllerForWindow:[self parentWindow]];
-  NSPoint anchorPoint =
-      [controller locationBarBridge]->GetManagePasswordsBubblePoint();
+  NSPoint anchorPoint;
+  info_bubble::BubbleArrowLocation arrow;
+  Browser* browser = chrome::FindBrowserWithWindow([self parentWindow]);
+  bool hasLocationBar =
+      browser && browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR);
+
+  if (hasLocationBar) {
+    BrowserWindowController* controller = [BrowserWindowController
+        browserWindowControllerForWindow:[self parentWindow]];
+    anchorPoint =
+        [controller locationBarBridge]->GetManagePasswordsBubblePoint();
+    arrow = info_bubble::kTopRight;
+  } else {
+    // Center the bubble if there's no location bar.
+    NSRect contentFrame = [[[self parentWindow] contentView] frame];
+    anchorPoint = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
+    arrow = info_bubble::kNoArrow;
+  }
+
+  // Update the anchor arrow.
+  [[self bubble] setArrowLocation:arrow];
+
+  // Update the anchor point.
   anchorPoint = [[self parentWindow] convertBaseToScreen:anchorPoint];
   [self setAnchorPoint:anchorPoint];
 
   // Update the frame.
-  CGFloat height = NSHeight([[currentController_ view] frame]) +
-                   info_bubble::kBubbleArrowHeight;
+  CGFloat height = NSHeight([[currentController_ view] frame]);
   CGFloat width = NSWidth([[currentController_ view] frame]);
-  CGFloat x = anchorPoint.x - width +
-              info_bubble::kBubbleArrowXOffset +
-              (0.5 * info_bubble::kBubbleArrowWidth);
+  CGFloat x = anchorPoint.x - width;
   CGFloat y = anchorPoint.y - height;
+
+  // Make the frame large enough for the arrow.
+  if (hasLocationBar) {
+    height += info_bubble::kBubbleArrowHeight;
+    x += info_bubble::kBubbleArrowXOffset +
+         (0.5 * info_bubble::kBubbleArrowWidth);
+  }
+
   [window setFrame:NSMakeRect(x, y, width, height)
            display:YES
            animate:[window isVisible]];
