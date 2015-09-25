@@ -119,7 +119,7 @@ v8::Local<v8::Value> toV8(const IDBKey* key, v8::Local<v8::Object> creationConte
     return v8Undefined();
 }
 
-// IDBAny is a a variant type used to hold the values produced by the |result|
+// IDBAny is a variant type used to hold the values produced by the |result|
 // attribute of IDBRequest and (as a convenience) the |source| attribute of
 // IDBRequest and IDBCursor.
 // TODO(jsbell): Replace the use of IDBAny for |source| attributes (which are
@@ -312,7 +312,7 @@ static IDBKey* createIDBKeyFromValueAndKeyPath(v8::Isolate* isolate, v8::Local<v
 static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate, const IDBValue* value)
 {
     ASSERT(isolate->InContext());
-    if (value->isNull())
+    if (!value || value->isNull())
         return v8::Null(isolate);
 
     const SharedBuffer* valueData = value->data();
@@ -324,7 +324,7 @@ static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate, const 
 static v8::Local<v8::Value> deserializeIDBValue(v8::Isolate* isolate, v8::Local<v8::Object> creationContext, const IDBValue* value)
 {
     ASSERT(isolate->InContext());
-    if (value->isNull())
+    if (!value || value->isNull())
         return v8::Null(isolate);
 
     v8::Local<v8::Value> v8Value = deserializeIDBValueData(isolate, value);
