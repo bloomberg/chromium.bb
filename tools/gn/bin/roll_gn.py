@@ -206,12 +206,11 @@ class GNRoller(object):
     patchset = int(props['patchsets'][-1])
 
     try:
-      patchset_data = json.loads(rpc_server.Send('/api/%d/%d' %
-                                                 (issue, patchset)))
+      try_job_results = json.loads(rpc_server.Send(
+          '/api/%d/%d/try_job_results' % (issue, patchset)))
     except Exception as _e:
       raise
 
-    try_job_results = patchset_data['try_job_results']
     if not try_job_results:
       print('No try jobs found on most recent patchset')
       return {}
@@ -375,7 +374,7 @@ class GNRoller(object):
     gn_changes = self.GetGNChanges()
 
     return (
-      'Roll DEPS %s..%s\n'
+      'Roll buildtools %s..%s\n'
       '\n'
       '  In order to roll GN %s..%s (r%s:r%s) and pick up\n'
       '  the following changes:\n'
