@@ -17,6 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_test_base.h"
+#include "ipc/ipc_test_messages.h"
 
 namespace {
 
@@ -35,25 +36,83 @@ std::string ReadFromFile(HANDLE h) {
 HANDLE GetHandleFromBrokeredAttachment(
     const scoped_refptr<IPC::BrokerableAttachment>& attachment) {
   if (attachment->GetType() !=
-      IPC::BrokerableAttachment::TYPE_BROKERABLE_ATTACHMENT)
+      IPC::BrokerableAttachment::TYPE_BROKERABLE_ATTACHMENT) {
+    LOG(INFO) << "Attachment type not TYPE_BROKERABLE_ATTACHMENT.";
     return nullptr;
-  if (attachment->GetBrokerableType() != IPC::BrokerableAttachment::WIN_HANDLE)
+  }
+
+  if (attachment->GetBrokerableType() !=
+      IPC::BrokerableAttachment::WIN_HANDLE) {
+    LOG(INFO) << "Brokerable type not WIN_HANDLE.";
     return nullptr;
+  }
+
   IPC::internal::HandleAttachmentWin* received_handle_attachment =
       static_cast<IPC::internal::HandleAttachmentWin*>(attachment.get());
   return received_handle_attachment->get_handle();
 }
 
-// Returns true if |attachment| is a file HANDLE whose contents is
-// |kDataBuffer|.
-bool CheckContentsOfBrokeredAttachment(
-    const scoped_refptr<IPC::BrokerableAttachment>& attachment) {
-  HANDLE h = GetHandleFromBrokeredAttachment(attachment);
-  if (h == nullptr)
+// |message| must be deserializable as a TestHandleWinMsg. Returns the HANDLE,
+// or nullptr if deserialization failed.
+HANDLE GetHandleFromTestHandleWinMsg(const IPC::Message& message) {
+  // Expect a message with a brokered attachment.
+  if (!message.HasBrokerableAttachments()) {
+    LOG(INFO) << "Message missing brokerable attachment.";
+    return nullptr;
+  }
+
+  TestHandleWinMsg::Schema::Param p;
+  bool success = TestHandleWinMsg::Read(&message, &p);
+  if (!success) {
+    LOG(INFO) << "Failed to deserialize message.";
+    return nullptr;
+  }
+
+  IPC::HandleWin handle_win = base::get<1>(p);
+  return handle_win.get_handle();
+}
+
+// |message| must be deserializable as a TestTwoHandleWinMsg. Returns the
+// HANDLE, or nullptr if deserialization failed.
+HANDLE GetHandleFromTestTwoHandleWinMsg(const IPC::Message& message,
+                                        int index) {
+  // Expect a message with a brokered attachment.
+  if (!message.HasBrokerableAttachments()) {
+    LOG(INFO) << "Message missing brokerable attachment.";
+    return nullptr;
+  }
+
+  TestTwoHandleWinMsg::Schema::Param p;
+  bool success = TestTwoHandleWinMsg::Read(&message, &p);
+  if (!success) {
+    LOG(INFO) << "Failed to deserialize message.";
+    return nullptr;
+  }
+
+  IPC::HandleWin handle_win;
+  if (index == 0)
+    handle_win = base::get<0>(p);
+  else if (index == 1)
+    handle_win = base::get<1>(p);
+  return handle_win.get_handle();
+}
+
+// |message| must be deserializable as a TestHandleWinMsg. Returns true if the
+// attached file HANDLE has contents |kDataBuffer|.
+bool CheckContentsOfTestMessage(const IPC::Message& message) {
+  HANDLE h = GetHandleFromTestHandleWinMsg(message);
+  if (h == nullptr) {
+    LOG(INFO) << "Failed to get handle from TestHandleWinMsg.";
     return false;
+  }
 
   std::string contents = ReadFromFile(h);
-  return contents == std::string(kDataBuffer);
+  bool success = (contents == std::string(kDataBuffer));
+  if (!success) {
+    LOG(INFO) << "Expected contents: " << std::string(kDataBuffer);
+    LOG(INFO) << "Read contents: " << contents;
+  }
+  return success;
 }
 
 enum TestResult {
@@ -88,30 +147,37 @@ class MockObserver : public IPC::AttachmentBroker::Observer {
 // message is received, or the channel has an error.
 class ProxyListener : public IPC::Listener {
  public:
-  ProxyListener() : reason_(MESSAGE_RECEIVED) {}
+  ProxyListener() : listener_(nullptr), reason_(MESSAGE_RECEIVED) {}
   ~ProxyListener() override {}
 
   // The reason for exiting the message loop.
   enum Reason { MESSAGE_RECEIVED, CHANNEL_ERROR };
 
   bool OnMessageReceived(const IPC::Message& message) override {
-    bool result = listener_->OnMessageReceived(message);
+    bool result = false;
+    if (listener_)
+      result = listener_->OnMessageReceived(message);
     reason_ = MESSAGE_RECEIVED;
-    base::MessageLoop::current()->Quit();
+    messages_.push_back(message);
+    base::MessageLoop::current()->QuitNow();
     return result;
   }
 
   void OnChannelError() override {
     reason_ = CHANNEL_ERROR;
-    base::MessageLoop::current()->Quit();
+    base::MessageLoop::current()->QuitNow();
   }
 
   void set_listener(IPC::Listener* listener) { listener_ = listener; }
   Reason get_reason() { return reason_; }
+  IPC::Message get_first_message() { return messages_[0]; }
+  void pop_first_message() { messages_.erase(messages_.begin()); }
+  bool has_message() { return !messages_.empty(); }
 
  private:
   IPC::Listener* listener_;
   Reason reason_;
+  std::vector<IPC::Message> messages_;
 };
 
 // Waits for a result to be sent over the channel.  Quits the message loop
@@ -140,7 +206,7 @@ class ResultListener : public IPC::Listener {
 // as the privileged process.
 class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
  public:
-  IPCAttachmentBrokerPrivilegedWinTest() : message_index_(0) {}
+  IPCAttachmentBrokerPrivilegedWinTest() {}
   ~IPCAttachmentBrokerPrivilegedWinTest() override {}
 
   void SetUp() override {
@@ -189,12 +255,8 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
   }
 
   void SendMessageWithAttachment(HANDLE h) {
-    IPC::Message* message =
-        new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
-    message->WriteInt(message_index_++);
-    scoped_refptr<IPC::internal::HandleAttachmentWin> attachment(
-        new IPC::internal::HandleAttachmentWin(h, IPC::HandleWin::DUPLICATE));
-    ASSERT_TRUE(message->WriteAttachment(attachment));
+    IPC::HandleWin handle_win(h, IPC::HandleWin::FILE_READ_WRITE);
+    IPC::Message* message = new TestHandleWinMsg(100, handle_win, 200);
     sender()->Send(message);
   }
 
@@ -205,7 +267,6 @@ class IPCAttachmentBrokerPrivilegedWinTest : public IPCTestBase {
  private:
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_path_;
-  int message_index_;
   ProxyListener proxy_listener_;
   scoped_ptr<IPC::AttachmentBrokerUnprivilegedWin> broker_;
   MockObserver observer_;
@@ -262,7 +323,9 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest,
   BOOL result = ::DuplicateHandle(GetCurrentProcess(), h, GetCurrentProcess(),
                                   &h2, 0, FALSE, DUPLICATE_CLOSE_SOURCE);
   ASSERT_TRUE(result);
-  SendMessageWithAttachment(h2);
+  IPC::HandleWin handle_win(h2, IPC::HandleWin::DUPLICATE);
+  IPC::Message* message = new TestHandleWinMsg(100, handle_win, 200);
+  sender()->Send(message);
   base::MessageLoop::current()->Run();
 
   // Check the result.
@@ -308,19 +371,19 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleToSelf) {
   CommonTearDown();
 }
 
-// Similar to SendHandle, except this test uses the HandleWin class.
-TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleWin) {
-  Init("SendHandleWin");
+// Similar to SendHandle, but sends a message with two instances of the same
+// handle.
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendTwoHandles) {
+  Init("SendTwoHandles");
 
   CommonSetUp();
   ResultListener result_listener;
   get_proxy_listener()->set_listener(&result_listener);
 
   HANDLE h = CreateTempFile();
-  IPC::HandleWin handle_win(h, IPC::HandleWin::FILE_READ_WRITE);
-  IPC::Message* message = new IPC::Message(0, 2, IPC::Message::PRIORITY_NORMAL);
-  message->WriteInt(0);
-  IPC::ParamTraits<IPC::HandleWin>::Write(message, handle_win);
+  IPC::HandleWin handle_win1(h, IPC::HandleWin::FILE_READ_WRITE);
+  IPC::HandleWin handle_win2(h, IPC::HandleWin::FILE_READ_WRITE);
+  IPC::Message* message = new TestTwoHandleWinMsg(handle_win1, handle_win2);
   sender()->Send(message);
   base::MessageLoop::current()->Run();
 
@@ -332,13 +395,33 @@ TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleWin) {
   CommonTearDown();
 }
 
-using OnMessageReceivedCallback =
-    void (*)(MockObserver* observer,
-             IPC::AttachmentBrokerPrivilegedWin* broker,
-             IPC::Sender* sender);
+// Similar to SendHandle, but sends the same message twice.
+TEST_F(IPCAttachmentBrokerPrivilegedWinTest, DISABLED_SendHandleTwice) {
+  Init("SendHandleTwice");
+
+  CommonSetUp();
+  ResultListener result_listener;
+  get_proxy_listener()->set_listener(&result_listener);
+
+  HANDLE h = CreateTempFile();
+  SendMessageWithAttachment(h);
+  SendMessageWithAttachment(h);
+  base::MessageLoop::current()->Run();
+
+  // Check the result.
+  ASSERT_EQ(ProxyListener::MESSAGE_RECEIVED,
+            get_proxy_listener()->get_reason());
+  ASSERT_EQ(result_listener.get_result(), RESULT_SUCCESS);
+
+  CommonTearDown();
+}
+
+using OnMessageReceivedCallback = void (*)(IPC::Sender* sender,
+                                           const IPC::Message& message);
 
 int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
                                 const char* channel_name) {
+  LOG(INFO) << "Privileged process start.";
   base::MessageLoopForIO main_message_loop;
   ProxyListener listener;
 
@@ -350,31 +433,27 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
   broker.RegisterCommunicationChannel(channel.get());
   CHECK(channel->Connect());
 
-  MockObserver observer;
-  broker.AddObserver(&observer);
-
   while (true) {
+    LOG(INFO) << "Privileged process spinning run loop.";
     base::MessageLoop::current()->Run();
     ProxyListener::Reason reason = listener.get_reason();
     if (reason == ProxyListener::CHANNEL_ERROR)
       break;
 
-    callback(&observer, &broker, channel.get());
+    while (listener.has_message()) {
+      LOG(INFO) << "Privileged process running callback.";
+      callback(channel.get(), listener.get_first_message());
+      LOG(INFO) << "Privileged process finishing callback.";
+      listener.pop_first_message();
+    }
   }
 
+  LOG(INFO) << "Privileged process end.";
   return 0;
 }
 
-void SendHandleCallback(MockObserver* observer,
-                        IPC::AttachmentBrokerPrivilegedWin* broker,
-                        IPC::Sender* sender) {
-  IPC::BrokerableAttachment::AttachmentId* id = observer->get_id();
-  scoped_refptr<IPC::BrokerableAttachment> received_attachment;
-  broker->GetAttachmentWithId(*id, &received_attachment);
-
-  // Check that it's the expected handle.
-  bool success = CheckContentsOfBrokeredAttachment(received_attachment);
-
+void SendHandleCallback(IPC::Sender* sender, const IPC::Message& message) {
+  bool success = CheckContentsOfTestMessage(message);
   SendControlMessage(sender, success);
 }
 
@@ -382,16 +461,9 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandle) {
   return CommonPrivilegedProcessMain(&SendHandleCallback, "SendHandle");
 }
 
-void SendHandleWithoutPermissionsCallback(
-    MockObserver* observer,
-    IPC::AttachmentBrokerPrivilegedWin* broker,
-    IPC::Sender* sender) {
-  IPC::BrokerableAttachment::AttachmentId* id = observer->get_id();
-  scoped_refptr<IPC::BrokerableAttachment> received_attachment;
-  broker->GetAttachmentWithId(*id, &received_attachment);
-
-  // Check that it's the expected handle.
-  HANDLE h = GetHandleFromBrokeredAttachment(received_attachment);
+void SendHandleWithoutPermissionsCallback(IPC::Sender* sender,
+                                          const IPC::Message& message) {
+  HANDLE h = GetHandleFromTestHandleWinMsg(message);
   if (h != nullptr) {
     SetFilePointer(h, 0, nullptr, FILE_BEGIN);
 
@@ -414,9 +486,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleWithoutPermissions) {
                                      "SendHandleWithoutPermissions");
 }
 
-void SendHandleToSelfCallback(MockObserver* observer,
-                              IPC::AttachmentBrokerPrivilegedWin* broker,
-                              IPC::Sender* sender) {
+void SendHandleToSelfCallback(IPC::Sender* sender, const IPC::Message&) {
   // Do nothing special. The default behavior already runs the
   // AttachmentBrokerPrivilegedWin.
 }
@@ -426,8 +496,69 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleToSelf) {
                                      "SendHandleToSelf");
 }
 
-MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleWin) {
-  return CommonPrivilegedProcessMain(&SendHandleCallback, "SendHandleWin");
+void SendTwoHandlesCallback(IPC::Sender* sender, const IPC::Message& message) {
+  // Check for two handles.
+  HANDLE h1 = GetHandleFromTestTwoHandleWinMsg(message, 0);
+  HANDLE h2 = GetHandleFromTestTwoHandleWinMsg(message, 1);
+  if (h1 == nullptr || h2 == nullptr) {
+    SendControlMessage(sender, false);
+    return;
+  }
+
+  // Check that their contents are correct.
+  std::string contents1 = ReadFromFile(h1);
+  std::string contents2 = ReadFromFile(h2);
+  if (contents1 != std::string(kDataBuffer) ||
+      contents2 != std::string(kDataBuffer)) {
+    SendControlMessage(sender, false);
+    return;
+  }
+
+  // Check that the handles point to the same file.
+  const char text[] = "katy perry";
+  DWORD bytes_written = 0;
+  SetFilePointer(h1, 0, nullptr, FILE_BEGIN);
+  BOOL success = ::WriteFile(h1, text, static_cast<DWORD>(strlen(text)),
+                             &bytes_written, nullptr);
+  if (!success) {
+    SendControlMessage(sender, false);
+    return;
+  }
+
+  SetFilePointer(h2, 0, nullptr, FILE_BEGIN);
+  char buffer[100];
+  DWORD bytes_read;
+  success = ::ReadFile(h2, buffer, static_cast<DWORD>(strlen(text)),
+                       &bytes_read, nullptr);
+  if (!success) {
+    SendControlMessage(sender, false);
+    return;
+  }
+  success = std::string(buffer, bytes_read) == std::string(text);
+  SendControlMessage(sender, success);
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendTwoHandles) {
+  return CommonPrivilegedProcessMain(&SendTwoHandlesCallback, "SendTwoHandles");
+}
+
+void SendHandleTwiceCallback(IPC::Sender* sender, const IPC::Message& message) {
+  // We expect the same message twice.
+  static int i = 0;
+  static bool success = true;
+  success &= CheckContentsOfTestMessage(message);
+  if (i == 0) {
+    LOG(INFO) << "Received first message.";
+    ++i;
+  } else {
+    LOG(INFO) << "Received second message.";
+    SendControlMessage(sender, success);
+  }
+}
+
+MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendHandleTwice) {
+  return CommonPrivilegedProcessMain(&SendHandleTwiceCallback,
+                                     "SendHandleTwice");
 }
 
 }  // namespace

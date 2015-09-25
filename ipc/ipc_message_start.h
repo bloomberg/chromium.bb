@@ -127,6 +127,7 @@ enum IPCMessageStart {
   RenderProcessMsgStart,
   PageLoadMetricsMsgStart,
   MemoryMsgStart,
+  IPCTestMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

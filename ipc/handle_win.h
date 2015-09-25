@@ -28,6 +28,8 @@ class IPC_EXPORT HandleWin {
     MAX_PERMISSIONS = FILE_READ_WRITE
   };
 
+  // Default constructor makes an invalid HANDLE.
+  HandleWin();
   HandleWin(const HANDLE& handle, Permissions permissions);
 
   HANDLE get_handle() const { return handle_; }
