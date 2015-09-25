@@ -1537,7 +1537,14 @@ void RenderWidgetHostViewAura::UnlockMouse() {
   ::ClipCursor(NULL);
 #endif
 
+  // Ensure that the global mouse position is updated here to its original
+  // value. If we don't do this then the synthesized mouse move which is posted
+  // after the cursor is moved ends up getting a large movement delta which is
+  // not what sites expect. The delta is computed in the
+  // ModifyEventMovementAndCoords function.
+  global_mouse_position_ = unlocked_global_mouse_position_;
   window_->MoveCursorTo(unlocked_mouse_position_);
+
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
   if (cursor_client) {
