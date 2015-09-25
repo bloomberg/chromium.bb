@@ -110,6 +110,14 @@ class PasswordFormBuilder {
     return html_ + "</FORM>";
   }
 
+  // Appends a field of |type| without name or id attribute at the end of the
+  // form.
+  void AddAnonymousInputField(const char* type) {
+    std::string type_attribute(type ? base::StringPrintf("type=\"%s\"", type)
+                                    : "");
+    base::StringAppendF(&html_, "<INPUT %s/>", type_attribute.c_str());
+  }
+
  private:
   std::string html_;
 
@@ -980,6 +988,70 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
   form.getFormControlElements(control_elements);
   EXPECT_FALSE(IsGaiaReauthenticationForm(
       GURL("https://google.com"), control_elements));
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest,
+       IdentifyingFieldsWithoutNameOrIdAttributes) {
+  const char* kEmpty = nullptr;
+  const struct {
+    const char* username_fieldname;
+    const char* password_fieldname;
+    const char* new_password_fieldname;
+    const char* expected_username_element;
+    const char* expected_password_element;
+    const char* expected_new_password_element;
+  } test_cases[] = {
+      {"username", "password", "new_password", "username", "password",
+       "new_password"},
+      {"username", "password", kEmpty, "username", "password",
+       "anonymous_new_password"},
+      {"username", kEmpty, kEmpty, "username", "anonymous_password",
+       "anonymous_new_password"},
+      {kEmpty, kEmpty, kEmpty, "anonymous_username", "anonymous_password",
+       "anonymous_new_password"},
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); ++i) {
+    SCOPED_TRACE(testing::Message()
+                 << "Iteration " << i << ", expected_username "
+                 << test_cases[i].expected_username_element
+                 << ", expected_password"
+                 << test_cases[i].expected_password_element
+                 << ", expected_new_password "
+                 << test_cases[i].expected_new_password_element);
+
+    PasswordFormBuilder builder(kTestFormActionURL);
+    if (test_cases[i].username_fieldname == kEmpty) {
+      builder.AddAnonymousInputField("text");
+    } else {
+      builder.AddTextField(test_cases[i].username_fieldname, "", kEmpty);
+    }
+
+    if (test_cases[i].password_fieldname == kEmpty) {
+      builder.AddAnonymousInputField("password");
+    } else {
+      builder.AddPasswordField(test_cases[i].password_fieldname, "", kEmpty);
+    }
+
+    if (test_cases[i].new_password_fieldname == kEmpty) {
+      builder.AddAnonymousInputField("password");
+    } else {
+      builder.AddPasswordField(test_cases[i].new_password_fieldname, "",
+                               kEmpty);
+    }
+    std::string html = builder.ProduceHTML();
+
+    scoped_ptr<PasswordForm> password_form;
+    LoadHTMLAndConvertForm(html, &password_form, nullptr);
+    EXPECT_TRUE(password_form);
+
+    EXPECT_EQ(base::UTF8ToUTF16(test_cases[i].expected_username_element),
+              password_form->username_element);
+    EXPECT_EQ(base::UTF8ToUTF16(test_cases[i].expected_password_element),
+              password_form->password_element);
+    EXPECT_EQ(base::UTF8ToUTF16(test_cases[i].expected_new_password_element),
+              password_form->new_password_element);
+  }
 }
 
 }  // namespace autofill

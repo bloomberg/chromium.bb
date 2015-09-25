@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
@@ -305,6 +306,13 @@ struct PasswordSiteUrlLazyInstanceTraits
 base::LazyInstance<icu::RegexMatcher, PasswordSiteUrlLazyInstanceTraits>
     password_site_matcher = LAZY_INSTANCE_INITIALIZER;
 
+// Returns the |input_field| name if its non-empty; otherwise a |dummy_name|.
+base::string16 FieldName(const WebInputElement& input_field,
+                         const char dummy_name[]) {
+  base::string16 field_name = input_field.nameForAutofill();
+  return field_name.empty() ? base::ASCIIToUTF16(dummy_name) : field_name;
+}
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -465,7 +473,8 @@ bool GetPasswordForm(const SyntheticForm& form,
   }
 
   if (!username_element.isNull()) {
-    password_form->username_element = username_element.nameForAutofill();
+    password_form->username_element =
+        FieldName(username_element, "anonymous_username");
     base::string16 username_value = username_element.value();
     if (nonscript_modified_values != nullptr) {
       auto username_iterator =
@@ -499,7 +508,7 @@ bool GetPasswordForm(const SyntheticForm& form,
   password_form->other_possible_usernames.swap(other_possible_usernames);
 
   if (!password.isNull()) {
-    password_form->password_element = password.nameForAutofill();
+    password_form->password_element = FieldName(password, "anonymous_password");
     blink::WebString password_value = password.value();
     if (nonscript_modified_values != nullptr) {
       auto password_iterator = nonscript_modified_values->find(password);
@@ -509,7 +518,8 @@ bool GetPasswordForm(const SyntheticForm& form,
     password_form->password_value = password_value;
   }
   if (!new_password.isNull()) {
-    password_form->new_password_element = new_password.nameForAutofill();
+    password_form->new_password_element =
+        FieldName(new_password, "anonymous_new_password");
     password_form->new_password_value = new_password.value();
     password_form->new_password_value_is_default =
         new_password.getAttribute("value") == new_password.value();

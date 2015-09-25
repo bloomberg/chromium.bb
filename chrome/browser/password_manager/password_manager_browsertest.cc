@@ -897,8 +897,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       NoPromptForInputElementWithoutIdAndName) {
-  // Check that no prompt is shown for forms where the input fields lack both
+                       PromptForInputElementWithoutIdAndName) {
+  // Check that prompt is shown for forms where the input fields lack both
   // the "id" and the "name" attributes.
   NavigateToFile("/password/password_form.html");
 
@@ -914,7 +914,26 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       "form.children[2].click()";  // form.children[2] is the submit button.
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
-  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+  prompt_observer->Accept();
+
+  // Check that credentials are stored.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+
+  // Spin the message loop to make sure the password store had a chance to save
+  // the password.
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(password_store->IsEmpty());
+
+#if !defined(OS_MACOSX)
+  CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
+                             base::ASCIIToUTF16("random"));
+#endif
 }
 
 // Test for checking that no prompt is shown for URLs with file: scheme.

@@ -237,16 +237,6 @@ bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.IsPublicSuffixMatch();
 }
 
-bool PasswordFormManager::HasValidPasswordForm() const {
-  DCHECK(state_ == MATCHING_PHASE || state_ == POST_MATCHING_PHASE) << state_;
-  // Non-HTML password forms (primarily HTTP and FTP autentication)
-  // do not contain username_element and password_element values.
-  if (observed_form_.scheme != PasswordForm::SCHEME_HTML)
-    return true;
-  return !observed_form_.password_element.empty() ||
-         !observed_form_.new_password_element.empty();
-}
-
 void PasswordFormManager::ProvisionallySave(
     const PasswordForm& credentials,
     OtherPossibleUsernamesAction action) {

@@ -113,10 +113,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // form.
   bool IsPendingCredentialsPublicSuffixMatch() const;
 
-  // Checks if the form is a valid password form. Forms which lack password
-  // field are not considered valid.
-  bool HasValidPasswordForm() const;
-
   // Through |driver|, supply the associated frame with appropriate information
   // (fill data, whether to allow password generation, etc.). If this is called
   // before |this| has data from the PasswordStore, the execution will be

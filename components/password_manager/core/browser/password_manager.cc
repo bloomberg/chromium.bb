@@ -309,12 +309,6 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     return;
   }
 
-  // Bail if we're missing any of the necessary form components.
-  if (!manager->HasValidPasswordForm()) {
-    RecordFailure(INVALID_FORM, form.origin, logger.get());
-    return;
-  }
-
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid =
       form.origin.SchemeIsCryptographic() &&
