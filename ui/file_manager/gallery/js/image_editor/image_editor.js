@@ -30,16 +30,19 @@ function ImageEditor(
   this.displayStringFunction_ = displayStringFunction;
 
   /**
-   * @type {ImageEditor.Mode}
-   * @private
+   * @private {ImageEditor.Mode}
    */
   this.currentMode_ = null;
 
   /**
-   * @type {HTMLElement}
-   * @private
+   * @private {HTMLElement}
    */
   this.currentTool_ = null;
+
+  /**
+   * @private {boolean}
+   */
+  this.settingUpNextMode_ = false;
 
   ImageUtil.removeChildren(this.container_);
 
@@ -575,6 +578,11 @@ ImageEditor.prototype.enterMode = function(mode) {
     return;
   }
 
+  // Guard not to call setUpMode_ more than once.
+  if (this.settingUpNextMode_)
+    return;
+  this.settingUpNextMode_ = true;
+
   this.recordToolUse(mode.name);
 
   this.leaveMode(true /* to switch mode */);
@@ -582,7 +590,10 @@ ImageEditor.prototype.enterMode = function(mode) {
   // The above call could have caused a commit which might have initiated
   // an asynchronous command execution. Wait for it to complete, then proceed
   // with the mode set up.
-  this.commandQueue_.executeWhenReady(this.setUpMode_.bind(this, mode));
+  this.commandQueue_.executeWhenReady(function() {
+    this.setUpMode_(mode);
+    this.settingUpNextMode_ = false;
+  }.bind(this));
 };
 
 /**
