@@ -191,7 +191,7 @@ static bool SetUserInputMethodImpl(
     DictionaryPrefUpdate updater(local_state, prefs::kUsersLRUInputMethod);
 
     base::DictionaryValue* const users_lru_input_methods = updater.Get();
-    if (users_lru_input_methods != NULL) {
+    if (users_lru_input_methods != nullptr) {
       users_lru_input_methods->SetStringWithoutPathExpansion(username, "");
     }
     return false;
@@ -251,7 +251,7 @@ SigninScreenHandler::SigninScreenHandler(
   DCHECK(network_error_model_);
   DCHECK(core_oobe_actor_);
   DCHECK(gaia_screen_handler_);
-  gaia_screen_handler_->SetSigninScreenHandler(this);
+  gaia_screen_handler_->set_signin_screen_handler(this);
   network_state_informer_->AddObserver(this);
 
   registrar_.Add(this,
@@ -290,13 +290,13 @@ SigninScreenHandler::~SigninScreenHandler() {
     keyboard->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
   if (delegate_)
-    delegate_->SetWebUIHandler(NULL);
+    delegate_->SetWebUIHandler(nullptr);
   network_state_informer_->RemoveObserver(this);
   if (max_mode_delegate_) {
     max_mode_delegate_->RemoveObserver(this);
-    max_mode_delegate_.reset(NULL);
+    max_mode_delegate_.reset(nullptr);
   }
-  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(NULL);
+  proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser("");
 }
 
@@ -552,7 +552,7 @@ void SigninScreenHandler::Show(const LoginScreenContext& context) {
   } else {
     email = context.email();
   }
-  gaia_screen_handler_->PopulateEmail(email);
+  gaia_screen_handler_->set_populated_email(email);
   ShowImpl();
   histogram_helper_->OnScreenShow();
 }
@@ -651,7 +651,7 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   // Do nothing once user has signed in or sign in is in progress.
   // TODO(antrim): We will end up here when processing network state
   // notification but no ShowSigninScreen() was called so delegate_ will be
-  // NULL. Network state processing logic does not belong here.
+  // nullptr. Network state processing logic does not belong here.
   if (delegate_ &&
       (delegate_->IsUserSigninCompleted() || delegate_->IsSigninInProgress())) {
     return;
@@ -850,7 +850,7 @@ void SigninScreenHandler::ReloadGaia(bool force_reload) {
 }
 
 void SigninScreenHandler::Initialize() {
-  // If delegate_ is NULL here (e.g. WebUIScreenLocker has been destroyed),
+  // If delegate_ is nullptr here (e.g. WebUIScreenLocker has been destroyed),
   // don't do anything, just return.
   if (!delegate_)
     return;
@@ -864,7 +864,7 @@ void SigninScreenHandler::Initialize() {
 gfx::NativeWindow SigninScreenHandler::GetNativeWindow() {
   if (native_window_delegate_)
     return native_window_delegate_->GetNativeWindow();
-  return NULL;
+  return nullptr;
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -912,17 +912,17 @@ void SigninScreenHandler::OnPreferencesChanged() {
   }
 
   if (delegate_ && !delegate_->IsShowUsers()) {
-    HandleShowAddUser(NULL);
+    HandleShowAddUser(nullptr);
   } else {
     if (delegate_)
       delegate_->HandleGetUsers();
-    UpdateUIState(UI_STATE_ACCOUNT_PICKER, NULL);
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER, nullptr);
   }
   preferences_changed_delayed_ = false;
 }
 
 void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
-  SetDelegate(NULL);
+  SetDelegate(nullptr);
 }
 
 void SigninScreenHandler::ShowError(int login_attempts,
@@ -957,7 +957,7 @@ void SigninScreenHandler::ShowSigninScreenForCreds(
     const std::string& username,
     const std::string& password) {
   DCHECK(gaia_screen_handler_);
-  gaia_screen_handler_->ShowSigninScreenForCreds(username, password);
+  gaia_screen_handler_->ShowSigninScreenForTest(username, password);
 }
 
 void SigninScreenHandler::ShowWhitelistCheckFailedError() {
@@ -1066,11 +1066,13 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
   std::string email;
   args->GetString(0, &email);
 
-  gaia_screen_handler_->PopulateEmail(email);
+  gaia_screen_handler_->set_populated_email(email);
   // Load auth extension. Parameters are: force reload, do not load extension in
   // background, use offline version.
-  gaia_screen_handler_->LoadAuthExtension(true, false, true);
-  UpdateUIState(UI_STATE_GAIA_SIGNIN, NULL);
+  gaia_screen_handler_->LoadAuthExtension(true /* force */,
+                                          false /* silent_load */,
+                                          true /* offline */);
+  UpdateUIState(UI_STATE_GAIA_SIGNIN, nullptr);
 }
 
 void SigninScreenHandler::HandleShutdownSystem() {
@@ -1102,7 +1104,7 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
   // |args| can be null if it's OOBE.
   if (args)
     args->GetString(0, &email);
-  gaia_screen_handler_->PopulateEmail(email);
+  gaia_screen_handler_->set_populated_email(email);
   if (!email.empty())
     SendReauthReason(email);
   OnShowAddUser();
@@ -1371,7 +1373,7 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
   if (!delegate_ || users.size() > kMaxUsers) {
     return false;
   }
-  const base::ListValue* whitelist = NULL;
+  const base::ListValue* whitelist = nullptr;
   if (!cros_settings->GetList(kAccountsPrefUsers, &whitelist) || !whitelist)
     return false;
   for (size_t i = 0; i < whitelist->GetSize(); ++i) {
