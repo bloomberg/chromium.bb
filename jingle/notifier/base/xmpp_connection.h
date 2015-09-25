@@ -22,7 +22,7 @@ class PreXmppAuth;
 class XmlElement;
 class XmppClientSettings;
 class XmppTaskParentInterface;
-}  // namespace
+}  // namespace buzz
 
 namespace jingle_glue {
 class TaskPump;
@@ -80,6 +80,13 @@ class XmppConnection
   ~XmppConnection() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest, RaisedError);
+  FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest, Connect);
+  FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest, MultipleConnect);
+  FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest, ConnectThenError);
+  FRIEND_TEST_ALL_PREFIXES(XmppConnectionTest,
+                           TasksDontRunAfterXmppConnectionDestructor);
+
   void OnStateChange(buzz::XmppEngine::State state);
   void OnInputLog(const char* data, int len);
   void OnOutputLog(const char* data, int len);
@@ -90,12 +97,6 @@ class XmppConnection
   base::WeakPtr<WeakXmppClient> weak_xmpp_client_;
   bool on_connect_called_;
   Delegate* delegate_;
-
-  FRIEND_TEST(XmppConnectionTest, RaisedError);
-  FRIEND_TEST(XmppConnectionTest, Connect);
-  FRIEND_TEST(XmppConnectionTest, MultipleConnect);
-  FRIEND_TEST(XmppConnectionTest, ConnectThenError);
-  FRIEND_TEST(XmppConnectionTest, TasksDontRunAfterXmppConnectionDestructor);
 
   DISALLOW_COPY_AND_ASSIGN(XmppConnection);
 };
