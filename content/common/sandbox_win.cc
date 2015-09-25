@@ -52,6 +52,8 @@ namespace {
 const wchar_t* const kTroublesomeDlls[] = {
   L"adialhk.dll",                 // Kaspersky Internet Security.
   L"acpiz.dll",                   // Unknown.
+  L"activedetect32.dll",          // Lenovo One Key Theater (crbug.com/536056).
+  L"activedetect64.dll",          // Lenovo One Key Theater (crbug.com/536056).
   L"airfoilinject3.dll",          // Airfoil.
   L"akinsofthook32.dll",          // Akinsoft Software Engineering.
   L"assistant_x64.dll",           // Unknown.
@@ -119,6 +121,8 @@ const wchar_t* const kTroublesomeDlls[] = {
   L"tfwah.dll",                   // Threatfire (PC tools).
   L"wblind.dll",                  // Stardock Object desktop.
   L"wbhelp.dll",                  // Stardock Object desktop.
+  L"windowsapihookdll32.dll",     // Lenovo One Key Theater (crbug.com/536056).
+  L"windowsapihookdll64.dll",     // Lenovo One Key Theater (crbug.com/536056).
   L"winstylerthemehelper.dll"     // Tuneup utilities 2006.
 };
 
