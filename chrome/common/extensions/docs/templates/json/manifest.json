@@ -115,7 +115,7 @@
   },
   "incognito": {
     "documentation": "manifest/incognito",
-    "example": "spanning or split"
+    "example": "spanning, split, or not_allowed"
   },
   "key": {
     "documentation": "manifest/key",

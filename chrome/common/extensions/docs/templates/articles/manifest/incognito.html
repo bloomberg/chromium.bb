@@ -3,7 +3,9 @@
 <p>
 Use the <code>"incognito"</code> manifest key with either
 <code>"spanning"</code> or <code>"split"</code> to specify how this
-{{platform}} will behave if allowed to run in incognito mode.
+{{platform}} will behave if allowed to run in incognito mode. Using <code>
+"not_allowed"</code> to prevent this {{platform}} from being enabled in
+incognito mode.
 </p>
 
 <p>
@@ -33,6 +35,11 @@ process runs along side the regular process, but has a separate memory-only
 cookie store. Each process sees events and messages only from its own context
 (for example, the incognito process will see only incognito tab updates).  The
 processes are unable to communicate with each other.
+</p>
+
+<h2 id="not_allowed">Not allowed</h2>
+<p>
+The {{platform}} cannot be enabled in incognito mode. Available from Chrome 47.
 </p>
 
 <h2 id="how-to-choose">How to choose</h2>
