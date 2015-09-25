@@ -35,7 +35,7 @@ import re
 
 from idl_types import IdlTypeBase
 import idl_types
-from idl_definitions import Exposure, IdlInterface, IdlAttribute, IdlOperation
+from idl_definitions import Exposure, IdlInterface, IdlAttribute
 from v8_globals import includes
 
 ACRONYMS = [
@@ -125,7 +125,7 @@ def scoped_name(interface, definition, base_name):
     if partial_interface_implemented_as:
         return '%s::%s' % (partial_interface_implemented_as, base_name)
     if (definition.is_static or
-        definition.name in ('Constructor', 'NamedConstructor')):
+            definition.name in ('Constructor', 'NamedConstructor')):
         return '%s::%s' % (cpp_name(interface), base_name)
     return 'impl->%s' % base_name
 
@@ -176,7 +176,7 @@ def activity_logging_world_check(member):
     if 'LogActivity' not in extended_attributes:
         return False
     if ('PerWorldBindings' not in extended_attributes and
-        'LogAllWorlds' not in extended_attributes):
+            'LogAllWorlds' not in extended_attributes):
         return True
     return False
 
@@ -421,10 +421,25 @@ def on_instance(interface, member):
     - [Unforgeable] members
     - regular members of [Global] or [PrimaryGlobal] interfaces
     """
-    # TODO(yukishiino): Implement this function following the spec.
     if member.is_static:
         return False
-    return not on_prototype(interface, member)
+
+    # TODO(yukishiino): Remove a hack for toString once we support
+    # Symbol.toStringTag.
+    if (interface.name == 'Window' and member.name == 'toString'):
+        return False
+
+    # TODO(yukishiino): Implement "interface object" and its [[Call]] method
+    # in a better way.  Then we can get rid of this hack.
+    if is_constructor_attribute(member):
+        return True
+
+    if ('PrimaryGlobal' in interface.extended_attributes or
+            'Global' in interface.extended_attributes or
+            'Unforgeable' in member.extended_attributes or
+            'Unforgeable' in interface.extended_attributes):
+        return True
+    return False
 
 
 def on_prototype(interface, member):
@@ -433,26 +448,29 @@ def on_prototype(interface, member):
 
     Most members are defined on the prototype object.  Exceptions are as
     follows.
-    - constant members
     - static members (optional)
     - [Unforgeable] members
     - members of [Global] or [PrimaryGlobal] interfaces
     - named properties of [Global] or [PrimaryGlobal] interfaces
     """
-    # TODO(yukishiino): Implement this function following the spec.
-
-    # These members must not be placed on prototype chains.
-    if (is_constructor_attribute(member) or
-            member.is_static or
-            is_unforgeable(interface, member)):
+    if member.is_static:
         return False
 
-    # TODO(yukishiino): We should handle [Global] and [PrimaryGlobal] instead of
-    # Window.
-    if (interface.name == 'Window'):
-        return (member.idl_type.name == 'EventHandler' or
-                type(member) == IdlOperation)
+    # TODO(yukishiino): Remove a hack for toString once we support
+    # Symbol.toStringTag.
+    if (interface.name == 'Window' and member.name == 'toString'):
+        return True
 
+    # TODO(yukishiino): Implement "interface object" and its [[Call]] method
+    # in a better way.  Then we can get rid of this hack.
+    if is_constructor_attribute(member):
+        return False
+
+    if ('PrimaryGlobal' in interface.extended_attributes or
+            'Global' in interface.extended_attributes or
+            'Unforgeable' in member.extended_attributes or
+            'Unforgeable' in interface.extended_attributes):
+        return False
     return True
 
 
@@ -462,10 +480,8 @@ def on_interface(interface, member):
     interface object.
 
     The following members must be defiend on an interface object.
-    - constant members
     - static members
     """
-    # TODO(yukishiino): Implement this function following the spec.
     if member.is_static:
         return True
     return False

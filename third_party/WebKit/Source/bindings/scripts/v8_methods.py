@@ -218,8 +218,8 @@ def argument_context(interface, method, argument, index, is_visible=True):
         idl_type.is_wrapper_type)
 
     if ('ImplementedInPrivateScript' in extended_attributes and
-        not idl_type.is_wrapper_type and
-        not idl_type.is_basic_type):
+            not idl_type.is_wrapper_type and
+            not idl_type.is_basic_type):
         raise Exception('Private scripts supports only primitive types and DOM wrappers.')
 
     set_default_value = argument.set_default_value
@@ -307,8 +307,8 @@ def cpp_value(interface, method, number_of_arguments):
     # static member functions, which for instance members (non-static members)
     # take *impl as their first argument
     if ('PartialInterfaceImplementedAs' in method.extended_attributes and
-        not 'ImplementedInPrivateScript' in method.extended_attributes and
-        not method.is_static):
+            'ImplementedInPrivateScript' not in method.extended_attributes and
+            not method.is_static):
         cpp_arguments.append('*impl')
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
 
@@ -316,8 +316,8 @@ def cpp_value(interface, method, number_of_arguments):
         if method.idl_type.name != 'void':
             cpp_arguments.append('&result')
     elif ('RaisesException' in method.extended_attributes or
-        (method.is_constructor and
-         has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
+          (method.is_constructor and
+           has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
         cpp_arguments.append('exceptionState')
 
     # If a method returns an IDL dictionary or union type, the return value is
@@ -347,8 +347,8 @@ def v8_set_return_value(interface_name, method, cpp_value, for_main_world=False)
         return None
 
     if ('ImplementedInPrivateScript' in extended_attributes and
-        not idl_type.is_wrapper_type and
-        not idl_type.is_basic_type):
+            not idl_type.is_wrapper_type and
+            not idl_type.is_basic_type):
         raise Exception('Private scripts supports only primitive types and DOM wrappers.')
 
     release = False
@@ -405,7 +405,7 @@ def v8_value_to_local_cpp_value(method, argument, index, return_promise=False, r
 # Auxiliary functions
 ################################################################################
 
-# [NotEnumerable]
+# [NotEnumerable], [Unforgeable]
 def property_attributes(interface, method):
     extended_attributes = method.extended_attributes
     property_attributes_list = []
@@ -413,8 +413,7 @@ def property_attributes(interface, method):
         property_attributes_list.append('v8::DontEnum')
     if is_unforgeable(interface, method):
         property_attributes_list.append('v8::ReadOnly')
-    if property_attributes_list:
-        property_attributes_list.insert(0, 'v8::DontDelete')
+        property_attributes_list.append('v8::DontDelete')
     return property_attributes_list
 
 

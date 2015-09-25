@@ -28,7 +28,7 @@
       __proto__ = targetWindow;
 
       shouldThrow('targetWindow.setTimeout(callback, 0, this);', '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
-      shouldThrow('setTimeout.call(targetWindow, callback, 0, this);', '"SecurityError: Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
+      shouldThrow('setTimeout.call(targetWindow, callback, 0, this);', '"SecurityError: Failed to execute \'setTimeout\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
       shouldThrow('originalSetTimeout.call(targetWindow, callback, 0, this);', '"SecurityError: Failed to execute \'setTimeout\' on \'Window\': Blocked a frame with origin \\"http://127.0.0.1:8000\\" from accessing a cross-origin frame."');
 
       originalSetTimeout(check, 10);

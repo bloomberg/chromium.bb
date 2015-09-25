@@ -556,34 +556,7 @@ interface ServicePortConnectEvent
     method constructor
     method respondWith
 interface ServiceWorkerGlobalScope
-    getter clients
-    getter onactivate
-    getter oncrossoriginmessage
-    getter onfetch
-    getter ongeofenceenter
-    getter ongeofenceleave
-    getter oninstall
-    getter onmessage
-    getter onnotificationclick
-    getter onperiodicsync
-    getter onpush
-    getter onsync
-    getter registration
-    method close
     method constructor
-    method fetch
-    method skipWaiting
-    setter onactivate
-    setter oncrossoriginmessage
-    setter onfetch
-    setter ongeofenceenter
-    setter ongeofenceleave
-    setter oninstall
-    setter onmessage
-    setter onnotificationclick
-    setter onperiodicsync
-    setter onpush
-    setter onsync
 interface ServiceWorkerRegistration
     getter geofencing
     getter onupdatefound
@@ -852,6 +825,36 @@ interface webkitIDBTransaction
     setter onabort
     setter oncomplete
     setter onerror
+global object
+    getter caches
+    getter clients
+    getter onactivate
+    getter oncrossoriginmessage
+    getter onfetch
+    getter ongeofenceenter
+    getter ongeofenceleave
+    getter oninstall
+    getter onmessage
+    getter onnotificationclick
+    getter onperiodicsync
+    getter onpush
+    getter onsync
+    getter registration
+    method close
+    method fetch
+    method gc
+    method skipWaiting
+    setter onactivate
+    setter oncrossoriginmessage
+    setter onfetch
+    setter ongeofenceenter
+    setter ongeofenceleave
+    setter oninstall
+    setter onmessage
+    setter onnotificationclick
+    setter onperiodicsync
+    setter onpush
+    setter onsync
 This is a testharness.js-based test.
 PASS Verify the interface of ServiceWorkerGlobalScope 
 Harness: the test ran to completion.

@@ -106,10 +106,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method setUint32
 [Worker]     method setUint8
 [Worker] interface DedicatedWorkerGlobalScope
-[Worker]     getter onmessage
 [Worker]     method constructor
-[Worker]     method postMessage
-[Worker]     setter onmessage
 [Worker] interface Event
 [Worker]     attribute AT_TARGET
 [Worker]     attribute BLUR
@@ -715,6 +712,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onabort
 [Worker]     setter oncomplete
 [Worker]     setter onerror
+[Worker] [GLOBAL OBJECT]
+[Worker]     getter caches
+[Worker]     getter onmessage
+[Worker]     method gc
+[Worker]     method postMessage
+[Worker]     setter onmessage
 PASS successfullyParsed is true
 
 TEST COMPLETE

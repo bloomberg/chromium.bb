@@ -130,9 +130,10 @@ PASS: canGetDescriptor(targetWindow, 'scrollTo') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'setInterval') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'setTimeout') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'stop') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'blur') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'close') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'focus') should be 'false' and is.
+PASS: canGetDescriptor(targetWindow, 'blur') should be 'true' and is.
+PASS: canGetDescriptor(targetWindow, 'close') should be 'true' and is.
+PASS: canGetDescriptor(targetWindow, 'focus') should be 'true' and is.
+PASS: canGetDescriptor(targetWindow, 'postMessage') should be 'true' and is.
 
 ----- tests for getting of not allowed Attributes -----
 

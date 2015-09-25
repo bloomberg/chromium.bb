@@ -34,19 +34,19 @@ function shouldBe(a, b, shouldNotPrintValues)
     log(message);
 }
 
-function shouldBeTrue(a) 
-{ 
-    shouldBe(a, "true"); 
+function shouldBeTrue(a)
+{
+    shouldBe(a, "true");
 }
 
-function shouldBeFalse(b) 
-{ 
-    shouldBe(b, "false"); 
+function shouldBeFalse(b)
+{
+    shouldBe(b, "false");
 }
 
-function shouldBeUndefined(b) 
-{ 
-    shouldBe(b, "undefined"); 
+function shouldBeUndefined(b)
+{
+    shouldBe(b, "undefined");
 }
 
 function canGet(keyPath)
@@ -93,7 +93,7 @@ function canGetDescriptor(target, property)
         var desc = Object.getOwnPropertyDescriptor(target, property);
         // To deal with an idiosyncrasy in how binding objects work in conjunction with
         // slot and descriptor delegates we also allow descriptor with undefined value/getter/setter
-        return  desc !== undefined && (desc.value !== undefined || desc.get !== undefined || desc.set !== undefined);
+        return desc !== undefined && (desc.value !== undefined || desc.get !== undefined || desc.set !== undefined);
     } catch(e) {
         return false;
     }
@@ -128,7 +128,7 @@ function toString(expression, valueForException)
 {
     if (valueForException === undefined)
         valueForException = "[exception]";
-        
+
     try {
         var evalExpression = eval(expression);
         if (evalExpression === undefined)

@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS targetWindow.setTimeout(callback, 0, this); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
-PASS setTimeout.call(targetWindow, callback, 0, this); threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
+PASS setTimeout.call(targetWindow, callback, 0, this); threw exception SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS originalSetTimeout.call(targetWindow, callback, 0, this); threw exception SecurityError: Failed to execute 'setTimeout' on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS this.wasInvoked is false
 PASS successfullyParsed is true

@@ -635,7 +635,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 {% endif %}
 {% set property_attribute =
        'static_cast<v8::PropertyAttribute>(%s)' %
-       ' | '.join(method.property_attributes or ['v8::DontDelete']) %}
+       ' | '.join(method.property_attributes or ['v8::None']) %}
 {% set only_exposed_to_private_script = 'V8DOMConfiguration::OnlyExposedToPrivateScript' if method.only_exposed_to_private_script else 'V8DOMConfiguration::ExposedToAllScripts' %}
 {% set holder_check = 'V8DOMConfiguration::DoNotCheckHolder' if method.is_do_not_check_signature else 'V8DOMConfiguration::CheckHolder' %}
 const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {

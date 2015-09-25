@@ -11,7 +11,7 @@ PASS window.hasOwnProperty('DeviceOrientationEvent') is true
 PASS typeof window.ondeviceorientation == 'object' is true
 PASS hasOnDeviceOrientationProperty() is true
 PASS 'ondeviceorientation' in window is true
-FAIL window.hasOwnProperty('ondeviceorientation') should be true. Was false.
+PASS window.hasOwnProperty('ondeviceorientation') is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

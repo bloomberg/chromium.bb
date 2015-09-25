@@ -11,7 +11,7 @@ PASS window.hasOwnProperty('DeviceMotionEvent') is true
 PASS typeof window.ondevicemotion == 'object' is true
 PASS hasOnDeviceMotionProperty() is true
 PASS 'ondevicemotion' in window is true
-FAIL window.hasOwnProperty('ondevicemotion') should be true. Was false.
+PASS window.hasOwnProperty('ondevicemotion') is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -1,3 +1,9 @@
+// Run all the code in a local scope.
+(function(globalObject) {
+
+// Save the list of property names of the global object before loading other scripts.
+var propertyNamesInGlobal = globalObject.propertyNamesInGlobal || Object.getOwnPropertyNames(globalObject);
+
 if (self.importScripts) {
     importScripts('../../resources/js-test.js');
 
@@ -39,10 +45,15 @@ var jsBuiltins = new Set([
     'Float32Array',
     'Float64Array',
     'Function',
+    'Infinity',
     'Int16Array',
     'Int32Array',
     'Int8Array',
+    'Intl',
+    'JSON',
     'Map',
+    'Math',
+    'NaN',
     'Number',
     'Object',
     'Promise',
@@ -54,13 +65,25 @@ var jsBuiltins = new Set([
     'Symbol',
     'SyntaxError',
     'TypeError',
+    'URIError',
     'Uint16Array',
     'Uint32Array',
     'Uint8Array',
     'Uint8ClampedArray',
-    'URIError',
     'WeakMap',
     'WeakSet',
+    'decodeURI',
+    'decodeURIComponent',
+    'encodeURI',
+    'encodeURIComponent',
+    'escape',
+    'eval',
+    'isFinite',
+    'isNaN',
+    'parseFloat',
+    'parseInt',
+    'undefined',
+    'unescape',
 ]);
 
 function isWebIDLConstructor(propertyName) {
@@ -72,8 +95,21 @@ function isWebIDLConstructor(propertyName) {
     return descriptor.writable && !descriptor.enumerable && descriptor.configurable;
 }
 
+function collectPropertyInfo(object, propertyName, output) {
+    var descriptor = Object.getOwnPropertyDescriptor(object, propertyName);
+    if ('value' in descriptor) {
+        var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
+        output.push('    ' + type + ' ' + propertyName);
+    } else {
+        if (descriptor.get)
+            output.push('    getter ' + propertyName);
+        if (descriptor.set)
+            output.push('    setter ' + propertyName);
+    }
+}
+
 // FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
-debug('[INTERFACES]')
+debug('[INTERFACES]');
 var interfaceNames = Object.getOwnPropertyNames(this).filter(isWebIDLConstructor);
 interfaceNames.sort();
 interfaceNames.forEach(function(interfaceName) {
@@ -81,19 +117,22 @@ interfaceNames.forEach(function(interfaceName) {
     var propertyStrings = [];
     var prototype = this[interfaceName].prototype;
     Object.getOwnPropertyNames(prototype).forEach(function(propertyName) {
-        var descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
-        if ('value' in descriptor) {
-            var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
-            propertyStrings.push('    ' + type + ' ' + propertyName);
-        } else {
-            if (descriptor.get)
-                propertyStrings.push('    getter ' + propertyName);
-            if (descriptor.set)
-                propertyStrings.push('    setter ' + propertyName);
-        }
+        collectPropertyInfo(prototype, propertyName, propertyStrings);
     });
     propertyStrings.sort().forEach(debug);
 });
 
+debug('[GLOBAL OBJECT]');
+var propertyStrings = [];
+var memberNames = propertyNamesInGlobal.filter(function(propertyName) {
+    return !jsBuiltins.has(propertyName) && !isWebIDLConstructor(propertyName);
+});
+memberNames.forEach(function(propertyName) {
+    collectPropertyInfo(globalObject, propertyName, propertyStrings);
+});
+propertyStrings.sort().forEach(debug);
+
 if (isWorker())
     finishJSTest();
+
+})(this); // Run all the code in a local scope.

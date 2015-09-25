@@ -453,24 +453,7 @@ interface Response
     method json
     method text
 interface ServiceWorkerGlobalScope
-    getter clients
-    getter onactivate
-    getter onfetch
-    getter oninstall
-    getter onmessage
-    getter onnotificationclick
-    getter onpush
-    getter registration
-    method close
     method constructor
-    method fetch
-    method skipWaiting
-    setter onactivate
-    setter onfetch
-    setter oninstall
-    setter onmessage
-    setter onnotificationclick
-    setter onpush
 interface ServiceWorkerRegistration
     getter onupdatefound
     getter pushManager
@@ -700,6 +683,26 @@ interface webkitIDBTransaction
     setter onabort
     setter oncomplete
     setter onerror
+global object
+    getter caches
+    getter clients
+    getter onactivate
+    getter onfetch
+    getter oninstall
+    getter onmessage
+    getter onnotificationclick
+    getter onpush
+    getter registration
+    method close
+    method fetch
+    method gc
+    method skipWaiting
+    setter onactivate
+    setter onfetch
+    setter oninstall
+    setter onmessage
+    setter onnotificationclick
+    setter onpush
 This is a testharness.js-based test.
 PASS Verify the interface of ServiceWorkerGlobalScope 
 Harness: the test ran to completion.

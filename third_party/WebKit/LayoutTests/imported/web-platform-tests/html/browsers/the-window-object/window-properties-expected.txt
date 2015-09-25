@@ -38,28 +38,28 @@ PASS EventTarget method: addEventListener
 PASS EventTarget method: removeEventListener 
 PASS EventTarget method: dispatchEvent 
 PASS Window interface 
-FAIL Window method: close assert_false: close in Window.prototype expected false got true
-FAIL Window method: stop assert_false: stop in Window.prototype expected false got true
-FAIL Window method: focus assert_false: focus in Window.prototype expected false got true
-FAIL Window method: blur assert_false: blur in Window.prototype expected false got true
-FAIL Window method: open assert_false: open in Window.prototype expected false got true
-FAIL Window method: alert assert_false: alert in Window.prototype expected false got true
-FAIL Window method: confirm assert_false: confirm in Window.prototype expected false got true
-FAIL Window method: prompt assert_false: prompt in Window.prototype expected false got true
-FAIL Window method: print assert_false: print in Window.prototype expected false got true
-FAIL Window method: postMessage assert_false: postMessage in Window.prototype expected false got true
-FAIL Window method: btoa assert_false: btoa in Window.prototype expected false got true
-FAIL Window method: atob assert_false: atob in Window.prototype expected false got true
-FAIL Window method: setTimeout assert_false: setTimeout in Window.prototype expected false got true
-FAIL Window method: clearTimeout assert_false: clearTimeout in Window.prototype expected false got true
-FAIL Window method: setInterval assert_false: setInterval in Window.prototype expected false got true
-FAIL Window method: clearInterval assert_false: clearInterval in Window.prototype expected false got true
-FAIL Window method: getSelection assert_false: getSelection in Window.prototype expected false got true
-FAIL Window method: getComputedStyle assert_false: getComputedStyle in Window.prototype expected false got true
-FAIL Window method: matchMedia assert_false: matchMedia in Window.prototype expected false got true
-FAIL Window method: scroll assert_false: scroll in Window.prototype expected false got true
-FAIL Window method: scrollTo assert_false: scrollTo in Window.prototype expected false got true
-FAIL Window method: scrollBy assert_false: scrollBy in Window.prototype expected false got true
+PASS Window method: close 
+PASS Window method: stop 
+PASS Window method: focus 
+PASS Window method: blur 
+PASS Window method: open 
+PASS Window method: alert 
+PASS Window method: confirm 
+PASS Window method: prompt 
+PASS Window method: print 
+PASS Window method: postMessage 
+PASS Window method: btoa 
+PASS Window method: atob 
+PASS Window method: setTimeout 
+PASS Window method: clearTimeout 
+PASS Window method: setInterval 
+PASS Window method: clearInterval 
+PASS Window method: getSelection 
+PASS Window method: getComputedStyle 
+PASS Window method: matchMedia 
+PASS Window method: scroll 
+PASS Window method: scrollTo 
+PASS Window method: scrollBy 
 FAIL Window readonly attribute: history assert_equals: expected "function" but got "undefined"
 FAIL Window readonly attribute: frameElement assert_equals: expected "function" but got "undefined"
 FAIL Window readonly attribute: navigator assert_equals: expected "function" but got "undefined"
@@ -69,74 +69,74 @@ FAIL Window readonly attribute: localStorage assert_equals: expected "function" 
 FAIL Window attribute: name assert_equals: expected "function" but got "undefined"
 FAIL Window attribute: status assert_equals: expected "function" but got "undefined"
 FAIL Window attribute: opener assert_equals: expected "function" but got "undefined"
-FAIL Window attribute: onabort assert_false: onabort in Window.prototype expected false got true
+FAIL Window attribute: onabort assert_equals: expected "function" but got "undefined"
 FAIL Window attribute: onafterprint assert_true: onafterprint in window expected true got false
 FAIL Window attribute: onbeforeprint assert_true: onbeforeprint in window expected true got false
-FAIL Window attribute: onbeforeunload assert_false: onbeforeunload in Window.prototype expected false got true
-FAIL Window attribute: onblur assert_false: onblur in Window.prototype expected false got true
-FAIL Window attribute: oncancel assert_false: oncancel in Window.prototype expected false got true
-FAIL Window attribute: oncanplay assert_false: oncanplay in Window.prototype expected false got true
-FAIL Window attribute: oncanplaythrough assert_false: oncanplaythrough in Window.prototype expected false got true
-FAIL Window attribute: onchange assert_false: onchange in Window.prototype expected false got true
-FAIL Window attribute: onclick assert_false: onclick in Window.prototype expected false got true
-FAIL Window attribute: onclose assert_false: onclose in Window.prototype expected false got true
-FAIL Window attribute: oncontextmenu assert_false: oncontextmenu in Window.prototype expected false got true
-FAIL Window attribute: oncuechange assert_false: oncuechange in Window.prototype expected false got true
-FAIL Window attribute: ondblclick assert_false: ondblclick in Window.prototype expected false got true
-FAIL Window attribute: ondrag assert_false: ondrag in Window.prototype expected false got true
-FAIL Window attribute: ondragend assert_false: ondragend in Window.prototype expected false got true
-FAIL Window attribute: ondragenter assert_false: ondragenter in Window.prototype expected false got true
-FAIL Window attribute: ondragleave assert_false: ondragleave in Window.prototype expected false got true
-FAIL Window attribute: ondragover assert_false: ondragover in Window.prototype expected false got true
-FAIL Window attribute: ondragstart assert_false: ondragstart in Window.prototype expected false got true
-FAIL Window attribute: ondrop assert_false: ondrop in Window.prototype expected false got true
-FAIL Window attribute: ondurationchange assert_false: ondurationchange in Window.prototype expected false got true
-FAIL Window attribute: onemptied assert_false: onemptied in Window.prototype expected false got true
-FAIL Window attribute: onended assert_false: onended in Window.prototype expected false got true
-FAIL Window attribute: onerror assert_false: onerror in Window.prototype expected false got true
-FAIL Window attribute: onfocus assert_false: onfocus in Window.prototype expected false got true
-FAIL Window attribute: onhashchange assert_false: onhashchange in Window.prototype expected false got true
-FAIL Window attribute: oninput assert_false: oninput in Window.prototype expected false got true
-FAIL Window attribute: oninvalid assert_false: oninvalid in Window.prototype expected false got true
-FAIL Window attribute: onkeydown assert_false: onkeydown in Window.prototype expected false got true
-FAIL Window attribute: onkeypress assert_false: onkeypress in Window.prototype expected false got true
-FAIL Window attribute: onkeyup assert_false: onkeyup in Window.prototype expected false got true
-FAIL Window attribute: onload assert_false: onload in Window.prototype expected false got true
-FAIL Window attribute: onloadeddata assert_false: onloadeddata in Window.prototype expected false got true
-FAIL Window attribute: onloadedmetadata assert_false: onloadedmetadata in Window.prototype expected false got true
-FAIL Window attribute: onloadstart assert_false: onloadstart in Window.prototype expected false got true
-FAIL Window attribute: onmessage assert_false: onmessage in Window.prototype expected false got true
-FAIL Window attribute: onmousedown assert_false: onmousedown in Window.prototype expected false got true
-FAIL Window attribute: onmousemove assert_false: onmousemove in Window.prototype expected false got true
-FAIL Window attribute: onmouseout assert_false: onmouseout in Window.prototype expected false got true
-FAIL Window attribute: onmouseover assert_false: onmouseover in Window.prototype expected false got true
-FAIL Window attribute: onmouseup assert_false: onmouseup in Window.prototype expected false got true
-FAIL Window attribute: onmousewheel assert_false: onmousewheel in Window.prototype expected false got true
-FAIL Window attribute: onoffline assert_false: onoffline in Window.prototype expected false got true
-FAIL Window attribute: ononline assert_false: ononline in Window.prototype expected false got true
-FAIL Window attribute: onpause assert_false: onpause in Window.prototype expected false got true
-FAIL Window attribute: onplay assert_false: onplay in Window.prototype expected false got true
-FAIL Window attribute: onplaying assert_false: onplaying in Window.prototype expected false got true
-FAIL Window attribute: onpagehide assert_false: onpagehide in Window.prototype expected false got true
-FAIL Window attribute: onpageshow assert_false: onpageshow in Window.prototype expected false got true
-FAIL Window attribute: onpopstate assert_false: onpopstate in Window.prototype expected false got true
-FAIL Window attribute: onprogress assert_false: onprogress in Window.prototype expected false got true
-FAIL Window attribute: onratechange assert_false: onratechange in Window.prototype expected false got true
-FAIL Window attribute: onreset assert_false: onreset in Window.prototype expected false got true
-FAIL Window attribute: onresize assert_false: onresize in Window.prototype expected false got true
-FAIL Window attribute: onscroll assert_false: onscroll in Window.prototype expected false got true
-FAIL Window attribute: onseeked assert_false: onseeked in Window.prototype expected false got true
-FAIL Window attribute: onseeking assert_false: onseeking in Window.prototype expected false got true
-FAIL Window attribute: onselect assert_false: onselect in Window.prototype expected false got true
-FAIL Window attribute: onshow assert_false: onshow in Window.prototype expected false got true
-FAIL Window attribute: onstalled assert_false: onstalled in Window.prototype expected false got true
-FAIL Window attribute: onstorage assert_false: onstorage in Window.prototype expected false got true
-FAIL Window attribute: onsubmit assert_false: onsubmit in Window.prototype expected false got true
-FAIL Window attribute: onsuspend assert_false: onsuspend in Window.prototype expected false got true
-FAIL Window attribute: ontimeupdate assert_false: ontimeupdate in Window.prototype expected false got true
-FAIL Window attribute: onunload assert_false: onunload in Window.prototype expected false got true
-FAIL Window attribute: onvolumechange assert_false: onvolumechange in Window.prototype expected false got true
-FAIL Window attribute: onwaiting assert_false: onwaiting in Window.prototype expected false got true
+FAIL Window attribute: onbeforeunload assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onblur assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oncancel assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oncanplay assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oncanplaythrough assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onchange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onclick assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onclose assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oncontextmenu assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oncuechange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondblclick assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondrag assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondragend assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondragenter assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondragleave assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondragover assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondragstart assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondrop assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ondurationchange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onemptied assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onended assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onerror assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onfocus assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onhashchange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oninput assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: oninvalid assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onkeydown assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onkeypress assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onkeyup assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onload assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onloadeddata assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onloadedmetadata assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onloadstart assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmessage assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmousedown assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmousemove assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmouseout assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmouseover assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmouseup assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onmousewheel assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onoffline assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ononline assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onpause assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onplay assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onplaying assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onpagehide assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onpageshow assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onpopstate assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onprogress assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onratechange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onreset assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onresize assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onscroll assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onseeked assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onseeking assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onselect assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onshow assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onstalled assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onstorage assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onsubmit assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onsuspend assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: ontimeupdate assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onunload assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onvolumechange assert_equals: expected "function" but got "undefined"
+FAIL Window attribute: onwaiting assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: window assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: document assert_equals: expected "function" but got "undefined"
 FAIL Window unforgeable attribute: location assert_equals: expected "function" but got "undefined"

@@ -1,6 +1,8 @@
-CONSOLE ERROR: line 2405: Uncaught Error: assert_true: myOnClick should have been called. expected true got false
 
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = Uncaught Error: assert_true: myOnClick should have been called. expected true got false
+PASS Named access test.  Window's members should have priority over named properties. 
+FAIL WindowProperties object should exist. assert_equals: expected "[object WindowProperties]" but got "[object Object]"
+FAIL WindowProperties object should provide named access. assert_equals: Named access shouldn't work when WindowProperties is not available. expected (undefined) undefined but got (object) Element node <a id="myAnchor"></a>
+PASS Window's members should be own members. 
 Harness: the test ran to completion.
 

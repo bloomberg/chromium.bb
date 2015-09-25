@@ -26,12 +26,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter scrollTop
 [Worker]     setter transform
 [Worker] interface CompositorWorkerGlobalScope
-[Worker]     getter onmessage
-[Worker]     method cancelAnimationFrame
 [Worker]     method constructor
-[Worker]     method postMessage
-[Worker]     method requestAnimationFrame
-[Worker]     setter onmessage
 [Worker] interface DataView
 [Worker]     getter buffer
 [Worker]     getter byteLength
@@ -167,6 +162,14 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onabort
 [Worker]     setter oncomplete
 [Worker]     setter onerror
+[Worker] [GLOBAL OBJECT]
+[Worker]     getter caches
+[Worker]     getter onmessage
+[Worker]     method cancelAnimationFrame
+[Worker]     method gc
+[Worker]     method postMessage
+[Worker]     method requestAnimationFrame
+[Worker]     setter onmessage
 PASS successfullyParsed is true
 
 TEST COMPLETE

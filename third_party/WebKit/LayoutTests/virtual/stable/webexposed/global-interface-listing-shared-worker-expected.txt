@@ -441,10 +441,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method update
 [Worker]     setter onupdatefound
 [Worker] interface SharedWorkerGlobalScope
-[Worker]     getter name
-[Worker]     getter onconnect
 [Worker]     method constructor
-[Worker]     setter onconnect
 [Worker] interface SubtleCrypto
 [Worker]     method constructor
 [Worker]     method decrypt
@@ -707,6 +704,12 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     setter onabort
 [Worker]     setter oncomplete
 [Worker]     setter onerror
+[Worker] [GLOBAL OBJECT]
+[Worker]     getter caches
+[Worker]     getter name
+[Worker]     getter onconnect
+[Worker]     method gc
+[Worker]     setter onconnect
 PASS successfullyParsed is true
 
 TEST COMPLETE
