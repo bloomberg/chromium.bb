@@ -68,17 +68,12 @@ _VERSION_SPECIFIC_FILTER['44'] = [
 
 _OS_SPECIFIC_FILTER = {}
 _OS_SPECIFIC_FILTER['win'] = [
-    # https://code.google.com/p/chromedriver/issues/detail?id=214
-    'ChromeDriverTest.testCloseWindow',
     # https://code.google.com/p/chromedriver/issues/detail?id=299
     'ChromeLogPathCapabilityTest.testChromeLogPath',
 ]
 _OS_SPECIFIC_FILTER['linux'] = [
     # Xvfb doesn't support maximization.
     'ChromeDriverTest.testWindowMaximize',
-    # https://code.google.com/p/chromedriver/issues/detail?id=302
-    'ChromeDriverTest.testWindowPosition',
-    'ChromeDriverTest.testWindowSize',
 ]
 _OS_SPECIFIC_FILTER['mac'] = [
 ]
