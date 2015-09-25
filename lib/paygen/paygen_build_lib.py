@@ -628,13 +628,17 @@ class _PaygenBuild(object):
     """
     results = []
 
+    # Paygen channel names typically end in '-channel', while Goldeneye
+    # does not maintain the '-channel' ending.
+    channel_name = self._build.channel.replace('-channel', '')
+
     contents = json.loads(gslib.Cat(OMAHA_URI))
     for nmo in contents.get('omaha_data', []):
       nmo_board = nmo['board']['public_codename']
       nmo_channel = nmo['channel']
       nmo_version = nmo['chrome_os_version']
 
-      if nmo_board == self._build.board and nmo_channel == self._build.channel:
+      if nmo_board == self._build.board and nmo_channel == channel_name:
         results.append(gspaths.Build(gspaths.Build(version=nmo_version,
                                                    board=self._build.board,
                                                    channel=self._build.channel,

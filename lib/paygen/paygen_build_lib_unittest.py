@@ -404,7 +404,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
            u'keyset': u'foo-mp',
            u'board':
            {u'public_codename': u'foo-board', u'is_active': True},
-           u'chrome_os_version': u'7478.0.0', u'channel': u'foo-channel',
+           u'chrome_os_version': u'7478.0.0', u'channel': u'foo',
            u'payloads':
            [{u'max_fraction': False,
              u'name': u'foo-channel/foo/7478.0.0/payloads/'
@@ -425,7 +425,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
            u'keyset': u'notfoo-mp',
            u'board':
            {u'public_codename': u'notfoo-board', u'is_active': True},
-           u'chrome_os_version': u'7478.0.0', u'channel': u'notfoo-channel',
+           u'chrome_os_version': u'7478.0.0', u'channel': u'notfoo',
            u'payloads':
            [{u'max_fraction': False,
              u'name': u'notfoo-channel/notfoo/7478.0.0/payloads/'
