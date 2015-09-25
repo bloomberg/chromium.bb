@@ -43,6 +43,47 @@ if (!isWorker()) {
     window.addEventListener('DOMContentLoaded', handleTestFinished, false);
 }
 
+function _compareLessThan(_a, _b) {
+  return _a < _b;
+}
+
+function _compareGreaterThan(_a, _b) {
+  return _a > _b;
+}
+
+// TODO(timvolodine): consider moving this code to js-test.js in blink and
+// reusing it from there (crbug.com/535209).
+function _comp(_a, _b, _inv_comparison_func, _comparison_str) {
+  if (typeof _a != "string" || typeof _b != "string")
+    debug("WARN: _comp expects string arguments");
+
+  var _exception;
+  var _av;
+  try {
+    _av = eval(_a);
+  } catch (e) {
+    _exception = e;
+  }
+  var _bv = eval(_b);
+
+  if (_exception) {
+    testFailed(_a + " should be" + _comparison_str + _b + ". Threw exception "
+        + _exception);
+  } else if (typeof _av == "undefined" || _inv_comparison_func(_av, _bv)) {
+    testFailed(_a + " should be" + _comparison_str + _b + ". Was " + _av
+        + " (of type " + typeof _av + ").");
+  } else {
+    testPassed(_a + " is" + _comparison_str + _b);
+  }
+}
+
+function shouldBeGreaterThanOrEqual(_a, _b) {
+  _comp(_a, _b, _compareLessThan, " >= ");
+}
+
+function shouldBeLessThanOrEqual(_a, _b) {
+  _comp(_a, _b, _compareGreaterThan, " <= ");
+}
 
 // Functions in common with js-test.js in blink,
 // see third_party/WebKit/LayoutTests/resources/js-test.js

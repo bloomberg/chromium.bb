@@ -169,16 +169,21 @@ public class WebViewLayoutTest
                 "blink-apis/geolocation/geolocation-permission-callbacks-expected.txt");
     }
 
-    public void testMediaSteamApiDenyPermission() throws Exception {
+    public void testMediaStreamApiDenyPermission() throws Exception {
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-permission-denied-callbacks.html",
                 "blink-apis/webrtc/mediastream-permission-denied-callbacks-expected.txt");
     }
 
-    public void testMediaSteamApi() throws Exception {
+    public void testMediaStreamApi() throws Exception {
         mTestActivity.setGrantPermission(true);
         runWebViewLayoutTest("blink-apis/webrtc/mediastream-callbacks.html",
                 "blink-apis/webrtc/mediastream-callbacks-expected.txt");
         mTestActivity.setGrantPermission(false);
+    }
+
+    public void testBatteryApi() throws Exception {
+        runWebViewLayoutTest("blink-apis/battery-status/battery-callback.html",
+                "blink-apis/battery-status/battery-callback-expected.txt");
     }
 
     // test helper methods
