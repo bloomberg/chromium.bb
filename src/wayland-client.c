@@ -1369,20 +1369,81 @@ err:
 	return -1;
 }
 
-/** Prepare to read events from the display to this queue
+/** Prepare to read events from the display's file descriptor to a queue
  *
  * \param display The display context object
  * \param queue The event queue to use
  * \return 0 on success or -1 if event queue was not empty
  *
- * Atomically makes sure the queue is empty and stops any other thread
- * from placing events into this (or any) queue.  Caller must
- * eventually call either wl_display_cancel_read() or
- * wl_display_read_events(), usually after waiting for the
- * display fd to become ready for reading, to release the lock.
+ * This function (or wl_display_prepare_read()) must be called before reading
+ * from the file descriptor using wl_display_read_events(). Calling
+ * wl_display_prepare_read_queue() announces the calling thread's intention to
+ * read and ensures that until the thread is ready to read and calls
+ * wl_display_read_events(), no other thread will read from the file descriptor.
+ * This only succeeds if the event queue is empty, and if not -1 is returned and
+ * errno set to EAGAIN.
  *
- * \sa wl_display_prepare_read
- * \memberof wl_event_queue
+ * If a thread successfully calls wl_display_prepare_read_queue(), it must
+ * either call wl_display_read_events() when it's ready or cancel the read
+ * intention by calling wl_display_cancel_read().
+ *
+ * Use this function before polling on the display fd or integrate the fd into a
+ * toolkit event loop in a race-free way. A correct usage would be (with most
+ * error checking left out):
+ *
+ * \code
+ * while (wl_display_prepare_read_queue(display, queue) != 0)
+ *         wl_display_dispatch_queue_pending(display, queue);
+ * wl_display_flush(display);
+ *
+ * ret = poll(fds, nfds, -1);
+ * if (has_error(ret))
+ *         wl_display_cancel_read(display);
+ * else
+ *         wl_display_read_events(display);
+ *
+ * wl_display_dispatch_queue_pending(display, queue);
+ * \endcode
+ *
+ * Here we call wl_display_prepare_read_queue(), which ensures that between
+ * returning from that call and eventually calling wl_display_read_events(), no
+ * other thread will read from the fd and queue events in our queue. If the call
+ * to wl_display_prepare_read_queue() fails, we dispatch the pending events and
+ * try again until we're successful.
+ *
+ * When using wl_display_dispatch() we'd have something like:
+ *
+ * \code
+ * wl_display_dispatch_pending(display);
+ * wl_display_flush(display);
+ * poll(fds, nfds, -1);
+ * wl_display_dispatch(display);
+ * \endcode
+ *
+ * This sequence in not thread-safe. The race is immediately after poll(),
+ * where one thread could preempt and read events before the other thread calls
+ * wl_display_dispatch(). This call now blocks and starves the other
+ * fds in the event loop.
+ *
+ * Another race would be when using more event queues.
+ * When one thread calls wl_display_dispatch(_queue)(), then it
+ * reads all events from display's fd and queues them in appropriate
+ * queues. Then it dispatches only its own queue and the other events
+ * are sitting in their queues, waiting for dispatching. If that happens
+ * before the other thread managed to call poll(), it will
+ * block with events queued.
+ *
+ * The wl_display_prepare_read_queue() function doesn't acquire exclusive access
+ * to the display's fd. It only registers that the thread calling this function
+ * has intention to read from fd. When all registered readers call
+ * wl_display_read_events(), only one (at random) eventually reads and queues
+ * the events and the others are sleeping meanwhile. This way we avoid races and
+ * still can read from more threads.
+ *
+ * \sa wl_display_cancel_read(), wl_display_read_events(),
+ * wl_display_prepare_read()
+ *
+ * \memberof wl_display
  */
 WL_EXPORT int
 wl_display_prepare_read_queue(struct wl_display *display,
@@ -1410,80 +1471,11 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * \param display The display context object
  * \return 0 on success or -1 if event queue was not empty
  *
- * This function must be called before reading from the file
- * descriptor using wl_display_read_events(). Calling
- * wl_display_prepare_read() announces the calling thread's intention
- * to read and ensures that until the thread is ready to read and
- * calls wl_display_read_events(), no other thread will read from the
- * file descriptor. This only succeeds if the event queue is empty
- * though, and if there are undispatched events in the queue, -1 is
- * returned and errno set to EAGAIN.
+ * This function does the same thing as wl_display_prepare_read_queue()
+ * with the default queue passed as the queue.
  *
- * If a thread successfully calls wl_display_prepare_read(), it must
- * either call wl_display_read_events() when it's ready or cancel the
- * read intention by calling wl_display_cancel_read().
- *
- * Use this function before polling on the display fd or to integrate
- * the fd into a toolkit event loop in a race-free way.
- * A correct usage would be (we left out most of error checking):
- *
- * \code
- * while (wl_display_prepare_read(display) != 0)
- *         wl_display_dispatch_pending(display);
- * wl_display_flush(display);
- *
- * ret = poll(fds, nfds, -1);
- * if (has_error(ret))
- *         wl_display_cancel_read(display);
- * else
- *         wl_display_read_events(display);
- *
- * wl_display_dispatch_pending(display);
- * \endcode
- *
- * Here we call wl_display_prepare_read(), which ensures that between
- * returning from that call and eventually calling
- * wl_display_read_events(), no other thread will read from the fd and
- * queue events in our queue. If the call to wl_display_prepare_read() fails,
- * we dispatch the pending events and try again until we're successful.
- *
- * When using wl_display_dispatch() we'd have something like:
- *
- * \code
- * wl_display_dispatch_pending(display);
- * wl_display_flush(display);
- * poll(fds, nfds, -1);
- * wl_display_dispatch(display);
- * \endcode
- *
- * This sequence in not thread-safe. The race is immediately after poll(),
- * where one thread could preempt and read events before the other thread calls
- * wl_display_dispatch(). This call now blocks and starves the other
- * fds in the event loop.
- *
- * Another race would be when using more event queues.
- * When one thread calls wl_display_dispatch(_queue)(), then it
- * reads all events from display's fd and queues them in appropriate
- * queues. Then it dispatches only its own queue and the other events
- * are sitting in their queues, waiting for dispatching. If that happens
- * before the other thread managed to call poll(), it will
- * block with events queued.
- *
- * wl_display_prepare_read() function doesn't acquire exclusive access
- * to the display's fd. It only registers that the thread calling this function
- * has intention to read from fd.
- * When all registered readers call wl_display_read_events(),
- * only one (at random) eventually reads and queues the events and the
- * others are sleeping meanwhile. This way we avoid races and still
- * can read from more threads.
- *
- * If the relevant queue is not the default queue, then
- * wl_display_prepare_read_queue() and wl_display_dispatch_queue_pending()
- * need to be used instead.
- *
- * \sa wl_display_cancel_read(), wl_display_read_events()
- *
- * \memberof wl_display
+ * \sa wl_display_prepare_read_queue
+ * \memberof wl_event_queue
  */
 WL_EXPORT int
 wl_display_prepare_read(struct wl_display *display)
