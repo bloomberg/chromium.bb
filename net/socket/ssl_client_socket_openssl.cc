@@ -85,11 +85,6 @@ void FreeX509Stack(STACK_OF(X509)* ptr) {
 
 using ScopedX509Stack = crypto::ScopedOpenSSL<STACK_OF(X509), FreeX509Stack>;
 
-#if OPENSSL_VERSION_NUMBER < 0x1000103fL
-// This method doesn't seem to have made it into the OpenSSL headers.
-unsigned long SSL_CIPHER_get_id(const SSL_CIPHER* cipher) { return cipher->id; }
-#endif
-
 // Used for encoding the |connection_status| field of an SSLInfo object.
 int EncodeSSLConnectionStatus(uint16 cipher_suite,
                               int compression,
