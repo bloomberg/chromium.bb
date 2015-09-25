@@ -27,6 +27,7 @@ function setUp() {
       },
       /* Mock EntryListWatcher */{});
   fileSystem = new MockFileSystem('volumeId');
+  model.fallbackSaveDirectory = fileSystem.root;
 }
 
 function testSaveItemOverwrite(callback) {

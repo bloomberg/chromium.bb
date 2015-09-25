@@ -72,7 +72,7 @@ GalleryDataModel.prototype.saveItem = function(
     item.saveToFile(
         volumeManager,
         this.metadataModel_,
-        this.fallbackSaveDirectory,
+        assert(this.fallbackSaveDirectory),
         canvas,
         overwrite,
         function(success) {
