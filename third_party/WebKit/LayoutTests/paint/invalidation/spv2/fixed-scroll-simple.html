@@ -4,12 +4,6 @@
     <link rel="stylesheet" href="../../../fast/repaint/resources/default.css">
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        if (window.testRunner)
-            testRunner.dumpAsTextWithPixelResults();
-
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV class='green'",
-        ];
         function paintInvalidationTest()
         {
             window.scrollTo(0, 100);

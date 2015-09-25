@@ -1,0 +1,24 @@
+<!-- Based on compositing/repaint/scroll-fixed-layer-out-of-view.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script type="text/javascript">
+        if (window.testRunner)
+            testRunner.dumpAsText();
+        if (window.internals)
+            internals.settings.setPreferCompositingToLCDTextEnabled(true);
+
+        function paintInvalidationTest()
+        {
+            window.scrollTo(0, 1000);
+            window.scrollTo(0, 100);
+        }
+    </script>
+</head>
+<body style="height:2000px" onload="runPaintInvalidationTest()">
+    <div style="position: fixed; top: -300px; left: 100px; width: 88px; height: 88px; background-color: silver"></div>
+    <div style="position: fixed; top: 1000px; left: 100px; width: 99px; height: 99px; background-color: silver"></div>
+    There should be no repaints here:
+</body>
+</html>

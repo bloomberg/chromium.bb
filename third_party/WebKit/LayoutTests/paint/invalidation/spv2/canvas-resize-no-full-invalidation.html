@@ -8,9 +8,6 @@ canvas {
   top: 50px;
   left: 50px;
   /* object-fit and object-position make the content of the canvas not affected
-     window.expectedPaintInvalidationObjects = [
-         "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
-     ];
      by the resize in paintInvalidationTest(). */  
   object-fit: contain;
   object-position: 0 0;
@@ -22,9 +19,6 @@ Tests paint invalidation of canvas when it's resized which doesn't affect its co
 
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-     window.expectedPaintInvalidationObjects = [
-         "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
-     ];
 function paintInvalidationTest() {
   document.getElementById('canvas').style.width = '500px';
 }

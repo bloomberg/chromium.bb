@@ -25,9 +25,6 @@ div {
 
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='resize' class='accelerated'",
-];
 function paintInvalidationTest() {
     var resizeElement = document.getElementById("resize");
     resizeElement.style.width = "100px";

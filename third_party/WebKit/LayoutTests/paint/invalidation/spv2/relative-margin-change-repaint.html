@@ -19,11 +19,6 @@
     }
 </style>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow BODY",
-        "LayoutBlockFlow (relative positioned) DIV id='container'",
-        "LayoutBlockFlow (relative positioned) DIV id='test'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById("test").style['margin-top'] = '20px';

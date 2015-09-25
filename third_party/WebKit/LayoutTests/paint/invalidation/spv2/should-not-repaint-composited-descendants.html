@@ -18,11 +18,6 @@
 </style>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "##ALL##",
-    "LayoutBlockFlow (positioned) DIV id='composited-box'",
-    "LayoutBlockFlow DIV class='child'",
-];
 function paintInvalidationTest() {
     // This will cause a full layer repaint, but should not include the composited child.
     document.getElementById('composited-box').style.clip = 'rect(30px, 120px, 120px, 30px)';

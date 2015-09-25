@@ -2,9 +2,6 @@
 <!DOCTYPE html>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (relative positioned) DIV id='block'",
-];
 function paintInvalidationTest() {
   document.getElementById('block').style.left = '200px';
 }

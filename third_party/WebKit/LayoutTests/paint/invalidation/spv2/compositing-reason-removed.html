@@ -12,8 +12,6 @@
 
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-  window.expectedPaintInvalidationObjects = [
-  ];
   function paintInvalidationTest() {
     // Remove the div's only compositing reason. This should trigger a repaint.
     document.getElementById("square").style.webkitBackfaceVisibility = "visible";

@@ -9,12 +9,6 @@ Here we append new cell, expect that cache is invalidated and paint produces exp
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTable TABLE",
-                "LayoutTableCell TD",
-            ];
             function paintInvalidationTest() {
                 newCell = document.createElement("td");
                 newCell.style.borderLeftWidth = "6px";

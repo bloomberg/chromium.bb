@@ -9,12 +9,6 @@ Here we change row border color, expect that cache is invalidated and paint prod
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableRow TR id='row'",
-            ];
             function paintInvalidationTest() {
                 document.getElementById("row").style.borderColor = "yellow";
             }

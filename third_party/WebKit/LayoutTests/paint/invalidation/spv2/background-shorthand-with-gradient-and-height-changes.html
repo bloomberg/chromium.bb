@@ -23,10 +23,6 @@
 <script>
 //This test verifies that gradient background gets repainted properly after child box height change.
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='outer'",
-    "LayoutBlockFlow DIV id='inner'",
-];
 function paintInvalidationTest() {
     document.getElementById('inner').style.height = 300 + 'px';
 }

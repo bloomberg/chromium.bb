@@ -4,10 +4,6 @@
 <head>
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (floating) DIV",
-            "LayoutBlockFlow DIV id='inner'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("inner").style.width = "0";

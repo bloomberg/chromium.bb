@@ -2,10 +2,6 @@
 <!DOCTYPE html>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='indicator'",
-    "LayoutBlockFlow (positioned) DIV id='target'",
-];
 function paintInvalidationTest() {
   document.getElementById('target').style.outlineOffset = '10px';
 }

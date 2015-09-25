@@ -3,27 +3,6 @@
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
     onload = runPaintInvalidationTest;
-    window.expectedPaintInvalidationObjects = [
-        "LayoutText #text",
-        "InlineTextBox 'Lorem ipsum'",
-        "InlineTextBox 'dolor sit amet,'",
-        "InlineTextBox 'consectetur'",
-        "InlineTextBox 'adipiscing'",
-        "InlineTextBox 'elit. Fusce'",
-        "InlineTextBox 'varius, metus'",
-        "InlineTextBox 'eu fringilla'",
-        "InlineTextBox 'pulvinar, ipsum'",
-        "InlineTextBox 'sapien'",
-        "InlineTextBox 'ultricies arcu,'",
-        "InlineTextBox 'non condimentum'",
-        "InlineTextBox 'quam est eu'",
-        "InlineTextBox 'purus. Ut nisl'",
-        "InlineTextBox 'libero,'",
-        "InlineTextBox 'suscipit ut leo'",
-        "InlineTextBox 'eget, dapibus'",
-        "InlineTextBox 'ultrices dolor.'",
-        "LayoutMultiColumnSet (anonymous)",
-    ];
     function paintInvalidationTest() {
         var target = document.getElementById('target');
         target.style.color = 'green';

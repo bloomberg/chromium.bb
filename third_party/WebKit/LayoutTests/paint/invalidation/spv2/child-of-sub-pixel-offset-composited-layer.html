@@ -33,9 +33,6 @@
 <script>
 // This test ensures that children of a composited element with a sub-pixel offset are properly repainted.
 // The box should have a fully green border.
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='target' class='green'",
-];
 function paintInvalidationTest() {
   var target = document.getElementById('target');
   target.classList.add('green');

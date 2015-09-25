@@ -2,33 +2,6 @@
 <!DOCTYPE html>
 <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='container'",
-    "LayoutBlockFlow (positioned) DIV class='test image'",
-    "LayoutBlockFlow (positioned) DIV class='test image size-cover'",
-    "LayoutBlockFlow (positioned) DIV class='test image size-contain'",
-    "LayoutBlockFlow (positioned) DIV class='test image fixed-width'",
-    "LayoutBlockFlow (positioned) DIV class='test image percent-width'",
-    "LayoutBlockFlow (positioned) DIV class='test image left'",
-    "LayoutBlockFlow (positioned) DIV class='test image right'",
-    "LayoutBlockFlow (positioned) DIV class='test image center'",
-    "LayoutBlockFlow (positioned) DIV class='test image no-repeat'",
-    "LayoutBlockFlow (positioned) DIV class='test image repeat-space'",
-    "LayoutBlockFlow (positioned) DIV class='test image repeat-round'",
-    "LayoutBlockFlow (positioned) DIV class='test generated'",
-    "LayoutBlockFlow (positioned) DIV class='test generated cover'",
-    "LayoutBlockFlow (positioned) DIV class='test generated contain'",
-    "LayoutBlockFlow (positioned) DIV class='test generated fixed-width'",
-    "LayoutBlockFlow (positioned) DIV class='test generated percent-width'",
-    "LayoutBlockFlow (positioned) DIV class='test generated left'",
-    "LayoutBlockFlow (positioned) DIV class='test generated right'",
-    "LayoutBlockFlow (positioned) DIV class='test generated center'",
-    "LayoutBlockFlow (positioned) DIV class='test generated no-repeat'",
-    "LayoutBlockFlow (positioned) DIV class='test generated repeat-space'",
-    "LayoutBlockFlow (positioned) DIV class='test generated repeat-round'",
-];
 function paintInvalidationTest()
 {
     document.getElementById('container').style.width = '550px';

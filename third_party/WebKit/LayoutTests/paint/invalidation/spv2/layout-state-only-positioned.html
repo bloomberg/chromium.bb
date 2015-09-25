@@ -2,13 +2,6 @@
 <head>
     <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV",
-            "VerticalScrollbar",
-            "VerticalScrollbar",
-            "VerticalScrollbar",
-            "LayoutBlockFlow (positioned) DIV id='q'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("q").style.height = "200px";

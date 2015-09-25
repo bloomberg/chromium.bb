@@ -1,0 +1,22 @@
+<!-- Based on compositing/repaint/scroll-fixed-layer-no-content.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="resources/paint-invalidation-test.js"></script>
+    <script type="text/javascript">
+        if (window.testRunner)
+            testRunner.dumpAsText();
+        if (window.internals)
+            internals.settings.setPreferCompositingToLCDTextEnabled(true);
+        function paintInvalidationTest()
+        {
+            window.scrollTo(0, 1000);
+            window.scrollTo(0, 100);
+        }
+    </script>
+</head>
+<body style="height:2000px" onload="runPaintInvalidationTest()">
+    <div style="position: fixed; top: 100px; left: 100px; width: 200px; height: 200px"></div>
+    There should be no repaints here:
+</body>
+</html>

@@ -9,17 +9,11 @@
     </style>
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        if (window.testRunner)
-            testRunner.dumpAsTextWithPixelResults();
-
         window.onload = function() {
             window.scrollTo(0, 200);
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='t' class='green translated'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById('t').setAttribute("class", "green translated");

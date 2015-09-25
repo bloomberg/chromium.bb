@@ -10,9 +10,6 @@
 // than the viewport does not receive an incorrect paint invalidation rect when it is invalidated. In particular, the invalidation
 // rect should not be clipped to the visible viewport.
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='foo'",
-];
 function paintInvalidationTest() {
     document.querySelector("#foo").style.background = 'red';
 }

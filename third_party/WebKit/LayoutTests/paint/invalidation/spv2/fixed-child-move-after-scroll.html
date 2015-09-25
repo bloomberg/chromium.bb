@@ -10,9 +10,6 @@
           runPaintInvalidationTest();
       }
 
-      window.expectedPaintInvalidationObjects = [
-          "LayoutBlockFlow (positioned) DIV id='toMove'",
-      ];
       function paintInvalidationTest()
       {
           document.getElementById('toMove').style.left = "150px";

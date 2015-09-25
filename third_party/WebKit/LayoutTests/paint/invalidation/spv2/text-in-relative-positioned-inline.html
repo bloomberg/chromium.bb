@@ -2,14 +2,6 @@
 <head>
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "InlineTextBox 'ab'",
-            "LayoutText #text",
-            "InlineFlowBox",
-            "LayoutInline (relative positioned) SPAN id='target'",
-            "LayoutText #text",
-            "RootInlineBox",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("target").style.display = "none";

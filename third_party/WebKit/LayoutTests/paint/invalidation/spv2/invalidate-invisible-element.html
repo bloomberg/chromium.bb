@@ -8,9 +8,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='target'",
-        ];
         function paintInvalidationTest() {
             var target = document.getElementById('target');
             target.style.visibility = 'visible';

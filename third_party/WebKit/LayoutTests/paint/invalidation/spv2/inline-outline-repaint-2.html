@@ -19,12 +19,6 @@ body {
   <span>Test</span>
 </div>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutInline SPAN",
-    "InlineFlowBox",
-    "LayoutText #text",
-    "InlineTextBox 'Test'",
-];
 function paintInvalidationTest() {
   document.getElementById('container').style.color = 'green';
 }

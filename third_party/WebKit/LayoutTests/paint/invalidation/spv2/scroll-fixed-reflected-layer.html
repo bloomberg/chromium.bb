@@ -9,9 +9,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("hideMe").style.zIndex = "-5";

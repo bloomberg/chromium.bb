@@ -21,21 +21,6 @@
 // the mv-tile element which is *not* removed from the DOM, but nevertheless moves to the left as the other one
 // is removed.
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (relative positioned) DIV id='foo' class='mv-tile'",
-    "InlineBox",
-    "RootInlineBox",
-    "InlineBox",
-    "RootInlineBox",
-    "LayoutBlockFlow DIV id='container'",
-    "LayoutBlockFlow DIV id='container'",
-    "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-    "LayoutBlockFlow (anonymous)",
-    "LayoutBlockFlow (relative positioned) DIV class='mv-tile'",
-    "LayoutText #text",
-    "LayoutText #text",
-    "LayoutText #text",
-];
 function paintInvalidationTest() {
     document.querySelector("#foo").remove();
 }

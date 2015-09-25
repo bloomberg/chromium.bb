@@ -1,0 +1,27 @@
+<!-- Based on fast/repaint/relative-positioned-movement-repaint.html -->
+<!DOCTYPE html>
+<style>
+    #block {
+        display: block;
+        margin: 10px;
+        width: 400px;
+        height: 60px;
+        border: 1px solid black;
+        -webkit-backface-visibility: hidden;
+        position: relative;
+        left: 10px;
+    }
+</style>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+    function paintInvalidationTest()
+    {
+        document.body.offsetTop;
+        var div = document.getElementById("block");
+        div.style.left = '50px';
+    }
+    window.onload = runPaintInvalidationTest;
+</script>
+<div id="block">When this layer moves it shouldn't generate a repaint rect.</div>

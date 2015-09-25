@@ -2,12 +2,6 @@
 <!DOCTYPE HTML>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV class='item1'",
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV class='item2'",
-    "LayoutBlockFlow DIV",
-];
 function paintInvalidationTest() {
   document.getElementsByClassName('item1')[0].style.justifySelf = 'start';
   document.getElementsByClassName('item2')[0].style.justifySelf = 'end';

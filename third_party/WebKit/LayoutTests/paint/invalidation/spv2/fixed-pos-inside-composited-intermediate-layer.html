@@ -40,9 +40,6 @@
             internals.settings.setPreferCompositingToLCDTextEnabled(false);
         }
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV class='fixed'",
-        ];
         function paintInvalidationTest() {
              window.scrollTo(0, 100);
         }

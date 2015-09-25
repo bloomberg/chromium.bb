@@ -10,9 +10,6 @@
 // was added to fix, the coordinates of the squashing layer paint invalidation rects were not recorded correctly, because some of
 // the code computed transformed ancestors incorrectly (it should *not* include the preserve-3d element).
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='target'",
-];
 function paintInvalidationTest() {
     var target = document.getElementById('target');
     target.style.background = 'red';

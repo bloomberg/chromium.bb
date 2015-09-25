@@ -18,9 +18,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='absoluteDiv' class='absolute green'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById('absoluteDiv').style.top = '700px';

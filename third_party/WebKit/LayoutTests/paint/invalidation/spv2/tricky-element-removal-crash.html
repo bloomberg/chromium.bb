@@ -6,9 +6,6 @@
   <div id="target" style="width: 100px; height: 100px; transform: translateZ(0); background-color: blue">
 </div>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='target'",
-];
 function paintInvalidationTest() {
     document.querySelector('#target').remove();
 }

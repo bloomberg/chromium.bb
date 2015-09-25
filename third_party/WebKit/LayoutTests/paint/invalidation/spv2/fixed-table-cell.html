@@ -14,17 +14,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutTableCell TD id='moveMe' class='fixed'",
-            "LayoutTable (positioned) TABLE",
-            "LayoutTableCell TD",
-            "LayoutTableCell TD",
-            "LayoutTableCell TD class='red'",
-            "LayoutTableCell (anonymous)",
-            "LayoutTableSection TBODY",
-            "LayoutTableCell (anonymous)",
-            "LayoutBlockFlow (positioned) TD id='moveMe' class='fixed'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById('moveMe').className = "fixed";

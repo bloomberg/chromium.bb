@@ -3,13 +3,6 @@
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
     onload = runPaintInvalidationTest;
-    window.expectedPaintInvalidationObjects = [
-        "LayoutText #text",
-        "InlineTextBox 'Lorem ipsum dolor'",
-        "InlineTextBox 'sit amet,'",
-        "InlineTextBox 'consectetur'",
-        "InlineTextBox 'adipiscing elit.'",
-    ];
     function paintInvalidationTest() {
         var target = document.getElementById('target');
         target.style.color = 'green';

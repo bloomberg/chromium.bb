@@ -11,14 +11,6 @@ if (window.internals) {
     internals.settings.setMockScrollbarsEnabled(true);
 }
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutView #document",
-    "LayoutBlockFlow HTML",
-    "LayoutBlockFlow BODY",
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV id='target'",
-];
 function paintInvalidationTest() {
     document.getElementById('target').style.height = '2px';
 }

@@ -35,9 +35,6 @@
     <script src="../../../fast/repaint/../../resources/run-after-layout-and-paint.js"></script>
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow DIV class='target'",
-        ];
         function paintInvalidationTest() {
             var target = document.getElementsByClassName("target")[0];
             target.style.visibility = "visible";

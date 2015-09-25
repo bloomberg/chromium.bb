@@ -1,0 +1,46 @@
+<!-- Based on fast/repaint/justify-self-change-keeping-geometry.html -->
+<!DOCTYPE HTML>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+  testRunner.dumpAsText();
+function paintInvalidationTest() {
+  document.getElementsByClassName('item1')[0].style.justifySelf = 'left';
+  document.getElementsByClassName('item2')[0].style.justifySelf = 'right';
+}
+onload = runPaintInvalidationTest;
+</script>
+<style>
+body {
+  margin: 0;
+}
+#container {
+  display: grid;
+  grid: 100px 100px / 150px 150px;
+  width: 200px;
+  height: 300px;
+  background-color: red;
+}
+.item1 {
+  grid-row: 1;
+  grid-column: 1;
+  justify-self: start;
+  background-color: green;
+  width: 50px;
+}
+.item2 {
+  grid-row: 1;
+  grid-column: 2;
+  justify-self: end;
+  background-color: green;
+  width: 50px;
+</style>
+<p style="height: 20px">Tests invalidation on justify-self style change. Passes if there is no red.</p>
+<div id="container">
+  <div class="item1">
+    <div style="height: 150px"></div>
+  </div>
+  <div class="item2">
+    <div style="height: 100px"></div>
+  </div>
+</div>

@@ -2,20 +2,6 @@
 <!DOCTYPE HTML>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV class='item1'",
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV class='item2'",
-    "LayoutGrid DIV id='container'",
-    "LayoutBlockFlow HTML",
-    "LayoutBlockFlow BODY",
-    "LayoutGrid DIV id='container'",
-    "LayoutBlockFlow DIV class='item1'",
-    "LayoutBlockFlow DIV",
-    "LayoutBlockFlow DIV class='item2'",
-    "LayoutBlockFlow DIV",
-];
 function paintInvalidationTest() {
   document.getElementById('container').style.justifyItems = 'end safe';
 }

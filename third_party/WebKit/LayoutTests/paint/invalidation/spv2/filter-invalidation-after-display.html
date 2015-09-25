@@ -21,10 +21,6 @@
 <div class="green drop-shadowed box" id="box"></div>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
-    "LayoutBlockFlow (positioned) DIV id='box' class='green box'",
-];
 function paintInvalidationTest() {
     var box = document.getElementById('box');
     box.classList.toggle('drop-shadowed');

@@ -31,9 +31,6 @@ div {
 <script>
 window.testIsAsync = true;
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='resize' class='drop-shadow accelerated'",
-];
 function paintInvalidationTest() {
     var resizeElement = document.getElementById("resize");
     resizeElement.style.width = "100px";

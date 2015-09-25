@@ -26,9 +26,6 @@
         ctx.fillRect(80, 80, 10, 10);
         window.testIsAsync = true;
         
-        window.expectedPaintInvalidationObjects = [
-            "LayoutHTMLCanvas CANVAS id='canvas'",
-        ];
         function paintInvalidationTest()
         {
             // patch up red squares with putImageData

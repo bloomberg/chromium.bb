@@ -14,9 +14,6 @@ Tests paint invalidation of canvas when it's resized. Passes if there is a whole
 
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutHTMLCanvas (positioned) CANVAS id='canvas'",
-];
 function paintInvalidationTest() {
   document.getElementById('canvas').style.width = '500px';
 }

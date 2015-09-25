@@ -27,11 +27,6 @@
 </style>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV class='hitregion'",
-    "LayoutBlockFlow (positioned) \u003Cpseudo:after\u003E",
-    "LayoutTextFragment (anonymous)",
-];
 function paintInvalidationTest() {
   if (!window.testRunner)
     return;

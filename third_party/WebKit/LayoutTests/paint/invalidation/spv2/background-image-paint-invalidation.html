@@ -6,10 +6,6 @@
 <script>
 // Tests that repaint when changing a document background image invalidates the whole document, not just the part that is visible on the screen.
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutView #document",
-    "LayoutBlockFlow BODY",
-];
 function paintInvalidationTest() {
     document.body.style.background = 'url(../../../fast/repaint/resources/ducky.png)';
 }

@@ -12,9 +12,6 @@
 <script>
 // Test that moving a Layer that is squashed relative to its squashing container repaints correctly.
 // In particular, the repaint rect needs to be recorded in the correct position relative to the squashing GraphicsLayer.
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='chip'",
-];
 function paintInvalidationTest()
 {
     document.getElementById('chip').style.left = "400px";

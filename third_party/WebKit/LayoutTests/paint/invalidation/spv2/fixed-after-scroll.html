@@ -9,10 +9,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-            "LayoutBlockFlow (positioned) DIV id='t' class='green absolute'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById('t').style.position = "fixed";

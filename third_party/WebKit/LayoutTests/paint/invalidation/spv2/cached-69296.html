@@ -25,22 +25,6 @@ Collapsed borders should not disappear.
         </style>
     <head>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableRow TR id='row1'",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableRow TR id='row1'",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-            ];
             function paintInvalidationTest() {
                 row = document.getElementById('row1');
                 rowRect = row.getBoundingClientRect();

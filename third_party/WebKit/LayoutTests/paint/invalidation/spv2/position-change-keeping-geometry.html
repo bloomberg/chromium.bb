@@ -11,10 +11,6 @@ function changePositionKeepingGeometry(id, newPosition) {
   target.style.left = originalLeft + 'px';
 }
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='target2'",
-    "LayoutBlockFlow (positioned) DIV id='target3'",
-];
 function paintInvalidationTest()
 {
   changePositionKeepingGeometry('target1', 'absolute');

@@ -6,13 +6,6 @@
     <div id="target" style="display: inline-block; width: 100px; height: 100px; overflow: hidden; font-family: Ahem; font-size: 100px; background: red; color: green;">p</div>
 </span>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "InlineTextBox ''",
-        "RootInlineBox",
-        "LayoutBlockFlow DIV id='target'",
-        "LayoutText #text",
-        "InlineTextBox 'a'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById("target").firstChild.data = "a";

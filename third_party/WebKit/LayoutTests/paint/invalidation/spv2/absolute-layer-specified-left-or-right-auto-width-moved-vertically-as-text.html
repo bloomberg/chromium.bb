@@ -1,0 +1,33 @@
+<!-- Based on fast/repaint/absolute-layer-specified-left-or-right-auto-width-moved-vertically.html -->
+<!DOCTYPE html>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+function paintInvalidationTest()
+{
+    document.getElementById('left').style.top = '400px';
+    document.getElementById('right').style.top = '400px';
+}
+
+window.onload = runPaintInvalidationTest;
+</script>
+
+<style>
+    #left, #right {
+        position: absolute;
+        top: 200px;
+        -webkit-backface-visibility: hidden;
+    }
+    #left {
+        left: 0px;
+    }
+    #right {
+        right: 0px;
+    }
+</style>
+
+There should be no repaint when the divs are moved vertically.
+<div id="left">Left</div>
+<div id="right">Right</div>
+<pre id="result"></pre>

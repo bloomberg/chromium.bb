@@ -3,9 +3,6 @@
 <div id="target" style="width: 100px; height: 100px; background: lightblue"></div>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='target'",
-];
 function paintInvalidationTest() {
     document.getElementById('target').style.opacity = 0.5;
 }

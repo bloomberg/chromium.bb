@@ -28,10 +28,6 @@ This test checks that repaint testing works with composited layers.
   </style>
   <script src="resources/paint-invalidation-test.js"></script>
   <script>
-      window.expectedPaintInvalidationObjects = [
-          "LayoutBlockFlow DIV id='parent'",
-          "LayoutBlockFlow (relative positioned) DIV id='child'",
-      ];
       function paintInvalidationTest() {
           var parent = document.getElementById('parent');
           var child = document.getElementById('child');

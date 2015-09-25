@@ -9,13 +9,6 @@ Here we change table border width, expect that cache is invalidated and paint pr
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD",
-                "LayoutTable TABLE id='tbl'",
-                "LayoutTableSection TBODY",
-                "LayoutTableRow TR",
-                "LayoutTableCell TD",
-            ];
             function paintInvalidationTest() {
                 document.getElementById("tbl").style.borderWidth = "4px";
             }

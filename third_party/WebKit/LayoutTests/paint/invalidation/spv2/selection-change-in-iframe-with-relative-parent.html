@@ -19,29 +19,6 @@
 
 <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
 <script>
-if (window.testRunner)
-    testRunner.dumpAsTextWithPixelResults();
-
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow HTML",
-    "LayoutBlockFlow BODY",
-    "LayoutText #text",
-    "InlineTextBox 'Foo'",
-    "LayoutBR BR",
-    "InlineTextBox '\n'",
-    "LayoutBR BR",
-    "InlineTextBox '\n'",
-    "LayoutText #text",
-    "InlineTextBox 'Bar'",
-    "LayoutBR BR",
-    "InlineTextBox '\n'",
-    "LayoutBR BR",
-    "InlineTextBox '\n'",
-    "LayoutText #text",
-    "InlineTextBox 'Bazz'",
-    "LayoutBR BR",
-    "InlineTextBox '\n'",
-];
 function paintInvalidationTest()
 {
     var iframe = document.getElementsByTagName("iframe")[0];

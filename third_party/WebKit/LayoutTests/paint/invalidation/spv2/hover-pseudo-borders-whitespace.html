@@ -23,10 +23,6 @@ div {
 </style>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow DIV id='div_border'",
-        "LayoutBlockFlow DIV id='div_outline'",
-    ];
     function paintInvalidationTest() {
         if (!window.testRunner)
             return;

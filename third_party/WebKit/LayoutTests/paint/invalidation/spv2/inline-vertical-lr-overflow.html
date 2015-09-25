@@ -1,10 +1,6 @@
 <!-- Based on fast/repaint/inline-vertical-lr-overflow.html -->
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "LayoutText #text",
-        "InlineTextBox 'A\u00A0\u00A0B'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById("target").style.webkitTextStrokeColor = "green";

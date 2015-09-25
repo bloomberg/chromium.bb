@@ -2,10 +2,6 @@
 <!DOCTYPE html>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow DIV id='inner2'",
-        "LayoutBlockFlow DIV id='outer'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById('inner2').style.display = 'none';

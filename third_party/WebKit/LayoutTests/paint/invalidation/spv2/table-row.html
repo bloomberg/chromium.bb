@@ -4,11 +4,6 @@
     <title>Test for http://bugs.webkit.org/show_bug.cgi?id=14056</title>
     <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
     <script type="text/javascript">
-        window.expectedPaintInvalidationObjects = [
-            "LayoutTableCell TD",
-            "LayoutTableRow TR id='target' class='green'",
-            "LayoutTableCell TD",
-        ];
         function paintInvalidationTest()
         {
             var div = document.getElementById("target");

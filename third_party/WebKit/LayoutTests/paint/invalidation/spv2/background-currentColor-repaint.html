@@ -23,10 +23,6 @@ div {
 <div id="div2"></div>
 
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='div1'",
-    "LayoutBlockFlow DIV id='div2'",
-];
 function paintInvalidationTest()
 {
 	div1.style.color = 'transparent';

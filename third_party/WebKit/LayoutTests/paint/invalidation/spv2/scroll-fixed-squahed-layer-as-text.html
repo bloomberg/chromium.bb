@@ -1,0 +1,41 @@
+<!-- Based on compositing/repaint/scroll-fixed-squahed-layer.html -->
+<!DOCTYPE html>
+<html>
+<head>
+<script src="resources/paint-invalidation-test.js"></script>
+<style>
+.main {
+    position: fixed;
+    top: 100px;
+    left: 100px;
+    width: 200px;
+    height: 200px;
+    background-color: lightblue;
+    will-change: transform;
+}
+
+.squahed {
+    position: fixed;
+    top: 150px;
+    left: 100px;
+    width: 200px;
+    height: 200px;
+    background-color: lightgreen;
+}
+</style>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+if (window.internals)
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
+
+function paintInvalidationTest() {
+    window.scrollTo(0, 100);
+}
+</script>
+</head>
+<body style="height:2000px" onload="runPaintInvalidationTest()">
+<div class="main"></div>
+<div class="squahed"></div>
+</body>
+</html>

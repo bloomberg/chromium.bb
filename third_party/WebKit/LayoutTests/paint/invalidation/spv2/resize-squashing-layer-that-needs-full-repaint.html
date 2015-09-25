@@ -10,9 +10,6 @@
 <script>
 // This test checks that resizing a squashing layer such that the offset of content squashed into it relative to the squashing
 // container causes a repaint of its bounds within the updated squashing layer geometry.
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='to-be-removed'",
-];
 function paintInvalidationTest() {
     document.querySelector("#to-be-removed").style.display = 'none';
 }

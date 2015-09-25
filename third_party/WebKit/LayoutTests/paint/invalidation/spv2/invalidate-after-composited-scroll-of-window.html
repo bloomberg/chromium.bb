@@ -8,9 +8,6 @@
 <script src="resources/paint-invalidation-test.js"></script>
 Tests that invalidation of a div after scrolling invalidates just the div and no other area.
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='target'",
-];
 function paintInvalidationTest() {
     window.scrollBy(0, 2350);
     target.style.background = "papayawhip";

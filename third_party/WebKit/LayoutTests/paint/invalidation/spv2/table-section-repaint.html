@@ -13,34 +13,6 @@
     </style>
     <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
     <script type="text/javascript">
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
-            "LayoutTableSection TBODY",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='red half'",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='green half'",
-            "LayoutTableCell TD",
-            "LayoutBlockFlow DIV id='top' class='blue half'",
-            "LayoutTableSection TBODY",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='red half'",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='green half'",
-            "LayoutBlockFlow CAPTION id='caption2' class='zero'",
-            "LayoutTableSection TBODY",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='green half'",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='red half'",
-            "LayoutTable TABLE",
-            "LayoutBlockFlow DIV id='innerDiv'",
-            "LayoutTableSection TBODY",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='half'",
-            "LayoutTableRow TR",
-            "LayoutTableCell TD class='half'",
-        ];
         function paintInvalidationTest()
         {
             var caption1 = document.getElementById("caption1");

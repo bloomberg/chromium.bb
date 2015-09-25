@@ -10,10 +10,6 @@
             runPaintInvalidationTest();
         };
 
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
-            "LayoutBlockFlow (positioned) DIV class='absolute green'",
-        ];
         function paintInvalidationTest()
         {
             var moveMeElement = document.getElementById('moveMe');

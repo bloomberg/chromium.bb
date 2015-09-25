@@ -2,9 +2,6 @@
 <!DOCTYPE HTML>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-if (window.testRunner)
-  testRunner.dumpAsTextWithPixelResults();
-
 function highlightRange(id, start, end, active) {
   var range = document.createRange();
   var elem = document.getElementById(id).firstChild;
@@ -12,24 +9,6 @@ function highlightRange(id, start, end, active) {
   range.setEnd(elem, end);
   internals.addTextMatchMarker(range, active);
 }
-window.expectedPaintInvalidationObjects = [
-    "LayoutText #text",
-    "InlineTextBox 'findme'",
-    "LayoutText #text",
-    "InlineTextBox 'findme'",
-    "LayoutText #text",
-    "InlineTextBox 'findme'",
-    "LayoutText #text",
-    "InlineTextBox 'findme'",
-    "LayoutText #text",
-    "InlineTextBox 'findme'",
-    "LayoutSVGInlineText #text",
-    "InlineTextBox 'Can you findme in this boring text?'",
-    "LayoutSVGInlineText #text",
-    "InlineTextBox 'Findme in a typewriter!'",
-    "LayoutSVGInlineText #text",
-    "InlineTextBox 'Findme on a path! Did you findme?'",
-];
 function paintInvalidationTest() {
   highlightRange('1', 0, 6, false);
   highlightRange('2', 0, 6, false);

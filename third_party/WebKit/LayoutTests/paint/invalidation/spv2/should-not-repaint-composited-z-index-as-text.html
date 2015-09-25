@@ -1,0 +1,21 @@
+<!-- Based on compositing/repaint/should-not-repaint-composited-z-index.html -->
+<!DOCTYPE html>
+<style>
+#composited-box {
+    backface-visibility: hidden;
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    z-index: 1;
+}
+</style>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+function paintInvalidationTest() {
+    document.getElementById('composited-box').style.zIndex = 2;
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<div id="composited-box"></div>

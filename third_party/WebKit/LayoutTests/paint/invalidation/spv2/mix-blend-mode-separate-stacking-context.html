@@ -28,16 +28,6 @@
     </div>
 
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow (floating) DIV id='second'",
-            "LayoutBlockFlow (relative positioned) (floating) DIV",
-            "LayoutBlockFlow (floating) DIV id='first'",
-            "LayoutBlockFlow (relative positioned) (floating) DIV",
-            "LayoutBlockFlow (floating) DIV id='second'",
-            "LayoutBlockFlow (floating) DIV id='third'",
-            "LayoutBlockFlow (relative positioned) (floating) DIV id='fourth'",
-            "LayoutBlockFlow (floating) DIV",
-        ];
         function paintInvalidationTest() {
             document.getElementById('first').style.mixBlendMode = "multiply";
             document.getElementById('second').style.mixBlendMode = "normal";

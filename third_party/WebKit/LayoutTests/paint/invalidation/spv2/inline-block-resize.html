@@ -7,12 +7,6 @@
     </style>
     <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "RootInlineBox",
-            "InlineBox",
-            "LayoutBlockFlow (positioned) DIV",
-            "LayoutBlockFlow DIV id='target'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById('target').style.width = '100px';

@@ -3,17 +3,6 @@
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
     onload = runPaintInvalidationTest;
-    window.expectedPaintInvalidationObjects = [
-        "RootInlineBox",
-        "RootInlineBox",
-        "RootInlineBox",
-        "InlineTextBox '\n'",
-        "InlineTextBox '\n'",
-        "InlineTextBox '\n'",
-        "LayoutMultiColumnFlowThread (anonymous)",
-        "LayoutText #text",
-        "InlineTextBox 'PASS'",
-    ];
     function paintInvalidationTest() {
         var mc = document.getElementById('mc');
         mc.appendChild(document.createTextNode('PASS'));

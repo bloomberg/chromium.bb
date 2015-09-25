@@ -1,1 +1,2 @@
-The percent-sized image should be fully repainted on container's resize. Passes if there is a whole apple after resize. 
+["LayoutBlockFlow (positioned) DIV",
+ "LayoutImage (positioned) IMG"]

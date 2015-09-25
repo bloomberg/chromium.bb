@@ -3,12 +3,6 @@
 <head>
     <script src="resources/paint-invalidation-test.js"></script>
     <script>
-        window.expectedPaintInvalidationObjects = [
-            "InlineTextBox ''",
-            "RootInlineBox",
-            "LayoutText #text",
-            "InlineTextBox 'is invisible'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("block").style.height = "100px";

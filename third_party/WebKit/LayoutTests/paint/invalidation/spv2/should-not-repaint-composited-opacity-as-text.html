@@ -1,0 +1,21 @@
+<!-- Based on compositing/repaint/should-not-repaint-composited-opacity.html -->
+<!DOCTYPE html>
+<style>
+#composited-box {
+    backface-visibility: hidden;
+    width: 100px;
+    height: 100px;
+    background: green;
+    opacity: 0.8;
+}
+</style>
+<script src="resources/paint-invalidation-test.js"></script>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+function paintInvalidationTest() {
+    document.getElementById('composited-box').style.opacity = 0.5;
+}
+window.onload = runPaintInvalidationTest;
+</script>
+<div id="composited-box"></div>

@@ -28,9 +28,6 @@
   <span class="child"></span>
 </div>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) SPAN class='child embiggen'",
-];
 function paintInvalidationTest() {
     document.querySelectorAll('.child')[1].classList.add('embiggen');
 }

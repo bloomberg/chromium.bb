@@ -53,9 +53,6 @@ div:hover {
 </style>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-    window.expectedPaintInvalidationObjects = [
-        "LayoutImage (positioned) IMG id='repaintdiv' class='repaintdiv'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById('repaintdiv').style.background = 'salmon';

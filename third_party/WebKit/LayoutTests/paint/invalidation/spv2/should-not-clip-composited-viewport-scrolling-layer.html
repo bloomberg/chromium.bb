@@ -4,9 +4,6 @@
 <script>
 if (window.internals)
   internals.settings.setPreferCompositingToLCDTextEnabled(true);
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow DIV id='content'",
-];
 function paintInvalidationTest() {
   document.getElementById('content').style.backgroundColor = 'green';
   window.scrollTo(2000, 2000);

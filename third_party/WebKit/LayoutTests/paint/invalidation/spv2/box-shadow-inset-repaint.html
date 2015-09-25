@@ -10,10 +10,6 @@
     </style>
     <script src="resources/paint-invalidation-test.js" type="text/javascript"></script>
     <script type="text/javascript">
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow DIV id='container'",
-        "LayoutBlockFlow DIV",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById('container').innerHTML = "<div style='width:100px; height:100px; background-color:green'></div>";

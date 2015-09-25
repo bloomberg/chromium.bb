@@ -2,10 +2,6 @@
 <!DOCTYPE HTML>
 <script src="resources/paint-invalidation-test.js"></script>
 <script>
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='target2' class='outer'",
-    "LayoutBlockFlow DIV class='inner'",
-];
 function paintInvalidationTest()
 {
     // No visual change. Optimally, there should be no repaint.

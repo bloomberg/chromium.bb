@@ -12,10 +12,6 @@ body {
 if (window.testRunner)
     window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
-window.expectedPaintInvalidationObjects = [
-    "##ALL##",
-    "LayoutView #document",
-];
 function paintInvalidationTest() {
     window.scrollTo(0, 1000);
 }

@@ -7,10 +7,6 @@
     </style>
     <script type="text/javascript" src="resources/paint-invalidation-test.js"></script>
     <script type="text/javascript">
-        window.expectedPaintInvalidationObjects = [
-            "LayoutBlockFlow DIV id='target' class='square'",
-            "LayoutBlockFlow DIV class='square'",
-        ];
         function paintInvalidationTest()
         {
             document.getElementById("target").style.overflow = "hidden";

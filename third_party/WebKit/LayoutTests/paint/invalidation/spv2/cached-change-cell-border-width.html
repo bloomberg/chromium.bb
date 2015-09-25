@@ -9,15 +9,6 @@ Here we change cell border width, expect that cache is invalidated and paint pro
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD id='foo'",
-                "LayoutTableCell TD",
-                "LayoutTable TABLE",
-                "LayoutTableSection TBODY",
-                "LayoutTableRow TR",
-                "LayoutTableCell TD id='foo'",
-                "LayoutTableCell TD",
-            ];
             function paintInvalidationTest() {
                 document.getElementById("foo").style.borderWidth = "4px";
                 document.getElementById("foo").style.borderColor = "lime";

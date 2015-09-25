@@ -1,0 +1,20 @@
+<!-- Based on paint/invalidation/invalidate-after-composited-scroll.html -->
+<!doctype HTML>
+<div id="scroller" style="overflow:auto; will-change: transform; width: 200px; height: 200px; position: absolute; left: 300px; top: 300px;">
+    <div>
+        <div class="spacer" style="width: 1px; height: 2400px;"></div>
+        <div id="target" style="width: 100px; height: 100px; background: blue"></div>
+        <div class="spacer" style="width: 1px; height: 2400px;"></div>
+    </div>
+</div>
+<script src="resources/paint-invalidation-test.js"></script>
+Tests that invalidation of a div after scrolling invalidates just the div and scrollbars, and no other area.
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+function paintInvalidationTest() {
+    scroller.scrollTop = 2350;
+    target.style.background = "papayawhip";
+}
+onload = runPaintInvalidationTest;
+</script>

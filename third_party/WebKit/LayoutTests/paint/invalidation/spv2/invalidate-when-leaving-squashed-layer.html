@@ -7,9 +7,6 @@
 <script>
 // Tests that causing a squashed layer to leave its squashing layer causes an invalidation in the squashing layer for the previous
 // location of the squashed layer.
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV id='target'",
-];
 function paintInvalidationTest() {
     var target = document.getElementById("target");
     target.style.transform = 'translateZ(0)';

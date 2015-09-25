@@ -8,9 +8,6 @@
 <div id="target" style="transform: translate(0, 0); width: 100px; height: 100px; background-color: yellow; border: solid;"></div>
 <script>
     var offset = 0;
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow DIV id='target'",
-    ];
     function paintInvalidationTest()
     {
         offset += 20;

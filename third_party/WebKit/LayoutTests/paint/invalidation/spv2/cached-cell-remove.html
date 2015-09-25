@@ -9,17 +9,6 @@ Here we remove cell, expect that cache is invalidated and paint produces expecte
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD id='bar'",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTable TABLE",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableSection TBODY",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-            ];
             function paintInvalidationTest() {
                 barCell = document.getElementById("bar");
                 document.getElementById("row").removeChild(barCell);

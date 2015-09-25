@@ -3,9 +3,6 @@
 <script>
     onload = runPaintInvalidationTest;
 
-    window.expectedPaintInvalidationObjects = [
-        "LayoutBlockFlow DIV id='target'",
-    ];
     function paintInvalidationTest()
     {
         document.getElementById("target").style.visibility = "hidden";

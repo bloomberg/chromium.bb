@@ -9,19 +9,6 @@ Here we change colgroup border color, expect that cache is invalidated and paint
         <link rel="stylesheet" href="../../../fast/table/border-collapsing/resources/cached.css">
         <script src="resources/paint-invalidation-test.js"></script>
         <script type="text/javascript">
-            window.expectedPaintInvalidationObjects = [
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCell TD",
-                "LayoutTableCol COLGROUP id='colgroup'",
-            ];
             function paintInvalidationTest() {
                 document.getElementById("colgroup").style.borderColor = "yellow";
             }

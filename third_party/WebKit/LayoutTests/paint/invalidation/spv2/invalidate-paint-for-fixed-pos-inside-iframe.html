@@ -8,9 +8,6 @@ window.onload = function() {
     runPaintInvalidationTest();
 };
 
-window.expectedPaintInvalidationObjects = [
-    "LayoutBlockFlow (positioned) DIV",
-];
 function paintInvalidationTest() {
     document.getElementsByTagName('iframe')[0]
         .contentDocument
