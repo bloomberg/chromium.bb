@@ -395,7 +395,7 @@ bool CreateApplicationShortcutView::Accept() {
 
 #if defined(OS_WIN)
   creation_locations.in_quick_launch_bar = quick_launch_check_box_ == nullptr ?
-      nullptr : quick_launch_check_box_->checked();
+      false : quick_launch_check_box_->checked();
 #elif defined(OS_POSIX)
   // Create shortcut in Mac dock or as Linux (gnome/kde) application launcher
   // are not implemented yet.
