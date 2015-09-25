@@ -26,7 +26,8 @@ def DriverClose(fp):
 
 def FixArch(arch):
   arch = arch.lower()
-  archfix = { 'x86-32': 'X8632',
+  archfix = { 'x86'   : 'X8632',
+              'x86-32': 'X8632',
               'x86_32': 'X8632',
               'x8632' : 'X8632',
               'i686'  : 'X8632',
@@ -35,6 +36,7 @@ def FixArch(arch):
               '686'   : 'X8632',
 
               'amd64' : 'X8664',
+              'x64'   : 'X8664',
               'x86_64': 'X8664',
               'x86-64': 'X8664',
               'x8664' : 'X8664',
