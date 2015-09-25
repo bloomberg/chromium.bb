@@ -42,19 +42,19 @@ class SharedWorkerWebApplicationCacheHostImpl
   // Main resource loading is different for workers. The main resource is
   // loaded by the worker using WorkerScriptLoader.
   // These overrides are stubbed out.
-  virtual void willStartMainResourceRequest(
+  void willStartMainResourceRequest(
       blink::WebURLRequest&,
-      const blink::WebApplicationCacheHost*) {}
-  virtual void didReceiveResponseForMainResource(const blink::WebURLResponse&) {
-  }
-  virtual void didReceiveDataForMainResource(const char* data, unsigned len) {}
-  virtual void didFinishLoadingMainResource(bool success) {}
+      const blink::WebApplicationCacheHost*) override {}
+  void didReceiveResponseForMainResource(
+      const blink::WebURLResponse&) override {}
+  void didReceiveDataForMainResource(const char* data, unsigned len) override {}
+  void didFinishLoadingMainResource(bool success) override {}
 
   // Cache selection is also different for workers. We know at construction
   // time what cache to select and do so then.
   // These overrides are stubbed out.
-  virtual void selectCacheWithoutManifest() {}
-  virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL) {
+  void selectCacheWithoutManifest() override {}
+  bool selectCacheWithManifest(const blink::WebURL& manifestURL) override {
     return true;
   }
 };
@@ -67,7 +67,7 @@ class DataSourceExtraData
       public base::SupportsUserData {
  public:
   DataSourceExtraData() {}
-  virtual ~DataSourceExtraData() {}
+  ~DataSourceExtraData() override {}
 };
 
 // Called on the main thread only and blink owns it.
@@ -76,9 +76,8 @@ class WebServiceWorkerNetworkProviderImpl
  public:
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
-  virtual void willSendRequest(
-      blink::WebDataSource* data_source,
-      blink::WebURLRequest& request) {
+  void willSendRequest(blink::WebDataSource* data_source,
+                       blink::WebURLRequest& request) override {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(data_source);
     scoped_ptr<RequestExtraData> extra_data(new RequestExtraData);
@@ -93,15 +92,13 @@ class WebServiceWorkerNetworkProviderImpl
     }
   }
 
-  virtual bool isControlledByServiceWorker(
-      blink::WebDataSource& data_source) {
+  bool isControlledByServiceWorker(blink::WebDataSource& data_source) override {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(&data_source);
     return provider->IsControlledByServiceWorker();
   }
 
-  virtual int64_t serviceWorkerID(
-      blink::WebDataSource& data_source) {
+  int64_t serviceWorkerID(blink::WebDataSource& data_source) override {
     ServiceWorkerNetworkProvider* provider =
         GetNetworkProviderFromDataSource(&data_source);
     if (provider->context()->controller())

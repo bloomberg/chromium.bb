@@ -31,17 +31,17 @@ class CONTENT_EXPORT DevToolsClient
  public:
   DevToolsClient(RenderFrame* main_render_frame,
                  const std::string& compatibility_script);
-  virtual ~DevToolsClient();
+  ~DevToolsClient() override;
 
  private:
   // RenderFrameObserver overrides.
   void DidClearWindowObject() override;
 
   // WebDevToolsFrontendClient implementation.
-  virtual void sendMessageToBackend(const blink::WebString&) override;
-  virtual void sendMessageToEmbedder(const blink::WebString&) override;
+  void sendMessageToBackend(const blink::WebString&) override;
+  void sendMessageToEmbedder(const blink::WebString&) override;
 
-  virtual bool isUnderTest() override;
+  bool isUnderTest() override;
 
   void OnDispatchOnInspectorFrontend(const std::string& message,
                                      uint32 total_size);

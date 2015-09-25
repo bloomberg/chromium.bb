@@ -93,7 +93,7 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   RTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client,
       PeerConnectionDependencyFactory* dependency_factory);
-  virtual ~RTCPeerConnectionHandler();
+  ~RTCPeerConnectionHandler() override;
 
   // Destroy all existing RTCPeerConnectionHandler objects.
   static void DestructAllHandlers();
@@ -111,57 +111,45 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       const base::WeakPtr<PeerConnectionTracker>& peer_connection_tracker);
 
   // blink::WebRTCPeerConnectionHandler implementation
-  virtual bool initialize(
-      const blink::WebRTCConfiguration& server_configuration,
-      const blink::WebMediaConstraints& options) override;
+  bool initialize(const blink::WebRTCConfiguration& server_configuration,
+                  const blink::WebMediaConstraints& options) override;
 
-  virtual void createOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebMediaConstraints& options) override;
-  virtual void createOffer(
-      const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebRTCOfferOptions& options) override;
+  void createOffer(const blink::WebRTCSessionDescriptionRequest& request,
+                   const blink::WebMediaConstraints& options) override;
+  void createOffer(const blink::WebRTCSessionDescriptionRequest& request,
+                   const blink::WebRTCOfferOptions& options) override;
 
-  virtual void createAnswer(
-      const blink::WebRTCSessionDescriptionRequest& request,
-      const blink::WebMediaConstraints& options) override;
+  void createAnswer(const blink::WebRTCSessionDescriptionRequest& request,
+                    const blink::WebMediaConstraints& options) override;
 
-  virtual void setLocalDescription(
+  void setLocalDescription(
       const blink::WebRTCVoidRequest& request,
       const blink::WebRTCSessionDescription& description) override;
-  virtual void setRemoteDescription(
-        const blink::WebRTCVoidRequest& request,
-        const blink::WebRTCSessionDescription& description) override;
-
-  virtual blink::WebRTCSessionDescription localDescription()
-      override;
-  virtual blink::WebRTCSessionDescription remoteDescription()
-      override;
-
-  virtual bool updateICE(
-      const blink::WebRTCConfiguration& server_configuration,
-      const blink::WebMediaConstraints& options) override;
-  virtual bool addICECandidate(
-      const blink::WebRTCICECandidate& candidate) override;
-  virtual bool addICECandidate(
+  void setRemoteDescription(
       const blink::WebRTCVoidRequest& request,
-      const blink::WebRTCICECandidate& candidate) override;
+      const blink::WebRTCSessionDescription& description) override;
+
+  blink::WebRTCSessionDescription localDescription() override;
+  blink::WebRTCSessionDescription remoteDescription() override;
+
+  bool updateICE(const blink::WebRTCConfiguration& server_configuration,
+                 const blink::WebMediaConstraints& options) override;
+  bool addICECandidate(const blink::WebRTCICECandidate& candidate) override;
+  bool addICECandidate(const blink::WebRTCVoidRequest& request,
+                       const blink::WebRTCICECandidate& candidate) override;
   virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
                                        bool result);
 
-  virtual bool addStream(
-      const blink::WebMediaStream& stream,
-      const blink::WebMediaConstraints& options) override;
-  virtual void removeStream(
-      const blink::WebMediaStream& stream) override;
-  virtual void getStats(
-      const blink::WebRTCStatsRequest& request) override;
-  virtual blink::WebRTCDataChannelHandler* createDataChannel(
+  bool addStream(const blink::WebMediaStream& stream,
+                 const blink::WebMediaConstraints& options) override;
+  void removeStream(const blink::WebMediaStream& stream) override;
+  void getStats(const blink::WebRTCStatsRequest& request) override;
+  blink::WebRTCDataChannelHandler* createDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
-  virtual blink::WebRTCDTMFSenderHandler* createDTMFSender(
+  blink::WebRTCDTMFSenderHandler* createDTMFSender(
       const blink::WebMediaStreamTrack& track) override;
-  virtual void stop() override;
+  void stop() override;
 
   // Delegate functions to allow for mocking of WebKit interfaces.
   // getStats takes ownership of request parameter.

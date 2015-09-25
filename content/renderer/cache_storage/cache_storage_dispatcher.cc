@@ -145,39 +145,39 @@ class CacheStorageDispatcher::WebCache : public blink::WebServiceWorkerCache {
   WebCache(base::WeakPtr<CacheStorageDispatcher> dispatcher, int cache_id)
       : dispatcher_(dispatcher), cache_id_(cache_id) {}
 
-  virtual ~WebCache() {
+  ~WebCache() override {
     if (dispatcher_)
       dispatcher_->OnWebCacheDestruction(cache_id_);
   }
 
   // From blink::WebServiceWorkerCache:
-  virtual void dispatchMatch(CacheMatchCallbacks* callbacks,
-                             const blink::WebServiceWorkerRequest& request,
-                             const QueryParams& query_params) {
+  void dispatchMatch(CacheMatchCallbacks* callbacks,
+                     const blink::WebServiceWorkerRequest& request,
+                     const QueryParams& query_params) override {
     if (!dispatcher_)
       return;
     dispatcher_->dispatchMatchForCache(cache_id_, callbacks, request,
                                        query_params);
   }
-  virtual void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks,
-                                const blink::WebServiceWorkerRequest& request,
-                                const QueryParams& query_params) {
+  void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks,
+                        const blink::WebServiceWorkerRequest& request,
+                        const QueryParams& query_params) override {
     if (!dispatcher_)
       return;
     dispatcher_->dispatchMatchAllForCache(cache_id_, callbacks, request,
                                           query_params);
   }
-  virtual void dispatchKeys(CacheWithRequestsCallbacks* callbacks,
-                            const blink::WebServiceWorkerRequest* request,
-                            const QueryParams& query_params) {
+  void dispatchKeys(CacheWithRequestsCallbacks* callbacks,
+                    const blink::WebServiceWorkerRequest* request,
+                    const QueryParams& query_params) override {
     if (!dispatcher_)
       return;
     dispatcher_->dispatchKeysForCache(cache_id_, callbacks, request,
                                       query_params);
   }
-  virtual void dispatchBatch(
+  void dispatchBatch(
       CacheBatchCallbacks* callbacks,
-      const blink::WebVector<BatchOperation>& batch_operations) {
+      const blink::WebVector<BatchOperation>& batch_operations) override {
     if (!dispatcher_)
       return;
     dispatcher_->dispatchBatchForCache(cache_id_, callbacks, batch_operations);

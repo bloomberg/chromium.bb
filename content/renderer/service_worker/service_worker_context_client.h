@@ -85,76 +85,78 @@ class ServiceWorkerContextClient
       mojo::ServiceProviderPtr exposed_services);
 
   // WebServiceWorkerContextClient overrides.
-  virtual blink::WebURL scope() const;
-  virtual void getClients(const blink::WebServiceWorkerClientQueryOptions&,
-                          blink::WebServiceWorkerClientsCallbacks*);
-  virtual void openWindow(const blink::WebURL&,
-                          blink::WebServiceWorkerClientCallbacks*);
-  virtual void setCachedMetadata(const blink::WebURL&,
-                                 const char* data,
-                                 size_t size);
-  virtual void clearCachedMetadata(const blink::WebURL&);
-  virtual void workerReadyForInspection();
+  blink::WebURL scope() const override;
+  void getClients(const blink::WebServiceWorkerClientQueryOptions&,
+                  blink::WebServiceWorkerClientsCallbacks*) override;
+  void openWindow(const blink::WebURL&,
+                  blink::WebServiceWorkerClientCallbacks*) override;
+  void setCachedMetadata(const blink::WebURL&,
+                         const char* data,
+                         size_t size) override;
+  void clearCachedMetadata(const blink::WebURL&) override;
+  void workerReadyForInspection() override;
 
   // Called on the main thread.
-  virtual void workerContextFailedToStart();
-  virtual void workerScriptLoaded();
+  void workerContextFailedToStart() override;
+  void workerScriptLoaded() override;
 
-  virtual void workerContextStarted(blink::WebServiceWorkerContextProxy* proxy);
-  virtual void didEvaluateWorkerScript(bool success);
-  virtual void didInitializeWorkerContext(v8::Local<v8::Context> context,
-                                          const blink::WebURL& url);
-  virtual void willDestroyWorkerContext(v8::Local<v8::Context> context);
-  virtual void workerContextDestroyed();
-  virtual void reportException(const blink::WebString& error_message,
-                               int line_number,
-                               int column_number,
-                               const blink::WebString& source_url);
-  virtual void reportConsoleMessage(int source,
-                                    int level,
-                                    const blink::WebString& message,
-                                    int line_number,
-                                    const blink::WebString& source_url);
-  virtual void sendDevToolsMessage(int call_id,
-                                   const blink::WebString& message,
-                                   const blink::WebString& state);
-  virtual void didHandleActivateEvent(int request_id,
-                                      blink::WebServiceWorkerEventResult);
-  virtual void didHandleInstallEvent(int request_id,
-                                     blink::WebServiceWorkerEventResult result);
-  virtual void didHandleFetchEvent(int request_id);
-  virtual void didHandleFetchEvent(
+  void workerContextStarted(
+      blink::WebServiceWorkerContextProxy* proxy) override;
+  void didEvaluateWorkerScript(bool success) override;
+  void didInitializeWorkerContext(v8::Local<v8::Context> context,
+                                  const blink::WebURL& url) override;
+  void willDestroyWorkerContext(v8::Local<v8::Context> context) override;
+  void workerContextDestroyed() override;
+  void reportException(const blink::WebString& error_message,
+                       int line_number,
+                       int column_number,
+                       const blink::WebString& source_url) override;
+  void reportConsoleMessage(int source,
+                            int level,
+                            const blink::WebString& message,
+                            int line_number,
+                            const blink::WebString& source_url) override;
+  void sendDevToolsMessage(int call_id,
+                           const blink::WebString& message,
+                           const blink::WebString& state) override;
+  void didHandleActivateEvent(int request_id,
+                              blink::WebServiceWorkerEventResult) override;
+  void didHandleInstallEvent(
       int request_id,
-      const blink::WebServiceWorkerResponse& response);
-  virtual void didHandleNotificationClickEvent(
+      blink::WebServiceWorkerEventResult result) override;
+  void didHandleFetchEvent(int request_id) override;
+  void didHandleFetchEvent(
       int request_id,
-      blink::WebServiceWorkerEventResult result);
-  virtual void didHandlePushEvent(int request_id,
-                                  blink::WebServiceWorkerEventResult result);
-  virtual void didHandleSyncEvent(int request_id,
-                                  blink::WebServiceWorkerEventResult result);
+      const blink::WebServiceWorkerResponse& response) override;
+  void didHandleNotificationClickEvent(
+      int request_id,
+      blink::WebServiceWorkerEventResult result) override;
+  void didHandlePushEvent(int request_id,
+                          blink::WebServiceWorkerEventResult result) override;
+  void didHandleSyncEvent(int request_id,
+                          blink::WebServiceWorkerEventResult result) override;
 
   // Called on the main thread.
-  virtual blink::WebServiceWorkerNetworkProvider*
-      createServiceWorkerNetworkProvider(blink::WebDataSource* data_source);
-  virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider();
+  blink::WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(
+      blink::WebDataSource* data_source) override;
+  blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
 
-  virtual void postMessageToClient(
+  void postMessageToClient(
       const blink::WebString& uuid,
       const blink::WebString& message,
-      blink::WebMessagePortChannelArray* channels);
-  virtual void postMessageToCrossOriginClient(
+      blink::WebMessagePortChannelArray* channels) override;
+  void postMessageToCrossOriginClient(
       const blink::WebCrossOriginServiceWorkerClient& client,
       const blink::WebString& message,
-      blink::WebMessagePortChannelArray* channels);
-  virtual void focus(const blink::WebString& uuid,
-                     blink::WebServiceWorkerClientCallbacks*);
-  virtual void navigate(const blink::WebString& uuid,
-                        const blink::WebURL&,
-                        blink::WebServiceWorkerClientCallbacks*);
-  virtual void skipWaiting(
-      blink::WebServiceWorkerSkipWaitingCallbacks* callbacks);
-  virtual void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks);
+      blink::WebMessagePortChannelArray* channels) override;
+  void focus(const blink::WebString& uuid,
+             blink::WebServiceWorkerClientCallbacks*) override;
+  void navigate(const blink::WebString& uuid,
+                const blink::WebURL&,
+                blink::WebServiceWorkerClientCallbacks*) override;
+  void skipWaiting(
+      blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) override;
+  void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks) override;
 
   virtual void DispatchSyncEvent(const blink::WebSyncRegistration& registration,
                                  const SyncCallback& callback);

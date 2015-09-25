@@ -37,7 +37,7 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
                                     public blink::WebSpeechRecognizer {
  public:
   explicit SpeechRecognitionDispatcher(RenderViewImpl* render_view);
-  virtual ~SpeechRecognitionDispatcher();
+  ~SpeechRecognitionDispatcher() override;
 
   // Aborts all speech recognitions.
   void AbortAllRecognitions();
@@ -47,13 +47,13 @@ class SpeechRecognitionDispatcher : public RenderViewObserver,
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::WebSpeechRecognizer implementation.
-  virtual void start(const blink::WebSpeechRecognitionHandle&,
-                     const blink::WebSpeechRecognitionParams&,
-                     blink::WebSpeechRecognizerClient*);
-  virtual void stop(const blink::WebSpeechRecognitionHandle&,
-                    blink::WebSpeechRecognizerClient*);
-  virtual void abort(const blink::WebSpeechRecognitionHandle&,
-                     blink::WebSpeechRecognizerClient*);
+  void start(const blink::WebSpeechRecognitionHandle&,
+             const blink::WebSpeechRecognitionParams&,
+             blink::WebSpeechRecognizerClient*) override;
+  void stop(const blink::WebSpeechRecognitionHandle&,
+            blink::WebSpeechRecognizerClient*) override;
+  void abort(const blink::WebSpeechRecognitionHandle&,
+             blink::WebSpeechRecognizerClient*) override;
 
   void OnRecognitionStarted(int request_id);
   void OnAudioStarted(int request_id);

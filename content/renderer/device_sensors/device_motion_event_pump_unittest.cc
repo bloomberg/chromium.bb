@@ -22,10 +22,9 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
       : did_change_device_motion_(false), number_of_events_(0) {
     memset(&data_, 0, sizeof(data_));
   }
-  virtual ~MockDeviceMotionListener() { }
+  ~MockDeviceMotionListener() override {}
 
-  virtual void didChangeDeviceMotion(
-      const blink::WebDeviceMotionData& data) override {
+  void didChangeDeviceMotion(const blink::WebDeviceMotionData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_motion_ = true;
     ++number_of_events_;

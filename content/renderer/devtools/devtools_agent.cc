@@ -45,14 +45,13 @@ class WebKitClientMessageLoopImpl
     : public WebDevToolsAgentClient::WebKitClientMessageLoop {
  public:
   WebKitClientMessageLoopImpl() : message_loop_(base::MessageLoop::current()) {}
-  virtual ~WebKitClientMessageLoopImpl() { message_loop_ = NULL; }
-  virtual void run() {
+  ~WebKitClientMessageLoopImpl() override { message_loop_ = NULL; }
+  void run() override {
     base::MessageLoop::ScopedNestableTaskAllower allow(message_loop_);
     message_loop_->Run();
   }
-  virtual void quitNow() {
-    message_loop_->QuitNow();
-  }
+  void quitNow() override { message_loop_->QuitNow(); }
+
  private:
   base::MessageLoop* message_loop_;
 };

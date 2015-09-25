@@ -36,7 +36,7 @@ class PpFrameWriter : public MediaStreamVideoSource,
                       public base::SupportsWeakPtr<PpFrameWriter> {
  public:
   PpFrameWriter();
-  virtual ~PpFrameWriter();
+  ~PpFrameWriter() override;
 
   // FrameWriterInterface implementation.
   // This method will be called by the Pepper host from render thread.

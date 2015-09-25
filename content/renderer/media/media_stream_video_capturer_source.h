@@ -28,7 +28,7 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
                                  scoped_ptr<media::VideoCapturerSource> source);
   MediaStreamVideoCapturerSource(const SourceStoppedCallback& stop_callback,
                                  const StreamDeviceInfo& device_info);
-  virtual ~MediaStreamVideoCapturerSource();
+  ~MediaStreamVideoCapturerSource() override;
 
  private:
   friend class MediaStreamVideoCapturerSourceTest;

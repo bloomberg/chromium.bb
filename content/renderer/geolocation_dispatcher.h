@@ -30,19 +30,19 @@ class GeolocationDispatcher
       public blink::WebGeolocationClient {
  public:
   explicit GeolocationDispatcher(RenderFrame* render_frame);
-  virtual ~GeolocationDispatcher();
+  ~GeolocationDispatcher() override;
 
  private:
   // WebGeolocationClient
-  virtual void startUpdating();
-  virtual void stopUpdating();
-  virtual void setEnableHighAccuracy(bool enable_high_accuracy);
-  virtual void setController(blink::WebGeolocationController* controller);
-  virtual bool lastPosition(blink::WebGeolocationPosition& position);
-  virtual void requestPermission(
-      const blink::WebGeolocationPermissionRequest& permissionRequest);
-  virtual void cancelPermissionRequest(
-      const blink::WebGeolocationPermissionRequest& permissionRequest);
+  void startUpdating() override;
+  void stopUpdating() override;
+  void setEnableHighAccuracy(bool enable_high_accuracy) override;
+  void setController(blink::WebGeolocationController* controller) override;
+  bool lastPosition(blink::WebGeolocationPosition& position) override;
+  void requestPermission(
+      const blink::WebGeolocationPermissionRequest& permissionRequest) override;
+  void cancelPermissionRequest(
+      const blink::WebGeolocationPermissionRequest& permissionRequest) override;
 
   void QueryNextPosition();
   void OnPositionUpdate(MojoGeopositionPtr geoposition);

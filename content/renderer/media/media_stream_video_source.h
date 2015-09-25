@@ -67,7 +67,7 @@ class CONTENT_EXPORT MediaStreamVideoSource
   };
 
   MediaStreamVideoSource();
-  virtual ~MediaStreamVideoSource();
+  ~MediaStreamVideoSource() override;
 
   // Returns the MediaStreamVideoSource object owned by |source|.
   static MediaStreamVideoSource* GetVideoSource(

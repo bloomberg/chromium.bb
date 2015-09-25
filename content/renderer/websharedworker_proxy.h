@@ -31,11 +31,11 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
                        unsigned long long document_id,
                        int route_id,
                        int render_frame_route_id);
-  virtual ~WebSharedWorkerProxy();
+  ~WebSharedWorkerProxy() override;
 
   // Implementations of WebSharedWorkerConnector APIs
-  virtual void connect(blink::WebMessagePortChannel* channel,
-                       ConnectListener* listener);
+  void connect(blink::WebMessagePortChannel* channel,
+               ConnectListener* listener) override;
 
  private:
   // IPC::Listener implementation.

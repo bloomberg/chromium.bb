@@ -21,9 +21,9 @@ class MockDeviceOrientationListener
   MockDeviceOrientationListener() : did_change_device_orientation_(false) {
     memset(&data_, 0, sizeof(data_));
   }
-  virtual ~MockDeviceOrientationListener() { }
+  ~MockDeviceOrientationListener() override {}
 
-  virtual void didChangeDeviceOrientation(
+  void didChangeDeviceOrientation(
       const blink::WebDeviceOrientationData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_orientation_ = true;

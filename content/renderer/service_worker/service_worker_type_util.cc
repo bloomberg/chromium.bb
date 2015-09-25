@@ -23,8 +23,8 @@ class HeaderVisitor : public blink::WebHTTPHeaderVisitor {
   HeaderVisitor(ServiceWorkerHeaderMap* headers) : headers_(headers) {}
   virtual ~HeaderVisitor() {}
 
-  virtual void visitHeader(const blink::WebString& name,
-                           const blink::WebString& value) {
+  void visitHeader(const blink::WebString& name,
+                   const blink::WebString& value) override {
     const std::string header_name =
         base::UTF16ToASCII(base::StringPiece16(name));
     const std::string header_value =

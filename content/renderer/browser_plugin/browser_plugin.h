@@ -79,61 +79,52 @@ class CONTENT_EXPORT BrowserPlugin :
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
   // blink::WebPlugin implementation.
-  virtual blink::WebPluginContainer* container() const override;
-  virtual bool initialize(blink::WebPluginContainer* container) override;
-  virtual void destroy() override;
-  virtual v8::Local<v8::Object> v8ScriptableObject(
-      v8::Isolate* isolate) override;
-  virtual bool supportsKeyboardFocus() const override;
-  virtual bool supportsEditCommands() const override;
-  virtual bool supportsInputMethod() const override;
-  virtual bool canProcessDrag() const override;
-  virtual void layoutIfNeeded() override { }
-  virtual void paint(
-      blink::WebCanvas* canvas,
-      const blink::WebRect& rect) override;
-  virtual void updateGeometry(
-      const blink::WebRect& window_rect,
-      const blink::WebRect& clip_rect,
-      const blink::WebRect& unobscured_rect,
-      const blink::WebVector<blink::WebRect>& cut_outs_rects,
-      bool is_visible) override;
-  virtual void updateFocus(bool focused,
-                           blink::WebFocusType focus_type) override;
-  virtual void updateVisibility(bool visible) override;
-  virtual bool acceptsInputEvents() override;
-  virtual bool handleInputEvent(
-      const blink::WebInputEvent& event,
-      blink::WebCursorInfo& cursor_info) override;
-  virtual bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
-                                      const blink::WebDragData& drag_data,
-                                      blink::WebDragOperationsMask mask,
-                                      const blink::WebPoint& position,
-                                      const blink::WebPoint& screen) override;
-  virtual void didReceiveResponse(
-      const blink::WebURLResponse& response) override;
-  virtual void didReceiveData(const char* data, int data_length) override;
-  virtual void didFinishLoading() override;
-  virtual void didFailLoading(const blink::WebURLError& error) override;
-  virtual void didFinishLoadingFrameRequest(
-      const blink::WebURL& url,
-      void* notify_data) override;
-  virtual void didFailLoadingFrameRequest(
-      const blink::WebURL& url,
-      void* notify_data,
-      const blink::WebURLError& error) override;
-  virtual bool executeEditCommand(const blink::WebString& name) override;
-  virtual bool executeEditCommand(const blink::WebString& name,
-                                  const blink::WebString& value) override;
-  virtual bool setComposition(
+  blink::WebPluginContainer* container() const override;
+  bool initialize(blink::WebPluginContainer* container) override;
+  void destroy() override;
+  v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate) override;
+  bool supportsKeyboardFocus() const override;
+  bool supportsEditCommands() const override;
+  bool supportsInputMethod() const override;
+  bool canProcessDrag() const override;
+  void layoutIfNeeded() override {}
+  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
+  void updateGeometry(const blink::WebRect& window_rect,
+                      const blink::WebRect& clip_rect,
+                      const blink::WebRect& unobscured_rect,
+                      const blink::WebVector<blink::WebRect>& cut_outs_rects,
+                      bool is_visible) override;
+  void updateFocus(bool focused, blink::WebFocusType focus_type) override;
+  void updateVisibility(bool visible) override;
+  bool acceptsInputEvents() override;
+  bool handleInputEvent(const blink::WebInputEvent& event,
+                        blink::WebCursorInfo& cursor_info) override;
+  bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
+                              const blink::WebDragData& drag_data,
+                              blink::WebDragOperationsMask mask,
+                              const blink::WebPoint& position,
+                              const blink::WebPoint& screen) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
+  void didReceiveData(const char* data, int data_length) override;
+  void didFinishLoading() override;
+  void didFailLoading(const blink::WebURLError& error) override;
+  void didFinishLoadingFrameRequest(const blink::WebURL& url,
+                                    void* notify_data) override;
+  void didFailLoadingFrameRequest(const blink::WebURL& url,
+                                  void* notify_data,
+                                  const blink::WebURLError& error) override;
+  bool executeEditCommand(const blink::WebString& name) override;
+  bool executeEditCommand(const blink::WebString& name,
+                          const blink::WebString& value) override;
+  bool setComposition(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
       int selectionStart,
       int selectionEnd) override;
-  virtual bool confirmComposition(
+  bool confirmComposition(
       const blink::WebString& text,
       blink::WebWidget::ConfirmCompositionBehavior selectionBehavior) override;
-  virtual void extendSelectionAndDelete(int before, int after) override;
+  void extendSelectionAndDelete(int before, int after) override;
 
   // MouseLockDispatcher::LockTarget implementation.
   void OnLockMouseACK(bool succeeded) override;

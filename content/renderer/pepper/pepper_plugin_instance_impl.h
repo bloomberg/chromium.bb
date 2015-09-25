@@ -547,7 +547,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   class ExternalDocumentLoader : public blink::WebURLLoaderClient {
    public:
     ExternalDocumentLoader();
-    virtual ~ExternalDocumentLoader();
+    ~ExternalDocumentLoader() override;
 
     void ReplayReceivedData(WebURLLoaderClient* document_loader);
 

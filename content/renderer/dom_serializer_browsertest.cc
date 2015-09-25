@@ -176,10 +176,9 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   // DomSerializerDelegate.
-  virtual void didSerializeDataForFrame(const WebURL& frame_web_url,
-                                        const WebCString& data,
-                                        PageSerializationStatus status) {
-
+  void didSerializeDataForFrame(const WebURL& frame_web_url,
+                                const WebCString& data,
+                                PageSerializationStatus status) override {
     GURL frame_url(frame_web_url);
     // If the all frames are finished saving, check all finish status
     if (status == WebPageSerializerClient::AllFramesAreFinished) {

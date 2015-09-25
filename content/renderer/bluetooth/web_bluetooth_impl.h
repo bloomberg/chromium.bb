@@ -24,7 +24,7 @@ class CONTENT_EXPORT WebBluetoothImpl
  public:
   explicit WebBluetoothImpl(ThreadSafeSender* thread_safe_sender);
   WebBluetoothImpl(ThreadSafeSender* thread_safe_sender, int frame_routing_id);
-  ~WebBluetoothImpl();
+  ~WebBluetoothImpl() override;
 
   // blink::WebBluetooth interface:
   void requestDevice(

@@ -24,14 +24,14 @@ class EmbeddedSharedWorkerContentSettingsClientProxy
       bool is_unique_origin,
       int routing_id,
       ThreadSafeSender* thread_safe_sender);
-  virtual ~EmbeddedSharedWorkerContentSettingsClientProxy();
+  ~EmbeddedSharedWorkerContentSettingsClientProxy() override;
 
   // WebWorkerContentSettingsClientProxy overrides.
-  virtual bool allowDatabase(const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual bool requestFileSystemAccessSync();
-  virtual bool allowIndexedDB(const blink::WebString& name);
+  bool allowDatabase(const blink::WebString& name,
+                     const blink::WebString& display_name,
+                     unsigned long estimated_size) override;
+  bool requestFileSystemAccessSync() override;
+  bool allowIndexedDB(const blink::WebString& name) override;
 
  private:
   const GURL origin_url_;

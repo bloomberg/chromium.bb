@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderFrameImpl
   static blink::WebFrame* ResolveOpener(int opener_frame_routing_id,
                                         int* opener_view_routing_id);
 
-  virtual ~RenderFrameImpl();
+  ~RenderFrameImpl() override;
 
   bool is_swapped_out() const {
     return is_swapped_out_;
@@ -236,9 +236,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // logic in the browser side to balance starts/stops.
   // |to_different_document| will be true unless the load is a fragment
   // navigation, or triggered by history.pushState/replaceState.
-  virtual void didStartLoading(bool to_different_document);
-  virtual void didStopLoading();
-  virtual void didChangeLoadProgress(double load_progress);
+  void didStartLoading(bool to_different_document) override;
+  void didStopLoading() override;
+  void didChangeLoadProgress(double load_progress) override;
 
   AccessibilityMode accessibility_mode() {
     return accessibility_mode_;
@@ -369,194 +369,194 @@ class CONTENT_EXPORT RenderFrameImpl
                            const std::string& message) override;
 
   // blink::WebFrameClient implementation:
-  virtual blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
-                                         const blink::WebPluginParams& params);
-  virtual blink::WebMediaPlayer* createMediaPlayer(
+  blink::WebPlugin* createPlugin(blink::WebLocalFrame* frame,
+                                 const blink::WebPluginParams& params) override;
+  blink::WebMediaPlayer* createMediaPlayer(
       blink::WebLocalFrame* frame,
       const blink::WebURL& url,
       blink::WebMediaPlayerClient* client,
       blink::WebMediaPlayerEncryptedMediaClient* encrypted_client,
-      blink::WebContentDecryptionModule* initial_cdm);
-  virtual blink::WebApplicationCacheHost* createApplicationCacheHost(
+      blink::WebContentDecryptionModule* initial_cdm) override;
+  blink::WebApplicationCacheHost* createApplicationCacheHost(
       blink::WebLocalFrame* frame,
-      blink::WebApplicationCacheHostClient* client);
-  virtual blink::WebWorkerContentSettingsClientProxy*
-      createWorkerContentSettingsClientProxy(blink::WebLocalFrame* frame);
-  virtual blink::WebExternalPopupMenu* createExternalPopupMenu(
+      blink::WebApplicationCacheHostClient* client) override;
+  blink::WebWorkerContentSettingsClientProxy*
+  createWorkerContentSettingsClientProxy(blink::WebLocalFrame* frame) override;
+  blink::WebExternalPopupMenu* createExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,
-      blink::WebExternalPopupMenuClient* popup_menu_client);
-  virtual blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame);
-  virtual blink::WebServiceWorkerProvider* createServiceWorkerProvider(
-      blink::WebLocalFrame* frame);
-  virtual void didAccessInitialDocument(blink::WebLocalFrame* frame);
-  virtual blink::WebFrame* createChildFrame(
+      blink::WebExternalPopupMenuClient* popup_menu_client) override;
+  blink::WebCookieJar* cookieJar(blink::WebLocalFrame* frame) override;
+  blink::WebServiceWorkerProvider* createServiceWorkerProvider(
+      blink::WebLocalFrame* frame) override;
+  void didAccessInitialDocument(blink::WebLocalFrame* frame) override;
+  blink::WebFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      blink::WebSandboxFlags sandboxFlags);
-  virtual void didChangeOpener(blink::WebFrame* frame);
-  virtual void frameDetached(blink::WebFrame* frame, DetachType type);
-  virtual void frameFocused();
-  virtual void willClose(blink::WebFrame* frame);
-  virtual void didChangeName(blink::WebLocalFrame* frame,
-                             const blink::WebString& name);
-  virtual void didChangeSandboxFlags(blink::WebFrame* child_frame,
-                                     blink::WebSandboxFlags flags);
-  virtual void didMatchCSS(
+      blink::WebSandboxFlags sandboxFlags) override;
+  void didChangeOpener(blink::WebFrame* frame) override;
+  void frameDetached(blink::WebFrame* frame, DetachType type) override;
+  void frameFocused() override;
+  void willClose(blink::WebFrame* frame) override;
+  void didChangeName(blink::WebLocalFrame* frame,
+                     const blink::WebString& name) override;
+  void didChangeSandboxFlags(blink::WebFrame* child_frame,
+                             blink::WebSandboxFlags flags) override;
+  void didMatchCSS(
       blink::WebLocalFrame* frame,
       const blink::WebVector<blink::WebString>& newly_matching_selectors,
-      const blink::WebVector<blink::WebString>& stopped_matching_selectors);
-  virtual bool shouldReportDetailedMessageForSource(
-      const blink::WebString& source);
-  virtual void didAddMessageToConsole(const blink::WebConsoleMessage& message,
-                                      const blink::WebString& source_name,
-                                      unsigned source_line,
-                                      const blink::WebString& stack_trace);
-  virtual void loadURLExternally(blink::WebLocalFrame* frame,
-                                 const blink::WebURLRequest& request,
-                                 blink::WebNavigationPolicy policy,
-                                 const blink::WebString& suggested_name);
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors)
+      override;
+  bool shouldReportDetailedMessageForSource(
+      const blink::WebString& source) override;
+  void didAddMessageToConsole(const blink::WebConsoleMessage& message,
+                              const blink::WebString& source_name,
+                              unsigned source_line,
+                              const blink::WebString& stack_trace) override;
+  void loadURLExternally(blink::WebLocalFrame* frame,
+                         const blink::WebURLRequest& request,
+                         blink::WebNavigationPolicy policy,
+                         const blink::WebString& suggested_name) override;
   // The WebDataSource::ExtraData* is assumed to be a DocumentState* subclass.
-  virtual blink::WebNavigationPolicy decidePolicyForNavigation(
-      const NavigationPolicyInfo& info);
-  virtual blink::WebHistoryItem historyItemForNewChildFrame(
-      blink::WebFrame* frame);
-  virtual void willSendSubmitEvent(blink::WebLocalFrame* frame,
-                                   const blink::WebFormElement& form);
-  virtual void willSubmitForm(blink::WebLocalFrame* frame,
-                              const blink::WebFormElement& form);
-  virtual void didCreateDataSource(blink::WebLocalFrame* frame,
-                                   blink::WebDataSource* datasource);
-  virtual void didStartProvisionalLoad(blink::WebLocalFrame* frame,
-                                       double triggering_event_time);
-  virtual void didReceiveServerRedirectForProvisionalLoad(
-      blink::WebLocalFrame* frame);
-  virtual void didFailProvisionalLoad(
-      blink::WebLocalFrame* frame,
-      const blink::WebURLError& error,
-      blink::WebHistoryCommitType commit_type);
-  virtual void didCommitProvisionalLoad(
+  blink::WebNavigationPolicy decidePolicyForNavigation(
+      const NavigationPolicyInfo& info) override;
+  blink::WebHistoryItem historyItemForNewChildFrame(
+      blink::WebFrame* frame) override;
+  void willSendSubmitEvent(blink::WebLocalFrame* frame,
+                           const blink::WebFormElement& form) override;
+  void willSubmitForm(blink::WebLocalFrame* frame,
+                      const blink::WebFormElement& form) override;
+  void didCreateDataSource(blink::WebLocalFrame* frame,
+                           blink::WebDataSource* datasource) override;
+  void didStartProvisionalLoad(blink::WebLocalFrame* frame,
+                               double triggering_event_time) override;
+  void didReceiveServerRedirectForProvisionalLoad(
+      blink::WebLocalFrame* frame) override;
+  void didFailProvisionalLoad(blink::WebLocalFrame* frame,
+                              const blink::WebURLError& error,
+                              blink::WebHistoryCommitType commit_type) override;
+  void didCommitProvisionalLoad(
       blink::WebLocalFrame* frame,
       const blink::WebHistoryItem& item,
-      blink::WebHistoryCommitType commit_type);
-  virtual void didCreateNewDocument(blink::WebLocalFrame* frame);
-  virtual void didClearWindowObject(blink::WebLocalFrame* frame);
-  virtual void didCreateDocumentElement(blink::WebLocalFrame* frame);
-  virtual void didReceiveTitle(blink::WebLocalFrame* frame,
-                               const blink::WebString& title,
-                               blink::WebTextDirection direction);
-  virtual void didChangeIcon(blink::WebLocalFrame* frame,
-                             blink::WebIconURL::Type icon_type);
-  virtual void didFinishDocumentLoad(blink::WebLocalFrame* frame,
-                                     bool document_is_empty);
-  virtual void didHandleOnloadEvents(blink::WebLocalFrame* frame);
-  virtual void didFailLoad(blink::WebLocalFrame* frame,
-                           const blink::WebURLError& error,
-                           blink::WebHistoryCommitType commit_type);
-  virtual void didFinishLoad(blink::WebLocalFrame* frame);
-  virtual void didNavigateWithinPage(blink::WebLocalFrame* frame,
-                                     const blink::WebHistoryItem& item,
-                                     blink::WebHistoryCommitType commit_type);
-  virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
-  virtual void didChangeThemeColor();
-  virtual void dispatchLoad();
-  virtual void requestNotificationPermission(
+      blink::WebHistoryCommitType commit_type) override;
+  void didCreateNewDocument(blink::WebLocalFrame* frame) override;
+  void didClearWindowObject(blink::WebLocalFrame* frame) override;
+  void didCreateDocumentElement(blink::WebLocalFrame* frame) override;
+  void didReceiveTitle(blink::WebLocalFrame* frame,
+                       const blink::WebString& title,
+                       blink::WebTextDirection direction) override;
+  void didChangeIcon(blink::WebLocalFrame* frame,
+                     blink::WebIconURL::Type icon_type) override;
+  void didFinishDocumentLoad(blink::WebLocalFrame* frame,
+                             bool document_is_empty) override;
+  void didHandleOnloadEvents(blink::WebLocalFrame* frame) override;
+  void didFailLoad(blink::WebLocalFrame* frame,
+                   const blink::WebURLError& error,
+                   blink::WebHistoryCommitType commit_type) override;
+  void didFinishLoad(blink::WebLocalFrame* frame) override;
+  void didNavigateWithinPage(blink::WebLocalFrame* frame,
+                             const blink::WebHistoryItem& item,
+                             blink::WebHistoryCommitType commit_type) override;
+  void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) override;
+  void didChangeThemeColor() override;
+  void dispatchLoad() override;
+  void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,
-      blink::WebNotificationPermissionCallback* callback);
-  virtual void didChangeSelection(bool is_empty_selection);
-  virtual blink::WebColorChooser* createColorChooser(
+      blink::WebNotificationPermissionCallback* callback) override;
+  void didChangeSelection(bool is_empty_selection) override;
+  blink::WebColorChooser* createColorChooser(
       blink::WebColorChooserClient* client,
       const blink::WebColor& initial_color,
-      const blink::WebVector<blink::WebColorSuggestion>& suggestions);
-  virtual void runModalAlertDialog(const blink::WebString& message);
-  virtual bool runModalConfirmDialog(const blink::WebString& message);
-  virtual bool runModalPromptDialog(const blink::WebString& message,
-                                    const blink::WebString& default_value,
-                                    blink::WebString* actual_value);
-  virtual bool runModalBeforeUnloadDialog(bool is_reload,
-                                          const blink::WebString& message);
-  virtual void showContextMenu(const blink::WebContextMenuData& data);
-  virtual void clearContextMenu();
-  virtual void willSendRequest(blink::WebLocalFrame* frame,
-                               unsigned identifier,
-                               blink::WebURLRequest& request,
-                               const blink::WebURLResponse& redirect_response);
-  virtual void didReceiveResponse(blink::WebLocalFrame* frame,
-                                  unsigned identifier,
-                                  const blink::WebURLResponse& response);
-  virtual void didLoadResourceFromMemoryCache(
+      const blink::WebVector<blink::WebColorSuggestion>& suggestions) override;
+  void runModalAlertDialog(const blink::WebString& message) override;
+  bool runModalConfirmDialog(const blink::WebString& message) override;
+  bool runModalPromptDialog(const blink::WebString& message,
+                            const blink::WebString& default_value,
+                            blink::WebString* actual_value) override;
+  bool runModalBeforeUnloadDialog(bool is_reload,
+                                  const blink::WebString& message) override;
+  void showContextMenu(const blink::WebContextMenuData& data) override;
+  void clearContextMenu() override;
+  void willSendRequest(blink::WebLocalFrame* frame,
+                       unsigned identifier,
+                       blink::WebURLRequest& request,
+                       const blink::WebURLResponse& redirect_response) override;
+  void didReceiveResponse(blink::WebLocalFrame* frame,
+                          unsigned identifier,
+                          const blink::WebURLResponse& response) override;
+  void didLoadResourceFromMemoryCache(
       blink::WebLocalFrame* frame,
       const blink::WebURLRequest& request,
-      const blink::WebURLResponse& response);
-  virtual void didDisplayInsecureContent();
-  virtual void didRunInsecureContent(const blink::WebSecurityOrigin& origin,
-                                     const blink::WebURL& target);
-  virtual void didChangePerformanceTiming();
-  virtual void didAbortLoading(blink::WebLocalFrame* frame);
-  virtual void didCreateScriptContext(blink::WebLocalFrame* frame,
-                                      v8::Local<v8::Context> context,
-                                      int extension_group,
-                                      int world_id);
-  virtual void willReleaseScriptContext(blink::WebLocalFrame* frame,
-                                        v8::Local<v8::Context> context,
-                                        int world_id);
-  virtual void didChangeScrollOffset(blink::WebLocalFrame* frame);
-  virtual void willInsertBody(blink::WebLocalFrame* frame);
-  virtual void reportFindInPageMatchCount(int request_id,
-                                          int count,
-                                          bool final_update);
-  virtual void reportFindInPageSelection(int request_id,
-                                         int active_match_ordinal,
-                                         const blink::WebRect& sel);
-  virtual void requestStorageQuota(blink::WebLocalFrame* frame,
-                                   blink::WebStorageQuotaType type,
-                                   unsigned long long requested_size,
-                                   blink::WebStorageQuotaCallbacks callbacks);
-  virtual void willOpenWebSocket(blink::WebSocketHandle* handle);
-  virtual blink::WebGeolocationClient* geolocationClient();
-  virtual blink::WebPushClient* pushClient();
-  virtual blink::WebPresentationClient* presentationClient();
-  virtual void willStartUsingPeerConnectionHandler(
+      const blink::WebURLResponse& response) override;
+  void didDisplayInsecureContent() override;
+  void didRunInsecureContent(const blink::WebSecurityOrigin& origin,
+                             const blink::WebURL& target) override;
+  void didChangePerformanceTiming() override;
+  void didAbortLoading(blink::WebLocalFrame* frame) override;
+  void didCreateScriptContext(blink::WebLocalFrame* frame,
+                              v8::Local<v8::Context> context,
+                              int extension_group,
+                              int world_id) override;
+  void willReleaseScriptContext(blink::WebLocalFrame* frame,
+                                v8::Local<v8::Context> context,
+                                int world_id) override;
+  void didChangeScrollOffset(blink::WebLocalFrame* frame) override;
+  void willInsertBody(blink::WebLocalFrame* frame) override;
+  void reportFindInPageMatchCount(int request_id,
+                                  int count,
+                                  bool final_update) override;
+  void reportFindInPageSelection(int request_id,
+                                 int active_match_ordinal,
+                                 const blink::WebRect& sel) override;
+  void requestStorageQuota(blink::WebLocalFrame* frame,
+                           blink::WebStorageQuotaType type,
+                           unsigned long long requested_size,
+                           blink::WebStorageQuotaCallbacks callbacks) override;
+  void willOpenWebSocket(blink::WebSocketHandle* handle) override;
+  blink::WebGeolocationClient* geolocationClient() override;
+  blink::WebPushClient* pushClient() override;
+  blink::WebPresentationClient* presentationClient() override;
+  void willStartUsingPeerConnectionHandler(
       blink::WebLocalFrame* frame,
-      blink::WebRTCPeerConnectionHandler* handler);
-  virtual blink::WebUserMediaClient* userMediaClient();
-  virtual blink::WebEncryptedMediaClient* encryptedMediaClient();
-  virtual blink::WebMIDIClient* webMIDIClient();
-  virtual bool willCheckAndDispatchMessageEvent(
+      blink::WebRTCPeerConnectionHandler* handler) override;
+  blink::WebUserMediaClient* userMediaClient() override;
+  blink::WebEncryptedMediaClient* encryptedMediaClient() override;
+  blink::WebMIDIClient* webMIDIClient() override;
+  bool willCheckAndDispatchMessageEvent(
       blink::WebLocalFrame* source_frame,
       blink::WebFrame* target_frame,
       blink::WebSecurityOrigin target_origin,
-      blink::WebDOMMessageEvent event);
-  virtual blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
-                                             const blink::WebURL& url);
-  virtual blink::WebString doNotTrackValue(blink::WebLocalFrame* frame);
-  virtual bool allowWebGL(blink::WebLocalFrame* frame, bool default_value);
-  virtual void didLoseWebGLContext(blink::WebLocalFrame* frame,
-                                   int arb_robustness_status_code);
-  virtual blink::WebScreenOrientationClient* webScreenOrientationClient();
-  virtual bool isControlledByServiceWorker(blink::WebDataSource& data_source);
-  virtual int64_t serviceWorkerID(blink::WebDataSource& data_source);
-  virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
-                                      blink::WebAXEvent event);
-  virtual void handleAccessibilityFindInPageResult(
-        int identifier,
-        int match_index,
-        const blink::WebAXObject& start_object,
-        int start_offset,
-        const blink::WebAXObject& end_object,
-        int end_offset);
-  virtual void didChangeManifest(blink::WebLocalFrame*);
-  virtual bool enterFullscreen();
-  virtual bool exitFullscreen();
-  virtual blink::WebPermissionClient* permissionClient();
-  virtual blink::WebAppBannerClient* appBannerClient();
-  virtual void registerProtocolHandler(const blink::WebString& scheme,
-                                       const blink::WebURL& url,
-                                       const blink::WebString& title);
-  virtual void unregisterProtocolHandler(const blink::WebString& scheme,
-                                         const blink::WebURL& url);
-  virtual blink::WebBluetooth* bluetooth();
-  virtual blink::WebUSBClient* usbClient();
+      blink::WebDOMMessageEvent event) override;
+  blink::WebString userAgentOverride(blink::WebLocalFrame* frame,
+                                     const blink::WebURL& url) override;
+  blink::WebString doNotTrackValue(blink::WebLocalFrame* frame) override;
+  bool allowWebGL(blink::WebLocalFrame* frame, bool default_value) override;
+  void didLoseWebGLContext(blink::WebLocalFrame* frame,
+                           int arb_robustness_status_code) override;
+  blink::WebScreenOrientationClient* webScreenOrientationClient() override;
+  bool isControlledByServiceWorker(blink::WebDataSource& data_source) override;
+  int64_t serviceWorkerID(blink::WebDataSource& data_source) override;
+  void postAccessibilityEvent(const blink::WebAXObject& obj,
+                              blink::WebAXEvent event) override;
+  void handleAccessibilityFindInPageResult(
+      int identifier,
+      int match_index,
+      const blink::WebAXObject& start_object,
+      int start_offset,
+      const blink::WebAXObject& end_object,
+      int end_offset) override;
+  void didChangeManifest(blink::WebLocalFrame*) override;
+  bool enterFullscreen() override;
+  bool exitFullscreen() override;
+  blink::WebPermissionClient* permissionClient() override;
+  blink::WebAppBannerClient* appBannerClient() override;
+  void registerProtocolHandler(const blink::WebString& scheme,
+                               const blink::WebURL& url,
+                               const blink::WebString& title) override;
+  void unregisterProtocolHandler(const blink::WebString& scheme,
+                                 const blink::WebURL& url) override;
+  blink::WebBluetooth* bluetooth() override;
+  blink::WebUSBClient* usbClient() override;
 
 #if defined(ENABLE_WEBVR)
   blink::WebVRClient* webVRClient() override;
@@ -618,7 +618,7 @@ class CONTENT_EXPORT RenderFrameImpl
         const blink::WebVector<v8::Local<v8::Value>>& result) override;
 
    private:
-    ~JavaScriptIsolatedWorldRequest();
+    ~JavaScriptIsolatedWorldRequest() override;
 
     int id_;
     bool notify_result_;

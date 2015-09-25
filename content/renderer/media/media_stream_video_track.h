@@ -46,7 +46,7 @@ class CONTENT_EXPORT MediaStreamVideoTrack : public MediaStreamTrack {
       const blink::WebMediaConstraints& constraints,
       const MediaStreamVideoSource::ConstraintsCallback& callback,
       bool enabled);
-  virtual ~MediaStreamVideoTrack();
+  ~MediaStreamVideoTrack() override;
 
   void SetEnabled(bool enabled) override;
 

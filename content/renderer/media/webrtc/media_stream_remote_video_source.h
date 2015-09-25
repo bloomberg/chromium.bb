@@ -24,7 +24,7 @@ class CONTENT_EXPORT MediaStreamRemoteVideoSource
      : public MediaStreamVideoSource {
  public:
   MediaStreamRemoteVideoSource(scoped_ptr<TrackObserver> observer);
-  virtual ~MediaStreamRemoteVideoSource();
+  ~MediaStreamRemoteVideoSource() override;
 
  protected:
   // Implements MediaStreamVideoSource.

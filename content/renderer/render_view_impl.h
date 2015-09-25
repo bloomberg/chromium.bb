@@ -325,12 +325,12 @@ class CONTENT_EXPORT RenderViewImpl
   // blink::WebWidgetClient implementation ------------------------------------
 
   // Most methods are handled by RenderWidget.
-  virtual void didFocus();
-  virtual void didBlur();
-  virtual void show(blink::WebNavigationPolicy policy);
-  virtual bool requestPointerLock();
-  virtual void requestPointerUnlock();
-  virtual bool isPointerLocked();
+  void didFocus() override;
+  void didBlur() override;
+  void show(blink::WebNavigationPolicy policy) override;
+  bool requestPointerLock() override;
+  void requestPointerUnlock() override;
+  bool isPointerLocked() override;
   void didHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
   void onMouseDown(const blink::WebNode& mouse_down_node) override;
@@ -339,24 +339,24 @@ class CONTENT_EXPORT RenderViewImpl
 
   // blink::WebViewClient implementation --------------------------------------
 
-  virtual blink::WebView* createView(blink::WebLocalFrame* creator,
-                                     const blink::WebURLRequest& request,
-                                     const blink::WebWindowFeatures& features,
-                                     const blink::WebString& frame_name,
-                                     blink::WebNavigationPolicy policy,
-                                     bool suppress_opener);
-  virtual blink::WebWidget* createPopupMenu(blink::WebPopupType popup_type);
-  virtual blink::WebStorageNamespace* createSessionStorageNamespace();
-  virtual void printPage(blink::WebLocalFrame* frame);
-  virtual bool enumerateChosenDirectory(
+  blink::WebView* createView(blink::WebLocalFrame* creator,
+                             const blink::WebURLRequest& request,
+                             const blink::WebWindowFeatures& features,
+                             const blink::WebString& frame_name,
+                             blink::WebNavigationPolicy policy,
+                             bool suppress_opener) override;
+  blink::WebWidget* createPopupMenu(blink::WebPopupType popup_type) override;
+  blink::WebStorageNamespace* createSessionStorageNamespace() override;
+  void printPage(blink::WebLocalFrame* frame) override;
+  bool enumerateChosenDirectory(
       const blink::WebString& path,
-      blink::WebFileChooserCompletion* chooser_completion);
-  virtual void saveImageFromDataURL(const blink::WebString& data_url);
-  virtual void didCancelCompositionOnSelectionChange();
-  virtual bool handleCurrentKeyboardEvent();
-  virtual bool runFileChooser(
+      blink::WebFileChooserCompletion* chooser_completion) override;
+  void saveImageFromDataURL(const blink::WebString& data_url) override;
+  void didCancelCompositionOnSelectionChange() override;
+  bool handleCurrentKeyboardEvent() override;
+  bool runFileChooser(
       const blink::WebFileChooserParams& params,
-      blink::WebFileChooserCompletion* chooser_completion);
+      blink::WebFileChooserCompletion* chooser_completion) override;
   void SetValidationMessageDirection(base::string16* main_text,
                                      blink::WebTextDirection main_text_hint,
                                      base::string16* sub_text,
@@ -369,50 +369,50 @@ class CONTENT_EXPORT RenderViewImpl
   void hideValidationMessage() override;
   void moveValidationMessage(
       const blink::WebRect& anchor_in_root_view) override;
-  virtual void setStatusText(const blink::WebString& text);
-  virtual void setMouseOverURL(const blink::WebURL& url);
-  virtual void setKeyboardFocusURL(const blink::WebURL& url);
-  virtual void startDragging(blink::WebLocalFrame* frame,
-                             const blink::WebDragData& data,
-                             blink::WebDragOperationsMask mask,
-                             const blink::WebImage& image,
-                             const blink::WebPoint& imageOffset);
-  virtual bool acceptsLoadDrops();
-  virtual void focusNext();
-  virtual void focusPrevious();
-  virtual void focusedNodeChanged(const blink::WebNode& fromNode,
-                                  const blink::WebNode& toNode);
-  virtual void didUpdateLayout();
+  void setStatusText(const blink::WebString& text) override;
+  void setMouseOverURL(const blink::WebURL& url) override;
+  void setKeyboardFocusURL(const blink::WebURL& url) override;
+  void startDragging(blink::WebLocalFrame* frame,
+                     const blink::WebDragData& data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& imageOffset) override;
+  bool acceptsLoadDrops() override;
+  void focusNext() override;
+  void focusPrevious() override;
+  void focusedNodeChanged(const blink::WebNode& fromNode,
+                          const blink::WebNode& toNode) override;
+  void didUpdateLayout() override;
 #if defined(OS_ANDROID) || defined(USE_AURA)
-  virtual bool didTapMultipleTargets(
+  bool didTapMultipleTargets(
       const blink::WebSize& inner_viewport_offset,
       const blink::WebRect& touch_rect,
-      const blink::WebVector<blink::WebRect>& target_rects);
+      const blink::WebVector<blink::WebRect>& target_rects) override;
 #endif
-  virtual blink::WebString acceptLanguages();
-  virtual void navigateBackForwardSoon(int offset);
-  virtual int historyBackListCount();
-  virtual int historyForwardListCount();
-  virtual blink::WebSpeechRecognizer* speechRecognizer();
-  virtual void zoomLimitsChanged(double minimum_level, double maximum_level);
+  blink::WebString acceptLanguages() override;
+  void navigateBackForwardSoon(int offset) override;
+  int historyBackListCount() override;
+  int historyForwardListCount() override;
+  blink::WebSpeechRecognizer* speechRecognizer() override;
+  void zoomLimitsChanged(double minimum_level, double maximum_level) override;
   virtual void zoomLevelChanged();
-  virtual void pageScaleFactorChanged();
+  void pageScaleFactorChanged() override;
   virtual double zoomLevelToZoomFactor(double zoom_level) const;
   virtual double zoomFactorToZoomLevel(double factor) const;
-  virtual blink::WebPageVisibilityState visibilityState() const;
-  virtual void draggableRegionsChanged();
-  virtual void pageImportanceSignalsChanged();
+  blink::WebPageVisibilityState visibilityState() const override;
+  void draggableRegionsChanged() override;
+  void pageImportanceSignalsChanged() override;
 
 #if defined(OS_ANDROID)
-  virtual void scheduleContentIntent(const blink::WebURL& intent);
-  virtual void cancelScheduledContentIntents();
-  virtual blink::WebContentDetectionResult detectContentAround(
-      const blink::WebHitTestResult& touch_hit);
+  void scheduleContentIntent(const blink::WebURL& intent) override;
+  void cancelScheduledContentIntents() override;
+  blink::WebContentDetectionResult detectContentAround(
+      const blink::WebHitTestResult& touch_hit) override;
 
   // Only used on Android since all other platforms implement
   // date and time input fields using MULTIPLE_FIELDS_UI
-  virtual bool openDateTimeChooser(const blink::WebDateTimeChooserParams&,
-                                   blink::WebDateTimeChooserCompletion*);
+  bool openDateTimeChooser(const blink::WebDateTimeChooserParams&,
+                           blink::WebDateTimeChooserCompletion*) override;
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
 
@@ -506,7 +506,7 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebDeviceEmulationParams& params) override;
 
   // Do not delete directly.  This class is reference counted.
-  virtual ~RenderViewImpl();
+  ~RenderViewImpl() override;
 
  private:
   // For unit tests.

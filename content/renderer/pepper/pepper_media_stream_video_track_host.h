@@ -42,8 +42,7 @@ class PepperMediaStreamVideoTrackHost : public PepperMediaStreamTrackHostBase,
   blink::WebMediaStreamTrack track() { return track_; }
 
  private:
-
-  virtual ~PepperMediaStreamVideoTrackHost();
+  ~PepperMediaStreamVideoTrackHost() override;
 
   void InitBuffers();
 

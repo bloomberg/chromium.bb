@@ -166,10 +166,10 @@ class FakeWebGestureCurve : public blink::WebGestureCurve {
                       const blink::WebFloatSize& cumulative_scroll)
       : velocity_(velocity), cumulative_scroll_(cumulative_scroll) {}
 
-  virtual ~FakeWebGestureCurve() {}
+  ~FakeWebGestureCurve() override {}
 
   // Returns false if curve has finished and can no longer be applied.
-  virtual bool apply(double time, blink::WebGestureCurveTarget* target) {
+  bool apply(double time, blink::WebGestureCurveTarget* target) override {
     blink::WebFloatSize displacement(velocity_.width * time,
                                      velocity_.height * time);
     blink::WebFloatSize increment(

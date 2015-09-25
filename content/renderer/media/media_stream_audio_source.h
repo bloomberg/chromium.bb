@@ -22,7 +22,7 @@ class CONTENT_EXPORT MediaStreamAudioSource
                          const SourceStoppedCallback& stop_callback,
                          PeerConnectionDependencyFactory* factory);
   MediaStreamAudioSource();
-  virtual ~MediaStreamAudioSource();
+  ~MediaStreamAudioSource() override;
 
   void AddTrack(const blink::WebMediaStreamTrack& track,
                 const blink::WebMediaConstraints& constraints,

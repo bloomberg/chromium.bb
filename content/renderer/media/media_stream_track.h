@@ -25,7 +25,7 @@ class CONTENT_EXPORT MediaStreamTrack
     : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
   explicit MediaStreamTrack(bool is_local_track);
-  virtual ~MediaStreamTrack();
+  ~MediaStreamTrack() override;
 
   static MediaStreamTrack* GetTrack(const blink::WebMediaStreamTrack& track);
 

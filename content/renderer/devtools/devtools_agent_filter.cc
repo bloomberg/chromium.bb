@@ -25,14 +25,15 @@ class MessageImpl : public WebDevToolsAgent::MessageDescriptor {
       : msg_(message),
         routing_id_(routing_id) {
   }
-  virtual ~MessageImpl() {}
-  virtual WebDevToolsAgent* agent() {
+  ~MessageImpl() override {}
+  WebDevToolsAgent* agent() override {
     DevToolsAgent* agent = DevToolsAgent::FromRoutingId(routing_id_);
     if (!agent)
       return 0;
     return agent->GetWebAgent();
   }
-  virtual WebString message() { return WebString::fromUTF8(msg_); }
+  WebString message() override { return WebString::fromUTF8(msg_); }
+
  private:
   std::string msg_;
   int routing_id_;

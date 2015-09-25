@@ -24,8 +24,8 @@ class CONTENT_EXPORT PresentationSessionClient
   ~PresentationSessionClient() override;
 
   // WebPresentationSessionClient implementation.
-  virtual blink::WebString getUrl();
-  virtual blink::WebString getId();
+  blink::WebString getUrl() override;
+  blink::WebString getId() override;
 
  private:
   blink::WebString url_;

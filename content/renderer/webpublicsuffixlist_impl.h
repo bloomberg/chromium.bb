@@ -13,8 +13,8 @@ namespace content {
 class WebPublicSuffixListImpl : public blink::WebPublicSuffixList {
  public:
   // WebPublicSuffixList methods:
-  virtual size_t getPublicSuffixLength(const blink::WebString& host);
-  virtual ~WebPublicSuffixListImpl();
+  size_t getPublicSuffixLength(const blink::WebString& host) override;
+  ~WebPublicSuffixListImpl() override;
 };
 
 }  // namespace content

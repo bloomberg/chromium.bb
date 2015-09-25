@@ -28,20 +28,20 @@ class WebServiceWorkerCacheStorageImpl
  public:
   WebServiceWorkerCacheStorageImpl(ThreadSafeSender* thread_safe_sender,
                                    const GURL& origin);
-  ~WebServiceWorkerCacheStorageImpl();
+  ~WebServiceWorkerCacheStorageImpl() override;
 
   // From WebServiceWorkerCacheStorage:
-  virtual void dispatchHas(CacheStorageCallbacks* callbacks,
-                           const blink::WebString& cacheName);
-  virtual void dispatchOpen(CacheStorageWithCacheCallbacks* callbacks,
-                            const blink::WebString& cacheName);
-  virtual void dispatchDelete(CacheStorageCallbacks* callbacks,
-                              const blink::WebString& cacheName);
-  virtual void dispatchKeys(CacheStorageKeysCallbacks* callbacks);
-  virtual void dispatchMatch(
+  void dispatchHas(CacheStorageCallbacks* callbacks,
+                   const blink::WebString& cacheName) override;
+  void dispatchOpen(CacheStorageWithCacheCallbacks* callbacks,
+                    const blink::WebString& cacheName) override;
+  void dispatchDelete(CacheStorageCallbacks* callbacks,
+                      const blink::WebString& cacheName) override;
+  void dispatchKeys(CacheStorageKeysCallbacks* callbacks) override;
+  void dispatchMatch(
       CacheStorageMatchCallbacks* callbacks,
       const blink::WebServiceWorkerRequest& request,
-      const blink::WebServiceWorkerCache::QueryParams& query_params);
+      const blink::WebServiceWorkerCache::QueryParams& query_params) override;
 
  private:
   // Helper to return the thread-specific dispatcher.

@@ -25,11 +25,11 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
  public:
   explicit RendererWebColorChooserImpl(RenderFrame* render_frame,
                                        blink::WebColorChooserClient*);
-  virtual ~RendererWebColorChooserImpl();
+  ~RendererWebColorChooserImpl() override;
 
   // blink::WebColorChooser implementation:
-  virtual void setSelectedColor(const blink::WebColor);
-  virtual void endChooser();
+  void setSelectedColor(const blink::WebColor) override;
+  void endChooser() override;
 
   void Open(SkColor initial_color,
             const std::vector<content::ColorSuggestion>& suggestions);

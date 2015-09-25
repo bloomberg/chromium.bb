@@ -37,17 +37,15 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   explicit MockLockOrientationCallback(LockOrientationResultHolder* results)
       : results_(results) {}
 
-  virtual void onSuccess() {
-    results_->succeeded_ = true;
-  }
+  void onSuccess() override { results_->succeeded_ = true; }
 
-  virtual void onError(blink::WebLockOrientationError error) {
+  void onError(blink::WebLockOrientationError error) override {
     results_->failed_ = true;
     results_->error_ = error;
   }
 
  private:
-  virtual ~MockLockOrientationCallback() {}
+  ~MockLockOrientationCallback() override {}
 
   LockOrientationResultHolder* results_;
 };

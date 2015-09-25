@@ -49,7 +49,7 @@ class ResourceFetcherImpl : public ResourceFetcher,
 
   explicit ResourceFetcherImpl(const GURL& url);
 
-  virtual ~ResourceFetcherImpl();
+  ~ResourceFetcherImpl() override;
 
   // Callback for timer that limits how long we wait for the server.  If this
   // timer fires and the request hasn't completed, we kill the request.

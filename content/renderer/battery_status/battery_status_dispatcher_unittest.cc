@@ -14,7 +14,7 @@ namespace content {
 class MockBatteryStatusListener : public blink::WebBatteryStatusListener {
  public:
   MockBatteryStatusListener() : did_change_battery_status_(false) {}
-  virtual ~MockBatteryStatusListener() {}
+  ~MockBatteryStatusListener() override {}
 
   // blink::WebBatteryStatusListener method.
   void updateBatteryStatus(const blink::WebBatteryStatus& status) override {

@@ -27,10 +27,10 @@ class PepperFileChooserHost::CompletionHandler
   explicit CompletionHandler(const base::WeakPtr<PepperFileChooserHost>& host)
       : host_(host) {}
 
-  virtual ~CompletionHandler() {}
+  ~CompletionHandler() override {}
 
-  virtual void didChooseFile(
-      const blink::WebVector<blink::WebString>& file_names) {
+  void didChooseFile(
+      const blink::WebVector<blink::WebString>& file_names) override {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {
@@ -43,8 +43,8 @@ class PepperFileChooserHost::CompletionHandler
     // It is the responsibility of this method to delete the instance.
     delete this;
   }
-  virtual void didChooseFile(
-      const blink::WebVector<SelectedFileInfo>& file_names) {
+  void didChooseFile(
+      const blink::WebVector<SelectedFileInfo>& file_names) override {
     if (host_.get()) {
       std::vector<PepperFileChooserHost::ChosenFileInfo> files;
       for (size_t i = 0; i < file_names.size(); i++) {

@@ -20,15 +20,17 @@ class RendererWebCookieJarImpl : public blink::WebCookieJar {
 
  private:
   // blink::WebCookieJar methods:
-  virtual void setCookie(
-      const blink::WebURL& url, const blink::WebURL& first_party_for_cookies,
-      const blink::WebString& value);
-  virtual blink::WebString cookies(
-      const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
-  virtual blink::WebString cookieRequestHeaderFieldValue(
-      const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
-  virtual bool cookiesEnabled(
-      const blink::WebURL& url, const blink::WebURL& first_party_for_cookies);
+  void setCookie(const blink::WebURL& url,
+                 const blink::WebURL& first_party_for_cookies,
+                 const blink::WebString& value) override;
+  blink::WebString cookies(
+      const blink::WebURL& url,
+      const blink::WebURL& first_party_for_cookies) override;
+  blink::WebString cookieRequestHeaderFieldValue(
+      const blink::WebURL& url,
+      const blink::WebURL& first_party_for_cookies) override;
+  bool cookiesEnabled(const blink::WebURL& url,
+                      const blink::WebURL& first_party_for_cookies) override;
 
   RenderFrameImpl* sender_;
 };

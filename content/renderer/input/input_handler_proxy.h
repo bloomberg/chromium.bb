@@ -32,7 +32,7 @@ class CONTENT_EXPORT InputHandlerProxy
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client);
-  virtual ~InputHandlerProxy();
+  ~InputHandlerProxy() override;
 
   InputScrollElasticityController* scroll_elasticity_controller() {
     return scroll_elasticity_controller_.get();
@@ -69,8 +69,8 @@ class CONTENT_EXPORT InputHandlerProxy
       const gfx::ScrollOffset& root_offset) override;
 
   // blink::WebGestureCurveTarget implementation.
-  virtual bool scrollBy(const blink::WebFloatSize& offset,
-                        const blink::WebFloatSize& velocity);
+  bool scrollBy(const blink::WebFloatSize& offset,
+                const blink::WebFloatSize& velocity) override;
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
     return gesture_scroll_on_impl_thread_;

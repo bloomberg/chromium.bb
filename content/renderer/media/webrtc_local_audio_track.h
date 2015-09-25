@@ -42,7 +42,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
                         const scoped_refptr<WebRtcAudioCapturer>& capturer,
                         WebAudioCapturerSource* webaudio_source);
 
-  virtual ~WebRtcLocalAudioTrack();
+  ~WebRtcLocalAudioTrack() override;
 
   // Add a sink to the track. This function will trigger a OnSetFormat()
   // call on the |sink|.

@@ -27,7 +27,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
     NON_EXPORTED_BASE(public blink::WebScreenOrientationClient) {
  public:
   explicit ScreenOrientationDispatcher(RenderFrame* render_frame);
-  virtual ~ScreenOrientationDispatcher();
+  ~ScreenOrientationDispatcher() override;
 
  private:
   friend class ScreenOrientationDispatcherTest;
@@ -36,10 +36,9 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // blink::WebScreenOrientationClient implementation.
-  virtual void lockOrientation(
-      blink::WebScreenOrientationLockType orientation,
-      blink::WebLockOrientationCallback* callback) override;
-  virtual void unlockOrientation() override;
+  void lockOrientation(blink::WebScreenOrientationLockType orientation,
+                       blink::WebLockOrientationCallback* callback) override;
+  void unlockOrientation() override;
 
   void OnLockSuccess(int request_id);
   void OnLockError(int request_id,

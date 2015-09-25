@@ -33,7 +33,7 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
  public:
   const std::string& buffer() const { return buffer_; }
 
-  virtual void visitHeader(const WebString& name, const WebString& value) {
+  void visitHeader(const WebString& name, const WebString& value) override {
     if (!buffer_.empty())
       buffer_.append("\n");
     buffer_.append(name.utf8());

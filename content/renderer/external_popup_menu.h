@@ -42,8 +42,8 @@ class ExternalPopupMenu : public blink::WebExternalPopupMenu {
 #endif
 
   // blink::WebExternalPopupMenu implementation:
-  virtual void show(const blink::WebRect& bounds);
-  virtual void close();
+  void show(const blink::WebRect& bounds) override;
+  void close() override;
 
  private:
   RenderFrameImpl* render_frame_;

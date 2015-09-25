@@ -78,7 +78,7 @@ class DataSourceExtraData
       public base::SupportsUserData {
  public:
   DataSourceExtraData() {}
-  virtual ~DataSourceExtraData() {}
+  ~DataSourceExtraData() override {}
 };
 
 // Called on the main thread only and blink owns it.
@@ -87,9 +87,8 @@ class WebServiceWorkerNetworkProviderImpl
  public:
   // Blink calls this method for each request starting with the main script,
   // we tag them with the provider id.
-  virtual void willSendRequest(
-      blink::WebDataSource* data_source,
-      blink::WebURLRequest& request) {
+  void willSendRequest(blink::WebDataSource* data_source,
+                       blink::WebURLRequest& request) override {
     ServiceWorkerNetworkProvider* provider =
         ServiceWorkerNetworkProvider::FromDocumentState(
             static_cast<DataSourceExtraData*>(data_source->extraData()));

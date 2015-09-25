@@ -47,7 +47,7 @@ class CONTENT_EXPORT MediaStream
   // and remotely generated streams.
   explicit MediaStream(webrtc::MediaStreamInterface* webrtc_stream);
 
-  virtual ~MediaStream();
+  ~MediaStream() override;
 
   // Returns an instance of MediaStream. This method will never return NULL.
   static MediaStream* GetMediaStream(

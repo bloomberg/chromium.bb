@@ -31,12 +31,12 @@ class RendererWebAudioDeviceImpl
   RendererWebAudioDeviceImpl(const media::AudioParameters& params,
                              blink::WebAudioDevice::RenderCallback* callback,
                              int session_id);
-  virtual ~RendererWebAudioDeviceImpl();
+  ~RendererWebAudioDeviceImpl() override;
 
   // blink::WebAudioDevice implementation.
-  virtual void start();
-  virtual void stop();
-  virtual double sampleRate();
+  void start() override;
+  void stop() override;
+  double sampleRate() override;
 
   // AudioRendererSink::RenderCallback implementation.
   int Render(media::AudioBus* dest, int audio_delay_milliseconds) override;

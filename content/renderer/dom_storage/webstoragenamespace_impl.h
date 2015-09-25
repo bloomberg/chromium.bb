@@ -16,13 +16,13 @@ class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
   // constructor should be used for session storage namepaces.
   WebStorageNamespaceImpl();
   explicit WebStorageNamespaceImpl(int64 namespace_id);
-  virtual ~WebStorageNamespaceImpl();
+  ~WebStorageNamespaceImpl() override;
 
   // See WebStorageNamespace.h for documentation on these functions.
-  virtual blink::WebStorageArea* createStorageArea(
-      const blink::WebString& origin);
+  blink::WebStorageArea* createStorageArea(
+      const blink::WebString& origin) override;
   virtual blink::WebStorageNamespace* copy();
-  virtual bool isSameNamespace(const WebStorageNamespace&) const;
+  bool isSameNamespace(const WebStorageNamespace&) const override;
 
  private:
   int64 namespace_id_;

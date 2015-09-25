@@ -120,20 +120,18 @@ class CONTENT_EXPORT RenderFrameProxy
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
 
   // blink::WebRemoteFrameClient implementation:
-  virtual void frameDetached(DetachType type);
-  virtual void postMessageEvent(
-      blink::WebLocalFrame* sourceFrame,
-      blink::WebRemoteFrame* targetFrame,
-      blink::WebSecurityOrigin target,
-      blink::WebDOMMessageEvent event);
-  virtual void initializeChildFrame(
-      const blink::WebRect& frame_rect,
-      float scale_factor);
-  virtual void navigate(const blink::WebURLRequest& request,
-                        bool should_replace_current_entry);
-  virtual void forwardInputEvent(const blink::WebInputEvent* event);
-  virtual void frameRectsChanged(const blink::WebRect& frame_rect);
-  virtual void didChangeOpener(blink::WebFrame* opener);
+  void frameDetached(DetachType type) override;
+  void postMessageEvent(blink::WebLocalFrame* sourceFrame,
+                        blink::WebRemoteFrame* targetFrame,
+                        blink::WebSecurityOrigin target,
+                        blink::WebDOMMessageEvent event) override;
+  void initializeChildFrame(const blink::WebRect& frame_rect,
+                            float scale_factor) override;
+  void navigate(const blink::WebURLRequest& request,
+                bool should_replace_current_entry) override;
+  void forwardInputEvent(const blink::WebInputEvent* event) override;
+  void frameRectsChanged(const blink::WebRect& frame_rect) override;
+  void didChangeOpener(blink::WebFrame* opener) override;
 
   // IPC handlers
   void OnDidStartLoading();

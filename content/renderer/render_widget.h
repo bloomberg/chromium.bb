@@ -167,43 +167,41 @@ class CONTENT_EXPORT RenderWidget
   bool Send(IPC::Message* msg) override;
 
   // blink::WebWidgetClient
-  virtual void didAutoResize(const blink::WebSize& new_size);
-  virtual void initializeLayerTreeView();
-  virtual blink::WebLayerTreeView* layerTreeView();
-  virtual void didFirstVisuallyNonEmptyLayout();
-  virtual void didFirstLayoutAfterFinishedParsing();
-  virtual void didFocus();
-  virtual void didBlur();
-  virtual void didChangeCursor(const blink::WebCursorInfo&);
-  virtual void closeWidgetSoon();
-  virtual void show(blink::WebNavigationPolicy);
-  virtual blink::WebRect windowRect();
-  virtual void setToolTipText(const blink::WebString& text,
-                              blink::WebTextDirection hint);
-  virtual void setWindowRect(const blink::WebRect&);
-  virtual blink::WebRect windowResizerRect();
-  virtual blink::WebRect rootWindowRect();
-  virtual blink::WebScreenInfo screenInfo();
-  virtual float deviceScaleFactor();
-  virtual void resetInputMethod();
-  virtual void didHandleGestureEvent(const blink::WebGestureEvent& event,
-                                     bool event_cancelled);
-  virtual void didOverscroll(
-      const blink::WebFloatSize& unusedDelta,
-      const blink::WebFloatSize& accumulatedRootOverScroll,
-      const blink::WebFloatPoint& position,
-      const blink::WebFloatSize& velocity);
-  virtual void showImeIfNeeded();
+  void didAutoResize(const blink::WebSize& new_size) override;
+  void initializeLayerTreeView() override;
+  blink::WebLayerTreeView* layerTreeView() override;
+  void didFirstVisuallyNonEmptyLayout() override;
+  void didFirstLayoutAfterFinishedParsing() override;
+  void didFocus() override;
+  void didBlur() override;
+  void didChangeCursor(const blink::WebCursorInfo&) override;
+  void closeWidgetSoon() override;
+  void show(blink::WebNavigationPolicy) override;
+  blink::WebRect windowRect() override;
+  void setToolTipText(const blink::WebString& text,
+                      blink::WebTextDirection hint) override;
+  void setWindowRect(const blink::WebRect&) override;
+  blink::WebRect windowResizerRect() override;
+  blink::WebRect rootWindowRect() override;
+  blink::WebScreenInfo screenInfo() override;
+  float deviceScaleFactor() override;
+  void resetInputMethod() override;
+  void didHandleGestureEvent(const blink::WebGestureEvent& event,
+                             bool event_cancelled) override;
+  void didOverscroll(const blink::WebFloatSize& unusedDelta,
+                     const blink::WebFloatSize& accumulatedRootOverScroll,
+                     const blink::WebFloatPoint& position,
+                     const blink::WebFloatSize& velocity) override;
+  void showImeIfNeeded() override;
 
 #if defined(OS_ANDROID)
   // Notifies that a tap was not consumed, so showing a UI for the unhandled
   // tap may be needed.
   // Performs various checks on the given WebNode to apply heuristics to
   // determine if triggering is appropriate.
-  virtual void showUnhandledTapUIIfNeeded(
-      const blink::WebPoint& tapped_position,
-      const blink::WebNode& tapped_node,
-      bool page_changed) override;
+  void showUnhandledTapUIIfNeeded(const blink::WebPoint& tapped_position,
+                                  const blink::WebNode& tapped_node,
+                                  bool page_changed) override;
 #endif
 
   // Begins the compositor's scheduler to start producing frames.
@@ -572,14 +570,14 @@ class CONTENT_EXPORT RenderWidget
   virtual bool HasTouchEventHandlersAt(const gfx::Point& point) const;
 
   // Check whether the WebWidget has any touch event handlers registered.
-  virtual void hasTouchEventHandlers(bool has_handlers);
+  void hasTouchEventHandlers(bool has_handlers) override;
 
   // Tell the browser about the actions permitted for a new touch point.
-  virtual void setTouchAction(blink::WebTouchAction touch_action);
+  void setTouchAction(blink::WebTouchAction touch_action) override;
 
   // Called when value of focused text field gets dirty, e.g. value is modified
   // by script, not by user input.
-  virtual void didUpdateTextOfFocusedElementByNonUserInput();
+  void didUpdateTextOfFocusedElementByNonUserInput() override;
 
   // Creates a 3D context associated with this view.
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(

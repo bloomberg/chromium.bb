@@ -19,14 +19,14 @@ class RendererWebMIDIAccessorImpl
  public:
   explicit RendererWebMIDIAccessorImpl(
       blink::WebMIDIAccessorClient* client);
-  virtual ~RendererWebMIDIAccessorImpl();
+  ~RendererWebMIDIAccessorImpl() override;
 
   // blink::WebMIDIAccessor implementation.
-  virtual void startSession();
-  virtual void sendMIDIData(unsigned port_index,
-                            const unsigned char* data,
-                            size_t length,
-                            double timestamp);
+  void startSession() override;
+  void sendMIDIData(unsigned port_index,
+                    const unsigned char* data,
+                    size_t length,
+                    double timestamp) override;
 
  private:
   blink::WebMIDIAccessorClient* client_;

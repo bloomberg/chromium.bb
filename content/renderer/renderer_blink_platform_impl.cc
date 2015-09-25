@@ -173,23 +173,23 @@ blink::WebBatteryStatusListener* g_test_battery_status_listener = nullptr;
 class RendererBlinkPlatformImpl::MimeRegistry
     : public SimpleWebMimeRegistryImpl {
  public:
-  virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+  blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const blink::WebString& mime_type,
       const blink::WebString& codecs,
-      const blink::WebString& key_system);
-  virtual bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
-                                           const blink::WebString& codecs);
-  virtual blink::WebString mimeTypeForExtension(
-      const blink::WebString& file_extension);
-  virtual blink::WebString mimeTypeFromFile(
-      const blink::WebString& file_path);
+      const blink::WebString& key_system) override;
+  bool supportsMediaSourceMIMEType(const blink::WebString& mime_type,
+                                   const blink::WebString& codecs) override;
+  blink::WebString mimeTypeForExtension(
+      const blink::WebString& file_extension) override;
+  blink::WebString mimeTypeFromFile(const blink::WebString& file_path) override;
 };
 
 class RendererBlinkPlatformImpl::FileUtilities : public WebFileUtilitiesImpl {
  public:
   explicit FileUtilities(ThreadSafeSender* sender)
       : thread_safe_sender_(sender) {}
-  virtual bool getFileInfo(const WebString& path, WebFileInfo& result);
+  bool getFileInfo(const WebString& path, WebFileInfo& result) override;
+
  private:
   bool SendSyncMessageFromAnyThread(IPC::SyncMessage* msg) const;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
@@ -202,17 +202,17 @@ class RendererBlinkPlatformImpl::SandboxSupport
   virtual ~SandboxSupport() {}
 
 #if defined(OS_MACOSX)
-  virtual bool loadFont(
-      NSFont* src_font,
-      CGFontRef* container,
-      uint32* font_id);
+  bool loadFont(NSFont* src_font,
+                CGFontRef* container,
+                uint32* font_id) override;
 #elif defined(OS_POSIX)
-  virtual void getFallbackFontForCharacter(
+  void getFallbackFontForCharacter(
       blink::WebUChar32 character,
       const char* preferred_locale,
-      blink::WebFallbackFont* fallbackFont);
-  virtual void getRenderStyleForStrike(
-      const char* family, int sizeAndStyle, blink::WebFontRenderStyle* out);
+      blink::WebFallbackFont* fallbackFont) override;
+  void getRenderStyleForStrike(const char* family,
+                               int sizeAndStyle,
+                               blink::WebFontRenderStyle* out) override;
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of

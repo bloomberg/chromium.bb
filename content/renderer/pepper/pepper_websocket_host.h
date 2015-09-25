@@ -32,23 +32,23 @@ class CONTENT_EXPORT PepperWebSocketHost
   explicit PepperWebSocketHost(RendererPpapiHost* host,
                                PP_Instance instance,
                                PP_Resource resource);
-  virtual ~PepperWebSocketHost();
+  ~PepperWebSocketHost() override;
 
   int32_t OnResourceMessageReceived(
       const IPC::Message& msg,
       ppapi::host::HostMessageContext* context) override;
 
   // WebSocketClient implementation.
-  virtual void didConnect();
-  virtual void didReceiveMessage(const blink::WebString& message);
-  virtual void didReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData);
-  virtual void didReceiveMessageError();
-  virtual void didUpdateBufferedAmount(unsigned long buffered_amount);
-  virtual void didStartClosingHandshake();
-  virtual void didClose(unsigned long unhandled_buffered_amount,
-                        ClosingHandshakeCompletionStatus status,
-                        unsigned short code,
-                        const blink::WebString& reason);
+  void didConnect() override;
+  void didReceiveMessage(const blink::WebString& message) override;
+  void didReceiveArrayBuffer(const blink::WebArrayBuffer& binaryData) override;
+  void didReceiveMessageError() override;
+  void didUpdateBufferedAmount(unsigned long buffered_amount) override;
+  void didStartClosingHandshake() override;
+  void didClose(unsigned long unhandled_buffered_amount,
+                ClosingHandshakeCompletionStatus status,
+                unsigned short code,
+                const blink::WebString& reason) override;
 
  private:
   // IPC message handlers.

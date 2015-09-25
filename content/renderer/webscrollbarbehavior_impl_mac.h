@@ -13,10 +13,9 @@ class WebScrollbarBehaviorImpl : public blink::WebScrollbarBehavior {
  public:
   WebScrollbarBehaviorImpl();
 
-  virtual bool shouldCenterOnThumb(
-      blink::WebScrollbarBehavior::Button mouseButton,
-      bool shiftKeyPressed,
-      bool altKeyPressed);
+  bool shouldCenterOnThumb(blink::WebScrollbarBehavior::Button mouseButton,
+                           bool shiftKeyPressed,
+                           bool altKeyPressed) override;
 
   void set_jump_on_track_click(bool jump_on_track_click) {
     jump_on_track_click_ = jump_on_track_click;

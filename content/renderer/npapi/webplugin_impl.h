@@ -67,36 +67,34 @@ class WebPluginImpl : public WebPlugin,
   blink::WebFrame* webframe() { return webframe_; }
 
   // blink::WebPlugin methods:
-  virtual bool initialize(
-      blink::WebPluginContainer* container);
-  virtual void destroy();
-  virtual NPObject* scriptableObject();
-  virtual struct _NPP* pluginNPP();
-  virtual bool getFormValue(blink::WebString& value);
-  virtual void layoutIfNeeded() override;
-  virtual void paint(
-      blink::WebCanvas* canvas, const blink::WebRect& paint_rect);
-  virtual void updateGeometry(
-      const blink::WebRect& window_rect,
-      const blink::WebRect& clip_rect,
-      const blink::WebRect& unobscured_rect,
-      const blink::WebVector<blink::WebRect>& cut_outs_rects,
-      bool is_visible);
-  virtual void updateFocus(bool focused, blink::WebFocusType focus_type);
-  virtual void updateVisibility(bool visible);
-  virtual bool acceptsInputEvents();
-  virtual bool handleInputEvent(
-      const blink::WebInputEvent& event, blink::WebCursorInfo& cursor_info);
-  virtual void didReceiveResponse(const blink::WebURLResponse& response);
-  virtual void didReceiveData(const char* data, int data_length);
-  virtual void didFinishLoading();
-  virtual void didFailLoading(const blink::WebURLError& error);
-  virtual void didFinishLoadingFrameRequest(
-      const blink::WebURL& url, void* notify_data);
-  virtual void didFailLoadingFrameRequest(
-      const blink::WebURL& url, void* notify_data,
-      const blink::WebURLError& error);
-  virtual bool isPlaceholder() override;
+  bool initialize(blink::WebPluginContainer* container) override;
+  void destroy() override;
+  NPObject* scriptableObject() override;
+  struct _NPP* pluginNPP() override;
+  bool getFormValue(blink::WebString& value) override;
+  void layoutIfNeeded() override;
+  void paint(blink::WebCanvas* canvas,
+             const blink::WebRect& paint_rect) override;
+  void updateGeometry(const blink::WebRect& window_rect,
+                      const blink::WebRect& clip_rect,
+                      const blink::WebRect& unobscured_rect,
+                      const blink::WebVector<blink::WebRect>& cut_outs_rects,
+                      bool is_visible) override;
+  void updateFocus(bool focused, blink::WebFocusType focus_type) override;
+  void updateVisibility(bool visible) override;
+  bool acceptsInputEvents() override;
+  bool handleInputEvent(const blink::WebInputEvent& event,
+                        blink::WebCursorInfo& cursor_info) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
+  void didReceiveData(const char* data, int data_length) override;
+  void didFinishLoading() override;
+  void didFailLoading(const blink::WebURLError& error) override;
+  void didFinishLoadingFrameRequest(const blink::WebURL& url,
+                                    void* notify_data) override;
+  void didFailLoadingFrameRequest(const blink::WebURL& url,
+                                  void* notify_data,
+                                  const blink::WebURLError& error) override;
+  bool isPlaceholder() override;
 
   // WebPlugin implementation:
   void SetWindow(gfx::PluginWindowHandle window) override;
@@ -331,29 +329,28 @@ class WebPluginImpl : public WebPlugin,
    public:
     LoaderClient(WebPluginImpl*);
 
-    virtual void willSendRequest(blink::WebURLLoader*,
-                                 blink::WebURLRequest&,
-                                 const blink::WebURLResponse&) override;
-    virtual void didSendData(blink::WebURLLoader*,
-                             unsigned long long bytesSent,
-                             unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(blink::WebURLLoader*,
-                                    const blink::WebURLResponse&) override;
-    virtual void didDownloadData(blink::WebURLLoader*,
-                                 int dataLength,
-                                 int encodedDataLength) override;
-    virtual void didReceiveData(blink::WebURLLoader*,
-                                const char* data,
-                                int dataLength,
-                                int encodedDataLength) override;
-    virtual void didReceiveCachedMetadata(blink::WebURLLoader*,
-                                          const char* data,
-                                          int dataLength) override;
-    virtual void didFinishLoading(blink::WebURLLoader*,
-                                  double finishTime,
-                                  int64_t total_encoded_data_length) override;
-    virtual void didFail(blink::WebURLLoader*,
-                         const blink::WebURLError&) override;
+    void willSendRequest(blink::WebURLLoader*,
+                         blink::WebURLRequest&,
+                         const blink::WebURLResponse&) override;
+    void didSendData(blink::WebURLLoader*,
+                     unsigned long long bytesSent,
+                     unsigned long long totalBytesToBeSent) override;
+    void didReceiveResponse(blink::WebURLLoader*,
+                            const blink::WebURLResponse&) override;
+    void didDownloadData(blink::WebURLLoader*,
+                         int dataLength,
+                         int encodedDataLength) override;
+    void didReceiveData(blink::WebURLLoader*,
+                        const char* data,
+                        int dataLength,
+                        int encodedDataLength) override;
+    void didReceiveCachedMetadata(blink::WebURLLoader*,
+                                  const char* data,
+                                  int dataLength) override;
+    void didFinishLoading(blink::WebURLLoader*,
+                          double finishTime,
+                          int64_t total_encoded_data_length) override;
+    void didFail(blink::WebURLLoader*, const blink::WebURLError&) override;
 
    private:
     WebPluginImpl* parent_;

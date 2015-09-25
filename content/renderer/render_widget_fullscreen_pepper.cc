@@ -141,15 +141,11 @@ class PepperWidget : public WebWidget {
   virtual ~PepperWidget() {}
 
   // WebWidget API
-  virtual void close() {
-    delete this;
-  }
+  void close() override { delete this; }
 
-  virtual WebSize size() {
-    return size_;
-  }
+  WebSize size() override { return size_; }
 
-  virtual void resize(const WebSize& size) {
+  void resize(const WebSize& size) override {
     if (!widget_->plugin())
       return;
 
@@ -160,11 +156,9 @@ class PepperWidget : public WebWidget {
     widget_->Invalidate();
   }
 
-  virtual void themeChanged() {
-    NOTIMPLEMENTED();
-  }
+  void themeChanged() override { NOTIMPLEMENTED(); }
 
-  virtual bool handleInputEvent(const WebInputEvent& event) {
+  bool handleInputEvent(const WebInputEvent& event) override {
     if (!widget_->plugin())
       return false;
 

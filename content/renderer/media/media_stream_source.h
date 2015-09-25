@@ -34,7 +34,7 @@ class CONTENT_EXPORT MediaStreamSource
   static const char kSourceId[];
 
   MediaStreamSource();
-  virtual ~MediaStreamSource();
+  ~MediaStreamSource() override;
 
   // Returns device information about a source that has been created by a
   // JavaScript call to GetUserMedia, e.g., a camera or microphone.
