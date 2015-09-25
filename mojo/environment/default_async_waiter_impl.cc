@@ -19,13 +19,14 @@ void OnHandleReady(common::HandleWatcher* watcher,
   callback(closure, result);
 }
 
-MojoAsyncWaitID AsyncWait(MojoHandle handle,
+MojoAsyncWaitID AsyncWait(int id,
+                          MojoHandle handle,
                           MojoHandleSignals signals,
                           MojoDeadline deadline,
                           MojoAsyncWaitCallback callback,
                           void* closure) {
   // This instance will be deleted when done or cancelled.
-  common::HandleWatcher* watcher = new common::HandleWatcher();
+  common::HandleWatcher* watcher = new common::HandleWatcher(id);
   watcher->Start(Handle(handle), signals, deadline,
                  base::Bind(&OnHandleReady, watcher, callback, closure));
   return reinterpret_cast<MojoAsyncWaitID>(watcher);

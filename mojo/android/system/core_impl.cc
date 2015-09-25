@@ -369,7 +369,7 @@ static ScopedJavaLocalRef<jobject> AsyncWait(
   MojoAsyncWaitID cancel_id;
   if (static_cast<MojoHandle>(mojo_handle) != MOJO_HANDLE_INVALID) {
     cancel_id = Environment::GetDefaultAsyncWaiter()->AsyncWait(
-        mojo_handle, signals, deadline, AsyncWaitCallback, callback_data);
+        1, mojo_handle, signals, deadline, AsyncWaitCallback, callback_data);
   } else {
     cancel_id = kInvalidHandleCancelID;
     base::MessageLoop::current()->PostTask(

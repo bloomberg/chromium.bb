@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "mojo/message_pump/mojo_message_pump_export.h"
@@ -26,10 +27,12 @@ class HandleWatcherTest;
 // when the handle is ready, or the deadline has expired.
 class MOJO_MESSAGE_PUMP_EXPORT HandleWatcher {
  public:
-  HandleWatcher();
+  explicit HandleWatcher(int location);
 
   // The destructor implicitly stops listening. See Stop() for details.
   ~HandleWatcher();
+
+  int location() const { return location_; }
 
   // Starts listening for |handle|. This implicitly invokes Stop(). In other
   // words, Start() performs one asynchronous watch at a time. It is ok to call
@@ -51,6 +54,8 @@ class MOJO_MESSAGE_PUMP_EXPORT HandleWatcher {
   class StateBase;
   class SameThreadWatchingState;
   class SecondaryThreadWatchingState;
+
+  const int location_;
 
   // If non-NULL Start() has been invoked.
   scoped_ptr<StateBase> state_;

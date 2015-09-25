@@ -43,7 +43,11 @@ struct MojoAsyncWaiter {
   //
   // Note that once the callback has been called, the returned |MojoAsyncWaitID|
   // becomes invalid.
-  MojoAsyncWaitID (*AsyncWait)(MojoHandle handle,
+  //
+  // TODO(sky): id is for tracking http://crbug.com/534719, will remove once
+  // fixed. |id| is used to identify the caller.
+  MojoAsyncWaitID (*AsyncWait)(int id,
+                               MojoHandle handle,
                                MojoHandleSignals signals,
                                MojoDeadline deadline,
                                MojoAsyncWaitCallback callback,

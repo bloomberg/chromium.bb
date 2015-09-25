@@ -79,6 +79,7 @@ WebURLLoaderImpl::WebURLLoaderImpl(mojo::URLLoaderFactory* url_loader_factory,
     : client_(NULL),
       web_blob_registry_(web_blob_registry),
       referrer_policy_(blink::WebReferrerPolicyDefault),
+      handle_watcher_(15),
       weak_factory_(this) {
   url_loader_factory->CreateURLLoader(GetProxy(&url_loader_));
 }

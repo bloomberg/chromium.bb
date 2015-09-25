@@ -26,8 +26,10 @@ struct WebSocketReadQueue::Operation {
 };
 
 WebSocketReadQueue::WebSocketReadQueue(DataPipeConsumerHandle handle)
-    : handle_(handle), is_busy_(false), weak_factory_(this) {
-}
+    : handle_(handle),
+      handle_watcher_(7),
+      is_busy_(false),
+      weak_factory_(this) {}
 
 WebSocketReadQueue::~WebSocketReadQueue() {
 }

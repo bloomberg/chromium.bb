@@ -36,7 +36,7 @@ class HttpConnectionImpl::SimpleDataPipeReader {
   using CompletionCallback =
       base::Callback<void(SimpleDataPipeReader*, scoped_ptr<std::string>)>;
 
-  SimpleDataPipeReader() {}
+  SimpleDataPipeReader() : watcher_(11) {}
   ~SimpleDataPipeReader() {}
 
   void Start(ScopedDataPipeConsumerHandle consumer,

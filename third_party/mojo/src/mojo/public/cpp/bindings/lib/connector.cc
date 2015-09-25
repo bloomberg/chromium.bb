@@ -150,11 +150,9 @@ void Connector::OnHandleReady(MojoResult result) {
 
 void Connector::WaitToReadMore() {
   MOJO_CHECK(!async_wait_id_);
-  async_wait_id_ = waiter_->AsyncWait(message_pipe_.get().value(),
-                                      MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_DEADLINE_INDEFINITE,
-                                      &Connector::CallOnHandleReady,
-                                      this);
+  async_wait_id_ = waiter_->AsyncWait(
+      4, message_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_DEADLINE_INDEFINITE, &Connector::CallOnHandleReady, this);
 }
 
 bool Connector::ReadSingleMessage(MojoResult* read_result) {

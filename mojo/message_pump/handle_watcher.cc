@@ -42,8 +42,12 @@ base::TimeTicks MojoDeadlineToTimeTicks(MojoDeadline deadline) {
 // Tracks the data for a single call to Start().
 struct WatchData {
   WatchData()
-      : id(0), handle_signals(MOJO_HANDLE_SIGNAL_NONE), task_runner(NULL) {}
+      : location(0),
+        id(0),
+        handle_signals(MOJO_HANDLE_SIGNAL_NONE),
+        task_runner(NULL) {}
 
+  int location;
   WatcherID id;
   Handle handle;
   MojoHandleSignals handle_signals;
@@ -99,9 +103,8 @@ void WatcherBackend::StartWatching(const WatchData& data) {
   DCHECK_EQ(0u, handle_to_data_.count(data.handle));
 
   handle_to_data_[data.handle] = data;
-  MessagePumpMojo::current()->AddHandler(this, data.handle,
-                                         data.handle_signals,
-                                         data.deadline);
+  MessagePumpMojo::current()->AddHandler(data.location, this, data.handle,
+                                         data.handle_signals, data.deadline);
 }
 
 void WatcherBackend::StopWatching(WatcherID watcher_id) {
@@ -163,7 +166,8 @@ class WatcherThreadManager {
   // stop watching the handle. When the handle is ready |callback| is notified
   // on the thread StartWatching() was invoked on.
   // This may be invoked on any thread.
-  WatcherID StartWatching(const Handle& handle,
+  WatcherID StartWatching(int location,
+                          const Handle& handle,
                           MojoHandleSignals handle_signals,
                           base::TimeTicks deadline,
                           const base::Callback<void(MojoResult)>& callback);
@@ -226,12 +230,14 @@ WatcherThreadManager* WatcherThreadManager::GetInstance() {
 }
 
 WatcherID WatcherThreadManager::StartWatching(
+    int location,
     const Handle& handle,
     MojoHandleSignals handle_signals,
     base::TimeTicks deadline,
     const base::Callback<void(MojoResult)>& callback) {
   RequestData request_data;
   request_data.type = REQUEST_START;
+  request_data.start_data.location = location;
   request_data.start_data.id = watcher_id_generator_.GetNext();
   request_data.start_data.handle = handle;
   request_data.start_data.callback = callback;
@@ -372,8 +378,9 @@ class HandleWatcher::SameThreadWatchingState : public StateBase,
         handle_(handle) {
     DCHECK(MessagePumpMojo::IsCurrent());
 
-    MessagePumpMojo::current()->AddHandler(
-        this, handle, handle_signals, MojoDeadlineToTimeTicks(deadline));
+    MessagePumpMojo::current()->AddHandler(watcher->location(), this, handle,
+                                           handle_signals,
+                                           MojoDeadlineToTimeTicks(deadline));
   }
 
   ~SameThreadWatchingState() override {
@@ -415,8 +422,7 @@ class HandleWatcher::SecondaryThreadWatchingState : public StateBase {
       : StateBase(watcher, callback),
         weak_factory_(this) {
     watcher_id_ = WatcherThreadManager::GetInstance()->StartWatching(
-        handle,
-        handle_signals,
+        watcher->location(), handle, handle_signals,
         MojoDeadlineToTimeTicks(deadline),
         base::Bind(&SecondaryThreadWatchingState::NotifyHandleReady,
                    weak_factory_.GetWeakPtr()));
@@ -443,8 +449,7 @@ class HandleWatcher::SecondaryThreadWatchingState : public StateBase {
 
 // HandleWatcher ---------------------------------------------------------------
 
-HandleWatcher::HandleWatcher() {
-}
+HandleWatcher::HandleWatcher(int location) : location_(location) {}
 
 HandleWatcher::~HandleWatcher() {
 }

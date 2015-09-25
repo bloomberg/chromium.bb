@@ -18,7 +18,9 @@ TCPConnectedSocketImpl::TCPConnectedSocketImpl(
     scoped_ptr<mojo::AppRefCount> app_refcount)
     : socket_(socket.Pass()),
       send_stream_(send_stream.Pass()),
+      receive_handle_watcher_(9),
       receive_stream_(receive_stream.Pass()),
+      send_handle_watcher_(10),
       binding_(this, request.Pass()),
       app_refcount_(app_refcount.Pass()),
       weak_ptr_factory_(this) {

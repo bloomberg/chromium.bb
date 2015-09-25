@@ -12,7 +12,7 @@ AsyncWaiter::AsyncWaiter(Handle handle,
     : waiter_(Environment::GetDefaultAsyncWaiter()),
       id_(0),
       callback_(callback) {
-  id_ = waiter_->AsyncWait(handle.value(), signals, MOJO_DEADLINE_INDEFINITE,
+  id_ = waiter_->AsyncWait(5, handle.value(), signals, MOJO_DEADLINE_INDEFINITE,
                            &AsyncWaiter::WaitComplete, this);
 }
 

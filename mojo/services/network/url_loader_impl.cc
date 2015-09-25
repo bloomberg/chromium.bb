@@ -136,6 +136,7 @@ URLLoaderImpl::URLLoaderImpl(NetworkContext* context,
                              InterfaceRequest<URLLoader> request,
                              scoped_ptr<mojo::AppRefCount> app_refcount)
     : context_(context),
+      handle_watcher_(12),
       response_body_buffer_size_(0),
       auto_follow_redirects_(true),
       connected_(true),

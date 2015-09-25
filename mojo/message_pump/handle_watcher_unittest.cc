@@ -152,7 +152,7 @@ TEST_P(HandleWatcherTest, SingleHandler) {
   MessagePipe test_pipe;
   ASSERT_TRUE(test_pipe.handle0.is_valid());
   CallbackHelper callback_helper;
-  HandleWatcher watcher;
+  HandleWatcher watcher(0);
   callback_helper.Start(&watcher, test_pipe.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper.got_callback());
@@ -175,21 +175,21 @@ TEST_P(HandleWatcherTest, ThreeHandles) {
   ASSERT_TRUE(test_pipe2.handle0.is_valid());
   ASSERT_TRUE(test_pipe3.handle0.is_valid());
 
-  HandleWatcher watcher1;
+  HandleWatcher watcher1(0);
   callback_helper1.Start(&watcher1, test_pipe1.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
 
-  HandleWatcher watcher2;
+  HandleWatcher watcher2(0);
   callback_helper2.Start(&watcher2, test_pipe2.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
 
-  HandleWatcher watcher3;
+  HandleWatcher watcher3(0);
   callback_helper3.Start(&watcher3, test_pipe3.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
@@ -237,13 +237,13 @@ TEST_P(HandleWatcherTest, Restart) {
   ASSERT_TRUE(test_pipe1.handle0.is_valid());
   ASSERT_TRUE(test_pipe2.handle0.is_valid());
 
-  HandleWatcher watcher1;
+  HandleWatcher watcher1(0);
   callback_helper1.Start(&watcher1, test_pipe1.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_FALSE(callback_helper2.got_callback());
 
-  HandleWatcher watcher2;
+  HandleWatcher watcher2(0);
   callback_helper2.Start(&watcher2, test_pipe2.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
@@ -286,7 +286,7 @@ TEST_P(HandleWatcherTest, RestartOnSameHandle) {
   CallbackHelper callback_helper;
   ASSERT_TRUE(test_pipe.handle0.is_valid());
 
-  HandleWatcher watcher;
+  HandleWatcher watcher(0);
   callback_helper.Start(&watcher, test_pipe.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper.got_callback());
@@ -311,7 +311,7 @@ TEST_P(HandleWatcherTest, Deadline) {
   ASSERT_TRUE(test_pipe3.handle0.is_valid());
 
   // Add a watcher with an infinite timeout.
-  HandleWatcher watcher1;
+  HandleWatcher watcher1(0);
   callback_helper1.Start(&watcher1, test_pipe1.handle0.get());
   RunUntilIdle();
   EXPECT_FALSE(callback_helper1.got_callback());
@@ -319,7 +319,7 @@ TEST_P(HandleWatcherTest, Deadline) {
   EXPECT_FALSE(callback_helper3.got_callback());
 
   // Add another watcher wth a timeout of 500 microseconds.
-  HandleWatcher watcher2;
+  HandleWatcher watcher2(0);
   watcher2.Start(test_pipe2.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, 500,
                  callback_helper2.GetCallback());
   RunUntilIdle();
@@ -331,7 +331,7 @@ TEST_P(HandleWatcherTest, Deadline) {
   // watcher to wake up the background thread.
   tick_clock_.Advance(base::TimeDelta::FromMicroseconds(501));
 
-  HandleWatcher watcher3;
+  HandleWatcher watcher3(0);
   callback_helper3.Start(&watcher3, test_pipe3.handle0.get());
 
   callback_helper2.RunUntilGotCallback();
@@ -344,7 +344,7 @@ TEST_P(HandleWatcherTest, DeleteInCallback) {
   MessagePipe test_pipe;
   CallbackHelper callback_helper;
 
-  HandleWatcher* watcher = new HandleWatcher();
+  HandleWatcher* watcher = new HandleWatcher(0);
   callback_helper.StartWithCallback(watcher, test_pipe.handle1.get(),
                                     base::Bind(&DeleteWatcherAndForwardResult,
                                                watcher,
@@ -360,7 +360,7 @@ TEST_P(HandleWatcherTest, AbortedOnMessageLoopDestruction) {
   MojoResult result = MOJO_RESULT_OK;
 
   MessagePipe pipe;
-  HandleWatcher watcher;
+  HandleWatcher watcher(0);
   watcher.Start(pipe.handle0.get(),
                 MOJO_HANDLE_SIGNAL_READABLE,
                 MOJO_DEADLINE_INDEFINITE,
@@ -397,6 +397,8 @@ void RunStressTest(int count,
                    base::RunLoop* run_loop,
                    int* active_count) {
   struct TestData {
+    TestData() : watcher(0) {}
+
     MessagePipe pipe;
     HandleWatcher watcher;
   };
@@ -409,7 +411,7 @@ void RunStressTest(int count,
       MessagePipe test_pipe;
       ASSERT_TRUE(test_pipe.handle0.is_valid());
       CallbackHelper callback_helper;
-      HandleWatcher watcher;
+      HandleWatcher watcher(0);
       callback_helper.Start(&watcher, test_pipe.handle0.get());
       RunUntilIdle();
       EXPECT_FALSE(callback_helper.got_callback());
