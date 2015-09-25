@@ -165,9 +165,24 @@ class GtkThemeIconSource : public gfx::ImageSkiaSource {
 
 class GtkButtonImageSource : public gfx::ImageSkiaSource {
   public:
-    GtkButtonImageSource(bool is_blue, ui::NativeTheme::State state)
+    GtkButtonImageSource(bool is_blue, bool focus, ui::NativeTheme::State state)
         : is_blue_(is_blue),
+          focus_(focus),
           state_(state) {
+    }
+    explicit GtkButtonImageSource(const char* idr_string) {
+      is_blue_ = !!strstr(idr_string, "IDR_BLUE");
+      focus_ = !!strstr(idr_string, "_FOCUSED_");
+
+      if (strstr(idr_string, "_DISABLED")) {
+        state_ = ui::NativeTheme::kDisabled;
+      } else if (strstr(idr_string, "_HOVER")) {
+        state_ = ui::NativeTheme::kHovered;
+      } else if (strstr(idr_string, "_PRESSED")) {
+        state_ = ui::NativeTheme::kPressed;
+      } else {
+        state_ = ui::NativeTheme::kNormal;
+      }
     }
 
     ~GtkButtonImageSource() override {}
@@ -231,6 +246,20 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
       gtk_widget_draw(button, cr);
 #endif
 
+      if (focus_) {
+        SkColor button_color = NativeThemeGtk2::instance()->GetSystemColor(
+            is_blue_ ? ui::NativeTheme::kColorId_BlueButtonEnabledColor
+                     : ui::NativeTheme::kColorId_ButtonEnabledColor);
+        cairo_set_source_rgba(cr,
+                              SkColorGetR(button_color) / 256.0,
+                              SkColorGetG(button_color) / 256.0,
+                              SkColorGetB(button_color) / 256.0,
+                              0.5);
+        cairo_set_line_width(cr, 1);
+        cairo_rectangle(cr, 4.5, 4.5, width - 9, height - 9);
+        cairo_stroke(cr);
+      }
+
       cairo_destroy(cr);
       cairo_surface_destroy(surface);
 
@@ -241,6 +270,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
 
   private:
     bool is_blue_;
+    bool focus_;
     ui::NativeTheme::State state_;
 
     DISALLOW_COPY_AND_ASSIGN(GtkButtonImageSource);
@@ -737,38 +767,49 @@ scoped_ptr<views::Border> Gtk2UI::CreateNativeBorder(
   gtk_border->SetPainter(true, views::Button::STATE_DISABLED, NULL);
 
 
+  static struct {
+    int idr;
+    int idr_blue;
+    bool focus;
+    views::Button::ButtonState state;
+  } const painters[] = {
+    { IDR_BUTTON_NORMAL, IDR_BLUE_BUTTON_NORMAL,
+      false, views::Button::STATE_NORMAL},
+
+    { IDR_BUTTON_HOVER, IDR_BLUE_BUTTON_HOVER,
+      false, views::Button::STATE_HOVERED},
+
+    { IDR_BUTTON_PRESSED, IDR_BLUE_BUTTON_PRESSED,
+      false, views::Button::STATE_PRESSED},
+
+    { IDR_BUTTON_FOCUSED_NORMAL, IDR_BLUE_BUTTON_FOCUSED_NORMAL,
+      true, views::Button::STATE_NORMAL},
+
+    { IDR_BUTTON_FOCUSED_HOVER, IDR_BLUE_BUTTON_FOCUSED_HOVER,
+      true, views::Button::STATE_HOVERED},
+
+    { IDR_BUTTON_FOCUSED_PRESSED, IDR_BLUE_BUTTON_FOCUSED_PRESSED,
+      true, views::Button::STATE_PRESSED},
+
+
+    { IDR_BUTTON_DISABLED, IDR_BLUE_BUTTON_DISABLED,
+      false, views::Button::STATE_DISABLED},
+    { IDR_BUTTON_DISABLED, IDR_BLUE_BUTTON_DISABLED,
+      true, views::Button::STATE_DISABLED},
+  };
+
   bool is_blue =
       owning_button->GetClassName() == views::BlueButton::kViewClassName;
 
+  for (unsigned i = 0; i < (sizeof(painters) / sizeof(painters[0])); i++) {
+    if (border->PaintsButtonState(painters[i].focus, painters[i].state)) {
+      int idr = is_blue ? painters[i].idr_blue : painters[i].idr;
+      const gfx::ImageSkia* img = GetThemeImageNamed(idr).ToImageSkia();
 
-  int id = is_blue ? IDR_BLUE_BUTTON_NORMAL : IDR_BUTTON_NORMAL;
-  if (border->PaintsButtonState(false, views::Button::STATE_NORMAL))
-    gtk_border->SetPainter(false,
-                           views::Button::STATE_NORMAL,
-                           views::Painter::CreateImagePainter(
-                               *GetThemeImageNamed(id).ToImageSkia(), insets));
-
-  id = is_blue ? IDR_BLUE_BUTTON_HOVER : IDR_BUTTON_HOVER;
-  if (border->PaintsButtonState(false, views::Button::STATE_HOVERED))
-    gtk_border->SetPainter(false,
-                           views::Button::STATE_HOVERED,
-                           views::Painter::CreateImagePainter(
-                               *GetThemeImageNamed(id).ToImageSkia(), insets));
-
-  id = is_blue ? IDR_BLUE_BUTTON_PRESSED : IDR_BUTTON_PRESSED;
-  if (border->PaintsButtonState(false, views::Button::STATE_PRESSED))
-    gtk_border->SetPainter(false,
-                           views::Button::STATE_PRESSED,
-                           views::Painter::CreateImagePainter(
-                               *GetThemeImageNamed(id).ToImageSkia(), insets));
-
-  id = is_blue ? IDR_BLUE_BUTTON_DISABLED : IDR_BUTTON_DISABLED;
-  if (border->PaintsButtonState(false, views::Button::STATE_DISABLED))
-    gtk_border->SetPainter(false,
-                           views::Button::STATE_DISABLED,
-                           views::Painter::CreateImagePainter(
-                               *GetThemeImageNamed(id).ToImageSkia(), insets));
-
+      gtk_border->SetPainter(painters[i].focus, painters[i].state,
+                             views::Painter::CreateImagePainter(*img, insets));
+    }
+  }
 
   return gtk_border.Pass();;
 }
@@ -1102,33 +1143,37 @@ gfx::Image Gtk2UI::GenerateGtkThemeImage(int id) const {
 
     // The toolbar bezels don't seem to be in use anymore, remove at your
     // discretion
-    case IDR_BUTTON_NORMAL:
-      source = new GtkButtonImageSource(false, ui::NativeTheme::kNormal);
-      break;
-    case IDR_BUTTON_HOVER:
     case IDR_TOOLBAR_BEZEL_HOVER:
-      source = new GtkButtonImageSource(false, ui::NativeTheme::kHovered);
+      source = new GtkButtonImageSource(false, false,
+                                        ui::NativeTheme::kHovered);
       break;
-    case IDR_BUTTON_PRESSED:
     case IDR_TOOLBAR_BEZEL_PRESSED:
-      source = new GtkButtonImageSource(false, ui::NativeTheme::kPressed);
-      break;
-    case IDR_BUTTON_DISABLED:
-      source = new GtkButtonImageSource(false, ui::NativeTheme::kDisabled);
+      source = new GtkButtonImageSource(false, false,
+                                        ui::NativeTheme::kPressed);
       break;
 
-    case IDR_BLUE_BUTTON_NORMAL:
-      source = new GtkButtonImageSource(true, ui::NativeTheme::kNormal);
+    // Macro to prevent the cases here from getting ridiculous
+#   define BUTTON_IMAGE_CASE(IDR_MACRO_) \
+    case IDR_MACRO_: \
+      source = new GtkButtonImageSource(#IDR_MACRO_); \
       break;
-    case IDR_BLUE_BUTTON_HOVER:
-      source = new GtkButtonImageSource(true, ui::NativeTheme::kHovered);
-      break;
-    case IDR_BLUE_BUTTON_PRESSED:
-      source = new GtkButtonImageSource(true, ui::NativeTheme::kPressed);
-      break;
-    case IDR_BLUE_BUTTON_DISABLED:
-      source = new GtkButtonImageSource(true, ui::NativeTheme::kDisabled);
-      break;
+
+    BUTTON_IMAGE_CASE(IDR_BUTTON_DISABLED);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_HOVER);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_NORMAL);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_PRESSED);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_FOCUSED_HOVER);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_FOCUSED_NORMAL);
+    BUTTON_IMAGE_CASE(IDR_BUTTON_FOCUSED_PRESSED);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_DISABLED);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_HOVER);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_NORMAL);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_PRESSED);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_FOCUSED_HOVER);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_FOCUSED_NORMAL);
+    BUTTON_IMAGE_CASE(IDR_BLUE_BUTTON_FOCUSED_PRESSED);
+
+#   undef BUTTON_IMAGE_CASE
   }
 
   if (source)
