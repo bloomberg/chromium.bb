@@ -41,14 +41,14 @@
     'gn_release_trybot_x86': ['gn', 'release_trybot', 'x86'],
     'gyp_debug_bot': ['gyp', 'debug_bot'],
     'gyp_debug_bot_x86': ['gyp', 'debug_bot', 'x86'],
-    'gyp_official_bot': ['gyp', 'official', 'goma'],
-    'gyp_official_bot_chromeos': ['gyp', 'official', 'goma', 'chromeos'],
-    'gyp_official_bot_x86': ['gyp', 'official', 'goma', 'x86'],
-    'gyp_official_bot_minimal_symbols': ['gyp', 'official', 'minimal_symbols', 'goma'],
-    'gyp_official_bot_minimal_symbols_android': ['gyp', 'official', 'minimal_symbols', 'goma', 'android'],
-    'gyp_official_bot_minimal_symbols_android_arm64': ['gyp', 'official', 'minimal_symbols', 'goma', 'android', 'arm64'],
-    'gyp_official_bot_minimal_symbols_x64': ['gyp', 'official', 'minimal_symbols', 'goma', 'x64'],
-    'gyp_official_bot_minimal_symbols_x86': ['gyp', 'official', 'minimal_symbols', 'goma', 'x86'],
+    'gyp_official_goma': ['gyp', 'official', 'goma'],
+    'gyp_official_goma_chromeos': ['gyp', 'official', 'goma', 'chromeos'],
+    'gyp_official_goma_x86': ['gyp', 'official', 'goma', 'x86'],
+    'gyp_official_goma_minimal_symbols': ['gyp', 'official', 'goma', 'minimal_symbols'],
+    'gyp_official_goma_minimal_symbols_android': ['gyp', 'official', 'goma', 'minimal_symbols', 'android'],
+    'gyp_official_goma_minimal_symbols_android_arm64': ['gyp', 'official', 'goma', 'minimal_symbols', 'android', 'arm64'],
+    'gyp_official_goma_minimal_symbols_x64': ['gyp', 'official', 'goma', 'minimal_symbols', 'x64'],
+    'gyp_official_goma_minimal_symbols_x86': ['gyp', 'official', 'goma', 'minimal_symbols', 'x86'],
     'gyp_release_bot_arm': ['gyp', 'release_bot', 'arm', 'crosscompile'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
 
@@ -256,8 +256,8 @@
     },
 
     'official': {
-      'gn_args': 'is_chrome_branded=true is_official_build=true is_debug=false is_component_build=false',
-      'gyp_defines': 'branding=Chrome buildtype=Official component=static_library',
+      'gn_args': 'is_chrome_branded=true is_official_build=true is_debug=false',
+      'gyp_defines': 'branding=Chrome buildtype=Official',
     },
 
     'release': {
@@ -316,11 +316,11 @@
   # TODO(crbug.com/481692): Add in remaining bots on the waterfalls.
   'masters': {
     'chromium.chrome': {
-      'Google Chrome Win': 'gyp_official_bot_minimal_symbols_x86',
-      'Google Chrome Linux': 'gyp_official_bot_x86',
-      'Google Chrome Linux x64': 'gyp_official_bot',
-      'Google Chrome Mac': 'gyp_official_bot',
-      'Google Chrome ChromeOS': 'gyp_official_bot_chromeos',
+      'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
+      'Google Chrome Linux': 'gyp_official_goma_x86',
+      'Google Chrome Linux x64': 'gyp_official_goma',
+      'Google Chrome Mac': 'gyp_official_goma',
+      'Google Chrome ChromeOS': 'gyp_official_goma_chromeos',
     },
     'chromium.chromiumos': {
       'Linux ChromiumOS GN': 'chromeos_gn_release_bot',
@@ -361,12 +361,12 @@
       'Chromium Mojo Windows 7 Perf': 'gn_release_bot_minimal_symbols_x86',
     },
     'chromium.perf': {
-      'Android Builder': 'gyp_official_bot_minimal_symbols_android',
-      'Android arm64 Builder': 'gyp_official_bot_minimal_symbols_android_arm64',
-      'Win Builder': 'gyp_official_bot_minimal_symbols_x86',
-      'Win x64 Builder': 'gyp_official_bot_minimal_symbols_x64',
-      'Mac Builder': 'gyp_official_bot',
-      'Linux Builder': 'gyp_official_bot',
+      'Android Builder': 'gyp_official_goma_minimal_symbols_android',
+      'Android arm64 Builder': 'gyp_official_goma_minimal_symbols_android_arm64',
+      'Win Builder': 'gyp_official_goma_minimal_symbols_x86',
+      'Win x64 Builder': 'gyp_official_goma_minimal_symbols_x64',
+      'Mac Builder': 'gyp_official_goma',
+      'Linux Builder': 'gyp_official_goma',
     },
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
@@ -451,12 +451,12 @@
       'mac_chromium_gn_upload': 'gn_release_bot',
     },
     'tryserver.chromium.perf': {
-      'android_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_android',
-      'android_arm64_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_android_arm64',
-      'linux_perf_bisect_builder': 'gyp_official_bot',
-      'mac_perf_bisect_builder': 'gyp_official_bot',
-      'win_perf_bisect_builder': 'gyp_official_bot_minimal_symbols_x86',
-      'winx64_bisect_builder': 'gyp_official_bot_minimal_symbols',
+      'android_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_android',
+      'android_arm64_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_android_arm64',
+      'linux_perf_bisect_builder': 'gyp_official_goma',
+      'mac_perf_bisect_builder': 'gyp_official_goma',
+      'win_perf_bisect_builder': 'gyp_official_goma_minimal_symbols_x86',
+      'winx64_bisect_builder': 'gyp_official_goma_minimal_symbols',
     },
     'tryserver.chromium.win': {
       'win_chromium_gn_x64_dbg': 'gn_debug_bot_minimal_symbols',
