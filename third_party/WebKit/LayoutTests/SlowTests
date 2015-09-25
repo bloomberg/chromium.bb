@@ -91,6 +91,7 @@ crbug.com/450493 http/tests/inspector/sources/ [ Slow ]
 crbug.com/450493 http/tests/inspector/stacktraces/ [ Slow ]
 crbug.com/450493 inspector/profiler/ [ Slow ]
 crbug.com/420008 inspector/tracing/ [ Slow ]
+crbug.com/420008 virtual/threaded/inspector/tracing/ [ Slow ]
 crbug.com/246190 [ Release ] http/tests/inspector/indexeddb/ [ Slow ]
 
 # Random slow tests
