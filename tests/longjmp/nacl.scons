@@ -36,6 +36,8 @@ if env.Bit('build_arm') and not env.Bit('pnacl_generate_pexe'):
     native_env.PNaClForceNative()
     native_env.Append(CCFLAGS=['--target=armv7a-none-nacl-gnueabi',
                                '-mfloat-abi=hard'])
+    # Enable the use of inline assembly.
+    native_env.Append(CCFLAGS=['-fgnu-inline-asm'])
   nexe = native_env.ComponentProgram('longjmp_float', 'longjmp_float.c',
                                      EXTRA_LIBS=['${NONIRT_LIBS}', 'm'])
   node = native_env.CommandSelLdrTestNacl(

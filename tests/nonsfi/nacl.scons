@@ -88,11 +88,15 @@ node = env.CommandSelLdrTestNacl('prctl_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_prctl_test')
 
-nexe = env.ComponentProgram('sigaction_test',
-                            'sigaction_test.cc',
-                            EXTRA_LIBS=['${NONIRT_LIBS}'])
+asm_enabled_env = env.Clone()
+# Enable the use of inline assembly.
+asm_enabled_env.Append(CCFLAGS=['-fgnu-inline-asm'])
 
-node = env.CommandSelLdrTestNacl('sigaction_test.out', nexe)
+nexe = asm_enabled_env.ComponentProgram('sigaction_test',
+                                        'sigaction_test.cc',
+                                        EXTRA_LIBS=['${NONIRT_LIBS}'])
+
+node = asm_enabled_env.CommandSelLdrTestNacl('sigaction_test.out', nexe)
 
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_sigaction_test')
 

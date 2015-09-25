@@ -73,15 +73,10 @@ for basename in barebones_tests:
 # The top_of_sandbox test does not apply to x86-32 because the bug
 # it tests for cannot happen in a segment-based sandbox, only with
 # a sandbox where some kind of address-masking is done.
-if not env.Bit('pnacl_generate_pexe') and not env.Bit('build_x86_32'):
-  native_env = env.Clone()
-  if native_env.Bit('bitcode'):
-    native_env.AddBiasForPNaCl()
-    native_env.PNaClForceNative()
-
-  nexe = native_env.ComponentProgram('top_of_sandbox', ['top_of_sandbox.c'])
-  node = native_env.CommandSelLdrTestNacl('top_of_sandbox.out', nexe)
-  native_env.AddNodeToTestSuite(
+if not env.Bit('bitcode') and not env.Bit('build_x86_32'):
+  nexe = env.ComponentProgram('top_of_sandbox', ['top_of_sandbox.c'])
+  node = env.CommandSelLdrTestNacl('top_of_sandbox.out', nexe)
+  env.AddNodeToTestSuite(
       node, ['small_tests', 'sel_ldr_tests',
              'barebones_tests', 'nonpexe_tests'],
       'run_top_of_sandbox_test',

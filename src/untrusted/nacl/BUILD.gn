@@ -13,7 +13,6 @@ static_library("nacl_dyncode_private") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -29,7 +28,6 @@ static_library("nacl_random_private") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -53,7 +51,6 @@ static_library("nacl_sys_private") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -75,7 +72,6 @@ static_library("imc_syscalls") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -91,7 +87,6 @@ static_library("nacl_exception_private") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -107,7 +102,6 @@ static_library("nacl_list_mappings_private") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -123,7 +117,6 @@ static_library("nacl_dyncode") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
   deps = [
@@ -348,7 +341,6 @@ static_library("nacl") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
 
@@ -366,7 +358,6 @@ source_set("irt_random") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
 
@@ -383,7 +374,6 @@ static_library("nacl_exception") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
 
@@ -400,7 +390,6 @@ static_library("nacl_list_mappings") {
   if (current_cpu == "pnacl") {
     cflags_c += [
       "-Wno-self-assign",
-      "-allow-asm",
     ]
   }
 
@@ -419,7 +408,6 @@ if (current_os != "glibc") {
     if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
-        "-allow-asm",
       ]
     }
 
@@ -436,7 +424,6 @@ if (current_os != "glibc") {
     if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
-        "-allow-asm",
       ]
     }
     deps = [
@@ -452,7 +439,6 @@ if (current_os != "glibc") {
     if (current_cpu == "pnacl") {
       cflags_c += [
         "-Wno-self-assign",
-        "-allow-asm",
       ]
     }
 

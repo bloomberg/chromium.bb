@@ -3044,6 +3044,8 @@ def AllowInlineAssembly(env):
     elif env.Bit('build_arm'):
       env.AppendUnique(CCFLAGS=['--target=armv7a-unknown-nacl-gnueabihf',
                                 '-mfloat-abi=hard'])
+    # Enable the use of inline assembly.
+    env.Append(CCFLAGS=['-fgnu-inline-asm'])
   return True
 
 nacl_env.AddMethod(AllowInlineAssembly)

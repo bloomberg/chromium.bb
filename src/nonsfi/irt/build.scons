@@ -14,6 +14,9 @@ if not env.Bit('posix') and not env.Bit('nonsfi_nacl'):
 env.FilterOut(CFLAGS='-Wdeclaration-after-statement')
 # Complaints about unused function arguments are too noisy.
 env.Append(CCFLAGS='-Wno-unused-parameter')
+if env.Bit('bitcode') and not env.Bit('pnacl_generate_pexe'):
+  # Enable the use of inline assembly.
+  env.Append(CCFLAGS='-fgnu-inline-asm')
 # TODO(mseaborn): We can enforce -Wstrict-prototypes after the uses of
 # DEFINE_STUB/USE_STUB are gone.
 env.FilterOut(CFLAGS='-Wstrict-prototypes')

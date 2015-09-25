@@ -20,11 +20,6 @@ DEP_LINKFLAGS = (['-Wl,--whole-archive'] + LIBGCC +
                    ['-l' + name for name in DEP_LIBS] +
                    ['-Wl,--no-whole-archive'])
 
-# TODO(robertm): get rid of -allow-asm once we can distinguish
-#                real asms from the redirect ones used here
-if env.Bit('bitcode'):
-  env.Append(CCFLAGS=['-allow-asm'])
-
 cpp11_env = env.Clone()
 # TODO(jfb): Change this to -std=c++11 when it's properly supported.
 cpp11_env.Append(CCFLAGS=['-std=gnu++11'])

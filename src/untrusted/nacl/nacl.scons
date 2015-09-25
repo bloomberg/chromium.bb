@@ -10,11 +10,7 @@ Import('env')
 env.FilterOut(CCFLAGS=['-pedantic'])
 if env.Bit('bitcode'):
   # silence a warning when compiling malloc.c with clang
-  # TODO(robertm): get rid of -allow-asm once we can distinguish
-  #                real asms from those used for redirects.
-  #                In this case:  asm("llvm.nacl.tp.tdb.offset")
-  #                from src/untrusted/nacl/tls_params.h
-  env.Append(CCFLAGS=['-Wno-self-assign', '-allow-asm'])
+  env.Append(CCFLAGS=['-Wno-self-assign'])
 if env.Bit('nacl_clang'):
   # Use the integrated assembler; this code can end up in the Chrome IRT, so we
   # want it to avoid revealing the sandbox base address.

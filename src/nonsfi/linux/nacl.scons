@@ -15,6 +15,9 @@ elif env.Bit('build_arm'):
   env.Append(CCFLAGS=['--target=armv7a-unknown-nacl-gnueabihf', '-mfloat-abi=hard'])
 else:
   raise Exception('Unsupported architecture')
+# Enable the use of inline assembly.
+env.Append(CCFLAGS=['-fgnu-inline-asm'])
+
 env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c',
                                              'directory.c',
                                              'irt_signal_handling.c'])

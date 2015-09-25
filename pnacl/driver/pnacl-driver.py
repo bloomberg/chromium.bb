@@ -45,8 +45,6 @@ EXTRA_ENV = {
   'DEFAULTLIBS' : '1',    # Link with default libraries
   'DIAGNOSTIC'  : '0',    # Diagnostic flag detected
   'PIC'         : '0',    # Generate PIC
-  # TODO(robertm): Switch the default to 1
-  'NO_ASM'      : '0',    # Disallow use of inline assembler
   'NEED_DASH_E' : '0',    # Used for stdin inputs, which must have an explicit
                           # type set (using -x) unless -E is specified.
   'VERBOSE'     : '0',    # Verbose (-v)
@@ -73,11 +71,7 @@ EXTRA_ENV = {
                   '-fno-vectorize -fno-slp-vectorize ' +
                   '-fno-common ${PTHREAD ? -pthread} ' +
                   '-nostdinc ${BIAS_%BIAS%} ' +
-                  # BUG: http://code.google.com/p/nativeclient/issues/detail?id=2345
-                  # it would be better to detect asm use inside clang
-                  # as some uses of asm are borderline legit, e.g.
-                  # <prototype> asm("<function-name>");
-                  '${NO_ASM ? -Dasm=ASM_FORBIDDEN -D__asm__=ASM_FORBIDDEN} ' +
+                  '-fno-gnu-inline-asm ' +
                   '-target ${FRONTEND_TRIPLE}',
 
 
@@ -250,8 +244,6 @@ GCCPatterns = [
   ( '-E',              "env.set('GCC_MODE', '-E')"),
   ( '-S',              "env.set('GCC_MODE', '-S')"),
   ( '-c',              "env.set('GCC_MODE', '-c')"),
-
-  ( '-allow-asm',       "env.set('NO_ASM', '0')"),
 
   ( '-nostdinc',       "env.set('STDINC', '0')"),
   ( '-nostdinc\+\+',   "env.set('STDINCCXX', '0')"),

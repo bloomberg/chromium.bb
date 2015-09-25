@@ -120,7 +120,7 @@ def TranslatorArchToBiasArch(arch):
 def TargetLibCflags(bias_arch):
   flags = '-g -O2'
   if IsBCArch(bias_arch):
-    flags += ' -mllvm -inline-threshold=5 -allow-asm'
+    flags += ' -mllvm -inline-threshold=5'
   else:
     # Use sections for the library builds to allow better GC for the IRT.
     flags += ' -ffunction-sections -fdata-sections'
