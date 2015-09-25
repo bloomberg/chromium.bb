@@ -138,15 +138,7 @@ component("ash") {
 }
 
 component("ash_with_content") {
-  sources = [
-    "content_support/ash_with_content_export.h",
-    "content_support/gpu_support_impl.cc",
-    "content_support/gpu_support_impl.h",
-    "keyboard_overlay/keyboard_overlay_delegate.cc",
-    "keyboard_overlay/keyboard_overlay_delegate.h",
-    "keyboard_overlay/keyboard_overlay_view.cc",
-    "keyboard_overlay/keyboard_overlay_view.h",
-  ]
+  sources = gypi_values.ash_with_content_sources
 
   defines = [ "ASH_WITH_CONTENT_IMPLEMENTATION" ]
 
@@ -245,9 +237,6 @@ static_library("ash_shell_lib") {
     "//base",
     "//base:i18n",
 
-    #"//chrome:packed_resources",  TODO(GYP)
-    "//content",
-    "//content/shell:content_shell_lib",
     "//net",
     "//skia",
     "//third_party/icu",
@@ -267,6 +256,19 @@ static_library("ash_shell_lib") {
     "//ui/views:test_support",
     "//ui/views/examples:views_examples_lib",
     "//ui/views/examples:views_examples_with_content_lib",
+  ]
+}
+
+static_library("ash_shell_lib_with_content") {
+  testonly = true
+  sources = gypi_values.ash_shell_with_content_lib_sources
+
+  deps = [
+    #"//chrome:packed_resources",  TODO(GYP)
+    "//content",
+    "//content/shell:content_shell_lib",
+    ":ash_shell_lib",
+    "//skia",
   ]
 }
 
@@ -376,14 +378,14 @@ test("ash_unittests") {
   }
 }
 
-executable("ash_shell") {
+executable("ash_shell_with_content") {
   testonly = true
   sources = [
-    "shell/shell_main.cc",
+    "shell/content/shell_with_content_main.cc",
   ]
 
   deps = [
-    ":ash_shell_lib",
+    ":ash_shell_lib_with_content",
     "//build/config/sanitizers:deps",
     "//components/user_manager",
   ]

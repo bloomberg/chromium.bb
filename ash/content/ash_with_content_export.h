@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_CONTENT_SUPPORT_ASH_WITH_CONTENT_EXPORT_H_
-#define ASH_CONTENT_SUPPORT_ASH_WITH_CONTENT_EXPORT_H_
+#ifndef ASH_CONTENT_ASH_WITH_CONTENT_EXPORT_H_
+#define ASH_CONTENT_ASH_WITH_CONTENT_EXPORT_H_
 
 // Defines ASH_EXPORT so that functionality implemented by the Ash module can
 // be exported to consumers.
@@ -29,4 +29,4 @@
 #define ASH_WITH_CONTENT_EXPORT
 #endif
 
-#endif  // ASH_CONTENT_SUPPORT_ASH_WITH_CONTENT_EXPORT_H_
+#endif  // ASH_CONTENT_ASH_WITH_CONTENT_EXPORT_H_

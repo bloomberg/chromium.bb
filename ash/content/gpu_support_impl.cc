@@ -2,18 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/content_support/gpu_support_impl.h"
+#include "ash/content/gpu_support_impl.h"
 
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/config/gpu_feature_type.h"
 
 namespace ash {
 
-GPUSupportImpl::GPUSupportImpl() {
-}
+GPUSupportImpl::GPUSupportImpl() {}
 
-GPUSupportImpl::~GPUSupportImpl() {
-}
+GPUSupportImpl::~GPUSupportImpl() {}
 
 bool GPUSupportImpl::IsPanelFittingDisabled() const {
   return content::GpuDataManager::GetInstance()->IsFeatureBlacklisted(
@@ -25,7 +23,7 @@ void GPUSupportImpl::DisableGpuWatchdog() {
 }
 
 void GPUSupportImpl::GetGpuProcessHandles(
-      const GetGpuProcessHandlesCallback& callback) const {
+    const GetGpuProcessHandlesCallback& callback) const {
   content::GpuDataManager::GetInstance()->GetGpuProcessHandles(callback);
 }
 

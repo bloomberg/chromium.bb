@@ -430,7 +430,7 @@ group("both_gn_and_gyp") {
 
     if (use_ash) {
       deps += [
-        "//ash:ash_shell",
+        "//ash:ash_shell_with_content",
         "//ash:ash_unittests",
       ]
     }

@@ -38,8 +38,7 @@ class WindowWatcher;
 
 class ShellBrowserMainParts : public content::BrowserMainParts {
  public:
-  explicit ShellBrowserMainParts(
-      const content::MainFunctionParams& parameters);
+  explicit ShellBrowserMainParts(const content::MainFunctionParams& parameters);
   ~ShellBrowserMainParts() override;
 
   // Overridden from content::BrowserMainParts:

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell/content_client/shell_main_delegate.h"
+#include "ash/shell/content/client/shell_main_delegate.h"
 
-#include "ash/shell/content_client/shell_content_browser_client.h"
+#include "ash/shell/content/client/shell_content_browser_client.h"
 #include "base/command_line.h"
 #include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -12,11 +12,9 @@
 namespace ash {
 namespace shell {
 
-ShellMainDelegate::ShellMainDelegate() {
-}
+ShellMainDelegate::ShellMainDelegate() {}
 
-ShellMainDelegate::~ShellMainDelegate() {
-}
+ShellMainDelegate::~ShellMainDelegate() {}
 
 bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   const base::CommandLine& command_line =

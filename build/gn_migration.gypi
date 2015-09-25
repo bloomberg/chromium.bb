@@ -249,7 +249,7 @@
         }],
         ['use_ash==1', {
           'dependencies': [
-            '../ash/ash.gyp:ash_shell',
+            '../ash/ash.gyp:ash_shell_with_content',
             '../ash/ash.gyp:ash_unittests',
           ],
         }],

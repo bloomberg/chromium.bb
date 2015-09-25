@@ -674,6 +674,15 @@
       'wm/workspace_controller.cc',
       'wm/workspace_controller.h',
     ],
+    'ash_with_content_sources': [
+      'content/ash_with_content_export.h',
+      'content/gpu_support_impl.cc',
+      'content/gpu_support_impl.h',
+      'keyboard_overlay/keyboard_overlay_delegate.cc',
+      'keyboard_overlay/keyboard_overlay_delegate.h',
+      'keyboard_overlay/keyboard_overlay_view.cc',
+      'keyboard_overlay/keyboard_overlay_view.h',
+    ],
     'ash_test_support_sources': [
       'desktop_background/desktop_background_controller_test_api.cc',
       'desktop_background/desktop_background_controller_test_api.h',
@@ -754,12 +763,6 @@
       '../ui/views/test/test_views_delegate_aura.cc',
       'shell/app_list.cc',
       'shell/bubble.cc',
-      'shell/content_client/shell_browser_main_parts.cc',
-      'shell/content_client/shell_browser_main_parts.h',
-      'shell/content_client/shell_content_browser_client.cc',
-      'shell/content_client/shell_content_browser_client.h',
-      'shell/content_client/shell_main_delegate.cc',
-      'shell/content_client/shell_main_delegate.h',
       'shell/context_menu.cc',
       'shell/context_menu.h',
       'shell/example_factory.h',
@@ -772,8 +775,6 @@
       'shell/shelf_delegate_impl.h',
       'shell/shell_delegate_impl.cc',
       'shell/shell_delegate_impl.h',
-      'shell/shell_main_parts.cc',
-      'shell/shell_main_parts.h',
       'shell/toplevel_window.cc',
       'shell/toplevel_window.h',
       'shell/widgets.cc',
@@ -783,6 +784,16 @@
       'shell/window_watcher.h',
       'shell/window_watcher_shelf_item_delegate.cc',
       'shell/window_watcher_shelf_item_delegate.h',
+    ],
+    'ash_shell_with_content_lib_sources': [
+      'shell/content/client/shell_browser_main_parts.cc',
+      'shell/content/client/shell_browser_main_parts.h',
+      'shell/content/client/shell_content_browser_client.cc',
+      'shell/content/client/shell_content_browser_client.h',
+      'shell/content/client/shell_main_delegate.cc',
+      'shell/content/client/shell_main_delegate.h',
+      'shell/content/shell_main_parts.cc',
+      'shell/content/shell_main_parts.h',
     ],
     'ash_unittests_sources': [
       'accelerators/accelerator_commands_unittest.cc',
@@ -1060,14 +1071,7 @@
         'ASH_WITH_CONTENT_IMPLEMENTATION',
       ],
       'sources': [
-        # Note: sources list duplicated in GN build.
-        'content_support/ash_with_content_export.h',
-        'content_support/gpu_support_impl.cc',
-        'content_support/gpu_support_impl.h',
-        'keyboard_overlay/keyboard_overlay_delegate.cc',
-        'keyboard_overlay/keyboard_overlay_delegate.h',
-        'keyboard_overlay/keyboard_overlay_view.cc',
-        'keyboard_overlay/keyboard_overlay_view.h',
+        '<@(ash_with_content_sources)',
       ],
     },
     {
@@ -1238,8 +1242,6 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../chrome/chrome_resources.gyp:packed_resources',
-        '../content/content_shell_and_tests.gyp:content_shell_lib',
-        '../content/content.gyp:content',
         '../skia/skia.gyp:skia',
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
@@ -1267,6 +1269,20 @@
       'sources': [
         '<@(ash_shell_lib_sources)',
       ],
+    },
+    {
+      # GN version: //ash:ash_shell_lib_with_content
+      'target_name': 'ash_shell_lib_with_content',
+      'type': 'static_library',
+      'dependencies': [
+        'ash_shell_lib',
+        '../content/content_shell_and_tests.gyp:content_shell_lib',
+        '../content/content.gyp:content',     
+        '../skia/skia.gyp:skia',
+      ],
+      'sources': [
+        '<@(ash_shell_with_content_lib_sources)',
+      ],
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
@@ -1276,15 +1292,15 @@
       ],
     },
     {
-      # GN version: //ash:ash_shell
-      'target_name': 'ash_shell',
+      # GN version: //ash:ash_shell_with_content
+      'target_name': 'ash_shell_with_content',
       'type': 'executable',
       'dependencies': [
-        'ash_shell_lib',
+        'ash_shell_lib_with_content',
         '../components/components.gyp:user_manager',
       ],
       'sources': [
-        'shell/shell_main.cc',
+        'shell/content/shell_with_content_main.cc',
       ],
       'conditions': [
         ['OS=="win"', {

@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/content_support/ash_with_content_export.h"
+#include "ash/content/ash_with_content_export.h"
 #include "ash/wm/overlay_event_filter.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/shell/content_client/shell_browser_main_parts.h"
+#include "ash/shell/content/client/shell_browser_main_parts.h"
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
@@ -79,12 +79,9 @@ class ShellViewsDelegate : public views::TestViewsDelegate {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const content::MainFunctionParams& parameters)
-    : BrowserMainParts(),
-      delegate_(NULL) {
-}
+    : BrowserMainParts(), delegate_(NULL) {}
 
-ShellBrowserMainParts::~ShellBrowserMainParts() {
-}
+ShellBrowserMainParts::~ShellBrowserMainParts() {}
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
 #if defined(USE_X11)
@@ -104,8 +101,8 @@ void ShellBrowserMainParts::ToolkitInitialized() {
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new content::ShellNetLog("ash_shell"));
-  browser_context_.reset(new content::ShellBrowserContext(
-      false, net_log_.get()));
+  browser_context_.reset(
+      new content::ShellBrowserContext(false, net_log_.get()));
 
   // A ViewsDelegate is required.
   if (!views::ViewsDelegate::GetInstance())
@@ -128,8 +125,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ash::Shell::CreateInstance(init_params);
   delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateShelf();
-  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-      user::LOGGED_IN_USER);
+  ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   gfx::Screen* screen = Shell::GetInstance()->GetScreen();
