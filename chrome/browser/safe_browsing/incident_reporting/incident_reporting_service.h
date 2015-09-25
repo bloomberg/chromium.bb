@@ -164,6 +164,13 @@ class IncidentReportingService : public content::NotificationObserver {
   // Adds |incident_data| relating to the optional |profile| to the service.
   void AddIncident(Profile* profile, scoped_ptr<Incident> incident);
 
+  // Clears all data associated with the |incident| relating to the optional
+  // |profile|.
+  void ClearIncident(Profile* profile, scoped_ptr<Incident> incident);
+
+  // Returns true if there are incidents waiting to be sent.
+  bool HasIncidentsToUpload() const;
+
   // Begins processing a report. If processing is already underway, ensures that
   // collection tasks have completed or are running.
   void BeginReportProcessing();
@@ -219,10 +226,12 @@ class IncidentReportingService : public content::NotificationObserver {
   void OnLastDownloadFound(
       scoped_ptr<ClientIncidentReport_DownloadDetails> last_download);
 
-  // Uploads an incident report if all data collection is complete. Incidents
-  // originating from profiles that do not participate in safe browsing are
-  // dropped.
-  void UploadIfCollectionComplete();
+  // Processes all received incidents once all data collection is
+  // complete. Incidents originating from profiles that do not participate in
+  // safe browsing are dropped, incidents that have already been reported are
+  // pruned, and prune state is cleared for incidents that are now clear. Report
+  // upload is started if any incidents remain.
+  void ProcessIncidentsIfCollectionComplete();
 
   // Cancels all uploads, discarding all reports and responses in progress.
   void CancelAllReportUploads();

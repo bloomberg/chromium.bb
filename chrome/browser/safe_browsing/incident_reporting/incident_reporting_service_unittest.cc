@@ -110,7 +110,7 @@ class IncidentReportingServiceTest : public testing::Test {
     static void CollectEnvironmentData(
         safe_browsing::ClientIncidentReport_EnvironmentData* data) {
       current().collect_environment_callback_.Run(data);
-    };
+    }
 
     static base::LazyInstance<base::ThreadLocalPointer<
         TestIncidentReportingService> >::Leaky test_instance_;
@@ -275,6 +275,10 @@ class IncidentReportingServiceTest : public testing::Test {
   // Confirms that the test incident(s) was/were uploaded by the service, then
   // clears the instance for subsequent incidents.
   void ExpectTestIncidentUploaded(int incident_count) {
+    if (incident_count == 0) {
+      ASSERT_FALSE(uploaded_report_);
+      return;
+    }
     ASSERT_TRUE(uploaded_report_);
     ASSERT_EQ(incident_count, uploaded_report_->incident_size());
     for (int i = 0; i < incident_count; ++i) {
@@ -1078,6 +1082,72 @@ TEST_F(IncidentReportingServiceTest, CleanLegacyPruneState) {
   ASSERT_FALSE(new_state->HasKey(omnibox_type));
   // But other data must be untouched.
   ASSERT_TRUE(new_state->HasKey(preference_type));
+}
+
+// Tests that an identical incident added after an incident is pruned and
+// cleared leads to an upload.
+TEST_F(IncidentReportingServiceTest, ProcessWideUploadClearUpload) {
+  // Add a profile that participates in safe browsing.
+  CreateProfile("profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION,
+                nullptr);
+
+  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+      instance_->GetIncidentReceiver());
+
+  // Add the test incident.
+  receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // An upload should have taken place.
+  ExpectTestIncidentUploaded(1);
+
+  // Clear incident data.
+  receiver->ClearIncidentForProcess(MakeTestIncident(nullptr));
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // No uploads should have taken place.
+  ExpectTestIncidentUploaded(0);
+
+  // Add the incident to the service again.
+  receiver->AddIncidentForProcess(MakeTestIncident(nullptr));
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // An upload should have taken place.
+  ExpectTestIncidentUploaded(1);
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
+}
+
+TEST_F(IncidentReportingServiceTest, ClearProcessIncidentOnCleanState) {
+  // Add a profile that participates in safe browsing.
+  CreateProfile("profile1", SAFE_BROWSING_OPT_IN, ON_PROFILE_ADDITION_NO_ACTION,
+                nullptr);
+
+  scoped_ptr<safe_browsing::IncidentReceiver> receiver(
+      instance_->GetIncidentReceiver());
+
+  // Clear incident data.
+  receiver->ClearIncidentForProcess(MakeTestIncident(nullptr));
+
+  // Let all tasks run.
+  task_runner_->RunUntilIdle();
+
+  // No uploads should have taken place.
+  ExpectTestIncidentUploaded(0);
+
+  // Downloads and environment data should have not been collected.
+  ASSERT_FALSE(HasCreatedDownloadFinder());
+  ASSERT_FALSE(HasCollectedEnvironmentData());
+
+  // Ensure that no report processing remains.
+  ASSERT_FALSE(instance_->IsProcessingReport());
 }
 
 // Parallel uploads

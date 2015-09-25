@@ -17,6 +17,7 @@ class MockIncidentReceiver : public IncidentReceiver {
 
   MOCK_METHOD2(DoAddIncidentForProfile, void(Profile*, scoped_ptr<Incident>*));
   MOCK_METHOD1(DoAddIncidentForProcess, void(scoped_ptr<Incident>*));
+  MOCK_METHOD1(DoClearIncidentForProcess, void(scoped_ptr<Incident>*));
 
  protected:
   void AddIncidentForProfile(Profile* profile,
@@ -26,6 +27,10 @@ class MockIncidentReceiver : public IncidentReceiver {
 
   void AddIncidentForProcess(scoped_ptr<Incident> incident) override {
     DoAddIncidentForProcess(&incident);
+  }
+
+  void ClearIncidentForProcess(scoped_ptr<Incident> incident) override {
+    DoClearIncidentForProcess(&incident);
   }
 };
 

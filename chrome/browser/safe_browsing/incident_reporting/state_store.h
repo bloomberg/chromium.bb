@@ -48,6 +48,9 @@ class StateStore {
                         const std::string& key,
                         IncidentDigest digest);
 
+    // Clears the described incident data.
+    void Clear(IncidentType type, const std::string& key);
+
     // Clears all data associated with an incident type.
     void ClearForType(IncidentType type);
 

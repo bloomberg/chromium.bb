@@ -46,6 +46,26 @@ void StateStore::Transaction::MarkAsReported(IncidentType type,
   type_dict->SetStringWithoutPathExpansion(key, base::UintToString(digest));
 }
 
+void StateStore::Transaction::Clear(IncidentType type, const std::string& key) {
+  // Nothing to do if the pref dict does not exist.
+  if (!store_->incidents_sent_)
+    return;
+
+  // Use the read-only view on the preference to figure out if there is a value
+  // to remove before committing to making a change since any use of GetPrefDict
+  // will result in a full serialize-and-write operation on the preferences
+  // store.
+  std::string type_string(base::IntToString(static_cast<int32_t>(type)));
+  const base::DictionaryValue* const_type_dict = nullptr;
+  if (store_->incidents_sent_->GetDictionaryWithoutPathExpansion(
+          type_string, &const_type_dict) &&
+      const_type_dict->GetWithoutPathExpansion(key, nullptr)) {
+    base::DictionaryValue* type_dict = nullptr;
+    GetPrefDict()->GetDictionaryWithoutPathExpansion(type_string, &type_dict);
+    type_dict->RemoveWithoutPathExpansion(key, nullptr);
+  }
+}
+
 void StateStore::Transaction::ClearForType(IncidentType type) {
   // Nothing to do if the pref dict does not exist.
   if (!store_->incidents_sent_)

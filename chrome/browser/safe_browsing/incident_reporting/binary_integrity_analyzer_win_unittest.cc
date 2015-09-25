@@ -101,19 +101,30 @@ TEST_F(BinaryIntegrityAnalyzerWinTest, VerifyBinaryIntegrity) {
 
   ASSERT_TRUE(base::CopyFile(signed_binary_path, chrome_elf_path));
 
+  // Run check on an integral binary.
   scoped_ptr<MockIncidentReceiver> mock_receiver(
       new StrictMock<MockIncidentReceiver>());
+  scoped_ptr<Incident> incident_to_clear;
+  EXPECT_CALL(*mock_receiver, DoClearIncidentForProcess(_))
+      .WillOnce(TakeIncident(&incident_to_clear));
+
   VerifyBinaryIntegrity(mock_receiver.Pass());
 
+  ASSERT_TRUE(incident_to_clear);
+  ASSERT_EQ(IncidentType::BINARY_INTEGRITY, incident_to_clear->GetType());
+
+  // Run check on an infected binary.
   ASSERT_TRUE(EraseFileContent(chrome_elf_path));
 
-  mock_receiver.reset(new MockIncidentReceiver());
+  mock_receiver.reset(new StrictMock<MockIncidentReceiver>());
   scoped_ptr<Incident> incident;
   EXPECT_CALL(*mock_receiver, DoAddIncidentForProcess(_))
       .WillOnce(TakeIncident(&incident));
 
   VerifyBinaryIntegrity(mock_receiver.Pass());
 
+  // Verify that the cleared and reported incidents have the same key.
+  ASSERT_EQ(incident->GetKey(), incident_to_clear->GetKey());
   // Verify that the incident report contains the expected data.
   scoped_ptr<ClientIncidentReport_IncidentData> incident_data(
       incident->TakePayload());

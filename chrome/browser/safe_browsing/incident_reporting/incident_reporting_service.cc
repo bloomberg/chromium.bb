@@ -109,9 +109,15 @@ struct IncidentReportingService::ProfileContext {
   ProfileContext();
   ~ProfileContext();
 
+  // Returns true if the profile has incidents to be uploaded or cleared.
+  bool HasIncidents() const;
+
   // The incidents collected for this profile pending creation and/or upload.
   // Will contain null values for pruned incidents.
   ScopedVector<Incident> incidents;
+
+  // The incidents data of which should be cleared.
+  ScopedVector<Incident> incidents_to_clear;
 
   // State storage for this profile; null until PROFILE_ADDED notification is
   // received.
@@ -157,9 +163,14 @@ class IncidentReportingService::Receiver : public IncidentReceiver {
   void AddIncidentForProfile(Profile* profile,
                              scoped_ptr<Incident> incident) override;
   void AddIncidentForProcess(scoped_ptr<Incident> incident) override;
+  void ClearIncidentForProcess(scoped_ptr<Incident> incident) override;
 
  private:
   static void AddIncidentOnMainThread(
+      const base::WeakPtr<IncidentReportingService>& service,
+      Profile* profile,
+      scoped_ptr<Incident> incident);
+  static void ClearIncidentOnMainThread(
       const base::WeakPtr<IncidentReportingService>& service,
       Profile* profile,
       scoped_ptr<Incident> incident);
@@ -199,6 +210,27 @@ void IncidentReportingService::Receiver::AddIncidentForProcess(
   }
 }
 
+void IncidentReportingService::Receiver::ClearIncidentForProcess(
+    scoped_ptr<Incident> incident) {
+  if (thread_runner_->BelongsToCurrentThread()) {
+    ClearIncidentOnMainThread(service_, nullptr, incident.Pass());
+  } else {
+    thread_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &IncidentReportingService::Receiver::ClearIncidentOnMainThread,
+            service_, nullptr, base::Passed(&incident)));
+  }
+}
+
+bool IncidentReportingService::HasIncidentsToUpload() const {
+  for (const auto& profile_and_context : profiles_) {
+    if (!profile_and_context.second->incidents.empty())
+      return true;
+  }
+  return false;
+}
+
 // static
 void IncidentReportingService::Receiver::AddIncidentOnMainThread(
     const base::WeakPtr<IncidentReportingService>& service,
@@ -210,6 +242,15 @@ void IncidentReportingService::Receiver::AddIncidentOnMainThread(
     LogIncidentDataType(DISCARDED, *incident);
 }
 
+// static
+void IncidentReportingService::Receiver::ClearIncidentOnMainThread(
+      const base::WeakPtr<IncidentReportingService>& service,
+      Profile* profile,
+      scoped_ptr<Incident> incident) {
+  if (service)
+    service->ClearIncident(profile, incident.Pass());
+}
+
 IncidentReportingService::ProfileContext::ProfileContext() : added(false) {
 }
 
@@ -218,6 +259,10 @@ IncidentReportingService::ProfileContext::~ProfileContext() {
     if (incident)
       LogIncidentDataType(DISCARDED, *incident);
   }
+}
+
+bool IncidentReportingService::ProfileContext::HasIncidents() const {
+  return !incidents.empty() || !incidents_to_clear.empty();
 }
 
 IncidentReportingService::UploadContext::UploadContext(
@@ -391,7 +436,7 @@ void IncidentReportingService::OnProfileAdded(Profile* profile) {
   // Start a new report if this profile participates in safe browsing and there
   // are process-wide incidents.
   if (safe_browsing_enabled && GetProfileContext(NULL) &&
-      GetProfileContext(NULL)->incidents.size()) {
+      GetProfileContext(NULL)->HasIncidents()) {
     BeginReportProcessing();
   }
 
@@ -542,6 +587,14 @@ void IncidentReportingService::AddIncident(Profile* profile,
   BeginReportProcessing();
 }
 
+void IncidentReportingService::ClearIncident(Profile* profile,
+                                             scoped_ptr<Incident> incident) {
+  ProfileContext* context = GetOrCreateProfileContext(profile);
+  context->incidents_to_clear.push_back(incident.release());
+  // Begin processing to handle cleared incidents following collation.
+  BeginReportProcessing();
+}
+
 void IncidentReportingService::BeginReportProcessing() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -565,9 +618,11 @@ void IncidentReportingService::BeginEnvironmentCollection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(report_);
   // Nothing to do if environment collection is pending or has already
-  // completed.
-  if (environment_collection_pending_ || report_->has_environment())
+  // completed, or if there are no incidents to process.
+  if (environment_collection_pending_ || report_->has_environment() ||
+      !HasIncidentsToUpload()) {
     return;
+  }
 
   environment_collection_begin_ = base::TimeTicks::Now();
   ClientIncidentReport_EnvironmentData* environment_data =
@@ -616,7 +671,7 @@ void IncidentReportingService::OnEnvironmentDataCollected(
                       base::TimeTicks::Now() - environment_collection_begin_);
   environment_collection_begin_ = base::TimeTicks();
 
-  UploadIfCollectionComplete();
+  ProcessIncidentsIfCollectionComplete();
 }
 
 bool IncidentReportingService::WaitingToCollateIncidents() {
@@ -641,8 +696,7 @@ void IncidentReportingService::OnCollationTimeout() {
   for (ProfileContextCollection::iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
-    if (scan->first && !scan->second->added &&
-        !scan->second->incidents.empty()) {
+    if (scan->first && !scan->second->added && scan->second->HasIncidents()) {
       collation_timer_.Reset();
       return;
     }
@@ -650,16 +704,18 @@ void IncidentReportingService::OnCollationTimeout() {
 
   collation_timeout_pending_ = false;
 
-  UploadIfCollectionComplete();
+  ProcessIncidentsIfCollectionComplete();
 }
 
 void IncidentReportingService::BeginDownloadCollection() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(report_);
-  // Nothing to do if a search for the most recent download is already pending
-  // or if one has already been found.
-  if (last_download_finder_ || report_->has_download())
+  // Nothing to do if a search for the most recent download is already pending,
+  // if one has already been found, or if there are no incidents to process.
+  if (last_download_finder_ || report_->has_download() ||
+      !HasIncidentsToUpload()) {
     return;
+  }
 
   last_download_begin_ = base::TimeTicks::Now();
   last_download_finder_ = CreateDownloadFinder(
@@ -680,7 +736,11 @@ bool IncidentReportingService::WaitingForMostRecentDownload() {
   // The next easy case: waiting if the finder is operating.
   if (last_download_finder_)
     return true;
-  // The harder case: waiting if a non-NULL profile has not yet been added.
+  // Harder case 1: not waiting if there are no incidents to upload (only
+  // incidents to clear).
+  if (!HasIncidentsToUpload())
+    return false;
+  // Harder case 2: waiting if a non-NULL profile has not yet been added.
   for (ProfileContextCollection::const_iterator scan = profiles_.begin();
        scan != profiles_.end();
        ++scan) {
@@ -713,10 +773,10 @@ void IncidentReportingService::OnLastDownloadFound(
   if (last_download)
     report_->set_allocated_download(last_download.release());
 
-  UploadIfCollectionComplete();
+  ProcessIncidentsIfCollectionComplete();
 }
 
-void IncidentReportingService::UploadIfCollectionComplete() {
+void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
   DCHECK(report_);
   // Bail out if there are still outstanding collection tasks. Completion of any
   // of these will start another upload attempt.
@@ -747,29 +807,50 @@ void IncidentReportingService::UploadIfCollectionComplete() {
   // Associate process-wide incidents with the profile that benefits from the
   // strongest safe browsing protections.
   ProfileContext* null_context = GetProfileContext(NULL);
-  if (null_context && !null_context->incidents.empty() && eligible_profile) {
+  if (null_context && null_context->HasIncidents() && eligible_profile) {
     ProfileContext* eligible_context = GetProfileContext(eligible_profile);
     // Move the incidents to the target context.
     eligible_context->incidents.insert(eligible_context->incidents.end(),
                                        null_context->incidents.begin(),
                                        null_context->incidents.end());
     null_context->incidents.weak_clear();
+    eligible_context->incidents_to_clear.insert(
+        eligible_context->incidents_to_clear.end(),
+        null_context->incidents_to_clear.begin(),
+        null_context->incidents_to_clear.end());
+    null_context->incidents_to_clear.weak_clear();
   }
+
+  // Clear incidents data where needed.
+  for (auto& profile_and_context : profiles_) {
+    // Bypass process-wide incidents that have not yet been associated with a
+    // profile and profiles with no incidents to clear.
+    if (!profile_and_context.first ||
+        profile_and_context.second->incidents_to_clear.empty()) {
+      continue;
+    }
+    ProfileContext* context = profile_and_context.second;
+    StateStore::Transaction transaction(context->state_store.get());
+    for (Incident* incident : context->incidents_to_clear)
+      transaction.Clear(incident->GetType(), incident->GetKey());
+    context->incidents_to_clear.clear();
+  }
+  // Abandon report if there are no incidents to upload.
+  if (!HasIncidentsToUpload())
+    return;
 
   // Collect incidents across all profiles participating in safe browsing. Drop
   // incidents if the profile stopped participating before collection completed.
   // Prune previously submitted incidents.
   // Associate the profile contexts and their incident data with the upload.
   UploadContext::PersistentIncidentStateCollection profiles_to_state;
-  for (ProfileContextCollection::iterator scan = profiles_.begin();
-       scan != profiles_.end();
-       ++scan) {
+  for (auto& profile_and_context : profiles_) {
     // Bypass process-wide incidents that have not yet been associated with a
     // profile.
-    if (!scan->first)
+    if (!profile_and_context.first)
       continue;
-    PrefService* prefs = scan->first->GetPrefs();
-    ProfileContext* context = scan->second;
+    PrefService* prefs = profile_and_context.first->GetPrefs();
+    ProfileContext* context = profile_and_context.second;
     if (context->incidents.empty())
       continue;
     if (!prefs->GetBoolean(prefs::kSafeBrowsingEnabled)) {

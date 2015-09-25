@@ -26,6 +26,10 @@ class IncidentReceiver {
   // Adds an incident relating to the entire browser process. May be called from
   // any thread.
   virtual void AddIncidentForProcess(scoped_ptr<Incident> incident) = 0;
+
+  // Clears all data associated with the specified |incident| relating to the
+  // entire browser process. May be called from any thread.
+  virtual void ClearIncidentForProcess(scoped_ptr<Incident> incident) = 0;
 };
 
 }  // namespace safe_browsing
