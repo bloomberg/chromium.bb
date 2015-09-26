@@ -25,6 +25,8 @@ public class DistilledPagePrefsTest extends NativeLibraryTestBase {
 
     private DistilledPagePrefs mDistilledPagePrefs;
 
+    private static final double EPSILON = 1e-5;
+
     @Override
     public void setUp() throws Exception {
         super.setUp();
@@ -160,6 +162,62 @@ public class DistilledPagePrefsTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    @UiThreadTest
+    @Feature({"DomDistiller"})
+    public void testGetAndSetFontScaling() throws InterruptedException {
+        // Check the default font scaling.
+        assertEquals(1.0, mDistilledPagePrefs.getFontScaling(), EPSILON);
+        // Check that font scaling can be correctly set.
+        setFontScaling(1.2f);
+        assertEquals(1.2, mDistilledPagePrefs.getFontScaling(), EPSILON);
+    }
+
+    /*
+    @SmallTest
+    @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
+    public void testSingleObserverFontScaling() throws InterruptedException {
+        TestingObserver testObserver = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserver);
+
+        setFontScaling(1.1f);
+        // Assumes that callback does not occur immediately.
+        assertNull(testObserver.getFontScaling());
+        UiUtils.settleDownUI(getInstrumentation());
+        // Check that testObserver's font scaling has been updated,
+        assertEquals(1.1, testObserver.getFontScaling(), EPSILON);
+        mDistilledPagePrefs.removeObserver(testObserver);
+    }
+
+    /*
+    @SmallTest
+    @Feature({"DomDistiller"})
+    crbug.com/458196
+    */
+    @DisabledTest
+    public void testMultipleObserversFontScaling() throws InterruptedException {
+        TestingObserver testObserverOne = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserverOne);
+        TestingObserver testObserverTwo = new TestingObserver();
+        mDistilledPagePrefs.addObserver(testObserverTwo);
+
+        setFontScaling(1.3f);
+        UiUtils.settleDownUI(getInstrumentation());
+        assertEquals(1.3, testObserverOne.getFontScaling(), EPSILON);
+        assertEquals(1.3, testObserverTwo.getFontScaling(), EPSILON);
+        mDistilledPagePrefs.removeObserver(testObserverOne);
+
+        setFontScaling(0.9f);
+        UiUtils.settleDownUI(getInstrumentation());
+        // Check that testObserverOne's font scaling is not changed but testObserverTwo's is.
+        assertEquals(1.3, testObserverOne.getFontScaling(), EPSILON);
+        assertEquals(0.9, testObserverTwo.getFontScaling(), EPSILON);
+        mDistilledPagePrefs.removeObserver(testObserverTwo);
+    }
+
+    @SmallTest
     @Feature({"DomDistiller"})
     public void testRepeatedAddAndDeleteObserver() throws InterruptedException {
         TestingObserver test = new TestingObserver();
@@ -178,6 +236,7 @@ public class DistilledPagePrefsTest extends NativeLibraryTestBase {
     private static class TestingObserver implements DistilledPagePrefs.Observer {
         private FontFamily mFontFamily;
         private Theme mTheme;
+        private float mFontScaling;
 
         public TestingObserver() {}
 
@@ -198,6 +257,15 @@ public class DistilledPagePrefsTest extends NativeLibraryTestBase {
         public void onChangeTheme(Theme theme) {
             mTheme = theme;
         }
+
+        public float getFontScaling() {
+            return mFontScaling;
+        }
+
+        @Override
+        public void onChangeFontScaling(float scaling) {
+            mFontScaling = scaling;
+        }
     }
 
     private void setFontFamily(final FontFamily font) {
@@ -214,6 +282,15 @@ public class DistilledPagePrefsTest extends NativeLibraryTestBase {
             @Override
             public void run() {
                 mDistilledPagePrefs.setTheme(theme);
+            }
+        });
+    }
+
+    private void setFontScaling(final float scaling) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mDistilledPagePrefs.setFontScaling(scaling);
             }
         });
     }

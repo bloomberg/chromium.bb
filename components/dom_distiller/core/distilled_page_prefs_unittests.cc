@@ -17,7 +17,8 @@ class TestingObserver : public DistilledPagePrefs::Observer {
  public:
   TestingObserver()
       : font_(DistilledPagePrefs::SANS_SERIF),
-        theme_(DistilledPagePrefs::LIGHT) {}
+        theme_(DistilledPagePrefs::LIGHT),
+        scaling_(1.0f) {}
 
   void OnChangeFontFamily(DistilledPagePrefs::FontFamily new_font) override {
     font_ = new_font;
@@ -31,9 +32,16 @@ class TestingObserver : public DistilledPagePrefs::Observer {
 
   DistilledPagePrefs::Theme GetTheme() { return theme_; }
 
+  void OnChangeFontScaling(float new_scaling) override {
+    scaling_ = new_scaling;
+  }
+
+  float GetFontScaling() { return scaling_; }
+
  private:
   DistilledPagePrefs::FontFamily font_;
   DistilledPagePrefs::Theme theme_;
+  float scaling_;
 };
 
 }  // namespace
@@ -56,10 +64,12 @@ class DistilledPagePrefsTest : public testing::Test {
 TEST_F(DistilledPagePrefsTest, TestingOnChangeFontIsBeingCalled) {
   TestingObserver obs;
   distilled_page_prefs_->AddObserver(&obs);
+
   distilled_page_prefs_->SetFontFamily(DistilledPagePrefs::MONOSPACE);
   EXPECT_EQ(DistilledPagePrefs::SANS_SERIF, obs.GetFontFamily());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::MONOSPACE, obs.GetFontFamily());
+
   distilled_page_prefs_->SetFontFamily(DistilledPagePrefs::SERIF);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SERIF, obs.GetFontFamily());
@@ -71,28 +81,35 @@ TEST_F(DistilledPagePrefsTest, TestingMultipleObserversFont) {
   distilled_page_prefs_->AddObserver(&obs);
   TestingObserver obs2;
   distilled_page_prefs_->AddObserver(&obs2);
+
   distilled_page_prefs_->SetFontFamily(DistilledPagePrefs::SERIF);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SERIF, obs.GetFontFamily());
   EXPECT_EQ(DistilledPagePrefs::SERIF, obs2.GetFontFamily());
+
   distilled_page_prefs_->RemoveObserver(&obs);
+
   distilled_page_prefs_->SetFontFamily(DistilledPagePrefs::MONOSPACE);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SERIF, obs.GetFontFamily());
   EXPECT_EQ(DistilledPagePrefs::MONOSPACE, obs2.GetFontFamily());
+
   distilled_page_prefs_->RemoveObserver(&obs2);
 }
 
 TEST_F(DistilledPagePrefsTest, TestingOnChangeThemeIsBeingCalled) {
   TestingObserver obs;
   distilled_page_prefs_->AddObserver(&obs);
+
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::SEPIA);
   EXPECT_EQ(DistilledPagePrefs::LIGHT, obs.GetTheme());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
+
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::DARK);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::DARK, obs.GetTheme());
+
   distilled_page_prefs_->RemoveObserver(&obs);
 }
 
@@ -101,15 +118,56 @@ TEST_F(DistilledPagePrefsTest, TestingMultipleObserversTheme) {
   distilled_page_prefs_->AddObserver(&obs);
   TestingObserver obs2;
   distilled_page_prefs_->AddObserver(&obs2);
+
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::SEPIA);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
   EXPECT_EQ(DistilledPagePrefs::SEPIA, obs2.GetTheme());
+
   distilled_page_prefs_->RemoveObserver(&obs);
+
   distilled_page_prefs_->SetTheme(DistilledPagePrefs::LIGHT);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DistilledPagePrefs::SEPIA, obs.GetTheme());
   EXPECT_EQ(DistilledPagePrefs::LIGHT, obs2.GetTheme());
+
+  distilled_page_prefs_->RemoveObserver(&obs2);
+}
+
+TEST_F(DistilledPagePrefsTest, TestingOnChangeFontScalingIsBeingCalled) {
+  TestingObserver obs;
+  distilled_page_prefs_->AddObserver(&obs);
+
+  distilled_page_prefs_->SetFontScaling(1.5f);
+  ASSERT_FLOAT_EQ(1.0f, obs.GetFontScaling());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FLOAT_EQ(1.5f, obs.GetFontScaling());
+
+  distilled_page_prefs_->SetFontScaling(0.7f);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FLOAT_EQ(0.7f, obs.GetFontScaling());
+
+  distilled_page_prefs_->RemoveObserver(&obs);
+}
+
+TEST_F(DistilledPagePrefsTest, TestingMultipleObserversFontScaling) {
+  TestingObserver obs;
+  distilled_page_prefs_->AddObserver(&obs);
+  TestingObserver obs2;
+  distilled_page_prefs_->AddObserver(&obs2);
+
+  distilled_page_prefs_->SetFontScaling(1.3f);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FLOAT_EQ(1.3f, obs.GetFontScaling());
+  ASSERT_FLOAT_EQ(1.3f, obs2.GetFontScaling());
+
+  distilled_page_prefs_->RemoveObserver(&obs);
+
+  distilled_page_prefs_->SetFontScaling(0.9f);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FLOAT_EQ(1.3f, obs.GetFontScaling());
+  ASSERT_FLOAT_EQ(0.9f, obs2.GetFontScaling());
+
   distilled_page_prefs_->RemoveObserver(&obs2);
 }
 

@@ -24,6 +24,8 @@ class DistilledPagePrefsAndroid {
   jint GetFontFamily(JNIEnv* env, jobject obj);
   void SetTheme(JNIEnv* env, jobject obj, jint theme);
   jint GetTheme(JNIEnv* env, jobject obj);
+  void SetFontScaling(JNIEnv* env, jobject obj, jfloat scaling);
+  jfloat GetFontScaling(JNIEnv* env, jobject obj);
 
   void AddObserver(JNIEnv* env, jobject obj, jlong obs);
   void RemoveObserver(JNIEnv* env, jobject obj, jlong obs);
@@ -43,6 +45,7 @@ class DistilledPagePrefsObserverAndroid : public DistilledPagePrefs::Observer {
   void OnChangeFontFamily(
       DistilledPagePrefs::FontFamily new_font_family) override;
   void OnChangeTheme(DistilledPagePrefs::Theme new_theme) override;
+  void OnChangeFontScaling(float scaling) override;
 
   virtual void DestroyObserverAndroid(JNIEnv* env, jobject obj);
 

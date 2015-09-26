@@ -19,6 +19,8 @@ namespace {
 const char kFontPref[] = "dom_distiller.font_family";
 // Path to the integer corresponding to user's preference font family.
 const char kThemePref[] = "dom_distiller.theme";
+// Path to the float corresponding to user's preference font scaling.
+const char kFontScalePref[] = "dom_distiller.font_scale";
 }
 
 namespace dom_distiller {
@@ -41,6 +43,9 @@ void DistilledPagePrefs::RegisterProfilePrefs(
       kFontPref,
       DistilledPagePrefs::SANS_SERIF,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDoublePref(
+      kFontScalePref,
+      1.0);
 }
 
 void DistilledPagePrefs::SetFontFamily(
@@ -80,6 +85,26 @@ DistilledPagePrefs::Theme DistilledPagePrefs::GetTheme() {
   return static_cast<Theme>(theme);
 }
 
+void DistilledPagePrefs::SetFontScaling(float scaling) {
+  pref_service_->SetDouble(kFontScalePref, scaling);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&DistilledPagePrefs::NotifyOnChangeFontScaling,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 scaling));
+}
+
+float DistilledPagePrefs::GetFontScaling() {
+  float scaling = pref_service_->GetDouble(kFontScalePref);
+  if (scaling < 0.4 || scaling > 2.5) {
+    // Persisted data was incorrect, trying to clean it up by storing the
+    // default.
+    SetFontScaling(1.0);
+    return 1.0;
+  }
+  return scaling;
+}
+
 void DistilledPagePrefs::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
 }
@@ -96,6 +121,11 @@ void DistilledPagePrefs::NotifyOnChangeFontFamily(
 void DistilledPagePrefs::NotifyOnChangeTheme(
     DistilledPagePrefs::Theme new_theme) {
   FOR_EACH_OBSERVER(Observer, observers_, OnChangeTheme(new_theme));
+}
+
+void DistilledPagePrefs::NotifyOnChangeFontScaling(
+    float scaling) {
+  FOR_EACH_OBSERVER(Observer, observers_, OnChangeFontScaling(scaling));
 }
 
 }  // namespace dom_distiller

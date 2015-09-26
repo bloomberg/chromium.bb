@@ -42,6 +42,16 @@ jint DistilledPagePrefsAndroid::GetTheme(JNIEnv* env, jobject obj) {
   return (int) distilled_page_prefs_->GetTheme();
 }
 
+void DistilledPagePrefsAndroid::SetFontScaling(JNIEnv* env,
+                                              jobject obj,
+                                              jfloat scaling) {
+  distilled_page_prefs_->SetFontScaling(static_cast<float>(scaling));
+}
+
+jfloat DistilledPagePrefsAndroid::GetFontScaling(JNIEnv* env, jobject obj) {
+  return distilled_page_prefs_->GetFontScaling();
+}
+
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            jlong distilled_page_prefs_ptr) {
@@ -97,6 +107,13 @@ void DistilledPagePrefsObserverAndroid::OnChangeTheme(
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DistilledPagePrefsObserverWrapper_onChangeTheme(
       env, java_ref_.obj(), (int)new_theme);
+}
+
+void DistilledPagePrefsObserverAndroid::OnChangeFontScaling(
+    float scaling) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_DistilledPagePrefsObserverWrapper_onChangeFontScaling(
+      env, java_ref_.obj(), scaling);
 }
 
 jlong InitObserverAndroid(JNIEnv* env, const JavaParamRef<jobject>& obj) {

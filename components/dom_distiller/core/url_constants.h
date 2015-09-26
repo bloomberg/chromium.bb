@@ -11,6 +11,7 @@ extern const char kDomDistillerScheme[];
 extern const char kEntryIdKey[];
 extern const char kUrlKey[];
 extern const char kViewerCssPath[];
+extern const char kViewerSaveFontScalingPath[];
 
 }  // namespace dom_distiller
 

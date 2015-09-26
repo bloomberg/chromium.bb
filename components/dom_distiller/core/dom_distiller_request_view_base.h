@@ -40,13 +40,17 @@ class DomDistillerRequestViewBase : public ViewRequestDelegate,
 
  protected:
   // DistilledPagePrefs::Observer implementation:
+  void OnChangeTheme(DistilledPagePrefs::Theme new_theme) override;
   void OnChangeFontFamily(
       DistilledPagePrefs::FontFamily new_font_family) override;
-  void OnChangeTheme(DistilledPagePrefs::Theme new_theme) override;
+  void OnChangeFontScaling(float scaling) override;
 
   // Sends JavaScript to the attached Viewer, buffering data if the viewer isn't
   // ready.
   virtual void SendJavaScript(const std::string& buffer) = 0;
+
+  // Sends JavaScript common to normal and error pages.
+  void SendCommonJavaScript();
 
   // The handle to the view request towards the DomDistillerService. It
   // needs to be kept around to ensure the distillation request finishes.

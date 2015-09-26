@@ -369,6 +369,50 @@ var pinchtest = (function() {
     pincher.handleTouchCancel();
   }
 
+  function testFontScaling() {
+    pincher.reset();
+    useFontScaling(1.5);
+    assertClose(pincher.status().clampedScale, 1.5);
+
+    var t = new touch();
+
+    // Start touch.
+    var oldState = pincher.status();
+    t.addTouchPoint(100, 100);
+    pincher.handleTouchStart(t.events());
+    t.addTouchPoint(300, 300);
+    pincher.handleTouchStart(t.events());
+
+    // Pinch to zoom out.
+    t.updateTouchPoint(0, 150, 150);
+    t.updateTouchPoint(1, 250, 250);
+    pincher.handleTouchMove(t.events());
+
+    // Verify scale is smaller.
+    assertTrue(pincher.status().clampedScale < 0.9 * oldState.clampedScale);
+    pincher.handleTouchCancel();
+
+    useFontScaling(0.8);
+    assertClose(pincher.status().clampedScale, 0.8);
+
+    // Start touch.
+    t = new touch();
+    oldState = pincher.status();
+    t.addTouchPoint(150, 150);
+    pincher.handleTouchStart(t.events());
+    t.addTouchPoint(250, 250);
+    pincher.handleTouchStart(t.events());
+
+    // Pinch to zoom in.
+    t.updateTouchPoint(0, 100, 100);
+    t.updateTouchPoint(1, 300, 300);
+    pincher.handleTouchMove(t.events());
+
+    // Verify scale is larger.
+    assertTrue(pincher.status().clampedScale > 1.1 * oldState.clampedScale);
+    pincher.handleTouchCancel();
+  }
+
   return {
     run: function(){
       testZoomOut();
@@ -380,6 +424,7 @@ var pinchtest = (function() {
       testCancel();
       testSingularity();
       testMinSpan();
+      testFontScaling();
       pincher.reset();
 
       return {success: true};

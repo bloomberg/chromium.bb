@@ -116,6 +116,10 @@ function updateToolbarColor() {
   document.getElementById('theme-color').content = toolbarColor;
 }
 
+function useFontScaling(scaling) {
+  pincher.useFontScaling(scaling);
+}
+
 var updateLoadingIndicator = function() {
   var colors = ["red", "yellow", "green", "blue"];
   return function(isLastPage) {
@@ -233,6 +237,7 @@ var pincher = (function() {
 
   // The zooming speed relative to pinching speed.
   var FONT_SCALE_MULTIPLIER = 0.5;
+
   var MIN_SPAN_LENGTH = 20;
 
   // The font size is guaranteed to be in px.
@@ -241,7 +246,7 @@ var pincher = (function() {
 
   var refreshTransform = function() {
     var slowedScale = Math.exp(Math.log(scale) * FONT_SCALE_MULTIPLIER);
-    clampedScale = Math.max(0.4, Math.min(2.5, fontSizeAnchor * slowedScale));
+    clampedScale = Math.max(0.5, Math.min(2.0, fontSizeAnchor * slowedScale));
 
     // Use "fake" 3D transform so that the layer is not repainted.
     // With 2D transform, the frame rate would be much lower.
@@ -251,6 +256,22 @@ var pincher = (function() {
         'scale(' + clampedScale/fontSizeAnchor + ')';
   };
 
+  function saveCenter(clientMid) {
+    // Try to preserve the pinching center after text reflow.
+    // This is accurate to the HTML element level.
+    focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
+    var rect = focusElement.getBoundingClientRect();
+    initClientMid = clientMid;
+    focusPos = (initClientMid.y - rect.top) / (rect.bottom - rect.top);
+  }
+
+  function restoreCenter() {
+    var rect = focusElement.getBoundingClientRect();
+    var targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
+        document.body.scrollTop - (initClientMid.y + shiftY);
+    document.body.scrollTop = targetTop;
+  }
+
   function endPinch() {
     pinching = false;
 
@@ -258,10 +279,16 @@ var pincher = (function() {
     document.body.style.transform = '';
     document.documentElement.style.fontSize = clampedScale * baseSize + "px";
 
-    var rect = focusElement.getBoundingClientRect();
-    var targetTop = focusPos * (rect.bottom - rect.top) + rect.top +
-        document.body.scrollTop - (initClientMid.y + shiftY);
-    document.body.scrollTop = targetTop;
+    restoreCenter();
+
+    var img = document.getElementById('fontscaling-img');
+    if (!img) {
+      img = document.createElement('img');
+      img.id = 'fontscaling-img';
+      img.style.display = 'none';
+      document.body.appendChild(img);
+    }
+    img.src = "/savefontscaling/" + clampedScale;
   }
 
   function touchSpan(e) {
@@ -322,12 +349,7 @@ var pincher = (function() {
       document.body.style.transformOrigin =
           pinchOrigin.x + 'px ' + pinchOrigin.y  + 'px';
 
-      // Try to preserve the pinching center after text reflow.
-      // This is accurate to the HTML element level.
-      focusElement = document.elementFromPoint(clientMid.x, clientMid.y);
-      var rect = focusElement.getBoundingClientRect();
-      initClientMid = clientMid;
-      focusPos = (initClientMid.y - rect.top) / (rect.bottom - rect.top);
+      saveCenter(clientMid);
 
       lastSpan = span;
       lastClientMid = clientMid;
@@ -389,6 +411,15 @@ var pincher = (function() {
         shiftX: shiftX,
         shiftY: shiftY
       };
+    },
+
+    useFontScaling: function(scaling) {
+      saveCenter({x: window.innerWidth/2, y: window.innerHeight/2});
+      shiftX = 0;
+      shiftY = 0;
+      document.documentElement.style.fontSize = scaling * baseSize + "px";
+      clampedScale = scaling;
+      restoreCenter();
     }
   };
 }());

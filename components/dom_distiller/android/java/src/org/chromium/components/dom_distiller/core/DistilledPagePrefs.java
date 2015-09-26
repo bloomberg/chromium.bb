@@ -26,6 +26,7 @@ public final class DistilledPagePrefs {
     public interface Observer {
         void onChangeFontFamily(FontFamily font);
         void onChangeTheme(Theme theme);
+        void onChangeFontScaling(float scaling);
     }
 
     /**
@@ -49,6 +50,11 @@ public final class DistilledPagePrefs {
         @CalledByNative("DistilledPagePrefsObserverWrapper")
         private void onChangeTheme(int theme) {
             mDistilledPagePrefsObserver.onChangeTheme(Theme.getThemeForValue(theme));
+        }
+
+        @CalledByNative("DistilledPagePrefsObserverWrapper")
+        private void onChangeFontScaling(float scaling) {
+            mDistilledPagePrefsObserver.onChangeFontScaling(scaling);
         }
 
         public void destroy() {
@@ -113,6 +119,14 @@ public final class DistilledPagePrefs {
         return Theme.getThemeForValue(nativeGetTheme(mDistilledPagePrefsAndroid));
     }
 
+    public void setFontScaling(float scaling) {
+        nativeSetFontScaling(mDistilledPagePrefsAndroid, scaling);
+    }
+
+    public float getFontScaling() {
+        return nativeGetFontScaling(mDistilledPagePrefsAndroid);
+    }
+
     private native long nativeInit(long distilledPagePrefPtr);
 
     private native void nativeSetFontFamily(long nativeDistilledPagePrefsAndroid, int fontFamily);
@@ -122,6 +136,10 @@ public final class DistilledPagePrefs {
     private native void nativeSetTheme(long nativeDistilledPagePrefsAndroid, int theme);
 
     private native int nativeGetTheme(long nativeDistilledPagePrefsAndroid);
+
+    private native void nativeSetFontScaling(long nativeDistilledPagePrefsAndroid, float scaling);
+
+    private native float nativeGetFontScaling(long nativeDistilledPagePrefsAndroid);
 
     private native void nativeAddObserver(long nativeDistilledPagePrefsAndroid,
             long nativeObserverPtr);

@@ -83,12 +83,15 @@ scoped_ptr<ViewerHandle> CreateViewRequest(
     ViewRequestDelegate* view_request_delegate,
     const gfx::Size& render_view_size);
 
-// Returns JavaScript coresponding to setting the font family.
+// Returns JavaScript corresponding to setting the font family.
 const std::string GetDistilledPageFontFamilyJs(
     DistilledPagePrefs::FontFamily font);
 
 // Returns JavaScript corresponding to setting a specific theme.
 const std::string GetDistilledPageThemeJs(DistilledPagePrefs::Theme theme);
+
+// Returns JavaScript corresponding to setting the font scaling.
+const std::string GetDistilledPageFontScalingJs(float scaling);
 
 }  // namespace viewer
 

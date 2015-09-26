@@ -4,7 +4,6 @@
 
 #include "components/dom_distiller/content/browser/dom_distiller_viewer_source.h"
 
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -12,6 +11,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/user_metrics.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
@@ -110,6 +111,7 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
   if (waiting_for_page_ready_) {
     buffer_ += buffer;
   } else {
+    DCHECK(buffer_.empty());
     if (web_contents()) {
       RunIsolatedJavaScript(web_contents()->GetMainFrame(), buffer);
     }
@@ -153,14 +155,14 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishLoad(
   if (render_frame_host->GetParent()) {
     return;
   }
+
+  // No SendJavaScript() calls allowed before |buffer_| is run and cleared.
   waiting_for_page_ready_ = false;
   if (!buffer_.empty()) {
     RunIsolatedJavaScript(web_contents()->GetMainFrame(), buffer_);
     buffer_.clear();
   }
-  if (IsErrorPage()) {
-    Cancel(); // This will cause the object to clean itself up.
-  }
+  // No need to Cancel() here.
 }
 
 DomDistillerViewerSource::DomDistillerViewerSource(
@@ -197,6 +199,13 @@ void DomDistillerViewerSource::StartDataRequest(
     std::string css = viewer::GetCss();
     callback.Run(base::RefCountedString::TakeString(&css));
     return;
+  } else if (base::StartsWith(path, kViewerSaveFontScalingPath,
+                              base::CompareCase::SENSITIVE)) {
+    double scale = 1.0;
+    if (base::StringToDouble(
+        path.substr(strlen(kViewerSaveFontScalingPath)), &scale)) {
+      dom_distiller_service_->GetDistilledPagePrefs()->SetFontScaling(scale);
+    }
   }
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);

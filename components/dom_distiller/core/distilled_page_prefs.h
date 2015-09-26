@@ -38,6 +38,7 @@ class DistilledPagePrefs {
    public:
     virtual void OnChangeFontFamily(FontFamily font) = 0;
     virtual void OnChangeTheme(Theme theme) = 0;
+    virtual void OnChangeFontScaling(float scaling) = 0;
   };
 
   explicit DistilledPagePrefs(PrefService* pref_service);
@@ -55,6 +56,11 @@ class DistilledPagePrefs {
   // Returns the user's preference for the theme of distilled pages.
   Theme GetTheme();
 
+  // Sets the user's preference for the font size scaling of distilled pages.
+  void SetFontScaling(float scaling);
+  // Returns the user's preference for the font size scaling of distilled pages.
+  float GetFontScaling();
+
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
 
@@ -63,6 +69,9 @@ class DistilledPagePrefs {
   void NotifyOnChangeFontFamily(FontFamily font_family);
   // Notifies all Observers of new theme.
   void NotifyOnChangeTheme(Theme theme);
+  // Notifies all Observers of new font scaling.
+  void NotifyOnChangeFontScaling(float scaling);
+
 
   PrefService* pref_service_;
   base::ObserverList<Observer> observers_;
