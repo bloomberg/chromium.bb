@@ -1733,8 +1733,10 @@ void Document::updateLayoutTree(StyleRecalcChange change)
     RELEASE_ASSERT(!view()->isPainting());
 
     // Script can run below in WidgetUpdates, so protect the LocalFrame.
-    // FIXME: Can this still happen? How does script run inside
-    // UpdateSuspendScope::performDeferredWidgetTreeOperations() ?
+    // TODO(esprehn): This should actually crash because of the ScriptForbiddenScope,
+    // for an example stack see crbug.com/536194, it seems like we should just use
+    // a PluginScriptForbiddenScope to block all script from running inside here
+    // to avoid the crash.
     RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
 
     TRACE_EVENT_BEGIN1("blink,devtools.timeline", "UpdateLayoutTree", "beginData", InspectorRecalculateStylesEvent::data(frame()));
@@ -2134,6 +2136,7 @@ void Document::detach(const AttachContext& context)
     if (!isActive())
         return;
 
+    HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     ScriptForbiddenScope forbidScript;
     view()->dispose();
     m_markers->prepareForDestruction();
