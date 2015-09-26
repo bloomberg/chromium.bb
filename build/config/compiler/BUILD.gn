@@ -1058,15 +1058,7 @@ if (is_clang) {
     default_warning_flags += [
       # TODO(thakis): Enable this, crbug.com/507717
       "-Wno-shift-negative-value",
-    ]
-  }
 
-  if (exec_script("//tools/clang/scripts/update.py",
-                  [ "--print-revision" ],
-                  "trim string") != "245965-1") {
-    default_warning_flags += [
-      # TODO(thakis): Move this into outer if once clang is rolled far enough
-      # that the pinned clang understands this flag.
       # TODO(thakis): Consider enabling this?
       "-Wno-bitfield-width",
     ]

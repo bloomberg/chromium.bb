@@ -28,7 +28,7 @@ import zipfile
 # Note: this revision is only used for Windows. Other platforms use update.sh.
 # TODO(thakis): Use the same revision on Windows and non-Windows.
 # TODO(thakis): Remove update.sh, use update.py everywhere.
-LLVM_WIN_REVISION = '245965'
+LLVM_WIN_REVISION = '247874'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
