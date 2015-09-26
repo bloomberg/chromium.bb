@@ -178,7 +178,8 @@
     readonly attribute unsigned long workerThreadCount;
 
     // Flags for layerTreeAsText.
-    // The values of these constants must be kept in sync with the values of LayerTreeAsTextBehaviorFlags in GraphicsLayerClient.h.
+    // The values of these constants must be kept in sync with the values of LayerTreeFlags in GraphicsLayerClient.h.
+    const unsigned short LAYER_TREE_INCLUDES_DEBUG_INFO = 1;
     const unsigned short LAYER_TREE_INCLUDES_REPAINT_RECTS = 2;
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 4;
     const unsigned short LAYER_TREE_INCLUDES_ROOT_LAYER = 8;
