@@ -51092,6 +51092,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebUI.CreatedForUrl" enum="WebUIUrlHashes">
+  <owner>dbeam@chromium.org</owner>
+  <summary>URLs for which Chrome creates WebUIControllers.</summary>
+</histogram>
+
 <histogram name="Win8.PageLoad" enum="Win8PageLoadType">
   <owner>zturner@chromium.org</owner>
   <summary>
@@ -73444,6 +73449,119 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="ArrayBuffer"/>
   <int value="2" label="ArrayBufferView"/>
   <int value="3" label="Blob"/>
+</enum>
+
+<enum name="WebUIUrlHashes" type="int">
+  <int value="-2103246641" label="chrome://signin-internals/"/>
+  <int value="-2034706497" label="chrome://net-internals/"/>
+  <int value="-1887206190" label="chrome://nfc-debug/"/>
+  <int value="-1808179141" label="chrome://password-manager-internals/"/>
+  <int value="-1743341803" label="chrome://bookmarks/"/>
+  <int value="-1729122580" label="chrome://chrome-urls/"/>
+  <int value="-1700864659" label="chrome://slow/"/>
+  <int value="-1697077152" label="chrome://device-log/"/>
+  <int value="-1690355375" label="chrome://mobilesetup/"/>
+  <int value="-1681544613" label="chrome://print/"/>
+  <int value="-1647734092" label="chrome://net-export/"/>
+  <int value="-1591890659" label="chrome://syncfs-internals/"/>
+  <int value="-1493822642" label="chrome://invalidations/"/>
+  <int value="-1440785181" label="chrome://profile-signin-confirmation/"/>
+  <int value="-1398642514" label="chrome://gesture/"/>
+  <int value="-1382906531" label="chrome://managed-user-passphrase/"/>
+  <int value="-1379571130" label="chrome://newtab/"/>
+  <int value="-1378421581" label="chrome://media-router/"/>
+  <int value="-1313432739" label="chrome://plugins/"/>
+  <int value="-1169621742" label="chrome://linux-proxy-config/"/>
+  <int value="-1108319739" label="chrome://sync-internals/"/>
+  <int value="-1082746738" label="chrome://credits/"/>
+  <int value="-1078583150" label="chrome://view-cert-dialog/"/>
+  <int value="-986409800" label="chrome://identity-internals/"/>
+  <int value="-969979971" label="chrome://sandbox/"/>
+  <int value="-946383082" label="chrome://translate-internals/"/>
+  <int value="-936786926" label="chrome://settings/"/>
+  <int value="-902637811" label="chrome://appcache-internals/"/>
+  <int value="-891260101" label="chrome://inspect/"/>
+  <int value="-853789543" label="chrome://bluetooth-pairing/"/>
+  <int value="-823585847" label="chrome://chrome-signin/"/>
+  <int value="-756514973" label="chrome://version/"/>
+  <int value="-753390931" label="chrome://interstitials/"/>
+  <int value="-727952446" label="chrome://nacl/"/>
+  <int value="-707542503" label="chrome://choose-mobile-network/"/>
+  <int value="-672072143" label="chrome://site-engagement/"/>
+  <int value="-661305899" label="chrome://set-time/"/>
+  <int value="-644310325" label="chrome://os-credits/"/>
+  <int value="-624584089"
+      label="chrome-extension://eemcgdkfndhakfknompkggombfjjjeno/ (Bookmark
+             Manager)"/>
+  <int value="-606058756" label="chrome://accessibility/"/>
+  <int value="-516792794" label="chrome://downloads/"/>
+  <int value="-512782085" label="chrome://salsa/"/>
+  <int value="-451371558" label="chrome://serviceworker-internals/"/>
+  <int value="-377028639" label="chrome://copresence/"/>
+  <int value="-359703631" label="chrome://slow_trace/"/>
+  <int value="-245337017" label="chrome://user-actions/"/>
+  <int value="-206925255" label="chrome://popular-sites-internals/"/>
+  <int value="-176639700" label="chrome://omnibox/"/>
+  <int value="-106823253" label="chrome://conflicts/"/>
+  <int value="-90956977" label="chrome://dns/"/>
+  <int value="-42737706" label="chrome://extensions-frame/"/>
+  <int value="-2353438" label="chrome://sim-unlock/"/>
+  <int value="1377205" label="chrome://history-frame/"/>
+  <int value="34035361" label="chrome://apps/"/>
+  <int value="43923599" label="chrome://tracing/"/>
+  <int value="58807865" label="chrome://local-state/"/>
+  <int value="112165789" label="chrome://device-emulator/"/>
+  <int value="114748825" label="chrome-devtools://devtools/"/>
+  <int value="164517522" label="chrome://discards/"/>
+  <int value="171659041" label="chrome://webrtc-device-provider/"/>
+  <int value="253258497" label="chrome://components/"/>
+  <int value="260253931" label="chrome://devices/"/>
+  <int value="325375649" label="chrome://settings-frame/"/>
+  <int value="361621847" label="chrome://make-metro/"/>
+  <int value="554090510" label="chrome://first-run/"/>
+  <int value="646837226" label="chrome://crashes/"/>
+  <int value="659389881" label="chrome://gpu/"/>
+  <int value="689991895" label="chrome://supervised-user-internals/"/>
+  <int value="742272091" label="chrome://extensions/"/>
+  <int value="784140714" label="chrome://predictors/"/>
+  <int value="812624791" label="chrome://dom-distiller/"/>
+  <int value="918960088" label="chrome://instant/"/>
+  <int value="943766809" label="chrome://view-cert/"/>
+  <int value="977219287" label="chrome://memory/"/>
+  <int value="985294599" label="chrome://webrtc-logs/"/>
+  <int value="1055519744" label="chrome://webrtc-internals/"/>
+  <int value="1109407387" label="chrome://keyboardoverlay/"/>
+  <int value="1211642987" label="chrome://voicesearch/"/>
+  <int value="1213428635" label="chrome://memory-redirect/"/>
+  <int value="1281801197" label="chrome://terms/"/>
+  <int value="1340926535" label="chrome://network/"/>
+  <int value="1354146226" label="chrome://tab-modal-confirm-dialog/"/>
+  <int value="1371905827" label="chrome://flags/"/>
+  <int value="1396129399" label="chrome://flash/"/>
+  <int value="1403605293" label="chrome://proxy-settings/"/>
+  <int value="1427179406" label="chrome://gcm-internals/"/>
+  <int value="1454088830" label="chrome://uber-frame/"/>
+  <int value="1457759734" label="chrome://user-manager/"/>
+  <int value="1463418339" label="chrome://proximity-auth/"/>
+  <int value="1466599095" label="chrome://oobe/"/>
+  <int value="1467342679" label="chrome://memory-internals/"/>
+  <int value="1540230808" label="chrome://power/"/>
+  <int value="1568301017" label="chrome://media-internals/"/>
+  <int value="1585293659" label="chrome://system/"/>
+  <int value="1603463396" label="chrome://help-frame/"/>
+  <int value="1615939424" label="chrome://chrome/"/>
+  <int value="1628875649" label="chrome://quota-internals/"/>
+  <int value="1631369147" label="chrome://domain-reliability-internals/"/>
+  <int value="1662453825" label="chrome://indexeddb-internals/"/>
+  <int value="1687272877" label="chrome://syncresources/"/>
+  <int value="1725906496" label="chrome://imageburner/"/>
+  <int value="1765337366" label="chrome://certificate-manager/"/>
+  <int value="1797107942" label="chrome://md-settings/"/>
+  <int value="1887784693" label="chrome://policy/"/>
+  <int value="1926101309" label="chrome://cryptohome/"/>
+  <int value="1961263039" label="chrome://profiler/"/>
+  <int value="1975618905" label="chrome://app-list/"/>
+  <int value="2114840772" label="chrome://drive-internals/"/>
 </enum>
 
 <enum name="WiFiApMode" type="int">

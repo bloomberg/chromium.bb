@@ -87,6 +87,16 @@ void WebUIImpl::RenderViewCreated(RenderViewHost* render_view_host) {
   controller_->RenderViewCreated(render_view_host);
 }
 
+void WebUIImpl::RenderViewReused(RenderViewHost* render_view_host,
+                                 bool was_main_frame) {
+  if (was_main_frame) {
+    GURL site_url = render_view_host->GetSiteInstance()->GetSiteURL();
+    GetContentClient()->browser()->LogWebUIUrl(site_url);
+  }
+
+  controller_->RenderViewReused(render_view_host);
+}
+
 WebContents* WebUIImpl::GetWebContents() const {
   return web_contents_;
 }
@@ -117,6 +127,10 @@ int WebUIImpl::GetBindings() const {
 
 void WebUIImpl::SetBindings(int bindings) {
   bindings_ = bindings;
+}
+
+bool WebUIImpl::HasRenderFrame() {
+  return TargetFrame() != nullptr;
 }
 
 WebUIController* WebUIImpl::GetController() const {

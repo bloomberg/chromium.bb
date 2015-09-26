@@ -2372,8 +2372,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   }
 
   if (pending_web_ui() && render_frame_host_->IsRenderFrameLive()) {
-    pending_web_ui()->GetController()->RenderViewReused(
-        render_frame_host_->render_view_host());
+    pending_web_ui()->RenderViewReused(render_frame_host_->render_view_host(),
+                                       frame_tree_node_->IsMainFrame());
   }
 
   // The renderer can exit view source mode when any error or cancellation

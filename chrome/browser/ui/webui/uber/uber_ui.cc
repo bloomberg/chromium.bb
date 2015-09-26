@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
+#include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
@@ -130,7 +131,27 @@ void UpdateHistoryNavigation(content::WebUI* web_ui) {
 
 }  // namespace
 
-UberUI::UberUI(content::WebUI* web_ui) : WebUIController(web_ui) {
+SubframeLogger::SubframeLogger(content::WebContents* contents)
+    : WebContentsObserver(contents) {}
+
+SubframeLogger::~SubframeLogger() {}
+
+void SubframeLogger::DidCommitProvisionalLoadForFrame(
+    content::RenderFrameHost* render_frame_host,
+    const GURL& url,
+    ui::PageTransition transition_type) {
+  if (url == GURL(chrome::kChromeUIExtensionsFrameURL) ||
+      url == GURL(chrome::kChromeUIHelpFrameURL) ||
+      url == GURL(chrome::kChromeUIHistoryFrameURL) ||
+      url == GURL(chrome::kChromeUISettingsFrameURL) ||
+      url == GURL(chrome::kChromeUIHelpFrameURL)) {
+    webui::LogWebUIUrl(url);
+  }
+}
+
+UberUI::UberUI(content::WebUI* web_ui)
+    : WebUIController(web_ui),
+      subframe_logger_(web_ui->GetWebContents()) {
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 CreateUberHTMLSource());
 

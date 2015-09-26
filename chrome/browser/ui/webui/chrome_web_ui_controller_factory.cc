@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
 #include "chrome/browser/ui/webui/invalidations_ui.h"
 #include "chrome/browser/ui/webui/local_state/local_state_ui.h"
+#include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
 #include "chrome/browser/ui/webui/net_internals/net_internals_ui.h"
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
@@ -642,6 +643,9 @@ WebUIController* ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
   WebUIFactoryFunction function = GetWebUIFactoryFunction(web_ui, profile, url);
   if (!function)
     return NULL;
+
+  if (web_ui->HasRenderFrame())
+    webui::LogWebUIUrl(url);
 
   return (*function)(web_ui, url);
 }

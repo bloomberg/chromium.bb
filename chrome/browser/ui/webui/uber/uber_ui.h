@@ -7,8 +7,10 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "extensions/browser/extension_registry_observer.h"
 
@@ -19,6 +21,22 @@ class BrowserContext;
 namespace extensions {
 class ExtensionRegistry;
 }
+
+// Logs visits to subframe URLs (e.g. chrome://settings-frame).
+class SubframeLogger : public content::WebContentsObserver {
+ public:
+  explicit SubframeLogger(content::WebContents* contents);
+  ~SubframeLogger() override;
+
+  // content::WebContentsObserver implementation.
+  void DidCommitProvisionalLoadForFrame(
+      content::RenderFrameHost* render_frame_host,
+      const GURL& url,
+      ui::PageTransition transition_type) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SubframeLogger);
+};
 
 // The WebUI class for the uber page (chrome://chrome). It manages the UI for
 // the uber page (navigation bar and so forth) as well as WebUI objects for
@@ -46,6 +64,8 @@ class UberUI : public content::WebUIController {
   // Creates and stores a WebUI for the given URL.
   void RegisterSubpage(const std::string& page_url,
                        const std::string& page_host);
+
+  SubframeLogger subframe_logger_;
 
   // The WebUI*s in this map are owned.
   SubpageMap sub_uis_;

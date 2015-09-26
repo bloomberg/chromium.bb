@@ -30,6 +30,10 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   // RenderFrameHostManager will reuse RenderView instances.
   void RenderViewCreated(RenderViewHost* render_view_host);
 
+  // Called by WebContentsImpl when the RenderView is reused. This happens on
+  // refresh or when the main page is navigated within the same SiteInstance.
+  void RenderViewReused(RenderViewHost* render_view_host, bool was_main_frame);
+
   // WebUI implementation:
   WebContents* GetWebContents() const override;
   WebUIController* GetController() const override;
@@ -41,6 +45,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void SetLinkTransitionType(ui::PageTransition type) override;
   int GetBindings() const override;
   void SetBindings(int bindings) override;
+  bool HasRenderFrame() override;
   void AddMessageHandler(WebUIMessageHandler* handler) override;
   typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   void RegisterMessageCallback(const std::string& message,

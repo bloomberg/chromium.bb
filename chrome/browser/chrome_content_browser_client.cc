@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -979,6 +980,10 @@ void ChromeContentBrowserClient::GetAdditionalWebUIHostsToIgnoreParititionCheck(
   hosts->push_back(chrome::kChromeUIThumbnailHost);
   hosts->push_back(chrome::kChromeUIThumbnailHost2);
   hosts->push_back(chrome::kChromeUIThumbnailListHost);
+}
+
+bool ChromeContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
+  return webui::LogWebUIUrl(web_ui_url);
 }
 
 net::URLRequestContextGetter*

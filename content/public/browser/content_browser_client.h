@@ -199,6 +199,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalWebUIHostsToIgnoreParititionCheck(
       std::vector<std::string>* hosts) {}
 
+  // Called when WebUI objects are created to get aggregate usage data (i.e. is
+  // chrome://downloads used more than chrome://bookmarks?). Only internal (e.g.
+  // chrome://) URLs are logged. Returns whether the URL was actually logged.
+  virtual bool LogWebUIUrl(const GURL& web_ui_url) const;
+
   // Creates the main net::URLRequestContextGetter. Should only be called once
   // per ContentBrowserClient object.
   // TODO(ajwong): Remove once http://crbug.com/159193 is resolved.
