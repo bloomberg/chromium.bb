@@ -12,6 +12,9 @@ const char kAllowToCollectURLBubbleWasShown[] =
 const char kAllowToCollectURLBubbleActivePeriodStartFactor[] =
     "password_manager_url_collection_bubble.active_period_start_id";
 
+const char kWasAutoSignInFirstRunExperienceShown[] =
+    "profile.was_auto_sign_in_first_run_experience_shown";
+
 const char kCredentialsEnableService[] = "credentials_enable_service";
 
 #if !defined(OS_MACOSX) && !defined(OS_CHROMEOS) && defined(OS_POSIX)

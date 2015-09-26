@@ -23,7 +23,10 @@ enum CustomPassphraseState { NO_CUSTOM_PASSPHRASE, CUSTOM_PASSPHRASE };
 
 enum Branding { NO_BRANDING, BRANDING };
 
-enum FirstRunExperience { NO_FIRST_RUN_EXPERIENCE, FIRST_RUN_EXPERIENCE };
+enum SavePromptFirstRunExperience {
+  NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE,
+  SAVE_PROMPT_FIRST_RUN_EXPERIENCE
+};
 
 enum SmartLockUser { SMARTLOCK_USER, NOT_SMARTLOCK_USER };
 
@@ -38,7 +41,7 @@ struct ShouldShowSavePromptFirstRunExperienceTestcase {
   CustomPassphraseState passphrase_state;
   syncer::ModelType type;
   bool pref_value;
-  FirstRunExperience first_run_experience;
+  SavePromptFirstRunExperience first_run_experience;
 };
 
 class TestSyncService : public sync_driver::FakeSyncService {
@@ -127,7 +130,7 @@ class PasswordManagerPasswordBubbleExperimentTest : public testing::Test {
     bool should_show_first_run_experience =
         password_bubble_experiment::ShouldShowSavePromptFirstRunExperience(
             sync_service(), prefs());
-    if (test_case.first_run_experience == FIRST_RUN_EXPERIENCE) {
+    if (test_case.first_run_experience == SAVE_PROMPT_FIRST_RUN_EXPERIENCE) {
       EXPECT_TRUE(should_show_first_run_experience);
     } else {
       EXPECT_FALSE(should_show_first_run_experience);
@@ -185,14 +188,22 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        ShoulShowSavePrompBrandingGroup) {
   const struct ShouldShowSavePromptFirstRunExperienceTestcase kTestData[] = {
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false,
+       SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
   };
 
   EnforceExperimentGroup(kSmartLockBrandingGroupName);
@@ -204,14 +215,22 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
        ShoulShowSavePrompNoBrandingGroup) {
   const struct ShouldShowSavePromptFirstRunExperienceTestcase kTestData[] = {
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
-      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true, NO_FIRST_RUN_EXPERIENCE},
-      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false, NO_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::PASSWORDS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::PASSWORDS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, true,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
+      {NO_CUSTOM_PASSPHRASE, syncer::BOOKMARKS, false,
+       NO_SAVE_PROMPT_FIRST_RUN_EXPERIENCE},
   };
 
   EnforceExperimentGroup(kSmartLockNoBrandingGroupName);
@@ -221,7 +240,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 }
 
 TEST_F(PasswordManagerPasswordBubbleExperimentTest,
-       RecordSavePromptFirstRunExperienceWasShownTest) {
+       RecordFirstRunExperienceWasShownTest) {
   const struct {
     bool initial_pref_value;
     bool result_pref_value;
@@ -229,6 +248,7 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
       {false, true}, {true, true},
   };
   for (const auto& test_case : kTestData) {
+    // Record Save prompt first run experience.
     prefs()->SetBoolean(
         password_manager::prefs::kWasSavePrompFirstRunExperienceShown,
         test_case.initial_pref_value);
@@ -238,5 +258,21 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
         test_case.result_pref_value,
         prefs()->GetBoolean(
             password_manager::prefs::kWasSavePrompFirstRunExperienceShown));
+    // Record Auto sign-in first run experience.
+    prefs()->SetBoolean(
+        password_manager::prefs::kWasAutoSignInFirstRunExperienceShown,
+        test_case.initial_pref_value);
+    EXPECT_EQ(!test_case.initial_pref_value,
+              password_bubble_experiment::
+                  ShouldShowAutoSignInPromptFirstRunExperience(prefs()));
+    password_bubble_experiment::
+        RecordAutoSignInPromptFirstRunExperienceWasShown(prefs());
+    EXPECT_EQ(
+        test_case.result_pref_value,
+        prefs()->GetBoolean(
+            password_manager::prefs::kWasAutoSignInFirstRunExperienceShown));
+    EXPECT_EQ(!test_case.result_pref_value,
+              password_bubble_experiment::
+                  ShouldShowAutoSignInPromptFirstRunExperience(prefs()));
   }
 }

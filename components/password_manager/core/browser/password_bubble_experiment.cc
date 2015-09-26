@@ -25,6 +25,9 @@ void RecordBubbleClosed(
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
+
+  registry->RegisterBooleanPref(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false);
 }
 
 bool IsSmartLockUser(const sync_driver::SyncService* sync_service) {
@@ -50,6 +53,16 @@ bool ShouldShowSavePromptFirstRunExperience(
 void RecordSavePromptFirstRunExperienceWasShown(PrefService* prefs) {
   prefs->SetBoolean(
       password_manager::prefs::kWasSavePrompFirstRunExperienceShown, true);
+}
+
+bool ShouldShowAutoSignInPromptFirstRunExperience(PrefService* prefs) {
+  return !prefs->GetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown);
+}
+
+void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs) {
+  prefs->SetBoolean(
+      password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, true);
 }
 
 }  // namespace password_bubble_experiment

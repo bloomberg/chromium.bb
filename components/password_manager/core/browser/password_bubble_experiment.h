@@ -26,8 +26,9 @@ void RecordBubbleClosed(
     PrefService* prefs,
     password_manager::metrics_util::UIDismissalReason reason);
 
-// Registers pref which contains information whether first run experience for
-// the save prompt was shown.
+// Registers prefs which controls appearance of the first run experience for the
+// Smart Lock UI, namely was first run experience shown for save prompt or auto
+// sign-in prompt.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
 // A Smart Lock user is a sync user without a custom passphrase.
@@ -45,6 +46,13 @@ bool ShouldShowSavePromptFirstRunExperience(
 // Sets appropriate value to the preference which controls appearance of the
 // first run experience for the save prompt.
 void RecordSavePromptFirstRunExperienceWasShown(PrefService* prefs);
+
+// Returns true if first run experience for auto sign-in prompt should be shown.
+bool ShouldShowAutoSignInPromptFirstRunExperience(PrefService* prefs);
+
+// Sets appropriate value to the preference which controls appearance of the
+// first run experience for the auto sign-in prompt.
+void RecordAutoSignInPromptFirstRunExperienceWasShown(PrefService* prefs);
 
 }  // namespace password_bubble_experiment
 

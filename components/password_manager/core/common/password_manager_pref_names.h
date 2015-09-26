@@ -21,6 +21,10 @@ extern const char kAllowToCollectURLBubbleWasShown[];
 // period, in which the "Allow to collect URL?" bubble can be shown.
 extern const char kAllowToCollectURLBubbleActivePeriodStartFactor[];
 
+// Boolean that indicated whether first run experience for the auto sign-in
+// prompt was shown or not.
+extern const char kWasAutoSignInFirstRunExperienceShown[];
+
 // The value of this preference controls whether the Password Manager will save
 // credentials. When it is false, it doesn't ask if you want to save passwords
 // but will continue to fill passwords. This preference in a future will
