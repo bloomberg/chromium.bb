@@ -1,5 +1,4 @@
 [OBJECT, EMBED] share:
-align
 height
 name
 type
@@ -25,4 +24,5 @@ willValidate
 ----------
 EMBED also has:
 src
- 
+
+

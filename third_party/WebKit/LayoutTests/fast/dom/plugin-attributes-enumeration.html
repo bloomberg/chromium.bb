@@ -31,6 +31,7 @@ function test()
     var objectHash = new Object();
     var embedHash = new Object();
     var intersectionHash = new Object();
+    var divElement = document.createElement('div');
 
     var object, embed;
 
@@ -52,7 +53,7 @@ function test()
     print("[OBJECT, EMBED] share:", "green");
     var array = new Array();
     for (var p in intersectionHash)
-        if (typeof document.body[p] == 'undefined') // weed out items shared by all elements
+        if (typeof divElement[p] == 'undefined') // weed out items shared by all elements
             array.push(p);
     array.sort();
     array.forEach(print);
@@ -83,8 +84,8 @@ function test()
 <hr>
 <div id='console'></div>
 
-<object class="invisible" id="object"></object>
-<embed class="invisible" id="embed"></embed>
+<div><object class="invisible" id="object"></object></div>
+<div><embed class="invisible" id="embed"></embed></div>
 
 </body>
 </html>
