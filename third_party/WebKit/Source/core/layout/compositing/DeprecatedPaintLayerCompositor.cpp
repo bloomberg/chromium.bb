@@ -1189,17 +1189,17 @@ String DeprecatedPaintLayerCompositor::debugName(const GraphicsLayer* graphicsLa
     } else if (graphicsLayer == m_rootTransformLayer.get()) {
         name = "Root Transform Layer";
     } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
-        name = "Overflow Controls Host Layer";
+        name = "Frame Overflow Controls Host Layer";
     } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {
-        name = "Horizontal Scrollbar Layer";
+        name = "Frame Horizontal Scrollbar Layer";
     } else if (graphicsLayer == m_layerForVerticalScrollbar.get()) {
-        name = "Vertical Scrollbar Layer";
+        name = "Frame Vertical Scrollbar Layer";
     } else if (graphicsLayer == m_layerForScrollCorner.get()) {
-        name = "Scroll Corner Layer";
+        name = "Frame Scroll Corner Layer";
     } else if (graphicsLayer == m_containerLayer.get()) {
-        name = "LocalFrame Clipping Layer";
+        name = "Frame Clipping Layer";
     } else if (graphicsLayer == m_scrollLayer.get()) {
-        name = "LocalFrame Scrolling Layer";
+        name = "Frame Scrolling Layer";
     } else {
         ASSERT_NOT_REACHED();
     }
