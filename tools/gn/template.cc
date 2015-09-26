@@ -41,9 +41,20 @@ Value Template::Invoke(Scope* scope,
                             invocation->function().value().as_string(),
                             block, args, invocation_scope.get(), err))
     return Value();
-  block->Execute(invocation_scope.get(), err);
-  if (err->has_error())
-    return Value();
+
+  {
+    // Don't allow the block of the template invocation to include other
+    // targets configs, or template invocations. This must only be applied
+    // to the invoker's block rather than the whole function because the
+    // template execution itself must be able to define targets, etc.
+    NonNestableBlock non_nestable(scope, invocation, "template invocation");
+    if (!non_nestable.Enter(err))
+      return Value();
+
+    block->Execute(invocation_scope.get(), err);
+    if (err->has_error())
+      return Value();
+  }
 
   // Set up the scope to run the template and set the current directory for the
   // template (which ScopePerFileProvider uses to base the target-related

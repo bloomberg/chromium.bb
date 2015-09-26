@@ -435,14 +435,6 @@ Label MakeLabelForScope(const Scope* scope,
 // there is already another non-nestable block on the stack.
 class NonNestableBlock {
  public:
-  enum Type {
-    CONFIG,
-    DECLARE_ARGS,
-    TARGET,
-    TEMPLATE,
-    TOOLCHAIN,
-  };
-
   // type_description is a string that will be used in error messages
   // describing the type of the block, for example, "template" or "config".
   NonNestableBlock(Scope* scope,
