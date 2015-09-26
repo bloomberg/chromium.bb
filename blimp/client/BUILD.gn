@@ -51,11 +51,23 @@ shared_library("blimp_client") {
 }
 
 if (is_android) {
+  manifest_package = "org.chromium.blimp"
   blimp_apk_manifest = "$target_gen_dir/blimp_apk_manifest/AndroidManifest.xml"
+  blimp_test_apk_manifest =
+      "$target_gen_dir/blimp_test_apk_manifest/AndroidManifest.xml"
+
+  jinja_variables = [ "manifest_package=$manifest_package" ]
 
   jinja_template("blimp_apk_manifest") {
     input = "android/AndroidManifest.xml.jinja2"
     output = blimp_apk_manifest
+    variables = jinja_variables
+  }
+
+  jinja_template("blimp_test_apk_manifest") {
+    input = "android/javatests/AndroidManifest.xml.jinja2"
+    output = blimp_test_apk_manifest
+    variables = jinja_variables
   }
 
   generate_jni("jni_headers") {
@@ -139,6 +151,19 @@ if (is_android) {
     ]
   }
 
+  android_library("blimp_test_java") {
+    testonly = true
+
+    deps = [
+      ":blimp_java",
+      ":blimp_java_resources",
+      "//base:base_java",
+      "//base:base_java_test_support",
+    ]
+
+    java_files = [ "android/javatests/src/org/chromium/blimp/DummyTest.java" ]
+  }
+
   android_apk("blimp_apk") {
     deps = [
       ":blimp_apk_manifest",
@@ -150,5 +175,15 @@ if (is_android) {
     apk_name = "Blimp"
     android_manifest = blimp_apk_manifest
     native_libs = [ "libblimp_client.so" ]
+  }
+
+  instrumentation_test_apk("blimp_test_apk") {
+    apk_name = "BlimpTest"
+    apk_under_test = ":blimp_apk"
+    android_manifest = blimp_test_apk_manifest
+    deps = [
+      ":blimp_test_apk_manifest",
+      ":blimp_test_java",
+    ]
   }
 }

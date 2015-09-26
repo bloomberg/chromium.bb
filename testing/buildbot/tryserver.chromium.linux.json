@@ -1,7 +1,7 @@
 {
   "android_chromium_gn_compile_dbg": {
     "additional_compile_targets": [
-      "blimp",
+      "blimp_tests",
       "chrome_public_apk",
       "chrome_public_test_apk",
       "content_shell_apk",
@@ -10,7 +10,7 @@
   },
   "android_chromium_gn_compile_rel": {
     "additional_compile_targets": [
-      "blimp",
+      "blimp_tests",
       "chrome_public_apk",
       "chrome_public_test_apk",
       "content_shell_apk",
@@ -116,7 +116,6 @@
       "accessibility_unittests",
       "app_list_unittests",
       "aura_unittests",
-      "blimp",
       "browser_tests",
       "cacheinvalidation_unittests",
       "cast_unittests",
@@ -165,7 +164,6 @@
   },
   "linux_chromium_gn_rel": {
     "additional_compile_targets": [
-      "blimp",
       "browser_tests",
       "mandoline:all"
     ],

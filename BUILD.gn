@@ -617,7 +617,7 @@ group("gn_only") {
     # and figure out how cross-platform they are
     deps += [
       ":gn_mojo_targets",
-      "//blimp",
+      "//blimp:blimp_tests",
       "//chrome/browser/resources:extension_resource_demo",
       "//chrome/installer/util:strings",
       "//chrome:main_dll",

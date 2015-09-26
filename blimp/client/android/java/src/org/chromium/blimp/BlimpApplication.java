@@ -6,13 +6,14 @@ package org.chromium.blimp;
 
 import android.app.Application;
 
+import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ResourceExtractor;
 
 /**
  * The {@link Application} for the Blimp client.
  */
-public class BlimpApplication extends Application {
+public class BlimpApplication extends BaseChromiumApplication {
     private static final String[] MANDATORY_PAK_FILES = new String[] {};
 
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "blimp";

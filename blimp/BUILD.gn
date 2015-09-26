@@ -12,3 +12,15 @@ group("blimp") {
     deps += [ "//blimp/client:blimp_apk" ]
   }
 }
+
+group("blimp_tests") {
+  testonly = true
+
+  deps = [
+    ":blimp",
+  ]
+
+  if (is_android) {
+    deps += [ "//blimp/client:blimp_test_apk" ]
+  }
+}
