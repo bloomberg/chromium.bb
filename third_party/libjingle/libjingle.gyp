@@ -23,6 +23,7 @@
       'EXPAT_RELATIVE_PATH',
       'FEATURE_ENABLE_SSL',
       'GTEST_RELATIVE_PATH',
+      'HAVE_OPENSSL_SSL_H',
       'HAVE_SRTP',
       'HAVE_WEBRTC_VIDEO',
       'HAVE_WEBRTC_VOICE',
@@ -30,6 +31,7 @@
       'NO_MAIN_THREAD_WRAPPING',
       'NO_SOUND_SYSTEM',
       'SRTP_RELATIVE_PATH',
+      'SSL_USE_OPENSSL',
       'USE_WEBRTC_DEV_BRANCH',
       'WEBRTC_CHROMIUM_BUILD',
     ],
@@ -56,6 +58,7 @@
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
       '<(DEPTH)/net/net.gyp:net',
+      '<(DEPTH)/third_party/boringssl/boringssl.gyp:boringssl',
       '<(DEPTH)/third_party/expat/expat.gyp:expat',
     ],
     'export_dependent_settings': [
@@ -172,35 +175,6 @@
       ],
     },
     'conditions': [
-      ['use_openssl==1', {
-        'defines': [
-          'SSL_USE_OPENSSL',
-          'HAVE_OPENSSL_SSL_H',
-        ],
-        'dependencies': [
-          '../../third_party/boringssl/boringssl.gyp:boringssl',
-        ],
-      }, {
-        'defines': [
-          'SSL_USE_NSS',
-          'HAVE_NSS_SSL_H',
-          'SSL_USE_NSS_RNG',
-        ],
-        'conditions': [
-          ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
-            'dependencies': [
-              '<(DEPTH)/build/linux/system.gyp:ssl',
-            ],
-          }],
-          ['OS == "mac" or OS == "ios" or OS == "win"', {
-            'dependencies': [
-              '<(DEPTH)/net/third_party/nss/ssl.gyp:libssl',
-              '<(DEPTH)/third_party/nss/nss.gyp:nspr',
-              '<(DEPTH)/third_party/nss/nss.gyp:nss',
-            ],
-          }],
-        ],
-      }],
       ['OS=="win"', {
         'include_dirs': [
           '../third_party/platformsdk_win7/files/Include',

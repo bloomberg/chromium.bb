@@ -125,11 +125,6 @@
                         'WebTestingSupport.cpp',
                     ],
                     'conditions': [
-                        ['use_openssl==0 and (OS=="win" or OS=="mac")', {
-                            'dependencies': [
-                                '<(DEPTH)/third_party/nss/nss.gyp:*',
-                            ],
-                        }],
                         ['link_core_modules_separately==1', {
                             'dependencies': [
                                 '../core/core.gyp:webcore_shared',

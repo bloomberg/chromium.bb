@@ -115,10 +115,5 @@
         ['exclude', '/scoped_autorelease_pool\\.(h|mm)$'],
       ],
     }],
-    ['use_openssl!=1', {
-      'sources/': [
-        ['exclude', '/openssl[a-z]+\\.(h|cc)$'],
-      ],
-    }],
   ],
 }

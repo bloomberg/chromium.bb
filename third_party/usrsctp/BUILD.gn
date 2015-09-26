@@ -86,6 +86,7 @@ static_library("usrsctp") {
   defines = [
     "SCTP_PROCESS_LEVEL_LOCKS",
     "SCTP_SIMPLE_ALLOCATOR",
+    "SCTP_USE_OPENSSL_SHA1",
     "__Userspace__",
 
     # "SCTP_DEBUG", # Uncomment for SCTP debugging.
@@ -102,12 +103,6 @@ static_library("usrsctp") {
   ]
 
   public_configs = [ ":usrsctp_config" ]
-
-  if (use_openssl) {
-    defines += [ "SCTP_USE_OPENSSL_SHA1" ]
-  } else {
-    defines += [ "SCTP_USE_NSS_SHA1" ]
-  }
 
   if (is_linux || is_android) {
     defines += [ "__Userspace_os_Linux" ]
