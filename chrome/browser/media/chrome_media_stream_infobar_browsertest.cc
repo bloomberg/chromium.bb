@@ -60,16 +60,6 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
     return test_server()->GetURL(kMainWebrtcTestHtmlPage);
   }
 
-  // Executes stopLocalStream() in the test page, which frees up an already
-  // acquired mediastream.
-  bool StopLocalStream(content::WebContents* tab_contents) {
-    std::string result;
-    bool ok = content::ExecuteScriptAndExtractString(
-        tab_contents, "stopLocalStream()", &result);
-    DCHECK(ok);
-    return result.compare("ok-stopped") == 0;
-  }
-
  private:
   content::WebContents* LoadTestPageInBrowser(Browser* browser) {
     EXPECT_TRUE(test_server()->Start());
