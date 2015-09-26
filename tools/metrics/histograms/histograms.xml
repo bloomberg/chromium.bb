@@ -14191,6 +14191,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     fail for various reasons (device drivers don't offer this information, the
     drive is still mounting, lack of access, etc.). Emitted twice shortly after
     startup when constructing the initial UMA log.
+
+    Seek penalty detection is disabled on XP/Vista as of 9/24/2015 because it
+    crashes too much. http://crbug.com/514822
   </summary>
 </histogram>
 
