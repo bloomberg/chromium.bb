@@ -27,7 +27,7 @@ class WebFileWriterImpl : public WebFileWriterBase,
                     Type type,
                     const scoped_refptr<base::SingleThreadTaskRunner>&
                         main_thread_task_runner);
-  virtual ~WebFileWriterImpl();
+  ~WebFileWriterImpl() override;
 
  protected:
   // WebFileWriterBase overrides

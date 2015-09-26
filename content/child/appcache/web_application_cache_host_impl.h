@@ -24,7 +24,7 @@ class WebApplicationCacheHostImpl
 
   WebApplicationCacheHostImpl(blink::WebApplicationCacheHostClient* client,
                               AppCacheBackend* backend);
-  virtual ~WebApplicationCacheHostImpl();
+  ~WebApplicationCacheHostImpl() override;
 
   int host_id() const { return host_id_; }
   AppCacheBackend* backend() const { return backend_; }
@@ -40,19 +40,20 @@ class WebApplicationCacheHostImpl
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
   // blink::WebApplicationCacheHost:
-  virtual void willStartMainResourceRequest(
-      blink::WebURLRequest&, const blink::WebApplicationCacheHost*);
-  virtual void willStartSubResourceRequest(blink::WebURLRequest&);
-  virtual void selectCacheWithoutManifest();
-  virtual bool selectCacheWithManifest(const blink::WebURL& manifestURL);
-  virtual void didReceiveResponseForMainResource(const blink::WebURLResponse&);
-  virtual void didReceiveDataForMainResource(const char* data, unsigned len);
-  virtual void didFinishLoadingMainResource(bool success);
-  virtual blink::WebApplicationCacheHost::Status status();
-  virtual bool startUpdate();
-  virtual bool swapCache();
-  virtual void getResourceList(blink::WebVector<ResourceInfo>* resources);
-  virtual void getAssociatedCacheInfo(CacheInfo* info);
+  void willStartMainResourceRequest(
+      blink::WebURLRequest&,
+      const blink::WebApplicationCacheHost*) override;
+  void willStartSubResourceRequest(blink::WebURLRequest&) override;
+  void selectCacheWithoutManifest() override;
+  bool selectCacheWithManifest(const blink::WebURL& manifestURL) override;
+  void didReceiveResponseForMainResource(const blink::WebURLResponse&) override;
+  void didReceiveDataForMainResource(const char* data, unsigned len) override;
+  void didFinishLoadingMainResource(bool success) override;
+  blink::WebApplicationCacheHost::Status status() override;
+  bool startUpdate() override;
+  bool swapCache() override;
+  void getResourceList(blink::WebVector<ResourceInfo>* resources) override;
+  void getAssociatedCacheInfo(CacheInfo* info) override;
 
  private:
   enum IsNewMasterEntry {

@@ -83,12 +83,12 @@ class WebMessagePortChannelImpl
   ~WebMessagePortChannelImpl() override;
 
   // WebMessagePortChannel implementation.
-  virtual void setClient(blink::WebMessagePortChannelClient* client);
-  virtual void destroy();
-  virtual void postMessage(const blink::WebString& message,
-                           blink::WebMessagePortChannelArray* channels_ptr);
-  virtual bool tryGetMessage(blink::WebString* message,
-                             blink::WebMessagePortChannelArray& channels);
+  void setClient(blink::WebMessagePortChannelClient* client) override;
+  void destroy() override;
+  void postMessage(const blink::WebString& message,
+                   blink::WebMessagePortChannelArray* channels_ptr) override;
+  bool tryGetMessage(blink::WebString* message,
+                     blink::WebMessagePortChannelArray& channels) override;
 
   void Init();
   void Entangle(scoped_refptr<WebMessagePortChannelImpl> channel);

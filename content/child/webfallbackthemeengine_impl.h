@@ -17,16 +17,16 @@ namespace content {
 class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
  public:
   WebFallbackThemeEngineImpl();
-  virtual ~WebFallbackThemeEngineImpl();
+  ~WebFallbackThemeEngineImpl();
 
   // WebFallbackThemeEngine methods:
-  virtual blink::WebSize getSize(blink::WebFallbackThemeEngine::Part);
-  virtual void paint(
+  blink::WebSize getSize(blink::WebFallbackThemeEngine::Part) override;
+  void paint(
       blink::WebCanvas* canvas,
       blink::WebFallbackThemeEngine::Part part,
       blink::WebFallbackThemeEngine::State state,
       const blink::WebRect& rect,
-      const blink::WebFallbackThemeEngine::ExtraParams* extra_params);
+      const blink::WebFallbackThemeEngine::ExtraParams* extra_params) override;
 
  private:
   scoped_ptr<ui::FallbackTheme> theme_;

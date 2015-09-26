@@ -27,21 +27,21 @@ class WebServiceWorkerProviderImpl
  public:
   WebServiceWorkerProviderImpl(ThreadSafeSender* thread_safe_sender,
                                ServiceWorkerProviderContext* context);
-  virtual ~WebServiceWorkerProviderImpl();
+  ~WebServiceWorkerProviderImpl() override;
 
-  virtual void setClient(blink::WebServiceWorkerProviderClient* client);
+  void setClient(blink::WebServiceWorkerProviderClient* client) override;
 
-  virtual void registerServiceWorker(const blink::WebURL& pattern,
-                                     const blink::WebURL& script_url,
-                                     WebServiceWorkerRegistrationCallbacks*);
-  virtual void getRegistration(const blink::WebURL& document_url,
-                               WebServiceWorkerGetRegistrationCallbacks*);
-  virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*);
-  virtual void getRegistrationForReady(
-      WebServiceWorkerGetRegistrationForReadyCallbacks*);
-  virtual bool validateScopeAndScriptURL(const blink::WebURL& pattern,
-                                         const blink::WebURL& script_url,
-                                         blink::WebString* error_message);
+  void registerServiceWorker(const blink::WebURL& pattern,
+                             const blink::WebURL& script_url,
+                             WebServiceWorkerRegistrationCallbacks*) override;
+  void getRegistration(const blink::WebURL& document_url,
+                       WebServiceWorkerGetRegistrationCallbacks*) override;
+  void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) override;
+  void getRegistrationForReady(
+      WebServiceWorkerGetRegistrationForReadyCallbacks*) override;
+  bool validateScopeAndScriptURL(const blink::WebURL& pattern,
+                                 const blink::WebURL& script_url,
+                                 blink::WebString* error_message) override;
 
   int provider_id() const;
 

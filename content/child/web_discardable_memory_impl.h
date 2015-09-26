@@ -19,14 +19,14 @@ namespace content {
 // discardable memory.
 class WebDiscardableMemoryImpl : public blink::WebDiscardableMemory {
  public:
-  virtual ~WebDiscardableMemoryImpl();
+  ~WebDiscardableMemoryImpl() override;
 
   static scoped_ptr<WebDiscardableMemoryImpl> CreateLockedMemory(size_t size);
 
   // blink::WebDiscardableMemory:
-  virtual bool lock();
-  virtual void unlock();
-  virtual void* data();
+  bool lock() override;
+  void unlock() override;
+  void* data() override;
 
  private:
   WebDiscardableMemoryImpl(scoped_ptr<base::DiscardableMemory> memory);

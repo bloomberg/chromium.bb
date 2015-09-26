@@ -52,15 +52,15 @@ class NotificationImageLoader
   void StartOnMainThread(int notification_id, const GURL& image_url);
 
   // blink::WebURLLoaderClient implementation.
-  virtual void didReceiveData(blink::WebURLLoader* loader,
-                              const char* data,
-                              int data_length,
-                              int encoded_data_length);
-  virtual void didFinishLoading(blink::WebURLLoader* loader,
-                                double finish_time,
-                                int64_t total_encoded_data_length);
-  virtual void didFail(blink::WebURLLoader* loader,
-                       const blink::WebURLError& error);
+  void didReceiveData(blink::WebURLLoader* loader,
+                      const char* data,
+                      int data_length,
+                      int encoded_data_length) override;
+  void didFinishLoading(blink::WebURLLoader* loader,
+                        double finish_time,
+                        int64_t total_encoded_data_length) override;
+  void didFail(blink::WebURLLoader* loader,
+               const blink::WebURLError& error) override;
 
  private:
   friend class base::DeleteHelper<NotificationImageLoader>;
@@ -68,7 +68,7 @@ class NotificationImageLoader
                                           NotificationImageLoaderDeleter>;
   friend struct NotificationImageLoaderDeleter;
 
-  virtual ~NotificationImageLoader();
+  ~NotificationImageLoader() override;
 
   // Invokes the callback on the thread this image loader was started for. When
   // the thread id is zero (the main document), it will be executed immediately.

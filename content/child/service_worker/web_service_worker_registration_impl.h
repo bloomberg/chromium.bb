@@ -37,13 +37,13 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void OnUpdateFound();
 
   // blink::WebServiceWorkerRegistration overrides.
-  virtual void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy);
-  virtual blink::WebServiceWorkerRegistrationProxy* proxy();
-  virtual blink::WebURL scope() const;
-  virtual void update(blink::WebServiceWorkerProvider* provider,
-                      WebServiceWorkerUpdateCallbacks* callbacks);
-  virtual void unregister(blink::WebServiceWorkerProvider* provider,
-                          WebServiceWorkerUnregistrationCallbacks* callbacks);
+  void setProxy(blink::WebServiceWorkerRegistrationProxy* proxy) override;
+  blink::WebServiceWorkerRegistrationProxy* proxy() override;
+  blink::WebURL scope() const override;
+  void update(blink::WebServiceWorkerProvider* provider,
+              WebServiceWorkerUpdateCallbacks* callbacks) override;
+  void unregister(blink::WebServiceWorkerProvider* provider,
+                  WebServiceWorkerUnregistrationCallbacks* callbacks) override;
 
   int64 registration_id() const;
 
@@ -62,7 +62,7 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
  private:
   friend class base::RefCounted<WebServiceWorkerRegistrationImpl>;
-  virtual ~WebServiceWorkerRegistrationImpl();
+  ~WebServiceWorkerRegistrationImpl() override;
 
   enum QueuedTaskType {
     INSTALLING,

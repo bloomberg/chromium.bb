@@ -48,65 +48,51 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   explicit WebFileSystemImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>&
           main_thread_task_runner);
-  virtual ~WebFileSystemImpl();
+  ~WebFileSystemImpl() override;
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
   // WebFileSystem implementation.
-  virtual void openFileSystem(
-      const blink::WebURL& storage_partition,
-      const blink::WebFileSystemType type,
-      blink::WebFileSystemCallbacks);
-  virtual void resolveURL(
-      const blink::WebURL& filesystem_url,
-      blink::WebFileSystemCallbacks) override;
-  virtual void deleteFileSystem(
-      const blink::WebURL& storage_partition,
-      const blink::WebFileSystemType type,
-      blink::WebFileSystemCallbacks);
-  virtual void move(
-      const blink::WebURL& src_path,
-      const blink::WebURL& dest_path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void copy(
-      const blink::WebURL& src_path,
-      const blink::WebURL& dest_path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void remove(
+  void openFileSystem(const blink::WebURL& storage_partition,
+                      const blink::WebFileSystemType type,
+                      blink::WebFileSystemCallbacks) override;
+  void resolveURL(const blink::WebURL& filesystem_url,
+                  blink::WebFileSystemCallbacks) override;
+  void deleteFileSystem(const blink::WebURL& storage_partition,
+                        const blink::WebFileSystemType type,
+                        blink::WebFileSystemCallbacks) override;
+  void move(const blink::WebURL& src_path,
+            const blink::WebURL& dest_path,
+            blink::WebFileSystemCallbacks) override;
+  void copy(const blink::WebURL& src_path,
+            const blink::WebURL& dest_path,
+            blink::WebFileSystemCallbacks) override;
+  void remove(const blink::WebURL& path,
+              blink::WebFileSystemCallbacks) override;
+  void removeRecursively(const blink::WebURL& path,
+                         blink::WebFileSystemCallbacks) override;
+  void readMetadata(const blink::WebURL& path,
+                    blink::WebFileSystemCallbacks) override;
+  void createFile(const blink::WebURL& path,
+                  bool exclusive,
+                  blink::WebFileSystemCallbacks) override;
+  void createDirectory(const blink::WebURL& path,
+                       bool exclusive,
+                       blink::WebFileSystemCallbacks) override;
+  void fileExists(const blink::WebURL& path,
+                  blink::WebFileSystemCallbacks) override;
+  void directoryExists(const blink::WebURL& path,
+                       blink::WebFileSystemCallbacks) override;
+  int readDirectory(const blink::WebURL& path,
+                    blink::WebFileSystemCallbacks) override;
+  void createFileWriter(const blink::WebURL& path,
+                        blink::WebFileWriterClient*,
+                        blink::WebFileSystemCallbacks) override;
+  void createSnapshotFileAndReadMetadata(
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) override;
-  virtual void removeRecursively(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void readMetadata(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void createFile(
-      const blink::WebURL& path,
-      bool exclusive,
-      blink::WebFileSystemCallbacks) override;
-  virtual void createDirectory(
-      const blink::WebURL& path,
-      bool exclusive,
-      blink::WebFileSystemCallbacks) override;
-  virtual void fileExists(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void directoryExists(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-  virtual int readDirectory(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks) override;
-  virtual void createFileWriter(
-      const blink::WebURL& path,
-      blink::WebFileWriterClient*,
-      blink::WebFileSystemCallbacks) override;
-  virtual void createSnapshotFileAndReadMetadata(
-      const blink::WebURL& path,
-      blink::WebFileSystemCallbacks);
-  virtual bool waitForAdditionalResult(int callbacksId);
+  bool waitForAdditionalResult(int callbacksId) override;
 
   int RegisterCallbacks(const blink::WebFileSystemCallbacks& callbacks);
   blink::WebFileSystemCallbacks GetCallbacks(int callbacks_id);

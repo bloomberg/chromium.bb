@@ -32,23 +32,23 @@ class PermissionDispatcherThreadProxy : public blink::WebPermissionClient,
       PermissionDispatcher* permissions_dispatcher);
 
   // blink::WebPermissionClient implementation.
-  virtual void queryPermission(blink::WebPermissionType type,
-                               const blink::WebURL& origin,
-                               blink::WebPermissionCallback* callback);
-  virtual void requestPermission(blink::WebPermissionType type,
-                                 const blink::WebURL& origin,
-                                 blink::WebPermissionCallback* callback);
-  virtual void requestPermissions(
+  void queryPermission(blink::WebPermissionType type,
+                       const blink::WebURL& origin,
+                       blink::WebPermissionCallback* callback) override;
+  void requestPermission(blink::WebPermissionType type,
+                         const blink::WebURL& origin,
+                         blink::WebPermissionCallback* callback) override;
+  void requestPermissions(
       const blink::WebVector<blink::WebPermissionType>& types,
       const blink::WebURL& origin,
-      blink::WebPermissionsCallback* callback);
-  virtual void revokePermission(blink::WebPermissionType type,
-                                const blink::WebURL& origin,
-                                blink::WebPermissionCallback* callback);
-  virtual void startListening(blink::WebPermissionType type,
-                              const blink::WebURL& origin,
-                              blink::WebPermissionObserver* observer);
-  virtual void stopListening(blink::WebPermissionObserver* observer);
+      blink::WebPermissionsCallback* callback) override;
+  void revokePermission(blink::WebPermissionType type,
+                        const blink::WebURL& origin,
+                        blink::WebPermissionCallback* callback) override;
+  void startListening(blink::WebPermissionType type,
+                      const blink::WebURL& origin,
+                      blink::WebPermissionObserver* observer) override;
+  void stopListening(blink::WebPermissionObserver* observer) override;
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
@@ -64,7 +64,7 @@ class PermissionDispatcherThreadProxy : public blink::WebPermissionClient,
                            blink::WebPermissionObserver* observer,
                            blink::WebPermissionStatus status);
 
-  virtual ~PermissionDispatcherThreadProxy();
+  ~PermissionDispatcherThreadProxy() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   PermissionDispatcher* permission_dispatcher_;

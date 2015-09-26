@@ -42,7 +42,7 @@ class HeaderCopier : public WebHTTPHeaderVisitor {
   HeaderCopier(WebURLResponse* response)
       : response_(response) {
   }
-  virtual void visitHeader(const WebString& name, const WebString& value) {
+  void visitHeader(const WebString& name, const WebString& value) override {
     const std::string& name_utf8 = name.utf8();
     for (size_t i = 0; i < arraysize(kReplaceHeaders); ++i) {
       if (base::LowerCaseEqualsASCII(name_utf8, kReplaceHeaders[i]))

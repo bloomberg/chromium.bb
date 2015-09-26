@@ -24,26 +24,26 @@ class CONTENT_EXPORT SimpleWebMimeRegistryImpl :
   static std::string ToASCIIOrEmpty(const blink::WebString& string);
 
   // WebMimeRegistry methods:
-  virtual blink::WebMimeRegistry::SupportsType supportsMIMEType(
-      const blink::WebString&);
-  virtual blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
-      const blink::WebString&);
-  virtual blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
-      const blink::WebString&);
-  virtual blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
-      const blink::WebString&);
-  virtual blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
+  blink::WebMimeRegistry::SupportsType supportsMIMEType(
+      const blink::WebString&) override;
+  blink::WebMimeRegistry::SupportsType supportsImageMIMEType(
+      const blink::WebString&) override;
+  blink::WebMimeRegistry::SupportsType supportsImagePrefixedMIMEType(
+      const blink::WebString&) override;
+  blink::WebMimeRegistry::SupportsType supportsJavaScriptMIMEType(
+      const blink::WebString&) override;
+  blink::WebMimeRegistry::SupportsType supportsMediaMIMEType(
       const blink::WebString&,
       const blink::WebString&,
-      const blink::WebString&);
-  virtual bool supportsMediaSourceMIMEType(const blink::WebString&,
-                                           const blink::WebString&);
-  virtual blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
-      const blink::WebString&);
-  virtual blink::WebString mimeTypeForExtension(const blink::WebString&);
-  virtual blink::WebString wellKnownMimeTypeForExtension(
-      const blink::WebString&);
-  virtual blink::WebString mimeTypeFromFile(const blink::WebString&);
+      const blink::WebString&) override;
+  bool supportsMediaSourceMIMEType(const blink::WebString&,
+                                   const blink::WebString&) override;
+  blink::WebMimeRegistry::SupportsType supportsNonImageMIMEType(
+      const blink::WebString&) override;
+  blink::WebString mimeTypeForExtension(const blink::WebString&) override;
+  blink::WebString wellKnownMimeTypeForExtension(
+      const blink::WebString&) override;
+  blink::WebString mimeTypeFromFile(const blink::WebString&) override;
 };
 
 }  // namespace content

@@ -80,7 +80,7 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       base::SingleThreadTaskRunner* main_thread_task_runner,
       BackgroundSyncProvider* sync_provider);
 
-  virtual ~BackgroundSyncProviderThreadProxy();
+  ~BackgroundSyncProviderThreadProxy() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

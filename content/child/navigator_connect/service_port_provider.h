@@ -52,14 +52,14 @@ class ServicePortProvider
       const scoped_refptr<base::SingleThreadTaskRunner>& main_loop);
 
   // WebServicePortProvider implementation.
-  virtual void destroy();
-  virtual void connect(const blink::WebURL& target_url,
-                       const blink::WebString& origin,
-                       blink::WebServicePortConnectCallbacks* callbacks);
-  virtual void postMessage(blink::WebServicePortID port_id,
-                           const blink::WebString& message,
-                           blink::WebMessagePortChannelArray* channels);
-  virtual void closePort(blink::WebServicePortID port_id);
+  void destroy() override;
+  void connect(const blink::WebURL& target_url,
+               const blink::WebString& origin,
+               blink::WebServicePortConnectCallbacks* callbacks) override;
+  void postMessage(blink::WebServicePortID port_id,
+                   const blink::WebString& message,
+                   blink::WebMessagePortChannelArray* channels) override;
+  void closePort(blink::WebServicePortID port_id) override;
 
   // ServicePortServiceClient implementation.
   void PostMessage(int32_t port_id,

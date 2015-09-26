@@ -17,44 +17,43 @@ class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();
 
-  virtual void databaseOpened(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      const blink::WebString& database_display_name,
-      unsigned long estimated_size);
-  virtual void databaseModified(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name);
-  virtual void databaseClosed(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name);
-  virtual void reportOpenDatabaseResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int callsite,
-      int websql_error,
-      int sqlite_error,
-      double call_time);
-  virtual void reportChangeVersionResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int callsite, int websql_error, int sqlite_error);
-  virtual void reportStartTransactionResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int callsite, int websql_error, int sqlite_error);
-  virtual void reportCommitTransactionResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int callsite, int websql_error, int sqlite_error);
-  virtual void reportExecuteStatementResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int callsite, int websql_error, int sqlite_error);
-  virtual void reportVacuumDatabaseResult(
-      const blink::WebString& origin_identifier,
-      const blink::WebString& database_name,
-      int sqlite_error);
+  void databaseOpened(const blink::WebString& origin_identifier,
+                      const blink::WebString& database_name,
+                      const blink::WebString& database_display_name,
+                      unsigned long estimated_size) override;
+  void databaseModified(const blink::WebString& origin_identifier,
+                        const blink::WebString& database_name) override;
+  void databaseClosed(const blink::WebString& origin_identifier,
+                      const blink::WebString& database_name) override;
+  void reportOpenDatabaseResult(const blink::WebString& origin_identifier,
+                                const blink::WebString& database_name,
+                                int callsite,
+                                int websql_error,
+                                int sqlite_error,
+                                double call_time) override;
+  void reportChangeVersionResult(const blink::WebString& origin_identifier,
+                                 const blink::WebString& database_name,
+                                 int callsite,
+                                 int websql_error,
+                                 int sqlite_error) override;
+  void reportStartTransactionResult(const blink::WebString& origin_identifier,
+                                    const blink::WebString& database_name,
+                                    int callsite,
+                                    int websql_error,
+                                    int sqlite_error) override;
+  void reportCommitTransactionResult(const blink::WebString& origin_identifier,
+                                     const blink::WebString& database_name,
+                                     int callsite,
+                                     int websql_error,
+                                     int sqlite_error) override;
+  void reportExecuteStatementResult(const blink::WebString& origin_identifier,
+                                    const blink::WebString& database_name,
+                                    int callsite,
+                                    int websql_error,
+                                    int sqlite_error) override;
+  void reportVacuumDatabaseResult(const blink::WebString& origin_identifier,
+                                  const blink::WebString& database_name,
+                                  int sqlite_error) override;
 
   void WaitForAllDatabasesToClose();
 

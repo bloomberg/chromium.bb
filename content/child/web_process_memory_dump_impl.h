@@ -36,23 +36,23 @@ class CONTENT_EXPORT WebProcessMemoryDumpImpl final
   explicit WebProcessMemoryDumpImpl(
       base::trace_event::ProcessMemoryDump* process_memory_dump);
 
-  virtual ~WebProcessMemoryDumpImpl();
+  ~WebProcessMemoryDumpImpl() override;
 
   // blink::WebProcessMemoryDump implementation.
-  virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
-      const blink::WebString& absolute_name);
-  virtual blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+  blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
+      const blink::WebString& absolute_name) override;
+  blink::WebMemoryAllocatorDump* createMemoryAllocatorDump(
       const blink::WebString& absolute_name,
-      blink::WebMemoryAllocatorDumpGuid guid);
-  virtual blink::WebMemoryAllocatorDump* getMemoryAllocatorDump(
-      const blink::WebString& absolute_name) const;
-  virtual void clear();
-  virtual void takeAllDumpsFrom(blink::WebProcessMemoryDump* other);
-  virtual void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
-                                blink::WebMemoryAllocatorDumpGuid target,
-                                int importance);
-  virtual void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
-                                blink::WebMemoryAllocatorDumpGuid target);
+      blink::WebMemoryAllocatorDumpGuid guid) override;
+  blink::WebMemoryAllocatorDump* getMemoryAllocatorDump(
+      const blink::WebString& absolute_name) const override;
+  void clear() override;
+  void takeAllDumpsFrom(blink::WebProcessMemoryDump* other) override;
+  void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+                        blink::WebMemoryAllocatorDumpGuid target,
+                        int importance) override;
+  void AddOwnershipEdge(blink::WebMemoryAllocatorDumpGuid source,
+                        blink::WebMemoryAllocatorDumpGuid target) override;
 
   const base::trace_event::ProcessMemoryDump* process_memory_dump() const {
     return process_memory_dump_;

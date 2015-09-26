@@ -49,67 +49,73 @@ class CONTENT_EXPORT BlinkPlatformImpl
   BlinkPlatformImpl();
   explicit BlinkPlatformImpl(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
-  virtual ~BlinkPlatformImpl();
+  ~BlinkPlatformImpl() override;
 
   // Platform methods (partial implementation):
-  virtual blink::WebThemeEngine* themeEngine();
-  virtual blink::WebFallbackThemeEngine* fallbackThemeEngine();
-  virtual blink::Platform::FileHandle databaseOpenFile(
-      const blink::WebString& vfs_file_name, int desired_flags);
-  virtual int databaseDeleteFile(const blink::WebString& vfs_file_name,
-                                 bool sync_dir);
-  virtual long databaseGetFileAttributes(
-      const blink::WebString& vfs_file_name);
-  virtual long long databaseGetFileSize(const blink::WebString& vfs_file_name);
-  virtual long long databaseGetSpaceAvailableForOrigin(
-      const blink::WebString& origin_identifier);
-  virtual bool databaseSetFileSize(
-      const blink::WebString& vfs_file_name, long long size);
-  virtual blink::WebString signedPublicKeyAndChallengeString(
-      unsigned key_size_index, const blink::WebString& challenge,
-      const blink::WebURL& url);
-  virtual size_t memoryUsageMB();
-  virtual size_t actualMemoryUsageMB();
-  virtual size_t physicalMemoryMB();
-  virtual size_t virtualMemoryLimitMB();
-  virtual bool isLowEndDeviceMode();
-  virtual size_t numberOfProcessors();
+  blink::WebThemeEngine* themeEngine() override;
+  blink::WebFallbackThemeEngine* fallbackThemeEngine() override;
+  blink::Platform::FileHandle databaseOpenFile(
+      const blink::WebString& vfs_file_name,
+      int desired_flags) override;
+  int databaseDeleteFile(const blink::WebString& vfs_file_name,
+                         bool sync_dir) override;
+  long databaseGetFileAttributes(
+      const blink::WebString& vfs_file_name) override;
+  long long databaseGetFileSize(const blink::WebString& vfs_file_name) override;
+  long long databaseGetSpaceAvailableForOrigin(
+      const blink::WebString& origin_identifier) override;
+  bool databaseSetFileSize(const blink::WebString& vfs_file_name,
+                           long long size) override;
+  blink::WebString signedPublicKeyAndChallengeString(
+      unsigned key_size_index,
+      const blink::WebString& challenge,
+      const blink::WebURL& url) override;
+  size_t memoryUsageMB() override;
+  size_t actualMemoryUsageMB() override;
+  size_t physicalMemoryMB() override;
+  size_t virtualMemoryLimitMB() override;
+  bool isLowEndDeviceMode() override;
+  size_t numberOfProcessors() override;
 
-  virtual bool processMemorySizesInBytes(size_t* private_bytes,
-                                         size_t* shared_bytes);
-  virtual bool memoryAllocatorWasteInBytes(size_t* size);
-  virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
-      size_t bytes);
-  virtual size_t maxDecodedImageBytes();
-  virtual uint32_t getUniqueIdForProcess();
-  virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebSocketHandle* createWebSocketHandle();
-  virtual blink::WebString userAgent();
-  virtual blink::WebData parseDataURL(
-      const blink::WebURL& url, blink::WebString& mimetype,
-      blink::WebString& charset);
-  virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
-  virtual bool isReservedIPAddress(const blink::WebString& host) const;
-  virtual bool portAllowed(const blink::WebURL& url) const;
-  virtual blink::WebThread* createThread(const char* name);
-  virtual blink::WebThread* currentThread();
-  virtual void yieldCurrentThread();
-  virtual blink::WebWaitableEvent* createWaitableEvent(
+  bool processMemorySizesInBytes(size_t* private_bytes,
+                                 size_t* shared_bytes) override;
+  bool memoryAllocatorWasteInBytes(size_t* size) override;
+  blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
+      size_t bytes) override;
+  size_t maxDecodedImageBytes() override;
+  uint32_t getUniqueIdForProcess() override;
+  blink::WebURLLoader* createURLLoader() override;
+  blink::WebSocketHandle* createWebSocketHandle() override;
+  blink::WebString userAgent() override;
+  blink::WebData parseDataURL(const blink::WebURL& url,
+                              blink::WebString& mimetype,
+                              blink::WebString& charset) override;
+  blink::WebURLError cancelledError(const blink::WebURL& url) const override;
+  bool isReservedIPAddress(const blink::WebString& host) const override;
+  bool portAllowed(const blink::WebURL& url) const override;
+  blink::WebThread* createThread(const char* name) override;
+  blink::WebThread* currentThread() override;
+  void yieldCurrentThread() override;
+  blink::WebWaitableEvent* createWaitableEvent(
       blink::WebWaitableEvent::ResetPolicy policy,
-      blink::WebWaitableEvent::InitialState state);
-  virtual blink::WebWaitableEvent* waitMultipleEvents(
-      const blink::WebVector<blink::WebWaitableEvent*>& events);
-  virtual void decrementStatsCounter(const char* name);
-  virtual void incrementStatsCounter(const char* name);
-  virtual void histogramCustomCounts(
-    const char* name, int sample, int min, int max, int bucket_count);
-  virtual void histogramEnumeration(
-    const char* name, int sample, int boundary_value);
-  virtual void histogramSparse(const char* name, int sample);
-  virtual const unsigned char* getTraceCategoryEnabledFlag(
-      const char* category_name);
-  virtual TraceEventAPIAtomicWord* getTraceSamplingState(
-      const unsigned thread_bucket);
+      blink::WebWaitableEvent::InitialState state) override;
+  blink::WebWaitableEvent* waitMultipleEvents(
+      const blink::WebVector<blink::WebWaitableEvent*>& events) override;
+  void decrementStatsCounter(const char* name) override;
+  void incrementStatsCounter(const char* name) override;
+  void histogramCustomCounts(const char* name,
+                             int sample,
+                             int min,
+                             int max,
+                             int bucket_count) override;
+  void histogramEnumeration(const char* name,
+                            int sample,
+                            int boundary_value) override;
+  void histogramSparse(const char* name, int sample) override;
+  const unsigned char* getTraceCategoryEnabledFlag(
+      const char* category_name) override;
+  TraceEventAPIAtomicWord* getTraceSamplingState(
+      const unsigned thread_bucket) override;
   virtual TraceEventHandle addTraceEvent(
       char phase,
       const unsigned char* category_group_enabled,
@@ -135,51 +141,53 @@ class CONTENT_EXPORT BlinkPlatformImpl
       const unsigned long long* arg_values,
       blink::WebConvertableToTraceFormat* convertable_values,
       unsigned char flags);
-  virtual void updateTraceEventDuration(
-      const unsigned char* category_group_enabled,
-      const char* name,
-      TraceEventHandle);
-  virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
-  virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp);
-  virtual blink::WebProcessMemoryDump* createProcessMemoryDump();
-  virtual blink::Platform::WebMemoryAllocatorDumpGuid
-  createWebMemoryAllocatorDumpGuid(const blink::WebString& guidStr);
+  void updateTraceEventDuration(const unsigned char* category_group_enabled,
+                                const char* name,
+                                TraceEventHandle) override;
+  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp) override;
+  void unregisterMemoryDumpProvider(
+      blink::WebMemoryDumpProvider* wmdp) override;
+  blink::WebProcessMemoryDump* createProcessMemoryDump() override;
+  blink::Platform::WebMemoryAllocatorDumpGuid createWebMemoryAllocatorDumpGuid(
+      const blink::WebString& guidStr) override;
 
-  virtual blink::WebData loadResource(const char* name);
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name);
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name, int numeric_value);
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name, const blink::WebString& value);
+  blink::WebData loadResource(const char* name) override;
+  blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name) override;
   virtual blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name,
-      const blink::WebString& value1, const blink::WebString& value2);
-  virtual void suddenTerminationChanged(bool enabled) { }
-  virtual double currentTime();
-  virtual double monotonicallyIncreasingTime();
-  virtual double systemTraceTime();
-  virtual void cryptographicallyRandomValues(
-      unsigned char* buffer, size_t length);
-  virtual blink::WebGestureCurve* createFlingAnimationCurve(
+      int numeric_value);
+  blink::WebString queryLocalizedString(blink::WebLocalizedString::Name name,
+                                        const blink::WebString& value) override;
+  blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name,
+      const blink::WebString& value1,
+      const blink::WebString& value2) override;
+  void suddenTerminationChanged(bool enabled) override {}
+  double currentTime() override;
+  double monotonicallyIncreasingTime() override;
+  double systemTraceTime() override;
+  void cryptographicallyRandomValues(unsigned char* buffer,
+                                     size_t length) override;
+  blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
-      const blink::WebSize& cumulative_scroll);
-  virtual void didStartWorkerRunLoop();
-  virtual void didStopWorkerRunLoop();
-  virtual blink::WebCrypto* crypto();
-  virtual blink::WebGeofencingProvider* geofencingProvider();
-  virtual blink::WebNotificationManager* notificationManager();
-  virtual blink::WebPushProvider* pushProvider();
-  virtual blink::WebServicePortProvider* createServicePortProvider(
-      blink::WebServicePortProviderClient*);
-  virtual blink::WebPermissionClient* permissionClient();
-  virtual blink::WebSyncProvider* backgroundSyncProvider();
+      const blink::WebSize& cumulative_scroll) override;
+  void didStartWorkerRunLoop() override;
+  void didStopWorkerRunLoop() override;
+  blink::WebCrypto* crypto() override;
+  blink::WebGeofencingProvider* geofencingProvider() override;
+  blink::WebNotificationManager* notificationManager() override;
+  blink::WebPushProvider* pushProvider() override;
+  blink::WebServicePortProvider* createServicePortProvider(
+      blink::WebServicePortProviderClient*) override;
+  blink::WebPermissionClient* permissionClient() override;
+  blink::WebSyncProvider* backgroundSyncProvider() override;
 
-  virtual blink::WebString domCodeStringFromEnum(int dom_code);
-  virtual int domEnumFromCodeString(const blink::WebString& codeString);
-  virtual blink::WebString domKeyStringFromEnum(int dom_key);
-  virtual int domKeyEnumFromString(const blink::WebString& key_string);
+  blink::WebString domCodeStringFromEnum(int dom_code) override;
+  int domEnumFromCodeString(const blink::WebString& codeString) override;
+  blink::WebString domKeyStringFromEnum(int dom_key) override;
+  int domKeyEnumFromString(const blink::WebString& key_string) override;
 
  private:
   void InternalInit();

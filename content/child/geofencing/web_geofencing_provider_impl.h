@@ -18,7 +18,7 @@ class CONTENT_EXPORT WebGeofencingProviderImpl
     : NON_EXPORTED_BASE(public blink::WebGeofencingProvider) {
  public:
   explicit WebGeofencingProviderImpl(ThreadSafeSender* thread_safe_sender);
-  virtual ~WebGeofencingProviderImpl();
+  ~WebGeofencingProviderImpl() override;
 
   // Enables mock geofencing service. |service_available| indicates if the
   // mock service should mock geofencing being available or not.
@@ -30,18 +30,18 @@ class CONTENT_EXPORT WebGeofencingProviderImpl
 
  private:
   // WebGeofencingProvider implementation.
-  virtual void registerRegion(
+  void registerRegion(
       const blink::WebString& regionId,
       const blink::WebCircularGeofencingRegion& region,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebGeofencingCallbacks* callbacks);
-  virtual void unregisterRegion(
+      blink::WebGeofencingCallbacks* callbacks) override;
+  void unregisterRegion(
       const blink::WebString& regionId,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebGeofencingCallbacks* callbacks);
-  virtual void getRegisteredRegions(
+      blink::WebGeofencingCallbacks* callbacks) override;
+  void getRegisteredRegions(
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebGeofencingRegionsCallbacks* callbacks);
+      blink::WebGeofencingRegionsCallbacks* callbacks) override;
 
   GeofencingDispatcher* GetDispatcher();
 

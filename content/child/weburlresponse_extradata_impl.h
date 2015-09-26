@@ -20,7 +20,7 @@ class CONTENT_EXPORT WebURLResponseExtraDataImpl :
  public:
   explicit WebURLResponseExtraDataImpl(
       const std::string& npn_negotiated_protocol);
-  virtual ~WebURLResponseExtraDataImpl();
+  ~WebURLResponseExtraDataImpl() override;
 
   const std::string& npn_negotiated_protocol() const {
     return npn_negotiated_protocol_;

@@ -34,26 +34,26 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   // The caller must guarantee that |service_registry| will have a lifetime
   // larger than this instance of PermissionDispatcher.
   explicit PermissionDispatcher(ServiceRegistry* service_registry);
-  virtual ~PermissionDispatcher();
+  ~PermissionDispatcher() override;
 
   // blink::WebPermissionClient implementation.
-  virtual void queryPermission(blink::WebPermissionType type,
-                               const blink::WebURL& origin,
-                               blink::WebPermissionCallback* callback);
-  virtual void requestPermission(blink::WebPermissionType,
-                                 const blink::WebURL& origin,
-                                 blink::WebPermissionCallback* callback);
-  virtual void requestPermissions(
+  void queryPermission(blink::WebPermissionType type,
+                       const blink::WebURL& origin,
+                       blink::WebPermissionCallback* callback) override;
+  void requestPermission(blink::WebPermissionType,
+                         const blink::WebURL& origin,
+                         blink::WebPermissionCallback* callback) override;
+  void requestPermissions(
       const blink::WebVector<blink::WebPermissionType>& types,
       const blink::WebURL& origin,
-      blink::WebPermissionsCallback* callback);
-  virtual void revokePermission(blink::WebPermissionType,
-                                const blink::WebURL& origin,
-                                blink::WebPermissionCallback* callback);
-  virtual void startListening(blink::WebPermissionType type,
-                              const blink::WebURL& origin,
-                              blink::WebPermissionObserver* observer);
-  virtual void stopListening(blink::WebPermissionObserver* observer);
+      blink::WebPermissionsCallback* callback) override;
+  void revokePermission(blink::WebPermissionType,
+                        const blink::WebURL& origin,
+                        blink::WebPermissionCallback* callback) override;
+  void startListening(blink::WebPermissionType type,
+                      const blink::WebURL& origin,
+                      blink::WebPermissionObserver* observer) override;
+  void stopListening(blink::WebPermissionObserver* observer) override;
 
   // The following methods must be called by workers on the main thread.
   void QueryPermissionForWorker(blink::WebPermissionType type,

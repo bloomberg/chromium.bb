@@ -47,12 +47,15 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
   class ReaderImpl final : public Reader {
    public:
     ReaderImpl(scoped_refptr<Context> context, Client* client);
-    virtual ~ReaderImpl();
-    virtual Result read(void* data, size_t size, Flags flags, size_t* readSize);
-    virtual Result beginRead(const void** buffer,
-                             Flags flags,
-                             size_t* available);
-    virtual Result endRead(size_t readSize);
+    ~ReaderImpl() override;
+    Result read(void* data,
+                size_t size,
+                Flags flags,
+                size_t* readSize) override;
+    Result beginRead(const void** buffer,
+                     Flags flags,
+                     size_t* available) override;
+    Result endRead(size_t readSize) override;
 
    private:
     scoped_refptr<Context> context_;
@@ -72,12 +75,12 @@ class CONTENT_EXPORT SharedMemoryDataConsumerHandle final
   SharedMemoryDataConsumerHandle(BackpressureMode mode,
                                  const base::Closure& on_reader_detached,
                                  scoped_ptr<Writer>* writer);
-  virtual ~SharedMemoryDataConsumerHandle();
+  ~SharedMemoryDataConsumerHandle() override;
 
   scoped_ptr<Reader> ObtainReader(Client* client);
 
  private:
-  virtual ReaderImpl* obtainReaderInternal(Client* client);
+  ReaderImpl* obtainReaderInternal(Client* client) override;
   const char* debugName() const override;
 
   scoped_refptr<Context> context_;

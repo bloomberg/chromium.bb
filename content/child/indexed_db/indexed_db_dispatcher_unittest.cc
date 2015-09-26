@@ -36,7 +36,7 @@ class MockCallbacks : public WebIDBCallbacks {
  public:
   MockCallbacks() : error_seen_(false) {}
 
-  virtual void onError(const WebIDBDatabaseError&) { error_seen_ = true; }
+  void onError(const WebIDBDatabaseError&) override { error_seen_ = true; }
 
   bool error_seen() const { return error_seen_; }
 

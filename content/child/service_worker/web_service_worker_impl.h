@@ -37,17 +37,17 @@ class WebServiceWorkerImpl
  public:
   WebServiceWorkerImpl(scoped_ptr<ServiceWorkerHandleReference> handle_ref,
                        ThreadSafeSender* thread_safe_sender);
-  virtual ~WebServiceWorkerImpl();
+  ~WebServiceWorkerImpl() override;
 
   void OnStateChanged(blink::WebServiceWorkerState new_state);
 
-  virtual void setProxy(blink::WebServiceWorkerProxy* proxy);
-  virtual blink::WebServiceWorkerProxy* proxy();
-  virtual blink::WebURL url() const;
-  virtual blink::WebServiceWorkerState state() const;
-  virtual void postMessage(const blink::WebString& message,
-                           blink::WebMessagePortChannelArray* channels);
-  virtual void terminate();
+  void setProxy(blink::WebServiceWorkerProxy* proxy) override;
+  blink::WebServiceWorkerProxy* proxy() override;
+  blink::WebURL url() const override;
+  blink::WebServiceWorkerState state() const override;
+  void postMessage(const blink::WebString& message,
+                   blink::WebMessagePortChannelArray* channels) override;
+  void terminate() override;
 
  private:
   scoped_ptr<ServiceWorkerHandleReference> handle_ref_;

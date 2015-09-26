@@ -30,7 +30,7 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
  public:
   HeaderFlattener() : has_accept_header_(false) {}
 
-  virtual void visitHeader(const WebString& name, const WebString& value) {
+  void visitHeader(const WebString& name, const WebString& value) override {
     // Headers are latin1.
     const std::string& name_latin1 = name.latin1();
     const std::string& value_latin1 = value.latin1();

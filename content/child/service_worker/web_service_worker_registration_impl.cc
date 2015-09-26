@@ -19,9 +19,9 @@ class HandleImpl : public blink::WebServiceWorkerRegistration::Handle {
  public:
   explicit HandleImpl(WebServiceWorkerRegistrationImpl* registration)
       : registration_(registration) {}
-  virtual ~HandleImpl() {}
+  ~HandleImpl() override {}
 
-  virtual blink::WebServiceWorkerRegistration* registration() {
+  blink::WebServiceWorkerRegistration* registration() override {
     return registration_.get();
   }
 

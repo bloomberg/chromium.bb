@@ -137,7 +137,7 @@ class FileWriterTest : public testing::Test,
   }
 
   // WebFileWriterClient overrides
-  virtual void didWrite(long long bytes, bool complete) {
+  void didWrite(long long bytes, bool complete) override {
     EXPECT_FALSE(received_did_write_complete_);
     ++received_did_write_count_;
     received_did_write_bytes_total_ += bytes;
@@ -148,14 +148,14 @@ class FileWriterTest : public testing::Test,
       testable_writer_.reset(NULL);
   }
 
-  virtual void didTruncate() {
+  void didTruncate() override {
     EXPECT_FALSE(received_did_truncate_);
     received_did_truncate_ = true;
     if (delete_in_client_callback_)
       testable_writer_.reset(NULL);
   }
 
-  virtual void didFail(blink::WebFileError error) {
+  void didFail(blink::WebFileError error) override {
     EXPECT_FALSE(received_did_fail_);
     received_did_fail_ = true;
     fail_error_received_ = error;

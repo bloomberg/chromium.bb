@@ -21,12 +21,12 @@ class CONTENT_EXPORT WebFileWriterBase
     : public NON_EXPORTED_BASE(blink::WebFileWriter) {
  public:
   WebFileWriterBase(const GURL& path, blink::WebFileWriterClient* client);
-  virtual ~WebFileWriterBase();
+  ~WebFileWriterBase() override;
 
   // WebFileWriter implementation
-  virtual void truncate(long long length);
-  virtual void write(long long position, const blink::WebString& id);
-  virtual void cancel();
+  void truncate(long long length) override;
+  void write(long long position, const blink::WebString& id) override;
+  void cancel() override;
 
  protected:
   // This calls DidSucceed() or DidFail() based on the value of |error_code|.

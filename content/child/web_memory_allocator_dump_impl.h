@@ -22,20 +22,16 @@ class WebMemoryAllocatorDumpImpl : public blink::WebMemoryAllocatorDump {
  public:
   explicit WebMemoryAllocatorDumpImpl(
       base::trace_event::MemoryAllocatorDump* memory_allocator_dump);
-  virtual ~WebMemoryAllocatorDumpImpl();
+  ~WebMemoryAllocatorDumpImpl() override;
 
   // blink::WebMemoryAllocatorDump implementation.
-  virtual void AddScalar(const char* name,
-                         const char* units,
-                         uint64 value);
-  virtual void AddScalarF(const char* name,
-                          const char* units,
-                          double value);
-  virtual void AddString(const char* name,
-                         const char* units,
-                         const blink::WebString& value);
+  void AddScalar(const char* name, const char* units, uint64 value) override;
+  void AddScalarF(const char* name, const char* units, double value) override;
+  void AddString(const char* name,
+                 const char* units,
+                 const blink::WebString& value) override;
 
-  virtual blink::WebMemoryAllocatorDumpGuid guid() const;
+  blink::WebMemoryAllocatorDumpGuid guid() const override;
 
  private:
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump_;  // Not owned.

@@ -27,33 +27,34 @@ class ThreadSafeSender;
 class WebBlobRegistryImpl : public blink::WebBlobRegistry {
  public:
   explicit WebBlobRegistryImpl(ThreadSafeSender* sender);
-  virtual ~WebBlobRegistryImpl();
+  ~WebBlobRegistryImpl() override;
 
   // TODO(dmurph): remove this after moving to createBuilder. crbug.com/504583
-  virtual void registerBlobData(const blink::WebString& uuid,
-                                const blink::WebBlobData& data);
+  void registerBlobData(const blink::WebString& uuid,
+                        const blink::WebBlobData& data) override;
 
-  virtual blink::WebBlobRegistry::Builder* createBuilder(
+  blink::WebBlobRegistry::Builder* createBuilder(
       const blink::WebString& uuid,
-      const blink::WebString& content_type);
+      const blink::WebString& content_type) override;
 
-  virtual void addBlobDataRef(const blink::WebString& uuid);
-  virtual void removeBlobDataRef(const blink::WebString& uuid);
-  virtual void registerPublicBlobURL(const blink::WebURL&,
-                                     const blink::WebString& uuid);
-  virtual void revokePublicBlobURL(const blink::WebURL&);
+  void addBlobDataRef(const blink::WebString& uuid) override;
+  void removeBlobDataRef(const blink::WebString& uuid) override;
+  void registerPublicBlobURL(const blink::WebURL&,
+                             const blink::WebString& uuid) override;
+  void revokePublicBlobURL(const blink::WebURL&) override;
 
   // Additional support for Streams.
-  virtual void registerStreamURL(const blink::WebURL& url,
-                                 const blink::WebString& content_type);
-  virtual void registerStreamURL(const blink::WebURL& url,
-                                 const blink::WebURL& src_url);
-  virtual void addDataToStream(const blink::WebURL& url,
-                               const char* data, size_t length);
-  virtual void flushStream(const blink::WebURL& url);
-  virtual void finalizeStream(const blink::WebURL& url);
-  virtual void abortStream(const blink::WebURL& url);
-  virtual void unregisterStreamURL(const blink::WebURL& url);
+  void registerStreamURL(const blink::WebURL& url,
+                         const blink::WebString& content_type) override;
+  void registerStreamURL(const blink::WebURL& url,
+                         const blink::WebURL& src_url) override;
+  void addDataToStream(const blink::WebURL& url,
+                       const char* data,
+                       size_t length) override;
+  void flushStream(const blink::WebURL& url) override;
+  void finalizeStream(const blink::WebURL& url) override;
+  void abortStream(const blink::WebURL& url) override;
+  void unregisterStreamURL(const blink::WebURL& url) override;
 
  private:
   // Handles all of the IPCs sent for building a blob.
@@ -62,20 +63,20 @@ class WebBlobRegistryImpl : public blink::WebBlobRegistry {
     BuilderImpl(const blink::WebString& uuid,
                 const blink::WebString& contentType,
                 ThreadSafeSender* sender);
-    virtual ~BuilderImpl();
+    ~BuilderImpl() override;
 
-    virtual void appendData(const blink::WebThreadSafeData&);
-    virtual void appendFile(const blink::WebString& path,
-                            uint64_t offset,
-                            uint64_t length,
-                            double expected_modification_time);
-    virtual void appendBlob(const blink::WebString& uuid,
-                            uint64_t offset,
-                            uint64_t length) override;
-    virtual void appendFileSystemURL(const blink::WebURL&,
-                                     uint64_t offset,
-                                     uint64_t length,
-                                     double expected_modification_time);
+    void appendData(const blink::WebThreadSafeData&) override;
+    void appendFile(const blink::WebString& path,
+                    uint64_t offset,
+                    uint64_t length,
+                    double expected_modification_time) override;
+    void appendBlob(const blink::WebString& uuid,
+                    uint64_t offset,
+                    uint64_t length) override;
+    void appendFileSystemURL(const blink::WebURL&,
+                             uint64_t offset,
+                             uint64_t length,
+                             double expected_modification_time) override;
 
     void build() override;
 

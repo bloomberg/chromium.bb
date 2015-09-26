@@ -22,7 +22,7 @@ class CONTENT_EXPORT RequestExtraData
     : public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {
  public:
   RequestExtraData();
-  virtual ~RequestExtraData();
+  ~RequestExtraData() override;
 
   blink::WebPageVisibilityState visibility_state() const {
     return visibility_state_;
