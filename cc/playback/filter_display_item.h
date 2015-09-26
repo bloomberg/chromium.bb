@@ -26,6 +26,8 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void ProcessForBounds(
+      DisplayItemListBoundsCalculator* calculator) const override;
 
  private:
   FilterOperations filters_;
@@ -45,6 +47,8 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
               const gfx::Rect& canvas_target_playback_rect,
               SkPicture::AbortCallback* callback) const override;
   void AsValueInto(base::trace_event::TracedValue* array) const override;
+  void ProcessForBounds(
+      DisplayItemListBoundsCalculator* calculator) const override;
 };
 
 }  // namespace cc

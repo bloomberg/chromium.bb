@@ -47,6 +47,12 @@ void CompositingDisplayItem::Raster(
   canvas->saveLayer(has_bounds_ ? &bounds_ : nullptr, &paint);
 }
 
+void CompositingDisplayItem::ProcessForBounds(
+    DisplayItemListBoundsCalculator* calculator) const {
+  calculator->AddStartingDisplayItem();
+  calculator->Save();
+}
+
 void CompositingDisplayItem::AsValueInto(
     base::trace_event::TracedValue* array) const {
   array->AppendString(base::StringPrintf(
@@ -71,6 +77,12 @@ void EndCompositingDisplayItem::Raster(
     const gfx::Rect& canvas_target_playback_rect,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
+}
+
+void EndCompositingDisplayItem::ProcessForBounds(
+    DisplayItemListBoundsCalculator* calculator) const {
+  calculator->Restore();
+  calculator->AddEndingDisplayItem();
 }
 
 void EndCompositingDisplayItem::AsValueInto(
