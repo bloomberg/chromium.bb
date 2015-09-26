@@ -101,9 +101,7 @@ class RendererBlinkPlatformImplNoSandboxImpl
       scheduler::RendererScheduler* scheduler)
       : RendererBlinkPlatformImpl(scheduler) {}
 
-  virtual blink::WebSandboxSupport* sandboxSupport() {
-    return NULL;
-  }
+  blink::WebSandboxSupport* sandboxSupport() override { return NULL; }
 };
 
 RenderViewTest::RendererBlinkPlatformImplNoSandbox::

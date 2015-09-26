@@ -36,64 +36,64 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
                                     public BlinkPlatformImpl {
  public:
   TestBlinkWebUnitTestSupport();
-  virtual ~TestBlinkWebUnitTestSupport();
+  ~TestBlinkWebUnitTestSupport() override;
 
-  virtual blink::WebBlobRegistry* blobRegistry();
-  virtual blink::WebClipboard* clipboard();
-  virtual blink::WebFileUtilities* fileUtilities();
-  virtual blink::WebIDBFactory* idbFactory();
-  virtual blink::WebMimeRegistry* mimeRegistry();
+  blink::WebBlobRegistry* blobRegistry() override;
+  blink::WebClipboard* clipboard() override;
+  blink::WebFileUtilities* fileUtilities() override;
+  blink::WebIDBFactory* idbFactory() override;
+  blink::WebMimeRegistry* mimeRegistry() override;
 
-  virtual blink::WebURLLoader* createURLLoader();
-  virtual blink::WebString userAgent() override;
-  virtual blink::WebData loadResource(const char* name);
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name);
-  virtual blink::WebString queryLocalizedString(
-      blink::WebLocalizedString::Name name,
-      const blink::WebString& value);
-  virtual blink::WebString queryLocalizedString(
+  blink::WebURLLoader* createURLLoader() override;
+  blink::WebString userAgent() override;
+  blink::WebData loadResource(const char* name) override;
+  blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name) override;
+  blink::WebString queryLocalizedString(blink::WebLocalizedString::Name name,
+                                        const blink::WebString& value) override;
+  blink::WebString queryLocalizedString(
       blink::WebLocalizedString::Name name,
       const blink::WebString& value1,
-      const blink::WebString& value2);
-  virtual blink::WebString defaultLocale();
+      const blink::WebString& value2) override;
+  blink::WebString defaultLocale() override;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void SetThemeEngine(blink::WebThemeEngine* engine);
-  virtual blink::WebThemeEngine* themeEngine();
+  blink::WebThemeEngine* themeEngine() override;
 #endif
 
-  virtual blink::WebCompositorSupport* compositorSupport();
+  blink::WebCompositorSupport* compositorSupport() override;
 
-  virtual blink::WebGestureCurve* createFlingAnimationCurve(
+  blink::WebGestureCurve* createFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
 
-  virtual blink::WebUnitTestSupport* unitTestSupport();
+  blink::WebUnitTestSupport* unitTestSupport() override;
 
   // WebUnitTestSupport implementation
-  virtual void registerMockedURL(const blink::WebURL& url,
-                                 const blink::WebURLResponse& response,
-                                 const blink::WebString& filePath);
-  virtual void registerMockedErrorURL(const blink::WebURL& url,
-                                      const blink::WebURLResponse& response,
-                                      const blink::WebURLError& error);
-  virtual void unregisterMockedURL(const blink::WebURL& url);
-  virtual void unregisterAllMockedURLs();
-  virtual void serveAsynchronousMockedRequests();
-  virtual void setLoaderDelegate(blink::WebURLLoaderTestDelegate* delegate);
-  virtual blink::WebString webKitRootDir();
-  virtual blink::WebLayerTreeView* createLayerTreeViewForTesting();
-  virtual blink::WebData readFromFile(const blink::WebString& path);
-  virtual bool getBlobItems(const blink::WebString& uuid,
-                            blink::WebVector<blink::WebBlobData::Item*>* items);
-  virtual blink::WebThread* currentThread();
-  virtual void enterRunLoop();
-  virtual void exitRunLoop();
+  void registerMockedURL(const blink::WebURL& url,
+                         const blink::WebURLResponse& response,
+                         const blink::WebString& filePath) override;
+  void registerMockedErrorURL(const blink::WebURL& url,
+                              const blink::WebURLResponse& response,
+                              const blink::WebURLError& error) override;
+  void unregisterMockedURL(const blink::WebURL& url) override;
+  void unregisterAllMockedURLs() override;
+  void serveAsynchronousMockedRequests() override;
+  void setLoaderDelegate(blink::WebURLLoaderTestDelegate* delegate) override;
+  blink::WebString webKitRootDir() override;
+  blink::WebLayerTreeView* createLayerTreeViewForTesting() override;
+  blink::WebData readFromFile(const blink::WebString& path) override;
+  bool getBlobItems(
+      const blink::WebString& uuid,
+      blink::WebVector<blink::WebBlobData::Item*>* items) override;
+  blink::WebThread* currentThread() override;
+  void enterRunLoop() override;
+  void exitRunLoop() override;
 
-  virtual void getPluginList(bool refresh,
-                             blink::WebPluginListBuilder* builder);
+  void getPluginList(bool refresh,
+                     blink::WebPluginListBuilder* builder) override;
 
  private:
   MockWebBlobRegistryImpl blob_registry_;

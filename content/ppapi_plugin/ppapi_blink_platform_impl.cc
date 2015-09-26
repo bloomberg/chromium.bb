@@ -42,16 +42,15 @@ class PpapiBlinkPlatformImpl::SandboxSupport : public WebSandboxSupport {
   virtual ~SandboxSupport() {}
 
 #if defined(OS_MACOSX)
-  virtual bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID);
+  bool loadFont(NSFont* srcFont, CGFontRef* out, uint32_t* fontID) override;
 #elif defined(OS_POSIX)
   SandboxSupport();
-  virtual void getFallbackFontForCharacter(
-      WebUChar32 character,
-      const char* preferred_locale,
-      blink::WebFallbackFont* fallbackFont);
-  virtual void getRenderStyleForStrike(const char* family,
-                                       int sizeAndStyle,
-                                       blink::WebFontRenderStyle* out);
+  void getFallbackFontForCharacter(WebUChar32 character,
+                                   const char* preferred_locale,
+                                   blink::WebFallbackFont* fallbackFont);
+  void getRenderStyleForStrike(const char* family,
+                               int sizeAndStyle,
+                               blink::WebFontRenderStyle* out) override;
 
  private:
   // WebKit likes to ask us for the correct font family to use for a set of

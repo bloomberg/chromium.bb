@@ -25,40 +25,40 @@ class WebLayerTreeViewImplForTesting
       public cc::LayerTreeHostSingleThreadClient {
  public:
   WebLayerTreeViewImplForTesting();
-  virtual ~WebLayerTreeViewImplForTesting();
+  ~WebLayerTreeViewImplForTesting() override;
 
   void Initialize();
 
   // blink::WebLayerTreeView implementation.
-  virtual void setRootLayer(const blink::WebLayer& layer);
-  virtual void clearRootLayer();
+  void setRootLayer(const blink::WebLayer& layer) override;
+  void clearRootLayer() override;
   virtual void setViewportSize(const blink::WebSize& unused_deprecated,
                                const blink::WebSize& device_viewport_size);
-  virtual void setViewportSize(const blink::WebSize& device_viewport_size);
-  virtual void setDeviceScaleFactor(float scale_factor);
-  virtual float deviceScaleFactor() const;
-  virtual void setBackgroundColor(blink::WebColor);
-  virtual void setHasTransparentBackground(bool transparent);
-  virtual void setVisible(bool visible);
-  virtual void setPageScaleFactorAndLimits(float page_scale_factor,
-                                           float minimum,
-                                           float maximum);
-  virtual void startPageScaleAnimation(const blink::WebPoint& destination,
-                                       bool use_anchor,
-                                       float new_page_scale,
-                                       double duration_sec);
-  virtual void setNeedsAnimate();
-  virtual void didStopFlinging();
-  virtual void setDeferCommits(bool defer_commits);
-  virtual void registerForAnimations(blink::WebLayer* layer);
-  virtual void registerViewportLayers(
+  void setViewportSize(const blink::WebSize& device_viewport_size) override;
+  void setDeviceScaleFactor(float scale_factor) override;
+  float deviceScaleFactor() const override;
+  void setBackgroundColor(blink::WebColor) override;
+  void setHasTransparentBackground(bool transparent) override;
+  void setVisible(bool visible) override;
+  void setPageScaleFactorAndLimits(float page_scale_factor,
+                                   float minimum,
+                                   float maximum) override;
+  void startPageScaleAnimation(const blink::WebPoint& destination,
+                               bool use_anchor,
+                               float new_page_scale,
+                               double duration_sec) override;
+  void setNeedsAnimate() override;
+  void didStopFlinging() override;
+  void setDeferCommits(bool defer_commits) override;
+  void registerForAnimations(blink::WebLayer* layer) override;
+  void registerViewportLayers(
       const blink::WebLayer* overscrollElasticityLayer,
       const blink::WebLayer* pageScaleLayerLayer,
       const blink::WebLayer* innerViewportScrollLayer,
       const blink::WebLayer* outerViewportScrollLayer) override;
-  virtual void clearViewportLayers() override;
-  virtual void registerSelection(const blink::WebSelection& selection) override;
-  virtual void clearSelection() override;
+  void clearViewportLayers() override;
+  void registerSelection(const blink::WebSelection& selection) override;
+  void clearSelection() override;
 
   // cc::LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}

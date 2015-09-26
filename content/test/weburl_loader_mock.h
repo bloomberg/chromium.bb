@@ -30,7 +30,7 @@ class WebURLLoaderMock : public blink::WebURLLoader {
   // This object becomes the owner of |default_loader|.
   WebURLLoaderMock(WebURLLoaderMockFactory* factory,
                    blink::WebURLLoader* default_loader);
-  virtual ~WebURLLoaderMock();
+  ~WebURLLoaderMock() override;
 
   // Simulates the asynchronous request being served.
   void ServeAsynchronousRequest(blink::WebURLLoaderTestDelegate* delegate,
@@ -44,14 +44,14 @@ class WebURLLoaderMock : public blink::WebURLLoader {
       const blink::WebURLResponse& redirectResponse);
 
   // WebURLLoader methods:
-  virtual void loadSynchronously(const blink::WebURLRequest& request,
-                                 blink::WebURLResponse& response,
-                                 blink::WebURLError& error,
-                                 blink::WebData& data);
-  virtual void loadAsynchronously(const blink::WebURLRequest& request,
-                                  blink::WebURLLoaderClient* client);
-  virtual void cancel();
-  virtual void setDefersLoading(bool defer);
+  void loadSynchronously(const blink::WebURLRequest& request,
+                         blink::WebURLResponse& response,
+                         blink::WebURLError& error,
+                         blink::WebData& data) override;
+  void loadAsynchronously(const blink::WebURLRequest& request,
+                          blink::WebURLLoaderClient* client) override;
+  void cancel() override;
+  void setDefersLoading(bool defer) override;
 
   bool isDeferred() { return is_deferred_; }
 

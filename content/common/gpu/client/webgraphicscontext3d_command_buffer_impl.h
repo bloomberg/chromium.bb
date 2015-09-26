@@ -112,7 +112,7 @@ class WebGraphicsContext3DCommandBufferImpl
       const SharedMemoryLimits& limits,
       WebGraphicsContext3DCommandBufferImpl* share_context);
 
-  virtual ~WebGraphicsContext3DCommandBufferImpl();
+  ~WebGraphicsContext3DCommandBufferImpl() override;
 
   CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();

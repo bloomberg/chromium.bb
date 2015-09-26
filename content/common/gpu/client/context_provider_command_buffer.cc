@@ -24,13 +24,11 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
     provider_->context3d_->setContextLostCallback(this);
   }
 
-  virtual ~LostContextCallbackProxy() {
+  ~LostContextCallbackProxy() override {
     provider_->context3d_->setContextLostCallback(NULL);
   }
 
-  virtual void onContextLost() {
-    provider_->OnLostContext();
-  }
+  void onContextLost() override { provider_->OnLostContext(); }
 
  private:
   ContextProviderCommandBuffer* provider_;

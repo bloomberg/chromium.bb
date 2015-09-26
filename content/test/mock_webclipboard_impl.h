@@ -25,31 +25,33 @@ class MockWebClipboardImpl : public blink::WebClipboard {
   MockWebClipboardImpl();
   virtual ~MockWebClipboardImpl();
 
-  virtual uint64_t sequenceNumber(Buffer);
-  virtual bool isFormatAvailable(blink::WebClipboard::Format format,
-                                 blink::WebClipboard::Buffer buffer);
-  virtual blink::WebVector<blink::WebString> readAvailableTypes(
-      blink::WebClipboard::Buffer buffer, bool* containsFilenames);
+  uint64_t sequenceNumber(Buffer) override;
+  bool isFormatAvailable(blink::WebClipboard::Format format,
+                         blink::WebClipboard::Buffer buffer) override;
+  blink::WebVector<blink::WebString> readAvailableTypes(
+      blink::WebClipboard::Buffer buffer,
+      bool* containsFilenames) override;
 
-  virtual blink::WebString readPlainText(blink::WebClipboard::Buffer buffer);
-  virtual blink::WebString readHTML(blink::WebClipboard::Buffer buffer,
-                                     blink::WebURL* url,
-                                     unsigned* fragmentStart,
-                                     unsigned* fragmentEnd);
-  virtual blink::WebData readImage(blink::WebClipboard::Buffer buffer);
-  virtual blink::WebString readCustomData(blink::WebClipboard::Buffer buffer,
-                                           const blink::WebString& type);
+  blink::WebString readPlainText(blink::WebClipboard::Buffer buffer) override;
+  blink::WebString readHTML(blink::WebClipboard::Buffer buffer,
+                            blink::WebURL* url,
+                            unsigned* fragmentStart,
+                            unsigned* fragmentEnd) override;
+  blink::WebData readImage(blink::WebClipboard::Buffer buffer) override;
+  blink::WebString readCustomData(blink::WebClipboard::Buffer buffer,
+                                  const blink::WebString& type) override;
 
-  virtual void writePlainText(const blink::WebString& plain_text);
-  virtual void writeHTML(
-      const blink::WebString& htmlText, const blink::WebURL& url,
-      const blink::WebString& plainText, bool writeSmartPaste);
+  void writePlainText(const blink::WebString& plain_text) override;
+  void writeHTML(const blink::WebString& htmlText,
+                 const blink::WebURL& url,
+                 const blink::WebString& plainText,
+                 bool writeSmartPaste) override;
   virtual void writeURL(
       const blink::WebURL& url, const blink::WebString& title);
-  virtual void writeImage(
-      const blink::WebImage& image, const blink::WebURL& url,
-      const blink::WebString& title);
-  virtual void writeDataObject(const blink::WebDragData& data);
+  void writeImage(const blink::WebImage& image,
+                  const blink::WebURL& url,
+                  const blink::WebString& title) override;
+  void writeDataObject(const blink::WebDragData& data) override;
 
  private:
   void clear();

@@ -41,7 +41,7 @@ class CONTENT_EXPORT DocumentState
   };
 
   DocumentState();
-  virtual ~DocumentState();
+  ~DocumentState() override;
 
   static DocumentState* FromDataSource(blink::WebDataSource* ds) {
     return static_cast<DocumentState*>(ds->extraData());

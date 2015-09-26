@@ -19,27 +19,28 @@ namespace content {
 class MockWebBlobRegistryImpl : public blink::WebBlobRegistry {
  public:
   MockWebBlobRegistryImpl();
-  virtual ~MockWebBlobRegistryImpl();
+  ~MockWebBlobRegistryImpl() override;
 
-  virtual void registerBlobData(const blink::WebString& uuid,
-                                const blink::WebBlobData& data);
-  virtual void addBlobDataRef(const blink::WebString& uuid);
-  virtual void removeBlobDataRef(const blink::WebString& uuid);
-  virtual void registerPublicBlobURL(const blink::WebURL&,
-                                     const blink::WebString& uuid);
-  virtual void revokePublicBlobURL(const blink::WebURL&);
+  void registerBlobData(const blink::WebString& uuid,
+                        const blink::WebBlobData& data) override;
+  void addBlobDataRef(const blink::WebString& uuid) override;
+  void removeBlobDataRef(const blink::WebString& uuid) override;
+  void registerPublicBlobURL(const blink::WebURL&,
+                             const blink::WebString& uuid) override;
+  void revokePublicBlobURL(const blink::WebURL&) override;
 
   // Additional support for Streams.
-  virtual void registerStreamURL(const blink::WebURL& url,
-                                 const blink::WebString& content_type);
-  virtual void registerStreamURL(const blink::WebURL& url,
-                                 const blink::WebURL& src_url);
-  virtual void addDataToStream(const blink::WebURL& url,
-                               const char* data, size_t length);
-  virtual void flushStream(const blink::WebURL& url);
-  virtual void finalizeStream(const blink::WebURL& url);
-  virtual void abortStream(const blink::WebURL& url);
-  virtual void unregisterStreamURL(const blink::WebURL& url);
+  void registerStreamURL(const blink::WebURL& url,
+                         const blink::WebString& content_type) override;
+  void registerStreamURL(const blink::WebURL& url,
+                         const blink::WebURL& src_url) override;
+  void addDataToStream(const blink::WebURL& url,
+                       const char* data,
+                       size_t length) override;
+  void flushStream(const blink::WebURL& url) override;
+  void finalizeStream(const blink::WebURL& url) override;
+  void abortStream(const blink::WebURL& url) override;
+  void unregisterStreamURL(const blink::WebURL& url) override;
 
   bool GetBlobItems(const blink::WebString& uuid,
                     blink::WebVector<blink::WebBlobData::Item*>* items) const;
