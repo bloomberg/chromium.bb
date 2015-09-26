@@ -21,6 +21,8 @@
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/message_port_service.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -36,7 +38,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -187,8 +188,12 @@ using OpenURLCallback = base::Callback<void(int, int)>;
 // The callback will be called in the IO thread.
 class OpenURLObserver : public WebContentsObserver {
  public:
-  OpenURLObserver(WebContents* web_contents, const OpenURLCallback& callback)
-      : WebContentsObserver(web_contents), callback_(callback) {}
+  OpenURLObserver(WebContents* web_contents,
+                  int frame_tree_node_id,
+                  const OpenURLCallback& callback)
+      : WebContentsObserver(web_contents),
+        frame_tree_node_id_(frame_tree_node_id),
+        callback_(callback) {}
 
   void DidCommitProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
@@ -196,7 +201,9 @@ class OpenURLObserver : public WebContentsObserver {
       ui::PageTransition transition_type) override {
     DCHECK(web_contents());
 
-    if (render_frame_host != web_contents()->GetMainFrame())
+    RenderFrameHostImpl* rfhi =
+        static_cast<RenderFrameHostImpl*>(render_frame_host);
+    if (rfhi->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
       return;
 
     RunCallback(render_frame_host->GetProcess()->GetID(),
@@ -226,15 +233,20 @@ class OpenURLObserver : public WebContentsObserver {
     base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
   }
 
+  int frame_tree_node_id_;
   const OpenURLCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenURLObserver);
 };
 
+// This is only called for main frame navigations in OpenWindowOnUI().
 void DidOpenURL(const OpenURLCallback& callback, WebContents* web_contents) {
   DCHECK(web_contents);
 
-  new OpenURLObserver(web_contents, callback);
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+  new OpenURLObserver(web_contents,
+                      rfhi->frame_tree_node()->frame_tree_node_id(), callback);
 }
 
 void NavigateClientOnUI(const GURL& url,
@@ -244,12 +256,10 @@ void NavigateClientOnUI(const GURL& url,
                         const OpenURLCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  RenderFrameHost* render_frame_host =
-      RenderFrameHost::FromID(process_id, frame_id);
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
+  RenderFrameHostImpl* rfhi = RenderFrameHostImpl::FromID(process_id, frame_id);
+  WebContents* web_contents = WebContents::FromRenderFrameHost(rfhi);
 
-  if (!render_frame_host || !web_contents) {
+  if (!rfhi || !web_contents) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(callback, ChildProcessHost::kInvalidUniqueID,
@@ -257,13 +267,18 @@ void NavigateClientOnUI(const GURL& url,
     return;
   }
 
+  ui::PageTransition transition = rfhi->GetParent()
+                                      ? ui::PAGE_TRANSITION_AUTO_SUBFRAME
+                                      : ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
+  int frame_tree_node_id = rfhi->frame_tree_node()->frame_tree_node_id();
+
   OpenURLParams params(
       url, Referrer::SanitizeForRequest(
                url, Referrer(script_url, blink::WebReferrerPolicyDefault)),
-      CURRENT_TAB, ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+      frame_tree_node_id, CURRENT_TAB, transition,
       true /* is_renderer_initiated */);
   web_contents->OpenURL(params);
-  DidOpenURL(callback, web_contents);
+  new OpenURLObserver(web_contents, frame_tree_node_id, callback);
 }
 
 void OpenWindowOnUI(
