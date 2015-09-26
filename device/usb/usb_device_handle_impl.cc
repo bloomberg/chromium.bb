@@ -122,10 +122,8 @@ static void RunTransferCallback(
 class UsbDeviceHandleImpl::InterfaceClaimer
     : public base::RefCountedThreadSafe<UsbDeviceHandleImpl::InterfaceClaimer> {
  public:
-  InterfaceClaimer(const scoped_refptr<UsbDeviceHandleImpl> handle,
-                   const int interface_number);
-
-  bool Claim() const;
+  InterfaceClaimer(scoped_refptr<UsbDeviceHandleImpl> handle,
+                   int interface_number);
 
   int alternate_setting() const { return alternate_setting_; }
   void set_alternate_setting(const int alternate_setting) {
@@ -133,7 +131,6 @@ class UsbDeviceHandleImpl::InterfaceClaimer
   }
 
  private:
-  friend class UsbDevice;
   friend class base::RefCountedThreadSafe<InterfaceClaimer>;
   ~InterfaceClaimer();
 
@@ -145,24 +142,14 @@ class UsbDeviceHandleImpl::InterfaceClaimer
 };
 
 UsbDeviceHandleImpl::InterfaceClaimer::InterfaceClaimer(
-    const scoped_refptr<UsbDeviceHandleImpl> handle,
-    const int interface_number)
+    scoped_refptr<UsbDeviceHandleImpl> handle,
+    int interface_number)
     : handle_(handle),
       interface_number_(interface_number),
-      alternate_setting_(0) {
-}
+      alternate_setting_(0) {}
 
 UsbDeviceHandleImpl::InterfaceClaimer::~InterfaceClaimer() {
   libusb_release_interface(handle_->handle(), interface_number_);
-}
-
-bool UsbDeviceHandleImpl::InterfaceClaimer::Claim() const {
-  const int rv = libusb_claim_interface(handle_->handle(), interface_number_);
-  if (rv != LIBUSB_SUCCESS) {
-    USB_LOG(EVENT) << "Failed to claim interface " << interface_number_ << ": "
-                   << ConvertPlatformUsbErrorToString(rv);
-  }
-  return rv == LIBUSB_SUCCESS;
 }
 
 // This inner class owns the underlying libusb_transfer and may outlast
@@ -731,8 +718,8 @@ void UsbDeviceHandleImpl::ClaimInterfaceOnBlockingThread(
     const ResultCallback& callback) {
   int rv = libusb_claim_interface(handle_, interface_number);
   if (rv != LIBUSB_SUCCESS) {
-    VLOG(1) << "Failed to claim interface: "
-            << ConvertPlatformUsbErrorToString(rv);
+    USB_LOG(EVENT) << "Failed to claim interface: "
+                   << ConvertPlatformUsbErrorToString(rv);
   }
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceHandleImpl::ClaimInterfaceComplete, this,
