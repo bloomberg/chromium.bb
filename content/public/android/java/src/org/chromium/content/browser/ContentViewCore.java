@@ -2085,6 +2085,21 @@ public class ContentViewCore implements
                 }
 
                 @Override
+                public void processText(Intent intent) {
+                    assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
+
+                    final String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
+                    if (TextUtils.isEmpty(query)) return;
+
+                    intent.putExtra(Intent.EXTRA_PROCESS_TEXT, query);
+                    try {
+                        getContext().startActivity(intent);
+                    } catch (android.content.ActivityNotFoundException ex) {
+                        // If no app handles it, do nothing.
+                    }
+                }
+
+                @Override
                 public void search() {
                     final String query = sanitizeQuery(getSelectedText(), MAX_SEARCH_QUERY_LENGTH);
                     if (TextUtils.isEmpty(query)) return;

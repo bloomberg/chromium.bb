@@ -4,10 +4,15 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.TargetApi;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.os.Build;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -16,6 +21,8 @@ import android.view.View;
 
 import org.chromium.content.R;
 import org.chromium.ui.base.DeviceFormFactor;
+
+import java.util.List;
 
 /**
  * An ActionMode.Callback for in-page web content selection. This class handles both the editable
@@ -51,6 +58,11 @@ public class WebActionModeCallback implements ActionMode.Callback {
          * Perform a share action.
          */
         void share();
+
+        /**
+         * Perform a processText action (translating the text, for example).
+         */
+        void processText(Intent intent);
 
         /**
          * Perform a search action.
@@ -157,12 +169,15 @@ public class WebActionModeCallback implements ActionMode.Callback {
             new MenuInflater(getContext()).inflate(R.menu.select_action_menu, menu);
         }
 
+        initializeTextProcessingMenu(menu);
+
         if (mIsInsertion) {
             menu.removeItem(R.id.select_action_menu_select_all);
             menu.removeItem(R.id.select_action_menu_cut);
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_share);
             menu.removeItem(R.id.select_action_menu_web_search);
+            menu.removeGroup(R.id.select_action_menu_text_processing_menus);
             return;
         }
 
@@ -185,6 +200,7 @@ public class WebActionModeCallback implements ActionMode.Callback {
         if (mIsPasswordType) {
             menu.removeItem(R.id.select_action_menu_copy);
             menu.removeItem(R.id.select_action_menu_cut);
+            menu.removeGroup(R.id.select_action_menu_text_processing_menus);
         }
     }
 
@@ -193,6 +209,7 @@ public class WebActionModeCallback implements ActionMode.Callback {
         if (mIsDestroyed) return true;
 
         int id = item.getItemId();
+        int groupId = item.getGroupId();
 
         if (id == R.id.select_action_menu_select_all) {
             mActionHandler.selectAll();
@@ -210,6 +227,9 @@ public class WebActionModeCallback implements ActionMode.Callback {
             mode.finish();
         } else if (id == R.id.select_action_menu_web_search) {
             mActionHandler.search();
+            mode.finish();
+        } else if (groupId == R.id.select_action_menu_text_processing_menus) {
+            mActionHandler.processText(item.getIntent());
             mode.finish();
         } else {
             return false;
@@ -241,5 +261,37 @@ public class WebActionModeCallback implements ActionMode.Callback {
         ClipboardManager clipMgr = (ClipboardManager)
                 getContext().getSystemService(Context.CLIPBOARD_SERVICE);
         return clipMgr.hasPrimaryClip();
+    }
+
+    /**
+     * Intialize the menu items for processing text, if there is any.
+     */
+    private void initializeTextProcessingMenu(Menu menu) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
+        PackageManager packageManager = getContext().getPackageManager();
+        List<ResolveInfo> supportedActivities =
+                packageManager.queryIntentActivities(createProcessTextIntent(), 0);
+        for (int i = 0; i < supportedActivities.size(); i++) {
+            ResolveInfo resolveInfo = supportedActivities.get(i);
+            CharSequence label = resolveInfo.loadLabel(getContext().getPackageManager());
+            menu.add(R.id.select_action_menu_text_processing_menus, Menu.NONE, i, label)
+                    .setIntent(createProcessTextIntentForResolveInfo(resolveInfo))
+                    .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private Intent createProcessTextIntent() {
+        return new Intent().setAction(Intent.ACTION_PROCESS_TEXT).setType("text/plain");
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private Intent createProcessTextIntentForResolveInfo(ResolveInfo info) {
+        return createProcessTextIntent()
+            // TODO(hush crbug.com/521027): should be !isSelectionEditable(),
+            // when WebView supports replacing the text.
+                .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY, true)
+                .setClassName(info.activityInfo.packageName, info.activityInfo.name);
     }
 }

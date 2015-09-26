@@ -6,6 +6,7 @@ package org.chromium.content.browser.input;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Build;
 import android.util.TypedValue;
@@ -139,6 +140,9 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
             @Override
             public void search() {}
+
+            @Override
+            public void processText(Intent intent) {}
 
             @Override
             public boolean isSelectionPassword() {
