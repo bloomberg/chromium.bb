@@ -6,20 +6,18 @@
 <dom-module id="cr-settings-main">
   <link rel="import" type="css" href="settings_main.css">
   <template>
-    <div id="mainContainer">
-      <content select="paper-icon-button"></content>
-      <iron-pages id="pageContainer" attr-for-selected="data-route-page"
-          selected="[[getSelectedPage_(currentRoute)]]">
-        <cr-settings-basic-page data-route-page="basic" prefs="{{prefs}}"
-            expand-container="{{expandContainer}}"
-            current-route="{{currentRoute}}">
-        </cr-settings-basic-page>
-        <cr-settings-advanced-page data-route-page="advanced" prefs="{{prefs}}"
-            expand-container="{{expandContainer}}"
-            current-route="{{currentRoute}}">
-        </cr-settings-advanced-page>
-      </iron-pages>
-    </div>
+    <content select="paper-icon-button"></content>
+    <iron-pages id="pageContainer" attr-for-selected="data-route-page"
+        selected="[[getSelectedPage_(currentRoute)]]">
+      <cr-settings-basic-page data-route-page="basic" prefs="{{prefs}}"
+          expand-container="[[expandContainer]]"
+          current-route="{{currentRoute}}">
+      </cr-settings-basic-page>
+      <cr-settings-advanced-page data-route-page="advanced" prefs="{{prefs}}"
+          expand-container="[[expandContainer]]"
+          current-route="{{currentRoute}}">
+      </cr-settings-advanced-page>
+    </iron-pages>
   </template>
   <script src="settings_main.js"></script>
 </dom-module>

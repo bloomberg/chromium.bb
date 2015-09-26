@@ -2,17 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#pageContainer {
-  box-sizing: border-box;
+:host {
+  display: block;
   height: 100%;
-  overflow: auto;
-  padding: 34px 16px;
-}
-
-#pageContainer.expanded {
-  padding: 0 16px;
-}
-
-::content core-icon-button {
-  position: absolute;
 }

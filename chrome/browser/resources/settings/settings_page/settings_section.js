@@ -50,7 +50,6 @@ Polymer({
      */
     expandContainer: {
       type: Object,
-      notify: true,
     },
 
     animationConfig: {
@@ -69,6 +68,10 @@ Polymer({
     },
   },
 
+  listeners: {
+    'expand-animation-complete': 'onExpandAnimationComplete_',
+  },
+
   /** @private */
   expanded_: false,
 
@@ -82,8 +85,19 @@ Polymer({
     }
 
     var visible = expanded || this.currentRoute.section == '';
-    this.$.section.elevation = visible ? 1 : 0;
+    this.$.card.elevation = visible ? 1 : 0;
+
+    // Remove 'hidden' class immediately, but defer adding it if we are invisble
+    // until the animation is complete.
+    if (visible)
+      this.hidden = false;
   },
+
+  /** @private */
+  onExpandAnimationComplete_: function() {
+    this.hidden = this.currentRoute.section != '' &&
+                  this.currentRoute.section != this.section;
+  }
 });
 
 Polymer({
@@ -94,32 +108,39 @@ Polymer({
   ],
 
   configure: function(config) {
-    var node = config.node;
-    var containerRect = node.expandContainer.getBoundingClientRect();
-    var nodeRect = node.getBoundingClientRect();
+    var section = config.node;
+    var card = section.$.card;
+    var containerRect = section.expandContainer.getBoundingClientRect();
+    var cardRect = card.getBoundingClientRect();
 
-    // Save section's original height.
-    node.unexpandedHeight = nodeRect.height;
+    // Set placeholder height so the page does not reflow during animation.
+    // TODO(tommycli): For URLs that directly load subpages, this does not work.
+    var placeholder = section.$.placeholder;
+    placeholder.style.top = card.offsetTop + 'px';
+    placeholder.style.height = card.offsetHeight + 'px';
 
-    var headerHeight = node.$.header.getBoundingClientRect().height;
-    var newTop = containerRect.top - headerHeight;
-    var newHeight = containerRect.height + headerHeight;
+    section.classList.add('neon-animating');
 
-    node.style.position = 'fixed';
-    node.style.zIndex = '1';
-
-    this._effect = new KeyframeEffect(node, [
-      {'top': nodeRect.top + 'px', 'height': nodeRect.height + 'px'},
-      {'top': newTop + 'px', 'height': newHeight + 'px'},
+    this._effect = new KeyframeEffect(card, [
+      {'top': cardRect.top + 'px', 'height': cardRect.height + 'px'},
+      {'top': containerRect.top + 'px', 'height': containerRect.height + 'px'},
     ], this.timingFromConfig(config));
     return this._effect;
   },
 
   complete: function(config) {
-    config.node.style.position = 'absolute';
-    config.node.style.top =
-        -config.node.$.header.getBoundingClientRect().height + 'px';
-    config.node.style.bottom = 0;
+    var section = config.node;
+    section.classList.remove('neon-animating');
+    section.classList.add('expanded');
+    section.expandContainer.classList.add('expanded');
+
+    // This event fires on itself as well, but that is benign.
+    var sections = section.parentNode.querySelectorAll('cr-settings-section');
+    for (var i = 0; i < sections.length; ++i) {
+      sections[i].fire('expand-animation-complete');
+    }
+
+    section.expandContainer.scrollTop = 0;
   }
 });
 
@@ -131,30 +152,25 @@ Polymer({
   ],
 
   configure: function(config) {
-    var node = config.node;
+    var section = config.node;
+    var oldRect = section.expandContainer.getBoundingClientRect();
 
-    var oldRect = node.getBoundingClientRect();
+    section.classList.remove('expanded');
+    section.expandContainer.classList.remove('expanded');
 
-    // Temporarily set position to static to determine new height.
-    node.style.position = '';
-    var newTop = node.getBoundingClientRect().top;
+    // Get the placeholder coordinates before reflowing.
+    var newRect = section.$.placeholder.getBoundingClientRect();
 
-    // TODO(tommycli): This value is undefined when the user navigates to a
-    // subpage directly by URL instead of from the settings root. Find a better
-    // method than using 200 as a dummy height.
-    var newHeight = node.unexpandedHeight || 200;
+    section.classList.add('neon-animating');
 
-    node.style.position = 'fixed';
-
-    this._effect = new KeyframeEffect(node, [
+    this._effect = new KeyframeEffect(section.$.card, [
       {'top': oldRect.top + 'px', 'height': oldRect.height + 'px'},
-      {'top': newTop + 'px', 'height': newHeight + 'px'},
+      {'top': newRect.top + 'px', 'height': newRect.height + 'px'},
     ], this.timingFromConfig(config));
     return this._effect;
   },
 
   complete: function(config) {
-    config.node.style.position = '';
-    config.node.style.zIndex = '0';
+    config.node.classList.remove('neon-animating');
   }
 });

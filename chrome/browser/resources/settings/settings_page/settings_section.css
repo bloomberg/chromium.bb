@@ -6,18 +6,49 @@
  * @fileoverview
  * Common styles for Settings pages.
  */
-#section {
-  background-color: white;
+:host {
+  display: block;
+}
+
+:host(.expanded) {
   height: 100%;
-  margin-bottom: 16px;
-  overflow: hidden;
-  width: 605px;
+}
+
+:host(.expanded) #header {
+  display: none;
 }
 
 #header .title {
   @apply(--paper-font-body2);
 }
 
-#content-container {
+paper-material {
+  background-color: white;
+  box-sizing: border-box;
+  overflow: hidden;
   padding: 16px;
+}
+
+paper-material,
+#placeholder {
+  margin-bottom: 16px;
+  width: 605px;
+}
+
+:host(.neon-animating) paper-material {
+  position: fixed;
+  z-index: 1;
+}
+
+:host(.expanded) paper-material {
+  margin-bottom: 0;
+  min-height: 100%;
+}
+
+#placeholder {
+  visibility: hidden;
+}
+
+:host(:not(.neon-animating)) #placeholder {
+  position: absolute;
 }

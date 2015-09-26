@@ -48,7 +48,7 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.expandContainer = this.$.mainContainer;
+    this.expandContainer = this.$.pageContainer;
   },
 
   /** @private */
