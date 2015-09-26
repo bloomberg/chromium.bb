@@ -10,7 +10,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "base/process/process_handle.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <sys/types.h>
 #include "base/base_export.h"
 #include "base/file_descriptor_posix.h"
@@ -26,7 +26,7 @@ class Pickle;
 
 // SharedMemoryHandle is a platform specific type which represents
 // the underlying OS handle to a shared memory segment.
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
 typedef FileDescriptor SharedMemoryHandle;
 #elif defined(OS_WIN)
 class BASE_EXPORT SharedMemoryHandle {
