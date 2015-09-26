@@ -9,13 +9,9 @@ import android.view.KeyEvent;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.PageTransition;
 
 /**
  * Implements app-level keyboard shortcuts for ChromeTabbedActivity and DocumentActivity.
@@ -137,21 +133,6 @@ public class KeyboardShortcuts {
             case CTRL | SHIFT | KeyEvent.KEYCODE_N:
                 activity.onMenuOrKeyboardAction(R.id.new_incognito_tab_menu_id, false);
                 return true;
-            case CTRL | SHIFT | KeyEvent.KEYCODE_B:
-            case CTRL | KeyEvent.KEYCODE_H:
-                String url = keyCode == KeyEvent.KEYCODE_B
-                        ? UrlConstants.BOOKMARKS_URL
-                        : UrlConstants.HISTORY_URL;
-                Tab currentTab = TabModelUtils.getCurrentTab(curModel);
-                if (currentTab != null && isCurrentTabVisible) {
-                    currentTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
-                } else {
-                    TabCreator tabCreator = activity.getCurrentTabCreator();
-                    if (tabCreator != null) {
-                        tabCreator.launchUrl(url, TabLaunchType.FROM_KEYBOARD);
-                    }
-                }
-                return true;
             case ALT | KeyEvent.KEYCODE_F:
             case KeyEvent.KEYCODE_BUTTON_Y:
                 activity.onMenuOrKeyboardAction(R.id.show_menu, false);
@@ -204,9 +185,15 @@ public class KeyboardShortcuts {
                 case KeyEvent.KEYCODE_BUTTON_X:
                     activity.onMenuOrKeyboardAction(R.id.focus_url_bar, false);
                     return true;
+                case CTRL | SHIFT | KeyEvent.KEYCODE_B:
+                    activity.onMenuOrKeyboardAction(R.id.all_bookmarks_menu_id, false);
+                    return true;
                 case KeyEvent.KEYCODE_BOOKMARK:
                 case CTRL | KeyEvent.KEYCODE_D:
                     activity.onMenuOrKeyboardAction(R.id.bookmark_this_page_id, false);
+                    return true;
+                case CTRL | KeyEvent.KEYCODE_H:
+                    activity.onMenuOrKeyboardAction(R.id.open_history_menu_id, false);
                     return true;
                 case CTRL | KeyEvent.KEYCODE_P:
                     activity.onMenuOrKeyboardAction(R.id.print_id, false);
