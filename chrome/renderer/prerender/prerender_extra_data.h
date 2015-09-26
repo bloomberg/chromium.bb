@@ -16,7 +16,7 @@ class PrerenderExtraData : public blink::WebPrerender::ExtraData {
   PrerenderExtraData(int prerender_id,
                      int render_view_route_id,
                      const gfx::Size& size);
-  virtual ~PrerenderExtraData();
+  ~PrerenderExtraData() override;
 
   int prerender_id() const { return prerender_id_; }
   int render_view_route_id() const { return render_view_route_id_; }

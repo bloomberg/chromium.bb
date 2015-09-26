@@ -29,14 +29,14 @@ class WorkerContentSettingsClientProxy
  public:
   WorkerContentSettingsClientProxy(content::RenderFrame* render_frame,
                               blink::WebFrame* frame);
-  virtual ~WorkerContentSettingsClientProxy();
+  ~WorkerContentSettingsClientProxy() override;
 
   // WebWorkerContentSettingsClientProxy overrides.
-  virtual bool allowDatabase(const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual bool requestFileSystemAccessSync();
-  virtual bool allowIndexedDB(const blink::WebString& name);
+  bool allowDatabase(const blink::WebString& name,
+                     const blink::WebString& display_name,
+                     unsigned long estimated_size) override;
+  bool requestFileSystemAccessSync() override;
+  bool allowIndexedDB(const blink::WebString& name) override;
 
  private:
   // Loading document context for this worker.

@@ -58,33 +58,31 @@ class ContentSettingsObserver
                            const base::string16& details);
 
   // blink::WebContentSettingsClient implementation.
-  virtual bool allowDatabase(const blink::WebString& name,
-                             const blink::WebString& display_name,
-                             unsigned long estimated_size);
-  virtual void requestFileSystemAccessAsync(
-      const blink::WebContentSettingCallbacks& callbacks);
-  virtual bool allowImage(bool enabled_per_settings,
-                          const blink::WebURL& image_url);
-  virtual bool allowIndexedDB(const blink::WebString& name,
-                              const blink::WebSecurityOrigin& origin);
-  virtual bool allowPlugins(bool enabled_per_settings);
-  virtual bool allowScript(bool enabled_per_settings);
-  virtual bool allowScriptFromSource(bool enabled_per_settings,
-                                     const blink::WebURL& script_url);
-  virtual bool allowStorage(bool local);
-  virtual bool allowReadFromClipboard(bool default_value);
-  virtual bool allowWriteToClipboard(bool default_value);
-  virtual bool allowMutationEvents(bool default_value);
-  virtual void didNotAllowPlugins();
-  virtual void didNotAllowScript();
-  virtual bool allowDisplayingInsecureContent(
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
-  virtual bool allowRunningInsecureContent(
-      bool allowed_per_settings,
-      const blink::WebSecurityOrigin& context,
-      const blink::WebURL& url);
+  bool allowDatabase(const blink::WebString& name,
+                     const blink::WebString& display_name,
+                     unsigned long estimated_size) override;
+  void requestFileSystemAccessAsync(
+      const blink::WebContentSettingCallbacks& callbacks) override;
+  bool allowImage(bool enabled_per_settings,
+                  const blink::WebURL& image_url) override;
+  bool allowIndexedDB(const blink::WebString& name,
+                      const blink::WebSecurityOrigin& origin) override;
+  bool allowPlugins(bool enabled_per_settings) override;
+  bool allowScript(bool enabled_per_settings) override;
+  bool allowScriptFromSource(bool enabled_per_settings,
+                             const blink::WebURL& script_url) override;
+  bool allowStorage(bool local) override;
+  bool allowReadFromClipboard(bool default_value) override;
+  bool allowWriteToClipboard(bool default_value) override;
+  bool allowMutationEvents(bool default_value) override;
+  void didNotAllowPlugins() override;
+  void didNotAllowScript() override;
+  bool allowDisplayingInsecureContent(bool allowed_per_settings,
+                                      const blink::WebSecurityOrigin& context,
+                                      const blink::WebURL& url) override;
+  bool allowRunningInsecureContent(bool allowed_per_settings,
+                                   const blink::WebSecurityOrigin& context,
+                                   const blink::WebURL& url) override;
 
   // This is used for cases when the NPAPI plugins malfunction if used.
   bool AreNPAPIPluginsBlocked() const;

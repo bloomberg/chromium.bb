@@ -21,7 +21,7 @@ class AppBannerClient : public content::RenderFrameObserver,
                         public blink::WebAppBannerClient {
  public:
   explicit AppBannerClient(content::RenderFrame* render_frame);
-  virtual ~AppBannerClient();
+  ~AppBannerClient() override;
 
  private:
   // content::RenderFrame::Observer implementation.
@@ -33,7 +33,7 @@ class AppBannerClient : public content::RenderFrameObserver,
   void registerBannerCallbacks(int request_id,
                                blink::WebAppBannerCallbacks*) override;
 
-  void showAppBanner(int request_id);
+  void showAppBanner(int request_id) override;
 
   void ResolveEvent(int request_id,
                     const std::string& platform,
