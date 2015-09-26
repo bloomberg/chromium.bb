@@ -180,6 +180,7 @@ SpeechRecognizerImpl::SpeechRecognizerImpl(
           media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)),
       is_dispatching_event_(false),
       provisional_results_(provisional_results),
+      end_of_utterance_(false),
       state_(STATE_IDLE) {
   DCHECK(recognition_engine_ != NULL);
   if (!continuous) {
@@ -301,6 +302,11 @@ void SpeechRecognizerImpl::OnSpeechRecognitionEngineResults(
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&SpeechRecognizerImpl::DispatchEvent,
                                      this, event_args));
+}
+
+void SpeechRecognizerImpl::OnSpeechRecognitionEngineEndOfUtterance() {
+  DCHECK(!end_of_utterance_);
+  end_of_utterance_ = true;
 }
 
 void SpeechRecognizerImpl::OnSpeechRecognitionEngineError(
@@ -500,6 +506,7 @@ void SpeechRecognizerImpl::ProcessAudioPipeline(const AudioChunk& raw_audio) {
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
+  DCHECK(state_ == STATE_IDLE);
   DCHECK(recognition_engine_.get() != NULL);
   DCHECK(!IsCapturingAudio());
   const bool unit_test_is_active = (audio_manager_for_tests_ != NULL);
@@ -511,6 +518,7 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
   DVLOG(1) << "SpeechRecognizerImpl starting audio capture.";
   num_samples_recorded_ = 0;
   audio_level_ = 0;
+  end_of_utterance_ = false;
   listener()->OnRecognitionStart(session_id());
 
   // TODO(xians): Check if the OS has the device with |device_id_|, return
@@ -632,7 +640,7 @@ SpeechRecognizerImpl::DetectUserSpeechOrTimeout(const FSMEventArgs&) {
 
 SpeechRecognizerImpl::FSMState
 SpeechRecognizerImpl::DetectEndOfSpeech(const FSMEventArgs& event_args) {
-  if (endpointer_.speech_input_complete())
+  if (end_of_utterance_ || endpointer_.speech_input_complete())
     return StopCaptureAndWaitForResult(event_args);
   return STATE_RECOGNIZING;
 }
@@ -699,9 +707,6 @@ SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::Abort(
 
 SpeechRecognizerImpl::FSMState SpeechRecognizerImpl::ProcessIntermediateResult(
     const FSMEventArgs& event_args) {
-  // Provisional results can occur only if explicitly enabled in the JS API.
-  DCHECK(provisional_results_);
-
   // In continuous recognition, intermediate results can occur even when we are
   // in the ESTIMATING_ENVIRONMENT or WAITING_FOR_SPEECH states (if the
   // recognition engine is "faster" than our endpointer). In these cases we

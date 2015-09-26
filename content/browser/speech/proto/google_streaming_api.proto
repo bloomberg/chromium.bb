@@ -35,6 +35,16 @@ message SpeechRecognitionEvent {
   // than one final=true result is returned, so client must accumulate
   // resultHistory by concatenating the final=true results.)
   repeated SpeechRecognitionResult result = 2;
+
+  enum EndpointerEventType {
+    START_OF_SPEECH = 0;
+    END_OF_SPEECH = 1;
+    END_OF_AUDIO = 2;  // End of audio stream has been reached.
+    // End of utterance indicates that no more speech segments are expected.
+    END_OF_UTTERANCE = 3;
+  }
+
+  optional EndpointerEventType endpoint = 4;
 };
 
 message SpeechRecognitionResult {

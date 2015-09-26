@@ -38,6 +38,7 @@ class SpeechRecognitionEngine {
     // implementations).
     virtual void OnSpeechRecognitionEngineResults(
         const SpeechRecognitionResults& results) = 0;
+    virtual void OnSpeechRecognitionEngineEndOfUtterance() = 0;
     virtual void OnSpeechRecognitionEngineError(
         const SpeechRecognitionError& error) = 0;
 

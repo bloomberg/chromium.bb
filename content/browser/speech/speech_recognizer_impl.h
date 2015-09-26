@@ -141,6 +141,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   // SpeechRecognitionEngineDelegate methods.
   void OnSpeechRecognitionEngineResults(
       const SpeechRecognitionResults& results) override;
+  void OnSpeechRecognitionEngineEndOfUtterance() override;
   void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) override;
 
@@ -154,6 +155,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   float audio_level_;
   bool is_dispatching_event_;
   bool provisional_results_;
+  bool end_of_utterance_;
   FSMState state_;
   std::string device_id_;
 

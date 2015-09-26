@@ -32,6 +32,9 @@ class GoogleOneShotRemoteEngineTest : public SpeechRecognitionEngineDelegate,
     results_ = results;
   }
 
+  void OnSpeechRecognitionEngineEndOfUtterance() override {
+  }
+
   void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) override {
     error_ = error.code;

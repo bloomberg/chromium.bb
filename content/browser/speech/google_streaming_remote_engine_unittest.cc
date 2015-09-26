@@ -41,7 +41,8 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
  public:
   GoogleStreamingRemoteEngineTest()
       : last_number_of_upstream_chunks_seen_(0U),
-        error_(SPEECH_RECOGNITION_ERROR_NONE) { }
+        error_(SPEECH_RECOGNITION_ERROR_NONE),
+        end_of_utterance_counter_(0) { }
 
   // Creates a speech recognition request and invokes its URL fetcher delegate
   // with the given test data.
@@ -51,6 +52,9 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   void OnSpeechRecognitionEngineResults(
       const SpeechRecognitionResults& results) override {
     results_.push(results);
+  }
+  void OnSpeechRecognitionEngineEndOfUtterance() override {
+    ++end_of_utterance_counter_;
   }
   void OnSpeechRecognitionEngineError(
       const SpeechRecognitionError& error) override {
@@ -93,6 +97,7 @@ class GoogleStreamingRemoteEngineTest : public SpeechRecognitionEngineDelegate,
   base::MessageLoop message_loop_;
   std::string response_buffer_;
   SpeechRecognitionErrorCode error_;
+  int end_of_utterance_counter_;
   std::queue<SpeechRecognitionResults> results_;
 };
 
@@ -331,6 +336,31 @@ TEST_F(GoogleStreamingRemoteEngineTest, Stability) {
   ExpectResultsReceived(empty_result);
   ASSERT_EQ(SPEECH_RECOGNITION_ERROR_NONE, error_);
   ASSERT_EQ(0U, results_.size());
+}
+
+TEST_F(GoogleStreamingRemoteEngineTest, EndOfUtterance) {
+  StartMockRecognition();
+  ASSERT_TRUE(GetUpstreamFetcher());
+
+  // Simulate a END_OF_UTTERANCE proto event with continuous true.
+  SpeechRecognitionEngine::Config config;
+  config.continuous = true;
+  engine_under_test_->SetConfig(config);
+  proto::SpeechRecognitionEvent proto_event;
+  proto_event.set_endpoint(proto::SpeechRecognitionEvent::END_OF_UTTERANCE);
+  ASSERT_EQ(0, end_of_utterance_counter_);
+  ProvideMockProtoResultDownstream(proto_event);
+  ASSERT_EQ(0, end_of_utterance_counter_);
+
+  // Simulate a END_OF_UTTERANCE proto event with continuous false.
+  config.continuous = false;
+  engine_under_test_->SetConfig(config);
+  ProvideMockProtoResultDownstream(proto_event);
+  ASSERT_EQ(1, end_of_utterance_counter_);
+
+  // Shut down.
+  CloseMockDownstream(DOWNSTREAM_ERROR_NONE);
+  EndMockRecognition();
 }
 
 TEST_F(GoogleStreamingRemoteEngineTest, SendPreamble) {

@@ -50,6 +50,8 @@ void DumpResponse(const std::string& response) {
   }
   if (event.has_status())
     DVLOG(1) << "STATUS\t" << event.status();
+  if (event.has_endpoint())
+    DVLOG(1) << "ENDPOINT\t" << event.endpoint();
   for (int i = 0; i < event.result_size(); ++i) {
     DVLOG(1) << "RESULT #" << i << ":";
     const proto::SpeechRecognitionResult& res = event.result(i);
@@ -357,6 +359,8 @@ GoogleStreamingRemoteEngine::ConnectBothStreams(const FSMEventArgs&) {
   }
   if (config_.continuous)
     upstream_args.push_back("continuous");
+  else
+    upstream_args.push_back("endpoint=1");
   if (config_.interim_results)
     upstream_args.push_back("interim");
   if (!config_.auth_token.empty() && !config_.auth_scope.empty()) {
@@ -430,14 +434,6 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
                                             event_args.response->end())))
     return AbortWithError(event_args);
 
-  // An empty (default) event is used to notify us that the upstream has
-  // been connected. Ignore.
-  if (!ws_event.result_size() && (!ws_event.has_status() ||
-      ws_event.status() == proto::SpeechRecognitionEvent::STATUS_SUCCESS)) {
-    DVLOG(1) << "Received empty response";
-    return state_;
-  }
-
   if (ws_event.has_status()) {
     switch (ws_event.status()) {
       case proto::SpeechRecognitionEvent::STATUS_SUCCESS:
@@ -459,6 +455,11 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       case proto::SpeechRecognitionEvent::STATUS_LANGUAGE_NOT_SUPPORTED:
         return Abort(SPEECH_RECOGNITION_ERROR_LANGUAGE_NOT_SUPPORTED);
     }
+  }
+
+  if (!config_.continuous && ws_event.has_endpoint() &&
+      ws_event.endpoint() == proto::SpeechRecognitionEvent::END_OF_UTTERANCE) {
+    delegate()->OnSpeechRecognitionEngineEndOfUtterance();
   }
 
   SpeechRecognitionResults results;
@@ -487,8 +488,9 @@ GoogleStreamingRemoteEngine::ProcessDownstreamResponse(
       result.hypotheses.push_back(hypothesis);
     }
   }
-
-  delegate()->OnSpeechRecognitionEngineResults(results);
+  if (results.size()) {
+    delegate()->OnSpeechRecognitionEngineResults(results);
+  }
 
   return state_;
 }
