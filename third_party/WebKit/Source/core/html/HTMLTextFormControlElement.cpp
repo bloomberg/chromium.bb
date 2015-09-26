@@ -632,15 +632,23 @@ void HTMLTextFormControlElement::setInnerEditorValue(const String& value)
         return;
 
     bool textIsChanged = value != innerEditorValue();
-    if (textIsChanged || !innerEditorElement()->hasChildren()) {
-        if (textIsChanged && layoutObject()) {
-            if (AXObjectCache* cache = document().existingAXObjectCache())
-                cache->handleTextFormControlChanged(this);
-        }
-        innerEditorElement()->setInnerText(value, ASSERT_NO_EXCEPTION);
+    HTMLElement* innerEditor = innerEditorElement();
+    if (!textIsChanged && innerEditor->hasChildren())
+        return;
 
-        if (value.endsWith('\n') || value.endsWith('\r'))
-            innerEditorElement()->appendChild(HTMLBRElement::create(document()));
+    // If the last child is a trailing <br> that's appended below, remove it
+    // first so as to enable setInnerText() fast path of updating a text node.
+    if (isHTMLBRElement(innerEditor->lastChild()))
+        innerEditor->removeChild(innerEditor->lastChild(), ASSERT_NO_EXCEPTION);
+
+    innerEditor->setInnerText(value, ASSERT_NO_EXCEPTION);
+
+    if (value.endsWith('\n') || value.endsWith('\r'))
+        innerEditor->appendChild(HTMLBRElement::create(document()));
+
+    if (textIsChanged && layoutObject()) {
+        if (AXObjectCache* cache = document().existingAXObjectCache())
+            cache->handleTextFormControlChanged(this);
     }
 }
 
