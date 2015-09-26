@@ -12,12 +12,14 @@ namespace media {
 
 FileDataSource::FileDataSource()
     : force_read_errors_(false),
-      force_streaming_(false) {
+      force_streaming_(false),
+      bytes_read_(0) {
 }
 
 FileDataSource::FileDataSource(base::File file)
     : force_read_errors_(false),
-      force_streaming_(false) {
+      force_streaming_(false),
+      bytes_read_(0) {
   file_.Initialize(file.Pass());
 }
 
@@ -47,6 +49,7 @@ void FileDataSource::Read(int64 position, int size, uint8* data,
   int64 clamped_size = std::min(static_cast<int64>(size), file_size - position);
 
   memcpy(data, file_.data() + position, clamped_size);
+  bytes_read_ += clamped_size;
   read_cb.Run(clamped_size);
 }
 

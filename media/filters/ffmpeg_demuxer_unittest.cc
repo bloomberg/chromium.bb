@@ -955,6 +955,44 @@ TEST_F(FFmpegDemuxerTest, MP4_ZeroStszEntry) {
   ReadUntilEndOfStream(demuxer_->GetStream(DemuxerStream::AUDIO));
 }
 
+class Mp3SeekFFmpegDemuxerTest
+    : public FFmpegDemuxerTest,
+      public testing::WithParamInterface<const char*> {
+};
+TEST_P(Mp3SeekFFmpegDemuxerTest, TestFastSeek) {
+  // Init demxuer with given MP3 file parameter.
+  CreateDemuxer(GetParam());
+  InitializeDemuxer();
+
+  // We read a bunch of bytes when we first open the file. Reset the count
+  // here to just track the bytes read for the upcoming seek. This allows us
+  // to use a more narrow threshold for passing the test.
+  data_source_->reset_bytes_read_for_testing();
+
+  FFmpegDemuxerStream* audio = static_cast<FFmpegDemuxerStream*>(
+    demuxer_->GetStream(DemuxerStream::AUDIO));
+  ASSERT_TRUE(audio);
+
+  // Seek to near the end of the file
+  WaitableMessageLoopEvent event;
+  demuxer_->Seek(.9 * audio->duration(), event.GetPipelineStatusCB());
+  event.RunAndWaitForStatus(PIPELINE_OK);
+
+  // Verify that seeking to the end read only a small portion of the file.
+  // Slow that read sequentially up to the seek point will fail this check.
+  int64 file_size = 0;
+  ASSERT_TRUE(data_source_->GetSize(&file_size));
+  EXPECT_LT(data_source_->bytes_read_for_testing(), (file_size * .25));
+}
+
+// MP3s should seek quickly without sequentially reading up to the seek point.
+// VBR vs CBR and the presence/absence of TOC influence the seeking algorithm.
+// See http://crbug.com/530043 and FFmpeg flag AVFMT_FLAG_FAST_SEEK.
+INSTANTIATE_TEST_CASE_P(, Mp3SeekFFmpegDemuxerTest,
+                        ::testing::Values("bear-audio-10s-CBR-has-TOC.mp3",
+                                          "bear-audio-10s-CBR-no-TOC.mp3",
+                                          "bear-audio-10s-VBR-has-TOC.mp3",
+                                          "bear-audio-10s-VBR-no-TOC.mp3"));
 
 static void ValidateAnnexB(DemuxerStream* stream,
                            DemuxerStream::Status status,
