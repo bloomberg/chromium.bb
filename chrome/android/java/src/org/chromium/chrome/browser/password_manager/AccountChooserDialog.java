@@ -92,10 +92,8 @@ public class AccountChooserDialog
             public View getView(int position, View convertView, ViewGroup parent) {
                 if (convertView == null) {
                     LayoutInflater inflater = LayoutInflater.from(getContext());
-                    // TODO(melandory): move account_chooser_infobar_item.xml to
-                    // account_chooser_dialog_item.xml during getting rid of AccountChooserInfobar.
                     convertView =
-                            inflater.inflate(R.layout.account_chooser_infobar_item, parent, false);
+                            inflater.inflate(R.layout.account_chooser_dialog_item, parent, false);
                 } else {
                     int oldPosition = (int) convertView.getTag();
                     mAvatarViews[oldPosition] = null;

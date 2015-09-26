@@ -120,7 +120,6 @@
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
 #include "chrome/browser/ui/android/connection_info_popup_android.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
-#include "chrome/browser/ui/android/infobars/account_chooser_infobar.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
@@ -176,7 +175,6 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      web_contents_delegate_android::RegisterWebContentsDelegateAndroidJni},
     // Register JNI for chrome classes.
     {"AccessibilityUtils", AccessibilityUtil::Register},
-    {"AccountChooserInfoBar", RegisterAccountChooserInfoBar},
     {"AccountChooserDialogAndroid", RegisterAccountChooserDialogAndroid},
     {"AccountManagementScreenHelper", AccountManagementScreenHelper::Register},
     {"AccountTrackerService", AccountTrackerServiceAndroid::Register},

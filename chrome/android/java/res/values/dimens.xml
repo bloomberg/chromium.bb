@@ -132,9 +132,6 @@
     <dimen name="badge_radius">10dp</dimen>
     <dimen name="badge_border_size">1.3dp</dimen>
 
-    <!-- Account Chooser infobar Dimensions -->
-    <dimen name="account_chooser_infobar_item_height">80dp</dimen>
-
     <!-- First Run Experience and Welcome Page dimensions -->
     <dimen name="fre_button_padding">16dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
