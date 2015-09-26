@@ -537,7 +537,7 @@ void SpellChecker::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask
     if (checkingLength)
         *checkingLength = sentenceToCheck.checkingLength();
 
-    RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, createRange(checkRange), createRange(paragraphRange), requestNumber);
+    RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNumber);
     if (!request)
         return;
 
@@ -930,8 +930,7 @@ void SpellChecker::cancelCheck()
 
 void SpellChecker::requestTextChecking(const Element& element)
 {
-    const EphemeralRange range = EphemeralRange::rangeOfContents(element);
-    RefPtrWillBeRawPtr<Range> rangeToCheck = Range::create(element.document(), range.startPosition(), range.endPosition());
+    const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
     m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 

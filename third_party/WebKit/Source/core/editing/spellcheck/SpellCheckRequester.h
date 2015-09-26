@@ -28,6 +28,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
+#include "core/editing/EphemeralRange.h"
 #include "platform/Timer.h"
 #include "platform/text/TextChecking.h"
 #include "wtf/Deque.h"
@@ -44,8 +45,10 @@ class TextCheckerClient;
 
 class SpellCheckRequest final : public TextCheckingRequest {
 public:
-    static PassRefPtrWillBeRawPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtrWillBeRawPtr<Range> checkingRange, PassRefPtrWillBeRawPtr<Range> paragraphRange, int requestNumber = 0);
+    static PassRefPtrWillBeRawPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, const EphemeralRange& checkingRange, const EphemeralRange& paragraphRange, int requestNumber = 0);
+
     ~SpellCheckRequest() override;
+    void dispose();
 
     PassRefPtrWillBeRawPtr<Range> checkingRange() const { return m_checkingRange; }
     PassRefPtrWillBeRawPtr<Range> paragraphRange() const { return m_paragraphRange; }
