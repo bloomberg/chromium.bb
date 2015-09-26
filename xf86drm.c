@@ -45,6 +45,7 @@
 #include <stddef.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <limits.h>
 #include <signal.h>
 #include <time.h>
 #include <sys/types.h>
