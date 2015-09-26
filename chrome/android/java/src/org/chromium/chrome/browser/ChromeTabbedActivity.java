@@ -9,6 +9,7 @@ import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -21,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.MemoryPressureListener;
@@ -1262,16 +1264,24 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
     public void onOverviewModeStartedShowing(boolean showToolbar) {
         if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), Color.BLACK);
     }
 
     @Override
     public void onOverviewModeFinishedShowing() {}
 
     @Override
-    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {}
+    public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+    }
 
     @Override
     public void onOverviewModeFinishedHiding() {
         if (getAssistStatusHandler() != null) getAssistStatusHandler().updateAssistState();
+        setStatusBarColor(getActivityTab(), getActivityTab().getThemeColor());
+    }
+
+    @Override
+    protected void setStatusBarColor(Tab tab, int color) {
+        super.setStatusBarColor(tab, isInOverviewMode() ? Color.BLACK : color);
     }
 }

@@ -3213,6 +3213,13 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return The default toolbar color for this tab.
+     */
+    public int getDefaultThemeColor() {
+        return mDefaultThemeColor;
+    }
+
+    /**
      * @return Intent that tells Chrome to bring an Activity for a particular Tab back to the
      *         foreground, or null if this isn't possible.
      */

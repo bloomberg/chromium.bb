@@ -117,6 +117,7 @@ import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.chrome.browser.toolbar.Toolbar;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.AddToHomescreenDialog;
 import org.chromium.chrome.browser.widget.ControlContainer;
@@ -485,6 +486,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
 
             @Override
+            public void onShown(Tab tab) {
+                setStatusBarColor(tab, tab.getThemeColor());
+            }
+
+            @Override
             public void onHidden(Tab tab) {
                 mLoFiBarPopupController.dismissLoFiBar();
             }
@@ -514,9 +520,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
-                if (getToolbarManager() == null) return;
                 if (getActivityTab() != tab) return;
+                setStatusBarColor(tab, color);
 
+                if (getToolbarManager() == null) return;
                 getToolbarManager().updatePrimaryColor(color);
 
                 ControlContainer controlContainer =
@@ -547,6 +554,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             ContextReporter.reportStatus(ContextReporter.STATUS_GSA_NOT_AVAILABLE);
         }
         mCompositorViewHolder.resetFlags();
+    }
+
+    /**
+     * Set device status bar to a given color.
+     * @param tab The tab that is currently showing.
+     * @param color The color that the status bar should be set to.
+     */
+    protected void setStatusBarColor(Tab tab, int color) {
+        int statusBarColor = (tab != null && tab.getDefaultThemeColor() == color)
+                ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
+        ApiCompatibilityUtils.setStatusBarColor(getWindow(), statusBarColor);
     }
 
     private void createContextReporterIfNeeded() {
