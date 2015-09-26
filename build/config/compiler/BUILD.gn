@@ -100,6 +100,7 @@ config("compiler") {
   cflags_objcc = []
   ldflags = []
   defines = []
+  configs = []
 
   # In general, Windows is totally different, but all the other builds share
   # some common GCC configuration. This section sets up Windows and the common
@@ -603,105 +604,7 @@ config("compiler") {
   # Android-specific flags setup.
   # -----------------------------
   if (is_android) {
-    cflags += [
-      "-ffunction-sections",
-      "-funwind-tables",
-      "-fno-short-enums",
-    ]
-    if (!is_clang) {
-      # Clang doesn't support these flags.
-      cflags += [ "-finline-limit=64" ]
-    }
-    if (is_clang) {
-      rebased_android_toolchain_root =
-          rebase_path(android_toolchain_root, root_build_dir)
-      if (current_cpu == "arm") {
-        cflags += [
-          # TODO(hans) Enable integrated-as (crbug.com/124610).
-          "-no-integrated-as",
-          "-B${rebased_android_toolchain_root}/bin",  # Else /usr/bin/as gets picked up.
-        ]
-      }
-    }
-    if (is_asan) {
-      # Android build relies on -Wl,--gc-sections removing unreachable code.
-      # ASan instrumentation for globals inhibits this and results in a library
-      # with unresolvable relocations.
-      # TODO(eugenis): find a way to reenable this.
-      cflags += [ "-mllvm -asan-globals=0" ]
-    }
-
-    defines += [ "ANDROID" ]
-
-    # The NDK has these things, but doesn't define the constants
-    # to say that it does. Define them here instead.
-    defines += [ "HAVE_SYS_UIO_H" ]
-
-    # Use gold for Android for most CPU architectures.
-    if (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm") {
-      ldflags += [ "-fuse-ld=gold" ]
-      if (is_clang) {
-        # Let clang find the ld.gold in the NDK.
-        ldflags += [ "--gcc-toolchain=$rebased_android_toolchain_root" ]
-      }
-
-      # Use -mstackrealign due to a bug on ia32 Jelly Bean.
-      # See crbug.com/521527
-      if (current_cpu == "x86") {
-        cflags += [ "-mstackrealign" ]
-      }
-    }
-
-    ldflags += [
-      "-Wl,--no-undefined",
-
-      # Don't allow visible symbols from libgcc or libc++ to be
-      # re-exported.
-      "-Wl,--exclude-libs=libgcc.a",
-      "-Wl,--exclude-libs=libc++_static.a",
-
-      # Don't allow visible symbols from libraries that contain
-      # assembly code with symbols that aren't hidden properly.
-      # http://crbug.com/448386
-      "-Wl,--exclude-libs=libvpx_assembly_arm.a",
-    ]
-    if (current_cpu == "arm") {
-      ldflags += [
-        # Enable identical code folding to reduce size.
-        "-Wl,--icf=safe",
-      ]
-    }
-
-    if (is_clang) {
-      if (current_cpu == "arm") {
-        _abi_target = "arm-linux-androideabi"
-      } else if (current_cpu == "x86") {
-        _abi_target = "i686-linux-androideabi"
-      } else if (current_cpu == "arm64") {
-        # Place holder for arm64 support, not tested.
-        _abi_target = "aarch64-linux-androideabi"
-      } else if (current_cpu == "x64") {
-        # Place holder for x64 support, not tested.
-        # TODO: Enable clang support for Android x64. http://crbug.com/346626
-        _abi_target = "x86_64-linux-androideabi"
-      } else if (current_cpu == "mipsel") {
-        # Place holder for mips support, not tested.
-        _abi_target = "mipsel-linux-androideabi"
-      } else if (current_cpu == "mips64el") {
-        # Place holder for mips64 support, not tested.
-        _abi_target = "mips64el-linux-androideabi"
-      } else {
-        assert(false, "Architecture not supported")
-      }
-      cflags += [
-        "-target",
-        _abi_target,
-      ]
-      ldflags += [
-        "-target",
-        _abi_target,
-      ]
-    }
+    configs += [ "//build/config/android:compiler" ]
   }
 
   # Pass the same C/C++ flags to the objective C/C++ compiler.
@@ -1318,57 +1221,48 @@ if (is_win) {
   }
 }
 
-# Default "optimization on" config. Set up variables so the
-# "default_optimization" config can re-use these settings.
-if (is_win) {
-  # Favor size over speed, /O1 must be before the common flags. The GYP
-  # build also specifies /Os and /GF but these are implied by /O1.
-  optimize_cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-} else if (is_android || is_ios) {
-  # Favor size over speed.
-  optimize_cflags = [ "-Os" ] + common_optimize_on_cflags
-} else {
-  # Linux & Mac favor speed over size.
-  # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
-  # explore favoring size over speed in this case as well.
-  optimize_cflags = [ "-O2" ] + common_optimize_on_cflags
-}
-optimize_ldflags = common_optimize_on_ldflags
-
+# Default "optimization on" config.
 config("optimize") {
-  cflags = optimize_cflags
-  ldflags = optimize_ldflags
-}
-
-# Turn off optimizations. Set up variables so the
-# "default_optimization" config can re-use these settings.
-if (is_win) {
-  no_optimize_cflags = [
-    "/Od",  # Disable optimization.
-    "/Ob0",  # Disable all inlining (on by default).
-    "/RTC1",  # Runtime checks for stack frame and uninitialized variables.
-  ]
-  no_optimize_ldflags = []
-} else if (is_android && !android_full_debug) {
-  # On Android we kind of optimize some things that don't affect debugging
-  # much even when optimization is disabled to get the binary size down.
-  no_optimize_cflags = [
-    "-Os",
-    "-fdata-sections",
-    "-ffunction-sections",
-  ]
-  if (!using_sanitizer) {
-    no_optimize_cflags += [ "-fomit-frame-pointer" ]
+  if (is_win) {
+    # Favor size over speed, /O1 must be before the common flags. The GYP
+    # build also specifies /Os and /GF but these are implied by /O1.
+    cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
+  } else if (is_android || is_ios) {
+    # Favor size over speed.
+    cflags = [ "-Os" ] + common_optimize_on_cflags
+  } else {
+    # Linux & Mac favor speed over size.
+    # TODO(brettw) it's weird that Mac and desktop Linux are different. We should
+    # explore favoring size over speed in this case as well.
+    cflags = [ "-O2" ] + common_optimize_on_cflags
   }
-  no_optimize_ldflags = common_optimize_on_ldflags
-} else {
-  no_optimize_cflags = [ "-O0" ]
-  no_optimize_ldflags = []
+  ldflags = common_optimize_on_ldflags
 }
 
+# Turn off optimizations.
 config("no_optimize") {
-  cflags = no_optimize_cflags
-  ldflags = no_optimize_ldflags
+  if (is_win) {
+    cflags = [
+      "/Od",  # Disable optimization.
+      "/Ob0",  # Disable all inlining (on by default).
+      "/RTC1",  # Runtime checks for stack frame and uninitialized variables.
+    ]
+  } else if (is_android && !android_full_debug) {
+    # On Android we kind of optimize some things that don't affect debugging
+    # much even when optimization is disabled to get the binary size down.
+    cflags = [
+      "-Os",
+      "-fdata-sections",
+      "-ffunction-sections",
+    ]
+    if (!using_sanitizer) {
+      cflags += [ "-fomit-frame-pointer" ]
+    }
+    ldflags = common_optimize_on_ldflags
+  } else {
+    cflags = [ "-O0" ]
+    ldflags = []
+  }
 }
 
 # Turns up the optimization level. On Windows, this implies whole program
@@ -1403,11 +1297,9 @@ config("optimize_max") {
 # either "optimize" or "no_optimize", depending on the build flags.
 config("default_optimization") {
   if (is_debug) {
-    cflags = no_optimize_cflags
-    ldflags = no_optimize_ldflags
+    configs = [ ":no_optimize" ]
   } else {
-    cflags = optimize_cflags
-    ldflags = optimize_ldflags
+    configs = [ ":optimize" ]
   }
 }
 
@@ -1423,80 +1315,68 @@ config("default_optimization") {
 #   configs += [ "//build/config/compiler:symbols" ]
 
 # Full symbols.
-if (is_win) {
-  import("//build/toolchain/goma.gni")
-  if (use_goma) {
-    symbols_cflags = [ "/Z7" ]  # No PDB file
-  } else {
-    symbols_cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
-  }
-  if (is_win_fastlink) {
-    # Tell VS 2015+ to create a PDB that references debug
-    # information in .obj and .lib files instead of copying
-    # it all. This flag is incompatible with /PROFILE
-    symbols_ldflags = [ "/DEBUG:FASTLINK" ]
-  } else {
-    symbols_ldflags = [ "/DEBUG" ]
-  }
-} else {
-  symbols_cflags = [ "-g2" ]
-  if (use_debug_fission) {
-    symbols_cflags += [ "-gsplit-dwarf" ]
-  }
-  symbols_ldflags = []
-}
-
 config("symbols") {
-  cflags = symbols_cflags
-  ldflags = symbols_ldflags
+  if (is_win) {
+    import("//build/toolchain/goma.gni")
+    if (use_goma) {
+      cflags = [ "/Z7" ]  # No PDB file
+    } else {
+      cflags = [ "/Zi" ]  # Produce PDB file, no edit and continue.
+    }
+    if (is_win_fastlink) {
+      # Tell VS 2015+ to create a PDB that references debug
+      # information in .obj and .lib files instead of copying
+      # it all. This flag is incompatible with /PROFILE
+      ldflags = [ "/DEBUG:FASTLINK" ]
+    } else {
+      ldflags = [ "/DEBUG" ]
+    }
+  } else {
+    cflags = [ "-g2" ]
+    if (use_debug_fission) {
+      cflags += [ "-gsplit-dwarf" ]
+    }
+    ldflags = []
+  }
 }
 
 # Minimal symbols.
-if (is_win) {
-  # Linker symbols for backtraces only.
-  minimal_symbols_cflags = []
-  if (is_win_fastlink) {
-    # Tell VS 2015+ to create a PDB that references debug
-    # information in .obj and .lib files instead of copying
-    # it all. This flag is incompatible with /PROFILE
-    minimal_symbols_ldflags = [ "/DEBUG:FASTLINK" ]
-  } else {
-    minimal_symbols_ldflags = [ "/DEBUG" ]
-  }
-} else {
-  minimal_symbols_cflags = [ "-g1" ]
-  if (use_debug_fission) {
-    minimal_symbols_cflags += [ "-gsplit-dwarf" ]
-  }
-  minimal_symbols_ldflags = []
-}
-
 config("minimal_symbols") {
-  cflags = minimal_symbols_cflags
-  ldflags = minimal_symbols_ldflags
+  if (is_win) {
+    # Linker symbols for backtraces only.
+    cflags = []
+    if (is_win_fastlink) {
+      # Tell VS 2015+ to create a PDB that references debug
+      # information in .obj and .lib files instead of copying
+      # it all. This flag is incompatible with /PROFILE
+      ldflags = [ "/DEBUG:FASTLINK" ]
+    } else {
+      ldflags = [ "/DEBUG" ]
+    }
+  } else {
+    cflags = [ "-g1" ]
+    if (use_debug_fission) {
+      cflags += [ "-gsplit-dwarf" ]
+    }
+    ldflags = []
+  }
 }
 
 # No symbols.
-if (is_win) {
-  no_symbols_cflags = []
-} else {
-  no_symbols_cflags = [ "-g0" ]
-}
-
 config("no_symbols") {
-  cflags = no_symbols_cflags
+  if (!is_win) {
+    cflags = [ "-g0" ]
+  }
 }
 
 # Default symbols.
 config("default_symbols") {
   if (symbol_level == 0) {
-    cflags = no_symbols_cflags
+    configs = [ ":no_symbols" ]
   } else if (symbol_level == 1) {
-    cflags = minimal_symbols_cflags
-    ldflags = minimal_symbols_ldflags
+    configs = [ ":minimal_symbols" ]
   } else if (symbol_level == 2) {
-    cflags = symbols_cflags
-    ldflags = symbols_ldflags
+    configs = [ ":symbols" ]
   } else {
     assert(false)
   }
