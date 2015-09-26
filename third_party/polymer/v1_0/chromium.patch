@@ -1,7 +1,7 @@
-diff --git a/components/font-roboto/roboto.html b/components/font-roboto/roboto.html
+diff --git a/components-chromium/font-roboto/roboto.html b/components-chromium/font-roboto/roboto.html
 index 7a24999..4eefcba 100644
---- a/components/font-roboto/roboto.html
-+++ b/components/font-roboto/roboto.html
+--- a/components-chromium/font-roboto/roboto.html
++++ b/components-chromium/font-roboto/roboto.html
 @@ -7,5 +7,4 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
  Code distributed by Google as part of the polymer project is also
  subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
@@ -9,3 +9,36 @@ index 7a24999..4eefcba 100644
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,300,300italic,400italic,500,500italic,700,700italic">
 -<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,700">
 +<link rel="stylesheet" href="chrome://resources/css/roboto.css">
+diff --git a/components-chromium/paper-button/paper-button.html b/components-chromium/paper-button/paper-button.html
+index 3463659..f3ec42f 100644
+--- a/components-chromium/paper-button/paper-button.html
++++ b/components-chromium/paper-button/paper-button.html
+@@ -100,12 +100,12 @@ Custom property | Description | Default
+         @apply(--paper-button);
+       }
+ 
+-      :host([raised]) .keyboard-focus {
++      :host([raised]) #content-wrapper.keyboard-focus {
+         font-weight: bold;
+         @apply(--paper-button-raised-keyboard-focus);
+       }
+ 
+-      :host(:not([raised])) .keyboard-focus {
++      :host(:not([raised])) #content-wrapper.keyboard-focus {
+         font-weight: bold;
+         @apply(--paper-button-flat-keyboard-focus);
+       }
+@@ -139,9 +139,11 @@ Custom property | Description | Default
+ 
+     <paper-ripple></paper-ripple>
+ 
+-    <paper-material class$="[[_computeContentClass(receivedFocusFromKeyboard)]]" elevation="[[_elevation]]" animated=""></paper-material>
++    <paper-material  elevation="[[_elevation]]" animated></paper-material>
+ 
+-    <content></content>
++    <div id="content-wrapper" class$="[[_computeContentClass(receivedFocusFromKeyboard)]]">
++      <content></content>
++    </div>
+ 
+   </template>
+ </dom-module>

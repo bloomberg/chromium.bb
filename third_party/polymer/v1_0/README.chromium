@@ -38,6 +38,10 @@ HTML elements to external JS files. This version of the Polymer is used in a web
 UI, where CSP forbids an execution of inline scripts. The extraction was made
 using Crisper (https://github.com/PolymerLabs/crisper).
 - Replaced CRLF line endings with LF line endings in text files.
+- Apply chromium.patch with local modifications. The patch is applied to
+components-chromium (i.e. after extracting the inline scripts) so that the
+results of 'git diff' (after any new local changes are applied) can be appended
+to chromium.patch.
 
 To restore the contents of the 'components' and 'components-chromium'
 directories from scratch, run ./reproduce.sh (requires bower and crisper).
