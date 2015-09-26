@@ -862,7 +862,7 @@
 ### **Variables**
 
 ```
-  args, data, data_deps, depfile, deps, outputs*, script*,
+  args, console, data, data_deps, depfile, deps, outputs*, script*,
   inputs, sources
   * = required
 
@@ -949,7 +949,7 @@
 ### **Variables**
 
 ```
-  args, data, data_deps, depfile, deps, outputs*, script*,
+  args, console, data, data_deps, depfile, deps, outputs*, script*,
   inputs, sources*
   * = required
 
@@ -2865,7 +2865,7 @@
 
 ```
 
-### **Example**:
+### **Example**
 
 ```
   if (current_toolchain == "//build:64_bit_toolchain") {
@@ -2980,7 +2980,7 @@
 
 ```
 
-### **Example**:
+### **Example**
 
 ```
   action("myscript") {
@@ -3042,7 +3042,7 @@
 
 ```
 
-### **Example**:
+### **Example**
 
 ```
   action("myscript") {
@@ -3115,7 +3115,7 @@
 
 ```
 
-### **Example**:
+### **Example**
 
 ```
   action("myscript") {
@@ -3559,6 +3559,31 @@
 
 
 ```
+## **console**: Run this action in the console pool.
+
+```
+  Boolean. Defaults to false.
+
+  Actions marked "console = true" will be run in the built-in ninja
+  "console" pool. They will have access to real stdin and stdout, and
+  output will not be buffered by ninja. This can be useful for
+  long-running actions with progress logs, or actions that require user 
+  input.
+
+  Only one console pool target can run at any one time in Ninja. Refer
+  to the Ninja documentation on the console pool for more info.
+
+```
+
+### **Example**
+
+```
+  action("long_action_with_progress_logs") {
+    console = true
+  }
+
+
+```
 ## **data**: Runtime data file dependencies.
 
 ```
@@ -3604,7 +3629,8 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   executable("foo") {
     deps = [ "//base" ]
@@ -3642,7 +3668,8 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   defines = [ "AWESOME_FEATURE", "LOG_LEVEL=3" ]
 
@@ -3665,7 +3692,8 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   action_foreach("myscript_target") {
     script = "myscript.py"
@@ -3778,7 +3806,8 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   include_dirs = [ "src/include", "//third_party/foo" ]
 
@@ -3803,10 +3832,10 @@
   uses via imports (the main script itself will be an implcit dependency
   of the action so need not be listed).
 
-  For action targets, inputs should be the entire set of inputs the
-  script needs. For action_foreach targets, inputs should be the set of
-  dependencies that don't change. These will be applied to each script
-  invocation over the sources.
+  For action targets, inputs and sources are treated the same, but from
+  a style perspective, it's recommended to follow the same rule as
+  action_foreach and put helper files in the inputs, and the data used
+  by the script (if any) in sources.
 
   Note that another way to declare input dependencies from an action
   is to have the action write a depfile (see "gn help depfile"). This
@@ -3817,6 +3846,26 @@
 
 ```
 
+### **Script input gotchas**
+
+```
+  It may be tempting to write a script that enumerates all files in a
+  directory as inputs. Don't do this! Even if you specify all the files
+  in the inputs or sources in the GN target (or worse, enumerate the
+  files in an exec_script call when running GN, which will be slow), the
+  dependencies will be broken.
+
+  The problem happens if a file is ever removed because the inputs are
+  not listed on the command line to the script. Because the script
+  hasn't changed and all inputs are up-to-date, the script will not
+  re-run and you will get a stale build. Instead, either list all
+  inputs on the command line to the script, or if there are many, create
+  a separate list file that the script reads. As long as this file is
+  listed in the inputs, the build will detect when it has changed in any
+  way and the action will re-run.
+
+```
+
 ### **Inputs for binary targets**
 
 ```
@@ -3824,6 +3873,14 @@
   Normally, all actions that a target depends on will be run before any
   files in a target are compiled. So if you depend on generated headers,
   you do not typically need to list them in the inputs section.
+
+  Inputs for binary targets will be treated as order-only dependencies,
+  meaning that they will be forced up-to-date before compiling or
+  any files in the target, but changes in the inputs will not
+  necessarily force the target to compile. This is because it is
+  expected that the compiler will report the precise list of input
+  dependencies required to recompile each file once the initial build
+  is done.
 
 ```
 
@@ -3908,7 +3965,8 @@
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   lib_dirs = [ "/usr/lib/foo", "lib/doom_melon" ]
 
@@ -3961,7 +4019,8 @@
 
 ```
 
-### **Examples**:
+### **Examples**
+
 ```
   On Windows:
     libs = [ "ctl3d.lib" ]
@@ -3978,6 +4037,35 @@
   override the name (for example to use "libfreetype.so.6" instead
   of libfreetype.so on Linux).
 
+  This value should not include a leading dot. If undefined or empty,
+  the default_output_extension specified on the tool will be used.
+  The output_extension will be used in the "{{output_extension}}"
+  expansion which the linker tool will generally use to specify the
+  output file name. See "gn help tool".
+
+```
+
+### **Example**
+
+```
+  shared_library("freetype") {
+    if (is_linux) {
+      # Call the output "libfreetype.so.6"
+      output_extension = "so.6"
+    }
+    ...
+  }
+
+  # On Windows, generate a "mysettings.cpl" control panel applet.
+  # Control panel applets are actually special shared libraries.
+  if (is_win) {
+    shared_library("mysettings") {
+      output_extension = "cpl"
+      ...
+    }
+  }
+
+
 ```
 ## **output_name**: Define a name for the output file other than the default.
 
@@ -3991,13 +4079,17 @@
 
   The output name should have no extension or prefixes, these will be
   added using the default system rules. For example, on Linux an output
-  name of "foo" will produce a shared library "libfoo.so".
+  name of "foo" will produce a shared library "libfoo.so". There
+  is no way to override the output prefix of a linker tool on a per-
+  target basis. If you need more flexibility, create a copy target
+  to produce the file you want.
 
   This variable is valid for all binary output target types.
 
 ```
 
-### **Example**:
+### **Example**
+
 ```
   static_library("doom_melon") {
     output_name = "fluffy_bunny"
@@ -4009,13 +4101,26 @@
 
 ```
   Outputs is valid for "copy", "action", and "action_foreach"
-  target types and indicates the resulting files. The values may contain
-  source expansions to generate the output names from the sources (see
-  "gn help source_expansion").
+  target types and indicates the resulting files. Outputs must always
+  refer to files in the build directory.
 
-  For copy targets, the outputs is the destination for the copied
-  file(s). For actions, the outputs should be the list of files
-  generated by the script.
+  copy
+    Copy targets should have exactly one entry in the outputs list. If
+    there is exactly one source, this can be a literal file name or a
+    source expansion. If there is more than one source, this must
+    contain a source expansion to map a single input name to a single
+    output name. See "gn help copy".
+
+  action_foreach
+    Action_foreach targets must always use source expansions to map
+    input files to output files. There can be more than one output,
+    which means that each invocation of the script will produce a set of
+    files (presumably based on the name of the input file). See
+    "gn help action_foreach".
+
+  action
+    Action targets (excluding action_foreach) must list literal output
+    file(s) with no source expansions. See "gn help action".
 
 
 ```
@@ -4117,7 +4222,8 @@
 
 ```
 
-### **Examples**:
+### **Examples**
+
 ```
   These exact files are public:
     public = [ "foo.h", "bar.h" ]
@@ -4234,7 +4340,42 @@
 ## **sources**: Source files for a target
 
 ```
-  A list of files relative to the current buildfile.
+  A list of files. Non-absolute paths will be resolved relative to the
+  current build file.
+
+```
+
+### **Sources for binary targets**
+
+```
+  For binary targets (source sets, executables, and libraries), the
+  known file types will be compiled with the associated tools. Unknown
+  file types and headers will be skipped. However, you should still
+  list all C/C+ header files so GN knows about the existance of those
+  files for the purposes of include checking.
+
+  As a special case, a file ending in ".def" will be treated as a
+  Windows module definition file. It will be appended to the link
+  line with a preceeding "/DEF:" string. There must be at most one
+  .def file in a target and they do not cross dependency boundaries
+  (so specifying a .def file in a static library or source set will have
+  no effect on the executable or shared library they're linked into).
+
+```
+
+### **Sources for non-binary targets**
+
+```
+  action_foreach
+    The sources are the set of files that the script will be executed
+    over. The script will run once per file.
+
+  action
+    The sources will be treated the same as inputs. See "gn help inputs"
+    for more information and usage advice.
+
+  copy
+    The source are the source files to copy.
 
 
 ```
