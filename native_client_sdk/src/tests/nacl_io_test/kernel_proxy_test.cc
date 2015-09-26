@@ -34,6 +34,7 @@ using namespace sdk_util;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
@@ -1093,8 +1094,9 @@ TEST_F(KernelProxyErrorTest, WriteError) {
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Wrote 0 bytes.
                       Return(1234)));       // Returned error 1234.
 
-  EXPECT_CALL(*mock_node, IsaDir()).Times(1);
-  EXPECT_CALL(*mock_node, Destroy()).Times(1);
+  EXPECT_CALL(*mock_node, IsaDir()).Times(AnyNumber());
+  EXPECT_CALL(*mock_node, GetType()).Times(AnyNumber());
+  EXPECT_CALL(*mock_node, Destroy()).Times(AnyNumber());
 
   int fd = ki_open("/dummy", O_WRONLY, 0);
   EXPECT_NE(0, fd);
@@ -1116,7 +1118,8 @@ TEST_F(KernelProxyErrorTest, ReadError) {
       .WillOnce(DoAll(SetArgPointee<3>(0),  // Read 0 bytes.
                       Return(1234)));       // Returned error 1234.
 
-  EXPECT_CALL(*mock_node, Destroy()).Times(1);
+  EXPECT_CALL(*mock_node, Destroy()).Times(AnyNumber());
+  EXPECT_CALL(*mock_node, GetType()).Times(AnyNumber());
 
   int fd = ki_open("/dummy", O_RDONLY, 0);
   EXPECT_NE(0, fd);
