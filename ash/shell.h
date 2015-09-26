@@ -42,6 +42,10 @@ class FocusClient;
 }
 }
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace gfx {
 class ImageSkia;
 class Point;
@@ -442,6 +446,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return shelf_item_delegate_manager_.get();
   }
 
+  base::SequencedWorkerPool* blocking_pool() {
+    return blocking_pool_;
+  }
+
   // Force the shelf to query for it's current visibility state.
   void UpdateShelfVisibility();
 
@@ -591,7 +599,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   typedef std::pair<aura::Window*, gfx::Rect> WindowAndBoundsPair;
 
   // Takes ownership of |delegate|.
-  explicit Shell(ShellDelegate* delegate);
+  Shell(ShellDelegate* delegate, base::SequencedWorkerPool* blocking_pool);
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
@@ -761,6 +769,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Injected content::GPUDataManager support.
   scoped_ptr<GPUSupport> gpu_support_;
+
+  base::SequencedWorkerPool* blocking_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };

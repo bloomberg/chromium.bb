@@ -21,9 +21,8 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
-#include "base/threading/worker_pool.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "components/wallpaper/wallpaper_resizer.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -32,7 +31,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/widget/widget.h"
 
-using content::BrowserThread;
 using wallpaper::WallpaperResizer;
 using wallpaper::WallpaperLayout;
 using wallpaper::WALLPAPER_LAYOUT_CENTER;
@@ -49,10 +47,12 @@ const int kWallpaperReloadDelayMs = 100;
 
 }  // namespace
 
-DesktopBackgroundController::DesktopBackgroundController()
+DesktopBackgroundController::DesktopBackgroundController(
+    base::SequencedWorkerPool* blocking_pool)
     : locked_(false),
       desktop_background_mode_(BACKGROUND_NONE),
-      wallpaper_reload_delay_(kWallpaperReloadDelayMs) {
+      wallpaper_reload_delay_(kWallpaperReloadDelayMs),
+      blocking_pool_(blocking_pool) {
   Shell::GetInstance()->window_tree_host_manager()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
@@ -94,9 +94,8 @@ bool DesktopBackgroundController::SetWallpaperImage(const gfx::ImageSkia& image,
     return false;
   }
 
-  current_wallpaper_.reset(
-      new WallpaperResizer(image, GetMaxDisplaySizeInNative(), layout,
-                           BrowserThread::GetBlockingPool()));
+  current_wallpaper_.reset(new WallpaperResizer(
+      image, GetMaxDisplaySizeInNative(), layout, blocking_pool_));
   current_wallpaper_->StartResize();
 
   FOR_EACH_OBSERVER(DesktopBackgroundControllerObserver,

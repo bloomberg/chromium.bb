@@ -9,10 +9,11 @@
 namespace ash {
 
 ShellInitParams::ShellInitParams()
-    : delegate(NULL),
-      context_factory(NULL)
+    : delegate(nullptr),
+      context_factory(nullptr),
+      blocking_pool(nullptr)
 #if defined(OS_WIN)
-      , remote_hwnd(NULL)
+      , remote_hwnd(nullptr)
 #endif
       {}
 

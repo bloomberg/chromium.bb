@@ -16,6 +16,10 @@
 #include "ui/gfx/display.h"
 #include "ui/gfx/display_observer.h"
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace ui {
 struct GammaRampRGBEntry;
 }  // namespace ui
@@ -28,7 +32,8 @@ class ASH_EXPORT DisplayColorManager
     : public ui::DisplayConfigurator::Observer,
       public base::SupportsWeakPtr<DisplayColorManager> {
  public:
-  explicit DisplayColorManager(ui::DisplayConfigurator* configurator);
+  DisplayColorManager(ui::DisplayConfigurator* configurator,
+                      base::SequencedWorkerPool* blocking_pool);
   ~DisplayColorManager() override;
 
   // ui::DisplayConfigurator::Observer
@@ -56,6 +61,7 @@ class ASH_EXPORT DisplayColorManager
 
   ui::DisplayConfigurator* configurator_;
   std::map<int64_t, ColorCalibrationData*> calibration_map_;
+  base::SequencedWorkerPool* blocking_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayColorManager);
 };

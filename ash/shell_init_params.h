@@ -13,6 +13,10 @@
 
 #include "ash/ash_export.h"
 
+namespace base {
+class SequencedWorkerPool;
+}
+
 namespace ui {
 class ContextFactory;
 }
@@ -28,6 +32,7 @@ struct ASH_EXPORT ShellInitParams {
   ShellDelegate* delegate;
 
   ui::ContextFactory* context_factory;
+  base::SequencedWorkerPool* blocking_pool;
 
 #if defined(OS_WIN)
   HWND remote_hwnd;

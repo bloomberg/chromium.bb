@@ -56,6 +56,7 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   // Shell takes ownership of ChromeShellDelegate.
   shell_init_params.delegate = new ChromeShellDelegate;
   shell_init_params.context_factory = content::GetContextFactory();
+  shell_init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 #if defined(OS_WIN)
   shell_init_params.remote_hwnd = remote_window;
 #endif

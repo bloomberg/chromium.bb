@@ -17,6 +17,7 @@
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
 #include "base/run_loop.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -94,6 +95,7 @@ void AshTestHelper::SetUp(bool start_session) {
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
+  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
   aura::test::EnvTestHelper(aura::Env::GetInstance()).SetInputStateLookup(
       scoped_ptr<aura::InputStateLookup>());

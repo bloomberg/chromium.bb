@@ -16,9 +16,9 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -66,6 +66,40 @@ void RunAnimationForWidget(views::Widget* widget) {
     base::TimeTicks step_time = controller.animator()->last_step_time();
     layer->GetAnimator()->Step(step_time +
                                base::TimeDelta::FromMilliseconds(1000));
+  }
+}
+
+// Monitors if any task is processed by the message loop.
+class TaskObserver : public base::MessageLoop::TaskObserver {
+ public:
+  TaskObserver() : processed_(false) {}
+  ~TaskObserver() override {}
+
+  // MessageLoop::TaskObserver overrides.
+  void WillProcessTask(const base::PendingTask& pending_task) override {}
+  void DidProcessTask(const base::PendingTask& pending_task) override {
+    processed_ = true;
+  }
+
+  // Returns true if any task was processed.
+  bool processed() const { return processed_; }
+
+ private:
+  bool processed_;
+  DISALLOW_COPY_AND_ASSIGN(TaskObserver);
+};
+
+void RunAllBlockingPoolTasksUntilIdle(base::SequencedWorkerPool* pool) {
+  while (true) {
+    pool->FlushForTesting();
+
+    TaskObserver task_observer;
+    base::MessageLoop::current()->AddTaskObserver(&task_observer);
+    base::RunLoop().RunUntilIdle();
+    base::MessageLoop::current()->RemoveTaskObserver(&task_observer);
+
+    if (!task_observer.processed())
+      break;
   }
 }
 
@@ -336,7 +370,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   // that the resized image is the expected size.
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
-  content::RunAllBlockingPoolTasksUntilIdle();
+  RunAllBlockingPoolTasksUntilIdle(Shell::GetInstance()->blocking_pool());
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
   EXPECT_FALSE(image.BackedBySameObjectAs(resized_image));
   EXPECT_EQ(gfx::Size(320, 200).ToString(), resized_image.size().ToString());
@@ -345,7 +379,7 @@ TEST_F(DesktopBackgroundControllerTest, ResizeCustomWallpaper) {
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
-  content::RunAllBlockingPoolTasksUntilIdle();
+  RunAllBlockingPoolTasksUntilIdle(Shell::GetInstance()->blocking_pool());
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 

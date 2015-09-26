@@ -12,6 +12,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/message_center/message_center.h"
@@ -52,6 +53,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   ash::ShellInitParams init_params;
   init_params.delegate = shell_delegate;
   init_params.context_factory = context_factory;
+  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
   ash::test::AshTestHelper::GetTestSessionStateDelegate()->
       SetActiveUserSessionStarted(true);
