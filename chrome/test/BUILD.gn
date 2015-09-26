@@ -601,7 +601,9 @@ if (!is_android) {
 
   group("telemetry_gpu_test") {
     data_deps = [
-      "//chrome",
+      # TODO(kbr): this used to be "//chrome". Had to change this to
+      # chrome_initial temporarily to work around crbug.com/536192.
+      "//chrome:chrome_initial",
       "//tools/telemetry:bitmaptools",
     ]
 
