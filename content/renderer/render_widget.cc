@@ -1320,13 +1320,6 @@ void RenderWidget::OnSetFocus(bool enable) {
     webwidget_->setFocus(enable);
 }
 
-void RenderWidget::ClearFocus() {
-  // We may have got the focus from the browser before this gets processed, in
-  // which case we do not want to unfocus ourself.
-  if (!has_focus_ && webwidget_)
-    webwidget_->setFocus(false);
-}
-
 void RenderWidget::FlushPendingInputEventAck() {
   if (pending_input_event_ack_) {
     TRACE_EVENT_ASYNC_END0("input", "RenderWidget::ThrottledInputEventAck",

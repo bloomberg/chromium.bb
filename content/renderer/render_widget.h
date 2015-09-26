@@ -531,10 +531,6 @@ class CONTENT_EXPORT RenderWidget
   // composition text.
   virtual bool CanComposeInline();
 
-  // Tells the renderer it does not have focus. Used to prevent us from getting
-  // the focus on our own when the browser did not focus us.
-  void ClearFocus();
-
   // Set the pending window rect.
   // Because the real render_widget is hosted in another process, there is
   // a time period where we may have set a new window rect which has not yet
