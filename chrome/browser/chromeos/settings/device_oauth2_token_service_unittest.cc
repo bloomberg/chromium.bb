@@ -145,7 +145,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
         new base::StringValue(refresh_token));
   }
 
-  std::string GetValidTokenInfoResponse(const std::string email) {
+  std::string GetValidTokenInfoResponse(const std::string& email) {
     return "{ \"email\": \"" + email + "\","
            "  \"user_id\": \"1234567890\" }";
   }

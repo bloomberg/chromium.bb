@@ -107,7 +107,7 @@ Status AutomationExtension::UpdateWindow(
                                       &result);
 }
 
-Status AutomationExtension::LaunchApp(std::string id) {
+Status AutomationExtension::LaunchApp(const std::string& id) {
   base::ListValue args;
   args.AppendString(id);
   scoped_ptr<base::Value> result;

@@ -162,9 +162,9 @@ void NewTabPageSyncHandler::OnSigninAllowedPrefChange() {
   BuildAndSendSyncStatus();
 }
 
-void NewTabPageSyncHandler::SendSyncMessageToPage(
-    MessageType type, std::string msg,
-    std::string linktext) {
+void NewTabPageSyncHandler::SendSyncMessageToPage(MessageType type,
+                                                  const std::string& msg,
+                                                  const std::string& linktext) {
   base::DictionaryValue value;
   std::string user;
   std::string title;

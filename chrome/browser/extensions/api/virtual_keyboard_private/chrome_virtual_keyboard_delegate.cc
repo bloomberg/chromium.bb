@@ -34,7 +34,7 @@ aura::Window* GetKeyboardContainer() {
   return controller ? controller->GetContainerWindow() : nullptr;
 }
 
-std::string GenerateFeatureFlag(std::string feature, bool enabled) {
+std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {
   return feature + (enabled ? "-enabled" : "-disabled");
 }
 

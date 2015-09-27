@@ -86,7 +86,8 @@ void AddEntry(const ArticleEntry& e, FakeDB<ArticleEntry>::EntryMap* map) {
   (*map)[e.entry_id()] = e;
 }
 
-ArticleEntry CreateEntry(std::string entry_id, std::string page_url) {
+ArticleEntry CreateEntry(const std::string& entry_id,
+                         const std::string& page_url) {
   ArticleEntry entry;
   entry.set_entry_id(entry_id);
   if (!page_url.empty()) {

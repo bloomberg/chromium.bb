@@ -329,7 +329,7 @@ void MediaGalleriesScanResultController::OnPreferenceUpdate(
 }
 
 void MediaGalleriesScanResultController::OnRemovableDeviceUpdate(
-    const std::string device_id) {
+    const std::string& device_id) {
   for (ScanResults::const_iterator it = scan_results_.begin();
        it != scan_results_.end();
        ++it) {

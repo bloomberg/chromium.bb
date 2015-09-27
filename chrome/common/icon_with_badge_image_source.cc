@@ -11,11 +11,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
-IconWithBadgeImageSource::Badge::Badge(std::string text,
+IconWithBadgeImageSource::Badge::Badge(const std::string& text,
                                        SkColor text_color,
                                        SkColor background_color)
-    : text(text), text_color(text_color), background_color(background_color) {
-}
+    : text(text), text_color(text_color), background_color(background_color) {}
 
 IconWithBadgeImageSource::Badge::~Badge() {}
 

@@ -228,7 +228,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
         std::string(), path, INSTALL_UI_TYPE_CANCEL, 0);
   }
 
-  void ReloadExtension(const std::string extension_id);
+  void ReloadExtension(const std::string& extension_id);
 
   void UnloadExtension(const std::string& extension_id);
 

@@ -161,8 +161,7 @@ void SystemIndicatorManager::OnExtensionActionUpdated(
 }
 
 bool SystemIndicatorManager::SendClickEventToExtensionForTest(
-    const std::string extension_id) {
-
+    const std::string& extension_id) {
     extensions::SystemIndicatorManager::SystemIndicatorMap::iterator it =
         system_indicators_.find(extension_id);
 

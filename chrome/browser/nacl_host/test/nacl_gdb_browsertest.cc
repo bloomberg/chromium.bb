@@ -34,7 +34,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
     command_line->AppendSwitchPath(switches::kNaClGdbScript, script_);
   }
 
-  void RunWithNaClGdb(std::string test_name) {
+  void RunWithNaClGdb(const std::string& test_name) {
     base::FilePath mock_nacl_gdb_file;
     scoped_ptr<base::Environment> env(base::Environment::Create());
     std::string content;

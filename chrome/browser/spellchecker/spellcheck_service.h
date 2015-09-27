@@ -111,7 +111,7 @@ class SpellcheckService : public KeyedService,
 
   // Unload a dictionary. The path is given to identify the dictionary.
   // Return value is true if successful.
-  bool UnloadExternalDictionary(std::string path);
+  bool UnloadExternalDictionary(const std::string& /* path */);
 
   // NotificationProfile implementation.
   void Observe(int type,

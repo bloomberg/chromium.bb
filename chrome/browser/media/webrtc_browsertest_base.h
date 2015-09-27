@@ -141,7 +141,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   std::string CreateLocalOffer(content::WebContents* from_tab) const;
   std::string CreateAnswer(std::string local_offer,
                            content::WebContents* to_tab) const;
-  void ReceiveAnswer(std::string answer, content::WebContents* from_tab) const;
+  void ReceiveAnswer(const std::string& answer,
+                     content::WebContents* from_tab) const;
   void GatherAndSendIceCandidates(content::WebContents* from_tab,
                                   content::WebContents* to_tab) const;
 

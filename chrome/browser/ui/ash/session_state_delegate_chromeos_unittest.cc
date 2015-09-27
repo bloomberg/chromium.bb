@@ -81,7 +81,7 @@ class SessionStateDelegateChromeOSTest : public testing::Test {
   }
 
   // Add and log in a user to the session.
-  void UserAddedToSession(std::string user) {
+  void UserAddedToSession(const std::string& user) {
     user_manager()->AddUser(user);
     user_manager()->LoginUser(user);
   }

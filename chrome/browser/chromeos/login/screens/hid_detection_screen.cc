@@ -360,10 +360,11 @@ void HIDDetectionScreen::SendKeyboardDeviceNotification() {
             !(pointing_device_id_.empty() && keyboard_device_id_.empty()));
 }
 
-void HIDDetectionScreen::SetKeyboardDeviceName_(std::string name) {
-  if (!(keyboard_device_id_.empty()) && name.empty())
-    name = l10n_util::GetStringUTF8(IDS_HID_DETECTION_DEFAULT_KEYBOARD_NAME);
-  keyboard_device_name_ = name;
+void HIDDetectionScreen::SetKeyboardDeviceName_(const std::string& name) {
+  keyboard_device_name_ =
+      keyboard_device_id_.empty() || !name.empty()
+          ? name
+          : l10n_util::GetStringUTF8(IDS_HID_DETECTION_DEFAULT_KEYBOARD_NAME);
 }
 
 void HIDDetectionScreen::DeviceAdded(

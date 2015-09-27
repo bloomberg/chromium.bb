@@ -80,7 +80,7 @@ std::string ColorProfileToString(ui::ColorCalibrationProfile profile) {
   return "";
 }
 
-ui::ColorCalibrationProfile StringToColorProfile(std::string value) {
+ui::ColorCalibrationProfile StringToColorProfile(const std::string& value) {
   if (value == "standard")
     return ui::COLOR_PROFILE_STANDARD;
   else if (value == "dynamic")

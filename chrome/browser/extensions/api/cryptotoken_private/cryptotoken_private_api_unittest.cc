@@ -45,7 +45,8 @@ class CryptoTokenPrivateApiTest : public extensions::ExtensionApiUnittest {
     return true;
   }
 
-  bool GetCanOriginAssertAppIdResult(std::string origin, std::string appId) {
+  bool GetCanOriginAssertAppIdResult(const std::string& origin,
+                                     const std::string& appId) {
     scoped_refptr<api::CryptotokenPrivateCanOriginAssertAppIdFunction> function(
         new api::CryptotokenPrivateCanOriginAssertAppIdFunction());
     function->set_has_callback(true);

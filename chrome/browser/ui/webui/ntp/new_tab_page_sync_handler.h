@@ -50,7 +50,8 @@ class NewTabPageSyncHandler : public content::WebUIMessageHandler,
   };
   // Helper to invoke the |syncMessageChanged| JS function on the new tab page.
   virtual void SendSyncMessageToPage(MessageType type,
-                                     std::string msg, std::string linktext);
+                                     const std::string& msg,
+                                     const std::string& linktext);
 
   // Helper to query the sync service and figure out what to send to
   // the page, and send it via SendSyncMessageToPage.

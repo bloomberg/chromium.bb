@@ -569,7 +569,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   return service->GetExtensionById(last_loaded_extension_id(), false);
 }
 
-void ExtensionBrowserTest::ReloadExtension(const std::string extension_id) {
+void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
   observer_->Watch(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                    content::NotificationService::AllSources());
 

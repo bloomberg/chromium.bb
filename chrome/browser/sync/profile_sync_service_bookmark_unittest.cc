@@ -379,7 +379,8 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   // change the sync model directly after ModelAssociation.  This function can
   // be invoked prior to model association to set up first-time sync model
   // association scenarios.
-  int64 AddFolderToShare(syncer::WriteTransaction* trans, std::string title) {
+  int64 AddFolderToShare(syncer::WriteTransaction* trans,
+                         const std::string& title) {
     EXPECT_FALSE(model_associator_);
 
     // Be sure to call CreatePermanentBookmarkNodes(), otherwise this will fail.

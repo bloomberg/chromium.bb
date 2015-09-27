@@ -871,7 +871,7 @@ InputMethodManagerImpl::~InputMethodManagerImpl() {
 }
 
 void InputMethodManagerImpl::RecordInputMethodUsage(
-    std::string input_method_id) {
+    const std::string& input_method_id) {
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Category",
                             GetInputMethodCategory(input_method_id),
                             INPUT_METHOD_CATEGORY_MAX);

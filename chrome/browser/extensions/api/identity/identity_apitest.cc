@@ -396,7 +396,7 @@ class MockQueuedMintRequest : public IdentityMintRequestQueue::Request {
   MOCK_METHOD1(StartMintToken, void(IdentityMintRequestQueue::MintType));
 };
 
-gaia::AccountIds CreateIds(std::string email, std::string obfid) {
+gaia::AccountIds CreateIds(const std::string& email, const std::string& obfid) {
   gaia::AccountIds ids;
   ids.account_key = email;
   ids.email = email;
@@ -670,11 +670,11 @@ class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
     command_line->AppendSwitch(switches::kExtensionsMultiAccount);
   }
 
-  void IssueLoginRefreshTokenForAccount(const std::string account_key) {
+  void IssueLoginRefreshTokenForAccount(const std::string& account_key) {
     token_service_->UpdateCredentials(account_key, "refresh_token");
   }
 
-  void IssueLoginAccessTokenForAccount(const std::string account_key) {
+  void IssueLoginAccessTokenForAccount(const std::string& account_key) {
     token_service_->IssueAllTokensForAccount(
         account_key,
         "access_token-" + account_key,
@@ -738,10 +738,10 @@ class GetAuthTokenFunctionTest : public IdentityTestWithSignin {
     id_api()->SetCachedToken(key, token_data);
   }
 
-  const IdentityTokenCacheValue& GetCachedToken(std::string account_id) {
-    if (account_id.empty())
-      account_id = GetPrimaryAccountId();
-    ExtensionTokenKey key(extension_id_, account_id, oauth_scopes_);
+  const IdentityTokenCacheValue& GetCachedToken(const std::string& account_id) {
+    ExtensionTokenKey key(
+        extension_id_, account_id.empty() ? GetPrimaryAccountId() : account_id,
+        oauth_scopes_);
     return id_api()->GetCachedToken(key);
   }
 

@@ -24,8 +24,10 @@ typedef InProcessBrowserTest NewTabPageSyncHandlerBrowserTest;
 
 class MockNewTabPageSyncHandler : public NewTabPageSyncHandler {
  public:
-  MOCK_METHOD3(SendSyncMessageToPage, void(MessageType type, std::string msg,
-      std::string linktext));
+  MOCK_METHOD3(SendSyncMessageToPage,
+               void(MessageType type,
+                    const std::string& msg,
+                    const std::string& linktext));
 
   void SetWaitingForInitialPageLoad(bool waiting) {
     waiting_for_initial_page_load_ = waiting;

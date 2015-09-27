@@ -23,9 +23,10 @@ namespace {
 
 struct IsSearchProviderTestData {
   IsSearchProviderTestData() : tab(NULL) {}
-  IsSearchProviderTestData(content::WebContents* t, std::string h, GURL url)
-      : tab(t), host(h), test_url(url) {
-  }
+  IsSearchProviderTestData(content::WebContents* t,
+                           const std::string& h,
+                           GURL url)
+      : tab(t), host(h), test_url(url) {}
 
   content::WebContents* tab;
   std::string host;

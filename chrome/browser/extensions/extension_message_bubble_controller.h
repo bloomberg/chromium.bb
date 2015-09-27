@@ -87,7 +87,7 @@ class ExtensionMessageBubbleController {
     const ExtensionRegistry* registry() const { return registry_; }
 
     std::string get_acknowledged_flag_pref_name() const;
-    void set_acknowledged_flag_pref_name(std::string pref_name);
+    void set_acknowledged_flag_pref_name(const std::string& pref_name);
 
    private:
     // A weak pointer to the profile we are associated with. Not owned by us.

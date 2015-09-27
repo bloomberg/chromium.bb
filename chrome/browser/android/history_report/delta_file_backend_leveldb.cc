@@ -37,7 +37,9 @@ int64 GetLastSeqNo(leveldb::DB* db) {
   return seq_no;
 }
 
-void SaveChange(leveldb::DB* db, std::string url, std::string type) {
+void SaveChange(leveldb::DB* db,
+                const std::string& url,
+                const std::string& type) {
   int64 seq_no = GetLastSeqNo(db) + 1;
   history_report::DeltaFileEntry entry;
   entry.set_seq_no(seq_no);

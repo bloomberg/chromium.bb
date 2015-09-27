@@ -13,7 +13,7 @@ class ChromeLoggingTest : public testing::Test {
  public:
   // Stores the current value of the log file name environment
   // variable and sets the variable to new_value.
-  void SaveEnvironmentVariable(std::string new_value) {
+  void SaveEnvironmentVariable(const std::string& new_value) {
     scoped_ptr<base::Environment> env(base::Environment::Create());
     if (!env->GetVar(env_vars::kLogFileName, &environment_filename_))
       environment_filename_ = "";

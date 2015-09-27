@@ -339,7 +339,7 @@ class InputMethodPreferencesTest : public PreferencesTest {
   }
 
   // Translates engine IDs in a CSV string to input method IDs.
-  std::string ToInputMethodIds(std::string value) {
+  std::string ToInputMethodIds(const std::string& value) {
     std::vector<std::string> tokens = base::SplitString(
         value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     std::transform(tokens.begin(), tokens.end(), tokens.begin(),

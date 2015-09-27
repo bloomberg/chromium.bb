@@ -117,7 +117,8 @@ v8::Local<v8::String> GenerateThumbnailURL(
           "chrome-search://thumb/%d/%d", render_view_id, most_visited_item_id));
 }
 
-v8::Local<v8::String> GenerateThumb2URL(v8::Isolate* isolate, std::string url) {
+v8::Local<v8::String> GenerateThumb2URL(v8::Isolate* isolate,
+                                        const std::string& url) {
   return UTF8ToV8String(
       isolate, base::StringPrintf("chrome-search://thumb2/%s", url.c_str()));
 }

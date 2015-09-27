@@ -56,7 +56,7 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // An action id and its corresponding ActionType.
   struct ToolbarItem {
     ToolbarItem() : type(UNKNOWN_ACTION) {}
-    ToolbarItem(std::string action_id, ActionType action_type)
+    ToolbarItem(const std::string& action_id, ActionType action_type)
         : id(action_id), type(action_type) {}
 
     bool operator==(const ToolbarItem& other) { return other.id == id; }

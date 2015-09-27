@@ -174,8 +174,7 @@ class HIDDetectionScreen : public HIDDetectionModel,
   void SendKeyboardDeviceNotification();
 
   // Helper method. Sets device name or placeholder if the name is empty.
-  void SetKeyboardDeviceName_(std::string name);
-
+  void SetKeyboardDeviceName_(const std::string& name);
 
   HIDDetectionView* view_;
 

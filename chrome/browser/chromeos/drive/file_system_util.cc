@@ -80,7 +80,7 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
 }
 
 base::FilePath GetDriveMountPointPathForUserIdHash(
-    const std::string user_id_hash) {
+    const std::string& user_id_hash) {
   static const base::FilePath::CharType kSpecialMountPointRoot[] =
       FILE_PATH_LITERAL("/special");
   static const char kDriveMountPointNameBase[] = "drive";

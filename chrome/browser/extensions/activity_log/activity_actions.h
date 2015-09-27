@@ -67,7 +67,7 @@ class Action : public base::RefCountedThreadSafe<Action> {
 
   // The specific API call used or accessed, for example "chrome.tabs.get".
   const std::string& api_name() const { return api_name_; }
-  void set_api_name(const std::string api_name) { api_name_ = api_name; }
+  void set_api_name(const std::string& api_name) { api_name_ = api_name; }
 
   // Any applicable arguments.  This might be null to indicate no data
   // available (a distinct condition from an empty argument list).

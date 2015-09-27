@@ -97,7 +97,7 @@ class NotificationsApiTest : public ExtensionApiTest {
   }
 
  protected:
-  std::string GetNotificationIdFromDelegateId(std::string delegate_id) {
+  std::string GetNotificationIdFromDelegateId(const std::string& delegate_id) {
     return g_browser_process->notification_ui_manager()
         ->FindById(
               delegate_id,

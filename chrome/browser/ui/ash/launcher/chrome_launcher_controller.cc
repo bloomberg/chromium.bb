@@ -1282,7 +1282,8 @@ ChromeLauncherAppMenuItems ChromeLauncherController::GetApplicationList(
 }
 
 std::vector<content::WebContents*>
-ChromeLauncherController::GetV1ApplicationsFromAppId(std::string app_id) {
+ChromeLauncherController::GetV1ApplicationsFromAppId(
+    const std::string& app_id) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
 
   // If there is no such an item pinned to the launcher, no menu gets created.

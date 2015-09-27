@@ -333,7 +333,7 @@ std::string WebRtcTestBase::CreateAnswer(std::string local_offer,
   return answer;
 }
 
-void WebRtcTestBase::ReceiveAnswer(std::string answer,
+void WebRtcTestBase::ReceiveAnswer(const std::string& answer,
                                    content::WebContents* from_tab) const {
   ASSERT_EQ(
       "ok-accepted-answer",

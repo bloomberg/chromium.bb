@@ -81,7 +81,7 @@ class ModelLoader : public net::URLFetcherDelegate {
   };
 
   // For testing only.
-  ModelLoader(base::Closure update_renderers, const std::string model_name);
+  ModelLoader(base::Closure update_renderers, const std::string& model_name);
 
   // This is called periodically to check whether a new client model is
   // available for download.

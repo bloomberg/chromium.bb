@@ -352,7 +352,7 @@ class ChromeLauncherController
 
   // Get the list of all tabs which belong to a certain application type.
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
-      std::string app_id);
+      const std::string& app_id);
 
   // Activates a specified shell application.
   void ActivateShellApp(const std::string& app_id, int index);

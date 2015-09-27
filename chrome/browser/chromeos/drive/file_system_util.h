@@ -31,7 +31,8 @@ base::FilePath GetDriveMountPointPath(Profile* profile);
 
 // Returns the Drive mount point path, which looks like
 // "/special/drive-<username_hash>", when provided with the |user_id_hash|.
-base::FilePath GetDriveMountPointPathForUserIdHash(std::string user_id_hash);
+base::FilePath GetDriveMountPointPathForUserIdHash(
+    const std::string& user_id_hash);
 
 // Returns true if the given path is under the Drive mount point.
 bool IsUnderDriveMountPoint(const base::FilePath& path);

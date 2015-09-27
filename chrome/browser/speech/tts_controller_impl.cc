@@ -17,7 +17,7 @@ const int kInvalidCharIndex = -1;
 
 // Given a language/region code of the form 'fr-FR', returns just the basic
 // language portion, e.g. 'fr'.
-std::string TrimLanguageCode(std::string lang) {
+std::string TrimLanguageCode(const std::string& lang) {
   if (lang.size() >= 5 && lang[2] == '-')
     return lang.substr(0, 2);
   else

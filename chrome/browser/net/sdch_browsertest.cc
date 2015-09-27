@@ -131,9 +131,8 @@ void SafeBase64Encode(const std::string& input_value, std::string* output) {
 class SdchResponseHandler {
  public:
   // Do initial preparation so that SDCH requests can be handled.
-  explicit SdchResponseHandler(std::string domain)
-      : cache_sdch_response_(false),
-        weak_ptr_factory_(this) {
+  explicit SdchResponseHandler(const std::string& domain)
+      : cache_sdch_response_(false), weak_ptr_factory_(this) {
     // Dictionary
     sdch_dictionary_contents_ = "Domain: ";
     sdch_dictionary_contents_ += domain;

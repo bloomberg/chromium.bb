@@ -221,7 +221,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void ReconfigureIMFramework(StateImpl* state);
 
   // Record input method usage histograms.
-  void RecordInputMethodUsage(std::string input_method_id);
+  void RecordInputMethodUsage(const std::string& input_method_id);
 
   scoped_ptr<InputMethodDelegate> delegate_;
 

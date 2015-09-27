@@ -89,7 +89,8 @@ class PDFExtensionTest : public ExtensionApiTest,
 
   // Runs the extensions test at chrome/test/data/pdf/<filename> on the PDF file
   // at chrome/test/data/pdf/<pdf_filename>.
-  void RunTestsInFile(std::string filename, std::string pdf_filename) {
+  void RunTestsInFile(const std::string& filename,
+                      const std::string& pdf_filename) {
     extensions::ResultCatcher catcher;
 
     GURL url(embedded_test_server()->GetURL("/pdf/" + pdf_filename));

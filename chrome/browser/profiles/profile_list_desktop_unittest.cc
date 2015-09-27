@@ -73,7 +73,7 @@ class ProfileListDesktopTest : public testing::Test {
 
   TestingProfileManager* manager() { return &manager_; }
 
-  void AddOmittedProfile(std::string name) {
+  void AddOmittedProfile(const std::string& name) {
     ProfileInfoCache* cache = manager()->profile_info_cache();
     cache->AddProfileToCache(
         cache->GetUserDataDir().AppendASCII(name), ASCIIToUTF16(name),

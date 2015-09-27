@@ -83,7 +83,7 @@ class SystemTrayDelegateChromeOSTest : public LoginManagerTest {
 
   ~SystemTrayDelegateChromeOSTest() override {}
 
-  void SetupUserProfile(std::string user_name, bool use_24_hour_clock) {
+  void SetupUserProfile(const std::string& user_name, bool use_24_hour_clock) {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(user_name);
     Profile* profile = ProfileHelper::Get()->GetProfileByUser(user);

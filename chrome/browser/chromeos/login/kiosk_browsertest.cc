@@ -198,7 +198,7 @@ void LockAndUnlock(scoped_ptr<base::Lock> lock) {
   lock->Release();
 }
 
-bool IsAppInstalled(const std::string app_id) {
+bool IsAppInstalled(const std::string& app_id) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
   DCHECK(app_profile);
   const extensions::Extension* app =
@@ -1353,7 +1353,7 @@ class KioskUpdateTest : public KioskTest {
     EXPECT_EQ(version, cached_version);
   }
 
-  void SetupFakeDiskMountManagerMountPath(const std::string mount_path) {
+  void SetupFakeDiskMountManagerMountPath(const std::string& mount_path) {
     base::FilePath test_data_dir;
     PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     test_data_dir = test_data_dir.AppendASCII(mount_path);

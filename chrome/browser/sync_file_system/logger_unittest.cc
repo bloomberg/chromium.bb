@@ -18,7 +18,8 @@ void LogSampleEvents() {
   util::Log(logging::LOG_ERROR, FROM_HERE, "Error test message");
 }
 
-bool ContainsString(std::string contains_string, EventLogger::Event event) {
+bool ContainsString(const std::string& contains_string,
+                    EventLogger::Event event) {
   return event.what.find(contains_string) != std::string::npos;
 }
 

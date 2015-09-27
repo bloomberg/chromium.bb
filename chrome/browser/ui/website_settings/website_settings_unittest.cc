@@ -117,7 +117,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
 
-  void SetURL(std::string url) { url_ = GURL(url); }
+  void SetURL(const std::string& url) { url_ = GURL(url); }
 
   const GURL& url() const { return url_; }
   MockCertStore* cert_store() { return &cert_store_; }

@@ -142,7 +142,8 @@ class ReauthDialogDelegate : public UserManager::ReauthDialogObserver,
                              public UserManagerWebContentsDelegate,
                              public ConstrainedWindowMacDelegate {
  public:
-   ReauthDialogDelegate(content::WebContents* web_contents, std::string email)
+  ReauthDialogDelegate(content::WebContents* web_contents,
+                       const std::string& email)
       : UserManager::ReauthDialogObserver(web_contents, email) {}
 
   // UserManager::ReauthDialogObserver:

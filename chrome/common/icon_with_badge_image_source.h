@@ -22,7 +22,9 @@ class IconWithBadgeImageSource : public gfx::CanvasImageSource {
  public:
   // The data representing a badge to be painted over the base image.
   struct Badge {
-    Badge(std::string text, SkColor text_color, SkColor background_color);
+    Badge(const std::string& text,
+          SkColor text_color,
+          SkColor background_color);
     ~Badge();
 
     std::string text;

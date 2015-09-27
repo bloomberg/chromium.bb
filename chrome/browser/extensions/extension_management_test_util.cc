@@ -24,7 +24,7 @@ namespace {
 const char kInstallSourcesPath[] = "*.install_sources";
 const char kAllowedTypesPath[] = "*.allowed_types";
 
-std::string make_path(std::string a, std::string b) {
+std::string make_path(const std::string& a, const std::string& b) {
   return a + "." + b;
 }
 

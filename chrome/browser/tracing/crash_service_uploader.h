@@ -69,7 +69,7 @@ class TraceCrashServiceUploader : public content::TraceUploader,
                 int* compressed_bytes);
   void CreateAndStartURLFetcher(const std::string& upload_url,
                                 const std::string& post_data);
-  void OnUploadError(std::string error_message);
+  void OnUploadError(const std::string& error_message);
 
   scoped_ptr<net::URLFetcher> url_fetcher_;
   UploadProgressCallback progress_callback_;

@@ -93,7 +93,7 @@ ModelLoader::ModelLoader(base::Closure update_renderers_callback,
 
 // For testing only
 ModelLoader::ModelLoader(base::Closure update_renderers_callback,
-                         const std::string model_name)
+                         const std::string& model_name)
     : name_(model_name),
       url_(kClientModelUrlPrefix + name_),
       update_renderers_callback_(update_renderers_callback),

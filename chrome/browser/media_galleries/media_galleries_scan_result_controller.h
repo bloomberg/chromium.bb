@@ -102,7 +102,7 @@ class MediaGalleriesScanResultController
   void OnPreferenceUpdate(const std::string& extension_id);
 
   // Used to keep the dialog in sync with attached and detached devices.
-  void OnRemovableDeviceUpdate(const std::string device_id);
+  void OnRemovableDeviceUpdate(const std::string& device_id);
 
   Profile* GetProfile() const;
 

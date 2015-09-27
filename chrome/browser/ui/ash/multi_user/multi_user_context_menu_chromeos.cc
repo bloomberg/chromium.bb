@@ -95,8 +95,9 @@ scoped_ptr<ui::MenuModel> CreateMultiUserContextMenu(aura::Window* window) {
   return model.Pass();
 }
 
-void OnAcceptTeleportWarning(
-    const std::string user_id, aura::Window* window_, bool no_show_again) {
+void OnAcceptTeleportWarning(const std::string& user_id,
+                             aura::Window* window_,
+                             bool no_show_again) {
   PrefService* pref = ProfileManager::GetActiveUserProfile()->GetPrefs();
   pref->SetBoolean(prefs::kMultiProfileWarningShowDismissed, no_show_again);
 

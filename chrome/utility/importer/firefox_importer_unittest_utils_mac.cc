@@ -245,7 +245,7 @@ class FFDecryptorClientChannelListener : public IPC::Listener {
     sender_->Send(new Msg_Decryptor_InitReturnCode(ret));
   }
 
-  void OnDecrypt(std::string crypt) {
+  void OnDecrypt(const std::string& crypt) {
     base::string16 unencrypted_str = decryptor_.Decrypt(crypt);
     sender_->Send(new Msg_Decryptor_Response(unencrypted_str));
   }

@@ -230,7 +230,8 @@ bool SpellcheckService::LoadExternalDictionary(std::string language,
   return false;
 }
 
-bool SpellcheckService::UnloadExternalDictionary(std::string path) {
+bool SpellcheckService::UnloadExternalDictionary(
+    const std::string& /* path */) {
   return false;
 }
 

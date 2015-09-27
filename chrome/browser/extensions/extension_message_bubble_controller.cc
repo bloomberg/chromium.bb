@@ -83,9 +83,8 @@ ExtensionMessageBubbleController::Delegate::get_acknowledged_flag_pref_name()
   return acknowledged_pref_name_;
 }
 
-void
-ExtensionMessageBubbleController::Delegate::set_acknowledged_flag_pref_name(
-    std::string pref_name) {
+void ExtensionMessageBubbleController::Delegate::
+    set_acknowledged_flag_pref_name(const std::string& pref_name) {
   acknowledged_pref_name_ = pref_name;
 }
 

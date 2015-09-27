@@ -97,7 +97,8 @@ Status ParseLogPath(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
-Status ParseDeviceName(std::string device_name, Capabilities* capabilities) {
+Status ParseDeviceName(const std::string& device_name,
+                       Capabilities* capabilities) {
   scoped_ptr<MobileDevice> device;
   Status status = FindMobileDevice(device_name, &device);
 

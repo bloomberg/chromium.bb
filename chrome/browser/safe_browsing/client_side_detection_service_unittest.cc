@@ -38,7 +38,7 @@ namespace {
 
 class MockModelLoader : public ModelLoader {
  public:
-  explicit MockModelLoader(const std::string model_name)
+  explicit MockModelLoader(const std::string& model_name)
       : ModelLoader(base::Closure(), model_name) {}
   ~MockModelLoader() override {}
 

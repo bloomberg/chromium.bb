@@ -71,7 +71,7 @@ class MockPrivetURLFetcherDelegate : public PrivetURLFetcher::Delegate {
     return true;
   }
 
-  MOCK_METHOD1(OnRawDataInternal, void(std::string data));
+  MOCK_METHOD1(OnRawDataInternal, void(const std::string& data));
 
   MOCK_METHOD0(OnFileInternal, void());
 

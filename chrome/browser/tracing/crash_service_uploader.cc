@@ -198,7 +198,8 @@ void TraceCrashServiceUploader::DoUploadOnFileThread(
                  base::Unretained(this), upload_url, post_data));
 }
 
-void TraceCrashServiceUploader::OnUploadError(std::string error_message) {
+void TraceCrashServiceUploader::OnUploadError(
+    const std::string& error_message) {
   LOG(ERROR) << error_message;
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
