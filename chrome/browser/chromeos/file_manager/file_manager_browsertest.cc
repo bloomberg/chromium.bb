@@ -205,11 +205,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE,
                       "renameDirectoryToExistingOneFromDirectoryTree"),
         TestParameter(IN_GUEST_MODE,
-                      "renameDirectoryToExistingOneFromDirectoryTree"),
-        TestParameter(NOT_IN_GUEST_MODE,
-                      "createDirectoryFromDirectoryTreeWithContextMenu"),
-        TestParameter(NOT_IN_GUEST_MODE,
-                      "createDirectoryFromDirectoryTreeWithKeyboardShortcut")));
+                      "renameDirectoryToExistingOneFromDirectoryTree")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)

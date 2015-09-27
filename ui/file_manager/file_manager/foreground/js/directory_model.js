@@ -53,12 +53,12 @@ function DirectoryModel(
                                     this.onFilterChanged_.bind(this));
 
   this.currentFileListContext_ =
-      new FileListContext(fileFilter, metadataModel);
+      new FileListContext(fileFilter,  metadataModel);
   this.currentDirContents_ =
       DirectoryContents.createForDirectory(this.currentFileListContext_, null);
   /**
    * Empty file list which is used as a dummy for inactive view of file list.
-   * @private {!FileListModel}
+   * @type {!FileListModel}
    */
   this.emptyFileList_ = new FileListModel(metadataModel);
 
@@ -874,38 +874,65 @@ DirectoryModel.prototype.onRenameEntry = function(
 };
 
 /**
- * Updates data model and selects new directory.
- * @param {!DirectoryEntry} newDirectory Directory entry to be selected.
- * @return {Promise} A promise which is resolved when new directory is selected.
- *     If current directory has changed during the operation, this will be
- *     rejected.
+ * Creates directory and updates the file list.
+ *
+ * @param {string} name Directory name.
+ * @param {function(DirectoryEntry)} successCallback Callback on success.
+ * @param {function(DOMError)} errorCallback Callback on failure.
+ * @param {function()} abortCallback Callback on abort (cancelled by user).
  */
-DirectoryModel.prototype.updateAndSelectNewDirectory = function(newDirectory) {
-  // Refresh the cache.
-  this.metadataModel_.notifyEntriesCreated([newDirectory]);
+DirectoryModel.prototype.createDirectory = function(name,
+                                                    successCallback,
+                                                    errorCallback,
+                                                    abortCallback) {
+  // Obtain and check the current directory.
+  var entry = this.getCurrentDirEntry();
+  if (!entry || this.isSearching() || util.isFakeEntry(entry)) {
+    errorCallback(util.createDOMError(
+        util.FileError.INVALID_MODIFICATION_ERR));
+    return;
+  }
+  entry = /** @type {DirectoryEntry} */ (entry);
+
   var dirContents = this.currentDirContents_;
+  var sequence = this.changeDirectorySequence_;
 
-  return new Promise(function(onFulfilled, onRejected) {
-    dirContents.prefetchMetadata(
-        [newDirectory], false, onFulfilled);
-  }).then(function(sequence) {
-    // If current directory has changed during the prefetch, do not try to
-    // select new directory.
-    if (sequence !== this.changeDirectorySequence_)
-      return Promise.reject();
+  new Promise(entry.getDirectory.bind(
+      entry, name, {create: true, exclusive: true})).
 
-    // If target directory is already in the list, just select it.
-    var existing = this.getFileList().slice().filter(
-        function(e) { return e.name === newDirectory.name; });
-    if (existing.length) {
-      this.selectEntry(newDirectory);
-    } else {
-      this.fileListSelection_.beginChange();
-      this.getFileList().splice(0, 0, newDirectory);
-      this.selectEntry(newDirectory);
-      this.fileListSelection_.endChange();
-    }
-  }.bind(this, this.changeDirectorySequence_));
+      then(function(newEntry) {
+        // Refresh the cache.
+        this.metadataModel_.notifyEntriesCreated([newEntry]);
+        return new Promise(function(onFulfilled, onRejected) {
+          dirContents.prefetchMetadata(
+              [newEntry], false, onFulfilled.bind(null, newEntry));
+        }.bind(this));
+      }.bind(this)).
+
+      then(function(newEntry) {
+        // Do not change anything or call the callback if current
+        // directory changed.
+        if (this.changeDirectorySequence_ !== sequence) {
+          abortCallback();
+          return;
+        }
+
+        // If target directory is already in the list, just select it.
+        var existing = this.getFileList().slice().filter(
+            function(e) { return e.name === name; });
+        if (existing.length) {
+          this.selectEntry(newEntry);
+          successCallback(existing[0]);
+        } else {
+          this.fileListSelection_.beginChange();
+          this.getFileList().splice(0, 0, newEntry);
+          this.selectEntry(newEntry);
+          this.fileListSelection_.endChange();
+          successCallback(newEntry);
+        }
+      }.bind(this), function(reason) {
+        errorCallback(/** @type {DOMError} */ (reason));
+      });
 };
 
 /**

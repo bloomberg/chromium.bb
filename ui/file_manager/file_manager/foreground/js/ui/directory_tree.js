@@ -14,25 +14,6 @@
 var DirectoryItemTreeBaseMethods = {};
 
 /**
- * Finds an item by entry and returns it.
- * @param {!Entry} entry
- * @return {DirectoryItem} null is returned if it's not found.
- * @this {(DirectoryItem|DirectoryTree)}
- */
-DirectoryItemTreeBaseMethods.getItemByEntry = function(entry) {
-  for (var i = 0; i < this.items.length; i++) {
-    var item = this.items[i];
-    if (!item.entry)
-      continue;
-    if (util.isSameEntry(item.entry, entry))
-      return item;
-    if (util.isDescendantEntry(item.entry, entry))
-      return item.getItemByEntry(entry);
-  }
-  return null;
-};
-
-/**
  * Finds a parent directory of the {@code entry} in {@code this}, and
  * invokes the DirectoryItem.selectByEntry() of the found directory.
  *
@@ -106,7 +87,7 @@ function DirectoryItem(label, tree) {
 
   item.label = label;
   return item;
-}
+};
 
 DirectoryItem.prototype = {
   __proto__: cr.ui.TreeItem.prototype,
@@ -178,15 +159,6 @@ DirectoryItem.prototype.updateSubElementsFromList = function(recursive) {
   } else {
     this.hasChildren = true;
   }
-};
-
-/**
- * Calls DirectoryItemTreeBaseMethods.getItemByEntry().
- * @param {!Entry} entry
- * @return {DirectoryItem}
- */
-DirectoryItem.prototype.getItemByEntry = function(entry) {
-  return DirectoryItemTreeBaseMethods.getItemByEntry.call(this, entry);
 };
 
 /**
@@ -993,41 +965,6 @@ DirectoryTree.prototype = {
 
 cr.defineProperty(DirectoryTree, 'contextMenuForSubitems', cr.PropertyKind.JS);
 cr.defineProperty(DirectoryTree, 'contextMenuForRootItems', cr.PropertyKind.JS);
-
-/**
- * Updates and selects new directory.
- * @param {!DirectoryEntry} parentDirectory Parent directory of new directory.
- * @param {!DirectoryEntry} newDirectory
- */
-DirectoryTree.prototype.updateAndSelectNewDirectory = function(
-    parentDirectory, newDirectory) {
-  // Expand parent directory.
-  var parentItem = DirectoryItemTreeBaseMethods.getItemByEntry.call(
-      this, parentDirectory);
-  parentItem.expanded = true;
-
-  // If new directory is already added to the tree, just select it.
-  for (var i = 0; i < parentItem.items.length; i++) {
-    var item = parentItem.items[i];
-    if (util.isSameEntry(item.entry, newDirectory)) {
-      this.selectedItem = item;
-      return;
-    }
-  }
-
-  // Create new item, and add it.
-  var newDirectoryItem = new SubDirectoryItem(
-      newDirectory.name, newDirectory, parentItem, this);
-
-  var addAt = 0;
-  while (addAt < parentItem.items.length &&
-      parentItem.items[addAt].entry.name < newDirectory.name) {
-    addAt++;
-  }
-
-  parentItem.addAt(newDirectoryItem, addAt);
-  this.selectedItem = newDirectoryItem;
-};
 
 /**
  * Calls DirectoryItemTreeBaseMethods.updateSubElementsFromList().

@@ -515,125 +515,86 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
  * Initiates new folder creation.
  * @type {Command}
  */
-CommandHandler.COMMANDS_['new-folder'] = (function() {
-  /**
-   * @constructor
-   * @struct
-   */
-  var NewFolderCommand = function() {};
-
+CommandHandler.COMMANDS_['new-folder'] = /** @type {Command} */ ({
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.
    */
-  NewFolderCommand.prototype.execute = function(event, fileManager) {
-    var targetDirectory;
-    var executedFromDirectoryTree;
-
-    if (event.target instanceof DirectoryTree) {
-      targetDirectory = event.target.selectedItem.entry;
-      executedFromDirectoryTree = true;
-    } else if (event.target instanceof DirectoryItem) {
-      targetDirectory = event.target.entry;
-      executedFromDirectoryTree = true;
-    } else {
-      targetDirectory = fileManager.directoryModel.getCurrentDirEntry();
-      executedFromDirectoryTree = false;
-    }
-
-    var directoryModel = fileManager.directoryModel;
-    var directoryTree = fileManager.ui.directoryTree;
-    var listContainer = fileManager.ui.listContainer;
-
-    this.generateNewDirectoryName_(targetDirectory).then(function(newName) {
-      if (!executedFromDirectoryTree)
-        listContainer.startBatchUpdates();
-
-      return new Promise(targetDirectory.getDirectory.bind(targetDirectory,
-          newName,
-          {create: true, exclusive: true})).then(function(newDirectory) {
-            metrics.recordUserAction('CreateNewFolder');
-
-            // Select new directory and start rename operation.
-            if (executedFromDirectoryTree) {
-              directoryTree.updateAndSelectNewDirectory(
-                  targetDirectory, newDirectory);
-              fileManager.getDirectoryTreeNamingController().attachAndStart(
-                  assert(fileManager.ui.directoryTree.selectedItem));
-            } else {
-              directoryModel.updateAndSelectNewDirectory(
-                  newDirectory).then(function() {
-                listContainer.endBatchUpdates();
-                fileManager.namingController.initiateRename();
-              }, function() {
-                listContainer.endBatchUpdates();
-              });
-            }
-          }, function(error) {
-            if (!executedFromDirectoryTree)
-              listContainer.endBatchUpdates();
-
-            fileManager.ui.alertDialog.show(
-                strf('ERROR_CREATING_FOLDER',
-                     newName,
-                     util.getFileErrorString(error.name)),
-                null, null);
-          });
-    });
-  };
-
-  /**
-   * Generates new directory name.
-   * @param {!DirectoryEntry} parentDirectory
-   * @param {number=} opt_index
-   * @private
-   */
-  NewFolderCommand.prototype.generateNewDirectoryName_ = function(
-      parentDirectory, opt_index) {
-    var index = opt_index || 0;
-
+  execute: function(event, fileManager) {
     var defaultName = str('DEFAULT_NEW_FOLDER_NAME');
-    var newName = index === 0 ? defaultName :
-        defaultName + ' (' + index + ')';
 
-    return new Promise(parentDirectory.getDirectory.bind(
-        parentDirectory, newName, {create: false})).then(function(newEntry) {
-      return this.generateNewDirectoryName_(parentDirectory, index + 1);
-    }.bind(this)).catch(function() {
-      return newName;
-    });
-  };
+    // Find a name that doesn't exist in the data model.
+    var files = fileManager.directoryModel.getFileList();
+    var hash = {};
+    for (var i = 0; i < files.length; i++) {
+      var name = files.item(i).name;
+      // Filtering names prevents from conflicts with prototype's names
+      // and '__proto__'.
+      if (name.substring(0, defaultName.length) == defaultName)
+        hash[name] = 1;
+    }
 
+    var baseName = defaultName;
+    var separator = '';
+    var suffix = '';
+    var index = '';
+
+    var advance = function() {
+      separator = ' (';
+      suffix = ')';
+      index++;
+    };
+
+    var current = function() {
+      return baseName + separator + index + suffix;
+    };
+
+    // Accessing hasOwnProperty is safe since hash properties filtered.
+    while (hash.hasOwnProperty(current())) {
+      advance();
+    }
+
+    var list = fileManager.ui.listContainer.currentList;
+
+    var onSuccess = function(entry) {
+      metrics.recordUserAction('CreateNewFolder');
+      list.selectedItem = entry;
+
+      fileManager.ui.listContainer.endBatchUpdates();
+
+      fileManager.namingController.initiateRename();
+    };
+
+    var onError = function(error) {
+      fileManager.ui.listContainer.endBatchUpdates();
+
+      fileManager.ui.alertDialog.show(
+          strf('ERROR_CREATING_FOLDER',
+               current(),
+               util.getFileErrorString(error.name)),
+          null, null);
+    };
+
+    var onAbort = function() {
+      fileManager.ui.listContainer.endBatchUpdates();
+    };
+
+    fileManager.ui.listContainer.startBatchUpdates();
+    fileManager.directoryModel.createDirectory(
+        current(), onSuccess, onError, onAbort);
+  },
   /**
    * @param {!Event} event Command event.
    * @param {!FileManager} fileManager FileManager to use.
    */
-  NewFolderCommand.prototype.canExecute = function(event, fileManager) {
-    if (event.target instanceof DirectoryItem ||
-        event.target instanceof DirectoryTree) {
-      var entry = CommandUtil.getCommandEntry(event.target);
-      if (!entry || !CommandUtil.shouldShowMenuItemForEntry(
-          fileManager.volumeManager, entry)) {
-        event.canExecute = false;
-        event.command.setHidden(true);
-        return;
-      }
-
-      var locationInfo = fileManager.volumeManager.getLocationInfo(entry);
-      event.canExecute = locationInfo && !locationInfo.isReadOnly;
-      event.command.setHidden(false);
-    } else {
-      var directoryModel = fileManager.directoryModel;
-      event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-                         !fileManager.namingController.isRenamingInProgress() &&
-                         !directoryModel.isSearching() &&
-                         !directoryModel.isScanning();
-      event.command.setHidden(false);
-    }
-  };
-
-  return new NewFolderCommand();
-})();
+  canExecute: function(event, fileManager) {
+    var directoryModel = fileManager.directoryModel;
+    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
+                       !fileManager.namingController.isRenamingInProgress() &&
+                       !directoryModel.isSearching() &&
+                       !directoryModel.isScanning();
+  }
+});
 
 /**
  * Initiates new window creation.
