@@ -9,6 +9,7 @@
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/time/time.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDocument.h"
@@ -127,6 +128,21 @@ bool PdfMetafileSkia::FinishPage() {
   return true;
 }
 
+static SkTime::DateTime TimeToSkTime(base::Time time) {
+    base::Time::Exploded exploded;
+    time.UTCExplode(&exploded);
+    SkTime::DateTime skdate;
+    skdate.fTimeZoneMinutes = 0;
+    skdate.fYear = exploded.year;
+    skdate.fMonth = exploded.month;
+    skdate.fDayOfWeek = exploded.day_of_week;
+    skdate.fDay = exploded.day_of_month;
+    skdate.fHour = exploded.hour;
+    skdate.fMinute = exploded.minute;
+    skdate.fSecond = exploded.second;
+    return skdate;
+}
+
 bool PdfMetafileSkia::FinishDocument() {
   // If we've already set the data in InitFromData, leave it be.
   if (data_->pdf_data_)
@@ -146,6 +162,10 @@ bool PdfMetafileSkia::FinishDocument() {
     canvas->drawPicture(page.content_.get());
     pdf_doc->endPage();
   }
+  SkTArray<SkDocument::Attribute> info;
+  info.emplace_back(SkString("Creator"), SkString("Chromium"));
+  SkTime::DateTime now = TimeToSkTime(base::Time::Now());
+  pdf_doc->setMetadata(info, &now, &now);
   if (!pdf_doc->close())
     return false;
 
