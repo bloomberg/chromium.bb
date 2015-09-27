@@ -380,18 +380,30 @@ AC_ARG_ENABLE(resize-optimization,
 AS_IF([test "x$enable_resize_optimization" = "xyes"],
       [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
 
-PKG_CHECK_MODULES(SYSTEMD_LOGIN,
-                  [libsystemd >= 209],
-                  [have_systemd_login_209=yes;have_systemd_login=yes],
-                  [have_systemd_login_209=no;have_systemd_login=no])
+AC_ARG_ENABLE(systemd-login,
+              AS_HELP_STRING([--enable-systemd-login],
+                             [Enable logind support]),,
+              enable_systemd_login=auto)
+if test x$enable_systemd_login != xno; then
+  PKG_CHECK_MODULES(SYSTEMD_LOGIN,
+                    [libsystemd >= 209],
+                    [have_systemd_login_209=yes;have_systemd_login=yes],
+                    [have_systemd_login_209=no;have_systemd_login=no])
 
-# Older versions of systemd package systemd-login separately. Fall back on that
-AS_IF([test x$have_systemd_login != xyes],[
-      PKG_CHECK_MODULES(SYSTEMD_LOGIN,
-                        [libsystemd-login >= 198],
-                        [have_systemd_login=yes],
-                        [have_systemd_login=no])
-      ])
+  # Older versions of systemd package systemd-login separately. Fall back on that
+  AS_IF([test x$have_systemd_login != xyes],[
+        PKG_CHECK_MODULES(SYSTEMD_LOGIN,
+                          [libsystemd-login >= 198],
+                          [have_systemd_login=yes],
+                          [have_systemd_login=no])
+        ])
+else
+  have_systemd_login=no
+fi
+
+if test "x$have_systemd_login" = "xno" -a "x$enable_systemd_login" = "xyes"; then
+  AC_MSG_ERROR([systemd-login support explicitly enabled, but can't find libsystemd>=209 or libsystemd-login])
+fi
 
 AS_IF([test "x$have_systemd_login" = "xyes"],
       [AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
