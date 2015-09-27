@@ -95,7 +95,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
     save_info_.suggested_name = suggested_name;
   }
   void set_offset(int64 offset) { save_info_.offset = offset; }
-  void set_hash_state(std::string hash_state) {
+  void set_hash_state(const std::string& hash_state) {
     save_info_.hash_state = hash_state;
   }
   void set_prompt(bool prompt) { save_info_.prompt_for_save_location = prompt; }

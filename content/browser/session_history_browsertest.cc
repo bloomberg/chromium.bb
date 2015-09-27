@@ -57,14 +57,14 @@ class SessionHistoryTest : public ContentBrowserTest {
   }
 
   // Simulate clicking a link.  Only works on the frames.html testserver page.
-  void ClickLink(std::string node_id) {
+  void ClickLink(const std::string& node_id) {
     GURL url("javascript:clickLink('" + node_id + "')");
     NavigateToURL(shell(), url);
   }
 
   // Simulate filling in form data.  Only works on the frames.html page with
   // subframe = form.html, and on form.html itself.
-  void FillForm(std::string node_id, std::string value) {
+  void FillForm(const std::string& node_id, const std::string& value) {
     GURL url("javascript:fillForm('" + node_id + "', '" + value + "')");
     // This will return immediately, but since the JS executes synchronously
     // on the renderer, it will complete before the next navigate message is
@@ -74,13 +74,13 @@ class SessionHistoryTest : public ContentBrowserTest {
 
   // Simulate submitting a form.  Only works on the frames.html page with
   // subframe = form.html, and on form.html itself.
-  void SubmitForm(std::string node_id) {
+  void SubmitForm(const std::string& node_id) {
     GURL url("javascript:submitForm('" + node_id + "')");
     NavigateToURL(shell(), url);
   }
 
   // Navigate session history using history.go(distance).
-  void JavascriptGo(std::string distance) {
+  void JavascriptGo(const std::string& distance) {
     GURL url("javascript:history.go('" + distance + "')");
     NavigateToURL(shell(), url);
   }
@@ -93,7 +93,7 @@ class SessionHistoryTest : public ContentBrowserTest {
     return shell()->web_contents()->GetLastCommittedURL();
   }
 
-  GURL GetURL(const std::string file) {
+  GURL GetURL(const std::string& file) {
     return embedded_test_server()->GetURL(
         std::string("/session_history/") + file);
   }

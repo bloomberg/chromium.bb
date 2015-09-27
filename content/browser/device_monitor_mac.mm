@@ -32,7 +32,7 @@ class DeviceInfo {
     kInvalid
   };
 
-  DeviceInfo(std::string unique_id, DeviceType type)
+  DeviceInfo(const std::string& unique_id, DeviceType type)
       : unique_id_(unique_id), type_(type) {}
 
   // Operator== is needed here to use this class in a std::find. A given

@@ -495,7 +495,8 @@ void GetStatsOnSignalingThread(
     const scoped_refptr<webrtc::PeerConnectionInterface>& pc,
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
     const scoped_refptr<webrtc::StatsObserver>& observer,
-    const std::string track_id, blink::WebMediaStreamSource::Type track_type) {
+    const std::string& track_id,
+    blink::WebMediaStreamSource::Type track_type) {
   TRACE_EVENT0("webrtc", "GetStatsOnSignalingThread");
 
   scoped_refptr<webrtc::MediaStreamTrackInterface> track;

@@ -51,7 +51,9 @@ void SpeechRecognizerImplAndroid::StartRecognition(
 }
 
 void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
-    std::string language, bool continuous, bool interim_results) {
+    const std::string& language,
+    bool continuous,
+    bool interim_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(env,

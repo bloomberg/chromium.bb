@@ -95,7 +95,7 @@ void CreateStunRequest(std::vector<char>* packet);
 void CreateStunResponse(std::vector<char>* packet);
 void CreateStunError(std::vector<char>* packet);
 
-net::IPEndPoint ParseAddress(const std::string ip_str, uint16 port);
+net::IPEndPoint ParseAddress(const std::string& ip_str, uint16 port);
 
 MATCHER_P(MatchMessage, type, "") {
   return arg->type() == type;

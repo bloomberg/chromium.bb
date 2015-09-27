@@ -284,7 +284,7 @@ class MockSharedWorkerConnector {
     EXPECT_TRUE(renderer_host_->OnMessageReceived(
         new MessagePortHostMsg_QueueMessages(remote_port_id_)));
   }
-  void SendPostMessage(std::string data) {
+  void SendPostMessage(const std::string& data) {
     const std::vector<TransferredMessagePort> empty_ports;
     EXPECT_TRUE(
         renderer_host_->OnMessageReceived(new MessagePortHostMsg_PostMessage(

@@ -53,8 +53,10 @@ void ReloadBlockUntilNavigationsComplete(Shell* window,
   same_tab_observer.Wait();
 }
 
-void LoadDataWithBaseURL(Shell* window, const GURL& url,
-    const std::string data, const GURL& base_url) {
+void LoadDataWithBaseURL(Shell* window,
+                         const GURL& url,
+                         const std::string& data,
+                         const GURL& base_url) {
   WaitForLoadStop(window->web_contents());
   TestNavigationObserver same_tab_observer(window->web_contents(), 1);
 

@@ -27,7 +27,8 @@ static const int kTimeCheckInterval = 10;
 
 class CCMessagesPerfTest : public testing::Test {
  protected:
-  static void RunTest(std::string test_name, const CompositorFrame& frame) {
+  static void RunTest(const std::string& test_name,
+                      const CompositorFrame& frame) {
     for (int i = 0; i < kNumWarmupRuns; ++i) {
       IPC::Message msg(1, 2, IPC::Message::PRIORITY_NORMAL);
       IPC::ParamTraits<CompositorFrame>::Write(&msg, frame);

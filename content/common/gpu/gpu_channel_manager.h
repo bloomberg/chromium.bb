@@ -151,7 +151,7 @@ class CONTENT_EXPORT GpuChannelManager : public IPC::Listener,
       int32 client_id,
       const GPUCreateCommandBufferConfig& init_params,
       int32 route_id);
-  void OnLoadedShader(std::string shader);
+  void OnLoadedShader(const std::string& shader);
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id, int client_id);
   void DestroyGpuMemoryBufferOnIO(gfx::GpuMemoryBufferId id, int client_id);
   void OnDestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

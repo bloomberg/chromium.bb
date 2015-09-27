@@ -49,8 +49,9 @@ class CONTENT_EXPORT SpeechRecognizerImplAndroid : public SpeechRecognizer {
     STATE_AWAITING_FINAL_RESULT
   };
 
-  void StartRecognitionOnUIThread(
-      std::string language, bool continuous, bool interim_results);
+  void StartRecognitionOnUIThread(const std::string& language,
+                                  bool continuous,
+                                  bool interim_results);
   void OnRecognitionResultsOnIOThread(SpeechRecognitionResults const &results);
 
   ~SpeechRecognizerImplAndroid() override;

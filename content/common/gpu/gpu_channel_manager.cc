@@ -249,7 +249,7 @@ void GpuChannelManager::OnUpdateValueState(
     it->second->HandleUpdateValueState(target, state);
 }
 
-void GpuChannelManager::OnLoadedShader(std::string program_proto) {
+void GpuChannelManager::OnLoadedShader(const std::string& program_proto) {
   if (program_cache())
     program_cache()->LoadProgram(program_proto);
 }

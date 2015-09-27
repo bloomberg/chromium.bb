@@ -132,11 +132,11 @@ class MediaStreamTrackMetricsTest : public testing::Test {
   void AddVideoTrack(VideoTrackInterface* track) { AddTrack(track); }
   void RemoveVideoTrack(VideoTrackInterface* track) { RemoveTrack(track); }
 
-  scoped_refptr<MockAudioTrackInterface> MakeAudioTrack(std::string id) {
+  scoped_refptr<MockAudioTrackInterface> MakeAudioTrack(const std::string& id) {
     return new rtc::RefCountedObject<MockAudioTrackInterface>(id);
   }
 
-  scoped_refptr<MockVideoTrackInterface> MakeVideoTrack(std::string id) {
+  scoped_refptr<MockVideoTrackInterface> MakeVideoTrack(const std::string& id) {
     return new rtc::RefCountedObject<MockVideoTrackInterface>(id);
   }
 

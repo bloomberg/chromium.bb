@@ -117,7 +117,7 @@ HistoryEntry::HistoryNode::~HistoryNode() {
   if (!entry_ || item_.isNull())
     return;
 
-  for (std::string name : unique_names_) {
+  for (const std::string& name : unique_names_) {
     if (entry_->unique_names_to_items_[name] == this)
       entry_->unique_names_to_items_.erase(name);
   }

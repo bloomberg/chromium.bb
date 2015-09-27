@@ -50,7 +50,7 @@ bool NavigateToURL(Shell* window, const GURL& url);
 
 void LoadDataWithBaseURL(Shell* window,
                          const GURL& url,
-                         const std::string data,
+                         const std::string& data,
                          const GURL& base_url);
 
 // Navigates |window| to |url|, blocking until the given number of navigations

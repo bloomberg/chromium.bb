@@ -281,7 +281,7 @@ class FileSystemDirURLRequestJobTest : public testing::Test {
     EXPECT_FALSE(date.is_null());
   }
 
-  GURL CreateFileSystemURL(const std::string path) {
+  GURL CreateFileSystemURL(const std::string& path) {
     return GURL(kFileSystemURLPrefix + path);
   }
 

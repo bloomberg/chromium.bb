@@ -476,7 +476,7 @@ TEST(IndexedDBLevelDBCodingTest, CompareEncodedStringsWithLength) {
   }
 }
 
-static std::string WrappedEncodeBinary(std::string value) {
+static std::string WrappedEncodeBinary(const std::string& value) {
   std::string buffer;
   EncodeBinary(value, &buffer);
   return buffer;

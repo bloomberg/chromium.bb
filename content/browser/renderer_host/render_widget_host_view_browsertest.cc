@@ -515,7 +515,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 
   GURL TestUrl() override { return GURL(test_url_); }
 
-  void SetTestUrl(std::string url) { test_url_ = url; }
+  void SetTestUrl(const std::string& url) { test_url_ = url; }
 
   // Loads a page two boxes side-by-side, each half the width of
   // |html_rect_size|, and with different background colors. The test then

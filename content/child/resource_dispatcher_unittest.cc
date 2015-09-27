@@ -299,7 +299,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
                                   shared_memory->requested_size(), 0)));
   }
 
-  void NotifyDataReceived(int request_id, std::string data) {
+  void NotifyDataReceived(int request_id, const std::string& data) {
     ASSERT_LE(data.length(), shared_memory_map_[request_id]->requested_size());
     memcpy(shared_memory_map_[request_id]->memory(), data.c_str(),
            data.length());

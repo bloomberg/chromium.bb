@@ -303,7 +303,7 @@ void Shell::ActionPerformed(int control) {
   }
 }
 
-void Shell::URLEntered(std::string url_string) {
+void Shell::URLEntered(const std::string& url_string) {
   if (!url_string.empty()) {
     GURL url(url_string);
     if (!url.has_scheme())

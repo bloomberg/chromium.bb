@@ -91,7 +91,7 @@ class SpeechRecognitionBrowserTest :
   }
 
   // Helper methods used by test fixtures.
-  GURL GetTestUrlFromFragment(const std::string fragment) {
+  GURL GetTestUrlFromFragment(const std::string& fragment) {
     return GURL(GetTestUrl("speech", "web_speech_recognition.html").spec() +
         "#" + fragment);
   }
