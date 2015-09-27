@@ -380,14 +380,23 @@ AC_ARG_ENABLE(resize-optimization,
 AS_IF([test "x$enable_resize_optimization" = "xyes"],
       [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
 
-PKG_CHECK_MODULES(SYSTEMD_LOGIN, [libsystemd-login >= 198],
-                  [have_systemd_login=yes], [have_systemd_login=no])
+PKG_CHECK_MODULES(SYSTEMD_LOGIN,
+                  [libsystemd >= 209],
+                  [have_systemd_login_209=yes;have_systemd_login=yes],
+                  [have_systemd_login_209=no;have_systemd_login=no])
+
+# Older versions of systemd package systemd-login separately. Fall back on that
+AS_IF([test x$have_systemd_login != xyes],[
+      PKG_CHECK_MODULES(SYSTEMD_LOGIN,
+                        [libsystemd-login >= 198],
+                        [have_systemd_login=yes],
+                        [have_systemd_login=no])
+      ])
+
 AS_IF([test "x$have_systemd_login" = "xyes"],
       [AC_DEFINE([HAVE_SYSTEMD_LOGIN], [1], [Have systemd-login])])
 AM_CONDITIONAL(HAVE_SYSTEMD_LOGIN, test "x$have_systemd_login" = "xyes")
 
-PKG_CHECK_MODULES(SYSTEMD_LOGIN_209, [libsystemd-login >= 209],
-                  [have_systemd_login_209=yes], [have_systemd_login_209=no])
 AS_IF([test "x$have_systemd_login_209" = "xyes"],
       [AC_DEFINE([HAVE_SYSTEMD_LOGIN_209], [1], [Have systemd-login >= 209])])
 
