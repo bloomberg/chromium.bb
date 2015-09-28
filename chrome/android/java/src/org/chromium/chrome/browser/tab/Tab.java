@@ -66,6 +66,7 @@ import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulatorWrapper;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
+import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.download.ChromeDownloadDelegate;
@@ -2924,6 +2925,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         enableHidingTopControls &= !mIsShowingErrorPage;
         enableHidingTopControls &= !webContents.isShowingInterstitialPage();
         enableHidingTopControls &= (mFullscreenManager != null);
+        enableHidingTopControls &= DeviceClassManager.enableFullscreen();
 
         return enableHidingTopControls;
     }

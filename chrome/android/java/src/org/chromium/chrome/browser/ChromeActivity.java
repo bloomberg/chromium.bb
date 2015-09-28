@@ -1242,10 +1242,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     protected void initializeCompositorContent(
             LayoutManagerDocument layoutManager, View urlBar, ViewGroup contentContainer,
             ControlContainer controlContainer) {
-        CommandLine commandLine = CommandLine.getInstance();
-        boolean enableFullscreen = !commandLine.hasSwitch(ChromeSwitches.DISABLE_FULLSCREEN);
-
-        if (enableFullscreen && controlContainer != null) {
+        if (controlContainer != null) {
             mFullscreenManager = createFullscreenManager((View) controlContainer);
         }
 
