@@ -78,3 +78,6 @@ PDFExtensionTest.WhitespaceTitle
 
 # https://crbug.com/530729
 SiteDetailsBrowserTest.ManyCrossSiteIframes
+
+# https://crbug.com/536891
+PhishingDOMFeatureExtractorTest.*
