@@ -20,10 +20,6 @@
 #include "base/task_runner_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/bluetooth_profile_service_provider.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
@@ -35,6 +31,10 @@
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_net.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
+#include "device/bluetooth/dbus/bluetooth_device_client.h"
+#include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -107,7 +107,7 @@ void BluetoothSocketChromeOS::Connect(
   device_address_ = device->GetAddress();
   device_path_ = device->object_path();
   uuid_ = uuid;
-  options_.reset(new BluetoothProfileManagerClient::Options());
+  options_.reset(new bluez::BluetoothProfileManagerClient::Options());
   if (security_level == SECURITY_LEVEL_LOW)
     options_->require_authentication.reset(new bool(false));
 
@@ -135,7 +135,7 @@ void BluetoothSocketChromeOS::Listen(
   adapter_->AddObserver(this);
 
   uuid_ = uuid;
-  options_.reset(new BluetoothProfileManagerClient::Options());
+  options_.reset(new bluez::BluetoothProfileManagerClient::Options());
   if (service_options.name)
     options_->name.reset(new std::string(*service_options.name));
 
@@ -165,7 +165,7 @@ void BluetoothSocketChromeOS::Close() {
   // In the case below, where an asynchronous task gets posted on the socket
   // thread in BluetoothSocketNet::Close, a reference will be held to this
   // socket by the callback. This may cause the BluetoothAdapter to outlive
-  // DBusThreadManager during shutdown if that callback executes too late.
+  // BluezDBusManager during shutdown if that callback executes too late.
   if (adapter_.get()) {
     adapter_->RemoveObserver(this);
     adapter_ = nullptr;
@@ -264,7 +264,7 @@ void BluetoothSocketChromeOS::OnRegisterProfile(
   VLOG(1) << uuid_.canonical_value() << ": Got profile, connecting to "
           << device_path_.value();
 
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
       device_path_, uuid_.canonical_value(),
       base::Bind(&BluetoothSocketChromeOS::OnConnectProfile, this,
                  success_callback),
@@ -355,7 +355,7 @@ void BluetoothSocketChromeOS::Released() {
 void BluetoothSocketChromeOS::NewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
-    const BluetoothProfileServiceProvider::Delegate::Options& options,
+    const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
@@ -460,7 +460,7 @@ void BluetoothSocketChromeOS::AcceptConnectionRequest() {
 void BluetoothSocketChromeOS::DoNewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
-    const BluetoothProfileServiceProvider::Delegate::Options& options,
+    const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   DCHECK(socket_thread()->task_runner()->RunsTasksOnCurrentThread());
   base::ThreadRestrictions::AssertIOAllowed();

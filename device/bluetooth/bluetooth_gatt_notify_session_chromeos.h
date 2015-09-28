@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_characteristic_client.h"
 
 namespace device {
 
@@ -25,7 +25,7 @@ class BluetoothRemoteGattCharacteristicChromeOS;
 // BluetoothGattNotifySession for the Chrome OS platform.
 class BluetoothGattNotifySessionChromeOS
     : public device::BluetoothGattNotifySession,
-      public BluetoothGattCharacteristicClient::Observer {
+      public bluez::BluetoothGattCharacteristicClient::Observer {
  public:
   ~BluetoothGattNotifySessionChromeOS() override;
 
@@ -44,7 +44,7 @@ class BluetoothGattNotifySessionChromeOS
       const std::string& characteristic_identifier,
       const dbus::ObjectPath& characteristic_path);
 
-  // BluetoothGattCharacteristicClient::Observer overrides.
+  // bluez::BluetoothGattCharacteristicClient::Observer overrides.
   void GattCharacteristicRemoved(const dbus::ObjectPath& object_path) override;
   void GattCharacteristicPropertyChanged(
       const dbus::ObjectPath& object_path,

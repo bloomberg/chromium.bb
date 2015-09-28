@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace chromeos {
 
@@ -23,11 +23,12 @@ BluetoothGattConnectionChromeOS::BluetoothGattConnectionChromeOS(
   DCHECK(!device_address_.empty());
   DCHECK(object_path_.IsValid());
 
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->AddObserver(this);
 }
 
 BluetoothGattConnectionChromeOS::~BluetoothGattConnectionChromeOS() {
-  DBusThreadManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(this);
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->RemoveObserver(
+      this);
   Disconnect();
 }
 
@@ -40,9 +41,9 @@ bool BluetoothGattConnectionChromeOS::IsConnected() {
   if (!connected_)
     return false;
 
-  BluetoothDeviceClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-          GetProperties(object_path_);
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
   if (!properties || !properties->connected.value())
     connected_ = false;
 
@@ -82,9 +83,9 @@ void BluetoothGattConnectionChromeOS::DevicePropertyChanged(
   if (!connected_)
     return;
 
-  BluetoothDeviceClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothDeviceClient()->
-          GetProperties(object_path_);
+  bluez::BluetoothDeviceClient::Properties* properties =
+      bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->GetProperties(
+          object_path_);
 
   if (!properties) {
     connected_ = false;

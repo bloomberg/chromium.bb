@@ -12,18 +12,18 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/bluetooth_adapter_client.h"
-#include "chromeos/dbus/bluetooth_agent_service_provider.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_input_client.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/bluetooth_profile_service_provider.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/dbus/bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
+#include "device/bluetooth/dbus/bluetooth_device_client.h"
+#include "device/bluetooth/dbus/bluetooth_input_client.h"
+#include "device/bluetooth/dbus/bluetooth_profile_manager_client.h"
+#include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -60,10 +60,10 @@ class BluetoothRemoteGattServiceChromeOS;
 // BluetoothChromeOSTest, Shutdown.
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
-      public chromeos::BluetoothAdapterClient::Observer,
-      public chromeos::BluetoothDeviceClient::Observer,
-      public chromeos::BluetoothInputClient::Observer,
-      public chromeos::BluetoothAgentServiceProvider::Delegate {
+      public bluez::BluetoothAdapterClient::Observer,
+      public bluez::BluetoothDeviceClient::Observer,
+      public bluez::BluetoothInputClient::Observer,
+      public bluez::BluetoothAgentServiceProvider::Delegate {
  public:
   typedef base::Callback<void(const std::string& error_message)>
       ErrorCompletionCallback;
@@ -156,8 +156,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   // |error_callback| will be called.
   void UseProfile(const device::BluetoothUUID& uuid,
                   const dbus::ObjectPath& device_path,
-                  const BluetoothProfileManagerClient::Options& options,
-                  BluetoothProfileServiceProvider::Delegate* delegate,
+                  const bluez::BluetoothProfileManagerClient::Options& options,
+                  bluez::BluetoothProfileServiceProvider::Delegate* delegate,
                   const ProfileRegisteredCallback& success_callback,
                   const ErrorCompletionCallback& error_callback);
 
@@ -193,23 +193,23 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   BluetoothAdapterChromeOS();
   ~BluetoothAdapterChromeOS() override;
 
-  // BluetoothAdapterClient::Observer override.
+  // bluez::BluetoothAdapterClient::Observer override.
   void AdapterAdded(const dbus::ObjectPath& object_path) override;
   void AdapterRemoved(const dbus::ObjectPath& object_path) override;
   void AdapterPropertyChanged(const dbus::ObjectPath& object_path,
                               const std::string& property_name) override;
 
-  // BluetoothDeviceClient::Observer override.
+  // bluez::BluetoothDeviceClient::Observer override.
   void DeviceAdded(const dbus::ObjectPath& object_path) override;
   void DeviceRemoved(const dbus::ObjectPath& object_path) override;
   void DevicePropertyChanged(const dbus::ObjectPath& object_path,
                              const std::string& property_name) override;
 
-  // BluetoothInputClient::Observer override.
+  // bluez::BluetoothInputClient::Observer override.
   void InputPropertyChanged(const dbus::ObjectPath& object_path,
                             const std::string& property_name) override;
 
-  // BluetoothAgentServiceProvider::Delegate override.
+  // bluez::BluetoothAgentServiceProvider::Delegate override.
   void Released() override;
   void RequestPinCode(const dbus::ObjectPath& device_path,
                       const PinCodeCallback& callback) override;
@@ -332,11 +332,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
   void OnRegisterProfile(const device::BluetoothUUID& uuid,
                          scoped_ptr<BluetoothAdapterProfileChromeOS> profile);
 
-  void SetProfileDelegate(const device::BluetoothUUID& uuid,
-                          const dbus::ObjectPath& device_path,
-                          BluetoothProfileServiceProvider::Delegate* delegate,
-                          const ProfileRegisteredCallback& success_callback,
-                          const ErrorCompletionCallback& error_callback);
+  void SetProfileDelegate(
+      const device::BluetoothUUID& uuid,
+      const dbus::ObjectPath& device_path,
+      bluez::BluetoothProfileServiceProvider::Delegate* delegate,
+      const ProfileRegisteredCallback& success_callback,
+      const ErrorCompletionCallback& error_callback);
   void OnRegisterProfileError(const device::BluetoothUUID& uuid,
                               const std::string& error_name,
                               const std::string& error_message);
@@ -376,7 +377,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
 
   // Instance of the D-Bus agent object used for pairing, initialized with
   // our own class as its delegate.
-  scoped_ptr<BluetoothAgentServiceProvider> agent_;
+  scoped_ptr<bluez::BluetoothAgentServiceProvider> agent_;
 
   // UI thread task runner and socket thread object used to create sockets.
   scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;

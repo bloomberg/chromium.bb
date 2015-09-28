@@ -11,11 +11,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/dbus/bluetooth_device_client.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 
 namespace device {
 class BluetoothSocketThread;
@@ -35,7 +35,7 @@ class BluetoothPairingChromeOS;
 // thread.
 class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
-      public BluetoothGattServiceClient::Observer {
+      public bluez::BluetoothGattServiceClient::Observer {
  public:
   // BluetoothDevice override
   uint32 GetBluetoothClass() const override;
@@ -115,7 +115,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
   ~BluetoothDeviceChromeOS() override;
 
-  // BluetoothGattServiceClient::Observer overrides.
+  // bluez::BluetoothGattServiceClient::Observer overrides.
   void GattServiceAdded(const dbus::ObjectPath& object_path) override;
   void GattServiceRemoved(const dbus::ObjectPath& object_path) override;
 

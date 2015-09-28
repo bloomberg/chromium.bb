@@ -11,18 +11,6 @@
 #include "chromeos/dbus/amplifier_client.h"
 #include "chromeos/dbus/ap_manager_client.h"
 #include "chromeos/dbus/audio_dsp_client.h"
-#include "chromeos/dbus/bluetooth_adapter_client.h"
-#include "chromeos/dbus/bluetooth_agent_manager_client.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_gatt_characteristic_client.h"
-#include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
-#include "chromeos/dbus/bluetooth_gatt_manager_client.h"
-#include "chromeos/dbus/bluetooth_gatt_service_client.h"
-#include "chromeos/dbus/bluetooth_input_client.h"
-#include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
-#include "chromeos/dbus/bluetooth_media_client.h"
-#include "chromeos/dbus/bluetooth_media_transport_client.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -125,62 +113,6 @@ ApManagerClient* DBusThreadManager::GetApManagerClient() {
 
 AudioDspClient* DBusThreadManager::GetAudioDspClient() {
   return client_bundle_->audio_dsp_client();
-}
-
-BluetoothAdapterClient* DBusThreadManager::GetBluetoothAdapterClient() {
-  return client_bundle_->bluetooth_adapter_client();
-}
-
-BluetoothLEAdvertisingManagerClient*
-DBusThreadManager::GetBluetoothLEAdvertisingManagerClient() {
-  return client_bundle_->bluetooth_le_advertising_manager_client();
-}
-
-BluetoothAgentManagerClient*
-DBusThreadManager::GetBluetoothAgentManagerClient() {
-  return client_bundle_->bluetooth_agent_manager_client();
-}
-
-BluetoothDeviceClient* DBusThreadManager::GetBluetoothDeviceClient() {
-  return client_bundle_->bluetooth_device_client();
-}
-
-BluetoothGattCharacteristicClient*
-DBusThreadManager::GetBluetoothGattCharacteristicClient() {
-  return client_bundle_->bluetooth_gatt_characteristic_client();
-}
-
-BluetoothGattDescriptorClient*
-DBusThreadManager::GetBluetoothGattDescriptorClient() {
-  return client_bundle_->bluetooth_gatt_descriptor_client();
-}
-
-BluetoothGattManagerClient*
-DBusThreadManager::GetBluetoothGattManagerClient() {
-  return client_bundle_->bluetooth_gatt_manager_client();
-}
-
-BluetoothGattServiceClient*
-DBusThreadManager::GetBluetoothGattServiceClient() {
-  return client_bundle_->bluetooth_gatt_service_client();
-}
-
-BluetoothInputClient* DBusThreadManager::GetBluetoothInputClient() {
-  return client_bundle_->bluetooth_input_client();
-}
-
-BluetoothMediaClient* DBusThreadManager::GetBluetoothMediaClient() {
-  return client_bundle_->bluetooth_media_client();
-}
-
-BluetoothMediaTransportClient*
-DBusThreadManager::GetBluetoothMediaTransportClient() {
-  return client_bundle_->bluetooth_media_transport_client();
-}
-
-BluetoothProfileManagerClient*
-DBusThreadManager::GetBluetoothProfileManagerClient() {
-  return client_bundle_->bluetooth_profile_manager_client();
 }
 
 CrasAudioClient* DBusThreadManager::GetCrasAudioClient() {
@@ -310,18 +242,6 @@ void DBusThreadManager::InitializeClients() {
   GetAmplifierClient()->Init(GetSystemBus());
   GetApManagerClient()->Init(GetSystemBus());
   GetAudioDspClient()->Init(GetSystemBus());
-  GetBluetoothAdapterClient()->Init(GetSystemBus());
-  GetBluetoothAgentManagerClient()->Init(GetSystemBus());
-  GetBluetoothDeviceClient()->Init(GetSystemBus());
-  GetBluetoothGattCharacteristicClient()->Init(GetSystemBus());
-  GetBluetoothGattDescriptorClient()->Init(GetSystemBus());
-  GetBluetoothGattManagerClient()->Init(GetSystemBus());
-  GetBluetoothGattServiceClient()->Init(GetSystemBus());
-  GetBluetoothInputClient()->Init(GetSystemBus());
-  GetBluetoothLEAdvertisingManagerClient()->Init(GetSystemBus());
-  GetBluetoothMediaClient()->Init(GetSystemBus());
-  GetBluetoothMediaTransportClient()->Init(GetSystemBus());
-  GetBluetoothProfileManagerClient()->Init(GetSystemBus());
   GetCrasAudioClient()->Init(GetSystemBus());
   GetCrosDisksClient()->Init(GetSystemBus());
   GetCryptohomeClient()->Init(GetSystemBus());
@@ -474,78 +394,6 @@ void DBusThreadManagerSetter::SetAmplifierClient(
 void DBusThreadManagerSetter::SetAudioDspClient(
     scoped_ptr<AudioDspClient> client) {
   DBusThreadManager::Get()->client_bundle_->audio_dsp_client_ = client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothAdapterClient(
-    scoped_ptr<BluetoothAdapterClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_adapter_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothLEAdvertisingManagerClient(
-    scoped_ptr<BluetoothLEAdvertisingManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->
-      bluetooth_le_advertising_manager_client_ = client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothAgentManagerClient(
-    scoped_ptr<BluetoothAgentManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_agent_manager_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothDeviceClient(
-    scoped_ptr<BluetoothDeviceClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_device_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothGattCharacteristicClient(
-    scoped_ptr<BluetoothGattCharacteristicClient> client) {
-  DBusThreadManager::Get()->client_bundle_->
-      bluetooth_gatt_characteristic_client_ = client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothGattDescriptorClient(
-    scoped_ptr<BluetoothGattDescriptorClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_gatt_descriptor_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothGattManagerClient(
-    scoped_ptr<BluetoothGattManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_gatt_manager_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothGattServiceClient(
-    scoped_ptr<BluetoothGattServiceClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_gatt_service_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothInputClient(
-    scoped_ptr<BluetoothInputClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_input_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothMediaClient(
-    scoped_ptr<BluetoothMediaClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_media_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothMediaTransportClient(
-    scoped_ptr<BluetoothMediaTransportClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_media_transport_client_ =
-      client.Pass();
-}
-
-void DBusThreadManagerSetter::SetBluetoothProfileManagerClient(
-    scoped_ptr<BluetoothProfileManagerClient> client) {
-  DBusThreadManager::Get()->client_bundle_->bluetooth_profile_manager_client_ =
-      client.Pass();
 }
 
 void DBusThreadManagerSetter::SetCrasAudioClient(

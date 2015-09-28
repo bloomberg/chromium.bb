@@ -5,14 +5,6 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
-#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
-#include "chromeos/dbus/fake_bluetooth_device_client.h"
-#include "chromeos/dbus/fake_bluetooth_gatt_characteristic_client.h"
-#include "chromeos/dbus/fake_bluetooth_gatt_descriptor_client.h"
-#include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
-#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -23,6 +15,14 @@
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_agent_manager_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_device_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_characteristic_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_descriptor_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_gatt_service_client.h"
+#include "device/bluetooth/dbus/fake_bluetooth_input_client.h"
 #include "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +41,11 @@ namespace chromeos {
 namespace {
 
 const BluetoothUUID kHeartRateMeasurementUUID(
-    FakeBluetoothGattCharacteristicClient::kHeartRateMeasurementUUID);
+    bluez::FakeBluetoothGattCharacteristicClient::kHeartRateMeasurementUUID);
 const BluetoothUUID kBodySensorLocationUUID(
-    FakeBluetoothGattCharacteristicClient::kBodySensorLocationUUID);
+    bluez::FakeBluetoothGattCharacteristicClient::kBodySensorLocationUUID);
 const BluetoothUUID kHeartRateControlPointUUID(
-    FakeBluetoothGattCharacteristicClient::kHeartRateControlPointUUID);
+    bluez::FakeBluetoothGattCharacteristicClient::kHeartRateControlPointUUID);
 
 // Compares GATT characteristic/descriptor values. Returns true, if the values
 // are equal.
@@ -70,34 +70,36 @@ class BluetoothGattChromeOSTest : public testing::Test {
   }
 
   void SetUp() override {
-    scoped_ptr<DBusThreadManagerSetter> dbus_setter =
-        chromeos::DBusThreadManager::GetSetterForTesting();
-    fake_bluetooth_device_client_ = new FakeBluetoothDeviceClient;
+    scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
+        bluez::BluezDBusManager::GetSetterForTesting();
+    fake_bluetooth_device_client_ = new bluez::FakeBluetoothDeviceClient;
     fake_bluetooth_gatt_service_client_ =
-        new FakeBluetoothGattServiceClient;
+        new bluez::FakeBluetoothGattServiceClient;
     fake_bluetooth_gatt_characteristic_client_ =
-        new FakeBluetoothGattCharacteristicClient;
+        new bluez::FakeBluetoothGattCharacteristicClient;
     fake_bluetooth_gatt_descriptor_client_ =
-        new FakeBluetoothGattDescriptorClient;
+        new bluez::FakeBluetoothGattDescriptorClient;
     dbus_setter->SetBluetoothDeviceClient(
-        scoped_ptr<BluetoothDeviceClient>(
+        scoped_ptr<bluez::BluetoothDeviceClient>(
             fake_bluetooth_device_client_));
     dbus_setter->SetBluetoothGattServiceClient(
-        scoped_ptr<BluetoothGattServiceClient>(
+        scoped_ptr<bluez::BluetoothGattServiceClient>(
             fake_bluetooth_gatt_service_client_));
     dbus_setter->SetBluetoothGattCharacteristicClient(
-        scoped_ptr<BluetoothGattCharacteristicClient>(
+        scoped_ptr<bluez::BluetoothGattCharacteristicClient>(
             fake_bluetooth_gatt_characteristic_client_));
     dbus_setter->SetBluetoothGattDescriptorClient(
-        scoped_ptr<BluetoothGattDescriptorClient>(
+        scoped_ptr<bluez::BluetoothGattDescriptorClient>(
             fake_bluetooth_gatt_descriptor_client_));
     dbus_setter->SetBluetoothAdapterClient(
-        scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
+        scoped_ptr<bluez::BluetoothAdapterClient>(
+            new bluez::FakeBluetoothAdapterClient));
     dbus_setter->SetBluetoothInputClient(
-        scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+        scoped_ptr<bluez::BluetoothInputClient>(
+            new bluez::FakeBluetoothInputClient));
     dbus_setter->SetBluetoothAgentManagerClient(
-        scoped_ptr<BluetoothAgentManagerClient>(
-            new FakeBluetoothAgentManagerClient));
+        scoped_ptr<bluez::BluetoothAgentManagerClient>(
+            new bluez::FakeBluetoothAgentManagerClient));
 
     GetAdapter();
 
@@ -112,7 +114,7 @@ class BluetoothGattChromeOSTest : public testing::Test {
     adapter_ = NULL;
     update_sessions_.clear();
     gatt_conn_.reset();
-    DBusThreadManager::Shutdown();
+    bluez::BluezDBusManager::Shutdown();
   }
 
   void GetAdapter() {
@@ -175,11 +177,12 @@ class BluetoothGattChromeOSTest : public testing::Test {
 
   base::MessageLoop message_loop_;
 
-  FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
-  FakeBluetoothGattServiceClient* fake_bluetooth_gatt_service_client_;
-  FakeBluetoothGattCharacteristicClient*
+  bluez::FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
+  bluez::FakeBluetoothGattServiceClient* fake_bluetooth_gatt_service_client_;
+  bluez::FakeBluetoothGattCharacteristicClient*
       fake_bluetooth_gatt_characteristic_client_;
-  FakeBluetoothGattDescriptorClient* fake_bluetooth_gatt_descriptor_client_;
+  bluez::FakeBluetoothGattDescriptorClient*
+      fake_bluetooth_gatt_descriptor_client_;
   scoped_ptr<device::BluetoothGattConnection> gatt_conn_;
   ScopedVector<BluetoothGattNotifySession> update_sessions_;
   scoped_refptr<BluetoothAdapter> adapter_;
@@ -192,10 +195,10 @@ class BluetoothGattChromeOSTest : public testing::Test {
 
 TEST_F(BluetoothGattChromeOSTest, GattConnection) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
   ASSERT_FALSE(device->IsConnected());
   ASSERT_FALSE(gatt_conn_.get());
@@ -213,7 +216,7 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
   EXPECT_TRUE(device->IsConnected());
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_TRUE(gatt_conn_->IsConnected());
-  EXPECT_EQ(FakeBluetoothDeviceClient::kLowEnergyAddress,
+  EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress,
             gatt_conn_->GetDeviceAddress());
 
   gatt_conn_->Disconnect();
@@ -255,8 +258,8 @@ TEST_F(BluetoothGattChromeOSTest, GattConnection) {
   EXPECT_TRUE(gatt_conn_->IsConnected());
 
   fake_bluetooth_device_client_->RemoveDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 }
@@ -265,10 +268,10 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
   // Create a fake LE device. We store the device pointer here because this is a
   // test. It's unsafe to do this in production as the device might get deleted.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -281,14 +284,14 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
 
   // Expose the fake Heart Rate Service.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   EXPECT_EQ(1, observer.gatt_service_added_count());
   EXPECT_EQ(0, observer.gatt_service_removed_count());
   EXPECT_FALSE(observer.last_gatt_service_id().empty());
   EXPECT_EQ(1U, device->GetGattServices().size());
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-      observer.last_gatt_service_uuid());
+  EXPECT_EQ(BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            observer.last_gatt_service_uuid());
 
   BluetoothGattService* service =
       device->GetGattService(observer.last_gatt_service_id());
@@ -308,9 +311,9 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
   EXPECT_EQ(1, observer.gatt_service_removed_count());
   EXPECT_FALSE(observer.last_gatt_service_id().empty());
   EXPECT_TRUE(device->GetGattServices().empty());
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-      observer.last_gatt_service_uuid());
+  EXPECT_EQ(BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            observer.last_gatt_service_uuid());
 
   EXPECT_EQ(NULL, device->GetGattService(observer.last_gatt_service_id()));
 
@@ -318,14 +321,14 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
   observer.last_gatt_service_uuid() = BluetoothUUID();
   observer.last_gatt_service_id().clear();
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   EXPECT_EQ(2, observer.gatt_service_added_count());
   EXPECT_EQ(1, observer.gatt_service_removed_count());
   EXPECT_FALSE(observer.last_gatt_service_id().empty());
   EXPECT_EQ(1U, device->GetGattServices().size());
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-      observer.last_gatt_service_uuid());
+  EXPECT_EQ(BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            observer.last_gatt_service_uuid());
 
   // The object |service| points to should have been deallocated. |device|
   // should contain a brand new instance.
@@ -341,25 +344,25 @@ TEST_F(BluetoothGattChromeOSTest, GattServiceAddedAndRemoved) {
   observer.last_gatt_service_uuid() = BluetoothUUID();
   observer.last_gatt_service_id().clear();
   fake_bluetooth_device_client_->RemoveDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
 
   EXPECT_EQ(2, observer.gatt_service_added_count());
   EXPECT_EQ(2, observer.gatt_service_removed_count());
   EXPECT_FALSE(observer.last_gatt_service_id().empty());
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-      observer.last_gatt_service_uuid());
-  EXPECT_EQ(
-      NULL, adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress));
+  EXPECT_EQ(BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            observer.last_gatt_service_uuid());
+  EXPECT_EQ(NULL, adapter_->GetDevice(
+                      bluez::FakeBluetoothDeviceClient::kLowEnergyAddress));
 }
 
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -367,7 +370,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =
@@ -424,10 +427,10 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicAddedAndRemoved) {
 
 TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -435,7 +438,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =
@@ -496,7 +499,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorAddedAndRemoved) {
   observer.last_gatt_descriptor_uuid() = BluetoothUUID();
   fake_bluetooth_gatt_descriptor_client_->ExposeDescriptor(
       dbus::ObjectPath(characteristic->GetIdentifier()),
-      FakeBluetoothGattDescriptorClient::
+      bluez::FakeBluetoothGattDescriptorClient::
           kClientCharacteristicConfigurationUUID);
   EXPECT_EQ(0, observer.gatt_service_changed_count());
   EXPECT_EQ(1U, characteristic->GetDescriptors().size());
@@ -520,10 +523,10 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
 
   // Create the fake D-Bus objects.
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   while (!fake_bluetooth_gatt_characteristic_client_->IsHeartRateVisible())
     base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(fake_bluetooth_gatt_service_client_->IsHeartRateVisible());
@@ -531,8 +534,8 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
 
   // Create the adapter. This should create all the GATT objects.
   GetAdapter();
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
   EXPECT_EQ(1U, device->GetGattServices().size());
 
@@ -540,9 +543,9 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
   ASSERT_TRUE(service);
   EXPECT_FALSE(service->IsLocal());
   EXPECT_TRUE(service->IsPrimary());
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
-      service->GetUUID());
+  EXPECT_EQ(BluetoothUUID(
+                bluez::FakeBluetoothGattServiceClient::kHeartRateServiceUUID),
+            service->GetUUID());
   EXPECT_EQ(service, device->GetGattServices()[0]);
   EXPECT_EQ(service, device->GetGattService(service->GetIdentifier()));
   EXPECT_FALSE(service->IsLocal());
@@ -552,10 +555,9 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
       fake_bluetooth_gatt_characteristic_client_->
           GetBodySensorLocationPath().value());
   ASSERT_TRUE(characteristic);
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattCharacteristicClient::
-          kBodySensorLocationUUID),
-      characteristic->GetUUID());
+  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                              kBodySensorLocationUUID),
+            characteristic->GetUUID());
   EXPECT_FALSE(characteristic->IsLocal());
   EXPECT_TRUE(characteristic->GetDescriptors().empty());
 
@@ -563,10 +565,9 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
       fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateControlPointPath().value());
   ASSERT_TRUE(characteristic);
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattCharacteristicClient::
-          kHeartRateControlPointUUID),
-      characteristic->GetUUID());
+  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                              kHeartRateControlPointUUID),
+            characteristic->GetUUID());
   EXPECT_FALSE(characteristic->IsLocal());
   EXPECT_TRUE(characteristic->GetDescriptors().empty());
 
@@ -574,10 +575,9 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
       fake_bluetooth_gatt_characteristic_client_->
           GetHeartRateMeasurementPath().value());
   ASSERT_TRUE(characteristic);
-  EXPECT_EQ(
-      BluetoothUUID(FakeBluetoothGattCharacteristicClient::
-          kHeartRateMeasurementUUID),
-      characteristic->GetUUID());
+  EXPECT_EQ(BluetoothUUID(bluez::FakeBluetoothGattCharacteristicClient::
+                              kHeartRateMeasurementUUID),
+            characteristic->GetUUID());
   EXPECT_FALSE(characteristic->IsLocal());
   EXPECT_EQ(1U, characteristic->GetDescriptors().size());
 
@@ -590,10 +590,10 @@ TEST_F(BluetoothGattChromeOSTest, AdapterAddedAfterGattService) {
 
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -601,7 +601,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =
@@ -805,10 +805,10 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicValue) {
 
 TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -816,7 +816,7 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
 
   BluetoothGattService* service =
       device->GetGattService(observer.last_gatt_service_id());
@@ -847,10 +847,10 @@ TEST_F(BluetoothGattChromeOSTest, GattCharacteristicProperties) {
 
 TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
-  BluetoothDevice* device = adapter_->GetDevice(
-      FakeBluetoothDeviceClient::kLowEnergyAddress);
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -858,7 +858,7 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =
@@ -970,10 +970,10 @@ TEST_F(BluetoothGattChromeOSTest, GattDescriptorValue) {
 
 TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress);
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -981,7 +981,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =
@@ -1119,10 +1119,10 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessions) {
 
 TEST_F(BluetoothGattChromeOSTest, NotifySessionsMadeInactive) {
   fake_bluetooth_device_client_->CreateDevice(
-      dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath),
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   BluetoothDevice* device =
-      adapter_->GetDevice(FakeBluetoothDeviceClient::kLowEnergyAddress);
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
 
   TestBluetoothAdapterObserver observer(adapter_);
@@ -1130,7 +1130,7 @@ TEST_F(BluetoothGattChromeOSTest, NotifySessionsMadeInactive) {
   // Expose the fake Heart Rate service. This will asynchronously expose
   // characteristics.
   fake_bluetooth_gatt_service_client_->ExposeHeartRateService(
-      dbus::ObjectPath(FakeBluetoothDeviceClient::kLowEnergyPath));
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kLowEnergyPath));
   ASSERT_EQ(1, observer.gatt_service_added_count());
 
   BluetoothGattService* service =

@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace chromeos {
 
@@ -47,9 +47,10 @@ std::string BluetoothRemoteGattDescriptorChromeOS::GetIdentifier() const {
 }
 
 device::BluetoothUUID BluetoothRemoteGattDescriptorChromeOS::GetUUID() const {
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->
-          GetProperties(object_path_);
+  bluez::BluetoothGattDescriptorClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothGattDescriptorClient()
+          ->GetProperties(object_path_);
   DCHECK(properties);
   return device::BluetoothUUID(properties->uuid.value());
 }
@@ -60,8 +61,8 @@ bool BluetoothRemoteGattDescriptorChromeOS::IsLocal() const {
 
 const std::vector<uint8>&
 BluetoothRemoteGattDescriptorChromeOS::GetValue() const {
-  BluetoothGattDescriptorClient::Properties* properties =
-      DBusThreadManager::Get()
+  bluez::BluetoothGattDescriptorClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
           ->GetProperties(object_path_);
 
@@ -89,7 +90,7 @@ void BluetoothRemoteGattDescriptorChromeOS::ReadRemoteDescriptor(
           << "descriptor: " << GetIdentifier() << ", UUID: "
           << GetUUID().canonical_value();
 
-  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
+  bluez::BluezDBusManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
       object_path_, callback,
       base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
@@ -104,13 +105,11 @@ void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
           << GetUUID().canonical_value() << ", with value: "
           << new_value << ".";
 
-  DBusThreadManager::Get()->GetBluetoothGattDescriptorClient()->WriteValue(
-      object_path_,
-      new_value,
-      callback,
-      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 error_callback));
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothGattDescriptorClient()
+      ->WriteValue(object_path_, new_value, callback,
+                   base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
+                              weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothRemoteGattDescriptorChromeOS::OnError(

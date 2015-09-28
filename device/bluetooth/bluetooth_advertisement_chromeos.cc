@@ -12,11 +12,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
-#include "chromeos/dbus/bluetooth_le_advertising_manager_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -82,10 +82,12 @@ BluetoothAdvertisementChromeOS::BluetoothAdvertisementChromeOS(
   dbus::ObjectPath advertisement_object_path =
       dbus::ObjectPath("/org/chromium/bluetooth_advertisement/" + GuidString);
 
-  DCHECK(DBusThreadManager::Get());
-  provider_ = BluetoothLEAdvertisementServiceProvider::Create(
-      DBusThreadManager::Get()->GetSystemBus(), advertisement_object_path, this,
-      static_cast<BluetoothLEAdvertisementServiceProvider::AdvertisementType>(
+  DCHECK(bluez::BluezDBusManager::Get());
+  provider_ = bluez::BluetoothLEAdvertisementServiceProvider::Create(
+      bluez::BluezDBusManager::Get()->GetSystemBus(), advertisement_object_path,
+      this,
+      static_cast<
+          bluez::BluetoothLEAdvertisementServiceProvider::AdvertisementType>(
           data->type()),
       data->service_uuids().Pass(), data->manufacturer_data().Pass(),
       data->solicit_uuids().Pass(), data->service_data().Pass());
@@ -95,8 +97,8 @@ void BluetoothAdvertisementChromeOS::Register(
     const base::Closure& success_callback,
     const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
         error_callback) {
-  DCHECK(DBusThreadManager::Get());
-  DBusThreadManager::Get()
+  DCHECK(bluez::BluezDBusManager::Get());
+  bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
       ->RegisterAdvertisement(
           adapter_->object_path(), provider_->object_path(), success_callback,
@@ -118,8 +120,8 @@ void BluetoothAdvertisementChromeOS::Unregister(
     return;
   }
 
-  DCHECK(DBusThreadManager::Get());
-  DBusThreadManager::Get()
+  DCHECK(bluez::BluezDBusManager::Get());
+  bluez::BluezDBusManager::Get()
       ->GetBluetoothLEAdvertisingManagerClient()
       ->UnregisterAdvertisement(
           adapter_->object_path(), provider_->object_path(), success_callback,

@@ -13,6 +13,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "content/public/browser/browser_thread.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/message_center/message_center.h"
@@ -44,6 +45,10 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   // also create the message center.
   message_center::MessageCenter::Initialize();
   chromeos::DBusThreadManager::Initialize();
+  bluez::BluezDBusManager::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus(),
+      chromeos::DBusThreadManager::Get()->IsUsingStub(
+          chromeos::DBusClientBundle::BLUETOOTH));
   chromeos::CrasAudioHandler::InitializeForTesting();
   chromeos::NetworkHandler::Initialize();
 
@@ -66,6 +71,7 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
 
   chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   // Ash Shell can't just live on its own without a browser process, we need to
   // also shut down the message center.

@@ -9,12 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_bluetooth_le_advertisement_service_provider.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_advertisement_chromeos.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/dbus/fake_bluetooth_le_advertisement_service_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using device::BluetoothAdapter;
@@ -52,7 +52,7 @@ class TestAdvertisementObserver : public BluetoothAdvertisement::Observer {
 class BluetoothAdvertisementChromeOSTest : public testing::Test {
  public:
   void SetUp() override {
-    DBusThreadManager::Initialize();
+    bluez::BluezDBusManager::Initialize(NULL, true);
 
     callback_count_ = 0;
     error_callback_count_ = 0;
@@ -70,7 +70,7 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
     // The adapter should outlive the advertisement.
     advertisement_ = nullptr;
     adapter_ = nullptr;
-    DBusThreadManager::Shutdown();
+    bluez::BluezDBusManager::Shutdown();
   }
 
   // Gets the existing Bluetooth adapter.
@@ -134,8 +134,8 @@ class BluetoothAdvertisementChromeOSTest : public testing::Test {
   void TriggerReleased(scoped_refptr<BluetoothAdvertisement> advertisement) {
     BluetoothAdvertisementChromeOS* adv =
         static_cast<BluetoothAdvertisementChromeOS*>(advertisement.get());
-    FakeBluetoothLEAdvertisementServiceProvider* provider =
-        static_cast<FakeBluetoothLEAdvertisementServiceProvider*>(
+    bluez::FakeBluetoothLEAdvertisementServiceProvider* provider =
+        static_cast<bluez::FakeBluetoothLEAdvertisementServiceProvider*>(
             adv->provider());
     provider->Release();
   }

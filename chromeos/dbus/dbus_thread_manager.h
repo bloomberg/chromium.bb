@@ -28,18 +28,6 @@ namespace chromeos {
 class AmplifierClient;
 class ApManagerClient;
 class AudioDspClient;
-class BluetoothAdapterClient;
-class BluetoothLEAdvertisingManagerClient;
-class BluetoothAgentManagerClient;
-class BluetoothDeviceClient;
-class BluetoothGattCharacteristicClient;
-class BluetoothGattDescriptorClient;
-class BluetoothGattManagerClient;
-class BluetoothGattServiceClient;
-class BluetoothInputClient;
-class BluetoothMediaClient;
-class BluetoothMediaTransportClient;
-class BluetoothProfileManagerClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
@@ -124,18 +112,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   AmplifierClient* GetAmplifierClient();
   ApManagerClient* GetApManagerClient();
   AudioDspClient* GetAudioDspClient();
-  BluetoothAdapterClient* GetBluetoothAdapterClient();
-  BluetoothLEAdvertisingManagerClient* GetBluetoothLEAdvertisingManagerClient();
-  BluetoothAgentManagerClient* GetBluetoothAgentManagerClient();
-  BluetoothDeviceClient* GetBluetoothDeviceClient();
-  BluetoothGattCharacteristicClient* GetBluetoothGattCharacteristicClient();
-  BluetoothGattDescriptorClient* GetBluetoothGattDescriptorClient();
-  BluetoothGattManagerClient* GetBluetoothGattManagerClient();
-  BluetoothGattServiceClient* GetBluetoothGattServiceClient();
-  BluetoothInputClient* GetBluetoothInputClient();
-  BluetoothMediaClient* GetBluetoothMediaClient();
-  BluetoothMediaTransportClient* GetBluetoothMediaTransportClient();
-  BluetoothProfileManagerClient* GetBluetoothProfileManagerClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
   CryptohomeClient* GetCryptohomeClient();
@@ -210,26 +186,6 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
 
   void SetAmplifierClient(scoped_ptr<AmplifierClient> client);
   void SetAudioDspClient(scoped_ptr<AudioDspClient> client);
-  void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
-  void SetBluetoothLEAdvertisingManagerClient(
-      scoped_ptr<BluetoothLEAdvertisingManagerClient> client);
-  void SetBluetoothAgentManagerClient(
-      scoped_ptr<BluetoothAgentManagerClient> client);
-  void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);
-  void SetBluetoothGattCharacteristicClient(
-      scoped_ptr<BluetoothGattCharacteristicClient> client);
-  void SetBluetoothGattDescriptorClient(
-      scoped_ptr<BluetoothGattDescriptorClient> client);
-  void SetBluetoothGattManagerClient(
-      scoped_ptr<BluetoothGattManagerClient> client);
-  void SetBluetoothGattServiceClient(
-      scoped_ptr<BluetoothGattServiceClient> client);
-  void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
-  void SetBluetoothMediaClient(scoped_ptr<BluetoothMediaClient> client);
-  void SetBluetoothMediaTransportClient(
-      scoped_ptr<BluetoothMediaTransportClient> client);
-  void SetBluetoothProfileManagerClient(
-      scoped_ptr<BluetoothProfileManagerClient> client);
   void SetCrasAudioClient(scoped_ptr<CrasAudioClient> client);
   void SetCrosDisksClient(scoped_ptr<CrosDisksClient> client);
   void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);

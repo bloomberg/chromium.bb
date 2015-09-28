@@ -9,32 +9,31 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "chromeos/dbus/bluetooth_profile_service_provider.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
 namespace chromeos {
 
 // static
 void BluetoothAdapterProfileChromeOS::Register(
     const device::BluetoothUUID& uuid,
-    const BluetoothProfileManagerClient::Options& options,
+    const bluez::BluetoothProfileManagerClient::Options& options,
     const ProfileRegisteredCallback& success_callback,
-    const BluetoothProfileManagerClient::ErrorCallback& error_callback) {
+    const bluez::BluetoothProfileManagerClient::ErrorCallback& error_callback) {
   scoped_ptr<BluetoothAdapterProfileChromeOS> profile(
       new BluetoothAdapterProfileChromeOS(uuid));
 
   VLOG(1) << "Registering profile: " << profile->object_path().value();
   const dbus::ObjectPath& object_path = profile->object_path();
-  DBusThreadManager::Get()->GetBluetoothProfileManagerClient()->RegisterProfile(
-      object_path,
-      uuid.canonical_value(),
-      options,
-      base::Bind(success_callback, base::Passed(&profile)),
-      error_callback);
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothProfileManagerClient()
+      ->RegisterProfile(object_path, uuid.canonical_value(), options,
+                        base::Bind(success_callback, base::Passed(&profile)),
+                        error_callback);
 }
 
 BluetoothAdapterProfileChromeOS::BluetoothAdapterProfileChromeOS(
@@ -45,9 +44,9 @@ BluetoothAdapterProfileChromeOS::BluetoothAdapterProfileChromeOS(
   object_path_ =
       dbus::ObjectPath("/org/chromium/bluetooth_profile/" + uuid_path);
 
-  dbus::Bus* system_bus = DBusThreadManager::Get()->GetSystemBus();
-  profile_.reset(
-      BluetoothProfileServiceProvider::Create(system_bus, object_path_, this));
+  dbus::Bus* system_bus = bluez::BluezDBusManager::Get()->GetSystemBus();
+  profile_.reset(bluez::BluetoothProfileServiceProvider::Create(
+      system_bus, object_path_, this));
   DCHECK(profile_.get());
 }
 
@@ -56,7 +55,7 @@ BluetoothAdapterProfileChromeOS::~BluetoothAdapterProfileChromeOS() {
 
 bool BluetoothAdapterProfileChromeOS::SetDelegate(
     const dbus::ObjectPath& device_path,
-    BluetoothProfileServiceProvider::Delegate* delegate) {
+    bluez::BluetoothProfileServiceProvider::Delegate* delegate) {
   DCHECK(delegate);
   VLOG(1) << "SetDelegate: " << object_path_.value() << " dev "
           << device_path.value();
@@ -86,7 +85,7 @@ void BluetoothAdapterProfileChromeOS::RemoveDelegate(
   VLOG(1) << device_path.value() << " No delegates left, unregistering.";
 
   // No users left, release the profile.
-  DBusThreadManager::Get()
+  bluez::BluezDBusManager::Get()
       ->GetBluetoothProfileManagerClient()
       ->UnregisterProfile(
           object_path_, unregistered_callback,
@@ -105,7 +104,7 @@ void BluetoothAdapterProfileChromeOS::OnUnregisterProfileError(
   unregistered_callback.Run();
 }
 
-// BluetoothProfileServiceProvider::Delegate:
+// bluez::BluetoothProfileServiceProvider::Delegate:
 void BluetoothAdapterProfileChromeOS::Released() {
   VLOG(1) << object_path_.value() << ": Release";
 }
@@ -113,7 +112,7 @@ void BluetoothAdapterProfileChromeOS::Released() {
 void BluetoothAdapterProfileChromeOS::NewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
-    const BluetoothProfileServiceProvider::Delegate::Options& options,
+    const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
     const ConfirmationCallback& callback) {
   dbus::ObjectPath delegate_path = device_path;
 

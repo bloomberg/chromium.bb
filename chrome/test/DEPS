@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/grit",  # For generated headers
   "+chromeos",
   "+components",
+  "+device/bluetooth/dbus",
   "+extensions",
 
   # Tests under chrome/ shouldn't need to access the internals of content/ and

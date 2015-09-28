@@ -16,6 +16,7 @@
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
+#include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -42,6 +43,10 @@ TestingIOThreadState::TestingIOThreadState() {
 #if defined(OS_CHROMEOS)
   // Needed by IOThread constructor.
   chromeos::DBusThreadManager::Initialize();
+  bluez::BluezDBusManager::Initialize(
+      chromeos::DBusThreadManager::Get()->GetSystemBus(),
+      chromeos::DBusThreadManager::Get()->IsUsingStub(
+          chromeos::DBusClientBundle::BLUETOOTH));
   chromeos::NetworkHandler::Initialize();
 #endif
 
@@ -75,6 +80,7 @@ TestingIOThreadState::~TestingIOThreadState() {
 
 #if defined(OS_CHROMEOS)
   chromeos::NetworkHandler::Shutdown();
+  bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
 }

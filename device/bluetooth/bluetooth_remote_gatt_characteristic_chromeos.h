@@ -12,10 +12,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "chromeos/dbus/bluetooth_gatt_descriptor_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
 
 namespace device {
 
@@ -34,7 +34,7 @@ class BluetoothRemoteGattServiceChromeOS;
 // platform.
 class BluetoothRemoteGattCharacteristicChromeOS
     : public device::BluetoothGattCharacteristic,
-      public BluetoothGattDescriptorClient::Observer {
+      public bluez::BluetoothGattDescriptorClient::Observer {
  public:
   // device::BluetoothGattCharacteristic overrides.
   std::string GetIdentifier() const override;
@@ -78,7 +78,7 @@ class BluetoothRemoteGattCharacteristicChromeOS
       const dbus::ObjectPath& object_path);
   ~BluetoothRemoteGattCharacteristicChromeOS() override;
 
-  // BluetoothGattDescriptorClient::Observer overrides.
+  // bluez::BluetoothGattDescriptorClient::Observer overrides.
   void GattDescriptorAdded(const dbus::ObjectPath& object_path) override;
   void GattDescriptorRemoved(const dbus::ObjectPath& object_path) override;
   void GattDescriptorPropertyChanged(const dbus::ObjectPath& object_path,
