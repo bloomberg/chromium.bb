@@ -2729,6 +2729,8 @@
     'chrome_browser_ssl_sources': [
       'browser/ssl/bad_clock_blocking_page.cc',
       'browser/ssl/bad_clock_blocking_page.h',
+      'browser/ssl/captive_portal_metrics_recorder.cc',
+      'browser/ssl/captive_portal_metrics_recorder.h',
       'browser/ssl/cert_report_helper.cc',
       'browser/ssl/cert_report_helper.h',
       'browser/ssl/chrome_ssl_host_state_delegate.cc',

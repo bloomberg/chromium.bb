@@ -18,9 +18,13 @@ namespace extensions {
 class ExperienceSamplingEvent;
 }
 
+class CaptivePortalMetricsRecorder;
+
 // This class adds desktop-Chrome-specific metrics (extension experience
 // sampling) to the security_interstitials::MetricsHelper. Together, they
 // record UMA, Rappor, and experience sampling metrics.
+
+// This class is meant to be used on the UI thread for captive portal metrics.
 class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
  public:
   ChromeMetricsHelper(
@@ -30,12 +34,15 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
       const std::string& sampling_event_name);
   ~ChromeMetricsHelper() override;
 
+  void StartRecordingCaptivePortalMetrics(bool overridable);
+
  protected:
   // security_interstitials::MetricsHelper methods:
   void RecordExtraUserDecisionMetrics(
       security_interstitials::MetricsHelper::Decision decision) override;
   void RecordExtraUserInteractionMetrics(
       security_interstitials::MetricsHelper::Interaction interaction) override;
+  void RecordExtraShutdownMetrics() override;
 
  private:
   content::WebContents* web_contents_;
@@ -44,6 +51,7 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
 #if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 #endif
+  scoped_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsHelper);
 };

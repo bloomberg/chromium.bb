@@ -10,29 +10,16 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/time/time.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
-namespace content {
-class WebContents;
-}
-
-// This class classifies characteristics of SSL errors, including information
-// about captive portal detection.
-//
-// This class should only be used on the UI thread because its
-// implementation uses captive_portal::CaptivePortalService which can only be
-// accessed on the UI thread.
-class SSLErrorClassification : public content::NotificationObserver {
+class SSLErrorClassification {
  public:
-  SSLErrorClassification(content::WebContents* web_contents,
-                         const base::Time& current_time,
+  SSLErrorClassification(const base::Time& current_time,
                          const GURL& url,
                          int cert_error,
                          const net::X509Certificate& cert);
-  ~SSLErrorClassification() override;
+  ~SSLErrorClassification();
 
   // Returns true if the system time is in the past.
   static bool IsUserClockInThePast(const base::Time& time_now);
@@ -63,7 +50,6 @@ class SSLErrorClassification : public content::NotificationObserver {
                                    std::string* www_match_host_name);
 
   void RecordUMAStatistics(bool overridable) const;
-  void RecordCaptivePortalUMAStatistics(bool overridable) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SSLErrorClassificationTest, TestDateInvalidScore);
@@ -132,24 +118,10 @@ class SSLErrorClassification : public content::NotificationObserver {
 
   static Tokens Tokenize(const std::string& name);
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-
-  content::WebContents* web_contents_;
   base::Time current_time_;
   const GURL request_url_;
   int cert_error_;
   const net::X509Certificate& cert_;
-  bool captive_portal_detection_enabled_;
-  // Did the probe complete before the interstitial was closed?
-  bool captive_portal_probe_completed_;
-  // Did the captive portal probe receive an error or get a non-HTTP response?
-  bool captive_portal_no_response_;
-  bool captive_portal_detected_;
-
-  content::NotificationRegistrar registrar_;
 };
 
 #endif  // CHROME_BROWSER_SSL_SSL_ERROR_CLASSIFICATION_H_
