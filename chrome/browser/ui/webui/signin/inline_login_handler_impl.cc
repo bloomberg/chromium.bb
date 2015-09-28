@@ -69,6 +69,11 @@ void LogHistogramValue(int action) {
                             signin_metrics::HISTOGRAM_MAX);
 }
 
+// Returns true if |profile| is a system profile or created from one.
+bool IsSystemProfile(Profile* profile) {
+  return profile->GetOriginalProfile()->IsSystemProfile();
+}
+
 void RedirectToNtpOrAppsPage(content::WebContents* contents,
                              signin_metrics::Source source) {
   // Do nothing if a navigation is pending, since this call can be triggered
@@ -599,6 +604,12 @@ bool InlineLoginHandlerImpl::CanOffer(Profile* profile,
 void InlineLoginHandlerImpl::SetExtraInitParams(base::DictionaryValue& params) {
   params.SetString("service", "chromiumsync");
 
+  // If this was called from the user manager to reauthenticate the profile,
+  // make sure the webui is aware.
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (IsSystemProfile(profile))
+    params.SetBoolean("dontResizeNonEmbeddedPages", true);
+
   content::WebContents* contents = web_ui()->GetWebContents();
   content::WebContentsObserver::Observe(contents);
   LogHistogramValue(signin_metrics::HISTOGRAM_SHOWN);
@@ -655,7 +666,7 @@ void InlineLoginHandlerImpl::CompleteLogin(const base::ListValue* args) {
   // find the right profile to reauthenticate.  Otherwise the profile can be
   // taken from web_ui().
   Profile* profile = Profile::FromWebUI(web_ui());
-  if (profile->GetOriginalProfile()->IsSystemProfile()) {
+  if (IsSystemProfile(profile)) {
     // Switch to the profile and finish the login.  Don't pass a handler pointer
     // since it will be destroyed before the callback runs.
     ProfileManager* manager = g_browser_process->profile_manager();

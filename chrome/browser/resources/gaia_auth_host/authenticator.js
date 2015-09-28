@@ -208,6 +208,7 @@ cr.define('cr.login', function() {
     this.gapsCookie_ = data.gapsCookie;
     this.gapsCookieSent_ = false;
     this.newGapsCookie_ = null;
+    this.dontResizeNonEmbeddedPages = data.dontResizeNonEmbeddedPages;
 
     this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
     this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
@@ -315,7 +316,12 @@ cr.define('cr.login', function() {
           }
         }
       }
-      if (!isEmbeddedPage) {
+
+      // In some cases, non-embedded pages should not be resized.  For
+      // example, on desktop when reauthenticating for purposes of unlocking
+      // a profile, resizing would cause a browser window to open in the
+      // system profile, which is not allowed.
+      if (!isEmbeddedPage && !this.dontResizeNonEmbeddedPages) {
         this.dispatchEvent(new CustomEvent('resize', {detail: currentUrl}));
         return;
       }
