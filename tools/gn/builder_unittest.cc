@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/gn/builder.h"
+#include "tools/gn/config.h"
 #include "tools/gn/loader.h"
 #include "tools/gn/target.h"
 #include "tools/gn/test_with_scope.h"
@@ -32,8 +33,17 @@ class MockLoader : public Loader {
     return files_.empty();
   }
 
-  // Returns true if two loads have been requested and they match the given
-  // file. This will clear the records so it will be empty for the next call.
+  // Returns true if one/two loads have been requested and they match the given
+  // file(s). This will clear the records so it will be empty for the next call.
+  bool HasLoadedOne(const SourceFile& file) {
+    if (files_.size() != 1u) {
+      files_.clear();
+      return false;
+    }
+    bool match = (files_[0] == file);
+    files_.clear();
+    return match;
+  }
   bool HasLoadedTwo(const SourceFile& a, const SourceFile& b) {
     if (files_.size() != 2u) {
       files_.clear();
@@ -215,4 +225,25 @@ TEST_F(BuilderTest, ShouldGenerate) {
 
   // It should have gotten pushed to B.
   EXPECT_TRUE(b_record->should_generate());
+}
+
+// Tests that configs applied to a config get loaded (bug 536844).
+TEST_F(BuilderTest, ConfigLoad) {
+  SourceDir toolchain_dir = settings_.toolchain_label().dir();
+  std::string toolchain_name = settings_.toolchain_label().name();
+
+  // Construct a dependency chain: A -> B -> C. Define A first with a
+  // forward-reference to B, then C, then B to test the different orders that
+  // the dependencies are hooked up.
+  Label a_label(SourceDir("//a/"), "a", toolchain_dir, toolchain_name);
+  Label b_label(SourceDir("//b/"), "b", toolchain_dir, toolchain_name);
+  Label c_label(SourceDir("//c/"), "c", toolchain_dir, toolchain_name);
+
+  // The builder will take ownership of the pointers.
+  Config* a = new Config(&settings_, a_label);
+  a->configs().push_back(LabelConfigPair(b_label));
+  builder_->ItemDefined(scoped_ptr<Item>(a));
+
+  // Should have requested that B is loaded.
+  EXPECT_TRUE(loader_->HasLoadedOne(SourceFile("//b/BUILD.gn")));
 }

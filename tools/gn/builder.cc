@@ -240,6 +240,17 @@ bool Builder::ConfigDefined(BuilderRecord* record, Err* err) {
   Config* config = record->item()->AsConfig();
   if (!AddDeps(record, config->configs(), err))
     return false;
+
+  // Make sure all deps of this config are scheduled to be loaded. For other
+  // item types like targets, the "should generate" flag is propogated around
+  // to mark whether this should happen. We could call
+  // RecursiveSetShouldGenerate to do this step here, but since configs nor
+  // anything they depend on is actually written, the "generate" flag isn't
+  // relevant and means extra book keeping. Just force load any deps of this
+  // config.
+  for (const auto& cur : record->all_deps())
+    ScheduleItemLoadIfNecessary(cur);
+
   return true;
 }
 
