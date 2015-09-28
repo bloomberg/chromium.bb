@@ -69,6 +69,10 @@ void Channel::Shutdown() {
     // |OnReadMessage()| or |OnError()|.
     raw_channel_->Shutdown();
     is_running_ = false;
+    // |WillShutdownSoon()| may not have been called (i.e. on a channel error),
+    // and this flag is relied on to prevent a race with
+    // |AttachAndRunEndpoint()|.
+    is_shutting_down_ = true;
 
     // We need to deal with it outside the lock.
     std::swap(to_destroy, local_id_to_endpoint_map_);
