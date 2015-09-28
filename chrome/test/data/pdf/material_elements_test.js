@@ -109,6 +109,9 @@ var tests = [
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(1, rootBookmarks.length, "one root bookmark");
     var rootBookmark = rootBookmarks[0];
+    MockInteractions.tap(rootBookmark.$.expand);
+
+    Polymer.dom.flush();
 
     var subBookmarks =
         rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
@@ -126,14 +129,6 @@ var tests = [
 
     MockInteractions.tap(subBookmarks[1].$.item);
     chrome.test.assertEq(3, lastPageChange);
-
-    var subBookmarkDiv =
-        rootBookmark.shadowRoot.querySelector('.sub-bookmark');
-
-    chrome.test.assertTrue(subBookmarkDiv.hidden);
-    MockInteractions.tap(rootBookmark.$.expand);
-    chrome.test.assertFalse(subBookmarkDiv.hidden);
-    chrome.test.assertEq('hidden', subBookmarks[1].$.expand.style.visibility);
 
     chrome.test.succeed();
   },

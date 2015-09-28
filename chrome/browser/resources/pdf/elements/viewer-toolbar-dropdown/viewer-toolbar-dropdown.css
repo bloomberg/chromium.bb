@@ -30,7 +30,7 @@ paper-material {
   display: inline-block;
 }
 
-#icon.open {
+:host([dropdown-open]) #icon {
   background-color: rgb(25, 27, 29);
   border-radius: 4px;
 }

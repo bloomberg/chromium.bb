@@ -28,8 +28,9 @@
 
       childDepth: Number,
 
-      childrenShown_: {
+      childrenShown: {
         type: Boolean,
+        reflectToAttribute: true,
         value: false
       }
     },
@@ -50,11 +51,7 @@
     },
 
     toggleChildren: function(e) {
-      this.childrenShown_ = !this.childrenShown_;
-      if (this.childrenShown_)
-        this.$.expand.classList.add('open');
-      else
-        this.$.expand.classList.remove('open');
+      this.childrenShown = !this.childrenShown;
       e.stopPropagation();  // Prevent the above onClick handler from firing.
     }
   });

@@ -11,14 +11,14 @@
       </iron-icon>
       <span id="title">{{bookmark.title}}</span>
     </div>
-    <div class="sub-bookmark" hidden$="{{!childrenShown_}}">
-      <!-- The sub-bookmarks will only be created after the parent bookmark has
-        finished initializing and childDepth is available. -->
+    <!-- dom-if will stamp the complex bookmark tree lazily as individual nodes
+      are opened. -->
+    <template is="dom-if" if="{{childrenShown}}" id="sub-bookmarks">
       <template is="dom-repeat" items="{{bookmark.children}}">
         <viewer-bookmark bookmark="{{item}}" depth="{{childDepth}}">
         </viewer-bookmark>
       </template>
-    </div>
+    </template>
   </template>
 </dom-module>
 <script src="viewer-bookmark.js"></script>

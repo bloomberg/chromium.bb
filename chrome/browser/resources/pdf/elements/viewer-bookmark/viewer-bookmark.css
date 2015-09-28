@@ -33,6 +33,6 @@
   width: 16px;
 }
 
-#expand.open {
+:host([children-shown]) #expand {
   transform: rotate(90deg);
 }
