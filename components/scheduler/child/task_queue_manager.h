@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
-#define CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
+#ifndef CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_MANAGER_H_
+#define CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_MANAGER_H_
 
 #include <map>
 
@@ -15,8 +15,8 @@
 #include "base/pending_task.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/base/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
@@ -258,4 +258,4 @@ class SCHEDULER_EXPORT TaskQueueManager
 
 }  // namespace scheduler
 
-#endif  // CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
+#endif  // CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_MANAGER_H_

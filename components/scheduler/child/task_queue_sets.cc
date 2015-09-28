@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/child/task_queue_sets.h"
 
 #include "base/logging.h"
-#include "components/scheduler/base/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_impl.h"
 
 namespace scheduler {
 namespace internal {
@@ -87,8 +87,8 @@ bool TaskQueueSets::GetOldestQueueInSet(
 }
 
 bool TaskQueueSets::IsSetEmpty(size_t set_index) const {
-  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size()) << " set_index = "
-                                                            << set_index;
+  DCHECK_LT(set_index, enqueue_order_to_queue_maps_.size())
+      << " set_index = " << set_index;
   return enqueue_order_to_queue_maps_[set_index].empty();
 }
 

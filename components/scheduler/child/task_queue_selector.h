@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_
-#define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_
+#ifndef COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SELECTOR_H_
+#define COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SELECTOR_H_
 
 #include <set>
 
 #include "base/compiler_specific.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"
-#include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/child/task_queue_sets.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
@@ -97,4 +97,4 @@ class SCHEDULER_EXPORT TaskQueueSelector {
 }  // namespace internal
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H
+#endif  // COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SELECTOR_H

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/task_queue_manager.h"
+#include "components/scheduler/child/task_queue_manager.h"
 
 #include "base/location.h"
 #include "base/run_loop.h"
@@ -10,36 +10,19 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread.h"
 #include "cc/test/ordered_simple_task_runner.h"
-#include "components/scheduler/base/nestable_task_runner_for_test.h"
-#include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/task_queue_sets.h"
-#include "components/scheduler/base/test_always_fail_time_source.h"
-#include "components/scheduler/base/test_time_source.h"
+#include "components/scheduler/child/nestable_task_runner_for_test.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_sets.h"
+#include "components/scheduler/child/test_time_source.h"
+#include "components/scheduler/test/test_always_fail_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::ElementsAre;
 using testing::_;
 
 namespace scheduler {
-
-class MessageLoopTaskRunner : public NestableTaskRunnerForTest {
- public:
-  static scoped_refptr<MessageLoopTaskRunner> Create() {
-    return make_scoped_refptr(new MessageLoopTaskRunner());
-  }
-
-  // NestableTaskRunner implementation.
-  bool IsNested() const override {
-    return base::MessageLoop::current()->IsNested();
-  }
-
- private:
-  MessageLoopTaskRunner()
-      : NestableTaskRunnerForTest(base::MessageLoop::current()->task_runner()) {
-  }
-  ~MessageLoopTaskRunner() override {}
-};
 
 class TaskQueueManagerTest : public testing::Test {
  public:
@@ -64,9 +47,9 @@ class TaskQueueManagerTest : public testing::Test {
 
   void InitializeWithRealMessageLoop(size_t num_queues) {
     message_loop_.reset(new base::MessageLoop());
-    manager_ = make_scoped_ptr(
-        new TaskQueueManager(MessageLoopTaskRunner::Create(), "test.scheduler",
-                             "test.scheduler.debug"));
+    manager_ = make_scoped_ptr(new TaskQueueManager(
+        SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get()),
+        "test.scheduler", "test.scheduler.debug"));
 
     for (size_t i = 0; i < num_queues; i++)
       runners_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test_queue")));
@@ -94,7 +77,8 @@ void PostFromNestedRunloop(base::MessageLoop* message_loop,
   message_loop->RunUntilIdle();
 }
 
-void NullTask() {}
+void NullTask() {
+}
 
 void TestTask(int value, std::vector<int>* out_result) {
   out_result->push_back(value);
@@ -127,7 +111,8 @@ TEST_F(TaskQueueManagerTest, MultiQueuePosting) {
   EXPECT_THAT(run_order, ElementsAre(1, 2, 3, 4, 5, 6));
 }
 
-void NopTask() {}
+void NopTask() {
+}
 
 TEST_F(TaskQueueManagerTest, NowNotCalledWhenThereAreNoDelayedTasks) {
   Initialize(3u);

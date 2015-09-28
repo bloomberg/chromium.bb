@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
-#define CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
+#ifndef CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_IMPL_H_
+#define CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_IMPL_H_
 
 #include <set>
 
@@ -11,8 +11,8 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/base/lazy_now.h"
-#include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/child/lazy_now.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
@@ -209,4 +209,4 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 }  // namespace internal
 }  // namespace scheduler
 
-#endif  // CONTENT_RENDERER_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_
+#endif  // CONTENT_RENDERER_SCHEDULER_TASK_QUEUE_IMPL_H_

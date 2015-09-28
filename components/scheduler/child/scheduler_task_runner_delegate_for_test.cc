@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "components/scheduler/base/nestable_task_runner_for_test.h"
+#include "components/scheduler/child/nestable_task_runner_for_test.h"
 
 namespace scheduler {
 

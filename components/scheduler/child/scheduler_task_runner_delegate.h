@@ -6,7 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_TASK_RUNNER_DELEGATE_H_
 
 #include "base/message_loop/message_loop.h"
-#include "components/scheduler/base/nestable_single_thread_task_runner.h"
+#include "components/scheduler/child/nestable_single_thread_task_runner.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {

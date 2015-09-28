@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/cancelable_closure_holder.h"
+#include "components/scheduler/child/cancelable_closure_holder.h"
 
 namespace scheduler {
 
-CancelableClosureHolder::CancelableClosureHolder() {}
+CancelableClosureHolder::CancelableClosureHolder() {
+}
 
-CancelableClosureHolder::~CancelableClosureHolder() {}
+CancelableClosureHolder::~CancelableClosureHolder() {
+}
 
 void CancelableClosureHolder::Reset(const base::Closure& callback) {
   callback_ = callback;

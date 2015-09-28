@@ -4,7 +4,7 @@
 
 #include "components/scheduler/renderer/renderer_web_scheduler_impl.h"
 
-#include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "components/scheduler/renderer/web_frame_host_scheduler_impl.h"
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/task_queue_manager.h"
+#include "components/scheduler/child/task_queue_manager.h"
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "components/scheduler/base/nestable_task_runner_for_test.h"
-#include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/child/scheduler_task_runner_delegate_impl.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_sets.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -28,7 +28,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     num_queues_ = num_queues;
     message_loop_.reset(new base::MessageLoop());
     manager_ = make_scoped_ptr(new TaskQueueManager(
-        NestableTaskRunnerForTest::Create(message_loop_->task_runner()),
+        SchedulerTaskRunnerDelegateImpl::Create(message_loop_.get()),
         "fake.category", "fake.category.debug"));
     for (size_t i = 0; i < num_queues; i++)
       queues_.push_back(manager_->NewTaskQueue(TaskQueue::Spec("test")));
@@ -50,7 +50,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
         num_tasks_to_post_ % 2 ? lower_num_tasks_to_post : 10;
     for (unsigned int i = 0;
          i < max_tasks_to_post && num_tasks_in_flight_ < max_tasks_in_flight_ &&
-         num_tasks_to_post_ > 0;
+             num_tasks_to_post_ > 0;
          i++) {
       // Choose a queue weighted towards queue 0.
       unsigned int queue = num_tasks_to_post_ % (num_queues_ + 1);

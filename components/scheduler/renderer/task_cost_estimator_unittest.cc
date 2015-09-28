@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/test/simple_test_tick_clock.h"
-#include "components/scheduler/base/test_time_source.h"
+#include "components/scheduler/child/test_time_source.h"
 #include "components/scheduler/renderer/task_cost_estimator.h"
 
 #include "testing/gmock/include/gmock/gmock.h"

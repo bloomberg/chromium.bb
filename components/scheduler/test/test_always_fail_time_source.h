@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_BASE_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
-#define COMPONENTS_SCHEDULER_BASE_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
+#ifndef COMPONENTS_SCHEDULER_TEST_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
+#define COMPONENTS_SCHEDULER_TEST_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
 
 #include "base/time/tick_clock.h"
 
@@ -22,4 +22,4 @@ class TestAlwaysFailTimeSource : public base::TickClock {
 
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_BASE_TEST_ALWAYS_FAIL_TIME_SOURCE_H_
+#endif  // COMPONENTS_SCHEDULER_TEST_TEST_ALWAYS_FAIL_TIME_SOURCE_H_

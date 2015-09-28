@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/nestable_task_runner_for_test.h"
+#include "components/scheduler/child/nestable_task_runner_for_test.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -17,9 +17,11 @@ scoped_refptr<NestableTaskRunnerForTest> NestableTaskRunnerForTest::Create(
 
 NestableTaskRunnerForTest::NestableTaskRunnerForTest(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {}
+    : task_runner_(task_runner), is_nested_(false) {
+}
 
-NestableTaskRunnerForTest::~NestableTaskRunnerForTest() {}
+NestableTaskRunnerForTest::~NestableTaskRunnerForTest() {
+}
 
 bool NestableTaskRunnerForTest::PostDelayedTask(
     const tracked_objects::Location& from_here,

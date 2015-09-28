@@ -9,9 +9,9 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/begin_frame_args.h"
-#include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
 
 namespace scheduler {
 namespace {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
-#define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
+#ifndef COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SETS_H_
+#define COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SETS_H_
 
 #include <map>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {
@@ -72,4 +72,4 @@ class SCHEDULER_EXPORT TaskQueueSets {
 }  // namespace internal
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_SETS_H_
+#endif  // COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_SETS_H_

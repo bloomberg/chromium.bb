@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/base/task_queue_manager.h"
+#include "components/scheduler/child/task_queue_manager.h"
 
 #include <queue>
 #include <set>
 
 #include "base/bind.h"
 #include "base/time/default_tick_clock.h"
-#include "components/scheduler/base/lazy_now.h"
-#include "components/scheduler/base/nestable_single_thread_task_runner.h"
-#include "components/scheduler/base/task_queue_impl.h"
-#include "components/scheduler/base/task_queue_selector.h"
-#include "components/scheduler/base/task_queue_sets.h"
+#include "components/scheduler/child/lazy_now.h"
+#include "components/scheduler/child/nestable_single_thread_task_runner.h"
+#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/child/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_sets.h"
 
 namespace {
 const int64_t kMaxTimeTicks = std::numeric_limits<int64>::max();
@@ -82,8 +82,8 @@ void TaskQueueManager::SetObserver(Observer* observer) {
 void TaskQueueManager::UnregisterTaskQueue(
     scoped_refptr<internal::TaskQueueImpl> task_queue) {
   TRACE_EVENT1(disabled_by_default_tracing_category_,
-               "TaskQueueManager::UnregisterTaskQueue", "queue_name",
-               task_queue->GetName());
+              "TaskQueueManager::UnregisterTaskQueue",
+              "queue_name", task_queue->GetName());
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (observer_)
     observer_->OnUnregisterTaskQueue(task_queue);
@@ -184,7 +184,7 @@ void TaskQueueManager::UpdateWorkQueues(
     // This is fine, erasing an element won't invalidate any interator, as long
     // as the iterator isn't the element being delated.
     if (queue->work_queue().empty())
-      queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
+        queue->UpdateWorkQueue(&lazy_now, should_trigger_wakeup, previous_task);
   }
 }
 

@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 #define COMPONENTS_SCHEDULER_CHILD_SCHEDULER_HELPER_H_
 
-#include "components/scheduler/base/task_queue_manager.h"
-#include "components/scheduler/base/task_queue_selector.h"
+#include "components/scheduler/child/task_queue_manager.h"
+#include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
