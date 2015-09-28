@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Įvestis negalioja</translation>
 <translation id="1082209053475788238">Nėra ankstesnės 6 lygio antraštės.</translation>
 <translation id="1088219014394087294">Nėra antraščių.</translation>
-<translation id="1092366490857960994">Teksto redagavimas, skaičių įrašas</translation>
 <translation id="1106741348836243114">Įjunkite arba išjunkite garsinius atsiliepimus (garsinius ženklelius).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724"><ph name="TAG" /> rinkinys, kuriame yra <ph name="NUM" /> element.</translation>
@@ -19,10 +18,9 @@
 <translation id="1157782847298808853">Klaviatūros pagalba</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, jungtinis laukelis</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, meniu elementas, su submeniu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Priskirtas</translation>
 <translation id="1188858454923323853">papildomas</translation>
-<translation id="1206619573307042055">pažymėtoji sritis</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">„ChromeVox“ suteikia „Chrome“ balsą</translation>
 <translation id="1229276918471378188">Ankstesnis perėjimas</translation>
 <translation id="1237866625126425153">rdgrp</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Dešinė</translation>
 <translation id="136718599399906424">Kita lentelės eilutė</translation>
 <translation id="1383876407941801731">Ieškoti</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Jei norite priimti, spustelėkite „Enter“, jei atšaukti – „Cancel“. Rodyklėmis aukštyn ir žemyn galite peržiūrėti ankstesnius ir kitus pasiūlymus.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Su visais skyrybos ženklais</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">prieigos klavišas: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Pakeisti dabartinę 6 taškų Brailio rašmenų lentelę pasirinkus parinktį iš toliau pateikiamo sąrašo.</translation>
 <translation id="2169714232367507776">Spustelėti dabartinį elementą</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{uždaromasis skliaustas}one{# uždaromasis skliaustas}few{# uždaromieji skliaustai}many{# close parens}other{# uždaromųjų skliaustų}}</translation>
@@ -119,7 +115,7 @@
 <translation id="2471138580042810658">6 antraštė</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{žvaigždutė}one{# žvaigždutė}few{# žvaigždutės}many{# asterisks}other{# žvaigždučių}}</translation>
 <translation id="2549392850788122959"><ph name="KEY" /> nustatytas iš naujo.</translation>
-<translation id="2553108862507765288">gramatikos klaida</translation>
+<translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Grupė</translation>
 <translation id="2582407057977008361">Šalia</translation>
 <translation id="2589102159832527089">Šiame puslapyje yra automatiškai iš PDF failo &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt; ištrauktas tekstas. &lt;a href="<ph name="URL" />"&gt;Jei reikia originalo, spustelėkite čia.&lt;/a&gt;</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Pereiti prie kito elemento, kurį galima fokusuoti</translation>
 <translation id="2770781857296573485">Pradėti grupės tyrinėjimą</translation>
 <translation id="2777845298774924149">Išeita</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Daugiau skirtingų elementų nėra.</translation>
 <translation id="2800780099804980316">Nėra ankstesnės 1 lygio antraštės.</translation>
 <translation id="2811204574343810641">Eilutė</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Nuoroda, kuria apsilankyta</translation>
 <translation id="323731244387692321">Atidaryti „ChromeVox“ klaviatūros pagalbą</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Ankstesnė aplankyta nuoroda</translation>
 <translation id="3286390186030710347">Šliaužiklis</translation>
 <translation id="3299925995433437805">Nėra kitos aplankytos nuorodos.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, sąrašo laukelis</translation>
 <translation id="3687295507293856493">Parinkti dabartinio langelio stulpelio antraštę</translation>
 <translation id="3692274950075847560">P.: <ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Kalbos valdymas</translation>
 <translation id="3716845769494773620">Kelios eilutės</translation>
 <translation id="3731746171184829332">Nėra ankstesnės antraštės.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Išeita iš dialogo lango.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Sąrašo automatinis užbaigimas</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Vaizdo</translation>
 <translation id="3816633764618089385">Kitas medijų raktas</translation>
 <translation id="3819376190738087562">Nėra perėjimų.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Naudodami toliau pateiktas parinktis galite tinkinti „ChromeVox“. Pakeitimai rodomi iš karto.</translation>
 <translation id="4271220233568730077">Kitas matematinis raktas</translation>
 <translation id="4271521365602459209">Nėra daugiau rezultatų.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Nėra jokių kitų straipsnių.</translation>
 <translation id="4289540628985791613">Apžvalga</translation>
 <translation id="4300318234632215983">Pranešti apie nuorodos URL</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Klasikinis klavišų žemėlapis</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{pasvirasis brūkšnys}one{# pasvirasis brūkšnys}few{# pasvirieji brūkšniai}many{# slashes}other{# pasvirųjų brūkšnių}}</translation>
 <translation id="4547556996012970016">Kita 5 lygio antraštė</translation>
-<translation id="4554899522007042510">Šviesumas procentais: <ph name="BRIGHTNESS" /></translation>
 <translation id="4562381607973973258">Antraštė</translation>
 <translation id="4591507479202817876">, pasirinkta</translation>
 <translation id="4597532268155981612">forma</translation>
@@ -356,7 +346,7 @@
 <translation id="4615592953348396470">Ignoruojamas kitas klavišo paspaudimas</translation>
 <translation id="461613135510474570">Sakinys</translation>
 <translation id="4647836961514597010">Spalvos parinkiklis</translation>
-<translation id="4661075872484491155">medis</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Ankstesnis orientyras</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">„Chrome“ OS klaviatūros naršyklė</translation>
 <translation id="4763296182459741068">Skaidyti į apačią</translation>
 <translation id="4763480195061959176">vaizdo įrašas</translation>
+<translation id="479989351350248267">ieškoti</translation>
 <translation id="481165870889056555">Pranešti apie dabartinio puslapio pavadinimą</translation>
 <translation id="4826415162591436065">Eiti į priekį</translation>
 <translation id="4826604887384865800">Kitas perėjimas</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Įgalinti TĮK įrašymą į žurnalą</translation>
 <translation id="4877261390094455813">Įveskite paieškos užklaus.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" /> / <ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Vidinė nuoroda</translation>
 <translation id="4953585991029886728">Redaguoti tekstą</translation>
 <translation id="4954534434583049121">Ankstesnė įtrauka</translation>
-<translation id="4970377555447282413">Rodyti padidintą puslapio turinio ro.</translation>
 <translation id="4973717656530883744">Min. <ph name="X" /></translation>
 <translation id="4973762002207131920">Perjungta į <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milisekundės</translation>
@@ -458,7 +447,7 @@
 <translation id="5598905979683743333"><ph name="NAME" />, akutės pasirinkimas panaikintas</translation>
 <translation id="5601172225407283979">Atlikti numatytąjį veiksmą</translation>
 <translation id="5608798115546226984">Automatinis eilutės užbaigimas</translation>
-<translation id="561939826962581046">laikas</translation>
+<translation id="561939826962581046">time</translation>
 <translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Žurnalas</translation>
 <translation id="5628125749885014029">h4</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">sekundės</translation>
 <translation id="867187640362843212">5 antraštė</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{statusis brūkšnys}one{# statusis brūkšnys}few{# statieji brūkšniai}many{# vertical pipes}other{# stačiųjų brūkšnių}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Sistema atnaujinta. Rekomenduojama paleisti iš naujo.</translation>
 <translation id="8735450637152821465">Pradėti rinktis</translation>
 <translation id="8743786158317878347">įveskite struktūrinį turinį, pvz., lenteles</translation>
 <translation id="8747966237988593539">Rūšiuotas sąrašas</translation>

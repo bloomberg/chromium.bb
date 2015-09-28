@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
 <translation id="1283072268083088623">Especifica quais os esquemas de Autenticação HTTP que o <ph name="PRODUCT_NAME" /> suporta. Os valores possíveis são "basic", "digest", "ntlm" e "negotiate". Separe os vários valores por vírgulas. Se deixar esta política por definir, serão utilizados os quatro esquemas.</translation>
 <translation id="1297182715641689552">Utilizar um script de proxy .pac</translation>
+<translation id="1304973015437969093">Instalar IDs de extensões/aplicações e URLs de atualização silenciosamente</translation>
 <translation id="1310699457130669094">Pode especificar um URL para um ficheiro .pac de proxy aqui.
 
           Esta política só é aplicada se selecionar definições de proxy manuais em "Escolher como indicar as definições do servidor proxy".
@@ -87,6 +88,13 @@
          Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando o modo de alto contraste. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, o modo de alto contraste é desativado quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar o modo de alto contraste a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+<translation id="1468707346106619889">Se esta política for definida como verdadeira, o Ambiente de trabalho unificado é permitido e
+      ativado por predefinição, o que permite que as aplicações se expandam em vários ecrãs.
+      O utilizador pode desativar o Ambiente de trabalho unificado para ecrãs
+      individuais ao desmarcá-lo nas definições de visualização.
+
+      Se esta política for definida como falsa ou não for definida, o Ambiente de trabalho unificado é
+      desativado. Neste caso, o utilizador não pode ativar a funcionalidade.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Especifica o período, em milissegundos, durante o qual é efetuada uma consulta ao serviço de gestão do aparelho para obter informações sobre a política do dispositivo.
 
@@ -288,6 +296,7 @@
 <translation id="2518231489509538392">Permitir a reprodução de áudio</translation>
 <translation id="2521581787935130926">Mostrar o atalho de aplicações na barra de marcadores</translation>
 <translation id="2529700525201305165">Restringir os utilizadores que têm permissão para iniciar sessão no <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">Configurar a lista de aplicações e extensões de instalação forçada</translation>
 <translation id="253135976343875019">Atraso do aviso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2552966063069741410">Fuso Horário</translation>
 <translation id="2571066091915960923">Ativar ou desativar o proxy de compressão de dados e impedir os utilizadores de alterar esta definição.
@@ -359,6 +368,7 @@
 
           O ExtensionInstallBlacklist tem prioridade sobre esta política. Isto é, uma extensão na lista negra não será instalada mesmo que seja proveniente de um Website incluído nesta lista.</translation>
 <translation id="2824715612115726353">Ativar o modo de navegação anónima</translation>
+<translation id="2850122204195089673">Disponibilizar o Ambiente de trabalho unificado e ativá-lo por predefinição.</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>

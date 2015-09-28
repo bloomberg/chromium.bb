@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1283072268083088623">Angiver, hvilke ordninger for HTTP Authentication, der understøttes af <ph name="PRODUCT_NAME" />. Mulige værdier er "grundlæggende", "fordøje", "NTLM" og "forhandle". Adskil flere værdier med kommaer. Hvis denne politik ikke er angivet, anvendes alle fire ordninger.</translation>
 <translation id="1297182715641689552">Brug et .pac-proxyscript</translation>
+<translation id="1304973015437969093">Udvidelses-/app-id'er og opdateringswebadresser, der skal installeres ubemærket</translation>
 <translation id="1310699457130669094">Du kan angive en webadresse til en proxy .pac-fil her. Denne politik fungerer kun, hvis du har valgt indstillinger for manuel proxy i "Vælg, hvordan du kan angive indstillinger for proxyserver". Du bør ikke angive denne politik, hvis du har valgt en anden tilstand for angivelse af proxypolitikker. Få detaljerede eksempler på: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Angiver den procentdel, som nedtoningsforsinkelsen på skærmen skaleres, når der observeres brugeraktivitet, mens skærmen er nedtonet, eller umiddelbart efter skærmen slukkes.
 
@@ -80,6 +81,13 @@
           Hvis du angiver denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere Høj kontrast. Brugerens valg er dog ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på loginskærmen i et minut.
 
           Hvis denne politik ikke angives, deaktiveres høj kontrast, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere Høj kontrast, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+<translation id="1468707346106619889">Hvis denne politik er angivet som sand, er Kombineret skrivebord tilladt og
+      aktiveret som standard, hvilket giver applikationer mulighed for at fylde flere skærme.
+      Brugeren kan deaktivere Kombineret skrivebord for de enkelte skærme ved at fjerne markeringen af afkrydsningsfeltet ud for dem
+      i skærmindstillingerne.
+
+      Hvis denne politik er angivet som falsk eller ikke er angivet, vil Kombineret skrivebord være
+      deaktiveret. Hvis det er tilfældet, kan brugeren ikke aktivere denne funktion.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Angiver den periode i millisekunder, hvor enhedsadministrationstjenesten forespørges om oplysninger om brugerpolitikken.
 
@@ -281,6 +289,7 @@
 <translation id="2518231489509538392">Tillad afspilning af lyd</translation>
 <translation id="2521581787935130926">Vis genvej til apps i bogmærkelinjen</translation>
 <translation id="2529700525201305165">Begræns, hvilke brugere der har tilladelse til at logge ind på <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfigurer listen over udvidelser og apps med tvungen installation</translation>
 <translation id="253135976343875019">Advarsel om inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2552966063069741410">Tidszone</translation>
 <translation id="2571066091915960923">Aktivér eller deaktiver proxyen til datakomprimering for at forhindre brugerne i at ændre denne indstilling.
@@ -353,6 +362,7 @@
 
          ExtensionInstallBlacklist har forrang i forhold til denne politik. Dvs. at en sortlistet udvidelse ikke vil blive installeret, selvom det sker fra et website på denne liste.</translation>
 <translation id="2824715612115726353">Aktiver inkognitotilstand</translation>
+<translation id="2850122204195089673">Gør Kombineret skrivebord tilgængeligt, og aktivér denne funktion som standard.</translation>
 <translation id="285480231336205327">Aktivér høj kontrast</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>

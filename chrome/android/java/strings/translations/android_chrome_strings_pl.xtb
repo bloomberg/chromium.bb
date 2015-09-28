@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Chroń siebie i swoje urządzenie przed niebezpiecznymi witrynami</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> – aplikacja internetowa. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Zawęź</translation>
+<translation id="2315043854645842844">Wybieranie certyfikatu klienta nie jest obsługiwane przez ten system operacyjny.</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2343328333327081434">Instaluję…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Hasła nie pasują do siebie</translation>
 <translation id="3039671569659952257">Usuń folder</translation>
 <translation id="3063601790762993062">Zapisz film</translation>
+<translation id="306566828762083630">Pamięć urządzenia jest pełna. Usuń inne pliki, by zrobić miejsce.</translation>
 <translation id="307329814453917357">Proponuj tłumaczenie stron w Tłumaczu Google</translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
 <translation id="3090193911106258841">Otwieram wejście audio i wideo</translation>
@@ -182,6 +184,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4023950129927433024">Jeśli nie pamiętasz hasła, zatrzymaj i zresetuj synchronizację w <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Pokazuj podpowiedzi, gdy nie można znaleźć adresu internetowego lub nawiązać połączenia</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="4062305924942672200">Informacje prawne</translation>
 <translation id="4084682180776658562">Dodaj do zakładek</translation>
 <translation id="4089831646916293264">Ta funkcja może zakłócać dostęp do udostępnianych przez operatora płatnych usług transmisji danych.</translation>
@@ -201,6 +204,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4297410240212242334">Rozdziel karty i aplikacje</translation>
 <translation id="4307992518367153382">Podstawy</translation>
 <translation id="4333969446981951071">Korzystając z tej aplikacji, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z Chrome<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności w Chrome<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Przenieś zapisane strony</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4357362091209756047">Nie widzisz swojego urządzenia? <ph name="BEGIN_LINK1" />Wyszukaj ponownie<ph name="END_LINK1" /> lub <ph name="BEGIN_LINK2" />skorzystaj z pomocy<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
@@ -216,6 +220,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4619298195800598081">Otwórz oryginał w nowej karcie</translation>
 <translation id="4645575059429386691">Zarządzany przez Twojego rodzica</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
+<translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
 <translation id="4686372254213217147">Rozmiar pierwotny</translation>
 <translation id="4690286298542128877">Karty zostaną przeniesione do przełącznika kart w Chrome.</translation>
@@ -246,6 +251,7 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
+<translation id="509605886816275399">Zapisać tę stronę offline?</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5138299137310274655">Język tej strony to <ph name="SOURCE_LANGUAGE" />. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5302048478445481009">Język</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
 <translation id="5305985456140490686">Ostatnia synchronizacja: <ph name="MINUTES" /> min temu</translation>
+<translation id="5308933389783727448">Szukaj na zapisanych stronach</translation>
 <translation id="5313967007315987356">Dodaj stronę</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5323972449344932352">Uruchom Chrome</translation>
@@ -408,6 +415,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="699220179437400583">Automatycznie przesyłaj do Google szczegółowe informacje o możliwych zagrożeniach</translation>
 <translation id="6999892069268112724">Potwierdź konto Google</translation>
 <translation id="7019652137705190998">Włącz tryb incognito, by przeglądać prywatnie lub zalogować się tymczasowo</translation>
+<translation id="7021515813996758557">Plik <ph name="FILE_NAME" /> został pobrany</translation>
 <translation id="7026897394897382018">Włącz Oszczędzanie danych</translation>
 <translation id="7029809446516969842">Hasła</translation>
 <translation id="7053983685419859001">Blokuj</translation>
@@ -473,6 +481,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8026334261755873520">Wyczyść dane przeglądania</translation>
 <translation id="8035133914807600019">Nowy folder…</translation>
 <translation id="8050319187894766337">Zapisano offline. Masz mało miejsca.</translation>
+<translation id="8068648041423924542">Nie można wybrać certyfikatu.</translation>
 <translation id="8069239273282989646">Po skompresowaniu</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8084156870963450514">Zaloguj się, by móc korzystać ze wszystkich swoich rzeczy związanych z internetem na dowolnym urządzeniu</translation>
@@ -495,6 +504,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
 <translation id="8413385045638830869">Najpierw zapytaj (zalecane)</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
+<translation id="8429160401486700187">Usuń zapisane strony</translation>
 <translation id="8481940801237642152">Twoje połączenie z tą witryną jest prywatne, ale inna osoba w sieci może zmienić wygląd tej strony.</translation>
 <translation id="8497726226069778601">Tu jeszcze niczego nie ma</translation>
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
@@ -534,6 +544,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8912362522468806198">Konta Google</translation>
 <translation id="8920114477895755567">Oczekiwanie na informacje o rodzicach.</translation>
 <translation id="8928220460877261598">Jesteś zalogowany w Chrome.</translation>
+<translation id="8934455786738644694">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="8941248009481596111">Twoje połączenie z tą witryną jest prywatne.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Adres nieosiągalny: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9156605176886108508">Brak folderów zakładek</translation>
 <translation id="9192643434065497760">Włącz Bluetooth w <ph name="BEGIN_LINK" />ustawieniach urządzenia<ph name="END_LINK" />, by umożliwić parowanie.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">Nie udało się pobrać pliku <ph name="FILE_NAME" /></translation>
 <translation id="932327136139879170">Strona główna</translation>
 <translation id="938850635132480979">Błąd: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Nowy folder</translation>

@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">તમે Chromoting નો ઉપયોગ કરીને આ કમ્પ્યુટરને સુરક્ષિત રીતે ઍક્સેસ કરી શકો છો.</translation>
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="2366718077645204424">હોસ્ટ સુધી પહોંચવામાં અક્ષમ. આ કદાચ તમે ઉપયોગ કરી રહ્યાં છો એ નેટવર્કની ગોઠવણીનાં કારણે છે.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  છેલ્લે <ph name="RELATIVE_TIMESTAMP" /> ઓનલાઇન જોવામાં આવ્યા.</translation>
 <translation id="2498359688066513246">સહાય અને પ્રતિસાદ</translation>
 <translation id="2499160551253595098">અમને ઉપયોગનાં આંકડા અને ક્રેશ રિપોર્ટ્સ એકત્રિત કરવાની મંજૂરી આપીને Chrome રીમોટ ડેસ્કટૉપમાં સુધારો કરવામાં અમને સહાય કરો.</translation>
 <translation id="2512228156274966424">નોંધ: બધા કીબોર્ડ શોર્ટકટ્સ ઉપલબ્ધ છે તેની ખાતરી કરવા, તમે Chrome રીમોટ ડેસ્કટૉપને 'વિંડો તરીકે ખોલો' પર ગોઠવી શકો છો.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">આ સેવા Chromoting ક્લાઇન્ટ્સ પાસેથી આવતા કનેક્શન્સ સક્ષમ કરે છે.</translation>
 <translation id="3606997049964069799">તમે Chromium માં સાઇન ઇન થયા નથી. કૃપા કરીને સાઇન ઇન કરી અને ફરી પ્રયાસ કરો.</translation>
 <translation id="3649256019230929621">વિંડો નાની કરો</translation>
+<translation id="369442766917958684">ઓફલાઇન.</translation>
 <translation id="3776024066357219166">તમારું Chrome રીમોટ ડેસ્કટૉપ સત્ર સમાપ્ત થયું.</translation>
 <translation id="3785447812627779171">Chromoting
 હોસ્ટ</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">ફરીથી કનેક્ટ કરો</translation>
 <translation id="5843054235973879827">આ કેમ સલામત છે?</translation>
 <translation id="5859141382851488196">નવી વિંડો…</translation>
+<translation id="5885438903806970186">ઓનલાઇન.</translation>
 <translation id="6001953797859482435">Chrome રીમોટ ડેસ્કટૉપ હોસ્ટ પસંદગીઓ</translation>
 <translation id="6011539954251327702">Chromoting તમને વેબ પર સુરક્ષિત રીતે તમારા કમ્પ્યુટરને શેર કરવાની પરવાનગી આપે છે. બન્ને વપરાશકર્તાઓ Chromoting એપ્લિકેશનનો ઉપયોગ કરતા હોવા આવશ્યક છે, જે <ph name="URL" /> ખાતેથી મળી શકે છે.</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>

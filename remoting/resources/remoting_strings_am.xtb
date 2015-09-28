@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">Chromotingን ተጠቅመው ይህንን ኮምፒውተር ደህንነቱ በተጠበቀ መልኩ ሊደርሱበት ይችላሉ።</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2366718077645204424">አስተናጋጁን መድረስ አልተቻለም። ይሄ በሚጠቀሙት አውታረ መረብ ላይ ባለ ውቅር ምክንያት ሳይሆን አይቀርም።</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ለመጨረሻ ጊዜ መስመር ላይ የታየው በ<ph name="RELATIVE_TIMESTAMP" />።</translation>
 <translation id="2498359688066513246">እገዛ እና ግብረመልስ</translation>
 <translation id="2499160551253595098">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chrome የርቀት ዴስክቶፕ እንድናሻሽል ያግዙን።</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">ይህ አገልግሎት ከChromoting ደንበኞች ገቢ ግንኙነቶችን ያነቃል።</translation>
 <translation id="3606997049964069799">ወደ Chromium በመለያ አልገቡም። እባክዎ ይግቡ እና እንደገና ይሞክሩ።</translation>
 <translation id="3649256019230929621">መስኮትን ያሳንሱት</translation>
+<translation id="369442766917958684">ከመስመር ውጪ።</translation>
 <translation id="3776024066357219166">የChrome የርቀት ዴስክቶፕ ክፍለ-ጊዜው ተጠናቅቋል።</translation>
 <translation id="3785447812627779171">Chromoting
 አስተናጋጅ</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">ዳግም ያገናኙ</translation>
 <translation id="5843054235973879827">ይሄ ለምንድነው ደህንነቱ የተጠበቀ የሆነው?</translation>
 <translation id="5859141382851488196">አዲሰ መስኮት…</translation>
+<translation id="5885438903806970186">መስመር ላይ።</translation>
 <translation id="6001953797859482435">Chrome የርቀት ዴስክቶፕ አስተናጋጅ ምርጫዎች</translation>
 <translation id="6011539954251327702">Chromoting ኮምፒውተርዎ ደህንነቱ በተጠበቀ መልኩ በድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChromoting መተግበሪያውን ማሂድ አለባቸው፣ <ph name="URL" /> ላይ ሊያገኙት ይችላሉ።</translation>
 <translation id="6040143037577758943">ዝጋ</translation>

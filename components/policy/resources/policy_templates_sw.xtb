@@ -45,6 +45,7 @@
 
           Ikiwa sera hii itaachwa kama haijawekwa, mipango yote minne itatumika.</translation>
 <translation id="1297182715641689552">Tumia hati ya  proksi ya .pac</translation>
+<translation id="1304973015437969093">Vitambulisho vya Viendelezi/Programu na URL za sasisho kusakinishwa kimyakimya</translation>
 <translation id="1310699457130669094">Unaweza kubainisha URL ya faili ya proksi ya .pac hapa.
 
           Ser hii inaanza kufanya tu kazi ikiwa umechagua mipangilio ya mwongozo wa proksi kwenye 'Chagua namna ya kubainisha mipangilio ya proksi ya seva'.
@@ -97,6 +98,13 @@ Iwapo sera hii imewekwa kuwa kweli, hali ya juu ya utofautishaji itawashwa wakat
 Iwapo sera hii imewekwa kwa haitumiki, hali ya juu ya utofautishaji itazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa.
 Iwapo utaweka sera hii, watumiaji wanaweza kwa muda kuipuuza kwa kuwasha au kuzima hali ya juu ya utofautishaji. Hata hivyo, chaguo la mtumiaji halitaendelea na chaguo-msingi  hurejeshwa tena wakati wowote skrini ya kuingia katika akaunto inapoonyeshwa upya au mtumiaji anaposalia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini ya kuingia katika akaunti inapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima hali ya juu ya utofautishaji wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
+<translation id="1468707346106619889">Sera hii ikiwekwa kuwa ndivyo, Eneo-kazi lililounganishwa linaruhusiwa na
+      kuwashwa kwa chaguo-msingi, ambapo inaruhusu programu kuonyeshwa katika skrini nyingi kama kwamba ni moja.
+      Mtumiaji anaweza kuzima Eneo-kazi lililounganishwa kwa maonyesho maalum kwa kuondoa alama
+     katika mipangilio ya onyesho.
+
+      Sera hii ikiwekwa kuwa sivyo au kutowekwa, Eneo-kazi lililounganishwa
+      litazimwa. Katika hali hii, mtumiaji hawezi kukiwasha kipengele.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Inabainisha  kipindi kwa nukta ambapo huduma ya udhibiti wa kifaa inahojiwa kwa ajili ya maelezo ya sera ya kifaa.
 
@@ -331,6 +339,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 <translation id="2518231489509538392">Ruhusu kucheza sauti</translation>
 <translation id="2521581787935130926">Onyesha njia ya mkato katika sehemu ya alamisho</translation>
 <translation id="2529700525201305165">Zuia ni watumiaji wapi ambao wanaruhusiwa kuingia kwenye <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Sanidi orodha ya programu na viendelezi vilivyosakinishwa kwa nguvu</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
 <translation id="2552966063069741410">Saa za eneo:</translation>
 <translation id="2571066091915960923">Washa au zima proksi ya kupunguza data na inazuia watumiaji kubadilisha mpangilio huu. 
@@ -407,6 +416,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           ExtensionInstallBlacklist inapewa kipaumbele dhidi ya sera hii. Yaani, kiendelezi kwenye orodha ya kuondoa idhini hakitasakinishwa, hata kama utatendeka kutoka kwenye tovuti ya orodha hii.</translation>
 <translation id="2824715612115726353">Washa hali Fiche</translation>
+<translation id="2850122204195089673">Fanya Eneo-kazi lililounganishwa lipatikane na uwashe kwa chaguo-msingi.</translation>
 <translation id="285480231336205327">Wezesha modi ya juu ya kulinganua</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="2877225735001246144">Lemaza kidokezo cha CNAME unapohawilisha uthibitishaji wa Kerberos</translation>

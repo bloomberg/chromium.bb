@@ -15,7 +15,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="123620459398936149">Chrome OS could not sync your data. Please update your Sync passphrase.</translation>
 <translation id="127345590676626841">Chrome updates automatically so that you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="1302523850133262269">Please wait while Chrome installs the latest system updates.</translation>
-<translation id="130631256467250065">Your changes will take effect the next time that you restart your device.</translation>
 <translation id="1348153800635493797">You must upgrade Chrome to use Google Wallet [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">Chrome has detected unusual behaviour</translation>
 <translation id="1393853151966637042">Get help with using Chrome</translation>
@@ -73,7 +72,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3047079729301751317">Disconnecting <ph name="USERNAME" /> will clear your history, bookmarks, settings and other Chrome data stored on this device. Data stored in your Google Account will not be cleared and can be managed on <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
-<translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3197823471738295152">Your device is up to date.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>

@@ -64,6 +64,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2353140552984634198">A Chromoting használatával biztonságosan hozzáférhet a számítógéphez.</translation>
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="2366718077645204424">A gazdagép nem érhető el. Ez valószínűleg az Ön által használt hálózat konfigurációja miatt van.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Legutóbb észlelve az interneten: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Súgó és visszajelzés</translation>
 <translation id="2499160551253595098">Segítsen fejleszteni a Chrome távoliasztal-szolgáltatást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikákat és hibajelentéseket.</translation>
 <translation id="2512228156274966424">MEGJEGYZÉS: ha biztosítani akarja valamennyi billentyűkód elérhetőségét, konfigurálja a Chrome távoliasztal-szolgáltatást a „Megnyitás ablakban” lehetőséggel.</translation>
@@ -109,6 +110,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="3596628256176442606">Ez a szolgáltatás engedélyezi a bejövő kapcsolatokat a Chromoting klienseitől.</translation>
 <translation id="3606997049964069799">Nincs bejelentkezve a Chromiumba. Jelentkezzen be, és próbálkozzon újra.</translation>
 <translation id="3649256019230929621">Ablak kis méretre állítása</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">A Chrome távoliasztal-szolgáltatás munkamenet véget ért.</translation>
 <translation id="3785447812627779171">Chromoting
 gazdagép</translation>
@@ -183,6 +185,7 @@ gazdagép</translation>
 <translation id="579702532610384533">Újrakapcsolódás</translation>
 <translation id="5843054235973879827">Miért biztonságos ez?</translation>
 <translation id="5859141382851488196">Új ablak…</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Chrome távoliasztal-szolgáltatási gazdagép beállításai</translation>
 <translation id="6011539954251327702">A Chromoting lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chromoting alkalmazásnak, amely itt található: <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Bezárás</translation>

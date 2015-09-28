@@ -79,6 +79,7 @@
 <translation id="219985413780390209">محافظت از شما و دستگاهتان دربرابر سایت‌های خطرناک</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، برنامه وب. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">فیلتر</translation>
+<translation id="2315043854645842844">انتخاب گواهی سمت کلاینت توسط سیستم‌عامل پشتیبانی نمی‌شود.</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
 <translation id="2321958826496381788">لغزنده را بکشید تا زمانی که بتوانید این متن را به راحتی بخوانید. بعد از دو ضربه متوالی روی یک پاراگراف، اندازه نوشتار حداقل باید به این بزرگی باشد.</translation>
 <translation id="2343328333327081434">در حال نصب…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">عبارت‌های عبور مطابقت ندارند</translation>
 <translation id="3039671569659952257">حذف پوشه</translation>
 <translation id="3063601790762993062">ذخیره ویدیو</translation>
+<translation id="306566828762083630">حافظه دستگاه شما پر است. برای آزاد کردن فضا، لطفاً رسانه دیگر را پاک کنید.</translation>
 <translation id="307329814453917357">‏پیشنهاد ترجمه صفحه‌ها با استفاده از Google Translate</translation>
 <translation id="3089395242580810162">باز کردن در برگه ناشناس</translation>
 <translation id="3090193911106258841">در حال دسترسی به ورودی صوتی و ویدیویی</translation>
@@ -180,6 +182,7 @@
 <translation id="4023950129927433024">‏اگر عبارت عبورتان را فراموش کرده‌اید، همگام‌سازی را در <ph name="BEGIN_LINK" />داشبورد Google<ph name="END_LINK" /> متوقف کرده و بازنشانی کنید.</translation>
 <translation id="4042870126885713738">وقتی آدرس وب شناسایی نمی‌شود یا اتصال برقرار نمی‌شود، پیشنهاداتی نشان داده می‌شود</translation>
 <translation id="4056223980640387499">سپیا</translation>
+<translation id="4059119910594077751">برای خروج از حالت تمام صفحه، دکمه برگشت را لمس کنید.</translation>
 <translation id="4062305924942672200">اطلاعات حقوقی</translation>
 <translation id="4084682180776658562">نشانک</translation>
 <translation id="4089831646916293264">ممکن است این قابلیت با دسترسی به سرویس‌های اطلاعاتی برتر ارائه شده توسط شرکت مخابراتی شما تداخل داشته باشد.</translation>
@@ -199,6 +202,7 @@
 <translation id="4297410240212242334">جدا کردن برگه‌ها و برنامه‌ها</translation>
 <translation id="4307992518367153382">موارد اصلی</translation>
 <translation id="4333969446981951071">‏استفاده از این برنامه به معنای اعلام موافقت شما با <ph name="BEGIN_LINK1" />شرایط خدمات<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />اعلامیه حریم خصوصی<ph name="END_LINK2" /> Chrome است.</translation>
+<translation id="4350413759959745971">جابه‌جا کردن صفحات ذخیره‌شده</translation>
 <translation id="4351244548802238354">بستن کادر گفتگو</translation>
 <translation id="4357362091209756047">دستگاهتان را نمی‌بینید؟ <ph name="BEGIN_LINK1" />دوباره جستجو کنید<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />راهنمایی دریافت کنید<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">کنترل نشده</translation>
@@ -214,6 +218,7 @@
 <translation id="4619298195800598081">باز کردن تصویر اصلی در برگه جدید</translation>
 <translation id="4645575059429386691">مدیریت شده توسط والدین شما</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> نشانک حذف شد</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> به صفحه اصلی شما اضافه شد</translation>
 <translation id="4684427112815847243">همگام‌سازی همه</translation>
 <translation id="4686372254213217147">اندازه اصلی</translation>
 <translation id="4690286298542128877">‏برگه‌ها به جابه‌جا‌کننده برگه در Chrome منتقل می‌شوند.</translation>
@@ -244,6 +249,7 @@
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5063480226653192405">کاربر </translation>
+<translation id="509605886816275399">رونوشت آفلاین این صفحه ذخیره شود؟</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="5127805178023152808">همگام‌سازی خاموش است</translation>
 <translation id="5138299137310274655">این صفحه به زبان <ph name="SOURCE_LANGUAGE" /> است. به <ph name="TARGET_LANGUAGE" /> ترجمه شود؟</translation>
@@ -263,6 +269,7 @@
 <translation id="5302048478445481009">زبان</translation>
 <translation id="5304593522240415983">این قسمت باید پر شود</translation>
 <translation id="5305985456140490686">آخرین همگام‌سازی: <ph name="MINUTES" /> دقیقه قبل</translation>
+<translation id="5308933389783727448">جستجوی صفحات ذخیره‌شده</translation>
 <translation id="5313967007315987356">افزودن سایت</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5323972449344932352">‏راه‌اندازی Chrome</translation>
@@ -405,6 +412,7 @@
 <translation id="699220179437400583">‏گزارش خودکار جزئیات حوادث امنیتی احتمالی به Google.</translation>
 <translation id="6999892069268112724">‏تأیید حساب Google</translation>
 <translation id="7019652137705190998">به حالت ناشناس بروید تا به صورت خصوصی مرور کنید یا موقتاً وارد سیستم شوید</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> دانلود شد</translation>
 <translation id="7026897394897382018">فعال کرن صرفه‌جویی در مصرف داده</translation>
 <translation id="7029809446516969842">گذرواژه‌ها</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
@@ -470,6 +478,7 @@
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8035133914807600019">پوشه جدید…</translation>
 <translation id="8050319187894766337">صفحه به‌صورت آفلاین ذخیره شد. حافظه پر است.</translation>
+<translation id="8068648041423924542">انتخاب گواهی ممکن نیست.</translation>
 <translation id="8069239273282989646">بعد از فشرده‌سازی</translation>
 <translation id="8073388330009372546">باز کردن تصویر در برگه جدید</translation>
 <translation id="8084156870963450514">به سیستم وارد شوید تا از هر دستگاهی به محتوای وبی‌تان دسترسی داشته باشید</translation>
@@ -492,6 +501,7 @@
 <translation id="8413126021676339697">نمایش کل سابقه</translation>
 <translation id="8413385045638830869">ابتدا سؤال شود (توصیه می‌شود)</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
+<translation id="8429160401486700187">حذف صفحه‌های ذخیره‌شده</translation>
 <translation id="8481940801237642152">اتصال شما به این سایت خصوصی است، اما ممکن است شخصی در شبکه بتواند ظاهر این صفحه را تغییر دهد.</translation>
 <translation id="8497726226069778601">هنوز… چیزی برای دیدن وجود ندارد</translation>
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
@@ -516,7 +526,7 @@
 <translation id="869891660844655955">تاریخ انقضا</translation>
 <translation id="8719023831149562936">انتقال برگه کنونی با پرتو ممکن نیست</translation>
 <translation id="8725066075913043281">سعی مجدد</translation>
-<translation id="8730621377337864115">انجام شد</translation>
+<translation id="8730621377337864115">تمام</translation>
 <translation id="8737542153238017984">صفحه ذخیره شده به‌صورت آفلاین در دسترس نیست. حافظه تقریباً پر است.</translation>
 <translation id="8793430725658173476">کپی نشانی وب</translation>
 <translation id="8798099450830957504">پیش‌فرض</translation>
@@ -531,6 +541,7 @@
 <translation id="8912362522468806198">‏حساب Google</translation>
 <translation id="8920114477895755567">در انتظار اطلاعات والدین.</translation>
 <translation id="8928220460877261598">‏اکنون وارد سیستم Chrome شدید.</translation>
+<translation id="8934455786738644694">برای خروج از حالت تمام صفحه، از بالا صفحه را بکشید و دکمه برگشت را لمس کنید</translation>
 <translation id="8941248009481596111">اتصال شما به این سایت خصوصی است.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">پیمایش غیرقابل دسترسی است: <ph name="URL" /></translation>
@@ -550,6 +561,7 @@
 <translation id="9156605176886108508">پوشه نشانک‌ها موجود نیست</translation>
 <translation id="9192643434065497760">بلوتوث را در <ph name="BEGIN_LINK" />تنظیمات دستگاه<ph name="END_LINK" /> روشن کنید تا مرتبط‌سازی امکان‌پذیر شود.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> دانلود نشد</translation>
 <translation id="932327136139879170">منزل</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">پوشهٔ جدید</translation>

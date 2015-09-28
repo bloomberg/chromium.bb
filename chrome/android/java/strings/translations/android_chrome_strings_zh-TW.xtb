@@ -79,6 +79,7 @@
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">修正搜尋</translation>
+<translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
 <translation id="2316129865977710310">不，謝謝</translation>
 <translation id="2321958826496381788">拖曳滑桿，將文字調整到您可以舒適閱讀的大小。當您輕按兩下文字段落，文字至少應呈現這樣的大小。</translation>
 <translation id="2343328333327081434">安裝中…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3039671569659952257">刪除資料夾</translation>
 <translation id="3063601790762993062">儲存影片</translation>
+<translation id="306566828762083630">您的裝置儲存空間已用盡，請移除其他媒體以釋出空間。</translation>
 <translation id="307329814453917357">可使用「Google 翻譯」翻譯網頁內容</translation>
 <translation id="3089395242580810162">在無痕式分頁中開啟</translation>
 <translation id="3090193911106258841">正在存取音訊和視訊輸入</translation>
@@ -182,6 +184,7 @@
 <translation id="4023950129927433024">如果您忘記通關密語，請透過 <ph name="BEGIN_LINK" />Google 資訊主頁<ph name="END_LINK" />停止並重設同步功能。</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="4056223980640387499">深褐色調</translation>
+<translation id="4059119910594077751">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4084682180776658562">書籤</translation>
 <translation id="4089831646916293264">這項功能可能會讓您無法存取行動通訊業者提供的付費數據服務。</translation>
@@ -201,6 +204,7 @@
 <translation id="4297410240212242334">區隔分頁與應用程式</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4333969446981951071">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
+<translation id="4350413759959745971">移動儲存的網頁</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4357362091209756047">找不到您的裝置嗎？請<ph name="BEGIN_LINK1" />重新搜尋<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />尋求協助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不受控制</translation>
@@ -216,6 +220,7 @@
 <translation id="4619298195800598081">在新分頁中開啟原始圖片</translation>
 <translation id="4645575059429386691">您的家長已停用這項功能</translation>
 <translation id="4663756553811254707">已刪除 <ph name="NUMBER_OF_BOOKMARKS" /> 個書籤</translation>
+<translation id="4665282149850138822">「<ph name="NAME" />」已加入您的主畫面</translation>
 <translation id="4684427112815847243">同步處理所有資料</translation>
 <translation id="4686372254213217147">原始大小</translation>
 <translation id="4690286298542128877">分頁將改為顯示在 Chrome 的分頁切換選項中。</translation>
@@ -246,6 +251,7 @@
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5063480226653192405">用量</translation>
+<translation id="509605886816275399">要離線儲存這個網頁嗎？</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5138299137310274655">這個網頁的內容是<ph name="SOURCE_LANGUAGE" />，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
@@ -265,6 +271,7 @@
 <translation id="5302048478445481009">語言</translation>
 <translation id="5304593522240415983">這個欄位不能留空</translation>
 <translation id="5305985456140490686">上次同步處理時間：<ph name="MINUTES" /> 分鐘前</translation>
+<translation id="5308933389783727448">搜尋儲存的網頁</translation>
 <translation id="5313967007315987356">新增網站</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5323972449344932352">啟動 Chrome</translation>
@@ -408,6 +415,7 @@
 <translation id="699220179437400583">自動將疑似安全性事件的詳細資料回報給 Google</translation>
 <translation id="6999892069268112724">確認 Google 帳戶</translation>
 <translation id="7019652137705190998">您可以使用無痕模式進入私密瀏覽狀態或暫時登入</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> 下載完成</translation>
 <translation id="7026897394897382018">啟用 Data Saver</translation>
 <translation id="7029809446516969842">密碼</translation>
 <translation id="7053983685419859001">封鎖</translation>
@@ -473,6 +481,7 @@
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8035133914807600019">新資料夾…</translation>
 <translation id="8050319187894766337">已離線儲存網頁。儲存空間即將用盡。</translation>
+<translation id="8068648041423924542">無法選取憑證。</translation>
 <translation id="8069239273282989646">壓縮後大小</translation>
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8084156870963450514">登入帳戶即可透過任何裝置存取您在網路上的所有資料</translation>
@@ -495,6 +504,7 @@
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8413385045638830869">先詢問我 (建議)</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8429160401486700187">刪除儲存的網頁</translation>
 <translation id="8481940801237642152">您與這個網站建立了私人連線，但網路上的其他人可能可以變更網頁的外觀。</translation>
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
@@ -534,6 +544,7 @@
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
 <translation id="8928220460877261598">您現在已登入 Chrome。</translation>
+<translation id="8934455786738644694">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="8941248009481596111">您與這個網站建立了私人連線。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
@@ -553,6 +564,7 @@
 <translation id="9156605176886108508">沒有書籤資料夾</translation>
 <translation id="9192643434065497760">如要允許配對，請在<ph name="BEGIN_LINK" />裝置設定<ph name="END_LINK" />中開啟藍牙功能。</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> 下載失敗</translation>
 <translation id="932327136139879170">首頁</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">新增資料夾</translation>

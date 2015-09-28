@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">無効な入力値</translation>
 <translation id="1082209053475788238">前のレベル 6 見出しはありません。</translation>
 <translation id="1088219014394087294">見出しがありません。</translation>
-<translation id="1092366490857960994">テキスト編集、番号エントリ</translation>
 <translation id="1106741348836243114">音声フィードバック（イアコン）をオンまたはオフにします。</translation>
 <translation id="1120743664840974483">{"a": "アルファ", "b": "ブラボー", "c": "チャーリー", "d": "デルタ", "e": "エコー", "f": "フォックストロット", "g": "ゴルフ", "h": "ホテル", "i": "インディア", "j": "ジュリエット","k": "キロ", "l": "リマ", "m": "マイク", "n": "ノベンバー", "o": "オスカー","p": "パパ", "q": "ケベック", "r": "ロメオ", "s": "シエラ", "t": "タンゴ", "u": "ユニフォーム", "v": "ビクター", "w": "ウイスキー","x": "エックスレイ", "y": "ヤンキー", "z": "ズールー"}</translation>
 <translation id="113582498867142724"><ph name="TAG" /> コレクション（<ph name="NUM" /> 個の項目）</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">キーボード ヘルプ</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />、<ph name="NAME" />、コンボ ボックス</translation>
 <translation id="1167230103353892028"><ph name="NAME" />、メニュー項目、サブメニューあり</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">カスタム</translation>
 <translation id="1188858454923323853">捕捉</translation>
 <translation id="1206619573307042055">マーキー</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">右</translation>
 <translation id="136718599399906424">表の次の行</translation>
 <translation id="1383876407941801731">検索</translation>
-<translation id="1384553361428699420">無効</translation>
 <translation id="1385214448885562192">確定するには Enter キー、キャンセルするには Esc キー、次へ進むには下矢印キー、前へ戻るには上矢印キーを押してください。</translation>
 <translation id="1396114365388024581">タブリスト</translation>
 <translation id="1439316808600711881">領域</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">すべての句読点を読み上げます</translation>
 <translation id="2119965627982867824">スピンボタン</translation>
 <translation id="2121067395472282800">アクセス キー: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">現在の 6 点点字表を変更するには、下のリストからオプションを選択します。</translation>
 <translation id="2169714232367507776">現在の項目をクリック</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{右丸かっこ}other{# 個の右丸かっこ}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">次のフォーカス可能項目にジャンプ</translation>
 <translation id="2770781857296573485">グループ検索を入力</translation>
 <translation id="2777845298774924149">終了しました</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">この他に異なる要素はありません。</translation>
 <translation id="2800780099804980316">前のレベル 1 見出しはありません。</translation>
 <translation id="2811204574343810641">行</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">チェックボックス</translation>
 <translation id="3229375994964697375">アクセス済みのリンク</translation>
 <translation id="323731244387692321">ChromeVox キーボード ヘルプを開く</translation>
-<translation id="324093695619034148">（偽）</translation>
 <translation id="3241052487511142956">前にアクセスしたリンク</translation>
 <translation id="3286390186030710347">スライダ</translation>
 <translation id="3299925995433437805">次にアクセスしたリンクはありません。</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />、リスト ボックス</translation>
 <translation id="3687295507293856493">現在のセルの列見出しを推測</translation>
 <translation id="3692274950075847560">け: <ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">読み上げのコントロール</translation>
 <translation id="3716845769494773620">複数行可</translation>
 <translation id="3731746171184829332">前の見出しはありません。</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">ダイアログを終了しました。</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">オートコンプリートはリスト形式</translation>
-<translation id="3806689594022048154">サブメニューへ</translation>
 <translation id="3810838688059735925">動画</translation>
 <translation id="3816633764618089385">次のメディア</translation>
 <translation id="3819376190738087562">ジャンプはありません。</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">以下のオプションを使用して ChromeVox をカスタマイズします。変更は直ちに有効になります。</translation>
 <translation id="4271220233568730077">次の数式</translation>
 <translation id="4271521365602459209">他に検索結果はありません。</translation>
-<translation id="4271999187965566439">（真）</translation>
 <translation id="4287520460805643128">次の記事はありません。</translation>
 <translation id="4289540628985791613">概要</translation>
 <translation id="4300318234632215983">リンクの URL を読み上げる</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">クラシック キーマップ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{スラッシュ}other{# 個のスラッシュ}}</translation>
 <translation id="4547556996012970016">次のレベル 5 見出し</translation>
-<translation id="4554899522007042510">輝度 <ph name="BRIGHTNESS" /> パーセント</translation>
 <translation id="4562381607973973258">見出し</translation>
 <translation id="4591507479202817876">、選択済み</translation>
 <translation id="4597532268155981612">フォーム</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS キーボード エクスプローラ</translation>
 <translation id="4763296182459741068">最後に戻ります</translation>
 <translation id="4763480195061959176">動画</translation>
+<translation id="479989351350248267">検索</translation>
 <translation id="481165870889056555">現在のページのタイトルを読み上げる</translation>
 <translation id="4826415162591436065">順方向にナビゲート</translation>
 <translation id="4826604887384865800">次のジャンプ</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">TTS ログを有効にする</translation>
 <translation id="4877261390094455813">検索キーワードを入力してください。</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">内部リンク</translation>
 <translation id="4953585991029886728">テキスト編集</translation>
 <translation id="4954534434583049121">前の引用文</translation>
-<translation id="4970377555447282413">ページのコンテンツの拡大ビューを表示する。</translation>
 <translation id="4973717656530883744">最小 <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> に切り替えました。</translation>
 <translation id="4975416682604111799">ミリ秒</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">秒</translation>
 <translation id="867187640362843212">見出し 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{パイプ}other{# 個のパイプ}}</translation>
-<translation id="8722779018229123609">（混合）</translation>
-<translation id="8723726026961763755">システムが更新されました。再起動してください。</translation>
 <translation id="8735450637152821465">選択を開始</translation>
 <translation id="8743786158317878347">表などの構造化コンテンツに入ります</translation>
 <translation id="8747966237988593539">番号付きリスト</translation>

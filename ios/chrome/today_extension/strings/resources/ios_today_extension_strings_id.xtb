@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1203161113033984675">BEGIN_LINK Web Fisik END_LINK aktif.</translation>
+<translation id="1418775127135578229">Buka Tautan yang Disalin</translation>
+<translation id="1487576085940433465">BEGIN_LINK Objek di sekitar menyiarkan laman web END_LINK. Layanan Google akan digunakan untuk meningkatkan kualitas hasil ini.</translation>
+<translation id="2026797012398135445">Buka kunci perangkat untuk mengaktifkan.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="3435896845095436175">Aktifkan</translation>
 <translation id="4394049700291259645">Nonaktifkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
+<translation id="5508399372551154686">BEGIN_LINK Web Fisik END_LINK tidak aktif.</translation>
+<translation id="5815960189179094695">Memindai objek BEGIN_LINK Web Fisik END_LINK...</translation>
 <translation id="6196207969502475924">Penelusuran Suara</translation>
+<translation id="6722203589267124394">Aktifkan Bluetooth untuk melihat objek BEGIN_LINK Web Fisik END_LINK.</translation>
 <translation id="7554791636758816595">Tab Baru</translation>
+<translation id="7588950540487816470">Web Fisik</translation>
+<translation id="8800384372516194324">Tampilkan Hasil Lainnya</translation>
 </translationbundle>

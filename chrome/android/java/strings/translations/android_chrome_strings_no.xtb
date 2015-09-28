@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Beskytt deg selv og enheten din mot farlige nettsteder</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, nettprogram. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finstem</translation>
+<translation id="2315043854645842844">Operativsystemet har ikke støtte for sertifikatvalg på klientsiden.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="2321958826496381788">Dra glidebryteren til du kan lese dette uten problemer. Når du har dobbelttrykket på et avsnitt, bør teksten være minst like stor som dette.</translation>
 <translation id="2343328333327081434">Installerer …</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3039671569659952257">Slett mappen</translation>
 <translation id="3063601790762993062">Lagre videoen</translation>
+<translation id="306566828762083630">Lagringsplassen på enheten er full. Du må fjerne andre filer for å gjøre plass.</translation>
 <translation id="307329814453917357">Tilby oversettelse av nettsider ved hjelp av Google Oversetter</translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
 <translation id="3090193911106258841">Åpner lyd- og videoinngang</translation>
@@ -182,6 +184,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4023950129927433024">Hvis du har glemt passordet ditt, bør du stoppe og tilbakestille synkroniseringen via <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Vis forslag når en nettadresse ikke fungerer eller en tilkobling ikke kan opprettes</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Trykk på tilbakeknappen for å avslutte fullskjermvisningen.</translation>
 <translation id="4062305924942672200">Juridisk informasjon</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="4089831646916293264">Det kan hende at dette elementet gjør at du ikke får tilgang til premium-datatjenester som tilbys av operatøren din.</translation>
@@ -201,6 +204,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4297410240212242334">Skill faner og apper</translation>
 <translation id="4307992518367153382">Generelt</translation>
 <translation id="4333969446981951071">Ved å bruke denne appen godtar du <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og den tilhørende <ph name="BEGIN_LINK2" />personvernmerknaden<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Flytt de lagrede sidene</translation>
 <translation id="4351244548802238354">Lukk dialogboks</translation>
 <translation id="4357362091209756047">Ser du ikke enheten din? <ph name="BEGIN_LINK1" />Søk igjen<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />få hjelp<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Ukontrollert</translation>
@@ -216,6 +220,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4619298195800598081">Åpne det opprinnelige bildet i en ny fane</translation>
 <translation id="4645575059429386691">Administreres av foreldrene dine</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmerker ble slettet</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> ble lagt til på startskjermen</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
 <translation id="4686372254213217147">Opprinnelig størrelse</translation>
 <translation id="4690286298542128877">Fanene flyttes til en fanevelger i Chrome.</translation>
@@ -246,6 +251,7 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
 <translation id="5063480226653192405">Bruk</translation>
+<translation id="509605886816275399">Vil du lagre denne siden utenfor nettet?</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5138299137310274655">Denne siden er på <ph name="SOURCE_LANGUAGE" />. Vil du oversette den til <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5304593522240415983">Dette feltet må fylles ut</translation>
 <translation id="5305985456140490686">Sist synkronisert: for <ph name="MINUTES" /> minutter siden</translation>
+<translation id="5308933389783727448">Søk i de lagrede sidene</translation>
 <translation id="5313967007315987356">Legg til et nettsted</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5323972449344932352">Start Chrome</translation>
@@ -408,6 +415,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="699220179437400583">Rapportér detaljer om mulige sikkerhetsbrudd til Google automatisk</translation>
 <translation id="6999892069268112724">Bekreftelse av Google-konto</translation>
 <translation id="7019652137705190998">Gå inkognito for å surfe privat eller logge på midlertidig.</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> er lastet ned</translation>
 <translation id="7026897394897382018">Slå på Datasparing</translation>
 <translation id="7029809446516969842">Passord</translation>
 <translation id="7053983685419859001">Blokkér</translation>
@@ -473,6 +481,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8026334261755873520">Slett nettleserdata</translation>
 <translation id="8035133914807600019">Ny mappe</translation>
 <translation id="8050319187894766337">Siden ble lagret lokalt. Lagringsplassen er nesten full.</translation>
+<translation id="8068648041423924542">Kan ikke velge sertifikat.</translation>
 <translation id="8069239273282989646">Etter komprimering</translation>
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8084156870963450514">Logg på, så får du tilgang til alt du har på nettet, på alle enheter du bruker</translation>
@@ -495,6 +504,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
 <translation id="8413385045638830869">Spør først (anbefales)</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
+<translation id="8429160401486700187">Slett de lagrede sidene</translation>
 <translation id="8481940801237642152">Tilkoblingen til dette området er privat, men det kan hende at noen på nettverket kan endre utseendet på siden.</translation>
 <translation id="8497726226069778601">Det er ikke noe her foreløpig</translation>
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
@@ -534,6 +544,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på informasjon om foreldre.</translation>
 <translation id="8928220460877261598">Du er nå logget på Chrome.</translation>
+<translation id="8934455786738644694">Dra ned fra toppen og trykk på tilbakeknappen for å avslutte fullskjermvisningen.</translation>
 <translation id="8941248009481596111">Tilkoblingen til dette nettstedet er privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Nettadressen er utilgjengelig: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="9156605176886108508">Ingen bokmerkemapper</translation>
 <translation id="9192643434065497760">Slå på Bluetooth i <ph name="BEGIN_LINK" />enhetsinnstillingene<ph name="END_LINK" /> for å tillate sammenkobling.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> kunne ikke lastes ned</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Ny mappe</translation>

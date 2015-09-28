@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Suojaa itseäsi ja laitettasi vaarallisilta sivustoilta</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, verkkosovellus. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Tarkenna</translation>
+<translation id="2315043854645842844">Käyttöjärjestelmä ei tue palvelimen varmennevalintaa.</translation>
 <translation id="2316129865977710310">Ei kiitos</translation>
 <translation id="2321958826496381788">Vedä liukusäädintä, kunnes voit lukea tämän mukavasti. Tekstin tulisi olla vähintään näin suurta kaksoisnapautettuasi kappaletta.</translation>
 <translation id="2343328333327081434">Asennetaan…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3039671569659952257">Poista kansio</translation>
 <translation id="3063601790762993062">Tallenna video</translation>
+<translation id="306566828762083630">Laitteen tallennustila on täynnä. Vapauta tilaa poistamalla muita tiedostoja.</translation>
 <translation id="307329814453917357">Tarjoa sivujen kääntämistä Google Kääntäjällä.</translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
 <translation id="3090193911106258841">Ääni- ja videotuloa käytetään</translation>
@@ -182,6 +184,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4023950129927433024">Jos olet unohtanut tunnuslauseen, keskeytä ja nollaa synkronointi <ph name="BEGIN_LINK" />Google-hallintapaneelin<ph name="END_LINK" /> kautta.</translation>
 <translation id="4042870126885713738">Näytä ehdotuksia, jos verkko-osoitetta ei tunnisteta tai yhteyttä ei voi muodostaa.</translation>
 <translation id="4056223980640387499">Seepia</translation>
+<translation id="4059119910594077751">Poistu koko näytön tilasta koskettamalla Takaisin-painiketta.</translation>
 <translation id="4062305924942672200">Oikeudelliset tiedot</translation>
 <translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="4089831646916293264">Tämä ominaisuus voi häiritä operaattorisi tarjoamien premium-tietopalveluiden käyttöä.</translation>
@@ -201,6 +204,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4297410240212242334">Erota välilehdet ja sovellukset</translation>
 <translation id="4307992518367153382">Perustiedot</translation>
 <translation id="4333969446981951071">Käyttämällä sovellusta hyväksyt Chromen <ph name="BEGIN_LINK1" />käyttöehdot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tietosuojailmoituksen<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Siirrä tallennetut sivut</translation>
 <translation id="4351244548802238354">Sulje ikkuna</translation>
 <translation id="4357362091209756047">Etkö näe laitetta? <ph name="BEGIN_LINK1" />Hae uudelleen<ph name="END_LINK1" /> tai <ph name="BEGIN_LINK2" />tutustu ohjeisiin<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Ei rajoitettu</translation>
@@ -216,6 +220,7 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4619298195800598081">Avaa alkup. uudella välilehd.</translation>
 <translation id="4645575059429386691">Vanhempasi hallinnoima</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> kirjanmerkkiä poistettiin</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> lisättiin aloitusnäytölle.</translation>
 <translation id="4684427112815847243">Synkronoi kaikki</translation>
 <translation id="4686372254213217147">Alkuperäinen koko</translation>
 <translation id="4690286298542128877">Välilehdet muuttavat Chromen sisäiseen välilehtien vaihtajaan.</translation>
@@ -246,6 +251,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
 <translation id="5063480226653192405">Käyttö</translation>
+<translation id="509605886816275399">Tallennetaanko tämä sivu offline-käyttöä varten?</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5127805178023152808">Synkronointi ei ole käytössä</translation>
 <translation id="5138299137310274655">Sivu on kirjoitettu kielellä <ph name="SOURCE_LANGUAGE" />. Haluatko kääntää sen kielelle <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5302048478445481009">Kieli</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
 <translation id="5305985456140490686">Viimeisin synkronointi: <ph name="MINUTES" /> minuuttia sitten</translation>
+<translation id="5308933389783727448">Hae tallennetuista sivuista</translation>
 <translation id="5313967007315987356">Lisää sivusto</translation>
 <translation id="5317780077021120954">Tallenna</translation>
 <translation id="5323972449344932352">Käynnistä Chrome</translation>
@@ -408,6 +415,7 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="699220179437400583">Ilmoita mahdollisista turvallisuusongelmista Googlelle automaattisesti</translation>
 <translation id="6999892069268112724">Vahvista Google-tili</translation>
 <translation id="7019652137705190998">Siirry incognito-tilaan ja selaa yksityisesti tai kirjaudu tilapäisesti.</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> ladattiin.</translation>
 <translation id="7026897394897382018">Ota Data Saver käyttöön</translation>
 <translation id="7029809446516969842">Salasanat</translation>
 <translation id="7053983685419859001">Estä</translation>
@@ -473,6 +481,7 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="8026334261755873520">Poista selaustiedot</translation>
 <translation id="8035133914807600019">Uusi kansio…</translation>
 <translation id="8050319187894766337">Offline-sivu tallennettu. Tall.tila lähes täynnä.</translation>
+<translation id="8068648041423924542">Varmenteen valinta epäonnistui</translation>
 <translation id="8069239273282989646">Pakkaamisen jälkeen</translation>
 <translation id="8073388330009372546">Avaa kuva uudessa välilehdessä</translation>
 <translation id="8084156870963450514">Kirjaudu sisään, niin voit käyttää verkkosisältöäsi millä tahansa laitteella.</translation>
@@ -495,6 +504,7 @@ Jotkin verkkosivut voivat vastata tähän pyyntöön esimerkiksi näyttämällä
 <translation id="8413126021676339697">Näytä koko selaushistoria</translation>
 <translation id="8413385045638830869">Kysy ensin (suositus)</translation>
 <translation id="8428213095426709021">Asetukset</translation>
+<translation id="8429160401486700187">Poista tallennetut sivut</translation>
 <translation id="8481940801237642152">Sivustoon on muodostettu salattu yhteys, mutta verkon käyttäjät voivat päästä muokkaamaan sivun ulkoasua.</translation>
 <translation id="8497726226069778601">Täällä ei ole mitään nähtävää… vielä</translation>
 <translation id="8514577642972634246">Siirry incognito-tilaan</translation>
@@ -534,6 +544,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="8912362522468806198">Google-tilisi avulla</translation>
 <translation id="8920114477895755567">Odotetaan vanhempien tietoja.</translation>
 <translation id="8928220460877261598">Olet nyt kirjautunut Chromeen.</translation>
+<translation id="8934455786738644694">Poistu koko näytön tilasta vetämällä näytön yläreunasta ja koskettamalla Takaisin-painiketta.</translation>
 <translation id="8941248009481596111">Sivustoon on muodostettu salattu yhteys.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Kohde ei ole saatavilla: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9156605176886108508">Ei kirjanmerkkikansioita</translation>
 <translation id="9192643434065497760">Ota Bluetooth käyttöön <ph name="BEGIN_LINK" />laitteen asetuksissa<ph name="END_LINK" />, jotta laiteparin muodostus onnistuu.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui.</translation>
 <translation id="932327136139879170">Etusivu</translation>
 <translation id="938850635132480979">(Virhe: <ph name="ERROR_CODE" />)</translation>
 <translation id="939736085109172342">Uusi kansio</translation>

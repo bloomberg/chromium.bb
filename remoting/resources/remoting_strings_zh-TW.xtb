@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">您可以透過 Chromoting 安全地存取這台電腦。</translation>
 <translation id="2359808026110333948">繼續</translation>
 <translation id="2366718077645204424">無法連線到主機，原因可能與您使用的網路設定有關。</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次上線時間：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2498359688066513246">說明與意見回饋</translation>
 <translation id="2499160551253595098">允許我們收集使用統計資料和當機報告，協助我們改善 Chrome 遠端桌面。</translation>
 <translation id="2512228156274966424">注意：如要確保所有鍵盤快捷鍵都能正常使用，請將 Chrome 遠端桌面設定為 [在視窗中開啟]。</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">這項服務允許來自 Chromoting 用戶端的連線。</translation>
 <translation id="3606997049964069799">您尚未登入 Chromium，請登入並再試一次。</translation>
 <translation id="3649256019230929621">將視窗縮到最小</translation>
+<translation id="369442766917958684">離線。</translation>
 <translation id="3776024066357219166">您的 Chrome 遠端桌面工作階段已結束。</translation>
 <translation id="3785447812627779171">Chromoting
 主機</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">重新連線</translation>
 <translation id="5843054235973879827">為什麼這項操作是安全的？</translation>
 <translation id="5859141382851488196">新增視窗…</translation>
+<translation id="5885438903806970186">線上。</translation>
 <translation id="6001953797859482435">Chrome 遠端桌面主機偏好設定</translation>
 <translation id="6011539954251327702">Chromoting 提供了安全的連線機制，可讓您透過網路與他人共用自己的電腦。您和共用對象都必須執行 Chromoting 應用程式，請前往 <ph name="URL" /> 安裝。</translation>
 <translation id="6040143037577758943">關閉</translation>

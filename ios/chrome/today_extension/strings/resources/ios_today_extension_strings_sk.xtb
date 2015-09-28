@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1203161113033984675">BEGIN_LINK Fyzický web END_LINK je zapnutý.</translation>
+<translation id="1418775127135578229">Otvoriť skopírovaný odkaz</translation>
+<translation id="1487576085940433465">BEGIN_LINK Objekty v okolí vysielajú webové stránky END_LINK. Kvalita týchto výsledkov sa zvýši pomocou služby Google.</translation>
+<translation id="2026797012398135445">Rozšírenie aktivujete odomknutím zariadenia.</translation>
 <translation id="2316129865977710310">Nie, ďakujem</translation>
 <translation id="3435896845095436175">Aktivovať</translation>
 <translation id="4394049700291259645">Zakázať</translation>
 <translation id="5301954838959518834">Áno, rozumiem</translation>
+<translation id="5508399372551154686">BEGIN_LINK Fyzický web END_LINK je vypnutý.</translation>
+<translation id="5815960189179094695">Vyhľadávajú sa objekty BEGIN_LINK fyzického webu END_LINK...</translation>
 <translation id="6196207969502475924">Hlasové vyhľadávanie</translation>
+<translation id="6722203589267124394">Ak chcete zobraziť objekty BEGIN_LINK fyzického webu END_LINK nachádzajúce sa v okolí, zapnite rozhranie Bluetooth.</translation>
 <translation id="7554791636758816595">Nová karta</translation>
+<translation id="7588950540487816470">Fyzický web</translation>
+<translation id="8800384372516194324">Zobraziť ďalšie výsledky</translation>
 </translationbundle>

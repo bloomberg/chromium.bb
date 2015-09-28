@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1203161113033984675">BEGIN_LINKFysisk webEND_LINK er slået til.</translation>
+<translation id="1418775127135578229">Åbn kopieret link</translation>
+<translation id="1487576085940433465">BEGIN_LINK Objekter i nærheden udsender websider END_LINK. En Google-tjeneste anvendes til at forbedre kvaliteten af disse resultater.</translation>
+<translation id="2026797012398135445">Lås din enhed op for at aktivere den.</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="3435896845095436175">Aktiver</translation>
 <translation id="4394049700291259645">Deaktiver</translation>
 <translation id="5301954838959518834">OK, det er forstået</translation>
+<translation id="5508399372551154686">BEGIN_LINKFysisk webEND_LINK er slået fra.</translation>
+<translation id="5815960189179094695">Scanner efter BEGIN_LINKfysiske webobjekterEND_LINK...</translation>
 <translation id="6196207969502475924">Talesøgning</translation>
+<translation id="6722203589267124394">Aktivér Bluetooth for at se BEGIN_LINKfysiske webobjekterEND_LINK i nærheden.</translation>
 <translation id="7554791636758816595">Ny fane</translation>
+<translation id="7588950540487816470">Fysisk web</translation>
+<translation id="8800384372516194324">Vis flere resultater</translation>
 </translationbundle>

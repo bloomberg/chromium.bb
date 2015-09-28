@@ -64,6 +64,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2353140552984634198">Rakendus Chromoting võimaldab teil turvaliselt arvuti juurde pääseda.</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Viimati nähtud võrgus <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Abi ja tagasiside</translation>
 <translation id="2499160551253595098">Aidake meil Chrome Remote Desktopi täiustada, lubades meil koguda kasutusstatistikat ja krahhiaruandeid.</translation>
 <translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
@@ -109,6 +110,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="3596628256176442606">See teenus lubab sissetulevad ühendused Chromootimise klientidelt.</translation>
 <translation id="3606997049964069799">Te ei ole Chromiumi sisse logitud. Logige sisse ja proovige uuesti.</translation>
 <translation id="3649256019230929621">Minimeeri aken</translation>
+<translation id="369442766917958684">Võrguühenduseta.</translation>
 <translation id="3776024066357219166">Teie Chrome Remote Desktopi seanss on lõppenud.</translation>
 <translation id="3785447812627779171">Chromootimine
 Host</translation>
@@ -183,6 +185,7 @@ Desktopi host</translation>
 <translation id="579702532610384533">Ühenda uuesti</translation>
 <translation id="5843054235973879827">Miks on see ohutu?</translation>
 <translation id="5859141382851488196">Uus aken ...</translation>
+<translation id="5885438903806970186">Veebis.</translation>
 <translation id="6001953797859482435">Chrome Remote Desktopi hosti eelistused</translation>
 <translation id="6011539954251327702">Rakendus Chromoting võimaldab teil arvutit turvaliselt veebi kaudu jagada. Mõlemad kasutajad peavad käitama rakendust Chromoting, mille leiate aadressilt <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Sule</translation>

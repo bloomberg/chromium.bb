@@ -79,6 +79,7 @@
 <translation id="219985413780390209">הגן על עצמך ועל המכשיר מפני אתרים מסוכנים</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, אפליקציית אינטרנט. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">צמצם</translation>
+<translation id="2315043854645842844">מערכת ההפעלה אינה תומכת בבחירת אישור בצד הלקוח.</translation>
 <translation id="2316129865977710310">לא, תודה</translation>
 <translation id="2321958826496381788">גרור את המחוון עד שתוכל לקרוא את הקטע הזה בצורה נוחה. לאחר שתקיש פעמיים על פיסקה, הטקסט אמור להיות מוצג בגודל הזה לפחות.</translation>
 <translation id="2343328333327081434">מתקין...</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3039671569659952257">מחק תיקייה</translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
+<translation id="306566828762083630">שטח האחסון של המכשיר שלך מלא. הסר קבצים כדי לפנות מקום.</translation>
 <translation id="307329814453917357">‏הצע לתרגם דפים באמצעות Google Translate</translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="3090193911106258841">גישה לקלט אודיו ווידאו</translation>
@@ -182,6 +184,7 @@
 <translation id="4023950129927433024">‏אם שכחת את ביטוי הסיסמה, עצור ואפס את הסינכרון דרך <ph name="BEGIN_LINK" />מרכז השליטה של Google‏<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
+<translation id="4059119910594077751">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4084682180776658562">סימניה</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
@@ -201,6 +204,7 @@
 <translation id="4297410240212242334">הפרדה בין כרטיסיות ואפליקציות</translation>
 <translation id="4307992518367153382">היסודות</translation>
 <translation id="4333969446981951071">‏על ידי שימוש ביישום הזה, אתה מסכים ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />הודעת הפרטיות<ph name="END_LINK2" /> של Chrome.</translation>
+<translation id="4350413759959745971">העבר את הדפים שנשמרו</translation>
 <translation id="4351244548802238354">סגור את תיבת הדו-שיח</translation>
 <translation id="4357362091209756047">אינך רואה את המכשיר? <ph name="BEGIN_LINK1" />חפש שוב<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />קבל עזרה<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">לא מבוקר</translation>
@@ -216,6 +220,7 @@
 <translation id="4619298195800598081">פתח את התמונה המקורית בכרטיסייה חדשה</translation>
 <translation id="4645575059429386691">מנוהל על-ידי ההורה שלך</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> סימניות נמחקו</translation>
+<translation id="4665282149850138822">האתר <ph name="NAME" /> נוסף למסך דף הבית שלך</translation>
 <translation id="4684427112815847243">סנכרן הכל</translation>
 <translation id="4686372254213217147">גודל מקורי</translation>
 <translation id="4690286298542128877">‏כרטיסיות יועברו למחליף כרטיסיות בתוך Chrome.</translation>
@@ -246,6 +251,7 @@
 <translation id="5039804452771397117">אפשר</translation>
 <translation id="5040262127954254034">פרטיות</translation>
 <translation id="5063480226653192405">שימוש</translation>
+<translation id="509605886816275399">לשמור את הדף הזה באופן לא מקוון?</translation>
 <translation id="5100237604440890931">מכווץ - לחץ כדי להרחיב.</translation>
 <translation id="5127805178023152808">סנכרון כבוי</translation>
 <translation id="5138299137310274655">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@
 <translation id="5302048478445481009">שפה</translation>
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5305985456140490686">סנכרון אחרון: לפני <ph name="MINUTES" /> דקות</translation>
+<translation id="5308933389783727448">חפש בדפים שנשמרו</translation>
 <translation id="5313967007315987356">הוסף אתר</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5323972449344932352">‏הפעל את Chrome</translation>
@@ -408,6 +415,7 @@
 <translation id="699220179437400583">‏דווח אוטומטית ל-Google על פרטים של בעיות אבטחה אפשריות</translation>
 <translation id="6999892069268112724">‏אישור חשבון Google</translation>
 <translation id="7019652137705190998">עבור למצב גלישה בסתר כדי לגלוש תוך שמירה על פרטיות או להיכנס באופן זמני</translation>
+<translation id="7021515813996758557">הורדת הקובץ <ph name="FILE_NAME" /> בוצעה</translation>
 <translation id="7026897394897382018">הפעל את חוסך הנתונים</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7053983685419859001">חסום</translation>
@@ -473,6 +481,7 @@
 <translation id="8026334261755873520">נקה נתוני גלישה</translation>
 <translation id="8035133914807600019">תיקייה חדשה…</translation>
 <translation id="8050319187894766337">הדף נשמר באופן לא מקוון. האחסון כמעט מלא.</translation>
+<translation id="8068648041423924542">אין אפשרות לבחור אישור.</translation>
 <translation id="8069239273282989646">לאחר דחיסה</translation>
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8084156870963450514">היכנס כדי לגשת לכל הדברים שלך באינטרנט מכל מכשיר</translation>
@@ -495,6 +504,7 @@
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
 <translation id="8413385045638830869">שאל תחילה (מומלץ)</translation>
 <translation id="8428213095426709021">הגדרות</translation>
+<translation id="8429160401486700187">מחק את הדפים שנשמרו</translation>
 <translation id="8481940801237642152">החיבור שלך לאתר הזה הוא פרטי, אך ייתכן שמישהו ברשת יכול לשנות את המראה של הדף.</translation>
 <translation id="8497726226069778601">אין מה לראות כאן… בינתיים</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
@@ -532,6 +542,7 @@
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8920114477895755567">ממתין לפרטי ההורים.</translation>
 <translation id="8928220460877261598">‏אתה מחובר כעת ל-Chrome.</translation>
+<translation id="8934455786738644694">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
 <translation id="8941248009481596111">החיבור שלך לאתר זה הוא פרטי.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>
@@ -551,6 +562,7 @@
 <translation id="9156605176886108508">אין תיקיות של סימניות</translation>
 <translation id="9192643434065497760">‏הפעל את Bluetooth ב<ph name="BEGIN_LINK" />הגדרות המכשיר<ph name="END_LINK" /> כדי לאפשר התאמה.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">ההורדה של <ph name="FILE_NAME" /> נכשלה</translation>
 <translation id="932327136139879170">בית</translation>
 <translation id="938850635132480979">שגיאה: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">תיקייה חדשה</translation>

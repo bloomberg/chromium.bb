@@ -45,6 +45,7 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kesemua empat skim akan digunakan.</translation>
 <translation id="1297182715641689552">Gunakan skrip proksi .pac</translation>
+<translation id="1304973015437969093">ID Sambungan/Apl dan URL kemas kini untuk dipasang secara senyap</translation>
 <translation id="1310699457130669094">Anda boleh menetapkan URL untuk fail .pac proksi di sini.
 
           Dasar ini hanya berkuat kuasa jika anda telah memilih tetapan proksi manual pada 'Pilih cara hendak menetapkan tetapan pelayan proksi'.
@@ -101,6 +102,13 @@
           Jika anda menetapkan dasar ini, pengguna boleh mengatasinya secara sementara dengan mendayakan atau melumpuhkan mod kontras tinggi. Walau bagaimanapun, pilihan pengguna ini tidak berterusan dan lalai dipulihkan apabila skrin log masuk dipaparkan semula atau pengguna kekal melahu pada skrin log masuk selama satu minit.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, mod kontras tinggi dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan mod kontras tinggi pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
+<translation id="1468707346106619889">Jika dasar ini ditetapkan kepada benar, Unified Desktop dibenarkan dan didayakan
+      secara lalai. Ini membenarkan aplikasi merangkumi berbilang paparan.
+      Pengguna boleh melumpuhkan Unified Desktop untuk paparan individu
+      dengan menyahtandainya dalam tetapan paparan.
+
+      Jika dasar ini ditetapkan kepada salah atau tidak ditetapkan, Unified Desktop akan
+      dilumpuhkan. Dalam keadaan ini, pengguna tidak dapat mendayakan ciri ini.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Menetapkan tempoh dalam milisaat apabila perkhidmatan pengurusan peranti disoal untuk mendapatkan maklumat dasar peranti.
 
@@ -337,6 +345,7 @@
 <translation id="2518231489509538392">Benarkan audio dimainkan</translation>
 <translation id="2521581787935130926">Tunjukkan pintasan apl pada bar penanda halaman</translation>
 <translation id="2529700525201305165">Hadkan pengguna yang dibenarkan untuk log masuk ke <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfigurasikan senarai apl dan sambungan pemasangan paksa</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2552966063069741410">Zon waktu</translation>
 <translation id="2571066091915960923">Dayakan atau lumpuhkan proksi pemampatan data dan halang pengguna daripada mengubah tetapan ini.
@@ -415,6 +424,7 @@
 
           ExtensionInstallBlacklist diberikan keutamaan melebihi dasar ini. Bermakna, pelanjutan pada senarai hitam tidak akan dipasang walaupun pelanjutan tersebut berasal dari tapak pada senarai ini.</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
+<translation id="2850122204195089673">Jadikan Unified Desktop tersedia dan dihidupkan secara lalai.</translation>
 <translation id="285480231336205327">Dayakan mod kontras tinggi</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>

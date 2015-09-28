@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">अमान्य इनपुट</translation>
 <translation id="1082209053475788238">कोई पिछला स्‍तर 6 शीर्षक नहीं.</translation>
 <translation id="1088219014394087294">कोई शीर्षक नहीं.</translation>
-<translation id="1092366490857960994">लेख, संख्या प्रविष्टि संपादित करें</translation>
 <translation id="1106741348836243114">ध्वनि फ़ीडबैक (ईयरकॉन) चालू या बंद करें.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724"><ph name="NUM" /> आइटम के साथ <ph name="TAG" /> संकलन</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">कीबोर्ड सहायता</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, कॉम्‍बो बॉक्‍स</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, मेनू आइटम, सबमेनू सहित</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">कस्टम</translation>
 <translation id="1188858454923323853">पूरक</translation>
 <translation id="1206619573307042055">मार्की</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">दाएं</translation>
 <translation id="136718599399906424">अगली तालिका पंक्ति</translation>
 <translation id="1383876407941801731">खोज</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">स्वीकार करने के लिए enter या रद्द करने के लिए escape, अगले के लिए down और पिछले के लिए up दबाएं.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">सभी विराम चिह्न</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">एक्सेस कुंजी:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">नीचे दी गई सूची से कोई विकल्प चुनकर वर्तमान 6 बिंदु ब्रेल तालिका को बदलें.</translation>
 <translation id="2169714232367507776">वर्तमान आइटम पर क्लिक करें</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{बंद कोष्ठक}one{# बंद कोष्ठक}other{# बंद कोष्ठक}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">अगले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="2770781857296573485">समूह अन्‍वेषण डालें</translation>
 <translation id="2777845298774924149">बाहर हो गया</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">कोई और भिन्‍न तत्‍व नहीं.</translation>
 <translation id="2800780099804980316">कोई पिछला स्‍तर 1 शीर्षक नहीं.</translation>
 <translation id="2811204574343810641">पंक्ति</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">देखा गया लिंक</translation>
 <translation id="323731244387692321">ChromeVox कीबोर्ड सहायता खोलें</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">पहले देखा गया लिंक</translation>
 <translation id="3286390186030710347">स्लाइडर</translation>
 <translation id="3299925995433437805">बाद में देखा गया कोई लिंक नहीं.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, सूची बॉक्‍स</translation>
 <translation id="3687295507293856493">वर्तमान सेल के स्‍तंभ शीर्ष लेख पर कोई अनुमान लगाएं</translation>
 <translation id="3692274950075847560">S:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">बोली नियंत्रित करना</translation>
 <translation id="3716845769494773620">एकाधिक पंक्ति</translation>
 <translation id="3731746171184829332">कोई पिछला शीर्षक नहीं.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">डॉयलॉग से बाहर हो गए हैं.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">स्वत: पूर्णता सूची</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">वीडियो</translation>
 <translation id="3816633764618089385">अगला मीडिया</translation>
 <translation id="3819376190738087562">कोई जंप नहीं.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">ChromeVox को कस्टमाइज़ करने के लिए नीचे दिए गए विकल्‍पों का उपयोग करें. बदलाव तुरंत लागू हो जाते हैं.</translation>
 <translation id="4271220233568730077">अगला गणित</translation>
 <translation id="4271521365602459209">और अधिक परिणाम नहीं.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">कोई अगला लेख नहीं.</translation>
 <translation id="4289540628985791613">संक्षिप्त विवरण</translation>
 <translation id="4300318234632215983">किसी लिंक के पीछे का URL प्रदर्शित करें</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">क्लासिक कीमैप</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{स्लैश}one{# स्लैश}other{# स्लैश}}</translation>
 <translation id="4547556996012970016">अगले स्तर 5 का शीर्षक</translation>
-<translation id="4554899522007042510">स्क्रीन की रोशनी <ph name="BRIGHTNESS" /> प्रतिशत</translation>
 <translation id="4562381607973973258">शीर्षलेख</translation>
 <translation id="4591507479202817876">, चयनित</translation>
 <translation id="4597532268155981612">फ़ॉर्म</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS कीबोर्ड एक्‍सप्‍लोरर</translation>
 <translation id="4763296182459741068">नीचे तक लपेटा गया</translation>
 <translation id="4763480195061959176">वीडियो</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">वर्तमान पृष्ठ का शीर्षक प्रदर्शित करें</translation>
 <translation id="4826415162591436065">आगे की ओर नेविगेट करें</translation>
 <translation id="4826604887384865800">अगला जंप</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">TTS लॉगिंग सक्षम करें</translation>
 <translation id="4877261390094455813">खोज क्वेरी डालें.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">आंतरिक लिंक</translation>
 <translation id="4953585991029886728">लेख संपादित करें</translation>
 <translation id="4954534434583049121">पिछला ब्‍लॉक कोट</translation>
-<translation id="4970377555447282413">पृष्ठ सामग्री का आवर्धित दृश्य दिखाएं.</translation>
 <translation id="4973717656530883744">न्‍यूनतम <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> पर स्विच किया गया.</translation>
 <translation id="4975416682604111799">मिलीसेकंड</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">सेकंड</translation>
 <translation id="867187640362843212">शीर्षक 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# लम्बवत पाइप}other{# लम्बवत पाइप}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">सिस्टम अपडेट किया गया था.  फिर से प्रारंभ करना सुझाए गए है.</translation>
 <translation id="8735450637152821465">चयन प्रारंभ करें</translation>
 <translation id="8743786158317878347">संरचित सामग्री, जैसे तालिकाएं डालें</translation>
 <translation id="8747966237988593539">क्रमित सूची</translation>

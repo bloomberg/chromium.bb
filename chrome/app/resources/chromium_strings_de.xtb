@@ -10,7 +10,6 @@
 <translation id="1221340462641866827">Chromium unterstützt keine externe App zur Verarbeitung von <ph name="SCHEME" />-Links. Der angeforderte Link ist <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Auf dem System wurde eine Installation von Chromium gefunden, die einen Konflikt verursacht. Bitte deinstallieren Sie sie und versuchen Sie es erneut.</translation>
 <translation id="1298199220304005244">Hilfe für Chromium OS aufrufen</translation>
-<translation id="130631256467250065">Ihre Änderungen werden beim nächsten Neustart wirksam.</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
 <translation id="1414495520565016063">Sie sind in Chromium angemeldet.</translation>
 <translation id="1444754455097148408">Open-Source-Lizenzen für Chromium</translation>
@@ -156,7 +155,6 @@
 <translation id="6475912303565314141">Die Erweiterung legt auch die Seite fest, die beim Start von Chromium angezeigt wird.</translation>
 <translation id="6485906693002546646">Ihre E-Mail-Adresse <ph name="PROFILE_EMAIL" /> wird zurzeit für die Synchronisierung Ihrer Chromium-Inhalte verwendet. Wenn Sie Ihre Synchronisierungseinstellungen ändern oder Chromium ohne Google-Konto verwenden möchten, rufen Sie <ph name="SETTINGS_LINK" /> auf.</translation>
 <translation id="6510925080656968729">Chromium deinstallieren</translation>
-<translation id="6613594504749178791">Ihre Änderungen werden beim nächsten Neustart von Chromium wirksam.</translation>
 <translation id="6637001341228460105">Chromium benötigt Zugriff auf das Mikrofon, um ihn mit dieser Website teilen zu können.</translation>
 <translation id="6638567566961868659">Ihre Lesezeichen finden Sie im Chromium-Menü oder in der Lesezeichenleiste.</translation>
 <translation id="6676384891291319759">Internetzugriff</translation>

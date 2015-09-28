@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
+<translation id="1203161113033984675">BEGIN_LINK Fizični splet END_LINK je vklopljen.</translation>
+<translation id="1418775127135578229">Odpri kopirano povezavo</translation>
+<translation id="1487576085940433465">BEGIN_LINK Elementi v bližini oddajajo spletne strani END_LINK. Za izboljšanje kakovosti teh rezultatov bo uporabljena Googlova storitev.</translation>
+<translation id="2026797012398135445">Odklenite napravo, če želite omogočiti.</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
 <translation id="3435896845095436175">Omogoči</translation>
 <translation id="4394049700291259645">Onemogoči</translation>
 <translation id="5301954838959518834">V redu, razumem</translation>
+<translation id="5508399372551154686">BEGIN_LINK Fizični splet END_LINK je izklopljen.</translation>
+<translation id="5815960189179094695">Iskanje elementov projekta BEGIN_LINK Fizični splet END_LINK ...</translation>
 <translation id="6196207969502475924">Glasovno iskanje</translation>
+<translation id="6722203589267124394">Vklopite Bluetooth, če si želite ogledati elemente za BEGIN_LINK Fizični splet END_LINK v bližini.</translation>
 <translation id="7554791636758816595">Nov zavihek</translation>
+<translation id="7588950540487816470">Fizični splet</translation>
+<translation id="8800384372516194324">Prikaži več rezultatov</translation>
 </translationbundle>

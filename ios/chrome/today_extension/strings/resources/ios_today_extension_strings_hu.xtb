@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1203161113033984675">BEGIN_LINKFizikai webEND_LINK bekapcsolva.</translation>
+<translation id="1418775127135578229">Másolt link megnyitása</translation>
+<translation id="1487576085940433465">BEGIN_LINKKözeli objektumok weboldalakat sugároznakEND_LINK. Egy Google-szolgáltatást fogunk használni ezeknek a találatoknak a javítására.</translation>
+<translation id="2026797012398135445">Az engedélyezéshez oldja fel eszköze zárolását.</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
 <translation id="3435896845095436175">Engedélyezés</translation>
 <translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="5301954838959518834">Rendben, értem</translation>
+<translation id="5508399372551154686">BEGIN_LINKFizikai webEND_LINK kikapcsolva.</translation>
+<translation id="5815960189179094695">BEGIN_LINKFizikai web-objektumokEND_LINK keresése…</translation>
 <translation id="6196207969502475924">Hangalapú keresés</translation>
+<translation id="6722203589267124394">Kapcsolja be a Bluetooth-t a közelben lévő BEGIN_LINKPhysical Web-objektumokEND_LINK észlelése érdekében.</translation>
 <translation id="7554791636758816595">Új lap</translation>
+<translation id="7588950540487816470">Fizikai web</translation>
+<translation id="8800384372516194324">További találatok megjelenítése</translation>
 </translationbundle>

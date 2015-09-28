@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
 <translation id="1283072268083088623">Određuje koje sheme HTTP autentifikacije <ph name="PRODUCT_NAME" /> podržava. Moguće su vrijednosti "basic" (osnovno), "digest" (sažeto), "NTLM" i "negotiate" (pregovaranje). Više vrijednosti odvojite zarezima. Ako ovo pravilo nije postavljeno, upotrebljavat će se sve četiri sheme.</translation>
 <translation id="1297182715641689552">Upotrijebi .pac proxy skriptu</translation>
+<translation id="1304973015437969093">ID-jevi proširenja/aplikacija i URL-ovi ažuriranja koja će se instalirati u pozadini</translation>
 <translation id="1310699457130669094">Ovdje možete odrediti URL za .pac datoteku proxy poslužitelja. Ovo pravilo vrijedi samo ako ste odabrali ručne postavke proxy poslužitelja u stavci "Odabir načina određivanja postavki proxy poslužitelja". Ne postavljajte ovo pravilo ako ste odabrali bilo koji drugi način postavljanja pravila za proxy poslužitelje. Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Određuje postotak odgode skaliranja zatamnjivanja zaslona kada se uoči aktivnosti korisnika dok se zaslon zatamnjuje ili ubrzo nakon što se zaslon isključi.
 
@@ -80,6 +81,13 @@
           Ako postavite to pravilo, korisnici ga mogu privremeno premostiti omogućujući ili onemogućujući način visokog kontrasta. Međutim, korisnički odabir nije trajan i zadana se vrijednost vraća svaki put kada se zaslon za prijavu prikaže iznova ili ako taj zaslon miruje jednu minutu.
 
           Ako se to pravilo ne postavi, način visokog kontrasta onemogućen je pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti način visokog kontrasta u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
+<translation id="1468707346106619889">Ako je to pravilo postavljeno na istinito, Jedinstvena radna površina dopuštena je
+      i omogućena prema zadanim postavkama, a aplikacijama omogućuje širenje na više zaslona.
+      Korisnik može onemogućiti Jedinstvenu radnu površinu za pojedinačne zaslone
+      poništavanjem njihova odabira u postavkama prikaza.
+
+      Ako je pravilo postavljeno na neistinito ili nije postavljeno, Jedinstvena radna
+      površina bit će onemogućena. U tom slučaju korisnik ne može omogućiti značajku.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Određuje razdoblje u milisekundama u kojem se usluzi upravljanja uređajem postavlja upit za informacije o pravilima uređaja.
 
@@ -281,6 +289,7 @@
 <translation id="2518231489509538392">Dopusti reprodukciju zvuka</translation>
 <translation id="2521581787935130926">Prikaži prečac aplikacije u traci oznaka</translation>
 <translation id="2529700525201305165">Ograničavanje korisnika koji se mogu prijaviti na uslugu <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfiguriranje popisa prisilno instaliranih aplikacija i proširenja</translation>
 <translation id="253135976343875019">Odgoda upozorenja o neaktivnosti dok je uređaj priključen na struju</translation>
 <translation id="2552966063069741410">Vremenska zona</translation>
 <translation id="2571066091915960923">Omogućuje ili onemogućuje proxy za kompresiju podataka i sprječava korisnike da promjene tu postavku.
@@ -353,6 +362,7 @@
 
           ExtensionInstallBlacklist ima prednost nad tim pravilom. To znači da proširenje na popisu zabranjenih proširenja neće biti instalirano čak ni ako dolazi s web-lokacije na tom popisu.</translation>
 <translation id="2824715612115726353">Omogući anonimni način</translation>
+<translation id="2850122204195089673">Omogućivanje i uključivanje Jedinstvene radne površine prema zadanim postavkama.</translation>
 <translation id="285480231336205327">Omogućavanje načina visokog kontrasta</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>

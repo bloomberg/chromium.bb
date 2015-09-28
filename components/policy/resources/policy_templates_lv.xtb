@@ -45,6 +45,7 @@
 
           Ja šī politika nav iestatīta, tiks lietotas visas četras shēmas.</translation>
 <translation id="1297182715641689552">Izmantot .pac starpniekservera skriptu</translation>
+<translation id="1304973015437969093">Paplašinājumu/lietotņu ID un atjauninājumu vietrāži URL instalēšanai klusajā režīmā</translation>
 <translation id="1310699457130669094">Šeit varat norādīt starpniekservera .pac faila vietrādi URL.
 
           Šī politika ir spēkā tikai tad, ja iestatījumā Izvēlieties, kādā veidā jānorāda starpniekserveru iestatījumi ir atlasīti manuālie starpniekserveru iestatījumi.
@@ -101,6 +102,13 @@
           Ja iestatāt šo politiku, lietotāji var īslaicīgi to ignorēt, iespējojot vai atspējojot augsta kontrasta režīmu. Tomēr lietotāja izvēle nav paliekoša, un noklusējuma iestatījums tiek atjaunots ikreiz, kad tiek atkārtoti parādīts pieteikšanās ekrāns vai kad lietotājs minūti nav aktīvs pieteikšanās ekrānā.
 
           Ja šī politika nav iestatīta, augsta kontrasta režīms ir atspējots, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotājs var jebkurā brīdī iespējot vai atspējot augsta kontrasta režīmu, un tā statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
+<translation id="1468707346106619889">Ja šī politika ir ieslēgta, vienotā darbvirsma ir atļauta un iespējota pēc
+      noklusējuma un lietojumprogrammas var izvērst pa vairākiem displejiem.
+      Lietotājs var atspējot apvienoto darbvirsmu atsevišķiem displejiem,
+      displeja iestatījumos noņemot atzīmi no šīs funkcijas.
+
+      Ja šī politika ir izslēgta vai nav iestatīta, apvienotā darbvirsma ir
+      atspējota. Šādā gadījumā lietotājs nevar iespējot šo funkciju.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Norāda laika periodu milisekundēs, kurā ierīču pārvaldības pakalpojumam tiek pieprasīta ierīces politikas informācija.
 
@@ -334,6 +342,7 @@
 <translation id="2518231489509538392">Atļauja atskaņot audio</translation>
 <translation id="2521581787935130926">Rādīt lietotņu saīsni grāmatzīmju joslā</translation>
 <translation id="2529700525201305165">To lietotāju ierobežošana, kuriem ir atļauts pierakstīties pārlūkā <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfigurēt piespiedu kārtā instalēto lietotņu un paplašinājumu sarakstu</translation>
 <translation id="253135976343875019">Aizkave līdz dīkstāves brīdinājumam, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2552966063069741410">Laika josla</translation>
 <translation id="2571066091915960923">Iespējo vai atspējo datu saspiešanas starpniekserveri un neļauj lietotājiem mainīt šo iestatījumu.
@@ -412,6 +421,7 @@
 
           Politika ExtensionInstallBlacklist ir svarīgāka par šo politiku. Tas nozīmē, ka melnajā sarakstā esošs paplašinājums netiks instalēts, pat ja tas atrodas šajā sarakstā minētā vietnē.</translation>
 <translation id="2824715612115726353">Iespējo inkognito režīmu</translation>
+<translation id="2850122204195089673">Atļaut vienoto darbvirsmu un ieslēgt to pēc noklusējuma</translation>
 <translation id="285480231336205327">Iespējot augsta kontrasta režīmu</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>

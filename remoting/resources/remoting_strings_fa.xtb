@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">‏شما می‌توانید با استفاده از کار با Chrome، در حالت ایمن به رایانه دسترسی داشته باشید.</translation>
 <translation id="2359808026110333948">ادامه</translation>
 <translation id="2366718077645204424">دسترسی به میزبان امکان‌پذیر نیست. این احتمالاً به دلیل پیکربندی شبکه‌ای است که استفاده می‌کنید.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  آخرین حضور آنلاین <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">راهنمایی و بازخورد</translation>
 <translation id="2499160551253595098">‏با اجازه به ما جهت جمع‌آوری آمار مربوط به استفاده و گزارش‌های خرابی، کمک کنید تا کنترل دسک تاپ از راه دور Chrome را ارتقا دهیم.</translation>
 <translation id="2512228156274966424">‏توجه: برای اطمینان از اینکه همه میانبرهای صفحه کلید در دسترس هستند، می‌توانید کنترل دسک‌تاپ از راه دور Chrome را روی «بازکردن به عنوان پنجره» پیکربندی کنید.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">‏این سرویس اتصالات ورودی از کلاینت‌های کنترل دسک‌تاپ از راه دور Chrome را فعال می‌کند.</translation>
 <translation id="3606997049964069799">‏وارد سیستم Chromium نشدید. لطفاً وارد سیستم شوید و دوباره امتحان کنید.</translation>
 <translation id="3649256019230929621">بازکردن پنجره در حداقل اندازه</translation>
+<translation id="369442766917958684">آفلاین.</translation>
 <translation id="3776024066357219166">‏جلسه "کنترل دسک‌تاپ از راه دور Chrome" تمام شد.</translation>
 <translation id="3785447812627779171">‏میزبان کار با Chrome</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -182,6 +184,7 @@
 <translation id="579702532610384533">اتصال مجدد</translation>
 <translation id="5843054235973879827">چرا این امن است؟</translation>
 <translation id="5859141382851488196">پنجره جدید...</translation>
+<translation id="5885438903806970186">آنلاین.</translation>
 <translation id="6001953797859482435">‏ترجیحات برنامه میزبان کنترل دسک‌تاپ از راه دور Chrome</translation>
 <translation id="6011539954251327702">‏کار با Chrome، به شما اجازه می‌دهد رایانه خود را به راحتی در وب به اشتراک بگذارید. هر دو کاربر باید برنامه Chrome را داشته باشند که می‌توان آن را در <ph name="URL" /> یافت.</translation>
 <translation id="6040143037577758943">بستن</translation>

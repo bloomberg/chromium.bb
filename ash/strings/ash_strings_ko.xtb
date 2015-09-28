@@ -26,6 +26,7 @@
 전환하려면 Shift+Alt를 누르세요.</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
+<translation id="1950626184269948555">작업 관리자 단축키가 변경되었습니다. Shift+Esc 대신 Search+Esc를 사용하세요.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">$1을(를) $2(으)로 전송 중</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
@@ -151,6 +152,7 @@
 <translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">종료하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
+<translation id="6287020362823083378">화면 잠금 단축키가 변경되었습니다. Ctrl+Shift+L 대신 Search+L을 사용하세요.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />(이)가 <ph name="ROTATION" />(으)로 회전되었습니다.</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" />에서 전송된 SMS</translation>
 <translation id="639644700271529076">CAPS LOCK이 꺼져 있음</translation>

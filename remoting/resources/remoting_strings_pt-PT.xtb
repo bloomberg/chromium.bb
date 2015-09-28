@@ -64,6 +64,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="2353140552984634198">Pode aceder com segurança a este computador utilizando o Chromoting.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última atividade online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar o Ambiente de Trabalho Remoto do Chrome, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para "Abrir como janela".</translation>
@@ -109,6 +110,7 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="3596628256176442606">Este serviço permite receber ligações de clientes do Chromoting.</translation>
 <translation id="3606997049964069799">Não tem sessão iniciada no Chromium. Inicie sessão e tente novamente.</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
 <translation id="3785447812627779171">Anfitrião do
 Chromoting</translation>
@@ -183,6 +185,7 @@ Remoto do Chrome</translation>
 <translation id="579702532610384533">Restabelecer ligação</translation>
 <translation id="5843054235973879827">Porque é que isto é seguro?</translation>
 <translation id="5859141382851488196">Nova janela…</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Preferências do Anfitrião do Ambiente de Trabalho Remoto do Chrome</translation>
 <translation id="6011539954251327702">O Chromoting permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Chromoting, que pode ser encontrada em <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Fechar</translation>

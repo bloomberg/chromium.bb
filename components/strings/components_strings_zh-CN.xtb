@@ -1,8 +1,10 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="1032854598605920125">顺时针旋转</translation>
 <translation id="1055184225775184556">撤消添加(&amp;U)</translation>
 <translation id="106701514854093668">桌面书签</translation>
+<translation id="1080116354587839789">适合窗口宽度</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="111844081046043029">确定要离开此页吗？</translation>
@@ -24,12 +26,13 @@
 <translation id="1549470594296187301">必须启用 JavaScript 才能使用此功能。</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
+<translation id="1655462015569774233">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在昨天过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书已在 # 天前过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为 <ph name="CURRENT_DATE" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。}}</translation>
 <translation id="168841957122794586">服务器证书包含弱加密密钥。</translation>
 <translation id="1693754753824026215"><ph name="SITE" /> 上的网页显示：</translation>
+<translation id="1706954506755087368">{1,plural, =1{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书明天才会生效。出现此问题的原因可能是配置有误或您的连接被拦截了。}other{此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书 # 天后才会生效。出现此问题的原因可能是配置有误或您的连接被拦截了。}}</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
-<translation id="1853748787962613237">无法显示文章。</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
 <translation id="1875753206475436906">试探法类型：<ph name="HEURISTIC_TYPE" />
     服务器类型：<ph name="SERVER_TYPE" />
@@ -49,6 +52,7 @@
 <translation id="2096368010154057602">省</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
+<translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="2171101176734966184">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书是使用弱签名算法签署的。这意味着服务器出示的安全凭据可能是伪造的，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
 <translation id="2181821976797666341">政策</translation>
@@ -56,12 +60,13 @@
 <translation id="2213606439339815911">正在获取条目…</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
-<translation id="2270192940992995399">找不到文章。</translation>
+<translation id="2282872951544483773">无法使用的实验功能</translation>
 <translation id="229702904922032456">根证书或中间证书已过期。</translation>
 <translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2367567093518048410">级别</translation>
+<translation id="2384307209577226199">在企业环境中默认实施</translation>
 <translation id="2386255080630008482">服务器的证书已撤消。</translation>
 <translation id="2392959068659972793">显示未设定值的政策</translation>
 <translation id="2396249848217231973">撤消删除(&amp;U)</translation>
@@ -101,6 +106,7 @@
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE" />网页，因此无法翻译。</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
+<translation id="3286538390144397061">立即重新启动</translation>
 <translation id="333371639341676808">禁止此页再显示对话框。</translation>
 <translation id="3340978935015468852">设置</translation>
 <translation id="3369192424181595722">时钟错误</translation>
@@ -110,6 +116,7 @@
 <translation id="3380365263193509176">未知错误</translation>
 <translation id="3380864720620200369">客户端 ID：</translation>
 <translation id="3427342743765426898">恢复修改(&amp;R)</translation>
+<translation id="3435896845095436175">启用</translation>
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">抓取时间间隔：</translation>
 <translation id="3462200631372590220">隐藏详情</translation>
@@ -117,6 +124,7 @@
 <translation id="3542684924769048008">使用以下项的密码：</translation>
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
 <translation id="3623476034248543066">显示值</translation>
+<translation id="3648607100222897006">这些实验性功能随时可能会更改、中止或取消。因此，我们完全无法保证您启用某项实验性功能后会发生什么情况，您的浏览器甚至可能会自动崩溃。请注意，您的浏览器可能会删除您的所有数据，您的安全和隐私也有可能受到意外伤害。您启用的所有实验性功能将用于此浏览器的所有用户。启用前，请务必三思。</translation>
 <translation id="3650584904733503804">验证成功</translation>
 <translation id="370665806235115550">正在加载...</translation>
 <translation id="3712624925041724820">许可已用尽</translation>
@@ -129,6 +137,7 @@
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
+<translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
 <translation id="409504436206021213">不重新加载</translation>
@@ -144,6 +153,7 @@
 <translation id="4300246636397505754">家长建议</translation>
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
+<translation id="4394049700291259645">停用</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
@@ -173,8 +183,11 @@
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
 <translation id="5190835502935405962">书签栏</translation>
+<translation id="5199729219167945352">实验</translation>
+<translation id="5251803541071282808">云端</translation>
 <translation id="5295309862264981122">确认导航</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
+<translation id="5316812925700871227">逆时针旋转</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -198,6 +211,7 @@
 <translation id="5989320800837274978">固定代理服务器和 .pac 脚本网址均未指定。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6040143037577758943">关闭</translation>
+<translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6154808779448689242">返回的策略令牌与当前令牌不匹配</translation>
 <translation id="6165508094623778733">了解详情</translation>
@@ -205,6 +219,8 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
+<translation id="6387478394221739770">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/beta，试用我们的测试版！</translation>
+<translation id="6426993025560594914">所有实验功能均可在您的平台上使用！</translation>
 <translation id="6445051938772793705">国家/地区</translation>
 <translation id="6458467102616083041">由于默认搜索被政策停用，政策值已被忽略。</translation>
 <translation id="647261751007945333">设备政策</translation>
@@ -233,6 +249,7 @@
 <translation id="7087282848513945231">县/郡</translation>
 <translation id="7108649287766967076">无法翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="7139724024395191329">酋长国</translation>
+<translation id="7179921470347911571">立即重新启动</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7182878459783632708">未设置任何政策</translation>
 <translation id="7186367841673660872">已将此网页从<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="LANGUAGE_LANGUAGE" /></translation>
@@ -255,6 +272,7 @@
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
+<translation id="7674629440242451245">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/dev，试用我们的测试版！</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="7761701407923456692">服务器的证书与网址不相符。</translation>
 <translation id="777702478322588152">县</translation>
@@ -270,6 +288,7 @@
 <translation id="7983301409776629893">一律将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">桌面书签</translation>
 <translation id="7995512525968007366">未指定</translation>
+<translation id="8003882219468422867">在企业环境中强制实施</translation>
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE" />，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
@@ -278,6 +297,7 @@
 <translation id="8208216423136871611">不保存</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
+<translation id="8294431847097064396">来源</translation>
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
 <translation id="8311778656528046050">确定要重新加载此网页吗？</translation>
 <translation id="8349305172487531364">书签栏</translation>
@@ -288,6 +308,7 @@
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
+<translation id="8647750283161643317">全部重置为默认值</translation>
 <translation id="8713130696108419660">初始签名错误</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
@@ -301,11 +322,13 @@
 <translation id="8866481888320382733">解析策略设置时出错</translation>
 <translation id="8876793034577346603">无法解析网络配置。</translation>
 <translation id="8891727572606052622">代理模式无效。</translation>
+<translation id="889901481107108152">抱歉，此项实验性功能不能用于您的平台。</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8932102934695377596">您的时钟慢了</translation>
 <translation id="8940229512486821554">运行 <ph name="EXTENSION_NAME" /> 命令：<ph name="SEARCH_TERMS" /></translation>
 <translation id="8971063699422889582">服务器的证书已过期。</translation>
 <translation id="8988760548304185580">输入信用卡背面显示的到期日期和 3 位数银行卡验证码 (CVC)</translation>
+<translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="9049981332609050619">您试图访问 <ph name="DOMAIN" />，但服务器提供的证书无效。</translation>
 <translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>
@@ -314,6 +337,7 @@
 <translation id="9154176715500758432">留在此页</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="917450738466192189">服务器证书无效。</translation>
+<translation id="9187827965378254003">目前似乎没有任何实验。</translation>
 <translation id="9207861905230894330">无法添加文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表单内容</translation>

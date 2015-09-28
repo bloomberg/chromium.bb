@@ -26,6 +26,7 @@
 切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1923539912171292317">自動クリック</translation>
+<translation id="1950626184269948555">タスク マネージャのショートカットが変更されました。Shift+Esc キーの代わりに検索+Esc キーを使用してください。</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">$1 を $2 にキャストしています</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
@@ -151,6 +152,7 @@
 <translation id="6165508094623778733">詳しく見る</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">終了するには Ctrl+Shift+Q を 2 回押してください。</translation>
+<translation id="6287020362823083378">画面ロックのショートカットが変更されました。Ctrl+Shift+L キーの代わりに検索+L キーを使用してください。</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> を <ph name="ROTATION" /> に回転しました</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER" /> の SMS</translation>
 <translation id="639644700271529076">CapsLock 機能はオフになっています</translation>

@@ -10,7 +10,6 @@
 <translation id="1221340462641866827">Chromium 作業系統不支援啟用外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。</translation>
 <translation id="1293235220023151515">系統在安裝 Chromium 時發生衝突問題。請先解除安裝，然後再試一次。</translation>
 <translation id="1298199220304005244">前往 Chromium 作業系統說明頁面</translation>
-<translation id="130631256467250065">您的變更會在下次重新啟動裝置時生效。</translation>
 <translation id="1396446129537741364">Chromium 即將顯示密碼。</translation>
 <translation id="1414495520565016063">您已登入 Chromium！</translation>
 <translation id="1444754455097148408">Chromium 開放原始碼授權</translation>
@@ -172,7 +171,6 @@
 <translation id="6475912303565314141">這個擴充功能也會控管您啟動 Chromium 時所顯示的網頁。</translation>
 <translation id="6485906693002546646">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chromium 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chromium，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6510925080656968729">解除安裝 Chromium</translation>
-<translation id="6613594504749178791">您的變更將於下次重新啟動 Chromium 時生效。</translation>
 <translation id="6637001341228460105">Chromium 需要麥克風存取權，才能與這個網站分享。</translation>
 <translation id="6638567566961868659">您的書籤會顯示在 Chromium 選單中或書籤列上。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>

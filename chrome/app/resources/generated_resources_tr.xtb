@@ -901,7 +901,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2279770628980885996">Sunucu isteği gerçekleştirmeyi denerken beklenmedik bir koşulla karşılaşıldı.</translation>
 <translation id="2280486287150724112">Sağ kenar boşluğu</translation>
 <translation id="2282146716419988068">GPU İşlemi</translation>
-<translation id="2282872951544483773">Kullanılamayan Deneyler</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2286454467119466181">Basit</translation>
 <translation id="2287590536030307392">Tüm kablosuz bağlantıları devre dışı bırakın.</translation>
@@ -1626,7 +1625,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="3280237271814976245">Farklı k&amp;aydet...</translation>
 <translation id="3280431534455935878">Hazırlanıyor</translation>
 <translation id="3285322247471302225">Yeni &amp;Sekme</translation>
-<translation id="3286538390144397061">Şimdi yeniden başlat</translation>
 <translation id="3288047731229977326">Geliştirici modunda çalışan uzantılar bilgisayarınıza zarar verebilir. Geliştirici değilseniz, geliştirici modundayken güvende olmak için bu uzantıların çalışmasını devre dışı bırakmanız gerekir.</translation>
 <translation id="3289566588497100676">Kolay sembol girişi</translation>
 <translation id="3289856944988573801">Güncellemeleri kontrol etmek için lütfen Ethernet veya Kablosuz kullanın.</translation>
@@ -1912,7 +1910,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="3643454140968246241"><ph name="COUNT" /> dosya senkronize ediliyor...</translation>
 <translation id="3646789916214779970">Varsayılan temaya sıfırla</translation>
 <translation id="3648460724479383440">Seçili radyo düğmesi</translation>
-<translation id="3648607100222897006">Bu deneysel özellikler zaman zaman değişebilir, bozulabilir veya kullanımdan kaldırılabilir. Bu deneylerden herhangi birini açtığınızda tarayıcınızın aniden yanmaya başlaması mümkün olduğundan, başınıza gelebilecekler konusunda kesinlikle hiçbir garanti vermeyiz. Şaka bir yana, tarayıcınız tüm verilerinizi silebilir ya da güvenliğiniz ve gizliliğiniz beklenmedik şekillerde riske girebilir. Etkinleştireceğiniz her deney bu tarayıcının tüm kullanıcıları için etkin hale gelecektir. Lütfen dikkatle ilerleyin.</translation>
 <translation id="3649138363871392317">Fotoğraf çekildi</translation>
 <translation id="3650242103421962931">Doğrusal</translation>
 <translation id="3651020361689274926">İstenen kaynak artık mevcut değil ve yönlendirme adresi yok. Bunun kalıcı bir durum olması bekleniyor.</translation>
@@ -2206,7 +2203,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="404493185430269859">Varsayılan arama motoru</translation>
 <translation id="4047112090469382184">Güvenliği nasıl sağlanır?</translation>
 <translation id="4047345532928475040">YOK</translation>
-<translation id="404928562651467259">UYARI</translation>
 <translation id="4052120076834320548">Çok küçük</translation>
 <translation id="4054376378714379870">Can sıkıcı olabilecek güvenlik özelliklerini etkinleştir.</translation>
 <translation id="4055023634561256217">Cihazınızın Powerwash ile sıfırlanabilmesi için yeniden başlatılması gerekir.</translation>
@@ -2356,7 +2352,6 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="4269099019648381197">Ayarlar menüsünde tablet sitesi isteğinde bulunma seçeneğini etkinleştirir.</translation>
 <translation id="4270393598798225102">Sürüm <ph name="NUMBER" /></translation>
 <translation id="4274187853770964845">Senkronizasyon hatası: Lütfen Senkronizasyonu durdurup yeniden başlatın.</translation>
-<translation id="4275663329226226506">Medya</translation>
 <translation id="4275830172053184480">Cihazınızı yeniden başlatın</translation>
 <translation id="4276796043975446927">Chromebox video konferansa hoş geldiniz.</translation>
 <translation id="4278390842282768270">İzin verildi</translation>
@@ -2709,7 +2704,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4793866834012505469">Ses modelini yeniden eğitin</translation>
 <translation id="479536056609751218">Web sayfası, Sadece HTML</translation>
 <translation id="479555359673800162">Şifre Yöneticisi Yeniden Kimlik Doğrulamasını Devre Dışı Bırak</translation>
-<translation id="4799797264838369263">Bu seçenek kurumsal politika tarafından denetleniyor. Lütfen daha fazla bilgi için yöneticinizle bağlantı kurun.</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4801257000660565496">Uygulama Kısayolları Oluştur</translation>
 <translation id="4801448226354548035">Hesapları gizle</translation>
@@ -2982,7 +2976,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5196716972587102051">2</translation>
 <translation id="5197255632782567636">İnternet</translation>
 <translation id="5197680270886368025">Senkronizasyon tamamlandı.</translation>
-<translation id="5199729219167945352">Deneyler</translation>
 <translation id="5204967432542742771">Şifre girin</translation>
 <translation id="5208988882104884956">Yarım genişlik</translation>
 <translation id="5209320130288484488">Cihaz bulunamadı</translation>
@@ -3595,7 +3588,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6056710589053485679">Normal Yeniden Yükle</translation>
 <translation id="6059232451013891645">Klasör:</translation>
 <translation id="6059652578941944813">Sertifika Hiyerarşisi</translation>
-<translation id="6060685159320643512">Dikkatli olun, bu deneyler canınızı yakabilir</translation>
 <translation id="6062697480277116433">Hücresel veri kullanıyorsunuz</translation>
 <translation id="6063810760121779748">WebAudio'yu devre dışı bırakma</translation>
 <translation id="6065289257230303064">Sertifika Konusu Dizin Öznitelikleri</translation>
@@ -3802,7 +3794,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6380224340023442078">İçerik ayarları...</translation>
 <translation id="6384275966486438344">Arama ayarlarınızı <ph name="SEARCH_HOST" /> olarak değiştirme</translation>
 <translation id="6385543213911723544">Siteler çerez verilerini kaydedebilir ve okuyabilir</translation>
-<translation id="6387478394221739770">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/beta adresinden beta kanalımızı deneyin.</translation>
 <translation id="6390799748543157332">Bu pencerede görüntülediğiniz sayfalar, göz atma geçmişinde görünmez ve açık olan tüm Misafir pencerelerini kapattığınızda bilgisayarda çerez gibi başka izler bırakmaz. Ancak indirdiğiniz dosyalar saklanır.</translation>
 <translation id="6391538222494443604">Giriş dizininin olması gerekir.</translation>
 <translation id="6391832066170725637">Dosya veya dizin bulunamadı.</translation>
@@ -3840,7 +3831,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6423731501149634044">Varsayılan PDF görüntüleyiciniz olarak Adobe Reader kullanılsın mı?</translation>
 <translation id="6425092077175753609">Malzeme</translation>
 <translation id="6426039856985689743">Mobil verileri devre dışı bırak</translation>
-<translation id="6426993025560594914">Tüm denemeler platformunuzda kullanılabilir!</translation>
 <translation id="642870617012116879">Bu site otomatik olarak birden fazla dosya indirmeye çalıştı.</translation>
 <translation id="6430814529589430811">Base64 kodlu ASCII, tek sertifika</translation>
 <translation id="6431217872648827691">Tüm veriler şu tarihte Google şifrenizle şifrelendi:
@@ -4344,7 +4334,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7173828187784915717">Chewing giriş ayarları</translation>
 <translation id="7175353351958621980">Yükleme kaynağı:</translation>
 <translation id="7177840076592118126">Genel bakışta sabit bir pencere sırası kullan.</translation>
-<translation id="7179921470347911571">Şimdi Yeniden Başlat</translation>
 <translation id="7180611975245234373">Yenile</translation>
 <translation id="7180865173735832675">Özelleştir</translation>
 <translation id="7186088072322679094">Araç Çubuğunda Tut</translation>
@@ -4695,7 +4684,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7668654391829183341">Bilinmeyen cihaz</translation>
 <translation id="7671130400130574146">Sistemin başlık çubuğunu ve kenarlıklarını kullan</translation>
 <translation id="7671576867600624">Teknoloji:</translation>
-<translation id="7674629440242451245">Chrome'daki etkileyici, yeni özellikler ilginizi çekiyor mu? chrome.com/dev adresinden geliştirici kanalımızı deneyin.</translation>
 <translation id="7676077734785147678">Uzantı IME'leri</translation>
 <translation id="7681202901521675750">SIM kart engellendi, lütfen PIN'i girin. Kalan deneme sayısı: <ph name="TRIES_COUNT" /></translation>
 <translation id="76814018934986158">Site güvenli olmayan bir komut dosyası yüklediği için bu siteyle olan bağlantınız gizli değil.</translation>
@@ -5369,7 +5357,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8639963783467694461">Otomatik doldurma ayarları</translation>
 <translation id="8642171459927087831">Erişim Verisi</translation>
 <translation id="8642947597466641025">Metni Büyüt</translation>
-<translation id="8647750283161643317">Tümünü varsayılan değerlere sıfırla</translation>
 <translation id="8651324101757295372">Bu kullanıcıyla sohbet edin</translation>
 <translation id="8651585100578802546">Bu Sayfayı Tekrar Yüklemeye Zorla</translation>
 <translation id="8652139471850419555">Tercih Edilen Ağlar</translation>
@@ -5548,7 +5535,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="8895908457475309889">Çıkış yaptığınızda bilgileriniz kaldırılacak.</translation>
 <translation id="88986195241502842">Bir sayfa aşağı gider</translation>
 <translation id="8898786835233784856">Sonraki Sekmeyi Seç</translation>
-<translation id="889901481107108152">Maalesef bu deney platformunuzda kullanılamıyor.</translation>
 <translation id="8899285681604219177">Desteklenmeyen Uzantılar Devre Dışı Bırakıldı</translation>
 <translation id="8899388739470541164">Vietnam dili</translation>
 <translation id="8899851313684471736">Bağlantıyı yeni &amp;pencerede aç</translation>
@@ -5640,7 +5626,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="901834265349196618">e-posta</translation>
 <translation id="9019062154811256702">Otomatik doldur ayarlarını okuma ve değiştirme</translation>
 <translation id="9019654278847959325">Slovakça klavye</translation>
-<translation id="901974403500617787">Tüm sistem için geçerli olan işaretler sadece sahibi <ph name="OWNER_EMAIL" /> tarafından ayarlanabilir.</translation>
 <translation id="9020142588544155172">Sunucu bağlantıyı reddetti.</translation>
 <translation id="9020278534503090146">Bu web sayfası kullanılamıyor</translation>
 <translation id="9021662811137657072">Virüs algılandı</translation>
@@ -5766,7 +5751,6 @@ Dolana kadar geçecek süre hesaplanıyor</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_DOMAIN" /> alan adından <ph name="DOWNLOAD_RECEIVED" /> alındı, <ph name="TIME_LEFT" /></translation>
 <translation id="9184473426683023988">İçe Aktar ve Cihaza Bağla</translation>
 <translation id="9186729806195986201">Ayrıca daha önce yüklü <ph name="IDS_SHORT_PRODUCT_NAME" /> sürümüne de geri döndür.</translation>
-<translation id="9187827965378254003">Maalesef, görünüşe göre şu anda kullanılabilir deney yok.</translation>
 <translation id="9188441292293901223">Bu <ph name="DEVICE_TYPE" /> cihazın kilidini açmak için lütfen telefonunuzu daha yeni bir Android sürümüne güncelleyin.</translation>
 <translation id="9189690067274055051">Giriş yapmak için telefonunuzun kilidini açın ve <ph name="DEVICE_TYPE" /> cihazınıza yaklaştırın.</translation>
 <translation id="9190063653747922532">L2TP/IPsec + önceden paylaşılan anahtar</translation>

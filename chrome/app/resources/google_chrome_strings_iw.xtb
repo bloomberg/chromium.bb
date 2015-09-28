@@ -13,7 +13,6 @@
 <translation id="123620459398936149">‏מערכת ההפעלה של Chrome לא הצליחה לסנכרן את הנתונים שלך. עדכן את משפט הסיסמה שלך לסנכרון.</translation>
 <translation id="127345590676626841">‏Chrome מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chrome יופעל מחדש ותוכל להמשיך.</translation>
 <translation id="1302523850133262269">‏המתן בזמן ש-Chrome מתקין את עדכוני המערכת האחרונים.</translation>
-<translation id="130631256467250065">השינויים ייכנסו לתוקף בפעם הבאה שתפעיל מחדש את המכשיר.</translation>
 <translation id="1348153800635493797">‏עליך לשדרג את Chrome כדי להשתמש בארנק Google‏ [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">‏Chrome זיהה התנהגות חריגה</translation>
 <translation id="1393853151966637042">‏קבלת עזרה לשימוש ב-Chrome</translation>
@@ -69,7 +68,6 @@
 <translation id="3047079729301751317">‏ניתוק <ph name="USERNAME" /> ינקה את ההיסטוריה, הסימניות, ההגדרות ונתוני Chrome אחרים המאוחסנים במכשיר הזה. נתונים המאוחסנים בחשבון Google לא ינוקו, וניתן לנהל אותם <ph name="GOOGLE_DASHBOARD_LINK" />במרכז השליטה של Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">‏המשך הפעלת יישומים ברקע כאשר Google Chrome סגור</translation>
 <translation id="3089968997497233615">‏גרסה חדשה ובטוחה יותר של Google Chrome זמינה כעת</translation>
-<translation id="3140883423282498090">‏השינויים ייכנסו לתוקף בפעם הבאה שתשיק מחדש את Google Chrome.</translation>
 <translation id="3149510190863420837">‏יישומי Chrome</translation>
 <translation id="3197823471738295152">המכשיר שלך מעודכן.</translation>
 <translation id="3282568296779691940">‏כניסה ל-Chrome</translation>

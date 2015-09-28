@@ -26,6 +26,7 @@
 ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
+<translation id="1950626184269948555">የተግባር አስተዳዳሪ አቋራጩ ተለውጧል። እባክዎ በShift+Esc ምትክ Search+Escን ይጠቀሙ።</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">$1ን ወደ $2 በመውሰድ ላይ</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@
 <translation id="6165508094623778733">ተጨማሪ ለመረዳት</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">ለመተው Control Shift Qን ሁለት ጊዜ ይጫኑ።</translation>
+<translation id="6287020362823083378">የማያ ገፅ ቁልፍ አቋራጩ ተለውጧል። እባክዎ በCtrl+Shift+L ምትክ Search+L ይጠቀሙ።</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ወደ <ph name="ROTATION" /> ዞሯል</translation>
 <translation id="6359806961507272919">ኤስ ኤም ኤስ ከ<ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK ጠፍቷል</translation>

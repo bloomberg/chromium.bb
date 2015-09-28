@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">限制通过SAML验证身份的用户可离线登录的时长</translation>
 <translation id="1283072268083088623">指定 <ph name="PRODUCT_NAME" />所支持的 HTTP 身份验证方案。可用的值有“basic”、“digest”、“ntlm”和“negotiate”。多个值之间用英文逗号分隔。如果未设置此政策，系统将会使用所有这四种方案。</translation>
 <translation id="1297182715641689552">使用 .pac 代理脚本</translation>
+<translation id="1304973015437969093">要静默安装的扩展程序/应用的 ID 和更新网址</translation>
 <translation id="1310699457130669094">您可以在此指定代理 .pac 文件的网址。只有当您在“选择如何指定代理服务器设置”中选择了手动代理设置后，此政策才会生效。如果您选择了其他任何模式来设置代理政策，就不应设置此政策。要查看详细示例，请访问：<ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">指定系统在屏幕变暗或屏幕关闭不久后察觉到用户活动时，对屏幕变暗延迟时间的调整幅度（百分比）。
 
@@ -80,6 +81,10 @@
           如果您设置了此政策，那么用户将可通过启用或停用高反差模式暂时覆盖此政策。但是用户选择的设置并不是永久有效的；只要登录屏幕重新显示或用户在登录屏幕上停止操作一段时间，系统即会恢复默认设置。
 
           如果未设置此政策，则登录屏幕初次显示时会停用高反差模式。用户可以随时启用或停用高反差模式，并且其在登录屏幕上的启用或停用状态对于各用户均有效。</translation>
+<translation id="1468707346106619889">此政策设为 true 时，用户将可以使用“统一桌面”功能，并且该功能在默认情况下处于启用状态（该功能处于启用状态时，应用可以跨多个显示屏进行显示）。
+      用户可以为个别显示屏停用“统一桌面”功能，方法是在显示设置中取消选中相应显示屏。
+
+      如果此政策设为 false 或未设置，系统将停用“统一桌面”功能。在这种情况下，用户将无法启用该功能。</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">指定向设备管理服务查询设备政策信息的周期（以毫秒为单位）。
 
@@ -278,6 +283,7 @@
 <translation id="2518231489509538392">允许播放视频</translation>
 <translation id="2521581787935130926">在书签栏中显示应用快捷方式</translation>
 <translation id="2529700525201305165">限制哪些用户可登录 <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">配置强制安装的应用和扩展程序的列表</translation>
 <translation id="253135976343875019">使用交流电源供电时的闲置警告延迟时间</translation>
 <translation id="2552966063069741410">时区</translation>
 <translation id="2571066091915960923">启用或停用数据压缩代理，并防止用户更改该设置。
@@ -350,6 +356,7 @@
 
           ExtensionInstallBlacklist的优先级高于此政策。也就是说，若某个扩展程序被列入了黑名单，虽然其所在的网站在此列表中，也不能安装。</translation>
 <translation id="2824715612115726353">启用隐身模式</translation>
+<translation id="2850122204195089673">使“统一桌面”功能可供用户使用，并使其在默认情况下处于启用状态。</translation>
 <translation id="285480231336205327">启用高反差模式</translation>
 <translation id="2872961005593481000">关闭</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>

@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">您可使用 Chrome 远程访问安全地访问此计算机。</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次在线时间：<ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2498359688066513246">帮助和反馈</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">此服务允许来自 Chrome 远程访问客户端的连接。</translation>
 <translation id="3606997049964069799">您尚未登录 Chromium。请登录，然后重试。</translation>
 <translation id="3649256019230929621">最小化窗口</translation>
+<translation id="369442766917958684">离线。</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
 <translation id="3785447812627779171">Chrome 远程
 访问主机</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">重新连接</translation>
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
 <translation id="5859141382851488196">打开新的窗口…</translation>
+<translation id="5885438903806970186">在线。</translation>
 <translation id="6001953797859482435">Chrome 远程桌面主机偏好设置</translation>
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL" />）。</translation>
 <translation id="6040143037577758943">关闭</translation>

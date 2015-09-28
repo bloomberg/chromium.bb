@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">‏תוכל לגשת למחשב זה באופן מאובטח באמצעות Chromoting.</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2366718077645204424">לא ניתן להשיג את המארח. הסיבה לכך יכולה להיות תצורת הרשת שבה אתה משתמש.</translation>
+<translation id="2370754117186920852">המארח <ph name="OPTIONAL_OFFLINE_REASON" />  נראה לאחרונה במצב מקוון <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">עזרה ומשוב</translation>
 <translation id="2499160551253595098">‏עזור לנו לשפר את 'שולחן עבודה מרוחק של Chrome' בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
 <translation id="2512228156274966424">‏שים לב: על מנת לוודא שכל מקשי הקיצור זמינים, ניתן להגדיר את שולחן העבודה המרוחק של Chrome ל'פתח כחלון'.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">‏שירות זה מאפשר חיבורים נכנסים מלקוחות Chromoting.</translation>
 <translation id="3606997049964069799">‏אתה לא מחובר ל-Chromium. היכנס ונסה שוב.</translation>
 <translation id="3649256019230929621">מזער את החלון</translation>
+<translation id="369442766917958684">פועל במצב לא מקוון.</translation>
 <translation id="3776024066357219166">‏הפעילות של 'שולחן עבודה מרוחק של Chrome' הסתיימה.</translation>
 <translation id="3785447812627779171">‏מארח
 Chromoting</translation>
@@ -183,6 +185,7 @@ Chromoting</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
+<translation id="5885438903806970186">פועל במצב מקוון.</translation>
 <translation id="6001953797859482435">‏העדפות מארח שולחן העבודה המרוחק של Chrome</translation>
 <translation id="6011539954251327702">‏Chromoting מאפשר לך לשתף את המחשב שלך דרך האינטרנט באופן מאובטח. על שני המשתמשים להפעיל את היישום Chromoting, שניתן למצוא בכתובת <ph name="URL" />.</translation>
 <translation id="6040143037577758943">סגור</translation>

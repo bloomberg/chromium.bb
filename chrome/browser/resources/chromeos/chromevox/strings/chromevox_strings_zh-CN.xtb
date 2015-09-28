@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">输入内容无效</translation>
 <translation id="1082209053475788238">不存在上一个6级标题。</translation>
 <translation id="1088219014394087294">无标题。</translation>
-<translation id="1092366490857960994">编辑文本，电话号码条目</translation>
 <translation id="1106741348836243114">开启或关闭声音反馈（耳标）。</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">包含<ph name="NUM" />个项的“<ph name="TAG" />”集</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">键盘帮助</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />，<ph name="NAME" />，组合框</translation>
 <translation id="1167230103353892028"><ph name="NAME" />，菜单项，包含子菜单</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">自定义</translation>
 <translation id="1188858454923323853">补充内容</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">向右</translation>
 <translation id="136718599399906424">表格下一行</translation>
 <translation id="1383876407941801731">搜索</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">按回车键可接受，按退出键可取消；按向下箭头键可移至下一条搜索结果，按向上箭头键可移至上一条搜索结果。</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">区域</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">读出所有标点符号</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">快捷键：<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">从以下列表中选择某个选项，即可更改当前的6点式盲文表。</translation>
 <translation id="2169714232367507776">点击当前项</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{1个右圆括号}other{#个右圆括号}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">跳转到下一个可设置为焦点的项</translation>
 <translation id="2770781857296573485">进入群组浏览</translation>
 <translation id="2777845298774924149">已退出</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">没有其他任何元素。</translation>
 <translation id="2800780099804980316">不存在上一个1级标题。</translation>
 <translation id="2811204574343810641">行</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">访问过的链接</translation>
 <translation id="323731244387692321">打开ChromeVox键盘帮助</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">上一个访问过的链接</translation>
 <translation id="3286390186030710347">滑块</translation>
 <translation id="3299925995433437805">不存在下一个访问过的链接。</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />，列表框</translation>
 <translation id="3687295507293856493">推测当前单元格的列标题</translation>
 <translation id="3692274950075847560">搜索结果：<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">控制语音</translation>
 <translation id="3716845769494773620">多行</translation>
 <translation id="3731746171184829332">不存在上一个标题。</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">已退出对话框。</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">自动填充列表</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">视频</translation>
 <translation id="3816633764618089385">下一个媒体内容</translation>
 <translation id="3819376190738087562">无跳转内容。</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">您可以使用以下选项来自定义ChromeVox。所有更改均会立即生效。</translation>
 <translation id="4271220233568730077">下一个数学元素</translation>
 <translation id="4271521365602459209">没有其他结果了。</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">不存在下一篇文章。</translation>
 <translation id="4289540628985791613">概述</translation>
 <translation id="4300318234632215983">读出链接网址</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">传统键映射</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{1个斜线符号}other{#个斜线符号}}</translation>
 <translation id="4547556996012970016">下一个5级标题</translation>
-<translation id="4554899522007042510">亮度为<ph name="BRIGHTNESS" />%</translation>
 <translation id="4562381607973973258">标头标记</translation>
 <translation id="4591507479202817876">，已选中</translation>
 <translation id="4597532268155981612">表单</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Chrome操作系统Keyboard Explorer</translation>
 <translation id="4763296182459741068">转至底部</translation>
 <translation id="4763480195061959176">视频</translation>
+<translation id="479989351350248267">搜索</translation>
 <translation id="481165870889056555">读出当前页面的标题</translation>
 <translation id="4826415162591436065">向前导航</translation>
 <translation id="4826604887384865800">下一个跳转</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">启用TTS日志记录</translation>
 <translation id="4877261390094455813">输入搜索查询内容。</translation>
 <translation id="4886524826165775965">第<ph name="INDEX" />项，共<ph name="TOTAL" />项</translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">内部链接</translation>
 <translation id="4953585991029886728">编辑文本</translation>
 <translation id="4954534434583049121">上一个块引用</translation>
-<translation id="4970377555447282413">显示页面内容的放大视图。</translation>
 <translation id="4973717656530883744">最小值为<ph name="X" /></translation>
 <translation id="4973762002207131920">已切换到“<ph name="KEY" />”。</translation>
 <translation id="4975416682604111799">毫秒</translation>
@@ -510,7 +499,7 @@
 <translation id="6129953537138746214">空格</translation>
 <translation id="6142308968191113180">4级标题标记</translation>
 <translation id="6169420925157477918">图片含有详细说明</translation>
-<translation id="6172087735260766220">无法读出受版权保护的 PDF 文档中的文字内容。</translation>
+<translation id="6172087735260766220">无法读出受版权保护的 PDF 文档中的无障碍文字内容。</translation>
 <translation id="6186305613600865047">跳至页尾</translation>
 <translation id="6193330012414963395">上午 下午</translation>
 <translation id="622484624075952240">向下箭头键</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">秒</translation>
 <translation id="867187640362843212">5级标题标记</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{1个竖线符号}other{#个竖线符号}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">系统已更新。建议重新启动。</translation>
 <translation id="8735450637152821465">开始选择</translation>
 <translation id="8743786158317878347">进入结构化内容，如表格</translation>
 <translation id="8747966237988593539">经过排序的列表</translation>

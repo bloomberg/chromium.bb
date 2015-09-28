@@ -79,6 +79,7 @@
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">优化</translation>
+<translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
 <translation id="2316129865977710310">不用了，谢谢</translation>
 <translation id="2321958826496381788">拖动该滑块，将文字调整到适合您阅读的大小。点按两次某段落后，显示的文字至少应是这么大。</translation>
 <translation id="2343328333327081434">正在安装…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3039671569659952257">删除文件夹</translation>
 <translation id="3063601790762993062">保存视频</translation>
+<translation id="306566828762083630">设备存储空间已用尽，请移除其他媒体内容以释放空间。</translation>
 <translation id="307329814453917357">询问是否要使用“Google 翻译”来翻译网页内容</translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
 <translation id="3090193911106258841">正在存取音频和视频输入</translation>
@@ -182,6 +184,7 @@
 <translation id="4023950129927433024">如果您忘记了密码，请通过 <ph name="BEGIN_LINK" />Google 信息中心<ph name="END_LINK" />停止并重置同步设置。</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
+<translation id="4059119910594077751">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4084682180776658562">已保存的书签</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
@@ -201,6 +204,7 @@
 <translation id="4297410240212242334">分开显示标签页和应用</translation>
 <translation id="4307992518367153382">基本设置</translation>
 <translation id="4333969446981951071">使用此应用即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
+<translation id="4350413759959745971">移动保存的网页</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4357362091209756047">没看到您的设备？<ph name="BEGIN_LINK1" />重新搜索<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />寻求帮助<ph name="END_LINK2" />。</translation>
 <translation id="4376501731284077108">不限</translation>
@@ -216,6 +220,7 @@
 <translation id="4619298195800598081">在新标签页中打开原始图片</translation>
 <translation id="4645575059429386691">由您父母管理</translation>
 <translation id="4663756553811254707">已删除 <ph name="NUMBER_OF_BOOKMARKS" /> 个书签</translation>
+<translation id="4665282149850138822"><ph name="NAME" />已添加到您的主屏幕</translation>
 <translation id="4684427112815847243">同步所有数据类型</translation>
 <translation id="4686372254213217147">原始大小</translation>
 <translation id="4690286298542128877">标签页将移到 Chrome 内的标签页切换器中。</translation>
@@ -246,6 +251,7 @@
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5063480226653192405">使用情况</translation>
+<translation id="509605886816275399">要离线保存此网页吗？</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE" />网页，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
@@ -265,6 +271,7 @@
 <translation id="5302048478445481009">语言</translation>
 <translation id="5304593522240415983">此字段不能为空</translation>
 <translation id="5305985456140490686">上次同步时间：<ph name="MINUTES" /> 分钟前</translation>
+<translation id="5308933389783727448">搜索保存的网页</translation>
 <translation id="5313967007315987356">添加网站</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5323972449344932352">启动 Chrome</translation>
@@ -408,6 +415,7 @@
 <translation id="699220179437400583">自动向Google报告可能出现的安全事件详情</translation>
 <translation id="6999892069268112724">确认 Google 帐户</translation>
 <translation id="7019652137705190998">进入隐身模式可进行私密浏览或临时登录</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> 已下载完毕</translation>
 <translation id="7026897394897382018">启用流量节省程序</translation>
 <translation id="7029809446516969842">密码</translation>
 <translation id="7053983685419859001">禁止</translation>
@@ -473,6 +481,7 @@
 <translation id="8026334261755873520">清除浏览数据</translation>
 <translation id="8035133914807600019">新建文件夹…</translation>
 <translation id="8050319187894766337">该网页已离线保存。存储空间即将用尽。</translation>
+<translation id="8068648041423924542">无法选择证书。</translation>
 <translation id="8069239273282989646">压缩后</translation>
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8084156870963450514">登录后即可通过任意设备查看您的所有在线内容</translation>
@@ -495,6 +504,7 @@
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8413385045638830869">先询问（推荐）</translation>
 <translation id="8428213095426709021">设置</translation>
+<translation id="8429160401486700187">删除保存的网页</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
@@ -534,6 +544,7 @@
 <translation id="8912362522468806198">Google 帐户</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
 <translation id="8928220460877261598">现在，您已登录 Chrome。</translation>
+<translation id="8934455786738644694">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
@@ -553,6 +564,7 @@
 <translation id="9156605176886108508">没有书签文件夹</translation>
 <translation id="9192643434065497760">请在<ph name="BEGIN_LINK" />设备设置<ph name="END_LINK" />部分开启蓝牙，以允许配对。</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> 下载失败</translation>
 <translation id="932327136139879170">家庭</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">新建文件夹</translation>

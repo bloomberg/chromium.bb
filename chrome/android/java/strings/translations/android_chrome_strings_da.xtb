@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Juster</translation>
+<translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
 <translation id="2316129865977710310">Nej tak</translation>
 <translation id="2321958826496381788">Træk i skyderen, indtil du kan læse dette uden problemer. Når du trykker to gange på et afsnit, skal teksten som minimum være på denne størrelse.</translation>
 <translation id="2343328333327081434">Installerer…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3039671569659952257">Slet mappe</translation>
 <translation id="3063601790762993062">Gem video</translation>
+<translation id="306566828762083630">Enhedens lager er opbrugt. Fjern andre medier for at frigøre plads.</translation>
 <translation id="307329814453917357">Tilbyd at oversætte sider ved hjælp af Google Oversæt</translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
 <translation id="3090193911106258841">Åbner lyd- og videoinput</translation>
@@ -182,6 +184,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4023950129927433024">Hvis du har glemt din adgangssætning, skal du stoppe og nulstille synkroniseringen via <ph name="BEGIN_LINK" />Google Betjeningspanel<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
@@ -201,6 +204,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4297410240212242334">Adskil faner og apps</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4333969446981951071">Ved at bruge denne applikation accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />bemærkninger om privatliv<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Flyt gemte sider</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4357362091209756047">Kan du ikke se din enhed? <ph name="BEGIN_LINK1" />Søg igen<ph name="END_LINK1" />, eller <ph name="BEGIN_LINK2" />få hjælp<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Ukontrolleret</translation>
@@ -216,6 +220,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4619298195800598081">Åbn originalbillede på ny fane</translation>
 <translation id="4645575059429386691">Administreret af en af dine forældre</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bogmærker blev slettet</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> blev føjet til din startskærm</translation>
 <translation id="4684427112815847243">Synkroniser alt</translation>
 <translation id="4686372254213217147">Oprindelig størrelse</translation>
 <translation id="4690286298542128877">Fanerne flyttes til en faneskifter i Chrome.</translation>
@@ -246,6 +251,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind p�
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5063480226653192405">Forbrug</translation>
+<translation id="509605886816275399">Vil du gemme denne side offline?</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5138299137310274655">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte til <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind p�
 <translation id="5302048478445481009">Sprog</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
 <translation id="5305985456140490686">Seneste synkronisering: For <ph name="MINUTES" /> minutter siden</translation>
+<translation id="5308933389783727448">Søg efter gemte sider</translation>
 <translation id="5313967007315987356">Tilføj website</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5323972449344932352">Åbn Chrome</translation>
@@ -408,6 +415,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="699220179437400583">Rapportér automatisk oplysninger om mulige sikkerhedshændelser til Google.</translation>
 <translation id="6999892069268112724">Bekræft Google-konto</translation>
 <translation id="7019652137705190998">Gå inkognito, hvis du vil browse privat eller logge ind midlertidigt</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> blev downloadet</translation>
 <translation id="7026897394897382018">Aktivér Datasparefunktion</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7053983685419859001">Bloker</translation>
@@ -473,6 +481,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8026334261755873520">Ryd browserdata</translation>
 <translation id="8035133914807600019">Ny mappe…</translation>
 <translation id="8050319187894766337">Siden blev gemt offline. Lagerpladsen er næsten opbrugt.</translation>
+<translation id="8068648041423924542">Certifikatet kunne ikke vælges.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8084156870963450514">Log ind for at få adgang til alle dine webting fra en enhver enhed</translation>
@@ -495,6 +504,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8413126021676339697">Vis hele historikken</translation>
 <translation id="8413385045638830869">Spørg først (anbefales)</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
+<translation id="8429160401486700187">Slet gemte sider</translation>
 <translation id="8481940801237642152">Din forbindelse til dette website er privat, men andre på netværket vil muligvis kunne ændre sidens udseende.</translation>
 <translation id="8497726226069778601">Her er ikke noget at se… endnu</translation>
 <translation id="8514577642972634246">Slå inkognitotilstand til</translation>
@@ -534,6 +544,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
 <translation id="8928220460877261598">Du er nu logget ind på Chrome.</translation>
+<translation id="8934455786738644694">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="8941248009481596111">Din forbindelse til dette website er privat.</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9156605176886108508">Ingen bogmærkemapper</translation>
 <translation id="9192643434065497760">Slå Bluetooth til under <ph name="BEGIN_LINK" />Enhedsindstillinger<ph name="END_LINK" /> for at tillade parring.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> kunne ikke downloades</translation>
 <translation id="932327136139879170">Start</translation>
 <translation id="938850635132480979">Fejl: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Ny mappe</translation>

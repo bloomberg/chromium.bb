@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1203161113033984675">BEGIN_LINKFysisk nettEND_LINK er på.</translation>
+<translation id="1418775127135578229">Åpne den kopierte linken</translation>
+<translation id="1487576085940433465">BEGIN_LINKObjekter i nærheten kringkaster nettsiderEND_LINK. En Google-tjeneste brukes til å forbedre kvaliteten på disse resultatene.</translation>
+<translation id="2026797012398135445">Lås opp enheten din for å slå på.</translation>
 <translation id="2316129865977710310">Nei takk</translation>
 <translation id="3435896845095436175">Slå på</translation>
 <translation id="4394049700291259645">Slå av</translation>
 <translation id="5301954838959518834">OK, skjønner</translation>
+<translation id="5508399372551154686">BEGIN_LINKFysisk nettEND_LINK er av.</translation>
+<translation id="5815960189179094695">Søker etter BEGIN_LINKFysisk nettEND_LINK-objekter …</translation>
 <translation id="6196207969502475924">Google Talesøk</translation>
+<translation id="6722203589267124394">Slå på Bluetooth for å se BEGIN_LINKFysisk nettEND_LINK-objekter i nærheten.</translation>
 <translation id="7554791636758816595">Ny fane</translation>
+<translation id="7588950540487816470">Fysisk nett</translation>
+<translation id="8800384372516194324">Vis flere resultater</translation>
 </translationbundle>

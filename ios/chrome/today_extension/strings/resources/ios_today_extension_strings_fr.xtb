@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
+<translation id="1203161113033984675">BEGIN_LINKWeb physiqueEND_LINK est activé.</translation>
+<translation id="1418775127135578229">Ouvrir le lien copié</translation>
+<translation id="1487576085940433465">BEGIN_LINKDes objets à proximité diffusent des pages WebEND_LINK. Un service Google va être utilisé pour améliorer la qualité de ces résultats.</translation>
+<translation id="2026797012398135445">Déverrouillez votre appareil pour activer cette extension.</translation>
 <translation id="2316129865977710310">Non merci</translation>
 <translation id="3435896845095436175">Activer</translation>
 <translation id="4394049700291259645">Désactiver</translation>
 <translation id="5301954838959518834">OK</translation>
+<translation id="5508399372551154686">BEGIN_LINKWeb physiqueEND_LINK est désactivé.</translation>
+<translation id="5815960189179094695">Recherche d'objets BEGIN_LINKWeb physiqueEND_LINK en cours…</translation>
 <translation id="6196207969502475924">Recherche vocale</translation>
+<translation id="6722203589267124394">Act. Bluetooth pour voir objets BEGIN_LINKWeb physiqueEND_LINK à prox.</translation>
 <translation id="7554791636758816595">Nouvel onglet</translation>
+<translation id="7588950540487816470">Web physique</translation>
+<translation id="8800384372516194324">Afficher d'autres résultats</translation>
 </translationbundle>

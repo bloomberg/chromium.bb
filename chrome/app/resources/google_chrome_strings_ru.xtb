@@ -13,7 +13,6 @@
 <translation id="123620459398936149">Не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="127345590676626841">Chrome обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
-<translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
 <translation id="1348153800635493797">Чтобы воспользоваться Google Кошельком, обновите Chrome [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">В работе Chrome обнаружены сбои</translation>
 <translation id="1393853151966637042">Справочный центр</translation>
@@ -69,7 +68,6 @@
 <translation id="3047079729301751317">Если вы отключите аккаунт <ph name="USERNAME" />, все сохраненные на этом устройстве закладки, настройки, история и другие данные Chrome будут удалены. Данные в вашем аккаунте Google сохранятся, и вы сможете управлять ими в <ph name="GOOGLE_DASHBOARD_LINK" />Личном кабинете Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
-<translation id="3140883423282498090">Внесенные изменения станут активны после перезапуска Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>

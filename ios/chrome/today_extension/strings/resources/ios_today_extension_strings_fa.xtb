@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fa">
+<translation id="1203161113033984675">‏BEGIN_LINK وب فیزیکی END_LINK روشن است.</translation>
+<translation id="1418775127135578229">باز کردن پیوند کپی‌شده</translation>
+<translation id="1487576085940433465">‏BEGIN_LINK اشیای اطراف درحال پخش صفحه‌های وب هستند END_LINK. از یک سرویس Google برای بهبود کیفیت این نتایج استفاده می‌شود.</translation>
+<translation id="2026797012398135445">قفل دستگاه را باز کنید تا فعال شود.</translation>
 <translation id="2316129865977710310">خیر، سپاسگزارم</translation>
 <translation id="3435896845095436175">فعال کردن</translation>
 <translation id="4394049700291259645">غیر فعال کردن</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
+<translation id="5508399372551154686">‏BEGIN_LINK وب فیزیکی END_LINK خاموش است.</translation>
+<translation id="5815960189179094695">‏درحال اسکن برای اشیای BEGIN_LINK وب فیزیکی END_LINK...</translation>
 <translation id="6196207969502475924">جستجوی صوتی</translation>
+<translation id="6722203589267124394">‏برای دیدن اشیای BEGIN_LINK P وب فیزیکی END_LINK اطراف، بلوتوث را روشن کنید.</translation>
 <translation id="7554791636758816595">برگهٔ جدید</translation>
+<translation id="7588950540487816470">وب فیزیکی</translation>
+<translation id="8800384372516194324">نمایش نتایج بیشتر</translation>
 </translationbundle>

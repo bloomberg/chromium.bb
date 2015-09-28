@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1203161113033984675">BEGIN_LINK Physical Web END_LINK ist aktiviert.</translation>
+<translation id="1418775127135578229">Kopierten Link öffnen</translation>
+<translation id="1487576085940433465">BEGIN_LINK Objekte in der Nähe übertragen Webseiten. END_LINK Zur Verbesserung der Qualität dieser Ergebnisse wird ein Google-Dienst verwendet.</translation>
+<translation id="2026797012398135445">Entsperren Sie Ihr Gerät für die Aktivierung.</translation>
 <translation id="2316129865977710310">Kein Interesse</translation>
 <translation id="3435896845095436175">Aktivieren</translation>
 <translation id="4394049700291259645">Deaktivieren</translation>
 <translation id="5301954838959518834">OK</translation>
+<translation id="5508399372551154686">BEGIN_LINK Physical Web END_LINK ist deaktiviert.</translation>
+<translation id="5815960189179094695">BEGIN_LINK Physical Web-Objekte END_LINK werden gesucht...</translation>
 <translation id="6196207969502475924">Sprachsuche</translation>
+<translation id="6722203589267124394">Zur Anzeige naher BEGIN_LINK Physical Web-Objekte END_LINK Bluetooth aktivieren</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
+<translation id="7588950540487816470">Physical Web</translation>
+<translation id="8800384372516194324">Weitere Ergebnisse anzeigen</translation>
 </translationbundle>

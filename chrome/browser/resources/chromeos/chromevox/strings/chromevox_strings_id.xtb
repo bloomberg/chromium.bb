@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Input tidak valid</translation>
 <translation id="1082209053475788238">Tidak ada judul tingkat 6 sebelumnya.</translation>
 <translation id="1088219014394087294">Tanpa judul.</translation>
-<translation id="1092366490857960994">Mengedit teks, entri angka</translation>
 <translation id="1106741348836243114">Mengaktifkan atau menonaktifkan masukan suara (earcons).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Koleksi <ph name="TAG" /> dengan <ph name="NUM" /> item</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Bantuan Keyboard</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, kotak kombo</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, item menu, dengan submenu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Sesuaikan</translation>
 <translation id="1188858454923323853">komplementer</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="136718599399906424">Baris tabel berikutnya</translation>
 <translation id="1383876407941801731">Telusuri</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Tekan enter untuk menerima atau escape untuk membatalkan, panah ke bawah untuk selanjutnya dan panah ke atas untuk sebelumnya.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Semua tanda baca</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Mengubah tabel braille 6 titik saat ini dengan memilih opsi dari daftar berikut.</translation>
 <translation id="2169714232367507776">Klik pada item ini</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{kurung tutup}other{# kurung tutup}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Melompat ke item yang dapat difokuskan berikutnya</translation>
 <translation id="2770781857296573485">Masukkan penjelajahan grup</translation>
 <translation id="2777845298774924149">Keluar</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Tidak ada elemen berbeda lainnya.</translation>
 <translation id="2800780099804980316">Tidak ada judul tingkat 1 sebelumnya.</translation>
 <translation id="2811204574343810641">Baris</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Tautan yang dikunjungi</translation>
 <translation id="323731244387692321">Membuka bantuan keyboard ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Tautan yang dikunjungi sebelumnya</translation>
 <translation id="3286390186030710347">Penggeser</translation>
 <translation id="3299925995433437805">Tidak ada tautan yang dikunjungi selanjutnya.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, kotak daftar</translation>
 <translation id="3687295507293856493">Menerka di judul kolom sel saat ini</translation>
 <translation id="3692274950075847560">P:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Ucapan Pengontrol</translation>
 <translation id="3716845769494773620">Multi-baris</translation>
 <translation id="3731746171184829332">Tidak ada judul sebelumnya.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Keluar dari dialog.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Pelengkapan otomatis daftar</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Media berikutnya</translation>
 <translation id="3819376190738087562">Tidak ada lompatan.</translation>
@@ -324,11 +316,10 @@
 <translation id="423334822609210999">Tidak ada sel di kiri.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, Tingkat <ph name="GRADE" /></translation>
 <translation id="4253168017788158739">Catatan</translation>
-<translation id="4254798249533888099">Pohon</translation>
+<translation id="4254798249533888099">Tree</translation>
 <translation id="4255943572433203166">Gunakan opsi di bawah untuk menyesuaikan ChromeVox. Perubahan segera diterapkan.</translation>
 <translation id="4271220233568730077">Matematika berikutnya</translation>
 <translation id="4271521365602459209">Tidak ada hasil lainnya.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Tidak ada artikel berikutnya.</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
 <translation id="4300318234632215983">Mengumumkan URL di belakang tautan</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Peta tombol klasik</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{garis miring}other{# garis miring}}</translation>
 <translation id="4547556996012970016">Judul tingkat 5 berikutnya</translation>
-<translation id="4554899522007042510">Kecerahan <ph name="BRIGHTNESS" /> persen</translation>
 <translation id="4562381607973973258">Header</translation>
 <translation id="4591507479202817876">, dipilih</translation>
 <translation id="4597532268155981612">formulir</translation>
@@ -356,7 +346,7 @@
 <translation id="4615592953348396470">Mengabaikan penekanan tombol berikutnya</translation>
 <translation id="461613135510474570">Kalimat</translation>
 <translation id="4647836961514597010">Pemilih warna</translation>
-<translation id="4661075872484491155">pohon</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Bangunan terkenal sebelumnya</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Penjelajah Keyboard ChromeOS</translation>
 <translation id="4763296182459741068">Terbungkus ke bawah</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Mengumumkan judul dari laman saat ini</translation>
 <translation id="4826415162591436065">Navigasi ke depan</translation>
 <translation id="4826604887384865800">Lompatan berikutnya</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Aktifkan penyimpanan log TTS</translation>
 <translation id="4877261390094455813">Masukkan kueri penelusuran.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Tautan internal</translation>
 <translation id="4953585991029886728">Edit teks</translation>
 <translation id="4954534434583049121">Blockquote sebelumnya</translation>
-<translation id="4970377555447282413">Tunjukkan tampilan konten laman yang diperbesar.</translation>
 <translation id="4973717656530883744">Min <ph name="X" /></translation>
 <translation id="4973762002207131920">Dialihkan ke <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milidetik</translation>
@@ -497,7 +486,7 @@
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Bagian</translation>
-<translation id="5968607524793740041">Menampilkan menu konteks</translation>
+<translation id="5968607524793740041">Tampilkan menu konteks</translation>
 <translation id="5983179082906765664">Meningkatkan granularitas navigasi</translation>
 <translation id="5999630716831179808">Suara</translation>
 <translation id="6000417740266304866">Mengubah tabel braille 8 titik saat ini dengan memilih opsi dari daftar berikut.</translation>
@@ -510,7 +499,7 @@
 <translation id="6129953537138746214">Spasi</translation>
 <translation id="6142308968191113180">Judul 4</translation>
 <translation id="6169420925157477918">Gambar dengan deskripsi panjang</translation>
-<translation id="6172087735260766220">Tidak dapat mengakses teks yang dapat diakses dari PDF yang tidak dapat disalin.</translation>
+<translation id="6172087735260766220">Tidak dapat mengakses teks yang dapat diakses, dari PDF yang tidak dapat disalin.</translation>
 <translation id="6186305613600865047">Melompat ke bagian bawah laman</translation>
 <translation id="6193330012414963395">AM PM</translation>
 <translation id="622484624075952240">Bawah</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">detik</translation>
 <translation id="867187640362843212">Judul 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipa}other{# pipa vertikal}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Sistem telah diperbarui. Disarankan untuk memulai ulang.</translation>
 <translation id="8735450637152821465">Mulai pilihan</translation>
 <translation id="8743786158317878347">memasuki konten terstruktur, misalnya tabel</translation>
 <translation id="8747966237988593539">Daftar Berurutan</translation>

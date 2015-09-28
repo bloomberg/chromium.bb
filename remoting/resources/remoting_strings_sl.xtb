@@ -64,6 +64,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="2353140552984634198">Oddaljeno povezovanje s Chromom omogoča varen dostop do tega računalnika.</translation>
 <translation id="2359808026110333948">Nadaljuj</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Nazadnje z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Pomoč in povratne informacije</translation>
 <translation id="2499160551253595098">Pomagajte nam izboljšati Oddaljeno namizje za Chrome, tako da nam dovolite zbiranje statističnih podatkov o uporabi in poročil o zrušitvah.</translation>
 <translation id="2512228156274966424">OPOMBA: Če želite zagotoviti, da bodo na voljo vse bližnjične tipke, lahko Oddaljeno namizje za Chrome konfigurirate na »Odpri kot okno«.</translation>
@@ -109,6 +110,7 @@ Za več informacij o zasebnosti si oglejte Googlov pravilnik o zasebnosti (http:
 <translation id="3596628256176442606">Ta storitev omogoča dohodne povezave iz odjemalcev za Oddaljeno povezovanje s Chromom.</translation>
 <translation id="3606997049964069799">Niste prijavljeni v Chromium. Prijavite se in poskusite znova.</translation>
 <translation id="3649256019230929621">Pomanjšanje olna</translation>
+<translation id="369442766917958684">Brez povezave.</translation>
 <translation id="3776024066357219166">Seja Oddaljenega namizja za Chrome je končana.</translation>
 <translation id="3785447812627779171">Gostitelj za Oddaljeno
 povezovanje s Chromom</translation>
@@ -183,6 +185,7 @@ namizje za Chrome</translation>
 <translation id="579702532610384533">Znova poveži</translation>
 <translation id="5843054235973879827">Zakaj je to varno?</translation>
 <translation id="5859141382851488196">Novo okno …</translation>
+<translation id="5885438903806970186">Povezava je vzpostavljena.</translation>
 <translation id="6001953797859482435">Nastavitve gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="6011539954251327702">Storitev Oddaljeno povezovanje s Chromom omogoča varno skupno rabo računalnika v spletu. Oba uporabnika morata uporabljati aplikacijo Oddaljeno povezovanje s Chromom, ki jo najdete na <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Zapri</translation>

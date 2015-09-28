@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">Овом рачунару можете безбедно да приступите помоћу Chromoting-а.</translation>
 <translation id="2359808026110333948">Настави</translation>
 <translation id="2366718077645204424">Није могуће успоставити везу са хостом. До овога је вероватно дошло због конфигурације мреже коју користите.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Последњи пут је виђен онлајн <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Помоћ и повратне информације</translation>
 <translation id="2499160551253595098">Помозите нам да побољшамо Chrome удаљени рачунар тако што ћете нам дозволити да прикупљамо статистику коришћења и извештаје о отказивању.</translation>
 <translation id="2512228156274966424">НАПОМЕНА: Да бисте обезбедили доступност свих тастерских пречица, можете да конфигуришете Chrome удаљени рачунар на „Отвори као прозор“.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">Ова услуга омогућава долазне везе клијената Chromoting-а.</translation>
 <translation id="3606997049964069799">Нисте пријављени у Chromium. Пријавите се и покушајте поново.</translation>
 <translation id="3649256019230929621">Смањивање прозора</translation>
+<translation id="369442766917958684">Офлајн је.</translation>
 <translation id="3776024066357219166">Сесија Chrome удаљеног рачунара је завршена.</translation>
 <translation id="3785447812627779171">Хост за Chromoting</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
@@ -181,6 +183,7 @@
 <translation id="579702532610384533">Поново се повежи</translation>
 <translation id="5843054235973879827">Зашто је ово безбедно?</translation>
 <translation id="5859141382851488196">Нови прозор...</translation>
+<translation id="5885438903806970186">Онлајн је.</translation>
 <translation id="6001953797859482435">Подешавања хоста за Chrome удаљени рачунар</translation>
 <translation id="6011539954251327702">Chromoting вам омогућава да безбедно делите рачунар на вебу. Потребно је да оба корисника покрену апликацију Chromoting, која може да се пронађе на <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Затвори</translation>

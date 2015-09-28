@@ -64,6 +64,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2353140552984634198">Maaari mong ligtas na i-access ang computer na ito gamit ang Chromoting.</translation>
 <translation id="2359808026110333948">Magpatuloy</translation>
 <translation id="2366718077645204424">Hindi maabot ang host. Malamang na dahil ito sa configuration ng network na iyong ginagamit.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Huling nakitang naka-online noong <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Tulong at feedback</translation>
 <translation id="2499160551253595098">Tumulong sa amin na pahusayin ang Remote na Desktop ng Chrome sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
 <translation id="2512228156274966424">TANDAAN: Upang matiyak na available ang lahat ng keyboard shortcut, maaari mong i-configure ang Remote na Desktop ng Chrome sa ‘Buksan bilang window’.</translation>
@@ -109,6 +110,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="3596628256176442606">Ini-enable ng serbisyong ito ang mga papasok na koneksyon mula sa mga client ng Chromoting.</translation>
 <translation id="3606997049964069799">Hindi ka naka-sign in sa Chromium. Mangyaring mag-sign in at subukang muli.</translation>
 <translation id="3649256019230929621">I-minimize ang window</translation>
+<translation id="369442766917958684">Naka-offline.</translation>
 <translation id="3776024066357219166">Natapos na ang iyong session sa Remote na Desktop ng Chrome.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -183,6 +185,7 @@ Desktop ng Chrome</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
 <translation id="5843054235973879827">Bakit ito ligtas?</translation>
 <translation id="5859141382851488196">Bagong window…</translation>
+<translation id="5885438903806970186">Naka-online.</translation>
 <translation id="6001953797859482435">Mga Kagustuhan sa Host ng Remote na Desktop ng Chrome</translation>
 <translation id="6011539954251327702">Binibigyang-daan ka ng Chromoting na maibahagi nang ligtas ang iyong computer sa Web. Dapat na pinapatakbo ng parehong user ang Chromoting app, na matatagpuan sa <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Isara</translation>

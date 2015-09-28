@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Nieprawidłowe informacje wejściowe</translation>
 <translation id="1082209053475788238">Brak poprzedniego nagłówka poziomu 6.</translation>
 <translation id="1088219014394087294">Bez nagłówków.</translation>
-<translation id="1092366490857960994">Edytowanie tekstu, wpisanie numeru</translation>
 <translation id="1106741348836243114">Włącz lub wyłącz powiadamianie dźwiękiem (ikony akustyczne).</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "brawo", "c": "czarli", "d": "delta", "e": "eko", "f": "fokstrot", "g": "golf", "h": "hotel", "i": "india", "j": "dżuliet","k": "kilo", "l": "lima", "m": "majk", "n": "nowember", "o": "oskar","p": "papa", "q": "kebek", "r": "romeo", "s": "sjera", "t": "tango", "u": "juniform", "v": "wiktor", "w": "łyski","x": "eks-rej", "y": "janki", "z": "zulu"}</translation>
 <translation id="113582498867142724">Kolekcja elementów <ph name="TAG" />. Liczba elementów: <ph name="NUM" /></translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Klawiatura – pomoc</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, pole złożone</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, element menu mający podmenu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Niestandardowe</translation>
 <translation id="1188858454923323853">pomocniczy</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="136718599399906424">Następny wiersz tabeli</translation>
 <translation id="1383876407941801731">Szukaj</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Naciśnij enter, by zaakceptować, escape, by anulować, strzałkę w dół, by przejść dalej, lub strzałkę w górę, by się cofnąć.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Pełna interpunkcja</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">klawisz dostępu:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Zmień bieżącą tabelę 6-punktowego pisma Braille'a, wybierając opcję z listy poniżej.</translation>
 <translation id="2169714232367507776">Kliknij bieżący element</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{nawias okrągły zamykający}few{# nawiasy okrągłe zamykające}many{# nawiasów okrągłych zamykających}other{# close parens}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Przejdź do następnego elementu, na którym można ustawić fokus</translation>
 <translation id="2770781857296573485">Otwórz poznawanie grup</translation>
 <translation id="2777845298774924149">Zamknięty</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Nie ma więcej różnych elementów.</translation>
 <translation id="2800780099804980316">Brak poprzedniego nagłówka poziomu 1.</translation>
 <translation id="2811204574343810641">Wiersz</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Kliknięty link</translation>
 <translation id="323731244387692321">Otwórz pomoc do klawiatury ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Poprzedni kliknięty link</translation>
 <translation id="3286390186030710347">Suwak</translation>
 <translation id="3299925995433437805">Brak następnego klikniętego linku.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, pole listy</translation>
 <translation id="3687295507293856493">Odgadnij nagłówek kolumny bieżącej komórki.</translation>
 <translation id="3692274950075847560">W:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Sterowanie mową</translation>
 <translation id="3716845769494773620">Wiele linii</translation>
 <translation id="3731746171184829332">Brak poprzedniego nagłówka.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Okno dialogowe zostało zamknięte</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Autouzupełnianie list</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Wideo</translation>
 <translation id="3816633764618089385">Następny plik multimedialny</translation>
 <translation id="3819376190738087562">Brak przejść.</translation>
@@ -324,11 +316,10 @@
 <translation id="423334822609210999">Brak komórki z lewej strony.</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, klasa <ph name="GRADE" /></translation>
 <translation id="4253168017788158739">Uwaga</translation>
-<translation id="4254798249533888099">Drzewo</translation>
+<translation id="4254798249533888099">Tree</translation>
 <translation id="4255943572433203166">Użyj poniższych opcji, aby dostosować ChromeVox. Zmiany są wprowadzane natychmiast.</translation>
 <translation id="4271220233568730077">Następne wyrażenie matematyczne</translation>
 <translation id="4271521365602459209">Brak innych wyników.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Nie ma następnego artykułu.</translation>
 <translation id="4289540628985791613">Omówienie</translation>
 <translation id="4300318234632215983">Przeczytaj URL linku</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Klasyczny układ klawiatury</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{ukośnik}few{# ukośniki}many{# ukośników}other{# slashes}}</translation>
 <translation id="4547556996012970016">Następny nagłówek poziomu 5</translation>
-<translation id="4554899522007042510">Jasność: <ph name="BRIGHTNESS" /> procent</translation>
 <translation id="4562381607973973258">Nagłówek</translation>
 <translation id="4591507479202817876">, wybrany</translation>
 <translation id="4597532268155981612">formularz</translation>
@@ -356,7 +346,7 @@
 <translation id="4615592953348396470">Ignorowanie następnego naciśnięcia klawisza</translation>
 <translation id="461613135510474570">Zdanie</translation>
 <translation id="4647836961514597010">Selektor kolorów</translation>
-<translation id="4661075872484491155">drzewo</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">grd</translation>
 <translation id="4693675773662933727">Poprzedni punkt orientacyjny</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Eksplorator klawiatury systemu operacyjnego Chrome</translation>
 <translation id="4763296182459741068">Zawijanie do dołu</translation>
 <translation id="4763480195061959176">film</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Przeczytaj tytuł bieżącej strony</translation>
 <translation id="4826415162591436065">Przejdź dalej</translation>
 <translation id="4826604887384865800">Następne przejście</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Włącz rejestrowanie TTS</translation>
 <translation id="4877261390094455813">Wpisz zapytanie.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Link wewnętrzny</translation>
 <translation id="4953585991029886728">Edytowanie tekstu</translation>
 <translation id="4954534434583049121">Poprzedni cytat blokowy</translation>
-<translation id="4970377555447282413">Pokaż powiększony widok zawartości strony.</translation>
 <translation id="4973717656530883744">Minimalnie <ph name="X" /></translation>
 <translation id="4973762002207131920">Zmiana na <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milisekundy</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">sekundy</translation>
 <translation id="867187640362843212">Nagłówek 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{kreska pionowa}few{# kreski pionowe}many{# kresek pionowych}other{# vertical pipes}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">System został zaktualizowany. Zalecane jest ponowne uruchomienie.</translation>
 <translation id="8735450637152821465">Zacznij wybierać</translation>
 <translation id="8743786158317878347">otwórz treści strukturalne, na przykład tabele</translation>
 <translation id="8747966237988593539">Lista numerowana</translation>

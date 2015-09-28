@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1203161113033984675">A BEGIN_LINKWeb físicaEND_LINK está ativada.</translation>
+<translation id="1418775127135578229">Abrir link copiado</translation>
+<translation id="1487576085940433465">BEGIN_LINKOs objetos próximos estão a difundir páginas WebEND_LINK. Será utilizado um serviço Google para melhorar a qualidade destes resultados.</translation>
+<translation id="2026797012398135445">Desbloqueie o dispositivo para ativar.</translation>
 <translation id="2316129865977710310">Não, obrigado</translation>
 <translation id="3435896845095436175">Ativar</translation>
 <translation id="4394049700291259645">Desactivar</translation>
 <translation id="5301954838959518834">OK, já percebi</translation>
+<translation id="5508399372551154686">A BEGIN_LINKWeb físicaEND_LINK está desativada.</translation>
+<translation id="5815960189179094695">A procurar objetos da BEGIN_LINKWeb físicaEND_LINK...</translation>
 <translation id="6196207969502475924">Pesquisa por Voz</translation>
+<translation id="6722203589267124394">Ative o Bluetooth para ver objetos da BEGIN_LINKWeb físicaEND_LINK próximos.</translation>
 <translation id="7554791636758816595">Novo separador</translation>
+<translation id="7588950540487816470">Web física</translation>
+<translation id="8800384372516194324">Mostrar mais resultados</translation>
 </translationbundle>

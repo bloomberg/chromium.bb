@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1203161113033984675">BEGIN_LINK Physical Web END_LINK เปิดอยู่</translation>
+<translation id="1418775127135578229">เปิดลิงก์ที่คัดลอก</translation>
+<translation id="1487576085940433465">BEGIN_LINK วัตถุที่อยู่ใกล้ๆ กำลังเผยแพร่หน้าเว็บ END_LINK จะมีการใช้บริการของ Google เพื่อปรับปรุงคุณภาพของผลลัพธ์เหล่านี้</translation>
+<translation id="2026797012398135445">ปลดล็อกอุปกรณ์เพื่อเปิดใช้</translation>
 <translation id="2316129865977710310">ไม่ ขอบคุณ</translation>
 <translation id="3435896845095436175">เปิดการใช้งาน</translation>
 <translation id="4394049700291259645">ปิดการใช้งาน</translation>
 <translation id="5301954838959518834">ตกลง เข้าใจแล้ว</translation>
+<translation id="5508399372551154686">BEGIN_LINK Physical Web END_LINK ปิดอยู่</translation>
+<translation id="5815960189179094695">กำลังสแกนหาวัตถุ BEGIN_LINK Physical Web END_LINK</translation>
 <translation id="6196207969502475924">การค้นหาด้วยเสียง</translation>
+<translation id="6722203589267124394">เปิดบลูทูธเพื่อดูวัตถุ BEGIN_LINK Physical Web END_LINK ที่อยู่ใกล้ๆ</translation>
 <translation id="7554791636758816595">แท็บใหม่</translation>
+<translation id="7588950540487816470">Physical Web</translation>
+<translation id="8800384372516194324">แสดงผลลัพธ์เพิ่มเติม</translation>
 </translationbundle>

@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1203161113033984675">BEGIN_LINKフィジカルウェブEND_LINKはオンです。</translation>
+<translation id="1418775127135578229">コピーしたリンクを開く</translation>
+<translation id="1487576085940433465">BEGIN_LINK近くのオブジェクトがウェブページを発信していますEND_LINK。この検出結果の品質を向上するためにGoogleのサービスが使用されます。</translation>
+<translation id="2026797012398135445">有効にするにはデバイスのロックを解除します。</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="3435896845095436175">有効にする</translation>
 <translation id="4394049700291259645">無効にする</translation>
 <translation id="5301954838959518834">OK</translation>
+<translation id="5508399372551154686">BEGIN_LINKフィジカルウェブEND_LINKはオフです。</translation>
+<translation id="5815960189179094695">BEGIN_LINKフィジカルウェブEND_LINK対応オブジェクトをスキャンしています...</translation>
 <translation id="6196207969502475924">音声検索</translation>
+<translation id="6722203589267124394">近くのBEGIN_LINKフィジカルウェブEND_LINK対応オブジェクトを探すにはBluetoothをオンにします。</translation>
 <translation id="7554791636758816595">新しいタブ</translation>
+<translation id="7588950540487816470">フィジカルウェブ</translation>
+<translation id="8800384372516194324">その他の結果を表示</translation>
 </translationbundle>

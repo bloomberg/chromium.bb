@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
+<translation id="1203161113033984675">BEGIN_LINKFizinis žiniatinklisEND_LINK įjungtas.</translation>
+<translation id="1418775127135578229">Atidaryti nukopijuotą nuorodą</translation>
+<translation id="1487576085940433465">BEGIN_LINKNetoliese esantys objektai transliuoja tinklalapiusEND_LINK. Šių rezultatų kokybei pagerinti bus naudojama „Google“ paslauga.</translation>
+<translation id="2026797012398135445">Atrakinkite įrenginį, kad įgalintumėte.</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
 <translation id="3435896845095436175">Įgalinti</translation>
 <translation id="4394049700291259645">Neleisti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
+<translation id="5508399372551154686">BEGIN_LINKFizinis žiniatinklisEND_LINK išjungtas.</translation>
+<translation id="5815960189179094695">Ieškoma BEGIN_LINKFizinio žiniatinklioEND_LINK obj...</translation>
 <translation id="6196207969502475924">Paieška balsu</translation>
+<translation id="6722203589267124394">Įj. „Bluetooth“, kad perž. BEGIN_LINKFiz. žiniat.END_LINK obj. net.</translation>
 <translation id="7554791636758816595">Naujas skirtukas</translation>
+<translation id="7588950540487816470">Fizinis žiniatinklis</translation>
+<translation id="8800384372516194324">Rodyti daugiau rezultatų</translation>
 </translationbundle>

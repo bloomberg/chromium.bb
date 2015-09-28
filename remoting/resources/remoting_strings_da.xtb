@@ -64,6 +64,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2353140552984634198">Du kan få sikker adgang til denne computer via Chromoting.</translation>
 <translation id="2359808026110333948">Fortsæt</translation>
 <translation id="2366718077645204424">Værten kunne ikke nås. Dette skyldes sandsynligvis konfigurationen af det netværk, du bruger.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Sidst set online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Hjælp og feedback</translation>
 <translation id="2499160551253595098">Hjælp os med at forbedre Chrome Fjernskrivebord ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
 <translation id="2512228156274966424">BEMÆRK! Du kan sikre, at alle tastaturgenveje er tilgængelige ved at konfigurere Chrome Fjernskrivebord til "Åbn som vindue".</translation>
@@ -109,6 +110,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="3596628256176442606">Denne tjeneste muliggør indgående forbindelser fra Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du er ikke logget ind på Chromium. Log ind, og prøv igen.</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">Din session med Chrome Fjernskrivebord er afsluttet.</translation>
 <translation id="3785447812627779171">Chromoting-
 host</translation>
@@ -183,6 +185,7 @@ Fjernskrivebord</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
 <translation id="5843054235973879827">Hvorfor er det sikkert?</translation>
 <translation id="5859141382851488196">Nyt vindue...</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Præferencer for host for Chrome Fjernskrivebord</translation>
 <translation id="6011539954251327702">Chromoting giver dig mulighed for sikkert at dele din computer via internettet. Begge brugere skal køre appen Chromoting, som kan findes på <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Luk</translation>

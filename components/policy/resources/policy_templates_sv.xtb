@@ -45,6 +45,7 @@
 
           Om policyn inte anges används alla fyra.</translation>
 <translation id="1297182715641689552">Använd en PAC-proxyskript</translation>
+<translation id="1304973015437969093">Tilläggs-/app-id:n och uppdateringsadresser som ska installeras obemärkt</translation>
 <translation id="1310699457130669094">Här kan du ange webbadressen till en PAC-fil för proxy.
 
           Den här policyn gäller bara om du har valt manuella proxyinställningar vid Välj hur inställningar för proxyserver ska anges.
@@ -101,6 +102,13 @@
           Om du anger den här principen kan användarna åsidosätta den temporärt genom att aktivera eller inaktivera högkontrastläget. Men inställningen sparas inte och standardvärdet återställs när inloggningsskärmen visas nästa gång eller om användaren inte gör något på inloggningsskärmen under en minut.
 
           Om den här principen inte anges är högkontrastläget inaktiverat första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera högkontrastläget när som helst och dess status på inloggningsskärmen sparas.</translation>
+<translation id="1468707346106619889">När värdet sant har angetts för den här principen är Enhetligt
+      skrivbord tillåtet och aktiverat som standard. Det gör att appar kan
+      sträcka sig över flera skärmar. Användaren kan inaktivera enhetligt skrivbord
+      för en enskild skärm genom att avmarkera det i skärminställningarna.
+
+      Om värdet falskt eller inget värde har angetts för principen inaktiveras
+      enhetligt skrivbord. I så fall kan användaren inte aktivera funktionen.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Policyn anger hur lång tid i millisekunder som enhetshanteringstjänsten tillfrågas efter information om enhetspolicy.
 
@@ -339,6 +347,7 @@
 <translation id="2518231489509538392">Tillåta uppspelning av ljud</translation>
 <translation id="2521581787935130926">Visa genvägen Appar i bokmärkesfältet</translation>
 <translation id="2529700525201305165">Begränsa vilka användare som får logga in på <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">Konfigurera listan med appar och tillägg som måste installeras</translation>
 <translation id="253135976343875019">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2552966063069741410">Tidszon</translation>
 <translation id="2571066091915960923">Aktiverar eller inaktiverar proxyfunktionen för datakomprimering och förhindra att användare ändrar inställningen.
@@ -417,6 +426,7 @@
 
           ExtensionInstallBlacklist har företräde framför den här principen. Det innebär att ett tillägg på den svarta listan inte kommer att installeras även om det sker från en webbplats på den här listan.</translation>
 <translation id="2824715612115726353">Aktivera inkognitoläge</translation>
+<translation id="2850122204195089673">Gör enhetligt skrivbord tillgängligt och aktivera det som standard.</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>

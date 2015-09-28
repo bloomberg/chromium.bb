@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">‏يمكنك الدخول بأمان إلى هذا الكمبيوتر باستخدام تطبيق التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="2359808026110333948">المتابعة</translation>
 <translation id="2366718077645204424">يتعذر الوصول إلى المضيف. ربما يرجع ذلك إلى تهيئة الشبكة التي تستخدمها.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  شوهد متصلاً آخر مرة <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">المساعدة والتعليقات</translation>
 <translation id="2499160551253595098">‏ساعدنا في تحسين سطح المكتب البعيد من Chrome من خلال السماح لنا بتجميع إحصاءات الاستخدام وتقارير الأعطال.</translation>
 <translation id="2512228156274966424">‏ملاحظة: للتأكد من توفر كل اختصارات لوحة المفاتيح، يمكنك تهيئة ميزة سطح المكتب البعيد من Chrome على "فتح كنافذة".</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">‏تمكن هذه الخدمة الاتصالات الواردة من عملاء التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="3606997049964069799">‏لم يتم تسجيل دخولك إلى Chromium، يُرجى تسجيل الدخول وإعادة المحاولة.</translation>
 <translation id="3649256019230929621">تصغير النافذة</translation>
+<translation id="369442766917958684">بلا اتصال.</translation>
 <translation id="3776024066357219166">‏انتهت جلسة سطح المكتب البعيد من Chrome.</translation>
 <translation id="3785447812627779171">مضيف
 التوافق مع نظام التشغيل</translation>
@@ -184,6 +186,7 @@
 <translation id="579702532610384533">إعادة الاتصال</translation>
 <translation id="5843054235973879827">ما سبب تمتع هذه العملية بالأمان؟</translation>
 <translation id="5859141382851488196">نافذة جديدة…</translation>
+<translation id="5885438903806970186">متصل.</translation>
 <translation id="6001953797859482435">‏تفضيلات مضيف سطح المكتب البعيد من Chrome</translation>
 <translation id="6011539954251327702">‏يسمح لك تطبيق التوافق مع نظام التشغيل Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق التوافق مع نظام التشغيل Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>
 <translation id="6040143037577758943">إغلاق</translation>

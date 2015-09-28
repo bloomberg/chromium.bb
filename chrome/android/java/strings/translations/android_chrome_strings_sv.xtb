@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Finjustera</translation>
+<translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2343328333327081434">Installerar …</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3039671569659952257">Radera mappen</translation>
 <translation id="3063601790762993062">Spara video</translation>
+<translation id="306566828762083630">Lagringsutrymmet på enheten är fullt. Frigör utrymme genom att ta bort andra filer.</translation>
 <translation id="307329814453917357">Erbjud att översätta sidor med Google Översätt</translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
 <translation id="3090193911106258841">Får åtkomst till ljud- och videoindata</translation>
@@ -182,6 +184,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4023950129927433024">Om du har glömt lösenfrasen avslutar du och återställer synkroniseringen via <ph name="BEGIN_LINK" />Google Översikt<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="4089831646916293264">Det kan hända att den här funktionen förhindrar åtkomst till premiumdatatjänster från operatören.</translation>
@@ -201,6 +204,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4297410240212242334">Separera flikar och appar</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4333969446981951071">Genom att använda det här programmet godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretessmeddelande<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Flytta sparade sidor</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4357362091209756047">Visas inte din enhet? <ph name="BEGIN_LINK1" />Gör om sökningen<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />få hjälp<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
@@ -216,6 +220,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4619298195800598081">Öppna original i ny flik</translation>
 <translation id="4645575059429386691">Hanteras av din förälder</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
 <translation id="4686372254213217147">Originalstorlek</translation>
 <translation id="4690286298542128877">Flikar flyttas till en funktion för flikbyte i Chrome.</translation>
@@ -246,6 +251,7 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5039804452771397117">Tillåt</translation>
 <translation id="5040262127954254034">Sekretess</translation>
 <translation id="5063480226653192405">Användning</translation>
+<translation id="509605886816275399">Vill du att sidan ska sparas offline?</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5302048478445481009">Språk</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
 <translation id="5305985456140490686">Synkroniserades senast för <ph name="MINUTES" /> minuter sedan</translation>
+<translation id="5308933389783727448">Sök i sparade sidor</translation>
 <translation id="5313967007315987356">Lägg till webbplats</translation>
 <translation id="5317780077021120954">Spara</translation>
 <translation id="5323972449344932352">Starta Chrome</translation>
@@ -408,6 +415,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="699220179437400583">Rapportera uppgifter om möjliga säkerhetsincidenter till Google automatiskt</translation>
 <translation id="6999892069268112724">Bekräfta Google-konto</translation>
 <translation id="7019652137705190998">Använd inkognitoläget om du vill söka privat eller om du vill logga in tillfälligt</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> har laddats ned</translation>
 <translation id="7026897394897382018">Aktivera Databesparing</translation>
 <translation id="7029809446516969842">Lösenord</translation>
 <translation id="7053983685419859001">Blockera</translation>
@@ -473,6 +481,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8026334261755873520">Rensa webbinformation</translation>
 <translation id="8035133914807600019">Ny mapp …</translation>
 <translation id="8050319187894766337">Sparad offline. Nästan fullt.</translation>
+<translation id="8068648041423924542">Det går inte att välja certifikat.</translation>
 <translation id="8069239273282989646">Efter komprimering</translation>
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8084156870963450514">Logga in för att komma åt alla dina grejer på webben från vilken enhet som helst</translation>
@@ -495,6 +504,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8413126021676339697">Visa fullständig historik</translation>
 <translation id="8413385045638830869">Fråga först (rekommenderas)</translation>
 <translation id="8428213095426709021">Inställningar</translation>
+<translation id="8429160401486700187">Radera sparade sidor</translation>
 <translation id="8481940801237642152">Din anslutning till webbplatsen är privat, men någon i nätverket kanske kan ändra utseendet på sidan.</translation>
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
@@ -534,6 +544,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
 <translation id="8928220460877261598">Du är nu inloggad i Chrome.</translation>
+<translation id="8934455786738644694">Dra uppifrån och tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9156605176886108508">Inga bokmärkesmappar</translation>
 <translation id="9192643434065497760">Aktivera Bluetooth i <ph name="BEGIN_LINK" />enhetsinställningarna<ph name="END_LINK" /> om du vill tillåta koppling.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">Det gick inte att ladda ned <ph name="FILE_NAME" /></translation>
 <translation id="932327136139879170">Startsida</translation>
 <translation id="938850635132480979">Fel: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Ny mapp</translation>

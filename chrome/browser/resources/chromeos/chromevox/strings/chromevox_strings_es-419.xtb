@@ -2,16 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1012173283529841972">Elemento de lista</translation>
-<translation id="1013742170491673792">buscd</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Ampliada</translation>
 <translation id="1025074108959230262">Modo permanente inhabilitado</translation>
 <translation id="1031961866430398710">luego</translation>
 <translation id="1044777062731150180">Sin encabezados</translation>
-<translation id="106222400312645156">encbzd clmn</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Entrada no válida</translation>
 <translation id="1082209053475788238">No hay ningún encabezado de nivel 6 anterior.</translation>
 <translation id="1088219014394087294">No hay encabezados.</translation>
-<translation id="1092366490857960994">Editar texto, entrada numérica</translation>
 <translation id="1106741348836243114">Permite activar o desactivar el sonido.</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "chocolate", "d": "delta", "e": "eco", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "julieta","k": "kilo", "l": "lima", "m": "maría", "n": "noviembre", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniforme", "v": "víctor", "w": "whisky","x": "xilófono", "y": "yanqui", "z": "zulú"}</translation>
 <translation id="113582498867142724">Colección de <ph name="TAG" /> con <ph name="NUM" /> elementos</translation>
@@ -19,13 +18,12 @@
 <translation id="1157782847298808853">Ayuda del teclado</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, cuadro combinado</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, elemento del menú, con submenú</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1188858454923323853">complementario</translation>
-<translation id="1206619573307042055">recuadro</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox, la voz de Chrome</translation>
 <translation id="1229276918471378188">Salto anterior</translation>
-<translation id="1237866625126425153">grp btn sel</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Siguiente encabezado de nivel 6</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
@@ -37,9 +35,8 @@
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="136718599399906424">Siguiente fila de la tabla</translation>
 <translation id="1383876407941801731">Buscar</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Presiona Enter para aceptar, Escape para cancelar, la tecla de flecha hacia abajo para ver el siguiente resultado y la tecla de flecha hacia arriba para ver el resultado anterior.</translation>
-<translation id="1396114365388024581">lst pstñ</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, cuadro de texto de la contraseña</translation>
 <translation id="1467432559032391204">Izquierda</translation>
@@ -78,7 +75,7 @@
 <translation id="188130072164734898">Di la fecha y la hora actuales.</translation>
 <translation id="1902396333223336119">Celda</translation>
 <translation id="1905379170753160525">Mostrar lista de encabezados</translation>
-<translation id="1912556590115083156">vncl vstd</translation>
+<translation id="1912556590115083156">vlnk</translation>
 <translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">Control de semana del año</translation>
 <translation id="1964135212174907577">Objeto siguiente</translation>
@@ -94,9 +91,8 @@
 <translation id="2089387485033699258">es-419</translation>
 <translation id="2091933974477985526">Área de texto editable anterior</translation>
 <translation id="2100350898815792233">Todos los signos de puntuación</translation>
-<translation id="2119965627982867824">btn cntrl num</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">tecla de acceso: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Para cambiar la tabla actual de braille de seis puntos, selecciona una opción de la siguiente lista.</translation>
 <translation id="2169714232367507776">Hacer clic en el elemento actual</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{paréntesis de cierre}other{# paréntesis de cierre}}</translation>
@@ -119,7 +115,7 @@
 <translation id="2471138580042810658">Encabezado 6</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{asterisco}other{# asteriscos}}</translation>
 <translation id="2549392850788122959">Se restableció <ph name="KEY" />.</translation>
-<translation id="2553108862507765288">error gramatical</translation>
+<translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Lateral</translation>
 <translation id="2589102159832527089">Esta página incluye el texto que se extrajo automáticamente del archivo PDF &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Haz clic aquí para acceder al original&lt;/a&gt;.</translation>
@@ -131,18 +127,17 @@
 <translation id="2639750663247012216">Tecla modificadora de ChromeVox</translation>
 <translation id="2644542693584024604">error ortográfico</translation>
 <translation id="2667291555398229137">Hacer clic en el elemento que aparece debajo de una clave de enrutamiento</translation>
-<translation id="2697408785920771974">autocmpltr ln</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{paréntesis de apertura}other{# paréntesis de apertura}}</translation>
 <translation id="2705875883745373140">Sin presionar</translation>
 <translation id="2706462751667573066">Arriba</translation>
-<translation id="2717271541250958000">pnl pstñ</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a. m.</translation>
 <translation id="2749275490991666823">Seleccionado</translation>
 <translation id="27527859628328957">Saltar al siguiente elemento enfocable</translation>
 <translation id="2770781857296573485">Ingresar exploración de grupos</translation>
 <translation id="2777845298774924149">Salió.</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">No hay más elementos diferentes.</translation>
 <translation id="2800780099804980316">No hay ningún encabezado de nivel 1 anterior.</translation>
 <translation id="2811204574343810641">Fila</translation>
@@ -178,12 +173,12 @@
 <translation id="308895241372589742">No hay ninguna expresión matemática posterior.</translation>
 <translation id="3090532668523289635">grp</translation>
 <translation id="3093176084511590672">Siguiente punto de referencia</translation>
-<translation id="3096671415663099226">cdr cmbnd</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">cdr dlg alrt</translation>
 <translation id="3109724472072898302">Contraído</translation>
 <translation id="3134461040845705080">sololctr</translation>
 <translation id="3138767756593758860">Mostrar lista de puntos de referencia</translation>
-<translation id="3143851963874289911">cld</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Línea siguiente</translation>
 <translation id="3155083529632865074">No hay ningún botón anterior.</translation>
 <translation id="3163593631834463955">Encabezado de columna vacío</translation>
@@ -191,10 +186,9 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{espacio}other{# espacios}}</translation>
 <translation id="320961988183078793">Se ingresó <ph name="TYPE" />.</translation>
 <translation id="3223701887221307104"><ph name="NAME" />, pestaña</translation>
-<translation id="3226035351387556942">casll verfcn</translation>
+<translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Vínculo visitado</translation>
 <translation id="323731244387692321">Abrir ayuda de teclado de ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Vínculo visitado anterior</translation>
 <translation id="3286390186030710347">Control deslizante</translation>
 <translation id="3299925995433437805">No hay ningún vínculo visitado posterior.</translation>
@@ -247,7 +241,7 @@
         "vi": "vietnamita",
         "zh": "chino",
         "zh_TW": "chino (tradicional)"}</translation>
-<translation id="3359142382821736686">sprdr</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{más}other{# signos más}}</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="3389259863310851658">Campo de formulario anterior</translation>
@@ -261,20 +255,19 @@
 <translation id="3486232535569802404"><ph name="V1" /> a <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{corchete de cierre}other{# corchetes de cierre}}</translation>
 <translation id="3493915602752813531">No hay ningún anclaje posterior.</translation>
-<translation id="3494946239022273294">elmnt mnú</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{signo de intercalación}other{# signos de intercalación}}</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, casilla de verificación no marcada</translation>
 <translation id="3599054940393788245">No incluido en el objeto matemático</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{comilla simple}other{# comillas simples}}</translation>
-<translation id="3650317109285159359">casll verfcn elmt mnú</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{dólar}other{# signos de dólar}}</translation>
 <translation id="3659787053479271466">alrt</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, cuadro de lista</translation>
 <translation id="3687295507293856493">Realizar una estimación sobre el encabezado de la columna de la celda actual</translation>
 <translation id="3692274950075847560">B:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Control de voz</translation>
 <translation id="3716845769494773620">Multilínea</translation>
 <translation id="3731746171184829332">No hay ningún encabezado anterior.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Saliste del cuadro de diálogo.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Lista de autocompletados</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Archivo multimedia siguiente</translation>
 <translation id="3819376190738087562">No hay saltos.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Usa las siguientes opciones para personalizar ChromeVox. Los cambios se aplican inmediatamente.</translation>
 <translation id="4271220233568730077">Expresión matemática siguiente</translation>
 <translation id="4271521365602459209">No hay más resultados.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">No hay ningún artículo posterior.</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="4300318234632215983">Indicar URL de un enlace</translation>
@@ -339,7 +330,7 @@
 <translation id="4372435075475052704">min:<ph name="X" /></translation>
 <translation id="4372705107434148843">Detener voz</translation>
 <translation id="4373197658375206385">No hay ningún elemento anterior que no sea un vínculo.</translation>
-<translation id="4391478986194775161">info ctnd</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">restablecer</translation>
 <translation id="4471074325120394300">No hay vínculos.</translation>
 <translation id="4476183483923481720">Nueva línea</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Mapa de teclado clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
 <translation id="4547556996012970016">Siguiente encabezado de nivel 5</translation>
-<translation id="4554899522007042510">Brillo: <ph name="BRIGHTNESS" /> %</translation>
 <translation id="4562381607973973258">Encabezado</translation>
 <translation id="4591507479202817876">, seleccionado</translation>
 <translation id="4597532268155981612">formulario</translation>
@@ -356,7 +346,7 @@
 <translation id="4615592953348396470">Se ignorará la siguiente pulsación de tecla.</translation>
 <translation id="461613135510474570">Frase</translation>
 <translation id="4647836961514597010">Selector de color</translation>
-<translation id="4661075872484491155">árbol</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">cdrcl</translation>
 <translation id="4693675773662933727">Punto de referencia anterior</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Explorador de teclado del Sistema operativo Chrome</translation>
 <translation id="4763296182459741068">Ajustar a la parte inferior</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Indicar el título de la página actual</translation>
 <translation id="4826415162591436065">Avanzar</translation>
 <translation id="4826604887384865800">Siguiente salto</translation>
@@ -374,15 +365,13 @@
 <translation id="4842108708071771135">No hay ningún bloque entrecomillado posterior.</translation>
 <translation id="4848993367330139335">tmprz</translation>
 <translation id="4850023505158945298">Elemento anterior similar</translation>
-<translation id="4866956062845190338">elmnt mnú btn sel</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Habilitar registro de texto a voz</translation>
 <translation id="4877261390094455813">Ingresa una consulta de búsqueda.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Vínculo interno</translation>
 <translation id="4953585991029886728">Editar texto</translation>
 <translation id="4954534434583049121">Cita de bloque anterior</translation>
-<translation id="4970377555447282413">Mostrar una vista ampliada del contenido de la página</translation>
 <translation id="4973717656530883744">Mínimo <ph name="X" /></translation>
 <translation id="4973762002207131920">Se cambió a <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milisegundos</translation>
@@ -428,7 +417,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comas}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, cuadro de texto</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, vínculo</translation>
-<translation id="5336381510091010269">autocmpltr+lst</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">Saltar atrás durante la lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
 <translation id="5374320867641260420">No hay ningún botón posterior.</translation>
@@ -450,7 +439,7 @@
 <translation id="5546092960038624944">No hay ningún encabezado de nivel 5 anterior.</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5561345396546889625">Siguiente lista</translation>
-<translation id="5562645715554321347">grp encbzd</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Tecla de retroceso</translation>
 <translation id="5585044216466955529">Editar texto, entrada de correo electrónico</translation>
 <translation id="5597170376237141345">Siguiente casilla de verificación</translation>
@@ -458,8 +447,8 @@
 <translation id="5598905979683743333"><ph name="NAME" />, botón de selección no seleccionado</translation>
 <translation id="5601172225407283979">Realizar acción predeterminada</translation>
 <translation id="5608798115546226984">Integración de autocompletados</translation>
-<translation id="561939826962581046">fch hr</translation>
-<translation id="5623778242535476823">btn sel</translation>
+<translation id="561939826962581046">time</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Registro</translation>
 <translation id="5628125749885014029">h4</translation>
 <translation id="5637871198229500030">No hay ninguna tabla anterior.</translation>
@@ -472,7 +461,7 @@
 <translation id="5684277895745049190">Lista</translation>
 <translation id="5700650669149824506">No hay ningún encabezado de nivel 4 anterior.</translation>
 <translation id="5709192780268610569">No hay descripción larga.</translation>
-<translation id="5712244464475377681">btn emrgt</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Siguiente columna de la tabla</translation>
 <translation id="571866080859340309">Explorando grupos</translation>
 <translation id="5728409797179002635">No se encontró la tabla.</translation>
@@ -504,7 +493,7 @@
 <translation id="6006050241733874051">Formulario</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{barra diagonal inversa}other{# barras diagonales inversas}}</translation>
 <translation id="6037602951055904232">Desplazar hacia delante</translation>
-<translation id="611827076493383239">vstd</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Fin de celda</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Google Space</translation>
@@ -554,7 +543,7 @@
 <translation id="6734854816611871228"><ph name="VALUE" />, cuadro combinado</translation>
 <translation id="6735257939857578167">con <ph name="NUM" /> elementos</translation>
 <translation id="6736510033526053669">pestaña creada</translation>
-<translation id="675895815784134693">brra progr</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">Artículo</translation>
 <translation id="6787839852456839824">Combinaciones de teclas para acceso directo</translation>
 <translation id="6793101435925451627">cdr lst</translation>
@@ -575,7 +564,7 @@
 <translation id="7041173719775863268">Finalizar selección</translation>
 <translation id="7095834689119144465">Modificar solo texto numérico</translation>
 <translation id="7096001299300236431">Archivo multimedia anterior</translation>
-<translation id="7116595520562830928">mult ln</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">reproducción oral de palabras</translation>
 <translation id="713824876195128146">Siguiente cita de bloque</translation>
 <translation id="7161771961008409533">Botón con ventana emergente</translation>
@@ -596,7 +585,7 @@
 <translation id="7285387653379749618">Tablas</translation>
 <translation id="7289186959554153431">Encabezado 3</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
-<translation id="731121099745151312">elmnt árbl</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">Subtítulos en braille inhabilitados</translation>
 <translation id="7318872822751139669">Usar el mouse para cambiar el elemento seleccionado</translation>
 <translation id="7322388933135261569">Febrero</translation>
@@ -605,7 +594,7 @@
 <translation id="7356165926712028380">Cambiar a braille de ocho puntos</translation>
 <translation id="7362871137496673139">No hay ningún encabezado de nivel 2 anterior.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{et}other{# signos et}}</translation>
-<translation id="737396357417333429">clicbl</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Saliendo de la tabla…</translation>
 <translation id="739763518212184081">Línea anterior</translation>
 <translation id="7400575256015741911">Error de ortografía detectado</translation>
@@ -613,7 +602,7 @@
 <translation id="7425395583360211003">retorno de carro</translation>
 <translation id="7434509671034404296">Opciones para desarrolladores</translation>
 <translation id="7439060726180460871">Directorio</translation>
-<translation id="744163271241493234">cntrsñ</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">tab</translation>
 <translation id="7492049978501397201">Se ingresó un cuadro de diálogo.</translation>
 <translation id="7532613204005497612">Junio</translation>
@@ -621,7 +610,7 @@
 <translation id="7586163296341959563">pegar</translation>
 <translation id="7596919493010894443">selección borrada</translation>
 <translation id="7604026522577407655">Ir al principio de la columna actual</translation>
-<translation id="7604451927827590395">encbzd</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Indicar URL de la página actual</translation>
 <translation id="7609363189280667021">Activar subtítulos en braille</translation>
 <translation id="762020119231868829">Detiene todos los widgets de medios que se estén reproduciendo.</translation>
@@ -633,9 +622,9 @@
 <translation id="7674576868851035240">Siguiente vínculo</translation>
 <translation id="7674768236845044097">marca</translation>
 <translation id="7684431668231950609">Editar texto, entrada de URL</translation>
-<translation id="7685589220304187312">brra herr</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Botón de selección anterior</translation>
-<translation id="7701196182766842984">autocmpltr lst</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, cuadro de texto de la contraseña</translation>
 <translation id="7805247615045262757">navegación predeterminada</translation>
 <translation id="7805768142964895445">Estado</translation>
@@ -683,7 +672,7 @@
 <translation id="8382679411218029383">Autocompletados integrados y lista de autocompletados</translation>
 <translation id="8428603554127842284">Nivel <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">No hay ningún encabezado de nivel 3 posterior.</translation>
-<translation id="8430049249787218991">brra mnú</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">No hay ninguna casilla de verificación anterior.</translation>
 <translation id="8455868257606149352">Máximo <ph name="X" /></translation>
 <translation id="84575901236241018">tiene tecla de acceso, <ph name="KEY" /></translation>
@@ -700,13 +689,11 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> elementos seleccionados</translation>
 <translation id="8638532244051952400">Anunciar coordenadas de celda actuales</translation>
 <translation id="8650576015643545550">No hay ninguna lista anterior.</translation>
-<translation id="8653031188082306838">url</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Mostrar la lista de vínculos</translation>
 <translation id="8664519043722036194">segundos</translation>
 <translation id="867187640362843212">Encabezado 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}other{# barras verticales}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Se actualizó el sistema. Se recomienda reiniciar.</translation>
 <translation id="8735450637152821465">Iniciar selección</translation>
 <translation id="8743786158317878347">ingresar al contenido estructurado, como tablas</translation>
 <translation id="8747966237988593539">Lista ordenada</translation>
@@ -724,12 +711,12 @@
 <translation id="8896347895970027998">Activar o desactivar ChromeVox</translation>
 <translation id="8898516272131543774">Reproducción oral del ciclo de puntuación</translation>
 <translation id="8900148057318340779">Tecla de prefijo</translation>
-<translation id="8908714597367957477">encbzd clmn</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">Encabezados vacíos</translation>
-<translation id="8937112856099038376">vncl int</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943175951035496220">No hay ninguna celda a la derecha.</translation>
-<translation id="8978496506222343566">info herr</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">archivo</translation>
 <translation id="9027462562263121875">No hay tablas.</translation>
 <translation id="9040132695316389094">Encabezado 1</translation>
@@ -741,11 +728,11 @@
 <translation id="9089864840575085222">Reproducción oral del ciclo de escritura</translation>
 <translation id="9107530006868467849">No hay widgets multimedia anteriores.</translation>
 <translation id="9108370397979208512">expr mtmtc</translation>
-<translation id="9108589040018540527">brra dsplzmnt</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{porcentaje}other{# signos de porcentaje}}</translation>
 <translation id="9115913704608474258">Noviembre</translation>
 <translation id="9128414153595658330">dlg</translation>
-<translation id="9149560530563164529">sccn</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">Muestra una breve descripción de la posición actual.</translation>
 <translation id="9153606228985488238">Tono: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Ir al final de la columna actual</translation>

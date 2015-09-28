@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Refine</translation>
+<translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
 <translation id="2316129865977710310">No, thank you</translation>
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2343328333327081434">Installing…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Passphrases do not match</translation>
 <translation id="3039671569659952257">Delete folder</translation>
 <translation id="3063601790762993062">Save video</translation>
+<translation id="306566828762083630">Your device storage is full. Please remove other media to make space.</translation>
 <translation id="307329814453917357">Offer to translate pages using Google Translate</translation>
 <translation id="3089395242580810162">Open in incognito tab</translation>
 <translation id="3090193911106258841">Accessing audio and video input</translation>
@@ -182,6 +184,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4023950129927433024">If you've forgotten your passphrase, stop and reset Sync via <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Show suggestions when a web address does not resolve or a connection cannot be made</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Touch the back button to exit full screen.</translation>
 <translation id="4062305924942672200">Legal information</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4089831646916293264">This feature may interfere with access to premium data services provided by your operator.</translation>
@@ -201,6 +204,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4297410240212242334">Separate tabs and apps</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4333969446981951071">By using this application, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">Move saved pages</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4357362091209756047">Not seeing your device? <ph name="BEGIN_LINK1" />Search again<ph name="END_LINK1" /> or <ph name="BEGIN_LINK2" />Get help<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Uncontrolled</translation>
@@ -216,6 +220,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4619298195800598081">Open original image in new tab</translation>
 <translation id="4645575059429386691">Managed by your parent</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
 <translation id="4684427112815847243">Sync everything</translation>
 <translation id="4686372254213217147">Original size</translation>
 <translation id="4690286298542128877">Tabs will move to a tab switcher inside Chrome.</translation>
@@ -246,6 +251,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Usage</translation>
+<translation id="509605886816275399">Save this page offline?</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5138299137310274655">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5302048478445481009">Language</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5305985456140490686">Last synced: <ph name="MINUTES" /> minutes ago</translation>
+<translation id="5308933389783727448">Search saved pages</translation>
 <translation id="5313967007315987356">Add site</translation>
 <translation id="5317780077021120954">Save</translation>
 <translation id="5323972449344932352">Launch Chrome</translation>
@@ -408,6 +415,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="699220179437400583">Automatically report details of possible security incidents to Google</translation>
 <translation id="6999892069268112724">Confirm Google Account</translation>
 <translation id="7019652137705190998">Go incognito to browse privately or sign in temporarily</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> downloaded</translation>
 <translation id="7026897394897382018">Enable Data Saver</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7053983685419859001">Block</translation>
@@ -473,6 +481,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="8035133914807600019">New folder…</translation>
 <translation id="8050319187894766337">Page saved offline. Storage almost full.</translation>
+<translation id="8068648041423924542">Unable to select certificate.</translation>
 <translation id="8069239273282989646">After compression</translation>
 <translation id="8073388330009372546">Open image in new tab</translation>
 <translation id="8084156870963450514">Sign in to access all your web stuff from any device</translation>
@@ -495,6 +504,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8413126021676339697">Show full history</translation>
 <translation id="8413385045638830869">Ask first (recommended)</translation>
 <translation id="8428213095426709021">Settings</translation>
+<translation id="8429160401486700187">Delete saved pages</translation>
 <translation id="8481940801237642152">Your connection to this site is private, but someone on the network might be able to change the look of the page.</translation>
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
@@ -532,6 +542,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
 <translation id="8928220460877261598">You're now signed in to Chrome.</translation>
+<translation id="8934455786738644694">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
@@ -551,6 +562,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9156605176886108508">No bookmark folders</translation>
 <translation id="9192643434065497760">Turn on Bluetooth in <ph name="BEGIN_LINK" />device settings<ph name="END_LINK" /> to allow pairing.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> download failed</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">New folder</translation>

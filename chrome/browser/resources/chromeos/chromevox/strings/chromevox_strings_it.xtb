@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Dati non validi</translation>
 <translation id="1082209053475788238">Nessuna intestazione livello 6 precedente.</translation>
 <translation id="1088219014394087294">Nessuna intestazione.</translation>
-<translation id="1092366490857960994">Modifica testo, numero</translation>
 <translation id="1106741348836243114">Attiva o disattiva feedback audio (icone audio).</translation>
 <translation id="1120743664840974483">{"a": "alfa", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "x-ray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Raccolta <ph name="TAG" /> con <ph name="NUM" /> elementi</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Guida tastiera</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, casella combinata</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, voce di menu, con sottomenu</translation>
-<translation id="1167523994081052608">.</translation>
 <translation id="1177863135347784049">Personalizzati</translation>
 <translation id="1188858454923323853">elementi complementari</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Destra</translation>
 <translation id="136718599399906424">Riga tabella successiva</translation>
 <translation id="1383876407941801731">Cerca</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Premi Invio per accettare o Esc per annullare, freccia Giù per passare al prossimo e freccia Su per passare al precedente.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Tutta la punteggiatura</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">tasto di accesso:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Cambia la tavoletta braille a sei punti corrente selezionando un'opzione dall'elenco sotto.</translation>
 <translation id="2169714232367507776">Clic sulla voce corrente</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parentesi tonda di chiusura}other{# parentesi tonde di chiusura}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Passa a elemento attivabile successivo</translation>
 <translation id="2770781857296573485">Attiva l'esplorazione dei gruppi</translation>
 <translation id="2777845298774924149">Uscita</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Nessun altro elemento diverso.</translation>
 <translation id="2800780099804980316">Nessuna intestazione livello 1 precedente.</translation>
 <translation id="2811204574343810641">Riga</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Link visitato</translation>
 <translation id="323731244387692321">Apri la guida della tastiera di ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Link visitato precedente</translation>
 <translation id="3286390186030710347">Dispositivo di scorrimento</translation>
 <translation id="3299925995433437805">Nessun link visitato successivo.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, casella di riepilogo</translation>
 <translation id="3687295507293856493">Fai un'ipotesi per l'intestazione di colonna della cella corrente</translation>
 <translation id="3692274950075847560">R:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Controllo vocale</translation>
 <translation id="3716845769494773620">Multiriga</translation>
 <translation id="3731746171184829332">Nessuna intestazione precedente.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Finestra di dialogo chiusa.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Elenco di completamento automatico</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Elemento multimediale successivo</translation>
 <translation id="3819376190738087562">Nessun passaggio.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Utilizza le opzioni sotto per personalizzare ChromeVox. Le modifiche hanno effetto immediato.</translation>
 <translation id="4271220233568730077">Espressione matematica successiva</translation>
 <translation id="4271521365602459209">Nessun altro risultato.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Nessun articolo successivo.</translation>
 <translation id="4289540628985791613">Panoramica</translation>
 <translation id="4300318234632215983">Pronuncia l'URL di un link</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Mappa di chiavi classica</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barre}}</translation>
 <translation id="4547556996012970016">Intestazione livello 5 successiva</translation>
-<translation id="4554899522007042510">Luminosità: <ph name="BRIGHTNESS" />%</translation>
 <translation id="4562381607973973258">Intestazione</translation>
 <translation id="4591507479202817876">, selezionato</translation>
 <translation id="4597532268155981612">modulo</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Esplorazione tastiera Chrome OS</translation>
 <translation id="4763296182459741068">Ricomincia dalla fine</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">ricerca</translation>
 <translation id="481165870889056555">Pronuncia il titolo della pagina corrente</translation>
 <translation id="4826415162591436065">Spostati avanti</translation>
 <translation id="4826604887384865800">Collegamento successivo</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Attiva la registrazione TTS</translation>
 <translation id="4877261390094455813">Inserisci una query di ricerca.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Link interno</translation>
 <translation id="4953585991029886728">Modifica testo</translation>
 <translation id="4954534434583049121">Citazione lunga precedente</translation>
-<translation id="4970377555447282413">Mostra visualizzazione ingrandita dei contenuti della pagina.</translation>
 <translation id="4973717656530883744">Minimo <ph name="X" /></translation>
 <translation id="4973762002207131920">Sei passato a <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">millisecondi</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">secondi</translation>
 <translation id="867187640362843212">Intestazione 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra verticale}other{# barre verticali}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Il sistema è stato aggiornato. È consigliabile riavviare.</translation>
 <translation id="8735450637152821465">Inizia selezione</translation>
 <translation id="8743786158317878347">entra in contenuti strutturati, come tabelle</translation>
 <translation id="8747966237988593539">Elenco ordinato</translation>

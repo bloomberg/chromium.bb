@@ -64,6 +64,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2353140552984634198">Unaweza kufikia kwa usalama kompyuta hii kutumia Chromoting.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Mara ya mwisho ilionekana mtandaoni <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Usaidizi na maoni</translation>
 <translation id="2499160551253595098">Tusaidie kuboresha Eneo-kazi la Mbali la Chrome kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
@@ -109,6 +110,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="3596628256176442606">Huduma hii inawasha miunganisho inayoingia kutoka kwenye viteja vya Chromoting.</translation>
 <translation id="3606997049964069799">Hujaingia kwenye Chromium. Tafadhali ingia na ujaribu tena.</translation>
 <translation id="3649256019230929621">Punguza dirisha</translation>
+<translation id="369442766917958684">Nje ya mtandao.</translation>
 <translation id="3776024066357219166">Kipindi chako cha Eneo-kazi la Mbali la Chrome kimekamilika.</translation>
 <translation id="3785447812627779171">Mpangishi wa
 Chromoting</translation>
@@ -183,6 +185,7 @@ ya Mbali ya Chrome</translation>
 <translation id="579702532610384533">Unganisha upya</translation>
 <translation id="5843054235973879827">Kwa nini hii ni salama?</translation>
 <translation id="5859141382851488196">Dirisha jipya...</translation>
+<translation id="5885438903806970186">Mtandaoni.</translation>
 <translation id="6001953797859482435">Mapendeleo ya Seva Pangishi ya Kompyuta ya Mbali ya Chrome</translation>
 <translation id="6011539954251327702">Chromoting hukuruhusu kushiriki kompyuta yako kwa usalama kwenye Wavuti. Watumiaji wote wawili lazima wawe wakiendesha programu ya Chromoting, inayoweza kupatikana katika <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Funga</translation>

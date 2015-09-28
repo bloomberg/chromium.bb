@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1203161113033984675">BEGIN_LINKFysieke webEND_LINK is ingeschakeld.</translation>
+<translation id="1418775127135578229">Gekopieerde link openen</translation>
+<translation id="1487576085940433465">BEGIN_LINKObjecten in de buurt zenden webpagina's uitEND_LINK. Er wordt een Google-service gebruikt om de kwaliteit van deze resultaten te verbeteren.</translation>
+<translation id="2026797012398135445">Ontgrendel je apparaat om dit in te schakelen.</translation>
 <translation id="2316129865977710310">Nee, bedankt</translation>
 <translation id="3435896845095436175">Inschakelen</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="5301954838959518834">OK</translation>
+<translation id="5508399372551154686">BEGIN_LINKFysieke webEND_LINK is uitgeschakeld.</translation>
+<translation id="5815960189179094695">Scannen naar BEGIN_LINKFysieke webEND_LINK-objecten…</translation>
 <translation id="6196207969502475924">Gesproken zoekopdrachten</translation>
+<translation id="6722203589267124394">Met Bluetooth kun je nabije BEGIN_LINKFysieke webEND_LINK-objecten zien.</translation>
 <translation id="7554791636758816595">Nieuw tabblad</translation>
+<translation id="7588950540487816470">Fysieke web</translation>
+<translation id="8800384372516194324">Meer resultaten weergeven</translation>
 </translationbundle>

@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">dữ liệu nhập không hợp lệ</translation>
 <translation id="1082209053475788238">Không có tiêu đề cấp 6 trước nào.</translation>
 <translation id="1088219014394087294">Không có tiêu đề nào.</translation>
-<translation id="1092366490857960994">Chỉnh sửa văn bản, mục nhập số</translation>
 <translation id="1106741348836243114">Bật hoặc tắt phản hồi bằng âm thanh (kết nối tai nghe).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Bộ sưu tập <ph name="TAG" /> có <ph name="NUM" /> mục</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Trợ giúp bàn phím</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, hộp kết hợp</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, mục menu, có menu con</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Tùy chỉnh</translation>
 <translation id="1188858454923323853">bổ sung</translation>
 <translation id="1206619573307042055">bảng chữ chạy</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Phải</translation>
 <translation id="136718599399906424">Hàng tiếp theo của bảng</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Nhấn enter để chấp nhận hoặc escape để hủy, mũi tên xuống để chuyển sang kết quả tiếp theo và mũi tên lên để chuyển sang kết quả trước.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Tất cả dấu câu</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">khóa truy cập:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Thay đổi bảng chữ nổi 6 chấm hiện tại bằng cách chọn một tùy chọn từ danh sách bên dưới.</translation>
 <translation id="2169714232367507776">Nhấp vào mục hiện tại</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{dấu đóng ngoặc}other{# dấu đóng ngoặc}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Nhảy tới mục có thể đặt tiêu điểm tiếp theo</translation>
 <translation id="2770781857296573485">Nhập thăm dò nhóm</translation>
 <translation id="2777845298774924149">Đã thoát</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Không có phần tử khác nào nữa.</translation>
 <translation id="2800780099804980316">Không có tiêu đề cấp 1 trước nào.</translation>
 <translation id="2811204574343810641">Hàng</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Liên kết đã truy cập</translation>
 <translation id="323731244387692321">Mở trợ giúp về bàn phím ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Liên kết đã truy cập trước đó</translation>
 <translation id="3286390186030710347">Thanh trượt</translation>
 <translation id="3299925995433437805">Không có liên kết đã truy cập tiếp theo nào.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, hộp danh sách</translation>
 <translation id="3687295507293856493">Đoán tại tiêu đề cột của ô hiện tại</translation>
 <translation id="3692274950075847560">T:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Điều chỉnh giọng nói</translation>
 <translation id="3716845769494773620">Nhiều dòng</translation>
 <translation id="3731746171184829332">Không có tiêu đề trước nào.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Đã thoát khỏi hộp thoại.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Tự động hoàn thành danh sách</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Phương tiện tiếp theo</translation>
 <translation id="3819376190738087562">Không có điểm nhảy nào.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Sử dụng các tùy chọn bên dưới để tùy chỉnh ChromeVox. Các thay đổi sẽ có hiệu lực ngay lập tức.</translation>
 <translation id="4271220233568730077">Biểu thức toán tiếp theo</translation>
 <translation id="4271521365602459209">Không còn kết quả nào nữa.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Không có bài viết tiếp theo nào.</translation>
 <translation id="4289540628985791613">Tổng quan</translation>
 <translation id="4300318234632215983">Thông báo URL ở sau liên kết</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Sơ đồ bàn phím cổ điển</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{dấu gạch chéo}other{# dấu gạch chéo}}</translation>
 <translation id="4547556996012970016">Tiêu đề cấp 5 tiếp theo</translation>
-<translation id="4554899522007042510">Độ sáng <ph name="BRIGHTNESS" /> phần trăm</translation>
 <translation id="4562381607973973258">Tiêu đề</translation>
 <translation id="4591507479202817876">, đã được chọn</translation>
 <translation id="4597532268155981612">biểu mẫu</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Trình khám phá bàn phím ChromeOS</translation>
 <translation id="4763296182459741068">Đã bao gồm cả cuối trang</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Thông báo tiêu đề của trang hiện tại</translation>
 <translation id="4826415162591436065">Điều hướng tiến lên</translation>
 <translation id="4826604887384865800">Bước nhảy tiếp theo</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Bật ghi nhật ký TTS</translation>
 <translation id="4877261390094455813">Nhập truy vấn tìm kiếm.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Liên kết bên trong</translation>
 <translation id="4953585991029886728">Chỉnh sửa văn bản</translation>
 <translation id="4954534434583049121">Khối trích dẫn trước</translation>
-<translation id="4970377555447282413">Hiển thị chế độ xem phóng to của nội dung trang.</translation>
 <translation id="4973717656530883744">Tối thiểu <ph name="X" /></translation>
 <translation id="4973762002207131920">Được chuyển thành <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">mili giây</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">giây</translation>
 <translation id="867187640362843212">Tiêu đề 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{dấu sổ thẳng}other{# dấu sổ thẳng}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Hệ thống đã được cập nhật.  Bạn nên khởi động lại.</translation>
 <translation id="8735450637152821465">Bắt đầu chọn</translation>
 <translation id="8743786158317878347">vào nội dung có cấu trúc, chẳng hạn như bảng</translation>
 <translation id="8747966237988593539">Danh sách theo thứ tự</translation>

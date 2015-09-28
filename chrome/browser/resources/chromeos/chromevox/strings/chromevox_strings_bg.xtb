@@ -2,16 +2,15 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1012173283529841972">Списъчен елемент</translation>
-<translation id="1013742170491673792">поле за търсене</translation>
+<translation id="1013742170491673792">srched</translation>
 <translation id="1023866615269196768">Разпростряна.</translation>
 <translation id="1025074108959230262">Фиксираният режим е деактивиран</translation>
 <translation id="1031961866430398710">след това</translation>
 <translation id="1044777062731150180">Няма заглавки</translation>
-<translation id="106222400312645156">заглавка на ред</translation>
+<translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Невалидни въведени данни</translation>
 <translation id="1082209053475788238">Няма предишно заглавие от шесто ниво.</translation>
 <translation id="1088219014394087294">Няма заглавия.</translation>
-<translation id="1092366490857960994">Поле за въвеждане на номер</translation>
 <translation id="1106741348836243114">Включване или изключване на обратната връзка със звук (звукови сигнали).</translation>
 <translation id="1120743664840974483">{"а": "антон", "б": "борис", "в": "васил", "г": "георги", "д": "димитър", "е": "елена", "ж": "живко", "з": "захари", "и": "иван", "й": "йордан", "к": "кирил", "л": "людмил", "м": "мария", "н": "николай", "о": "огнян", "п": "петър", "р": "румен", "с": "стефан", "т": "тодор", "у": "уляна", "ф": "филип", "х": "христо", "ц": "цветан", "ч": "чавдар", "ш": "шипка", "щ": "щерю", "ъ": "ер голям", "ь": "ер малък", "ю": "юлия", "я": "явор"}</translation>
 <translation id="113582498867142724">Колекция от <ph name="TAG" /> с/ъс <ph name="NUM" /> елемента</translation>
@@ -19,13 +18,12 @@
 <translation id="1157782847298808853">Помощ за клавиатурата</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, „<ph name="NAME" />“, разгъващ се списък</translation>
 <translation id="1167230103353892028">„<ph name="NAME" />“, елемент от меню, с подменю</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">По избор</translation>
 <translation id="1188858454923323853">допълнение</translation>
-<translation id="1206619573307042055">бягащ ред</translation>
+<translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – Chrome получава глас</translation>
 <translation id="1229276918471378188">Предишният преход</translation>
-<translation id="1237866625126425153">група бутони за избор</translation>
+<translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Следващото заглавие от шесто ниво</translation>
 <translation id="1275718070701477396">Избрано</translation>
 <translation id="1319608975892113573">Няма предишен блоков цитат.</translation>
@@ -37,9 +35,8 @@
 <translation id="1346748346194534595">Надясно</translation>
 <translation id="136718599399906424">Следващият ред в таблицата</translation>
 <translation id="1383876407941801731">Търсене</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Натиснете „enter“, за да приемете, или „escape“, за да анулирате, стрелката за надолу – за напред, а тази за нагоре – за назад.</translation>
-<translation id="1396114365388024581">списък с раздели</translation>
+<translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">област</translation>
 <translation id="1452236308086741652"><ph name="VALUE" />, текстово поле за парола</translation>
 <translation id="1467432559032391204">Наляво</translation>
@@ -78,8 +75,8 @@
 <translation id="188130072164734898">Изговаряне на текущите дата и час.</translation>
 <translation id="1902396333223336119">Клетка</translation>
 <translation id="1905379170753160525">Показване на списъка със заглавия</translation>
-<translation id="1912556590115083156">посетена връзка</translation>
-<translation id="1913761808037590218">числово поле</translation>
+<translation id="1912556590115083156">vlnk</translation>
+<translation id="1913761808037590218">#ed</translation>
 <translation id="1954623340234317532">Контрола за седмицата от годината</translation>
 <translation id="1964135212174907577">Следващият обект</translation>
 <translation id="1969092762068865084">юли</translation>
@@ -94,9 +91,8 @@
 <translation id="2089387485033699258">bg</translation>
 <translation id="2091933974477985526">Предишната текстова област, която може да се редактира</translation>
 <translation id="2100350898815792233">Всички препинателни знаци</translation>
-<translation id="2119965627982867824">брояч</translation>
+<translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">клавиш за достъп: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">избрано</translation>
 <translation id="2155457205053847599">Променете текущата 6-точкова брайлова таблица, като изберете опция от списъка по-долу.</translation>
 <translation id="2169714232367507776">Кликване върху текущия елемент</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{затваряща скоба}other{# затварящи скоби}}</translation>
@@ -119,7 +115,7 @@
 <translation id="2471138580042810658">Заглавие от шесто ниво</translation>
 <translation id="248982282205370495">{COUNT,plural, =1{звездичка}other{# звездички}}</translation>
 <translation id="2549392850788122959">Върнахте се към първоначалната клавиатурна подредба „<ph name="KEY" />“.</translation>
-<translation id="2553108862507765288">граматическа грешка</translation>
+<translation id="2553108862507765288">grammatical mistake</translation>
 <translation id="257674075312929031">Група</translation>
 <translation id="2582407057977008361">Странично съдържание</translation>
 <translation id="2589102159832527089">Тази страница съдържа текста, който е извлечен автоматично от PDF файла &lt;b&gt;<ph name="FILENAME" />&lt;/b&gt;. &lt;a href="<ph name="URL" />"&gt;Кликнете тук за оригинала.&lt;/a&gt;</translation>
@@ -131,18 +127,17 @@
 <translation id="2639750663247012216">Модифициращ клавиш за ChromeVox</translation>
 <translation id="2644542693584024604">правописна грешка</translation>
 <translation id="2667291555398229137">Кликнете върху елемента под ключа за пренасочване</translation>
-<translation id="2697408785920771974">вложено авт. довършване</translation>
+<translation id="2697408785920771974">autoinl</translation>
 <translation id="2704429362613743330">{COUNT,plural, =1{отваряща скоба}other{# отварящи скоби}}</translation>
 <translation id="2705875883745373140">Не е натиснато</translation>
 <translation id="2706462751667573066">Клавиш за нагоре</translation>
-<translation id="2717271541250958000">панел с раздели</translation>
+<translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">звук</translation>
 <translation id="2732718972699418926">AM</translation>
 <translation id="2749275490991666823">С отметка</translation>
 <translation id="27527859628328957">Преминаване към следващия елемент, който може да получи фокус</translation>
 <translation id="2770781857296573485">Влизане в режим за разглеждане на група</translation>
 <translation id="2777845298774924149">Излязохте</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Няма повече различни елементи.</translation>
 <translation id="2800780099804980316">Няма предишно заглавие от първо ниво.</translation>
 <translation id="2811204574343810641">Ред</translation>
@@ -178,12 +173,12 @@
 <translation id="308895241372589742">Няма следващ математически израз.</translation>
 <translation id="3090532668523289635">група</translation>
 <translation id="3093176084511590672">Следващият ориентир</translation>
-<translation id="3096671415663099226">разгъващ се списък</translation>
+<translation id="3096671415663099226">cbo</translation>
 <translation id="3104705064753753826">диалогов прозорец за сигнал</translation>
 <translation id="3109724472072898302">Свито</translation>
 <translation id="3134461040845705080">само за четене</translation>
 <translation id="3138767756593758860">Показване на списъка с ориентири</translation>
-<translation id="3143851963874289911">клетка</translation>
+<translation id="3143851963874289911">cll</translation>
 <translation id="3149472044574196936">Следващият ред</translation>
 <translation id="3155083529632865074">Няма предишен бутон.</translation>
 <translation id="3163593631834463955">Празна заглавка на графа</translation>
@@ -191,10 +186,9 @@
 <translation id="3172700825913348768">{COUNT,plural, =1{интервал}other{# интервала}}</translation>
 <translation id="320961988183078793">влязохте в/ъв <ph name="TYPE" /></translation>
 <translation id="3223701887221307104">„<ph name="NAME" />“, раздел</translation>
-<translation id="3226035351387556942">квадратче за отметка</translation>
+<translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Посетена връзка</translation>
 <translation id="323731244387692321">Отваряне на помощта за клавиатурата за ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Предишна посетена връзка</translation>
 <translation id="3286390186030710347">Плъзгач</translation>
 <translation id="3299925995433437805">Няма следваща посетена връзка.</translation>
@@ -247,7 +241,7 @@
         "hr": "хърватски",
         "cs": "чешки",
         "sv": "шведски"}</translation>
-<translation id="3359142382821736686">разделител</translation>
+<translation id="3359142382821736686">seprtr</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{знак плюс}other{# знака плюс}}</translation>
 <translation id="338583716107319301">Разделител</translation>
 <translation id="3389259863310851658">Предишното поле във формуляра</translation>
@@ -261,20 +255,19 @@
 <translation id="3486232535569802404"><ph name="V1" /> до <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{дясна квадратна скоба}other{# десни квадратни скоби}}</translation>
 <translation id="3493915602752813531">Няма следваща котва.</translation>
-<translation id="3494946239022273294">елемент от меню</translation>
+<translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{въпросителен знак}other{# въпросителни знака}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{карета}other{# карети}}</translation>
 <translation id="3568702578574425662">„<ph name="NAME" />“, квадратче без отметка</translation>
 <translation id="3599054940393788245">Извън математическия израз</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3646890046000188562">{COUNT,plural, =1{обратен апостроф}other{# обратни апострофа}}</translation>
-<translation id="3650317109285159359">квадратче за отметка в меню</translation>
+<translation id="3650317109285159359">chkmnuitm</translation>
 <translation id="3655855170848725876">{COUNT,plural, =1{знак за долар}other{# знака за долар}}</translation>
 <translation id="3659787053479271466">сигнал</translation>
 <translation id="3665563998540286755"><ph name="VALUE" />, списъчно поле</translation>
 <translation id="3687295507293856493">Предположение за заглавката на графата за текущата клетка</translation>
 <translation id="3692274950075847560">Т: <ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Контролиране на говора</translation>
 <translation id="3716845769494773620">Няколко реда</translation>
 <translation id="3731746171184829332">Няма предишно заглавие.</translation>
@@ -283,13 +276,12 @@
 <translation id="3793710123303304873">Излязохте от диалоговия прозорец.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Автоматично довършване в списък</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3816633764618089385">Следващият мултимедиен елемент</translation>
 <translation id="3819376190738087562">Няма преминавания.</translation>
 <translation id="385383972552776628">Отваряне на страницата с опции</translation>
 <translation id="3856075812838139784">Само за четене</translation>
-<translation id="3887576927692165210">текстово поле</translation>
+<translation id="3887576927692165210">ed</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909320334364316587">Предишното заглавие от шесто ниво</translation>
 <translation id="3914173277599553213">Задължително</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Използвайте опциите по-долу, за да персонализирате ChromeVox. Промените влизат в сила незабавно.</translation>
 <translation id="4271220233568730077">Следващият математически израз</translation>
 <translation id="4271521365602459209">Няма повече резултати.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Няма следваща статия.</translation>
 <translation id="4289540628985791613">Общ преглед</translation>
 <translation id="4300318234632215983">Съобщаване на URL адреса зад връзката</translation>
@@ -339,7 +330,7 @@
 <translation id="4372435075475052704">минимум: <ph name="X" /></translation>
 <translation id="4372705107434148843">Спиране на говора</translation>
 <translation id="4373197658375206385">Няма предишен елемент, който не е връзка.</translation>
-<translation id="4391478986194775161">данни за съдържанието</translation>
+<translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">нулиране</translation>
 <translation id="4471074325120394300">Няма връзки.</translation>
 <translation id="4476183483923481720">нов ред</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Традиционна клавиатурна подредба</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{наклонена черта}other{# наклонени черти}}</translation>
 <translation id="4547556996012970016">Следващото заглавие от пето ниво</translation>
-<translation id="4554899522007042510">Яркостта е <ph name="BRIGHTNESS" /> процент/а</translation>
 <translation id="4562381607973973258">Горен колонтитул</translation>
 <translation id="4591507479202817876">, избрано</translation>
 <translation id="4597532268155981612">формуляр</translation>
@@ -356,7 +346,7 @@
 <translation id="4615592953348396470">Следващото натискане на клавиш се пренебрегва</translation>
 <translation id="461613135510474570">Изречение</translation>
 <translation id="4647836961514597010">Инструмент за избор на цветове</translation>
-<translation id="4661075872484491155">дърво</translation>
+<translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="4688873778442829762">таблица</translation>
 <translation id="4693675773662933727">Предишният ориентир</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Инструмент за изследване на клавиатурата в ChromeOS</translation>
 <translation id="4763296182459741068">Пренасяне в края</translation>
 <translation id="4763480195061959176">видео</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Съобщаване на заглавието на текущата страница</translation>
 <translation id="4826415162591436065">Навигация напред</translation>
 <translation id="4826604887384865800">Следващият преход</translation>
@@ -374,15 +365,13 @@
 <translation id="4842108708071771135">Няма следващ блоков цитат.</translation>
 <translation id="4848993367330139335">таймер</translation>
 <translation id="4850023505158945298">Предишният подобен елемент.</translation>
-<translation id="4866956062845190338">бутон за избор в меню</translation>
+<translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Активиране на регистрирането за синтезирания говор</translation>
 <translation id="4877261390094455813">Въведете заявка за търсене.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Вътрешна връзка</translation>
 <translation id="4953585991029886728">Текстово поле</translation>
 <translation id="4954534434583049121">Предишният блоков цитат</translation>
-<translation id="4970377555447282413">Показване на увеличен изглед на съдържанието на страницата.</translation>
 <translation id="4973717656530883744">Минимум <ph name="X" /></translation>
 <translation id="4973762002207131920">Превключихте към „<ph name="KEY" />“.</translation>
 <translation id="4975416682604111799">милисекунди</translation>
@@ -406,10 +395,10 @@
 <translation id="5080758118274074384">кликнахте два пъти</translation>
 <translation id="5098541983634824365">Напускате таблицата.</translation>
 <translation id="5102981729317424850">Лента с инструменти</translation>
-<translation id="5105050547967751155">задължително</translation>
+<translation id="5105050547967751155">rq</translation>
 <translation id="5110983769041734144">Няма предишно поле във формуляра.</translation>
 <translation id="5111640677200759579">Заглавка на графа</translation>
-<translation id="5117636609870536415">поле за имейл адрес</translation>
+<translation id="5117636609870536415">@ed</translation>
 <translation id="5136967254288895616">Няма предишна връзка.</translation>
 <translation id="513774504516943387">връзка</translation>
 <translation id="517143700877085897">, неизбрано</translation>
@@ -428,7 +417,7 @@
 <translation id="5321085947096604457">{COUNT,plural, =1{запетая}other{# запетаи}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, текстово поле</translation>
 <translation id="5330443287809544590">„<ph name="NAME" />“, връзка</translation>
-<translation id="5336381510091010269">авт. дов. – вложено + списък</translation>
+<translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="536031132345979795">Превъртане назад при непрекъснато четене</translation>
 <translation id="5368000168321181111">Звуковите сигнали са изключени</translation>
 <translation id="5374320867641260420">Няма следващ бутон.</translation>
@@ -450,7 +439,7 @@
 <translation id="5546092960038624944">Няма предишно заглавие от пето ниво.</translation>
 <translation id="556042886152191864">Бутон</translation>
 <translation id="5561345396546889625">Следващият списък</translation>
-<translation id="5562645715554321347">група заглавия</translation>
+<translation id="5562645715554321347">hdnggrp</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585044216466955529">Поле за въвеждане на имейл адрес</translation>
 <translation id="5597170376237141345">Следващото квадратче за отметка</translation>
@@ -458,21 +447,21 @@
 <translation id="5598905979683743333">„<ph name="NAME" />“, немаркиран бутон за избор</translation>
 <translation id="5601172225407283979">Изпълняване на действие по подразбиране</translation>
 <translation id="5608798115546226984">Вградено автоматично довършване</translation>
-<translation id="561939826962581046">контрола за дата и час</translation>
-<translation id="5623778242535476823">бутон за избор</translation>
+<translation id="561939826962581046">time</translation>
+<translation id="5623778242535476823">rbtn</translation>
 <translation id="5623842676595125836">Регистрационен файл</translation>
 <translation id="5628125749885014029">заглавие от четвърто ниво</translation>
 <translation id="5637871198229500030">Няма предишна таблица.</translation>
 <translation id="5655682562155942719">Команди за преминаване</translation>
 <translation id="56637627897541303">Текстова област</translation>
-<translation id="5678161956734658133">текстова област</translation>
+<translation id="5678161956734658133">mled</translation>
 <translation id="5681643281275621376">определение</translation>
 <translation id="5682113568322255809">Ориентир</translation>
 <translation id="5683155931978483559">Предишното квадратче за отметка</translation>
 <translation id="5684277895745049190">Списък</translation>
 <translation id="5700650669149824506">Няма предишно заглавие от четвърто ниво.</translation>
 <translation id="5709192780268610569">Няма дълго описание</translation>
-<translation id="5712244464475377681">бутон за изскачащ прозорец</translation>
+<translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Следващата графа в таблицата</translation>
 <translation id="571866080859340309">Разглеждане на групи</translation>
 <translation id="5728409797179002635">Няма намерена таблица.</translation>
@@ -504,7 +493,7 @@
 <translation id="6006050241733874051">Формуляр</translation>
 <translation id="6006064078185310784">{COUNT,plural, =1{обратна наклонена черта}other{# обратни наклонени черти}}</translation>
 <translation id="6037602951055904232">Панорамно придвижване напред</translation>
-<translation id="611827076493383239">посетено</translation>
+<translation id="611827076493383239">vtd</translation>
 <translation id="6119955456199054975">Край на клетката.</translation>
 <translation id="6122013438240733403">бутон</translation>
 <translation id="6129953537138746214">Интервал</translation>
@@ -554,7 +543,7 @@
 <translation id="6734854816611871228"><ph name="VALUE" />, разгъващ се списък</translation>
 <translation id="6735257939857578167">с/ъс <ph name="NUM" /> елемента</translation>
 <translation id="6736510033526053669">разделът е създаден</translation>
-<translation id="675895815784134693">лента за хода</translation>
+<translation id="675895815784134693">pgbar</translation>
 <translation id="6786800275320335305">Статия</translation>
 <translation id="6787839852456839824">Клавишни комбинации</translation>
 <translation id="6793101435925451627">списъчно поле</translation>
@@ -575,7 +564,7 @@
 <translation id="7041173719775863268">Край на открояването</translation>
 <translation id="7095834689119144465">Поле само за цифри</translation>
 <translation id="7096001299300236431">Предишният мултимедиен елемент</translation>
-<translation id="7116595520562830928">няколко реда</translation>
+<translation id="7116595520562830928">multln</translation>
 <translation id="712735679809149106">ехо за думите</translation>
 <translation id="713824876195128146">Следващият блоков цитат</translation>
 <translation id="7161771961008409533">Бутон с изскачащ прозорец</translation>
@@ -596,7 +585,7 @@
 <translation id="7285387653379749618">Таблици</translation>
 <translation id="7289186959554153431">Заглавие от трето ниво</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
-<translation id="731121099745151312">елемент от дърво</translation>
+<translation id="731121099745151312">tritm</translation>
 <translation id="731576946540457939">Брайловите надписи са деактивирани.</translation>
 <translation id="7318872822751139669">Използване на мишката за промяна на фокуса.</translation>
 <translation id="7322388933135261569">февруари</translation>
@@ -605,7 +594,7 @@
 <translation id="7356165926712028380">Превключване към 8-точково брайлово писмо</translation>
 <translation id="7362871137496673139">Няма предишно заглавие от второ ниво.</translation>
 <translation id="7370432716629432284">{COUNT,plural, =1{амперсанд}other{# амперсанда}}</translation>
-<translation id="737396357417333429">избираем елемент</translation>
+<translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Напускате таблицата.</translation>
 <translation id="739763518212184081">Предишният ред</translation>
 <translation id="7400575256015741911">Открита е правописна грешка</translation>
@@ -613,7 +602,7 @@
 <translation id="7425395583360211003">връщане в началото на реда</translation>
 <translation id="7434509671034404296">Програмист</translation>
 <translation id="7439060726180460871">Директория</translation>
-<translation id="744163271241493234">поле за парола</translation>
+<translation id="744163271241493234">pwded</translation>
 <translation id="7491962110804786152">раздел</translation>
 <translation id="7492049978501397201">Влязохте в диалогов прозорец</translation>
 <translation id="7532613204005497612">юни</translation>
@@ -621,7 +610,7 @@
 <translation id="7586163296341959563">поставяне.</translation>
 <translation id="7596919493010894443">открояването е изчистено</translation>
 <translation id="7604026522577407655">Към началото на текущата графа</translation>
-<translation id="7604451927827590395">заглавие</translation>
+<translation id="7604451927827590395">hdng</translation>
 <translation id="7609342235116740824">Съобщаване на URL адреса на текущата страница</translation>
 <translation id="7609363189280667021">Превключване на брайловите надписи</translation>
 <translation id="762020119231868829">Поставя на пауза всички понастоящем пуснати приспособления за мултимедия</translation>
@@ -633,9 +622,9 @@
 <translation id="7674576868851035240">Следващата връзка</translation>
 <translation id="7674768236845044097">маркиране</translation>
 <translation id="7684431668231950609">Поле за въвеждане на URL адрес</translation>
-<translation id="7685589220304187312">лента с инструменти</translation>
+<translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Предишният бутон за избор</translation>
-<translation id="7701196182766842984">авт. довършване – списък</translation>
+<translation id="7701196182766842984">autolst</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, „<ph name="NAME" />“, текстово поле за парола</translation>
 <translation id="7805247615045262757">навигиране по подразбиране</translation>
 <translation id="7805768142964895445">Състояние</translation>
@@ -683,7 +672,7 @@
 <translation id="8382679411218029383">Автоматично довършване – вградено и в списък</translation>
 <translation id="8428603554127842284">ниво <ph name="DEPTH" /></translation>
 <translation id="842922884199979200">Няма следващо заглавие от трето ниво.</translation>
-<translation id="8430049249787218991">лента с менюта</translation>
+<translation id="8430049249787218991">mnubr</translation>
 <translation id="844681116543532394">Няма предишно квадратче за отметка.</translation>
 <translation id="8455868257606149352">Максимум <ph name="X" /></translation>
 <translation id="84575901236241018">има клавиш за достъп, „<ph name="KEY" />“</translation>
@@ -700,13 +689,11 @@
 <translation id="8631359288236106450"><ph name="COUNT" /> избрани елемента</translation>
 <translation id="8638532244051952400">Съобщаване на координатите на текущата клетка</translation>
 <translation id="8650576015643545550">Няма предишен списък.</translation>
-<translation id="8653031188082306838">поле за URL адрес</translation>
+<translation id="8653031188082306838">urled</translation>
 <translation id="8653646212587894517">Показване на списъка с връзки</translation>
 <translation id="8664519043722036194">секунди</translation>
 <translation id="867187640362843212">Заглавие от пето ниво</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикална черта}other{# вертикални черти}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Системата бе актуализирана. Препоръчва се рестартиране.</translation>
 <translation id="8735450637152821465">Начало на открояването</translation>
 <translation id="8743786158317878347">вход в структурирано съдържание, като например таблици</translation>
 <translation id="8747966237988593539">Подреден списък</translation>
@@ -724,12 +711,12 @@
 <translation id="8896347895970027998">Превключване на ChromeVox между активно или неактивно състояние.</translation>
 <translation id="8898516272131543774">Цикъл на ехото за препинателни знаци</translation>
 <translation id="8900148057318340779">Клавиш за префикс</translation>
-<translation id="8908714597367957477">заглавка на колона</translation>
+<translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">Празни заглавки</translation>
-<translation id="8937112856099038376">вътрешна връзка</translation>
+<translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Модифициращи клавиши</translation>
 <translation id="8943175951035496220">Няма клетка отдясно.</translation>
-<translation id="8978496506222343566">подсказка</translation>
+<translation id="8978496506222343566">tltip</translation>
 <translation id="900114243503212879">файл</translation>
 <translation id="9027462562263121875">Няма таблици.</translation>
 <translation id="9040132695316389094">Заглавие от първо ниво</translation>
@@ -741,11 +728,11 @@
 <translation id="9089864840575085222">Цикъл на ехото при въвеждане</translation>
 <translation id="9107530006868467849">Няма предишно приспособление за мултимедия.</translation>
 <translation id="9108370397979208512">математически израз</translation>
-<translation id="9108589040018540527">лента за превъртане</translation>
+<translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{знак за процент}other{# знака за процент}}</translation>
 <translation id="9115913704608474258">ноември</translation>
 <translation id="9128414153595658330">диалогов прозорец</translation>
-<translation id="9149560530563164529">секция</translation>
+<translation id="9149560530563164529">sctn</translation>
 <translation id="9151211641321628915">Съобщава кратко описание на текущата позиция</translation>
 <translation id="9153606228985488238">Височина: <ph name="PERCENT" /> процента</translation>
 <translation id="9160096769946561184">Към края на текущата графа</translation>

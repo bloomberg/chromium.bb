@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="1203161113033984675">‏BEGIN_LINK الشبكة المادية END_LINK في وضع التشغيل.</translation>
+<translation id="1418775127135578229">فتح الرابط المنسوخ</translation>
+<translation id="1487576085940433465">‏BEGIN_LINK تبث الأجهزة المجاورة صفحات ويب END_LINK. وسيتم استخدام إحدى خدمات Google لتحسين جودة هذه النتائج.</translation>
+<translation id="2026797012398135445">ألغ قفل جهازك للتمكين.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="3435896845095436175">تمكين الإضافات</translation>
 <translation id="4394049700291259645">تعطيل</translation>
 <translation id="5301954838959518834">موافق وأعي ذلك</translation>
+<translation id="5508399372551154686">‏BEGIN_LINK الشبكة المادية END_LINK في وضع إيقاف التشغيل.</translation>
+<translation id="5815960189179094695">‏جارٍ البحث عن أجهزة BEGIN_LINK الشبكة المادية END_LINK...</translation>
 <translation id="6196207969502475924">البحث الصوتي</translation>
+<translation id="6722203589267124394">‏شغّل بلوتوث لرؤية أجهزة BEGIN_LINK الشبكة المادية END_LINK المجاورة.</translation>
 <translation id="7554791636758816595">علامة تبويب جديدة</translation>
+<translation id="7588950540487816470">الشبكة المادية</translation>
+<translation id="8800384372516194324">عرض مزيد من النتائج</translation>
 </translationbundle>

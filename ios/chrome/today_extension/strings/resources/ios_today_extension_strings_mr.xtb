@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
+<translation id="1203161113033984675">BEGIN_LINK भौतिक वेब END_LINK चालू आहे.</translation>
+<translation id="1418775127135578229">कॉपी केलेला दुवा उघडा</translation>
+<translation id="1487576085940433465">BEGIN_LINK जवळपासचे ऑब्जेक्‍ट वेबपृष्‍ठे प्रसारित करीत आहेत END_LINK. या परिणामांची गुणवत्ता सुधारण्‍यासाठी Google सेवा वापरली जाईल.</translation>
+<translation id="2026797012398135445">सक्षम करण्‍यासाठी आपले डिव्‍हाइस अनलॉक करा.</translation>
 <translation id="2316129865977710310">नाही, धन्यवाद</translation>
 <translation id="3435896845095436175">सक्षम करा</translation>
 <translation id="4394049700291259645">अक्षम करा</translation>
 <translation id="5301954838959518834">ठीक, मला समजले</translation>
+<translation id="5508399372551154686">BEGIN_LINK भौतिक वेब END_LINK बंद आहे.</translation>
+<translation id="5815960189179094695">BEGIN_LINK भौतिक वेब END_LINK ऑब्जेक्टसाठी स्कॅन करीत आहे...</translation>
 <translation id="6196207969502475924">व्हॉइस शोध</translation>
+<translation id="6722203589267124394">जवळपासचे BEGIN_LINK भौतिक वेब END_LINK ऑब्जेक्‍ट पाहण्‍यासाठी Bluetooth चालू करा.</translation>
 <translation id="7554791636758816595">नवीन टॅब</translation>
+<translation id="7588950540487816470">भौतिक वेब</translation>
+<translation id="8800384372516194324">आणखी परिणाम दर्शवा</translation>
 </translationbundle>

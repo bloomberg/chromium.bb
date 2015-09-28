@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="1203161113033984675">Το BEGIN_LINK Φυσικό δίκτυο END_LINK είναι ενεργό.</translation>
+<translation id="1418775127135578229">Άνοιγμα αντιγραμ. συνδέσμου</translation>
+<translation id="1487576085940433465">BEGIN_LINK Τα κοντινά αντικείμενα μεταδίδουν ιστοσελίδες END_LINK. Θα χρησιμοποιηθεί μια υπηρεσία Google για τη βελτίωση της ποιότητας αυτών των αποτελεσμάτων.</translation>
+<translation id="2026797012398135445">Ξεκλειδώσετε τη συσκευή σας για ενεργοποίηση.</translation>
 <translation id="2316129865977710310">Όχι, ευχαριστώ</translation>
 <translation id="3435896845095436175">Ενεργοποίηση</translation>
 <translation id="4394049700291259645">Απενεργοποίηση</translation>
 <translation id="5301954838959518834">Εντάξει, το κατάλαβα</translation>
+<translation id="5508399372551154686">Το BEGIN_LINK Φυσικό δίκτυο END_LINK είναι ανενεργό.</translation>
+<translation id="5815960189179094695">Σάρωση για αντικείμενα BEGIN_LINK φυσικού δικτύου END_LINK…</translation>
 <translation id="6196207969502475924">Φωνητική αναζήτηση</translation>
+<translation id="6722203589267124394">Ενεργοποιήστε το Bluetooth για κοντινά αντικείμενα BEGIN_LINK φυσικού δικτύου Web END_LINK.</translation>
 <translation id="7554791636758816595">Νέα καρτέλα</translation>
+<translation id="7588950540487816470">Φυσικό δίκτυο</translation>
+<translation id="8800384372516194324">Εμφάνιση περισσότερων αποτελεσμάτων</translation>
 </translationbundle>

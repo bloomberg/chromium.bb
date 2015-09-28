@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1203161113033984675">BEGIN_LINKPhysical WebEND_LINK har aktiverats.</translation>
+<translation id="1418775127135578229">Öppna kopierad länk</translation>
+<translation id="1487576085940433465">BEGIN_LINKWebbsidor sänds av objekt i närhetenEND_LINK. En tjänst från Google används för att förbättra kvaliteten på resultaten.</translation>
+<translation id="2026797012398135445">Lås upp enheten för att aktivera.</translation>
 <translation id="2316129865977710310">Nej tack</translation>
 <translation id="3435896845095436175">Aktivera</translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="5301954838959518834">OK, jag fattar</translation>
+<translation id="5508399372551154686">BEGIN_LINKPhysical WebEND_LINK har inaktiverats.</translation>
+<translation id="5815960189179094695">Söker efter BEGIN_LINKPhysical Web-objektEND_LINK ...</translation>
 <translation id="6196207969502475924">Röstsökning</translation>
+<translation id="6722203589267124394">Aktivera Bluetooth om du vill visa BEGIN_LINKPhysical Web-objektEND_LINK i närheten.</translation>
 <translation id="7554791636758816595">Ny flik</translation>
+<translation id="7588950540487816470">Physical Web</translation>
+<translation id="8800384372516194324">Visa fler resultat</translation>
 </translationbundle>

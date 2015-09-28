@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">Chromoting을 사용하여 컴퓨터에 안전하게 액세스할 수 있습니다.</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2366718077645204424">호스트에 연결할 수 없습니다. 사용 중인 네트워크의 구성 때문일 수 있습니다.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  <ph name="RELATIVE_TIMESTAMP" /> 온라인에 마지막으로 연결했습니다.</translation>
 <translation id="2498359688066513246">도움말 및 의견</translation>
 <translation id="2499160551253595098">사용 통계 및 오류 보고서 수집을 허용하여 Chrome 원격 데스크톱 개선에 참여하겠습니다.</translation>
 <translation id="2512228156274966424">참고: 모든 단축키를 사용하려면 Chrome 원격 데스크톱을 '창으로 열기'로 설정합니다.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">이 서비스를 이용하면 Chromoting 클라이언트로부터의 연결을 수신할 수 있습니다.</translation>
 <translation id="3606997049964069799">Chromium에 로그인하지 않았습니다. 로그인 후 다시 시도하세요.</translation>
 <translation id="3649256019230929621">창 최소화</translation>
+<translation id="369442766917958684">오프라인.</translation>
 <translation id="3776024066357219166">Chrome 원격 데스크톱 세션이 종료되었습니다.</translation>
 <translation id="3785447812627779171">Chromoting
 호스트</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">다시 연결</translation>
 <translation id="5843054235973879827">안전한 이유</translation>
 <translation id="5859141382851488196">새 창…</translation>
+<translation id="5885438903806970186">온라인.</translation>
 <translation id="6001953797859482435">Chrome 원격 데스크톱 호스트 환경설정</translation>
 <translation id="6011539954251327702">Chromoting을 사용하면 컴퓨터를 웹에서 안전하게 공유할 수 있습니다. 양쪽 사용자 모두 <ph name="URL" />에 있는 Chromoting 앱을 실행해야 합니다.</translation>
 <translation id="6040143037577758943">닫기</translation>

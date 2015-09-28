@@ -45,6 +45,7 @@ Les valeurs possibles sont "basic", "digest", "NTLM" et "negotiate". Séparez le
 
 Si cette règle n'est pas configurée, les quatre modèles seront utilisés.</translation>
 <translation id="1297182715641689552">Utiliser un script de proxy .pac</translation>
+<translation id="1304973015437969093">Identifiants d'extension ou d'application et URL de mise à jour à installer en arrière-plan</translation>
 <translation id="1310699457130669094">Vous pouvez spécifier ici une URL pointant vers un fichier .pac de proxy. 
 
 Cette règle ne prend effet que si vous avez sélectionné les paramètres de proxy manuels pour l'option "Sélectionner le mode de spécification des paramètres de serveur proxy". 
@@ -101,6 +102,14 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
           Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant le mode Contraste élevé. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
 
           Si vous ne définissez pas cette règle, le mode Contraste élevé est désactivé au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou le désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
+<translation id="1468707346106619889">Si cette règle est définie sur "True", le bureau unifié est autorisé et activé
+      par défaut, ce qui permet aux applications de couvrir plusieurs affichages.
+      L'utilisateur peut désactiver le bureau unifié pour certains affichages
+      en le désélectionnant dans les paramètres d'affichage.
+
+      Si cette règle est définie sur "False" ou n'est pas définie, le bureau
+      unifié est désactivé. Dans ce cas, l'utilisateur ne peut pas activer cette
+      fonctionnalité.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Indique la fréquence en millisecondes à laquelle le service de gestion des appareils est interrogé sur les informations concernant les règles relatives aux appareils. 
 
@@ -335,6 +344,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 <translation id="2518231489509538392">Autoriser la lecture audio</translation>
 <translation id="2521581787935130926">Afficher le raccourci des applications dans la barre de favoris</translation>
 <translation id="2529700525201305165">Ne pas autoriser certains utilisateurs à se connecter à <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Configurer la liste des applications et des extensions dont l'installation est forcée</translation>
 <translation id="253135976343875019">Délai d'inactivité avant l'affichage d'un avertissement (en cas de connexion secteur)</translation>
 <translation id="2552966063069741410">Fuseau horaire</translation>
 <translation id="2571066091915960923">Activer ou désactiver le proxy pour la compression de données et empêcher les utilisateurs de modifier ce paramètre
@@ -413,6 +423,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
           ExtensionInstallBlacklist prévaut sur cette règle : une extension figurant dans la liste noire ne sera pas installée, même si elle provient d'un site mentionné dans cette liste.</translation>
 <translation id="2824715612115726353">Activer le mode navigation privée</translation>
+<translation id="2850122204195089673">Rendre le mode bureau unifié disponible et l'activer par défaut</translation>
 <translation id="285480231336205327">Activer le mode Contraste élevé</translation>
 <translation id="2872961005593481000">Éteindre</translation>
 <translation id="2877225735001246144">Désactiver la consultation CNAME lors de la négociation de l'authentification Kerberos</translation>

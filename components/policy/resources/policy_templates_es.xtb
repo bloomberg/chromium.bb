@@ -45,6 +45,7 @@ Si esta política se establece en False, no se informará sobre el estado del co
 
           Si no se establece esta política, se usarán los cuatro esquemas.</translation>
 <translation id="1297182715641689552">Utilizar una secuencia de comandos .pac de proxy</translation>
+<translation id="1304973015437969093">IDs de extensiones/aplicaciones y URLs de actualización que se instalan automáticamente</translation>
 <translation id="1310699457130669094">Permite especificar la URL de un archivo .pac de proxy.
 
           Esta política solo tendrá validez si has seleccionado una configuración manual del proxy en la opción Seleccionar la forma de especificar la configuración del servidor proxy.
@@ -101,6 +102,10 @@ Si esta política se establece en False, no se informará sobre el estado del co
           Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el modo de contraste alto. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
 
           Si no se establece esta política, el modo de contraste alto se inhabilitará la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de inicio de sesión permanece entre usuarios.</translation>
+<translation id="1468707346106619889">Si esta política está establecida en "true", el escritorio unificado está permitido y habilitado de forma predeterminada, lo que permite que las aplicaciones ocupen varias pantallas.
+El usuario puede inhabilitar el escritorio unificado para pantallas individuales desactivando la opción en los ajustes de la pantalla.
+
+Si esta política está establecida en "false" o no está establecida, se inhabilitará el escritorio unificado. En este caso, el usuario no puede habilitar la función.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Permite especificar el período en milisegundos durante el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
 
@@ -339,6 +344,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2518231489509538392">Permitir reproducción de audio</translation>
 <translation id="2521581787935130926">Mostrar el acceso directo de aplicaciones en la barra de marcadores</translation>
 <translation id="2529700525201305165">Restringir los usuarios que pueden iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Configura la lista de aplicaciones y extensiones de instalación forzada</translation>
 <translation id="253135976343875019">Tiempo de espera de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2571066091915960923">Habilita o inhabilita el proxy de compresión de datos y evita que los usuarios cambien esta opción.
@@ -419,6 +425,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
           ExtensionInstallBlacklist prevalece sobre esta política, lo que significa que las extensiones incluidas en la lista negra no se instalarán aunque procedan de un sitio incluido en esta lista.</translation>
 <translation id="2824715612115726353">Habilitar modo de incógnito</translation>
+<translation id="2850122204195089673">Habilita el escritorio unificado y lo activa de forma predeterminada.</translation>
 <translation id="285480231336205327">Habilitar modo de contraste alto</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>

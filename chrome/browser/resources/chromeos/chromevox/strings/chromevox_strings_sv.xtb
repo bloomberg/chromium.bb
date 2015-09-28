@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Ogiltig indata</translation>
 <translation id="1082209053475788238">Det finns ingen föregående rubrik på nivå 6.</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
-<translation id="1092366490857960994">Textinmatning, telefonnummer</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
 <translation id="1120743664840974483">{"a": "Adam", "b": "Bertil", "c": "Cesar", "d": "David", "e": "Erik", "f": "Filip", "g": "Gustav", "h": "Helge", "i": "Ivar", "j": "Johan","k": "Kalle", "l": "Ludvig", "m": "Martin", "n": "Niklas", "o": "Olof","p": "Petter", "q": "Quintus", "r": "Rudolf", "s": "Sigurd", "t": "Tore", "u": "Urban", "v": "Viktor", "w": "Wilhelm","x": "Xerxes", "y": "Yngve", "z": "Zäta", "å": "Åke", "ä": "Ärlig", "ö": "Östen"}</translation>
 <translation id="113582498867142724"><ph name="TAG" />-samling med <ph name="NUM" /> objekt</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Tangentbordshjälp</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, kombinationsruta</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menyalternativ, med undermeny</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Anpassad</translation>
 <translation id="1188858454923323853">kompletterande</translation>
 <translation id="1206619573307042055">markör</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Höger</translation>
 <translation id="136718599399906424">Nästa tabellrad</translation>
 <translation id="1383876407941801731">Sök</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Tryck Retur om du vill godkänna, Esc om du vill avbryta, ned för nästa och upp för föregående.</translation>
 <translation id="1396114365388024581">fliklista</translation>
 <translation id="1439316808600711881">region</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Alla skiljetecken</translation>
 <translation id="2119965627982867824">snurrknapp</translation>
 <translation id="2121067395472282800">snabbtangent:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Ändra den aktuella tabellen för punktskrift med sex punkter genom att välja ett alternativ i listan nedan.</translation>
 <translation id="2169714232367507776">Klicka på det aktuella objektet</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{högerparentes}other{# högerparenteser}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Hoppa till nästa fokuserbara objekt</translation>
 <translation id="2770781857296573485">Börja utforska grupper</translation>
 <translation id="2777845298774924149">Stängdes</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Inga flera olika element.</translation>
 <translation id="2800780099804980316">Det finns ingen föregående rubrik på nivå 1.</translation>
 <translation id="2811204574343810641">Rad</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">kryssruta</translation>
 <translation id="3229375994964697375">Besökt länk</translation>
 <translation id="323731244387692321">Öppna tangentbordshjälpen för ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Föregående länk som har besökts</translation>
 <translation id="3286390186030710347">Skjutreglage</translation>
 <translation id="3299925995433437805">Det finns inga fler länkar som har besökts.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, listruta</translation>
 <translation id="3687295507293856493">Gissa kolumnrubriken för den aktuella cellen</translation>
 <translation id="3692274950075847560">S:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Röstkontroller</translation>
 <translation id="3716845769494773620">Flerradigt</translation>
 <translation id="3731746171184829332">Det finns ingen föregående rubrik.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Dialogrutan stängdes.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Autoslutförande med lista</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Nästa media</translation>
 <translation id="3819376190738087562">Det finns inga hopp.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Anpassa ChromeVox med alternativen nedan. Ändringarna börjar gälla direkt.</translation>
 <translation id="4271220233568730077">Nästa matematiska uttryck</translation>
 <translation id="4271521365602459209">Inga fler resultat.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Det finns inga fler artiklar.</translation>
 <translation id="4289540628985791613">Översikt</translation>
 <translation id="4300318234632215983">Läs upp webbadressen bakom en länk</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Klassisk tangentuppsättning</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{snedstreck}other{# snedstreck}}</translation>
 <translation id="4547556996012970016">Nästa rubrik på nivå 5</translation>
-<translation id="4554899522007042510">Ljusstyrka: <ph name="BRIGHTNESS" /> procent</translation>
 <translation id="4562381607973973258">Sidhuvud</translation>
 <translation id="4591507479202817876">, valt</translation>
 <translation id="4597532268155981612">formulär</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Tangentbordsutforskaren för ChromeOS</translation>
 <translation id="4763296182459741068">Till slutet</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">sök</translation>
 <translation id="481165870889056555">Läs upp den aktuella sidans titel</translation>
 <translation id="4826415162591436065">Navigera framåt</translation>
 <translation id="4826604887384865800">Nästa hopp</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Aktivera loggning av text-till-tal</translation>
 <translation id="4877261390094455813">Ange en sökfråga.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Intern länk</translation>
 <translation id="4953585991029886728">Textinmatning</translation>
 <translation id="4954534434583049121">Föregående citatblock</translation>
-<translation id="4970377555447282413">Visa en förstorad vy av innehåll på sidan.</translation>
 <translation id="4973717656530883744">Minst <ph name="X" /></translation>
 <translation id="4973762002207131920">Bytte till <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">millisekunder</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Rubrik 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{lodstreck}other{# lodstreck}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Systemet har uppdaterats. Vi rekommenderar att du startar om enheten.</translation>
 <translation id="8735450637152821465">Börja markering</translation>
 <translation id="8743786158317878347">öppna strukturerat innehåll, t.ex. tabeller</translation>
 <translation id="8747966237988593539">Sorterad lista</translation>

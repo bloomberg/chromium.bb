@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Invalid input</translation>
 <translation id="1082209053475788238">No previous level 6 heading.</translation>
 <translation id="1088219014394087294">No headings.</translation>
-<translation id="1092366490857960994">Edit text, number entry</translation>
 <translation id="1106741348836243114">Turn sound feedback (earcons) on or off.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724"><ph name="TAG" /> collection with <ph name="NUM" /> items</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Keyboard Help</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, combo box</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menu item, with submenu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Customised</translation>
 <translation id="1188858454923323853">complementary</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Right</translation>
 <translation id="136718599399906424">Next table row</translation>
 <translation id="1383876407941801731">Search</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Press enter to accept or escape to cancel, down for next and up for previous.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">All punctuation</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Change the current 6 dot braille table by selecting an option from the list below.</translation>
 <translation id="2169714232367507776">Click on current item</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{close paren}other{# close parens}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Jump to next focusable item</translation>
 <translation id="2770781857296573485">Enter group exploration</translation>
 <translation id="2777845298774924149">Exited</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">No more different elements.</translation>
 <translation id="2800780099804980316">No previous level 1 heading.</translation>
 <translation id="2811204574343810641">Row</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Visited link</translation>
 <translation id="323731244387692321">Open ChromeVox keyboard help</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Previous visited link</translation>
 <translation id="3286390186030710347">Slider</translation>
 <translation id="3299925995433437805">No next visited link.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, list box</translation>
 <translation id="3687295507293856493">Make a guess at the column header of the current cell</translation>
 <translation id="3692274950075847560">S:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Controlling Speech</translation>
 <translation id="3716845769494773620">Multi line</translation>
 <translation id="3731746171184829332">No previous heading.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Exited dialogue.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Auto-completion list</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Next media</translation>
 <translation id="3819376190738087562">No jumps.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Use the options below to customise ChromeVox. Changes take effect immediately.</translation>
 <translation id="4271220233568730077">Next math</translation>
 <translation id="4271521365602459209">No more results.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">No next article.</translation>
 <translation id="4289540628985791613">Overview</translation>
 <translation id="4300318234632215983">Announce the URL behind a link</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Classic keymap</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
 <translation id="4547556996012970016">Next level 5 heading</translation>
-<translation id="4554899522007042510">Brightness <ph name="BRIGHTNESS" /> percent</translation>
 <translation id="4562381607973973258">Header</translation>
 <translation id="4591507479202817876">, selected</translation>
 <translation id="4597532268155981612">form</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS Keyboard Explorer</translation>
 <translation id="4763296182459741068">Wrapped to bottom</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Announce the title of the current page</translation>
 <translation id="4826415162591436065">Navigate forward</translation>
 <translation id="4826604887384865800">Next jump</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Enable TTS logging</translation>
 <translation id="4877261390094455813">Enter a search query.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Internal link</translation>
 <translation id="4953585991029886728">Edit text</translation>
 <translation id="4954534434583049121">Previous block quote</translation>
-<translation id="4970377555447282413">Show a magnified view of the page content.</translation>
 <translation id="4973717656530883744">Min <ph name="X" /></translation>
 <translation id="4973762002207131920">Switched to <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milliseconds</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">seconds</translation>
 <translation id="867187640362843212">Heading 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipe}other{# vertical pipes}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">System was updated. Restart is recommended.</translation>
 <translation id="8735450637152821465">Start selection</translation>
 <translation id="8743786158317878347">enter structured content, such as tables</translation>
 <translation id="8747966237988593539">Ordered List</translation>

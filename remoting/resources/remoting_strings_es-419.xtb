@@ -64,6 +64,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2353140552984634198">Puedes acceder a esta computadora sin correr ningún riesgo a través de Chromoting.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">No se puede establecer la conexión con el host. Probablemente esto se deba a la configuración de la red que usas.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Última vez en línea <ph name="RELATIVE_TIMESTAMP" /></translation>
 <translation id="2498359688066513246">Ayuda y comentarios</translation>
 <translation id="2499160551253595098">Ayúdanos a mejorar la aplicación Escritorio remoto de Chrome permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
 <translation id="2512228156274966424">NOTA: Para asegurarte de que todas las combinaciones de teclas para acceso directo estén disponibles, puedes configurar Escritorio remoto de Chrome en "Abrir como ventana".</translation>
@@ -109,6 +110,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="3596628256176442606">Este servicio permite conexiones entrantes de los clientes de Chromoting.</translation>
 <translation id="3606997049964069799">No accediste a Chromium. Accede y vuelve a intentarlo.</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
+<translation id="369442766917958684">Sin conexión</translation>
 <translation id="3776024066357219166">Se cerró tu sesión en Escritorio remoto de Chrome.</translation>
 <translation id="3785447812627779171">Host de
 Chromoting</translation>
@@ -183,6 +185,7 @@ remoto de Chrome</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
 <translation id="5859141382851488196">Nueva ventana…</translation>
+<translation id="5885438903806970186">En línea</translation>
 <translation id="6001953797859482435">Preferencias del host del Escritorio remoto de Chrome</translation>
 <translation id="6011539954251327702">Chromoting te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben ejecutar la aplicación Chromoting, que está disponible en <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Cerrar</translation>

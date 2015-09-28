@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Неправильно введені дані</translation>
 <translation id="1082209053475788238">Немає попереднього заголовка рівня 6.</translation>
 <translation id="1088219014394087294">Немає заголовків.</translation>
-<translation id="1092366490857960994">Редагування введеного тексту, номера телефону</translation>
 <translation id="1106741348836243114">Увімкнути або вимкнути звуковий сигнал (звуковий ефект).</translation>
 <translation id="1120743664840974483">{"а": "а-зОт", "б": "бОн-да-рів-на", "в": "віт-ро-гон", "г": "га-ра-кі-рі", "ґ": "ґо-ґо-дзи", "д": "до-ли-на", "е": "ерг", "є": "єд-ність-то-си-ла", "ж": "жа-б'є-се-ло", "з": "зо-ло-ту-ха", "и": "то-не-во-но", "і": "І-ван", "ї": "їж-хто-го-ло-ден", "й": "йди-хо-лод-ком", "к": "ко-лі-но", "л": "лі-со-ру-би", "м": "мо-роз", "н": "но-га", "о": "о-ко-лот", "п": "при-мо-роз-ки", "р": "ри-бонь-ка", "с": "са-ха-ра", "т": "тон", "у": "у-па-док", "ф": "фі-лан-тро-пи", "х": "хо-ло-до-чок", "ц": "цьо-ця-дор-ця", "ч": "чор-но-го-ра", "ш": "шо-ло-ви-ло", "щ": "що-ро-ку-мо-роз", "ь": "то-м'я-кий-тон" "ю": "ю-рій-ко-роль", "я": "я-ро-шен-ко"}</translation>
 <translation id="113582498867142724">Збірка <ph name="TAG" /> з такою кількістю елементів: <ph name="NUM" /></translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Довідка клавіатури</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, комбіноване вікно</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, пункт меню з підменю</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Спеціальне</translation>
 <translation id="1188858454923323853">додатково</translation>
 <translation id="1206619573307042055">область виділення</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Праворуч</translation>
 <translation id="136718599399906424">Наступний рядок таблиці</translation>
 <translation id="1383876407941801731">Пошук</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Натисніть клавішу Enter, щоб прийняти, клавішу Escape, щоб скасувати, стрілку вниз, щоб перейти далі, стрілку вгору, щоб перейти назад.</translation>
 <translation id="1396114365388024581">список вкладок</translation>
 <translation id="1439316808600711881">регіон</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Усі розділові знаки</translation>
 <translation id="2119965627982867824">лічильник</translation>
 <translation id="2121067395472282800">клавіша доступу: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Змініть поточний 6-крапковий шрифт Брайля, вибравши опцію зі списку нижче.</translation>
 <translation id="2169714232367507776">Натиснути поточний елемент</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{права кругла дужка}one{# права кругла дужка}few{# праві круглі дужки}many{# правих круглих дужок}other{# close parens}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Перейти до наступного інтерактивного елемента</translation>
 <translation id="2770781857296573485">Почати вивчення груп</translation>
 <translation id="2777845298774924149">Ви закрили</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Інших несхожих елементів немає.</translation>
 <translation id="2800780099804980316">Немає попереднього заголовка рівня 1.</translation>
 <translation id="2811204574343810641">Рядок</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">прапорець</translation>
 <translation id="3229375994964697375">Натиснуте посилання</translation>
 <translation id="323731244387692321">Відкрити довідку клавіатури ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Попереднє натиснуте посилання</translation>
 <translation id="3286390186030710347">Повзунок</translation>
 <translation id="3299925995433437805">Немає наступного натиснутого посилання.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, вікно списку</translation>
 <translation id="3687295507293856493">Зробити припущення щодо заголовка стовпця поточної клітинки</translation>
 <translation id="3692274950075847560">П:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Керування мовленням</translation>
 <translation id="3716845769494773620">Багаторядковий</translation>
 <translation id="3731746171184829332">Немає попереднього заголовка.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Ви закрили діалогове вікно.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">Список автозавершення</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Відео</translation>
 <translation id="3816633764618089385">Медіа – далі</translation>
 <translation id="3819376190738087562">Немає переходів.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Щоб налаштувати ChromeVox, використовуйте параметри нижче. Зміни почнуть діяти негайно.</translation>
 <translation id="4271220233568730077">Математичний – далі</translation>
 <translation id="4271521365602459209">Більше результатів немає.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Немає наступної статті.</translation>
 <translation id="4289540628985791613">Огляд</translation>
 <translation id="4300318234632215983">Повідомити URL-адресу посилання</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Класична розкладка клавіатури</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{коса риска}one{# коса риска}few{# косі риски}many{# косих рисок}other{# slashes}}</translation>
 <translation id="4547556996012970016">Наступний заголовок рівня 5</translation>
-<translation id="4554899522007042510">Рівень яскравості у відсотках: <ph name="BRIGHTNESS" /></translation>
 <translation id="4562381607973973258">Заголовок</translation>
 <translation id="4591507479202817876">, вибрано</translation>
 <translation id="4597532268155981612">форма</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Огляд клавіатури ОС Chrome</translation>
 <translation id="4763296182459741068">Перенесення вниз</translation>
 <translation id="4763480195061959176">відео</translation>
+<translation id="479989351350248267">пошук</translation>
 <translation id="481165870889056555">Повідомити назву поточної сторінки</translation>
 <translation id="4826415162591436065">Перейти вперед</translation>
 <translation id="4826604887384865800">Наступний перехід</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Увімкнути реєстрацію TTS</translation>
 <translation id="4877261390094455813">Введіть пошуковий запит.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Внутрішнє посилання</translation>
 <translation id="4953585991029886728">Редагування тексту</translation>
 <translation id="4954534434583049121">Цитування попереднього блока</translation>
-<translation id="4970377555447282413">Показувати вміст сторінки в режимі збільшення.</translation>
 <translation id="4973717656530883744">Мін. <ph name="X" /></translation>
 <translation id="4973762002207131920">Змінено на <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">мілісекунд</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">секунд</translation>
 <translation id="867187640362843212">Заголовок 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикальна риска}one{# вертикальна риска}few{# вертикальні риски}many{# вертикальних рисок}other{# vertical pipes}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Систему оновлено. Рекомендується перезапуск.</translation>
 <translation id="8735450637152821465">Початок виділення</translation>
 <translation id="8743786158317878347">відкрити структурований вміст, як-от таблиці</translation>
 <translation id="8747966237988593539">Упорядкований список</translation>

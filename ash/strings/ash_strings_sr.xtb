@@ -26,6 +26,7 @@
 Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Аутоматски кликови</translation>
+<translation id="1950626184269948555">Пречица за менаџер задатака је промењена. Користите комбинацију тастера за претрагу и Esc уместо комбинације тастера Shift и Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">$1 се пребацује на екран $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@
 <translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Притисните Control Shift Q двапут да бисте изашли.</translation>
+<translation id="6287020362823083378">Пречица за закључавање екрана је промењена. Користите комбинацију тастера за претрагу и L уместо комбинације тастера Ctrl, Shift и L.</translation>
 <translation id="6310121235600822547">Екран <ph name="DISPLAY_NAME" /> је промењен у <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS са броја <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK је искључен</translation>

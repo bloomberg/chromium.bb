@@ -45,6 +45,7 @@
 
           Če ta pravilnik ni nastavljen, bodo uporabljene vse štiri sheme.</translation>
 <translation id="1297182715641689552">Uporabi skript .pac za proxy</translation>
+<translation id="1304973015437969093">ID-ji razširitev/aplikacij in URL-ji posodobitev se namestijo brez obveščanja</translation>
 <translation id="1310699457130669094">Tu lahko določite URL za datoteko .pac strežnika proxy.
 
           Ta pravilnik velja le, če ste v »Izberite, kako določiti nastavitve strežnika proxy« izbrali ročne nastavitve.
@@ -101,6 +102,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
          Če ta pravilnik vklopite, ga lahko uporabniki začasno preglasijo tako, da omogočijo ali onemogočijo visokokontrastni način, vendar ta nastavitev ni trajna in se privzeta nastavitev obnovi vsakič, ko je ponovno prikazan prijavni zaslon ali kadar je uporabnik eno minuto nedejaven na prijavnem zaslonu.
 
           Če ta pravilnik ni vklopljen, je visokokontrastni način onemogočen, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
+<translation id="1468707346106619889">Če je ta pravilnik nastavljen na »true«, je enotno namizje dovoljeno in
+      privzeto omogočeno; ta funkcija aplikacijam omogoča, da se raztezajo prek več zaslonov.
+      Uporabnik lahko onemogoči enotno namizje za posamezne zaslone, tako da
+      v nastavitvah prikaza počisti to funkcijo.
+
+      Če je ta pravilnik nastavljen na »false« ali ni nastavljen, bo enotno namizje
+      onemogočeno. V tem primeru uporabnik funkcije ne more omogočiti.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Določa obdobje (v milisekundah), v katerem se izvaja poizvedba v storitvi upravljanja naprave za podatke pravilnika za napravo.
 
@@ -336,6 +344,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="2518231489509538392">Omogočanje predvajanje zvoka</translation>
 <translation id="2521581787935130926">Prikaz bližnjice za aplikacije v vrstici z zaznamki</translation>
 <translation id="2529700525201305165">Določa, kateri uporabniki se lahko prijavijo v storitev <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">Konfiguriranje seznama vsiljenih namestitev aplikacij in razširitev</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
 <translation id="2571066091915960923">Omogoči ali onemogoči strežnik proxy za stiskanje podatkov in uporabnikom prepreči spreminjanje te nastavitve.
@@ -415,6 +424,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Seznam ExtensionInstallBlacklist ima prednost pred tem pravilnikom. To pomeni, da razširitve s tega seznama ni mogoče namestiti, čeprav je za namestitev uporabljeno spletno mesto na tem seznamu.</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
+<translation id="2850122204195089673">Naj bo enotno namizje na voljo in privzeto vklopljeno.</translation>
 <translation id="285480231336205327">Omogoči visokokontrastni način</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>

@@ -45,6 +45,7 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang lahat ng apat na scheme.</translation>
 <translation id="1297182715641689552">Gumamit ng .pac proxy script</translation>
+<translation id="1304973015437969093">Ang mga extension/app ID at URL sa pag-update na tahimik na ii-install</translation>
 <translation id="1310699457130669094">Maaari kang tumukoy ng isang URL sa isang proxy .pac file dito.
 
           Magkakaroon lamang ng epekto ang patakarang ito kung pinili mo ang mga manu-manong setting ng proxy sa 'Pumili kung paano tumukoy ng mga setting ng proxy server'.
@@ -101,6 +102,13 @@
           Kung itatakda mo ang patakarang ito, maaaring pansamantalang i-override ng mga user ito sa pamamagitan ng pag-enable o pag-disable ng  high contrast mode. Gayunpaman, hindi mananaig ang pinili ng user at mababalik ang default sa tuwing ipapakitang muli ang screen sa pag-login o kung manatiling idle ang user sa screen sa loob ng isang minuto.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang high contrast mode kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang high contrast mode anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
+<translation id="1468707346106619889">Kung nakatakda ang patakarang ito sa true, pinapayagan ang Unified Desktop at
+      naka-enable bilang default, na binibigyang-daan ang mga application na mag-span ng maraming display.
+      Maaaring i-disable ng user ang Unified Desktop para sa mga indibidwal na display sa pamamagitan ng pag-aalis ng check
+      nito sa mga setting ng display.
+
+      Kung nakatakda ang patakarang ito sa false o hindi nakatakda, idi-disable ang
+      Unified Desktop. Sa sitwasyong ito, hindi mae-enable ng user ang feature.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Tinutukoy ang tagal sa milliseconds kung kailan na-query sa serbisyo ng pamamahala sa device ang impormasyon ng patakaran ng device.
 
@@ -334,6 +342,7 @@
 <translation id="2518231489509538392">Payagan ang pag-play ng audio</translation>
 <translation id="2521581787935130926">Ipakita ang shortcut ng mga app sa bar ng bookmark</translation>
 <translation id="2529700525201305165">Limitahan ang mga user na pinapayagang mag-sign in sa <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">I-configure ang listahan ng mga puwersahang na-install na app at extension</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2571066091915960923">Ine-enable o dini-disable ang proxy ng compression ng data at pinipigilan ang mga user na palitan ang setting na ito.
@@ -412,6 +421,7 @@
 
           Binibigyang-halaga ang ExtensionInstallBlacklist sa patakarang ito. Dahil dito, hindi mai-install ang extension sa blacklist, kahit na mangyari ito mula sa isang site sa listahang ito.</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
+<translation id="2850122204195089673">Gawing available ang Unified Desktop at i-on bilang default.</translation>
 <translation id="285480231336205327">Paganahin ang mataas na contrast mode</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>

@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
+<translation id="1203161113033984675">Naka-on ang BEGIN_LINK Pisikal na Web END_LINK.</translation>
+<translation id="1418775127135578229">Buksan ang Kinopyang Link</translation>
+<translation id="1487576085940433465">BEGIN_LINK May mga kalapit na bagay na nagbo-broadcast ng mga webpage END_LINK. Gagamit ng serbisyo ng Google upang mapahusay ang kalidad ng mga resultang ito.</translation>
+<translation id="2026797012398135445">I-unlock ang iyong device upang i-enable.</translation>
 <translation id="2316129865977710310">Hindi, salamat</translation>
 <translation id="3435896845095436175">I-enable</translation>
 <translation id="4394049700291259645">Huwag paganahin</translation>
 <translation id="5301954838959518834">OK, nakuha ko na</translation>
+<translation id="5508399372551154686">Naka-off ang BEGIN_LINK Pisikal na Web END_LINK.</translation>
+<translation id="5815960189179094695">Scan bagay sa BEGIN_LINK Physical Web END_LINK...</translation>
 <translation id="6196207969502475924">Paghahanap gamit ang boses</translation>
+<translation id="6722203589267124394">I-on ang Bluetooth upang makita ang mga kalapit na bagay sa BEGIN_LINK Pisikal na Web END_LINK.</translation>
 <translation id="7554791636758816595">Bagong Tab</translation>
+<translation id="7588950540487816470">Pisikal na Web</translation>
+<translation id="8800384372516194324">Magpakita ng Higit Pang Mga Resulta</translation>
 </translationbundle>

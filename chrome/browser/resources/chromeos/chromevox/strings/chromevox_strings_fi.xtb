@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Virheellinen syöte</translation>
 <translation id="1082209053475788238">Ei edellisiä tason 6 otsikoita.</translation>
 <translation id="1088219014394087294">Ei otsikoita.</translation>
-<translation id="1092366490857960994">Muokkaa tekstiä, numero</translation>
 <translation id="1106741348836243114">Ota äänipalaute (earcon-äänimerkit) käyttöön tai poista se käytöstä.</translation>
 <translation id="1120743664840974483">{"a": "aarne", "b": "bertta", "c": "celcius", "d": "daavid", "e": "eemeli", "f": "faarao", "g": "gideon", "h": "heikki", "i": "iivari", "j": "jussi","k": "kalle", "l": "lauri", "m": "matti", "n": "niilo", "o": "otto","p": "paavo", "q": "kuu", "r": "risto", "s": "sakari", "t": "tyyne", "u": "urho", "v": "vihtori", "w": "wiski","x": "äksä", "y": "yrjö", "z": "tseta", "å": "åke", "ä": "äiti", "ö": "öljy"}</translation>
 <translation id="113582498867142724"><ph name="TAG" />-kokoelma, jossa <ph name="NUM" /> kohdetta</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Näppäimistöohje</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, yhdistelmäruutu</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, valikkokohde, jossa alivalikko</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Muokattu</translation>
 <translation id="1188858454923323853">täydentävä</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Oikealle</translation>
 <translation id="136718599399906424">Taulukon seuraava rivi</translation>
 <translation id="1383876407941801731">Haku</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Hyväksy painamalla enter-painiketta tai peruuta esc-painikkeella, siirry seuraavaan alanuolella ja edelliseen ylänuolella.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">alue</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Kaikki välimerkit</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">pääsyavain: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Muuta nykyistä kuuden pisteen pistekirjoitustaulukkoa valitsemalla vaihtoehto alla olevasta luettelosta.</translation>
 <translation id="2169714232367507776">Klikkaa nykyistä kohdetta</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{oikea kaarisulje}other{# oikeaa kaarisuljetta}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Siirry seuraavaan aktivoitavaan kohteeseen</translation>
 <translation id="2770781857296573485">Käytä ryhmätutkintaa</translation>
 <translation id="2777845298774924149">Suljettiin</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Ei muita erilaisia elementtejä.</translation>
 <translation id="2800780099804980316">Ei edellisiä tason 1 otsikoita.</translation>
 <translation id="2811204574343810641">Rivi</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Käyty linkki</translation>
 <translation id="323731244387692321">Avaa ChromeVox-näppäimistöohje</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Edellinen käyty linkki</translation>
 <translation id="3286390186030710347">Liukusäädin</translation>
 <translation id="3299925995433437805">Ei seuraavia käytyjä linkkejä.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, luetteloruutu</translation>
 <translation id="3687295507293856493">Arvioi nykyisen solun sarakkeen otsikossa</translation>
 <translation id="3692274950075847560">H:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Puheen hallinta</translation>
 <translation id="3716845769494773620">Monirivinen</translation>
 <translation id="3731746171184829332">Ei edellisiä otsikoita.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Valintaikkuna suljettiin.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">Ennakoivan tekstinsyötön luettelo</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Seuraava mediakohde</translation>
 <translation id="3819376190738087562">Ei siirtymiä.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Muokkaa ChromeVoxia alla olevien asetusten avulla. Muutokset tulevat voimaan välittömästi.</translation>
 <translation id="4271220233568730077">Seuraava matemaattinen lauseke</translation>
 <translation id="4271521365602459209">Ei enempää tuloksia.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Tämä on viimeinen artikkeli.</translation>
 <translation id="4289540628985791613">Yleiskatsaus</translation>
 <translation id="4300318234632215983">Ilmoita linkin takana oleva URL-osoite</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Perinteinen näppäinasettelu</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{kauttaviiva}other{# kauttaviivaa}}</translation>
 <translation id="4547556996012970016">Seuraava tason 5 otsikko</translation>
-<translation id="4554899522007042510">Kirkkaus <ph name="BRIGHTNESS" /> prosenttia</translation>
 <translation id="4562381607973973258">Otsikko</translation>
 <translation id="4591507479202817876">, valittu</translation>
 <translation id="4597532268155981612">lomake</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS Keyboard Explorer</translation>
 <translation id="4763296182459741068">Sijoitettu alareunaan</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">haku</translation>
 <translation id="481165870889056555">Ilmoita nykyisen sivun otsikko</translation>
 <translation id="4826415162591436065">Siirry eteenpäin</translation>
 <translation id="4826604887384865800">Seuraava siirtyminen</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Ota TTS-kirjaaminen käyttöön</translation>
 <translation id="4877261390094455813">Anna hakutermi.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Sisäinen linkki</translation>
 <translation id="4953585991029886728">Muokkaa tekstiä</translation>
 <translation id="4954534434583049121">Edellinen estoviittaus</translation>
-<translation id="4970377555447282413">Näytä sivun sisältö suurennettuna.</translation>
 <translation id="4973717656530883744">Vähintään <ph name="X" /></translation>
 <translation id="4973762002207131920">Vaihdettu näppäimeen <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">millisekuntia</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">sekuntia</translation>
 <translation id="867187640362843212">Otsikko 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pystyviiva}other{# pystyviivaa}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Järjestelmä päivitettiin. Suositellaan uudelleenkäynnistystä.</translation>
 <translation id="8735450637152821465">Aloita valinta</translation>
 <translation id="8743786158317878347">siirry rakenteelliseen sisältöön, kuten taulukkoon</translation>
 <translation id="8747966237988593539">Järjestetty luettelo</translation>

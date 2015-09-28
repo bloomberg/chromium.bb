@@ -26,6 +26,7 @@
 Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
+<translation id="1950626184269948555">Snarveien til oppgavebehandlingen er endret. Bruk Søk + Esc i stedet for Shift + Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">Caster $1 til $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -152,6 +153,7 @@ Trykk på Shift + Alt for å bytte.</translation>
 <translation id="6165508094623778733">Les mer</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
 <translation id="6248847161401822652">Trykk Control+Shift+Q to ganger for å avslutte.</translation>
+<translation id="6287020362823083378">Snarveien for låsing av skjermen er endret. Bruk Søk + L i stedet for Ctrl + Shift + L.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> ble rotert til <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Tekstmelding fra <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK er av</translation>

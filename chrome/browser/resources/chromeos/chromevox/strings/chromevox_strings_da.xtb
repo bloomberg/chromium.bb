@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Ugyldigt input</translation>
 <translation id="1082209053475788238">Ingen tidligere niveau 6-overskrifter.</translation>
 <translation id="1088219014394087294">Ingen overskrifter.</translation>
-<translation id="1092366490857960994">Rediger tekst, nummerindtastning</translation>
 <translation id="1106741348836243114">Slå lydfeedback (earcons) til eller fra.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724"><ph name="TAG" />-samling med <ph name="NUM" /> elementer</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Hjælp til tastatur</translation>
 <translation id="1157843803349774103">Kombifeltet <ph name="VALUE" />, <ph name="NAME" /></translation>
 <translation id="1167230103353892028">Menupunktet <ph name="NAME" /> med undermenu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Tilpasset</translation>
 <translation id="1188858454923323853">supplerende</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Højre</translation>
 <translation id="136718599399906424">Næste tabelrække</translation>
 <translation id="1383876407941801731">Søg</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Tryk på enter for at acceptere eller escape for at annullere. Tryk på ned for næste og op for forrige.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Al tegnsætning</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">hurtigtast:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Skift det aktuelle 6-punkts braillealfabet ved at vælge en indstilling på listen nedenfor.</translation>
 <translation id="2169714232367507776">Klik på aktuelt element</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{højre parentes}one{# højre parentes}other{# højre parenteser}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Gå til næste element, der kan fokuseres på</translation>
 <translation id="2770781857296573485">Start udforskning af grupper</translation>
 <translation id="2777845298774924149">Lukket</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Ikke flere anderledes elementer.</translation>
 <translation id="2800780099804980316">Ingen tidligere niveau 1-overskrifter.</translation>
 <translation id="2811204574343810641">Række</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Besøgt link</translation>
 <translation id="323731244387692321">Åbn Hjælp til ChromeVox-tastatur</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Tidligere besøgt link</translation>
 <translation id="3286390186030710347">Skyder</translation>
 <translation id="3299925995433437805">Intet næste besøgte link.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755">Listefeltet <ph name="VALUE" /></translation>
 <translation id="3687295507293856493">Giv et bud på kolonneoverskriften af ​​den aktuelle celle</translation>
 <translation id="3692274950075847560">S:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Kontrollerer tale</translation>
 <translation id="3716845769494773620">Flere linjer</translation>
 <translation id="3731746171184829332">Ingen tidligere overskrifter.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Dialogboks blev lukket.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Autofuldførelsesliste</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Næste medie</translation>
 <translation id="3819376190738087562">Ingen hop.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Brug indstillingerne nedenfor til at tilpasse ChromeVox. Ændringer træder i kraft med det samme.</translation>
 <translation id="4271220233568730077">Næste matematiske udtryk</translation>
 <translation id="4271521365602459209">Ikke flere resultater.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Ikke flere artikler.</translation>
 <translation id="4289540628985791613">Oversigt</translation>
 <translation id="4300318234632215983">Offentliggør webadressen bag et link</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Klassisk tastaturoversigt</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{skråstreg}one{# skråstreger}other{# skråstreger}}</translation>
 <translation id="4547556996012970016">Næste niveau 5-overskrift</translation>
-<translation id="4554899522007042510">Lysstyrke <ph name="BRIGHTNESS" /> procent</translation>
 <translation id="4562381607973973258">Overskrift</translation>
 <translation id="4591507479202817876">, valgt</translation>
 <translation id="4597532268155981612">formular</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS-tastaturudforsker</translation>
 <translation id="4763296182459741068">Ombrudt til bunden af siden</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">søg</translation>
 <translation id="481165870889056555">Offentliggør titlen på den aktuelle side</translation>
 <translation id="4826415162591436065">Naviger frem</translation>
 <translation id="4826604887384865800">Næste hop</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Aktivér TTS-logføring</translation>
 <translation id="4877261390094455813">Indtast en søgeforespørgsel.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Internt link</translation>
 <translation id="4953585991029886728">Rediger tekst</translation>
 <translation id="4954534434583049121">Forrige citatblok</translation>
-<translation id="4970377555447282413">Se en forstørret visning af sidens indhold.</translation>
 <translation id="4973717656530883744">Min. <ph name="X" /></translation>
 <translation id="4973762002207131920">Ændret til <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">millisekunder</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Overskrift 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{streg}one{# lodrette streger}other{# lodrette streger}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Systemet blev opdateret. Genstart anbefales.</translation>
 <translation id="8735450637152821465">Det valgte startes</translation>
 <translation id="8743786158317878347">indtast struktureret indhold, f.eks. tabeller</translation>
 <translation id="8747966237988593539">Sorteret liste</translation>

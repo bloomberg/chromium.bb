@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Intrare nevalidă</translation>
 <translation id="1082209053475788238">Nu există un titlu de nivel 6 anterior.</translation>
 <translation id="1088219014394087294">Nu există titluri.</translation>
-<translation id="1092366490857960994">Câmp editare text de tip număr</translation>
 <translation id="1106741348836243114">Activați/dezactivați feedbackul sonor (semnalele audio).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Colecția <ph name="TAG" /> cu <ph name="NUM" /> (de) elemente</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Ajutor tastatură</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, casetă combo</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, element din meniu cu submeniu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Personalizează</translation>
 <translation id="1188858454923323853">complementar</translation>
 <translation id="1206619573307042055">text derulant</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Dreapta</translation>
 <translation id="136718599399906424">Rândul următor din tabel</translation>
 <translation id="1383876407941801731">Caută</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Apăsați pe Enter pentru a accepta sau pe Escape pentru a anula, pe săgeata în jos pentru Înainte și pe săgeata în sus pentru Înapoi.</translation>
 <translation id="1396114365388024581">listă de file</translation>
 <translation id="1439316808600711881">regiune</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Toate semnele de punctuație</translation>
 <translation id="2119965627982867824">buton rotire</translation>
 <translation id="2121067395472282800">tastă de acces: <ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Schimbați tabelul Braille actual cu 6 puncte selectând o opțiune din lista de mai jos.</translation>
 <translation id="2169714232367507776">Dați clic pe elementul curent</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{paranteză închisă}few{# paranteze închise}other{# de paranteze închise}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Salt la elementul focalizabil următor</translation>
 <translation id="2770781857296573485">Trece la explorarea grupului</translation>
 <translation id="2777845298774924149">S-a ieșit</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Nu mai există elemente diferite.</translation>
 <translation id="2800780099804980316">Nu există un titlu de nivel 1 anterior.</translation>
 <translation id="2811204574343810641">Rând</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">casetă de selectare</translation>
 <translation id="3229375994964697375">Link accesat</translation>
 <translation id="323731244387692321">Deschideți ajutorul pentru tastatură ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Link accesat anterior</translation>
 <translation id="3286390186030710347">Glisor</translation>
 <translation id="3299925995433437805">Nu există un link accesat următor.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, casetă listă</translation>
 <translation id="3687295507293856493">Faceți o încercare la antetul coloanei pentru celula curentă</translation>
 <translation id="3692274950075847560">C:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Comenzi pentru vorbire</translation>
 <translation id="3716845769494773620">Mai multe linii</translation>
 <translation id="3731746171184829332">Nu există un titlu anterior.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">S-a ieșit din caseta de dialog.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Completare automată listă</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Video</translation>
 <translation id="3816633764618089385">Conținut media următor</translation>
 <translation id="3819376190738087562">Nu există puncte de accesare directă.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Folosiți opțiunile de mai jos pentru a personaliza ChromeVox. Modificările intră în vigoare imediat.</translation>
 <translation id="4271220233568730077">Expresia matematică următoare</translation>
 <translation id="4271521365602459209">Nu există alte rezultate.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Nu există un articol următor.</translation>
 <translation id="4289540628985791613">Prezentare generală</translation>
 <translation id="4300318234632215983">Anunță adresa URL la care trimite un link</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Harta clasică a tastelor</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{bară oblică spre dreapta}few{# bare oblice spre dreapta}other{# de bare oblice spre dreapta}}</translation>
 <translation id="4547556996012970016">Titlul de nivel 5 următor</translation>
-<translation id="4554899522007042510">Luminozitate <ph name="BRIGHTNESS" />%</translation>
 <translation id="4562381607973973258">Antet</translation>
 <translation id="4591507479202817876">, selectat</translation>
 <translation id="4597532268155981612">formular</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Explorator pentru comenzile de la tastatură în sistemul de operare Chrome</translation>
 <translation id="4763296182459741068">Încadrare jos</translation>
 <translation id="4763480195061959176">video</translation>
+<translation id="479989351350248267">căutați</translation>
 <translation id="481165870889056555">Anunță titlul paginii curente</translation>
 <translation id="4826415162591436065">Navigați înainte</translation>
 <translation id="4826604887384865800">Saltul următor</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Activați înregistrarea TTS</translation>
 <translation id="4877261390094455813">Introduceți o interogare de căutare.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Link intern</translation>
 <translation id="4953585991029886728">Câmp text de editare</translation>
 <translation id="4954534434583049121">Citatul anterior</translation>
-<translation id="4970377555447282413">Afișați o imagine mărită a conținutului paginii.</translation>
 <translation id="4973717656530883744">Min. <ph name="X" /></translation>
 <translation id="4973762002207131920">S-a comutat la <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milisecunde</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">secunde</translation>
 <translation id="867187640362843212">Titlu 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{bară verticală}few{# bare verticale}other{# de bare verticale}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Sistemul a fost actualizat. Vă recomandăm să îl reporniți.</translation>
 <translation id="8735450637152821465">S-a început selectarea</translation>
 <translation id="8743786158317878347">intrați în conținut structurat, cum ar fi tabelele</translation>
 <translation id="8747966237988593539">Listă ordonată</translation>

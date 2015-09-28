@@ -64,6 +64,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="2353140552984634198">Du kan trygt bruke denne datamaskinen med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Sist pålogget <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Hjelp og tilbakemelding</translation>
 <translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å gi oss tillatelse til å samle bruksstatistikk og programstopprapporter.</translation>
 <translation id="2512228156274966424">MERK: For å sikre at alle hurtigtastene er tilgjengelige, kan du konfigurere Chrome Eksternt skrivebord til «Åpne som vindu».</translation>
@@ -109,6 +110,7 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="3596628256176442606">Med denne tjenesten kan du motta innkommende tilkoblinger fra Chromoting-klienter.</translation>
 <translation id="3606997049964069799">Du er ikke logget på Chromium. Logg på, og prøv på nytt.</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
+<translation id="369442766917958684">Uten nett.</translation>
 <translation id="3776024066357219166">Chrome Eksternt skrivebord-økten din er avsluttet.</translation>
 <translation id="3785447812627779171">Chromoting
 Vert</translation>
@@ -183,6 +185,7 @@ skrivebord-vert</translation>
 <translation id="579702532610384533">Koble til på nytt</translation>
 <translation id="5843054235973879827">Hvorfor er dette trygt?</translation>
 <translation id="5859141382851488196">Nytt vindu</translation>
+<translation id="5885438903806970186">På nettet.</translation>
 <translation id="6001953797859482435">Alternativer for Chrome Eksternt skrivebord-vert</translation>
 <translation id="6011539954251327702">Med Chromoting kan du trygt dele datamaskinen din på nettet. Begge brukerne må kjøre Chromoting-appen, som er å finne på <ph name="URL" /></translation>
 <translation id="6040143037577758943">Lukk</translation>

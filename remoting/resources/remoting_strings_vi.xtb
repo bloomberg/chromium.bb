@@ -64,6 +64,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2353140552984634198">Bạn có thể truy cập an toàn vào máy tính này bằng Kết nối từ xa trên Chrome.</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
 <translation id="2366718077645204424">Không thể kết nối với máy chủ. Điều này có thể do cấu hình của mạng bạn đang sử dụng.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Nhìn thấy trực tuyến lần cuối <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Trợ giúp và phản hồi</translation>
 <translation id="2499160551253595098">Giúp chúng tôi cải tiến Chrome Remote Desktop bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="2512228156274966424">LƯU Ý: Nhằm đảm bảo rằng tất cả các phím tắt đều khả dụng, bạn có thể định cấu hình Chrome Remote Desktop để ‘Mở dưới dạng cửa sổ’.</translation>
@@ -109,6 +110,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="3596628256176442606">Dịch vụ này kích hoạt các kết nối đến từ ứng dụng khách kết nối từ xa trên Chrome.</translation>
 <translation id="3606997049964069799">Bạn chưa đăng nhập vào Chromium. Vui lòng đăng nhập và thử lại.</translation>
 <translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
+<translation id="369442766917958684">Ngoại tuyến.</translation>
 <translation id="3776024066357219166">Phiên Chrome Remote Desktop của bạn đã kết thúc.</translation>
 <translation id="3785447812627779171">Máy chủ kết nối từ xa
 trên Chrome</translation>
@@ -183,6 +185,7 @@ Remote Desktop</translation>
 <translation id="579702532610384533">Kết nối lại</translation>
 <translation id="5843054235973879827">Tại sao thao tác này lại an toàn?</translation>
 <translation id="5859141382851488196">Cửa sổ mới...</translation>
+<translation id="5885438903806970186">Trực tuyến.</translation>
 <translation id="6001953797859482435">Tùy chọn máy chủ Chrome Remote Desktop</translation>
 <translation id="6011539954251327702">Kết nối từ xa trên Chrome cho phép bạn chia sẻ máy tính của bạn một cách an toàn qua Web. Cả hai người dùng đều phải chạy ứng dụng Kết nối từ xa trên Chrome có thể tìm thấy tại <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Đóng</translation>

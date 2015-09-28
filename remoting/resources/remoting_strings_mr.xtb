@@ -64,6 +64,7 @@
 <translation id="2353140552984634198">Chromoting वापरून आपण या संगणकावर सुरक्षितरितीने प्रवेश करू शकता.</translation>
 <translation id="2359808026110333948">सुरू ठेवा</translation>
 <translation id="2366718077645204424">होस्‍टवर पोहोचण्‍यात अक्षम. हे बहुदा आपण वापरत असलेल्या नेटवर्कच्या कॉन्फिगरेशनमुळे झाले आहे.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  अंतिम अॉनलाइन पाहिले<ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">मदत आणि अभिप्राय</translation>
 <translation id="2499160551253595098">आम्हाला वापर आकडेवारी आणि क्रॅश अहवाल संकलित करण्‍यासाठी अनुमती देऊन आम्हाला Chrome दूरस्थ डेस्कटॉप सुधारण्यास मदत करा.</translation>
 <translation id="2512228156274966424">टीप: सर्व कीबोर्ड शॉर्टकट उपलब्ध असल्याचे सुनिश्चित करण्यासाठी, आपण ‘विंडो म्हणून उघडण्यासाठी’ Chrome दूरस्थ डेस्कटॉप कॉन्फिगर करू शकता.</translation>
@@ -109,6 +110,7 @@
 <translation id="3596628256176442606">ही सेवा Chromoting क्लायंटकडील येणारी कनेक्शन सक्षम करते.</translation>
 <translation id="3606997049964069799">आपण Chromium वर साइन इन केलेले नाही. कृपया साइन इन करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="3649256019230929621">विंडो लहान करा</translation>
+<translation id="369442766917958684">ऑफलाइन.</translation>
 <translation id="3776024066357219166">आपले Chrome दूरस्थ डेस्कटॉप सत्र समाप्त झाले आहे.</translation>
 <translation id="3785447812627779171">Chromoting
 होस्ट</translation>
@@ -183,6 +185,7 @@
 <translation id="579702532610384533">रीकनेक्ट करा</translation>
 <translation id="5843054235973879827">हे सुरक्षित का आहे?</translation>
 <translation id="5859141382851488196">नवीन विंडो…</translation>
+<translation id="5885438903806970186">ऑनलाइन.</translation>
 <translation id="6001953797859482435">Chrome दूरस्थ डेस्कटॉप होस्ट प्राधान्ये</translation>
 <translation id="6011539954251327702">Chromoting आपल्याला वेबवर आपला संगणक सुरक्षितपणे सामायिक करण्याची अनुमती देते. दोन्ही वापरकर्त्यांनी Chromoting अ‍ॅप चालविणे आवश्यक आहे, जो <ph name="URL" /> येथे आढळू शकतो.</translation>
 <translation id="6040143037577758943">बंद करा</translation>

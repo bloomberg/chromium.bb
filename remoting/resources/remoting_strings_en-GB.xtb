@@ -64,6 +64,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="2353140552984634198">You may securely access this computer using Chromoting.</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="2366718077645204424">Unable to reach the host. This is probably due to the configuration of the network you are using.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Last seen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Help &amp; feedback</translation>
 <translation id="2499160551253595098">Help us to improve Chrome Remote Desktop by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
@@ -109,6 +110,7 @@ For information about privacy, please see the Google Privacy Policy (http://goo.
 <translation id="3596628256176442606">This service enables incoming connections from Chromoting clients.</translation>
 <translation id="3606997049964069799">You are not signed in to Chromium. Please sign in and try again.</translation>
 <translation id="3649256019230929621">Minimise window</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
 <translation id="3785447812627779171">Chromoting
 Host</translation>
@@ -183,6 +185,7 @@ Desktop Host</translation>
 <translation id="579702532610384533">Reconnect</translation>
 <translation id="5843054235973879827">Why is this safe?</translation>
 <translation id="5859141382851488196">New window…</translation>
+<translation id="5885438903806970186">Online</translation>
 <translation id="6001953797859482435">Chrome Remote Desktop Host Preferences</translation>
 <translation id="6011539954251327702">Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Close</translation>

@@ -25,6 +25,7 @@
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">کلیک‌های خودکار</translation>
+<translation id="1950626184269948555">‏میان‌بر مدیر فعالیت‌ها تغییر کرده است. لطفاً به‌جای Shift+Esc از Search+Esc استفاده کنید.</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="1963814843110128691">در حال فرستادن $1 به $2</translation>
 <translation id="1969011864782743497">‏<ph name="DEVICE_NAME" /> (‏USB)</translation>
@@ -149,6 +150,7 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
 <translation id="6248847161401822652">‏برای خروج Control‏، Shift و Q را دو بار فشار دهید.</translation>
+<translation id="6287020362823083378">‏میان‌بر قفل صفحه تغییر کرده است. لطفاً به‌جای Ctrl+Shift+L از Search+L استفاده کنید.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> به <ph name="ROTATION" /> چرخانده شد</translation>
 <translation id="6359806961507272919">پیامک از <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">‏CAPS LOCK خاموش است</translation>

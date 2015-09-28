@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Proteggi te stesso e il tuo dispositivo da siti pericolosi</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, app web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Perfeziona</translation>
+<translation id="2315043854645842844">La selezione del certificato lato cliente non è supportata dal sistema operativo.</translation>
 <translation id="2316129865977710310">No, grazie</translation>
 <translation id="2321958826496381788">Trascina il cursore finché leggi il testo senza problemi. Il testo dovrebbe avere queste dimensioni minime quando tocchi due volte un paragrafo.</translation>
 <translation id="2343328333327081434">Installazione…</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3039671569659952257">Elimina cartella</translation>
 <translation id="3063601790762993062">Salva video</translation>
+<translation id="306566828762083630">Lo spazio di archiviazione del dispositivo è esaurito. Rimuovi altri contenuti multimediali per liberare spazio.</translation>
 <translation id="307329814453917357">Proponi di tradurre le pagine utilizzando Google Traduttore</translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
 <translation id="3090193911106258841">Accesso all'input audio e video in corso</translation>
@@ -182,6 +184,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4023950129927433024">Se hai dimenticato la passphrase, interrompi e reimposta la sincronizzazione tramite <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Mostra suggerimenti quando un indirizzo web non viene risolto o non è possibile stabilire una connessione</translation>
 <translation id="4056223980640387499">Seppia</translation>
+<translation id="4059119910594077751">Tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="4062305924942672200">Informazioni legali</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="4089831646916293264">Questa funzione potrebbe interferire con l'accesso ai servizi di dati premium forniti dal tuo operatore.</translation>
@@ -201,6 +204,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4297410240212242334">Separa schede e app</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
 <translation id="4333969446981951071">Se utilizzi questa applicazione, accetti i <ph name="BEGIN_LINK1" />Termini di servizio<ph name="END_LINK1" /> e l'<ph name="BEGIN_LINK2" />Informativa sulla privacy<ph name="END_LINK2" /> di Chrome.</translation>
+<translation id="4350413759959745971">Sposta pagine salvate</translation>
 <translation id="4351244548802238354">Chiudi finestra di dialogo</translation>
 <translation id="4357362091209756047">Non trovi il tuo dispositivo? <ph name="BEGIN_LINK1" />Esegui di nuovo la ricerca<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />richiedi assistenza<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Non controllati</translation>
@@ -216,6 +220,7 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4619298195800598081">Apri originale in nuova scheda</translation>
 <translation id="4645575059429386691">Gestito da un genitore</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> Preferiti eliminati</translation>
+<translation id="4665282149850138822">Il sito <ph name="NAME" /> è stato aggiunto alla schermata Home</translation>
 <translation id="4684427112815847243">Sincronizza tutto</translation>
 <translation id="4686372254213217147">Dimensione originale</translation>
 <translation id="4690286298542128877">Le schede verranno spostate in un selettore di schede all'interno di Chrome.</translation>
@@ -246,6 +251,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
+<translation id="509605886816275399">Salvare la pagina offline?</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5127805178023152808">La sincronizzazione è disattivata</translation>
 <translation id="5138299137310274655">Questa pagina è in <ph name="SOURCE_LANGUAGE" />. Tradurla in <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5302048478445481009">Lingua</translation>
 <translation id="5304593522240415983">Questo campo non può essere vuoto</translation>
 <translation id="5305985456140490686">Ultima sincronizzazione: <ph name="MINUTES" /> minuti fa</translation>
+<translation id="5308933389783727448">Cerca pagine salvate</translation>
 <translation id="5313967007315987356">Aggiungi sito</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="5323972449344932352">Avvia Chrome</translation>
@@ -408,6 +415,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="699220179437400583">Segnala automaticamente a Google dettagli dei possibili incidenti di sicurezza</translation>
 <translation id="6999892069268112724">Conferma account Google</translation>
 <translation id="7019652137705190998">Attiva la modalità in incognito per navigare in privato o accedere temporaneamente</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> scaricato</translation>
 <translation id="7026897394897382018">Attiva Risparmio dati</translation>
 <translation id="7029809446516969842">Password</translation>
 <translation id="7053983685419859001">Blocca</translation>
@@ -473,6 +481,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8026334261755873520">Cancella dati di navigazione</translation>
 <translation id="8035133914807600019">Nuova cartella…</translation>
 <translation id="8050319187894766337">Pag salvata offline. Memoria quasi piena.</translation>
+<translation id="8068648041423924542">Impossibile selezionare il certificato.</translation>
 <translation id="8069239273282989646">Dopo la compressione</translation>
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8084156870963450514">Esegui l'accesso per accedere a tutti i tuoi contenuti web da qualsiasi dispositivo</translation>
@@ -495,6 +504,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
 <translation id="8413385045638830869">Chiedi prima (opzione consigliata)</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
+<translation id="8429160401486700187">Elimina pagine salvate</translation>
 <translation id="8481940801237642152">La tua connessione a questo sito è privata, ma qualcuno in rete potrebbe riuscire a cambiare l'aspetto della pagina.</translation>
 <translation id="8497726226069778601">Qui non c'è ancora niente</translation>
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
@@ -534,6 +544,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">In attesa dei dettagli sui genitori.</translation>
 <translation id="8928220460877261598">Hai eseguito l'accesso a Chrome.</translation>
+<translation id="8934455786738644694">Trascina dall'alto e tocca il pulsante Indietro per uscire dalla modalità a schermo intero.</translation>
 <translation id="8941248009481596111">La tua connessione a questo sito è privata.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigazione inaccessibile: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9156605176886108508">Nessuna cartella di Preferiti</translation>
 <translation id="9192643434065497760">Per consentire l'accoppiamento, attiva il Bluetooth nelle <ph name="BEGIN_LINK" />impostazioni del dispositivo<ph name="END_LINK" />.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">Download di <ph name="FILE_NAME" /> non riuscito</translation>
 <translation id="932327136139879170">Home page</translation>
 <translation id="938850635132480979">Errore: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Nuova cartella</translation>

@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Неважећи унос</translation>
 <translation id="1082209053475788238">Нема претходног заглавља 6. нивоа.</translation>
 <translation id="1088219014394087294">Нема заглавља.</translation>
-<translation id="1092366490857960994">Измените текст, унос за број</translation>
 <translation id="1106741348836243114">Укључивање или искључивање звучних повратних информација (звучна обавештења).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Колекција <ph name="TAG" /> са <ph name="NUM" /> ставке(и)</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Помоћ за тастатуру</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, комбиновани оквир</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, ставка менија, са подменијем</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Прилагођено</translation>
 <translation id="1188858454923323853">комплементарно</translation>
 <translation id="1206619573307042055">покретни текст</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Удесно</translation>
 <translation id="136718599399906424">Следећи ред табеле</translation>
 <translation id="1383876407941801731">Претражи</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Притисните enter да бисте прихватили или escape да бисте отказали, стрелицу надоле за следеће и стрелицу нагоре за претходно.</translation>
 <translation id="1396114365388024581">листа картица</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Сва интерпункција</translation>
 <translation id="2119965627982867824">дугме за промену вредности</translation>
 <translation id="2121067395472282800">приступни тастер:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Промените актуелну табелу Брајеве азбуке са 6 тачака тако што ћете изабрати опцију са листе у наставку.</translation>
 <translation id="2169714232367507776">Клик на актуелну ставку</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{затворена заграда}one{# затворена заграда}few{# затворене заграде}other{# затворених заграда}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Прелазак на следећу ставку која може да се фокусира</translation>
 <translation id="2770781857296573485">Улазак у истраживање група</translation>
 <translation id="2777845298774924149">Изашли сте</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Нема више различитих елемената.</translation>
 <translation id="2800780099804980316">Нема претходног заглавља 1. нивоа.</translation>
 <translation id="2811204574343810641">Ред</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">поље за потврду</translation>
 <translation id="3229375994964697375">Посећени линк</translation>
 <translation id="323731244387692321">Отварање помоћи за ChromeVox тастатуру</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Претходни посећени линк</translation>
 <translation id="3286390186030710347">Клизач</translation>
 <translation id="3299925995433437805">Нема следећег посећеног линка.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, оквир листе</translation>
 <translation id="3687295507293856493">Предвиђање наслова колоне актуелне ћелије</translation>
 <translation id="3692274950075847560">П:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Контролисање говора</translation>
 <translation id="3716845769494773620">Вишелинијско</translation>
 <translation id="3731746171184829332">Нема претходног заглавља.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Изашли сте из дијалога.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}few{#}other{#}}</translation>
 <translation id="3801735343383419236">Аутоматско довршавање листе</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Видео</translation>
 <translation id="3816633764618089385">Следећа медијска датотека</translation>
 <translation id="3819376190738087562">Нема прелазака.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Користите доленаведене опције да бисте прилагодили ChromeVox. Промене одмах ступају на снагу.</translation>
 <translation id="4271220233568730077">Следећи математички израз</translation>
 <translation id="4271521365602459209">Нема више резултата.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Нема следећег чланка.</translation>
 <translation id="4289540628985791613">Преглед</translation>
 <translation id="4300318234632215983">Објављивање URL-а иза линка</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Класична мапа тастера</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{коса црта}one{# коса црта}few{# косе црте}other{# косих црта}}</translation>
 <translation id="4547556996012970016">Следеће заглавље 5. нивоа</translation>
-<translation id="4554899522007042510">Осветљеност у процентима: <ph name="BRIGHTNESS" /></translation>
 <translation id="4562381607973973258">Заглавље</translation>
 <translation id="4591507479202817876">, изабрано</translation>
 <translation id="4597532268155981612">образац</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Истраживач Chrome ОС тастатуре</translation>
 <translation id="4763296182459741068">Пребачено на дно</translation>
 <translation id="4763480195061959176">видео</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">Објављивање наслова актуелне странице</translation>
 <translation id="4826415162591436065">Кретање унапред</translation>
 <translation id="4826604887384865800">Следећи прелазак</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Омогућавање TTS евидентирања</translation>
 <translation id="4877261390094455813">Унесите упит за претрагу.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Интерни линк</translation>
 <translation id="4953585991029886728">Измена текста</translation>
 <translation id="4954534434583049121">Претходни издвојени цитат</translation>
-<translation id="4970377555447282413">Прикажи увећани приказ садржаја странице.</translation>
 <translation id="4973717656530883744">Најмање <ph name="X" /></translation>
 <translation id="4973762002207131920">Пребачено је на <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">милисекунде</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">секундe</translation>
 <translation id="867187640362843212">Заглавље 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{усправна црта}one{# усправна црта}few{# усправне црте}other{# усправних црта}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">Систем је ажуриран. Препоручујемо вам поновно покретање.</translation>
 <translation id="8735450637152821465">Почетак избора</translation>
 <translation id="8743786158317878347">уђите у структурирани садржај, попут табела</translation>
 <translation id="8747966237988593539">Уређена листа</translation>

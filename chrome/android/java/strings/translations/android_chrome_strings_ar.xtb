@@ -79,6 +79,7 @@
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">تحسين</translation>
+<translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
 <translation id="2321958826496381788">يمكنك سحب شريط التمرير حتى تتمكن من قراءة هذا النص بسهولة. يجب أن يظهر النص بهذا الحجم على الأقل بعد النقر مرتين على إحدى الفقرات.</translation>
 <translation id="2343328333327081434">جارٍ التثبيت...</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3039671569659952257">حذف مجلد</translation>
 <translation id="3063601790762993062">حفظ الفيديو</translation>
+<translation id="306566828762083630">سعة التخزين لجهازك ممتلئة. يُرجى إزالة الوسائط الأخرى لتوفير مساحة.</translation>
 <translation id="307329814453917357">‏عرض ترجمة الصفحات باستخدام ترجمة Google.</translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="3090193911106258841">جارٍ الوصول إلى إدخال الصوت والفيديو</translation>
@@ -180,6 +182,7 @@
 <translation id="4023950129927433024">‏إذا كنت قد نسيت عبارة المرور، يمكنك إيقاف المزامنة وإعادة ضبطها عبر <ph name="BEGIN_LINK" />لوحة تحكم Google<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">عرض اقتراحات عند تعذر فتح عنوان ويب أو تعذر إجراء اتصال</translation>
 <translation id="4056223980640387499">بني داكن</translation>
+<translation id="4059119910594077751">المس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="4062305924942672200">المعلومات القانونية</translation>
 <translation id="4084682180776658562">إشارة</translation>
 <translation id="4089831646916293264">قد تتداخل هذه الميزة مع إمكانية الوصول إلى خدمات البيانات المتميزة التي يقدّمها مشغّل شبكة الجوال.</translation>
@@ -199,6 +202,7 @@
 <translation id="4297410240212242334">فصل علامات التبويب والتطبيقات</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
 <translation id="4333969446981951071">‏باستخدامك هذا التطبيق، توافق على <ph name="BEGIN_LINK1" />بنود خدمة<ph name="END_LINK1" /> Chrome و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" />.</translation>
+<translation id="4350413759959745971">نقل الصفحات المحفوظة</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4357362091209756047">ألا ترى جهازك؟ <ph name="BEGIN_LINK1" />ابحث مرة أخرى<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />احصل على مساعدة<ph name="END_LINK2" /> .</translation>
 <translation id="4376501731284077108">غير مُتحكم فيه</translation>
@@ -214,6 +218,7 @@
 <translation id="4619298195800598081">فتح الصورة الأصلية بتبويب جديد</translation>
 <translation id="4645575059429386691">يديره والداك</translation>
 <translation id="4663756553811254707">تم حذف <ph name="NUMBER_OF_BOOKMARKS" /> من الإشارات المرجعية</translation>
+<translation id="4665282149850138822">تمت إضافة <ph name="NAME" /> إلى صفحتك الرئيسية</translation>
 <translation id="4684427112815847243">مزامنة كل شيء</translation>
 <translation id="4686372254213217147">الحجم الأصلي</translation>
 <translation id="4690286298542128877">‏سيتم نقل علامات التبويب إلى مبدّل علامات التبويب في Chrome.</translation>
@@ -244,6 +249,7 @@
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
+<translation id="509605886816275399">حفظ هذه الصفحة بلا اتصال؟</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="5127805178023152808">المزامنة معطلة</translation>
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" /> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
@@ -263,6 +269,7 @@
 <translation id="5302048478445481009">اللغة</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
 <translation id="5305985456140490686">آخر مزامنة: قبل <ph name="MINUTES" /> من الدقائق</translation>
+<translation id="5308933389783727448">البحث في الصفحات المحفوظة</translation>
 <translation id="5313967007315987356">إضافة موقع ويب</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5323972449344932352">‏تشغيل Chrome</translation>
@@ -406,6 +413,7 @@
 <translation id="699220179437400583">‏إبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة</translation>
 <translation id="6999892069268112724">‏تأكيد حساب Google</translation>
 <translation id="7019652137705190998">الانتقال إلى وضع التصفُّح المتخفّي للتصفح بشكل خاص أو سَجّل الدخول مؤقتًا</translation>
+<translation id="7021515813996758557">تم تنزيل <ph name="FILE_NAME" /></translation>
 <translation id="7026897394897382018">تمكين ميزة توفير البيانات</translation>
 <translation id="7029809446516969842">كلمات المرور</translation>
 <translation id="7053983685419859001">منع</translation>
@@ -471,6 +479,7 @@
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8035133914807600019">مجلد جديد...</translation>
 <translation id="8050319187894766337">حفظت صفحة بلا اتصال. سعة ممتلئة.</translation>
+<translation id="8068648041423924542">يتعذر تحديد الشهادة.</translation>
 <translation id="8069239273282989646">بعد الضغط</translation>
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8084156870963450514">سجّل الدخول للوصول إلى برامج الويب من أي جهاز.</translation>
@@ -493,6 +502,7 @@
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
 <translation id="8413385045638830869">السؤال أولاً (موصى به)</translation>
 <translation id="8428213095426709021">إعدادات</translation>
+<translation id="8429160401486700187">حذف الصفحات المحفوظة</translation>
 <translation id="8481940801237642152">إن اتصالك بهذا الموقع له خصوصية، لكن قد يتمكن أحد الأشخاص على هذه الشبكة من تغيير مظهر الصفحة.</translation>
 <translation id="8497726226069778601">لا يوجد شيء هنا... حتى الآن</translation>
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
@@ -532,6 +542,7 @@
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8920114477895755567">الانتظار للحصول على تفاصيل الآباء</translation>
 <translation id="8928220460877261598">‏تم تسجيل دخولك إلى Chrome الآن.</translation>
+<translation id="8934455786738644694">اسحب من الجزء العلوي والمس زر الرجوع للخروج من وضع ملء الشاشة.</translation>
 <translation id="8941248009481596111">إن اتصالك بهذا الموقع له خصوصية.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">التنقل غير قابل للوصول: <ph name="URL" /></translation>
@@ -551,6 +562,7 @@
 <translation id="9156605176886108508">ليس هناك أي مجلدات للإشارات المرجعية</translation>
 <translation id="9192643434065497760">شغّل البلوتوث من <ph name="BEGIN_LINK" />إعدادات الجهاز<ph name="END_LINK" /> للسماح بالإقران.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">أخفق تنزيل <ph name="FILE_NAME" /></translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>
 <translation id="938850635132480979">الخطأ: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">مجلد جديد</translation>

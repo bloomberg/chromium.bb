@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Ograniczenie czasu, przez który użytkownik uwierzytelniony za pomocą SAML może logować się offline</translation>
 <translation id="1283072268083088623">Pozwala określić schematy uwierzytelniania HTTP obsługiwane w <ph name="PRODUCT_NAME" />. Możliwe wartości to „podstawowe”, „podsumowanie”, „NTLM” i „negocjacja”. Poszczególne wartości rozdziel przecinkami. Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
+<translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
 <translation id="1310699457130669094">W tym miejscu możesz podać URL pliku PAC serwera proxy. Ta zasada obowiązuje tylko po wybraniu ręcznego konfigurowania ustawień proxy za pomocą opcji „Wybierz sposób określenia ustawień serwera proxy”. Szczegółowe przykłady można znaleźć na  <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1313457536529613143">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu.
 
@@ -80,6 +81,13 @@
           Gdy ją ustawisz, użytkownicy mogą ją chwilowo zastąpić, włączając lub wyłączając tryb wysokiego kontrastu. Wybór użytkownika nie jest jednak trwały i wartość domyślna jest przywracana po ponownym wyświetleniu ekranu logowania lub wtedy, gdy użytkownik przez minutę będzie nieaktywny na tym ekranie.
 
           Jeśli zasada pozostanie nieustawiona, po pierwszym wyświetleniu ekranu logowania tryb wysokiego kontrastu jest wyłączony. Użytkownicy mogą go w każdej chwili włączyć lub wyłączyć i jego stan na ekranie logowania jest trwały dla wszystkich użytkowników.</translation>
+<translation id="1468707346106619889">Jeśli ta zasada ma wartość „true”, ujednolicony pulpit jest dozwolony i włączony
+      domyślnie, co umożliwia wyświetlanie jednej aplikacji na wielu monitorach.
+      Użytkownik może wyłączyć ujednolicony pulpit na poszczególnych
+      monitorach, odznaczając go w ustawieniach wyświetlania.
+
+      Jeśli ta zasada ma wartość „false” lub nie jest ustawiona,
+      ujednolicony pulpit jest wyłączony i użytkownik nie może go włączyć.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Pozwala określić w milisekundach okres wysyłania do usługi zarządzania urządzeniem zapytań o zasady dotyczące urządzeń.
 
@@ -278,6 +286,7 @@
 <translation id="2518231489509538392">Zezwalaj na odtwarzanie dźwięku</translation>
 <translation id="2521581787935130926">Pokaż skróty aplikacji na pasku zakładek</translation>
 <translation id="2529700525201305165">Określ użytkowników, którzy mogą logować się do <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfiguruj listę aplikacji i rozszerzeń, których instalacja jest wymuszana</translation>
 <translation id="253135976343875019">Opóźnienie ostrzeżenia o bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2552966063069741410">Strefa czasowa</translation>
 <translation id="2571066091915960923">Włącza i wyłącza serwer proxy kompresowania danych i uniemożliwia użytkownikom zmienianie tego ustawienia.
@@ -350,6 +359,7 @@
 
           ExtensionInstallBlacklist ma pierwszeństwo przed tą zasadą. Oznacza to, że rozszerzenie z czarnej listy nie zostanie zainstalowane, nawet jeśli pochodzi ze strony wymienionej w tej zasadzie.</translation>
 <translation id="2824715612115726353">Włącz tryb incognito</translation>
+<translation id="2850122204195089673">Udostępnij ujednolicony pulpit i włącz go domyślnie</translation>
 <translation id="285480231336205327">Włącz tryb wysokiego kontrastu</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>

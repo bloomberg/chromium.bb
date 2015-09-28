@@ -26,6 +26,7 @@
 Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="1882897271359938046">Copiando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
+<translation id="1950626184269948555">Se modificó la combinación de teclas del Administrador de tareas. Usa Buscar+Esc en lugar de Mayúscula+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">Transmitiendo $1 a $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Presiona Control+Mayús+Q dos veces para salir.</translation>
+<translation id="6287020362823083378">Se modificó la combinación de teclas para bloquear la pantalla. Use Buscar+L en lugar de Ctrl+Mayúscula+L.</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> se giró a <ph name="ROTATION" />.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">El bloqueo de mayúsculas está desactivado.</translation>

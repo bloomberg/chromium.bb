@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">ഇൻപുട്ട് അസാധുവാണ്</translation>
 <translation id="1082209053475788238">മുൻ നില 6 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="1088219014394087294">ശീർഷകങ്ങളൊന്നുമില്ല.</translation>
-<translation id="1092366490857960994">വാചകം എഡിറ്റുചെയ്യുക, നമ്പർ എൻട്രി</translation>
 <translation id="1106741348836243114">ശബ്‌ദ ഫീഡ്‌ബാക്ക് (ഇയർകോൺസ്) ഓണാക്കുക അല്ലെങ്കിൽ ഓഫാക്കുക.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724"><ph name="NUM" /> ഇനങ്ങളുള്ള <ph name="TAG" /> ശേഖരം</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">കീബോർഡ് സഹായം</translation>
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, കോംബോ ബോക്സ്</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, ഉപമെനു ഉള്ള മെനു ഇനം</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">ഇഷ്ടാനുസൃതം</translation>
 <translation id="1188858454923323853">കോംപ്ലിമെന്ററി</translation>
 <translation id="1206619573307042055">മാർക്യൂ</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">ശരി</translation>
 <translation id="136718599399906424">അടുത്ത പട്ടിക നിര</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">അംഗീകരിക്കുന്നതിന് എന്ററും റദ്ദാക്കുന്നതിന് എസ്‌കേപ്പും അടുത്തതിനായി താഴേക്കും മുമ്പത്തേതിനായി മുകളിലേക്കും അമർത്തുക.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">എല്ലാ വിരാമചിഹ്നങ്ങളും</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">ആക്‌സസ്സ് കീ:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">ചുവടെയുള്ള ലിസ്റ്റിൽ നിന്ന് ഒരു ഓപ്‌ഷൻ തിരഞ്ഞെടുത്തുകൊണ്ട് നിലവിലുള്ള 6 ഡോട്ട് ബ്രെയ്‌ലി പട്ടിക മാറ്റുക.</translation>
 <translation id="2169714232367507776">നിലവിലെ ഇനത്തിൽ ക്ലിക്കുചെയ്യുക</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ക്ലോസ് പരാന്തിസിസ്}other{# ക്ലോസ് പരാന്തിസിസുകൾ}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">ഫോക്കസ് ചെയ്യാനാകുന്ന അടുത്ത ഇനത്തിലേക്ക് പോകുക</translation>
 <translation id="2770781857296573485">ഗ്രൂപ്പ് പര്യവേക്ഷണം നൽകുക</translation>
 <translation id="2777845298774924149">പുറത്തുകടന്നു</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">മറ്റ് വ്യത്യസ്‌ത ഘടകങ്ങൾ ഒന്നുമില്ല.</translation>
 <translation id="2800780099804980316">മുൻ നില 1 ശീർഷകം ഒന്നുമില്ല.</translation>
 <translation id="2811204574343810641">വരി</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">സന്ദർശിച്ച ലിങ്ക്</translation>
 <translation id="323731244387692321">ChromeVox കീ‌ബോർഡ് സഹായം തുറക്കുക</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">സന്ദർശിച്ച മുമ്പത്തെ ലിങ്ക്</translation>
 <translation id="3286390186030710347">സ്ലൈഡർ</translation>
 <translation id="3299925995433437805">സന്ദർശിച്ച അടുത്ത ലിങ്കൊന്നുമില്ല.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755"><ph name="VALUE" />, ലിസ്റ്റ് ബോക്സ്</translation>
 <translation id="3687295507293856493">നിലവിലെ സെല്ലിന്റെ നിര ശീർഷകത്തിൽ ഒരു ഊഹം നടത്തുക</translation>
 <translation id="3692274950075847560">തി:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">സംഭാഷണ നിയന്ത്രണം</translation>
 <translation id="3716845769494773620">ഒന്നിലധികം രേഖകൾ</translation>
 <translation id="3731746171184829332">മുൻ തലക്കെട്ടൊന്നുമില്ല.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">ഡയലോഗിൽ നിന്ന് പുറത്തുകടന്നു.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}other{#}}</translation>
 <translation id="3801735343383419236">യാന്ത്രികപൂർത്തീകരണം ലിസ്റ്റ്</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3816633764618089385">അടുത്ത മീഡിയ</translation>
 <translation id="3819376190738087562">ജംപുകൾ ഒന്നുമില്ല.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">ChromeVox ഇഷ്ടാനുസൃതമാക്കുന്നതിന് ചുവടെയുള്ള ഓപ്ഷനുകൾ ഉപയോഗിക്കുക. മാറ്റങ്ങൾ പെട്ടെന്ന് പ്രാബല്യത്തിൽ വരും.</translation>
 <translation id="4271220233568730077">അടുത്ത മാത്ത്</translation>
 <translation id="4271521365602459209">കൂടുതൽ ഫലങ്ങളൊന്നുമില്ല.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">അടുത്ത ലേഖനമൊന്നുമില്ല.</translation>
 <translation id="4289540628985791613">അവലോകനം</translation>
 <translation id="4300318234632215983">ഒരു ലിങ്കിന് പുറകിലുള്ള URL അറിയിക്കുക</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">ക്ലാസിക്ക് കീമാപ്പ്</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{സ്ലാഷ്}other{# സ്ലാഷുകൾ}}</translation>
 <translation id="4547556996012970016">അടുത്ത നില 5 ശീർഷകം</translation>
-<translation id="4554899522007042510">തെളിച്ചം <ph name="BRIGHTNESS" /> ശതമാനം</translation>
 <translation id="4562381607973973258">ശീർഷകം</translation>
 <translation id="4591507479202817876">, തിരഞ്ഞെടുത്തു</translation>
 <translation id="4597532268155981612">ഫോം</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">ChromeOS കീബോർഡ് എക്സ്പ്ലോറർ</translation>
 <translation id="4763296182459741068">താഴേയ്‌ക്ക് റാപ്പുചെ‌യ്‌തു</translation>
 <translation id="4763480195061959176">വീഡിയോ</translation>
+<translation id="479989351350248267">search</translation>
 <translation id="481165870889056555">നിലവിലെ പേജിന്റെ ശീർഷകം അറിയിക്കുക</translation>
 <translation id="4826415162591436065">മുന്നോട്ട് നാവിഗേറ്റ് ചെയ്യുക</translation>
 <translation id="4826604887384865800">അടുത്ത ജമ്പ്</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">TTS ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4877261390094455813">ഒരു തിരയൽ ചോദ്യം നൽകുക.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">ആന്തരിക ലിങ്ക്</translation>
 <translation id="4953585991029886728">വാചകം എഡിറ്റുചെയ്യുക</translation>
 <translation id="4954534434583049121">മുൻ ബ്ലോക്ക് ഉദ്ധരണി</translation>
-<translation id="4970377555447282413">പേജ് ഉള്ളടക്കത്തിന്റെ വിപുലീകൃത കാഴ്‌ച കാണിക്കുക.</translation>
 <translation id="4973717656530883744">കുറഞ്ഞത് <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> എന്നതിലേക്ക് മാറി.</translation>
 <translation id="4975416682604111799">മില്ലിസെക്കൻഡ്</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">സെക്കൻഡ്</translation>
 <translation id="867187640362843212">ശീർഷകം 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{പൈപ്പ്}other{# ലംബമായ പൈപ്പുകൾ}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">സിസ്റ്റം അപ്‌ഡേറ്റുചെയ്‌തു.  പുനരാരംഭിക്കൽ ശുപാർശ ചെയ്‌തു.</translation>
 <translation id="8735450637152821465">തിരഞ്ഞെടുക്കൽ ആരംഭിക്കുക</translation>
 <translation id="8743786158317878347">പട്ടികകൾ പോലുള്ള ഘടനാപരമായ ഉള്ളടക്കം നൽകുക</translation>
 <translation id="8747966237988593539">ക്രമപ്പെടുത്തിയ ലിസ്റ്റ്</translation>

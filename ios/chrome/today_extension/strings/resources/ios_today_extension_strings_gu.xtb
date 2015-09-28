@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
+<translation id="1203161113033984675">BEGIN_LINK વાસ્તવિક વેબ END_LINK ચાલુ છે.</translation>
+<translation id="1418775127135578229">કૉપિ કરેલ લિંક ખોલો</translation>
+<translation id="1487576085940433465">BEGIN_LINK નજીકનાં ઑબ્જેક્ટ્સ, વેબપૃષ્ઠોને બ્રોડકાસ્ટ કરી રહ્યાં છે END_LINK. આ પરિણામોની ગુણવત્તા સુધારવા Google સેવાનો ઉપયોગ કરવામાં આવશે.</translation>
+<translation id="2026797012398135445">સક્ષમ કરવા માટે તમારા ઉપકરણને અનલૉક કરો.</translation>
 <translation id="2316129865977710310">નહીં, આભાર</translation>
 <translation id="3435896845095436175">સક્ષમ કરો</translation>
 <translation id="4394049700291259645">અક્ષમ કરો</translation>
 <translation id="5301954838959518834">બરાબર, સમજાઇ ગયું</translation>
+<translation id="5508399372551154686">BEGIN_LINK વાસ્તવિક વેબ END_LINK બંધ છે.</translation>
+<translation id="5815960189179094695">BEGIN_LINK વાસ્તવિક વેબ END_LINK ઑબ્જેક્ટ્સ માટે સ્કેન કરી રહ્યાં છે...</translation>
 <translation id="6196207969502475924">વૉઇસ શોધ</translation>
+<translation id="6722203589267124394">નજીકના BEGIN_LINKવાસ્તવિક વેબEND_LINK ઑબ્જેક્ટ્સ જોવા માટે Bluetooth ચાલુ કરો.</translation>
 <translation id="7554791636758816595">નવું ટૅબ</translation>
+<translation id="7588950540487816470">વાસ્તવિક વેબ</translation>
+<translation id="8800384372516194324">વધુ પરિણામો દર્શાવો</translation>
 </translationbundle>

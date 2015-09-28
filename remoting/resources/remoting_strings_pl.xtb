@@ -64,6 +64,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="2353140552984634198">Możesz bezpiecznie korzystać z tego komputera przez Chromoting.</translation>
 <translation id="2359808026110333948">Kontynuuj</translation>
 <translation id="2366718077645204424">Nie można połączyć się z hostem. Problem prawdopodobnie wynika z konfiguracji Twojej sieci.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Ostatnio online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2499160551253595098">Pomóż nam udoskonalić Pulpit zdalny Chrome, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="2512228156274966424">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Pulpit zdalny Chrome na „Otwórz jako okno”.</translation>
@@ -109,6 +110,7 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="3596628256176442606">Ta usługa umożliwia obsługę połączeń przychodzących z klientów funkcji Chromoting.</translation>
 <translation id="3606997049964069799">Nie jesteś zalogowany do Chromium. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="3649256019230929621">Minimalizuj okno</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
 <translation id="3785447812627779171">Host funkcji
 Chromoting</translation>
@@ -183,6 +185,7 @@ zdalnego Chrome</translation>
 <translation id="579702532610384533">Połącz ponownie</translation>
 <translation id="5843054235973879827">Dlaczego to bezpieczne?</translation>
 <translation id="5859141382851488196">Nowe okno...</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Ustawienia hosta Pulpitu zdalnego Chrome</translation>
 <translation id="6011539954251327702">Chromoting pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Chromoting, którą można znaleźć na <ph name="URL" />.</translation>
 <translation id="6040143037577758943">Zamknij</translation>

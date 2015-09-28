@@ -45,6 +45,7 @@
 
           If this policy is left unset, all four schemes will be used.</translation>
 <translation id="1297182715641689552">Use a .pac proxy script</translation>
+<translation id="1304973015437969093">Extension/App IDs and update URLs to be silently installed</translation>
 <translation id="1310699457130669094">You can specify a URL to a proxy .pac file here.
 
           This policy only takes effect if you have selected manual proxy settings at 'Choose how to specify proxy server settings'.
@@ -101,6 +102,13 @@
           If you set this policy, users can temporarily override it by enabling or disabling high contrast mode. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode at any time and its status on the login screen is persisted between users.</translation>
+<translation id="1468707346106619889">If this policy is set to true, Unified Desktop is allowed and
+      enabled by default, which allows applications to span multiple displays.
+      The user may disable Unified Desktop for individual displays by unticking
+      it in the display settings.
+
+      If this policy is set to false or unset, Unified Desktop will be
+      disabled. In this case, the user cannot enable the feature.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Specifies the period in milliseconds at which the device management service is queried for device policy information.
 
@@ -335,6 +343,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2518231489509538392">Allow playing audio</translation>
 <translation id="2521581787935130926">Show the apps shortcut in the bookmark bar</translation>
 <translation id="2529700525201305165">Restrict which users are allowed to sign in to <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Configure the list of force-installed apps and extensions</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
 <translation id="2552966063069741410">Timezone</translation>
 <translation id="2571066091915960923">Enable or disable the data compression proxy and prevent users from changing this setting.
@@ -415,6 +424,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           ExtensionInstallBlacklist takes precedence over this policy. That is, an extension on the blacklist won't be installed, even if it happens from a site on this list.</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
+<translation id="2850122204195089673">Make Unified Desktop available and turn on by default.</translation>
 <translation id="285480231336205327">Enable high contrast mode</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2877225735001246144">Disable CNAME lookup when negotiating Kerberos authentication</translation>

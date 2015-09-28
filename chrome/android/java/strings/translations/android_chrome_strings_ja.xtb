@@ -79,6 +79,7 @@
 <translation id="219985413780390209">危険なサイトからユーザーとデバイスを保護する</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" /> はウェブアプリです（<ph name="APP_URL" />）。</translation>
 <translation id="2268044343513325586">絞り込み</translation>
+<translation id="2315043854645842844">オペレーティング システムでサポートされていないため、クライアント側で証明書を選択することはできません。</translation>
 <translation id="2316129865977710310">いいえ</translation>
 <translation id="2321958826496381788">読みやすくなるまでスライダをドラッグしてください。段落をダブルタップするとテキストがこれより大きくなります。</translation>
 <translation id="2343328333327081434">インストール中...</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
 <translation id="3039671569659952257">フォルダを削除</translation>
 <translation id="3063601790762993062">動画を保存</translation>
+<translation id="306566828762083630">デバイスのストレージがいっぱいです。他のメディアを削除して容量を空けてください。</translation>
 <translation id="307329814453917357">Google 翻訳を使ってページを翻訳するかどうかを尋ねます</translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
 <translation id="3090193911106258841">音声 / ビデオ入力にアクセスしています</translation>
@@ -182,6 +184,7 @@
 <translation id="4023950129927433024">パスフレーズをお忘れの場合は、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />から同期の停止とリセットを行ってください。</translation>
 <translation id="4042870126885713738">ウェブアドレスが解決されない場合や接続を確立できない場合にアドバイスを表示します</translation>
 <translation id="4056223980640387499">セピア</translation>
+<translation id="4059119910594077751">全画面表示を終了するには戻るボタンをタップします。</translation>
 <translation id="4062305924942672200">法的情報</translation>
 <translation id="4084682180776658562">ブックマーク</translation>
 <translation id="4089831646916293264">この機能により、携帯通信会社が提供するプレミアム データサービスの利用に問題が発生する可能性があります。</translation>
@@ -201,6 +204,7 @@
 <translation id="4297410240212242334">タブとアプリの分離</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4333969446981951071">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />に同意したことになります。</translation>
+<translation id="4350413759959745971">保存したページを移動</translation>
 <translation id="4351244548802238354">ダイアログを閉じる</translation>
 <translation id="4357362091209756047">デバイスが見つからない場合は、<ph name="BEGIN_LINK1" />もう一度検索<ph name="END_LINK1" />するか、<ph name="BEGIN_LINK2" />ヘルプ<ph name="END_LINK2" />をご覧ください。</translation>
 <translation id="4376501731284077108">管理対象外</translation>
@@ -216,6 +220,7 @@
 <translation id="4619298195800598081">元の画像を新しいタブで開く</translation>
 <translation id="4645575059429386691">保護者により管理されています</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> 件のブックマークを削除しました</translation>
+<translation id="4665282149850138822">「<ph name="NAME" />」がホーム画面に追加されました</translation>
 <translation id="4684427112815847243">すべてを同期する</translation>
 <translation id="4686372254213217147">元のサイズ</translation>
 <translation id="4690286298542128877">タブは Chrome 内のタブ切り替えに表示されます。</translation>
@@ -246,6 +251,7 @@
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5063480226653192405">使用状況</translation>
+<translation id="509605886816275399">このページをオフライン用に保存しますか？</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
 <translation id="5127805178023152808">同期は無効です</translation>
 <translation id="5138299137310274655"><ph name="SOURCE_LANGUAGE" />のページです。<ph name="TARGET_LANGUAGE" />に翻訳しますか？</translation>
@@ -265,6 +271,7 @@
 <translation id="5302048478445481009">言語</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
 <translation id="5305985456140490686">最終同期: <ph name="MINUTES" /> 分前</translation>
+<translation id="5308933389783727448">保存したページを検索</translation>
 <translation id="5313967007315987356">サイトを追加</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5323972449344932352">Chrome を起動</translation>
@@ -408,6 +415,7 @@
 <translation id="699220179437400583">セキュリティに関する事象についての詳細を Google に自動送信する</translation>
 <translation id="6999892069268112724">Google アカウントの確認</translation>
 <translation id="7019652137705190998">私的な閲覧や一時的なログインにシークレット モードを使用する</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> をダウンロードしました</translation>
 <translation id="7026897394897382018">データセーバーを有効にする</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7053983685419859001">ブロック</translation>
@@ -473,6 +481,7 @@
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8035133914807600019">新しいフォルダ...</translation>
 <translation id="8050319187894766337">オフライン保存完了（空き容量少）。</translation>
+<translation id="8068648041423924542">証明書を選択できません</translation>
 <translation id="8069239273282989646">圧縮後</translation>
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8084156870963450514">ログインすると、どのデバイスからもウェブ上の自分のデータにアクセスできます</translation>
@@ -495,6 +504,7 @@
 <translation id="8413126021676339697">全履歴を表示</translation>
 <translation id="8413385045638830869">最初に確認する（推奨）</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8429160401486700187">保存したページを削除</translation>
 <translation id="8481940801237642152">このサイトへの接続はプライベート接続です。ただし、ネットワーク上のユーザーがこのページのデザインを変更できる可能性はあります。</translation>
 <translation id="8497726226069778601">表示するものがまだありません</translation>
 <translation id="8514577642972634246">シークレット モードを開始</translation>
@@ -534,6 +544,7 @@
 <translation id="8912362522468806198">Google アカウントを使用</translation>
 <translation id="8920114477895755567">保護者の情報を待っています。</translation>
 <translation id="8928220460877261598">Chrome にログインしています。</translation>
+<translation id="8934455786738644694">全画面表示を終了するには、上からドラッグして、戻るボタンをタップします。</translation>
 <translation id="8941248009481596111">このサイトへの接続はプライベート接続です。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698"><ph name="URL" /> にアクセスできません</translation>
@@ -553,6 +564,7 @@
 <translation id="9156605176886108508">ブックマークフォルダはありません</translation>
 <translation id="9192643434065497760">ペア設定するには<ph name="BEGIN_LINK" />デバイスの設定<ph name="END_LINK" />で Bluetooth をオンにしてください。</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" /> をダウンロードできませんでした</translation>
 <translation id="932327136139879170">ホーム</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">新しいフォルダ</translation>

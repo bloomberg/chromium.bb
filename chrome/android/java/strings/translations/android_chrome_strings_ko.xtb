@@ -79,6 +79,7 @@
 <translation id="219985413780390209">위험 사이트로부터 사용자와 기기를 보호합니다.</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, 웹 앱. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">상세검색</translation>
+<translation id="2315043854645842844">클라이언트측 인증서 선택이 운영체제에서 지원되지 않습니다.</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="2321958826496381788">편하게 읽을 수 있을 때까지 슬라이더를 드래그하세요. 단락을 두 번 탭하면 텍스트가 이 이상의 크기로 표시됩니다.</translation>
 <translation id="2343328333327081434">설치 중...</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
 <translation id="3039671569659952257">폴더 삭제</translation>
 <translation id="3063601790762993062">동영상 저장</translation>
+<translation id="306566828762083630">기기 저장용량이 가득 찼습니다. 다른 미디어를 삭제하여 공간을 확보하세요.</translation>
 <translation id="307329814453917357">Google 번역을 사용하여 페이지를 번역할 것을 제안합니다.</translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
 <translation id="3090193911106258841">오디오 및 비디오 입력 장치에 액세스</translation>
@@ -182,6 +184,7 @@
 <translation id="4023950129927433024">암호을 잊어버린 경우 <ph name="BEGIN_LINK" />Google 대시보드<ph name="END_LINK" />에서 동기화를 중지하고 재설정하세요.</translation>
 <translation id="4042870126885713738">웹 주소가 확인되지 않거나 연결되지 않는 경우 추천 주소 표시</translation>
 <translation id="4056223980640387499">세피아</translation>
+<translation id="4059119910594077751">전체화면을 종료하려면 뒤로 버튼을 터치하세요.</translation>
 <translation id="4062305924942672200">법적 정보</translation>
 <translation id="4084682180776658562">북마크</translation>
 <translation id="4089831646916293264">이 기능을 사용하면 이동통신사에서 제공하는 프리미엄 데이터 서비스에 액세스하는 데 문제가 생길 수 있습니다.</translation>
@@ -201,6 +204,7 @@
 <translation id="4297410240212242334">탭과 앱 따로 표시</translation>
 <translation id="4307992518367153382">기본설정</translation>
 <translation id="4333969446981951071">이 애플리케이션을 사용하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하게 됩니다.</translation>
+<translation id="4350413759959745971">저장된 페이지 이동</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
 <translation id="4357362091209756047">기기가 표시되지 않나요? <ph name="BEGIN_LINK1" />다시 검색<ph name="END_LINK1" />하거나 <ph name="BEGIN_LINK2" />도움말을 확인<ph name="END_LINK2" />해 보세요.</translation>
 <translation id="4376501731284077108">제어되지 않음</translation>
@@ -216,6 +220,7 @@
 <translation id="4619298195800598081">새 탭에서 원본 이미지 열기</translation>
 <translation id="4645575059429386691">부모님이 관리합니다.</translation>
 <translation id="4663756553811254707">북마크 <ph name="NUMBER_OF_BOOKMARKS" />개 삭제됨</translation>
+<translation id="4665282149850138822"><ph name="NAME" />이(가) 메인 스크린에 추가됨</translation>
 <translation id="4684427112815847243">모두 동기화</translation>
 <translation id="4686372254213217147">원래 크기</translation>
 <translation id="4690286298542128877">탭이 Chrome 내부의 탭 전환으로 이동합니다.</translation>
@@ -246,6 +251,7 @@
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5063480226653192405">사용</translation>
+<translation id="509605886816275399">이 페이지를 오프라인에 저장할까요?</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5138299137310274655">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
@@ -265,6 +271,7 @@
 <translation id="5302048478445481009">언어</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
 <translation id="5305985456140490686">최근 동기화: <ph name="MINUTES" />분 전</translation>
+<translation id="5308933389783727448">저장된 페이지 검색</translation>
 <translation id="5313967007315987356">사이트 추가</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5323972449344932352">Chrome 실행</translation>
@@ -408,6 +415,7 @@
 <translation id="699220179437400583">발생 가능성이 있는 보안 문제의 세부정보를 자동으로 Google에 보고합니다.</translation>
 <translation id="6999892069268112724">Google 계정 확인</translation>
 <translation id="7019652137705190998">시크릿 모드를 사용하여 비공개로 탐색하거나 일시적으로 로그인</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" />(이)가 다운로드됨</translation>
 <translation id="7026897394897382018">데이터 세이버 사용</translation>
 <translation id="7029809446516969842">비밀번호</translation>
 <translation id="7053983685419859001">차단</translation>
@@ -473,6 +481,7 @@
 <translation id="8026334261755873520">인터넷 사용정보 삭제</translation>
 <translation id="8035133914807600019">새 폴더…</translation>
 <translation id="8050319187894766337">페이지 오프라인 저장, 저장용량 거의 참</translation>
+<translation id="8068648041423924542">인증서를 선택할 수 없습니다.</translation>
 <translation id="8069239273282989646">압축 후</translation>
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8084156870963450514">모든 기기에서 모든 웹 항목에 액세스하려면 로그인하세요.</translation>
@@ -495,6 +504,7 @@
 <translation id="8413126021676339697">방문 기록 전체 보기</translation>
 <translation id="8413385045638830869">우선 확인(권장)</translation>
 <translation id="8428213095426709021">설정</translation>
+<translation id="8429160401486700187">저장된 페이지 삭제</translation>
 <translation id="8481940801237642152">이 사이트에 대한 연결은 비공개지만 네트워크에 있는 다른 사람은 페이지 디자인을 변경할 수 있습니다.</translation>
 <translation id="8497726226069778601">아직 표시할 내용 없음</translation>
 <translation id="8514577642972634246">시크릿 모드로 들어가기</translation>
@@ -534,6 +544,7 @@
 <translation id="8912362522468806198">Google 계정</translation>
 <translation id="8920114477895755567">부모님의 세부정보를 기다리는 중</translation>
 <translation id="8928220460877261598">현재 Chrome에 로그인되어 있습니다.</translation>
+<translation id="8934455786738644694">전체화면을 종료하려면 상단에서 드래그하여 뒤로 버튼을 터치하세요.</translation>
 <translation id="8941248009481596111">이 사이트에 대한 연결은 비공개입니다.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">탐색할 수 없음: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@
 <translation id="9156605176886108508">북마크 폴더 없음</translation>
 <translation id="9192643434065497760"><ph name="BEGIN_LINK" />기기 설정<ph name="END_LINK" />에서 블루투스를 사용 설정하여 페어링을 허용하세요.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213"><ph name="FILE_NAME" />을(를) 다운로드하지 못함</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">새 폴더</translation>

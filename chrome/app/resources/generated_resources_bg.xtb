@@ -893,7 +893,6 @@
 <translation id="2279770628980885996">Възникна неочаквано състояние, докато сървърът се опитваше да изпълни заявката.</translation>
 <translation id="2280486287150724112">Дясно поле</translation>
 <translation id="2282146716419988068">Процес на графичния процесор</translation>
-<translation id="2282872951544483773">Експерименти, които не са налице</translation>
 <translation id="2283117145434822734">F6</translation>
 <translation id="2286454467119466181">Опростено</translation>
 <translation id="2287590536030307392">Изключване на всички безжични връзки.</translation>
@@ -1618,7 +1617,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3280237271814976245">&amp;Запазване като...</translation>
 <translation id="3280431534455935878">Подготвя се</translation>
 <translation id="3285322247471302225">Нов &amp;раздел</translation>
-<translation id="3286538390144397061">Рестартиране сега</translation>
 <translation id="3288047731229977326">Разширенията, които се изпълняват в режим за програмисти, могат да навредят на компютъра ви. Ако не сте програмист, за по-голяма безопасност трябва да деактивирате изпълнението им в този режим.</translation>
 <translation id="3289566588497100676">Лесно въвеждане на символи</translation>
 <translation id="3289856944988573801">За да проверите за актуализации, моля, използвайте Ethernet или Wi-Fi.</translation>
@@ -1902,7 +1900,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3643454140968246241">Синхронизират се <ph name="COUNT" /> файла...</translation>
 <translation id="3646789916214779970">Възстановяване на темата по подразбиране</translation>
 <translation id="3648460724479383440">Маркиран бутон за избор</translation>
-<translation id="3648607100222897006">Тези експериментални функции може да се променят, повредят или изчезнат по всяко време. Не даваме абсолютно никаква гаранция какво може да се случи, ако включите някоя от тях. Възможно е дори браузърът ви спонтанно да се самозапали. Шегата настрани, браузърът ви може да изтрие всичките ви данни или сигурността и поверителността ви може да бъдат компрометирани по неочаквани начини. Активираните от вас експерименти ще работят за всички потребители на този браузър. Моля, действайте внимателно.</translation>
 <translation id="3649138363871392317">Снимката бе направена</translation>
 <translation id="3650242103421962931">Линейно</translation>
 <translation id="3651020361689274926">Заявеният ресурс не съществува повече и няма адрес за препращане.  Очаква се това състояние да е постоянно.</translation>
@@ -2192,7 +2189,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="404493185430269859">Основна търсеща машина</translation>
 <translation id="4047112090469382184">Защо това е сигурно</translation>
 <translation id="4047345532928475040">Няма данни</translation>
-<translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
 <translation id="4052120076834320548">Миниатюрен</translation>
 <translation id="4054376378714379870">Активиране на потенциално натрапчивите защитни функции.</translation>
 <translation id="4055023634561256217">Изисква се да рестартирате устройството си, преди да може да бъде възстановено с Powerwash.</translation>
@@ -2342,7 +2338,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4269099019648381197">Активиране на опцията за заявка за сайтa за таблети в менюто „Настройки“.</translation>
 <translation id="4270393598798225102">Версия <ph name="NUMBER" /></translation>
 <translation id="4274187853770964845">Грешка при синхронизирането: Моля, спрете го и го стартирайте отново.</translation>
-<translation id="4275663329226226506">Медия</translation>
 <translation id="4275830172053184480">Рестартиране на устройството ви</translation>
 <translation id="4276796043975446927">Добре дошли в Chromebox за срещи</translation>
 <translation id="4278390842282768270">Разрешено</translation>
@@ -2685,7 +2680,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4793866834012505469">Повторно обучение на гласовия модел</translation>
 <translation id="479536056609751218">Уеб страница, само HTML</translation>
 <translation id="479555359673800162">Деактивиране на повторното удостоверяване за диспечера на паролите</translation>
-<translation id="4799797264838369263">Тази опция се контролира от корпоративно правило. Моля, свържете се с администратора си за още информация.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4801257000660565496">Създаване на преки пътища към приложението</translation>
 <translation id="4801448226354548035">Скриване на профилите</translation>
@@ -2958,7 +2952,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="5196716972587102051">2</translation>
 <translation id="5197255632782567636">Интернет</translation>
 <translation id="5197680270886368025">Синхронизирането завърши.</translation>
-<translation id="5199729219167945352">Експерименти</translation>
 <translation id="5204967432542742771">Въведете парола</translation>
 <translation id="5208988882104884956">С половин ширина</translation>
 <translation id="5209320130288484488">Няма намерени устройства</translation>
@@ -3570,7 +3563,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6056710589053485679">Нормално презареждане</translation>
 <translation id="6059232451013891645">Папка:</translation>
 <translation id="6059652578941944813">Йерархия на сертификатите</translation>
-<translation id="6060685159320643512">Внимавайте, тези експерименти може да са опасни</translation>
 <translation id="6062697480277116433">Използвате мобилни данни</translation>
 <translation id="6063810760121779748">Деактивиране на WebAudio</translation>
 <translation id="6065289257230303064">Атрибути за директорията на субекта на сертификата</translation>
@@ -3777,7 +3769,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6380224340023442078">Настройки за съдържанието...</translation>
 <translation id="6384275966486438344">Променете настройките си за търсене на: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Сайтовете могат да запазват и четат данни за „бисквитки“</translation>
-<translation id="6387478394221739770">Търсите интересни нови функции на Chrome? Изпробвайте бета канала на адрес chrome.com/beta.</translation>
 <translation id="6390799748543157332">Преглежданите от вас страници в този прозорец няма да се показват в историята на браузъра и няма да оставят на компютъра други следи, като „бисквитки“, след като затворите всички прозорци в режим като гост. Изтеглените от вас файлове обаче ще бъдат запазени.</translation>
 <translation id="6391538222494443604">Трябва да съществува директория за въвеждане.</translation>
 <translation id="6391832066170725637">Файлът или директорията не можаха да бъдат намерени.</translation>
@@ -3815,7 +3806,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6423731501149634044">Да се използва ли Acrobat Reader като визуализатор по подразбиране на PDF файлове?</translation>
 <translation id="6425092077175753609">Material</translation>
 <translation id="6426039856985689743">Деактивиране на мобилните данни</translation>
-<translation id="6426993025560594914">На платформата ви са налице всички експерименти!</translation>
 <translation id="642870617012116879">Този сайт опита да изтегли автоматично няколко файла.</translation>
 <translation id="6430814529589430811">ASCII с кодиране Base64, единичен сертификат</translation>
 <translation id="6431217872648827691">Всички данни бяха шифровани с паролата ви за Google на
@@ -4317,7 +4307,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7173828187784915717">Настройки за въвеждане на чуинг</translation>
 <translation id="7175353351958621980">Заредено от:</translation>
 <translation id="7177840076592118126">Използване на стабилна подредба на прозорците при общ преглед.</translation>
-<translation id="7179921470347911571">Стартиране отново сега</translation>
 <translation id="7180611975245234373">Опресняване</translation>
 <translation id="7180865173735832675">Персонализиране</translation>
 <translation id="7186088072322679094">Запазване в лентата с инструменти</translation>
@@ -4667,7 +4656,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="7668654391829183341">Неизвестно устройство</translation>
 <translation id="7671130400130574146">Използване на системната заглавна лента и контурите</translation>
 <translation id="7671576867600624">Технология:</translation>
-<translation id="7674629440242451245">Търсите интересни нови функции на Chrome? Изпробвайте канала за програмисти на адрес chrome.com/dev.</translation>
 <translation id="7676077734785147678">Разширения за редактори за методи на въвеждане (IME)</translation>
 <translation id="7681202901521675750">SIM картата е заключена. Моля, въведете ПИН. Оставащи опити: <ph name="TRIES_COUNT" /></translation>
 <translation id="76814018934986158">Връзката ви с този сайт не е поверителна, защото той зареди несигурен скрипт.</translation>
@@ -5339,7 +5327,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8639963783467694461">Настройки за автоматично попълване</translation>
 <translation id="8642171459927087831">Означение за достъп</translation>
 <translation id="8642947597466641025">Шрифтът на текста се уголемява</translation>
-<translation id="8647750283161643317">Възстановяване на всичко към стандартното състояние</translation>
 <translation id="8651324101757295372">Разговор с този човек</translation>
 <translation id="8651585100578802546">Принудително презареждане на тази страница</translation>
 <translation id="8652139471850419555">Предпочитани мрежи</translation>
@@ -5518,7 +5505,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="8895908457475309889">Информацията ви ще бъде премахната, когато излезете от профила си.</translation>
 <translation id="88986195241502842">Страница надолу</translation>
 <translation id="8898786835233784856">Избор на следващия раздел</translation>
-<translation id="889901481107108152">За съжаление този експеримент не се предлага за платформата ви.</translation>
 <translation id="8899285681604219177">Неподдържаните разширения са деактивирани</translation>
 <translation id="8899388739470541164">виетнамски</translation>
 <translation id="8899851313684471736">Отваряне на връзк&amp;ата в нов прозорец</translation>
@@ -5610,7 +5596,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="901834265349196618">имейл</translation>
 <translation id="9019062154811256702">Четене и промяна на настройките за автоматично попълване</translation>
 <translation id="9019654278847959325">Словашка клавиатура</translation>
-<translation id="901974403500617787">Флаговете, които се прилагат за цялата система, могат да бъдат зададени само от собственика: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Сървърът отказа връзката.</translation>
 <translation id="9020278534503090146">Няма достъп до тази уеб страница</translation>
 <translation id="9021662811137657072">Открит е вирус</translation>
@@ -5732,7 +5717,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="9183836083779743117"><ph name="DOWNLOAD_RECEIVED" /> от <ph name="DOWNLOAD_DOMAIN" />, <ph name="TIME_LEFT" /></translation>
 <translation id="9184473426683023988">Импортиране и свързване с устройство</translation>
 <translation id="9186729806195986201">Също така връщане към предишната инсталирана версия на <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="9187827965378254003">Ужас! Изглежда, че понастоящем няма налични експерименти.</translation>
 <translation id="9188441292293901223">Моля, актуализирайте телефона си до по-нова версия на Android, за да отключите този <ph name="DEVICE_TYPE" />.</translation>
 <translation id="9189690067274055051">Отключете телефона си и го приближете до своя <ph name="DEVICE_TYPE" />, за да влезете.</translation>
 <translation id="9190063653747922532">L2TP/IPSec с предварително споделен ключ</translation>

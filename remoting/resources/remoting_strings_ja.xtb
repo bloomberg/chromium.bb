@@ -64,6 +64,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="2353140552984634198">Chromoting を使用して、このパソコンに安全にアクセスできます。</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2366718077645204424">ホストにアクセスできません。お使いのネットワークの設定が原因であることが考えられます。</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />最終オンライン: <ph name="RELATIVE_TIMESTAMP" />。</translation>
 <translation id="2498359688066513246">ヘルプとフィードバック</translation>
 <translation id="2499160551253595098">Chrome リモート デスクトップの改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
 <translation id="2512228156274966424">注: すべてのキーボード ショートカットを使用できるようにするには、Chrome リモート デスクトップを [ウィンドウとして開く] に設定してください。</translation>
@@ -109,6 +110,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="3596628256176442606">このサービスにより、Chromoting クライアントからの着信接続が有効になります。</translation>
 <translation id="3606997049964069799">Chromium にログインしていません。ログインしてもう一度お試しください。</translation>
 <translation id="3649256019230929621">ウィンドウを最小化</translation>
+<translation id="369442766917958684">オフラインです。</translation>
 <translation id="3776024066357219166">Chrome リモート デスクトップ セッションが終了しました。</translation>
 <translation id="3785447812627779171">Chromoting
 ホスト</translation>
@@ -183,6 +185,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="579702532610384533">再接続</translation>
 <translation id="5843054235973879827">この操作が安全な理由</translation>
 <translation id="5859141382851488196">新しいウィンドウ...</translation>
+<translation id="5885438903806970186">オンラインです。</translation>
 <translation id="6001953797859482435">Chrome リモート デスクトップ ホストの設定</translation>
 <translation id="6011539954251327702">Chromoting を使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chromoting アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
 <translation id="6040143037577758943">閉じる</translation>

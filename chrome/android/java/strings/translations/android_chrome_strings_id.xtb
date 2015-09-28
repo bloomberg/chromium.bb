@@ -79,6 +79,7 @@
 <translation id="219985413780390209">Lindungi Anda dan perangkat Anda dari situs berbahaya</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplikasi web. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Saring</translation>
+<translation id="2315043854645842844">Pilihan sertifikat sisi klien tidak didukung oleh sistem operasi.</translation>
 <translation id="2316129865977710310">Lain kali</translation>
 <translation id="2321958826496381788">Seret penggeser sampai Anda dapat membacanya dengan nyaman. Teks harus terlihat setidaknya sebesar ini setelah paragraf diketuk dua kali.</translation>
 <translation id="2343328333327081434">Memasang...</translation>
@@ -128,6 +129,7 @@
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3039671569659952257">Hapus folder</translation>
 <translation id="3063601790762993062">Simpan video</translation>
+<translation id="306566828762083630">Tempat penyimpanan perangkat sudah penuh. Hapus media lain untuk mengosongkan ruang.</translation>
 <translation id="307329814453917357">Tawarkan untuk menerjemahkan laman dengan Google Terjemahan</translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
 <translation id="3090193911106258841">Mengakses masukan audio dan video</translation>
@@ -182,6 +184,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4023950129927433024">Jika lupa sandi Anda, berhenti dan setel ulang Sinkronisasi melalui <ph name="BEGIN_LINK" />Dasbor Google<ph name="END_LINK" />.</translation>
 <translation id="4042870126885713738">Tampilkan saran saat alamat web tidak dapat menyelesaikan masalah atau sambungan tidak dapat dibuat</translation>
 <translation id="4056223980640387499">Sepia</translation>
+<translation id="4059119910594077751">Sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="4084682180776658562">Bookmark</translation>
 <translation id="4089831646916293264">Fitur ini dapat mengganggu akses ke layanan data premium yang disediakan oleh operator Anda.</translation>
@@ -201,6 +204,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4297410240212242334">Pisahkan tab dan aplikasi</translation>
 <translation id="4307992518367153382">Dasar-Dasar</translation>
 <translation id="4333969446981951071">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
+<translation id="4350413759959745971">Pindahkan laman tersimpan</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4357362091209756047">Tidak melihat perangkat Anda? <ph name="BEGIN_LINK1" />Telusuri lagi<ph name="END_LINK1" /> atau <ph name="BEGIN_LINK2" />Dapatkan bantuan<ph name="END_LINK2" />.</translation>
 <translation id="4376501731284077108">Tidak terkontrol</translation>
@@ -216,6 +220,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4619298195800598081">Buka gambar asli di tab baru</translation>
 <translation id="4645575059429386691">Dikelola oleh orang tua Anda</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmark dihapus</translation>
+<translation id="4665282149850138822"><ph name="NAME" /> telah ditambahkan ke layar Utama</translation>
 <translation id="4684427112815847243">Sinkronkan semua</translation>
 <translation id="4686372254213217147">Ukuran asli</translation>
 <translation id="4690286298542128877">Tab akan dipindahkan ke pengalih tab di dalam Chrome.</translation>
@@ -246,6 +251,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
+<translation id="509605886816275399">Simpan offline laman ini?</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5138299137310274655">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
@@ -265,6 +271,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
 <translation id="5305985456140490686">Terakhir disinkronkan: <ph name="MINUTES" /> menit yang lalu</translation>
+<translation id="5308933389783727448">Telusuri laman tersimpan</translation>
 <translation id="5313967007315987356">Tambahkan situs</translation>
 <translation id="5317780077021120954">Simpan</translation>
 <translation id="5323972449344932352">Luncurkan Chrome</translation>
@@ -408,6 +415,7 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="699220179437400583">Otomatis melaporkan detail kemungkinan insiden keamanan ke Google</translation>
 <translation id="6999892069268112724">Konfirmasi Akun Google</translation>
 <translation id="7019652137705190998">Gunakan mode penyamaran untuk menjelajah secara pribadi atau masuk untuk sementara</translation>
+<translation id="7021515813996758557"><ph name="FILE_NAME" /> diunduh</translation>
 <translation id="7026897394897382018">Aktifkan Penghemat Data</translation>
 <translation id="7029809446516969842">Sandi</translation>
 <translation id="7053983685419859001">Cekal</translation>
@@ -473,6 +481,7 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="8026334261755873520">Hapus data penjelajahan</translation>
 <translation id="8035133914807600019">Folder baru…</translation>
 <translation id="8050319187894766337">Laman disimpan untuk offline. Penyimpanan hampir penuh.</translation>
+<translation id="8068648041423924542">Tidak dapat memilih sertifikat.</translation>
 <translation id="8069239273282989646">Setelah kompresi</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8084156870963450514">Masuk untuk mengakses semua file web Anda dari perangkat apa pun</translation>
@@ -495,6 +504,7 @@ Contohnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangk
 <translation id="8413126021676339697">Tampilkan riwayat lengkap</translation>
 <translation id="8413385045638830869">Tanya dulu (disarankan)</translation>
 <translation id="8428213095426709021">Setelan</translation>
+<translation id="8429160401486700187">Hapus laman tersimpan</translation>
 <translation id="8481940801237642152">Sambungan Anda ke situs ini bersifat pribadi, namun seseorang yang berada dalam jaringan Anda mungkin dapat mengubah tampilan laman.</translation>
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
@@ -534,6 +544,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>
 <translation id="8928220460877261598">Sekarang Anda sudah masuk ke Chrome.</translation>
+<translation id="8934455786738644694">Seret dari atas dan sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="8941248009481596111">Sambungan Anda ke situs ini bersifat pribadi.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
@@ -553,6 +564,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="9156605176886108508">Tidak ada folder bookmark</translation>
 <translation id="9192643434065497760">Aktifkan Bluetooth di <ph name="BEGIN_LINK" />setelan perangkat<ph name="END_LINK" /> untuk melakukan penyandingan.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="93001355573231213">Unduhan <ph name="FILE_NAME" /> gagal</translation>
 <translation id="932327136139879170">Beranda</translation>
 <translation id="938850635132480979">Kesalahan: <ph name="ERROR_CODE" /></translation>
 <translation id="939736085109172342">Folder baru</translation>

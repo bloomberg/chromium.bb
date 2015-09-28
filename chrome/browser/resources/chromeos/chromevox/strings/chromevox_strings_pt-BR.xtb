@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">Entrada inválida</translation>
 <translation id="1082209053475788238">Nenhum cabeçalho anterior de nível 6.</translation>
 <translation id="1088219014394087294">Nenhum cabeçalho.</translation>
-<translation id="1092366490857960994">Editar texto, entrada numérica</translation>
 <translation id="1106741348836243114">Ativa ou desativa o feedback sonoro (earcons).</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">Coleção de <ph name="TAG" /> com <ph name="NUM" /> itens</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">Ajuda do teclado</translation>
 <translation id="1157843803349774103">Caixa de texto <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="1167230103353892028">Item de menu <ph name="NAME" />, com submenu</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1188858454923323853">complementar</translation>
 <translation id="1206619573307042055">marquee</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">Para a direita</translation>
 <translation id="136718599399906424">Próxima linha de tabela</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">Pressione Enter para aceitar, Esc para cancelar, seta para baixo para ir para o próximo e seta para cima para ir para o anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">Todos os sinais de pontuação</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">access key:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">Para alterar a tabela de braille de seis pontos atual, selecione uma opção na lista a seguir.</translation>
 <translation id="2169714232367507776">Clicar no item atual</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{parêntese de fechamento}one{# parênteses de fechamento}other{# parênteses de fechamento}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">Ir para o próximo item focalizável</translation>
 <translation id="2770781857296573485">Entrar na exploração de grupo</translation>
 <translation id="2777845298774924149">Saiu</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">Não há mais elementos diferentes.</translation>
 <translation id="2800780099804980316">Nenhum cabeçalho anterior de nível 1.</translation>
 <translation id="2811204574343810641">Linha</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">Link visitado</translation>
 <translation id="323731244387692321">Abrir ajuda de teclado do ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">Link anterior visitado</translation>
 <translation id="3286390186030710347">Slide</translation>
 <translation id="3299925995433437805">Não há próximo link visitado.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755">Caixa de listagem <ph name="VALUE" /></translation>
 <translation id="3687295507293856493">Fazer estimativa do cabeçalho da coluna da célula atual</translation>
 <translation id="3692274950075847560">P:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">Controle de voz</translation>
 <translation id="3716845769494773620">Multilinha</translation>
 <translation id="3731746171184829332">Nenhum cabeçalho anterior.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">Caixa de diálogo fechada.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}one{#}other{#}}</translation>
 <translation id="3801735343383419236">Lista de preenchimento automático</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3816633764618089385">Próxima mídia</translation>
 <translation id="3819376190738087562">Nenhum salto.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">Use as opções abaixo para personalizar o ChromeVox. As alterações têm efeito imediato.</translation>
 <translation id="4271220233568730077">Próxima expressão matemática</translation>
 <translation id="4271521365602459209">Não há mais resultados.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">Não há artigos a seguir.</translation>
 <translation id="4289540628985791613">Visão geral</translation>
 <translation id="4300318234632215983">Anunciar o URL associado a um link</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">Mapa de teclado clássico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}one{# barras}other{# barras}}</translation>
 <translation id="4547556996012970016">Próximo cabeçalho de nível 5</translation>
-<translation id="4554899522007042510">Brilho: <ph name="BRIGHTNESS" />%</translation>
 <translation id="4562381607973973258">Cabeçalho</translation>
 <translation id="4591507479202817876">. selecionado</translation>
 <translation id="4597532268155981612">formulário</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">Explorador de teclado ChromeOS</translation>
 <translation id="4763296182459741068">Avançar para baixo</translation>
 <translation id="4763480195061959176">vídeo</translation>
+<translation id="479989351350248267">pesquisar</translation>
 <translation id="481165870889056555">Anunciar o título da página atual</translation>
 <translation id="4826415162591436065">Navegar para a frente</translation>
 <translation id="4826604887384865800">Próximo atalho</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">Ativar registros TTS</translation>
 <translation id="4877261390094455813">Inserir uma consulta de pesquisa.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">Link interno</translation>
 <translation id="4953585991029886728">Texto de edição</translation>
 <translation id="4954534434583049121">Citação em bloco anterior</translation>
-<translation id="4970377555447282413">Mostrar uma visualização ampliada do conteúdo da página.</translation>
 <translation id="4973717656530883744">Min <ph name="X" /></translation>
 <translation id="4973762002207131920">Comutado para <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">milésimos de segundo</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">segundos</translation>
 <translation id="867187640362843212">Cabeçalho 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}one{# barras verticais}other{# barras verticais}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">O sistema foi atualizado. É recomendável reiniciar.</translation>
 <translation id="8735450637152821465">Iniciar seleção</translation>
 <translation id="8743786158317878347">insere conteúdo estruturado, como tabelas</translation>
 <translation id="8747966237988593539">Lista ordenada</translation>

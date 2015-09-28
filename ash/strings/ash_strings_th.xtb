@@ -26,6 +26,7 @@
 กด Shift + Alt เพื่อสลับ</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
+<translation id="1950626184269948555">เปลี่ยนทางลัดตัวจัดการงานแล้ว โปรดใช้ Search+Esc แทน Shift+Esc</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">กำลังแคสต์ $1 ไปยัง $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@
 <translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">กด Control Shift Q สองครั้งเพื่อออก</translation>
+<translation id="6287020362823083378">เปลี่ยนทางลัดการล็อกหน้าจอแล้ว โปรดใช้ Search+L แทน Ctrl+Shift+L</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> หมุนเวียนเป็น <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">SMS จาก <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK ปิดอยู่</translation>

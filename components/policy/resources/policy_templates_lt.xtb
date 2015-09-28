@@ -45,6 +45,7 @@
 
           Nenustačius šios politikos, bus naudojamos visos keturios schemos.</translation>
 <translation id="1297182715641689552">Naudoti .pac tarpinio serverio scenarijų</translation>
+<translation id="1304973015437969093">Automatiškai diegiami plėtinių / programų ID ir atnaujinimo URL</translation>
 <translation id="1310699457130669094">Čia galite nurodyti URL, siejantį su įgaliotojo serverio .pac failu.
 
           Ši politika galioja, tik jei skiltyje „Pasirinkti, kaip nurodyti įgaliotojo serverio nustatymus“ pasirinkote rankinius įgaliotojo serverio nustatymus.
@@ -101,6 +102,13 @@
           Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalinę arba išjungę didelio kontrasto režimą. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba kai naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, didelio kontrasto režimas yra išjungtas, kai prisijungimo ekranas rodomas pirmą kartą. Naudotojai gali bet kada įgalinti arba išjungti didelio kontrasto režimą, o jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
+<translation id="1468707346106619889">Jei ši politika nustatyta į „true“, vienas darbalaukis bus leidžiamas ir
+      įgalintas pagal numatytuosius nustatymus. Taip programoms bus leidžiama užimti kelis ekranus.
+      Naudotojas gali išjungti vieno darbalaukio režimą atskiruose ekranuose atžymėdamas
+      jį ekrano nustatymuose.
+
+      Jei ši politika nustatyta į „false“ arba nenustatyta, vienas darbalaukis bus
+      išjungtas. Tokiu atveju naudotojas negalės įgalinti funkcijos.</translation>
 <translation id="1477934438414550161">1.2 versijos TLS</translation>
 <translation id="1492145937778428165">Nurodomas laikotarpis milisekundėmis, kuriuo įrenginio valdymo paslaugai pateikiama užklausa dėl įrenginio politikos informacijos.
 
@@ -335,6 +343,7 @@
 <translation id="2518231489509538392">Leisti paleisti garsą</translation>
 <translation id="2521581787935130926">Rodyti programų spartųjį klavišą žymių juostoje</translation>
 <translation id="2529700525201305165">Riboti, kuriems naudotojams leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“</translation>
+<translation id="2529880111512635313">Konfigūruoti programų ir plėtinių, kuriuos įdiegti privaloma, sąrašą</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2552966063069741410">Laiko juosta</translation>
 <translation id="2571066091915960923">Įgalina arba išjungia duomenų glaudinimo tarpinį serverį ir neleidžia naudotojams keisti šio nustatymo.
@@ -415,6 +424,7 @@
 
           Į „ExtensionInstallBlacklist“ (plėtinių diegimo juodąjį sąrašą) įtrauktiems plėtiniams ši politika negalioja. T. y. juodajame sąraše esantis plėtinys įdiegtas nebus, net jei tai atliekama iš šio sąrašo svetainės.</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
+<translation id="2850122204195089673">Nustatykite, kad vieno darbalaukio režimas būtų pasiekiamas ir įjungtas pagal numatytuosius nustatymus.</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>

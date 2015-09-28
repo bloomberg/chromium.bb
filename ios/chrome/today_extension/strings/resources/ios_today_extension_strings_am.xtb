@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1203161113033984675">BEGIN_LINK አካላዊ ድር END_LINK በርቷል።</translation>
+<translation id="1418775127135578229">የተቀዳ አገናኝን ክፈት</translation>
+<translation id="1487576085940433465">BEGIN_LINK የአቅራቢያ ነገሮች ድረ-ገጾችን በማሰራጨት ላይ ናቸው END_LINK። የGoogle አገልግሎት የእነዚህን ውጤቶች ጥራት ለማሻሻል ጥቅም ላይ ይውላል።</translation>
+<translation id="2026797012398135445">ለማንቃት የእርስዎን መሣሪያ ይክፈቱ።</translation>
 <translation id="2316129865977710310">አይ፣ አመሰግናለሁ</translation>
 <translation id="3435896845095436175">አንቃ</translation>
 <translation id="4394049700291259645">አሰናክል</translation>
 <translation id="5301954838959518834">እሺ፣ ገባኝ</translation>
+<translation id="5508399372551154686">BEGIN_LINK አካላዊ ድር END_LINK ጠፍቷል።</translation>
+<translation id="5815960189179094695">BEGIN_LINK የአካላዊ ድር END_LINK ነገሮችን በመቃኘት ላይ...</translation>
 <translation id="6196207969502475924">የድምጽ ፍለጋ</translation>
+<translation id="6722203589267124394">በአቅራቢያ ያሉ BEGIN_LINK አካላዊ የድር END_LINK ነገሮችን ለማየት ብሉቱዝን ያብሩ።</translation>
 <translation id="7554791636758816595">አዲስ ትር</translation>
+<translation id="7588950540487816470">አካላዊ ድር</translation>
+<translation id="8800384372516194324">ተጨማሪ ውጤቶችን አሳይ</translation>
 </translationbundle>

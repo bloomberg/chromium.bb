@@ -11,7 +11,6 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, 
 <translation id="1221340462641866827">O Chromium OS não suporta a inicialização de um aplicativo externo para lidar com links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Foi encontrada uma instalação conflituosa do Chromium no sistema. Desinstale e tente novamente.</translation>
 <translation id="1298199220304005244">Obter ajuda para usar o Chromium OS</translation>
-<translation id="130631256467250065">As alterações entrarão em vigor na próxima vez que você reiniciar o dispositivo.</translation>
 <translation id="1396446129537741364">O Chromium está tentando mostrar senhas.</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="1444754455097148408">Licenças de código aberto do Chromium</translation>
@@ -171,7 +170,6 @@ incomuns e incorretas. Um invasor está tentando fingir ser <ph name="SITE" />, 
 <translation id="6475912303565314141">Controla também qual página deve ser exibida quando você inicia o Chromium.</translation>
 <translation id="6485906693002546646">Você está usando <ph name="PROFILE_EMAIL" /> para sincronizar suas informações do Chromium. Para atualizar suas preferências de sincronização ou usar o Chromium sem uma Conta do Google, vá para <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
-<translation id="6613594504749178791">As alterações entrarão em vigor na próxima vez que você reiniciar o Chromium.</translation>
 <translation id="6637001341228460105">O Chromium precisa de acesso ao microfone para compartilhá-lo com este site.</translation>
 <translation id="6638567566961868659">Encontre seus favoritos no menu do Chromium ou na barra de favoritos.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>

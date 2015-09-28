@@ -64,6 +64,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
+<translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Posljednji put viđen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
 <translation id="2498359688066513246">Pomoć i povratne informacije</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
@@ -109,6 +110,7 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="3596628256176442606">Ta usluga omogućuje dolazne veze s klijenata usluge Chromoting.</translation>
 <translation id="3606997049964069799">Niste prijavljeni u Chromium. Prijavite se i pokušajte ponovo.</translation>
 <translation id="3649256019230929621">Minimiziranje prozora</translation>
+<translation id="369442766917958684">Offline.</translation>
 <translation id="3776024066357219166">Završila je vaša sesija u aplikaciji Udaljena radna površina Chrome.</translation>
 <translation id="3785447812627779171">Host usluge
 Chromoting</translation>
@@ -183,6 +185,7 @@ površine Chrome</translation>
 <translation id="579702532610384533">Ponovno povezivanje</translation>
 <translation id="5843054235973879827">Zašto je ovo sigurno?</translation>
 <translation id="5859141382851488196">Novi prozor…</translation>
+<translation id="5885438903806970186">Online.</translation>
 <translation id="6001953797859482435">Postavke hosta Udaljene radne površine Chrome</translation>
 <translation id="6011539954251327702">Chromoting omogućuje sigurno dijeljenje računala putem weba. Aplikacija Chromoting, koja se nalazi na web-lokaciji <ph name="URL" />, mora biti pokrenuta na oba računala.</translation>
 <translation id="6040143037577758943">Zatvori</translation>

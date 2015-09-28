@@ -33,6 +33,7 @@
 <translation id="1265053460044691532">Permite limitar el tiempo durante el cual un usuario autenticado mediante SAML puede acceder sin conexión.</translation>
 <translation id="1283072268083088623">Especifica qué esquemas de autenticación de HTTP son compatibles con <ph name="PRODUCT_NAME" />. Los valores posibles son "basic", "digest", "ntlm" y "negotiate". Cuando hay más de un valor, sepáralos con comas. Si esta política se configura, se usarán los cuatro esquemas.</translation>
 <translation id="1297182715641689552">Usar un script para proxy .pac</translation>
+<translation id="1304973015437969093">ID de extensiones/aplicaciones y direcciones URL de actualización para instalar en silencio</translation>
 <translation id="1310699457130669094">Puedes especificar una URL para un archivo .pac de proxy aquí. Esta política solo tiene efecto si se ha seleccionado la configuración manual de proxy en "Elegir cómo especificar la configuración del servidor proxy". No debes configurar esta política si se ha seleccionado cualquier otro modo de configuración de las políticas de proxy. Para ver ejemplos detallados, visita: <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1313457536529613143">Especifica el porcentaje de ajuste del tiempo de espera de inactividad de la pantalla cuando se observa la actividad del usuario con la pantalla oscurecida o poco después de que esta se haya desactivado.
 
@@ -80,6 +81,13 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si estableces esta política, los usuarios podrán anularla de forma temporal habilitando o inhabilitando el modo de contraste alto. Sin embargo, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de acceso o el usuario permanezca ausente en la pantalla de acceso durante un minuto.
 
           Si no se establece esta política, el modo de contraste alto se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar el modo de contraste alto en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
+<translation id="1468707346106619889">Si la política se define en "verdadero", se permite el uso del modo de escritorio unificado, y
+      la opción queda habilitada en la configuración predeterminada, lo que permite a las aplicaciones mostrarse en varias pantallas.
+      El usuario podrá inhabilitar el modo de escritorio unificado en pantallas individuales; para ello, debe desmarcar
+      la pantalla en la configuración correspondiente.
+
+      Si la política se define en "falso" o "no establecida", se inhabilitará el modo de escritorio unificado.
+      En ese caso, el usuario no podrá habilitar la función.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Especifica el período en milisegundos durante el que se solicita información sobre políticas de dispositivos al servicio de administración de dispositivos.
 
@@ -281,6 +289,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="2518231489509538392">Permitir la reproducción de audio</translation>
 <translation id="2521581787935130926">Muestra el acceso directo a las aplicaciones en la barra de marcadores.</translation>
 <translation id="2529700525201305165">Restringe los usuarios que pueden acceder a <ph name="PRODUCT_NAME" />.</translation>
+<translation id="2529880111512635313">Configurar la lista de extensiones y aplicaciones que se instalarán obligatoriamente</translation>
 <translation id="253135976343875019">Advertencia de inactividad cuando el dispositivo está conectado a alimentación de CA</translation>
 <translation id="2552966063069741410">Zona horaria</translation>
 <translation id="2571066091915960923">Habilita o inhabilita el proxy de compresión de datos y evita que los usuarios cambien esta opción.
@@ -353,6 +362,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 
           ExtensionInstallBlacklist tiene prioridad sobre esta política. Esto significa que las extensiones incluidas en la lista negra no se instalarán aunque provengan de un sitio de la lista.</translation>
 <translation id="2824715612115726353">Activar el modo de incógnito</translation>
+<translation id="2850122204195089673">Habilitar el modo de escritorio unificado y activarlo en la configuración predeterminada</translation>
 <translation id="285480231336205327">Habilitar el modo de contraste alto</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>

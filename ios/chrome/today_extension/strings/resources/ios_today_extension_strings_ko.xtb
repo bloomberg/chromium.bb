@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1203161113033984675">BEGIN_LINK피지컬 웹END_LINK이 사용 설정되어 있습니다.</translation>
+<translation id="1418775127135578229">복사한 링크 열기</translation>
+<translation id="1487576085940433465">BEGIN_LINK주변 개체가 웹페이지를 전송합니다END_LINK. 검색결과의 품질 향상을 위해 Google 서비스가 사용됩니다.</translation>
+<translation id="2026797012398135445">사용하려면 기기를 잠금 해제하세요.</translation>
 <translation id="2316129865977710310">아니요, 괜찮습니다.</translation>
 <translation id="3435896845095436175">사용</translation>
 <translation id="4394049700291259645">사용 중지</translation>
 <translation id="5301954838959518834">확인</translation>
+<translation id="5508399372551154686">BEGIN_LINK피지컬 웹END_LINK이 사용 중지되어 있습니다.</translation>
+<translation id="5815960189179094695">BEGIN_LINK피지컬 웹END_LINK 개체를 검색하는 중...</translation>
 <translation id="6196207969502475924">음성 검색</translation>
+<translation id="6722203589267124394">블루투스를 사용 설정하여 주변 BEGIN_LINK피지컬 웹END_LINK 개체를 확인합니다.</translation>
 <translation id="7554791636758816595">새 탭</translation>
+<translation id="7588950540487816470">피지컬 웹</translation>
+<translation id="8800384372516194324">결과 더 보기</translation>
 </translationbundle>

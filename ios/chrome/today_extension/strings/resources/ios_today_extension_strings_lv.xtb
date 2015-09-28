@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1203161113033984675">BEGIN_LINKFiziskais tīmeklisEND_LINK ir ieslēgts.</translation>
+<translation id="1418775127135578229">Atvērt kopēto saiti</translation>
+<translation id="1487576085940433465">BEGIN_LINKTuvumā esošie objekti apraida tīmekļa lapas.END_LINK. Tiks izmantots Google pakalpojums, lai uzlabotu šo rezultātu kvalitāti.</translation>
+<translation id="2026797012398135445">Lai to iespējotu, atbloķējiet ierīci.</translation>
 <translation id="2316129865977710310">Nē, paldies</translation>
 <translation id="3435896845095436175">Iespējot</translation>
 <translation id="4394049700291259645">Atspējot</translation>
 <translation id="5301954838959518834">Es sapratu</translation>
+<translation id="5508399372551154686">BEGIN_LINKFiziskais tīmeklisEND_LINK ir izslēgts.</translation>
+<translation id="5815960189179094695">Notiek BEGIN_LINKfiziskā tīmekļaEND_LINK objektu meklēšana...</translation>
 <translation id="6196207969502475924">Balss meklēšana</translation>
+<translation id="6722203589267124394">Ieslēdziet Bluetooth, lai redzētu tuvumā esošus BEGIN_LINKfiziskā tīmekļaEND_LINK objektus.</translation>
 <translation id="7554791636758816595">Jauna cilne</translation>
+<translation id="7588950540487816470">Fiziskais tīmeklis</translation>
+<translation id="8800384372516194324">Rādīt vairāk rezultātu</translation>
 </translationbundle>

@@ -11,7 +11,6 @@
 <translation id="1065552602950927991">إدخال غير صالح</translation>
 <translation id="1082209053475788238">ليس هناك عنوان سابق من المستوى السادس.</translation>
 <translation id="1088219014394087294">ليست هناك عناوين.</translation>
-<translation id="1092366490857960994">تعديل النص، إدخال الرقم</translation>
 <translation id="1106741348836243114">‏تشغيل التعليقات الصوتية (earcons) أو إيقافها.</translation>
 <translation id="1120743664840974483">{"a": "alpha", "b": "bravo", "c": "charlie", "d": "delta", "e": "echo", "f": "foxtrot", "g": "golf", "h": "hotel", "i": "india", "j": "juliet","k": "kilo", "l": "lima", "m": "mike", "n": "november", "o": "oscar","p": "papa", "q": "quebec", "r": "romeo", "s": "sierra", "t": "tango", "u": "uniform", "v": "victor", "w": "whiskey","x": "xray", "y": "yankee", "z": "zulu"}</translation>
 <translation id="113582498867142724">مجموعة من <ph name="TAG" /> تشتمل على <ph name="NUM" /> من العناصر</translation>
@@ -19,7 +18,6 @@
 <translation id="1157782847298808853">مساعدة لوحة المفاتيح</translation>
 <translation id="1157843803349774103">مربع تحرير <ph name="NAME" />، بالقيمة <ph name="VALUE" /></translation>
 <translation id="1167230103353892028">عنصر القائمة <ph name="NAME" /> مع قائمة فرعية</translation>
-<translation id="1167523994081052608">!</translation>
 <translation id="1177863135347784049">مخصص</translation>
 <translation id="1188858454923323853">تكميلي</translation>
 <translation id="1206619573307042055">صورة بها نص متحرك</translation>
@@ -37,7 +35,6 @@
 <translation id="1346748346194534595">يمين</translation>
 <translation id="136718599399906424">صف الجدول التالي</translation>
 <translation id="1383876407941801731">البحث</translation>
-<translation id="1384553361428699420">xx</translation>
 <translation id="1385214448885562192">‏اضغط على Enter للموافقة أو Esc للإلغاء، واضغط على السهم لأسفل للانتقال إلى النتيجة التالية وعلى السهم لأعلى للانتقال إلى النتيجة السابقة.</translation>
 <translation id="1396114365388024581">tablst</translation>
 <translation id="1439316808600711881">rgn</translation>
@@ -96,7 +93,6 @@
 <translation id="2100350898815792233">جميع علامات الترقيم</translation>
 <translation id="2119965627982867824">spnbtn</translation>
 <translation id="2121067395472282800">مفتاح الدخول:<ph name="KEY" /></translation>
-<translation id="2149594028072271924">x</translation>
 <translation id="2155457205053847599">يمكنك تغيير الجدول بنمط برايل 6 نقاط الحالي عبر تحديد خيار من القائمة أدناه.</translation>
 <translation id="2169714232367507776">النقر على العنصر الحالي</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{قوس مغلق واحد}zero{# close parens}two{قوسان مغلقان (#)}few{# أقواس مغلقة}many{# قوسًا مغلقًا}other{# من الأقواس المغلقة}}</translation>
@@ -142,7 +138,6 @@
 <translation id="27527859628328957">الانتقال إلى العنصر التالي القابل للتركيز</translation>
 <translation id="2770781857296573485">الدخول إلى استكشاف المجموعات</translation>
 <translation id="2777845298774924149">تم الإنهاء</translation>
-<translation id="2788135150614412178">+</translation>
 <translation id="2800204403141299078">ليس هناك المزيد من العناصر المختلفة.</translation>
 <translation id="2800780099804980316">ليس هناك عنوان سابق من المستوى الأول.</translation>
 <translation id="2811204574343810641">صف</translation>
@@ -194,7 +189,6 @@
 <translation id="3226035351387556942">chk</translation>
 <translation id="3229375994964697375">الرابط الذي تم الانتقال إليه</translation>
 <translation id="323731244387692321">‏فتح مساعدة لوحة مفاتيح ChromeVox</translation>
-<translation id="324093695619034148">( )</translation>
 <translation id="3241052487511142956">الرابط السابق الذي تمّ الانتقال إليه</translation>
 <translation id="3286390186030710347">شريط تمرير</translation>
 <translation id="3299925995433437805">ليس هناك رابط تالٍ تم الانتقال إليه.</translation>
@@ -274,7 +268,6 @@
 <translation id="3665563998540286755">مربع القائمة <ph name="VALUE" /></translation>
 <translation id="3687295507293856493">إجراء تخمين في عنوان العمود للخلية الحالية</translation>
 <translation id="3692274950075847560">بحث:<ph name="RESULT" /></translation>
-<translation id="3705722231355495246">-</translation>
 <translation id="3712520970944678024">التحكم في النطق</translation>
 <translation id="3716845769494773620">متعدد الأسطر</translation>
 <translation id="3731746171184829332">ليس هناك عنوان سابق.</translation>
@@ -283,7 +276,6 @@
 <translation id="3793710123303304873">تم إنهاء مربع الحوار.</translation>
 <translation id="3795836767122514678">+{COUNT,plural, =1{#}zero{#}two{#}few{#}many{#}other{#}}</translation>
 <translation id="3801735343383419236">إكمال تلقائي على هيئة قائمة</translation>
-<translation id="3806689594022048154">-&gt;</translation>
 <translation id="3810838688059735925">فيديو</translation>
 <translation id="3816633764618089385">الوسائط التالية</translation>
 <translation id="3819376190738087562">ليست هناك نقاط انتقال.</translation>
@@ -328,7 +320,6 @@
 <translation id="4255943572433203166">‏استخدم الخيارات أدناه لتخصيص ChromeVox. تسري التغييرات في الحال.</translation>
 <translation id="4271220233568730077">التعبير الرياضي التالي</translation>
 <translation id="4271521365602459209">لا تتوفر نتائج أخرى.</translation>
-<translation id="4271999187965566439">(x)</translation>
 <translation id="4287520460805643128">لا تتوفر مقالة تالية.</translation>
 <translation id="4289540628985791613">نظرة عامة</translation>
 <translation id="4300318234632215983">‏الإعلان عن عنوان URL وراء رابط</translation>
@@ -348,7 +339,6 @@
 <translation id="4529987814483543472">مخطط مفاتيح كلاسيكي</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{شرطة مائلة واحدة}zero{# slashes}two{شرطتان مائلتان (#)}few{# شرطات مائلة}many{# شرطة مائلة}other{# من الشرطات المائلة}}</translation>
 <translation id="4547556996012970016">عنوان المستوى الخامس التالي</translation>
-<translation id="4554899522007042510">السطوع <ph name="BRIGHTNESS" /> في المائة</translation>
 <translation id="4562381607973973258">رأس صفحة</translation>
 <translation id="4591507479202817876">، محدد</translation>
 <translation id="4597532268155981612">نموذج</translation>
@@ -367,6 +357,7 @@
 <translation id="4759716709594980008">‏مستكشف لوحة مفاتيح ChromeOS</translation>
 <translation id="4763296182459741068">التفاف إلى أسفل</translation>
 <translation id="4763480195061959176">فيديو</translation>
+<translation id="479989351350248267">بحث</translation>
 <translation id="481165870889056555">الإعلان عن عنوان الصفحة الحالية</translation>
 <translation id="4826415162591436065">التنقل للأمام</translation>
 <translation id="4826604887384865800">الانتقال التالي</translation>
@@ -378,11 +369,9 @@
 <translation id="4867316986324544967">‏تمكين تسجيل TTS</translation>
 <translation id="4877261390094455813">الدخول إلى طلب بحث.</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
-<translation id="4894355468197982314">=</translation>
 <translation id="489907760999452556">رابط داخلي</translation>
 <translation id="4953585991029886728">تعديل النص</translation>
 <translation id="4954534434583049121">الاقتباس الطويل السابق</translation>
-<translation id="4970377555447282413">إظهار عرض مكبر لمحتوى الصفحة.</translation>
 <translation id="4973717656530883744">الحد الأدنى <ph name="X" /></translation>
 <translation id="4973762002207131920">تم التبديل إلى <ph name="KEY" />.</translation>
 <translation id="4975416682604111799">مللي ثانية</translation>
@@ -705,8 +694,6 @@
 <translation id="8664519043722036194">ثواني</translation>
 <translation id="867187640362843212">العنوان الخامس</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{شريط رأسي واحد}zero{# vertical pipes}two{شريطان رأسيان (#)}few{# أشرطة رأسية}many{# شريطًا رأسيًا}other{# من الأشرطة الرأسية}}</translation>
-<translation id="8722779018229123609">(-)</translation>
-<translation id="8723726026961763755">تم تحديث النظام، ويوصى بإعادة التشغيل.</translation>
 <translation id="8735450637152821465">بدء التحديد</translation>
 <translation id="8743786158317878347">دخول إلى المحتوى المنظم، مثل الجداول</translation>
 <translation id="8747966237988593539">قائمة مرتبة</translation>

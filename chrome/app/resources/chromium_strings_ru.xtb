@@ -10,7 +10,6 @@
 <translation id="1221340462641866827">Chromium OS не поддерживает внешних приложений для обработки ссылок <ph name="SCHEME" />. Запрашиваемая ссылка: <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">В системе установлена конфликтующая версия Chromium. Удалите ее и повторите попытку.</translation>
 <translation id="1298199220304005244">Помощь по использованию Chromium OS</translation>
-<translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
 <translation id="1396446129537741364">Вводимые пароли будут отображаться в Chromium.</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="1444754455097148408">Лицензии Chromium на ПО с открытым исходным кодом</translation>
@@ -170,7 +169,6 @@
 <translation id="6475912303565314141">Кроме того, расширение изменило стартовую страницу Chromium.</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>
-<translation id="6613594504749178791">Изменения вступят в силу при следующем входе в Chromium.</translation>
 <translation id="6637001341228460105">Предоставьте браузеру Chromium доступ к микрофону, чтобы пользоваться им на этом сайте.</translation>
 <translation id="6638567566961868659">Закладки можно найти в меню Chromium или на панели закладок.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>

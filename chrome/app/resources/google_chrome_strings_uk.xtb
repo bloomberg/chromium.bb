@@ -13,7 +13,6 @@
 <translation id="123620459398936149">ОС Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
 <translation id="127345590676626841">Chrome оновлюється автоматично, щоб у вас завжди була найновіша версія. Коли це завантаження завершиться, Chrome перезапуститься, і ви зможете продовжувати роботу.</translation>
 <translation id="1302523850133262269">Зачекайте, доки Chrome установить найновіші оновлення системи.</translation>
-<translation id="130631256467250065">Ваші зміни почнуть діяти під час наступного перезапуску пристрою.</translation>
 <translation id="1348153800635493797">Щоб користуватися Google Wallet, потрібно оновити Chrome [<ph name="ERROR_CODE" />].</translation>
 <translation id="1350930993895295930">У Chrome виявлено незвичну активність</translation>
 <translation id="1393853151966637042">Отримати довідку щодо користування Chrome</translation>
@@ -69,7 +68,6 @@
 <translation id="3047079729301751317">Якщо від’єднати користувача <ph name="USERNAME" />, вашу історію, закладки, налаштування й інші дані Chrome, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK" />Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
-<translation id="3140883423282498090">Ваші зміни почнуть діяти після наступного перезапуску Google Chrome.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
 <translation id="3197823471738295152">Пристрій оновлено.</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>

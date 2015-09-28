@@ -40,6 +40,7 @@
 
           Hvis denne retningslinjen ikke angis, vil alle de fire skjemaene brukes.</translation>
 <translation id="1297182715641689552">Bruk et .pac-skript for mellomtjener</translation>
+<translation id="1304973015437969093">Utvidelsers/appers ID-er og oppdateringsnettadresser for stum installasjon</translation>
 <translation id="1310699457130669094">Du kan angi nettadresse til en .pac-fil til mellomtjener her.
 
           Denne retningslinjen trer i kraft bare hvis du har valgt manuelle mellomtjenerinnstulinger under «Velg hvordan du skal angi proxytjenerinnstillinger».
@@ -96,6 +97,13 @@
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere høykontrastmodus. Brukernes valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis denne innstillingen angis, deaktiveres høykontrastmodus når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere høykontrastmodus når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
+<translation id="1468707346106619889">Hvis denne retningslinjen settes til sann, blir det enhetlige skrivebordet tillatt og
+      slått på som standard, noe som gjør at apper kan fordeles over flere skjermer.
+      Brukeren kan slå av det enhetlige skrivebordet for individuelle skjermer ved
+      å fjerne merket for det i visningsinnstillingene.
+
+      Hvis denne retningslinjen settes til usann eller ikke konfigureres, blir det enhetlige
+      skrivebordet slått av. I så fall kan ikke brukeren slå på denne funksjonen.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Spesifiserer perioden i millisekunder – angir frekvens for hvor ofte tjenesten for enhetsadministrasjon blir kontaktet for informasjon om enhetsretningslinjer.
 
@@ -315,6 +323,7 @@
 <translation id="2518231489509538392">Tillat avspilling av lyd</translation>
 <translation id="2521581787935130926">Vis apper-snarveien i bokmerkefeltet</translation>
 <translation id="2529700525201305165">Begrens hvilke brukere som kan logge seg på <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfigurer listen over tvangsinstallerte programmer og utvidelser</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
 <translation id="2552966063069741410">Tidssone</translation>
 <translation id="2571066091915960923">Aktiver eller deaktiver proxy-tjener for datakomprimering og forhindre brukere fra å endre denne innstillingen.
@@ -391,6 +400,7 @@
 
           ExtensionInstallBlacklist har forrang over denne innstillingen. Det betyr at en utvidelse på svartelisten ikke blir installert, selv om det skjer fra et nettsted som er på denne listen.</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
+<translation id="2850122204195089673">Gjør det enhetlige skrivebordet tilgjengelig, og slå det på som standard.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2872961005593481000">Avslutt</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
@@ -658,7 +668,7 @@
 
       Hvis dette alternativet deaktiveres eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
-<translation id="4474167089968829729">Slå på lagring av passord i passordbehandlingen</translation>
+<translation id="4474167089968829729">Slå på lagring av passord i passordbehandleren</translation>
 <translation id="4480694116501920047">Tving Sikkert Søk</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME" />.
 

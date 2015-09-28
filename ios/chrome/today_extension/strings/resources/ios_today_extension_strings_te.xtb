@@ -1,10 +1,19 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="1203161113033984675">BEGIN_LINK భౌతిక వెబ్ END_LINK ఆన్‌లో ఉంది.</translation>
+<translation id="1418775127135578229">కాపీ చేసిన లింక్‌ను తెరువు</translation>
+<translation id="1487576085940433465">BEGIN_LINK సమీప ఆబ్జెక్ట్‌లు వెబ్ పేజీలను ప్రసారం చేస్తున్నాయి END_LINK. ఈ ఫలితాల నాణ్యతను మెరుగుపరచడానికి Google సేవ ఉపయోగించబడుతుంది.</translation>
+<translation id="2026797012398135445">ప్రారంభించడానికి మీ పరికరాన్ని అన్‌లాక్ చేయండి.</translation>
 <translation id="2316129865977710310">వద్దు, ధన్యవాదాలు</translation>
 <translation id="3435896845095436175">ప్రారంభించండి</translation>
 <translation id="4394049700291259645">ఆపివెయ్యి</translation>
 <translation id="5301954838959518834">సరే, అర్థమైంది</translation>
+<translation id="5508399372551154686">BEGIN_LINK భౌతిక వెబ్ END_LINK ఆఫ్‌లో ఉంది.</translation>
+<translation id="5815960189179094695">BEGIN_LINK భౌతిక వెబ్ END_LINK ఆబ్జెక్ట్‌ల కోసం స్కాన్ చేస్తోంది...</translation>
 <translation id="6196207969502475924">వాయిస్ శోధన</translation>
+<translation id="6722203589267124394">సమీప BEGIN_LINK భౌతిక వెబ్ END_LINK ఆబ్జెక్ట్‌లు చూడటానికి బ్లూటూత్‌ను ఆన్ చేయండి.</translation>
 <translation id="7554791636758816595">కొత్త ట్యాబ్</translation>
+<translation id="7588950540487816470">భౌతిక వెబ్</translation>
+<translation id="8800384372516194324">మరిన్ని ఫలితాలను చూపు</translation>
 </translationbundle>

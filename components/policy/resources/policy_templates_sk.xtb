@@ -45,6 +45,7 @@
 
           Ak toto pravidlo ponecháte nenastavené, použijú sa všetky štyri schémy.</translation>
 <translation id="1297182715641689552">Použiť skript servera proxy vo formáte PAC</translation>
+<translation id="1304973015437969093">ID rozšírení/aplikácií a webové adresy aktualizácií, ktoré sa majú nainštalovať na pozadí</translation>
 <translation id="1310699457130669094">Tu môžete zadať webovú adresu súboru PAC servera proxy.
 
           Toto pravidlo sa prejaví len v prípade, ak ste v časti „Zvoľte spôsob konfigurácie nastavení servera proxy“ zvolili ručné nastavenia servera proxy.
@@ -101,6 +102,13 @@
           Ak nastavíte toto pravidlo, používatelia ho budú môcť dočasne prepísať povolením alebo zakázaním režimu vysokého kontrastu. Voľba používateľa však nie je trvalá a predvolené nastavenie sa obnoví zakaždým, keď sa znova zobrazí prihlasovacia obrazovka alebo používateľ bude na prihlasovacej obrazovke nečinný po dobu jednej minúty.
 
           Ak toto pravidlo ponecháte nenastavené, bude režim vysokého kontrastu pri prvom zobrazení prihlasovacej obrazovky zakázaný. Používatelia budú môcť režim vysokého kontrastu kedykoľvek povoliť alebo zakázať a jeho stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
+<translation id="1468707346106619889">Ak toto pravidlo nastavíte na hodnotu true, bude povolený a
+      predvolene zapnutý režim zjednotenej plochy, ktorý umožňuje aplikáciám rozšíriť obsah na viacero obrazoviek.
+      Používateľ môže vypnúť režim zjednotenej plochy pre jednotlivé obrazovky tak, že zruší začiarknutie
+      danej obrazovky v nastaveniach zobrazenia.
+
+      Ak toto pravidlo nastavíte na hodnotu false alebo ho nenastavíte, režim zjednotenej obrazovky
+      bude vypnutý. V tomto prípade ho používateľ nemôže zapnúť.</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1492145937778428165">Určuje interval v milisekundách, v ktorom sa budú službe správy zariadenia odosielať informačné žiadosti o pravidlách pre zariadenie.
 
@@ -337,6 +345,7 @@
 <translation id="2518231489509538392">Povoliť prehrávanie zvuku</translation>
 <translation id="2521581787935130926">Zobraziť skratku aplikácií na paneli so záložkami</translation>
 <translation id="2529700525201305165">Obmedzenie používateľov, ktorí sa môžu prihlásiť do prehliadača <ph name="PRODUCT_NAME" /></translation>
+<translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
 <translation id="2552966063069741410">Časové pásmo</translation>
 <translation id="2571066091915960923">Povoliť alebo zakázať kompresiu dát servera proxy a zabrániť používateľom toto nastavenie zmeniť.
@@ -415,6 +424,7 @@
 
           Zoznam zakázaných položiek ExtensionInstallBlacklist je tomuto pravidlu nadradený. Rozšírenie v zozname zakázaných položiek nebude nainštalované ani v prípade, že bude pochádzať zo stránok, ktoré sú uvedené v tomto zozname.</translation>
 <translation id="2824715612115726353">Povoliť režim inkognito</translation>
+<translation id="2850122204195089673">Sprístupnenie režimu zjednotenej plochy a jeho zapnutie v predvolenom nastavení</translation>
 <translation id="285480231336205327">Povoliť režim s vysokým kontrastom</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2877225735001246144">Zakázať hľadanie záznamov CNAME pri absolvovaní overenia Kerberos</translation>

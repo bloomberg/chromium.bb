@@ -26,6 +26,7 @@
 Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
+<translation id="1950626184269948555">Zmienił się skrót menedżera zadań. Naciśnij klawisz wyszukiwania i Esc zamiast kombinacji Shift+Esc.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1963814843110128691">Przesyłam $1 do $2</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
@@ -151,6 +152,7 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6165508094623778733">Więcej informacji</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
 <translation id="6248847161401822652">Naciśnij dwukrotnie Control Shift Q, by zakończyć.</translation>
+<translation id="6287020362823083378">Zmienił się skrót blokady ekranu. Naciśnij klawisz wyszukiwania i L zamiast kombinacji Ctrl+Shift+L.</translation>
 <translation id="6310121235600822547">Wyświetlacz <ph name="DISPLAY_NAME" /> został obrócony na <ph name="ROTATION" /></translation>
 <translation id="6359806961507272919">Wiadomość SMS z numeru <ph name="PHONE_NUMBER" /></translation>
 <translation id="639644700271529076">CAPS LOCK jest wyłączony</translation>
