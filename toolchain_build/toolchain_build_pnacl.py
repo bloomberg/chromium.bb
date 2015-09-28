@@ -113,7 +113,8 @@ BINUTILS_PROGS = ['addr2line', 'ar', 'as', 'c++filt', 'elfedit', 'ld',
 TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
                      'x86-32-nonsfi', 'arm-nonsfi')
 
-SANDBOXED_TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32')
+SANDBOXED_TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
+                               'x86-32-nonsfi', 'arm-nonsfi')
 # MIPS32 doesn't use biased bitcode, and nonsfi targets don't need it.
 BITCODE_BIASES = tuple(
     bias for bias in ('le32', 'i686_bc', 'x86_64_bc', 'arm_bc'))

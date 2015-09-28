@@ -422,6 +422,11 @@ llvm-sb-install() {
       # We do not yet have an x86-64 backend for pnacl-sz.
       arches="i686 x86_64"
     fi
+    if [[ "${arch}" == "i686" ]]; then
+      arches+=" x86-32-nonsfi"
+    elif [[ "${arch}" == "armv7" ]]; then
+      arches+=" arm-nonsfi"
+    fi
     translate-sb-tool ${toolname} "${arches}"
     install-sb-tool ${toolname} "${arches}"
   done
@@ -509,6 +514,8 @@ GetTranslatorInstallDir() {
     x86_64) arch=x86-64 ;;
     armv7) arch=arm ;;
     mips) arch=mips32 ;;
+    x86-32-nonsfi) arch=x86-32-nonsfi ;;
+    arm-nonsfi) arch=arm-nonsfi ;;
     default) arch=$1 ;;
   esac
   echo "${INSTALL_TRANSLATOR}"/translator/${arch}
@@ -700,6 +707,11 @@ binutils-gold-sb-install() {
   local arches=${arch}
   if [[ "${arch}" == "universal" ]]; then
     arches="${SBTC_ARCHES_ALL}"
+  fi
+  if [[ "${arch}" == "i686" ]]; then
+    arches+=" x86-32-nonsfi"
+  elif [[ "${arch}" == "armv7" ]]; then
+    arches+=" arm-nonsfi"
   fi
   translate-sb-tool ld "${arches}"
   install-sb-tool ld "${arches}"

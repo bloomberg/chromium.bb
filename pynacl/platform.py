@@ -62,15 +62,19 @@ def IsCygWin(platform=None):
 # in place to be sure the order is kept.
 ARCH3264_LIST = [
     'x86-32',
+    'x86-32-nonsfi',
     'x86-64',
     'arm',
+    'arm-nonsfi',
     'mips32',
 ]
 
 (
     ARCH3264_X86_32,
+    ARCH3264_X86_32_NONSFI,
     ARCH3264_X86_64,
     ARCH3264_ARM,
+    ARCH3264_ARM_NONSFI,
     ARCH3264_MIPS32,
 ) = ARCH3264_LIST
 
@@ -79,8 +83,10 @@ ARCH64_SET = set([ARCH3264_X86_64])
 ARCH3264_MAP = {
     ARCH3264_X86_32: ('x86', 'x86-32', 'x86_32', 'x8632', 'i386',
                       'i686', 'ia32', '32'),
+    ARCH3264_X86_32_NONSFI: ('x86-32-nonsfi',),
     ARCH3264_X86_64: ('x86-64', 'amd64', 'x86_64', 'x8664', '64'),
     ARCH3264_ARM: ('arm', 'armv7', 'armv7l'),
+    ARCH3264_ARM_NONSFI: ('arm-nonsfi',),
     ARCH3264_MIPS32: ('mips32', 'mips', 'mipsel'),
 }
 
