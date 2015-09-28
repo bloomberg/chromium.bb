@@ -19,13 +19,13 @@ void DirectoryDataTypeController::ActivateDataType(
     BackendDataTypeConfigurer* configurer) {
   // Tell the backend about the change processor for this type so it can
   // begin routing changes to it.
-  configurer->ActivateDataType(type(), model_safe_group(),
-                               GetChangeProcessor());
+  configurer->ActivateDirectoryDataType(type(), model_safe_group(),
+                                        GetChangeProcessor());
 }
 
 void DirectoryDataTypeController::DeactivateDataType(
     BackendDataTypeConfigurer* configurer) {
-  configurer->DeactivateDataType(type());
+  configurer->DeactivateDirectoryDataType(type());
 }
 
 }  // namespace sync_driver

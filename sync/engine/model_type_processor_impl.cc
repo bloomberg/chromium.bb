@@ -6,8 +6,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/thread_task_runner_handle.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_entity.h"
+#include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "sync/syncable/syncable_util.h"
 
@@ -52,13 +54,16 @@ void ModelTypeProcessorImpl::Enable(
   data_type_state_.progress_marker.set_data_type_id(
       GetSpecificsFieldNumberFromModelType(type_));
 
-  UpdateResponseDataList saved_pending_updates = GetPendingUpdates();
+  scoped_ptr<ActivationContext> activation_context =
+      make_scoped_ptr(new ActivationContext);
+  activation_context->data_type_state = data_type_state_;
+  activation_context->saved_pending_updates = GetPendingUpdates();
+  activation_context->type_task_runner = base::ThreadTaskRunnerHandle::Get();
+  activation_context->type_processor = weak_ptr_factory_for_sync_.GetWeakPtr();
+
   sync_context_proxy_ = sync_context_proxy.Pass();
-  sync_context_proxy_->ConnectTypeToSync(
-      GetModelType(),
-      data_type_state_,
-      saved_pending_updates,
-      weak_ptr_factory_for_sync_.GetWeakPtr());
+  sync_context_proxy_->ConnectTypeToSync(GetModelType(),
+                                         activation_context.Pass());
 }
 
 void ModelTypeProcessorImpl::Disable() {

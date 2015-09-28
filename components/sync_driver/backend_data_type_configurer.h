@@ -12,6 +12,10 @@
 #include "sync/internal_api/public/configure_reason.h"
 #include "sync/internal_api/public/engine/model_safe_worker.h"
 
+namespace syncer_v2 {
+struct ActivationContext;
+}
+
 namespace sync_driver {
 
 class ChangeProcessor;
@@ -61,16 +65,25 @@ class BackendDataTypeConfigurer {
   static syncer::ModelTypeSet GetDataTypesInState(
       DataTypeConfigState state, const DataTypeConfigStateMap& state_map);
 
-  // Activates change processing for the given data type.  This must
+  // Activates change processing for the given directory data type.  This must
   // be called synchronously with the data type's model association so
   // no changes are dropped between model association and change
   // processor activation.
-  virtual void ActivateDataType(
-      syncer::ModelType type, syncer::ModelSafeGroup group,
-      ChangeProcessor* change_processor) = 0;
+  virtual void ActivateDirectoryDataType(syncer::ModelType type,
+                                         syncer::ModelSafeGroup group,
+                                         ChangeProcessor* change_processor) = 0;
 
   // Deactivates change processing for the given data type.
-  virtual void DeactivateDataType(syncer::ModelType type) = 0;
+  virtual void DeactivateDirectoryDataType(syncer::ModelType type) = 0;
+
+  // Activates change processing for the given non-blocking data type.
+  // This must be called synchronously with the data type's model association.
+  virtual void ActivateNonBlockingDataType(
+      syncer::ModelType type,
+      scoped_ptr<syncer_v2::ActivationContext> activation_context) = 0;
+
+  // Deactivates change processing for the given non-blocking data type.
+  virtual void DeactivateNonBlockingDataType(syncer::ModelType type) = 0;
 
   // Set state of |types| in |state_map| to |state|.
   static void SetDataTypesState(DataTypeConfigState state,

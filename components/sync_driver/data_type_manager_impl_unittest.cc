@@ -11,6 +11,7 @@
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/data_type_status_table.h"
 #include "components/sync_driver/fake_data_type_controller.h"
+#include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/configure_reason.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,13 +103,23 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
     return ready_types_;
   }
 
-  void ActivateDataType(syncer::ModelType type,
-                        syncer::ModelSafeGroup group,
-                        ChangeProcessor* change_processor) override {
+  void ActivateDirectoryDataType(syncer::ModelType type,
+                                 syncer::ModelSafeGroup group,
+                                 ChangeProcessor* change_processor) override {
     activated_types_.Put(type);
   }
-  void DeactivateDataType(syncer::ModelType type) override {
+  void DeactivateDirectoryDataType(syncer::ModelType type) override {
     activated_types_.Remove(type);
+  }
+
+  void ActivateNonBlockingDataType(
+      syncer::ModelType type,
+      scoped_ptr<syncer_v2::ActivationContext> activation_context) override {
+    // TODO (stanisc): crbug.com/515962: Add test coverage.
+  }
+
+  void DeactivateNonBlockingDataType(syncer::ModelType type) override {
+    // TODO (stanisc): crbug.com/515962: Add test coverage.
   }
 
   base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task() const {

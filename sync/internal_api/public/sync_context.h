@@ -5,15 +5,11 @@
 #ifndef SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_H_
 #define SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_H_
 
-#include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "sync/base/sync_export.h"
+#include "base/memory/scoped_ptr.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/internal_api/public/non_blocking_sync_common.h"
 
 namespace syncer_v2 {
-class ModelTypeProcessor;
+struct ActivationContext;
 
 // An interface of the core parts of sync.
 //
@@ -33,10 +29,7 @@ class SYNC_EXPORT_PRIVATE SyncContext {
   // type's thread.
   virtual void ConnectSyncTypeToWorker(
       syncer::ModelType type,
-      const DataTypeState& data_type_state,
-      const UpdateResponseDataList& saved_pending_updates,
-      const scoped_refptr<base::SequencedTaskRunner>& datatype_task_runner,
-      const base::WeakPtr<ModelTypeProcessor>& type_processor) = 0;
+      scoped_ptr<ActivationContext> activation_context) = 0;
 
   // Disconnects the syncer from the model and stops syncing the type.
   //
@@ -50,6 +43,6 @@ class SYNC_EXPORT_PRIVATE SyncContext {
   virtual void DisconnectSyncWorker(syncer::ModelType type) = 0;
 };
 
-}  // namespace syncer
+}  // namespace syncer_v2
 
 #endif  // SYNC_INTERNAL_API_PUBLIC_SYNC_CONTEXT_H_

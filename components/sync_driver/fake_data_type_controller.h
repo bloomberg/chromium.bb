@@ -24,7 +24,6 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   explicit FakeDataTypeController(syncer::ModelType type);
 
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
-  void OnModelLoaded() override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   syncer::ModelType type() const override;

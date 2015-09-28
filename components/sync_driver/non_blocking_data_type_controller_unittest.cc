@@ -10,9 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/sync_driver/non_blocking_data_type_controller.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_processor_impl.h"
+#include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/sync_context_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -81,20 +83,16 @@ class MockSyncContextProxy : public syncer_v2::SyncContextProxy {
 
   void ConnectTypeToSync(
       syncer::ModelType type,
-      const syncer_v2::DataTypeState& data_type_state,
-      const syncer_v2::UpdateResponseDataList& saved_pending_updates,
-      const base::WeakPtr<syncer_v2::ModelTypeProcessor>& type_processor)
-      override {
+      scoped_ptr<syncer_v2::ActivationContext> activation_context) override {
     // Normally we'd use ThreadTaskRunnerHandle::Get() as the TaskRunner
     // argument
     // to Connect().  That won't work here in this test, so we use the
     // model_task_runner_ that was injected for this purpose instead.
-    sync_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&MockSyncContext::Connect,
-                                           base::Unretained(mock_sync_context_),
-                                           type,
-                                           model_task_runner_,
-                                           type_processor));
+    sync_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&MockSyncContext::Connect,
+                   base::Unretained(mock_sync_context_), type,
+                   model_task_runner_, activation_context->type_processor));
   }
 
   void Disconnect(syncer::ModelType type) override {
@@ -123,6 +121,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
       : type_processor_(syncer::DICTIONARY,
                         base::WeakPtr<syncer_v2::ModelTypeStore>()),
         model_thread_(new base::TestSimpleTaskRunner()),
+        model_thread_handle_(model_thread_),
         sync_thread_(new base::TestSimpleTaskRunner()),
         controller_(syncer::DICTIONARY, true),
         mock_context_proxy_(&mock_sync_context_, model_thread_, sync_thread_),
@@ -185,6 +184,7 @@ class NonBlockingDataTypeControllerTest : public testing::Test {
  protected:
   syncer_v2::ModelTypeProcessorImpl type_processor_;
   scoped_refptr<base::TestSimpleTaskRunner> model_thread_;
+  base::ThreadTaskRunnerHandle model_thread_handle_;
   scoped_refptr<base::TestSimpleTaskRunner> sync_thread_;
 
   NonBlockingDataTypeController controller_;

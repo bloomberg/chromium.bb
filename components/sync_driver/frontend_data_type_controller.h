@@ -80,9 +80,6 @@ class FrontendDataTypeController
   // Datatype specific creation of sync components.
   virtual void CreateSyncComponents() = 0;
 
-  // DataTypeController interface.
-  void OnModelLoaded() override;
-
   // Perform any DataType controller specific state cleanup before stopping
   // the datatype controller. The default implementation is a no-op.
   virtual void CleanUpState();
@@ -110,6 +107,11 @@ class FrontendDataTypeController
   virtual void RecordUnrecoverableError(
       const tracked_objects::Location& from_here,
       const std::string& message);
+
+  // If the DTC is waiting for models to load, once the models are
+  // loaded the datatype service will call this function on DTC to let
+  // us know that it is safe to start associating.
+  void OnModelLoaded();
 
   sync_driver::SyncClient* const sync_client_;
 

@@ -25,6 +25,7 @@
 #include "components/sync_driver/sync_prefs.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "sync/internal_api/public/activation_context.h"
 #include "sync/internal_api/public/base_transaction.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_bridge.h"
@@ -452,14 +453,26 @@ void SyncBackendHostImpl::EnableEncryptEverything() {
       base::Bind(&SyncBackendHostCore::DoEnableEncryptEverything, core_.get()));
 }
 
-void SyncBackendHostImpl::ActivateDataType(
-    syncer::ModelType type, syncer::ModelSafeGroup group,
+void SyncBackendHostImpl::ActivateDirectoryDataType(
+    syncer::ModelType type,
+    syncer::ModelSafeGroup group,
     sync_driver::ChangeProcessor* change_processor) {
   registrar_->ActivateDataType(type, group, change_processor, GetUserShare());
 }
 
-void SyncBackendHostImpl::DeactivateDataType(syncer::ModelType type) {
+void SyncBackendHostImpl::DeactivateDirectoryDataType(syncer::ModelType type) {
   registrar_->DeactivateDataType(type);
+}
+
+void SyncBackendHostImpl::ActivateNonBlockingDataType(
+    syncer::ModelType type,
+    scoped_ptr<syncer_v2::ActivationContext> activation_context) {
+  sync_context_proxy_->ConnectTypeToSync(type, activation_context.Pass());
+}
+
+void SyncBackendHostImpl::DeactivateNonBlockingDataType(
+    syncer::ModelType type) {
+  sync_context_proxy_->Disconnect(type);
 }
 
 syncer::UserShare* SyncBackendHostImpl::GetUserShare() const {

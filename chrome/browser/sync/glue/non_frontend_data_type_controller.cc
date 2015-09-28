@@ -203,10 +203,6 @@ void NonFrontendDataTypeController::LoadModels(
   model_load_callback.Run(type(), syncer::SyncError());
 }
 
-void NonFrontendDataTypeController::OnModelLoaded() {
-  NOTREACHED();
-}
-
 void NonFrontendDataTypeController::StartAssociating(
     const StartCallback& start_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

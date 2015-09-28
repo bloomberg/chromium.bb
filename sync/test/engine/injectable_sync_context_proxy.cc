@@ -6,6 +6,7 @@
 
 #include "sync/engine/commit_queue.h"
 #include "sync/engine/model_type_processor_impl.h"
+#include "sync/internal_api/public/activation_context.h"
 
 namespace syncer_v2 {
 
@@ -19,9 +20,7 @@ InjectableSyncContextProxy::~InjectableSyncContextProxy() {
 
 void InjectableSyncContextProxy::ConnectTypeToSync(
     syncer::ModelType type,
-    const DataTypeState& data_type_state,
-    const UpdateResponseDataList& response_list,
-    const base::WeakPtr<ModelTypeProcessor>& type_processor) {
+    scoped_ptr<ActivationContext> activation_context) {
   // This class is allowed to participate in only one connection.
   DCHECK(!is_worker_connected_);
   is_worker_connected_ = true;
@@ -30,7 +29,7 @@ void InjectableSyncContextProxy::ConnectTypeToSync(
   // an unsafe pointer to it.  This is why we can only connect once.
   scoped_ptr<CommitQueue> queue(queue_);
 
-  type_processor->OnConnect(queue.Pass());
+  activation_context->type_processor->OnConnect(queue.Pass());
 }
 
 void InjectableSyncContextProxy::Disconnect(syncer::ModelType type) {

@@ -4,6 +4,8 @@
 
 #include "sync/internal_api/public/test/null_sync_context_proxy.h"
 
+#include "sync/internal_api/public/activation_context.h"
+
 namespace syncer_v2 {
 
 NullSyncContextProxy::NullSyncContextProxy() {
@@ -14,9 +16,7 @@ NullSyncContextProxy::~NullSyncContextProxy() {
 
 void NullSyncContextProxy::ConnectTypeToSync(
     syncer::ModelType type,
-    const DataTypeState& data_type_state,
-    const UpdateResponseDataList& saved_pending_updates,
-    const base::WeakPtr<ModelTypeProcessor>& type_processor) {
+    scoped_ptr<ActivationContext> activation_context) {
   NOTREACHED() << "NullSyncContextProxy is not meant to be used";
 }
 

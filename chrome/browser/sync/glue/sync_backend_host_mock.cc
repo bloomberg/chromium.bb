@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host_mock.h"
 
 #include "components/sync_driver/sync_frontend.h"
+#include "sync/internal_api/public/activation_context.h"
 
 namespace browser_sync {
 
@@ -70,10 +71,18 @@ syncer::ModelTypeSet SyncBackendHostMock::ConfigureDataTypes(
 
 void SyncBackendHostMock::EnableEncryptEverything() {}
 
-void SyncBackendHostMock::ActivateDataType(
-    syncer::ModelType type, syncer::ModelSafeGroup group,
+void SyncBackendHostMock::ActivateDirectoryDataType(
+    syncer::ModelType type,
+    syncer::ModelSafeGroup group,
     sync_driver::ChangeProcessor* change_processor) {}
-void SyncBackendHostMock::DeactivateDataType(syncer::ModelType type) {}
+void SyncBackendHostMock::DeactivateDirectoryDataType(syncer::ModelType type) {}
+
+void SyncBackendHostMock::ActivateNonBlockingDataType(
+    syncer::ModelType type,
+    scoped_ptr<syncer_v2::ActivationContext> activation_context) {}
+
+void SyncBackendHostMock::DeactivateNonBlockingDataType(
+    syncer::ModelType type) {}
 
 syncer::UserShare* SyncBackendHostMock::GetUserShare() const {
   return NULL;

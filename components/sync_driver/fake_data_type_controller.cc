@@ -44,10 +44,6 @@ void FakeDataTypeController::LoadModels(
   }
 }
 
-void FakeDataTypeController::OnModelLoaded() {
-  NOTREACHED();
-}
-
 // MODEL_LOADED -> MODEL_STARTING.
 void FakeDataTypeController::StartAssociating(
    const StartCallback& start_callback) {

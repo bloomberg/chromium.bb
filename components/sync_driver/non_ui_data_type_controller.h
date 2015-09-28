@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_
 
-#include <string>
-
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
@@ -47,9 +45,6 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   NonUIDataTypeController();
   // DataTypeController is RefCounted.
   ~NonUIDataTypeController() override;
-
-  // DataTypeController interface.
-  void OnModelLoaded() override;
 
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
@@ -98,6 +93,11 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // To allow unit tests to control thread interaction during non-ui startup
   // and shutdown, use a factory method to create the SharedChangeProcessor.
   virtual SharedChangeProcessor* CreateSharedChangeProcessor();
+
+  // If the DTC is waiting for models to load, once the models are
+  // loaded the datatype service will call this function on DTC to let
+  // us know that it is safe to start associating.
+  void OnModelLoaded();
 
  private:
 

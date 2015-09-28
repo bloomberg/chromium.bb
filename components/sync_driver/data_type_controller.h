@@ -149,11 +149,6 @@ class DataTypeController
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const base::Closure& error_callback);
 
-  // If the DTC is waiting for models to load, once the models are
-  // loaded the datatype service will call this function on DTC to let
-  // us know that it is safe to start associating.
-  virtual void OnModelLoaded() = 0;
-
   ~DataTypeController() override;
 
   // The callback that will be invoked when an unrecoverable error occurs.

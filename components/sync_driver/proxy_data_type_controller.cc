@@ -59,10 +59,6 @@ void ProxyDataTypeController::OnSingleDataTypeUnrecoverableError(
   NOTIMPLEMENTED();
 }
 
-void ProxyDataTypeController::OnModelLoaded() {
-  NOTIMPLEMENTED();
-}
-
 void ProxyDataTypeController::ActivateDataType(
     BackendDataTypeConfigurer* configurer) {}
 

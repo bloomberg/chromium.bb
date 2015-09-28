@@ -4,6 +4,7 @@
 
 #include "sync/engine/model_type_processor_impl.h"
 
+#include "base/message_loop/message_loop.h"
 #include "sync/engine/commit_queue.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/non_blocking_sync_common.h"
@@ -129,6 +130,8 @@ class ModelTypeProcessorImplTest : public ::testing::Test {
   scoped_ptr<ModelTypeProcessorImpl> type_processor_;
 
   DataTypeState data_type_state_;
+  // This sets ThreadTaskRunnerHandle on the current thread.
+  base::MessageLoop message_loop_;
 };
 
 ModelTypeProcessorImplTest::ModelTypeProcessorImplTest()

@@ -112,11 +112,15 @@ class SyncBackendHostImpl
       const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
           ready_task,
       const base::Callback<void()>& retry_callback) override;
-  void ActivateDataType(
+  void ActivateDirectoryDataType(
       syncer::ModelType type,
       syncer::ModelSafeGroup group,
       sync_driver::ChangeProcessor* change_processor) override;
-  void DeactivateDataType(syncer::ModelType type) override;
+  void DeactivateDirectoryDataType(syncer::ModelType type) override;
+  void ActivateNonBlockingDataType(
+      syncer::ModelType type,
+      scoped_ptr<syncer_v2::ActivationContext>) override;
+  void DeactivateNonBlockingDataType(syncer::ModelType type) override;
   void EnableEncryptEverything() override;
   syncer::UserShare* GetUserShare() const override;
   scoped_ptr<syncer_v2::SyncContextProxy> GetSyncContextProxy() override;

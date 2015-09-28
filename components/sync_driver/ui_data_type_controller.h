@@ -75,9 +75,6 @@ class UIDataTypeController : public DirectoryDataTypeController {
   // the datatype controller. The default implementation is a no-op.
   virtual void StopModels();
 
-  // DataTypeController interface.
-  void OnModelLoaded() override;
-
   // Helper method for cleaning up state and invoking the start callback.
   virtual void StartDone(ConfigureResult result,
                          const syncer::SyncMergeResult& local_merge_result,
@@ -87,6 +84,11 @@ class UIDataTypeController : public DirectoryDataTypeController {
   virtual void RecordAssociationTime(base::TimeDelta time);
   // Record causes of start failure.
   virtual void RecordStartFailure(ConfigureResult result);
+
+  // If the DTC is waiting for models to load, once the models are
+  // loaded the datatype service will call this function on DTC to let
+  // us know that it is safe to start associating.
+  void OnModelLoaded();
 
   SyncClient* const sync_client_;
 

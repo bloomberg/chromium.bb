@@ -92,9 +92,6 @@ class NonFrontendDataTypeController
 
   ~NonFrontendDataTypeController() override;
 
-  // DataTypeController interface.
-  void OnModelLoaded() override;
-
   // Start any dependent services that need to be running before we can
   // associate models. The default implementation is a no-op.
   // Return value:

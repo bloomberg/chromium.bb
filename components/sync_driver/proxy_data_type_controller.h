@@ -39,9 +39,6 @@ class ProxyDataTypeController : public DataTypeController {
   // DataTypeController is RefCounted.
   ~ProxyDataTypeController() override;
 
-  // DataTypeController interface.
-  void OnModelLoaded() override;
-
  private:
   State state_;
 

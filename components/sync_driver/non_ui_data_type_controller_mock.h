@@ -20,7 +20,6 @@ class NonUIDataTypeControllerMock
   MOCK_METHOD1(StartAssociating,
                  void(const StartCallback& start_callback));
   MOCK_METHOD1(LoadModels, void(const ModelLoadCallback& model_load_callback));
-  MOCK_METHOD0(OnModelLoaded, void());
   MOCK_METHOD0(Stop, void());
   MOCK_CONST_METHOD0(type, syncer::ModelType());
   MOCK_CONST_METHOD0(name, std::string());
