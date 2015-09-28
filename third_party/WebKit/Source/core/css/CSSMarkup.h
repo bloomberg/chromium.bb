@@ -36,7 +36,7 @@ String quoteCSSURLIfNeeded(const String&);
 bool serializeIdentifier(const String& identifier, StringBuilder& appendTo);
 void serializeString(const String&, StringBuilder& appendTo);
 String serializeString(const String&);
-String serializeStringWithoutQuotations(const String&);
+String serializeURI(const String&);
 
 } // namespace blink
 

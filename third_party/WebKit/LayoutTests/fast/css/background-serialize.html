@@ -32,8 +32,8 @@ shouldBeEqualToString("test('.test { background-position-x: 5%; }')", ".test { b
 shouldBeEqualToString("test('.test { background-position-y: 5%; }')", ".test { background-position-y: 5%; }");
 shouldBeEqualToString("test('.test { background-position-x: 5%; background-position-y: 10%; }')", ".test { background-position: 5% 10%; }");
 shouldBeEqualToString("test('.test { background-position-x: 5%; background-position-y: 10% !important; }')", ".test { background-position-x: 5%; background-position-y: 10% !important; }");
-shouldBeEqualToString("test('.test { background: url(dummy://test.png); }')", ".test { background: url(dummy://test.png); }");
-shouldBeEqualToString("test('.test { background: url(dummy://test.png); background-color: black; }')", ".test { background: url(dummy://test.png) black; }");
+shouldBeEqualToString("test('.test { background: url(dummy://test.png); }')", '.test { background: url("dummy://test.png"); }');
+shouldBeEqualToString("test('.test { background: url(dummy://test.png); background-color: black; }')", '.test { background: url("dummy://test.png") black; }');
 
 </script>
 <script src="../js/resources/js-test-post.js"></script>

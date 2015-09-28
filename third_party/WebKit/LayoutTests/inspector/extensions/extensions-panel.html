@@ -38,7 +38,7 @@ function initialize_extensionsPanelTest()
             }
             // Strip url(...) and prefix of the URL within, leave just last 3 components.
             var url = item.style.backgroundImage.replace(/^url\(.*(([/][^/]*){3}[^/)]*)\)$/, "...$1");
-            InspectorTest.addResult("status bar item " + i + ", icon: " + url + ", tooltip: '" + item[WebInspector.Tooltip._symbol].content + "', disabled: " + item.disabled);
+            InspectorTest.addResult("status bar item " + i + ", icon: \"" + url + ", tooltip: '" + item[WebInspector.Tooltip._symbol].content + "', disabled: " + item.disabled);
        }
     }
 

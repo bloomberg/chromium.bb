@@ -207,10 +207,10 @@
 
   var anchor = document.createElement('a');
   function sanitizeUrls(value) {
-    var matches = value.match(/url\([^\)]*\)/g);
+    var matches = value.match(/url\("([^\)]*)"\)/g);
     if (matches !== null) {
       for (var i = 0; i < matches.length; ++i) {
-        var url = /url\(([^\)]*)\)/g.exec(matches[i])[1];
+        var url = /url\("([^\)]*)"\)/g.exec(matches[i])[1];
         anchor.href = url;
         anchor.pathname = '...' + anchor.pathname.substring(anchor.pathname.lastIndexOf('/'));
         value = value.replace(matches[i], 'url(' + anchor.href + ')');

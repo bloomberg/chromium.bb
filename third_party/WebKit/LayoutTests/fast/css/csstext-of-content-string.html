@@ -23,6 +23,6 @@ var style = document.getElementById('style');
 shouldBeEqualToString("style.sheet.cssRules[0].cssText", "#A::after { content: \"A\"; }");
 shouldBeEqualToString("style.sheet.cssRules[1].cssText", "#B::after { content: \"'B'\"; }");
 shouldBeEqualToString("style.sheet.cssRules[2].cssText", "#C::after { content: \"'C\\8 '\"; }");
-shouldBeEqualToString("style.sheet.cssRules[3].cssText", "#D::after { content: \"'D'\" url(http://example.com/) \"EFG\"; }");
+shouldBeEqualToString("style.sheet.cssRules[3].cssText", "#D::after { content: \"'D'\" url(\"http://example.com/\") \"EFG\"; }");
 </script>
 </html>

@@ -51,13 +51,13 @@ rect.setAttribute("fill", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", "rgb(0, 128, 0)");
 
 rect.setAttribute("fill", "url(#reference)");
-shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", "url(#reference)");
+shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", 'url("#reference")');
 // Reset to green.
 rect.setAttribute("fill", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", "rgb(0, 128, 0)");
 
 rect.setAttribute("fill", "url(#reference) green");
-shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", "url(#reference) rgb(0, 128, 0)");
+shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", 'url("#reference") rgb(0, 128, 0)');
 // Reset to green.
 rect.setAttribute("fill", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).fill", "rgb(0, 128, 0)");
@@ -103,13 +103,13 @@ rect.setAttribute("stroke", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", "rgb(0, 128, 0)");
 
 rect.setAttribute("stroke", "url(#reference)");
-shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", "url(#reference)");
+shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", 'url("#reference")');
 // Reset to green.
 rect.setAttribute("stroke", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", "rgb(0, 128, 0)");
 
 rect.setAttribute("stroke", "url(#reference) green");
-shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", "url(#reference) rgb(0, 128, 0)");
+shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", 'url("#reference") rgb(0, 128, 0)');
 // Reset to green.
 rect.setAttribute("stroke", "green");
 shouldBeEqualToString("document.defaultView.getComputedStyle(rect, null).stroke", "rgb(0, 128, 0)");

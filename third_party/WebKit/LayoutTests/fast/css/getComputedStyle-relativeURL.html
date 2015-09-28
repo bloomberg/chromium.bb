@@ -7,8 +7,8 @@
 <script>
   target.style.backgroundImage = "-webkit-cross-fade(url(images1.jpg), url(images2.jpg), 0.5)";
   test(function() {
-    var expected = "-webkit-cross-fade(url(" + location.href.replace('getComputedStyle-relativeURL.html', 'images1.jpg') + "), url(" + location.href.replace('getComputedStyle-relativeURL.html', 'images2.jpg') + "), 0.5)";
+    var expected = '-webkit-cross-fade(url("' + location.href.replace('getComputedStyle-relativeURL.html', 'images1.jpg') + '"), url("' + location.href.replace('getComputedStyle-relativeURL.html', 'images2.jpg') + '"), 0.5)';
     assert_equals(getComputedStyle(target).backgroundImage, expected);
-    assert_equals(target.style.backgroundImage, "-webkit-cross-fade(url(images1.jpg), url(images2.jpg), 0.5)");
+    assert_equals(target.style.backgroundImage, '-webkit-cross-fade(url("images1.jpg"), url("images2.jpg"), 0.5)');
   }, 'Testing that getComputedStyle.backgroundImage returns absolute URLs and style.backgroundImage returns relative URLs');
 </script>

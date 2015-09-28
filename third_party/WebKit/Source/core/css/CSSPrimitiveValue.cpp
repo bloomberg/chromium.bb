@@ -897,7 +897,7 @@ String CSSPrimitiveValue::customCSSText() const
         break;
     }
     case UnitType::URI:
-        text = "url(" + quoteCSSURLIfNeeded(m_value.string) + ")";
+        text = serializeURI(m_value.string);
         break;
     case UnitType::ValueID:
         text = valueName(m_value.valueID);

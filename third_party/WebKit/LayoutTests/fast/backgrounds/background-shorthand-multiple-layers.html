@@ -7,7 +7,7 @@
 description("Tests that serialization of background shorthand property with multiple layers is correct.");
 
 var e = document.getElementById('test');
-shouldBe("getComputedStyle(e).background", "'url(dummy://foo) repeat scroll 0% 0% / auto padding-box border-box, rgb(255, 0, 0) url(dummy://bar) repeat scroll 0% 0% / auto padding-box border-box'")
+shouldBeEqualToString("getComputedStyle(e).background", 'url("dummy://foo") repeat scroll 0% 0% / auto padding-box border-box, rgb(255, 0, 0) url("dummy://bar") repeat scroll 0% 0% / auto padding-box border-box')
 
 </script>
 </body>

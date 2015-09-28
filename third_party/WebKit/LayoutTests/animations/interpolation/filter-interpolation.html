@@ -290,13 +290,13 @@ assertInterpolation({
 
 assertNoInterpolation({
   property: '-webkit-filter',
-  from: 'url(#svgfilter)',
+  from: 'url("#svgfilter")',
   to: 'none', // lacuna is not defined
 });
 
 assertNoInterpolation({
   property: '-webkit-filter',
-  from: 'url(#svgfilter)',
+  from: 'url("#svgfilter")',
   to: 'blur(5px)',
 });
 

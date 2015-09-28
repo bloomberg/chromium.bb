@@ -24,10 +24,10 @@ function testFilterRule(description, rule, expectedValue)
     shouldBeEqualToString("declaration.getPropertyValue('-webkit-filter')", expectedValue);
 }
 
-testFilterRule("Basic reference", "url('#a')", "url('#a')");
-testFilterRule("Bare unquoted reference converting to quoted form", "url(#a)", "url('#a')");
-testFilterRule("Multiple references", "url('#a') url('#b')", "url('#a') url('#b')");
-testFilterRule("Reference as 2nd value", "grayscale(1) url('#a')", "grayscale(1) url('#a')");
+testFilterRule("Basic reference", "url('#a')", 'url("#a")');
+testFilterRule("Bare unquoted reference converting to quoted form", "url(#a)", 'url("#a")');
+testFilterRule("Multiple references", "url('#a') url('#b')", 'url("#a") url("#b")');
+testFilterRule("Reference as 2nd value", "grayscale(1) url('#a')", 'grayscale(1) url("#a")');
 testFilterRule("Integer value", "grayscale(1)");
 testFilterRule("Percentage value", "grayscale(50%)");
 testFilterRule("Float value converts to integer", "grayscale(1.0)", "grayscale(1)");

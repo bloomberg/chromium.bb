@@ -39,7 +39,7 @@ function roundtripCssRule(cssText)
 
 debug('Test cursor rules which should accept \'hand\' as an alias of \'pointer\'.');
 testCursorRule('hand', 'pointer');
-testCursorRule('url(file:///foo.png), hand', 'url(file:///foo.png), pointer');
+testCursorRule('url(file:///foo.png), hand', 'url("file:///foo.png"), pointer');
 
 debug('');
 debug('Test invalid cursor rules which shouldn\'t parse at all.');

@@ -18,8 +18,8 @@ PASS test('.test { background-position-x: 5%; }') is ".test { background-positio
 PASS test('.test { background-position-y: 5%; }') is ".test { background-position-y: 5%; }"
 PASS test('.test { background-position-x: 5%; background-position-y: 10%; }') is ".test { background-position: 5% 10%; }"
 PASS test('.test { background-position-x: 5%; background-position-y: 10% !important; }') is ".test { background-position-x: 5%; background-position-y: 10% !important; }"
-PASS test('.test { background: url(dummy://test.png); }') is ".test { background: url(dummy://test.png); }"
-PASS test('.test { background: url(dummy://test.png); background-color: black; }') is ".test { background: url(dummy://test.png) black; }"
+PASS test('.test { background: url(dummy://test.png); }') is ".test { background: url(\"dummy://test.png\"); }"
+PASS test('.test { background: url(dummy://test.png); background-color: black; }') is ".test { background: url(\"dummy://test.png\") black; }"
 PASS successfullyParsed is true
 
 TEST COMPLETE

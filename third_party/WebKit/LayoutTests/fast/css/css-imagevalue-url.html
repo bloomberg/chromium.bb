@@ -4,7 +4,7 @@
 
 <script>
   test(function() {
-    var cssText = 'div { background-image: url(images.jpg); }';
+    var cssText = 'div { background-image: url("images.jpg"); }';
 
     var doc = document.implementation.createHTMLDocument("");
     var styleElement = document.createElement("style");

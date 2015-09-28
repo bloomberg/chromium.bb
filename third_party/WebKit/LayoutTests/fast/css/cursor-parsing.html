@@ -11,18 +11,18 @@ description("Test the parsing of the cursor property.");
 
 function makeCursorRule(rule)
 {
-    return "cursor: " + rule + ";";
+    return 'cursor: ' + rule + ';';
 }
 
 function testCursorRule(rule)
 {
     var cssText = makeCursorRule(rule);
-    shouldBeEqualToString('roundtripCssRule("' + cssText + '")', cssText);
+    shouldBeEqualToString('roundtripCssRule(`' + cssText + '`)', cssText);
 }
 
 function testInvalidCursorRule(rule)
 {
-    shouldBeEqualToString('roundtripCssRule("' + makeCursorRule(rule) + '")', '');
+    shouldBeEqualToString('roundtripCssRule(`' + makeCursorRule(rule) + '`)', '');
 }
 
 function roundtripCssRule(cssText)
@@ -48,14 +48,14 @@ testCursorRule('zoom-out');
 testCursorRule('-webkit-grabbing');
 testCursorRule('-webkit-zoom-in');
 testCursorRule('-webkit-zoom-out');
-testCursorRule('url(file:///foo.png), crosshair');
-testCursorRule('url(file:///foo.png), url(file:///foo2.png), pointer');
-testCursorRule('url(file:///foo.png) 12 3, pointer');
-testCursorRule('url(file:///foo.png) 0 0, pointer');
-testCursorRule('url(file:///foo.png) 12 3, url(file:///foo2.png), url(file:///foo3.png) 6 7, crosshair');
-testCursorRule('url(file:///foo.png) -2 3, pointer');
-testCursorRule('url(file:///foo.png) 2 -3, pointer');
-testCursorRule('url(file:///foo.png) -1 -1, pointer');
+testCursorRule('url("file:///foo.png"), crosshair');
+testCursorRule('url("file:///foo.png"), url("file:///foo2.png"), pointer');
+testCursorRule('url("file:///foo.png") 12 3, pointer');
+testCursorRule('url("file:///foo.png") 0 0, pointer', 'url("file:///foo.png") 0 0, pointer');
+testCursorRule('url("file:///foo.png") 12 3, url("file:///foo2.png"), url("file:///foo3.png") 6 7, crosshair');
+testCursorRule('url("file:///foo.png") -2 3, pointer');
+testCursorRule('url("file:///foo.png") 2 -3, pointer');
+testCursorRule('url("file:///foo.png") -1 -1, pointer');
 
 debug('');
 debug('Test a bunch of invalid cursor rules which shouldn\'t parse at all.');
@@ -63,12 +63,12 @@ testInvalidCursorRule('nonexistent');
 testInvalidCursorRule('ltr');
 testInvalidCursorRule('inline');
 testInvalidCursorRule('hand');
-testInvalidCursorRule('url(file:///foo.png)');
-testInvalidCursorRule('url(file:///foo.png), url(file:///foo2.png)');
-testInvalidCursorRule('url(file:///foo.png) 12');
-testInvalidCursorRule('url(file:///foo.png) 12 3 5');
-testInvalidCursorRule('url(file:///foo.png) x y');
-testInvalidCursorRule('url(file:///foo.png) auto');
+testInvalidCursorRule('url("file:///foo.png")');
+testInvalidCursorRule('url("file:///foo.png"), url("file:///foo2.png")');
+testInvalidCursorRule('url("file:///foo.png") 12');
+testInvalidCursorRule('url("file:///foo.png") 12 3 5');
+testInvalidCursorRule('url("file:///foo.png") x y');
+testInvalidCursorRule('url("file:///foo.png") auto');
 
 successfullyParsed = true;
 </script>

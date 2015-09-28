@@ -61,7 +61,7 @@ DocumentResource* CSSSVGDocumentValue::load(Document* document)
 
 String CSSSVGDocumentValue::customCSSText() const
 {
-    return quoteCSSStringIfNeeded(m_url);
+    return serializeString(m_url);
 }
 
 bool CSSSVGDocumentValue::equals(const CSSSVGDocumentValue& other) const

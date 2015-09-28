@@ -20,7 +20,7 @@ assertResponsive({
   }, {
     state: {inherited: 'url(a)'},
     expect: [
-      {at: 0.25, is: 'url(a)'},
+      {at: 0.25, is: 'url("a")'},
       {at: 0.75, is: 'rgb(0, 128, 0)'},
     ],
   }],

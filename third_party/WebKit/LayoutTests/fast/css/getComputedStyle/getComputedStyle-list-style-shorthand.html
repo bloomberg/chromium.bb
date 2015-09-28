@@ -19,23 +19,23 @@ e = document.getElementById('test');
 computedStyle = window.getComputedStyle(e, null);
 
 e.style.listStyle = "circle outside url(dummy://test.png)";
-shouldBe("computedStyle.getPropertyValue('list-style')", "'circle outside url(dummy://test.png)'");
+shouldBeEqualToString("computedStyle.getPropertyValue('list-style')", 'circle outside url("dummy://test.png")');
 
 e.style.listStyle = ""
 e.style.listStyle = "a b c";
-shouldBe("computedStyle.getPropertyValue('list-style')", "'disc outside none'");
+shouldBeEqualToString("computedStyle.getPropertyValue('list-style')", 'disc outside none');
 
 e.style.listStyle = "circle outside";
-shouldBe("computedStyle.getPropertyValue('list-style')", "'circle outside none'")
+shouldBeEqualToString("computedStyle.getPropertyValue('list-style')", 'circle outside none')
 
 e.style.listStyle = "none";
-shouldBe("computedStyle.getPropertyValue('list-style')", "'none outside none'")
+shouldBeEqualToString("computedStyle.getPropertyValue('list-style')", 'none outside none')
 
 e.style.listStyle = "";
 e.style.listStyleType = "circle";
 e.style.listStylePosition = "outside";
 e.style.listStyleImage = "url(dummy://test.png)";
-shouldBe("computedStyle.getPropertyValue('list-style')", "'circle outside url(dummy://test.png)'");
+shouldBeEqualToString("computedStyle.getPropertyValue('list-style')", 'circle outside url("dummy://test.png")');
 
 document.body.removeChild(testContainer);
 
