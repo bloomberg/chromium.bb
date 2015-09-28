@@ -7,10 +7,12 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/mock_entropy_provider.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_registration_handle.h"
@@ -1626,6 +1628,28 @@ TEST_F(BackgroundSyncManagerTest, UnregisterSucceedsWithoutWindow) {
   RemoveWindowClients();
   EXPECT_TRUE(Unregister(callback_registration_handle_.get()));
   EXPECT_FALSE(GetRegistration(sync_options_1_));
+}
+
+TEST_F(BackgroundSyncManagerTest, FieldTrialDisablesManager) {
+  EXPECT_TRUE(Register(sync_options_1_));
+
+  base::FieldTrialList field_trial_list(new base::MockEntropyProvider());
+  base::FieldTrialList::CreateFieldTrial("BackgroundSync",
+                                         "ExperimentDisabled");
+
+  EXPECT_FALSE(Register(sync_options_2_));
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback_status_);
+
+  // If the service worker is wiped and the manager is restarted, the manager
+  // should disable itself on init.
+  test_background_sync_manager_->set_corrupt_backend(false);
+  helper_->context()->ScheduleDeleteAndStartOver();
+  base::RunLoop().RunUntilIdle();
+
+  RegisterServiceWorkers();
+
+  EXPECT_FALSE(GetRegistrations(SYNC_ONE_SHOT));
+  EXPECT_EQ(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback_status_);
 }
 
 }  // namespace content

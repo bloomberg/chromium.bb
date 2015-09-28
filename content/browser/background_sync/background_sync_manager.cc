@@ -7,6 +7,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "content/browser/background_sync/background_sync_metrics.h"
@@ -50,6 +51,12 @@ void PostErrorResponse(
       base::Bind(
           callback, status,
           base::Passed(scoped_ptr<BackgroundSyncRegistrationHandle>().Pass())));
+}
+
+bool ShouldDisableForFieldTrial() {
+  std::string experiment = base::FieldTrialList::FindFullName("BackgroundSync");
+  return base::StartsWith(experiment, "ExperimentDisable",
+                          base::CompareCase::INSENSITIVE_ASCII);
 }
 
 }  // namespace
@@ -246,6 +253,11 @@ void BackgroundSyncManager::InitImpl(const base::Closure& callback) {
     return;
   }
 
+  if (ShouldDisableForFieldTrial()) {
+    DisableAndClearManager(callback);
+    return;
+  }
+
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
       base::Bind(&BackgroundSyncManager::InitDidGetDataFromBackend,
@@ -337,6 +349,13 @@ void BackgroundSyncManager::RegisterImpl(
         BackgroundSyncMetrics::REGISTRATION_IS_NOT_DUPLICATE,
         BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
     PostErrorResponse(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback);
+    return;
+  }
+
+  if (ShouldDisableForFieldTrial()) {
+    DisableAndClearManager(base::Bind(
+        callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
+        base::Passed(scoped_ptr<BackgroundSyncRegistrationHandle>().Pass())));
     return;
   }
 
