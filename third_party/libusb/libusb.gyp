@@ -64,7 +64,6 @@
           ],
           'defines': [
             'OS_LINUX=1',
-            'USBI_TIMERFD_AVAILABLE',
             '_GNU_SOURCE=1',
           ],
         }],
