@@ -295,39 +295,29 @@ bool VisibleSelection::expandUsingGranularityInComposedTree(TextGranularity gran
     return expandUsingGranularity(granularity);
 }
 
-static PassRefPtrWillBeRawPtr<Range> makeSearchRange(const Position& pos)
+template <typename Strategy>
+static EphemeralRangeTemplate<Strategy> makeSearchRange(const PositionAlgorithm<Strategy>& pos)
 {
     Node* node = pos.anchorNode();
     if (!node)
-        return nullptr;
+        return EphemeralRangeTemplate<Strategy>();
     Document& document = node->document();
     if (!document.documentElement())
-        return nullptr;
+        return EphemeralRangeTemplate<Strategy>();
     Element* boundary = enclosingBlockFlowElement(*node);
     if (!boundary)
-        return nullptr;
+        return EphemeralRangeTemplate<Strategy>();
 
-    RefPtrWillBeRawPtr<Range> searchRange(Range::create(document));
-    TrackExceptionState exceptionState;
-
-    Position start(pos.parentAnchoredEquivalent());
-    searchRange->selectNodeContents(boundary, exceptionState);
-    searchRange->setStart(start.computeContainerNode(), start.offsetInContainerNode(), exceptionState);
-
-    ASSERT(!exceptionState.hadException());
-    if (exceptionState.hadException())
-        return nullptr;
-
-    return searchRange.release();
+    return EphemeralRangeTemplate<Strategy>(pos, PositionAlgorithm<Strategy>::lastPositionInNode(boundary));
 }
 
 void VisibleSelection::appendTrailingWhitespace()
 {
-    RefPtrWillBeRawPtr<Range> searchRange = makeSearchRange(m_end);
-    if (!searchRange)
+    const EphemeralRange searchRange = makeSearchRange(m_end);
+    if (searchRange.isNull())
         return;
 
-    CharacterIterator charIt(searchRange->startPosition(), searchRange->endPosition(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
+    CharacterIterator charIt(searchRange.startPosition(), searchRange.endPosition(), TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     bool changed = false;
 
     for (; charIt.length(); charIt.advance(1)) {
