@@ -276,7 +276,6 @@ cr.define('options', function() {
       // Public session users cannot change the locale.
       if (cr.isChromeOS && UIAccountTweaks.loggedInAsPublicAccount())
         $('language-options-ui-language-section').hidden = true;
-          PageManager.closeOverlay.bind(PageManager);
     },
 
     /**
