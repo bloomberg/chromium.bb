@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
-#define MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/edk/embedder/process_type.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/embedder/slave_process_delegate.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_type.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
 
 namespace mojo {
 namespace test {
@@ -113,4 +113,4 @@ class ScopedSlaveIPCSupport : public embedder::SlaveProcessDelegate {
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_SCOPED_IPC_SUPPORT_H_

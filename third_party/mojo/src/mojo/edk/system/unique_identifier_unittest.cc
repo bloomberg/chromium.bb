@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/unique_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/unique_identifier.h"
 
 #include <set>
 #include <string>
 
 #include "base/containers/hash_tables.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
 
 namespace mojo {
 namespace system {

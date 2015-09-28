@@ -9,10 +9,10 @@
 #include "gin/modules/timer.h"
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
-#include "mojo/edk/js/core.h"
-#include "mojo/edk/js/support.h"
-#include "mojo/edk/js/threading.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/js/core.h"
+#include "third_party/mojo/src/mojo/edk/js/support.h"
+#include "third_party/mojo/src/mojo/edk/js/threading.h"
 
 namespace mojo {
 namespace js {

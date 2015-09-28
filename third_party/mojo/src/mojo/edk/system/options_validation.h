@@ -8,8 +8,8 @@
 // but any |flags| specified must be known to the system (otherwise, an error of
 // |MOJO_RESULT_UNIMPLEMENTED| should be returned).
 
-#ifndef MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_
-#define MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -17,10 +17,10 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -99,4 +99,4 @@ class UserOptionsReader {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_OPTIONS_VALIDATION_H_

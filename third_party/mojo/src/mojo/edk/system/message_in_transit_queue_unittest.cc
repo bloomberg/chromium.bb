@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/message_in_transit_queue.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
 
-#include "mojo/edk/system/message_in_transit_test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

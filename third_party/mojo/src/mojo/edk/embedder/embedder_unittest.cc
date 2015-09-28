@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #include <string.h>
 
@@ -14,17 +14,17 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/test_embedder.h"
-#include "mojo/edk/system/mutex.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/edk/test/scoped_ipc_support.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
+#include "third_party/mojo/src/mojo/edk/test/scoped_ipc_support.h"
 
 namespace mojo {
 namespace embedder {

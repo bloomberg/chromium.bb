@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/channel_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
 
 #include "base/logging.h"
 #include "base/threading/platform_thread.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/channel_endpoint_client.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint_client.h"
 
 namespace mojo {
 namespace system {

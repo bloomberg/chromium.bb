@@ -12,8 +12,8 @@
 // particular, |TRY_ACQUIRE()| doesn't work: b/19264527).
 // https://github.com/domokit/mojo/issues/314
 
-#ifndef MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_
-#define MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_
 
 // Enable thread-safety attributes only with clang.
 // The attributes can be safely erased when compiling with other compilers.
@@ -82,4 +82,4 @@
 // implementations.
 #define MOJO_NOT_THREAD_SAFE MOJO_NO_THREAD_SAFETY_ANALYSIS
 
-#endif  // MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_THREAD_ANNOTATIONS_H_

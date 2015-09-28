@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/platform_handle_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/platform_handle_dispatcher.h"
 
 #include <stdio.h>
 
@@ -11,8 +11,8 @@
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/test/test_utils.h"
 
 namespace mojo {
 namespace system {

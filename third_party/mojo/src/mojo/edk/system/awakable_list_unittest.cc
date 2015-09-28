@@ -7,13 +7,13 @@
 // increase tolerance and reduce observed flakiness (though doing so reduces the
 // meaningfulness of the test).
 
-#include "mojo/edk/system/awakable_list.h"
+#include "third_party/mojo/src/mojo/edk/system/awakable_list.h"
 
-#include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/waiter.h"
-#include "mojo/edk/system/waiter_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter_test_utils.h"
 
 namespace mojo {
 namespace system {

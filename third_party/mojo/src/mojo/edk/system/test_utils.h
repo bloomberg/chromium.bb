@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_TEST_UTILS_H_
-#define MOJO_EDK_SYSTEM_TEST_UTILS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TEST_UTILS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
 #include "base/time/time.h"
 #include "mojo/public/c/system/types.h"
@@ -55,4 +55,4 @@ class Stopwatch {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_TEST_UTILS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TEST_UTILS_H_

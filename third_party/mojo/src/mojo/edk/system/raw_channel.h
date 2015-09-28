@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
-#define MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
 
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_in_transit_queue.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace base {
 class MessageLoopForIO;
@@ -330,4 +330,4 @@ class MOJO_SYSTEM_IMPL_EXPORT RawChannel {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_RAW_CHANNEL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_RAW_CHANNEL_H_

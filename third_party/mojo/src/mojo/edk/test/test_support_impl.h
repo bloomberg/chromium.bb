@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
-#define MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
 
 #include <stdio.h>
 
@@ -33,4 +33,4 @@ class TestSupportImpl : public TestSupport {
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_TEST_SUPPORT_IMPL_H_

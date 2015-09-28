@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -23,16 +23,16 @@
 #include "base/test/test_io_thread.h"
 #include "base/threading/simple_thread.h"
 #include "build/build_config.h"  // TODO(vtl): Remove this.
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/mutex.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/transport_data.h"
-#include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/transport_data.h"
+#include "third_party/mojo/src/mojo/edk/test/test_utils.h"
 
 namespace mojo {
 namespace system {

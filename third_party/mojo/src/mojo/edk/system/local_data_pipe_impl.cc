@@ -8,7 +8,7 @@
 // saved by the limit on capacity -- the maximum size of the buffer, checked in
 // |DataPipe::ValidateOptions()|, is currently sufficiently small.)
 
-#include "mojo/edk/system/local_data_pipe_impl.h"
+#include "third_party/mojo/src/mojo/edk/system/local_data_pipe_impl.h"
 
 #include <string.h>
 
@@ -16,13 +16,13 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/data_pipe.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_in_transit_queue.h"
-#include "mojo/edk/system/remote_consumer_data_pipe_impl.h"
-#include "mojo/edk/system/remote_producer_data_pipe_impl.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit_queue.h"
+#include "third_party/mojo/src/mojo/edk/system/remote_consumer_data_pipe_impl.h"
+#include "third_party/mojo/src/mojo/edk/system/remote_producer_data_pipe_impl.h"
 
 namespace mojo {
 namespace system {

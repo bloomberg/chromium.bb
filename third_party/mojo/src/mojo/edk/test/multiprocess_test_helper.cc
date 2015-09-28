@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/test/multiprocess_test_helper.h"
+#include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
 
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 
 namespace mojo {
 namespace test {

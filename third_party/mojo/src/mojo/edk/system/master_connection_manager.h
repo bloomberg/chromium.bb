@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_
-#define MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_
 
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/system/connection_manager.h"
-#include "mojo/edk/system/mutex.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace base {
 class TaskRunner;
@@ -175,4 +175,4 @@ class MOJO_SYSTEM_IMPL_EXPORT MasterConnectionManager final
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MASTER_CONNECTION_MANAGER_H_

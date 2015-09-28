@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/data_pipe_producer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_producer_dispatcher.h"
 
 #include "base/logging.h"
-#include "mojo/edk/system/data_pipe.h"
-#include "mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/memory.h"
 
 namespace mojo {
 namespace system {

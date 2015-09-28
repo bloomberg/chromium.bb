@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 
 #include <windows.h>
 
@@ -15,8 +15,8 @@
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "base/win/windows_version.h"
-#include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 
 namespace mojo {
 namespace system {

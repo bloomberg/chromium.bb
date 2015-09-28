@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
-#define MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
 
 #include <deque>
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -59,4 +59,4 @@ class MOJO_SYSTEM_IMPL_EXPORT MessageInTransitQueue {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_QUEUE_H_

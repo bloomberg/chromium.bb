@@ -10,11 +10,11 @@
 // So instead we have some cheesy macros that you can define to enable
 // individual compilation failures.
 
-#include "mojo/edk/system/thread_annotations.h"
+#include "third_party/mojo/src/mojo/edk/system/thread_annotations.h"
 
-#include "mojo/edk/system/mutex.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
 
 // Uncomment these to enable particular compilation failure tests.
 // #define NC_GUARDED_BY

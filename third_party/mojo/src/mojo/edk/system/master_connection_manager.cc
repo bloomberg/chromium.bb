@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/master_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/master_connection_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -10,15 +10,15 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/connection_manager_messages.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/raw_channel.h"
-#include "mojo/edk/system/transport_data.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_manager_messages.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/system/transport_data.h"
 
 namespace mojo {
 namespace system {

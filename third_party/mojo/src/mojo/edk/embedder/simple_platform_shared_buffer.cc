@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/simple_platform_shared_buffer.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_shared_buffer.h"
 
 #include "base/logging.h"
-#include "mojo/edk/embedder/platform_handle_utils.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_utils.h"
 
 namespace mojo {
 namespace embedder {

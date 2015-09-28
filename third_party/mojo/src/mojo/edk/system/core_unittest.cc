@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/core.h"
+#include "third_party/mojo/src/mojo/edk/system/core.h"
 
 #include <stdint.h>
 
 #include <limits>
 
 #include "base/bind.h"
-#include "mojo/edk/system/awakable.h"
-#include "mojo/edk/system/core_test_base.h"
-#include "mojo/edk/system/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/awakable.h"
+#include "third_party/mojo/src/mojo/edk/system/core_test_base.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 
 namespace mojo {
 namespace system {

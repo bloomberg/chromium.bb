@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_
-#define MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_
 
 #include "base/macros.h"
 #include "gin/modules/module_runner_delegate.h"
@@ -30,4 +30,4 @@ class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
 }  // namespace js
 }  // namespace mojo
 
-#endif  // MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_MOJO_RUNNER_DELEGATE_H_

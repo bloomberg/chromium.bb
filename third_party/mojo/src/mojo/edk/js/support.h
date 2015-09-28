@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_JS_SUPPORT_H_
-#define MOJO_EDK_JS_SUPPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_SUPPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_SUPPORT_H_
 
 #include "v8/include/v8.h"
 
@@ -19,4 +19,4 @@ class Support {
 }  // namespace js
 }  // namespace mojo
 
-#endif  // MOJO_EDK_JS_SUPPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_JS_SUPPORT_H_

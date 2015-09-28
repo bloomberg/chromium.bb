@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/js/support.h"
+#include "third_party/mojo/src/mojo/edk/js/support.h"
 
 #include "base/bind.h"
 #include "gin/arguments.h"
@@ -12,9 +12,9 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
-#include "mojo/edk/js/handle.h"
-#include "mojo/edk/js/waiting_callback.h"
 #include "mojo/public/cpp/system/core.h"
+#include "third_party/mojo/src/mojo/edk/js/handle.h"
+#include "third_party/mojo/src/mojo/edk/js/waiting_callback.h"
 
 namespace mojo {
 namespace js {

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_
-#define MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_
 
-#include "mojo/edk/system/unique_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/unique_identifier.h"
 
 namespace mojo {
 namespace system {
@@ -17,4 +17,4 @@ using ConnectionIdentifier = UniqueIdentifier;
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CONNECTION_IDENTIFIER_H_

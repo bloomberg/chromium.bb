@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
-#define MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
@@ -26,4 +26,4 @@
 #define MOJO_SYSTEM_IMPL_EXPORT
 #endif
 
-#endif  // MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_

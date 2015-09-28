@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_
-#define MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_
 
 #include <stdint.h>
 
 #include "base/memory/ref_counted.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/waiter.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
 
 namespace mojo {
 namespace system {
@@ -101,4 +101,4 @@ class WaiterThread : public base::SimpleThread {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_WAITER_TEST_UTILS_H_

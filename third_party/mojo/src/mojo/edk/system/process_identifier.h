@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_
-#define MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_
 
 #include <stdint.h>
 
@@ -22,4 +22,4 @@ const ProcessIdentifier kMasterProcessIdentifier = 1;
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROCESS_IDENTIFIER_H_

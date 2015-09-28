@@ -5,7 +5,7 @@
 // This is really a unit test for |MasterConnectionManager| and
 // |SlaveConnectionManager| (since they need to be tested together).
 
-#include "mojo/edk/system/connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_manager.h"
 
 #include <stdint.h>
 
@@ -14,14 +14,14 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/embedder/slave_process_delegate.h"
-#include "mojo/edk/system/master_connection_manager.h"
-#include "mojo/edk/system/slave_connection_manager.h"
-#include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/system/master_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/slave_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

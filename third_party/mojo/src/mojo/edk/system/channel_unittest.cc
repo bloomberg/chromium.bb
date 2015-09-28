@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
 
-#include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/channel_endpoint_id.h"
-#include "mojo/edk/system/channel_test_base.h"
-#include "mojo/edk/system/message_pipe.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/waiter.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint_id.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_test_base.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
 
 namespace mojo {
 namespace system {

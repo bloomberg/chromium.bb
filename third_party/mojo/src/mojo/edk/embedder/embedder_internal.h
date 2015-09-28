@@ -6,12 +6,12 @@
 // embedder API. It should not be included by any public header (nor by users of
 // the embedder API).
 
-#ifndef MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_
-#define MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_
 
 #include <stdint.h>
 
-#include "mojo/edk/system/channel_id.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_id.h"
 
 namespace base {
 class TaskRunner;
@@ -62,4 +62,4 @@ extern system::IPCSupport* g_ipc_support;
 
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_EMBEDDER_INTERNAL_H_

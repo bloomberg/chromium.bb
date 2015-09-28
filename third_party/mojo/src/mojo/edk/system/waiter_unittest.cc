@@ -7,15 +7,15 @@
 // increase tolerance and reduce observed flakiness (though doing so reduces the
 // meaningfulness of the test).
 
-#include "mojo/edk/system/waiter.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
 
 #include <stdint.h>
 
 #include "base/threading/simple_thread.h"
-#include "mojo/edk/system/mutex.h"
-#include "mojo/edk/system/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
 
 namespace mojo {
 namespace system {

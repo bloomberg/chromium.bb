@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/mapping_table.h"
+#include "third_party/mojo/src/mojo/edk/system/mapping_table.h"
 
 #include "base/logging.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
 
 namespace mojo {
 namespace system {

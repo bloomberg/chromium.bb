@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/test_embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/test_embedder.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/channel_manager.h"
-#include "mojo/edk/system/core.h"
-#include "mojo/edk/system/handle_table.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder_internal.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/core.h"
+#include "third_party/mojo/src/mojo/edk/system/handle_table.h"
 
 namespace mojo {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/test/test_support_impl.h"
+#include "third_party/mojo/src/mojo/edk/test/test_support_impl.h"
 
 #include <stdlib.h>
 #include <string.h>

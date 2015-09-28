@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
-#define MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
 
 #include <stdint.h>
 
@@ -12,11 +12,11 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/platform_handle.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -188,4 +188,4 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_TRANSPORT_DATA_H_

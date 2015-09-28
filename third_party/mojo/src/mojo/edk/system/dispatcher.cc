@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 
 #include "base/logging.h"
-#include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
-#include "mojo/edk/system/data_pipe_producer_dispatcher.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/platform_handle_dispatcher.h"
-#include "mojo/edk/system/shared_buffer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_consumer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_producer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/platform_handle_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/shared_buffer_dispatcher.h"
 
 namespace mojo {
 namespace system {

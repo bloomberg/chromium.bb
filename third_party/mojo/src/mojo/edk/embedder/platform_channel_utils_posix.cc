@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_utils_posix.h"
 
 #include <sys/socket.h>
 #include <sys/uio.h>

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_
-#define MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_
 
 #include <stdint.h>
 #include <string.h>
@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/containers/hash_tables.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -101,4 +101,4 @@ struct hash<mojo::system::UniqueIdentifier> {
 
 }  // BASE_HASH_NAMESPACE
 
-#endif  // MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_UNIQUE_IDENTIFIER_H_

@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_IPC_SUPPORT_H_
-#define MOJO_EDK_SYSTEM_IPC_SUPPORT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_IPC_SUPPORT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_IPC_SUPPORT_H_
 
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/process_type.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
-#include "mojo/edk/embedder/slave_info.h"
-#include "mojo/edk/system/channel_id.h"
-#include "mojo/edk/system/connection_identifier.h"
-#include "mojo/edk/system/process_identifier.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_type.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_info.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_id.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/process_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 
@@ -178,4 +178,4 @@ class MOJO_SYSTEM_IMPL_EXPORT IPCSupport {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_IPC_SUPPORT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_IPC_SUPPORT_H_

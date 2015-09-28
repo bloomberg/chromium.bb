@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
-#define MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
 
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_pipe_endpoint.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -58,4 +58,4 @@ class MOJO_SYSTEM_IMPL_EXPORT ProxyMessagePipeEndpoint final
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_PROXY_MESSAGE_PIPE_ENDPOINT_H_

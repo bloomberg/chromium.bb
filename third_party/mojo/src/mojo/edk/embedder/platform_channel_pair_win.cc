@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
 
 #include <windows.h>
 
@@ -14,7 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
-#include "mojo/edk/embedder/platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 
 namespace mojo {
 namespace embedder {

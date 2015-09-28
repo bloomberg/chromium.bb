@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/js/core.h"
+#include "third_party/mojo/src/mojo/edk/js/core.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -16,8 +16,8 @@
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
-#include "mojo/edk/js/drain_data.h"
-#include "mojo/edk/js/handle.h"
+#include "third_party/mojo/src/mojo/edk/js/drain_data.h"
+#include "third_party/mojo/src/mojo/edk/js/handle.h"
 
 namespace mojo {
 namespace js {

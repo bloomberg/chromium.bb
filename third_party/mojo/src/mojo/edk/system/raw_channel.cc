@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 
 #include <string.h>
 
@@ -12,8 +12,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/transport_data.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/transport_data.h"
 
 namespace mojo {
 namespace system {

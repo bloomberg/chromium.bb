@@ -9,14 +9,14 @@
 // still cheats and uses Chromium's lock_impl.*), but eventually we'll want our
 // own and, e.g., add support for non-exclusive (reader) locks.
 
-#ifndef MOJO_EDK_SYSTEM_MUTEX_H_
-#define MOJO_EDK_SYSTEM_MUTEX_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MUTEX_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MUTEX_H_
 
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/platform_thread.h"
-#include "mojo/edk/system/system_impl_export.h"
-#include "mojo/edk/system/thread_annotations.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/edk/system/thread_annotations.h"
 
 namespace mojo {
 namespace system {
@@ -90,4 +90,4 @@ class MOJO_SCOPED_LOCKABLE MOJO_SYSTEM_IMPL_EXPORT MutexLocker {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_MUTEX_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MUTEX_H_

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_
-#define MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_
 
 #include <string>
 
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/multiprocess_func_list.h"
+#include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace mojo {
 
@@ -95,4 +95,4 @@ class MultiprocessTestHelper {
 }  // namespace test
 }  // namespace mojo
 
-#endif  // MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_TEST_MULTIPROCESS_TEST_HELPER_H_

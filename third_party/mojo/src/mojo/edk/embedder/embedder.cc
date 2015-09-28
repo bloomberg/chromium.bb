@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 #include "base/atomicops.h"
 #include "base/bind.h"
@@ -11,19 +11,19 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/platform_support.h"
-#include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/edk/embedder/slave_process_delegate.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/channel_manager.h"
-#include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/core.h"
-#include "mojo/edk/system/ipc_support.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/platform_handle_dispatcher.h"
-#include "mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder_internal.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/system/core.h"
+#include "third_party/mojo/src/mojo/edk/system/ipc_support.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/platform_handle_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
 
 namespace mojo {
 namespace embedder {

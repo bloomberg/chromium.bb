@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_
-#define MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_
 
 #include <list>
 
-#include "mojo/edk/system/awakable_list.h"
-#include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/awakable_list.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -46,4 +46,4 @@ class MOJO_SYSTEM_IMPL_EXPORT SimpleDispatcher : public Dispatcher {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_SIMPLE_DISPATCHER_H_

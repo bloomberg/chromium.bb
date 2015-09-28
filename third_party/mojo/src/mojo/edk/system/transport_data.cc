@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/transport_data.h"
+#include "third_party/mojo/src/mojo/edk/system/transport_data.h"
 
 #include <string.h>
 
 #include "base/logging.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 
 namespace mojo {
 namespace system {

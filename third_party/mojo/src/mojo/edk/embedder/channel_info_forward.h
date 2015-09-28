@@ -5,8 +5,8 @@
 // This file simply (forward) declares |mojo::embedder::ChannelInfo|, which is
 // meant to be opaque to users of the embedder API.
 
-#ifndef MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_
-#define MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_
 
 namespace mojo {
 namespace embedder {
@@ -19,4 +19,4 @@ struct ChannelInfo;
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_CHANNEL_INFO_FORWARD_H_

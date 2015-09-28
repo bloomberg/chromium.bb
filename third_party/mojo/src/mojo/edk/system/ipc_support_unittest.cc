@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/ipc_support.h"
+#include "third_party/mojo/src/mojo/edk/system/ipc_support.h"
 
 #include <utility>
 #include <vector>
@@ -15,22 +15,22 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_timeouts.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/embedder/slave_process_delegate.h"
-#include "mojo/edk/system/channel_manager.h"
-#include "mojo/edk/system/connection_identifier.h"
-#include "mojo/edk/system/dispatcher.h"
-#include "mojo/edk/system/message_pipe.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/process_identifier.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/waiter.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
-#include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/process_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
+#include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
+#include "third_party/mojo/src/mojo/edk/test/test_utils.h"
 
 namespace mojo {
 namespace system {

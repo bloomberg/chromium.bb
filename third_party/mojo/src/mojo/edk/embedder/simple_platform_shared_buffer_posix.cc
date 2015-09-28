@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/embedder/simple_platform_shared_buffer.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_shared_buffer.h"
 
 #include <stdint.h>
 #include <stdio.h>     // For |fileno()|.
@@ -20,7 +20,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_restrictions.h"
-#include "mojo/edk/embedder/platform_handle.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle.h"
 
 // We assume that |size_t| and |off_t| (type for |ftruncate()|) fits in a
 // |uint64_t|.

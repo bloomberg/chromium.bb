@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/shared_buffer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/shared_buffer_dispatcher.h"
 
 #include <limits>
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/embedder/platform_support.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/configuration.h"
-#include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/options_validation.h"
 #include "mojo/public/c/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/configuration.h"
+#include "third_party/mojo/src/mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/edk/system/options_validation.h"
 
 namespace mojo {
 namespace system {

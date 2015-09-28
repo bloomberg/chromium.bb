@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/ipc_support.h"
+#include "third_party/mojo/src/mojo/edk/system/ipc_support.h"
 
 #include "base/logging.h"
-#include "mojo/edk/embedder/master_process_delegate.h"
-#include "mojo/edk/embedder/slave_process_delegate.h"
-#include "mojo/edk/system/channel_manager.h"
-#include "mojo/edk/system/master_connection_manager.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/slave_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/embedder/master_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/master_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/slave_connection_manager.h"
 
 namespace mojo {
 namespace system {

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/shared_buffer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/shared_buffer_dispatcher.h"
 
 #include <limits>
 
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/dispatcher.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_shared_buffer.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/system/dispatcher.h"
 
 namespace mojo {
 namespace system {

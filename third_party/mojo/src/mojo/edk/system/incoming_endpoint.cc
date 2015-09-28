@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/incoming_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/incoming_endpoint.h"
 
 #include "base/logging.h"
-#include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/data_pipe.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_pipe.h"
-#include "mojo/edk/system/remote_producer_data_pipe_impl.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/remote_producer_data_pipe_impl.h"
 
 namespace mojo {
 namespace system {

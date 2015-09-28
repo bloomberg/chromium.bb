@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
-#define MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
 
 #include "base/test/test_io_thread.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/test/multiprocess_test_helper.h"
 
 namespace mojo {
 namespace system {
@@ -71,4 +71,4 @@ class MultiprocessMessagePipeTestBase : public testing::Test {
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_PIPE_TEST_UTILS_H_

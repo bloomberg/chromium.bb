@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
-#define MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
 
-#include "mojo/edk/embedder/process_delegate.h"
-#include "mojo/edk/embedder/slave_info.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
+#include "third_party/mojo/src/mojo/edk/embedder/slave_info.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace embedder {
@@ -40,4 +40,4 @@ inline ProcessType MasterProcessDelegate::GetType() const {
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_MASTER_PROCESS_DELEGATE_H_

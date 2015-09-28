@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/slave_connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/slave_connection_manager.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/system/connection_manager_messages.h"
-#include "mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_manager_messages.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 
 namespace mojo {
 namespace system {

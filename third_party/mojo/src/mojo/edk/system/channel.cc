@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
 
 #include <algorithm>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/endpoint_relayer.h"
-#include "mojo/edk/system/transport_data.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
+#include "third_party/mojo/src/mojo/edk/system/endpoint_relayer.h"
+#include "third_party/mojo/src/mojo/edk/system/transport_data.h"
 
 namespace mojo {
 namespace system {

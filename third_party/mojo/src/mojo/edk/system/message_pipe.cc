@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
 
 #include "base/logging.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/channel_endpoint_id.h"
-#include "mojo/edk/system/incoming_endpoint.h"
-#include "mojo/edk/system/local_message_pipe_endpoint.h"
-#include "mojo/edk/system/message_in_transit.h"
-#include "mojo/edk/system/message_pipe_dispatcher.h"
-#include "mojo/edk/system/message_pipe_endpoint.h"
-#include "mojo/edk/system/proxy_message_pipe_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint_id.h"
+#include "third_party/mojo/src/mojo/edk/system/incoming_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/local_message_pipe_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/proxy_message_pipe_endpoint.h"
 
 namespace mojo {
 namespace system {

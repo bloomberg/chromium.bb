@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_
-#define MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,8 +12,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace system {
@@ -145,4 +145,4 @@ struct hash<mojo::system::ChannelEndpointId> {
 
 }  // namespace BASE_HASH_NAMESPACE
 
-#endif  // MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_CHANNEL_ENDPOINT_ID_H_

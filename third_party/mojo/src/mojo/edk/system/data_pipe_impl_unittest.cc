@@ -5,7 +5,7 @@
 // This file contains tests that are shared between different implementations of
 // |DataPipeImpl|.
 
-#include "mojo/edk/system/data_pipe_impl.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_impl.h"
 
 #include <stdint.h>
 
@@ -15,19 +15,19 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_io_thread.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/channel.h"
-#include "mojo/edk/system/channel_endpoint.h"
-#include "mojo/edk/system/data_pipe.h"
-#include "mojo/edk/system/data_pipe_consumer_dispatcher.h"
-#include "mojo/edk/system/data_pipe_producer_dispatcher.h"
-#include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/message_pipe.h"
-#include "mojo/edk/system/raw_channel.h"
-#include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/waiter.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_channel_pair.h"
+#include "third_party/mojo/src/mojo/edk/embedder/simple_platform_support.h"
+#include "third_party/mojo/src/mojo/edk/system/channel.h"
+#include "third_party/mojo/src/mojo/edk/system/channel_endpoint.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_consumer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/data_pipe_producer_dispatcher.h"
+#include "third_party/mojo/src/mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/edk/system/message_pipe.h"
+#include "third_party/mojo/src/mojo/edk/system/raw_channel.h"
+#include "third_party/mojo/src/mojo/edk/system/test_utils.h"
+#include "third_party/mojo/src/mojo/edk/system/waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

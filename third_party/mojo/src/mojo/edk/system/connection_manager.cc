@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/connection_manager.h"
+#include "third_party/mojo/src/mojo/edk/system/connection_manager.h"
 
 namespace mojo {
 namespace system {

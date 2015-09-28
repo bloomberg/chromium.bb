@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/system/unique_identifier.h"
+#include "third_party/mojo/src/mojo/edk/system/unique_identifier.h"
 
 #include <stdint.h>
 
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
-#include "mojo/edk/embedder/platform_support.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_support.h"
 
 namespace mojo {
 namespace system {

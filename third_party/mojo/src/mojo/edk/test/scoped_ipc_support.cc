@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/edk/test/scoped_ipc_support.h"
+#include "third_party/mojo/src/mojo/edk/test/scoped_ipc_support.h"
 
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/embedder/embedder.h"
+#include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace mojo {
 namespace test {

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_
-#define MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_
 
-#include "mojo/edk/system/system_impl_export.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 namespace embedder {
@@ -29,4 +29,4 @@ MOJO_SYSTEM_IMPL_EXPORT bool Shutdown();
 }  // namespace embedder
 }  // namespace mojo
 
-#endif  // MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_EMBEDDER_TEST_EMBEDDER_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_
-#define MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/system/message_in_transit.h"
+#include "third_party/mojo/src/mojo/edk/system/message_in_transit.h"
 
 namespace mojo {
 namespace system {
@@ -32,4 +32,4 @@ bool IsTestMessage(MessageInTransit* message, unsigned* id);
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_MESSAGE_IN_TRANSIT_TEST_UTILS_H_

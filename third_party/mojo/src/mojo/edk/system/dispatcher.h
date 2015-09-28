@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_EDK_SYSTEM_DISPATCHER_H_
-#define MOJO_EDK_SYSTEM_DISPATCHER_H_
+#ifndef THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_DISPATCHER_H_
+#define THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_DISPATCHER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,16 +13,16 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/edk/embedder/platform_handle_vector.h"
-#include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/memory.h"
-#include "mojo/edk/system/mutex.h"
-#include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "third_party/mojo/src/mojo/edk/embedder/platform_handle_vector.h"
+#include "third_party/mojo/src/mojo/edk/system/handle_signals_state.h"
+#include "third_party/mojo/src/mojo/edk/system/memory.h"
+#include "third_party/mojo/src/mojo/edk/system/mutex.h"
+#include "third_party/mojo/src/mojo/edk/system/system_impl_export.h"
 
 namespace mojo {
 
@@ -431,4 +431,4 @@ MOJO_SYSTEM_IMPL_EXPORT inline std::ostream& operator<<(std::ostream& out,
 }  // namespace system
 }  // namespace mojo
 
-#endif  // MOJO_EDK_SYSTEM_DISPATCHER_H_
+#endif  // THIRD_PARTY_MOJO_SRC_MOJO_EDK_SYSTEM_DISPATCHER_H_
