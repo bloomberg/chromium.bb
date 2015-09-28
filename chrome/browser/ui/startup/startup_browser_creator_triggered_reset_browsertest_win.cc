@@ -10,6 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter.h"
 #include "chrome/browser/profile_resetter/triggered_profile_resetter_factory.h"
+#include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -153,8 +154,15 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,
   // Verify that only the first-run tabs are shown.
   TabStripModel* tab_strip = new_browser->tab_strip_model();
   ASSERT_EQ(2, tab_strip->count());
-  EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
-            tab_strip->GetWebContentsAt(0)->GetURL());
+
+  if (signin::ShouldShowPromoAtStartup(browser()->profile(), true)) {
+    EXPECT_EQ(signin::GetPromoURL(signin_metrics::SOURCE_START_PAGE, false),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+  } else {
+    EXPECT_EQ(GURL(chrome::kChromeUINewTabURL),
+              tab_strip->GetWebContentsAt(0)->GetURL());
+  }
+
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(1)->GetURL().ExtractFileName());
 }
