@@ -21,6 +21,8 @@
         # Note: sources list duplicated in GN build.
         'net_log/chrome_net_log.cc',
         'net_log/chrome_net_log.h',
+        'net_log/net_export_ui_constants.cc',
+        'net_log/net_export_ui_constants.h',
         'net_log/net_log_temp_file.cc',
         'net_log/net_log_temp_file.h',
       ],

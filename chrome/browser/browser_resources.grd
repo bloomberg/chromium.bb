@@ -193,8 +193,6 @@
       <include name="IDR_INSTANT_CSS" file="resources\instant\instant.css" flattenhtml="true" type="BINDATA" />
       <include name="IDR_INSTANT_HTML" file="resources\instant\instant.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_INSTANT_JS" file="resources\instant\instant.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NET_EXPORT_HTML" file="resources\net_export\net_export.html" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_NET_EXPORT_JS" file="resources\net_export\net_export.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_NETWORK_SPEECH_SYNTHESIS_MANIFEST" file="resources\network_speech_synthesis\manifest.json" type="BINDATA" />
       <include name="IDR_PREDICTORS_HTML" file="resources\predictors\predictors.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_PREDICTORS_JS" file="resources\predictors\predictors.js" flattenhtml="true" type="BINDATA" />

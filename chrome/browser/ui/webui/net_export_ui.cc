@@ -14,7 +14,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/grit/components_resources.h"
 #include "components/net_log/chrome_net_log.h"
+#include "components/net_log/net_export_ui_constants.h"
 #include "components/net_log/net_log_temp_file.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -22,7 +24,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "grit/browser_resources.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/intent_helper.h"
@@ -39,8 +40,8 @@ content::WebUIDataSource* CreateNetExportHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUINetExportHost);
 
   source->SetJsonPath("strings.js");
-  source->AddResourcePath("net_export.js", IDR_NET_EXPORT_JS);
-  source->SetDefaultResource(IDR_NET_EXPORT_HTML);
+  source->AddResourcePath(net_log::kNetExportUIJS, IDR_NET_LOG_NET_EXPORT_JS);
+  source->SetDefaultResource(IDR_NET_LOG_NET_EXPORT_HTML);
   return source;
 }
 
@@ -112,19 +113,19 @@ void NetExportMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_ui()->RegisterMessageCallback(
-      "getExportNetLogInfo",
+      net_log::kGetExportNetLogInfoHandler,
       base::Bind(&NetExportMessageHandler::OnGetExportNetLogInfo,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "startNetLog",
+      net_log::kStartNetLogHandler,
       base::Bind(&NetExportMessageHandler::OnStartNetLog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "stopNetLog",
+      net_log::kStopNetLogHandler,
       base::Bind(&NetExportMessageHandler::OnStopNetLog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "sendNetLog",
+      net_log::kSendNetLogHandler,
       base::Bind(&NetExportMessageHandler::OnSendNetLog,
                  base::Unretained(this)));
 }
@@ -241,8 +242,7 @@ void NetExportMessageHandler::SendEmail(const base::FilePath& file_to_send) {
 void NetExportMessageHandler::OnExportNetLogInfoChanged(base::Value* arg) {
   scoped_ptr<base::Value> value(arg);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  web_ui()->CallJavascriptFunction(
-      "NetExportView.getInstance().onExportNetLogInfoChanged", *arg);
+  web_ui()->CallJavascriptFunction(net_log::kOnExportNetLogInfoChanged, *arg);
 }
 
 }  // namespace

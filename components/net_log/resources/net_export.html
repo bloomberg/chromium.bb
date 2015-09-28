@@ -5,6 +5,13 @@
 <if expr="is_android">
 <meta name="viewport" content="width=device-width">
 </if>
+
+<if expr="is_ios">
+<!-- TODO(jyquinn): Remove this once CRWWebUIPageBuilder can inject it.
+See http://crbug.com/487000 -->
+<script src="chrome://resources/js/ios/web_ui.js"></script>
+</if>
+
 <script src="chrome://resources/js/util.js"></script>
 <script src="chrome://resources/js/cr.js"></script>
 <script src="chrome://net-export/net_export.js"></script>

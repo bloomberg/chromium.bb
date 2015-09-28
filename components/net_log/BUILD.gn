@@ -6,6 +6,8 @@ source_set("net_log") {
   sources = [
     "chrome_net_log.cc",
     "chrome_net_log.h",
+    "net_export_ui_constants.cc",
+    "net_export_ui_constants.h",
     "net_log_temp_file.cc",
     "net_log_temp_file.h",
   ]
