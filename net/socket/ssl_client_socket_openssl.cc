@@ -883,10 +883,10 @@ int SSLClientSocketOpenSSL::Init() {
   STACK_OF(SSL_CIPHER)* ciphers = SSL_get_ciphers(ssl_);
   DCHECK(ciphers);
   // See SSLConfig::disabled_cipher_suites for description of the suites
-  // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
+  // disabled by default. Note that SHA256 and SHA384 only select HMAC-SHA256
   // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
   // as the handshake hash.
-  std::string command("DEFAULT:!SHA256:!SHA384:!AESGCM+AES256:!aPSK");
+  std::string command("DEFAULT:!SHA256:-SHA384:!AESGCM+AES256:!aPSK");
   // Walk through all the installed ciphers, seeing if any need to be
   // appended to the cipher removal |command|.
   for (size_t i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
@@ -911,8 +911,15 @@ int SSLClientSocketOpenSSL::Init() {
      }
   }
 
-  if (!ssl_config_.enable_deprecated_cipher_suites)
+  if (!ssl_config_.enable_deprecated_cipher_suites) {
     command.append(":!RC4");
+  } else {
+    // Add TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 under a fallback. This is
+    // believed to work around a bug in some out-of-date Microsoft IIS servers
+    // which cause them to require the version downgrade
+    // (https://crbug.com/433406).
+    command.append(":ECDHE-RSA-AES256-SHA384");
+  }
 
   // Disable ECDSA cipher suites on platforms that do not support ECDSA
   // signed certificates, as servers may use the presence of such
