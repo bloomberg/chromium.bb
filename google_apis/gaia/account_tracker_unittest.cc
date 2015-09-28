@@ -29,7 +29,7 @@ enum TrackingEventType {
   SIGN_OUT
 };
 
-std::string AccountKeyToObfuscatedId(const std::string email) {
+std::string AccountKeyToObfuscatedId(const std::string& email) {
   return "obfid-" + email;
 }
 
@@ -294,7 +294,7 @@ class IdentityAccountTrackerTest : public testing::Test {
 
   // Helpers to pass fake events to the tracker.
 
-  void NotifyLogin(const std::string account_key) {
+  void NotifyLogin(const std::string& account_key) {
     identity_provider()->LogIn(account_key);
   }
 
@@ -314,7 +314,7 @@ class IdentityAccountTrackerTest : public testing::Test {
         username, "access_token-" + username, base::Time::Max());
   }
 
-  std::string GetValidTokenInfoResponse(const std::string account_key) {
+  std::string GetValidTokenInfoResponse(const std::string& account_key) {
     return std::string("{ \"id\": \"") + AccountKeyToObfuscatedId(account_key) +
            "\" }";
   }

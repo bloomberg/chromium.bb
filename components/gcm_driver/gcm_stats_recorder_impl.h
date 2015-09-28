@@ -47,7 +47,8 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   void RecordCheckinInitiated(uint64 android_id) override;
   void RecordCheckinDelayedDueToBackoff(int64 delay_msec) override;
   void RecordCheckinSuccess() override;
-  void RecordCheckinFailure(std::string status, bool will_retry) override;
+  void RecordCheckinFailure(const std::string& status,
+                            bool will_retry) override;
   void RecordConnectionInitiated(const std::string& host) override;
   void RecordConnectionDelayedDueToBackoff(int64 delay_msec) override;
   void RecordConnectionSuccess() override;

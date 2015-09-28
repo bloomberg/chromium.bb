@@ -177,7 +177,7 @@ void AccountTracker::NotifySignInChanged(const AccountState& account) {
                     OnAccountSignInChanged(account.ids, account.is_signed_in));
 }
 
-void AccountTracker::UpdateSignInState(const std::string account_key,
+void AccountTracker::UpdateSignInState(const std::string& account_key,
                                        bool is_signed_in) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
@@ -198,7 +198,7 @@ void AccountTracker::UpdateSignInState(const std::string account_key,
     NotifySignInChanged(account);
 }
 
-void AccountTracker::StartTrackingAccount(const std::string account_key) {
+void AccountTracker::StartTrackingAccount(const std::string& account_key) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -235,7 +235,7 @@ void AccountTracker::StopTrackingAllAccounts() {
     StopTrackingAccount(accounts_.begin()->first);
 }
 
-void AccountTracker::StartFetchingUserInfo(const std::string account_key) {
+void AccountTracker::StartFetchingUserInfo(const std::string& account_key) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile(

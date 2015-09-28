@@ -15,7 +15,7 @@ const char kValidTokenResponse[] =
     "}";
 }
 
-std::string GetValidTokenResponse(std::string token, int expiration) {
+std::string GetValidTokenResponse(const std::string& token, int expiration) {
   return base::StringPrintf(kValidTokenResponse, token.c_str(), expiration);
 }
 

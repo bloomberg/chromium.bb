@@ -10,7 +10,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-std::string GetValidTokenResponse(std::string token, int expiration);
+std::string GetValidTokenResponse(const std::string& token, int expiration);
 
 // A simple testing consumer.
 class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {

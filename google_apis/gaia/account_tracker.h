@@ -97,12 +97,17 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void NotifyAccountRemoved(const AccountState& account);
   void NotifySignInChanged(const AccountState& account);
 
-  void UpdateSignInState(const std::string account_key, bool is_signed_in);
+  void UpdateSignInState(const std::string& account_key, bool is_signed_in);
 
-  void StartTrackingAccount(const std::string account_key);
+  void StartTrackingAccount(const std::string& account_key);
+
+  // Note: |account_key| is passed by value here, because the original
+  // object may be stored in |accounts_| and if so, it will be destroyed
+  // after erasing the key from the map.
   void StopTrackingAccount(const std::string account_key);
+
   void StopTrackingAllAccounts();
-  void StartFetchingUserInfo(const std::string account_key);
+  void StartFetchingUserInfo(const std::string& account_key);
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
   IdentityProvider* identity_provider_;  // Not owned.

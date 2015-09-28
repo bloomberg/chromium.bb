@@ -206,8 +206,8 @@ void GCMStatsRecorderImpl::RecordCheckinSuccess() {
   RecordCheckin("Checkin succeeded", std::string());
 }
 
-void GCMStatsRecorderImpl::RecordCheckinFailure(std::string status,
-                                            bool will_retry) {
+void GCMStatsRecorderImpl::RecordCheckinFailure(const std::string& status,
+                                                bool will_retry) {
   if (!is_recording_)
     return;
   RecordCheckin("Checkin failed", base::StringPrintf(

@@ -21,9 +21,8 @@ void FakeGCMStatsRecorder::RecordCheckinDelayedDueToBackoff(int64 delay_msec) {
 void FakeGCMStatsRecorder::RecordCheckinSuccess() {
 }
 
-void FakeGCMStatsRecorder::RecordCheckinFailure(std::string status,
-                                            bool will_retry) {
-}
+void FakeGCMStatsRecorder::RecordCheckinFailure(const std::string& status,
+                                                bool will_retry) {}
 
 void FakeGCMStatsRecorder::RecordConnectionInitiated(const std::string& host) {
 }

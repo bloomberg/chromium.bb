@@ -52,7 +52,8 @@ class GCM_EXPORT GCMStatsRecorder {
 
   // Records that a check-in request has failed. If a retry will be tempted then
   // will_retry should be true.
-  virtual void RecordCheckinFailure(std::string status, bool will_retry) = 0;
+  virtual void RecordCheckinFailure(const std::string& status,
+                                    bool will_retry) = 0;
 
   // Records that a connection to MCS has been initiated.
   virtual void RecordConnectionInitiated(const std::string& host) = 0;
