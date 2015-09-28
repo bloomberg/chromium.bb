@@ -188,40 +188,43 @@ void AwRenderViewExt::OnDocumentHasImagesRequest(int id) {
 }
 
 void AwRenderViewExt::DidCommitCompositorFrame() {
-  UpdatePageScaleFactor();
+  PostCheckContentsSizeAndScale();
 }
 
 void AwRenderViewExt::DidUpdateLayout() {
+  PostCheckContentsSizeAndScale();
+}
+
+void AwRenderViewExt::PostCheckContentsSizeAndScale() {
   if (check_contents_size_timer_.IsRunning())
     return;
 
   check_contents_size_timer_.Start(FROM_HERE,
                                    base::TimeDelta::FromMilliseconds(0), this,
-                                   &AwRenderViewExt::CheckContentsSize);
+                                   &AwRenderViewExt::CheckContentsSizeAndScale);
 }
 
-void AwRenderViewExt::UpdatePageScaleFactor() {
-  if (page_scale_factor_ != render_view()->GetWebView()->pageScaleFactor()) {
-    page_scale_factor_ = render_view()->GetWebView()->pageScaleFactor();
+void AwRenderViewExt::CheckContentsSizeAndScale() {
+  blink::WebView* webview = render_view()->GetWebView();
+  if (!webview)
+    return;
+
+  if (page_scale_factor_ != webview->pageScaleFactor()) {
+    page_scale_factor_ = webview->pageScaleFactor();
     Send(new AwViewHostMsg_PageScaleFactorChanged(routing_id(),
                                                   page_scale_factor_));
   }
-}
-
-void AwRenderViewExt::CheckContentsSize() {
-  if (!render_view()->GetWebView())
-    return;
 
   gfx::Size contents_size;
 
-  blink::WebFrame* main_frame = render_view()->GetWebView()->mainFrame();
+  blink::WebFrame* main_frame = webview->mainFrame();
   if (main_frame)
     contents_size = main_frame->contentsSize();
 
   // Fall back to contentsPreferredMinimumSize if the mainFrame is reporting a
   // 0x0 size (this happens during initial load).
   if (contents_size.IsEmpty()) {
-    contents_size = render_view()->GetWebView()->contentsPreferredMinimumSize();
+    contents_size = webview->contentsPreferredMinimumSize();
   }
 
   if (contents_size == last_sent_contents_size_)

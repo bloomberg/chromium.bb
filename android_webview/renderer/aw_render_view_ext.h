@@ -56,9 +56,9 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   void OnSmoothScroll(int target_x, int target_y, long duration_ms);
 
-  void UpdatePageScaleFactor();
+  void CheckContentsSizeAndScale();
 
-  void CheckContentsSize();
+  void PostCheckContentsSizeAndScale();
 
   bool capture_picture_enabled_;
 
