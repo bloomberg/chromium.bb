@@ -670,12 +670,29 @@ bool ThreadState::shouldForceConservativeGC()
     return judgeGCThreshold(32 * 1024 * 1024, 5.0);
 }
 
+bool ThreadState::forceMemoryPressureGCIfNeeded()
+{
+    if (!shouldForceMemoryPressureGC())
+        return false;
+    completeSweep();
+    if (!shouldForceMemoryPressureGC())
+        return false;
+
+    Heap::collectGarbage(HeapPointersOnStack, GCWithoutSweep, Heap::ConservativeGC);
+    return true;
+}
+
 void ThreadState::scheduleV8FollowupGCIfNeeded(V8GCType gcType)
 {
     ASSERT(checkThread());
     Heap::reportMemoryUsageForTracing();
 
     if (isGCForbidden())
+        return;
+
+    // If V8 has acted on a memory pressure signal and performed a major GC,
+    // follow up, if needed.
+    if (gcType == V8MajorGC && forceMemoryPressureGCIfNeeded())
         return;
 
     if (isSweepingInProgress())

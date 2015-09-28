@@ -704,9 +704,16 @@ private:
     // longer necessary due to the navigation.
     bool shouldSchedulePageNavigationGC(float estimatedRemovalRatio);
 
-    // Internal helper for GC policy handling code. Returns true if
-    // an urgent conservative GC is now needed due to memory pressure.
+    // Internal helpers to handle memory pressure conditions.
+
+    // Returns true if memory use is in a near-OOM state
+    // (aka being under "memory pressure".)
     bool shouldForceMemoryPressureGC();
+
+    // Returns true if shouldForceMemoryPressureGC() held and a
+    // conservative GC was performed to handle the emergency.
+    bool forceMemoryPressureGCIfNeeded();
+
     size_t estimatedLiveSize(size_t currentSize, size_t sizeAtLastGC);
     size_t totalMemorySize();
     double heapGrowingRate();
