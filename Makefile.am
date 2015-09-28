@@ -76,7 +76,7 @@ dist_doc_DATA = \
 	INSTALL \
 	LICENSE \
 	NEWS \
-	README
+	README.md
 
 ## Headers
 if LINUX_HOST

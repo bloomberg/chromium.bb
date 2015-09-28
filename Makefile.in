@@ -2028,7 +2028,7 @@ dist_doc_DATA = \
 	INSTALL \
 	LICENSE \
 	NEWS \
-	README
+	README.md
 
 @LINUX_HOST_TRUE@includeclhdir = $(includedir)/$(PACKAGE)/client/linux/handler
 @LINUX_HOST_TRUE@includeclh_HEADERS = $(top_srcdir)/src/client/linux/handler/*.h
