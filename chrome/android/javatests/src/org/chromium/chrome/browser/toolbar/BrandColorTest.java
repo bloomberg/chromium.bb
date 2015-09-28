@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.toolbar;
 
+import android.annotation.TargetApi;
 import android.graphics.Color;
+import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -17,6 +20,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.InterstitialPageDelegateAndroid;
@@ -60,6 +64,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         // Don't launch activity automatically.
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
         try {
             assertTrue("The toolbar background doesn't contain the right color",
@@ -78,6 +83,21 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
                             return mToolbar.getOverlayDrawable().getColor() == brandColor;
                         }
                     }));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                    && !SysUtils.isLowEndDevice()) {
+                final int expectedStatusBarColor = brandColor == mDefaultColor
+                        ? Color.BLACK
+                        : ColorUtils.getDarkenedColorForStatusBar(brandColor);
+                assertTrue("The status bar is not set to the right color",
+                        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+                            @Override
+                            public boolean isSatisfied() {
+                                return expectedStatusBarColor
+                                        == getActivity().getWindow().getStatusBarColor();
+                            }
+                        }));
+            }
+
         } catch (InterruptedException e) {
             fail();
         }

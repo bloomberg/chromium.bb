@@ -17,6 +17,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.webapps.FullScreenActivity;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -108,6 +109,11 @@ public class EmbedContentViewActivity extends FullScreenActivity {
     @Override
     protected boolean isContextualSearchAllowed() {
         return false;
+    }
+
+    @Override
+    protected void setStatusBarColor(Tab tab, int color) {
+        // Intentionally do nothing as EmbedContentViewActivity does not set status bar color.
     }
 
     @Override

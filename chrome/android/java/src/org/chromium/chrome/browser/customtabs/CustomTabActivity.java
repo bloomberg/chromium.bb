@@ -435,6 +435,11 @@ public class CustomTabActivity extends ChromeActivity {
         return super.onMenuOrKeyboardAction(id, fromMenu);
     }
 
+    @Override
+    protected void setStatusBarColor(Tab tab, int color) {
+        // Intentionally do nothing as CustomTabActivity explicitly sets status bar color.
+    }
+
     /**
      * @return The {@link AppMenuPropertiesDelegate} associated with this activity. For test
      *         purposes only.
