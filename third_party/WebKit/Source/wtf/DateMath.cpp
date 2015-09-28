@@ -89,9 +89,7 @@
 
 #if OS(WIN)
 #include <windows.h>
-#endif
-
-#if HAVE(SYS_TIME_H)
+#else
 #include <sys/time.h>
 #endif
 

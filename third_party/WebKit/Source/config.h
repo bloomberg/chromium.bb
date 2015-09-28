@@ -97,16 +97,8 @@
 #endif /* OS(MACOSX) */
 
 #if OS(POSIX)
-#define HAVE_SIGNAL_H 1
-#define HAVE_SYS_TIME_H 1
 #define WTF_USE_PTHREADS 1
 #endif /* OS(POSIX) */
-
-#if !OS(WIN) && !OS(ANDROID)
-#define HAVE_TM_GMTOFF 1
-#define HAVE_TM_ZONE 1
-#define HAVE_TIMEGM 1
-#endif
 
 #if OS(MACOSX)
 #define WTF_USE_NEW_THEME 1
