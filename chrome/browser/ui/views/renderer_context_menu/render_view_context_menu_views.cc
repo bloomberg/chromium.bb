@@ -150,6 +150,7 @@ void RenderViewContextMenuViews::ExecuteCommand(int command_id,
           blink::WebTextDirectionRightToLeft :
           blink::WebTextDirectionLeftToRight);
       view_host->NotifyTextDirection();
+      RenderViewContextMenu::RecordUsedItem(command_id);
       break;
     }
 

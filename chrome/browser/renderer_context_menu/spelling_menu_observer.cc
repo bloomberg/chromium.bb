@@ -35,6 +35,8 @@
 
 using content::BrowserThread;
 
+const int kMaxSpellingSuggestions = 3;
+
 SpellingMenuObserver::SpellingMenuObserver(RenderViewContextMenuProxy* proxy)
     : proxy_(proxy),
       loading_frame_(0),
@@ -79,7 +81,9 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     proxy_->AddSeparator();
 
   // Append Dictionary spell check suggestions.
-  for (size_t i = 0; i < params.dictionary_suggestions.size() &&
+  int length = std::min(kMaxSpellingSuggestions,
+                        static_cast<int>(params.dictionary_suggestions.size()));
+  for (int i = 0; i < length &&
        IDC_SPELLCHECK_SUGGESTION_0 + i <= IDC_SPELLCHECK_SUGGESTION_LAST;
        ++i) {
     proxy_->AddMenuItem(IDC_SPELLCHECK_SUGGESTION_0 + static_cast<int>(i),
@@ -146,17 +150,7 @@ void SpellingMenuObserver::InitMenu(const content::ContextMenuParams& params) {
     }
   }
 
-  if (params.dictionary_suggestions.empty()) {
-    proxy_->AddMenuItem(
-        IDC_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS,
-        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_NO_SPELLING_SUGGESTIONS));
-    bool use_spelling_service = SpellingServiceClient::IsAvailable(
-        browser_context, SpellingServiceClient::SPELLCHECK);
-    if (use_suggestions || use_spelling_service)
-      proxy_->AddSeparator();
-  } else {
-    proxy_->AddSeparator();
-
+  if (!params.dictionary_suggestions.empty()) {
     // |spellcheck_service| can be null when the suggested word is
     // provided by Web SpellCheck API.
     SpellcheckService* spellcheck_service =

@@ -53759,6 +53759,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="12" label="Load images"/>
   <int value="13" label="Load original image"/>
   <int value="14" label="Save video"/>
+  <int value="15" label="Open link in a new window"/>
+  <int value="16" label="Print"/>
+  <int value="17" label="Search web for..."/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
@@ -74271,6 +74274,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="ImageLink"
       label="The context menu was shown for an image which is also a link"/>
   <suffix name="Video" label="The context menu was shown for a video"/>
+  <suffix name="TextSelection"
+      label="The context menu was shown for a text selection"/>
   <affected-histogram name="ContextMenu.SelectedOption"/>
 </histogram_suffixes>
 

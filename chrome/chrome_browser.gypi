@@ -736,8 +736,6 @@
       'browser/renderer_context_menu/context_menu_content_type_factory.h',
       'browser/renderer_context_menu/context_menu_content_type_panel.cc',
       'browser/renderer_context_menu/context_menu_content_type_panel.h',
-      'browser/renderer_context_menu/spellchecker_submenu_observer.h',
-      'browser/renderer_context_menu/spellchecker_submenu_observer_mac.cc',
       'browser/renderer_host/chrome_render_message_filter.cc',
       'browser/renderer_host/chrome_render_message_filter.h',
       'browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h',
@@ -961,7 +959,6 @@
     ],
     # Desktop Linux and ChromeOS.
     'chrome_browser_linux_sources': [
-      'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     # Desktop linux, doesn't count ChromeOS.
     'chrome_browser_linux_desktop_sources': [
@@ -1297,7 +1294,6 @@
       'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h',
       'browser/password_manager/password_manager_util_win.cc',
       'browser/password_manager/password_manager_util_win.h',
-      'browser/renderer_context_menu/spellchecker_submenu_observer_hunspell.cc',
     ],
     'chrome_browser_non_win_sources': [
       'browser/profile_resetter/triggered_profile_resetter_stub.cc',

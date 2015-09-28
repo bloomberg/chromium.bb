@@ -170,6 +170,7 @@ void RenderViewContextMenuMac::ExecuteCommand(int command_id, int event_flags) {
         dir = blink::WebTextDirectionRightToLeft;
       view_host->UpdateTextDirection(dir);
       view_host->NotifyTextDirection();
+      RenderViewContextMenu::RecordUsedItem(command_id);
       break;
     }
 

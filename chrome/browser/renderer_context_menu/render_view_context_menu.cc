@@ -38,7 +38,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_context_menu/context_menu_content_type_factory.h"
-#include "chrome/browser/renderer_context_menu/spellchecker_submenu_observer.h"
 #include "chrome/browser/renderer_context_menu/spelling_menu_observer.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -146,6 +145,13 @@ using extensions::MenuManager;
 
 namespace {
 
+// Whether to return the general enum_id or context_specific_enum_id
+// in the FindUMAEnumValueForCommand lookup function.
+enum UmaEnumIdLookupType {
+  GENERAL_ENUM_ID,
+  CONTEXT_SPECIFIC_ENUM_ID,
+};
+
 const int kImageSearchThumbnailMinSize = 300 * 300;
 const int kImageSearchThumbnailMaxWidth = 600;
 const int kImageSearchThumbnailMaxHeight = 600;
@@ -155,8 +161,14 @@ const int kImageSearchThumbnailMaxHeight = 600;
 // Never change mapping or reuse |enum_id|. Always push back new items.
 // Items that is not used any more by |RenderViewContextMenu.ExecuteCommand|
 // could be deleted, but don't change the rest of |kUmaEnumToControlId|.
+//
+// |context_specific_enum_id| matches the ContextMenuOption histogram enum.
+// Used to track command usage under specific contexts, specifically Menu
+// items under 'link + image' and 'selected text'. Should be set to -1 if
+// command is not context specific tracked.
 const struct UmaEnumCommandIdPair {
   int enum_id;
+  int context_specific_enum_id;
   int control_id;
 } kUmaEnumToControlId[] = {
     /*
@@ -164,72 +176,73 @@ const struct UmaEnumCommandIdPair {
       RenderViewContextMenu::IsContentCustomCommandId and
       ContextMenuMatcher::IsExtensionsCustomCommandId
     */
-    {2, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
-    {3, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
-    {4, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
-    {5, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
-    {6, IDC_CONTENT_CONTEXT_SAVELINKAS},
-    {7, IDC_CONTENT_CONTEXT_SAVEAVAS},
-    {8, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
-    {9, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
-    {10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
-    {11, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
-    {12, IDC_CONTENT_CONTEXT_COPYIMAGE},
-    {13, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
-    {14, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
-    {15, IDC_CONTENT_CONTEXT_PLAYPAUSE},
-    {16, IDC_CONTENT_CONTEXT_MUTE},
-    {17, IDC_CONTENT_CONTEXT_LOOP},
-    {18, IDC_CONTENT_CONTEXT_CONTROLS},
-    {19, IDC_CONTENT_CONTEXT_ROTATECW},
-    {20, IDC_CONTENT_CONTEXT_ROTATECCW},
-    {21, IDC_BACK},
-    {22, IDC_FORWARD},
-    {23, IDC_SAVE_PAGE},
-    {24, IDC_RELOAD},
-    {25, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
-    {26, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
-    {27, IDC_PRINT},
-    {28, IDC_VIEW_SOURCE},
-    {29, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
-    {30, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
-    {31, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
-    {32, IDC_CONTENT_CONTEXT_TRANSLATE},
-    {33, IDC_CONTENT_CONTEXT_RELOADFRAME},
-    {34, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
-    {35, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
-    {36, IDC_CONTENT_CONTEXT_UNDO},
-    {37, IDC_CONTENT_CONTEXT_REDO},
-    {38, IDC_CONTENT_CONTEXT_CUT},
-    {39, IDC_CONTENT_CONTEXT_COPY},
-    {40, IDC_CONTENT_CONTEXT_PASTE},
-    {41, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
-    {42, IDC_CONTENT_CONTEXT_DELETE},
-    {43, IDC_CONTENT_CONTEXT_SELECTALL},
-    {44, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
-    {45, IDC_CONTENT_CONTEXT_GOTOURL},
-    {46, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
-    {47, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
-    {48, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
-    {52, IDC_CONTENT_CONTEXT_OPENLINKWITH},
-    {53, IDC_CHECK_SPELLING_WHILE_TYPING},
-    {54, IDC_SPELLCHECK_MENU},
-    {55, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
-    {56, IDC_SPELLCHECK_LANGUAGES_FIRST},
-    {57, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
-    {58, IDC_SPELLCHECK_SUGGESTION_0},
-    {59, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
-    {60, IDC_SPELLPANEL_TOGGLE},
-    {61, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
-    {62, IDC_WRITING_DIRECTION_MENU},
-    {63, IDC_WRITING_DIRECTION_DEFAULT},
-    {64, IDC_WRITING_DIRECTION_LTR},
-    {65, IDC_WRITING_DIRECTION_RTL},
-    {66, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
-    {67, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
+    {2, -1, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_FIRST},
+    {3, 0, IDC_CONTENT_CONTEXT_OPENLINKNEWTAB},
+    {4, 15, IDC_CONTENT_CONTEXT_OPENLINKNEWWINDOW},
+    {5, 1, IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD},
+    {6, 5, IDC_CONTENT_CONTEXT_SAVELINKAS},
+    {7, 17, IDC_CONTENT_CONTEXT_SAVEAVAS},
+    {8, 6, IDC_CONTENT_CONTEXT_SAVEIMAGEAS},
+    {9, 2, IDC_CONTENT_CONTEXT_COPYLINKLOCATION},
+    {10, 10, IDC_CONTENT_CONTEXT_COPYIMAGELOCATION},
+    {11, -1, IDC_CONTENT_CONTEXT_COPYAVLOCATION},
+    {12, 9, IDC_CONTENT_CONTEXT_COPYIMAGE},
+    {13, 8, IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB},
+    {14, -1, IDC_CONTENT_CONTEXT_OPENAVNEWTAB},
+    {15, -1, IDC_CONTENT_CONTEXT_PLAYPAUSE},
+    {16, -1, IDC_CONTENT_CONTEXT_MUTE},
+    {17, -1, IDC_CONTENT_CONTEXT_LOOP},
+    {18, -1, IDC_CONTENT_CONTEXT_CONTROLS},
+    {19, -1, IDC_CONTENT_CONTEXT_ROTATECW},
+    {20, -1, IDC_CONTENT_CONTEXT_ROTATECCW},
+    {21, -1, IDC_BACK},
+    {22, -1, IDC_FORWARD},
+    {23, -1, IDC_SAVE_PAGE},
+    {24, -1, IDC_RELOAD},
+    {25, -1, IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP},
+    {26, -1, IDC_CONTENT_CONTEXT_RESTART_PACKAGED_APP},
+    {27, 16, IDC_PRINT},
+    {28, -1, IDC_VIEW_SOURCE},
+    {29, -1, IDC_CONTENT_CONTEXT_INSPECTELEMENT},
+    {30, -1, IDC_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE},
+    {31, -1, IDC_CONTENT_CONTEXT_VIEWPAGEINFO},
+    {32, -1, IDC_CONTENT_CONTEXT_TRANSLATE},
+    {33, -1, IDC_CONTENT_CONTEXT_RELOADFRAME},
+    {34, -1, IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE},
+    {35, -1, IDC_CONTENT_CONTEXT_VIEWFRAMEINFO},
+    {36, -1, IDC_CONTENT_CONTEXT_UNDO},
+    {37, -1, IDC_CONTENT_CONTEXT_REDO},
+    {38, -1, IDC_CONTENT_CONTEXT_CUT},
+    {39, 4, IDC_CONTENT_CONTEXT_COPY},
+    {40, -1, IDC_CONTENT_CONTEXT_PASTE},
+    {41, -1, IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE},
+    {42, -1, IDC_CONTENT_CONTEXT_DELETE},
+    {43, -1, IDC_CONTENT_CONTEXT_SELECTALL},
+    {44, 17, IDC_CONTENT_CONTEXT_SEARCHWEBFOR},
+    {45, -1, IDC_CONTENT_CONTEXT_GOTOURL},
+    {46, -1, IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS},
+    {47, -1, IDC_CONTENT_CONTEXT_PROTOCOL_HANDLER_SETTINGS},
+    {48, -1, IDC_CONTENT_CONTEXT_ADDSEARCHENGINE},
+    {52, -1, IDC_CONTENT_CONTEXT_OPENLINKWITH},
+    {53, -1, IDC_CHECK_SPELLING_WHILE_TYPING},
+    {54, -1, IDC_SPELLCHECK_MENU},
+    {55, -1, IDC_CONTENT_CONTEXT_SPELLING_TOGGLE},
+    {56, -1, IDC_SPELLCHECK_LANGUAGES_FIRST},
+    {57, 11, IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE},
+    {58, -1, IDC_SPELLCHECK_SUGGESTION_0},
+    {59, -1, IDC_SPELLCHECK_ADD_TO_DICTIONARY},
+    {60, -1, IDC_SPELLPANEL_TOGGLE},
+    {61, -1, IDC_CONTENT_CONTEXT_OPEN_ORIGINAL_IMAGE_NEW_TAB},
+    {62, -1, IDC_WRITING_DIRECTION_MENU},
+    {63, -1, IDC_WRITING_DIRECTION_DEFAULT},
+    {64, -1, IDC_WRITING_DIRECTION_LTR},
+    {65, -1, IDC_WRITING_DIRECTION_RTL},
+    {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
+    {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {68, 0},  // Must be the last. Increment |enum_id| when new IDC was added.
+    {68, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+                  // was added.
 };
 
 // Collapses large ranges of ids before looking for UMA enum.
@@ -256,7 +269,8 @@ int CollapseCommandsForUMA(int id) {
 }
 
 // Returns UMA enum value for command specified by |id| or -1 if not found.
-int FindUMAEnumValueForCommand(int id) {
+// |use_specific_context_enum| set to true returns the context_specific_enum_id.
+int FindUMAEnumValueForCommand(int id, UmaEnumIdLookupType enum_lookup_type) {
   if (RenderViewContextMenu::IsContentCustomCommandId(id))
     return 0;
 
@@ -267,9 +281,15 @@ int FindUMAEnumValueForCommand(int id) {
   const size_t kMappingSize = arraysize(kUmaEnumToControlId);
   for (size_t i = 0; i < kMappingSize; ++i) {
     if (kUmaEnumToControlId[i].control_id == id) {
-      return kUmaEnumToControlId[i].enum_id;
+      if (enum_lookup_type == GENERAL_ENUM_ID) {
+        return kUmaEnumToControlId[i].enum_id;
+      } else if (enum_lookup_type == CONTEXT_SPECIFIC_ENUM_ID &&
+                 kUmaEnumToControlId[i].context_specific_enum_id > -1) {
+        return kUmaEnumToControlId[i].context_specific_enum_id;
+      }
     }
   }
+
   return -1;
 }
 
@@ -340,8 +360,6 @@ void WriteURLToClipboard(const GURL& url, const std::string& languages) {
 }
 
 bool g_custom_id_ranges_initialized = false;
-
-const int kSpellcheckRadioGroup = 1;
 
 }  // namespace
 
@@ -558,13 +576,6 @@ void RenderViewContextMenu::InitMenu() {
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
     AppendPageItems();
 
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_FRAME)) {
-    // Merge in frame items with page items if we clicked within a frame that
-    // needs them.
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-    AppendFrameItems();
-  }
-
   if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK)) {
     AppendLinkItems();
     if (params_.media_type != WebContextMenuData::MediaTypeNone)
@@ -617,8 +628,18 @@ void RenderViewContextMenu::InitMenu() {
     AppendSearchProvider();
   }
 
-  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT))
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT) &&
+      !content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
     AppendPrintItem();
+  }
+
+  if (content_type_->SupportsGroup(
+          ContextMenuContentType::ITEM_GROUP_EDITABLE)) {
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+    AppendPlatformEditableItems();
+    AppendLanguageSettings();
+  }
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_MEDIA_PLUGIN)) {
@@ -665,18 +686,37 @@ Profile* RenderViewContextMenu::GetProfile() {
 }
 
 void RenderViewContextMenu::RecordUsedItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id);
+  int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
   if (enum_id != -1) {
     const size_t kMappingSize = arraysize(kUmaEnumToControlId);
     UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Used", enum_id,
                               kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    // Record to additional context specific histograms.
+    enum_id = FindUMAEnumValueForCommand(id, CONTEXT_SPECIFIC_ENUM_ID);
+
+    // Linked image context.
+    if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_LINK) &&
+        content_type_->SupportsGroup(
+            ContextMenuContentType::ITEM_GROUP_MEDIA_IMAGE)) {
+      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.ImageLink", enum_id,
+                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    }
+    // Selected text context.
+    if (content_type_->SupportsGroup(
+            ContextMenuContentType::ITEM_GROUP_SEARCH_PROVIDER) &&
+        content_type_->SupportsGroup(
+            ContextMenuContentType::ITEM_GROUP_PRINT)) {
+      UMA_HISTOGRAM_ENUMERATION("ContextMenu.SelectedOption.SelectedText",
+                                enum_id,
+                                kUmaEnumToControlId[kMappingSize - 1].enum_id);
+    }
   } else {
     NOTREACHED() << "Update kUmaEnumToControlId. Unhanded IDC: " << id;
   }
 }
 
 void RenderViewContextMenu::RecordShownItem(int id) {
-  int enum_id = FindUMAEnumValueForCommand(id);
+  int enum_id = FindUMAEnumValueForCommand(id, GENERAL_ENUM_ID);
   if (enum_id != -1) {
     const size_t kMappingSize = arraysize(kUmaEnumToControlId);
     UMA_HISTOGRAM_ENUMERATION("RenderViewContextMenu.Shown", enum_id,
@@ -726,6 +766,12 @@ void RenderViewContextMenu::AppendDeveloperItems() {
   // In the DevTools popup menu, "developer items" is normally the only
   // section, so omit the separator there.
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PAGE))
+    menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
+                                    IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
+  if (content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_FRAME))
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
+                                    IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_INSPECTELEMENT,
                                   IDS_CONTENT_CONTEXT_INSPECTELEMENT);
 }
@@ -767,12 +813,6 @@ void RenderViewContextMenu::AppendLinkItems() {
 }
 
 void RenderViewContextMenu::AppendImageItems() {
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
-                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
-                                  IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
-                                  IDS_CONTENT_CONTEXT_COPYIMAGE);
   std::map<std::string, std::string>::const_iterator it =
       params_.properties.find(data_reduction_proxy::chrome_proxy_header());
   if (it != params_.properties.end() && it->second ==
@@ -792,6 +832,12 @@ void RenderViewContextMenu::AppendImageItems() {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB,
                                     IDS_CONTENT_CONTEXT_OPENIMAGENEWTAB);
   }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEIMAGEAS,
+                                  IDS_CONTENT_CONTEXT_SAVEIMAGEAS);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGE,
+                                  IDS_CONTENT_CONTEXT_COPYIMAGE);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYIMAGELOCATION,
+                                  IDS_CONTENT_CONTEXT_COPYIMAGELOCATION);
 }
 
 void RenderViewContextMenu::AppendSearchWebForImageItems() {
@@ -810,14 +856,13 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
-  AppendMediaItems();
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
-                                  IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB);
 }
 
 void RenderViewContextMenu::AppendCanvasItems() {
@@ -828,35 +873,13 @@ void RenderViewContextMenu::AppendCanvasItems() {
 }
 
 void RenderViewContextMenu::AppendVideoItems() {
-  AppendMediaItems();
   menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
+                                  IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SAVEAVAS,
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPENAVNEWTAB,
-                                  IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB);
-}
-
-void RenderViewContextMenu::AppendMediaItems() {
-  int media_flags = params_.media_flags;
-
-  menu_model_.AddItemWithStringId(
-      IDC_CONTENT_CONTEXT_PLAYPAUSE,
-      media_flags & WebContextMenuData::MediaPaused ?
-          IDS_CONTENT_CONTEXT_PLAY :
-          IDS_CONTENT_CONTEXT_PAUSE);
-
-  menu_model_.AddItemWithStringId(
-      IDC_CONTENT_CONTEXT_MUTE,
-      media_flags & WebContextMenuData::MediaMuted ?
-          IDS_CONTENT_CONTEXT_UNMUTE :
-          IDS_CONTENT_CONTEXT_MUTE);
-
-  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_LOOP,
-                                       IDS_CONTENT_CONTEXT_LOOP);
-  menu_model_.AddCheckItemWithStringId(IDC_CONTENT_CONTEXT_CONTROLS,
-                                       IDS_CONTENT_CONTEXT_CONTROLS);
 }
 
 void RenderViewContextMenu::AppendPluginItems() {
@@ -895,27 +918,11 @@ void RenderViewContextMenu::AppendPageItems() {
         IDC_CONTENT_CONTEXT_TRANSLATE,
         l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATE, language));
   }
-
-  menu_model_.AddItemWithStringId(IDC_VIEW_SOURCE,
-                                  IDS_CONTENT_CONTEXT_VIEWPAGESOURCE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWPAGEINFO,
-                                  IDS_CONTENT_CONTEXT_VIEWPAGEINFO);
-}
-
-void RenderViewContextMenu::AppendFrameItems() {
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RELOADFRAME,
-                                  IDS_CONTENT_CONTEXT_RELOADFRAME);
-  // These two menu items have yet to be implemented.
-  // http://code.google.com/p/chromium/issues/detail?id=11827
-  //   IDS_CONTENT_CONTEXT_SAVEFRAMEAS
-  //   IDS_CONTENT_CONTEXT_PRINTFRAME
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE,
-                                  IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_VIEWFRAMEINFO,
-                                  IDS_CONTENT_CONTEXT_VIEWFRAMEINFO);
 }
 
 void RenderViewContextMenu::AppendCopyItem() {
+  if (menu_model_.GetItemCount())
+    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPY,
                                   IDS_CONTENT_CONTEXT_COPY);
 }
@@ -993,13 +1000,25 @@ void RenderViewContextMenu::AppendEditableItems() {
   if (use_spellcheck_and_search)
     AppendSpellingSuggestionsSubMenu();
 
-  if (!IsDevToolsURL(params_.page_url)) {
+// 'Undo' and 'Redo' for text input with no suggestions and no text selected.
+// We make an exception for OS X as context clicking will select the closest
+// word. In this case both items are always shown.
+#if defined(OS_MACOSX)
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
+                                  IDS_CONTENT_CONTEXT_UNDO);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
+                                  IDS_CONTENT_CONTEXT_REDO);
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+#else
+  if (!IsDevToolsURL(params_.page_url) && !menu_model_.GetItemCount() &&
+      !content_type_->SupportsGroup(ContextMenuContentType::ITEM_GROUP_PRINT)) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_UNDO,
                                     IDS_CONTENT_CONTEXT_UNDO);
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_REDO,
                                     IDS_CONTENT_CONTEXT_REDO);
     menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   }
+#endif
 
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_CUT,
                                   IDS_CONTENT_CONTEXT_CUT);
@@ -1009,33 +1028,18 @@ void RenderViewContextMenu::AppendEditableItems() {
                                   IDS_CONTENT_CONTEXT_PASTE);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE,
                                   IDS_CONTENT_CONTEXT_PASTE_AND_MATCH_STYLE);
-  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_DELETE,
-                                  IDS_CONTENT_CONTEXT_DELETE);
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-
-  if (use_spellcheck_and_search && !params_.keyword_url.is_empty()) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_ADDSEARCHENGINE,
-                                    IDS_CONTENT_CONTEXT_ADDSEARCHENGINE);
-    menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
-  }
-
-#if defined(OS_MACOSX)
-  if (use_spellcheck_and_search)
-    AppendSpellcheckOptionsSubMenu();
-#else
-  if (chrome::spellcheck_common::IsMultilingualSpellcheckEnabled()) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
-                                    IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
-  } else if (use_spellcheck_and_search) {
-    AppendSpellcheckOptionsSubMenu();
-  }
-#endif  // defined(OS_MACOSX)
-
-  AppendPlatformEditableItems();
-
-  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SELECTALL,
                                   IDS_CONTENT_CONTEXT_SELECTALL);
+
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+}
+
+void RenderViewContextMenu::AppendLanguageSettings() {
+  const bool use_spellcheck_and_search = !chrome::IsRunningInForcedAppMode();
+
+  if (use_spellcheck_and_search)
+    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_LANGUAGE_SETTINGS,
+                                    IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS);
 }
 
 void RenderViewContextMenu::AppendSpellingSuggestionsSubMenu() {
@@ -1043,15 +1047,6 @@ void RenderViewContextMenu::AppendSpellingSuggestionsSubMenu() {
     spelling_menu_observer_.reset(new SpellingMenuObserver(this));
   observers_.AddObserver(spelling_menu_observer_.get());
   spelling_menu_observer_->InitMenu(params_);
-}
-
-void RenderViewContextMenu::AppendSpellcheckOptionsSubMenu() {
-  if (!spellchecker_submenu_observer_.get()) {
-    spellchecker_submenu_observer_.reset(new SpellCheckerSubMenuObserver(
-        this, this, kSpellcheckRadioGroup));
-  }
-  spellchecker_submenu_observer_->InitMenu(params_);
-  observers_.AddObserver(spellchecker_submenu_observer_.get());
 }
 
 void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {

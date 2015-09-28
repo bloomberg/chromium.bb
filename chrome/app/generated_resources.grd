@@ -648,6 +648,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
 
       <!-- content area context menus. Android does not use it -->
       <if expr="not is_android">
+        <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
+          I&amp;nspect
+        </message>
         <if expr="is_macosx">
             <message name="IDS_CONTENT_CONTEXT_LOOK_UP" desc="The name of the 'Look Up “string”' item in the content area context menu. To translate, launch /Applications/TextEdit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
               Look Up “<ph name="LOOKUP_STRING">$1<ex>orthogonal</ex></ph>”
@@ -677,9 +680,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="The name of the View Page Info command in the content area context menu">
             View page &amp;info
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="The name of the Inspect Element command in the content area context menu">
-            I&amp;nspect element
           </message>
           <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="The name of the Inspect Background Page command in the packaged app content area context menu">
             Inspect &amp;background page
@@ -738,7 +738,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Sa&amp;ve image as...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="The name of the Copy Image Location command in the content area context menu">
-            C&amp;opy image URL
+            C&amp;opy image address
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="The name of the Copy Image command in the content area context menu">
             Cop&amp;y image
@@ -782,7 +782,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Sa&amp;ve video as...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="The name of the Copy Video Location command in the content area context menu">
-            C&amp;opy video URL
+            C&amp;opy video address
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open video in new tab
@@ -792,7 +792,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Sa&amp;ve audio as...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="The name of the Copy Audio Location command in the content area context menu">
-            C&amp;opy audio URL
+            C&amp;opy audio address
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open audio in new tab
@@ -850,7 +850,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="The name of the Search For Image command in the content area context menu">
-            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this image
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for image
           </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="The name of the Go to 'url' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
@@ -860,6 +860,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="The name of the Save Password command in the content area context menu">
             Save password
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
+            &amp;Language settings...
           </message>
         </if>
         <if expr="use_titlecase">
@@ -886,9 +889,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWPAGEINFO" desc="In Title Case: The name of the View Page Info command in the content area context menu">
             View Page &amp;Info
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_INSPECTELEMENT" desc="In Title Case: The name of the Inspect Element command in the content area context menu">
-            I&amp;nspect Element
           </message>
           <message name="IDS_CONTENT_CONTEXT_INSPECTBACKGROUNDPAGE" desc="In Title Case: The name of the Inspect Background Page command in the packaged app content area context menu">
             Inspect &amp;Background Page
@@ -947,7 +947,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Sa&amp;ve Image As...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGELOCATION" desc="In Title Case: The name of the Copy Image Location command in the content area context menu">
-            C&amp;opy Image URL
+            C&amp;opy Image Address
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYIMAGE" desc="In Title Case: The name of the Copy Image command in the content area context menu">
             Cop&amp;y Image
@@ -991,7 +991,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
            Sa&amp;ve Video As...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION" desc="In Title Case: The name of the Copy Video Location command in the content area context menu">
-            C&amp;opy Video URL
+            C&amp;opy Video Address
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENVIDEONEWTAB" desc="In Title Case: The name of the Open Video in New Tab command in the content area context menu">
             &amp;Open Video in New Tab
@@ -1001,7 +1001,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Sa&amp;ve Audio As...
           </message>
           <message name="IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION" desc="In Title Case: The name of the Copy Audio Location command in the content area context menu">
-            C&amp;opy Audio URL
+            C&amp;opy Audio Address
           </message>
           <message name="IDS_CONTENT_CONTEXT_OPENAUDIONEWTAB" desc="In Title Case: The name of the Open Audio in New Tab command in the content area context menu">
             &amp;Open Audio in New Tab
@@ -1070,7 +1070,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for “<ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>”
           </message>
           <message name="IDS_CONTENT_CONTEXT_SEARCHWEBFORIMAGE" desc="In Title Case: The name of the Search For Image command in the content area context menu">
-            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for this Image
+            &amp;Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for Image
           </message>
           <message name="IDS_CONTENT_CONTEXT_GOTOURL" desc="In Title Case: The name of the Go to url for 'string' command in the content area context menu">
             &amp;Go to <ph name="URL">$1<ex>http://www.google.com/</ex></ph>
@@ -1080,6 +1080,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
           </message>
           <message name="IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD" desc="In Title Case: The name of the Save Password command in the content area context menu">
             Save Password
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
+            &amp;Language Settings...
           </message>
         </if>
       </if>
@@ -1114,43 +1117,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
         </message>
         <message name="IDS_VISIT_DESKTOP_WARNING_SHOW_DISMISS" desc="Label for checkbox dismissing show of teleportation warning dialog.">
           Got it, don't show me again.
-        </message>
-      </if>
-
-      <!-- Spelling submenu -->
-      <if expr="is_macosx">
-        <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the spelling context menu">
-          Spelling and Grammar
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
-          Check Spelling While Typing
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_SHOW_SPELLING_PANEL" desc="The name of the Show Spelling Panel command in the spelling context menu">
-          Show Spelling and Grammar
-        </message>
-        <message name="IDS_CONTENT_CONTEXT_HIDE_SPELLING_PANEL" desc="The name of the Hide Spelling Panel command in the spelling context menu">
-          Hide Spelling and Grammar
-        </message>
-      </if>
-      <if expr="not is_macosx">
-        <if expr="not use_titlecase">
-          <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="The name of the Spellcheck Options submenu in the content area context menu">
-            Spell-checker &amp;options
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="The name of the Language Settings command in the content area context menu">
-            &amp;Language settings...
-          </message>
-        </if>
-        <if expr="use_titlecase">
-          <message name="IDS_CONTENT_CONTEXT_SPELLCHECK_MENU" desc="In Title Case: The name of the Spellcheck Options submenu in the content area context menu">
-            Spell-checker &amp;Options
-          </message>
-          <message name="IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS" desc="In Title Case: The name of the Language Settings command in the content area context menu">
-            &amp;Language Settings...
-          </message>
-        </if>
-        <message name="IDS_CONTENT_CONTEXT_CHECK_SPELLING_WHILE_TYPING" desc="The name of the Check Spelling while Typing field command in the spelling context menu">
-          Check the spelling of text fields
         </message>
       </if>
 

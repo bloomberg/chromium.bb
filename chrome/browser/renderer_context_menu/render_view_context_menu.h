@@ -82,6 +82,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 #if defined(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher extension_items_;
 #endif
+  void RecordUsedItem(int id) override;
 
  private:
   friend class RenderViewContextMenuTest;
@@ -101,7 +102,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // RenderViewContextMenuBase:
   void InitMenu() override;
   void RecordShownItem(int id) override;
-  void RecordUsedItem(int id) override;
 #if defined(ENABLE_PLUGINS)
   void HandleAuthorizeAllPlugins() override;
 #endif
@@ -119,14 +119,13 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendAudioItems();
   void AppendCanvasItems();
   void AppendVideoItems();
-  void AppendMediaItems();
   void AppendPluginItems();
   void AppendPageItems();
-  void AppendFrameItems();
   void AppendCopyItem();
   void AppendPrintItem();
   void AppendRotationItems();
   void AppendEditableItems();
+  void AppendLanguageSettings();
   void AppendSearchProvider();
 #if defined(ENABLE_EXTENSIONS)
   void AppendAllExtensionItems();
@@ -135,7 +134,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendPrintPreviewItems();
   void AppendSearchWebForImageItems();
   void AppendSpellingSuggestionsSubMenu();
-  void AppendSpellcheckOptionsSubMenu();
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
 
@@ -174,9 +172,6 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
   // An observer that handles spelling-menu items.
   scoped_ptr<SpellingMenuObserver> spelling_menu_observer_;
-
-  // An observer that handles a 'spell-checker options' submenu.
-  scoped_ptr<SpellCheckerSubMenuObserver> spellchecker_submenu_observer_;
 
 #if defined(ENABLE_PRINT_PREVIEW)
   // An observer that disables menu items when print preview is active.
