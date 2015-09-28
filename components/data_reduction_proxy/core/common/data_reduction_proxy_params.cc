@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
@@ -206,6 +207,29 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
   return value;
 }
 
+bool GetOverrideProxiesForHttpFromCommandLine(
+    std::vector<net::ProxyServer>* override_proxies_for_http) {
+  DCHECK(override_proxies_for_http);
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDataReductionProxyHttpProxies)) {
+    return false;
+  }
+
+  override_proxies_for_http->clear();
+
+  std::string proxy_overrides =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kDataReductionProxyHttpProxies);
+  std::vector<std::string> proxy_override_values = base::SplitString(
+      proxy_overrides, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& proxy_override : proxy_override_values) {
+    override_proxies_for_http->push_back(net::ProxyServer::FromURI(
+        proxy_override, net::ProxyServer::SCHEME_HTTP));
+  }
+
+  return true;
+}
+
 }  // namespace params
 
 void DataReductionProxyParams::EnableQuic(bool enable) {
@@ -230,15 +254,7 @@ DataReductionProxyTypeInfo::~DataReductionProxyTypeInfo(){
 }
 
 DataReductionProxyParams::DataReductionProxyParams(int flags)
-    : allowed_((flags & kAllowed) == kAllowed),
-      fallback_allowed_((flags & kFallbackAllowed) == kFallbackAllowed),
-      promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
-      holdback_((flags & kHoldback) == kHoldback),
-      quic_enabled_(false),
-      configured_on_command_line_(false) {
-  bool result = Init(allowed_, fallback_allowed_);
-  DCHECK(result);
-}
+    : DataReductionProxyParams(flags, true) {}
 
 DataReductionProxyParams::~DataReductionProxyParams() {
 }
@@ -250,7 +266,8 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
       promo_allowed_((flags & kPromoAllowed) == kPromoAllowed),
       holdback_((flags & kHoldback) == kHoldback),
       quic_enabled_(false),
-      configured_on_command_line_(false) {
+      configured_on_command_line_(false),
+      use_override_proxies_for_http_(false) {
   if (should_call_init) {
     bool result = Init(allowed_, fallback_allowed_);
     DCHECK(result);
@@ -291,10 +308,13 @@ bool DataReductionProxyParams::Init(bool allowed, bool fallback_allowed) {
     return false;
   }
   return true;
-
 }
 
 void DataReductionProxyParams::InitWithoutChecks() {
+  use_override_proxies_for_http_ =
+      params::GetOverrideProxiesForHttpFromCommandLine(
+          &override_proxies_for_http_);
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string origin;
@@ -364,6 +384,8 @@ bool DataReductionProxyParams::UsingHTTPTunnel(
 
 const std::vector<net::ProxyServer>&
 DataReductionProxyParams::proxies_for_http() const {
+  if (use_override_proxies_for_http_)
+    return override_proxies_for_http_;
   return proxies_for_http_;
 }
 

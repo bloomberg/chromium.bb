@@ -423,4 +423,20 @@ TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
   }
 }
 
+TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kDataReductionProxyHttpProxies,
+      "http://override-first.net;http://override-second.net");
+  DataReductionProxyParams params(
+      DataReductionProxyParams::kAllowAllProxyConfigurations);
+
+  std::vector<net::ProxyServer> expected_override_proxies_for_http;
+  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
+      "http://override-first.net", net::ProxyServer::SCHEME_HTTP));
+  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
+      "http://override-second.net", net::ProxyServer::SCHEME_HTTP));
+
+  EXPECT_EQ(expected_override_proxies_for_http, params.proxies_for_http());
+}
+
 }  // namespace data_reduction_proxy

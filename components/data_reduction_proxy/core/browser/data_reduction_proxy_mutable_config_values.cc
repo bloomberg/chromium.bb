@@ -4,6 +4,8 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 
+#include <vector>
+
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
 namespace data_reduction_proxy {
@@ -25,7 +27,12 @@ DataReductionProxyMutableConfigValues::DataReductionProxyMutableConfigValues()
     : promo_allowed_(false),
       holdback_(false),
       allowed_(false),
-      fallback_allowed_(false) {
+      fallback_allowed_(false),
+      use_override_proxies_for_http_(false) {
+  use_override_proxies_for_http_ =
+      params::GetOverrideProxiesForHttpFromCommandLine(
+          &override_proxies_for_http_);
+
   // Constructed on the UI thread, but should be checked on the IO thread.
   thread_checker_.DetachFromThread();
 }
@@ -58,6 +65,16 @@ bool DataReductionProxyMutableConfigValues::UsingHTTPTunnel(
 const std::vector<net::ProxyServer>&
 DataReductionProxyMutableConfigValues::proxies_for_http() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  if (use_override_proxies_for_http_ && !proxies_for_http_.empty()) {
+    // Only override the proxies if a non-empty list of proxies would have been
+    // returned otherwise. This is to prevent use of the proxies when the config
+    // has been invalidated, since attempting to use a Data Reduction Proxy
+    // without valid credentials could cause a proxy bypass.
+    return override_proxies_for_http_;
+  }
+  // TODO(sclittle): Support overriding individual proxies in the proxy list
+  // according to field trials such as the DRP QUIC field trial and their
+  // corresponding command line flags (crbug.com/533637).
   return proxies_for_http_;
 }
 

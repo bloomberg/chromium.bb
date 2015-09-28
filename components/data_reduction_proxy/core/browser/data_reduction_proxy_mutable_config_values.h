@@ -60,6 +60,11 @@ class DataReductionProxyMutableConfigValues
   std::vector<net::ProxyServer> proxies_for_https_;
   GURL secure_proxy_check_url_;
 
+  // Permits use of locally specified Data Reduction Proxy servers instead of
+  // ones specified from the Data Saver API.
+  bool use_override_proxies_for_http_;
+  std::vector<net::ProxyServer> override_proxies_for_http_;
+
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 

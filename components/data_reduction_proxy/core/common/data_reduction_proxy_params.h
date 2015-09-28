@@ -106,6 +106,12 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
                                     int default_value,
                                     int min_value);
 
+// Returns true if the list of Data Reduction Proxies to use for HTTP requests
+// has been overridden on the command line, and if so, returns the override
+// proxy list in |override_proxies_for_http|.
+bool GetOverrideProxiesForHttpFromCommandLine(
+    std::vector<net::ProxyServer>* override_proxies_for_http);
+
 }  // namespace params
 
 class ClientConfig;
@@ -223,6 +229,9 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   std::string override_quic_origin_;
 
   bool configured_on_command_line_;
+
+  bool use_override_proxies_for_http_;
+  std::vector<net::ProxyServer> override_proxies_for_http_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };

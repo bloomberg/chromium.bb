@@ -81,5 +81,15 @@ const char kEnableDataReductionProxyConfigClient[] =
 // The URL from which to retrieve the Data Reduction Proxy configuration.
 const char kDataReductionProxyConfigURL[] = "data-reduction-proxy-config-url";
 
+// The semicolon-separated list of proxy server URIs to override the list of
+// HTTP proxies returned by the Data Saver API. If set, the value of this flag
+// overrides any proxies specified by other flags like --spdy-proxy-auth-origin
+// or --spdy-proxy-auth-fallback. If the URI omits a scheme, then the proxy
+// server scheme defaults to HTTP, and if the port is omitted then the default
+// port for that scheme is used. E.g. "http://foo.net:80", "http://foo.net",
+// "foo.net:80", and "foo.net" are all equivalent.
+const char kDataReductionProxyHttpProxies[] =
+    "data-reduction-proxy-http-proxies";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy
