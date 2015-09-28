@@ -54,7 +54,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void OnRendererVisible() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
-  void OnPageLoadStarted() override;
+  void AddPendingNavigation() override;
+  void RemovePendingNavigation() override;
+  void OnNavigationStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
@@ -239,6 +241,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     base::TimeTicks estimated_next_frame_begin;
     base::TimeDelta expected_short_idle_period_duration;
     int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
+    int navigation_task_expected_count;
     bool renderer_hidden;
     bool renderer_backgrounded;
     bool timer_queue_suspension_when_backgrounded_enabled;

@@ -84,6 +84,16 @@ public:
     // if the suspension count is zero and the current scheduler policy allows it.
     virtual void resumeTimerQueue() { }
 
+    // Tells the scheduler that a navigation task is pending.
+    // TODO(alexclarke): Long term should this be a task trait?
+    virtual void addPendingNavigation() { }
+
+    // Tells the scheduler that a navigation task is no longer pending.
+    virtual void removePendingNavigation() { }
+
+    // Tells the scheduler that an expected navigation was started.
+    virtual void onNavigationStarted() { }
+
 #ifdef INSIDE_BLINK
     // Helpers for posting bound functions as tasks.
     typedef Function<void(double deadlineSeconds)> IdleTask;

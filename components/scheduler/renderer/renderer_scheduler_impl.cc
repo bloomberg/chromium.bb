@@ -102,6 +102,7 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly()
       short_idle_period_duration(kShortIdlePeriodDurationSampleCount),
       current_use_case(UseCase::NONE),
       timer_queue_suspend_count(0),
+      navigation_task_expected_count(0),
       renderer_hidden(false),
       renderer_backgrounded(false),
       timer_queue_suspension_when_backgrounded_enabled(false),
@@ -631,6 +632,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (!MainThreadOnly().have_seen_a_begin_main_frame)
     block_expensive_tasks = false;
 
+  // Don't block expensive tasks if we are expecting a navigation.
+  if (MainThreadOnly().navigation_task_expected_count > 0)
+    block_expensive_tasks = false;
+
   if (block_expensive_tasks && loading_tasks_seem_expensive)
     new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
 
@@ -816,6 +821,8 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
       "rails_loading_priority_deadline",
       (AnyThread().rails_loading_priority_deadline - base::TimeTicks())
           .InMillisecondsF());
+  state->SetInteger("navigation_task_expected_count",
+                    MainThreadOnly().navigation_task_expected_count);
   state->SetDouble("last_idle_period_end_time",
                    (AnyThread().last_idle_period_end_time - base::TimeTicks())
                        .InMillisecondsF());
@@ -858,9 +865,23 @@ void RendererSchedulerImpl::OnIdlePeriodEnded() {
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
-void RendererSchedulerImpl::OnPageLoadStarted() {
+void RendererSchedulerImpl::AddPendingNavigation() {
+  helper_.CheckOnValidThread();
+  MainThreadOnly().navigation_task_expected_count++;
+  UpdatePolicy();
+}
+
+void RendererSchedulerImpl::RemovePendingNavigation() {
+  helper_.CheckOnValidThread();
+  DCHECK_GT(MainThreadOnly().navigation_task_expected_count, 0);
+  if (MainThreadOnly().navigation_task_expected_count > 0)
+    MainThreadOnly().navigation_task_expected_count--;
+  UpdatePolicy();
+}
+
+void RendererSchedulerImpl::OnNavigationStarted() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnPageLoadStarted");
+               "RendererSchedulerImpl::OnNavigationStarted");
   base::AutoLock lock(any_thread_lock_);
   AnyThread().rails_loading_priority_deadline =
       helper_.Now() + base::TimeDelta::FromMilliseconds(

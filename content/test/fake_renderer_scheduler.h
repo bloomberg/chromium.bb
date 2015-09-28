@@ -38,7 +38,9 @@ class FakeRendererScheduler : public scheduler::RendererScheduler {
   void OnRendererVisible() override;
   void OnRendererBackgrounded() override;
   void OnRendererForegrounded() override;
-  void OnPageLoadStarted() override;
+  void AddPendingNavigation() override;
+  void RemovePendingNavigation() override;
+  void OnNavigationStarted() override;
   bool IsHighPriorityWorkAnticipated() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
   bool ShouldYieldForHighPriorityWork() override;

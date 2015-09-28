@@ -82,7 +82,13 @@ void FakeRendererScheduler::OnRendererBackgrounded() {
 void FakeRendererScheduler::OnRendererForegrounded() {
 }
 
-void FakeRendererScheduler::OnPageLoadStarted() {
+void FakeRendererScheduler::AddPendingNavigation() {
+}
+
+void FakeRendererScheduler::RemovePendingNavigation() {
+}
+
+void FakeRendererScheduler::OnNavigationStarted() {
 }
 
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {

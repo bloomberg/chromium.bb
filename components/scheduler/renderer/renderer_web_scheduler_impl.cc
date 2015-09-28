@@ -35,4 +35,16 @@ RendererWebSchedulerImpl::createFrameHostScheduler() {
   return new WebFrameHostSchedulerImpl(renderer_scheduler_);
 }
 
+void RendererWebSchedulerImpl::addPendingNavigation() {
+  renderer_scheduler_->AddPendingNavigation();
+}
+
+void RendererWebSchedulerImpl::removePendingNavigation() {
+  renderer_scheduler_->RemovePendingNavigation();
+}
+
+void RendererWebSchedulerImpl::onNavigationStarted() {
+  renderer_scheduler_->OnNavigationStarted();
+}
+
 }  // namespace scheduler

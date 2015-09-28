@@ -275,6 +275,10 @@ NavigationScheduler::NavigationScheduler(LocalFrame* frame)
 
 NavigationScheduler::~NavigationScheduler()
 {
+    // TODO(alexclarke): Can remove this if oilpan is on since any pending task should
+    // keep the NavigationScheduler alive.
+    if (m_navigateTaskFactory->isPending())
+        Platform::current()->currentThread()->scheduler()->removePendingNavigation();
 }
 
 bool NavigationScheduler::locationChangePending()
@@ -375,6 +379,8 @@ void NavigationScheduler::scheduleReload()
 
 void NavigationScheduler::navigateTask()
 {
+    Platform::current()->currentThread()->scheduler()->removePendingNavigation();
+
     if (!m_frame->page())
         return;
     if (m_frame->page()->defersLoading()) {
@@ -420,7 +426,9 @@ void NavigationScheduler::startTimer()
     if (!m_redirect->shouldStartTimer(m_frame))
         return;
 
-    Platform::current()->currentThread()->scheduler()->loadingTaskRunner()->postDelayedTask(
+    WebScheduler* scheduler = Platform::current()->currentThread()->scheduler();
+    scheduler->addPendingNavigation();
+    scheduler->loadingTaskRunner()->postDelayedTask(
         FROM_HERE, m_navigateTaskFactory->cancelAndCreate(), m_redirect->delay() * 1000.0);
 
     InspectorInstrumentation::frameScheduledNavigation(m_frame, m_redirect->delay());
@@ -428,8 +436,10 @@ void NavigationScheduler::startTimer()
 
 void NavigationScheduler::cancel()
 {
-    if (m_navigateTaskFactory->isPending())
+    if (m_navigateTaskFactory->isPending()) {
+        Platform::current()->currentThread()->scheduler()->removePendingNavigation();
         InspectorInstrumentation::frameClearedScheduledNavigation(m_frame);
+    }
     m_navigateTaskFactory->cancel();
     m_redirect.clear();
 }

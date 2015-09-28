@@ -114,10 +114,19 @@ class SCHEDULER_EXPORT RendererScheduler : public ChildScheduler {
   // Must be called on the main thread.
   virtual void OnRendererForegrounded() = 0;
 
-  // Tells the scheduler that a page load has started.  The scheduler will
+  // Tells the scheduler that a navigation task is pending. While any navigation
+  // tasks are pending, the scheduler will ensure that loading tasks are not
+  // blocked even if they are expensive. Must be called on the main thread.
+  virtual void AddPendingNavigation() = 0;
+
+  // Tells the scheduler that a navigation task is no longer pending.
+  // Must be called on the main thread.
+  virtual void RemovePendingNavigation() = 0;
+
+  // Tells the scheduler that a navigation has started.  The scheduler will
   // prioritize loading tasks for a short duration afterwards.
   // Must be called from the main thread.
-  virtual void OnPageLoadStarted() = 0;
+  virtual void OnNavigationStarted() = 0;
 
   // Returns true if the scheduler has reason to believe that high priority work
   // may soon arrive on the main thread, e.g., if gesture events were observed

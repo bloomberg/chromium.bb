@@ -1146,7 +1146,7 @@ void RenderFrameImpl::OnNavigate(
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
   // Can be NULL in tests.
   if (render_thread_impl)
-    render_thread_impl->GetRendererScheduler()->OnPageLoadStarted();
+    render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
@@ -2807,7 +2807,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
       render_thread_impl->histogram_customizer()->
           RenderViewNavigatedToHost(GURL(GetLoadingUrl()).host(),
                                     RenderView::GetRenderViewCount());
-      render_thread_impl->GetRendererScheduler()->OnPageLoadStarted();
+      render_thread_impl->GetRendererScheduler()->OnNavigationStarted();
     }
   }
 

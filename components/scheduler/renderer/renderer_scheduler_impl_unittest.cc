@@ -308,6 +308,35 @@ class RendererSchedulerImplTest : public testing::Test {
     scheduler_->WillBeginFrame(begin_frame_args);
   }
 
+  void ForceTouchStartToBeExpectedSoon() {
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollEnd),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+    clock_->Advance(priority_escalation_after_input_duration() * 2);
+    scheduler_->ForceUpdatePolicy();
+  }
+
+  void SimulateExpensiveTasks(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    // RunUntilIdle won't actually run all of the SimpleTestTickClock::Advance
+    // tasks unless we set AutoAdvanceNow to true :/
+    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
+
+    // Simulate a bunch of expensive tasks
+    for (int i = 0; i < 10; i++) {
+      task_runner->PostTask(FROM_HERE,
+                            base::Bind(&base::SimpleTestTickClock::Advance,
+                                       base::Unretained(clock_.get()),
+                                       base::TimeDelta::FromMilliseconds(500)));
+    }
+
+    RunUntilIdle();
+
+    // Switch back to not auto-advancing because we want to be in control of
+    // when time advances.
+    mock_task_runner_->SetAutoAdvanceNowToPendingTasks(false);
+  }
+
   void EnableIdleTasks() { DoMainFrame(); }
 
   UseCase CurrentUseCase() {
@@ -712,23 +741,7 @@ TEST_F(
     TestCompositorPolicy_ExpensiveTimersDontRunWhenMainThreadOnCriticalPath) {
   std::vector<std::string> run_order;
 
-  // RunUntilIdle won't actually run all of the SimpleTestTickClock::Advance
-  // tasks unless we set AutoAdvanceNow to true :/
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-
-  // Simulate a bunch of expensive timer tasks
-  for (int i = 0; i < 10; i++) {
-    timer_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&base::SimpleTestTickClock::Advance,
-                              base::Unretained(clock_.get()),
-                              base::TimeDelta::FromMilliseconds(500)));
-  }
-
-  RunUntilIdle();
-
-  // Switch back to not auto-advancing because we want to be in control of when
-  // time advances.
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(false);
+  SimulateExpensiveTasks(timer_task_runner_);
 
   // Timers should now be disabled during main thread user user interactions.
   PostTestTasks(&run_order, "C1 T1");
@@ -755,25 +768,8 @@ TEST_F(
 TEST_F(RendererSchedulerImplTest, Navigation_ResetsTaskCostEstimations) {
   std::vector<std::string> run_order;
 
-  // RunUntilIdle won't actually run all of the SimpleTestTickClock::Advance
-  // tasks unless we set AutoAdvanceNow to true :/
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-
-  // Simulate a bunch of expensive timer tasks
-  for (int i = 0; i < 10; i++) {
-    timer_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&base::SimpleTestTickClock::Advance,
-                              base::Unretained(clock_.get()),
-                              base::TimeDelta::FromMilliseconds(500)));
-  }
-
-  RunUntilIdle();
-
-  // Switch back to not auto-advancing because we want to be in control of when
-  // time advances.
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(false);
-
-  scheduler_->OnPageLoadStarted();
+  SimulateExpensiveTasks(timer_task_runner_);
+  scheduler_->OnNavigationStarted();
   PostTestTasks(&run_order, "C1 T1");
 
   scheduler_->DidAnimateForInputOnCompositorThread();
@@ -916,7 +912,7 @@ TEST_F(RendererSchedulerImplTest, DISABLED_LoadingUseCase) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "I1 D1 C1 T1 L1 D2 C2 T2 L2");
 
-  scheduler_->OnPageLoadStarted();
+  scheduler_->OnNavigationStarted();
   EnableIdleTasks();
   RunUntilIdle();
 
@@ -1986,20 +1982,8 @@ TEST_F(RendererSchedulerImplTest,
        ExpensiveLoadingTasksNotBlockedTillFirstBeginMainFrame) {
   std::vector<std::string> run_order;
 
-  // RunUntilIdle won't actually run all of the SimpleTestTickClock::Advance
-  // tasks unless we set AutoAdvanceNow to true :/
-  mock_task_runner_->SetAutoAdvanceNowToPendingTasks(true);
-
-  // Simulate a bunch of expensive loading tasks
-  for (int i = 0; i < 10; i++) {
-    loading_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&base::SimpleTestTickClock::Advance,
-                              base::Unretained(clock_.get()),
-                              base::TimeDelta::FromMilliseconds(500)));
-  }
-
-  RunUntilIdle();
-
+  SimulateExpensiveTasks(loading_task_runner_);
+  ForceTouchStartToBeExpectedSoon();
   PostTestTasks(&run_order, "L1 D1");
   RunUntilIdle();
 
@@ -2007,6 +1991,7 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_FALSE(HaveSeenABeginMainframe());
   EXPECT_TRUE(LoadingTasksSeemExpensive());
   EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("D1")));
 
@@ -2021,8 +2006,99 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_TRUE(HaveSeenABeginMainframe());
   EXPECT_TRUE(LoadingTasksSeemExpensive());
   EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
+}
+
+TEST_F(RendererSchedulerImplTest,
+       ExpensiveLoadingTasksNotBlockedIfNavigationExpected) {
+  std::vector<std::string> run_order;
+
+  DoMainFrame();
+  SimulateExpensiveTasks(loading_task_runner_);
+  ForceTouchStartToBeExpectedSoon();
+  scheduler_->AddPendingNavigation();
+
+  PostTestTasks(&run_order, "L1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(UseCase::NONE, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("D1")));
+
+  // After the nagigation has been cancelled, the expensive loading tasks should
+  // get blocked.
+  scheduler_->RemovePendingNavigation();
+  run_order.clear();
+
+  PostTestTasks(&run_order, "L1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(RendererScheduler::UseCase::NONE, CurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
 }
+
+TEST_F(
+    RendererSchedulerImplTest,
+    ExpensiveLoadingTasksNotBlockedIfNavigationExpected_MultipleNavigations) {
+  std::vector<std::string> run_order;
+
+  DoMainFrame();
+  SimulateExpensiveTasks(loading_task_runner_);
+  ForceTouchStartToBeExpectedSoon();
+  scheduler_->AddPendingNavigation();
+  scheduler_->AddPendingNavigation();
+
+  PostTestTasks(&run_order, "L1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(UseCase::NONE, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1")));
+
+
+  run_order.clear();
+  scheduler_->RemovePendingNavigation();
+  // Navigation task expected ref count non-zero so expensive tasks still not
+  // blocked.
+  PostTestTasks(&run_order, "L1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(UseCase::NONE, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("L1"), std::string("D1")));
+
+
+  run_order.clear();
+  scheduler_->RemovePendingNavigation();
+  // Navigation task expected ref count is now zero, the expensive loading tasks
+  // should get blocked.
+  PostTestTasks(&run_order, "L1 D1");
+  RunUntilIdle();
+
+  EXPECT_EQ(RendererScheduler::UseCase::NONE, CurrentUseCase());
+  EXPECT_TRUE(HaveSeenABeginMainframe());
+  EXPECT_TRUE(LoadingTasksSeemExpensive());
+  EXPECT_FALSE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
+}
+
 
 }  // namespace scheduler
