@@ -46,12 +46,15 @@ public:
     }
     ~CSSImageSetValue();
 
-    bool isCachePending(float deviceScaleFactor) const;
-    StyleImage* cachedImageSet(float deviceScaleFactor);
-    StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor, const ResourceLoaderOptions&);
-    StyleFetchedImageSet* cacheImageSet(Document*, float deviceScaleFactor);
+    StyleFetchedImageSet* cachedImageSet(Document*, float deviceScaleFactor, const ResourceLoaderOptions&);
+    StyleFetchedImageSet* cachedImageSet(Document*, float deviceScaleFactor);
+
+    // Returns a StyleFetchedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.
+    StyleImage* cachedOrPendingImageSet(float);
 
     String customCSSText() const;
+
+    bool isPending() const { return !m_accessedBestFitImage; }
 
     struct ImageWithScale {
         ALLOW_ONLY_INLINE_ALLOCATION();
@@ -67,7 +70,7 @@ public:
     DECLARE_TRACE_AFTER_DISPATCH();
 
 protected:
-    ImageWithScale bestImageForScaleFactor(float scaleFactor);
+    ImageWithScale bestImageForScaleFactor();
 
 private:
     CSSImageSetValue();
@@ -75,9 +78,12 @@ private:
     void fillImageSet();
     static inline bool compareByScaleFactor(ImageWithScale first, ImageWithScale second) { return first.scaleFactor < second.scaleFactor; }
 
-    bool m_isCachePending;
-    float m_cachedScaleFactor;
-    RefPtrWillBeMember<StyleImage> m_cachedImageSet;
+    RefPtrWillBeMember<StyleImage> m_imageSet;
+    bool m_accessedBestFitImage;
+
+    // This represents the scale factor that we used to find the best fit image. It does not necessarily
+    // correspond to the scale factor of the best fit image.
+    float m_scaleFactor;
 
     Vector<ImageWithScale> m_imagesInSet;
 };

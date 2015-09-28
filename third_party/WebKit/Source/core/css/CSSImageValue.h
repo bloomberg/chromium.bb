@@ -50,10 +50,10 @@ public:
     }
     ~CSSImageValue();
 
-    bool isCachePending() const { return m_isCachePending; }
-    StyleImage* cachedImage() { ASSERT(!isCachePending()); return m_cachedImage.get(); }
-    StyleFetchedImage* cacheImage(Document*, const ResourceLoaderOptions&);
-    StyleFetchedImage* cacheImage(Document* document) { return cacheImage(document, ResourceFetcher::defaultResourceOptions()); }
+    StyleFetchedImage* cachedImage(Document*, const ResourceLoaderOptions&);
+    StyleFetchedImage* cachedImage(Document* document) { return cachedImage(document, ResourceFetcher::defaultResourceOptions()); }
+    // Returns a StyleFetchedImage if the image is cached already, otherwise a StylePendingImage.
+    StyleImage* cachedOrPendingImage();
 
     const String& url() { return m_absoluteURL; }
 
@@ -72,7 +72,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CSSImageValue> valueWithURLMadeAbsolute()
     {
-        return create(KURL(ParsedURLString, m_absoluteURL), m_cachedImage.get());
+        return create(KURL(ParsedURLString, m_absoluteURL), m_image.get());
     }
 
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
@@ -86,8 +86,8 @@ private:
     AtomicString m_relativeURL;
     AtomicString m_absoluteURL;
     Referrer m_referrer;
-    bool m_isCachePending;
-    RefPtrWillBeMember<StyleImage> m_cachedImage;
+    RefPtrWillBeMember<StyleImage> m_image;
+    bool m_accessedImage;
     AtomicString m_initiatorName;
 };
 

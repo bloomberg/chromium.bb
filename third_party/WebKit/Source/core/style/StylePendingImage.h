@@ -46,7 +46,7 @@ public:
         return adoptRefWillBeNoop(new StylePendingImage(value));
     }
 
-    WrappedImagePtr data() const override { return m_value.get(); }
+    WrappedImagePtr data() const override { return m_value; }
 
     PassRefPtrWillBeRawPtr<CSSValue> cssValue() const override { return m_value; }
 
@@ -56,10 +56,10 @@ public:
         return nullptr;
     }
 
-    CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value.get()) : 0; }
-    CSSImageGeneratorValue* cssImageGeneratorValue() const { return m_value->isImageGeneratorValue() ? toCSSImageGeneratorValue(m_value.get()) : 0; }
-    CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value.get()) : 0; }
-    CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value.get()) : 0; }
+    CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value) : 0; }
+    CSSImageGeneratorValue* cssImageGeneratorValue() const { return m_value->isImageGeneratorValue() ? toCSSImageGeneratorValue(m_value) : 0; }
+    CSSCursorImageValue* cssCursorImageValue() const { return m_value->isCursorImageValue() ? toCSSCursorImageValue(m_value) : 0; }
+    CSSImageSetValue* cssImageSetValue() const { return m_value->isImageSetValue() ? toCSSImageSetValue(m_value) : 0; }
 
     LayoutSize imageSize(const LayoutObject*, float /*multiplier*/) const override { return LayoutSize(); }
     bool imageHasRelativeWidth() const override { return false; }
@@ -89,7 +89,7 @@ private:
         m_isPendingImage = true;
     }
 
-    RefPtrWillBeMember<CSSValue> m_value;
+    RawPtrWillBeMember<CSSValue> m_value; // Not retained; it owns us.
 };
 
 DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, isPendingImage());

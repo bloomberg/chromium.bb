@@ -37,7 +37,7 @@ namespace blink {
 static bool subimageIsPending(CSSValue* value)
 {
     if (value->isImageValue())
-        return toCSSImageValue(value)->isCachePending();
+        return toCSSImageValue(value)->cachedOrPendingImage()->isPendingImage();
 
     if (value->isImageGeneratorValue())
         return toCSSImageGeneratorValue(value)->isPending();
@@ -66,7 +66,7 @@ static ImageResource* cachedImageForCSSValue(CSSValue* value, Document* document
         return nullptr;
 
     if (value->isImageValue()) {
-        StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cacheImage(document);
+        StyleFetchedImage* styleImageResource = toCSSImageValue(value)->cachedImage(document);
         if (!styleImageResource)
             return nullptr;
 

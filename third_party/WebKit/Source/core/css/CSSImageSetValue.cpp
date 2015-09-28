@@ -35,6 +35,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/style/StyleFetchedImageSet.h"
+#include "core/style/StylePendingImage.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
@@ -43,16 +44,16 @@ namespace blink {
 
 CSSImageSetValue::CSSImageSetValue()
     : CSSValueList(ImageSetClass, CommaSeparator)
-    , m_isCachePending(true)
-    , m_cachedScaleFactor(1)
+    , m_accessedBestFitImage(false)
+    , m_scaleFactor(1)
 {
 }
 
 CSSImageSetValue::~CSSImageSetValue()
 {
 #if !ENABLE(OILPAN)
-    if (m_cachedImageSet && m_cachedImageSet->isImageResourceSet())
-        toStyleFetchedImageSet(m_cachedImageSet)->clearImageSetValue();
+    if (m_imageSet && m_imageSet->isImageResourceSet())
+        toStyleFetchedImageSet(m_imageSet)->clearImageSetValue();
 #endif
 }
 
@@ -81,41 +82,32 @@ void CSSImageSetValue::fillImageSet()
     std::sort(m_imagesInSet.begin(), m_imagesInSet.end(), CSSImageSetValue::compareByScaleFactor);
 }
 
-CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor(float scaleFactor)
+CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor()
 {
     ImageWithScale image;
     size_t numberOfImages = m_imagesInSet.size();
     for (size_t i = 0; i < numberOfImages; ++i) {
         image = m_imagesInSet.at(i);
-        if (image.scaleFactor >= scaleFactor)
+        if (image.scaleFactor >= m_scaleFactor)
             return image;
     }
     return image;
 }
 
-bool CSSImageSetValue::isCachePending(float deviceScaleFactor) const
-{
-    return m_isCachePending || deviceScaleFactor != m_cachedScaleFactor;
-}
-
-StyleImage* CSSImageSetValue::cachedImageSet(float deviceScaleFactor)
-{
-    ASSERT(!isCachePending(deviceScaleFactor));
-    return m_cachedImageSet.get();
-}
-
-StyleFetchedImageSet* CSSImageSetValue::cacheImageSet(Document* document, float deviceScaleFactor, const ResourceLoaderOptions& options)
+StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(Document* document, float deviceScaleFactor, const ResourceLoaderOptions& options)
 {
     ASSERT(document);
+
+    m_scaleFactor = deviceScaleFactor;
 
     if (!m_imagesInSet.size())
         fillImageSet();
 
-    if (m_isCachePending || deviceScaleFactor != m_cachedScaleFactor) {
+    if (!m_accessedBestFitImage) {
         // FIXME: In the future, we want to take much more than deviceScaleFactor into acount here.
         // All forms of scale should be included: Page::pageScaleFactor(), LocalFrame::pageZoomFactor(),
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
-        ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
+        ImageWithScale image = bestImageForScaleFactor();
         FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css, options);
         request.mutableResourceRequest().setHTTPReferrer(image.referrer);
 
@@ -123,18 +115,32 @@ StyleFetchedImageSet* CSSImageSetValue::cacheImageSet(Document* document, float 
             request.setCrossOriginAccessControl(document->securityOrigin(), options.allowCredentials, options.credentialsRequested);
 
         if (ResourcePtr<ImageResource> cachedImage = ImageResource::fetch(request, document->fetcher())) {
-            m_cachedImageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
-            m_cachedScaleFactor = deviceScaleFactor;
-            m_isCachePending = false;
+            m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
+            m_accessedBestFitImage = true;
         }
     }
 
-    return (m_cachedImageSet && m_cachedImageSet->isImageResourceSet()) ? toStyleFetchedImageSet(m_cachedImageSet) : nullptr;
+    return (m_imageSet && m_imageSet->isImageResourceSet()) ? toStyleFetchedImageSet(m_imageSet) : nullptr;
 }
 
-StyleFetchedImageSet* CSSImageSetValue::cacheImageSet(Document* document, float deviceScaleFactor)
+StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(Document* document, float deviceScaleFactor)
 {
-    return cacheImageSet(document, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
+    return cachedImageSet(document, deviceScaleFactor, ResourceFetcher::defaultResourceOptions());
+}
+
+StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)
+{
+    if (!m_imageSet) {
+        m_imageSet = StylePendingImage::create(this);
+    } else if (!m_imageSet->isPendingImage()) {
+        // If the deviceScaleFactor has changed, we may not have the best image loaded, so we have to re-assess.
+        if (deviceScaleFactor != m_scaleFactor) {
+            m_accessedBestFitImage = false;
+            m_imageSet = StylePendingImage::create(this);
+        }
+    }
+
+    return m_imageSet.get();
 }
 
 String CSSImageSetValue::customCSSText() const
@@ -169,16 +175,16 @@ String CSSImageSetValue::customCSSText() const
 
 bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
 {
-    if (!m_cachedImageSet || !m_cachedImageSet->isImageResourceSet())
+    if (!m_imageSet || !m_imageSet->isImageResourceSet())
         return false;
-    if (Resource* cachedResource = toStyleFetchedImageSet(m_cachedImageSet)->cachedImage())
+    if (Resource* cachedResource = toStyleFetchedImageSet(m_imageSet)->cachedImage())
         return cachedResource->loadFailedOrCanceled();
     return true;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue)
 {
-    visitor->trace(m_cachedImageSet);
+    visitor->trace(m_imageSet);
     CSSValueList::traceAfterDispatch(visitor);
 }
 
