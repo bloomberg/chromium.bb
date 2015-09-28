@@ -242,7 +242,7 @@ bool Builder::ConfigDefined(BuilderRecord* record, Err* err) {
     return false;
 
   // Make sure all deps of this config are scheduled to be loaded. For other
-  // item types like targets, the "should generate" flag is propogated around
+  // item types like targets, the "should generate" flag is propagated around
   // to mark whether this should happen. We could call
   // RecursiveSetShouldGenerate to do this step here, but since configs nor
   // anything they depend on is actually written, the "generate" flag isn't
