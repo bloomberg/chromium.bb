@@ -26,6 +26,27 @@ namespace traffic_stats {
 // UDP usage. |bytes| must not be nullptr.
 NET_EXPORT bool GetTotalTxBytes(int64_t* bytes);
 
+// Returns true if the number of bytes received since device boot is
+// available and sets |*bytes| to that value. Counts packets across all network
+// interfaces, and always increases monotonically since device boot.
+// Statistics are measured at the network layer, so they include both TCP and
+// UDP usage. |bytes| must not be nullptr.
+NET_EXPORT bool GetTotalRxBytes(int64_t* bytes);
+
+// Returns true if the number of bytes attributed to caller's UID since device
+// boot are available and sets |*bytes| to that value. Counts packets across
+// all network interfaces, and always increases monotonically since device
+// boot. Statistics are measured at the network layer, so they include both TCP
+// and UDP usage. |bytes| must not be nullptr.
+NET_EXPORT bool GetCurrentUidTxBytes(int64_t* bytes);
+
+// Returns true if the number of bytes attributed to caller's UID since device
+// boot are available and sets |*bytes| to that value. Counts packets across
+// all network interfaces, and always increases monotonically since device
+// boot. Statistics are measured at the network layer, so they include both TCP
+// and UDP usage. |bytes| must not be nullptr.
+NET_EXPORT bool GetCurrentUidRxBytes(int64_t* bytes);
+
 bool Register(JNIEnv* env);
 
 }  // namespace traffic_stats
