@@ -34,6 +34,7 @@
     'gn_debug_bot_minimal_symbols_x86': ['gn', 'debug_bot_minimal_symbols', 'x86'],
     'gn_debug_static_bot': ['gn', 'debug_static_bot'],
     'gn_linux_upload': ['gn_linux_upload', 'official', 'goma'],
+    'gn_official_goma': ['gn', 'official', 'goma'],
     'gn_release_bot': ['gn', 'release_bot'],
     'gn_release_bot_minimal_symbols': ['gn', 'release_bot_minimal_symbols'],
     'gn_release_bot_minimal_symbols_x86': ['gn', 'release_bot_minimal_symbols', 'x86'],
@@ -370,7 +371,7 @@
       'Win Builder': 'gyp_official_goma_minimal_symbols_x86',
       'Win x64 Builder': 'gyp_official_goma_minimal_symbols_x64',
       'Mac Builder': 'gyp_official_goma',
-      'Linux Builder': 'gyp_official_goma',
+      'Linux Builder': 'gn_official_goma',
     },
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
