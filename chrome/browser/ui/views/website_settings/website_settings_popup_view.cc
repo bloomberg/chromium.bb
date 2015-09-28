@@ -474,35 +474,6 @@ gfx::Size WebsiteSettingsPopupView::GetPreferredSize() const {
 
 void WebsiteSettingsPopupView::SetCookieInfo(
     const CookieInfoList& cookie_info_list) {
-  site_data_content_->RemoveAllChildViews(true);
-
-  views::GridLayout* layout = new views::GridLayout(site_data_content_);
-  site_data_content_->SetLayoutManager(layout);
-
-  const int site_data_content_column = 0;
-  views::ColumnSet* column_set =
-      layout->AddColumnSet(site_data_content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::FIXED,
-                        kSiteDataIconColumnWidth,
-                        0);
-  column_set->AddPaddingColumn(0, kIconMarginLeft);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
-  // No padding. This third column is for |third_party_label_text| (see below),
-  // and the text needs to flow naturally from the |first_party_label_text|
-  // link.
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
-
-  layout->AddPaddingRow(1, 5);
-
   // |cookie_info_list| should only ever have 2 items: first- and third-party
   // cookies.
   DCHECK_EQ(cookie_info_list.size(), 2u);
@@ -520,26 +491,55 @@ void WebsiteSettingsPopupView::SetCookieInfo(
     }
   }
 
-  cookie_dialog_link_ = new views::Link(first_party_label_text);
-  cookie_dialog_link_->set_listener(this);
+  if (!cookie_dialog_link_) {
+    cookie_dialog_link_ = new views::Link(first_party_label_text);
+    cookie_dialog_link_->set_listener(this);
+  } else {
+    cookie_dialog_link_->SetText(first_party_label_text);
+  }
 
-  layout->StartRow(1, site_data_content_column);
-  WebsiteSettingsUI::PermissionInfo info;
-  info.type = CONTENT_SETTINGS_TYPE_COOKIES;
-  info.setting = CONTENT_SETTING_ALLOW;
-  views::ImageView* icon = new views::ImageView();
-  const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
-  icon->SetImage(image.ToImageSkia());
-  layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
-                  views::GridLayout::CENTER);
-  layout->AddView(cookie_dialog_link_, 1, 1, views::GridLayout::CENTER,
-                  views::GridLayout::CENTER);
-  base::string16 comma = base::ASCIIToUTF16(", ");
+  views::GridLayout* layout =
+      static_cast<views::GridLayout*>(site_data_content_->GetLayoutManager());
+  if (!layout) {
+    layout = new views::GridLayout(site_data_content_);
+    site_data_content_->SetLayoutManager(layout);
 
-  layout->AddView(new views::Label(comma + third_party_label_text), 1, 1,
-                  views::GridLayout::LEADING, views::GridLayout::CENTER);
+    const int site_data_content_column = 0;
+    views::ColumnSet* column_set =
+        layout->AddColumnSet(site_data_content_column);
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::FIXED, kSiteDataIconColumnWidth,
+                          0);
+    column_set->AddPaddingColumn(0, kIconMarginLeft);
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::USE_PREF, 0, 0);
+    // No padding. This third column is for |third_party_label_text| (see
+    // below),
+    // and the text needs to flow naturally from the |first_party_label_text|
+    // link.
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::USE_PREF, 0, 0);
 
-  layout->AddPaddingRow(1, 6);
+    layout->AddPaddingRow(1, 5);
+
+    layout->StartRow(1, site_data_content_column);
+    WebsiteSettingsUI::PermissionInfo info;
+    info.type = CONTENT_SETTINGS_TYPE_COOKIES;
+    info.setting = CONTENT_SETTING_ALLOW;
+    views::ImageView* icon = new views::ImageView();
+    const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
+    icon->SetImage(image.ToImageSkia());
+    layout->AddView(icon, 1, 1, views::GridLayout::CENTER,
+                    views::GridLayout::CENTER);
+    layout->AddView(cookie_dialog_link_, 1, 1, views::GridLayout::CENTER,
+                    views::GridLayout::CENTER);
+    base::string16 comma = base::ASCIIToUTF16(", ");
+
+    layout->AddView(new views::Label(comma + third_party_label_text), 1, 1,
+                    views::GridLayout::LEADING, views::GridLayout::CENTER);
+
+    layout->AddPaddingRow(1, 6);
+  }
 
   layout->Layout(site_data_content_);
   SizeToContents();
