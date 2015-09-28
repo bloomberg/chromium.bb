@@ -25,6 +25,7 @@ public:
     static bool isForbiddenResponseHeaderName(const String& name);
     static bool isSimpleOrForbiddenRequest(const String& method, const HTTPHeaderMap&);
     static AtomicString normalizeMethod(const AtomicString& method);
+    static String normalizeHeaderValue(const String& value);
 };
 
 } // namespace blink

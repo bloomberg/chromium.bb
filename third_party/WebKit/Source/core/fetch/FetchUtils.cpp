@@ -16,6 +16,11 @@ namespace blink {
 
 namespace {
 
+bool isHTTPWhitespace(UChar chr)
+{
+    return chr == ' ' || chr == '\n' || chr == '\t' || chr == '\r';
+}
+
 class ForbiddenHeaderNames {
     WTF_MAKE_NONCOPYABLE(ForbiddenHeaderNames); WTF_MAKE_FAST_ALLOCATED(ForbiddenHeaderNames);
 public:
@@ -187,6 +192,15 @@ AtomicString FetchUtils::normalizeMethod(const AtomicString& method)
         }
     }
     return method;
+}
+
+String FetchUtils::normalizeHeaderValue(const String& value)
+{
+    // https://fetch.spec.whatwg.org/#concept-header-value-normalize
+    // Strip leading and trailing whitespace from header value.
+    // HTTP whitespace bytes are 0x09, 0x0A, 0x0D, and 0x20.
+
+    return value.stripWhiteSpace(isHTTPWhitespace);
 }
 
 } // namespace blink

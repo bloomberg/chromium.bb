@@ -3812,6 +3812,7 @@
             'events/EventPathTest.cpp',
             'fetch/CachingCorrectnessTest.cpp',
             'fetch/ClientHintsPreferencesTest.cpp',
+            'fetch/FetchUtilsTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
             'fetch/MockImageResourceClient.cpp',
