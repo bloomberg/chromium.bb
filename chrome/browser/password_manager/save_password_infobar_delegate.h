@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/password_manager/password_manager_infobar_delegate.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -27,7 +28,7 @@ enum class CredentialSourceType;
 // login is one we already know about, the end of the line is
 // provisional_save_manager_ because we just update it on success and so such
 // forms never end up in an infobar.
-class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
+class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
  public:
   // If we won't be showing the one-click signin infobar, creates a save
   // password infobar and delegate and adds the infobar to the InfoBarService
@@ -43,19 +44,11 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   ~SavePasswordInfoBarDelegate() override;
 
-  const gfx::Range& message_link_range() const { return message_link_range_; }
-
   base::string16 GetFirstRunExperienceMessage();
 
   // ConfirmInfoBarDelegate:
-  Type GetInfoBarType() const override;
-  InfoBarAutomationType GetInfoBarAutomationType() const override;
-  int GetIconId() const override;
-  bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
-  bool LinkClicked(WindowOpenDisposition disposition) override;
   bool Accept() override;
   bool Cancel() override;
 
@@ -88,13 +81,6 @@ class SavePasswordInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Records source from where infobar was triggered.
   // Infobar appearance (message, buttons) depends on value of this parameter.
   password_manager::CredentialSourceType source_type_;
-
-  // Infobar message: branded as a part of Google Smart Lock for signed users.
-  base::string16 message_;
-
-  // If set, describes the location of the link to the help center article for
-  // Smart Lock.
-  gfx::Range message_link_range_;
 
   bool should_show_first_run_experience_;
 

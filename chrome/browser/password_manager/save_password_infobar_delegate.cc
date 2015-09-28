@@ -91,7 +91,7 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     password_manager::CredentialSourceType source_type,
     bool is_smartlock_branding_enabled,
     bool should_show_first_run_experience)
-    : ConfirmInfoBarDelegate(),
+    : PasswordManagerInfoBarDelegate(),
       form_to_save_(form_to_save.Pass()),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix),
@@ -103,10 +103,13 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
         "PasswordManager.SavePasswordPromptDisplayed_" + uma_histogram_suffix_,
         true);
   }
-  message_link_range_ = gfx::Range();
+  base::string16 message;
+  gfx::Range message_link_range = gfx::Range();
   GetSavePasswordDialogTitleTextAndLinkRange(
       web_contents->GetVisibleURL(), form_to_save_->observed_form().origin,
-      is_smartlock_branding_enabled, false, &message_, &message_link_range_);
+      is_smartlock_branding_enabled, false, &message, &message_link_range);
+  SetMessage(message);
+  SetMessageLinkRange(message_link_range);
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetFirstRunExperienceMessage() {
@@ -116,32 +119,9 @@ base::string16 SavePasswordInfoBarDelegate::GetFirstRunExperienceMessage() {
              : base::string16();
 }
 
-infobars::InfoBarDelegate::Type
-SavePasswordInfoBarDelegate::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
-infobars::InfoBarDelegate::InfoBarAutomationType
-SavePasswordInfoBarDelegate::GetInfoBarAutomationType() const {
-  return PASSWORD_INFOBAR;
-}
-
-int SavePasswordInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_SAVE_PASSWORD;
-}
-
-bool SavePasswordInfoBarDelegate::ShouldExpire(
-    const NavigationDetails& details) const {
-  return !details.is_redirect && ConfirmInfoBarDelegate::ShouldExpire(details);
-}
-
 void SavePasswordInfoBarDelegate::InfoBarDismissed() {
   DCHECK(form_to_save_.get());
   infobar_response_ = password_manager::metrics_util::INFOBAR_DISMISSED;
-}
-
-base::string16 SavePasswordInfoBarDelegate::GetMessageText() const {
-  return message_;
 }
 
 base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
@@ -167,17 +147,5 @@ bool SavePasswordInfoBarDelegate::Cancel() {
     form_to_save_->PermanentlyBlacklist();
     infobar_response_ = password_manager::metrics_util::NEVER_REMEMBER_PASSWORD;
   }
-  return true;
-}
-
-bool SavePasswordInfoBarDelegate::LinkClicked(
-    WindowOpenDisposition disposition) {
-  InfoBarService::WebContentsFromInfoBar(infobar())
-      ->OpenURL(content::OpenURLParams(
-          GURL(l10n_util::GetStringUTF16(
-              IDS_PASSWORD_MANAGER_SMART_LOCK_PAGE)),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          ui::PAGE_TRANSITION_LINK, false));
   return true;
 }

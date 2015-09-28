@@ -2067,6 +2067,8 @@
     'chrome_browser_password_manager_mac_android_sources': [
       'browser/password_manager/save_password_infobar_delegate.cc',
       'browser/password_manager/save_password_infobar_delegate.h',
+      'browser/password_manager/password_manager_infobar_delegate.cc',
+      'browser/password_manager/password_manager_infobar_delegate.h'
     ],
     'chrome_browser_permissions_sources': [
       'browser/permissions/permission_bubble_request_impl.cc',
