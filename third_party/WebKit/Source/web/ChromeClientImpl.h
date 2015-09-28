@@ -174,6 +174,8 @@ public:
 
     FloatSize elasticOverscroll() const override;
 
+    void didObserveNonGetFetchFromScript() const override;
+
 private:
     explicit ChromeClientImpl(WebViewImpl*);
 

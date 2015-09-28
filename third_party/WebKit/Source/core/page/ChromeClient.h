@@ -252,6 +252,11 @@ public:
 
     virtual FloatSize elasticOverscroll() const { return FloatSize(); }
 
+    // Called when observed XHR, fetch, and other fetch request with non-GET
+    // method is initiated from javascript. At this time, it is not guaranteed
+    // that this is comprehensive.
+    virtual void didObserveNonGetFetchFromScript() const {}
+
 protected:
     ~ChromeClient() override { }
 

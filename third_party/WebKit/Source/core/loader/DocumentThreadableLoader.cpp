@@ -48,6 +48,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "platform/SharedBuffer.h"
 #include "platform/Task.h"
 #include "platform/network/ResourceRequest.h"
@@ -160,6 +162,24 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     for (const auto& header : headerMap) {
         if (FetchUtils::isSimpleHeader(header.key, header.value))
             m_simpleRequestHeaders.add(header.key, header.value);
+    }
+
+    // DocumentThreadableLoader is used by all javascript initiated fetch, so
+    // we use this chance to record non-GET fetch script requests.
+    // However, this is based on the following assumptions, so please be careful
+    // when adding similar logic:
+    // - ThreadableLoader is used as backend for all javascript initiated network
+    //   fetches.
+    //   - Note that ThreadableLoader is also used for non-network fetch such as
+    //     FileReaderLoader. However it emulates GET method so signal is not
+    //     recorded here.
+    // - ThreadableLoader w/ non-GET request is only created from javascript
+    //   initiated fetch.
+    //   - Some non-script initiated fetches such as WorkerScriptLoader also use
+    //     ThreadableLoader, but they are guaranteed to use GET method.
+    if (request.httpMethod() != "GET") {
+        if (Page* page = m_document.page())
+            page->chromeClient().didObserveNonGetFetchFromScript();
     }
 
     // If the fetch request will be handled by the ServiceWorker, the

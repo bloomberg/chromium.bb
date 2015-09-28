@@ -20,6 +20,8 @@ public:
 
     bool hadFormInteraction() const { return m_hadFormInteraction; }
     void setHadFormInteraction();
+    bool issuedNonGetFetchFromScript() const { return m_issuedNonGetFetchFromScript; }
+    void setIssuedNonGetFetchFromScript();
 
     BLINK_EXPORT void reset();
 #if BLINK_IMPLEMENTATION
@@ -30,6 +32,8 @@ public:
 
 private:
     bool m_hadFormInteraction : 1;
+    bool m_issuedNonGetFetchFromScript : 1;
+
     WebViewClient* m_observer = nullptr;
 };
 

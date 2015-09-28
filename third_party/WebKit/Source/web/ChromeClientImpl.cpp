@@ -77,6 +77,7 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebKit.h"
 #include "public/web/WebNode.h"
+#include "public/web/WebPageImportanceSignals.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebSelection.h"
@@ -1004,6 +1005,12 @@ void ChromeClientImpl::notifyPopupOpeningObservers() const
 FloatSize ChromeClientImpl::elasticOverscroll() const
 {
     return m_webView->elasticOverscroll();
+}
+
+void ChromeClientImpl::didObserveNonGetFetchFromScript() const
+{
+    if (m_webView->pageImportanceSignals())
+        m_webView->pageImportanceSignals()->setIssuedNonGetFetchFromScript();
 }
 
 } // namespace blink
