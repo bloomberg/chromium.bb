@@ -71,18 +71,8 @@ MockIsolatedFileSystem.prototype = {
         if (!this._callback)
             return;
         var files = Object.keys(this._files);
-        for (var i = 0; i < files.length; ++i) {
-            var isExcluded = false;
-            for (var j = 0; j < files[i].length; ++j) {
-                if (files[i][j] === "/") {
-                    if (InspectorTest.testExcludedFolderManager.isFileExcluded(this._path, files[i].substr(0, j + 1)))
-                        isExcluded = true;
-                }
-            }
-            if (isExcluded)
-                continue;
+        for (var i = 0; i < files.length; ++i)
             this._callback(files[i].substr(1));
-        }
         delete this._callback;
     },
 
@@ -128,11 +118,6 @@ MockIsolatedFileSystemManager.prototype = {
         return this.fileSystemMapping;
     },
 
-    excludedFolderManager: function()
-    {
-        return InspectorTest.testExcludedFolderManager;
-    },
-
     __proto__: WebInspector.Object.prototype
 }
 
@@ -148,7 +133,7 @@ InspectorTest.addFilesToMockFileSystem = function(path, files)
     MockIsolatedFileSystem._isolatedFileSystemMocks[path]._addFiles(files);
 }
 
-InspectorFrontendHost.isolatedFileSystem = function(name, url)
+InspectorFrontendHost.isolatedFileSystem = function(name)
 {
     return InspectorTest.TestFileSystem._instances[name];
 }
@@ -164,7 +149,6 @@ InspectorTest.TestFileSystem._instances = {};
 InspectorTest.TestFileSystem.prototype = {
     reportCreated: function()
     {
-        WebInspector.isolatedFileSystemManager._loaded = true;
         InspectorTest.TestFileSystem._instances[this.fileSystemPath] = this;
         InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemAdded, {
             fileSystem: { fileSystemPath: this.fileSystemPath,

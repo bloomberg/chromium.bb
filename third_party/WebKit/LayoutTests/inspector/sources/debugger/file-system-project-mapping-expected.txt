@@ -94,19 +94,6 @@ function f()
 
 ==Source frame contents end==
 
-Running: testExcludingFolders
-Adding file system.
-Adding exclusion pattern and excluded folder.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/bar.js.
-Workspace event: UISourceCodeAdded: filesystem:/var/www/html2/foo.js.
-Dumping uiSourceCodes origin URLs:
-  - file:///var/www/bar.js
-  - file:///var/www/html2/foo.js
-Excluding html2 folder:
-Workspace event: UISourceCodeRemoved: filesystem:/var/www/html2/foo.js.
-Dumping uiSourceCodes origin URLs:
-  - file:///var/www/bar.js
-
 Running: testRemoveProject
 Adding file system.
 Workspace event: UISourceCodeAdded: filesystem:/var/www/foo.js.

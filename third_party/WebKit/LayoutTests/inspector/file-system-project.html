@@ -75,11 +75,6 @@ function test()
                 dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
             }
 
-            function uiSourceCodeAdded(uiSourceCode)
-            {
-                uiSourceCodes.push(uiSourceCode)
-            }
-
             function uiSourceCodesDumped()
             {
                 dumpUISourceCodeLocations(uiSourceCodes, 5);
@@ -126,6 +121,49 @@ function test()
                 }
             }
         },
+
+        function testFileSystems(next)
+        {
+            function dumpWorkspaceUISourceCodes()
+            {
+                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
+                var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
+                for (var i = 0; i < uiSourceCodes.length; ++i)
+                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
+            }
+
+            var fs;
+            function createFileSystem(name)
+            {
+                fs = new InspectorTest.TestFileSystem(name);
+                fs.root.mkdir("html").addFile("foo.js", "");
+                fs.root.mkdir(".git").addFile("foogit.js", "");
+                fs.root.addFile("bar.js", "");
+                fs.root.mkdir("html2").addFile("foo.js", "");
+                fs.reportCreated();
+            }
+
+            createFileSystem("/var/www");
+            InspectorTest.addResult("");
+            InspectorTest.addResult("-- Default excludes --");
+            dumpWorkspaceUISourceCodes();
+            fs.removeFileSystem();
+
+            WebInspector.settings.createLocalSetting("workspaceExcludedFolders", {}).set({"/var/www2":["/html/"]});
+            createFileSystem("/var/www2");
+            InspectorTest.addResult("");
+            InspectorTest.addResult("-- Excluded /html/ --");
+            dumpWorkspaceUISourceCodes();
+            fs.removeFileSystem();
+
+            createFileSystem("/var/www3");
+            InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("/html2/");
+            InspectorTest.addResult("");
+            InspectorTest.addResult("-- Excluded /html2/ --");
+            dumpWorkspaceUISourceCodes();
+            fs.removeFileSystem();
+            next();
+        }
     ]);
 };
 </script>

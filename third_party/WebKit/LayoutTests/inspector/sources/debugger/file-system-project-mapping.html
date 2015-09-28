@@ -279,35 +279,6 @@ function test()
             }
         },
 
-        function testExcludingFolders(next)
-        {
-            function dumpWorkspaceUISourceCodes()
-            {
-                InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
-                var uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
-                for (var i = 0; i < uiSourceCodes.length; ++i)
-                    InspectorTest.addResult("  - " + uiSourceCodes[i].originURL());
-            }
-
-            var fileSystemPath = "/var/www";
-            var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
-            var files = {"/html/foo.js": "", "/.git/foogit.js": "", "/bar.js": "", "/html2/foo.js": ""};
-
-            createObjects();
-
-            InspectorTest.addResult("Adding file system.");
-            manager.addMockFileSystem(fileSystemPath);
-            InspectorTest.addResult("Adding exclusion pattern and excluded folder.");
-            InspectorTest.testExcludedFolderManager.addExcludedFolder(fileSystemPath, "/html/");
-            manager.addFiles(fileSystemPath, files);
-            dumpWorkspaceUISourceCodes();
-            InspectorTest.addResult("Excluding html2 folder:");
-            InspectorTest.testWorkspace.uiSourceCodes()[0].project().excludeFolder("/html2/");
-            dumpWorkspaceUISourceCodes();
-            InspectorTest.testExcludedFolderManager.removeExcludedFolder(fileSystemPath, "/html/");
-            next();
-        },
-
         function testRemoveProject(next)
         {
             function dumpWorkspaceUISourceCodes()

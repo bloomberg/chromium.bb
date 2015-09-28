@@ -46,3 +46,21 @@ Removing second file system.
 Removing first file system.
     number of uiSourceCodes in workspace after removing first file system: 0
 
+Running: testFileSystems
+
+-- Default excludes --
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www/html/foo.js
+  - file:///var/www/bar.js
+  - file:///var/www/html2/foo.js
+
+-- Excluded /html/ --
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www2/bar.js
+  - file:///var/www2/html2/foo.js
+
+-- Excluded /html2/ --
+Dumping uiSourceCodes origin URLs:
+  - file:///var/www3/html/foo.js
+  - file:///var/www3/bar.js
+
