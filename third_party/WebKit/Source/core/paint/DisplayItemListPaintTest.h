@@ -30,8 +30,6 @@ private:
     {
         RenderingTest::SetUp();
         enableCompositing();
-        // TODO(wangxianzhu): Update the test expectations when we enable the feature permanently.
-        RuntimeEnabledFeatures::setSlimmingPaintSubsequenceCachingEnabled(false);
     }
     void TearDown() override
     {
