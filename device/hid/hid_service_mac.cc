@@ -254,8 +254,7 @@ scoped_refptr<HidDeviceInfo> HidServiceMac::CreateDeviceInfo(
   std::vector<uint8> report_descriptor;
   if (!TryGetHidDataProperty(hid_device, CFSTR(kIOHIDReportDescriptorKey),
                              &report_descriptor)) {
-    HID_LOG(EVENT) << "Unable to get report descriptor for new device.";
-    return nullptr;
+    HID_LOG(DEBUG) << "Device report descriptor not available.";
   }
 
   return new HidDeviceInfo(
