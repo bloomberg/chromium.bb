@@ -49,7 +49,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
 
  private:
   struct Request;
-  typedef ScopedVector<Request>::iterator RequestIterator;
+  using RequestIterator = ScopedVector<Request>::iterator;
 
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -72,9 +72,7 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // we restart when the returned access token has expired.
   void StartFetching(Request* request);
 
-  void DispatchNetworkError(RequestIterator it, int error_code);
-  void DispatchGoogleServiceAuthError(RequestIterator it,
-                                      const GoogleServiceAuthError& error);
+  void DispatchResult(RequestIterator it, bool success);
 
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;

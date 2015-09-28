@@ -199,7 +199,6 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
 void PermissionRequestCreatorApiary::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  VLOG(1) << "Couldn't get token";
   RequestIterator it = requests_.begin();
   while (it != requests_.end()) {
     if (request == (*it)->access_token_request.get())
@@ -207,8 +206,8 @@ void PermissionRequestCreatorApiary::OnGetTokenFailure(
     ++it;
   }
   DCHECK(it != requests_.end());
-  (*it)->callback.Run(false);
-  requests_.erase(it);
+  LOG(WARNING) << "Token error: " << error.ToString();
+  DispatchResult(it, false);
 }
 
 void PermissionRequestCreatorApiary::OnURLFetchComplete(
@@ -223,7 +222,8 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
 
   const net::URLRequestStatus& status = source->GetStatus();
   if (!status.is_success()) {
-    DispatchNetworkError(it, status.error());
+    LOG(WARNING) << "Network error " << status.error();
+    DispatchResult(it, false);
     return;
   }
 
@@ -240,8 +240,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
 
   if (response_code != net::HTTP_OK) {
     LOG(WARNING) << "HTTP error " << response_code;
-    DispatchGoogleServiceAuthError(
-        it, GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
+    DispatchResult(it, false);
     return;
   }
 
@@ -250,33 +249,27 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
   scoped_ptr<base::Value> value = base::JSONReader::Read(response_body);
   base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
-    DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
+    LOG(WARNING) << "Invalid top-level dictionary";
+    DispatchResult(it, false);
     return;
   }
   base::DictionaryValue* permission_dict = NULL;
   if (!dict->GetDictionary(kPermissionRequestKey, &permission_dict)) {
-    DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
+    LOG(WARNING) << "Permission request not found";
+    DispatchResult(it, false);
     return;
   }
   std::string id;
   if (!permission_dict->GetString(kIdKey, &id)) {
-    DispatchNetworkError(it, net::ERR_INVALID_RESPONSE);
+    LOG(WARNING) << "ID not found";
+    DispatchResult(it, false);
     return;
   }
-  (*it)->callback.Run(true);
-  requests_.erase(it);
+  DispatchResult(it, true);
 }
 
-void PermissionRequestCreatorApiary::DispatchNetworkError(RequestIterator it,
-                                                          int error_code) {
-  DispatchGoogleServiceAuthError(
-      it, GoogleServiceAuthError::FromConnectionError(error_code));
-}
-
-void PermissionRequestCreatorApiary::DispatchGoogleServiceAuthError(
-    RequestIterator it,
-    const GoogleServiceAuthError& error) {
-  VLOG(1) << "GoogleServiceAuthError: " << error.ToString();
-  (*it)->callback.Run(false);
+void PermissionRequestCreatorApiary::DispatchResult(RequestIterator it,
+                                                    bool success) {
+  (*it)->callback.Run(success);
   requests_.erase(it);
 }
