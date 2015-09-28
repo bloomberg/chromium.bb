@@ -62,14 +62,12 @@
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/startup/autolaunch_prompt.h"
-#include "chrome/browser/ui/startup/default_browser_prompt.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
-#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -147,6 +145,7 @@
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/upgrade_detector.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -221,6 +220,10 @@
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #endif
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/startup/default_browser_prompt.h"
+#endif
+
 namespace {
 
 #if !defined(OS_ANDROID)
@@ -237,7 +240,6 @@ const char kLegacyProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 namespace chrome {
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
-
   // Please keep this list alphabetized.
   AppListService::RegisterPrefs(registry);
   browser_shutdown::RegisterPrefs(registry);
@@ -262,7 +264,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
-  UpgradeDetector::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
@@ -298,6 +299,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
+  UpgradeDetector::RegisterPrefs(registry);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
 #endif  // !defined(OS_CHROMEOS)

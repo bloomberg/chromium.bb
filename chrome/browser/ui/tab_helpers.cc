@@ -29,7 +29,6 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -60,6 +59,7 @@
 #include "chrome/browser/plugins/plugin_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_tab_observer.h"
 #include "chrome/browser/thumbnails/thumbnail_tab_helper.h"
+#include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/hung_plugin_tab_helper.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
@@ -143,7 +143,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       autofill::ChromeAutofillClient::FromWebContents(web_contents),
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  BookmarkTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
   ChromeContentSettingsClient::CreateForWebContents(web_contents);
@@ -185,6 +184,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   VoiceSearchTabHelper::CreateForWebContents(web_contents);
   WindowAndroidHelper::CreateForWebContents(web_contents);
 #else
+  BookmarkTabHelper::CreateForWebContents(web_contents);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);

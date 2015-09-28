@@ -163,6 +163,17 @@ source_set("test_support") {
     ]
   }
 
+  if (is_android) {
+    sources -= [
+      "base/dialog_test_browser_window.cc",
+      "base/dialog_test_browser_window.h",
+      "base/in_process_browser_test.cc",
+      "base/in_process_browser_test.h",
+      "base/test_browser_window.cc",
+      "base/test_browser_window.h",
+    ]
+  }
+
   if (enable_extensions) {
     deps += [
       "//chrome/common/extensions/api",
@@ -659,7 +670,9 @@ if (!is_android) {
   # The _run targets exist only for compatibility w/ GYP.
   group("browser_tests_run") {
     testonly = true
-    data_deps = [ ":browser_tests" ]
+    data_deps = [
+      ":browser_tests",
+    ]
   }
 
   test("browser_tests") {
@@ -1208,7 +1221,9 @@ if (!is_android) {
       "//third_party/WebKit/public:blink",
     ]
 
-    data_deps = [ "//third_party/mesa:osmesa" ]
+    data_deps = [
+      "//third_party/mesa:osmesa",
+    ]
 
     if (cld_version == 2) {
       # Language detection is irrelevant to sync, so it can depend on any

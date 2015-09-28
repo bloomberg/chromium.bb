@@ -182,9 +182,6 @@ source_set("ui") {
                            "//chrome")
     deps += [ "//chrome/browser/chromeos" ]
   } else {
-    sources += rebase_path(gypi_values.chrome_browser_ui_non_chromeos_sources,
-                           ".",
-                           "//chrome")
     defines += [ "FRAME_AVATAR_BUTTON=1" ]
   }
   if (use_cups) {
@@ -524,6 +521,16 @@ source_set("test_support") {
     if (!is_mac) {
       sources += [ "views/toolbar/browser_action_test_util_views.cc" ]
     }
+  }
+
+  if (is_android) {
+    sources -= [
+      "exclusive_access/fullscreen_controller_state_test.cc",
+      "exclusive_access/fullscreen_controller_state_test.h",
+      "exclusive_access/fullscreen_controller_state_tests.h",
+      "exclusive_access/fullscreen_controller_test.cc",
+      "exclusive_access/fullscreen_controller_test.h",
+    ]
   }
 
   public_deps = [
