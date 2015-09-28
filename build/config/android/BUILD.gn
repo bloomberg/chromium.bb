@@ -115,6 +115,10 @@ config("compiler") {
       abi_target,
     ]
   }
+
+  # Assign any flags set for the C compiler to asmflags so that they are sent
+  # to the assembler.
+  asmflags = cflags
 }
 
 # This is included by reference in the //build/config/compiler:runtime_library
@@ -194,6 +198,7 @@ config("runtime_library") {
 config("sdk") {
   if (sysroot != "") {
     cflags = [ "--sysroot=" + sysroot ]
+    asmflags = [ "--sysroot=" + sysroot ]
     ldflags = [ "--sysroot=" + sysroot ]
 
     # Need to get some linker flags out of the sysroot.
@@ -209,6 +214,7 @@ config("sdk") {
 
 config("executable_config") {
   cflags = [ "-fPIE" ]
+  asmflags = [ "-fPIE" ]
   ldflags = [ "-pie" ]
 }
 

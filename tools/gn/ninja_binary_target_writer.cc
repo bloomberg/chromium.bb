@@ -420,16 +420,12 @@ void NinjaBinaryTargetWriter::WriteCompilerVars(
     WriteOneFlag(SUBSTITUTION_ASMFLAGS, false, Toolchain::TYPE_NONE,
                  &ConfigValues::asmflags, opts);
   }
-  // TODO(andybons): Remove SOURCE_S and SOURCE_ASM checks once asmflags is
-  // used.
   if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_CPP) ||
-      used_types.Get(SOURCE_M) || used_types.Get(SOURCE_MM) ||
-      used_types.Get(SOURCE_S) || used_types.Get(SOURCE_ASM)) {
+      used_types.Get(SOURCE_M) || used_types.Get(SOURCE_MM)) {
     WriteOneFlag(SUBSTITUTION_CFLAGS, false, Toolchain::TYPE_NONE,
                  &ConfigValues::cflags, opts);
   }
-  if (used_types.Get(SOURCE_C) || used_types.Get(SOURCE_S) ||
-      used_types.Get(SOURCE_ASM)) {
+  if (used_types.Get(SOURCE_C)) {
     WriteOneFlag(SUBSTITUTION_CFLAGS_C, has_precompiled_headers,
                  Toolchain::TYPE_CC, &ConfigValues::cflags_c, opts);
   }

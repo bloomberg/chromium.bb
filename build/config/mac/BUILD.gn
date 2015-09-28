@@ -12,6 +12,7 @@ config("sdk") {
     "-mmacosx-version-min=$mac_deployment_target",
   ]
 
+  asmflags = common_flags
   cflags = common_flags
   ldflags = common_flags
 }

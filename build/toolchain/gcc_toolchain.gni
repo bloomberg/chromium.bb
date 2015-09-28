@@ -194,7 +194,7 @@ template("gcc_toolchain") {
     tool("asm") {
       # For GCC we can just use the C compiler to compile assembly.
       depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile ${rebuild_string}{{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM {{output}}"
       outputs = [

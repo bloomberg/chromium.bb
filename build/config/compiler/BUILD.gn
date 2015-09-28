@@ -93,6 +93,7 @@ config("default_include_dirs") {
 # where stuff should go. Put warning related stuff in the "warnings" config.
 
 config("compiler") {
+  asmflags = []
   cflags = []
   cflags_c = []
   cflags_cc = []
@@ -453,11 +454,20 @@ config("compiler") {
   # Pass the same C/C++ flags to the objective C/C++ compiler.
   cflags_objc += cflags_c
   cflags_objcc += cflags_cc
+
+  # Assign any flags set for the C compiler to asmflags so that they are sent
+  # to the assembler. The Windows assembler takes different types of flags
+  # so only do so for posix platforms.
+  if (is_posix) {
+    asmflags += cflags
+    asmflags += cflags_c
+  }
 }
 
 config("compiler_arm_fpu") {
   if (current_cpu == "arm" && !is_ios && !is_nacl) {
     cflags = [ "-mfpu=$arm_fpu" ]
+    asmflags = cflags
   }
 }
 
@@ -806,6 +816,7 @@ config("no_chromium_code") {
       "-Wno-deprecated",
     ]
   }
+
   cflags += default_warning_flags
   cflags_cc += default_warning_flags_cc
 }
@@ -1083,6 +1094,7 @@ config("symbols") {
     if (use_debug_fission) {
       cflags += [ "-gsplit-dwarf" ]
     }
+    asmflags = cflags
     ldflags = []
   }
 }
@@ -1105,6 +1117,7 @@ config("minimal_symbols") {
     if (use_debug_fission) {
       cflags += [ "-gsplit-dwarf" ]
     }
+    asmflags = cflags
     ldflags = []
   }
 }
@@ -1113,6 +1126,7 @@ config("minimal_symbols") {
 config("no_symbols") {
   if (!is_win) {
     cflags = [ "-g0" ]
+    asmflags = cflags
   }
 }
 

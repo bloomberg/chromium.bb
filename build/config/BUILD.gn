@@ -449,9 +449,7 @@ config("precompiled_headers") {
     # then delete the precompile.c.obj file, then build again.
     cflags_c = [ "/wd4206" ]
   } else if (is_mac && !is_official_build && !use_goma) {
-    # TODO(andybons): enable this when GCC PCH support in the binary has been
-    # rolled.
-    #precompiled_header = "build/precompile.h"
-    #precompiled_source = "//build/precompile.h"
+    precompiled_header = "build/precompile.h"
+    precompiled_source = "//build/precompile.h"
   }
 }

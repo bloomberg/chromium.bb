@@ -12,6 +12,14 @@ assert(is_win)
 # is applied to all targets. It is here to separate out the logic that is
 # Windows-only.
 config("compiler") {
+  asmflags = [
+    # When /SAFESEH is specified, the linker will only produce an image if it
+    # can also produce a table of the image's safe exception handlers. This
+    # table specifies for the operating system which exception handlers are
+    # valid for the image.
+    "/SAFESEH",
+  ]
+
   cflags = [
     "/Gy",  # Enable function-level linking.
     "/GS",  # Enable buffer security checking.
