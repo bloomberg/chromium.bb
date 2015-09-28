@@ -56,6 +56,7 @@ QUnit.test('Loading a non-existent host yields default values',
 QUnit.test('Saving and loading a host preserves the saved values',
   function(assert) {
     var options = new remoting.HostOptions('host-id');
+    var optionsLoaded = new remoting.HostOptions('host-id');
     options.setShrinkToFit(false);
     options.setResizeToClient(false);
     options.setDesktopScale(2);
@@ -67,18 +68,20 @@ QUnit.test('Saving and loading a host preserves the saved values',
     var optionsCopy = base.deepCopy(options);
 
     return options.save().then(function() {
-      return options.load();
+      return optionsLoaded.load();
     }).then(function() {
-      assert.deepEqual(optionsCopy, base.deepCopy(options));
+      assert.deepEqual(optionsCopy, base.deepCopy(optionsLoaded));
     });
 });
 
 QUnit.test('Saving a host ignores unset values',
   function(assert) {
     var options = new remoting.HostOptions('host-id');
+    options.setShrinkToFit(false);
     var optionsCopy = base.deepCopy(options);
+    var optionsEmpty = new remoting.HostOptions('host-id');
 
-    return options.save().then(function() {
+    return optionsEmpty.save().then(function() {
       return options.load();
     }).then(function() {
       assert.deepEqual(optionsCopy, base.deepCopy(options));
@@ -103,4 +106,17 @@ QUnit.test('Old-style (string-formatted) key remappings are parsed correctly',
         function() {
           assert.deepEqual(options1, options2);
         });
+});
+
+QUnit.test('New options are loaded and saved without updating the code',
+  function(assert) {
+    var options = new remoting.HostOptions('host-id');
+    var optionsLoaded = new remoting.HostOptions('host-id');
+    options['undefined-option'] = 42;
+
+    return options.save().then(function() {
+      return optionsLoaded.load();
+    }).then(function() {
+      assert.equal(optionsLoaded['undefined-option'], 42);
+    });
 });
