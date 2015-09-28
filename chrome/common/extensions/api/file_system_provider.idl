@@ -188,8 +188,8 @@ namespace fileSystemProvider {
     // The unique identifier of this request.
     long requestId;
 
-    // The path of the entry to return the list of actions for.
-    DOMString entryPath;
+    // List of paths of entries for the list of actions.
+    DOMString[] entryPaths;
   };
 
   // Options for the $(ref:onReadDirectoryRequested) event.
@@ -416,8 +416,8 @@ namespace fileSystemProvider {
     // The unique identifier of this request.
     long requestId;
 
-    // The path of the entry to be used for the action.
-    DOMString entryPath;
+    // The set of paths of the entries to be used for the action.
+    DOMString[] entryPaths;
 
     // The identifier of the action to be executed.
     DOMString actionId;
@@ -590,8 +590,10 @@ namespace fileSystemProvider {
         MetadataCallback successCallback,
         ProviderErrorCallback errorCallback);
 
-    // Raised when list of actions for of a file or a directory at
-    // <code>entryPath</code>s requested. The actions must be returned with the
+    // Raised when a list of actions for a set of files or directories at
+    // <code>entryPaths</code> is requested. All of the returned actions must
+    // be applicable to each entry. If there are no such actions, an empty array
+    // should be returned. The actions must be returned with the
     // <code>successCallback</code> call. In case of an error,
     // <code>errorCallback</code> must be called.
     [maxListeners=1, nodoc] static void onGetActionsRequested(
@@ -730,9 +732,9 @@ namespace fileSystemProvider {
       ProviderSuccessCallback successCallback,
       ProviderErrorCallback errorCallback);
 
-    // Raised when executing an action for a file or a directory is requested.
-    // After the action is completed, <code>successCallback</code> must be
-    // called. On error, <code>errorCallback</code> must be called.
+    // Raised when executing an action for a set of files or directories is\
+    // requested. After the action is completed, <code>successCallback</code>
+    // must be called. On error, <code>errorCallback</code> must be called.
     [maxListeners=1, nodoc] static void onExecuteActionRequested(
       ExecuteActionRequestedOptions options,
       ProviderSuccessCallback successCallback,

@@ -54,13 +54,13 @@ function onGetActionsRequested(options, onSuccess, onError) {
     return;
   }
 
-  if (options.entryPath === '/' + TESTING_ACTIONS_DIR.name) {
-    onSuccess(TESTING_ACTIONS_DIR_ACTIONS);
+  if (options.entryPaths.indexOf('/' + TESTING_NO_ACTIONS_DIR.name) !== -1) {
+    onSuccess([]);
     return;
   }
 
-  if (options.entryPath === '/' + TESTING_NO_ACTIONS_DIR.name) {
-    onSuccess([]);
+  if (options.entryPaths.indexOf('/' + TESTING_ACTIONS_DIR.name) !== -1) {
+    onSuccess(TESTING_ACTIONS_DIR_ACTIONS);
     return;
   }
 
@@ -99,8 +99,8 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            chrome.fileManagerPrivate.getEntryActions(
-                dirEntry,
+            chrome.fileManagerPrivate.getCustomActions(
+                [dirEntry],
                 chrome.test.callbackPass(function(actions) {
                   chrome.test.assertEq(2, actions.length);
                   chrome.test.assertEq(TESTING_ACTIONS_DIR_ACTIONS[0].id,
@@ -124,11 +124,36 @@ function runTests() {
           TESTING_NO_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            chrome.fileManagerPrivate.getEntryActions(
-                dirEntry,
+            chrome.fileManagerPrivate.getCustomActions(
+                [dirEntry],
                 chrome.test.callbackPass(function(actions) {
                   chrome.test.assertEq(0, actions.length);
                 }));
+          }),
+          function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
+
+    // Get actions for multiple entries.
+    function getNoActionsMultipleSuccess() {
+      test_util.fileSystem.root.getDirectory(
+          TESTING_ACTIONS_DIR.name,
+          {create: false},
+          chrome.test.callbackPass(function(dirEntry) {
+            test_util.fileSystem.root.getDirectory(
+                TESTING_NO_ACTIONS_DIR.name,
+                {create: false},
+                chrome.test.callbackPass(function(dirEntry2) {
+                  chrome.fileManagerPrivate.getCustomActions(
+                      [dirEntry, dirEntry2],
+                      chrome.test.callbackPass(function(actions) {
+                        chrome.test.assertEq(0, actions.length);
+                      }));
+                }),
+                function(error) {
+                  chrome.test.fail(error.name);
+                });
           }),
           function(error) {
             chrome.test.fail(error.name);

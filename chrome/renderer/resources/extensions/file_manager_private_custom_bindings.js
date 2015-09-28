@@ -87,15 +87,20 @@ binding.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.removeFileWatch(url, callback);
   });
 
-  apiFunctions.setHandleRequest('getEntryActions', function(entry, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
-    fileManagerPrivateInternal.getEntryActions(url, callback);
+  apiFunctions.setHandleRequest('getCustomActions', function(
+        entries, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
+    });
+    fileManagerPrivateInternal.getCustomActions(urls, callback);
   });
 
-  apiFunctions.setHandleRequest('executeEntryAction', function(
-        entry, actionId, callback) {
-    var url = fileBrowserHandlerNatives.GetEntryURL(entry);
-    fileManagerPrivateInternal.executeEntryAction(url, actionId, callback);
+  apiFunctions.setHandleRequest('executeCustomAction', function(
+        entries, actionId, callback) {
+    var urls = entries.map(function(entry) {
+      return fileBrowserHandlerNatives.GetEntryURL(entry);
+    });
+    fileManagerPrivateInternal.executeCustomAction(urls, actionId, callback);
   });
 
   apiFunctions.setHandleRequest('computeChecksum', function(entry, callback) {

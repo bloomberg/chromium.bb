@@ -198,12 +198,12 @@ AbortCallback ProvidedFileSystem::GetMetadata(
 }
 
 AbortCallback ProvidedFileSystem::GetActions(
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const GetActionsCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       GET_ACTIONS,
       scoped_ptr<RequestManager::HandlerInterface>(new operations::GetActions(
-          event_router_, file_system_info_, entry_path, callback)));
+          event_router_, file_system_info_, entry_paths, callback)));
   if (!request_id) {
     callback.Run(Actions(), base::File::FILE_ERROR_SECURITY);
     return AbortCallback();
@@ -214,14 +214,14 @@ AbortCallback ProvidedFileSystem::GetActions(
 }
 
 AbortCallback ProvidedFileSystem::ExecuteAction(
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   const int request_id = request_manager_->CreateRequest(
       EXECUTE_ACTION,
       scoped_ptr<RequestManager::HandlerInterface>(
           new operations::ExecuteAction(event_router_, file_system_info_,
-                                        entry_path, action_id, callback)));
+                                        entry_paths, action_id, callback)));
   if (!request_id) {
     callback.Run(base::File::FILE_ERROR_SECURITY);
     return AbortCallback();

@@ -110,7 +110,7 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
 }
 
 AbortCallback FakeProvidedFileSystem::GetActions(
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const ProvidedFileSystemInterface::GetActionsCallback& callback) {
   // TODO(mtomasz): Implement it once needed.
   const std::vector<Action> actions;
@@ -118,7 +118,7 @@ AbortCallback FakeProvidedFileSystem::GetActions(
 }
 
 AbortCallback FakeProvidedFileSystem::ExecuteAction(
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // TODO(mtomasz): Implement it once needed.

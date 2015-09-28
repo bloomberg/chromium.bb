@@ -17,14 +17,13 @@ namespace operations {
 ExecuteAction::ExecuteAction(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
     const storage::AsyncFileUtil::StatusCallback& callback)
     : Operation(event_router, file_system_info),
-      entry_path_(entry_path),
+      entry_paths_(entry_paths),
       action_id_(action_id),
-      callback_(callback) {
-}
+      callback_(callback) {}
 
 ExecuteAction::~ExecuteAction() {
 }
@@ -35,7 +34,8 @@ bool ExecuteAction::Execute(int request_id) {
   ExecuteActionRequestedOptions options;
   options.file_system_id = file_system_info_.file_system_id();
   options.request_id = request_id;
-  options.entry_path = entry_path_.AsUTF8Unsafe();
+  for (const auto& entry_path : entry_paths_)
+    options.entry_paths.push_back(entry_path.AsUTF8Unsafe());
   options.action_id = action_id_;
 
   return SendEvent(

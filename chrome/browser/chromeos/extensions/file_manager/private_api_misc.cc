@@ -9,6 +9,7 @@
 
 #include "ash/frame/frame_util.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,8 +54,8 @@
 #include "url/gurl.h"
 
 namespace extensions {
-
 namespace {
+
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 
 // Obtains the current app window.
@@ -98,6 +99,54 @@ GetLoggedInProfileInfoList() {
 
   return result_profiles;
 }
+
+// Converts a list of file system urls (as strings) to a pair of a provided file
+// system object and a list of unique paths on the file system. In case of an
+// error, false is returned and the error message set.
+bool ConvertURLsToProvidedInfo(
+    const scoped_refptr<storage::FileSystemContext>& file_system_context,
+    const std::vector<std::string>& urls,
+    chromeos::file_system_provider::ProvidedFileSystemInterface** file_system,
+    std::vector<base::FilePath>* paths,
+    std::string* error) {
+  DCHECK(file_system);
+  DCHECK(error);
+
+  if (!urls.size()) {
+    *error = "At least one file must be specified.";
+    return false;
+  }
+
+  *file_system = nullptr;
+  for (const auto url : urls) {
+    const storage::FileSystemURL file_system_url(
+        file_system_context->CrackURL(GURL(url)));
+
+    chromeos::file_system_provider::util::FileSystemURLParser parser(
+        file_system_url);
+    if (!parser.Parse()) {
+      *error = "Related provided file system not found.";
+      return false;
+    }
+
+    if (*file_system != nullptr) {
+      if (*file_system != parser.file_system()) {
+        *error = "All entries must be on the same file system.";
+        return false;
+      }
+    } else {
+      *file_system = parser.file_system();
+    }
+    paths->push_back(parser.file_path());
+  }
+
+  // Erase duplicates.
+  std::sort(paths->begin(), paths->end());
+  paths->erase(std::unique(paths->begin(), paths->end()), paths->end());
+
+  return true;
+}
+
 }  // namespace
 
 bool FileManagerPrivateLogoutUserForReauthenticationFunction::RunSync() {
@@ -541,14 +590,14 @@ void FileManagerPrivateConfigureVolumeFunction::OnCompleted(
   Respond(NoArguments());
 }
 
-FileManagerPrivateInternalGetEntryActionsFunction::
-    FileManagerPrivateInternalGetEntryActionsFunction()
-    : chrome_details_(this) {
-}
+FileManagerPrivateInternalGetCustomActionsFunction::
+    FileManagerPrivateInternalGetCustomActionsFunction()
+    : chrome_details_(this) {}
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateInternalGetEntryActionsFunction::Run() {
-  using extensions::api::file_manager_private_internal::GetEntryActions::Params;
+FileManagerPrivateInternalGetCustomActionsFunction::Run() {
+  using extensions::api::file_manager_private_internal::GetCustomActions::
+      Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
@@ -556,23 +605,26 @@ FileManagerPrivateInternalGetEntryActionsFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
 
-  const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->url)));
+  std::vector<base::FilePath> paths;
+  chromeos::file_system_provider::ProvidedFileSystemInterface* file_system =
+      nullptr;
+  std::string error;
 
-  chromeos::file_system_provider::util::FileSystemURLParser parser(
-      file_system_url);
-  if (!parser.Parse())
-    return RespondNow(Error("Related provided file system not found."));
+  if (!ConvertURLsToProvidedInfo(file_system_context, params->urls,
+                                 &file_system, &paths, &error)) {
+    return RespondNow(Error(error));
+  }
 
-  parser.file_system()->GetActions(
-      parser.file_path(),
+  DCHECK(file_system);
+  file_system->GetActions(
+      paths,
       base::Bind(
-          &FileManagerPrivateInternalGetEntryActionsFunction::OnCompleted,
+          &FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted,
           this));
   return RespondLater();
 }
 
-void FileManagerPrivateInternalGetEntryActionsFunction::OnCompleted(
+void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
     const chromeos::file_system_provider::Actions& actions,
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
@@ -590,18 +642,17 @@ void FileManagerPrivateInternalGetEntryActionsFunction::OnCompleted(
   }
 
   Respond(ArgumentList(
-      api::file_manager_private_internal::GetEntryActions::Results::Create(
+      api::file_manager_private_internal::GetCustomActions::Results::Create(
           items)));
 }
 
-FileManagerPrivateInternalExecuteEntryActionFunction::
-    FileManagerPrivateInternalExecuteEntryActionFunction()
-    : chrome_details_(this) {
-}
+FileManagerPrivateInternalExecuteCustomActionFunction::
+    FileManagerPrivateInternalExecuteCustomActionFunction()
+    : chrome_details_(this) {}
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateInternalExecuteEntryActionFunction::Run() {
-  using extensions::api::file_manager_private_internal::ExecuteEntryAction::
+FileManagerPrivateInternalExecuteCustomActionFunction::Run() {
+  using extensions::api::file_manager_private_internal::ExecuteCustomAction::
       Params;
   const scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -610,23 +661,26 @@ FileManagerPrivateInternalExecuteEntryActionFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
 
-  const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->url)));
+  std::vector<base::FilePath> paths;
+  chromeos::file_system_provider::ProvidedFileSystemInterface* file_system =
+      nullptr;
+  std::string error;
 
-  chromeos::file_system_provider::util::FileSystemURLParser parser(
-      file_system_url);
-  if (!parser.Parse())
-    return RespondNow(Error("Related provided file system not found."));
+  if (!ConvertURLsToProvidedInfo(file_system_context, params->urls,
+                                 &file_system, &paths, &error)) {
+    return RespondNow(Error(error));
+  }
 
-  parser.file_system()->ExecuteAction(
-      parser.file_path(), params->action_id,
+  DCHECK(file_system);
+  file_system->ExecuteAction(
+      paths, params->action_id,
       base::Bind(
-          &FileManagerPrivateInternalExecuteEntryActionFunction::OnCompleted,
+          &FileManagerPrivateInternalExecuteCustomActionFunction::OnCompleted,
           this));
   return RespondLater();
 }
 
-void FileManagerPrivateInternalExecuteEntryActionFunction::OnCompleted(
+void FileManagerPrivateInternalExecuteCustomActionFunction::OnCompleted(
     base::File::Error result) {
   if (result != base::File::FILE_OK) {
     Respond(Error("Failed to execute the action."));

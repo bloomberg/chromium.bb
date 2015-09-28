@@ -95,10 +95,10 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   AbortCallback GetMetadata(const base::FilePath& entry_path,
                             MetadataFieldMask fields,
                             const GetMetadataCallback& callback) override;
-  AbortCallback GetActions(const base::FilePath& entry_path,
+  AbortCallback GetActions(const std::vector<base::FilePath>& entry_paths,
                            const GetActionsCallback& callback) override;
   AbortCallback ExecuteAction(
-      const base::FilePath& entry_path,
+      const std::vector<base::FilePath>& entry_paths,
       const std::string& action_id,
       const storage::AsyncFileUtil::StatusCallback& callback) override;
   AbortCallback ReadDirectory(

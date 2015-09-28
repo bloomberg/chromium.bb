@@ -20,7 +20,7 @@ namespace fileManagerPrivateInternal {
       fileManagerPrivate.EntryProperties[] entryProperties);
   callback AddFileWatchCallback = void(optional boolean success);
   callback RemoveFileWatchCallback = void(optional boolean success);
-  callback GetEntryActionsCallback = void(fileSystemProvider.Action[] actions);
+  callback GetCustomActionsCallback = void(fileSystemProvider.Action[] actions);
   callback ComputeChecksumCallback = void(DOMString checksum);
   callback GetMimeTypeCallback = void(DOMString result);
   callback ExecuteTaskCallback = void(fileManagerPrivate.TaskResult result);
@@ -44,11 +44,11 @@ namespace fileManagerPrivateInternal {
     static void removeFileWatch(
         DOMString url,
         RemoveFileWatchCallback callback);
-    static void getEntryActions(DOMString url,
-                                GetEntryActionsCallback callback);
-    static void executeEntryAction(DOMString url,
-                                   DOMString actionId,
-                                   SimpleCallback callback);
+    static void getCustomActions(DOMString[] urls,
+                                 GetCustomActionsCallback callback);
+    static void executeCustomAction(DOMString[] urls,
+                                    DOMString actionId,
+                                    SimpleCallback callback);
     static void computeChecksum(DOMString url,
                                 ComputeChecksumCallback callback);
     static void getMimeType(DOMString url,

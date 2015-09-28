@@ -642,22 +642,22 @@ chrome.fileManagerPrivate.addProvidedFileSystem =
 chrome.fileManagerPrivate.configureVolume = function(volumeId, callback) {};
 
 /**
- * Requests fetching list of actions for the specified entry. If not possible,
- * then returns an error via chrome.runtime.lastError.
- * @param {!Entry} entry
+ * Requests fetching list of actions for the specified set of entries. If not
+ * possible, then returns an error via chrome.runtime.lastError.
+ * @param {!Array<!Entry>} entries
  * @param {function((!Array<!EntryAction>|undefined))} callback
  */
-chrome.fileManagerPrivate.getEntryActions = function(entry, callback) {};
+chrome.fileManagerPrivate.getCustomActions = function(entries, callback) {};
 
 /**
- * Executes the action on the specified entry. If not possible, then returns an
- * error via chrome.runtime.lastError.
- * @param {!Entry} entry
+ * Executes the action on the specified set of entries. If not possible, then
+ * returns an error via chrome.runtime.lastError.
+ * @param {!Array<!Entry>} entries
  * @param {string} actionId
  * @param {function()} callback
  */
 chrome.fileManagerPrivate.executeAction = function(
-    entry, actionId, callback) {};
+    entries, actionId, callback) {};
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onMountCompleted;

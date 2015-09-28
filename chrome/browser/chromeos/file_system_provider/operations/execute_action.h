@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_FILE_SYSTEM_PROVIDER_OPERATIONS_EXECUTE_ACTION_H_
 
 #include <string>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/memory/scoped_ptr.h"
@@ -28,14 +29,14 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-// Bridge between chrome.fileManagerPrivate.executeEntryAction operation and
+// Bridge between chrome.fileManagerPrivate.executeCustomAction operation and
 // the providing extension's onExecuteActionRequested event. Created per
 // request.
 class ExecuteAction : public Operation {
  public:
   ExecuteAction(extensions::EventRouter* event_router,
                 const ProvidedFileSystemInfo& file_system_info,
-                const base::FilePath& entry_path,
+                const std::vector<base::FilePath>& entry_path,
                 const std::string& action_id,
                 const storage::AsyncFileUtil::StatusCallback& callback);
   ~ExecuteAction() override;
@@ -50,7 +51,7 @@ class ExecuteAction : public Operation {
                base::File::Error error) override;
 
  private:
-  const base::FilePath entry_path_;
+  const std::vector<base::FilePath> entry_paths_;
   const std::string action_id_;
   const storage::AsyncFileUtil::StatusCallback callback_;
 

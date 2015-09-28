@@ -54,8 +54,9 @@ function runTests() {
           function(options, onSuccess, onError) {
             chrome.test.assertEq(test_util.FILE_SYSTEM_ID,
                 options.fileSystemId);
+            chrome.test.assertEq(1, options.entryPaths.length);
             chrome.test.assertEq('/' + TESTING_ACTIONS_DIR.name,
-                options.entryPath);
+                options.entryPaths[0]);
             chrome.test.assertEq(TESTING_ACTION_ID, options.actionId);
             chrome.fileSystemProvider.onExecuteActionRequested.removeListener(
                 onExecuteActionRequested);
@@ -67,8 +68,8 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            chrome.fileManagerPrivate.executeEntryAction(
-                dirEntry,
+            chrome.fileManagerPrivate.executeCustomAction(
+                [dirEntry],
                 TESTING_ACTION_ID,
                 chrome.test.callbackPass(function() {}));
           }),
@@ -83,8 +84,9 @@ function runTests() {
           function(options, onSuccess, onError) {
             chrome.test.assertEq(test_util.FILE_SYSTEM_ID,
                 options.fileSystemId);
+            chrome.test.assertEq(1, options.entryPaths.length);
             chrome.test.assertEq('/' + TESTING_ACTIONS_DIR.name,
-                options.entryPath);
+                options.entryPaths[0]);
             chrome.test.assertEq(TESTING_UNKNOWN_ACTION_ID, options.actionId);
             chrome.fileSystemProvider.onExecuteActionRequested.removeListener(
                 onExecuteActionRequested);
@@ -96,8 +98,8 @@ function runTests() {
           TESTING_ACTIONS_DIR.name,
           {create: false},
           chrome.test.callbackPass(function(dirEntry) {
-            chrome.fileManagerPrivate.executeEntryAction(
-                dirEntry,
+            chrome.fileManagerPrivate.executeCustomAction(
+                [dirEntry],
                 TESTING_UNKNOWN_ACTION_ID,
                 chrome.test.callbackFail('Failed to execute the action.',
                     function() {}));

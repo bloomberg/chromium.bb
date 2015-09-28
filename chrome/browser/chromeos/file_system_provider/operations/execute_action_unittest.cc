@@ -27,8 +27,10 @@ namespace {
 const char kExtensionId[] = "mbflcebpggnecokmikipoihdbecnjfoj";
 const char kFileSystemId[] = "testing-file-system";
 const int kRequestId = 2;
-const base::FilePath::CharType kEntryPath[] =
+const base::FilePath::CharType kDirectoryPath[] =
     FILE_PATH_LITERAL("/kitty/and/puppy/happy");
+const base::FilePath::CharType kFilePath[] =
+    FILE_PATH_LITERAL("/rabbit/and/bear/happy");
 const char kActionId[] = "SHARE";
 
 }  // namespace
@@ -43,9 +45,13 @@ class FileSystemProviderOperationsExecuteActionTest : public testing::Test {
         kExtensionId, MountOptions(kFileSystemId, "" /* display_name */),
         base::FilePath(), false /* configurable */, true /* watchable */,
         extensions::SOURCE_FILE);
+    entry_paths_.clear();
+    entry_paths_.push_back(base::FilePath(kDirectoryPath));
+    entry_paths_.push_back(base::FilePath(kFilePath));
   }
 
   ProvidedFileSystemInfo file_system_info_;
+  std::vector<base::FilePath> entry_paths_;
 };
 
 TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute) {
@@ -55,7 +61,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute) {
   util::StatusCallbackLog callback_log;
 
   ExecuteAction execute_action(
-      NULL, file_system_info_, base::FilePath(kEntryPath), kActionId,
+      NULL, file_system_info_, entry_paths_, kActionId,
       base::Bind(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -79,7 +85,9 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute) {
       ExecuteActionRequestedOptions::Populate(*options_as_value, &options));
   EXPECT_EQ(kFileSystemId, options.file_system_id);
   EXPECT_EQ(kRequestId, options.request_id);
-  EXPECT_EQ(kEntryPath, options.entry_path);
+  ASSERT_EQ(entry_paths_.size(), options.entry_paths.size());
+  EXPECT_EQ(entry_paths_[0].value(), options.entry_paths[0]);
+  EXPECT_EQ(entry_paths_[1].value(), options.entry_paths[1]);
   EXPECT_EQ(kActionId, options.action_id);
 }
 
@@ -88,7 +96,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, Execute_NoListener) {
   util::StatusCallbackLog callback_log;
 
   ExecuteAction execute_action(
-      NULL, file_system_info_, base::FilePath(kEntryPath), kActionId,
+      NULL, file_system_info_, entry_paths_, kActionId,
       base::Bind(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -102,7 +110,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, OnSuccess) {
   util::StatusCallbackLog callback_log;
 
   ExecuteAction execute_action(
-      NULL, file_system_info_, base::FilePath(kEntryPath), kActionId,
+      NULL, file_system_info_, entry_paths_, kActionId,
       base::Bind(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,
@@ -122,7 +130,7 @@ TEST_F(FileSystemProviderOperationsExecuteActionTest, OnError) {
   util::StatusCallbackLog callback_log;
 
   ExecuteAction execute_action(
-      NULL, file_system_info_, base::FilePath(kEntryPath), kActionId,
+      NULL, file_system_info_, entry_paths_, kActionId,
       base::Bind(&util::LogStatusCallback, &callback_log));
   execute_action.SetDispatchEventImplForTesting(
       base::Bind(&util::LoggingDispatchEventImpl::OnDispatchEventImpl,

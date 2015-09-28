@@ -39,12 +39,11 @@ Actions ConvertRequestValueToActions(scoped_ptr<RequestValue> value) {
 GetActions::GetActions(
     extensions::EventRouter* event_router,
     const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& entry_path,
+    const std::vector<base::FilePath>& entry_paths,
     const ProvidedFileSystemInterface::GetActionsCallback& callback)
     : Operation(event_router, file_system_info),
-      entry_path_(entry_path),
-      callback_(callback) {
-}
+      entry_paths_(entry_paths),
+      callback_(callback) {}
 
 GetActions::~GetActions() {
 }
@@ -55,7 +54,8 @@ bool GetActions::Execute(int request_id) {
   GetActionsRequestedOptions options;
   options.file_system_id = file_system_info_.file_system_id();
   options.request_id = request_id;
-  options.entry_path = entry_path_.AsUTF8Unsafe();
+  for (const auto& entry_path : entry_paths_)
+    options.entry_paths.push_back(entry_path.AsUTF8Unsafe());
 
   return SendEvent(
       request_id,

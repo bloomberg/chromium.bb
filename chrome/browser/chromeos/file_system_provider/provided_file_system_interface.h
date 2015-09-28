@@ -119,14 +119,15 @@ class ProvidedFileSystemInterface {
                                     MetadataFieldMask fields,
                                     const GetMetadataCallback& callback) = 0;
 
-  // Requests list of actions for the passed |entry_path|. It can be either a
-  // file or a directory.
-  virtual AbortCallback GetActions(const base::FilePath& entry_path,
-                                   const GetActionsCallback& callback) = 0;
+  // Requests list of actions for the passed list of entries at |entry_paths|.
+  // They can be either files or directories.
+  virtual AbortCallback GetActions(
+      const std::vector<base::FilePath>& entry_paths,
+      const GetActionsCallback& callback) = 0;
 
-  // Executes the |action_id| action on the entry at |entry_path|.
+  // Executes the |action_id| action on the list of entries at |entry_paths|.
   virtual AbortCallback ExecuteAction(
-      const base::FilePath& entry_path,
+      const std::vector<base::FilePath>& entry_paths,
       const std::string& action_id,
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
