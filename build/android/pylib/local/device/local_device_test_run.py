@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import functools
 import logging
 
 from devil.android import device_errors
@@ -18,6 +19,7 @@ def handle_shard_failures(f):
     f: the function being decorated. The function must take at least one
       argument, and that argument must be the device.
   """
+  @functools.wraps(f)
   def wrapper(dev, *args, **kwargs):
     try:
       return f(dev, *args, **kwargs)
@@ -29,7 +31,6 @@ def handle_shard_failures(f):
       logging.exception('Shard died: %s(%s)', f.__name__, str(dev))
     return None
 
-  wrapper.__name__ = f.__name__
   return wrapper
 
 
