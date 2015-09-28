@@ -77,9 +77,13 @@ class BASE_EXPORT MemoryPressureListener {
   // measurements.
   static bool AreNotificationsSuppressed();
   static void SetNotificationsSuppressed(bool suppressed);
+  static void SimulatePressureNotification(
+      MemoryPressureLevel memory_pressure_level);
 
  private:
   void Notify(MemoryPressureLevel memory_pressure_level);
+
+  static void DoNotifyMemoryPressure(MemoryPressureLevel memory_pressure_level);
 
   MemoryPressureCallback callback_;
 

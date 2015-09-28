@@ -10,43 +10,69 @@
 
 namespace base {
 
-using MockCallback =
-    testing::MockFunction<void(MemoryPressureListener::MemoryPressureLevel)>;
+using MemoryPressureLevel = MemoryPressureListener::MemoryPressureLevel;
 
-TEST(MemoryPressureListenerTest, NotifyMemoryPressure) {
-  MessageLoopForUI message_loop;
-  MockCallback callback;
-  scoped_ptr<MemoryPressureListener> listener(new MemoryPressureListener(
-      Bind(&MockCallback::Call, Unretained(&callback))));
+class MemoryPressureListenerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    message_loop_.reset(new MessageLoopForUI());
+    listener_.reset(new MemoryPressureListener(
+        Bind(&MemoryPressureListenerTest::OnMemoryPressure, Unretained(this))));
+  }
 
+  void TearDown() override {
+    listener_.reset();
+    message_loop_.reset();
+  }
+
+ protected:
+  void ExpectNotification(
+      void (*notification_function)(MemoryPressureLevel),
+      MemoryPressureLevel level) {
+    EXPECT_CALL(*this, OnMemoryPressure(level)).Times(1);
+    notification_function(level);
+    message_loop_->RunUntilIdle();
+  }
+
+  void ExpectNoNotification(
+      void (*notification_function)(MemoryPressureLevel),
+      MemoryPressureLevel level) {
+    EXPECT_CALL(*this, OnMemoryPressure(testing::_)).Times(0);
+    notification_function(level);
+    message_loop_->RunUntilIdle();
+  }
+
+ private:
+  MOCK_METHOD1(OnMemoryPressure,
+               void(MemoryPressureListener::MemoryPressureLevel));
+
+  scoped_ptr<MessageLoopForUI> message_loop_;
+  scoped_ptr<MemoryPressureListener> listener_;
+};
+
+TEST_F(MemoryPressureListenerTest, NotifyMemoryPressure) {
   // Memory pressure notifications are not suppressed by default.
   EXPECT_FALSE(MemoryPressureListener::AreNotificationsSuppressed());
-  EXPECT_CALL(callback,
-              Call(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE))
-      .Times(1);
-  MemoryPressureListener::NotifyMemoryPressure(
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  message_loop.RunUntilIdle();
+  ExpectNotification(&MemoryPressureListener::NotifyMemoryPressure,
+                     MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
+  ExpectNotification(&MemoryPressureListener::SimulatePressureNotification,
+                     MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
 
   // Enable suppressing memory pressure notifications.
   MemoryPressureListener::SetNotificationsSuppressed(true);
   EXPECT_TRUE(MemoryPressureListener::AreNotificationsSuppressed());
-  EXPECT_CALL(callback, Call(testing::_)).Times(0);
-  MemoryPressureListener::NotifyMemoryPressure(
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  message_loop.RunUntilIdle();
+  ExpectNoNotification(&MemoryPressureListener::NotifyMemoryPressure,
+                       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
+  ExpectNotification(&MemoryPressureListener::SimulatePressureNotification,
+                     MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
 
   // Disable suppressing memory pressure notifications.
   MemoryPressureListener::SetNotificationsSuppressed(false);
   EXPECT_FALSE(MemoryPressureListener::AreNotificationsSuppressed());
-  EXPECT_CALL(callback,
-              Call(MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL))
-      .Times(1);
-  MemoryPressureListener::NotifyMemoryPressure(
-      MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  message_loop.RunUntilIdle();
-
-  listener.reset();
+  ExpectNotification(&MemoryPressureListener::NotifyMemoryPressure,
+                     MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  ExpectNotification(&MemoryPressureListener::SimulatePressureNotification,
+                     MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL);
 }
 
 }  // namespace base

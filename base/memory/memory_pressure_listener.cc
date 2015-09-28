@@ -60,8 +60,7 @@ void MemoryPressureListener::NotifyMemoryPressure(
       "level", memory_pressure_level);
   if (AreNotificationsSuppressed())
     return;
-  g_observers.Get().Notify(FROM_HERE, &MemoryPressureListener::Notify,
-                           memory_pressure_level);
+  DoNotifyMemoryPressure(memory_pressure_level);
 }
 
 // static
@@ -72,6 +71,21 @@ bool MemoryPressureListener::AreNotificationsSuppressed() {
 // static
 void MemoryPressureListener::SetNotificationsSuppressed(bool suppress) {
   subtle::Release_Store(&g_notifications_suppressed, suppress ? 1 : 0);
+}
+
+// static
+void MemoryPressureListener::SimulatePressureNotification(
+    MemoryPressureLevel memory_pressure_level) {
+  // Notify all listeners even if regular pressure notifications are suppressed.
+  DoNotifyMemoryPressure(memory_pressure_level);
+}
+
+// static
+void MemoryPressureListener::DoNotifyMemoryPressure(
+    MemoryPressureLevel memory_pressure_level) {
+  DCHECK_NE(memory_pressure_level, MEMORY_PRESSURE_LEVEL_NONE);
+  g_observers.Get().Notify(FROM_HERE, &MemoryPressureListener::Notify,
+                           memory_pressure_level);
 }
 
 }  // namespace base
