@@ -24,6 +24,12 @@ void StubBrailleController::AddObserver(BrailleObserver* observer) {
 void StubBrailleController::RemoveObserver(BrailleObserver* observer) {
 }
 
+StubBrailleController* StubBrailleController::GetInstance() {
+  return base::Singleton<
+      StubBrailleController,
+      base::LeakySingletonTraits<StubBrailleController>>::get();
+}
+
 }  // namespace braille_display_private
 }  // namespace api
 }  // namespace extensions

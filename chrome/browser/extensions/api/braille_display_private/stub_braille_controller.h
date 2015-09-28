@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_STUB_BRAILLE_CONTROLLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BRAILLE_DISPLAY_PRIVATE_STUB_BRAILLE_CONTROLLER_H_
 
+#include "base/memory/singleton.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 
 namespace extensions {
@@ -19,6 +20,11 @@ class StubBrailleController : public BrailleController {
   void WriteDots(const std::vector<char>& cells) override;
   void AddObserver(BrailleObserver* observer) override;
   void RemoveObserver(BrailleObserver* observer) override;
+
+  static StubBrailleController* GetInstance();
+
+ private:
+  friend struct base::DefaultSingletonTraits<StubBrailleController>;
 };
 
 }  // namespace braille_display_private

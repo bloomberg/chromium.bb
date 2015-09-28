@@ -37,7 +37,7 @@ class BrlapiConnection {
   virtual bool Connected() = 0;
 
   // Gets the last brlapi error on this thread.
-  // This works ismilar to errno in C.  There's one thread-local error
+  // This works similar to errno in C.  There's one thread-local error
   // value, meaning that this method should be called after any
   // other method of this class that can return an error without calling
   // another method in between.  This class is not thread safe.
