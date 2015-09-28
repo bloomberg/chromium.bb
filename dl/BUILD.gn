@@ -199,8 +199,8 @@ if (current_cpu == "arm") {
 
     if (!arm_use_neon) {
       configs -= [ "//build/config/compiler:compiler_arm_fpu" ]
-      // TODO(andybons): Remove cflags once the toolchains have been updated
-      // to use asmflags for assemblers.
+      # TODO(andybons): Remove cflags once the toolchains have been updated
+      # to use asmflags for assemblers.
       cflags = [ "-mfpu=neon" ]
       asmflags = [ "-mfpu=neon" ]
     }
