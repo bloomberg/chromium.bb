@@ -20,11 +20,11 @@
 }
 
 input#input {
+  -webkit-margin-start: -3px;
   color: #fff;
   line-height: 18px;
-  margin-left: -3px;
   padding: 3px;
-  text-align: right;
+  text-align: end;
 }
 
 input#input:focus,
@@ -33,19 +33,13 @@ input#input:hover {
   border-radius: 2px;
 }
 
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
 #slash {
   padding: 0 3px;
 }
 
 #pagelength-spacer {
   display: inline-block;
-  text-align: left;
+  text-align: start;
 }
 
 #slash,

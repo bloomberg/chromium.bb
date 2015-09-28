@@ -42,7 +42,8 @@
 
     depthChanged: function() {
       this.childDepth = this.depth + 1;
-      this.$.item.style.paddingLeft = (this.depth * BOOKMARK_INDENT) + 'px';
+      this.$.item.style.webkitPaddingStart =
+          (this.depth * BOOKMARK_INDENT) + 'px';
     },
 
     onClick: function() {

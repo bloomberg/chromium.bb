@@ -33,6 +33,10 @@
   width: 16px;
 }
 
+:host-context([dir=rtl]) #expand {
+  transform: rotate(180deg);
+}
+
 :host([children-shown]) #expand {
   transform: rotate(90deg);
 }

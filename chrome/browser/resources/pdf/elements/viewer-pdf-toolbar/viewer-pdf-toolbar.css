@@ -26,15 +26,15 @@
 
 #buttons {
   -webkit-user-select: none;
-  text-align: right;
+  text-align: end;
 }
 
 paper-icon-button {
-  margin-right: 12px;
+  -webkit-margin-end: 12px;
 }
 
 viewer-toolbar-dropdown {
-  margin-right: 4px;
+  -webkit-margin-end: 4px;
 }
 
 paper-progress {

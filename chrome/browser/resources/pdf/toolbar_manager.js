@@ -42,8 +42,11 @@ function isMouseNearTopToolbar(e) {
  * screen.
  */
 function isMouseNearSideToolbar(e) {
-  return e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT &&
-         e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
+  var atSide = e.x > window.innerWidth - SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
+  if (document.dir == 'rtl')
+    atSide = e.x < SIDE_TOOLBAR_REVEAL_DISTANCE_RIGHT;
+  var atBottom = e.y > window.innerHeight - SIDE_TOOLBAR_REVEAL_DISTANCE_BOTTOM;
+  return atSide && atBottom;
 }
 
 /**

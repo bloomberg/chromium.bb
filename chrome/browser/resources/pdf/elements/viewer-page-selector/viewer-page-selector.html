@@ -6,8 +6,9 @@
   <link rel="import" type="css" href="viewer-page-selector.css">
   <template>
     <paper-input-container id="pageselector" no-label-float>
-      <input id="input" is="iron-input" type="number" bind-value="{{pageNo}}"
-          on-mouseup="select" on-change="pageNoCommitted">
+      <input id="input" is="iron-input" bind-value="{{pageNo}}"
+          prevent-invalid-input allowed-pattern="\d" on-mouseup="select"
+          on-change="pageNoCommitted">
     </paper-input-container>
     <span id="slash"> / </span>
     <span id="pagelength-spacer">

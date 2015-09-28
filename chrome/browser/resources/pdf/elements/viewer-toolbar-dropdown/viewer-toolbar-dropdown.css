@@ -4,7 +4,7 @@
 
 :host {
   display: inline-block;
-  text-align: left;
+  text-align: start;
 }
 
 #container {
@@ -36,8 +36,8 @@ paper-material {
 }
 
 #arrow {
-  margin-left: -12px;
-  padding-right: 4px;
+  -webkit-margin-start: -12px;
+  -webkit-padding-end: 4px;
 }
 
 h1 {

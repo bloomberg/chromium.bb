@@ -5,10 +5,6 @@
 Polymer({
   is: 'viewer-zoom-button',
 
-  behaviors: [
-    Polymer.NeonAnimationRunnerBehavior
-  ],
-
   properties: {
     /**
      * Icons to be displayed on the FAB. Multiple icons should be separated with
@@ -30,16 +26,15 @@ Polymer({
 
     tooltips: Array,
 
-    opened: {
+    closed: {
       type: Boolean,
-      value: true
+      reflectToAttribute: true,
+      value: false
     },
 
-    delay: Number,
-
-    animationConfig: {
-      type: Object,
-      computed: 'computeAnimationConfig_(delay)'
+    delay: {
+      type: Number,
+      observer: 'delayChanged_'
     },
 
     /**
@@ -65,31 +60,6 @@ Polymer({
     }
   },
 
-  computeAnimationConfig_: function(delay) {
-    return {
-      'entry': {
-        name: 'transform-animation',
-        node: this,
-        timing: {
-          easing: 'cubic-bezier(0, 0, 0.2, 1)',
-          duration: 250,
-          delay: delay
-        },
-        transformFrom: 'translateX(100%)'
-      },
-      'exit': {
-        name: 'transform-animation',
-        node: this,
-        timing: {
-          easing: 'cubic-bezier(0.4, 0, 1, 1)',
-          duration: 250,
-          delay: delay
-        },
-        transformTo: 'translateX(100%)'
-      }
-    };
-  },
-
   computeIconsArray_: function(icons) {
     return icons.split(' ');
   },
@@ -102,29 +72,16 @@ Polymer({
     return tooltips[activeIndex];
   },
 
-  listeners: {
-    'neon-animation-finish': '_onAnimationFinished'
-  },
-
-  _onAnimationFinished: function() {
-    this.style.transform = this.opened ? 'none' : 'translateX(100%)';
+  delayChanged_: function() {
+    this.$.wrapper.style.transitionDelay = this.delay + 'ms';
   },
 
   show: function() {
-    if (!this.opened) {
-      this.toggle_();
-    }
+    this.closed = false;
   },
 
   hide: function() {
-    if (this.opened)
-      this.toggle_();
-  },
-
-  toggle_: function() {
-    this.opened = !this.opened;
-    this.cancelAnimation();
-    this.playAnimation(this.opened ? 'entry' : 'exit');
+    this.closed = true;
   },
 
   fireClick: function() {

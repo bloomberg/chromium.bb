@@ -569,6 +569,8 @@ PDFViewer.prototype = {
       if (this.materialToolbar_)
         this.materialToolbar_.strings = strings;
       this.zoomToolbar_.strings = strings;
+      document.dir = strings['textdirection'];
+      document.lang = strings['language'];
     } else {
       this.passwordScreen_.text = strings.passwordPrompt;
       this.progressBar_.text = strings.pageLoading;
@@ -747,9 +749,12 @@ PDFViewer.prototype = {
       // gives a compromise: if there is no scrollbar visible then the toolbar
       // will be half a scrollbar width further left than the spec but if there
       // is a scrollbar visible it will be half a scrollbar width further right
-      // than the spec.
-      this.zoomToolbar_.style.right = -verticalScrollbarWidth +
-          (scrollbarWidth / 2) + 'px';
+      // than the spec. In RTL layout, the zoom toolbar is on the left side, but
+      // the scrollbar is still on the left, so this is not necessary.
+      if (document.dir == 'ltr') {
+        this.zoomToolbar_.style.right = -verticalScrollbarWidth +
+            (scrollbarWidth / 2) + 'px';
+      }
       // Having a horizontal scrollbar is much rarer so we don't offset the
       // toolbar from the bottom any more than what the spec says. This means
       // that when there is a scrollbar visible, it will be a full scrollbar

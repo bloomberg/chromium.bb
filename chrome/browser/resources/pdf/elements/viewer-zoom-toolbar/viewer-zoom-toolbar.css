@@ -11,6 +11,11 @@
   z-index: 3;
 }
 
+:host-context([dir=rtl]) {
+  left: 0;
+  right: auto;
+}
+
 viewer-zoom-button {
   display: block;
 }

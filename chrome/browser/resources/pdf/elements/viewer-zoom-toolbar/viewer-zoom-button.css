@@ -2,6 +2,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#wrapper {
+  transition: transform 250ms;
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+:host([closed]) #wrapper {
+  transform: translateX(100%);
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+}
+
+:host-context([dir=rtl]):host([closed]) #wrapper {
+  transform: translateX(-100%);
+}
+
 paper-fab {
   --paper-fab-keyboard-focus-background: var(--viewer-icon-ink-color);
   --paper-fab-mini: {
