@@ -6,18 +6,26 @@
  * @fileoverview Useful abstraction when  speaking messages.
  *
  * Usage:
- * $m('aria_role_link')
+ * $m('role_link')
  * .andPause()
- * .andMessage('aria_role_forms')
+ * .andMessage('role_forms')
  * .speakFlush();
  *
  */
 
+goog.provide('cvox.SpokenMessage');
 goog.provide('cvox.SpokenMessages');
 
 goog.require('cvox.AbstractTts');
 goog.require('cvox.ChromeVox');
-goog.require('cvox.SpokenMessage');
+
+/**
+ * @constructor
+ */
+cvox.SpokenMessage = function() {
+  /** @type {Array} */
+  this.id = null;
+};
 
 /**
  * @type {Array}
@@ -32,13 +40,6 @@ cvox.SpokenMessages.speakFlush = function() {
 };
 
 /**
- * Speaks the message chain after on-going speech finishes.
- */
-cvox.SpokenMessages.speakQueued = function() {
-  cvox.SpokenMessages.speak(cvox.QueueMode.QUEUE);
-};
-
-/**
  * Speak the message chain.
  * @param {cvox.QueueMode} mode The speech queue mode.
  */
@@ -50,8 +51,7 @@ cvox.SpokenMessages.speak = function(mode) {
     if (!message || !message.id)
       throw 'Invalid message received.';
 
-    var finalText = cvox.ChromeVox.msgs.getMsg.apply(cvox.ChromeVox.msgs,
-                                                     message.id);
+    var finalText = Msgs.getMsg.apply(Msgs, message.id);
     cvox.ChromeVox.tts.speak(finalText, mode,
                              cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
@@ -60,16 +60,6 @@ cvox.SpokenMessages.speak = function(mode) {
   }
 
   cvox.SpokenMessages.messages = [];
-};
-
-/**
- * The newest message.
- * @return {cvox.SpokenMessage} The newest (current) message.
- */
-cvox.SpokenMessages.currentMessage = function() {
-  if (cvox.SpokenMessages.messages.length == 0)
-    throw 'Invalid usage of SpokenMessages; start the chain using $m()';
-  return cvox.SpokenMessages.messages[cvox.SpokenMessages.messages.length - 1];
 };
 
 /**

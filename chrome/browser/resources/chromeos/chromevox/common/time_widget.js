@@ -136,7 +136,7 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
   var minutes = -1;
   var seconds = 0;
   var milliseconds = 0;
-  var ampm = cvox.ChromeVox.msgs.getMsg('timewidget_am');
+  var ampm = Msgs.getMsg('timewidget_am');
   if (splitTime.length > 1) {
     minutes = splitTime[1];
   }
@@ -149,14 +149,14 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
   }
   if (hours > 12) {
     hours = hours - 12;
-    ampm = cvox.ChromeVox.msgs.getMsg('timewidget_pm');
+    ampm = Msgs.getMsg('timewidget_pm');
   }
   if (hours == 12) {
-    ampm = cvox.ChromeVox.msgs.getMsg('timewidget_pm');
+    ampm = Msgs.getMsg('timewidget_pm');
   }
   if (hours == 0) {
     hours = 12;
-    ampm = cvox.ChromeVox.msgs.getMsg('timewidget_am');
+    ampm = Msgs.getMsg('timewidget_am');
   }
 
   var changeMessage = '';
@@ -167,25 +167,25 @@ cvox.ChromeVoxHTMLTimeWidget.prototype.update_ = function(shouldSpeakLabel) {
 
   if (hours != this.pHours_) {
     changeMessage = changeMessage + hours + ' ' +
-        cvox.ChromeVox.msgs.getMsg('timewidget_hours') + '\n';
+        Msgs.getMsg('timewidget_hours') + '\n';
     this.pHours_ = hours;
   }
 
   if (minutes != this.pMinutes_) {
     changeMessage = changeMessage + minutes + ' ' +
-        cvox.ChromeVox.msgs.getMsg('timewidget_minutes') + '\n';
+        Msgs.getMsg('timewidget_minutes') + '\n';
     this.pMinutes_ = minutes;
   }
 
   if (seconds != this.pSeconds_) {
     changeMessage = changeMessage + seconds + ' ' +
-        cvox.ChromeVox.msgs.getMsg('timewidget_seconds') + '\n';
+        Msgs.getMsg('timewidget_seconds') + '\n';
     this.pSeconds_ = seconds;
   }
 
   if (milliseconds != this.pMilliseconds_) {
     changeMessage = changeMessage + milliseconds + ' ' +
-        cvox.ChromeVox.msgs.getMsg('timewidget_milliseconds') + '\n';
+        Msgs.getMsg('timewidget_milliseconds') + '\n';
     this.pMilliseconds_ = milliseconds;
   }
 

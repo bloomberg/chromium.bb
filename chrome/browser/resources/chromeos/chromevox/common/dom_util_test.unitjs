@@ -20,12 +20,12 @@ CvoxDomUtilUnitTest.prototype = {
     'cvox.ChromeVox',
     'cvox.DescriptionUtil',
     'cvox.DomUtil',
-    'cvox.TestMsgs',
+    'TestMsgs',
   ],
 
   /** @override */
   setUp: function() {
-    cvox.ChromeVox.msgs = new cvox.TestMsgs();
+    Msgs = TestMsgs;
   },
 
   asText_: function(node) {

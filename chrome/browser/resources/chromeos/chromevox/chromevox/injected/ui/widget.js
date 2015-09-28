@@ -138,7 +138,7 @@ cvox.Widget.prototype.toggle = function() {
 /**
  * The name of the widget.
  * @return {!Array} The message id referencing the name of the widget in an
- * array argument form passable to cvox.ChromeVox.msgs.getMsg.apply.
+ * array argument form passable to Msgs.getMsg.apply.
  */
 cvox.Widget.prototype.getNameMsg = goog.abstractMethod;
 

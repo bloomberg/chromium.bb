@@ -9,6 +9,8 @@
 goog.provide('cvox.NodeState');
 goog.provide('cvox.NodeStateUtil');
 
+goog.require('Msgs');
+
 /**
  * Holds the state of a node.  It is an Array or Arrays of strings and numbers.
  * Each sub array is in the format:
@@ -38,11 +40,11 @@ cvox.NodeStateUtil.expand = function(state) {
       }
       var args = s.slice(1).map(function(a) {
         if (typeof a == 'number') {
-          return cvox.ChromeVox.msgs.getNumber(a);
+          return Msgs.getNumber(a);
         }
         return a;
       });
-      return cvox.ChromeVox.msgs.getMsg(/** @type {string} */ (s[0]), args);
+      return Msgs.getMsg(/** @type {string} */ (s[0]), args);
     }).join(' ');
   } catch (e) {
     throw new Error('error: ' + e + ' state: ' + state);

@@ -16,8 +16,8 @@ CvoxWalkerUnitTestBase.prototype = {
 
   /** @override */
   closureModuleDeps: [
-    'cvox.CursorSelection',
-    'cvox.TestMsgs'
+    'TestMsgs',
+    'cvox.CursorSelection'
   ],
 
   /**
@@ -25,7 +25,7 @@ CvoxWalkerUnitTestBase.prototype = {
    */
   setUp: function() {
     // Needed for getDescription and getGranularityMsg.
-    cvox.ChromeVox.msgs = new cvox.TestMsgs();
+    Msgs = TestMsgs;
 
     // Delete all nodes in the body.
     while (document.body.hasChildNodes()) {

@@ -78,7 +78,7 @@ cvox.MathShifter.prototype.sync = function(sel) {
  * @override
  */
 cvox.MathShifter.prototype.getName = function() {
-  return cvox.ChromeVox.msgs.getMsg('math_shifter');
+  return Msgs.getMsg('math_shifter');
 };
 
 

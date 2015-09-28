@@ -48,7 +48,7 @@ cvox.GroupWalker.prototype.getBraille = function(prevSel, sel) {
  * @override
  */
 cvox.GroupWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('group_strategy');
+  return Msgs.getMsg('group_strategy');
 };
 
 /**

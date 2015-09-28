@@ -10,6 +10,7 @@
 
 goog.provide('cvox.AbstractTts');
 
+goog.require('Msgs');
 goog.require('cvox.TtsInterface');
 goog.require('goog.i18n.MessageFormat');
 
@@ -238,7 +239,7 @@ cvox.AbstractTts.prototype.preprocess = function(text, properties) {
   // Handle single characters that we want to make sure we pronounce.
   if (text.length == 1) {
     return cvox.AbstractTts.CHARACTER_DICTIONARY[text] ?
-        (new goog.i18n.MessageFormat(cvox.ChromeVox.msgs.getMsg(
+        (new goog.i18n.MessageFormat(Msgs.getMsg(
                 cvox.AbstractTts.CHARACTER_DICTIONARY[text])))
             .format({'COUNT': 1}) :
         text.toUpperCase();
@@ -552,7 +553,7 @@ cvox.AbstractTts.repetitionRegexp_ =
  */
 cvox.AbstractTts.repetitionReplace_ = function(match) {
   var count = match.length;
-  return ' ' + (new goog.i18n.MessageFormat(cvox.ChromeVox.msgs.getMsg(
+  return ' ' + (new goog.i18n.MessageFormat(Msgs.getMsg(
       cvox.AbstractTts.CHARACTER_DICTIONARY[match[0]])))
           .format({'COUNT': count}) + ' ';
 };

@@ -17,9 +17,9 @@ CvoxLayoutLineWalkerUnitTest.prototype = {
 
   /** @override */
   closureModuleDeps: [
+    'TestMsgs',
     'cvox.CursorSelection',
     'cvox.LayoutLineWalker',
-    'cvox.TestMsgs',
   ],
 
   /** @override */
@@ -39,7 +39,7 @@ CvoxLayoutLineWalkerUnitTest.prototype = {
       '</p>' +
      '</div>'
     );
-    cvox.ChromeVox.msgs = new cvox.TestMsgs();
+    Msgs = TestMsgs;
     this.walker = new cvox.LayoutLineWalker();
   
     this.a = cvox.CursorSelection.fromNode($('a'));

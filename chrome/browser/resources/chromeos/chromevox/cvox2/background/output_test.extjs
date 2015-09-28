@@ -244,6 +244,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
       '<input type="number"></input>' +
       '<input type="time"></input>' +
       '<input type="date"></input>' +
+      '<input type="file"</input>' +
+      '<input type="search"</input>' +
       '<input type="invalidType"</input>',
     function(root) {
       var expected = {string_: '', 'spans_': [
@@ -263,7 +265,7 @@ TEST_F('OutputE2ETest', 'Input', function() {
         '||Edit text',
         '||Edit text, email entry',
         '||Password edit text',
-        '||Edit text, number entry',
+        '||Edit text numeric only',
         {string_: '||Spin button', spans_: [{value: 'name', start: 0, end: 0},
             {value: {earconId:'LISTBOX'}, start: 0, end: 0},
             {value: {startIndex: 0, endIndex: 0}, start: 1, end: 1},
@@ -275,7 +277,13 @@ TEST_F('OutputE2ETest', 'Input', function() {
         {string_: '||Date control', spans_: [{value: 'name', start: 0, end: 0},
             {value: 'value', start: 1, end: 1},
             {value: 'role', start: 2, end: 14}]},
-        "||Edit text"
+        {string_: 'Choose File|No file chosen|Button',
+         spans_: [{value: 'name', start: 0, end: 11},
+                  {value: {earconId: "BUTTON"}, start: 0, end: 11},
+                  {value: 'value', start: 12, end: 26},
+                  {value: 'role', start: 27, end: 33}]},
+        '||Edit text, search entry',
+        '||Edit text'
       ];
       // TODO(plundblad): Some of these are wrong, there should be an initial
       // space for the cursor in edit fields.
@@ -287,6 +295,8 @@ TEST_F('OutputE2ETest', 'Input', function() {
         ' spnbtn',
         {string_: 'time'},
         {string_: 'date'},
+        {string_: 'Choose File No file chosen btn'},
+        ' srched',
         ' ed'
       ];
       assertEquals(expectedSpeechValues.length, expectedBrailleValues.length);
@@ -488,8 +498,8 @@ TEST_F('OutputE2ETest', 'ListBox', function() {
 SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
   for (var key in Output.ROLE_INFO_) {
     var value = Output.ROLE_INFO_[key];
-    cvox.ChromeVox.msgs.getMsg(value.msgId);
-    cvox.ChromeVox.msgs.getMsg(value.msgId + '_brl');
+    Msgs.getMsg(value.msgId);
+    Msgs.getMsg(value.msgId + '_brl');
     assertFalse(/[A-Z]+/.test(value.msgId));
     if (value.earconId)
       assertNotNullNorUndefined(cvox.Earcon[value.earconId]);
@@ -498,12 +508,18 @@ SYNC_TEST_F('OutputE2ETest', 'MessageIdAndEarconValidity', function() {
     var value = Output.STATE_INFO_[key];
     for (innerKey in value) {
       var innerValue = value[innerKey];
-      cvox.ChromeVox.msgs.getMsg(innerValue.msgId);
-      cvox.ChromeVox.msgs.getMsg(innerValue.msgId + '_brl');
+      Msgs.getMsg(innerValue.msgId);
+      Msgs.getMsg(innerValue.msgId + '_brl');
       assertFalse(/[A-Z]+/.test(innerValue.msgId));
       if (innerValue.earconId)
         assertNotNullNorUndefined(cvox.Earcon[innerValue.earconId]);
     }
+  }
+  for (var key in Output.INPUT_TYPE_MESSAGE_IDS_) {
+    var msgId = Output.INPUT_TYPE_MESSAGE_IDS_[key];
+    assertFalse(/[A-Z]+/.test(msgId));
+    Msgs.getMsg(msgId);
+    Msgs.getMsg(msgId + '_brl');
   }
 });
 

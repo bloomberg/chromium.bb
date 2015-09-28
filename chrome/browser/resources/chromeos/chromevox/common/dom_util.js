@@ -35,24 +35,24 @@ cvox.DomUtil = function() {
  * @type {Object}
  */
 cvox.DomUtil.INPUT_TYPE_TO_INFORMATION_TABLE_MSG = {
-  'button' : 'input_type_button',
-  'checkbox' : 'input_type_checkbox',
+  'button' : 'role_button',
+  'checkbox' : 'role_checkbox',
   'color' : 'input_type_color',
   'datetime' : 'input_type_datetime',
   'datetime-local' : 'input_type_datetime_local',
   'date' : 'input_type_date',
   'email' : 'input_type_email',
   'file' : 'input_type_file',
-  'image' : 'input_type_image',
+  'image' : 'role_button',
   'month' : 'input_type_month',
   'number' : 'input_type_number',
   'password' : 'input_type_password',
-  'radio' : 'input_type_radio',
-  'range' : 'input_type_range',
+  'radio' : 'role_radio',
+  'range' : 'role_slider',
   'reset' : 'input_type_reset',
   'search' : 'input_type_search',
-  'submit' : 'input_type_submit',
-  'tel' : 'input_type_tel',
+  'submit' : 'role_button',
+  'tel' : 'input_type_number',
   'text' : 'input_type_text',
   'url' : 'input_type_url',
   'week' : 'input_type_week'
@@ -66,11 +66,11 @@ cvox.DomUtil.INPUT_TYPE_TO_INFORMATION_TABLE_MSG = {
  * @type {Object}
  */
 cvox.DomUtil.TAG_TO_INFORMATION_TABLE_VERBOSE_MSG = {
-  'A' : 'tag_link',
+  'A' : 'role_link',
   'ARTICLE' : 'tag_article',
   'ASIDE' : 'tag_aside',
   'AUDIO' : 'tag_audio',
-  'BUTTON' : 'tag_button',
+  'BUTTON' : 'role_button',
   'FOOTER' : 'tag_footer',
   'H1' : 'tag_h1',
   'H2' : 'tag_h2',
@@ -99,7 +99,7 @@ cvox.DomUtil.TAG_TO_INFORMATION_TABLE_VERBOSE_MSG = {
  */
 cvox.DomUtil.TAG_TO_INFORMATION_TABLE_BRIEF_MSG = {
   'AUDIO' : 'tag_audio',
-  'BUTTON' : 'tag_button',
+  'BUTTON' : 'role_button',
   'SELECT' : 'tag_select',
   'TABLE' : 'tag_table',
   'TEXTAREA' : 'tag_textarea',
@@ -872,7 +872,7 @@ cvox.DomUtil.getValue = function(node) {
     // of the selection only since we don't know which was added or
     // removed. Once we keep the previous selection, we can read the diff.
     if (start && end && start != end) {
-      value = cvox.ChromeVox.msgs.getMsg(
+      value = Msgs.getMsg(
         'selected_options_value', [start.text, end.text]);
     } else if (start) {
       value = start.text + '';
@@ -1313,7 +1313,7 @@ cvox.DomUtil.getRoleMsg = function(targetNode, verbosity) {
 cvox.DomUtil.getRole = function(targetNode, verbosity) {
   var roleMsg = cvox.DomUtil.getRoleMsg(targetNode, verbosity) || '';
   var role = roleMsg && roleMsg != ' ' ?
-      cvox.ChromeVox.msgs.getMsg(roleMsg) : '';
+      Msgs.getMsg(roleMsg) : '';
   return role ? role : roleMsg;
 };
 
@@ -1381,17 +1381,17 @@ cvox.DomUtil.getStateMsgs = function(targetNode, primary) {
   } else if (targetNode.tagName == 'SELECT') {
     if (targetNode.selectedOptions && targetNode.selectedOptions.length <= 1) {
       info.push(['list_position',
-                 cvox.ChromeVox.msgs.getNumber(targetNode.selectedIndex + 1),
-                 cvox.ChromeVox.msgs.getNumber(targetNode.options.length)]);
+                 Msgs.getNumber(targetNode.selectedIndex + 1),
+                 Msgs.getNumber(targetNode.options.length)]);
     } else {
       info.push(['selected_options_state',
-          cvox.ChromeVox.msgs.getNumber(targetNode.selectedOptions.length)]);
+          Msgs.getNumber(targetNode.selectedOptions.length)]);
     }
   } else if (targetNode.tagName == 'UL' ||
              targetNode.tagName == 'OL' ||
              role == 'list') {
     info.push(['list_with_items_not_pluralized',
-               cvox.ChromeVox.msgs.getNumber(
+               Msgs.getNumber(
                    cvox.DomUtil.getListLength(targetNode))]);
   }
 
@@ -1937,7 +1937,7 @@ cvox.DomUtil.getLinkURL = function(node) {
   if (node.tagName == 'A') {
     if (node.getAttribute('href')) {
       if (cvox.DomUtil.isInternalLink(node)) {
-        return cvox.ChromeVox.msgs.getMsg('internal_link');
+        return Msgs.getMsg('internal_link');
       } else {
         return node.getAttribute('href');
       }
@@ -1945,8 +1945,8 @@ cvox.DomUtil.getLinkURL = function(node) {
       return '';
     }
   } else if (cvox.AriaUtil.getRoleName(node) ==
-             cvox.ChromeVox.msgs.getMsg('aria_role_link')) {
-    return cvox.ChromeVox.msgs.getMsg('unknown_link');
+             Msgs.getMsg('role_link')) {
+    return Msgs.getMsg('unknown_link');
   }
 
   return '';

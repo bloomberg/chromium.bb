@@ -390,7 +390,7 @@ cvox.NavigationManager.prototype.syncAll = function(opt_skipText) {
 cvox.NavigationManager.prototype.clearPageSel = function(opt_announce) {
   var hasSel = !!this.pageSel_;
   if (hasSel && opt_announce) {
-    var announcement = cvox.ChromeVox.msgs.getMsg('clear_page_selection');
+    var announcement = Msgs.getMsg('clear_page_selection');
     cvox.ChromeVox.tts.speak(announcement, cvox.QueueMode.FLUSH,
                              cvox.AbstractTts.PERSONALITY_ANNOTATION);
   }
@@ -703,9 +703,9 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
     cvox.ChromeVox.tts.stop();
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.WRAP);
     if (cvox.ChromeVox.verbosity === cvox.VERBOSITY_VERBOSE) {
-      var msg = cvox.ChromeVox.msgs.getMsg('wrapped_to_top');
+      var msg = Msgs.getMsg('wrapped_to_top');
       if (this.isReversed()) {
-        msg = cvox.ChromeVox.msgs.getMsg('wrapped_to_bottom');
+        msg = Msgs.getMsg('wrapped_to_bottom');
       }
       cvox.ChromeVox.tts.speak(msg, cvox.QueueMode.QUEUE,
           cvox.AbstractTts.PERSONALITY_ANNOTATION);
@@ -714,8 +714,7 @@ cvox.NavigationManager.prototype.finishNavCommand = function(
   }
 
   if (this.enteredShifter_ || this.exitedShifter_) {
-    opt_prefix = cvox.ChromeVox.msgs.getMsg(
-        'enter_content_say', [this.shifter_.getName()]);
+    opt_prefix = Msgs.getMsg('enter_content_say', [this.shifter_.getName()]);
   }
 
   var descriptionArray = cvox.ChromeVox.navigationManager.getDescription();

@@ -116,18 +116,17 @@ cvox.BrailleTable.getUncontracted = function(tables, table) {
  * @return {string} Localized display name.
  */
 cvox.BrailleTable.getDisplayName = function(table) {
-  var msgs = cvox.ChromeVox.msgs;
-  var localeName = msgs.getLocaleDisplayName(table.locale);
+  var localeName = Msgs.getLocaleDisplayName(table.locale);
   if (!table.grade && !table.variant) {
     return localeName;
   } else if (table.grade && !table.variant) {
-    return msgs.getMsg('braille_table_name_with_grade',
+    return Msgs.getMsg('braille_table_name_with_grade',
                        [localeName, table.grade]);
   } else if (!table.grade && table.variant) {
-    return msgs.getMsg('braille_table_name_with_variant',
+    return Msgs.getMsg('braille_table_name_with_variant',
                        [localeName, table.variant]);
   } else {
-    return msgs.getMsg('braille_table_name_with_variant_and_grade',
+    return Msgs.getMsg('braille_table_name_with_variant_and_grade',
                        [localeName, table.variant, table.grade]);
   }
 };

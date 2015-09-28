@@ -144,8 +144,7 @@ cvox.PdfProcessor.onMessage = function(message) {
   var src = cvox.PdfProcessor.pdfEmbed.src;
   var filename = src.substr(src.lastIndexOf('/') + 1);
   document.title = filename;
-  var html = cvox.ChromeVox.msgs.getMsg(
-      'pdf_header', [filename, src + '#original']);
+  var html = Msgs.getMsg('pdf_header', [filename, src + '#original']);
   headerDiv.innerHTML = html;
   // Set up a handler to reload the page when 'Show original' is clicked.
   var showLink = headerDiv.getElementsByTagName('a')[0];
@@ -164,7 +163,7 @@ cvox.PdfProcessor.onMessage = function(message) {
   if (!info.copyable) {
     var alert = document.createElement('div');
     alert.setAttribute('role', 'alert');
-    alert.innerText = cvox.ChromeVox.msgs.getMsg('copy_protected_pdf');
+    alert.innerText = Msgs.getMsg('copy_protected_pdf');
     cvox.PdfProcessor.documentDiv.appendChild(alert);
     cvox.PdfProcessor.pdfEmbed.parentElement.appendChild(
         cvox.PdfProcessor.documentDiv);

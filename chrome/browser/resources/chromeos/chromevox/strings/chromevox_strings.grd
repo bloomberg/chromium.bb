@@ -452,9 +452,6 @@
       <message desc="An option to show the cursor between characters." name="IDS_CHROMEVOX_OPTIONS_CURSOR_BETWEEN_CHARACTERS">
         Place cursor between characters when editing text (like Mac OS X).
       </message>
-      <message desc="An option to show the magnifier." name="IDS_CHROMEVOX_OPTIONS_MAGNIFIER_SHOW_CHECKBOX">
-        Show a magnified view of the page content.
-      </message>
       <message desc="An options page section header for options about the ChromeVox voice. This section lets users change the voice by selecting a different voice from a listbox." name="IDS_CHROMEVOX_OPTIONS_VOICES">
         Voices
       </message>
@@ -512,12 +509,6 @@
       <message desc="The instructions for the keyboard explorer.  The keyboard explorer voices the name of each key when the user presses it. * These instructions describe how to use the keyboard explorer." name="IDS_CHROMEVOX_KBEXPLORER_INSTRUCTIONS">
         Press any key to learn its name. Ctrl+W will close the keyboard explorer.
       </message>
-      <message desc="Spoken when a System update is ready and restart is needed." name="IDS_CHROMEVOX_CHROME_SYSTEM_NEED_RESTART">
-        System was updated.  Restart is recommended.
-      </message>
-      <message desc="Spoken when the screen brightness is changed." name="IDS_CHROMEVOX_CHROME_BRIGHTNESS_CHANGED">
-        Brightness <ph name="brightness">$1</ph> percent
-      </message>
       <message desc="Spoken when a new Chrome tab named 'title' is opened." name="IDS_CHROMEVOX_CHROME_TAB_CREATED">
         tab created
       </message>
@@ -542,17 +533,11 @@
       <message desc="The checked state for a checkbox." name="IDS_CHROMEVOX_CHECKBOX_CHECKED_STATE">
         checked
       </message>
-      <message desc="The checked state for a checkbox in braille." name="IDS_CHROMEVOX_CHECKBOX_CHECKED_STATE_BRL">
-        (x)
-      </message>
       <message desc="Describes a HTML checkbox named 'name' in the unchecked state." name="IDS_CHROMEVOX_DESCRIBE_CHECKBOX_UNCHECKED">
         <ph name="name">$1</ph>, checkbox not checked
       </message>
       <message desc="The unchecked state for a checkbox." name="IDS_CHROMEVOX_CHECKBOX_UNCHECKED_STATE">
         not checked
-      </message>
-      <message desc="The unchecked state for a checkbox in braille." name="IDS_CHROMEVOX_CHECKBOX_UNCHECKED_STATE_BRL">
-        ( )
       </message>
       <message desc="Describes a HTML radio button named 'name' in the selected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_SELECTED">
         <ph name="name">$1</ph>, radio button selected
@@ -560,17 +545,11 @@
       <message desc="The selected state for a radio button." name="IDS_CHROMEVOX_RADIO_SELECTED_STATE">
         selected
       </message>
-      <message desc="The selected state for a radio button in braille." name="IDS_CHROMEVOX_RADIO_SELECTED_STATE_BRL">
-        (x)
-      </message>
       <message desc="Describes a HTML radio button named 'name' in the unselected state." name="IDS_CHROMEVOX_DESCRIBE_RADIO_UNSELECTED">
         <ph name="name">$1</ph>, radio button unselected
       </message>
       <message desc="The unselected state for a radio button." name="IDS_CHROMEVOX_RADIO_UNSELECTED_STATE">
         unselected
-      </message>
-      <message desc="The unselected state for a radio button in braille." name="IDS_CHROMEVOX_RADIO_UNSELECTED_STATE_BRL">
-        ( )
       </message>
       <message desc="Describes a menu named 'name'." name="IDS_CHROMEVOX_DESCRIBE_MENU">
         <ph name="name">$1</ph>, menu
@@ -653,12 +632,6 @@
       <message desc="Spoken when the user enters a dialog with the text 'text'." name="IDS_CHROMEVOX_ENTERING_DIALOG">
         Entered dialog
       </message>
-      <message desc="Spoken for an element with role dialog." name="IDS_CHROMEVOX_DIALOG">
-        Dialog
-      </message>
-      <message desc="Brailled for an element with role dialog." name="IDS_CHROMEVOX_DIALOG_BRL">
-        dlg
-      </message>
       <message desc="Spoken before the list of elements when a live region of a page is removed." name="IDS_CHROMEVOX_LIVE_REGIONS_REMOVED">
         removed:
       </message>
@@ -682,9 +655,6 @@
       </message>
       <message desc="Prompt spoken when any ChoiceWidget exits." name="IDS_CHROMEVOX_CHOICE_WIDGET_EXITED">
         Exited
-      </message>
-      <message desc="Prompt spoken to describe items within the ChoiceWidget." name="IDS_CHROMEVOX_CHOICE_WIDGET_TYPE_GENERIC">
-        ''' '''
       </message>
       <message desc="Spoken when table mode reachs the end of a cell." name="IDS_CHROMEVOX_END_OF_CELL">
         End of cell.
@@ -956,19 +926,16 @@
       <message desc='Spoken after a menu is spoken if the menu has a submenu. For example "Menu Options has submenu"' name="IDS_CHROMEVOX_ARIA_HAS_SUBMENU">
         has submenu
       </message>
-      <message desc="Brailled after a menu if the menu has a submenu." name="IDS_CHROMEVOX_ARIA_HAS_SUBMENU_BRL">
-        ->
-      </message>
       <message desc='Spoken after an element is spoken if the element has a pop up. For example "Button Add friends has pop up"' name="IDS_CHROMEVOX_ARIA_HAS_POPUP">
         has pop up
       </message>
-      <message desc="Brailled after an element is spoken if the element has a pop up." name="IDS_CHROMEVOX_ARIA_HAS_POPUP_BRL">
+      <message desc="This is a suffix shown on a braille display for a widget (such as a button) that opens some kind of popup. When translating, keep the plus sign and append the translated word for 'popup'. If it is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_HAS_POPUP_BRL">
         +popup
       </message>
       <message desc='Spoken when describing an ARIA value minimun. For example "Distance, in meters textbox 6, min 2, max 10"' name="IDS_CHROMEVOX_ARIA_VALUE_MIN">
         Min <ph name="x">$1</ph>
       </message>
-      <message desc='Brailled when describing an ARIA value minimun. For example "Distance, in meters: 6 min:6 max:10"' name="IDS_CHROMEVOX_ARIA_VALUE_MIN_BRL">
+      <message desc='Brailled when describing an ARIA value minimum. For example "Distance, in meters: 6 min:6 max:10"' name="IDS_CHROMEVOX_ARIA_VALUE_MIN_BRL">
         min:<ph name="x">$1</ph>
       </message>
       <message desc='Spoken when describing an ARIA value maximum. For example "Distance, in meters textbox 6, min 2, max 10"' name="IDS_CHROMEVOX_ARIA_VALUE_MAX">
@@ -989,541 +956,487 @@
       <message desc='Brailled when describing an ARIA value text. For example "Distance, short distance set"' name="IDS_CHROMEVOX_ARIA_VALUE_TEXT_BRL">
         <ph name="x">$1</ph>
       </message>
-      <message desc="Describes an element with the ARIA role alert." name="IDS_CHROMEVOX_ARIA_ROLE_ALERT">
+      <message desc="Describes an element with the ARIA role alert." name="IDS_CHROMEVOX_ROLE_ALERT">
         Alert
       </message>
-      <message desc="Braille of element with the ARIA role alert." name="IDS_CHROMEVOX_ARIA_ROLE_ALERT_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translated word 'alert' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_ALERT_BRL">
         alrt
       </message>
-      <message desc="Describes an element with the ARIA role alertdialog." name="IDS_CHROMEVOX_ARIA_ROLE_ALERTDIALOG">
+      <message desc="Describes an element with the ARIA role alertdialog." name="IDS_CHROMEVOX_ROLE_ALERTDIALOG">
         Alert dialog
       </message>
-      <message desc="Braille of element with the ARIA role alertdialog." name="IDS_CHROMEVOX_ARIA_ROLE_ALERTDIALOG_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'alert dialog' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_ALERTDIALOG_BRL">
         alrt dlg
       </message>
-      <message desc="Describes an element with the ARIA role button." name="IDS_CHROMEVOX_ARIA_ROLE_BUTTON">
+      <message desc="Describes an element with the ARIA role button." name="IDS_CHROMEVOX_ROLE_BUTTON">
         Button
       </message>
-      <message desc="Braille of element with the ARIA role button." name="IDS_CHROMEVOX_ARIA_ROLE_BUTTON_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translated word for 'button' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_BUTTON_BRL">
         btn
       </message>
-      <message desc="Describes an element with the ARIA role checkbox." name="IDS_CHROMEVOX_ARIA_ROLE_CHECKBOX">
+      <message desc="Describes an element with the ARIA role checkbox." name="IDS_CHROMEVOX_ROLE_CHECKBOX">
         Check box
       </message>
-      <message desc="Braille of element with the ARIA role checkbox." name="IDS_CHROMEVOX_ARIA_ROLE_CHECKBOX_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'check box' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_CHECKBOX_BRL">
         chk
       </message>
-      <message desc="Describes an element with the ARIA role combobox." name="IDS_CHROMEVOX_ARIA_ROLE_COMBOBOX">
+      <message desc="Describes an element with the ARIA role combobox." name="IDS_CHROMEVOX_ROLE_COMBOBOX">
         Combo box
       </message>
-      <message desc="Braille of element with the ARIA role combobox." name="IDS_CHROMEVOX_ARIA_ROLE_COMBOBOX_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'combo box' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_COMBOBOX_BRL">
         cbo
       </message>
-      <message desc="Describes an element with the ARIA role dialog." name="IDS_CHROMEVOX_ARIA_ROLE_DIALOG">
+      <message desc="Describes an element with the ARIA role dialog." name="IDS_CHROMEVOX_ROLE_DIALOG">
         Dialog
       </message>
-      <message desc="Braille of element with the ARIA role dialog." name="IDS_CHROMEVOX_ARIA_ROLE_DIALOG_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'dialog' (as in dialog box on a computer screen) according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DIALOG_BRL">
         dlg
       </message>
-      <message desc="Describes an element with the ARIA role grid." name="IDS_CHROMEVOX_ARIA_ROLE_GRID">
+      <message desc="Describes an element with the ARIA role grid." name="IDS_CHROMEVOX_ROLE_GRID">
         Grid
       </message>
-      <message desc="Braille of element with the ARIA role grid." name="IDS_CHROMEVOX_ARIA_ROLE_GRID_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'grid' (a kind of tabular layout) according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_GRID_BRL">
         grd
       </message>
-      <message desc="Describes an element with the ARIA role gridcell." name="IDS_CHROMEVOX_ARIA_ROLE_GRIDCELL">
+      <message desc="Describes an element with the ARIA role gridcell." name="IDS_CHROMEVOX_ROLE_GRIDCELL">
         Cell
       </message>
-      <message desc="Braille of element with the ARIA role gridcell." name="IDS_CHROMEVOX_ARIA_ROLE_GRIDCELL_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'cell' (as a part of a grid or tabular layout) according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_GRIDCELL_BRL">
         cll
       </message>
-      <message desc="Describes the position of an element with the ARIA role gridcell." name="IDS_CHROMEVOX_ARIA_ROLE_GRIDCELL_POS">
+      <message desc="Describes the position of an element with the ARIA role gridcell." name="IDS_CHROMEVOX_ROLE_GRIDCELL_POS">
         row <ph name="row">$1</ph> column <ph name="col">$2</ph>
       </message>
-      <message desc="Describes an element with the ARIA role link." name="IDS_CHROMEVOX_ARIA_ROLE_LINK">
+      <message desc="Spoken to describe a link in a document." name="IDS_CHROMEVOX_ROLE_LINK">
         Link
       </message>
-      <message desc="Braille of element with the ARIA role link." name="IDS_CHROMEVOX_ARIA_ROLE_LINK_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'link' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LINK_BRL">
         lnk
       </message>
-      <message desc="Describes an element with the ARIA role listbox." name="IDS_CHROMEVOX_ARIA_ROLE_LISTBOX">
+      <message desc="Describes an element with the ARIA role listbox." name="IDS_CHROMEVOX_ROLE_LISTBOX">
         List box
       </message>
-      <message desc="Braille of element with the ARIA role listbox." name="IDS_CHROMEVOX_ARIA_ROLE_LISTBOX_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'list box' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LISTBOX_BRL">
         lstbx
       </message>
-      <message desc="Describes an element with the ARIA role log." name="IDS_CHROMEVOX_ARIA_ROLE_LOG">
+      <message desc="Describes an element with the ARIA role log." name="IDS_CHROMEVOX_ROLE_LOG">
         Log
       </message>
-      <message desc="Braille of element with the ARIA role log." name="IDS_CHROMEVOX_ARIA_ROLE_LOG_BRL">
+      <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LOG_BRL">
         log
       </message>
-      <message desc="Describes an element with the ARIA role marquee." name="IDS_CHROMEVOX_ARIA_ROLE_MARQUEE">
+      <message desc="Describes an element with the ARIA role marquee." name="IDS_CHROMEVOX_ROLE_MARQUEE">
         Marquee
       </message>
-      <message desc="Braille of element with the ARIA role marquee." name="IDS_CHROMEVOX_ARIA_ROLE_MARQUEE_BRL">
+      <message desc="This is an ARIA widget role name shown on a braille display. When translating, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MARQUEE_BRL">
         marquee
       </message>
-      <message desc="Describes an element with the ARIA role menu." name="IDS_CHROMEVOX_ARIA_ROLE_MENU">
+      <message desc="Describes an element with the ARIA role menu." name="IDS_CHROMEVOX_ROLE_MENU">
         Menu
       </message>
-      <message desc="Braille of element with the ARIA role menu." name="IDS_CHROMEVOX_ARIA_ROLE_MENU_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'menu' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MENU_BRL">
         mnu
       </message>
-      <message desc="Describes an element with the ARIA role menubar." name="IDS_CHROMEVOX_ARIA_ROLE_MENUBAR">
+      <message desc="Describes an element with the ARIA role menubar." name="IDS_CHROMEVOX_ROLE_MENUBAR">
         Menu bar
       </message>
-      <message desc="Braille of element with the ARIA role menubar." name="IDS_CHROMEVOX_ARIA_ROLE_MENUBAR_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'menu bar' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MENUBAR_BRL">
         mnubr
       </message>
-      <message desc="Describes an element with the ARIA role menuitem." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEM">
+      <message desc="Describes an element with the ARIA role menuitem." name="IDS_CHROMEVOX_ROLE_MENUITEM">
         Menu item
       </message>
-      <message desc="Braille of element with the ARIA role menuitem." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEM_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'menu item' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MENUITEM_BRL">
         mnuitm
       </message>
-      <message desc="Describes an element with the ARIA role menuitemcheckbox." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMCHECKBOX">
+      <message desc="Describes an element with the ARIA role menuitemcheckbox." name="IDS_CHROMEVOX_ROLE_MENUITEMCHECKBOX">
         Menu item check box
       </message>
-      <message desc="Braille of element with the ARIA role menuitemcheckbox." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMCHECKBOX_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'menu item with checkbox' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MENUITEMCHECKBOX_BRL">
         chkmnuitm
       </message>
-      <message desc="Describes an element with the ARIA role menuitemradio." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMRADIO">
+      <message desc="Describes an element with the ARIA role menuitemradio." name="IDS_CHROMEVOX_ROLE_MENUITEMRADIO">
         Menu item radio button
       </message>
-      <message desc="Braille of element with the ARIA role menuitemradio." name="IDS_CHROMEVOX_ARIA_ROLE_MENUITEMRADIO_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'menu item with radio button' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_MENUITEMRADIO_BRL">
         rdmnuitm
       </message>
-      <message desc="Describes an element with the ARIA role option." name="IDS_CHROMEVOX_ARIA_ROLE_OPTION">
-        ''' '''
-      </message>
-      <message desc="Braille of element with the ARIA role option." name="IDS_CHROMEVOX_ARIA_ROLE_OPTION_BRL">
-        ''' '''
-      </message>
-      <message desc="Describes an element with the ARIA role button, with a pop-up." name="IDS_CHROMEVOX_ARIA_ROLE_POPUP_BUTTON">
+      <message desc="Describes an element with the ARIA role button, with a pop-up." name="IDS_CHROMEVOX_ROLE_POPUP_BUTTON">
         Pop-up button
       </message>
-      <message desc="Braille of element with the ARIA role button, with a pop-up." name="IDS_CHROMEVOX_ARIA_ROLE_POPUP_BUTTON_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'pop up button' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_POPUP_BUTTON_BRL">
         popbtn
       </message>
-      <message desc="Describes an element with the ARIA role progressbar." name="IDS_CHROMEVOX_ARIA_ROLE_PROGRESSBAR">
+      <message desc="Describes an element with the ARIA role progressbar." name="IDS_CHROMEVOX_ROLE_PROGRESSBAR">
         Progress bar
       </message>
-      <message desc="Braille of element with the ARIA role progressbar." name="IDS_CHROMEVOX_ARIA_ROLE_PROGRESSBAR_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'progress bar' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_PROGRESSBAR_BRL">
         pgbar
       </message>
-      <message desc="Describes an element with the ARIA role radio." name="IDS_CHROMEVOX_ARIA_ROLE_RADIO">
+      <message desc="Describes an element with the ARIA role radio." name="IDS_CHROMEVOX_ROLE_RADIO">
         Radio button
       </message>
-      <message desc="Braille of element with the ARIA role radio." name="IDS_CHROMEVOX_ARIA_ROLE_RADIO_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'radio button' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_RADIO_BRL">
         rbtn
       </message>
-      <message desc="Describes an element with the ARIA role radiogroup." name="IDS_CHROMEVOX_ARIA_ROLE_RADIOGROUP">
+      <message desc="Describes an element with the ARIA role radiogroup." name="IDS_CHROMEVOX_ROLE_RADIOGROUP">
         Radio button group
       </message>
-      <message desc="Braille of element with the ARIA role radiogroup." name="IDS_CHROMEVOX_ARIA_ROLE_RADIOGROUP_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'radio button group' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_RADIOGROUP_BRL">
         rdgrp
       </message>
-      <message desc="Describes an element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ARIA_ROLE_SCROLLBAR">
+      <message desc="Describes an element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ROLE_SCROLLBAR">
         Scroll bar
       </message>
-      <message desc="Braille of element with the ARIA role scrollbar." name="IDS_CHROMEVOX_ARIA_ROLE_SCROLLBAR_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'scroll bar' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_SCROLLBAR_BRL">
         scbr
       </message>
-      <message desc="Describes an element with the ARIA role slider." name="IDS_CHROMEVOX_ARIA_ROLE_SLIDER">
+      <message desc="Describes an element with the ARIA role slider." name="IDS_CHROMEVOX_ROLE_SLIDER">
         Slider
       </message>
-      <message desc="Braille of element with the ARIA role slider." name="IDS_CHROMEVOX_ARIA_ROLE_SLIDER_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'slider' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_SLIDER_BRL">
         sldr
       </message>
-      <message desc="Describes an element with the ARIA role spinbutton." name="IDS_CHROMEVOX_ARIA_ROLE_SPINBUTTON">
+      <message desc="Describes an element with the ARIA role spinbutton." name="IDS_CHROMEVOX_ROLE_SPINBUTTON">
         Spin button
       </message>
-      <message desc="Braille of element with the ARIA role spinbutton." name="IDS_CHROMEVOX_ARIA_ROLE_SPINBUTTON_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'spin button' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_SPINBUTTON_BRL">
         spnbtn
       </message>
-      <message desc="Describes an element with the ARIA role status." name="IDS_CHROMEVOX_ARIA_ROLE_STATUS">
+      <message desc="Describes an element with the ARIA role status." name="IDS_CHROMEVOX_ROLE_STATUS">
         Status
       </message>
-      <message desc="Braille of element with the ARIA role status." name="IDS_CHROMEVOX_ARIA_ROLE_STATUS_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'status' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_STATUS_BRL">
         sts
       </message>
-      <message desc="Describes an element with the ARIA role tab." name="IDS_CHROMEVOX_ARIA_ROLE_TAB">
+      <message desc="Describes an element with the ARIA role tab." name="IDS_CHROMEVOX_ROLE_TAB">
         Tab
       </message>
-      <message desc="Braille of element with the ARIA role tab." name="IDS_CHROMEVOX_ARIA_ROLE_TAB_BRL">
+      <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TAB_BRL">
         tab
       </message>
-      <message desc="Describes an element with the ARIA role tablist." name="IDS_CHROMEVOX_ARIA_ROLE_TABLIST">
+      <message desc="Describes an element with the ARIA role tablist." name="IDS_CHROMEVOX_ROLE_TABLIST">
         Tab list
       </message>
-      <message desc="Brailles an element with the ARIA role tablist." name="IDS_CHROMEVOX_ARIA_ROLE_TABLIST_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'tab list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TABLIST_BRL">
         tablst
       </message>
-      <message desc="Describes an element with the ARIA role tabpanel." name="IDS_CHROMEVOX_ARIA_ROLE_TABPANEL">
+      <message desc="Describes an element with the ARIA role tabpanel." name="IDS_CHROMEVOX_ROLE_TABPANEL">
         Tab panel
       </message>
-      <message desc="Braille of element with the ARIA role tabpanel." name="IDS_CHROMEVOX_ARIA_ROLE_TABPANEL_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'tab panel' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TABPANEL_BRL">
         tabpnl
       </message>
-      <message desc="Describes an element with the ARIA role textbox." name="IDS_CHROMEVOX_ARIA_ROLE_TEXTBOX">
+      <message desc="Describes an element with the ARIA role textbox." name="IDS_CHROMEVOX_ROLE_TEXTBOX">
         Text box
       </message>
-      <message desc="Braille of element with the ARIA role textbox." name="IDS_CHROMEVOX_ARIA_ROLE_TEXTBOX_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'editable' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TEXTBOX_BRL">
         ed
       </message>
-      <message desc="Describes an element with the ARIA role timer." name="IDS_CHROMEVOX_ARIA_ROLE_TIMER">
+      <message desc="Describes an element with the ARIA role timer." name="IDS_CHROMEVOX_ROLE_TIMER">
         Timer
       </message>
-      <message desc="Braille of element with the ARIA role timer." name="IDS_CHROMEVOX_ARIA_ROLE_TIMER_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'timer' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TIMER_BRL">
         tmr
       </message>
-      <message desc="Describes an element with the ARIA role toolbar." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLBAR">
+      <message desc="Describes an element with the ARIA role toolbar." name="IDS_CHROMEVOX_ROLE_TOOLBAR">
         Tool bar
       </message>
-      <message desc="Braille of element with the ARIA role toolbar." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLBAR_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'tool bar' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TOOLBAR_BRL">
         tlbar
       </message>
-      <message desc="Describes an element with the ARIA role tooltip." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLTIP">
+      <message desc="Describes an element with the ARIA role tooltip." name="IDS_CHROMEVOX_ROLE_TOOLTIP">
         Tool tip
       </message>
-      <message desc="Braille of element with the ARIA role tooltip." name="IDS_CHROMEVOX_ARIA_ROLE_TOOLTIP_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'tool tip' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TOOLTIP_BRL">
         tltip
       </message>
-      <message desc="Describes an element with the ARIA role tree." name="IDS_CHROMEVOX_ARIA_ROLE_TREE">
+      <message desc="Describes an element with the ARIA role tree. Note that the word tree is used metaphorically and refers to a user interface widget." name="IDS_CHROMEVOX_ROLE_TREE">
         Tree
       </message>
-      <message desc="Braille of element with the ARIA role tree." name="IDS_CHROMEVOX_ARIA_ROLE_TREE_BRL">
+      <message desc="This is an ARIA widget role name shown on a braille display. If the translation is longer than 5 characters, try to abbreviate it according to local conventions, and when doing so, if reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible. Note that the word tree is used metaphorically and refers to a user interface widget." name="IDS_CHROMEVOX_ROLE_TREE_BRL">
         tree
       </message>
-      <message desc="Describes an element with the ARIA role treeitem." name="IDS_CHROMEVOX_ARIA_ROLE_TREEITEM">
+      <message desc="Describes an element with the ARIA role treeitem." name="IDS_CHROMEVOX_ROLE_TREEITEM">
         Tree item
       </message>
-      <message desc="Braille of element with the ARIA role treeitem." name="IDS_CHROMEVOX_ARIA_ROLE_TREEITEM_BRL">
+      <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'tree item' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_TREEITEM_BRL">
         tritm
       </message>
-      <message desc="Describes an element with the ARIA role article." name="IDS_CHROMEVOX_ARIA_ROLE_ARTICLE">
+      <message desc="Describes an element with the ARIA role article." name="IDS_CHROMEVOX_ROLE_ARTICLE">
         Article
       </message>
-      <message desc="Braille of element with the ARIA role article." name="IDS_CHROMEVOX_ARIA_ROLE_ARTICLE_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_ARTICLE_BRL">
         article
       </message>
-      <message desc="Describes an element with the ARIA role application." name="IDS_CHROMEVOX_ARIA_ROLE_APPLICATION">
+      <message desc="Describes an element with the ARIA role application." name="IDS_CHROMEVOX_ROLE_APPLICATION">
         Application
       </message>
-      <message desc="Braille of element with the ARIA role application." name="IDS_CHROMEVOX_ARIA_ROLE_APPLICATION_BRL">
+      <message desc="This is an ARIA navigational landmark role name shown on a braille display. When translating, try to find a contracted form of the translation for 'application' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_APPLICATION_BRL">
         app
       </message>
-      <message desc="Describes an element with the ARIA role banner." name="IDS_CHROMEVOX_ARIA_ROLE_BANNER">
+      <message desc="Describes an element with the ARIA role banner." name="IDS_CHROMEVOX_ROLE_BANNER">
         Banner
       </message>
-      <message desc="Braille of element with the ARIA role banner." name="IDS_CHROMEVOX_ARIA_ROLE_BANNER_BRL">
+      <message desc="This is an ARIA navigational landmark role name shown on a braille display. When translating, try to find a contracted form of the translation for 'banner' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_BANNER_BRL">
         bnr
       </message>
-      <message desc="Describes an element with the ARIA role columnheader." name="IDS_CHROMEVOX_ARIA_ROLE_COLUMNHEADER">
+      <message desc="Describes an element with the ARIA role columnheader." name="IDS_CHROMEVOX_ROLE_COLUMNHEADER">
         Column header
       </message>
-      <message desc="Braille of element with the ARIA role columnheader." name="IDS_CHROMEVOX_ARIA_ROLE_COLUMNHEADER_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'column header' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_COLUMNHEADER_BRL">
         colhdr
       </message>
-      <message desc="Describes an element with the ARIA role complementary." name="IDS_CHROMEVOX_ARIA_ROLE_COMPLEMENTARY">
+      <message desc="Describes an element with the ARIA role complementary." name="IDS_CHROMEVOX_ROLE_COMPLEMENTARY">
         Complementary
       </message>
-      <message desc="Braille of element with the ARIA role complementary." name="IDS_CHROMEVOX_ARIA_ROLE_COMPLEMENTARY_BRL">
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_COMPLEMENTARY_BRL">
         complementary
       </message>
-      <message desc="Describes an element with the ARIA role contentinfo." name="IDS_CHROMEVOX_ARIA_ROLE_CONTENTINFO">
+      <message desc="Describes an element with the ARIA role contentinfo." name="IDS_CHROMEVOX_ROLE_CONTENTINFO">
         Content info
       </message>
-      <message desc="Braille of element with the ARIA role contentinfo." name="IDS_CHROMEVOX_ARIA_ROLE_CONTENTINFO_BRL">
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, try to find a contracted form of the translation for 'content info' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_CONTENTINFO_BRL">
         cntntinfo
       </message>
-      <message desc="Describes an element with the ARIA role definition." name="IDS_CHROMEVOX_ARIA_ROLE_DEFINITION">
+      <message desc="Describes an element with the ARIA role definition." name="IDS_CHROMEVOX_ROLE_DEFINITION">
         Definition
       </message>
-      <message desc="Braille of element with the ARIA role definition." name="IDS_CHROMEVOX_ARIA_ROLE_DEFINITION_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'definition' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DEFINITION_BRL">
         def
       </message>
-      <message desc="Describes an element with the ARIA role directory." name="IDS_CHROMEVOX_ARIA_ROLE_DIRECTORY">
+      <message desc="Describes an element with the ARIA role directory." name="IDS_CHROMEVOX_ROLE_DIRECTORY">
         Directory
       </message>
-      <message desc="Braille of element with the ARIA role directory." name="IDS_CHROMEVOX_ARIA_ROLE_DIRECTORY_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'directory' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DIRECTORY_BRL">
         dir
       </message>
-      <message desc="Describes an element with the ARIA role document." name="IDS_CHROMEVOX_ARIA_ROLE_DOCUMENT">
+      <message desc="Describes an element with the ARIA role document." name="IDS_CHROMEVOX_ROLE_DOCUMENT">
         Document
       </message>
-      <message desc="Braille of element with the ARIA role document." name="IDS_CHROMEVOX_ARIA_ROLE_DOCUMENT_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'document' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_DOCUMENT_BRL">
         doc
       </message>
-      <message desc="Describes an element with the ARIA role form." name="IDS_CHROMEVOX_ARIA_ROLE_FORM">
+      <message desc="Describes an element with the ARIA role form." name="IDS_CHROMEVOX_ROLE_FORM">
         Form
       </message>
-      <message desc="Braille of element with the ARIA role form." name="IDS_CHROMEVOX_ARIA_ROLE_FORM_BRL">
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_FORM_BRL">
         form
       </message>
-      <message desc="Describes an element with the ARIA role group." name="IDS_CHROMEVOX_ARIA_ROLE_GROUP">
+      <message desc="Describes an element with the ARIA role group." name="IDS_CHROMEVOX_ROLE_GROUP">
         Group
       </message>
-      <message desc="Braille of element with the ARIA role group." name="IDS_CHROMEVOX_ARIA_ROLE_GROUP_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'group' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_GROUP_BRL">
         grp
       </message>
-      <message desc="Describes an element with the ARIA role heading." name="IDS_CHROMEVOX_ARIA_ROLE_HEADING">
+      <message desc="Describes an element with the ARIA role heading." name="IDS_CHROMEVOX_ROLE_HEADING">
         Heading
       </message>
-      <message desc="Braille of element with the ARIA role heading." name="IDS_CHROMEVOX_ARIA_ROLE_HEADING_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'heading' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_HEADING_BRL">
         hdng
       </message>
-      <message desc="Describes an element with the ARIA role img." name="IDS_CHROMEVOX_ARIA_ROLE_IMG">
+      <message desc="Describes an element with the ARIA role img." name="IDS_CHROMEVOX_ROLE_IMG">
         Image
       </message>
-      <message desc="Describes an element with the ARIA role img." name="IDS_CHROMEVOX_ARIA_ROLE_IMG_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'image' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_IMG_BRL">
         img
       </message>
-      <message desc="Describes an element with the ARIA role list." name="IDS_CHROMEVOX_ARIA_ROLE_LIST">
+      <message desc="Describes an element with the ARIA role list." name="IDS_CHROMEVOX_ROLE_LIST">
         List
       </message>
-      <message desc="Braille of element with the ARIA role list." name="IDS_CHROMEVOX_ARIA_ROLE_LIST_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LIST_BRL">
         lst
       </message>
-      <message desc="Describes an element with the ARIA role listitem." name="IDS_CHROMEVOX_ARIA_ROLE_LISTITEM">
+      <message desc="Describes an element with the ARIA role listitem." name="IDS_CHROMEVOX_ROLE_LISTITEM">
         List item
       </message>
-      <message desc="Braille of element with the ARIA role listitem." name="IDS_CHROMEVOX_ARIA_ROLE_LISTITEM_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'list item' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_LISTITEM_BRL">
         lstitm
       </message>
-      <message desc="Describes an element with the ARIA role main." name="IDS_CHROMEVOX_ARIA_ROLE_MAIN">
+      <message desc="Describes an element with the ARIA role main." name="IDS_CHROMEVOX_ROLE_MAIN">
         Main
       </message>
-      <message desc="Braille of element with the ARIA role main." name="IDS_CHROMEVOX_ARIA_ROLE_MAIN_BRL">
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_MAIN_BRL">
         main
       </message>
-      <message desc="Describes an element with the ARIA role math." name="IDS_CHROMEVOX_ARIA_ROLE_MATH">
+      <message desc="Describes an element with the ARIA role math." name="IDS_CHROMEVOX_ROLE_MATH">
         Math
       </message>
-      <message desc="Braille of element with the ARIA role math." name="IDS_CHROMEVOX_ARIA_ROLE_MATH_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_MATH_BRL">
         math
       </message>
-      <message desc="Describes an element with the ARIA role navigation." name="IDS_CHROMEVOX_ARIA_ROLE_NAVIGATION">
+      <message desc="Describes an element with the ARIA role navigation." name="IDS_CHROMEVOX_ROLE_NAVIGATION">
         Navigation
       </message>
-      <message desc="Braille of element with the ARIA role navigation." name="IDS_CHROMEVOX_ARIA_ROLE_NAVIGATION_BRL">
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, try to find a contracted form of the translation for 'navigation' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_NAVIGATION_BRL">
         nav
       </message>
-      <message desc="Describes an element with the ARIA role note." name="IDS_CHROMEVOX_ARIA_ROLE_NOTE">
+      <message desc="Describes an element with the ARIA role note." name="IDS_CHROMEVOX_ROLE_NOTE">
         Note
       </message>
-      <message desc="Braille of element with the ARIA role note." name="IDS_CHROMEVOX_ARIA_ROLE_NOTE_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_NOTE_BRL">
         note
       </message>
-      <message desc="Describes an element with the ARIA role region." name="IDS_CHROMEVOX_ARIA_ROLE_REGION">
+      <message desc="Describes an element with the ARIA role region." name="IDS_CHROMEVOX_ROLE_REGION">
         Region
       </message>
-      <message desc="Braille of element with the ARIA role region." name="IDS_CHROMEVOX_ARIA_ROLE_REGION_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'region' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_REGION_BRL">
         rgn
       </message>
-      <message desc="Describes an element with the ARIA role rowheader." name="IDS_CHROMEVOX_ARIA_ROLE_ROWHEADER">
+      <message desc="Describes an element with the ARIA role rowheader." name="IDS_CHROMEVOX_ROLE_ROWHEADER">
         Row header
       </message>
-      <message desc="Braille of element with the ARIA role rowheader." name="IDS_CHROMEVOX_ARIA_ROLE_ROWHEADER_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'row header' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_ROWHEADER_BRL">
         rwhdr
       </message>
-      <message desc="Describes an element with the ARIA role search." name="IDS_CHROMEVOX_ARIA_ROLE_SEARCH">
+      <message desc="Describes an element with the ARIA role search." name="IDS_CHROMEVOX_ROLE_SEARCH">
         Search
       </message>
-      <message desc="Braille of element with the ARIA role search." name="IDS_CHROMEVOX_ARIA_ROLE_SEARCH_BRL">
-        srched
+      <message desc="This is the name of an ARIA navigational landmark role shown on a braille display. When translating, stick to lowercase letters, if applicable." name="IDS_CHROMEVOX_ROLE_SEARCH_BRL">
+        search
       </message>
-      <message desc="Describes an element with the ARIA role separator." name="IDS_CHROMEVOX_ARIA_ROLE_SEPARATOR">
+      <message desc="Describes an element with the ARIA role separator." name="IDS_CHROMEVOX_ROLE_SEPARATOR">
         Separator
       </message>
-      <message desc="Braille of element with the ARIA role separator." name="IDS_CHROMEVOX_ARIA_ROLE_SEPARATOR_BRL">
+      <message desc="This is the name of an ARIA document structure role shown on a braille display. When translating, try to find a contracted form of the translation for 'separator' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_SEPARATOR_BRL">
         seprtr
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=inline." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE">
         Autocompletion inline
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-autocomplete=inline." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields and combo boxes when suggestions on how to complete the field are shown as text after the caret. When translating, try to find a contracted form of the translation for 'autocomplete inline' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_INLINE_BRL">
         autoinl
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=list." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_LIST">
         Autocompletion list
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-autocomplete=list." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_LIST_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields and combo boxes when suggestions on how to complete the field are shown in a list. When translating, try to find a contracted form of the translation for 'autocomplete list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_LIST_BRL">
         autolst
       </message>
       <message desc="Describes an element with the ARIA attribute aria-autocomplete=both." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH">
         Autocompletion inline and list
       </message>
-      <message desc="Brailles an element with the ARIA attribute aria-autocomplete=both." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields and combo boxes when suggestions on how to complete the field are shown in a list and the currently selected value is shown as text after the caret in the input field. When translating, try to find a contracted form of the translation for 'autocomplete inline and list' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_AUTOCOMPLETE_BOTH_BRL">
         autoinl+lst
       </message>
       <message desc="Describes an element with the ARIA attribute aria-checked=true." name="IDS_CHROMEVOX_ARIA_CHECKED_TRUE">
         Checked
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-checked=true." name="IDS_CHROMEVOX_ARIA_CHECKED_TRUE_BRL">
-        x
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-checked=false." name="IDS_CHROMEVOX_ARIA_CHECKED_FALSE">
         Not checked
-      </message>
-      <message desc="Braille of element with the ARIA attribute aria-checked=false." name="IDS_CHROMEVOX_ARIA_CHECKED_FALSE_BRL">
-        ( )
       </message>
       <message desc="Describes an element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED">
         Partially checked
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-checked=mixed." name="IDS_CHROMEVOX_ARIA_CHECKED_MIXED_BRL">
-        (-)
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE">
         Disabled
-      </message>
-      <message desc="Braille of element with the ARIA attribute aria-disabled=true." name="IDS_CHROMEVOX_ARIA_DISABLED_TRUE_BRL">
-        xx
       </message>
       <message desc="Describes an element with the ARIA attribute aria-expanded=true." name="IDS_CHROMEVOX_ARIA_EXPANDED_TRUE">
         Expanded
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-expanded=true." name="IDS_CHROMEVOX_ARIA_EXPANDED_TRUE_BRL">
-        -
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-expanded=false." name="IDS_CHROMEVOX_ARIA_EXPANDED_FALSE">
         Collapsed
-      </message>
-      <message desc="Braille of element with the ARIA attribute aria-expanded=false." name="IDS_CHROMEVOX_ARIA_EXPANDED_FALSE_BRL">
-        +
       </message>
       <message desc="Describes an element with the ARIA attribute aria-invalid=true." name="IDS_CHROMEVOX_ARIA_INVALID_TRUE">
         Invalid input
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-invalid=true." name="IDS_CHROMEVOX_ARIA_INVALID_TRUE_BRL">
-        !
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-invalid=grammar." name="IDS_CHROMEVOX_ARIA_INVALID_GRAMMAR">
         Grammatical mistake detected
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-invalid=grammar." name="IDS_CHROMEVOX_ARIA_INVALID_GRAMMAR_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields that are marked as containing a grammatical mistake. When translating, stick to lowercase." name="IDS_CHROMEVOX_ARIA_INVALID_GRAMMAR_BRL">
         grammatical mistake
       </message>
       <message desc="Describes an element with the ARIA attribute aria-invalid=spelling." name="IDS_CHROMEVOX_ARIA_INVALID_SPELLING">
         Spelling mistake detected
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-invalid=spelling." name="IDS_CHROMEVOX_ARIA_INVALID_SPELLING_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields that are marked as containing a misspelling. When translating, stick to lowercase." name="IDS_CHROMEVOX_ARIA_INVALID_SPELLING_BRL">
         misspelled
       </message>
       <message desc="Describes an element with the ARIA attribute aria-multiline=true." name="IDS_CHROMEVOX_ARIA_MULTILINE_TRUE">
         Multi line
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-multiline=true." name="IDS_CHROMEVOX_ARIA_MULTILINE_TRUE_BRL">
+      <message desc="Shown on a braille display as a suffix to text fields that accept multiline input. When translating, try to find a contracted form of the translation for 'multiple lines' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_MULTILINE_TRUE_BRL">
         multln
       </message>
       <message desc="Describes an element with the ARIA attribute aria-multiselectable=true." name="IDS_CHROMEVOX_ARIA_MULTISELECTABLE_TRUE">
         Multi select
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-multiselectable=true." name="IDS_CHROMEVOX_ARIA_MULTISELECTABLE_TRUE_BRL">
+      <message desc="Shown on a braille display for list boxes that allow more than one selected list item. When translating, try to find a contracted form of the translation for 'multiple selections' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_MULTISELECTABLE_TRUE_BRL">
         multsel
       </message>
       <message desc="Describes an element with the ARIA attribute aria-pressed=true." name="IDS_CHROMEVOX_ARIA_PRESSED_TRUE">
         Pressed
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-pressed=true." name="IDS_CHROMEVOX_ARIA_PRESSED_TRUE_BRL">
-        =
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-pressed=false." name="IDS_CHROMEVOX_ARIA_PRESSED_FALSE">
         Not pressed
-      </message>
-      <message desc="Braille of element with the ARIA attribute aria-pressed=false." name="IDS_CHROMEVOX_ARIA_PRESSED_FALSE_BRL">
-        ''' '''
       </message>
       <message desc="Describes an element with the ARIA attribute aria-pressed=mixed." name="IDS_CHROMEVOX_ARIA_PRESSED_MIXED">
         Partially pressed
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-pressed=mixed." name="IDS_CHROMEVOX_ARIA_PRESSED_MIXED_BRL">
-        -
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-readonly=true." name="IDS_CHROMEVOX_ARIA_READONLY_TRUE">
         Read only
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-readonly=true." name="IDS_CHROMEVOX_ARIA_READONLY_TRUE_BRL">
+      <message desc="Shown on a braille display for read-only controls. When translating, try to find a contracted form of the translation for 'read only' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_READONLY_TRUE_BRL">
         rdonly
       </message>
       <message desc="Describes an element with the ARIA attribute aria-required=true." name="IDS_CHROMEVOX_ARIA_REQUIRED_TRUE">
         Required
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-required=true." name="IDS_CHROMEVOX_ARIA_REQUIRED_TRUE_BRL">
+      <message desc="Shown on a braille display for required fields. When translating, try to find a contracted form of the translation for 'required' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ARIA_REQUIRED_TRUE_BRL">
         rq
       </message>
       <message desc="Describes an element with the ARIA attribute aria-selected=true." name="IDS_CHROMEVOX_ARIA_SELECTED_TRUE">
         Selected
       </message>
-      <message desc="Braille of element with the ARIA attribute aria-selected=true." name="IDS_CHROMEVOX_ARIA_SELECTED_TRUE_BRL">
-        (x)
-      </message>
       <message desc="Describes an element with the ARIA attribute aria-selected=false." name="IDS_CHROMEVOX_ARIA_SELECTED_FALSE">
         Not selected
-      </message>
-      <message desc="Braille of element with the ARIA attribute aria-selected=false." name="IDS_CHROMEVOX_ARIA_SELECTED_FALSE_BRL">
-        ( )
-      </message>
-      <message desc="Spoken to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK">
-        Link
       </message>
       <message desc="Spoken to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK">
         Visited link
       </message>
+      <message desc="Shown on a braille display as a suffix to visited links in a document. When translating, try to find a contracted form of the translation for 'visited link' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_VISITED_LINK_BRL">
+        vlnk
+      </message>
       <message desc="Spoken to describe the visited state (e.g. for links)." name="IDS_CHROMEVOX_VISITED_STATE">
         Visited
       </message>
-      <message desc="Brailled to describe the visited state (e.g. for links)." name="IDS_CHROMEVOX_VISITED_STATE_BRL">
+      <message desc="Shown on a braille display for widget in the visited state (e.g. for links). When translating, try to find a contracted form of the translation for 'visited' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_VISITED_STATE_BRL">
         vtd
-      </message>
-      <message desc="Brailled to describe an &lt;a&gt; tag." name="IDS_CHROMEVOX_TAG_LINK_BRL">
-        lnk
-      </message>
-      <message desc="Brailled to describe a visited link." name="IDS_CHROMEVOX_VISITED_LINK_BRL">
-        vlnk
-      </message>
-      <message desc="Spoken to describe a &lt;button&gt; tag." name="IDS_CHROMEVOX_TAG_BUTTON">
-        Button
-      </message>
-      <message desc="Brailled to describe a &lt;button&gt; tag." name="IDS_CHROMEVOX_TAG_BUTTON_BRL">
-        btn
       </message>
       <message desc="Spoken to describe a &lt;h1&gt; tag." name="IDS_CHROMEVOX_TAG_H1">
         Heading 1
       </message>
-      <message desc="Brailled to describe a &lt;h1&gt; tag." name="IDS_CHROMEVOX_TAG_H1_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 1 in a document. When translating, try to find a contracted form of the translation for 'heading 1' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H1_BRL">
         h1
       </message>
       <message desc="Spoken to describe a &lt;h2&gt; tag." name="IDS_CHROMEVOX_TAG_H2">
         Heading 2
       </message>
-      <message desc="Brailled to describe a &lt;h2&gt; tag." name="IDS_CHROMEVOX_TAG_H2_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 2 in a document. When translating, try to find a contracted form of the translation for 'heading 2' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H2_BRL">
         h2
       </message>
       <message desc="Spoken to describe a &lt;h3&gt; tag." name="IDS_CHROMEVOX_TAG_H3">
         Heading 3
       </message>
-      <message desc="Brailled to describe a &lt;h3&gt; tag." name="IDS_CHROMEVOX_TAG_H3_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 3 in a document. When translating, try to find a contracted form of the translation for 'heading 3' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H3_BRL">
         h3
       </message>
       <message desc="Spoken to describe a &lt;h4&gt; tag." name="IDS_CHROMEVOX_TAG_H4">
         Heading 4
       </message>
-      <message desc="Brailled to describe a &lt;h4&gt; tag." name="IDS_CHROMEVOX_TAG_H4_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 4 in a document. When translating, try to find a contracted form of the translation for 'heading 4' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H4_BRL">
         h4
       </message>
       <message desc="Spoken to describe a &lt;h5&gt; tag." name="IDS_CHROMEVOX_TAG_H5">
         Heading 5
       </message>
-      <message desc="Brailled to describe a &lt;h5&gt; tag." name="IDS_CHROMEVOX_TAG_H5_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 5 in a document. When translating, try to find a contracted form of the translation for 'heading 5' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H5_BRL">
         h5
       </message>
       <message desc="Spoken to describe a &lt;h6&gt; tag." name="IDS_CHROMEVOX_TAG_H6">
         Heading 6
       </message>
-      <message desc="Brailled to describe a &lt;h6&gt; tag." name="IDS_CHROMEVOX_TAG_H6_BRL">
+      <message desc="Shown on a braille display to describe a heading on level 6 in a document. When translating, try to find a contracted form of the translation for 'heading 6' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_TAG_H6_BRL">
         h6
       </message>
       <message desc="Spoken to describe a &lt;li&gt; tag." name="IDS_CHROMEVOX_TAG_LI">
@@ -1607,9 +1520,6 @@
       <message desc="Spoken to describe a &lt;time&gt; tag." name="IDS_CHROMEVOX_TAG_TIME">
         Time
       </message>
-      <message desc="Brailled to describe a &lt;time&gt; tag." name="IDS_CHROMEVOX_TAG_TIME_BRL">
-        ''' '''
-      </message>
       <message desc="Spoken to describe a &lt;mark&gt; tag." name="IDS_CHROMEVOX_TAG_MARK">
         Mark
       </message>
@@ -1628,18 +1538,6 @@
       <message desc="Brailled to describe a &lt;audio&gt; tag." name="IDS_CHROMEVOX_TAG_AUDIO_BRL">
         audio
       </message>
-      <message desc="Describes an &lt;input&gt; element with type=button." name="IDS_CHROMEVOX_INPUT_TYPE_BUTTON">
-        Button
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=button." name="IDS_CHROMEVOX_INPUT_TYPE_BUTTON_BRL">
-        btn
-      </message>
-      <message desc="Describes an &lt;input&gt; element with type=checkbox." name="IDS_CHROMEVOX_INPUT_TYPE_CHECKBOX">
-        Check box
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=checkbox." name="IDS_CHROMEVOX_INPUT_TYPE_CHECKBOX_BRL">
-        chk
-      </message>
       <message desc="Describes an &lt;input&gt; element with type=color." name="IDS_CHROMEVOX_INPUT_TYPE_COLOR">
         Color picker
       </message>
@@ -1652,7 +1550,7 @@
       <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_DATETIME_BRL">
         date time
       </message>
-      <message desc="Describes an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_TIME">
+      <message desc="Describes an &lt;input&gt; element with type=time." name="IDS_CHROMEVOX_INPUT_TYPE_TIME">
         Time control
       </message>
       <message desc="Brailles an &lt;input&gt; element with type=datetime." name="IDS_CHROMEVOX_INPUT_TYPE_TIME_BRL">
@@ -1673,7 +1571,7 @@
       <message desc="Describes an &lt;input&gt; element with type=email." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL">
         Edit text, email entry
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=email." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
+      <message desc="Shown on a braille display for a text field that accept an email address as input. When translating, keep the @ sign and try to find an abbreviation for 'edit field'. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_EMAIL_BRL">
         @ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE">
@@ -1682,88 +1580,58 @@
       <message desc="Brailles an &lt;input&gt; element with type=file." name="IDS_CHROMEVOX_INPUT_TYPE_FILE_BRL">
         file
       </message>
-      <message desc="Describes an &lt;input&gt; element with type=image." name="IDS_CHROMEVOX_INPUT_TYPE_IMAGE">
-        Button
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=image." name="IDS_CHROMEVOX_INPUT_TYPE_IMAGE_BRL">
-        btn
-      </message>
       <message desc="Describes an &lt;input&gt; element with type=month." name="IDS_CHROMEVOX_INPUT_TYPE_MONTH">
         Month control
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=month." name="IDS_CHROMEVOX_INPUT_TYPE_MONTH_BRL">
+      <message desc="Shown on a braille display for a control allowing the user to input a month value. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_MONTH_BRL">
         month
       </message>
       <message desc="Describes an &lt;input&gt; element with type=number." name="IDS_CHROMEVOX_INPUT_TYPE_NUMBER">
         Edit text numeric only
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=number." name="IDS_CHROMEVOX_INPUT_TYPE_NUMBER_BRL">
+      <message desc="Shown on a braille display for a text field that accept numeric input only. When translating, keep the # sign, if it can be used to represent numbers in the target language and try to find an abbreviation for 'edit field'. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_NUMBER_BRL">
         #ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=password." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD">
         Password edit text
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=password." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD_BRL">
+      <message desc="Shown on a braille display for a password text field. When translating, try to find a contracted form of the translation of 'password edit' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_PASSWORD_BRL">
         pwded
-      </message>
-      <message desc="Describes an &lt;input&gt; element with type=radio." name="IDS_CHROMEVOX_INPUT_TYPE_RADIO">
-        Radio button
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=radio." name="IDS_CHROMEVOX_INPUT_TYPE_RADIO_BRL">
-        rbtn
-      </message>
-      <message desc="Describes an &lt;input&gt; element with type=range." name="IDS_CHROMEVOX_INPUT_TYPE_RANGE">
-        Slider
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=range." name="IDS_CHROMEVOX_INPUT_TYPE_RANGE_BRL">
-        sldr
       </message>
       <message desc="Describes an &lt;input&gt; element with type=reset." name="IDS_CHROMEVOX_INPUT_TYPE_RESET">
         Reset
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=reset." name="IDS_CHROMEVOX_INPUT_TYPE_RESET_BRL">
+      <message desc="Shown on a braille display for a reset button. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_RESET_BRL">
         reset
       </message>
       <message desc="Describes an &lt;input&gt; element with type=search." name="IDS_CHROMEVOX_INPUT_TYPE_SEARCH">
         Edit text, search entry
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=search." name="IDS_CHROMEVOX_INPUT_TYPE_SEARCH_BRL">
+      <message desc="Shown on a braille display for an input field of type search. When translating, try to find a contracted form of the translation for 'search edit field' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_SEARCH_BRL">
         srched
-      </message>
-      <message desc="Describes an &lt;input&gt; element with type=submit." name="IDS_CHROMEVOX_INPUT_TYPE_SUBMIT">
-        Button
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=submit." name="IDS_CHROMEVOX_INPUT_TYPE_SUBMIT_BRL">
-        btn
-      </message>
-      <message desc="Describes an &lt;input&gt; element with type=tel." name="IDS_CHROMEVOX_INPUT_TYPE_TEL">
-        Edit text, number entry
-      </message>
-      <message desc="Brailles an &lt;input&gt; element with type=tel." name="IDS_CHROMEVOX_INPUT_TYPE_TEL_BRL">
-        #ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=text." name="IDS_CHROMEVOX_INPUT_TYPE_TEXT">
         Edit text
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=text." name="IDS_CHROMEVOX_INPUT_TYPE_TEXT_BRL">
+      <message desc="Shown on a braille display to describe a text field. When translating, try to find a contracted form of the translation for 'edit field' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_TEXT_BRL">
         ed
       </message>
       <message desc="Describes an &lt;input&gt; element with type=url." name="IDS_CHROMEVOX_INPUT_TYPE_URL">
         Edit text, URL entry
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=url." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
+      <message desc="Shown on a braille display to describe a text field for entering a URL. When translating, try to find a contracted form of the translation for 'url edit field' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INPUT_TYPE_URL_BRL">
         urled
       </message>
       <message desc="Describes an &lt;input&gt; element with type=week." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK">
         Week of the year control
       </message>
-      <message desc="Brailles an &lt;input&gt; element with type=week." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK_BRL">
+      <message desc="Shown on a braille display to describe a widget for entering a week number. When translating, stick to lowercase." name="IDS_CHROMEVOX_INPUT_TYPE_WEEK_BRL">
         week
       </message>
       <message desc="Spoken to describe a &lt;a&gt; tag with a link to an internal anchor." name="IDS_CHROMEVOX_INTERNAL_LINK">
         Internal link
       </message>
-      <message desc="Brailles to describe a &lt;a&gt; tag with a link to an internal anchor." name="IDS_CHROMEVOX_INTERNAL_LINK_BRL">
+      <message desc="Shown on a braille display to describe a link to a different part of the same web page. When translating, try to find a contracted form of the translation for 'internal link' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_INTERNAL_LINK_BRL">
         intlnk
       </message>
       <message desc="In an editable text box, describes a blank line." name="IDS_CHROMEVOX_TEXT_BOX_BLANK">
@@ -1792,9 +1660,6 @@
       </message>
       <message desc="Phrase indicating a menu item has a submenu." name="IDS_CHROMEVOX_HAS_SUBMENU">
         with submenu
-      </message>
-      <message desc="Brailled after an menu is spoken if the menu has a submenu." name="IDS_CHROMEVOX_HAS_SUBMENU_BRL">
-        ->
       </message>
       <message desc="Phrase indicating a control has a pop-up component to it." name="IDS_CHROMEVOX_HAS_POPUP">
         has popup
@@ -2018,7 +1883,7 @@
       <message desc="Spoken to describe the current selection is a Math object." name="IDS_CHROMEVOX_MATH_EXPR">
         Math
       </message>
-      <message desc="Brailled phrase indicating the current selection is a Math object." name="IDS_CHROMEVOX_MATH_EXPR_BRL">
+      <message desc="Brailled phrase indicating the current selection is a Math object. When translating, stick to lowercase." name="IDS_CHROMEVOX_MATH_EXPR_BRL">
         math
       </message>
       <message desc="Describes an element with the ARIA role math." name="IDS_CHROMEVOX_NOT_INSIDE_MATH">
@@ -2411,7 +2276,7 @@
       <message desc="Spoken to describe an access key.  An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated." name="IDS_CHROMEVOX_ACCESS_KEY">
         has access key, <ph name="key">$1</ph>
       </message>
-      <message desc="Brailled to describe an access key.  An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated." name="IDS_CHROMEVOX_ACCESS_KEY_BRL">
+      <message desc="Brailled to describe an access key. An access key consists of a single letter. When pressed along with a modifier (usually alt, but depends on platform), a targetted node will be activated. When translating, stick to lower case." name="IDS_CHROMEVOX_ACCESS_KEY_BRL">
         access key:<ph name="key">$1</ph>
       </message>
       <message desc="A dictionary mapping locale identifiers to their corresponding language names. The format is the following: { ..., 'en_US': 'English (United States)', ...}. Translation only needed for the language and country names (e.g. English (United States)). All other strings must be kept as is." name="IDS_CHROMEVOX_LOCALE_DICT">

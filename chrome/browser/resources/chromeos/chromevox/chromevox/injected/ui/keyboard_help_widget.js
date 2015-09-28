@@ -33,7 +33,7 @@ cvox.KeyboardHelpWidget = function() {
       if (!id) {
         return;
       }
-      message = cvox.ChromeVox.msgs.getMsg(id);
+      message = Msgs.getMsg(id);
     } catch (e) {
       // TODO(dtseng): We have some commands that don't have valid message id's.
     }

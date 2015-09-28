@@ -58,25 +58,19 @@ cvox.BrailleUtil.CONTAINER = [
  */
 cvox.BrailleUtil.TEMPLATE = {
   'base': 'c n v r s',
-  'aria_role_alert': 'r: n',
-  'aria_role_button': 'n r s',
-  'aria_role_checkbox': 'n r s',
-  'aria_role_menuitemcheckbox': 'n r s',
-  'aria_role_menuitemradio': 'n r s',
-  'aria_role_radio': 'n r s',
-  'aria_role_textbox': 'n: v r s',
-  'input_type_button': 'n r s',
-  'input_type_checkbox': 'n r s',
+  'role_alert': 'r: n',
+  'role_button': 'n r s',
+  'role_checkbox': 'n r s',
+  'role_menuitemcheckbox': 'n r s',
+  'role_menuitemradio': 'n r s',
+  'role_radio': 'n r s',
+  'role_textbox': 'n: v r s',
   'input_type_email': 'n: v r s',
   'input_type_number': 'n: v r s',
   'input_type_password': 'n: v r s',
-  'input_type_radio': 'n r s',
   'input_type_search': 'n: v r s',
-  'input_type_submit': 'n r s',
   'input_type_text': 'n: v r s',
-  'input_type_tel': 'n: v r s',
   'input_type_url': 'n: v r s',
-  'tag_button': 'n r s',
   'tag_textarea': 'n: v r s'
 };
 
@@ -111,7 +105,7 @@ cvox.BrailleUtil.getRoleMsg = function(node) {
     roleMsg = cvox.DomUtil.collapseWhitespace(roleMsg);
   }
   if (roleMsg && (roleMsg.length > 0)) {
-    if (cvox.ChromeVox.msgs.getMsg(roleMsg + '_brl')) {
+    if (Msgs.getMsg(roleMsg + '_brl')) {
       roleMsg += '_brl';
     }
   }
@@ -138,7 +132,7 @@ cvox.BrailleUtil.expandStateMsgs_ = function(stateMsgs) {
     // resulting string is empty. To avoid this, we pass a dummy
     // substitution string array here.
     var dummySubs = ['dummy', 'dummy', 'dummy'];
-    if (cvox.ChromeVox.msgs.getMsg(state[0] + '_brl', dummySubs)) {
+    if (Msgs.getMsg(state[0] + '_brl', dummySubs)) {
       state[0] += '_brl';
     }
   });
@@ -160,7 +154,7 @@ cvox.BrailleUtil.getContainer = function(prev, node) {
   for (var i = 0, container; container = ancestors[i]; i++) {
     var msg = cvox.BrailleUtil.getRoleMsg(container);
     if (msg && cvox.BrailleUtil.CONTAINER.indexOf(msg) != -1) {
-      return cvox.ChromeVox.msgs.getMsg(msg);
+      return Msgs.getMsg(msg);
     }
   }
   return '';
@@ -250,8 +244,8 @@ cvox.BrailleUtil.getTemplated = function(prev, node, opt_override) {
   }
   var role = opt_override.role || '';
   if (!role && roleMsg) {
-    role = cvox.ChromeVox.msgs.getMsg(roleMsg + '_brl') ||
-        cvox.ChromeVox.msgs.getMsg(roleMsg);
+    role = Msgs.getMsg(roleMsg + '_brl') ||
+        Msgs.getMsg(roleMsg);
   }
 
   var templated = new cvox.Spannable();

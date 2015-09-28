@@ -560,7 +560,7 @@ cvox.ChromeVoxEditableContentEditable.prototype.changed =
   }
   // Take over here if we can't describe a change; assume it's a blank line.
   if (!this.shouldDescribeChange(evt)) {
-    this.speak(cvox.ChromeVox.msgs.getMsg('text_box_blank'), true);
+    this.speak(Msgs.getMsg('text_box_blank'), true);
     if (this.brailleHandler_) {
       this.brailleHandler_.changed('' /*line*/, 0 /*start*/, 0 /*end*/,
                                    true /*multiline*/, null /*element*/,

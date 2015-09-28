@@ -40,5 +40,5 @@ cvox.CharacterWalker.prototype.getDescription = function(prevSel, sel) {
  * @override
  */
 cvox.CharacterWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('character_granularity');
+  return Msgs.getMsg('character_granularity');
 };

@@ -7,39 +7,42 @@
  * @fileoverview Testing stub for messages.
  */
 
-goog.provide('cvox.TestMsgs');
+goog.provide('TestMsgs');
 
-goog.require('cvox.Msgs');
+goog.require('Msgs');
 goog.require('cvox.TestMessages');
-
 
 /**
  * @constructor
- * @extends {cvox.Msgs}
  */
-cvox.TestMsgs = function() {
-  cvox.Msgs.call(this);
-};
-goog.inherits(cvox.TestMsgs, cvox.Msgs);
-
+TestMsgs = function() {};
 
 /**
- * @override
+ * @type {Object<string>}
  */
-cvox.TestMsgs.prototype.getLocale = function() {
+TestMsgs.Untranslated = Msgs.Untranslated;
+
+/**
+ * @return {string} The locale.
+ */
+TestMsgs.getLocale = function() {
   return 'testing';
 };
 
-
 /**
- * @override
+ * @param {string} messageId
+ * @param {Array<string>=} opt_subs
+ * @return {string}
  */
-cvox.TestMsgs.prototype.getMsg = function(messageId, opt_subs) {
+TestMsgs.getMsg = function(messageId, opt_subs) {
   if (!messageId) {
     throw Error('Message id required');
   }
-  var message = cvox.TestMessages[('chromevox_' + messageId).toUpperCase()];
-  if (message == undefined) {
+  var message = TestMsgs.Untranslated[messageId.toUpperCase()];
+  if (message !== undefined)
+    return message;
+  message = cvox.TestMessages[('chromevox_' + messageId).toUpperCase()];
+  if (message === undefined) {
     throw Error('missing-msg: ' + messageId);
   }
 
@@ -52,3 +55,9 @@ cvox.TestMsgs.prototype.getMsg = function(messageId, opt_subs) {
   }
   return messageString;
 };
+
+/**
+ * @param {number} num
+ * @return {string}
+ */
+TestMsgs.getNumber = Msgs.getNumber;

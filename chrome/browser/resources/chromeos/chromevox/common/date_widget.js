@@ -4,6 +4,8 @@
 
 goog.provide('cvox.ChromeVoxHTMLDateWidget');
 
+goog.require('Msgs');
+
 /**
  * @fileoverview Gives the user spoken feedback as they interact with the date
  * widget (input type=date).
@@ -18,7 +20,7 @@ goog.provide('cvox.ChromeVoxHTMLDateWidget');
  * @param {Element} dateElem The time widget element.
  * @param {cvox.TtsInterface} tts The TTS object from ChromeVox.
  */
-cvox.ChromeVoxHTMLDateWidget = function(dateElem, tts){
+cvox.ChromeVoxHTMLDateWidget = function(dateElem, tts) {
   var self = this;
   /**
    * Currently selected field in the widget.
@@ -76,10 +78,10 @@ cvox.ChromeVoxHTMLDateWidget = function(dateElem, tts){
   // Use listeners to make this work when running tests inside of ChromeVox.
   this.keyListener_ = function(evt) {
     self.eventHandler_(evt);
-  }
+  };
   this.blurListener_ = function(evt) {
     self.shutdown();
-  }
+  };
 
   // Ensure we have a reasonable value to start with.
   if (this.dateElem_.value.length == 0) {
@@ -138,16 +140,16 @@ cvox.ChromeVoxHTMLDateWidget.prototype.forceInitTime_ = function() {
       break;
     case 'week':
       // Based on info from: http://www.merlyn.demon.co.uk/weekcalc.htm#WNR
-      currentDate.setHours(0,0,0);
+      currentDate.setHours(0, 0, 0);
       // Set to nearest Thursday: current date + 4 - current day number
       // Make Sunday's day number 7
       currentDate.setDate(
-          currentDate.getDate() + 4 - (currentDate.getDay()||7));
+          currentDate.getDate() + 4 - (currentDate.getDay() || 7));
       // Get first day of year
-      var yearStart = new Date(currentDate.getFullYear(),0,1);
+      var yearStart = new Date(currentDate.getFullYear(), 0, 1);
       // Calculate full weeks to nearest Thursday
       var weekString =
-          Math.ceil(( ( (currentDate - yearStart) / 86400000) + 1)/7) + '';
+          Math.ceil((((currentDate - yearStart) / 86400000) + 1) / 7) + '';
       if (weekString.length < 2) {
         weekString = '0' + weekString; // Week format is WXX.
       }
@@ -200,8 +202,8 @@ cvox.ChromeVoxHTMLDateWidget.prototype.handlePosChange_ = function() {
  * @param {boolean} shouldSpeakLabel Whether or not to speak the label.
  */
 cvox.ChromeVoxHTMLDateWidget.prototype.update_ = function(shouldSpeakLabel) {
-  var splitDate = this.dateElem_.value.split("-");
-  if (splitDate.length < 1){
+  var splitDate = this.dateElem_.value.split('-');
+  if (splitDate.length < 1) {
     this.forceInitTime_();
     return;
   }
@@ -222,7 +224,7 @@ cvox.ChromeVoxHTMLDateWidget.prototype.update_ = function(shouldSpeakLabel) {
     month = parseInt(splitDate[1], 10);
   }
 
-  var changeMessage = ''
+  var changeMessage = '';
 
   if (shouldSpeakLabel) {
     changeMessage = cvox.DomUtil.getName(this.dateElem_, true, true) + '\n';
@@ -230,7 +232,7 @@ cvox.ChromeVoxHTMLDateWidget.prototype.update_ = function(shouldSpeakLabel) {
 
   if (week != this.pWeek_) {
     changeMessage = changeMessage +
-        cvox.ChromeVox.msgs.getMsg('datewidget_week') + week + '\n';
+        Msgs.getMsg('datewidget_week') + week + '\n';
     this.pWeek_ = week;
   }
 
@@ -238,40 +240,40 @@ cvox.ChromeVoxHTMLDateWidget.prototype.update_ = function(shouldSpeakLabel) {
     var monthName = '';
     switch (month) {
       case 1:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_january');
+        monthName = Msgs.getMsg('datewidget_january');
         break;
       case 2:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_february');
+        monthName = Msgs.getMsg('datewidget_february');
         break;
       case 3:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_march');
+        monthName = Msgs.getMsg('datewidget_march');
         break;
       case 4:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_april');
+        monthName = Msgs.getMsg('datewidget_april');
         break;
       case 5:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_may');
+        monthName = Msgs.getMsg('datewidget_may');
         break;
       case 6:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_june');
+        monthName = Msgs.getMsg('datewidget_june');
         break;
       case 7:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_july');
+        monthName = Msgs.getMsg('datewidget_july');
         break;
       case 8:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_august');
+        monthName = Msgs.getMsg('datewidget_august');
         break;
       case 9:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_september');
+        monthName = Msgs.getMsg('datewidget_september');
         break;
       case 10:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_october');
+        monthName = Msgs.getMsg('datewidget_october');
         break;
       case 11:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_november');
+        monthName = Msgs.getMsg('datewidget_november');
         break;
       case 12:
-        monthName = cvox.ChromeVox.msgs.getMsg('datewidget_december');
+        monthName = Msgs.getMsg('datewidget_december');
         break;
     }
     changeMessage = changeMessage + monthName + '\n';

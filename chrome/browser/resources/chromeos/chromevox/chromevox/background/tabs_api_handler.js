@@ -33,7 +33,7 @@ cvox.TabsApiHandler = function(tts, braille, earcons) {
   /** @type {cvox.AbstractEarcons} @private */
   this.earcons_ = earcons;
   /** @type {function(string, Array<string>=)} @private */
-  this.msg_ = cvox.ChromeVox.msgs.getMsg.bind(cvox.ChromeVox.msgs);
+  this.msg_ = Msgs.getMsg.bind(Msgs);
   /**
    * Tracks whether the active tab has finished loading.
    * @type {boolean}

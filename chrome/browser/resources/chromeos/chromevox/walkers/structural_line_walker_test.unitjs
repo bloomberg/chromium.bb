@@ -18,7 +18,7 @@ CvoxStructuralLineWalkerUnitTest.prototype = {
   /** @override */
   closureModuleDeps: [
     'cvox.StructuralLineWalker',
-    'cvox.TestMsgs',
+    'TestMsgs',
   ],
 
   /** @override */
@@ -31,7 +31,7 @@ CvoxStructuralLineWalkerUnitTest.prototype = {
       </p>
       */});
   
-    cvox.ChromeVox.msgs = new cvox.TestMsgs();
+    Msgs = TestMsgs;
   
     this.walker_ = new cvox.StructuralLineWalker();
   },

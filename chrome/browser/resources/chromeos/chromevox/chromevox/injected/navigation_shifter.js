@@ -129,7 +129,7 @@ cvox.NavigationShifter.prototype.sync = function(sel) {
  * @override
  */
 cvox.NavigationShifter.prototype.getName = function() {
-  return cvox.ChromeVox.msgs.getMsg('navigation_shifter');
+  return Msgs.getMsg('navigation_shifter');
 };
 
 

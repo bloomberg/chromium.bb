@@ -350,7 +350,7 @@ Background.prototype = {
         current = cursors.Range.fromNode(node);
       } else {
         if (predErrorMsg) {
-          cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(predErrorMsg),
+          cvox.ChromeVox.tts.speak(Msgs.getMsg(predErrorMsg),
                                    cvox.QueueMode.FLUSH);
         }
         return;

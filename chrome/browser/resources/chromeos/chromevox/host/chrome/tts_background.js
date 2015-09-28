@@ -133,7 +133,7 @@ cvox.TtsBackground = function(opt_enableMath) {
      * @const
      */
     this.PHONETIC_MAP_ = /** @type {Object<string>} */(
-        JSON.parse(cvox.ChromeVox.msgs.getMsg('phonetic_map')));
+        JSON.parse(Msgs.getMsg('phonetic_map')));
   } catch (e) {
     console.log('Error; unable to parse phonetic map msg.');
   }
@@ -646,7 +646,7 @@ cvox.TtsBackground.prototype.createPunctuationReplace_ = function(clear) {
     var retain = this.retainPunctuation_.indexOf(match) != -1 ?
         match : ' ';
     return clear ? retain :
-        ' ' + (new goog.i18n.MessageFormat(cvox.ChromeVox.msgs.getMsg(
+        ' ' + (new goog.i18n.MessageFormat(Msgs.getMsg(
                 cvox.AbstractTts.CHARACTER_DICTIONARY[match])))
             .format({'COUNT': 1}) + retain + ' ';
   }, this);

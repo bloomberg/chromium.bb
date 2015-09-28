@@ -56,7 +56,7 @@ cvox.TableWalker.prototype.sync = function(sel) {
 /**
  * @override
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.Msgs.prototype.getMsg does not match formal parameter
+ * Msgs.prototype.getMsg does not match formal parameter
  * found   : Array<number>
  * required: (Array<string>|null|undefined)
  */
@@ -69,7 +69,7 @@ cvox.TableWalker.prototype.getDescription = function(prevSel, sel) {
   var descs = cvox.DescriptionUtil.getCollectionDescription(prevSel, sel);
   if (descs.length == 0) {
     descs.push(new cvox.NavDescription({
-      annotation: cvox.ChromeVox.msgs.getMsg('empty_cell')
+      annotation: Msgs.getMsg('empty_cell')
     }));
   }
   return descs;
@@ -252,10 +252,10 @@ cvox.TableWalker.prototype.getHeaderText_ = function(sel) {
   this.tt.initialize(this.getTableNode_(sel));
   var position = this.tt.findNearestCursor(sel.start.node);
   if (!position) {
-    return cvox.ChromeVox.msgs.getMsg('not_inside_table');
+    return Msgs.getMsg('not_inside_table');
   }
   if (!this.tt.goToCell(position)) {
-    return cvox.ChromeVox.msgs.getMsg('not_inside_table');
+    return Msgs.getMsg('not_inside_table');
   }
   return (
       this.getRowHeaderText_(position) +
@@ -268,7 +268,7 @@ cvox.TableWalker.prototype.getHeaderText_ = function(sel) {
  * @param {!cvox.CursorSelection} sel A valid selection.
  * @return {Array<cvox.NavDescription>} The location description.
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.Msgs.prototype.getMsg does not match
+ * Msgs.prototype.getMsg does not match
  * formal parameter
  * found   : Array<number>
  * required: (Array<string>|null|undefined)
@@ -280,7 +280,7 @@ cvox.TableWalker.prototype.getLocationDescription_ = function(sel) {
     return null;
   }
   return [new cvox.NavDescription({
-    text: cvox.ChromeVox.msgs.getMsg('table_location', locationInfo)
+    text: Msgs.getMsg('table_location', locationInfo)
   })];
 };
 
@@ -300,7 +300,7 @@ cvox.TableWalker.prototype.getRowHeaderText_ = function(position) {
     rowHeaderText += cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(firstCellInRow) + ' ' +
             cvox.DomUtil.getName(firstCellInRow));
-    return cvox.ChromeVox.msgs.getMsg('row_header') + rowHeaderText;
+    return Msgs.getMsg('row_header') + rowHeaderText;
   }
 
   for (var i = 0; i < rowHeaders.length; ++i) {
@@ -309,9 +309,9 @@ cvox.TableWalker.prototype.getRowHeaderText_ = function(position) {
             cvox.DomUtil.getName(rowHeaders[i]));
   }
   if (rowHeaderText == '') {
-    return cvox.ChromeVox.msgs.getMsg('empty_row_header');
+    return Msgs.getMsg('empty_row_header');
   }
-  return cvox.ChromeVox.msgs.getMsg('row_header') + rowHeaderText;
+  return Msgs.getMsg('row_header') + rowHeaderText;
 };
 
 /**
@@ -330,7 +330,7 @@ cvox.TableWalker.prototype.getColHeaderText_ = function(position) {
     colHeaderText += cvox.DomUtil.collapseWhitespace(
         cvox.DomUtil.getValue(firstCellInCol) + ' ' +
         cvox.DomUtil.getName(firstCellInCol));
-    return cvox.ChromeVox.msgs.getMsg('column_header') + colHeaderText;
+    return Msgs.getMsg('column_header') + colHeaderText;
   }
 
   for (var i = 0; i < colHeaders.length; ++i) {
@@ -339,9 +339,9 @@ cvox.TableWalker.prototype.getColHeaderText_ = function(position) {
             cvox.DomUtil.getName(colHeaders[i]));
   }
   if (colHeaderText == '') {
-    return cvox.ChromeVox.msgs.getMsg('empty_row_header');
+    return Msgs.getMsg('empty_row_header');
   }
-  return cvox.ChromeVox.msgs.getMsg('column_header') + colHeaderText;
+  return Msgs.getMsg('column_header') + colHeaderText;
 };
 
 /**
@@ -362,7 +362,7 @@ cvox.TableWalker.prototype.getLocationInfo = function(sel) {
     this.tt.rowCount,
     position[1] + 1,
     this.tt.colCount
-  ].map(function(x) {return cvox.ChromeVox.msgs.getNumber(x);});
+  ].map(function(x) {return Msgs.getNumber(x);});
 };
 
 /**

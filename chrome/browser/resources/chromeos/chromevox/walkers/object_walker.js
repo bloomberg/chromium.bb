@@ -52,5 +52,5 @@ cvox.ObjectWalker.prototype.getBraille = function(prevSel, sel) {
  * @override
  */
 cvox.ObjectWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('object_strategy');
+  return Msgs.getMsg('object_strategy');
 };

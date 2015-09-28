@@ -26,5 +26,5 @@ goog.inherits(cvox.WordWalker, cvox.AbstractSelectionWalker);
  * @override
  */
 cvox.WordWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('word_granularity');
+  return Msgs.getMsg('word_granularity');
 };

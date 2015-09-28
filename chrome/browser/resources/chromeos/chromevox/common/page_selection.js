@@ -45,18 +45,18 @@ cvox.PageSelection.prototype.getDescription =
   if (this.sel_.isReversed() != curSel.isReversed()) {
     // A shrinking selection.
     desc = navShifter.getDescription(curSel, prevSel);
-    desc[0].annotation = cvox.ChromeVox.msgs.getMsg('describe_unselected');
+    desc[0].annotation = Msgs.getMsg('describe_unselected');
     desc[0].pushEarcon(cvox.Earcon.SELECTION_REVERSE);
   } else {
     // A growing selection.
     desc = navShifter.getDescription(prevSel, curSel);
-    desc[0].annotation = cvox.ChromeVox.msgs.getMsg('describe_selected');
+    desc[0].annotation = Msgs.getMsg('describe_selected');
     desc[0].pushEarcon(cvox.Earcon.SELECTION);
     if (!this.wasBegin_ && this.sel_.absEquals(curSel.clone().normalize())) {
       // A selection has inverted across the start cursor. Describe it.
       var prevDesc = navShifter.getDescription(curSel, prevSel);
       prevDesc[0].annotation =
-          cvox.ChromeVox.msgs.getMsg('describe_unselected');
+          Msgs.getMsg('describe_unselected');
       prevDesc[0].pushEarcon(cvox.Earcon.SELECTION_REVERSE);
       prevDesc[0].pushEarcon(cvox.Earcon.WRAP);
       desc = prevDesc.concat(desc);
@@ -76,7 +76,7 @@ cvox.PageSelection.prototype.getDescription =
 cvox.PageSelection.prototype.getFullDescription = function() {
   return [new cvox.NavDescription(
       {text: window.getSelection().toString(),
-       context: cvox.ChromeVox.msgs.getMsg('selection_is')})];
+       context: Msgs.getMsg('selection_is')})];
 };
 
 

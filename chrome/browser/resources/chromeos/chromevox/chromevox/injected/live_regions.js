@@ -336,7 +336,7 @@ cvox.LiveRegions.announceChange = function(
     navDescriptions = [cvox.DescriptionUtil.getDescriptionFromAncestors(
         [node], true, cvox.ChromeVox.verbosity)];
     navDescriptions = [new cvox.NavDescription({
-      context: cvox.ChromeVox.msgs.getMsg('live_regions_removed'), text: ''
+      context: Msgs.getMsg('live_regions_removed'), text: ''
     })].concat(navDescriptions);
   }
 

@@ -338,7 +338,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
   //   - one to speak
 
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(cvox.ChromeVox.msgs.getMsg('dot'))
+    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('dot'))
         .format({'COUNT': 1})), evt.triggeredByUser);
     return;
   }
@@ -346,15 +346,15 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
     // It's currently a cursor.
     if (this.start != this.end) {
       // It was previously a selection, so just announce 'unselected'.
-      this.speak(cvox.ChromeVox.msgs.getMsg('Unselected'), evt.triggeredByUser);
+      this.speak(Msgs.getMsg('Unselected'), evt.triggeredByUser);
     } else if (this.getLineIndex(this.start) !=
         this.getLineIndex(evt.start)) {
       // Moved to a different line; read it.
       var lineValue = this.getLine(this.getLineIndex(evt.start));
       if (lineValue == '') {
-        lineValue = cvox.ChromeVox.msgs.getMsg('text_box_blank');
+        lineValue = Msgs.getMsg('text_box_blank');
       } else if (/^\s+$/.test(lineValue)) {
-        lineValue = cvox.ChromeVox.msgs.getMsg('text_box_whitespace');
+        lineValue = Msgs.getMsg('text_box_whitespace');
       }
       this.speak(lineValue, evt.triggeredByUser);
     } else if (this.start == evt.start + 1 ||
@@ -363,10 +363,10 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
       if (!cvox.ChromeVoxEditableTextBase.useIBeamCursor) {
         if (evt.start == this.value.length) {
           if (cvox.ChromeVox.verbosity == cvox.VERBOSITY_VERBOSE) {
-            this.speak(cvox.ChromeVox.msgs.getMsg('end_of_text_verbose'),
+            this.speak(Msgs.getMsg('end_of_text_verbose'),
                        evt.triggeredByUser);
           } else {
-            this.speak(cvox.ChromeVox.msgs.getMsg('end_of_text_brief'),
+            this.speak(Msgs.getMsg('end_of_text_brief'),
                        evt.triggeredByUser);
           }
         } else {
@@ -396,29 +396,29 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
       // It was previously a cursor.
       this.speak(this.value.substr(evt.start, evt.end - evt.start),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('selected'));
+      this.speak(Msgs.getMsg('selected'));
     } else if (this.start == evt.start && this.end < evt.end) {
       this.speak(this.value.substr(this.end, evt.end - this.end),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('added_to_selection'));
+      this.speak(Msgs.getMsg('added_to_selection'));
     } else if (this.start == evt.start && this.end > evt.end) {
       this.speak(this.value.substr(evt.end, this.end - evt.end),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('removed_from_selection'));
+      this.speak(Msgs.getMsg('removed_from_selection'));
     } else if (this.end == evt.end && this.start > evt.start) {
       this.speak(this.value.substr(evt.start, this.start - evt.start),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('added_to_selection'));
+      this.speak(Msgs.getMsg('added_to_selection'));
     } else if (this.end == evt.end && this.start < evt.start) {
       this.speak(this.value.substr(this.start, evt.start - this.start),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('removed_from_selection'));
+      this.speak(Msgs.getMsg('removed_from_selection'));
     } else {
       // The selection changed but it wasn't an obvious extension of
       // a previous selection. Just read the new selection.
       this.speak(this.value.substr(evt.start, evt.end - evt.start),
                  evt.triggeredByUser);
-      this.speak(cvox.ChromeVox.msgs.getMsg('selected'));
+      this.speak(Msgs.getMsg('selected'));
     }
   }
 };
@@ -434,7 +434,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(cvox.ChromeVox.msgs.getMsg('dot'))
+    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('dot'))
         .format({'COUNT': 1})), evt.triggeredByUser, personality);
     return;
   }
@@ -531,7 +531,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
   if (this.multiline) {
     // Fall back to announce deleted but omit the text that was deleted.
     if (evt.value.length < this.value.length) {
-      this.speak(cvox.ChromeVox.msgs.getMsg('text_deleted'),
+      this.speak(Msgs.getMsg('text_deleted'),
                  evt.triggeredByUser, personality);
     }
     // The below is a somewhat loose way to deal with non-standard

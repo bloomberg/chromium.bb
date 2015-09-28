@@ -78,5 +78,5 @@ cvox.SelectWidget.prototype.onNavigate = function() {
  * @override
  */
 cvox.SelectWidget.prototype.getNameMsg = function() {
-  return ['aria_role_menu'];
+  return ['role_menu'];
 };

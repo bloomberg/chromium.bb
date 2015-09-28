@@ -20,12 +20,12 @@ CvoxBrailleUtilUnitTest.prototype = {
     'cvox.BrailleUtil',
     'cvox.CursorSelection',
     'cvox.NavigationShifter',
-    'cvox.TestMsgs',
+    'TestMsgs',
   ],
 
   /** @override */
   setUp: function() {
-    cvox.ChromeVox.msgs = new cvox.TestMsgs();
+    Msgs = TestMsgs;
   },
 
   /**
@@ -359,12 +359,12 @@ TEST_F('CvoxBrailleUtilUnitTest', 'GetTemplatedOverride', function() {
   assertEquals('Menu mnu',
                cvox.BrailleUtil.getTemplated(null, null,
                                              { 'name': 'Menu',
-                                              'roleMsg': 'aria_role_menu' }).
+                                              'roleMsg': 'role_menu' }).
                                                   toString());
   assertEquals('alrt: Watch out!',
               cvox.BrailleUtil.getTemplated(null, null,
                                             { 'name': 'Watch out!',
-                                              'roleMsg': 'aria_role_alert' }).
+                                              'roleMsg': 'role_alert' }).
                                                   toString());
   // Test all properties.  role, if present, overrides roleMsg.
   assertEquals('Name Value Role State',

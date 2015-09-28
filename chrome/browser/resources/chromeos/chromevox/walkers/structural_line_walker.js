@@ -28,7 +28,7 @@ goog.inherits(cvox.StructuralLineWalker, cvox.AbstractSelectionWalker);
  * @override
  */
 cvox.StructuralLineWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('structural_line');
+  return Msgs.getMsg('structural_line');
 };
 
 

@@ -130,7 +130,7 @@ cvox.LayoutLineWalker.prototype.getBraille = function(prevSel, sel) {
  * @override
  */
 cvox.LayoutLineWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('layout_line');
+  return Msgs.getMsg('layout_line');
 };
 
 

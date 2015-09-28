@@ -63,14 +63,14 @@ cvox.TableShifter.prototype.sync = function(sel) {
  * @override
  */
 cvox.TableShifter.prototype.getName = function() {
-  return cvox.ChromeVox.msgs.getMsg('table_shifter');
+  return Msgs.getMsg('table_shifter');
 };
 
 
 /**
  * @override
  * @suppress {checkTypes} actual parameter 2 of
- * cvox.Msgs.prototype.getMsg does not match formal parameter
+ * Msgs.prototype.getMsg does not match formal parameter
  * found   : Array<number>
  * required: (Array<string>|null|undefined)
  */
@@ -87,7 +87,7 @@ cvox.TableShifter.prototype.getDescription = function(prevSel, sel) {
       var locationInfo = this.currentWalker_.getLocationInfo(sel);
       if (locationInfo != null) {
         descs.push(new cvox.NavDescription({
-          context: cvox.ChromeVox.msgs.getMsg('table_location', locationInfo),
+          context: Msgs.getMsg('table_location', locationInfo),
           text: '',
           annotation: summaryText ? summaryText + ' ' : ''
         }));
@@ -95,7 +95,7 @@ cvox.TableShifter.prototype.getDescription = function(prevSel, sel) {
       if (this.currentWalker_.tt.isSpanned()) {
         descs.push(new cvox.NavDescription({
           text: '',
-          annotation: cvox.ChromeVox.msgs.getMsg('spanned')
+          annotation: Msgs.getMsg('spanned')
         }));
       }
       this.begin_ = false;

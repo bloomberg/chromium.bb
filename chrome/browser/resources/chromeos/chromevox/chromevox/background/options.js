@@ -9,6 +9,7 @@
 
 goog.provide('cvox.OptionsPage');
 
+goog.require('Msgs');
 goog.require('cvox.BrailleTable');
 goog.require('cvox.BrailleTranslatorManager');
 goog.require('cvox.ChromeEarcons');
@@ -21,7 +22,6 @@ goog.require('cvox.ExtensionBridge');
 goog.require('cvox.HostFactory');
 goog.require('cvox.KeyMap');
 goog.require('cvox.KeySequence');
-goog.require('cvox.Msgs');
 goog.require('cvox.PlatformFilter');
 goog.require('cvox.PlatformUtil');
 
@@ -61,8 +61,6 @@ cvox.OptionsPage.TEXT_TO_KEYCODE = {
  * @suppress {missingProperties} Property prefs never defined on Window
  */
 cvox.OptionsPage.init = function() {
-  cvox.ChromeVox.msgs = new cvox.Msgs();
-
   cvox.OptionsPage.prefs = chrome.extension.getBackgroundPage().prefs;
   cvox.OptionsPage.populateKeyMapSelect();
   cvox.OptionsPage.addKeys();
@@ -76,7 +74,7 @@ cvox.OptionsPage.init = function() {
     $('brailleWordWrap').checked = items.brailleWordWrap;
   });
 
-  cvox.ChromeVox.msgs.addTranslatedMessagesToDom(document);
+  Msgs.addTranslatedMessagesToDom(document);
   cvox.OptionsPage.hidePlatformSpecifics();
 
   cvox.OptionsPage.update();
@@ -193,11 +191,11 @@ cvox.OptionsPage.addKeys = function() {
 
     var keySeqStr = cvox.KeyUtil.keySequenceToString(this.keySequence, true);
     var announce = keySeqStr.replace(/\+/g,
-        ' ' + cvox.ChromeVox.msgs.getMsg('then') + ' ');
+        ' ' + Msgs.getMsg('then') + ' ');
     announce = announce.replace(/>/g,
-        ' ' + cvox.ChromeVox.msgs.getMsg('followed_by') + ' ');
+        ' ' + Msgs.getMsg('followed_by') + ' ');
     announce = announce.replace('Cvox',
-        ' ' + cvox.ChromeVox.msgs.getMsg('modifier_key') + ' ');
+        ' ' + Msgs.getMsg('modifier_key') + ' ');
 
     // TODO(dtseng): Only basic conflict detection; it does not speak the
     // conflicting command. Nor does it detect prefix conflicts like Cvox+L vs
@@ -206,7 +204,7 @@ cvox.OptionsPage.addKeys = function() {
         this.keySequence)) {
       document.activeElement.value = keySeqStr;
     } else {
-      announce = cvox.ChromeVox.msgs.getMsg('key_conflict', [announce]);
+      announce = Msgs.getMsg('key_conflict', [announce]);
     }
     cvox.OptionsPage.speak(announce, cvox.QueueMode.QUEUE);
     this.prevTime = currentTime;
@@ -311,7 +309,7 @@ cvox.OptionsPage.addKeys = function() {
         // Indicate error and instructions excluding tab.
         if (evt.keyCode != 9) {
           cvox.OptionsPage.speak(
-              cvox.ChromeVox.msgs.getMsg('modifier_entry_error'),
+              Msgs.getMsg('modifier_entry_error'),
               cvox.QueueMode.FLUSH, {});
         }
         this.modifierSeq_ = null;
@@ -335,7 +333,7 @@ cvox.OptionsPage.addKeys = function() {
               cvox.KeyUtil.keySequenceToString(this.modifierSeq_, true, true);
           evt.target.value = modifierStr;
           cvox.OptionsPage.speak(
-              cvox.ChromeVox.msgs.getMsg('modifier_entry_set', [modifierStr]),
+              Msgs.getMsg('modifier_entry_set', [modifierStr]),
               cvox.QueueMode.QUEUE);
           localStorage['cvoxKey'] = modifierStr;
           this.modifierSeq_ = null;
@@ -453,7 +451,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       localStorage['brailleTable'] = localStorage['brailleTable6'];
       localStorage['brailleTableType'] = 'brailleTable6';
       tableTypeButton.textContent =
-          cvox.ChromeVox.msgs.getMsg('options_braille_table_type_6');
+          Msgs.getMsg('options_braille_table_type_6');
     } else {
       select6.setAttribute('aria-hidden', 'true');
       select6.setAttribute('tabIndex', -1);
@@ -467,7 +465,7 @@ cvox.OptionsPage.populateBrailleTablesSelect = function() {
       localStorage['brailleTable'] = localStorage['brailleTable8'];
       localStorage['brailleTableType'] = 'brailleTable8';
       tableTypeButton.textContent =
-          cvox.ChromeVox.msgs.getMsg('options_braille_table_type_8');
+          Msgs.getMsg('options_braille_table_type_8');
     }
     cvox.OptionsPage.getBrailleTranslatorManager().refresh();
   };
@@ -546,7 +544,7 @@ cvox.OptionsPage.reset = function() {
   var selectKeyMap = $('cvox_keymaps');
   var id = selectKeyMap.options[selectKeyMap.selectedIndex].id;
 
-  var msgs = cvox.ChromeVox.msgs;
+  var msgs = Msgs;
   var announce = cvox.OptionsPage.prefs.getPrefs()['currentKeyMap'] == id ?
       msgs.getMsg('keymap_reset', [msgs.getMsg(id)]) :
       msgs.getMsg('keymap_switch', [msgs.getMsg(id)]);
@@ -555,7 +553,7 @@ cvox.OptionsPage.reset = function() {
   cvox.OptionsPage.prefs.switchToKeyMap(id);
   $('keysContainer').innerHTML = '';
   cvox.OptionsPage.addKeys();
-  cvox.ChromeVox.msgs.addTranslatedMessagesToDom(document);
+  Msgs.addTranslatedMessagesToDom(document);
 };
 
 /**

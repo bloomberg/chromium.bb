@@ -34,5 +34,5 @@ cvox.RowWalker.prototype.next = function(sel) {
  * @override
  */
 cvox.RowWalker.prototype.getGranularityMsg = function() {
-  return cvox.ChromeVox.msgs.getMsg('row_granularity');
+  return Msgs.getMsg('row_granularity');
 };

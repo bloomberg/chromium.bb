@@ -216,7 +216,7 @@ cvox.DescriptionUtil.getDescriptionFromNavigation =
         prevAncestors, recursive, verbosity);
     if (prevDesc.context && !desc.context) {
       desc.context =
-          cvox.ChromeVox.msgs.getMsg('exited_container', [prevDesc.context]);
+          Msgs.getMsg('exited_container', [prevDesc.context]);
     }
   }
   return [desc];
@@ -376,10 +376,10 @@ cvox.DescriptionUtil.insertCollectionDescription_ = function(descriptions) {
     descriptions.splice(0, 0, new cvox.NavDescription({
       context: firstContext,
       text: '',
-      annotation: cvox.ChromeVox.msgs.getMsg(
+      annotation: Msgs.getMsg(
           'collection',
           [commonAnnotation,
-           cvox.ChromeVox.msgs.getNumber(descriptions.length)])
+           Msgs.getNumber(descriptions.length)])
     }));
   }
 };
@@ -399,7 +399,7 @@ cvox.DescriptionUtil.getAnnotations_ = function(descriptions) {
       // If we have an Internal link collection, call it Link collection.
       // NOTE(deboer): The message comparison is a symptom of a bad design.
       // I suspect this code belongs elsewhere but I don't know where, yet.
-      var linkMsg = cvox.ChromeVox.msgs.getMsg('tag_link');
+      var linkMsg = Msgs.getMsg('role_link');
       if (description.annotation.toLowerCase().indexOf(linkMsg.toLowerCase()) !=
           -1) {
         if (annotations.indexOf(linkMsg) == -1) {
@@ -427,7 +427,7 @@ cvox.DescriptionUtil.getAnnotations_ = function(descriptions) {
  * @private
  */
 cvox.DescriptionUtil.isAnnotationCollection_ = function(annotation) {
-  return (annotation == cvox.ChromeVox.msgs.getMsg('tag_link'));
+  return (annotation == Msgs.getMsg('role_link'));
 };
 
 /**

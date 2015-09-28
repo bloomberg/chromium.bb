@@ -37,7 +37,7 @@ goog.addDependency(
 
 goog.addDependency(
     '../chromevox/messages/msgs.js',
-    ['cvox.Msgs'],
+    ['Msgs'],
     []);
 
 goog.addDependency(
@@ -96,10 +96,6 @@ cvox.ChromeVox.braille;
  * @type {cvox.MathJaxInterface}
  */
 cvox.ChromeVox.mathJax;
-/**
- * @type {cvox.Msgs}
- */
-cvox.ChromeVox.msgs = null;
 /**
  * @type {boolean}
  */

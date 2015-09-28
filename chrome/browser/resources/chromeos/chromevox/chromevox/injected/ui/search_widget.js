@@ -323,12 +323,12 @@ cvox.SearchWidget.prototype.toggleCaseSensitivity_ = function() {
   if (this.caseSensitive_) {
     cvox.SearchWidget.caseSensitive_ = false;
     cvox.ChromeVox.tts.speak(
-        cvox.ChromeVox.msgs.getMsg('ignoring_case'),
+        Msgs.getMsg('ignoring_case'),
         cvox.QueueMode.FLUSH, null);
   } else {
     this.caseSensitive_ = true;
     cvox.ChromeVox.tts.speak(
-        cvox.ChromeVox.msgs.getMsg('case_sensitive'),
+        Msgs.getMsg('case_sensitive'),
         cvox.QueueMode.FLUSH, null);
   }
 };
@@ -462,7 +462,7 @@ cvox.SearchWidget.prototype.outputSearchResult_ = function(result, searchStr) {
       null,
       cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
 
-  cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg('search_help_item'),
+  cvox.ChromeVox.tts.speak(Msgs.getMsg('search_help_item'),
                            cvox.QueueMode.QUEUE,
                            cvox.AbstractTts.PERSONALITY_ANNOTATION);
 
@@ -499,7 +499,7 @@ cvox.SearchWidget.prototype.outputSearchResultToBraille_ = function(searchStr) {
   // Mark the string as a search result by adding a prefix
   // and adjust the targetIndex accordingly.
   var oldLength = text.length;
-  text = cvox.ChromeVox.msgs.getMsg('mark_as_search_result_brl', [text]);
+  text = Msgs.getMsg('mark_as_search_result_brl', [text]);
   var newLength = text.length;
   targetIndex += (newLength - oldLength);
 

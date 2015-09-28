@@ -114,14 +114,14 @@ CvoxEditableTextUnitTest.prototype = {
     cvox.ChromeVox.braille = new TestBraille();
 
     /** Simple mock. */
-    cvox.ChromeVox.msgs = {};
+    Msgs = {};
 
     /**
      * Simply return the message id.
      * @param {string} msg Message id.
      * @return {string} Message id.
      */
-    cvox.ChromeVox.msgs.getMsg = function(msg) {
+    Msgs.getMsg = function(msg) {
       return msg;
     };
   },

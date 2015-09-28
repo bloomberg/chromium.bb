@@ -519,7 +519,7 @@ cvox.ChromeVoxEventWatcher.mouseClickEventWatcher = function(evt) {
     // happens in a focused text field).
     cvox.Focuser.setFocus(cvox.ChromeVox.navigationManager.getCurrentNode());
     cvox.ChromeVox.tts.speak(
-        cvox.ChromeVox.msgs.getMsg('element_clicked'),
+        Msgs.getMsg('element_clicked'),
         cvox.ChromeVoxEventWatcher.queueMode_(),
         cvox.AbstractTts.PERSONALITY_ANNOTATION);
     var targetNode = cvox.ChromeVox.navigationManager.getCurrentNode();
@@ -887,7 +887,7 @@ cvox.ChromeVoxEventWatcher.clipboardEventWatcher = function(evt) {
     return true;
   }
 
-  cvox.ChromeVox.tts.speak(cvox.ChromeVox.msgs.getMsg(evt.type).toLowerCase(),
+  cvox.ChromeVox.tts.speak(Msgs.getMsg(evt.type).toLowerCase(),
                            cvox.QueueMode.QUEUE);
   var text = '';
   switch (evt.type) {
@@ -1248,7 +1248,7 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
       cvox.ChromeVox.navigationManager.currentDialog = null;
 
       cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
-          cvox.ChromeVox.msgs.getMsg('exiting_dialog'),
+          Msgs.getMsg('exiting_dialog'),
           cvox.TtsCategory.NAV);
       return true;
     }
@@ -1256,7 +1256,7 @@ cvox.ChromeVoxEventWatcher.handleDialogFocus = function(target) {
     if (dialog) {
       cvox.ChromeVox.navigationManager.currentDialog = dialog;
       cvox.ChromeVoxEventWatcher.speakAnnotationWithCategory_(
-          cvox.ChromeVox.msgs.getMsg('entering_dialog'),
+          Msgs.getMsg('entering_dialog'),
           cvox.TtsCategory.NAV);
 
       if (role == 'alertdialog') {

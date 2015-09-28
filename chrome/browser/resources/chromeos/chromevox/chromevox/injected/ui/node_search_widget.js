@@ -34,7 +34,7 @@ goog.inherits(cvox.NodeSearchWidget, cvox.SearchWidget);
  * @override
  */
 cvox.NodeSearchWidget.prototype.getNameMsg = function() {
-  return ['choice_widget_name', [cvox.ChromeVox.msgs.getMsg(this.typeMsg_)]];
+  return ['choice_widget_name', [Msgs.getMsg(this.typeMsg_)]];
 };
 
 
