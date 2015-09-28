@@ -1,0 +1,62 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/sessions/ios/ios_live_tab.h"
+#include "ios/web/public/navigation_manager.h"
+
+namespace {
+const char kIOSLiveTabWebStateUserDataKey[] = "ios_live_tab";
+}
+
+namespace sessions {
+
+std::string IOSLiveTab::user_agent_override_;
+
+// static
+IOSLiveTab* IOSLiveTab::GetForWebState(web::WebState* web_state) {
+  if (!web_state->GetUserData(kIOSLiveTabWebStateUserDataKey)) {
+    web_state->SetUserData(kIOSLiveTabWebStateUserDataKey,
+                           new IOSLiveTab(web_state));
+  }
+
+  return static_cast<IOSLiveTab*>(
+      web_state->GetUserData(kIOSLiveTabWebStateUserDataKey));
+}
+
+IOSLiveTab::IOSLiveTab(web::WebState* web_state) : web_state_(web_state) {}
+
+IOSLiveTab::~IOSLiveTab() {}
+
+int IOSLiveTab::GetCurrentEntryIndex() {
+  return navigation_manager()->GetCurrentEntryIndex();
+}
+
+int IOSLiveTab::GetPendingEntryIndex() {
+  return navigation_manager()->GetPendingItemIndex();
+}
+
+sessions::SerializedNavigationEntry IOSLiveTab::GetEntryAtIndex(int index) {
+  return sessions::IOSSerializedNavigationBuilder::FromNavigationItem(
+      index, *navigation_manager()->GetItemAtIndex(index));
+}
+
+sessions::SerializedNavigationEntry IOSLiveTab::GetPendingEntry() {
+  return sessions::IOSSerializedNavigationBuilder::FromNavigationItem(
+      GetPendingEntryIndex(), *navigation_manager()->GetPendingItem());
+}
+
+int IOSLiveTab::GetEntryCount() {
+  return navigation_manager()->GetEntryCount();
+}
+
+void IOSLiveTab::LoadIfNecessary() {
+  navigation_manager()->LoadIfNecessary();
+}
+
+const std::string& IOSLiveTab::GetUserAgentOverride() const {
+  // Dynamic user agent overrides are not supported on iOS.
+  return user_agent_override_;
+}
+
+}  // namespace sessions
