@@ -8,6 +8,8 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.test.suitebuilder.annotation.LargeTest;
@@ -204,9 +206,9 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         assertEquals("MyNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertNotNull(notification.largeIcon);
 
-        // These are the dimensions of //chrome/test/data/notifications/icon.png at 1x scale.
-        assertEquals(100, notification.largeIcon.getWidth());
-        assertEquals(100, notification.largeIcon.getHeight());
+        // TODO(peter): Do some more sensible checking that |icon.png| could actually be loaded.
+        // One option might be to give that icon a solid color and check for it in the Bitmap, but
+        // I'm not certain how reliable that would be.
     }
 
     /**
@@ -224,10 +226,12 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
         assertEquals("NoIconNotification", notification.extras.getString(Notification.EXTRA_TITLE));
         assertNotNull(notification.largeIcon);
 
+        NotificationUIManager manager = NotificationUIManager.getInstanceForTests();
+        assertNotNull(manager);
+
         // Create a second rounded icon for the test's origin, and compare its dimensions against
         // those of the icon associated to the notification itself.
-        RoundedIconGenerator generator = NotificationUIManager.createRoundedIconGenerator(
-                getActivity().getApplicationContext());
+        RoundedIconGenerator generator = manager.mIconGenerator;
         assertNotNull(generator);
 
         Bitmap generatedIcon = generator.generateIconForUrl(getOrigin());
@@ -235,6 +239,55 @@ public class NotificationUIManagerTest extends ChromeActivityTestCaseBase<Chrome
 
         assertEquals(generatedIcon.getWidth(), notification.largeIcon.getWidth());
         assertEquals(generatedIcon.getHeight(), notification.largeIcon.getHeight());
+    }
+
+    /**
+     * Tests the three paths for ensuring that a notification will be shown with a normalized icon:
+     *     (1) NULL bitmaps should have an auto-generated image.
+     *     (2) Large bitmaps should be resized to the device's intended size.
+     *     (3) Smaller bitmaps should be left alone.
+     */
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testEnsureNormalizedIconBehavior() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        // Create a notification to ensure that the NotificationUIManager is initialized.
+        showAndGetNotification("MyNotification", "{}");
+
+        // Get the dimensions of the notification icon that will be presented to the user.
+        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
+        Resources resources = appContext.getResources();
+
+        int largeIconWidthPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        int largeIconHeightPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+
+        String origin = "https://example.com";
+
+        NotificationUIManager manager = NotificationUIManager.getInstanceForTests();
+        assertNotNull(manager);
+
+        Bitmap fromNullIcon = manager.ensureNormalizedIcon(null, origin);
+        assertNotNull(fromNullIcon);
+        assertEquals(largeIconWidthPx, fromNullIcon.getWidth());
+        assertEquals(largeIconHeightPx, fromNullIcon.getHeight());
+
+        Bitmap largeIcon = Bitmap.createBitmap(largeIconWidthPx * 2, largeIconHeightPx * 2,
+                                               Bitmap.Config.ALPHA_8);
+
+        Bitmap fromLargeIcon = manager.ensureNormalizedIcon(largeIcon, origin);
+        assertNotNull(fromLargeIcon);
+        assertEquals(largeIconWidthPx, fromLargeIcon.getWidth());
+        assertEquals(largeIconHeightPx, fromLargeIcon.getHeight());
+
+        Bitmap smallIcon = Bitmap.createBitmap(largeIconWidthPx / 2, largeIconHeightPx / 2,
+                                               Bitmap.Config.ALPHA_8);
+
+        Bitmap fromSmallIcon = manager.ensureNormalizedIcon(smallIcon, origin);
+        assertNotNull(fromSmallIcon);
+        assertEquals(smallIcon, fromSmallIcon);
     }
 
     /*

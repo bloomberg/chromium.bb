@@ -70,7 +70,10 @@ public class NotificationUIManager {
     private final Context mAppContext;
     private final NotificationManagerProxy mNotificationManager;
 
-    private RoundedIconGenerator mIconGenerator;
+    @VisibleForTesting public RoundedIconGenerator mIconGenerator;
+    private final int mLargeIconWidthPx;
+    private final int mLargeIconHeightPx;
+    private final float mDensity;
 
     private long mLastNotificationClickMs = 0L;
 
@@ -87,6 +90,17 @@ public class NotificationUIManager {
         }
 
         sInstance = new NotificationUIManager(nativeNotificationManager, context);
+        return sInstance;
+    }
+
+    /**
+     * Returns the current instance of the NotificationUIManager.
+     *
+     * @return The instance of the NotificationUIManager, if any.
+     */
+    @Nullable
+    @VisibleForTesting
+    static NotificationUIManager getInstanceForTests() {
         return sInstance;
     }
 
@@ -113,6 +127,14 @@ public class NotificationUIManager {
             mNotificationManager = new NotificationManagerProxyImpl(
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
         }
+
+        Resources resources = mAppContext.getResources();
+
+        mLargeIconWidthPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
+        mLargeIconHeightPx =
+                resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+        mDensity = resources.getDisplayMetrics().density;
     }
 
     /**
@@ -372,8 +394,8 @@ public class NotificationUIManager {
      * @param title Title to be displayed in the notification.
      * @param body Message to be displayed in the notification. Will be trimmed to one line of
      *             text by the Android notification system.
-     * @param icon Icon to be displayed in the notification. When this isn't a valid Bitmap, a
-     *             default icon will be generated instead.
+     * @param icon Icon to be displayed in the notification. Valid Bitmap icons will be scaled to
+     *             the platforms, whereas a default icon will be generated for invalid Bitmaps.
      * @param vibrationPattern Vibration pattern following the Web Vibration syntax.
      * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param actionTitles Titles of actions to display alongside the notification.
@@ -383,10 +405,6 @@ public class NotificationUIManager {
     private void displayNotification(long persistentNotificationId, String origin, String tag,
             String title, String body, Bitmap icon, int[] vibrationPattern, boolean silent,
             String[] actionTitles) {
-        if (icon == null || icon.getWidth() == 0) {
-            icon = getIconGenerator().generateIconForUrl(origin, true);
-        }
-
         Resources res = mAppContext.getResources();
 
         // Set up a pending intent for going to the settings screen for |origin|.
@@ -404,7 +422,7 @@ public class NotificationUIManager {
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setLargeIcon(icon)
+                .setLargeIcon(ensureNormalizedIcon(icon, origin))
                 .setSmallIcon(R.drawable.ic_chrome)
                 .setContentIntent(makePendingIntent(
                         NotificationConstants.ACTION_CLICK_NOTIFICATION,
@@ -459,40 +477,37 @@ public class NotificationUIManager {
     }
 
     /**
-     * Ensures the existance of an icon generator, which is created lazily.
+     * Ensures the availability of an icon for the notification.
      *
-     * @return The icon generator which can be used.
-     */
-    private RoundedIconGenerator getIconGenerator() {
-        if (mIconGenerator == null) {
-            mIconGenerator = createRoundedIconGenerator(mAppContext);
-        }
-
-        return mIconGenerator;
-    }
-
-    /**
-     * Creates the rounded icon generator to use for notifications based on the dimensions
-     * and resolution of the device we're running on.
+     * If |icon| is a valid, non-empty Bitmap, the bitmap will be scaled to be of an appropriate
+     * size for the current Android device. Otherwise, a default icon will be created based on the
+     * origin the notification is being displayed for.
      *
-     * @param appContext The application context to retrieve resources from.
-     * @return The newly created rounded icon generator.
+     * @param icon The developer-provided icon they intend to use for the notification.
+     * @param origin The origin the notification is being displayed for.
+     * @return An appropriately sized icon to use for the notification.
      */
     @VisibleForTesting
-    public static RoundedIconGenerator createRoundedIconGenerator(Context appContext) {
-        Resources res = appContext.getResources();
-        float density = res.getDisplayMetrics().density;
+    public Bitmap ensureNormalizedIcon(Bitmap icon, String origin) {
+        if (icon == null || icon.getWidth() == 0) {
+            if (mIconGenerator == null) {
+                int cornerRadiusPx = Math.min(mLargeIconWidthPx, mLargeIconHeightPx) / 2;
+                mIconGenerator =
+                        new RoundedIconGenerator(mLargeIconWidthPx, mLargeIconHeightPx,
+                                                 cornerRadiusPx,
+                                                 NOTIFICATION_ICON_BG_COLOR,
+                                                 NOTIFICATION_TEXT_SIZE_DP * mDensity);
+            }
 
-        int widthPx = res.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
-        int heightPx =
-                res.getDimensionPixelSize(android.R.dimen.notification_large_icon_height);
+            return mIconGenerator.generateIconForUrl(origin, true);
+        }
 
-        return new RoundedIconGenerator(
-                widthPx,
-                heightPx,
-                Math.min(widthPx, heightPx) / 2,
-                NOTIFICATION_ICON_BG_COLOR,
-                NOTIFICATION_TEXT_SIZE_DP * density);
+        if (icon.getWidth() > mLargeIconWidthPx || icon.getHeight() > mLargeIconHeightPx) {
+            return icon.createScaledBitmap(icon, mLargeIconWidthPx, mLargeIconHeightPx,
+                                           false /* not filtered */);
+        }
+
+        return icon;
     }
 
     /**
