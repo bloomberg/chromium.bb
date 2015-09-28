@@ -1053,6 +1053,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setSupportsMultipleWindows(prefs.supports_multiple_windows);
 
+  settings->setInertVisualViewport(prefs.inert_visual_viewport);
+
   // TODO(bokan): Remove once Blink side is gone.
   settings->setInvertViewportScrollOrder(true);
 
