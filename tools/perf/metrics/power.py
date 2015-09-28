@@ -85,7 +85,8 @@ class PowerMetric(Metric):
     # Make sure that power monitoring is cleaned up when program exits.
     platform = self._platform
     def CleanUp():
-      platform.StopMonitoringPower()
+      if platform.IsMonitoringPower():
+        platform.StopMonitoringPower()
     atexit.register(CleanUp)
 
     self._running = True
