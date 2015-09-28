@@ -649,6 +649,29 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/texture-npot.html',
         ['mac'], bug=483282)
+    # Mac Intel only.
+    self.Fail('deqp/data/gles3/shaders/arrays.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/conditionals.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/declarations.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/fragdata.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/invalid_texture_functions.html',
+        ['mac', 'intel'], bug=536887)
+    self.Fail('deqp/data/gles3/shaders/keywords.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/negative.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/switch.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/swizzles.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/bufferobjectquery.html', ['mac', 'intel'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/fbostencilbuffer.html', ['mac', 'intel'],
+        bug=536887)
 
     # Linux only.
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
@@ -657,6 +680,24 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux'], bug=483282)
     self.Fail('conformance2/samplers/samplers.html',
         ['linux'], bug=483282)
+    self.Fail('deqp/data/gles3/shaders/arrays.html', ['linux'], bug=536887)
+    self.Fail('deqp/data/gles3/shaders/constants.html', ['linux'], bug=536887)
+    self.Fail('deqp/data/gles3/shaders/constant_expressions.html', ['linux'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/conversions.html', ['linux'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/functions.html', ['linux'], bug=536887)
+    self.Fail('deqp/data/gles3/shaders/linkage.html', ['linux'], bug=536887)
+    self.Fail('deqp/data/gles3/shaders/preprocessor.html', ['linux'],
+        bug=536887)
+    self.Fail('deqp/data/gles3/shaders/qualification_order.html', ['linux'],
+        bug=536887)
+    self.Fail('deqp/framework/opengl/simplereference/referencecontext.html',
+        ['linux'], bug=536887)
+    self.Fail('deqp/functional/gles3/attriblocation.html', ['linux'],
+        bug=536887)
+    self.Fail('deqp/functional/gles3/booleanstatequery.html', ['linux'],
+        bug=536887)
     # Linux NVIDIA only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux', 'nvidia'], bug=483282)
