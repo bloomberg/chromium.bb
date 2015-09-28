@@ -2994,9 +2994,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushNoURL) {
   scoped_ptr<SpdyFrame>
       stream1_reply(spdy_util_.ConstructSpdyGetSynReply(NULL, 0, 1));
   scoped_ptr<SpdyHeaderBlock> incomplete_headers(new SpdyHeaderBlock());
-  (*incomplete_headers)["hello"] = "bye";
   (*incomplete_headers)[spdy_util_.GetStatusKey()] = "200 OK";
   (*incomplete_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  (*incomplete_headers)["hello"] = "bye";
   scoped_ptr<SpdyFrame> stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
       incomplete_headers.Pass(), 2, 1));
   MockRead reads[] = {
@@ -3060,25 +3060,23 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
     }
   };
 
-  test_cases[0].expected_headers["cookie"] = "val1";
-  test_cases[0].expected_headers["cookie"] += '\0';
-  test_cases[0].expected_headers["cookie"] += "val2";
-  test_cases[0].expected_headers["hello"] = "bye";
   test_cases[0].expected_headers["status"] = "200";
-
-  test_cases[1].expected_headers["hello"] = "bye";
   test_cases[1].expected_headers["status"] = "200";
-
-  test_cases[2].expected_headers["cookie"] = "val1,val2";
-  test_cases[2].expected_headers["hello"] = "bye";
   test_cases[2].expected_headers["status"] = "200";
 
+  // HTTP/2 eliminates use of the :version header.
   if (spdy_util_.spdy_version() < HTTP2) {
-    // HTTP/2 eliminates use of the :version header.
     test_cases[0].expected_headers["version"] = "HTTP/1.1";
     test_cases[1].expected_headers["version"] = "HTTP/1.1";
     test_cases[2].expected_headers["version"] = "HTTP/1.1";
   }
+
+  test_cases[0].expected_headers["hello"] = "bye";
+  test_cases[1].expected_headers["hello"] = "bye";
+  test_cases[2].expected_headers["hello"] = "bye";
+
+  test_cases[0].expected_headers["cookie"] = StringPiece("val1\0val2", 9);
+  test_cases[2].expected_headers["cookie"] = "val1,val2";
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     scoped_ptr<SpdyFrame> req(
@@ -3113,11 +3111,15 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
     std::string name, value;
     SpdyHeaderBlock header_block;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-      if (header_block[name].empty()) {
-        header_block[name] = value;
+      SpdyHeaderBlock::StringPieceProxy mutable_header_block_value =
+          header_block[name];
+      if (static_cast<StringPiece>(mutable_header_block_value).empty()) {
+        mutable_header_block_value = value;
       } else {
-        header_block[name] += '\0';
-        header_block[name] += value;
+        std::string joint_value = mutable_header_block_value.as_string();
+        joint_value.append(1, '\0');
+        joint_value.append(value);
+        mutable_header_block_value = joint_value;
       }
     }
     EXPECT_EQ(test_cases[i].expected_headers, header_block);
@@ -3133,65 +3135,35 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     int num_headers[2];
     const char* extra_headers[2][16];
   } test_cases[] = {
-    // Test the case of a multi-valued cookie.  When the value is delimited
-    // with NUL characters, it needs to be unfolded into multiple headers.
-    {
-      true,
-      { 1, 4 },
-      { { "cookie",   "val1,val2",
-          NULL
-        },
-        { "vary",     "cookie",
-          spdy_util_.GetStatusKey(), "200",
-          spdy_util_.GetPathKey(),      "/index.php",
-          spdy_util_.GetVersionKey(), "HTTP/1.1",
-          NULL
-        }
-      }
-    }, {    // Multiple vary fields.
-      true,
-      { 2, 5 },
-      { { "friend",   "barney",
-          "enemy",    "snaggletooth",
-          NULL
-        },
-        { "vary",     "friend",
-          "vary",     "enemy",
-          spdy_util_.GetStatusKey(), "200",
-          spdy_util_.GetPathKey(),      "/index.php",
-          spdy_util_.GetVersionKey(), "HTTP/1.1",
-          NULL
-        }
-      }
-    }, {    // Test a '*' vary field.
-      false,
-      { 1, 4 },
-      { { "cookie",   "val1,val2",
-          NULL
-        },
-        { "vary",     "*",
-          spdy_util_.GetStatusKey(), "200",
-          spdy_util_.GetPathKey(),      "/index.php",
-          spdy_util_.GetVersionKey(), "HTTP/1.1",
-          NULL
-        }
-      }
-    }, {    // Multiple comma-separated vary fields.
-      true,
-      { 2, 4 },
-      { { "friend",   "barney",
-          "enemy",    "snaggletooth",
-          NULL
-        },
-        { "vary",     "friend,enemy",
-          spdy_util_.GetStatusKey(), "200",
-          spdy_util_.GetPathKey(),      "/index.php",
-          spdy_util_.GetVersionKey(), "HTTP/1.1",
-          NULL
-        }
-      }
-    }
-  };
+      // Test the case of a multi-valued cookie.  When the value is delimited
+      // with NUL characters, it needs to be unfolded into multiple headers.
+      {true,
+       {1, 4},
+       {{"cookie", "val1,val2", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "cookie",
+         NULL}}},
+      {// Multiple vary fields.
+       true,
+       {2, 5},
+       {{"friend", "barney", "enemy", "snaggletooth", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "friend",
+         "vary", "enemy", NULL}}},
+      {// Test a '*' vary field.
+       false,
+       {1, 4},
+       {{"cookie", "val1,val2", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary", "*",
+         NULL}}},
+      {// Multiple comma-separated vary fields.
+       true,
+       {2, 4},
+       {{"friend", "barney", "enemy", "snaggletooth", NULL},
+        {spdy_util_.GetStatusKey(), "200", spdy_util_.GetPathKey(),
+         "/index.php", spdy_util_.GetVersionKey(), "HTTP/1.1", "vary",
+         "friend,enemy", NULL}}}};
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
     // Construct the request.
@@ -3269,24 +3241,20 @@ TEST_P(SpdyNetworkTransactionTest, InvalidSynReply) {
     int num_headers;
     const char* headers[10];
   } test_cases[] = {
-    // SYN_REPLY missing status header
-    { 4,
-      { "cookie", "val1",
-        "cookie", "val2",
-        spdy_util_.GetPathKey(), "/index.php",
-        spdy_util_.GetVersionKey(), "HTTP/1.1",
-        NULL
+      // SYN_REPLY missing status header
+      {
+          4,
+          {spdy_util_.GetPathKey(), "/index.php", spdy_util_.GetVersionKey(),
+           "HTTP/1.1", "cookie", "val1", "cookie", "val2", NULL},
       },
-    },
-    // SYN_REPLY missing version header
-    { 2,
-      { "status", "200",
-        spdy_util_.GetPathKey(), "/index.php",
-        NULL
+      // SYN_REPLY missing version header
+      {
+          2, {spdy_util_.GetPathKey(), "/index.php", "status", "200", NULL},
       },
-    },
-    // SYN_REPLY with no headers
-    { 0, { NULL }, },
+      // SYN_REPLY with no headers
+      {
+          0, {NULL},
+      },
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
@@ -5015,9 +4983,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
       spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)["hello"] = "bye";
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
   (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  (*late_headers)["hello"] = "bye";
   scoped_ptr<SpdyFrame> stream2_headers(
       spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
                                            false,
@@ -5077,9 +5045,9 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
       spdy_util_.ConstructInitialSpdyPushFrame(initial_headers.Pass(), 2, 1));
 
   scoped_ptr<SpdyHeaderBlock> late_headers(new SpdyHeaderBlock());
-  (*late_headers)["hello"] = "bye";
   (*late_headers)[spdy_util_.GetStatusKey()] = "200";
   (*late_headers)[spdy_util_.GetVersionKey()] = "HTTP/1.1";
+  (*late_headers)["hello"] = "bye";
   scoped_ptr<SpdyFrame> stream2_headers(
       spdy_util_.ConstructSpdyControlFrame(late_headers.Pass(),
                                            false,

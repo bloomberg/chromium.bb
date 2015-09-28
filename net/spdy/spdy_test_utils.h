@@ -9,12 +9,18 @@
 
 #include <string>
 
+#include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
 class HashValue;
 class TransportSecurityState;
+
+inline bool operator==(StringPiece x,
+                       const SpdyHeaderBlock::StringPieceProxy& y) {
+  return x == y.operator StringPiece();
+}
 
 namespace test {
 

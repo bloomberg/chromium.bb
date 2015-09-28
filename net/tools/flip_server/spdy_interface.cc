@@ -154,9 +154,9 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
     // path contains a query string with a http:// in one of its values,
     // UrlUtilities::GetUrlPath will fail and always return a / breaking
     // the request. GetUrlPath assumes the absolute URL is being passed in.
-    path_string = UrlUtilities::GetUrlPath(url->second);
-    host_string = UrlUtilities::GetUrlHost(url->second);
-    version_string = version->second;
+    path_string = UrlUtilities::GetUrlPath(url->second.as_string());
+    host_string = UrlUtilities::GetUrlHost(url->second.as_string());
+    version_string = version->second.as_string();
   } else {
     method = headers.find(":method");
     host = headers.find(":host");
@@ -168,8 +168,8 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
               << "missing. Not creating stream";
       return 0;
     }
-    host_string = host->second;
-    path_string = path->second;
+    host_string = host->second.as_string();
+    path_string = path->second.as_string();
     version_string = "HTTP/1.1";
   }
 
@@ -180,13 +180,12 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second
             << " " << path_string;
-    std::string filename = EncodeURL(path_string,
-                                     host_string,
-                                     method->second);
+    std::string filename =
+        EncodeURL(path_string, host_string, method->second.as_string());
     NewStream(stream_id, priority, filename);
   } else {
-    http_data +=
-        method->second + " " + path_string + " " + version_string + "\r\n";
+    http_data += method->second.as_string() + " " + path_string + " " +
+                 version_string + "\r\n";
     VLOG(1) << ACCEPTOR_CLIENT_IDENT << "Request: " << method->second << " "
             << path_string << " " << version_string;
     http_data += "Host: " + (*is_https_scheme ?
@@ -204,9 +203,9 @@ int SpdySM::SpdyHandleNewStream(SpdyStreamId stream_id,
           i == url) {
         // Ignore the entry.
       } else {
-        http_data += i->first + ": " + i->second + "\r\n";
-        VLOG(2) << ACCEPTOR_CLIENT_IDENT << i->first.c_str() << ":"
-                << i->second.c_str();
+        http_data +=
+            i->first.as_string() + ": " + i->second.as_string() + "\r\n";
+        VLOG(2) << ACCEPTOR_CLIENT_IDENT << i->first << ":" << i->second;
       }
     }
     if (forward_ip_header_.length()) {

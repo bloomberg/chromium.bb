@@ -93,10 +93,11 @@ bool QuicSpdyClientStream::ParseResponseHeaders(const char* data,
     data_.append(data + len, data_len - len);
   }
   if (ContainsKey(response_headers_, "content-length") &&
-      !StringToInt(response_headers_["content-length"], &content_length_)) {
+      !StringToInt(StringPiece(response_headers_["content-length"]),
+                   &content_length_)) {
     return false;  // Invalid content-length.
   }
-  string status = response_headers_[":status"];
+  string status = response_headers_[":status"].as_string();
   size_t end = status.find(" ");
   if (end != string::npos) {
     status.erase(end);

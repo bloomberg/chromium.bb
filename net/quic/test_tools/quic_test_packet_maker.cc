@@ -260,16 +260,16 @@ SpdyHeaderBlock QuicTestPacketMaker::GetRequestHeaders(
     const std::string& path) {
   SpdyHeaderBlock headers;
   if (version_ <= QUIC_VERSION_24) {
+    headers[":version"] = "HTTP/1.1";
+  }
+  headers[":method"] = method;
+  if (version_ <= QUIC_VERSION_24) {
     headers[":host"] = host_;
   } else {
     headers[":authority"] = host_;
   }
-  headers[":path"] = path;
   headers[":scheme"] = scheme;
-  headers[":method"] = method;
-  if (version_ <= QUIC_VERSION_24) {
-    headers[":version"] = "HTTP/1.1";
-  }
+  headers[":path"] = path;
   return headers;
 }
 

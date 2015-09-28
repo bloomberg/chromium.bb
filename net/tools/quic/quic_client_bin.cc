@@ -56,6 +56,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client.h"
 #include "net/tools/quic/spdy_balsa_utils.h"
@@ -275,7 +276,7 @@ int main(int argc, char *argv[]) {
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
     cout << "headers:" << endl;
-    for (const std::pair<string, string>& kv : header_block) {
+    for (const auto& kv : header_block) {
       cout << " " << kv.first << ": " << kv.second << endl;
     }
     cout << "body: " << FLAGS_body << endl;

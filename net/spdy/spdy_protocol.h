@@ -24,6 +24,7 @@
 #include "net/base/net_export.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 #include "net/spdy/spdy_bitmasks.h"
+#include "net/spdy/spdy_header_block.h"
 
 namespace net {
 
@@ -420,10 +421,6 @@ enum SpdyGoAwayStatus {
 // number between 0 and 3.
 typedef uint8 SpdyPriority;
 
-// A datastructure for holding a set of headers from a HEADERS, PUSH_PROMISE,
-// SYN_STREAM, or SYN_REPLY frame.
-typedef std::map<std::string, std::string> SpdyHeaderBlock;
-
 typedef uint64 SpdyPingId;
 
 typedef std::string SpdyProtocolId;
@@ -618,7 +615,7 @@ class NET_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
     header_block_ = header_block;
   }
   void SetHeader(base::StringPiece name, base::StringPiece value) {
-    header_block_[name.as_string()] = value.as_string();
+    header_block_[name] = value;
   }
   SpdyHeaderBlock* mutable_header_block() { return &header_block_; }
 

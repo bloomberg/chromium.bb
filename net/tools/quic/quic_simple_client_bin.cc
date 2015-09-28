@@ -58,6 +58,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_utils.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/tools/quic/quic_simple_client.h"
 #include "net/tools/quic/synchronous_host_resolver.h"
@@ -278,7 +279,7 @@ int main(int argc, char *argv[]) {
   if (!FLAGS_quiet) {
     cout << "Request:" << endl;
     cout << "headers:" << endl;
-    for (const std::pair<string, string>& kv : header_block) {
+    for (const auto& kv : header_block) {
       cout << " " << kv.first << ": " << kv.second << endl;
     }
     cout << "body: " << FLAGS_body << endl;

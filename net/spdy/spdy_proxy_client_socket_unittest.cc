@@ -310,15 +310,15 @@ void SpdyProxyClientSocketTest::AssertAsyncWriteWithReadsSucceeds(
 
 void SpdyProxyClientSocketTest::PopulateConnectRequestIR(
     SpdyHeaderBlock* block) {
+  spdy_util_.MaybeAddVersionHeader(block);
   (*block)[spdy_util_.GetMethodKey()] = "CONNECT";
   if (spdy_util_.spdy_version() == HTTP2) {
     (*block)[spdy_util_.GetHostKey()] = kOriginHostPort;
   } else {
-    (*block)[spdy_util_.GetPathKey()] = kOriginHostPort;
     (*block)[spdy_util_.GetHostKey()] = kOriginHost;
+    (*block)[spdy_util_.GetPathKey()] = kOriginHostPort;
   }
   (*block)["user-agent"] = kUserAgent;
-  spdy_util_.MaybeAddVersionHeader(block);
 }
 
 void SpdyProxyClientSocketTest::PopulateConnectReplyIR(SpdyHeaderBlock* block,

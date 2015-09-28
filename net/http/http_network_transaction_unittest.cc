@@ -3957,14 +3957,14 @@ TEST_P(HttpNetworkTransactionTest,
 
   // CONNECT to mail.example.org:443 via SPDY.
   SpdyHeaderBlock connect2_block;
+  spdy_util_.MaybeAddVersionHeader(&connect2_block);
   connect2_block[spdy_util_.GetMethodKey()] = "CONNECT";
   if (GetParam() == kProtoHTTP2) {
     connect2_block[spdy_util_.GetHostKey()] = "mail.example.org:443";
   } else {
-    connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
     connect2_block[spdy_util_.GetHostKey()] = "mail.example.org";
+    connect2_block[spdy_util_.GetPathKey()] = "mail.example.org:443";
   }
-  spdy_util_.MaybeAddVersionHeader(&connect2_block);
   scoped_ptr<SpdyFrame> connect2(
       spdy_util_.ConstructSpdySyn(3, connect2_block, LOWEST, false, false));
 
@@ -12604,11 +12604,11 @@ TEST_P(HttpNetworkTransactionTest, DoNotUseSpdySessionForHttpOverTunnel) {
 
   // SPDY GET for HTTP URL (through the proxy, but not the tunnel).
   SpdyHeaderBlock req2_block;
+  spdy_util_.MaybeAddVersionHeader(&req2_block);
   req2_block[spdy_util_.GetMethodKey()] = "GET";
-  req2_block[spdy_util_.GetPathKey()] = "/";
   req2_block[spdy_util_.GetHostKey()] = "www.example.org:8080";
   req2_block[spdy_util_.GetSchemeKey()] = "http";
-  spdy_util_.MaybeAddVersionHeader(&req2_block);
+  req2_block[spdy_util_.GetPathKey()] = "/";
   scoped_ptr<SpdyFrame> req2(
       spdy_util_.ConstructSpdySyn(3, req2_block, MEDIUM, false, true));
 

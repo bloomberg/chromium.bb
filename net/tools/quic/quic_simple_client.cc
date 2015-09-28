@@ -18,6 +18,7 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/spdy_utils.h"
+#include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_http_utils.h"
 #include "net/udp/udp_client_socket.h"
 

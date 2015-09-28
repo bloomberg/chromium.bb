@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_piece.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/spdy_test_utils.h"
 #include "net/tools/balsa/balsa_enums.h"
 #include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/flip_server/flip_config.h"

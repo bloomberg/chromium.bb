@@ -75,20 +75,16 @@ bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
     }
   }
 
-  auto it = decoded_block_.find(name.as_string());
+  auto it = decoded_block_.find(name);
   if (it == decoded_block_.end()) {
     // This is a new key.
-    decoded_block_[name.as_string()].assign(value.data(), value.size());
+    decoded_block_[name] = value;
   } else {
     // The key already exists, append |value| with appropriate delimiter.
-    string& old_value = it->second;
-    if (name == kCookieKey) {
-      old_value.append("; ");
-      value.AppendToString(&old_value);
-    } else {
-      old_value.push_back('\0');
-      old_value.insert(old_value.end(), value.begin(), value.end());
-    }
+    string new_value = it->second.as_string();
+    new_value.append((name == kCookieKey) ? "; " : string(1, '\0'));
+    value.AppendToString(&new_value);
+    decoded_block_.ReplaceOrAppendHeader(name, new_value);
   }
   return true;
 }

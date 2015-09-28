@@ -6,16 +6,119 @@
 #define NET_SPDY_SPDY_HEADER_BLOCK_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
+#include "net/base/linked_hash_map.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log.h"
 
 namespace net {
 
-// A data structure for holding a set of headers from either a
-// SYN_STREAM or SYN_REPLY frame.
-typedef std::map<std::string, std::string> SpdyHeaderBlock;
+// Allows arg-dependent lookup to work for logging's operator<<.
+using ::operator<<;
+
+// This class provides a key-value map that can be used to store SPDY header
+// names and values. This data structure preserves insertion order.
+//
+// Under the hood, this data structure uses large, contiguous blocks of memory
+// to store names and values. Lookups may be performed with StringPiece keys,
+// and values are returned as StringPieces (via StringPieceProxy, below).
+// Value StringPieces are valid as long as the SpdyHeaderBlock exists; allocated
+// memory is never freed until SpdyHeaderBlock's destruction.
+//
+// This implementation does not make much of an effort to minimize wasted space.
+// It's expected that keys are rarely deleted from a SpdyHeaderBlock.
+class NET_EXPORT SpdyHeaderBlock {
+ private:
+  using MapType = linked_hash_map<base::StringPiece, base::StringPiece>;
+  class Storage;
+
+ public:
+  using iterator = MapType::iterator;
+  using const_iterator = MapType::const_iterator;
+  using value_type = MapType::value_type;
+  using reverse_iterator = MapType::reverse_iterator;
+
+  class StringPieceProxy;
+
+  SpdyHeaderBlock();
+  SpdyHeaderBlock(const SpdyHeaderBlock& other);
+  ~SpdyHeaderBlock();
+
+  SpdyHeaderBlock& operator=(const SpdyHeaderBlock& other);
+
+  // These methods delegate to our MapType member.
+  iterator begin() { return block_.begin(); }
+  iterator end() { return block_.end(); }
+  const_iterator begin() const { return block_.begin(); }
+  const_iterator end() const { return block_.end(); }
+  bool empty() const { return block_.empty(); }
+  size_t size() const { return block_.size(); }
+  iterator find(base::StringPiece key) { return block_.find(key); }
+  const_iterator find(base::StringPiece key) const { return block_.find(key); }
+  reverse_iterator rbegin() { return block_.rbegin(); }
+  void erase(base::StringPiece key) { block_.erase(key); }
+
+  // Clears both our MapType member and the memory used to hold headers.
+  void clear();
+
+  // These methods copy data into our backing storage.
+  void insert(const MapType::value_type& value);
+  void ReplaceOrAppendHeader(const base::StringPiece key,
+                             const base::StringPiece value);
+
+  // Allows either lookup or mutation of the value associated with a key.
+  StringPieceProxy operator[](const base::StringPiece key);
+
+  bool operator==(const SpdyHeaderBlock& other) const;
+
+  // This object provides automatic conversions that allow SpdyHeaderBlock to be
+  // nearly a drop-in replacement for linked_hash_map<string, string>. It reads
+  // data from or writes data to a SpdyHeaderBlock::Storage.
+  class NET_EXPORT StringPieceProxy {
+   public:
+    ~StringPieceProxy();
+
+    // Assignment modifies the underlying SpdyHeaderBlock.
+    StringPieceProxy& operator=(const base::StringPiece other);
+
+    // Allows a StringPieceProxy to be automatically converted to a StringPiece.
+    // This makes SpdyHeaderBlock::operator[] easy to use with StringPieces.
+    operator base::StringPiece() const;
+
+    // Reserves |size| bytes in the underlying storage.
+    void reserve(size_t size);
+
+    std::string as_string() const {
+      return static_cast<base::StringPiece>(*this).as_string();
+    }
+
+   private:
+    friend class SpdyHeaderBlock;
+
+    StringPieceProxy(SpdyHeaderBlock::MapType* block,
+                     SpdyHeaderBlock::Storage* storage,
+                     SpdyHeaderBlock::MapType::iterator lookup_result,
+                     const base::StringPiece key);
+
+    SpdyHeaderBlock::MapType* block_;
+    SpdyHeaderBlock::Storage* storage_;
+    SpdyHeaderBlock::MapType::iterator lookup_result_;
+    const base::StringPiece key_;
+
+    // Contains only POD members; explicitly copyable.
+  };
+
+ private:
+  void Write(const base::StringPiece s);
+  void AppendHeader(const base::StringPiece key, const base::StringPiece value);
+
+  MapType block_;
+  scoped_ptr<Storage> storage_;
+};
 
 // Converts a SpdyHeaderBlock into NetLog event parameters.
 NET_EXPORT scoped_ptr<base::Value> SpdyHeaderBlockNetLogCallback(

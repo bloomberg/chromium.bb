@@ -140,7 +140,7 @@ void AppendToHeaderBlock(const char* const extra_headers[],
       // separated by a NULL character.
 
       // Adjust the value.
-      new_value = (*headers)[this_header];
+      new_value = (*headers)[this_header].as_string();
       // Put in a NULL separator.
       new_value.append(1, '\0');
       // Append the new value.
@@ -731,8 +731,8 @@ void SpdyTestUtil::AddUrlToHeaderBlock(base::StringPiece url,
                                        SpdyHeaderBlock* headers) const {
   std::string scheme, host, path;
   ParseUrl(url, &scheme, &host, &path);
-  (*headers)[GetSchemeKey()] = scheme;
   (*headers)[GetHostKey()] = host;
+  (*headers)[GetSchemeKey()] = scheme;
   (*headers)[GetPathKey()] = path;
 }
 
@@ -866,7 +866,7 @@ std::string SpdyTestUtil::ConstructSpdyReplyString(
   std::string reply_string;
   for (SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
-    std::string key = it->first;
+    std::string key = it->first.as_string();
     // Remove leading colon from "special" headers (for SPDY3 and
     // above).
     if (spdy_version() >= SPDY3 && key[0] == ':')
@@ -964,9 +964,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
                                           RequestPriority request_priority,
                                           bool direct) const {
   SpdyHeaderBlock block;
-  AddUrlToHeaderBlock(default_url_.spec(), &block);
-  block[GetMethodKey()] = "GET";
   MaybeAddVersionHeader(&block);
+  block[GetMethodKey()] = "GET";
+  AddUrlToHeaderBlock(default_url_.spec(), &block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(stream_id, block, request_priority, compressed, true);
 }
@@ -978,17 +978,16 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     RequestPriority priority,
     const HostPortPair& host_port_pair) const {
   SpdyHeaderBlock block;
+  MaybeAddVersionHeader(&block);
   block[GetMethodKey()] = "CONNECT";
   if (spdy_version() < HTTP2) {
-    block[GetPathKey()] = host_port_pair.ToString();
     block[GetHostKey()] = (host_port_pair.port() == 443)
                               ? host_port_pair.host()
                               : host_port_pair.ToString();
+    block[GetPathKey()] = host_port_pair.ToString();
   } else {
     block[GetHostKey()] = host_port_pair.ToString();
   }
-
-  MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(stream_id, block, priority, false, false);
 }
@@ -1015,8 +1014,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyPush(const char* const extra_headers[],
         CreateFramer(false)->SerializeFrame(push_promise));
 
     SpdyHeadersIR headers(stream_id);
-    headers.SetHeader("hello", "bye");
     headers.SetHeader(GetStatusKey(), "200 OK");
+    headers.SetHeader("hello", "bye");
     AppendToHeaderBlock(extra_headers, extra_header_count,
                         headers.mutable_header_block());
     scoped_ptr<SpdyFrame> headers_frame(
@@ -1159,9 +1158,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySynReplyError(
     int extra_header_count,
     int stream_id) {
   SpdyHeaderBlock block;
-  block["hello"] = "bye";
   block[GetStatusKey()] = status;
   MaybeAddVersionHeader(&block);
+  block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
 
   return ConstructSpdyReply(stream_id, block);
@@ -1184,9 +1183,9 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGetSynReply(
     int extra_header_count,
     int stream_id) {
   SpdyHeaderBlock block;
-  block["hello"] = "bye";
   block[GetStatusKey()] = "200";
   MaybeAddVersionHeader(&block);
+  block["hello"] = "bye";
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
 
   return ConstructSpdyReply(stream_id, block);
@@ -1208,9 +1207,9 @@ SpdyFrame* SpdyTestUtil::ConstructChunkedSpdyPost(
     const char* const extra_headers[],
     int extra_header_count) {
   SpdyHeaderBlock block;
+  MaybeAddVersionHeader(&block);
   block[GetMethodKey()] = "POST";
   AddUrlToHeaderBlock(default_url_.spec(), &block);
-  MaybeAddVersionHeader(&block);
   AppendToHeaderBlock(extra_headers, extra_header_count, &block);
   return ConstructSpdySyn(1, block, LOWEST, false, false);
 }
@@ -1316,13 +1315,13 @@ scoped_ptr<SpdyHeaderBlock> SpdyTestUtil::ConstructHeaderBlock(
   std::string scheme, host, path;
   ParseUrl(url.data(), &scheme, &host, &path);
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock());
-  (*headers)[GetMethodKey()] = method.as_string();
-  (*headers)[GetPathKey()] = path.c_str();
-  (*headers)[GetHostKey()] = host.c_str();
-  (*headers)[GetSchemeKey()] = scheme.c_str();
   if (include_version_header()) {
     (*headers)[GetVersionKey()] = "HTTP/1.1";
   }
+  (*headers)[GetMethodKey()] = method.as_string();
+  (*headers)[GetHostKey()] = host.c_str();
+  (*headers)[GetSchemeKey()] = scheme.c_str();
+  (*headers)[GetPathKey()] = path.c_str();
   if (content_length) {
     std::string length_str = base::Int64ToString(*content_length);
     (*headers)["content-length"] = length_str;

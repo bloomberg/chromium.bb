@@ -292,8 +292,8 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key1"] = "value1";
     headers["cookie"] = "a=bb";
 
-    ExpectIndex(IndexOf(cookie_a_));
     ExpectIndex(IndexOf(key_1_));
+    ExpectIndex(IndexOf(cookie_a_));
     CompareWithExpectedEncoding(headers);
   }
   // Header table is:
@@ -307,11 +307,12 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key2"] = "value2";
     headers["cookie"] = "c=dd; e=ff";
 
-    ExpectIndex(IndexOf(cookie_c_));
+    // "key2: value2"
+    ExpectIndex(64);
+    // "cookie: c=dd"
+    ExpectIndex(62);
     // This cookie evicts |key1| from the dynamic table.
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "e=ff");
-    // "key2: value2"
-    ExpectIndex(65);
 
     CompareWithExpectedEncoding(headers);
   }
@@ -326,14 +327,14 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
     headers["key2"] = "value2";
     headers["cookie"] = "a=bb; b=cc; c=dd";
 
+    // "key2: value2"
+    ExpectIndex(65);
     // "cookie: a=bb"
     ExpectIndex(64);
     // This cookie evicts |key2| from the dynamic table.
     ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "b=cc");
     // "cookie: c=dd"
     ExpectIndex(64);
-    // "key2: value2"
-    ExpectIndexedLiteral("key2", "value2");
 
     CompareWithExpectedEncoding(headers);
   }
@@ -341,26 +342,24 @@ TEST_F(HpackEncoderTest, MultipleEncodingPasses) {
 
 TEST_F(HpackEncoderTest, PseudoHeadersFirst) {
   SpdyHeaderBlock headers;
-  // A pseudo-header to be indexed.
-  headers[":authority"] = "www.example.com";
   // A pseudo-header that should not be indexed.
   headers[":path"] = "/spam/eggs.html";
+  // A pseudo-header to be indexed.
+  headers[":authority"] = "www.example.com";
   // A regular header which precedes ":" alphabetically, should still be encoded
   // after pseudo-headers.
   headers["-foo"] = "bar";
   headers["foo"] = "bar";
   headers["cookie"] = "c=dd";
 
-  // Pseudo-headers are encoded in alphabetical order.
+  // Headers are indexed in the order in which they were added.
   // This entry pushes "cookie: a=bb" back to 63.
+  ExpectNonIndexedLiteral(":path", "/spam/eggs.html");
   ExpectIndexedLiteral(peer_.table()->GetByName(":authority"),
                        "www.example.com");
-  ExpectNonIndexedLiteral(":path", "/spam/eggs.html");
-  // Regular headers are endoded in alphabetical order.
-  // This entry pushes "cookie: a=bb" back to 64.
   ExpectIndexedLiteral("-foo", "bar");
-  ExpectIndex(64);
   ExpectIndexedLiteral("foo", "bar");
+  ExpectIndexedLiteral(peer_.table()->GetByName("cookie"), "c=dd");
   CompareWithExpectedEncoding(headers);
 }
 

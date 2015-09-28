@@ -27,9 +27,10 @@ SpdyHeaderBlock SpdyUtils::ConvertSpdy3ResponseHeadersToSpdy4(
     SpdyHeaderBlock response_headers) {
   // SPDY/4 headers include neither the version field nor the response details.
   response_headers.erase(":version");
-  size_t end_of_code = response_headers[":status"].find(' ');
+  StringPiece status_value = response_headers[":status"];
+  size_t end_of_code = status_value.find(' ');
   if (end_of_code != string::npos) {
-    response_headers[":status"].erase(end_of_code);
+    response_headers[":status"] = status_value.substr(0, end_of_code);
   }
   return response_headers;
 }

@@ -4576,7 +4576,7 @@ TEST_P(SpdySessionTest, SplitHeaders) {
 
   SpdyHeaderBlock::const_iterator it = response_headers.find("alpha");
   std::string alpha_val =
-      (it == response_headers.end()) ? std::string() : it->second;
+      (it == response_headers.end()) ? std::string() : it->second.as_string();
   EXPECT_EQ("beta", alpha_val);
 
   GURL request_url =

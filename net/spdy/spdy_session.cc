@@ -66,8 +66,9 @@ scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
   for (SpdyHeaderBlock::const_iterator it = headers.begin();
        it != headers.end(); ++it) {
     headers_list->AppendString(
-        it->first + ": " +
-        ElideHeaderValueForNetLog(capture_mode, it->first, it->second));
+        it->first.as_string() + ": " +
+        ElideHeaderValueForNetLog(capture_mode, it->first.as_string(),
+                                  it->second.as_string()));
   }
   return headers_list.Pass();
 }

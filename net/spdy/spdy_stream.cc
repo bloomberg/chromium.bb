@@ -882,21 +882,23 @@ int SpdyStream::MergeWithResponseHeaders(
   for (SpdyHeaderBlock::const_iterator it = new_response_headers.begin();
       it != new_response_headers.end(); ++it) {
     // Disallow uppercase headers.
-    if (ContainsUppercaseAscii(it->first)) {
-      session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
-                            "Upper case characters in header: " + it->first);
+    if (ContainsUppercaseAscii(it->first.as_string())) {
+      session_->ResetStream(
+          stream_id_, RST_STREAM_PROTOCOL_ERROR,
+          "Upper case characters in header: " + it->first.as_string());
       return ERR_SPDY_PROTOCOL_ERROR;
     }
 
-    SpdyHeaderBlock::iterator it2 = response_headers_.lower_bound(it->first);
+    SpdyHeaderBlock::iterator it2 =
+        response_headers_.find(it->first.as_string());
     // Disallow duplicate headers.  This is just to be conservative.
-    if (it2 != response_headers_.end() && it2->first == it->first) {
+    if (it2 != response_headers_.end()) {
       session_->ResetStream(stream_id_, RST_STREAM_PROTOCOL_ERROR,
-                            "Duplicate header: " + it->first);
+                            "Duplicate header: " + it->first.as_string());
       return ERR_SPDY_PROTOCOL_ERROR;
     }
 
-    response_headers_.insert(it2, *it);
+    response_headers_.insert(*it);
   }
 
   // If delegate_ is not yet attached, we'll call

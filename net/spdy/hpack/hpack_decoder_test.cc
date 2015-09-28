@@ -136,13 +136,14 @@ TEST_F(HpackDecoderTest, HandleHeaderRepresentation) {
   // Finish and emit all headers.
   decoder_.HandleControlFrameHeadersComplete(0, nullptr);
 
+  // Resulting decoded headers are in the same order as input.
   EXPECT_THAT(decoded_block(),
               ElementsAre(Pair("cookie", " part 1; part 2 ; part3;  fin!"),
-                          Pair("empty", ""),
-                          Pair("empty-joined", string("\0foo\0\0", 6)),
-                          Pair("joineD", string("value 1\0value 2", 15)),
+                          Pair("passed-through", StringPiece("foo\0baz", 7)),
                           Pair("joined", "not joined"),
-                          Pair("passed-through", string("foo\0baz", 7))));
+                          Pair("joineD", StringPiece("value 1\0value 2", 15)),
+                          Pair("empty", ""),
+                          Pair("empty-joined", StringPiece("\0foo\0\0", 6))));
 }
 
 // Decoding an encoded name with a valid string literal should work.
@@ -387,8 +388,8 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
 
   EXPECT_THAT(
       header_set,
-      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
-                  Pair(":path", "/"), Pair(":scheme", "http")));
+      ElementsAre(Pair(":method", "GET"), Pair(":scheme", "http"),
+                  Pair(":path", "/"), Pair(":authority", "www.example.com")));
 
   expectEntry(62, 57, ":authority", "www.example.com");
   EXPECT_EQ(57u, decoder_peer_.header_table()->size());
@@ -420,8 +421,8 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
 
   EXPECT_THAT(
       header_set,
-      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
-                  Pair(":path", "/"), Pair(":scheme", "http"),
+      ElementsAre(Pair(":method", "GET"), Pair(":scheme", "http"),
+                  Pair(":path", "/"), Pair(":authority", "www.example.com"),
                   Pair("cache-control", "no-cache")));
 
   expectEntry(62, 53, "cache-control", "no-cache");
@@ -457,11 +458,11 @@ TEST_F(HpackDecoderTest, SectionD4RequestHuffmanExamples) {
       "25a849e95bb8e8b4bf");
   header_set = DecodeBlockExpectingSuccess(third);
 
-  EXPECT_THAT(
-      header_set,
-      ElementsAre(Pair(":authority", "www.example.com"), Pair(":method", "GET"),
-                  Pair(":path", "/index.html"), Pair(":scheme", "https"),
-                  Pair("custom-key", "custom-value")));
+  EXPECT_THAT(header_set,
+              ElementsAre(Pair(":method", "GET"), Pair(":scheme", "https"),
+                          Pair(":path", "/index.html"),
+                          Pair(":authority", "www.example.com"),
+                          Pair("custom-key", "custom-value")));
 
   expectEntry(62, 54, "custom-key", "custom-value");
   expectEntry(63, 53, "cache-control", "no-cache");
@@ -634,9 +635,9 @@ TEST_F(HpackDecoderTest, SectionD6ResponseHuffmanExamples) {
   EXPECT_THAT(
       header_set,
       ElementsAre(Pair(":status", "200"), Pair("cache-control", "private"),
-                  Pair("content-encoding", "gzip"),
                   Pair("date", "Mon, 21 Oct 2013 20:13:22 GMT"),
                   Pair("location", "https://www.example.com"),
+                  Pair("content-encoding", "gzip"),
                   Pair("set-cookie",
                        "foo=ASDJKHQKBZXOQWEOPIUAXQWEOIU;"
                        " max-age=3600; version=1")));

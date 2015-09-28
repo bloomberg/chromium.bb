@@ -999,7 +999,7 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
       control_frame->size());
 
   EXPECT_THAT(visitor.headers_,
-              testing::ElementsAre(testing::Pair("name", value)));
+              testing::ElementsAre(testing::Pair("name", StringPiece(value))));
 }
 
 TEST_P(SpdyFramerTest, BasicCompression) {
@@ -1063,14 +1063,14 @@ TEST_P(SpdyFramerTest, BasicCompression) {
 #if defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(149u, compressed_size4);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(101u, compressed_size4);
+    EXPECT_EQ(99u, compressed_size4);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   } else {
     EXPECT_EQ(165u, uncompressed_size4);
 #if defined(USE_SYSTEM_ZLIB)
     EXPECT_EQ(175u, compressed_size4);
 #else  // !defined(USE_SYSTEM_ZLIB)
-    EXPECT_EQ(102u, compressed_size4);
+    EXPECT_EQ(99u, compressed_size4);
 #endif  // !defined(USE_SYSTEM_ZLIB)
   }
 

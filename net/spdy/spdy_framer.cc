@@ -1330,7 +1330,7 @@ void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
 
   WriteLengthZ(headers->size(), length_length, kZStandardData, z);
 
-  std::map<std::string, std::string>::const_iterator it;
+  SpdyHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
     WriteLengthZ(it->first.size(), length_length, kZStandardData, z);
     WriteZ(it->first, kZStandardData, z);

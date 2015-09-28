@@ -1652,7 +1652,7 @@
       'spdy/spdy_frame_builder_test.cc',
       'spdy/spdy_frame_reader_test.cc',
       'spdy/spdy_framer_test.cc',
-      'spdy/spdy_header_block_unittest.cc',
+      'spdy/spdy_header_block_test.cc',
       'spdy/spdy_headers_block_parser_test.cc',
       'spdy/spdy_http_stream_unittest.cc',
       'spdy/spdy_http_utils_unittest.cc',

@@ -117,7 +117,7 @@ class QuicSpdyServerStreamTest : public ::testing::TestWithParam<QuicVersion> {
     return QuicSpdyServerStreamPeer::body(stream_.get());
   }
 
-  const string& StreamHeadersValue(const string& key) {
+  StringPiece StreamHeadersValue(const string& key) {
     return (*stream_->mutable_headers())[key];
   }
 
@@ -227,9 +227,8 @@ TEST_P(QuicSpdyServerStreamTest, TestSendErrorResponse) {
 
 TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
-  request_headers["content-length"] = "11";
-  request_headers["content-length"].push_back('\0');
-  request_headers["content-length"].append("12");
+  // \000 is a way to write the null byte when followed by a literal digit.
+  request_headers["content-length"] = StringPiece("11\00012", 5);
 
   headers_string_ =
       SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());
@@ -247,8 +246,8 @@ TEST_P(QuicSpdyServerStreamTest, InvalidMultipleContentLength) {
 
 TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
   SpdyHeaderBlock request_headers;
-  request_headers["content-length"] = '\0';
-  request_headers["content-length"].append("12");
+  // \000 is a way to write the null byte when followed by a literal digit.
+  request_headers["content-length"] = StringPiece("\00012", 3);
 
   headers_string_ =
       SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());
@@ -266,9 +265,8 @@ TEST_P(QuicSpdyServerStreamTest, InvalidLeadingNullContentLength) {
 
 TEST_P(QuicSpdyServerStreamTest, ValidMultipleContentLength) {
   SpdyHeaderBlock request_headers;
-  request_headers["content-length"] = "11";
-  request_headers["content-length"].push_back('\0');
-  request_headers["content-length"].append("11");
+  // \000 is a way to write the null byte when followed by a literal digit.
+  request_headers["content-length"] = StringPiece("11\00011", 5);
 
   headers_string_ =
       SpdyUtils::SerializeUncompressedHeaders(request_headers, GetParam());

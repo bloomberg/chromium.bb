@@ -112,7 +112,8 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
 
       for (net::SpdyHeaderBlock::const_iterator it = request_headers.begin();
            it != request_headers.end(); ++it) {
-        info->request_headers.push_back(std::make_pair(it->first, it->second));
+        info->request_headers.push_back(
+            std::make_pair(it->first.as_string(), it->second.as_string()));
       }
       info->request_headers_text = "";
       break;
