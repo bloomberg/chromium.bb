@@ -6,10 +6,6 @@
  * @fileoverview
  * Styles used for animating settings subpages.
  */
-neon-animated-pages ::content > * {
+neon-animated-pages ::content > .iron-selected {
   position: static;
-}
-
-neon-animated-pages ::content > .neon-animating {
-  position: absolute;
 }

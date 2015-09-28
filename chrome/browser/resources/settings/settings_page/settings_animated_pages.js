@@ -58,10 +58,10 @@ Polymer({
     var newRouteIsSubpage = newRoute && newRoute.section == this.section;
     var oldRouteIsSubpage = oldRoute && oldRoute.section == this.section;
 
-    // If two routes are at the same level, or if either the new or old route is
-    // not a subpage, fade in and out.
     if (!newRouteIsSubpage || !oldRouteIsSubpage ||
         newRoute.subpage.length == oldRoute.subpage.length) {
+      // If two routes are at the same level, or if either the new or old route
+      // is not a subpage, fade in and out.
       this.$.animatedPages.exitAnimation = 'fade-out-animation';
       this.$.animatedPages.entryAnimation = 'fade-in-animation';
     } else {
@@ -75,14 +75,8 @@ Polymer({
       }
     }
 
-    if (newRouteIsSubpage) {
-      // TODO(tommycli): Support paths where the final component carries
-      // data rather than referring to a specific subpage.
-      // E.g. internet > internet/known-networks > internet/detail/wifi1_guid
-      this.$.animatedPages.selected = newRoute.subpage.slice(-1)[0];
-    } else {
-      this.$.animatedPages.selected = '';
-    }
+    this.$.animatedPages.selected =
+        newRouteIsSubpage ? newRoute.subpage.slice(-1)[0] : '';
   },
 
   /**

@@ -73,18 +73,36 @@ Polymer({
   },
 
   /** @private */
-  expanded_: false,
+  currentRouteChanged_: function(newRoute, oldRoute) {
+    var newExpanded = newRoute.section == this.section;
+    var oldExpanded = oldRoute && oldRoute.section == this.section;
 
-  /** @private */
-  currentRouteChanged_: function() {
-    var expanded = this.currentRoute.section == this.section;
+    var visible = newExpanded || this.currentRoute.section == '';
 
-    if (expanded != this.expanded_) {
-      this.expanded_ = expanded;
-      this.playAnimation(expanded ? 'expand' : 'collapse');
+    // If the user navigates directly to a subpage, skip all the animations.
+    if (!oldRoute) {
+      if (newExpanded) {
+        // If we navigate directly to a subpage, skip animations.
+        this.classList.add('expanded');
+        this.expandContainer.classList.add('expanded');
+      } else if (!visible) {
+        this.hidden = true;
+        this.$.card.elevation = 0;
+      }
+
+      return;
     }
 
-    var visible = expanded || this.currentRoute.section == '';
+    if (newExpanded && !oldExpanded) {
+      this.playAnimation('expand');
+    } else if (oldExpanded && !newExpanded) {
+      // For contraction, we defer the animation to allow
+      // settings-animated-pages to reflow the new page correctly.
+      this.async(function() {
+        this.playAnimation('collapse');
+      }.bind(this));
+    }
+
     this.$.card.elevation = visible ? 1 : 0;
 
     // Remove 'hidden' class immediately, but defer adding it if we are invisble
@@ -97,7 +115,7 @@ Polymer({
   onExpandAnimationComplete_: function() {
     this.hidden = this.currentRoute.section != '' &&
                   this.currentRoute.section != this.section;
-  }
+  },
 });
 
 Polymer({
@@ -158,12 +176,12 @@ Polymer({
     section.classList.remove('expanded');
     section.expandContainer.classList.remove('expanded');
 
-    // Get the placeholder coordinates before reflowing.
-    var newRect = section.$.placeholder.getBoundingClientRect();
+    var card = section.$.card;
+    var newRect = card.getBoundingClientRect();
 
     section.classList.add('neon-animating');
 
-    this._effect = new KeyframeEffect(section.$.card, [
+    this._effect = new KeyframeEffect(card, [
       {'top': oldRect.top + 'px', 'height': oldRect.height + 'px'},
       {'top': newRect.top + 'px', 'height': newRect.height + 'px'},
     ], this.timingFromConfig(config));
