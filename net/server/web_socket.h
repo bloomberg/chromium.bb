@@ -27,10 +27,7 @@ class WebSocket final {
     FRAME_ERROR
   };
 
-  static scoped_ptr<WebSocket> CreateWebSocket(
-      HttpServer* server,
-      HttpConnection* connection,
-      const HttpServerRequestInfo& request);
+  WebSocket(HttpServer* server, HttpConnection* connection);
 
   void Accept(const HttpServerRequestInfo& request);
   ParseResult Read(std::string* message);
@@ -38,14 +35,12 @@ class WebSocket final {
   ~WebSocket();
 
  private:
-  WebSocket(HttpServer* server,
-            HttpConnection* connection,
-            const HttpServerRequestInfo& request);
+  void Fail();
+  void SendErrorResponse(const std::string& message);
 
   HttpServer* const server_;
   HttpConnection* const connection_;
   scoped_ptr<WebSocketEncoder> encoder_;
-  std::string response_extensions_;
   bool closed_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocket);

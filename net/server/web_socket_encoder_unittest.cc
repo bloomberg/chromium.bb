@@ -3,30 +3,76 @@
 // found in the LICENSE file.
 
 #include "net/server/web_socket_encoder.h"
+
+#include "net/websockets/websocket_deflate_parameters.h"
+#include "net/websockets/websocket_extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
+TEST(WebSocketEncoderHandshakeTest, EmptyRequestShouldBeRejected) {
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server =
+      WebSocketEncoder::CreateServer("", &params);
+
+  EXPECT_FALSE(server);
+}
+
 TEST(WebSocketEncoderHandshakeTest,
      CreateServerWithoutClientMaxWindowBitsParameter) {
-  std::string response_extensions;
-  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer(
-      "permessage-deflate", &response_extensions));
-  // The response must not include client_max_window_bits if the client didn't
-  // declare that it accepts the parameter.
-  EXPECT_EQ("permessage-deflate; server_max_window_bits=15",
-            response_extensions);
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server =
+      WebSocketEncoder::CreateServer("permessage-deflate", &params);
+
+  ASSERT_TRUE(server);
+  EXPECT_TRUE(server->deflate_enabled());
+  EXPECT_EQ("permessage-deflate", params.AsExtension().ToString());
 }
 
 TEST(WebSocketEncoderHandshakeTest,
      CreateServerWithServerNoContextTakeoverParameter) {
-  std::string response_extensions;
-  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer(
-      "permessage-deflate; server_no_context_takeover", &response_extensions));
-  EXPECT_EQ(
-      "permessage-deflate; server_max_window_bits=15"
-      "; server_no_context_takeover",
-      response_extensions);
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+      "permessage-deflate; server_no_context_takeover", &params);
+  ASSERT_TRUE(server);
+  EXPECT_TRUE(server->deflate_enabled());
+  EXPECT_EQ("permessage-deflate; server_no_context_takeover",
+            params.AsExtension().ToString());
+}
+
+TEST(WebSocketEncoderHandshakeTest, FirstExtensionShouldBeChosen) {
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+      "permessage-deflate; server_no_context_takeover,"
+      "permessage-deflate; server_max_window_bits=15",
+      &params);
+
+  ASSERT_TRUE(server);
+  EXPECT_TRUE(server->deflate_enabled());
+  EXPECT_EQ("permessage-deflate; server_no_context_takeover",
+            params.AsExtension().ToString());
+}
+
+TEST(WebSocketEncoderHandshakeTest, FirstValidExtensionShouldBeChosen) {
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server = WebSocketEncoder::CreateServer(
+      "permessage-deflate; Xserver_no_context_takeover,"
+      "permessage-deflate; server_max_window_bits=15",
+      &params);
+
+  ASSERT_TRUE(server);
+  EXPECT_TRUE(server->deflate_enabled());
+  EXPECT_EQ("permessage-deflate; server_max_window_bits=15",
+            params.AsExtension().ToString());
+}
+
+TEST(WebSocketEncoderHandshakeTest, AllExtensionsAreUnknownOrMalformed) {
+  WebSocketDeflateParameters params;
+  scoped_ptr<WebSocketEncoder> server =
+      WebSocketEncoder::CreateServer("unknown, permessage-deflate; x", &params);
+
+  ASSERT_TRUE(server);
+  EXPECT_FALSE(server->deflate_enabled());
 }
 
 class WebSocketEncoderTest : public testing::Test {
@@ -35,7 +81,7 @@ class WebSocketEncoderTest : public testing::Test {
 
   void SetUp() override {
     std::string response_extensions;
-    server_.reset(WebSocketEncoder::CreateServer("", &response_extensions));
+    server_ = WebSocketEncoder::CreateServer();
     EXPECT_EQ(std::string(), response_extensions);
     client_.reset(WebSocketEncoder::CreateClient(""));
   }
@@ -50,16 +96,28 @@ class WebSocketEncoderCompressionTest : public WebSocketEncoderTest {
   WebSocketEncoderCompressionTest() : WebSocketEncoderTest() {}
 
   void SetUp() override {
-    std::string response_extensions;
-    server_.reset(WebSocketEncoder::CreateServer(
-        "permessage-deflate; client_max_window_bits", &response_extensions));
-    EXPECT_EQ(
-        "permessage-deflate; server_max_window_bits=15; "
-        "client_max_window_bits=15",
-        response_extensions);
-    client_.reset(WebSocketEncoder::CreateClient(response_extensions));
+    WebSocketDeflateParameters params;
+    server_ = WebSocketEncoder::CreateServer(
+        "permessage-deflate; client_max_window_bits", &params);
+    ASSERT_TRUE(server_);
+    EXPECT_TRUE(server_->deflate_enabled());
+    EXPECT_EQ("permessage-deflate; client_max_window_bits=15",
+              params.AsExtension().ToString());
+    client_.reset(
+        WebSocketEncoder::CreateClient(params.AsExtension().ToString()));
   }
 };
+
+TEST_F(WebSocketEncoderTest, DeflateDisabledEncoder) {
+  scoped_ptr<WebSocketEncoder> server(WebSocketEncoder::CreateServer());
+  scoped_ptr<WebSocketEncoder> client(WebSocketEncoder::CreateClient(""));
+
+  ASSERT_TRUE(server);
+  ASSERT_TRUE(client);
+
+  EXPECT_FALSE(server->deflate_enabled());
+  EXPECT_FALSE(client->deflate_enabled());
+}
 
 TEST_F(WebSocketEncoderTest, ClientToServer) {
   std::string frame("ClientToServer");

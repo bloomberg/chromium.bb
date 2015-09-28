@@ -16,61 +16,50 @@
 
 namespace net {
 
-class WebSocketEncoder {
+class WebSocketDeflateParameters;
+
+class WebSocketEncoder final {
  public:
+  static const char kClientExtensions[];
+
   ~WebSocketEncoder();
 
-  static WebSocketEncoder* CreateServer(const std::string& request_extensions,
-                                        std::string* response_extensions);
-
-  static const char kClientExtensions[];
+  // Creates and returns an encoder for a server without extensions.
+  static scoped_ptr<WebSocketEncoder> CreateServer();
+  // Creates and returns an encoder.
+  // |extensions| is the value of a Sec-WebSocket-Extensions header.
+  // Returns nullptr when there is an error.
+  static scoped_ptr<WebSocketEncoder> CreateServer(
+      const std::string& extensions,
+      WebSocketDeflateParameters* params);
+  // TODO(yhirano): Return a scoped_ptr instead of a raw pointer.
   static WebSocketEncoder* CreateClient(const std::string& response_extensions);
 
   WebSocket::ParseResult DecodeFrame(const base::StringPiece& frame,
                                      int* bytes_consumed,
                                      std::string* output);
-
   void EncodeFrame(const std::string& frame,
                    int masking_key,
                    std::string* output);
 
- private:
-  explicit WebSocketEncoder(bool is_server);
-  WebSocketEncoder(bool is_server,
-                   int deflate_bits,
-                   int inflate_bits,
-                   bool no_context_takeover);
+  bool deflate_enabled() const { return deflater_; }
 
-  // Parses a value in the Sec-WebSocket-Extensions header. If it contains a
-  // single element of the permessage-deflate extension, stores the result of
-  // parsing the parameters of the extension into the given variables.
-  // Otherwise, returns with *deflate set to false.
-  //
-  // - If the client_max_window_bits parameter is missing, *client_window_bits
-  //   defaults to 15.
-  // - If the client_max_window_bits parameter has an invalid value,
-  //   *client_window_bits will be set to 0.
-  // - If the server_max_window_bits parameter is missing, *server_window_bits
-  //   defaults to 15.
-  // - If the server_max_window_bits parameter has an invalid value,
-  //   *client_window_bits will be set to 0.
-  //
-  // TODO(tyoshino): Consider using a struct than taking a lot of pointers for
-  // output.
-  static void ParseExtensions(const std::string& header_value,
-                              bool* deflate,
-                              bool* has_client_window_bits,
-                              int* client_window_bits,
-                              int* server_window_bits,
-                              bool* client_no_context_takeover,
-                              bool* server_no_context_takeover);
+ private:
+  enum Type {
+    FOR_SERVER,
+    FOR_CLIENT,
+  };
+
+  WebSocketEncoder(Type type,
+                   scoped_ptr<WebSocketDeflater> deflater,
+                   scoped_ptr<WebSocketInflater> inflater);
 
   bool Inflate(std::string* message);
   bool Deflate(const std::string& message, std::string* output);
 
+  Type type_;
   scoped_ptr<WebSocketDeflater> deflater_;
   scoped_ptr<WebSocketInflater> inflater_;
-  bool is_server_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEncoder);
 };

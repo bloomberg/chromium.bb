@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "net/http/http_util.h"
 
 namespace net {
 
@@ -18,6 +19,8 @@ WebSocketExtension::Parameter::Parameter(const std::string& name,
                                          const std::string& value)
     : name_(name), value_(value) {
   DCHECK(!value.empty());
+  // |extension-param| must be a token.
+  DCHECK(HttpUtil::IsToken(value));
 }
 
 bool WebSocketExtension::Parameter::Equals(const Parameter& other) const {
@@ -43,6 +46,24 @@ bool WebSocketExtension::Equals(const WebSocketExtension& other) const {
     other_parameters.insert(std::make_pair(p.name(), p.value()));
   }
   return this_parameters == other_parameters;
+}
+
+std::string WebSocketExtension::ToString() const {
+  if (name_.empty())
+    return std::string();
+
+  std::string result = name_;
+
+  for (const auto& param : parameters_) {
+    result += "; " + param.name();
+    if (!param.HasValue())
+      continue;
+
+    // |extension-param| must be a token and we don't need to quote it.
+    DCHECK(HttpUtil::IsToken(param.value()));
+    result += "=" + param.value();
+  }
+  return result;
 }
 
 }  // namespace net

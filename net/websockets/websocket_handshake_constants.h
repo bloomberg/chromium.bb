@@ -13,6 +13,7 @@
 #define NET_WEBSOCKETS_WEBSOCKET_HANDSHAKE_CONSTANTS_H_
 
 #include "base/basictypes.h"
+#include "net/base/net_export.h"
 
 // This file plases constants inside the ::net::websockets namespace to avoid
 // risk of collisions with other symbols in libnet.
@@ -52,7 +53,7 @@ extern const char kUpgrade[];
 
 // "258EAFA5-E914-47DA-95CA-C5AB0DC85B11" as defined in section 4.1 of
 // RFC6455.
-extern const char kWebSocketGuid[];
+extern const char NET_EXPORT kWebSocketGuid[];
 
 // Colon-prefixed lowercase headers for SPDY3.
 

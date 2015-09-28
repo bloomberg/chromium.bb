@@ -95,6 +95,13 @@ class NET_EXPORT_PRIVATE WebSocketDeflateParameters {
     client_max_window_bits_ = WindowBits(bits, true, true);
   }
 
+  int PermissiveServerMaxWindowBits() const {
+    return server_max_window_bits_.PermissiveBits();
+  }
+  int PermissiveClientMaxWindowBits() const {
+    return client_max_window_bits_.PermissiveBits();
+  }
+
   // Return true if |bits| is valid as a max_window_bits value.
   static bool IsValidWindowBits(int bits) { return 8 <= bits && bits <= 15; }
 
@@ -103,6 +110,10 @@ class NET_EXPORT_PRIVATE WebSocketDeflateParameters {
     WindowBits() : WindowBits(0, false, false) {}
     WindowBits(int16_t bits, bool is_specified, bool has_value)
         : bits(bits), is_specified(is_specified), has_value(has_value) {}
+
+    int PermissiveBits() const {
+      return (is_specified && has_value) ? bits : 15;
+    }
 
     int16_t bits;
     // True when "window bits" parameter appears in the parameters.

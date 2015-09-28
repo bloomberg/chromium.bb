@@ -1734,6 +1734,7 @@
       'websockets/websocket_end_to_end_test.cc',
       'websockets/websocket_errors_test.cc',
       'websockets/websocket_extension_parser_test.cc',
+      'websockets/websocket_extension_test.cc',
       'websockets/websocket_frame_parser_test.cc',
       'websockets/websocket_frame_test.cc',
       'websockets/websocket_handshake_challenge_test.cc',

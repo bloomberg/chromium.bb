@@ -44,6 +44,7 @@ class NET_EXPORT_PRIVATE WebSocketExtension {
   const std::string& name() const { return name_; }
   const std::vector<Parameter>& parameters() const { return parameters_; }
   bool Equals(const WebSocketExtension& other) const;
+  std::string ToString() const;
 
   // The default copy constructor and the assignment operator are defined:
   // we need them.
