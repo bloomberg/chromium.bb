@@ -6,6 +6,7 @@
 #include "modules/permissions/Permissions.h"
 
 #include "bindings/core/v8/Dictionary.h"
+#include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/modules/v8/V8MidiPermissionDescriptor.h"
@@ -27,24 +28,7 @@ namespace blink {
 
 namespace {
 
-// Here we eagerly reject any permissions that we do not support.
-// If the permission is handled here, it will not be propogated up to the content layer.
-// The return value indicates if the permissions has been handled by the funciton.
-bool handleNotSupportedPermission(
-    ScriptState* scriptState, const Dictionary& rawPermission, ScriptPromiseResolver* resolver, WebPermissionType type, TrackExceptionState& exceptionState)
-{
-    if (type == WebPermissionTypePushNotifications) {
-        PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-        // Only "userVisibleOnly" push is supported for now.
-        if (!pushPermission.userVisibleOnly()) {
-            resolver->reject(DOMException::create(NotSupportedError, "Push Permission without userVisibleOnly:true isn't supported yet."));
-            return true;
-        }
-    }
-    return false;
-}
-
-WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& rawPermission, const PermissionDescriptor& permission, TrackExceptionState& exceptionState)
+WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& rawPermission, const PermissionDescriptor& permission, ExceptionState& exceptionState)
 {
     const String& name = permission.name();
     if (name == "geolocation")
@@ -60,6 +44,44 @@ WebPermissionType getPermissionType(ScriptState* scriptState, const Dictionary& 
 
     ASSERT_NOT_REACHED();
     return WebPermissionTypeGeolocation;
+}
+
+// Parses the raw permission dictionary and returns the PermissionType if
+// parsing was successful. If an exception occurs, it will be stored in
+// |exceptionState| and null will be returned. Therefore, the |exceptionState|
+// should be checked before attempting to use the returned permission as the
+// non-null assert will be fired otherwise.
+Nullable<WebPermissionType> parsePermission(ScriptState* scriptState, const Dictionary rawPermission, ExceptionState& exceptionState)
+{
+    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+
+    if (exceptionState.hadException()) {
+        exceptionState.throwTypeError(exceptionState.message());
+        return Nullable<WebPermissionType>();
+    }
+
+    WebPermissionType type = getPermissionType(scriptState, rawPermission, permission, exceptionState);
+    if (exceptionState.hadException()) {
+        exceptionState.throwTypeError(exceptionState.message());
+        return Nullable<WebPermissionType>();
+    }
+
+    // Here we reject any permissions which are not yet supported by Blink.
+    if (type == WebPermissionTypePushNotifications) {
+        PushPermissionDescriptor pushPermission = NativeValueTraits<PushPermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
+        if (exceptionState.hadException()) {
+            exceptionState.throwTypeError(exceptionState.message());
+            return Nullable<WebPermissionType>();
+        }
+
+        // Only "userVisibleOnly" push is supported for now.
+        if (!pushPermission.userVisibleOnly()) {
+            exceptionState.throwDOMException(NotSupportedError, "Push Permission without userVisibleOnly:true isn't supported yet.");
+            return Nullable<WebPermissionType>();
+        }
+    }
+
+    return Nullable<WebPermissionType>(type);
 }
 
 } // anonymous namespace
@@ -83,24 +105,19 @@ ScriptPromise Permissions::query(ScriptState* scriptState, const Dictionary& raw
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't query permissions."));
 
-    TrackExceptionState exceptionState;
-    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-
+    ExceptionState exceptionState(ExceptionState::GetterContext,  "query", "Permissions", scriptState->context()->Global(), scriptState->isolate());
+    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
-        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+        return exceptionState.reject(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-
-    WebPermissionType type = getPermissionType(scriptState, rawPermission, permission, exceptionState);
-    if (handleNotSupportedPermission(scriptState, rawPermission, resolver, type, exceptionState))
-        return promise;
 
     // If the current origin is a file scheme, it will unlikely return a
     // meaningful value because most APIs are broken on file scheme and no
     // permission prompt will be shown even if the returned permission will most
     // likely be "prompt".
-    client->queryPermission(type, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type));
+    client->queryPermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
@@ -110,20 +127,15 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Dictionary& r
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
-    TrackExceptionState exceptionState;
-    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-
+    ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
+    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
-        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+        return exceptionState.reject(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebPermissionType type = getPermissionType(scriptState, rawPermission, permission, exceptionState);
-    if (handleNotSupportedPermission(scriptState, rawPermission, resolver, type, exceptionState))
-        return promise;
-
-    client->requestPermission(type, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type));
+    client->requestPermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
@@ -133,27 +145,20 @@ ScriptPromise Permissions::request(ScriptState* scriptState, const Vector<Dictio
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't request permissions."));
 
-    TrackExceptionState exceptionState;
+    ExceptionState exceptionState(ExceptionState::GetterContext,  "request", "Permissions", scriptState->context()->Global(), scriptState->isolate());
     OwnPtr<WebVector<WebPermissionType>> permissions = adoptPtr(new WebVector<WebPermissionType>(rawPermissions.size()));
-
     for (size_t i = 0; i < rawPermissions.size(); ++i) {
         const Dictionary& rawPermission = rawPermissions[i];
-        PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
 
+        Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
         if (exceptionState.hadException())
-            return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+            return exceptionState.reject(scriptState);
 
-        permissions->operator[](i) = getPermissionType(scriptState, rawPermission, permission, exceptionState);
+        permissions->operator[](i) = type.get();
     }
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-
-    // We need to do this is a separate loop because we can't create the Resolver and Promise untile we are clear of all parsing/type errors.
-    for (size_t i = 0; i < rawPermissions.size(); ++i) {
-        if (handleNotSupportedPermission(scriptState, rawPermissions[i], resolver, (*permissions)[i], exceptionState))
-            return promise;
-    }
 
     client->requestPermissions(*permissions, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionsCallback(resolver, permissions.release()));
     return promise;
@@ -165,20 +170,15 @@ ScriptPromise Permissions::revoke(ScriptState* scriptState, const Dictionary& ra
     if (!client)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "In its current state, the global scope can't revoke permissions."));
 
-    TrackExceptionState exceptionState;
-    PermissionDescriptor permission = NativeValueTraits<PermissionDescriptor>::nativeValue(scriptState->isolate(), rawPermission.v8Value(), exceptionState);
-
+    ExceptionState exceptionState(ExceptionState::GetterContext,  "revoke", "Permissions", scriptState->context()->Global(), scriptState->isolate());
+    Nullable<WebPermissionType> type = parsePermission(scriptState, rawPermission, exceptionState);
     if (exceptionState.hadException())
-        return ScriptPromise::reject(scriptState, v8::Exception::TypeError(v8String(scriptState->isolate(), exceptionState.message())));
+        return exceptionState.reject(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    WebPermissionType type = getPermissionType(scriptState, rawPermission, permission, exceptionState);
-    if (handleNotSupportedPermission(scriptState, rawPermission, resolver, type, exceptionState))
-        return promise;
-
-    client->revokePermission(type, KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type));
+    client->revokePermission(type.get(), KURL(KURL(), scriptState->executionContext()->securityOrigin()->toString()), new PermissionCallback(resolver, type.get()));
     return promise;
 }
 
