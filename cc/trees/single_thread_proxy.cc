@@ -128,7 +128,6 @@ void SingleThreadProxy::SetVisible(bool visible) {
 
   if (scheduler_on_impl_thread_)
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
-  // Changing visibility could change ShouldComposite().
 }
 
 void SingleThreadProxy::SetThrottleFrameProduction(bool throttle) {
