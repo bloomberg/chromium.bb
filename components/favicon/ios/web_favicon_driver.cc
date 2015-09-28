@@ -32,6 +32,11 @@ void WebFaviconDriver::CreateForWebState(
                                               history_service, bookmark_model));
 }
 
+void WebFaviconDriver::FetchFavicon(const GURL& url) {
+  fetch_favicon_url_ = url;
+  FaviconDriverImpl::FetchFavicon(url);
+}
+
 gfx::Image WebFaviconDriver::GetFavicon() const {
   web::NavigationItem* item =
       web_state()->GetNavigationManager()->GetLastCommittedItem();
@@ -68,7 +73,7 @@ GURL WebFaviconDriver::GetActiveURL() {
 }
 
 bool WebFaviconDriver::GetActiveFaviconValidity() {
-  return GetFaviconStatus().valid;
+  return !ActiveURLChangedSinceFetchFavicon() && GetFaviconStatus().valid;
 }
 
 void WebFaviconDriver::SetActiveFaviconValidity(bool validity) {
@@ -76,7 +81,7 @@ void WebFaviconDriver::SetActiveFaviconValidity(bool validity) {
 }
 
 GURL WebFaviconDriver::GetActiveFaviconURL() {
-  return GetFaviconStatus().url;
+  return ActiveURLChangedSinceFetchFavicon() ? GURL() : GetFaviconStatus().url;
 }
 
 void WebFaviconDriver::SetActiveFaviconURL(const GURL& url) {
@@ -87,8 +92,17 @@ void WebFaviconDriver::SetActiveFaviconImage(const gfx::Image& image) {
   GetFaviconStatus().image = image;
 }
 
+bool WebFaviconDriver::ActiveURLChangedSinceFetchFavicon() {
+  // On iOS the active URL can change in between calls to FetchFavicon(). For
+  // instance, FetchFavicon() is not synchronously called when the active URL
+  // changes as a result of CRWSessionController::goToEntry().
+  // TODO(stuartmorgan): Remove this once iOS always triggers favicon fetches
+  // synchronously after active URL changes.
+  return GetActiveURL() != fetch_favicon_url_;
+}
+
 web::FaviconStatus& WebFaviconDriver::GetFaviconStatus() {
-  DCHECK(web_state()->GetNavigationManager()->GetVisibleItem());
+  DCHECK(!ActiveURLChangedSinceFetchFavicon());
   return web_state()->GetNavigationManager()->GetVisibleItem()->GetFavicon();
 }
 
@@ -106,7 +120,7 @@ WebFaviconDriver::~WebFaviconDriver() {
 void WebFaviconDriver::FaviconUrlUpdated(
     const std::vector<web::FaviconURL>& candidates) {
   DCHECK(!candidates.empty());
-  OnUpdateFaviconURL(FaviconURLsFromWebFaviconURLs(candidates));
+  OnUpdateFaviconURL(GetActiveURL(), FaviconURLsFromWebFaviconURLs(candidates));
 }
 
 }  // namespace favicon

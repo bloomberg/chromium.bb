@@ -29,6 +29,7 @@ class WebFaviconDriver : public web::WebStateObserver,
                                 bookmarks::BookmarkModel* bookmark_model);
 
   // FaviconDriver implementation.
+  void FetchFavicon(const GURL& url) override;
   gfx::Image GetFavicon() const override;
   bool FaviconIsValid() const override;
   int StartDownload(const GURL& url, int max_bitmap_size) override;
@@ -49,12 +50,18 @@ class WebFaviconDriver : public web::WebStateObserver,
                    bookmarks::BookmarkModel* bookmark_model);
   ~WebFaviconDriver() override;
 
+  // Returns whether the active URL has changed since FetchFavicon() was called.
+  bool ActiveURLChangedSinceFetchFavicon();
+
   // web::WebStateObserver implementation.
   void FaviconUrlUpdated(
       const std::vector<web::FaviconURL>& candidates) override;
 
   // Returns the active navigation entry's favicon.
   web::FaviconStatus& GetFaviconStatus();
+
+  // The URL passed to FetchFavicon().
+  GURL fetch_favicon_url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFaviconDriver);
 };

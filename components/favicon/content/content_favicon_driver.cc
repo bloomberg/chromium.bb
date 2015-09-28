@@ -161,11 +161,14 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
-  if (!web_contents()->GetController().GetLastCommittedEntry())
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
     return;
 
   favicon_urls_ = candidates;
-  OnUpdateFaviconURL(FaviconURLsFromContentFaviconURLs(candidates));
+  OnUpdateFaviconURL(entry->GetURL(),
+                     FaviconURLsFromContentFaviconURLs(candidates));
 }
 
 void ContentFaviconDriver::DidStartNavigationToPendingEntry(

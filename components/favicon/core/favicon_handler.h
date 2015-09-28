@@ -94,7 +94,8 @@ class FaviconHandler {
 
   // Message Handler.  Must be public, because also called from
   // PrerenderContents. Collects the |image_urls| list.
-  void OnUpdateFaviconURL(const std::vector<favicon::FaviconURL>& candidates);
+  void OnUpdateFaviconURL(const GURL& page_url,
+                          const std::vector<favicon::FaviconURL>& candidates);
 
   // Processes the current image_urls_ entry, requesting the image from the
   // history / download service.
@@ -153,7 +154,7 @@ class FaviconHandler {
                                   const gfx::Image& image);
 
   // Returns true if the favicon should be saved.
-  virtual bool ShouldSaveFavicon(const GURL& url);
+  virtual bool ShouldSaveFavicon();
 
  private:
   // For testing:
@@ -164,11 +165,8 @@ class FaviconHandler {
     DownloadRequest();
     ~DownloadRequest();
 
-    DownloadRequest(const GURL& url,
-                    const GURL& image_url,
-                    favicon_base::IconType icon_type);
+    DownloadRequest(const GURL& image_url, favicon_base::IconType icon_type);
 
-    GURL url;
     GURL image_url;
     favicon_base::IconType icon_type;
   };
@@ -178,13 +176,11 @@ class FaviconHandler {
     FaviconCandidate();
     ~FaviconCandidate();
 
-    FaviconCandidate(const GURL& url,
-                     const GURL& image_url,
+    FaviconCandidate(const GURL& image_url,
                      const gfx::Image& image,
                      float score,
                      favicon_base::IconType icon_type);
 
-    GURL url;
     GURL image_url;
     gfx::Image image;
     float score;
@@ -202,8 +198,7 @@ class FaviconHandler {
   // If the favicon has expired, asks the renderer to download the favicon.
   // Otherwise asks history to update the mapping between page url and icon
   // url with a callback to OnFaviconData when done.
-  void DownloadFaviconOrAskFaviconService(const GURL& page_url,
-                                          const GURL& icon_url,
+  void DownloadFaviconOrAskFaviconService(const GURL& icon_url,
                                           favicon_base::IconType icon_type);
 
   // See description above class for details.
@@ -212,20 +207,17 @@ class FaviconHandler {
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.
-  void ScheduleDownload(const GURL& url,
-                        const GURL& image_url,
+  void ScheduleDownload(const GURL& image_url,
                         favicon_base::IconType icon_type);
 
   // Updates |favicon_candidate_| and returns true if it is an exact match.
-  bool UpdateFaviconCandidate(const GURL& url,
-                              const GURL& image_url,
+  bool UpdateFaviconCandidate(const GURL& image_url,
                               const gfx::Image& image,
                               float score,
                               favicon_base::IconType icon_type);
 
   // Sets the image data for the favicon.
-  void SetFavicon(const GURL& url,
-                  const GURL& icon_url,
+  void SetFavicon(const GURL& icon_url,
                   const gfx::Image& image,
                   favicon_base::IconType icon_type);
 
@@ -241,9 +233,6 @@ class FaviconHandler {
   favicon::FaviconURL* current_candidate() {
     return (!image_urls_.empty()) ? &image_urls_.front() : NULL;
   }
-
-  // Returns whether the page's url changed since the favicon was requested.
-  bool PageChangedSinceFaviconWasRequested();
 
   // Returns the preferred size of the image. 0 means no preference (any size
   // will do).

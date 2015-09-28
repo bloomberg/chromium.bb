@@ -62,15 +62,14 @@ class FaviconDriver {
   virtual GURL GetActiveURL() = 0;
 
   // Returns whether the page's favicon is valid (returns false if the default
-  // favicon is being used). Requires GetActiveURL() to be valid.
+  // favicon is being used).
   virtual bool GetActiveFaviconValidity() = 0;
 
   // Sets whether the page's favicon is valid (if false, the default favicon is
   // being used).
   virtual void SetActiveFaviconValidity(bool valid) = 0;
 
-  // Returns the URL of the current page's favicon. Requires GetActiveURL() to
-  // be valid.
+  // Returns the URL of the current page's favicon.
   virtual GURL GetActiveFaviconURL() = 0;
 
   // Sets the URL of the favicon's bitmap.
@@ -83,8 +82,9 @@ class FaviconDriver {
   // necessarily 16x16. |icon_url| is the url the image is from. If
   // |is_active_favicon| is true the image corresponds to the favicon
   // (possibly empty) of the page.
-  virtual void OnFaviconAvailable(const gfx::Image& image,
+  virtual void OnFaviconAvailable(const GURL& page_url,
                                   const GURL& icon_url,
+                                  const gfx::Image& image,
                                   bool is_active_favicon) = 0;
 
   // Returns whether the driver is waiting for a download to complete or for
