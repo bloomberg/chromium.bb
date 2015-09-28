@@ -532,6 +532,9 @@ void TextAutosizer::updatePageInfo()
             return;
 
         LocalFrame* mainFrame = m_document->page()->deprecatedLocalMainFrame();
+        if (!mainFrame->view())
+            return;
+
         IntSize frameSize = m_document->settings()->textAutosizingWindowSizeOverride();
         if (frameSize.isEmpty())
             frameSize = windowSize();
