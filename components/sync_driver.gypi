@@ -157,6 +157,7 @@
         ['configuration_policy==1', {
           'dependencies': [
             'policy',
+            'policy_component',
           ],
           'sources': [
             'sync_driver/sync_policy_handler.cc',
