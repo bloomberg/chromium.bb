@@ -16,19 +16,23 @@
 #include "base/containers/stack_container.h"
 #include "base/location.h"
 #include "base/memory/linked_ptr.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
+#include "ui/gl/trace_util.h"
 
 namespace media {
 
 // Implementation of a pool of GpuMemoryBuffers used to back VideoFrames.
 class GpuMemoryBufferVideoFramePool::PoolImpl
     : public base::RefCountedThreadSafe<
-          GpuMemoryBufferVideoFramePool::PoolImpl> {
+          GpuMemoryBufferVideoFramePool::PoolImpl>,
+      public base::trace_event::MemoryDumpProvider {
  public:
   // |media_task_runner| is the media task runner associated with the
   // GL context provided by |gpu_factories|
@@ -58,10 +62,13 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   void CreateHardwareFrame(const scoped_refptr<VideoFrame>& video_frame,
                            const FrameReadyCB& cb);
 
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   friend class base::RefCountedThreadSafe<
       GpuMemoryBufferVideoFramePool::PoolImpl>;
-  ~PoolImpl();
+  ~PoolImpl() override;
 
   // Resource to represent a plane.
   struct PlaneResource {
@@ -365,6 +372,42 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
                             video_frame, frame_resources, frame_ready_cb));
 }
 
+bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  const uint64 tracing_process_id =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->GetTracingProcessId();
+  const int kImportance = 2;
+  for (const FrameResources* frame_resources : resources_pool_) {
+    for (const PlaneResource& plane_resource :
+         frame_resources->plane_resources) {
+      if (plane_resource.gpu_memory_buffer) {
+        gfx::GpuMemoryBufferId buffer_id =
+            plane_resource.gpu_memory_buffer->GetId();
+        std::string dump_name = base::StringPrintf(
+            "media/video_frame_memory/buffer_%d", buffer_id.id);
+        base::trace_event::MemoryAllocatorDump* dump =
+            pmd->CreateAllocatorDump(dump_name);
+        size_t buffer_size_in_bytes = gfx::BufferSizeForBufferFormat(
+            plane_resource.size, plane_resource.gpu_memory_buffer->GetFormat());
+        dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        buffer_size_in_bytes);
+        dump->AddScalar("free_size",
+                        base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                        frame_resources->in_use ? 0 : buffer_size_in_bytes);
+        base::trace_event::MemoryAllocatorDumpGuid shared_buffer_guid =
+            gfx::GetGpuMemoryBufferGUIDForTracing(tracing_process_id,
+                                                  buffer_id);
+        pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+        pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid, kImportance);
+      }
+    }
+  }
+  return true;
+}
+
 void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
     const scoped_refptr<VideoFrame>& video_frame,
     FrameResources* frame_resources,
@@ -575,11 +618,11 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
     PlaneResource& plane_resource = frame_resources->plane_resources[i];
     const size_t width = VideoFrame::Columns(i, format, size.width());
     const size_t height = VideoFrame::Rows(i, format, size.height());
-    const gfx::Size plane_size(width, height);
+    plane_resource.size = gfx::Size(width, height);
 
     const gfx::BufferFormat buffer_format = GpuMemoryBufferFormat(format, i);
     plane_resource.gpu_memory_buffer = gpu_factories_->AllocateGpuMemoryBuffer(
-        plane_size, buffer_format, gfx::BufferUsage::MAP);
+        plane_resource.size, buffer_format, gfx::BufferUsage::MAP);
 
     gles2->GenTextures(1, &plane_resource.texture_id);
     gles2->BindTexture(texture_target_, plane_resource.texture_id);
@@ -643,9 +686,14 @@ GpuMemoryBufferVideoFramePool::GpuMemoryBufferVideoFramePool(
     const scoped_refptr<base::TaskRunner>& worker_task_runner,
     const scoped_refptr<GpuVideoAcceleratorFactories>& gpu_factories)
     : pool_impl_(
-          new PoolImpl(media_task_runner, worker_task_runner, gpu_factories)) {}
+          new PoolImpl(media_task_runner, worker_task_runner, gpu_factories)) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      pool_impl_.get(), media_task_runner);
+}
 
 GpuMemoryBufferVideoFramePool::~GpuMemoryBufferVideoFramePool() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      pool_impl_.get());
 }
 
 void GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame(
