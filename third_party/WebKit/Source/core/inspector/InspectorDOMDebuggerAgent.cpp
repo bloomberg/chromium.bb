@@ -46,7 +46,7 @@
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/RemoteObjectId.h"
-#include "core/inspector/V8DebuggerAgent.h"
+#include "core/inspector/v8/V8DebuggerAgent.h"
 #include "platform/JSONValues.h"
 
 namespace {

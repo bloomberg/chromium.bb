@@ -31,6 +31,7 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/ScriptAsyncCallStack.h"
 #include "core/inspector/v8/V8Debugger.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -39,7 +40,7 @@ namespace blink {
 
 InspectorDebuggerAgent::InspectorDebuggerAgent(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
     : InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>("Debugger")
-    , m_v8DebuggerAgent(adoptPtrWillBeNoop(new V8DebuggerAgent(injectedScriptManager, debugger, this, contextGroupId)))
+    , m_v8DebuggerAgent(V8DebuggerAgent::create(injectedScriptManager, debugger, this, contextGroupId))
 {
 }
 
@@ -53,6 +54,7 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 DEFINE_TRACE(InspectorDebuggerAgent)
 {
     visitor->trace(m_v8DebuggerAgent);
+    visitor->trace(m_asyncCallTracker);
     InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>::trace(visitor);
 }
 
@@ -253,6 +255,16 @@ void InspectorDebuggerAgent::debuggerAgentDisabled()
     m_instrumentingAgents->setInspectorDebuggerAgent(nullptr);
 }
 
+void InspectorDebuggerAgent::asyncCallTrackingStateChanged(bool tracking)
+{
+    m_asyncCallTracker->asyncCallTrackingStateChanged(tracking);
+}
+
+void InspectorDebuggerAgent::resetAsyncOperations()
+{
+    m_asyncCallTracker->resetAsyncOperations();
+}
+
 bool InspectorDebuggerAgent::isPaused()
 {
     return m_v8DebuggerAgent->isPaused();
@@ -287,6 +299,7 @@ void InspectorDebuggerAgent::didExecuteScript()
 void InspectorDebuggerAgent::init()
 {
     m_v8DebuggerAgent->setInspectorState(m_state);
+    m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(m_v8DebuggerAgent.get(), m_instrumentingAgents.get()));
 }
 
 void InspectorDebuggerAgent::setFrontend(InspectorFrontend* frontend)

@@ -32,7 +32,8 @@
 #define AsyncCallTracker_h
 
 #include "core/CoreExport.h"
-#include "core/inspector/V8DebuggerAgent.h"
+#include "core/inspector/InstrumentingAgents.h"
+#include "core/inspector/v8/V8DebuggerAgent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -52,17 +53,16 @@ class MutationObserver;
 class ThreadableLoaderClient;
 class XMLHttpRequest;
 
-class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker>, public V8DebuggerAgent::AsyncCallTrackingListener {
+class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(AsyncCallTracker);
 public:
     AsyncCallTracker(V8DebuggerAgent*, InstrumentingAgents*);
-    ~AsyncCallTracker() override;
+    ~AsyncCallTracker();
 
-    // V8DebuggerAgent::AsyncCallTrackingListener implementation:
-    void asyncCallTrackingStateChanged(bool tracking) override;
-    void resetAsyncOperations() override;
+    void asyncCallTrackingStateChanged(bool tracking);
+    void resetAsyncOperations();
 
     void didInstallTimer(ExecutionContext*, int timerId, int timeout, bool singleShot);
     void didRemoveTimer(ExecutionContext*, int timerId);

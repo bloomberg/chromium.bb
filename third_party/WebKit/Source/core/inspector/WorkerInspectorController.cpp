@@ -34,7 +34,6 @@
 
 #include "core/InspectorBackendDispatcher.h"
 #include "core/InspectorFrontend.h"
-#include "core/inspector/AsyncCallTracker.h"
 #include "core/inspector/InjectedScriptHost.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorConsoleAgent.h"
@@ -135,7 +134,6 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
     OwnPtrWillBeRawPtr<WorkerDebuggerAgent> workerDebuggerAgent = WorkerDebuggerAgent::create(m_workerThreadDebugger.get(), workerGlobalScope, m_injectedScriptManager.get());
     m_workerDebuggerAgent = workerDebuggerAgent.get();
     m_agents.append(workerDebuggerAgent.release());
-    m_asyncCallTracker = adoptPtrWillBeNoop(new AsyncCallTracker(m_workerDebuggerAgent->v8DebuggerAgent(), m_instrumentingAgents.get()));
 
     v8::Isolate* isolate = workerGlobalScope->thread()->isolate();
     m_agents.append(InspectorProfilerAgent::create(isolate, m_injectedScriptManager.get(), 0));
@@ -252,7 +250,6 @@ DEFINE_TRACE(WorkerInspectorController)
     visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_workerDebuggerAgent);
-    visitor->trace(m_asyncCallTracker);
     visitor->trace(m_workerRuntimeAgent);
 }
 
