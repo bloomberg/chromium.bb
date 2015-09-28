@@ -32,8 +32,17 @@ vars = {
   # If you do not know, use the full path while defining your new deps entry.
   'googlecode_url': 'http://%s.googlecode.com/svn',
   'chromium_git': 'https://chromium.googlesource.com',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling libvpx
+  # and whatever else without interference from each other.
   'libvpx_revision': 'b33794b9132c8c1722206d6676c37177ccbaef2e',
-  'sfntly_revision': '1bdaae8fc788a5ac8936d68bf24f37d977a13dac',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling sfntly
+  # and whatever else without interference from each other.
+  'sfntly_revision': '130f832eddf98467e6578b548cb74ce17d04a26d',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling Skia
+  # and whatever else without interference from each other.
   'skia_revision': 'c9e190ddac3d193e89e580ea3819a55c28f15e61',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
@@ -157,8 +166,8 @@ deps = {
   'src/native_client':
    Var('chromium_git') + '/native_client/src/native_client.git' + '@' + Var('nacl_revision'),
 
-  'src/third_party/sfntly/cpp/src':
-    Var('chromium_git') + '/external/sfntly/cpp/src.git' + '@' +  Var('sfntly_revision'),
+  'src/third_party/sfntly/src':
+   Var('chromium_git') + '/external/github.com/googlei18n/sfntly.git' + '@' + Var('sfntly_revision'),
 
   'src/third_party/skia':
    Var('chromium_git') + '/skia.git' + '@' +  Var('skia_revision'),

@@ -1,7 +1,6 @@
 Name: sfntly
-URL: http://code.google.com/p/sfntly/
-Version: unknown
-Revision: 111
+URL: https://github.com/googlei18n/sfntly
+Version: 130f832eddf98467e6578b548cb74ce17d04a26d
 Security Critical: yes
 License: Apache 2.0
 License File: COPYING.txt
@@ -12,9 +11,4 @@ fonts (e.g. OpenType, TrueType).  We use it to subset the embedded font in the
 PDF generated in print preview so that the result PDF documents are
 significantly smaller and loaded faster.
 
-Local files (not taken from upstream):
-README.chromium
-src/subsetter/*
-
 COPYING.txt is the license file copied from upstream.
-A sfntly.gyp file has been added for building with Chromium.
