@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/tabs/tab_discard_state.h"
 
+#include "base/metrics/histogram.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 
 using content::WebContents;
@@ -16,6 +18,7 @@ const char kDiscardStateKey[] = "TabDiscardState";
 
 // static
 TabDiscardState* TabDiscardState::Get(WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   TabDiscardState* discard_state = static_cast<TabDiscardState*>(
       web_contents->GetUserData(&kDiscardStateKey));
 
@@ -31,6 +34,7 @@ TabDiscardState* TabDiscardState::Get(WebContents* web_contents) {
 
 // static
 void TabDiscardState::Set(WebContents* web_contents, TabDiscardState* state) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   web_contents->SetUserData(&kDiscardStateKey, state);
 }
 
@@ -43,6 +47,12 @@ bool TabDiscardState::IsDiscarded(WebContents* web_contents) {
 // static
 void TabDiscardState::SetDiscardState(WebContents* web_contents, bool state) {
   TabDiscardState* discard_state = TabDiscardState::Get(web_contents);
+  if (discard_state->is_discarded_ && !state) {
+    static int reload_count = 0;
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Tabs.Discard.ReloadCount", ++reload_count, 1,
+                                1000, 50);
+  }
+
   discard_state->is_discarded_ = state;
 }
 

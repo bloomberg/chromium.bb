@@ -1054,13 +1054,8 @@ void Browser::ActiveTabChanged(WebContents* old_contents,
   exclusive_access_manager_->OnTabDetachedFromView(old_contents);
 
   // Discarded tabs always get reloaded.
-  if (TabDiscardState::IsDiscarded(new_contents)) {
-    LOG(WARNING) << "Reloading discarded tab at " << index;
-    static int reload_count = 0;
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Tabs.Discard.ReloadCount", ++reload_count, 1, 1000, 50);
+  if (TabDiscardState::IsDiscarded(new_contents))
     chrome::Reload(this, CURRENT_TAB);
-  }
 
   // If we have any update pending, do it now.
   if (chrome_updater_factory_.HasWeakPtrs() && old_contents)
