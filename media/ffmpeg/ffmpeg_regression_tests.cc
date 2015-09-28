@@ -142,6 +142,10 @@ FFMPEG_TEST_CASE(Cr449958,
                  "security/449958.webm",
                  PIPELINE_OK,
                  PIPELINE_ERROR_DECODE);
+FFMPEG_TEST_CASE(Cr536601,
+                 "security/536601.m4a",
+                 PIPELINE_OK,
+                 PIPELINE_OK);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
