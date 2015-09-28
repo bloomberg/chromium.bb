@@ -11,6 +11,15 @@
 
 namespace content {
 
+// static
+bool BackgroundSyncNetworkObserver::ignore_network_change_notifier_ = false;
+
+// static
+void BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
+    bool ignore) {
+  ignore_network_change_notifier_ = ignore;
+}
+
 BackgroundSyncNetworkObserver::BackgroundSyncNetworkObserver(
     const base::Closure& network_changed_callback)
     : connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
@@ -47,22 +56,30 @@ bool BackgroundSyncNetworkObserver::NetworkSufficient(
   return false;
 }
 
-void BackgroundSyncNetworkObserver::NotifyNetworkChanged() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                network_changed_callback_);
-}
-
 void BackgroundSyncNetworkObserver::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (ignore_network_change_notifier_)
+    return;
+  NotifyManagerIfNetworkChanged(connection_type);
+}
+
+void BackgroundSyncNetworkObserver::NotifyManagerIfNetworkChanged(
+    net::NetworkChangeNotifier::ConnectionType connection_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (connection_type == connection_type_)
     return;
 
   connection_type_ = connection_type;
   NotifyNetworkChanged();
+}
+
+void BackgroundSyncNetworkObserver::NotifyNetworkChanged() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                network_changed_callback_);
 }
 
 }  // namespace content

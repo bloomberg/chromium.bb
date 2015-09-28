@@ -20,6 +20,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/background_sync_launcher_android.h"
+#include "content/browser/android/background_sync_network_observer_android.h"
 #endif
 
 namespace content {
@@ -213,9 +214,15 @@ BackgroundSyncManager::BackgroundSyncManager(
 
   service_worker_context_->AddObserver(this);
 
+#if defined(OS_ANDROID)
+  network_observer_.reset(new BackgroundSyncNetworkObserverAndroid(
+      base::Bind(&BackgroundSyncManager::OnNetworkChanged,
+                 weak_ptr_factory_.GetWeakPtr())));
+#else
   network_observer_.reset(new BackgroundSyncNetworkObserver(
       base::Bind(&BackgroundSyncManager::OnNetworkChanged,
                  weak_ptr_factory_.GetWeakPtr())));
+#endif
   power_observer_.reset(new BackgroundSyncPowerObserver(base::Bind(
       &BackgroundSyncManager::OnPowerChanged, weak_ptr_factory_.GetWeakPtr())));
 }
