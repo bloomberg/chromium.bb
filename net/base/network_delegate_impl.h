@@ -128,6 +128,16 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   void OnNetworkBytesReceived(const URLRequest& request,
                               int64_t bytes_received) override;
 
+  // Called when bytes are sent over the network, such as when sending request
+  // headers or uploading request body bytes. This includes localhost requests.
+  // |bytes_sent| is the number of bytes measured at the application layer that
+  // have been sent over the network for this request since the last time
+  // OnNetworkBytesSent was called. |bytes_sent| will always be greater than 0.
+  // Currently, this is only implemented for HTTP transactions, and |bytes_sent|
+  // does not include TLS overhead or TCP retransmits.
+  void OnNetworkBytesSent(const URLRequest& request,
+                          int64_t bytes_sent) override;
+
   // Indicates that the URL request has been completed or failed.
   // |started| indicates whether the request has been started. If false,
   // some information like the socket address is not available.

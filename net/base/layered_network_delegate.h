@@ -66,6 +66,7 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
   void OnResponseStarted(URLRequest* request) final;
   void OnNetworkBytesReceived(const URLRequest& request,
                               int64_t bytes_received) final;
+  void OnNetworkBytesSent(const URLRequest& request, int64_t bytes_sent) final;
   void OnCompleted(URLRequest* request, bool started) final;
   void OnURLRequestDestroyed(URLRequest* request) final;
   void OnURLRequestJobOrphaned(URLRequest* request) final;
@@ -127,6 +128,9 @@ class NET_EXPORT LayeredNetworkDelegate : public NetworkDelegate {
 
   virtual void OnNetworkBytesReceivedInternal(const URLRequest& request,
                                               int64_t bytes_received);
+
+  virtual void OnNetworkBytesSentInternal(const URLRequest& request,
+                                          int64_t bytes_sent);
 
   virtual void OnCompletedInternal(URLRequest* request, bool started);
 

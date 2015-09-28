@@ -402,10 +402,9 @@ class NET_EXPORT URLRequestJob
   // |location| and |http_status_code|.
   RedirectInfo ComputeRedirectInfo(const GURL& location, int http_status_code);
 
-  // Notify the network delegate that more bytes have been received over the
-  // network, if bytes have been received since the previous notification.
-  // TODO(sclittle): Have this method also notify about sent bytes once
-  // URLRequestJob::GetTotalSentBytes has been implemented (crbug.com/518897).
+  // Notify the network delegate that more bytes have been received or sent over
+  // the network, if bytes have been received or sent since the previous
+  // notification.
   void MaybeNotifyNetworkBytes();
 
   // Indicates that the job is done producing data, either it has completed
@@ -451,6 +450,11 @@ class NET_EXPORT URLRequestJob
   // MaybeNotifyNetworkBytes() was called. Used to calculate how bytes have been
   // newly received since the last notification.
   int64_t last_notified_total_received_bytes_;
+
+  // The value from GetTotalSentBytes() the last time MaybeNotifyNetworkBytes()
+  // was called. Used to calculate how bytes have been newly sent since the last
+  // notification.
+  int64_t last_notified_total_sent_bytes_;
 
   base::WeakPtrFactory<URLRequestJob> weak_factory_;
 

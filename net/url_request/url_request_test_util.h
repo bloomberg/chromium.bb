@@ -289,6 +289,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int64_t total_network_bytes_received() const {
     return total_network_bytes_received_;
   }
+  int64_t total_network_bytes_sent() const { return total_network_bytes_sent_; }
 
   // Last observed proxy in proxy header sent callback.
   HostPortPair last_observed_proxy() {
@@ -322,6 +323,8 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnResponseStarted(URLRequest* request) override;
   void OnNetworkBytesReceived(const URLRequest& request,
                               int64_t bytes_received) override;
+  void OnNetworkBytesSent(const URLRequest& request,
+                          int64_t bytes_sent) override;
   void OnCompleted(URLRequest* request, bool started) override;
   void OnURLRequestDestroyed(URLRequest* request) override;
   void OnPACScriptError(int line_number, const base::string16& error) override;
@@ -363,6 +366,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   int before_send_headers_count_;
   int headers_received_count_;
   int64_t total_network_bytes_received_;
+  int64_t total_network_bytes_sent_;
   // Last observed proxy in before proxy header sent callback.
   HostPortPair last_observed_proxy_;
 

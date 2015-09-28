@@ -73,6 +73,7 @@ URLRequestJob::URLRequestJob(URLRequest* request,
       expected_content_size_(-1),
       network_delegate_(network_delegate),
       last_notified_total_received_bytes_(0),
+      last_notified_total_sent_bytes_(0),
       weak_factory_(this) {
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   if (power_monitor)
@@ -948,6 +949,7 @@ void URLRequestJob::MaybeNotifyNetworkBytes() {
   if (!request_ || !network_delegate_)
     return;
 
+  // Report any new received bytes.
   int64_t total_received_bytes = GetTotalReceivedBytes();
   DCHECK_GE(total_received_bytes, last_notified_total_received_bytes_);
   if (total_received_bytes > last_notified_total_received_bytes_) {
@@ -955,6 +957,15 @@ void URLRequestJob::MaybeNotifyNetworkBytes() {
         *request_, total_received_bytes - last_notified_total_received_bytes_);
   }
   last_notified_total_received_bytes_ = total_received_bytes;
+
+  // Report any new sent bytes.
+  int64_t total_sent_bytes = GetTotalSentBytes();
+  DCHECK_GE(total_sent_bytes, last_notified_total_sent_bytes_);
+  if (total_sent_bytes > last_notified_total_sent_bytes_) {
+    network_delegate_->NotifyNetworkBytesSent(
+        *request_, total_sent_bytes - last_notified_total_sent_bytes_);
+  }
+  last_notified_total_sent_bytes_ = total_sent_bytes;
 }
 
 }  // namespace net

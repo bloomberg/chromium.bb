@@ -59,6 +59,9 @@ void NetworkDelegateImpl::OnResponseStarted(URLRequest* request) {
 void NetworkDelegateImpl::OnNetworkBytesReceived(const URLRequest& request,
                                                  int64_t bytes_received) {}
 
+void NetworkDelegateImpl::OnNetworkBytesSent(const URLRequest& request,
+                                             int64_t bytes_sent) {}
+
 void NetworkDelegateImpl::OnCompleted(URLRequest* request, bool started) {
 }
 

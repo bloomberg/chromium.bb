@@ -96,6 +96,13 @@ void NetworkDelegate::NotifyNetworkBytesReceived(const URLRequest& request,
   OnNetworkBytesReceived(request, bytes_received);
 }
 
+void NetworkDelegate::NotifyNetworkBytesSent(const URLRequest& request,
+                                             int64_t bytes_sent) {
+  DCHECK(CalledOnValidThread());
+  DCHECK_GT(bytes_sent, 0);
+  OnNetworkBytesSent(request, bytes_sent);
+}
+
 void NetworkDelegate::NotifyBeforeRedirect(URLRequest* request,
                                            const GURL& new_location) {
   DCHECK(CalledOnValidThread());

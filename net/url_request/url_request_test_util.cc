@@ -330,6 +330,7 @@ TestNetworkDelegate::TestNetworkDelegate()
       before_send_headers_count_(0),
       headers_received_count_(0),
       total_network_bytes_received_(0),
+      total_network_bytes_sent_(0),
       has_load_timing_info_before_redirect_(false),
       has_load_timing_info_before_auth_(false),
       can_access_files_(true),
@@ -510,6 +511,12 @@ void TestNetworkDelegate::OnNetworkBytesReceived(const URLRequest& request,
                                                  int64_t bytes_received) {
   event_order_[request.identifier()] += "OnNetworkBytesReceived\n";
   total_network_bytes_received_ += bytes_received;
+}
+
+void TestNetworkDelegate::OnNetworkBytesSent(const URLRequest& request,
+                                             int64_t bytes_sent) {
+  event_order_[request.identifier()] += "OnNetworkBytesSent\n";
+  total_network_bytes_sent_ += bytes_sent;
 }
 
 void TestNetworkDelegate::OnCompleted(URLRequest* request, bool started) {

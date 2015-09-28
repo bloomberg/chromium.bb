@@ -149,6 +149,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
             request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             network_delegate_.total_network_bytes_received());
 }
@@ -178,6 +180,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
             request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             network_delegate_.total_network_bytes_received());
 }
@@ -209,6 +213,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest, TestContentLengthFailedRequest) {
             request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             network_delegate_.total_network_bytes_received());
 }
@@ -241,6 +247,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
             request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             network_delegate_.total_network_bytes_received());
 }
@@ -291,6 +299,9 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
   EXPECT_EQ(CountReadBytes(final_reads, arraysize(final_reads)),
             request->GetTotalReceivedBytes());
   // Should include the redirect as well as the final response.
+  EXPECT_EQ(CountWriteBytes(redirect_writes, arraysize(redirect_writes)) +
+                CountWriteBytes(final_writes, arraysize(final_writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(redirect_reads, arraysize(redirect_reads)) +
                 CountReadBytes(final_reads, arraysize(final_reads)),
             network_delegate_.total_network_bytes_received());
@@ -320,6 +331,8 @@ TEST_F(URLRequestHttpJobWithMockSocketsTest,
             request->GetTotalSentBytes());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             request->GetTotalReceivedBytes());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            network_delegate_.total_network_bytes_sent());
   EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
             network_delegate_.total_network_bytes_received());
 }
