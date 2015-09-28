@@ -6,27 +6,22 @@ package org.chromium.chrome.browser.ntp;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.View;
-import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.widget.Toast;
 
 /**
  * The toolbar at the bottom of the new tab page. Contains buttons to open the bookmarks and
  * recent tabs pages.
  */
-public class NewTabPageToolbar extends LinearLayout implements OnLongClickListener {
+public class NewTabPageToolbar extends LinearLayout {
 
     private View mBookmarksButton, mRecentTabsButton;
-    private Toast mToast;
 
     /**
      * Constructor for inflating from xml.
@@ -58,29 +53,5 @@ public class NewTabPageToolbar extends LinearLayout implements OnLongClickListen
                 textView, icon, null, null, null);
 
         return button;
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        // Display tooltip on long click
-        if (v == mBookmarksButton) {
-            showTooltip(OfflinePageBridge.isEnabled()
-                    ? R.string.offline_pages_ntp_button_name : R.string.ntp_bookmarks);
-        } else if (v == mRecentTabsButton) {
-            showTooltip(R.string.recent_tabs);
-        }
-        return true;
-    }
-
-    /**
-     * Shows a tooltip for a button. If a tooltip is already showing, it will be hidden.
-     * @param stringId The string resource ID of the tooltip to be shown.
-     */
-    private void showTooltip(int stringId) {
-        if (mToast != null) mToast.cancel();
-        Context ctx = getContext();
-        mToast = Toast.makeText(ctx, ctx.getResources().getString(stringId), Toast.LENGTH_SHORT);
-        mToast.setGravity(Gravity.BOTTOM | Gravity.CENTER, 0, getHeight());
-        mToast.show();
     }
 }
