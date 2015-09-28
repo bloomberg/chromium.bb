@@ -390,6 +390,7 @@ crbug.com/525872 imported/web-platform-tests/html/rendering/non-replaced-element
 crbug.com/490511 imported/web-platform-tests/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 crbug.com/525896 imported/web-platform-tests/html/semantics/embedded-content/the-embed-element/embed-represent-nothing-01.html [ ImageOnlyFailure ]
 crbug.com/508725 imported/web-platform-tests/html/semantics/forms/textfieldselection/textfieldselection-setRangeText.html [ Failure Timeout ]
+crbug.com/490511 [ Win ] imported/web-platform-tests/html/semantics/forms/constraints/form-validation-reportValidity.html [ NeedsRebaseline ]
 crbug.com/490511 imported/web-platform-tests/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/526920 imported/web-platform-tests/html/semantics/embedded-content/media-elements/location-of-the-media-resource/currentSrc.html [ Failure ]
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
@@ -562,7 +563,7 @@ crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-vr
 
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-005.xht [ ImageOnlyFailure ]
-crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-009.xht [ ImageOnlyFailure ]
+crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-block-alignment-007.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-table-alignment-003.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/inline-table-alignment-005.xht [ ImageOnlyFailure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/table-column-order-002.xht [ ImageOnlyFailure ]
@@ -619,7 +620,6 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-dire
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-023.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/block-flow-direction-024.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/inline-block-alignment-006.xht [ ImageOnlyFailure ]
-crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/inline-block-alignment-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/line-box-direction-001.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/line-box-direction-002.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/line-box-direction-003.xht [ ImageOnlyFailure ]
@@ -645,8 +645,7 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression-008.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/row-progression-009.xht [ ImageOnlyFailure ]
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-006.xht [ ImageOnlyFailure ]
-crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-008.xht [ ImageOnlyFailure ]
-crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-009.xht [ ImageOnlyFailure ]
+crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/text-baseline-007.xht [ ImageOnlyFailure ]
 
 crbug.com/498845 [ Win ] fast/multicol/vertical-rl/float-content-break.html [ ImageOnlyFailure ]
 
