@@ -62,8 +62,13 @@ class Setup {
 void InitContentHandlers(package_manager::PackageManagerImpl* manager,
                          const base::CommandLine& command_line) {
   // Default content handlers.
+  manager->RegisterContentHandler("application/javascript",
+                                  GURL("mojo:html_viewer"));
   manager->RegisterContentHandler("application/pdf", GURL("mojo:pdf_viewer"));
+  manager->RegisterContentHandler("image/gif", GURL("mojo:html_viewer"));
+  manager->RegisterContentHandler("image/jpeg", GURL("mojo:html_viewer"));
   manager->RegisterContentHandler("image/png", GURL("mojo:png_viewer"));
+  manager->RegisterContentHandler("text/css", GURL("mojo:html_viewer"));
   manager->RegisterContentHandler("text/html", GURL("mojo:html_viewer"));
   manager->RegisterContentHandler("text/plain", GURL("mojo:html_viewer"));
 
