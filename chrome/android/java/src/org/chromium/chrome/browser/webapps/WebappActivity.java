@@ -334,7 +334,7 @@ public class WebappActivity extends FullScreenActivity {
                 ? ApiCompatibilityUtils.getColor(getResources(), R.color.default_primary_color)
                 : mBrandColor;
 
-        ApiCompatibilityUtils.setTaskDescription(this, title, icon, color);
+        DocumentUtils.updateTaskDescription(this, title, icon, color, mBrandColor == null);
     }
 
     /** Returns a unique identifier for this WebappActivity. */

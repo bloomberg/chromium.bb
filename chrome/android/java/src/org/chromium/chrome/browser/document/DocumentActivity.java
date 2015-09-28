@@ -790,11 +790,11 @@ public class DocumentActivity extends ChromeActivity {
         updateTaskDescription(label, bitmap);
     }
 
-    private void updateTaskDescription(String label, Bitmap icon) {
+    protected void updateTaskDescription(String label, Bitmap icon) {
         int color = mDefaultThemeColor;
         if (getActivityTab() != null) color = getActivityTab().getThemeColor();
         boolean useDefaultStatusBarColor = isIncognito() || color == mDefaultThemeColor;
-        ApiCompatibilityUtils.setTaskDescription(this, label, icon, color);
+        DocumentUtils.updateTaskDescription(this, label, icon, color, useDefaultStatusBarColor);
     }
 
     /**

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.document;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
@@ -12,14 +13,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
+import org.chromium.chrome.browser.util.ColorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +35,22 @@ import java.util.List;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentUtils {
     public static final String TAG = "DocumentUtilities";
+
+    /**
+     * Update the Recents entry for the Activity.
+     * @param activity Activity to change the entry for.
+     * @param title Title to show on the card.
+     * @param icon Icon to show on the card.
+     * @param color Color to use for the card's bar.
+     * @param useDefaultStatusBarColor Whether status bar should be set to default color.
+     */
+    public static void updateTaskDescription(Activity activity, String title, Bitmap icon,
+            int color, boolean useDefaultStatusBarColor) {
+        ApiCompatibilityUtils.setTaskDescription(activity, title, icon, color);
+        int statusBarColor = useDefaultStatusBarColor
+                ? Color.BLACK : ColorUtils.getDarkenedColorForStatusBar(color);
+        ApiCompatibilityUtils.setStatusBarColor(activity.getWindow(), statusBarColor);
+    }
 
     /**
      * Finishes tasks other than the one with the given task ID that were started with the given
