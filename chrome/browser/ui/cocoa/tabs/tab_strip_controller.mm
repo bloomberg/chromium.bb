@@ -2126,6 +2126,10 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
   GURL url(GURL(url_formatter::FixupURL(
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string())));
 
+  // If the URL isn't valid, don't bother.
+  if (!url.is_valid())
+    return;
+
   [self openURL:&url inView:view at:point];
 }
 
