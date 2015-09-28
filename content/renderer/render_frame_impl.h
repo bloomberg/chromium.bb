@@ -34,6 +34,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
+#include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "ui/gfx/range/range.h"
 
@@ -131,7 +132,8 @@ class VRDispatcher;
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
       NON_EXPORTED_BASE(public blink::WebFrameClient),
-      NON_EXPORTED_BASE(public media::WebMediaPlayerDelegate) {
+      NON_EXPORTED_BASE(public media::WebMediaPlayerDelegate),
+      NON_EXPORTED_BASE(public blink::WebPageSerializerClient) {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
   static RenderFrameImpl* CreateMainFrame(RenderViewImpl* render_view,
@@ -568,6 +570,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidPause(blink::WebMediaPlayer* player) override;
   void PlayerGone(blink::WebMediaPlayer* player) override;
 
+  // WebPageSerializerClient implementation:
+  void didSerializeDataForFrame(
+      const blink::WebURL& frame_url,
+      const blink::WebCString& data,
+      blink::WebPageSerializerClient::PageSerializationStatus status) override;
+
   // Make this frame show an empty, unscriptable page.
   // TODO(nasko): Remove this method once swapped out state is no longer used.
   void NavigateToSwappedOutURL();
@@ -722,6 +730,10 @@ class CONTENT_EXPORT RenderFrameImpl
                           bool has_stale_copy_in_cache,
                           int error_code);
   void OnGetSavableResourceLinks();
+  void OnGetSerializedHtmlWithLocalLinks(
+      std::vector<GURL> original_urls,
+      std::vector<base::FilePath> equivalent_local_paths,
+      base::FilePath local_directory_path);
 
   // Virtual since overridden by WebTestProxy for layout tests.
   virtual blink::WebNavigationPolicy DecidePolicyForNavigation(

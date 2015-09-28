@@ -205,6 +205,7 @@ SavePackage::SavePackage(WebContents* web_contents,
                          const base::FilePath& file_full_path,
                          const base::FilePath& directory_full_path)
     : WebContentsObserver(web_contents),
+      number_of_frames_pending_response_(0),
       file_manager_(NULL),
       download_manager_(NULL),
       download_(NULL),
@@ -222,8 +223,7 @@ SavePackage::SavePackage(WebContents* web_contents,
       contents_id_(0),
       unique_id_(g_save_package_id++),
       wrote_to_completed_file_(false),
-      wrote_to_failed_file_(false) {
-}
+      wrote_to_failed_file_(false) {}
 
 SavePackage::~SavePackage() {
   // Stop receiving saving job's updates
@@ -339,7 +339,7 @@ void SavePackage::InitWithDownloadItem(
   if (save_type_ == SAVE_PAGE_TYPE_AS_COMPLETE_HTML) {
     // Get directory
     DCHECK(!saved_main_directory_path_.empty());
-    GetSavableResourceLinksForCurrentPage();
+    GetSavableResourceLinks();
   } else if (save_type_ == SAVE_PAGE_TYPE_AS_MHTML) {
     web_contents()->GenerateMHTML(saved_main_file_path_, base::Bind(
         &SavePackage::OnMHTMLGenerated, this));
@@ -626,7 +626,7 @@ void SavePackage::StartSave(const SaveFileCreateInfo* info) {
       wait_state_ == HTML_DATA) {
     // Inform backend to serialize the all frames' DOM and send serialized
     // HTML data back.
-    GetSerializedHtmlDataForCurrentPageWithLocalLinks();
+    GetSerializedHtmlWithLocalLinks();
   }
 }
 
@@ -1003,16 +1003,6 @@ void SavePackage::DoSavingProcess() {
   }
 }
 
-bool SavePackage::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SavePackage, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SendSerializedHtmlData,
-                        OnReceivedSerializedHtmlData)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 bool SavePackage::OnMessageReceived(const IPC::Message& message,
                                     RenderFrameHost* render_frame_host) {
   bool handled = true;
@@ -1021,6 +1011,8 @@ bool SavePackage::OnMessageReceived(const IPC::Message& message,
                         OnSavableResourceLinksResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SavableResourceLinksError,
                         OnSavableResourceLinksError)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
+                        OnSerializedHtmlWithLocalLinksResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1030,7 +1022,7 @@ bool SavePackage::OnMessageReceived(const IPC::Message& message,
 // We collect all URLs which have local storage and send the
 // map:(originalURL:currentLocalPath) to render process (backend).
 // Then render process will serialize DOM and send data to us.
-void SavePackage::GetSerializedHtmlDataForCurrentPageWithLocalLinks() {
+void SavePackage::GetSerializedHtmlWithLocalLinks() {
   if (wait_state_ != HTML_DATA)
     return;
   std::vector<GURL> saved_links;
@@ -1067,41 +1059,48 @@ void SavePackage::GetSerializedHtmlDataForCurrentPageWithLocalLinks() {
   // Get the relative directory name.
   base::FilePath relative_dir_name = saved_main_directory_path_.BaseName();
 
-  Send(new ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      routing_id(), saved_links, saved_file_paths, relative_dir_name));
+  // Ask all frames for their serialized data.
+  DCHECK_EQ(0, number_of_frames_pending_response_);
+  web_contents()->ForEachFrame(base::Bind(
+      &SavePackage::GetSerializedHtmlWithLocalLinksForFrame,
+      base::Unretained(this),  // Safe, because ForEachFrame is synchronous.
+      saved_links, saved_file_paths, relative_dir_name));
+  DCHECK_LT(0, number_of_frames_pending_response_);
 }
 
-// Process the serialized HTML content data of a specified web page
-// retrieved from render process.
-void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                               const std::string& data,
-                                               int32 status) {
+void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
+    const std::vector<GURL>& saved_links,
+    const std::vector<base::FilePath>& saved_file_paths,
+    const base::FilePath& relative_dir_name,
+    RenderFrameHost* target) {
+  number_of_frames_pending_response_++;
+  target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
+      target->GetRoutingID(), saved_links, saved_file_paths,
+      relative_dir_name));
+}
+
+// Process the serialized HTML content data of a specified frame
+// retrieved from the renderer process.
+void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
+    RenderFrameHost* sender,
+    const GURL& frame_url,
+    const std::string& data,
+    int32 status) {
   WebPageSerializerClient::PageSerializationStatus flag =
       static_cast<WebPageSerializerClient::PageSerializationStatus>(status);
+
+  // When calling WebPageSerializer::serialize in non-recursive mode, the
+  // AllFramesAreFinished is redundant - it is sent by each frame right after
+  // CurrentFrameIsFinished.  Therefore we ignore AllFramesAreFinished and
+  // instead track pending frames in |number_of_frames_pending_response_|.
+  if (flag == WebPageSerializerClient::AllFramesAreFinished)
+    return;
+
   // Check current state.
   if (wait_state_ != HTML_DATA)
     return;
 
   int id = contents_id();
-  // If the all frames are finished saving, we need to close the
-  // remaining SaveItems.
-  if (flag == WebPageSerializerClient::AllFramesAreFinished) {
-    for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
-         it != in_progress_items_.end(); ++it) {
-      DVLOG(20) << " " << __FUNCTION__ << "()"
-                << " save_id = " << it->second->save_id()
-                << " url = \"" << it->second->url().spec() << "\"";
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          base::Bind(&SaveFileManager::SaveFinished,
-                     file_manager_,
-                     it->second->save_id(),
-                     it->second->url(),
-                     id,
-                     true));
-    }
-    return;
-  }
 
   SaveUrlItemMap::iterator it = in_progress_items_.find(frame_url.spec());
   if (it == in_progress_items_.end()) {
@@ -1151,12 +1150,29 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
                    save_item->url(),
                    id,
                    true));
+    number_of_frames_pending_response_--;
+    DCHECK_LE(0, number_of_frames_pending_response_);
+  }
+
+  // If all frames are finished saving, we need to close the remaining
+  // SaveItems.
+  if (number_of_frames_pending_response_ == 0) {
+    for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
+         it != in_progress_items_.end(); ++it) {
+      DVLOG(20) << " " << __FUNCTION__ << "()"
+                << " save_id = " << it->second->save_id() << " url = \""
+                << it->second->url().spec() << "\"";
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&SaveFileManager::SaveFinished, file_manager_,
+                     it->second->save_id(), it->second->url(), id, true));
+    }
   }
 }
 
 // Ask for all savable resource links from backend, include main frame and
 // sub-frame.
-void SavePackage::GetSavableResourceLinksForCurrentPage() {
+void SavePackage::GetSavableResourceLinks() {
   if (wait_state_ != START_PROCESS)
     return;
 
@@ -1205,14 +1221,14 @@ void SavePackage::OnSavableResourceLinksResponse(
   if (frame_url.is_valid())
     frame_urls_to_save_.push_back(frame_url);
 
-  CompleteSavableResourceLinksResponseFromFrame();
+  CompleteSavableResourceLinksResponse();
 }
 
 void SavePackage::OnSavableResourceLinksError(RenderFrameHost* sender) {
-  CompleteSavableResourceLinksResponseFromFrame();
+  CompleteSavableResourceLinksResponse();
 }
 
-void SavePackage::CompleteSavableResourceLinksResponseFromFrame() {
+void SavePackage::CompleteSavableResourceLinksResponse() {
   --number_of_frames_pending_response_;
   DCHECK_LE(0, number_of_frames_pending_response_);
   if (number_of_frames_pending_response_ != 0)

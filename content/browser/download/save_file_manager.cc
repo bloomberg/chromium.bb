@@ -272,9 +272,8 @@ void SaveFileManager::SaveFinished(int save_id,
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
     SaveFile* save_file = it->second;
-    // This routine may be called twice for the same from from
-    // SaveePackage::OnReceivedSerializedHtmlData, once for the file
-    // itself, and once when all frames have been serialized.
+    // This routine may be called twice from the same SavePackage - once for the
+    // file itself, and once when all frames have been serialized.
     // So we can't assert that the file is InProgress() here.
     // TODO(rdsmith): Fix this logic and put the DCHECK below back in.
     // DCHECK(save_file->InProgress());

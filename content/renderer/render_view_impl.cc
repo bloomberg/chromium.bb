@@ -153,7 +153,6 @@
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebPageImportanceSignals.h"
-#include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
@@ -245,8 +244,6 @@ using blink::WebMouseEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
-using blink::WebPageSerializer;
-using blink::WebPageSerializerClient;
 using blink::WebPeerConnection00Handler;
 using blink::WebPeerConnection00HandlerClient;
 using blink::WebPeerConnectionHandler;
@@ -1353,9 +1350,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
-    IPC_MESSAGE_HANDLER(
-        ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
-        OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     // TODO(viettrungluu): Move to a separate message filter.
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryOffsetAndLength,
@@ -2193,19 +2187,6 @@ blink::WebString RenderViewImpl::acceptLanguages() {
   return WebString::fromUTF8(renderer_preferences_.accept_languages);
 }
 
-// blink::WebPageSerializerClient implementation ------------------------------
-
-void RenderViewImpl::didSerializeDataForFrame(
-    const WebURL& frame_url,
-    const WebCString& data,
-    WebPageSerializerClient::PageSerializationStatus status) {
-  Send(new ViewHostMsg_SendSerializedHtmlData(
-    routing_id(),
-    frame_url,
-    data.data(),
-    static_cast<int32>(status)));
-}
-
 // RenderView implementation ---------------------------------------------------
 
 bool RenderViewImpl::Send(IPC::Message* message) {
@@ -2780,27 +2761,6 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
                                       const WebPluginAction& action) {
   if (webview())
     webview()->performPluginAction(action, location);
-}
-
-void RenderViewImpl::OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-    const std::vector<GURL>& links,
-    const std::vector<base::FilePath>& local_paths,
-    const base::FilePath& local_directory_name) {
-
-  // Convert std::vector of GURLs to WebVector<WebURL>
-  WebVector<WebURL> weburl_links(links);
-
-  // Convert std::vector of base::FilePath to WebVector<WebString>
-  WebVector<WebString> webstring_paths(local_paths.size());
-  for (size_t i = 0; i < local_paths.size(); i++)
-    webstring_paths[i] = local_paths[i].AsUTF16Unsafe();
-
-  WebPageSerializer::serialize(webview()->mainFrame()->toWebLocalFrame(),
-                               true,
-                               this,
-                               weburl_links,
-                               webstring_paths,
-                               local_directory_name.AsUTF16Unsafe());
 }
 
 void RenderViewImpl::OnSuppressDialogsUntilSwapOut() {

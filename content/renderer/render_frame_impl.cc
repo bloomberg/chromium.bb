@@ -136,6 +136,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
+#include "third_party/WebKit/public/web/WebPageSerializer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
@@ -202,6 +203,7 @@
 
 using blink::WebContentDecryptionModule;
 using blink::WebContextMenuData;
+using blink::WebCString;
 using blink::WebData;
 using blink::WebDataSource;
 using blink::WebDocument;
@@ -220,6 +222,8 @@ using blink::WebMediaPlayerEncryptedMediaClient;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
+using blink::WebPageSerializer;
+using blink::WebPageSerializerClient;
 using blink::WebPluginParams;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
@@ -1128,6 +1132,8 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_FailedNavigation, OnFailedNavigation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
+    IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
+                        OnGetSerializedHtmlWithLocalLinks)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
@@ -3888,6 +3894,14 @@ void RenderFrameImpl::PlayerGone(WebMediaPlayer* player) {
   DidPause(player);
 }
 
+void RenderFrameImpl::didSerializeDataForFrame(
+    const WebURL& frame_url,
+    const WebCString& data,
+    WebPageSerializerClient::PageSerializationStatus status) {
+  Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
+      routing_id_, frame_url, data.data(), static_cast<int32>(status)));
+}
+
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -4437,6 +4451,29 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 
   Send(new FrameHostMsg_SavableResourceLinksResponse(
       routing_id_, frame_->document().url(), resources_list, referrers_list));
+}
+
+void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
+    std::vector<GURL> original_urls,
+    std::vector<base::FilePath> equivalent_local_paths,
+    base::FilePath local_directory_path) {
+  // Only DCHECK, since the message comes from the trusted browser process.
+  DCHECK(original_urls.size() == equivalent_local_paths.size());
+
+  // Convert std::vector of GURLs to WebVector<WebURL>
+  WebVector<WebURL> weburl_links(original_urls);
+
+  // Convert std::vector of base::FilePath to WebVector<WebString>
+  WebVector<WebString> webstring_paths(equivalent_local_paths.size());
+  for (size_t i = 0; i < equivalent_local_paths.size(); i++)
+    webstring_paths[i] = equivalent_local_paths[i].AsUTF16Unsafe();
+
+  // Serialize the frame (without recursing into subframes).
+  WebPageSerializer::serialize(GetWebFrame(),
+                               false,  // recursive?  nope.
+                               this,   // WebPageSerializerClient.
+                               weburl_links, webstring_paths,
+                               local_directory_path.AsUTF16Unsafe());
 }
 
 void RenderFrameImpl::OpenURL(WebFrame* frame,

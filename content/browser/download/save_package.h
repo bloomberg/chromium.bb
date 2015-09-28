@@ -146,7 +146,6 @@ class CONTENT_EXPORT SavePackage
   void DoSavingProcess();
 
   // WebContentsObserver implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;
 
@@ -179,7 +178,7 @@ class CONTENT_EXPORT SavePackage
 
   // Set of methods to get all savable resource links from current web page,
   // including main frame and sub-frames.
-  void GetSavableResourceLinksForCurrentPage();
+  void GetSavableResourceLinks();
   void GetSavableResourceLinksForFrame(RenderFrameHost* target);
   void OnSavableResourceLinksResponse(
       RenderFrameHost* sender,
@@ -187,11 +186,35 @@ class CONTENT_EXPORT SavePackage
       const std::vector<GURL>& resources_list,
       const std::vector<Referrer>& referrers_list);
   void OnSavableResourceLinksError(RenderFrameHost* sender);
-  void CompleteSavableResourceLinksResponseFromFrame();
+  void CompleteSavableResourceLinksResponse();
 
-  // Get html data by serializing all frames of current page with lists
-  // which contain all resource links that have local copy.
-  void GetSerializedHtmlDataForCurrentPageWithLocalLinks();
+  // For each frame in the current page, ask the renderer process associated
+  // with that frame to serialize that frame into html.
+  void GetSerializedHtmlWithLocalLinks();
+
+  // Ask renderer process to serialize |target| frame into html data
+  // with lists which contain all resource links that have a local copy.
+  // - The parameter |saved_links| contains original URLs of all saved links
+  //   (which may include URLs referred to from the whole page (not just from
+  //   the |target| frame).
+  // - The parameter |saved_file_paths| contains corresponding local file paths
+  //   of all saved links, which is matched with |saved_links| vector one by
+  //   one.
+  // - The parameter |relative_dir_name| is relative path of directory which
+  //   contain all saved auxiliary files included all sub frames and resouces.
+  void GetSerializedHtmlWithLocalLinksForFrame(
+      const std::vector<GURL>& saved_links,
+      const std::vector<base::FilePath>& saved_file_paths,
+      const base::FilePath& relative_dir_name,
+      RenderFrameHost* target);
+
+  // Routes html data (sent by renderer process in response to
+  // GetSerializedHtmlWithLocalLinksForFrame above) to the associated local file
+  // (and also keeps track of when all frames have been completed).
+  void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHost* sender,
+                                              const GURL& frame_url,
+                                              const std::string& data,
+                                              int32 status);
 
   // Look up SaveItem by save id from in progress map.
   SaveItem* LookupItemInProcessBySaveId(int32 save_id);
@@ -213,10 +236,6 @@ class CONTENT_EXPORT SavePackage
       const base::FilePath& final_name,
       SavePageType type,
       const SavePackageDownloadCreatedCallback& cb);
-
-  void OnReceivedSerializedHtmlData(const GURL& frame_url,
-                                    const std::string& data,
-                                    int32 status);
 
   typedef base::hash_map<std::string, SaveItem*> SaveUrlItemMap;
   // in_progress_items_ is map of all saving job in in-progress state.

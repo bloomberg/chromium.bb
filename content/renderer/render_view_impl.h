@@ -53,7 +53,6 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebNavigationType.h"
 #include "third_party/WebKit/public/web/WebNode.h"
-#include "third_party/WebKit/public/web/WebPageSerializerClient.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/web/WebViewClient.h"
 #include "ui/base/window_open_disposition.h"
@@ -153,7 +152,6 @@ class WebMediaPlayerProxyAndroid;
 class CONTENT_EXPORT RenderViewImpl
     : public RenderWidget,
       NON_EXPORTED_BASE(public blink::WebViewClient),
-      NON_EXPORTED_BASE(public blink::WebPageSerializerClient),
       public RenderView,
       public base::SupportsWeakPtr<RenderViewImpl> {
  public:
@@ -416,13 +414,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didScrollWithKeyboard(const blink::WebSize& delta);
 #endif
 
-  // blink::WebPageSerializerClient implementation ----------------------------
-
-  void didSerializeDataForFrame(
-      const blink::WebURL& frame_url,
-      const blink::WebCString& data,
-      PageSerializationStatus status) override;
-
   // RenderView implementation -------------------------------------------------
 
   bool Send(IPC::Message* message) override;
@@ -643,10 +634,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnFind(int request_id,
               const base::string16&,
               const blink::WebFindOptions&);
-  void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
-      const std::vector<GURL>& links,
-      const std::vector<base::FilePath>& local_paths,
-      const base::FilePath& local_directory_name);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const blink::WebMediaPlayerAction& action);
   void OnPluginActionAt(const gfx::Point& location,

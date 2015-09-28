@@ -556,13 +556,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
 
 #endif
 
-// Get html data by serializing all frames of current page with lists
-// which contain all resource links that have local copy.
-IPC_MESSAGE_ROUTED3(ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
-                    std::vector<GURL> /* urls that have local copy */,
-                    std::vector<base::FilePath> /* paths of local copy */,
-                    base::FilePath /* local directory path */)
-
 // Tells the render side that a ViewHostMsg_LockMouse message has been
 // processed. |succeeded| indicates whether the mouse has been successfully
 // locked or not.
@@ -1272,11 +1265,6 @@ IPC_MESSAGE_CONTROL1(ViewHostMsg_UserMetricsRecordAction,
 IPC_MESSAGE_CONTROL2(ViewHostMsg_SavedPageAsMHTML,
                      int /* job_id */,
                      int64 /* size of the MHTML file, -1 if error */)
-
-IPC_MESSAGE_ROUTED3(ViewHostMsg_SendSerializedHtmlData,
-                    GURL /* frame's url */,
-                    std::string /* data buffer */,
-                    int32 /* complete status */)
 
 // Notifies the browser of an event occurring in the media pipeline.
 IPC_MESSAGE_CONTROL1(ViewHostMsg_MediaLogEvents,

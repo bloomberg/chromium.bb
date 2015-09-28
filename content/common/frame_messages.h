@@ -671,6 +671,13 @@ IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
 // Note: this covers only the immediate frame / doesn't cover subframes.
 IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
+// Get html data by serializing the target frame and replacing all resource
+// links with a path to the local copy passed in the message payload.
+IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
+                    std::vector<GURL> /* urls that have local copy */,
+                    std::vector<base::FilePath> /* paths of local copy */,
+                    base::FilePath /* local directory path */)
+
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
@@ -1166,6 +1173,12 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
 // non-savable content (i.e. from a non-savable scheme) or if there were
 // errors gathering the links.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
+
+// Response to FrameMsg_GetSerializedHtmlWithLocalLinks.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
+                    GURL /* frame URL */,
+                    std::string /* data buffer */,
+                    int32 /* complete status */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,

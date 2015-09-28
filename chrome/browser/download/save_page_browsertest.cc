@@ -786,7 +786,9 @@ class SavePageSitePerProcessBrowserTest : public SavePageBrowserTest {
 
     // TODO(lukasza): Enable --site-per-process once crbug.com/526786 is fixed.
     // (currently, when the line below is uncommented out, the test crashes
-    // under RenderViewImpl::OnGetSerializedHtmlDataForCu...PageWithLocalLinks).
+    // under blink::WebLocalFrameImpl::fromFrameOwnerElement called from
+    // blink::WebPageSerializerImpl::openTagToString).
+    //
     // content::IsolateAllSitesForTesting(command_line);
   }
 
