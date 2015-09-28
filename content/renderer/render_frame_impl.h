@@ -347,6 +347,7 @@ class CONTENT_EXPORT RenderFrameImpl
                          const blink::WebURLRequest& request,
                          blink::WebNavigationPolicy policy) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
+  bool IsMainFrame() override;
   bool IsHidden() override;
   ServiceRegistry* GetServiceRegistry() override;
 #if defined(ENABLE_PLUGINS)
@@ -863,10 +864,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // case of the main frame, but not subframes).
   blink::WebLocalFrame* frame_;
 
-  // Boolean value indicating whether this RenderFrameImpl object is for a
-  // subframe or not. It remains accurate during destruction, even when |frame_|
-  // has been invalidated.
-  bool is_subframe_;
+  // Boolean value indicating whether this RenderFrameImpl object is for the
+  // main frame or not. It remains accurate during destruction, even when
+  // |frame_| has been invalidated.
+  bool is_main_frame_;
 
   // Frame is a local root if it is rendered in a process different than parent
   // or it is a main frame.

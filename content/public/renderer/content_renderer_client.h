@@ -76,9 +76,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Notifies us that the RenderThread has been created.
   virtual void RenderThreadStarted() {}
 
-  // Notifies that a new RenderFrame has been created. Note that at this point,
-  // render_frame->GetWebFrame()->parent() is always NULL. This will change once
-  // the frame tree moves from Blink to content.
+  // Notifies that a new RenderFrame has been created.
   virtual void RenderFrameCreated(RenderFrame* render_frame) {}
 
   // Notifies that a new RenderView has been created.

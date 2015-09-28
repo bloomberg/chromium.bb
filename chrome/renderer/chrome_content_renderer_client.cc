@@ -550,27 +550,21 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new nacl::NaClHelper(render_frame);
 #endif
 
-  // TODO(jam): when the frame tree moves into content and parent() works at
-  // RenderFrame construction, simplify this by just checking parent().
-  if (render_frame->GetRenderView()->GetMainRenderFrame() != render_frame) {
+  if (render_frame->IsMainFrame()) {
+    // Only attach NetErrorHelper to the main frame, since only the main frame
+    // should get error pages.
+    new NetErrorHelper(render_frame);
+
+    // Only attach MainRenderFrameObserver to the main frame, since
+    // we only want to log page load metrics for the main frame.
+    new page_load_metrics::MetricsRenderFrameObserver(render_frame);
+  } else {
     // Avoid any race conditions from having the browser tell subframes that
     // they're prerendering.
     if (prerender::PrerenderHelper::IsPrerendering(
             render_frame->GetRenderView()->GetMainRenderFrame())) {
       new prerender::PrerenderHelper(render_frame);
     }
-  }
-
-  if (render_frame->GetRenderView()->GetMainRenderFrame() == render_frame) {
-    // Only attach NetErrorHelper to the main frame, since only the main frame
-    // should get error pages.
-    new NetErrorHelper(render_frame);
-  }
-
-  if (render_frame->GetWebFrame()->parent() == nullptr) {
-    // Only attach MainRenderFrameObserver to the main frame, since
-    // we only want to log page load metrics for the main frame.
-    new page_load_metrics::MetricsRenderFrameObserver(render_frame);
   }
 
   // Set up a mojo service to test if this page is a distiller page.

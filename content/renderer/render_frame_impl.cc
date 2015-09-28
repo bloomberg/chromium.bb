@@ -680,7 +680,7 @@ blink::WebFrame* RenderFrameImpl::ResolveOpener(int opener_frame_routing_id,
 // RenderFrameImpl ----------------------------------------------------------
 RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
     : frame_(NULL),
-      is_subframe_(false),
+      is_main_frame_(true),
       is_local_root_(false),
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
@@ -753,7 +753,7 @@ RenderFrameImpl::~RenderFrameImpl() {
     render_view_->UnregisterVideoHoleFrame(this);
 #endif
 
-  if (!is_subframe_) {
+  if (is_main_frame_) {
     // When using swapped out frames, RenderFrameProxy is owned by
     // RenderFrameImpl in the case it is the main frame. Ensure it is deleted
     // along with this object.
@@ -788,14 +788,14 @@ void RenderFrameImpl::SetWebFrame(blink::WebLocalFrame* web_frame) {
 }
 
 void RenderFrameImpl::Initialize() {
-  is_subframe_ = !!frame_->parent();
-  is_local_root_ = !frame_->parent() || frame_->parent()->isWebRemoteFrame();
+  is_main_frame_ = !frame_->parent();
+  is_local_root_ = is_main_frame_ || frame_->parent()->isWebRemoteFrame();
 
   bool is_tracing = false;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED("navigation", &is_tracing);
   if (is_tracing) {
     int parent_id = MSG_ROUTING_NONE;
-    if (is_subframe_) {
+    if (!is_main_frame_) {
       if (frame_->parent()->isWebRemoteFrame()) {
         RenderFrameProxy* parent_proxy = RenderFrameProxy::FromWebFrame(
             frame_->parent());
@@ -1208,10 +1208,9 @@ void RenderFrameImpl::OnSwapOut(
   RenderFrameProxy* proxy = NULL;
   bool swapped_out_forbidden =
       SiteIsolationPolicy::IsSwappedOutStateForbidden();
-  bool is_main_frame = !frame_->parent();
 
   // This codepath should only be hit for subframes when in --site-per-process.
-  CHECK_IMPLIES(!is_main_frame,
+  CHECK_IMPLIES(!is_main_frame_,
                 SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Only run unload if we're not swapped out yet, but send the ack either way.
@@ -1234,11 +1233,11 @@ void RenderFrameImpl::OnSwapOut(
     // Synchronously run the unload handler before sending the ACK.
     // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
     // unload on subframes as well.
-    if (is_main_frame)
+    if (is_main_frame_)
       frame_->dispatchUnloadEvent();
 
     // Swap out and stop sending any IPC messages that are not ACKs.
-    if (is_main_frame)
+    if (is_main_frame_)
       render_view_->SetSwappedOut(true);
     is_swapped_out_ = true;
 
@@ -1259,7 +1258,7 @@ void RenderFrameImpl::OnSwapOut(
 
     // Transfer settings such as initial drawing parameters to the remote frame,
     // if one is created, that will replace this frame.
-    if (!is_main_frame && proxy)
+    if (!is_main_frame_ && proxy)
       proxy->web_frame()->initializeFromFrame(frame_);
 
     // Replace the page with a blank dummy URL. The unload handler will not be
@@ -1272,7 +1271,7 @@ void RenderFrameImpl::OnSwapOut(
     // Let WebKit know that this view is hidden so it can drop resources and
     // stop compositing.
     // TODO(creis): Support this for subframes as well.
-    if (is_main_frame) {
+    if (is_main_frame_) {
       render_view_->webview()->setVisibilityState(
           blink::WebPageVisibilityStateHidden, false);
     }
@@ -1280,12 +1279,13 @@ void RenderFrameImpl::OnSwapOut(
 
   // It is now safe to show modal dialogs again.
   // TODO(creis): Deal with modal dialogs from subframes.
-  if (is_main_frame)
+  if (is_main_frame_)
     render_view_->suppress_dialogs_until_swap_out_ = false;
 
   Send(new FrameHostMsg_SwapOut_ACK(routing_id_));
 
   RenderViewImpl* render_view = render_view_.get();
+  bool is_main_frame = is_main_frame_;
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
@@ -2301,7 +2301,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame, DetachType type) {
   // Only remove the frame from the renderer's frame tree if the frame is
   // being detached for removal. In the case of a swap, the frame needs to
   // remain in the tree so WebFrame::swap() can replace it with the new frame.
-  if (is_subframe_ && type == DetachType::Remove)
+  if (!is_main_frame_ && type == DetachType::Remove)
     frame->parent()->removeChild(frame);
 
   // |frame| is invalid after here.  Be sure to clear frame_ as well, since this
@@ -2726,7 +2726,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // If this is the main frame going from a remote frame to a local frame,
     // it needs to set RenderViewImpl's pointer for the main frame to itself
     // and ensure RenderWidget is no longer in swapped out mode.
-    if (!is_subframe_) {
+    if (is_main_frame_) {
       CHECK(!render_view_->main_render_frame_);
       render_view_->main_render_frame_ = this;
       if (render_view_->is_swapped_out())
@@ -3930,6 +3930,10 @@ void RenderFrameImpl::WidgetWillClose() {
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, WidgetWillClose());
 }
 
+bool RenderFrameImpl::IsMainFrame() {
+  return is_main_frame_;
+}
+
 bool RenderFrameImpl::IsHidden() {
   return GetRenderWidget()->is_hidden();
 }
@@ -4251,8 +4255,8 @@ WebNavigationPolicy RenderFrameImpl::DecidePolicyForNavigation(
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(info.frame,
                                                            info.urlRequest));
 
-  // TODO(nick): Is consulting |is_subframe_| here correct?
-  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() && is_subframe_) {
+  // TODO(nick): Is consulting |is_main_frame| here correct?
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden() && !is_main_frame_) {
     // There's no reason to ignore navigations on subframes, since the swap out
     // logic no longer applies.
   } else {
