@@ -6,6 +6,7 @@
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
+#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
@@ -158,6 +159,12 @@ int RendererMain(const MainFunctionParams& parameters) {
         std::set<std::string>());
     DCHECK(result);
   }
+
+  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+  feature_list->InitializeFromCommandLine(
+      parsed_command_line.GetSwitchValueASCII(switches::kEnableFeatures),
+      parsed_command_line.GetSwitchValueASCII(switches::kDisableFeatures));
+  base::FeatureList::SetInstance(feature_list.Pass());
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();

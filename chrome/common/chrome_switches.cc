@@ -266,9 +266,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Comma-separated list of feature names to disable. See also kEnableFeatures.
-const char kDisableFeatures[] = "disable-features";
-
 // Disable field trial tests configured in fieldtrial_testing_config.json.
 const char kDisableFieldTrialTestingConfig[] = "disable-field-trial-config";
 
@@ -438,9 +435,6 @@ const char kEnableExtensionActivityLogTesting[] =
 // running a tab's onunload js handler independently of the GUI -
 // crbug.com/142458 .
 const char kEnableFastUnload[] = "enable-fast-unload";
-
-// Comma-separated list of feature names to enable. See also kDisableFeatures.
-const char kEnableFeatures[] = "enable-features";
 
 // Enables support for the QUIC protocol for insecure schemes (http://).
 // This is a temporary testing flag.
