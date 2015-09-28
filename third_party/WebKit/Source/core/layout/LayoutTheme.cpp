@@ -233,6 +233,7 @@ static String formatChromiumMediaControlsTime(float time, float duration, bool i
         duration = 0;
     int seconds = static_cast<int>(fabsf(time));
     int minutes = seconds / 60;
+    int hours = seconds / (60 * 60);
 
     seconds %= 60;
 
@@ -241,7 +242,6 @@ static String formatChromiumMediaControlsTime(float time, float duration, bool i
     int durationMins = durationSecs / 60;
 
     if (!RuntimeEnabledFeatures::newMediaPlaybackUiEnabled()) {
-        int hours = seconds / (60 * 60);
         int durationHours = durationSecs / (60 * 60);
         durationMins %= 60;
         minutes %= 60;
