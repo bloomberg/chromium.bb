@@ -24,6 +24,7 @@ import time
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
+from devil.android import device_temp_file
 from devil.android import device_utils
 from devil.android.sdk import version_codes
 from devil.utils import run_tests_helper
@@ -99,6 +100,7 @@ def ProvisionDevice(device, blacklist, options):
       device.adb.WaitForDevice()
 
   try:
+    CheckExternalStorage(device)
     if should_run_phase(_PHASES.WIPE):
       if options.chrome_specific_wipe:
         run_phase(WipeChromeData)
@@ -126,6 +128,23 @@ def ProvisionDevice(device, blacklist, options):
                       str(device))
     blacklist.Extend([str(device)])
 
+def CheckExternalStorage(device):
+  """Checks that storage is writable and if not makes it writable.
+
+  Arguments:
+    device: The device to check.
+  """
+  try:
+    with device_temp_file.DeviceTempFile(
+        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()):
+      pass
+  except device_errors.CommandFailedError:
+    logging.info('External storage not writable. Remounting / as RW')
+    device.RunShellCommand(['mount', '-o', 'remount,rw', '/'],
+                           check_return=True, as_root=True)
+    with device_temp_file.DeviceTempFile(
+        device.adb, suffix='.sh', dir=device.GetExternalStoragePath()):
+      pass
 
 def WipeChromeData(device, options):
   """Wipes chrome specific data from device
@@ -392,7 +411,6 @@ def _LaunchHostHeartbeat():
   subprocess.Popen([os.path.join(constants.DIR_SOURCE_ROOT,
                                  'build/android/host_heartbeat.py')])
 
-
 def KillHostHeartbeat():
   ps = subprocess.Popen(['ps', 'aux'], stdout=subprocess.PIPE)
   stdout, _ = ps.communicate()
@@ -401,7 +419,6 @@ def KillHostHeartbeat():
     logging.info('An instance of host heart beart running... will kill')
     pid = re.findall(r'(\S+)', match)[1]
     subprocess.call(['kill', str(pid)])
-
 
 def main():
   # Recommended options on perf bots:
