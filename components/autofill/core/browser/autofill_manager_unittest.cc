@@ -17,6 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autocomplete_history_manager.h"
@@ -807,6 +808,26 @@ class TestFormStructure : public FormStructure {
  private:
   DISALLOW_COPY_AND_ASSIGN(TestFormStructure);
 };
+
+// Test that calling OnFormsSeen with an empty set of forms (such as when
+// reloading a page or when the renderer processes a set of forms but detects
+// no changes) does not load the forms again.
+TEST_F(AutofillManagerTest, OnFormsSeen_Empty) {
+  // Set up our form data.
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  std::vector<FormData> forms(1, form);
+
+  base::HistogramTester histogram_tester;
+  FormsSeen(forms);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UserHappiness", 0 /* FORMS_LOADED */, 1);
+
+  // No more forms, metric is not logged.
+  FormsSeen(std::vector<FormData>{});
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UserHappiness", 0 /* FORMS_LOADED */, 1);
+}
 
 // Test that we return all address profile suggestions when all form fields are
 // empty.

@@ -1394,6 +1394,9 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
 }
 
 void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
+  if (forms.empty())
+    return;
+
   std::vector<FormStructure*> non_queryable_forms;
   for (const FormData& form : forms) {
     scoped_ptr<FormStructure> form_structure(new FormStructure(form));
