@@ -222,7 +222,7 @@ class BluetoothLowEnergyConnection : public Connection,
   void ClearWriteRequestsQueue();
 
   // Returns the Bluetooth address of the remote device.
-  const std::string& GetRemoteDeviceAddress();
+  std::string GetRemoteDeviceAddress();
 
   // Returns the device corresponding to |remote_device_address_|.
   device::BluetoothDevice* GetRemoteDevice();

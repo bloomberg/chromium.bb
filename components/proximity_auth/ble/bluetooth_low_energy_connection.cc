@@ -550,8 +550,13 @@ void BluetoothLowEnergyConnection::ClearWriteRequestsQueue() {
     write_requests_queue_.pop();
 }
 
-const std::string& BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
-  return remote_device().bluetooth_address;
+std::string BluetoothLowEnergyConnection::GetRemoteDeviceAddress() {
+  // When the remote device is connected we should rely on the address given by
+  // |gatt_connection_|. As the device address may change if the device is
+  // paired. The address in |gatt_connection_| is automatically updated in this
+  // case.
+  return gatt_connection_ ? gatt_connection_->GetDeviceAddress()
+                          : remote_device().bluetooth_address;
 }
 
 BluetoothDevice* BluetoothLowEnergyConnection::GetRemoteDevice() {
