@@ -47,6 +47,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserContext;
@@ -55,6 +56,7 @@ using content::DownloadItem;
 using content::DownloadManager;
 using content::WebContents;
 using net::URLRequestMockHTTPJob;
+using testing::HasSubstr;
 
 namespace {
 
@@ -809,19 +811,21 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveCrossSitePage) {
     return;  // Avoid failing on Site Isolation FYI bot.
   }
 
-  GURL url(embedded_test_server()->GetURL(
-      "a.com", "/frame_tree/page_with_two_frames_remote_and_local.html"));
+  GURL url(embedded_test_server()->GetURL("a.com", "/save_page/iframes.htm"));
   ui_test_utils::NavigateToURL(browser(), url);
 
   base::FilePath full_file_name, dir;
-  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, "xsite1", 3,
+  SaveCurrentTab(url, content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML, "iframes", 5,
                  &dir, &full_file_name);
   ASSERT_FALSE(HasFailure());
 
   EXPECT_TRUE(base::DirectoryExists(dir));
   base::FilePath expected_files[] = {
-      full_file_name, dir.AppendASCII("title1.html"),
-      dir.AppendASCII("title1(1).html"),
+      full_file_name,
+      dir.AppendASCII("a.html"),  // From iframes.htm
+      dir.AppendASCII("b.html"),  // From iframes.htm
+      dir.AppendASCII("1.css"),   // From b.htm
+      dir.AppendASCII("1.png"),   // Deduplicated from iframes.htm and b.htm.
   };
   for (auto file_path : expected_files) {
     EXPECT_TRUE(base::PathExists(file_path)) << "Does " << file_path.value()
@@ -831,6 +835,18 @@ IN_PROC_BROWSER_TEST_F(SavePageSitePerProcessBrowserTest, SaveCrossSitePage) {
     EXPECT_NE(0, actual_file_size) << "Is " << file_path.value()
                                    << " non-empty?";
   }
+
+  // Verify that local links got correctly replaced with local paths
+  // (most importantly for iframe elements, which are only exercised
+  // by this particular test).
+  std::string main_contents;
+  ASSERT_TRUE(base::ReadFileToString(full_file_name, &main_contents));
+  EXPECT_THAT(main_contents,
+              HasSubstr("<iframe src=\"./iframes_files/a.html\"></iframe>"));
+  EXPECT_THAT(main_contents,
+              HasSubstr("<iframe src=\"./iframes_files/b.html\"></iframe>"));
+  EXPECT_THAT(main_contents,
+              HasSubstr("<img src=\"./iframes_files/1.png\">"));
 }
 
 }  // namespace
