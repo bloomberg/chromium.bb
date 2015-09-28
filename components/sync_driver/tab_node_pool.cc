@@ -28,8 +28,8 @@ const int TabNodePool::kInvalidTabNodeID = -1;
 TabNodePool::~TabNodePool() {}
 
 // Static
-std::string TabNodePool::TabIdToTag(
-    const std::string machine_tag, int tab_node_id) {
+std::string TabNodePool::TabIdToTag(const std::string& machine_tag,
+                                    int tab_node_id) {
   return base::StringPrintf("%s %d", machine_tag.c_str(), tab_node_id);
 }
 

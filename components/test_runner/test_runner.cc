@@ -216,7 +216,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetXSSAuditorEnabled(bool enabled);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string key, v8::Local<v8::Value> value);
+  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
   void SetAcceptLanguages(const std::string& accept_languages);
   void SetPluginsEnabled(bool enabled);
   void DumpEditingCallbacks();
@@ -292,7 +292,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
                                             v8::Local<v8::Function> callback);
-  void SetCustomTextOutput(std::string output);
+  void SetCustomTextOutput(const std::string& output);
   void SetViewSourceForFrame(const std::string& name, bool enabled);
   void SetBluetoothMockDataSet(const std::string& dataset_name);
   void SetBluetoothManualChooser();
@@ -1054,7 +1054,7 @@ void TestRunnerBindings::SetAllowFileAccessFromFileURLs(bool allow) {
     runner_->SetAllowFileAccessFromFileURLs(allow);
 }
 
-void TestRunnerBindings::OverridePreference(const std::string key,
+void TestRunnerBindings::OverridePreference(const std::string& key,
                                             v8::Local<v8::Value> value) {
   if (runner_)
     runner_->OverridePreference(key, value);
@@ -1450,7 +1450,7 @@ void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
     runner_->CopyImageAtAndCapturePixelsAsyncThen(x, y, callback);
 }
 
-void TestRunnerBindings::SetCustomTextOutput(std::string output) {
+void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
   runner_->setCustomTextOutput(output);
 }
 
@@ -1784,7 +1784,7 @@ std::string TestRunner::customDumpText() const {
   return custom_text_output_;
 }
 
-void TestRunner::setCustomTextOutput(std::string text) {
+void TestRunner::setCustomTextOutput(const std::string& text) {
   custom_text_output_ = text;
   has_custom_text_output_ = true;
 }
@@ -2554,7 +2554,7 @@ void TestRunner::SetAllowFileAccessFromFileURLs(bool allow) {
   delegate_->ApplyPreferences();
 }
 
-void TestRunner::OverridePreference(const std::string key,
+void TestRunner::OverridePreference(const std::string& key,
                                     v8::Local<v8::Value> value) {
   TestPreferences* prefs = delegate_->Preferences();
   if (key == "WebKitDefaultFontSize") {

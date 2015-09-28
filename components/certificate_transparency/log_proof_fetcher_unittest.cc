@@ -98,11 +98,11 @@ class GetSTHResponseHandler : public net::URLRequestInterceptor {
     return job;
   }
 
-  void set_response_body(std::string response_body) {
+  void set_response_body(const std::string& response_body) {
     response_body_ = response_body;
   }
 
-  void set_response_headers(std::string response_headers) {
+  void set_response_headers(const std::string& response_headers) {
     response_headers_ = response_headers;
   }
 

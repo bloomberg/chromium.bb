@@ -106,7 +106,7 @@ State GetProcessState() {
   return state;
 }
 
-bool CheckFlag(std::string command_switch, State min_state) {
+bool CheckFlag(const std::string& command_switch, State min_state) {
   // Individiual flag settings take precedence.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(command_switch))
     return true;

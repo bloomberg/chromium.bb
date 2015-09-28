@@ -343,11 +343,12 @@ void AboutSigninInternals::OnTokenRemoved(
   NotifyObservers();
 }
 
-void AboutSigninInternals::OnRefreshTokenReceived(std::string status) {
+void AboutSigninInternals::OnRefreshTokenReceived(const std::string& status) {
   NotifySigninValueChanged(REFRESH_TOKEN_RECEIVED, status);
 }
 
-void AboutSigninInternals::OnAuthenticationResultReceived(std::string status) {
+void AboutSigninInternals::OnAuthenticationResultReceived(
+    const std::string& status) {
   NotifySigninValueChanged(AUTHENTICATION_RESULT_RECEIVED, status);
 }
 

@@ -314,7 +314,7 @@ void BluetoothLowEnergyConnectionFinder::RestartDiscoverySessionWhenReady() {
 }
 
 BluetoothDevice* BluetoothLowEnergyConnectionFinder::GetDevice(
-    std::string device_address) {
+    const std::string& device_address) {
   // It's not possible to simply use
   // |adapter_->GetDevice(GetRemoteDeviceAddress())| to find the device with MAC
   // address |GetRemoteDeviceAddress()|. For paired devices,

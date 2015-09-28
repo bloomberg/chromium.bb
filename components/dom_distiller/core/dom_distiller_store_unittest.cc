@@ -79,8 +79,10 @@ class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
   EntryMap* model_;
 };
 
-ArticleEntry CreateEntry(std::string entry_id, std::string page_url1,
-                         std::string page_url2, std::string page_url3) {
+ArticleEntry CreateEntry(const std::string& entry_id,
+                         const std::string& page_url1,
+                         const std::string& page_url2,
+                         const std::string& page_url3) {
   ArticleEntry entry;
   entry.set_entry_id(entry_id);
   if (!page_url1.empty()) {

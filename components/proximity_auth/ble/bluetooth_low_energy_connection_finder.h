@@ -126,7 +126,7 @@ class BluetoothLowEnergyConnectionFinder
   void InvokeCallbackAsync();
 
   // Returns the device with |device_address|.
-  device::BluetoothDevice* GetDevice(std::string device_address);
+  device::BluetoothDevice* GetDevice(const std::string& device_address);
 
   // The remote BLE device being searched. It maybe empty, in this case the
   // remote device should advertise |remote_service_uuid_| and

@@ -790,7 +790,7 @@ bool UserManagerBase::HasPendingBootstrap(const std::string& user_id) const {
   return false;
 }
 
-void UserManagerBase::SetOwnerEmail(std::string owner_user_id) {
+void UserManagerBase::SetOwnerEmail(const std::string& owner_user_id) {
   owner_email_ = owner_user_id;
 }
 
@@ -798,7 +798,7 @@ const std::string& UserManagerBase::GetPendingUserSwitchID() const {
   return pending_user_switch_;
 }
 
-void UserManagerBase::SetPendingUserSwitchID(std::string user_id) {
+void UserManagerBase::SetPendingUserSwitchID(const std::string& user_id) {
   pending_user_switch_ = user_id;
 }
 

@@ -170,8 +170,7 @@ class GCMNetworkChannelTest
     last_invalidator_state_ = invalidator_state;
   }
 
-  void OnIncomingMessage(std::string incoming_message) {
-  }
+  void OnIncomingMessage(std::string /* incoming_message */) {}
 
   GCMNetworkChannel* network_channel() {
     return gcm_network_channel_.get();

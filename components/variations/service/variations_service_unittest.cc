@@ -60,7 +60,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   void OverrideUIString(uint32_t hash, const base::string16& string) override {}
   void OnInitialStartup() override {}
 
-  void set_restrict_parameter(std::string value) {
+  void set_restrict_parameter(const std::string& value) {
     restrict_parameter_ = value;
   }
 

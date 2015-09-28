@@ -65,7 +65,7 @@ void ClonedInstallDetector::CheckForClonedInstall(
 }
 
 void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
-                                          std::string raw_id) {
+                                          const std::string& raw_id) {
   if (raw_id.empty()) {
     LogMachineIdState(ID_GENERATION_FAILED);
     local_state->ClearPref(prefs::kMetricsMachineId);

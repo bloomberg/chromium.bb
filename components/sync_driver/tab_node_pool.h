@@ -55,7 +55,7 @@ class TabNodePool {
   static const int kInvalidTabNodeID;
 
   // Build a sync tag from tab_node_id.
-  static std::string TabIdToTag(const std::string machine_tag,
+  static std::string TabIdToTag(const std::string& machine_tag,
                                 int tab_node_id);
 
   // Returns the tab_node_id for the next free tab node. If none are available,

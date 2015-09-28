@@ -259,7 +259,7 @@ class DataReductionProxyProtocolTest : public testing::Test {
   }
 
   // Returns the key to the |ProxyRetryInfoMap|.
-  std::string GetProxyKey(std::string proxy) {
+  std::string GetProxyKey(const std::string& proxy) {
     net::ProxyServer proxy_server = net::ProxyServer::FromURI(
         proxy, net::ProxyServer::SCHEME_HTTP);
     if (!proxy_server.is_valid())

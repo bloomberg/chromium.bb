@@ -24,11 +24,11 @@ namespace {
 const char kAccountId1[] = "account_1";
 const char kAccountId2[] = "account_2";
 
-std::string AccountKeyToObfuscatedId(const std::string email) {
+std::string AccountKeyToObfuscatedId(const std::string& email) {
   return "obfid-" + email;
 }
 
-std::string GetValidTokenInfoResponse(const std::string account_key) {
+std::string GetValidTokenInfoResponse(const std::string& account_key) {
   return std::string("{ \"id\": \"") + AccountKeyToObfuscatedId(account_key) +
          "\" }";
 }

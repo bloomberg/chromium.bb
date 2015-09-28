@@ -87,7 +87,7 @@ class TestRunner : public WebTestRunner,
   void ClearDevToolsLocalStorage();
   void setShouldDumpAsText(bool);
   void setShouldDumpAsMarkup(bool);
-  void setCustomTextOutput(std::string text);
+  void setCustomTextOutput(const std::string& text);
   void setShouldGeneratePixelResults(bool);
   void setShouldDumpFrameLoadCallbacks(bool);
   void setShouldDumpPingLoaderCallbacks(bool);
@@ -329,7 +329,7 @@ class TestRunner : public WebTestRunner,
   void SetXSSAuditorEnabled(bool enabled);
   void SetAllowUniversalAccessFromFileURLs(bool allow);
   void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string key, v8::Local<v8::Value> value);
+  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
 
   // Modify accept_languages in RendererPreferences.
   void SetAcceptLanguages(const std::string& accept_languages);

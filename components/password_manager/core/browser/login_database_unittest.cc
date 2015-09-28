@@ -1371,7 +1371,8 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
   // Returns an empty vector on failure. Otherwise returns values in the column
   // |column_name| of the logins table. The order of the
   // returned rows is well-defined.
-  template <class T> std::vector<T> GetValues(std::string column_name) {
+  template <class T>
+  std::vector<T> GetValues(const std::string& column_name) {
     sql::Connection db;
     std::vector<T> results;
     if (!db.Open(database_path_))

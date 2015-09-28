@@ -87,7 +87,7 @@ TraceConfigFile::TraceConfigFile()
 TraceConfigFile::~TraceConfigFile() {
 }
 
-bool TraceConfigFile::ParseTraceConfigFileContent(std::string content) {
+bool TraceConfigFile::ParseTraceConfigFileContent(const std::string& content) {
   scoped_ptr<base::Value> value(base::JSONReader::Read(content));
   if (!value || !value->IsType(base::Value::TYPE_DICTIONARY))
     return false;

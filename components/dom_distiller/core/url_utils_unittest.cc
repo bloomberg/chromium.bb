@@ -41,12 +41,12 @@ TEST(DomDistillerUrlUtilsTest, TestGetValueForKeyInUrlPathQuery) {
   EXPECT_EQ("foo", GetValueForKeyInUrlPathQuery(valid_url_two_keys, "key"));
 }
 
-std::string ThroughDistiller(std::string url) {
+std::string ThroughDistiller(const std::string& url) {
   return GetOriginalUrlFromDistillerUrl(
       GetDistillerViewUrlFromUrl(kDomDistillerScheme, GURL(url))).spec();
 }
 
-std::string GetOriginalUrlFromDistillerUrl(std::string url) {
+std::string GetOriginalUrlFromDistillerUrl(const std::string& url) {
   return GetOriginalUrlFromDistillerUrl(GURL(url)).spec();
 }
 

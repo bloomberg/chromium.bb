@@ -81,7 +81,7 @@ class TRACING_EXPORT TraceConfigFile {
   TraceConfigFile();
   ~TraceConfigFile();
 
-  bool ParseTraceConfigFileContent(std::string content);
+  bool ParseTraceConfigFileContent(const std::string& content);
 
   bool is_enabled_;
   base::trace_event::TraceConfig trace_config_;

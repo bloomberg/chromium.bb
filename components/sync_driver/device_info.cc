@@ -106,7 +106,7 @@ base::DictionaryValue* DeviceInfo::ToValue() {
   return value;
 }
 
-void DeviceInfo::set_public_id(std::string id) {
+void DeviceInfo::set_public_id(const std::string& id) {
   public_id_ = id;
 }
 

@@ -20,7 +20,7 @@ using media::SupportedCodecs;
 namespace cdm {
 
 // Return |name|'s parent key system.
-static std::string GetDirectParentName(std::string name) {
+static std::string GetDirectParentName(const std::string& name) {
   size_t last_period = name.find_last_of('.');
   DCHECK_GT(last_period, 0u);
   return name.substr(0u, last_period);

@@ -260,7 +260,7 @@ class TrackedPreferencesMigrationTest : public testing::Test {
 
   // Determines whether |expected_pref_in_hash_store| has a hash in the Local
   // State hash store.
-  bool ContainsLegacyHash(std::string expected_pref_in_hash_store) {
+  bool ContainsLegacyHash(const std::string& expected_pref_in_hash_store) {
     const base::DictionaryValue* hash_store_contents =
         PrefServiceHashStoreContents(kHashStoreId, &local_state_).GetContents();
     return hash_store_contents &&

@@ -63,7 +63,7 @@ class DnsQueue {
   // Returns true for success, false for failure (nothing written).
   PushResult Push(const char* source, const size_t length);
 
-  PushResult Push(std::string source) {
+  PushResult Push(const std::string& source) {
     return Push(source.c_str(), source.length());
   }
 

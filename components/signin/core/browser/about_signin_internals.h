@@ -73,8 +73,8 @@ class AboutSigninInternals
 
   void Initialize(SigninClient* client);
 
-  void OnRefreshTokenReceived(std::string status);
-  void OnAuthenticationResultReceived(std::string status);
+  void OnRefreshTokenReceived(const std::string& status);
+  void OnAuthenticationResultReceived(const std::string& status);
 
   // KeyedService implementation.
   void Shutdown() override;

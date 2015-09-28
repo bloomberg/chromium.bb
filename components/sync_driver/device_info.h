@@ -68,7 +68,7 @@ class DeviceInfo {
   // not unique enough so the user can be tracked. Exposing |guid|
   // would lead to a stable unique id for a device which can potentially
   // be used for tracking.
-  void set_public_id(std::string id);
+  void set_public_id(const std::string& id);
 
   // Converts the |DeviceInfo| values to a JS friendly DictionaryValue,
   // which extension APIs can expose to third party apps.

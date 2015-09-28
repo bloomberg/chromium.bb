@@ -48,31 +48,31 @@ enum TrackingEventType {
   REMOVED,
 };
 
-std::string AccountIdToEmail(const std::string account_id) {
+std::string AccountIdToEmail(const std::string& account_id) {
   return account_id + "@gmail.com";
 }
 
-std::string AccountIdToGaiaId(const std::string account_id) {
+std::string AccountIdToGaiaId(const std::string& account_id) {
   return "gaia-" + account_id;
 }
 
-std::string AccountIdToFullName(const std::string account_id) {
+std::string AccountIdToFullName(const std::string& account_id) {
   return "full-name-" + account_id;
 }
 
-std::string AccountIdToGivenName(const std::string account_id) {
+std::string AccountIdToGivenName(const std::string& account_id) {
   return "given-name-" + account_id;
 }
 
-std::string AccountIdToLocale(const std::string account_id) {
+std::string AccountIdToLocale(const std::string& account_id) {
   return "locale-" + account_id;
 }
 
-std::string AccountIdToPictureURL(const std::string account_id) {
+std::string AccountIdToPictureURL(const std::string& account_id) {
   return "picture_url-" + account_id;
 }
 
-void CheckAccountDetails(const std::string account_id,
+void CheckAccountDetails(const std::string& account_id,
                          const AccountInfo& info) {
   EXPECT_EQ(account_id, info.account_id);
   EXPECT_EQ(AccountIdToGaiaId(account_id), info.gaia);

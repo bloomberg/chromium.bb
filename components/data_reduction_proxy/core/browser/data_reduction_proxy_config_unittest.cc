@@ -310,7 +310,7 @@ TEST_F(DataReductionProxyConfigTest,
   CheckSecureProxyCheckOnIPChange("OK", SUCCEEDED_PROXY_ENABLED, false, false);
 }
 
-std::string GetRetryMapKeyFromOrigin(std::string origin) {
+std::string GetRetryMapKeyFromOrigin(const std::string& origin) {
   // The retry map has the scheme prefix for https but not for http.
   return origin;
 }

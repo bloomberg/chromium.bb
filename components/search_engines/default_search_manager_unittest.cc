@@ -118,7 +118,8 @@ void SetPolicy(user_prefs::TestingPrefServiceSyncable* prefs,
   prefs->SetManagedPref(kDefaultSearchProviderData, entry.release());
 }
 
-scoped_ptr<TemplateURLData> GenerateDummyTemplateURLData(std::string type) {
+scoped_ptr<TemplateURLData> GenerateDummyTemplateURLData(
+    const std::string& type) {
   scoped_ptr<TemplateURLData> data(new TemplateURLData());
   data->SetShortName(base::UTF8ToUTF16(std::string(type).append("name")));
   data->SetKeyword(base::UTF8ToUTF16(std::string(type).append("key")));
