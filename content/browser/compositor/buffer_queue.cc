@@ -62,18 +62,10 @@ void BufferQueue::CopyBufferDamage(int texture,
                                    int source_texture,
                                    const gfx::Rect& new_damage,
                                    const gfx::Rect& old_damage) {
-  gfx::Rect new_damage_mutable = new_damage;
-  gfx::Rect old_damage_mutable = old_damage;
-#if defined(ARCH_CPU_ARM_FAMILY)
-  // TODO(dnicoara): Remove ARM workaround once partial swap is enabled.
-  new_damage_mutable = gfx::Rect(size_);
-  old_damage_mutable = gfx::Rect();
-#endif
-
   gl_helper_->CopySubBufferDamage(
       texture_target_, texture, source_texture,
-      SkRegion(gfx::RectToSkIRect(new_damage_mutable)),
-      SkRegion(gfx::RectToSkIRect(old_damage_mutable)));
+      SkRegion(gfx::RectToSkIRect(new_damage)),
+      SkRegion(gfx::RectToSkIRect(old_damage)));
 }
 
 void BufferQueue::UpdateBufferDamage(const gfx::Rect& damage) {
