@@ -257,13 +257,13 @@ void CopyRowsToNV12Buffer(int first_row,
     DCHECK_EQ(0, first_row % 2);
 
     libyuv::I420ToNV12(
-        source_frame->data(VideoFrame::kYPlane) +
+        source_frame->visible_data(VideoFrame::kYPlane) +
             first_row * source_frame->stride(VideoFrame::kYPlane),
         source_frame->stride(VideoFrame::kYPlane),
-        source_frame->data(VideoFrame::kUPlane) +
+        source_frame->visible_data(VideoFrame::kUPlane) +
             first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
         source_frame->stride(VideoFrame::kUPlane),
-        source_frame->data(VideoFrame::kVPlane) +
+        source_frame->visible_data(VideoFrame::kVPlane) +
             first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
         source_frame->stride(VideoFrame::kVPlane),
         dest_y + first_row * dest_stride_y, dest_stride_y,
@@ -287,13 +287,13 @@ void CopyRowsToUYVYBuffer(int first_row,
     DCHECK_LE(width, std::abs(dest_stride / 2));
     DCHECK_EQ(0, first_row % 2);
     libyuv::I420ToUYVY(
-        source_frame->data(VideoFrame::kYPlane) +
+        source_frame->visible_data(VideoFrame::kYPlane) +
             first_row * source_frame->stride(VideoFrame::kYPlane),
         source_frame->stride(VideoFrame::kYPlane),
-        source_frame->data(VideoFrame::kUPlane) +
+        source_frame->visible_data(VideoFrame::kUPlane) +
             first_row / 2 * source_frame->stride(VideoFrame::kUPlane),
         source_frame->stride(VideoFrame::kUPlane),
-        source_frame->data(VideoFrame::kVPlane) +
+        source_frame->visible_data(VideoFrame::kVPlane) +
             first_row / 2 * source_frame->stride(VideoFrame::kVPlane),
         source_frame->stride(VideoFrame::kVPlane),
         output + first_row * dest_stride, dest_stride, width, rows);
@@ -350,7 +350,6 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       return;
   }
 
-  DCHECK(video_frame->visible_rect().origin().IsOrigin());
   const gfx::Size size = video_frame->visible_rect().size();
 
   // Acquire resources. Incompatible ones will be dropped from the pool.
@@ -391,7 +390,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
   // Compute the number of tasks to post and create the barrier.
   const size_t num_planes = VideoFrame::NumPlanes(output_format_);
   const size_t planes_per_copy = PlanesPerCopy(output_format_);
-  gfx::Size size = video_frame->visible_rect().size();
+  const gfx::Size size = video_frame->visible_rect().size();
   size_t copies = 0;
   for (size_t i = 0; i < num_planes; i += planes_per_copy) {
     const int rows = VideoFrame::Rows(i, output_format_, size.height());
@@ -429,11 +428,10 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CopyVideoFrameToGpuMemoryBuffers(
           const int bytes_per_row =
               VideoFrame::RowBytes(i, output_format_, size.width());
           worker_task_runner_->PostTask(
-              FROM_HERE,
-              base::Bind(&CopyRowsToI420Buffer, row, rows_to_copy,
-                         bytes_per_row, video_frame->data(i),
-                         video_frame->stride(i), dest_buffers[0],
-                         dest_strides[0], barrier));
+              FROM_HERE, base::Bind(&CopyRowsToI420Buffer, row, rows_to_copy,
+                                    bytes_per_row, video_frame->visible_data(i),
+                                    video_frame->stride(i), dest_buffers[0],
+                                    dest_strides[0], barrier));
           break;
         }
         case PIXEL_FORMAT_NV12:
@@ -511,8 +509,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
           mailbox_holders[VideoFrame::kUPlane],
           mailbox_holders[VideoFrame::kVPlane],
           base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, video_frame->visible_rect(), video_frame->natural_size(),
-          video_frame->timestamp());
+          size, gfx::Rect(size), size, video_frame->timestamp());
       if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
         frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
@@ -521,8 +518,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
       frame = VideoFrame::WrapNativeTexture(
           output_format_, mailbox_holders[VideoFrame::kYPlane],
           base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources),
-          size, video_frame->visible_rect(), video_frame->natural_size(),
-          video_frame->timestamp());
+          size, gfx::Rect(size), size, video_frame->timestamp());
       frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
     default:
