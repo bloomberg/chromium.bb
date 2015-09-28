@@ -38,6 +38,7 @@
 #include "components/metrics/net/version_utils.h"
 #include "components/metrics/profiler/profiler_metrics_provider.h"
 #include "components/metrics/profiler/tracking_synchronizer.h"
+#include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/url_constants.h"
 #include "components/omnibox/browser/omnibox_metrics_provider.h"
 #include "components/variations/variations_associated_data.h"
@@ -168,7 +169,7 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterInt64Pref(prefs::kUninstallLastObservedRunTimeSec, 0);
 
   metrics::MetricsService::RegisterPrefs(registry);
-  ChromeStabilityMetricsProvider::RegisterPrefs(registry);
+  metrics::StabilityMetricsHelper::RegisterPrefs(registry);
 
 #if defined(OS_ANDROID)
   AndroidMetricsProvider::RegisterPrefs(registry);

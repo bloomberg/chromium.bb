@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/system_memory_stats_recorder.h"
+#include "components/metrics/system_memory_stats_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 
-namespace memory {
+namespace metrics {
 
 // Record a size in megabytes, a potential interval from 250MB up to 32 GB.
 #define UMA_HISTOGRAM_ALLOCATED_MEGABYTES(name, sample) \
@@ -94,4 +94,4 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   }
 }
 
-}  // namespace memory
+}  // namespace metrics

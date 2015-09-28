@@ -340,6 +340,7 @@
       'metrics/persisted_logs_unittest.cc',
       'metrics/profiler/profiler_metrics_provider_unittest.cc',
       'metrics/profiler/tracking_synchronizer_unittest.cc',
+      'metrics/stability_metrics_helper_unittest.cc',
     ],
     'mime_util_unittest_sources': [
       'mime_util/mime_util_unittest.cc',

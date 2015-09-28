@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/memory/system_memory_stats_recorder.h"
+#include "components/metrics/system_memory_stats_recorder.h"
 
 #include <windows.h>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 
-namespace memory {
+namespace metrics {
 
 void RecordMemoryStats(RecordMemoryStatsType type) {
   MEMORYSTATUSEX mem_status;
@@ -41,4 +41,4 @@ void RecordMemoryStats(RecordMemoryStatsType type) {
   }
 }
 
-}  // namespace memory
+}  // namespace metrics

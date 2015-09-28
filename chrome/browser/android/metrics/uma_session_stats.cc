@@ -119,8 +119,8 @@ static void LogRendererCrash(JNIEnv*, const JavaParamRef<jclass>&) {
   // Increment the renderer crash count in stability metrics.
   PrefService* pref = g_browser_process->local_state();
   DCHECK(pref);
-  int value = pref->GetInteger(prefs::kStabilityRendererCrashCount);
-  pref->SetInteger(prefs::kStabilityRendererCrashCount, value + 1);
+  int value = pref->GetInteger(metrics::prefs::kStabilityRendererCrashCount);
+  pref->SetInteger(metrics::prefs::kStabilityRendererCrashCount, value + 1);
 }
 
 static void RegisterExternalExperiment(JNIEnv* env,

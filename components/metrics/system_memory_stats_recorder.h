@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
-#define CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
+#ifndef COMPONENTS_METRICS_SYSTEM_MEMORY_STATS_RECORDER_H_
+#define COMPONENTS_METRICS_SYSTEM_MEMORY_STATS_RECORDER_H_
 
-namespace memory {
+namespace metrics {
 
 // Record a memory size in megabytes, over a potential interval up to 32 GB.
 #define UMA_HISTOGRAM_LARGE_MEMORY_MB(name, sample) \
@@ -25,6 +25,6 @@ enum RecordMemoryStatsType {
 
 void RecordMemoryStats(RecordMemoryStatsType type);
 
-}  // namespace memory
+}  // namespace metrics
 
-#endif  // CHROME_BROWSER_MEMORY_SYSTEM_MEMORY_STATS_RECORDER_H_
+#endif  // COMPONENTS_METRICS_SYSTEM_MEMORY_STATS_RECORDER_H_

@@ -1266,41 +1266,9 @@ const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif
 
-// Number of times a page load event occurred since the last report.
-const char kStabilityPageLoadCount[] =
-    "user_experience_metrics.stability.page_load_count";
-
-// Number of times a renderer process crashed since the last report.
-const char kStabilityRendererCrashCount[] =
-    "user_experience_metrics.stability.renderer_crash_count";
-
-// Number of times a renderer process failed to launch since the last report.
-const char kStabilityRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.renderer_failed_launch_count";
-
-// Number of times an extension renderer process crashed since the last report.
-const char kStabilityExtensionRendererCrashCount[] =
-    "user_experience_metrics.stability.extension_renderer_crash_count";
-
-// Number of times an extension renderer process failed to launch since the last
-// report.
-const char kStabilityExtensionRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.extension_renderer_failed_launch_count";
-
 // This is the location of a list of dictionaries of plugin stability stats.
 const char kStabilityPluginStats[] =
     "user_experience_metrics.stability.plugin_stats2";
-
-// Number of times the renderer has become non-responsive since the last
-// report.
-const char kStabilityRendererHangCount[] =
-    "user_experience_metrics.stability.renderer_hang_count";
-
-// Total number of child process crashes (other than renderer / extension
-// renderer ones, and plugin children, which are counted separately) since the
-// last report.
-const char kStabilityChildProcessCrashCount[] =
-    "user_experience_metrics.stability.child_process_crash_count";
 
 // On Chrome OS, total number of non-Chrome user process crashes
 // since the last report.
@@ -1350,8 +1318,6 @@ const char kStabilityPluginLoadingErrors[] = "loading_errors";
 // The keys below are strictly increasing counters over the lifetime of
 // a chrome installation. They are (optionally) sent up to the uninstall
 // survey in the event of uninstallation.
-const char kUninstallMetricsPageLoadCount[] =
-    "uninstall_metrics.page_load_count";
 const char kUninstallLastLaunchTimeSec[] =
     "uninstall_metrics.last_launch_time_sec";
 const char kUninstallLastObservedRunTimeSec[] =

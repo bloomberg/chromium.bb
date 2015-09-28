@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/memory/system_memory_stats_recorder.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -37,6 +36,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/url_constants.h"
+#include "components/metrics/system_memory_stats_recorder.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -293,7 +293,7 @@ void TabManager::RecordDiscardStatistics() {
 // all platforms.
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   // Record system memory usage at the time of the discard.
-  RecordMemoryStats(RECORD_MEMORY_STATS_TAB_DISCARDED);
+  metrics::RecordMemoryStats(metrics::RECORD_MEMORY_STATS_TAB_DISCARDED);
 #endif
   // Set up to record the next interval.
   last_discard_time_ = TimeTicks::Now();

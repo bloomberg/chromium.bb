@@ -65,8 +65,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, CloseRenderersNormally) {
   // Verify that the expected stability metrics were recorded.
   const PrefService* prefs = g_browser_process->local_state();
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
-  EXPECT_EQ(3, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-  EXPECT_EQ(0, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
+  EXPECT_EQ(3, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(0, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that
   // metrics::prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser
@@ -98,14 +98,14 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   // since the notification is posted to all observers essentially
   // simultaneously... so busy waiting here shouldn't be too bad.
   const PrefService* prefs = g_browser_process->local_state();
-  while (!prefs->GetInteger(prefs::kStabilityRendererCrashCount)) {
+  while (!prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount)) {
     content::RunAllPendingInMessageLoop();
   }
 
   // Verify that the expected stability metrics were recorded.
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityLaunchCount));
-  EXPECT_EQ(4, prefs->GetInteger(prefs::kStabilityPageLoadCount));
-  EXPECT_EQ(1, prefs->GetInteger(prefs::kStabilityRendererCrashCount));
+  EXPECT_EQ(4, prefs->GetInteger(metrics::prefs::kStabilityPageLoadCount));
+  EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
   // TODO(isherman): We should also verify that
   // metrics::prefs::kStabilityExitedCleanly
   // is set to true, but this preference isn't set until the browser

@@ -53,6 +53,11 @@ source_set("metrics") {
     "metrics_switches.h",
     "persisted_logs.cc",
     "persisted_logs.h",
+    "stability_metrics_helper.cc",
+    "stability_metrics_helper.h",
+    "system_memory_stats_recorder.h",
+    "system_memory_stats_recorder_linux.cc",
+    "system_memory_stats_recorder_win.cc",
     "url_constants.cc",
     "url_constants.h",
   ]
@@ -196,6 +201,7 @@ source_set("unit_tests") {
     "metrics_state_manager_unittest.cc",
     "net/net_metrics_log_uploader_unittest.cc",
     "persisted_logs_unittest.cc",
+    "stability_metrics_helper_unittest.cc",
   ]
 
   deps = [

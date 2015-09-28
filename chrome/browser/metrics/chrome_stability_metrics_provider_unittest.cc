@@ -33,7 +33,7 @@ namespace {
 class ChromeStabilityMetricsProviderTest : public testing::Test {
  protected:
   ChromeStabilityMetricsProviderTest() : prefs_(new TestingPrefServiceSimple) {
-    ChromeStabilityMetricsProvider::RegisterPrefs(prefs()->registry());
+    metrics::StabilityMetricsHelper::RegisterPrefs(prefs()->registry());
   }
 
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
