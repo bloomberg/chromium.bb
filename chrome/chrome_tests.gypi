@@ -550,6 +550,7 @@
       'browser/ui/webui/identity_internals_ui_browsertest.h',
       'browser/ui/webui/inspect_ui_browsertest.cc',
       'browser/ui/webui/interstitials/interstitial_ui_browsertest.cc',
+      'browser/ui/webui/log_web_ui_url_browsertest.cc',
       'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
       'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
       'browser/ui/webui/ntp/new_tab_page_sync_handler_browsertest.cc',
@@ -2479,6 +2480,12 @@
           # avatar button code. TODO(estade): remove.
           'defines': [ 'FRAME_AVATAR_BUTTON=1', ],
           'sources': [ '<@(chrome_browser_tests_views_non_cros_or_mac_sources)' ],
+        }],
+        ['OS=="ios"', {
+          'sources!': [
+            # TODO(dbeam): log webui URLs on iOS and test them.
+            'browser/ui/webui/log_web_ui_url_browsertest.cc',
+          ],
         }],
         ['OS!="android" and OS!="ios"', {
           'sources': [

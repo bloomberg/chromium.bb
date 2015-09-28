@@ -18,6 +18,8 @@
 
 namespace webui {
 
+const char kWebUICreatedForUrl[] = "WebUI.CreatedForUrl";
+
 bool LogWebUIUrl(const GURL& web_ui_url) {
   bool should_log = web_ui_url.SchemeIs(content::kChromeUIScheme) ||
                     web_ui_url.SchemeIs(content::kChromeDevToolsScheme);
@@ -29,7 +31,7 @@ bool LogWebUIUrl(const GURL& web_ui_url) {
 
   if (should_log) {
     uint32 hash = base::Hash(web_ui_url.GetOrigin().spec());
-    UMA_HISTOGRAM_SPARSE_SLOWLY("WebUI.CreatedForUrl",
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kWebUICreatedForUrl,
                                 static_cast<base::HistogramBase::Sample>(hash));
   }
 
