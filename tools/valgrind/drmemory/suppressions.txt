@@ -743,3 +743,9 @@ name=bug_522049
 *!base::MessagePumpDefault::Run
 *!base::MessageLoop::RunHandler
 *!base::MessageLoop::Run
+
+UNADDRESSABLE ACCESS
+name=bug_536803
+*!blink::SecurityOrigin::addSuborigin
+*!blink::SecurityOriginTest_Suborigins_Test::TestBody
+*!testing::internal::HandleExceptionsInMethodIfSupported<>
