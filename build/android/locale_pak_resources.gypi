@@ -12,6 +12,8 @@
 # Variables:
 #   locale_pak_files - List of .pak files to process.
 #     Names must be of the form "en.pak" or "en-US.pak".
+#   resource_zip_path - the path of generated zip file, optional, normally, you
+#     don't need to set this variable.
 #
 # Example
 #  {
@@ -25,12 +27,12 @@
 #
 {
   'variables': {
-    'resources_zip_path': '<(PRODUCT_DIR)/res.java/<(_target_name).zip',
+    'resources_zip_path%': '<(PRODUCT_DIR)/res.java/<(_target_name).zip',
   },
   'all_dependent_settings': {
     'variables': {
-      'additional_input_paths': ['<(resources_zip_path)'],
-      'dependencies_res_zip_paths': ['<(resources_zip_path)'],
+      'additional_locale_input_paths': ['<(resources_zip_path)'],
+      'dependencies_locale_zip_paths': ['<(resources_zip_path)'],
     },
   },
   'actions': [{

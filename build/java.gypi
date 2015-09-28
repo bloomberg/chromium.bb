@@ -63,6 +63,7 @@
     'jar_excluded_classes': [ '*/R.class', '*/R##*.class' ],
     'instr_stamp': '<(intermediate_dir)/instr.stamp',
     'additional_input_paths': [],
+    'additional_locale_input_paths': [],
     'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',
     'main_dex_list_path': '<(intermediate_dir)/main_dex_list.txt',
     'generated_src_dirs': ['>@(generated_R_dirs)'],
@@ -135,6 +136,7 @@
         'generated_src_dirs': ['<(R_dir)'],
         'additional_input_paths': ['<(resource_zip_path)', ],
 
+        'dependencies_locale_zip_paths': [],
         'dependencies_res_zip_paths': [],
         'resource_zip_path': '<(PRODUCT_DIR)/res.java/<(_target_name).zip',
       },
@@ -166,6 +168,10 @@
             # the list of inputs changes.
             'inputs_list_file': '>|(java_resources.<(_target_name).gypcmd >@(resource_input_paths))',
             'process_resources_options': [],
+            'local_dependencies_res_zip_paths': [
+              '>@(dependencies_res_zip_paths)',
+              '>@(dependencies_locale_zip_paths)'
+            ],
             'conditions': [
               ['res_v14_skip == 1', {
                 'process_resources_options': ['--v14-skip']
@@ -177,7 +183,7 @@
             '<(DEPTH)/build/android/gyp/process_resources.py',
             '<(DEPTH)/build/android/gyp/generate_v14_compatible_resources.py',
             '>@(resource_input_paths)',
-            '>@(dependencies_res_zip_paths)',
+            '>@(local_dependencies_res_zip_paths)',
             '>(inputs_list_file)',
           ],
           'outputs': [
@@ -193,7 +199,7 @@
             '--android-manifest', '<(android_manifest)',
             '--custom-package', '<(R_package)',
 
-            '--dependencies-res-zips', '>(dependencies_res_zip_paths)',
+            '--dependencies-res-zips', '>(local_dependencies_res_zip_paths)',
             '--resource-dirs', '<(res_input_dirs)',
 
             '--R-dir', '<(R_dir)',
@@ -278,6 +284,10 @@
       'action_name': 'javac_<(_target_name)',
       'message': 'Compiling <(_target_name) java sources',
       'variables': {
+        'local_additional_input_paths': [
+          '>@(additional_input_paths)',
+          '>@(additional_locale_input_paths)',
+        ],
         'extra_args': [],
         'extra_inputs': [],
         'java_sources': ['>!@(find >(java_in_dir)>(java_in_dir_suffix) >(additional_src_dirs) -name "*.java")'],
@@ -295,7 +305,7 @@
         '<(DEPTH)/build/android/gyp/javac.py',
         '>@(java_sources)',
         '>@(input_jars_paths)',
-        '>@(additional_input_paths)',
+        '>@(local_additional_input_paths)',
         '<@(extra_inputs)',
       ],
       'outputs': [

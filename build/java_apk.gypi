@@ -68,12 +68,15 @@
 #  java_in_dir_suffix - To override the /src suffix on java_in_dir.
 #  app_manifest_version_name - set the apps 'human readable' version number.
 #  app_manifest_version_code - set the apps version number.
+#  dependencies_locale_zip_alternative_paths - a list of paths that used to
+#    replace dependencies_locale_zip_paths of all_dependent_settings.
 {
   'variables': {
     'tested_apk_obfuscated_jar_path%': '/',
     'tested_apk_dex_path%': '/',
     'tested_apk_is_multidex%': 0,
     'additional_input_paths': [],
+    'additional_locale_input_paths': [],
     'create_density_splits%': 0,
     'language_splits': [],
     'input_jars_paths': [],
@@ -93,6 +96,8 @@
     'R_package%':'',
     'include_all_resources%': 0,
     'additional_R_text_files': [],
+    'dependencies_locale_zip_alternative_paths%': [],
+    'dependencies_locale_zip_paths': [],
     'dependencies_res_zip_paths': [],
     'additional_res_packages': [],
     'additional_bundled_libs%': [],
@@ -781,12 +786,27 @@
       'action_name': 'process_resources',
       'message': 'processing resources for <(_target_name)',
       'variables': {
+        'local_additional_input_paths': [
+          '>@(additional_input_paths)',
+        ],
+        'local_dependencies_res_zip_paths': [
+          '>@(dependencies_res_zip_paths)'
+        ],
         # Write the inputs list to a file, so that its mtime is updated when
         # the list of inputs changes.
-        'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(additional_input_paths) >@(resource_input_paths))',
+        'inputs_list_file': '>|(apk_codegen.<(_target_name).gypcmd >@(local_additional_input_paths) >@(resource_input_paths))',
+
         'process_resources_options': [],
         'conditions': [
+          ['dependencies_locale_zip_alternative_paths == []', {
+            'local_dependencies_res_zip_paths': ['>@(dependencies_locale_zip_paths)'],
+            'local_additional_input_paths': ['>@(additional_locale_input_paths)']
+          }, {
+            'local_dependencies_res_zip_paths': ['<@(dependencies_locale_zip_alternative_paths)'],
+            'local_additional_input_paths': ['>@(dependencies_locale_zip_alternative_paths)'],
+          }],
           ['is_test_apk == 1', {
+            'dependencies_locale_zip_paths=': [],
             'dependencies_res_zip_paths=': [],
             'additional_res_packages=': [],
           }],
@@ -811,9 +831,9 @@
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/process_resources.py',
         '<(android_manifest_path)',
-        '>@(additional_input_paths)',
+        '>@(local_additional_input_paths)',
         '>@(resource_input_paths)',
-        '>@(dependencies_res_zip_paths)',
+        '>@(local_dependencies_res_zip_paths)',
         '>(inputs_list_file)',
       ],
       'outputs': [
@@ -827,7 +847,7 @@
         '--aapt-path', '<(android_aapt_path)',
 
         '--android-manifest', '<(android_manifest_path)',
-        '--dependencies-res-zips', '>(dependencies_res_zip_paths)',
+        '--dependencies-res-zips', '>(local_dependencies_res_zip_paths)',
 
         '--extra-res-packages', '>(additional_res_packages)',
         '--extra-r-text-files', '>(additional_R_text_files)',
@@ -1096,14 +1116,20 @@
     },
     {
       'variables': {
+        'local_dependencies_res_zip_paths': ['>@(dependencies_res_zip_paths)'],
         'extra_inputs': ['<(codegen_stamp)'],
         'resource_zips': [
           '<(resource_zip_path)',
         ],
         'conditions': [
+          ['dependencies_locale_zip_alternative_paths == []', {
+            'local_dependencies_res_zip_paths': ['>@(dependencies_locale_zip_paths)'],
+          }, {
+            'local_dependencies_res_zip_paths': ['<@(dependencies_locale_zip_alternative_paths)'],
+          }],
           ['is_test_apk == 0', {
             'resource_zips': [
-              '>@(dependencies_res_zip_paths)',
+              '>@(local_dependencies_res_zip_paths)',
             ],
           }],
         ],
