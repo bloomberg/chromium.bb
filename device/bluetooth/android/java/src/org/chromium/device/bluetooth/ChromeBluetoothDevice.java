@@ -27,7 +27,7 @@ import java.util.List;
 final class ChromeBluetoothDevice {
     private static final String TAG = "Bluetooth";
 
-    private final long mNativeBluetoothDeviceAndroid;
+    private long mNativeBluetoothDeviceAndroid;
     final Wrappers.BluetoothDeviceWrapper mDevice;
     private List<ParcelUuid> mUuidsFromScan;
     Wrappers.BluetoothGattWrapper mBluetoothGatt;
@@ -39,6 +39,15 @@ final class ChromeBluetoothDevice {
         mDevice = deviceWrapper;
         mBluetoothGattCallbackImpl = new BluetoothGattCallbackImpl();
         Log.v(TAG, "ChromeBluetoothDevice created.");
+    }
+
+    /**
+     * Handles C++ object being destroyed.
+     */
+    @CalledByNative
+    private void onBluetoothDeviceAndroidDestruction() {
+        disconnectGatt();
+        mNativeBluetoothDeviceAndroid = 0;
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -112,7 +121,7 @@ final class ChromeBluetoothDevice {
     @CalledByNative
     private void disconnectGatt() {
         Log.i(TAG, "BluetoothGatt.disconnect");
-        mBluetoothGatt.disconnect();
+        if (mBluetoothGatt != null) mBluetoothGatt.disconnect();
     }
 
     // Implements BluetoothDeviceAndroid::GetDeviceName.
@@ -129,8 +138,10 @@ final class ChromeBluetoothDevice {
                     (newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED)
                             ? "Connected"
                             : "Disconnected");
-            nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
-                    newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);
+            if (mNativeBluetoothDeviceAndroid != 0) {
+                nativeOnConnectionStateChange(mNativeBluetoothDeviceAndroid, status,
+                        newState == android.bluetooth.BluetoothProfile.STATE_CONNECTED);
+            }
         }
     }
 

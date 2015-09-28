@@ -180,7 +180,9 @@ TEST_F(BluetoothTest, BluetoothGattConnection) {
   EXPECT_EQ(0, gatt_disconnection_attempt_count_);
 
   // Delete device, connection objects should all be disconnected.
+  gatt_disconnection_attempt_count_ = 0;
   DeleteDevice(device);
+  EXPECT_EQ(1, gatt_disconnection_attempt_count_);
   EXPECT_FALSE(gatt_connections_[0]->IsConnected());
   EXPECT_FALSE(gatt_connections_[1]->IsConnected());
 

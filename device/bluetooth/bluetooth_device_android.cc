@@ -28,6 +28,8 @@ BluetoothDeviceAndroid* BluetoothDeviceAndroid::Create(
 }
 
 BluetoothDeviceAndroid::~BluetoothDeviceAndroid() {
+  Java_ChromeBluetoothDevice_onBluetoothDeviceAndroidDestruction(
+      AttachCurrentThread(), j_device_.obj());
 }
 
 bool BluetoothDeviceAndroid::UpdateAdvertisedUUIDs(jobject advertised_uuids) {
