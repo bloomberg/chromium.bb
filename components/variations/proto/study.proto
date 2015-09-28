@@ -44,7 +44,7 @@ message Study {
 
   // An experiment within the study.
   //
-  // Next tag: 11
+  // Next tag: 12
   message Experiment {
     // A named parameter value for this experiment.
     //
@@ -79,10 +79,44 @@ message Study {
     // Optional id used to uniquely identify this experiment for Chrome Sync.
     optional uint64 chrome_sync_experiment_id = 10;
 
+    // Specifies the feature association parameters for this experiment group.
+    //
+    // Next tag: 5
+    message FeatureAssociation {
+      // Optional list of features to enable when this experiment is selected.
+      // Command-line overrides take precedence over this setting. No feature
+      // listed here should exist in the |disable_feature| list.
+      repeated string enable_feature = 1;
+
+      // Optional list of features to disable when this experiment is selected.
+      // Command-line overrides take precedence over this setting. No feature
+      // listed here should exist in the |enable_feature| list.
+      repeated string disable_feature = 2;
+
+      // Similar to |forcing_flag|, this is an optional name of a feature which
+      // will cause this experiment to be activated, if that feature is enabled
+      // from the command-line. Experiment with this set are not eligible for
+      // selection via a random dice roll.
+      // Mutually exclusive with |forcing_flag|, |forcing_feature_off| or
+      // having a non-zero |probability_weight|.
+      optional string forcing_feature_on = 3;
+
+      // Similar to |forcing_flag|, this is an optional name of a feature which
+      // will cause this experiment to be activated, if that feature is disabled
+      // from the command-line. Experiment with this set are not eligible for
+      // selection via a random dice roll.
+      // Mutually exclusive with |forcing_flag|, |forcing_feature_on| or having
+      // a non-zero |probability_weight|.
+      optional string forcing_feature_off = 4;
+    }
+    optional FeatureAssociation feature_association = 11;
+
     // Optional name of a Chrome flag that, when present, causes this experiment
     // to be forced. If the forcing_flag field is set, users will not be
     // assigned to this experiment unless that flag is present in Chrome's
     // command line.
+    // Mutually exclusive with |forcing_feature_on|, |forcing_feature_off| or
+    // having a non-zero |probability_weight|.
     optional string forcing_flag = 5;
 
     // Parameter values for this experiment.

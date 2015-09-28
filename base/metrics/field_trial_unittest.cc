@@ -72,6 +72,8 @@ class FieldTrialTest : public testing::Test {
  private:
   MessageLoop message_loop_;
   FieldTrialList trial_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(FieldTrialTest);
 };
 
 // Test registration, and also check that destructors are called for trials
@@ -374,6 +376,28 @@ TEST_F(FieldTrialTest, ActiveGroupsNotFinalized) {
   ASSERT_EQ(1U, active_groups.size());
   EXPECT_EQ(kTrialName, active_groups[0].trial_name);
   EXPECT_EQ(active_group.group_name, active_groups[0].group_name);
+}
+
+TEST_F(FieldTrialTest, GetGroupNameWithoutActivation) {
+  const char kTrialName[] = "TestTrial";
+  const char kSecondaryGroupName[] = "SecondaryGroup";
+
+  int default_group = -1;
+  scoped_refptr<FieldTrial> trial =
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
+  trial->AppendGroup(kSecondaryGroupName, 50);
+
+  // The trial should start inactive.
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(kTrialName));
+
+  // Calling |GetGroupNameWithoutActivation()| should not activate the trial.
+  std::string group_name = trial->GetGroupNameWithoutActivation();
+  EXPECT_FALSE(group_name.empty());
+  EXPECT_FALSE(FieldTrialList::IsTrialActive(kTrialName));
+
+  // Calling |group_name()| should activate it and return the same group name.
+  EXPECT_EQ(group_name, trial->group_name());
+  EXPECT_TRUE(FieldTrialList::IsTrialActive(kTrialName));
 }
 
 TEST_F(FieldTrialTest, Save) {

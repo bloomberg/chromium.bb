@@ -4,9 +4,11 @@
 
 #include "base/feature_list.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
 
 namespace base {
@@ -37,11 +39,53 @@ void FeatureList::InitializeFromCommandLine(
   // Process disabled features first, so that disabled ones take precedence over
   // enabled ones (since RegisterOverride() uses insert()).
   for (const auto& feature_name : SplitFeatureListString(disable_features)) {
-    RegisterOverride(feature_name, OVERRIDE_DISABLE_FEATURE);
+    RegisterOverride(feature_name, OVERRIDE_DISABLE_FEATURE, nullptr);
   }
   for (const auto& feature_name : SplitFeatureListString(enable_features)) {
-    RegisterOverride(feature_name, OVERRIDE_ENABLE_FEATURE);
+    RegisterOverride(feature_name, OVERRIDE_ENABLE_FEATURE, nullptr);
   }
+}
+
+bool FeatureList::IsFeatureOverriddenFromCommandLine(
+    const std::string& feature_name,
+    OverrideState state) const {
+  auto it = overrides_.find(feature_name);
+  return it != overrides_.end() && it->second.overridden_state == state &&
+         !it->second.overridden_by_field_trial;
+}
+
+void FeatureList::RegisterFieldTrialOverride(const std::string& feature_name,
+                                             OverrideState override_state,
+                                             FieldTrial* field_trial) {
+  DCHECK(field_trial);
+  DCHECK(!ContainsKey(overrides_, feature_name) ||
+         !overrides_.find(feature_name)->second.field_trial)
+      << "Feature " << feature_name
+      << " has conflicting field trial overrides: "
+      << overrides_.find(feature_name)->second.field_trial->trial_name()
+      << " / " << field_trial->trial_name();
+
+  RegisterOverride(feature_name, override_state, field_trial);
+}
+
+void FeatureList::AssociateReportingFieldTrial(
+    const std::string& feature_name,
+    OverrideState for_overridden_state,
+    FieldTrial* field_trial) {
+  DCHECK(
+      IsFeatureOverriddenFromCommandLine(feature_name, for_overridden_state));
+
+  // Only one associated field trial is supported per feature. This is generally
+  // enforced server-side.
+  OverrideEntry* entry = &overrides_.find(feature_name)->second;
+  if (entry->field_trial) {
+    NOTREACHED() << "Feature " << feature_name
+                 << " already has trial: " << entry->field_trial->trial_name()
+                 << ", associating trial: " << field_trial->trial_name();
+    return;
+  }
+
+  entry->field_trial = field_trial;
 }
 
 // static
@@ -81,6 +125,11 @@ bool FeatureList::IsFeatureEnabled(const Feature& feature) {
   auto it = overrides_.find(feature.name);
   if (it != overrides_.end()) {
     const OverrideEntry& entry = it->second;
+
+    // Activate the corresponding field trial, if necessary.
+    if (entry.field_trial)
+      entry.field_trial->group();
+
     // TODO(asvitkine) Expand this section as more support is added.
     return entry.overridden_state == OVERRIDE_ENABLE_FEATURE;
   }
@@ -89,9 +138,14 @@ bool FeatureList::IsFeatureEnabled(const Feature& feature) {
 }
 
 void FeatureList::RegisterOverride(const std::string& feature_name,
-                                   OverrideState overridden_state) {
+                                   OverrideState overridden_state,
+                                   FieldTrial* field_trial) {
   DCHECK(!initialized_);
-  overrides_.insert(make_pair(feature_name, OverrideEntry(overridden_state)));
+  // Note: The semantics of insert() is that it does not overwrite the entry if
+  // one already exists for the key. Thus, only the first override for a given
+  // feature name takes effect.
+  overrides_.insert(std::make_pair(
+      feature_name, OverrideEntry(overridden_state, field_trial)));
 }
 
 bool FeatureList::CheckFeatureIdentity(const Feature& feature) {
@@ -107,7 +161,10 @@ bool FeatureList::CheckFeatureIdentity(const Feature& feature) {
   return it->second == &feature;
 }
 
-FeatureList::OverrideEntry::OverrideEntry(OverrideState overridden_state)
-    : overridden_state(overridden_state) {}
+FeatureList::OverrideEntry::OverrideEntry(OverrideState overridden_state,
+                                          FieldTrial* field_trial)
+    : overridden_state(overridden_state),
+      field_trial(field_trial),
+      overridden_by_field_trial(field_trial != nullptr) {}
 
 }  // namespace base

@@ -18,6 +18,10 @@
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 
+namespace base {
+class FeatureList;
+}
+
 namespace variations {
 
 class ProcessedStudy;
@@ -42,7 +46,8 @@ class VariationsSeedProcessor {
                             const std::string& hardware_class,
                             const std::string& session_consistency_country,
                             const std::string& permanent_consistency_country,
-                            const UIStringOverrideCallback& override_callback);
+                            const UIStringOverrideCallback& override_callback,
+                            base::FeatureList* feature_list);
 
  private:
   friend class VariationsSeedProcessorTest;
@@ -71,7 +76,8 @@ class VariationsSeedProcessor {
   // Creates and registers a field trial from the |processed_study| data.
   // Disables the trial if |processed_study.is_expired| is true.
   void CreateTrialFromStudy(const ProcessedStudy& processed_study,
-                            const UIStringOverrideCallback& override_callback);
+                            const UIStringOverrideCallback& override_callback,
+                            base::FeatureList* feature_list);
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessor);
 };

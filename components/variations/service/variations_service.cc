@@ -223,7 +223,7 @@ VariationsService::VariationsService(
 VariationsService::~VariationsService() {
 }
 
-bool VariationsService::CreateTrialsFromSeed() {
+bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   create_trials_from_seed_called_ = true;
@@ -252,7 +252,8 @@ bool VariationsService::CreateTrialsFromSeed() {
       GetCurrentFormFactor(), GetHardwareClass(), latest_country,
       LoadPermanentConsistencyCountry(current_version, latest_country),
       base::Bind(&UIStringOverrider::OverrideUIString,
-                 base::Unretained(&ui_string_overrider_)));
+                 base::Unretained(&ui_string_overrider_)),
+      feature_list);
 
   const base::Time now = base::Time::Now();
 

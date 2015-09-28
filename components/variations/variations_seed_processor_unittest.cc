@@ -9,7 +9,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/format_macros.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/variations/processed_study.h"
 #include "components/variations/variations_associated_data.h"
@@ -105,19 +108,27 @@ class VariationsSeedProcessorTest : public ::testing::Test {
     // process singletons.
     testing::ClearAllVariationIDs();
     testing::ClearAllVariationParams();
+
+    base::FeatureList::ClearInstanceForTesting();
   }
 
   bool CreateTrialFromStudy(const Study* study) {
+    return CreateTrialFromStudyWithFeatureList(study, &feature_list_);
+  }
+
+  bool CreateTrialFromStudyWithFeatureList(const Study* study,
+                                           base::FeatureList* feature_list) {
     ProcessedStudy processed_study;
     if (processed_study.Init(study, false)) {
       VariationsSeedProcessor().CreateTrialFromStudy(
-          processed_study, override_callback_.callback());
+          processed_study, override_callback_.callback(), feature_list);
       return true;
     }
     return false;
   }
 
  protected:
+  base::FeatureList feature_list_;
   TestOverrideStringCallback override_callback_;
 
  private:
@@ -215,23 +226,27 @@ TEST_F(VariationsSeedProcessorTest,
   // Check that adding [expired, non-expired] activates the non-expired one.
   ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
   {
+    base::FeatureList feature_list;
     base::FieldTrialList field_trial_list(NULL);
     study1->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(
         seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
-        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback());
+        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
+        &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
   // Check that adding [non-expired, expired] activates the non-expired one.
   ASSERT_EQ(std::string(), base::FieldTrialList::FindFullName(kTrialName));
   {
+    base::FeatureList feature_list;
     base::FieldTrialList field_trial_list(NULL);
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(
         seed, "en-CA", base::Time::Now(), version, Study_Channel_STABLE,
-        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback());
+        Study_FormFactor_DESKTOP, "", "", "", override_callback_.callback(),
+        &feature_list);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -436,7 +451,7 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   seed_processor.CreateTrialsFromSeed(
       seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
       Study_Channel_STABLE, Study_FormFactor_DESKTOP, "", "", "",
-      override_callback_.callback());
+      override_callback_.callback(), &feature_list_);
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.
@@ -491,6 +506,202 @@ TEST_F(VariationsSeedProcessorTest, ForcingFlagAlreadyForced) {
   VariationID id = GetGoogleVariationID(GOOGLE_WEB_PROPERTIES, kFlagStudyName,
                                         kNonFlagGroupName);
   EXPECT_EQ(kExperimentId, id);
+}
+
+TEST_F(VariationsSeedProcessorTest, FeatureEnabledOrDisableByTrial) {
+  struct base::Feature kFeatureOffByDefault {
+    "kOff", base::FEATURE_DISABLED_BY_DEFAULT
+  };
+  struct base::Feature kFeatureOnByDefault {
+    "kOn", base::FEATURE_ENABLED_BY_DEFAULT
+  };
+  struct base::Feature kUnrelatedFeature {
+    "kUnrelated", base::FEATURE_DISABLED_BY_DEFAULT
+  };
+
+  struct {
+    const char* enable_feature;
+    const char* disable_feature;
+    bool expected_feature_off_state;
+    bool expected_feature_on_state;
+  } test_cases[] = {
+      {nullptr, nullptr, false, true},
+      {kFeatureOnByDefault.name, nullptr, false, true},
+      {kFeatureOffByDefault.name, nullptr, true, true},
+      {nullptr, kFeatureOnByDefault.name, false, false},
+      {nullptr, kFeatureOffByDefault.name, false, true},
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); i++) {
+    const auto& test_case = test_cases[i];
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]", i));
+
+    base::FieldTrialList field_trial_list(NULL);
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+
+    Study study;
+    study.set_name("Study1");
+    study.set_default_experiment_name("B");
+    AddExperiment("B", 0, &study);
+
+    Study_Experiment* experiment = AddExperiment("A", 1, &study);
+    Study_Experiment_FeatureAssociation* association =
+        experiment->mutable_feature_association();
+    if (test_case.enable_feature)
+      association->add_enable_feature(test_case.enable_feature);
+    else if (test_case.disable_feature)
+      association->add_disable_feature(test_case.disable_feature);
+
+    EXPECT_TRUE(
+        CreateTrialFromStudyWithFeatureList(&study, feature_list.get()));
+    base::FeatureList::SetInstance(feature_list.Pass());
+
+    // |kUnrelatedFeature| should not be affected.
+    EXPECT_FALSE(base::FeatureList::IsEnabled(kUnrelatedFeature));
+
+    // Before the associated feature is queried, the trial shouldn't be active.
+    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study.name()));
+
+    EXPECT_EQ(test_case.expected_feature_off_state,
+              base::FeatureList::IsEnabled(kFeatureOffByDefault));
+    EXPECT_EQ(test_case.expected_feature_on_state,
+              base::FeatureList::IsEnabled(kFeatureOnByDefault));
+
+    // The field trial should get activated if it had a feature association.
+    const bool expected_field_trial_active =
+        test_case.enable_feature || test_case.disable_feature;
+    EXPECT_EQ(expected_field_trial_active,
+              base::FieldTrialList::IsTrialActive(study.name()));
+  }
+}
+
+TEST_F(VariationsSeedProcessorTest, FeatureAssociationAndForcing) {
+  struct base::Feature kFeatureOffByDefault {
+    "kFeatureOffByDefault", base::FEATURE_DISABLED_BY_DEFAULT
+  };
+  struct base::Feature kFeatureOnByDefault {
+    "kFeatureOnByDefault", base::FEATURE_ENABLED_BY_DEFAULT
+  };
+
+  enum OneHundredPercentGroup {
+    DEFAULT_GROUP,
+    ENABLE_GROUP,
+    DISABLE_GROUP,
+  };
+
+  const char kDefaultGroup[] = "Default";
+  const char kEnabledGroup[] = "Enabled";
+  const char kDisabledGroup[] = "Disabled";
+  const char kForcedOnGroup[] = "ForcedOn";
+  const char kForcedOffGroup[] = "ForcedOff";
+
+  struct {
+    const base::Feature& feature;
+    const char* enable_features_command_line;
+    const char* disable_features_command_line;
+    OneHundredPercentGroup one_hundred_percent_group;
+
+    const char* expected_group;
+    bool expected_feature_state;
+    bool expected_trial_activated;
+  } test_cases[] = {
+      // Check what happens without and command-line forcing flags - that the
+      // |one_hundred_percent_group| gets correctly selected and does the right
+      // thing w.r.t. to affecting the feature / activating the trial.
+      {kFeatureOffByDefault, "", "", DEFAULT_GROUP, kDefaultGroup, false,
+       false},
+      {kFeatureOffByDefault, "", "", ENABLE_GROUP, kEnabledGroup, true, true},
+      {kFeatureOffByDefault, "", "", DISABLE_GROUP, kDisabledGroup, false,
+       true},
+
+      // Do the same as above, but for kFeatureOnByDefault feature.
+      {kFeatureOnByDefault, "", "", DEFAULT_GROUP, kDefaultGroup, true, false},
+      {kFeatureOnByDefault, "", "", ENABLE_GROUP, kEnabledGroup, true, true},
+      {kFeatureOnByDefault, "", "", DISABLE_GROUP, kDisabledGroup, false, true},
+
+      // Test forcing each feature on and off through the command-line and that
+      // the correct associated experiment gets chosen.
+      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", DEFAULT_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, DEFAULT_GROUP,
+       kForcedOffGroup, false, true},
+      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", DEFAULT_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, DEFAULT_GROUP,
+       kForcedOffGroup, false, true},
+
+      // Check that even if a feature should be enabled or disabled based on the
+      // the experiment probability weights, the forcing flag association still
+      // takes precedence. This is 4 cases as above, but with different values
+      // for |one_hundred_percent_group|.
+      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", ENABLE_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, ENABLE_GROUP,
+       kForcedOffGroup, false, true},
+      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", ENABLE_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, ENABLE_GROUP,
+       kForcedOffGroup, false, true},
+      {kFeatureOffByDefault, kFeatureOffByDefault.name, "", DISABLE_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOffByDefault, "", kFeatureOffByDefault.name, DISABLE_GROUP,
+       kForcedOffGroup, false, true},
+      {kFeatureOnByDefault, kFeatureOnByDefault.name, "", DISABLE_GROUP,
+       kForcedOnGroup, true, true},
+      {kFeatureOnByDefault, "", kFeatureOnByDefault.name, DISABLE_GROUP,
+       kForcedOffGroup, false, true},
+  };
+
+  for (size_t i = 0; i < arraysize(test_cases); i++) {
+    const auto& test_case = test_cases[i];
+    const int group = test_case.one_hundred_percent_group;
+    SCOPED_TRACE(base::StringPrintf(
+        "Test[%" PRIuS "]: %s [%s] [%s] %d", i, test_case.feature.name,
+        test_case.enable_features_command_line,
+        test_case.disable_features_command_line, static_cast<int>(group)));
+
+    base::FieldTrialList field_trial_list(NULL);
+    base::FeatureList::ClearInstanceForTesting();
+    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->InitializeFromCommandLine(
+        test_case.enable_features_command_line,
+        test_case.disable_features_command_line);
+
+    Study study;
+    study.set_name("Study1");
+    study.set_default_experiment_name("Default");
+    AddExperiment(kDefaultGroup, group == DEFAULT_GROUP ? 1 : 0, &study);
+
+    Study_Experiment* feature_enable =
+        AddExperiment(kEnabledGroup, group == ENABLE_GROUP ? 1 : 0, &study);
+    feature_enable->mutable_feature_association()->add_enable_feature(
+        test_case.feature.name);
+
+    Study_Experiment* feature_disable =
+        AddExperiment(kDisabledGroup, group == DISABLE_GROUP ? 1 : 0, &study);
+    feature_disable->mutable_feature_association()->add_disable_feature(
+        test_case.feature.name);
+
+    AddExperiment(kForcedOnGroup, 0, &study)
+        ->mutable_feature_association()
+        ->set_forcing_feature_on(test_case.feature.name);
+    AddExperiment(kForcedOffGroup, 0, &study)
+        ->mutable_feature_association()
+        ->set_forcing_feature_off(test_case.feature.name);
+
+    EXPECT_TRUE(
+        CreateTrialFromStudyWithFeatureList(&study, feature_list.get()));
+    base::FeatureList::SetInstance(feature_list.Pass());
+
+    // Trial should not be activated initially, but later might get activated
+    // depending on the expected values.
+    EXPECT_FALSE(base::FieldTrialList::IsTrialActive(study.name()));
+    EXPECT_EQ(test_case.expected_feature_state,
+              base::FeatureList::IsEnabled(test_case.feature));
+    EXPECT_EQ(test_case.expected_trial_activated,
+              base::FieldTrialList::IsTrialActive(study.name()));
+  }
 }
 
 }  // namespace variations

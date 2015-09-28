@@ -678,9 +678,8 @@ void ChromeBrowserMainParts::SetupMetricsAndFieldTrials() {
   variations::VariationsService* variations_service =
       browser_process_->variations_service();
   if (variations_service)
-    variations_service->CreateTrialsFromSeed();
+    variations_service->CreateTrialsFromSeed(feature_list.get());
 
-  // TODO(asvitkine): Pass |feature_list| to CreateTrialsFromSeed() above.
   base::FeatureList::SetInstance(feature_list.Pass());
 
   // This must be called after |local_state_| is initialized.

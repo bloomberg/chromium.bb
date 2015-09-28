@@ -149,6 +149,11 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   // is used as the group name. This causes a winner to be chosen if none was.
   const std::string& group_name();
 
+  // Finalizes the group choice and returns the chosen group, but does not mark
+  // the trial as active - so its state will not be reported until group_name()
+  // or similar is called.
+  const std::string& GetGroupNameWithoutActivation();
+
   // Set the field trial as forced, meaning that it was setup earlier than
   // the hard coded registration of the field trial to override it.
   // This allows the code that was hard coded to register the field trial to

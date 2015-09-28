@@ -139,6 +139,11 @@ const std::string& FieldTrial::group_name() {
   return group_name_;
 }
 
+const std::string& FieldTrial::GetGroupNameWithoutActivation() {
+  FinalizeGroupChoice();
+  return group_name_;
+}
+
 void FieldTrial::SetForced() {
   // We might have been forced before (e.g., by CreateFieldTrial) and it's
   // first come first served, e.g., command line switch has precedence.
