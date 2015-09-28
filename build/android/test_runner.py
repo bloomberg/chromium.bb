@@ -959,9 +959,9 @@ def RunTestsInPlatformMode(args, parser):
                        else itertools.count())
         for _ in repetitions:
           iteration_results = test_run.RunTests()
-          results.append(iteration_results)
 
           if iteration_results is not None:
+            results.append(iteration_results)
             report_results.LogFull(
                 results=iteration_results,
                 test_type=test.TestType(),
