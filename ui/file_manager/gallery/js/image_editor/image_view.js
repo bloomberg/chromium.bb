@@ -320,11 +320,29 @@ ImageView.prototype.setupDeviceBuffer = function(canvas) {
 };
 
 /**
- * @return {!ImageData} A new ImageData object with a copy of the content.
+ * Gets screen image data with specified size.
+ * @param {number} width
+ * @param {number} height
+ * @return {!ImageData} A new ImageData object.
  */
-ImageView.prototype.copyScreenImageData = function() {
-  return this.screenImage_.getContext('2d').getImageData(
-      0, 0, this.screenImage_.width, this.screenImage_.height);
+ImageView.prototype.getScreenImageDataWith = function(width, height) {
+  // If specified size is same with current screen image size, just return it.
+  if (width === this.screenImage_.width &&
+      height === this.screenImage_.height) {
+    return this.screenImage_.getContext('2d').getImageData(
+        0, 0, this.screenImage_.width, this.screenImage_.height);
+  }
+
+  // Resize if these sizes are different.
+  var resizeCanvas = document.createElement('canvas');
+  resizeCanvas.width = width;
+  resizeCanvas.height = height;
+
+  var context = resizeCanvas.getContext('2d');
+  context.drawImage(this.screenImage_,
+      0, 0, this.screenImage_.width, this.screenImage_.height,
+      0, 0, resizeCanvas.width, resizeCanvas.height);
+  return context.getImageData(0, 0, resizeCanvas.width, resizeCanvas.height);
 };
 
 /**
