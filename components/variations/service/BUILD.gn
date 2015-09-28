@@ -4,6 +4,8 @@
 
 source_set("service") {
   sources = [
+    "ui_string_overrider.cc",
+    "ui_string_overrider.h",
     "variations_service.cc",
     "variations_service.h",
     "variations_service_client.h",

@@ -15,6 +15,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/variations/service/ui_string_overrider.h"
 #include "components/variations/service/variations_service_client.h"
 #include "components/variations/variations_request_scheduler.h"
 #include "components/variations/variations_seed_simulator.h"
@@ -128,7 +129,8 @@ class VariationsService
       scoped_ptr<VariationsServiceClient> client,
       PrefService* local_state,
       metrics::MetricsStateManager* state_manager,
-      const char* disable_network_switch);
+      const char* disable_network_switch,
+      const UIStringOverrider& ui_string_overrider);
 
   // Factory method for creating a VariationsService in a testing context.
   static scoped_ptr<VariationsService> CreateForTesting(
@@ -168,7 +170,8 @@ class VariationsService
       scoped_ptr<VariationsServiceClient> client,
       scoped_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
       PrefService* local_state,
-      metrics::MetricsStateManager* state_manager);
+      metrics::MetricsStateManager* state_manager,
+      const UIStringOverrider& ui_string_overrider);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsServiceTest, Observer);
@@ -229,6 +232,7 @@ class VariationsService
       const std::string& latest_country);
 
   scoped_ptr<VariationsServiceClient> client_;
+  UIStringOverrider ui_string_overrider_;
 
   // The pref service used to store persist the variations seed.
   PrefService* local_state_;

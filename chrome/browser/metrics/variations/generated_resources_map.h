@@ -30,9 +30,6 @@ extern const uint32_t kResourceHashes[];
 // to the order of |kResourceHashes|.
 extern const int kResourceIndices[];
 
-// Gets the resource index corresponding to the given hash.
-int GetResourceIndex(uint32_t hash);
-
 }  // namespace chrome_variations
 
 #endif  // CHROME_BROWSER_METRICS_VARIATIONS_GENERATED_RESOURCES_MAP_H_

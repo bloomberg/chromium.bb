@@ -57,11 +57,6 @@ class VariationsServiceClient {
   // parameter if true is returned.
   virtual bool OverridesRestrictParameter(std::string* parameter) = 0;
 
-  // Allows the embedder to override the string resource specified by |hash|
-  // with |string| in the resource bundle if desired.
-  virtual void OverrideUIString(uint32_t hash,
-                                const base::string16& string) = 0;
-
   // Called from VariationsService::PerformPreMainMessageLoopStartup().
   virtual void OnInitialStartup() {}
 };

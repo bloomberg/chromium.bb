@@ -108,6 +108,8 @@
         'web_resource',
       ],
       'sources': [
+        'variations/service/ui_string_overrider.h',
+        'variations/service/ui_string_overrider.cc',
         'variations/service/variations_service.cc',
         'variations/service/variations_service.h',
         'variations/service/variations_service_client.h',

@@ -57,7 +57,6 @@ class TestVariationsServiceClient : public VariationsServiceClient {
     *parameter = restrict_parameter_;
     return true;
   }
-  void OverrideUIString(uint32_t hash, const base::string16& string) override {}
   void OnInitialStartup() override {}
 
   void set_restrict_parameter(const std::string& value) {
@@ -79,7 +78,8 @@ class TestVariationsService : public VariationsService {
       : VariationsService(make_scoped_ptr(new TestVariationsServiceClient()),
                           test_notifier.Pass(),
                           local_state,
-                          NULL),
+                          NULL,
+                          UIStringOverrider()),
         intercepts_fetch_(true),
         fetch_attempted_(false),
         seed_stored_(false) {
@@ -233,7 +233,7 @@ TEST_F(VariationsServiceTest, GetVariationsServerURL) {
   VariationsService service(
       client.Pass(),
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL);
+      &prefs, NULL, UIStringOverrider());
   GURL url = service.GetVariationsServerURL(&prefs, std::string());
   EXPECT_TRUE(base::StartsWith(url.spec(), default_variations_url,
                                base::CompareCase::SENSITIVE));
@@ -350,7 +350,7 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   VariationsService service(
       make_scoped_ptr(new TestVariationsServiceClient()),
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL);
+      &prefs, NULL, UIStringOverrider());
   service.variations_server_url_ =
       service.GetVariationsServerURL(&prefs, std::string());
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
@@ -398,7 +398,7 @@ TEST_F(VariationsServiceTest, Observer) {
   VariationsService service(
       make_scoped_ptr(new TestVariationsServiceClient()),
       make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-      &prefs, NULL);
+      &prefs, NULL, UIStringOverrider());
 
   struct {
     int normal_count;
@@ -498,7 +498,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
     VariationsService service(
         make_scoped_ptr(new TestVariationsServiceClient()),
         make_scoped_ptr(new web_resource::TestRequestAllowedNotifier(&prefs)),
-        &prefs, NULL);
+        &prefs, NULL, UIStringOverrider());
 
     if (test.pref_value_before) {
       base::ListValue list_value;

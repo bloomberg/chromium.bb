@@ -203,8 +203,10 @@ VariationsService::VariationsService(
     scoped_ptr<VariationsServiceClient> client,
     scoped_ptr<web_resource::ResourceRequestAllowedNotifier> notifier,
     PrefService* local_state,
-    metrics::MetricsStateManager* state_manager)
+    metrics::MetricsStateManager* state_manager,
+    const UIStringOverrider& ui_string_overrider)
     : client_(client.Pass()),
+      ui_string_overrider_(ui_string_overrider),
       local_state_(local_state),
       state_manager_(state_manager),
       policy_pref_service_(local_state),
@@ -240,15 +242,17 @@ bool VariationsService::CreateTrialsFromSeed() {
 
   const std::string latest_country =
       local_state_->GetString(prefs::kVariationsCountry);
-  // Note that passing |client_| via base::Unretained below is safe because
-  // the callback is executed synchronously.
+  // Note that passing |&ui_string_overrider_| via base::Unretained below is
+  // safe because the callback is executed synchronously. It is not possible
+  // to pass UIStringOverrider itself to VariationSeedProcesor as variations
+  // components should not depends on //ui/base.
   variations::VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, client_->GetApplicationLocale(),
       GetReferenceDateForExpiryChecks(local_state_), current_version, channel,
       GetCurrentFormFactor(), GetHardwareClass(), latest_country,
       LoadPermanentConsistencyCountry(current_version, latest_country),
-      base::Bind(&VariationsServiceClient::OverrideUIString,
-                 base::Unretained(client_.get())));
+      base::Bind(&UIStringOverrider::OverrideUIString,
+                 base::Unretained(&ui_string_overrider_)));
 
   const base::Time now = base::Time::Now();
 
@@ -415,7 +419,8 @@ scoped_ptr<VariationsService> VariationsService::Create(
     scoped_ptr<VariationsServiceClient> client,
     PrefService* local_state,
     metrics::MetricsStateManager* state_manager,
-    const char* disable_network_switch) {
+    const char* disable_network_switch,
+    const UIStringOverrider& ui_string_overrider) {
   scoped_ptr<VariationsService> result;
 #if !defined(GOOGLE_CHROME_BUILD)
   // Unless the URL was provided, unsupported builds should return NULL to
@@ -431,7 +436,7 @@ scoped_ptr<VariationsService> VariationsService::Create(
       client.Pass(),
       make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
           local_state, disable_network_switch)),
-      local_state, state_manager));
+      local_state, state_manager, ui_string_overrider));
   return result.Pass();
 }
 
@@ -443,7 +448,7 @@ scoped_ptr<VariationsService> VariationsService::CreateForTesting(
       client.Pass(),
       make_scoped_ptr(new web_resource::ResourceRequestAllowedNotifier(
           local_state, nullptr)),
-      local_state, nullptr));
+      local_state, nullptr, UIStringOverrider()));
 }
 
 void VariationsService::DoActualFetch() {

@@ -6,11 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/metrics/variations/generated_resources_map.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_CHROMEOS)
 #include "chrome/browser/upgrade_detector_impl.h"
@@ -79,17 +77,6 @@ bool ChromeVariationsServiceClient::OverridesRestrictParameter(
 #else
   return false;
 #endif
-}
-
-void ChromeVariationsServiceClient::OverrideUIString(
-    uint32_t hash,
-    const base::string16& string) {
-  int resource_id = chrome_variations::GetResourceIndex(hash);
-  if (resource_id == -1)
-    return;
-
-  ui::ResourceBundle::GetSharedInstance().OverrideLocaleStringResource(
-      resource_id, string);
 }
 
 void ChromeVariationsServiceClient::OnInitialStartup() {

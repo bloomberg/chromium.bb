@@ -141,7 +141,7 @@
       'browser/metrics/thread_watcher_android_unittest.cc',
       'browser/metrics/thread_watcher_unittest.cc',
       'browser/metrics/time_ticks_experiment_unittest.cc',
-      'browser/metrics/variations/generated_resources_map_lookup_unittest.cc',
+      'browser/metrics/variations/ui_string_overrider_unittest.cc',
       'browser/mod_pagespeed/mod_pagespeed_metrics_unittest.cc',
       'browser/net/chrome_network_delegate_unittest.cc',
       'browser/net/dns_probe_runner_unittest.cc',
