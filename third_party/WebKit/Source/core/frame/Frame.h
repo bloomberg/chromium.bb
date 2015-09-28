@@ -95,7 +95,12 @@ public:
     bool isLocalRoot() const;
 
     FrameOwner* owner() const;
-    void setOwner(FrameOwner* owner) { m_owner = owner; }
+    void setOwner(FrameOwner* owner)
+    {
+        m_owner = owner;
+        verifyOwnerPointerAndCrashIfNecessary();
+    }
+
     HTMLFrameOwnerElement* deprecatedLocalOwner() const;
 
     FrameTree& tree() const;
@@ -129,6 +134,8 @@ public:
     void setIsLoading(bool isLoading) { m_isLoading = isLoading; }
     bool isLoading() const { return m_isLoading; }
 
+    void verifyOwnerPointerAndCrashIfNecessary();
+
 protected:
     Frame(FrameClient*, FrameHost*, FrameOwner*);
 
@@ -137,6 +144,10 @@ protected:
     mutable FrameTree m_treeNode;
 
     RawPtrWillBeMember<FrameHost> m_host;
+
+    // TODO(bokan): Temporary, used for debugging crbug.com/519752. This will help
+    // check if we've overwritten the m_owner pointer.
+    volatile unsigned m_ownerMagicValue;
     RawPtrWillBeMember<FrameOwner> m_owner;
 
 private:
