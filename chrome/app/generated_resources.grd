@@ -7660,6 +7660,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS" desc="Information that some data may remain even though the user clears their browsing history. The text in '|'s and '#'s will be turned into buttons. The translated text should contain exactly one phrase in '|'s and one in '#'s.">
         Saved |content settings| and #search engines# will not be cleared and may reflect your browsing habits.
       </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE" desc="Information that some data may remain even though the user clears their browsing history. The text in '|'s will be turned into a button. The translated text should contain exactly one phrase in '|'s.">
+        Some settings that may reflect browsing habits |will not be cleared|.
+      </message>
+      <message name="IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
+        This clears synced data from all devices.
+      </message>
+      <message name="IDS_FLAGS_SIMPLE_CLEAR_BROWSING_DATA_SUPPORT_STRING_NAME" desc="Name of the flag that simplifies the support string in the Clear browsing data dialog.">
+        Use a simple support string in the Clear browsing data dialog.
+      </message>
+      <message name="IDS_FLAGS_SIMPLE_CLEAR_BROWSING_DATA_SUPPORT_STRING_DESCRIPTION" desc="Description of the flag that simplifies the support string in the Clear browsing data dialog.">
+        Instead of enumerating data types that are not deleted in the dialog, use a simple support string linking to an article with more information.
+      </message>
       <message name="IDS_FLAGS_ENABLE_CLEAR_BROWSING_DATA_COUNTERS_NAME" desc="Name of the flag that enables the data volume counters in the Clear browsing data dialog.">
         Enable Clear browsing data counters.
       </message>

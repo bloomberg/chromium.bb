@@ -21,6 +21,7 @@
 #include "chrome/browser/browsing_data/passwords_counter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -43,17 +44,25 @@ bool AreCountersEnabled() {
       switches::kEnableClearBrowsingDataCounters);
 }
 
+bool IsSupportStringSimplified() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kSimpleClearBrowsingDataSupportString);
+}
+
 }  // namespace
 
 namespace options {
 
 ClearBrowserDataHandler::ClearBrowserDataHandler()
-    : remover_(NULL) {
+    : remover_(nullptr),
+      sync_service_(nullptr) {
 }
 
 ClearBrowserDataHandler::~ClearBrowserDataHandler() {
   if (remover_)
     remover_->RemoveObserver(this);
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 }
 
 void ClearBrowserDataHandler::InitializeHandler() {
@@ -72,9 +81,20 @@ void ClearBrowserDataHandler::InitializeHandler() {
         make_scoped_ptr(new PasswordsCounter()), IDS_DEL_PASSWORDS_COUNTER);
     // TODO(msramek): Add counters for browsing history and cache.
   }
+
+  if (IsSupportStringSimplified()) {
+    sync_service_ =
+        ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+    if (sync_service_)
+      sync_service_->AddObserver(this);
+  }
 }
 
 void ClearBrowserDataHandler::InitializePage() {
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.createFooter",
+      base::FundamentalValue(IsSupportStringSimplified()),
+      base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()));
   UpdateInfoBannerVisibility();
   OnBrowsingHistoryPrefChanged();
   bool removal_in_progress = !!remover_;
@@ -118,8 +138,10 @@ void ClearBrowserDataHandler::GetLocalizedValues(
 
   static OptionsStringResource resources[] = {
     { "clearBrowserDataLabel", IDS_CLEAR_BROWSING_DATA_LABEL },
-    { "contentSettingsAndSearchEnginesRemain",
-      IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
+    { "clearBrowserDataSyncWarning", IDS_CLEAR_BROWSING_DATA_SYNCED_DELETION },
+    { "clearBrowserDataSupportString", IsSupportStringSimplified()
+        ? IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS_SIMPLE
+        : IDS_CLEAR_BROWSING_DATA_SOME_STUFF_REMAINS },
     { "deleteBrowsingHistoryCheckbox", IDS_DEL_BROWSING_HISTORY_CHKBOX },
     { "deleteDownloadHistoryCheckbox", IDS_DEL_DOWNLOAD_HISTORY_CHKBOX },
     { "deleteCacheCheckbox", IDS_DEL_CACHE_CHKBOX },
@@ -308,6 +330,12 @@ void ClearBrowserDataHandler::UpdateCounterText(const std::string& pref_name,
       "ClearBrowserDataOverlay.updateCounter",
       base::StringValue(pref_name),
       base::StringValue(text));
+}
+
+void ClearBrowserDataHandler::OnStateChanged() {
+  web_ui()->CallJavascriptFunction(
+      "ClearBrowserDataOverlay.updateSyncWarning",
+      base::FundamentalValue(sync_service_ && sync_service_->IsSyncActive()));
 }
 
 }  // namespace options

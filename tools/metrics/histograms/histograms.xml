@@ -63550,6 +63550,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1408331660" label="enhanced-bookmarks-experiment"/>
   <int value="1410697724" label="mediadrm-enable-non-compositing"/>
   <int value="1416592483" label="ash-enable-mirrored-screen"/>
+  <int value="1421620678" label="simple-clear-browsing-data-support-string"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1459529277" label="disable-text-input-focus-manager"/>
   <int value="1465624446" label="disable-zero-copy"/>

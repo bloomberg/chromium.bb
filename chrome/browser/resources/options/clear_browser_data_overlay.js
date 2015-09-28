@@ -71,8 +71,6 @@ cr.define('options', function() {
         checkboxes[i].onclick = f;
       }
 
-      this.createStuffRemainsFooter_();
-
       $('clear-browser-data-dismiss').onclick = function(event) {
         ClearBrowserDataOverlay.dismiss();
       };
@@ -94,24 +92,40 @@ cr.define('options', function() {
 
     /**
      * Create a footer that explains that some content is not cleared by the
-     * clear browsing history dialog.
+     * clear browsing data dialog and warns that the deletion may be synced.
+     * @param {boolean} simple Whether to use a simple support string.
+     * @param {boolean} syncing Whether the user uses Sync.
+     * @private
      */
-    createStuffRemainsFooter_: function() {
+    createFooter_: function(simple, syncing) {
       // The localized string is of the form "Saved [content settings] and
       // {search engines} will not be cleared and may reflect your browsing
-      // habits.". The following parses out the parts in brackts and braces and
-      // converts them into buttons whereas the remainders are represented as
-      // span elements.
+      // habits.", or of the form "Some settings that may reflect browsing
+      // habits |will not be cleared|." if the simplified support string
+      // experiment is enabled. The following parses out the parts in brackets
+      // and braces and converts them into buttons whereas the remainders are
+      // represented as span elements.
       var footer =
           document.querySelector('#some-stuff-remains-footer p');
       var footerFragments =
-          loadTimeData.getString('contentSettingsAndSearchEnginesRemain')
+          loadTimeData.getString('clearBrowserDataSupportString')
                       .split(/([|#])/);
+
+      if (simple) {
+        footerFragments.unshift(
+            loadTimeData.getString('clearBrowserDataSyncWarning') +
+            ' '  // Padding between the sync warning and the rest of the footer.
+        );
+      }
+
       for (var i = 0; i < footerFragments.length;) {
         var linkId = '';
         if (i + 2 < footerFragments.length) {
           if (footerFragments[i] == '|' && footerFragments[i + 2] == '|') {
-            linkId = 'open-content-settings-from-clear-browsing-data';
+            if (simple)
+              linkId = 'open-not-deleted-help-from-clear-browsing-data';
+            else
+              linkId = 'open-content-settings-from-clear-browsing-data';
           } else if (footerFragments[i] == '#' &&
                      footerFragments[i + 2] == '#') {
             linkId = 'open-search-engines-from-clear-browsing-data';
@@ -127,18 +141,40 @@ cr.define('options', function() {
         } else {
           var span = document.createElement('span');
           span.textContent = footerFragments[i];
+          if (simple && i == 0) {
+            span.id = 'clear-browser-data-sync-warning';
+            span.hidden = !syncing;
+          }
           footer.appendChild(span);
           i += 1;
         }
       }
-      $('open-content-settings-from-clear-browsing-data').onclick =
-          function(event) {
-        PageManager.showPageByName('content');
-      };
-      $('open-search-engines-from-clear-browsing-data').onclick =
-          function(event) {
-        PageManager.showPageByName('searchEngines');
-      };
+
+      if (simple) {
+        $('open-not-deleted-help-from-clear-browsing-data').onclick =
+            function(event) {
+          // TODO(msramek): Link to the exact page when the article is written.
+          window.open('https://support.google.com/chrome/');
+        };
+      } else {
+        $('open-content-settings-from-clear-browsing-data').onclick =
+            function(event) {
+          PageManager.showPageByName('content');
+        };
+        $('open-search-engines-from-clear-browsing-data').onclick =
+            function(event) {
+          PageManager.showPageByName('searchEngines');
+        };
+      }
+    },
+
+    /**
+     * Shows or hides the sync warning based on whether the user uses Sync.
+     * @param {boolean} syncing Whether the user uses Sync.
+     * @private
+     */
+    updateSyncWarning_: function(syncing) {
+      $('clear-browser-data-sync-warning').hidden = !syncing;
     },
 
     /**
@@ -245,6 +281,14 @@ cr.define('options', function() {
 
   ClearBrowserDataOverlay.updateCounter = function(pref_name, text) {
     ClearBrowserDataOverlay.getInstance().updateCounter_(pref_name, text);
+  };
+
+  ClearBrowserDataOverlay.createFooter = function(simple, syncing) {
+    ClearBrowserDataOverlay.getInstance().createFooter_(simple, syncing);
+  };
+
+  ClearBrowserDataOverlay.updateSyncWarning = function(syncing) {
+    ClearBrowserDataOverlay.getInstance().updateSyncWarning_(syncing);
   };
 
   ClearBrowserDataOverlay.setClearing = function(clearing) {

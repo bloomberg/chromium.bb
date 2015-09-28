@@ -1970,6 +1970,12 @@ const Experiment kExperiments[] = {
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableClearBrowsingDataCounters)
     },
+    {"simple-clear-browsing-data-support-string",
+     IDS_FLAGS_SIMPLE_CLEAR_BROWSING_DATA_SUPPORT_STRING_NAME,
+     IDS_FLAGS_SIMPLE_CLEAR_BROWSING_DATA_SUPPORT_STRING_DESCRIPTION,
+     kOsAll,
+     SINGLE_VALUE_TYPE(switches::kSimpleClearBrowsingDataSupportString)
+    },
 #if defined(ENABLE_TASK_MANAGER)
     {"disable-new-task-manager",
      IDS_FLAGS_DISABLE_NEW_TASK_MANAGER_NAME,

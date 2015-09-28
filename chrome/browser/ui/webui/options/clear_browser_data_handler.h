@@ -9,13 +9,15 @@
 #include "base/prefs/pref_member.h"
 #include "chrome/browser/browsing_data/browsing_data_counter.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace options {
 
 // Clear browser data handler page UI handler.
 class ClearBrowserDataHandler : public OptionsPageUIHandler,
-                                public BrowsingDataRemover::Observer {
+                                public BrowsingDataRemover::Observer,
+                                public sync_driver::SyncServiceObserver {
  public:
   ClearBrowserDataHandler();
   ~ClearBrowserDataHandler() override;
@@ -54,6 +56,10 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
                          bool finished,
                          uint32 count);
 
+  // Implementation of SyncServiceObserver. Updates the support string at the
+  // bottom of the dialog.
+  void OnStateChanged() override;
+
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
   BrowsingDataRemover* remover_;
@@ -70,6 +76,9 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
 
   // Counters that calculate the data volume for some of the data types.
   ScopedVector<BrowsingDataCounter> counters_;
+
+  // Informs us whether the user is syncing their data.
+  ProfileSyncService* sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowserDataHandler);
 };

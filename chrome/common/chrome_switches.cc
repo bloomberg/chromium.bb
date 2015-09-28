@@ -986,6 +986,10 @@ const char kSilentDebuggerExtensionAPI[]    = "silent-debugger-extension-api";
 // one wishes to use Chrome as an ash server.
 const char kSilentLaunch[]                  = "silent-launch";
 
+// Simplifies the support string in the Clear Browsing Data dialog.
+const char kSimpleClearBrowsingDataSupportString[] =
+    "simple-clear-browsing-data-support-string";
+
 // Simulates that elevation is needed to recover upgrade channel.
 const char kSimulateElevatedRecovery[]      = "simulate-elevated-recovery";
 
