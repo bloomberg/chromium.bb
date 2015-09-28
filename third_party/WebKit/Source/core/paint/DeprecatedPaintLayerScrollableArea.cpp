@@ -88,6 +88,7 @@ DeprecatedPaintLayerScrollableArea::DeprecatedPaintLayerScrollableArea(Deprecate
     , m_nextTopmostScrollChild(0)
     , m_topmostScrollChild(0)
     , m_needsCompositedScrolling(false)
+    , m_scrollbarManager(*this)
     , m_scrollCorner(nullptr)
     , m_resizer(nullptr)
 #if ENABLE(ASSERT)
@@ -142,8 +143,7 @@ void DeprecatedPaintLayerScrollableArea::dispose()
             frameView->removeResizerArea(box());
     }
 
-    destroyScrollbar(HorizontalScrollbar);
-    destroyScrollbar(VerticalScrollbar);
+    m_scrollbarManager.dispose();
 
     if (m_scrollCorner)
         m_scrollCorner->destroy();
@@ -159,8 +159,7 @@ void DeprecatedPaintLayerScrollableArea::dispose()
 
 DEFINE_TRACE(DeprecatedPaintLayerScrollableArea)
 {
-    visitor->trace(m_hBar);
-    visitor->trace(m_vBar);
+    m_scrollbarManager.trace(visitor);
     ScrollableArea::trace(visitor);
 }
 
@@ -205,15 +204,15 @@ void DeprecatedPaintLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scro
     // See crbug.com/343132.
     DisableCompositingQueryAsserts disabler;
 
-    ASSERT(scrollbar == m_hBar.get() || scrollbar == m_vBar.get());
-    ASSERT(scrollbar == m_hBar.get() ? !layerForHorizontalScrollbar() : !layerForVerticalScrollbar());
+    ASSERT(scrollbar == horizontalScrollbar() || scrollbar == verticalScrollbar());
+    ASSERT(scrollbar == horizontalScrollbar() ? !layerForHorizontalScrollbar() : !layerForVerticalScrollbar());
 
     IntRect scrollRect = rect;
     // If we are not yet inserted into the tree, there is no need to issue paint invaldiations.
     if (!box().isLayoutView() && !box().parent())
         return;
 
-    if (scrollbar == m_vBar.get())
+    if (scrollbar == verticalScrollbar())
         scrollRect.move(verticalScrollbarStart(0, box().size().width()), box().borderTop());
     else
         scrollRect.move(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
@@ -653,11 +652,12 @@ void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scro
     ASSERT(box().hasOverflowClip());
 
     if (needsScrollbarReconstruction()) {
-        if (m_hBar)
-            destroyScrollbar(HorizontalScrollbar);
-        if (m_vBar)
-            destroyScrollbar(VerticalScrollbar);
+        m_scrollbarManager.setCanDetachScrollbars(false);
+        setHasHorizontalScrollbar(false);
+        setHasVerticalScrollbar(false);
     }
+
+    m_scrollbarManager.setCanDetachScrollbars(true);
 
     scrollOffset = adjustedScrollOffset();
     computeScrollDimensions();
@@ -674,10 +674,14 @@ void DeprecatedPaintLayerScrollableArea::updateScrollDimensions(DoubleSize& scro
     autoHorizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow)) || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar());
     autoVerticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow)) || (box().style()->overflowY() == OSCROLL && !verticalScrollbar());
     if (!visualViewportSuppliesScrollbars() && (autoHorizontalScrollBarChanged || autoVerticalScrollBarChanged)) {
-        if (box().hasAutoHorizontalScrollbar() || (box().style()->overflowX() == OSCROLL && !horizontalScrollbar()))
-            setHasHorizontalScrollbar(box().style()->overflowX() == OSCROLL ? true : hasHorizontalOverflow);
-        if (box().hasAutoVerticalScrollbar() || (box().style()->overflowY() == OSCROLL && !verticalScrollbar()))
-            setHasVerticalScrollbar(box().style()->overflowY() == OSCROLL ? true : hasVerticalOverflow);
+        if (box().hasAutoHorizontalScrollbar())
+            setHasHorizontalScrollbar(hasHorizontalOverflow);
+        else if (box().style()->overflowX() == OSCROLL)
+            setHasHorizontalScrollbar(true);
+        if (box().hasAutoVerticalScrollbar())
+            setHasVerticalScrollbar(hasVerticalOverflow);
+        else if (box().style()->overflowX() == OSCROLL)
+            setHasVerticalScrollbar(true);
     }
 }
 
@@ -695,6 +699,8 @@ void DeprecatedPaintLayerScrollableArea::finalizeScrollDimensions(const DoubleSi
         DoublePoint origin(scrollOrigin());
         scrollPositionChanged(-origin + adjustedScrollOffset(), ProgrammaticScroll);
     }
+
+    m_scrollbarManager.setCanDetachScrollbars(false);
 
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();
     bool hasVerticalOverflow = this->hasVerticalOverflow();
@@ -869,19 +875,19 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
     // When switching to another value, we need to re-enable them (see bug 11985).
     if (needsHorizontalScrollbar && oldStyle && oldStyle->overflowX() == OSCROLL && overflowX != OSCROLL) {
         ASSERT(hasHorizontalScrollbar());
-        m_hBar->setEnabled(true);
+        horizontalScrollbar()->setEnabled(true);
     }
 
     if (needsVerticalScrollbar && oldStyle && oldStyle->overflowY() == OSCROLL && overflowY != OSCROLL) {
         ASSERT(hasVerticalScrollbar());
-        m_vBar->setEnabled(true);
+        verticalScrollbar()->setEnabled(true);
     }
 
     // FIXME: Need to detect a swap from custom to native scrollbars (and vice versa).
-    if (m_hBar)
-        m_hBar->styleChanged();
-    if (m_vBar)
-        m_vBar->styleChanged();
+    if (horizontalScrollbar())
+        horizontalScrollbar()->styleChanged();
+    if (verticalScrollbar())
+        verticalScrollbar()->styleChanged();
 
     updateScrollCornerStyle();
     updateResizerAreaSet();
@@ -919,27 +925,27 @@ void DeprecatedPaintLayerScrollableArea::updateAfterOverflowRecalc()
 
 IntRect DeprecatedPaintLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& borderBoxRect) const
 {
-    if (!m_hBar)
+    if (!hasHorizontalScrollbar())
         return IntRect();
 
     const IntRect& scrollCorner = scrollCornerRect();
 
     return IntRect(horizontalScrollbarStart(borderBoxRect.x()),
-        borderBoxRect.maxY() - box().borderBottom() - m_hBar->height(),
+        borderBoxRect.maxY() - box().borderBottom() - horizontalScrollbar()->height(),
         borderBoxRect.width() - (box().borderLeft() + box().borderRight()) - scrollCorner.width(),
-        m_hBar->height());
+        horizontalScrollbar()->height());
 }
 
 IntRect DeprecatedPaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& borderBoxRect) const
 {
-    if (!m_vBar)
+    if (!hasVerticalScrollbar())
         return IntRect();
 
     const IntRect& scrollCorner = scrollCornerRect();
 
     return IntRect(verticalScrollbarStart(borderBoxRect.x(), borderBoxRect.maxX()),
         borderBoxRect.y() + box().borderTop(),
-        m_vBar->width(),
+        verticalScrollbar()->width(),
         borderBoxRect.height() - (box().borderTop() + box().borderBottom()) - scrollCorner.height());
 }
 
@@ -947,23 +953,23 @@ LayoutUnit DeprecatedPaintLayerScrollableArea::verticalScrollbarStart(int minX, 
 {
     if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
         return minX + box().borderLeft();
-    return maxX - box().borderRight() - m_vBar->width();
+    return maxX - box().borderRight() - verticalScrollbar()->width();
 }
 
 LayoutUnit DeprecatedPaintLayerScrollableArea::horizontalScrollbarStart(int minX) const
 {
     int x = minX + box().borderLeft();
     if (box().style()->shouldPlaceBlockDirectionScrollbarOnLogicalLeft())
-        x += m_vBar ? m_vBar->width() : resizerCornerRect(box().pixelSnappedBorderBoxRect(), ResizerForPointer).width();
+        x += hasVerticalScrollbar() ? verticalScrollbar()->width() : resizerCornerRect(box().pixelSnappedBorderBoxRect(), ResizerForPointer).width();
     return x;
 }
 
 IntSize DeprecatedPaintLayerScrollableArea::scrollbarOffset(const Scrollbar* scrollbar) const
 {
-    if (scrollbar == m_vBar.get())
+    if (scrollbar == verticalScrollbar())
         return IntSize(verticalScrollbarStart(0, box().size().width()), box().borderTop());
 
-    if (scrollbar == m_hBar.get())
+    if (scrollbar == horizontalScrollbar())
         return IntSize(horizontalScrollbarStart(0), box().size().height() - box().borderBottom() - scrollbar->height());
 
     ASSERT_NOT_REACHED();
@@ -1009,43 +1015,8 @@ bool DeprecatedPaintLayerScrollableArea::needsScrollbarReconstruction() const
     LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
     bool shouldUseCustom = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
     bool hasAnyScrollbar = hasScrollbar();
-    bool hasCustom = (m_hBar && m_hBar->isCustomScrollbar()) || (m_vBar && m_vBar->isCustomScrollbar());
+    bool hasCustom = (hasHorizontalScrollbar() && horizontalScrollbar()->isCustomScrollbar()) || (hasVerticalScrollbar() && verticalScrollbar()->isCustomScrollbar());
     return hasAnyScrollbar && (shouldUseCustom != hasCustom);
-}
-
-PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::createScrollbar(ScrollbarOrientation orientation)
-{
-    RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
-    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(box());
-    bool hasCustomScrollbarStyle = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
-    if (hasCustomScrollbarStyle) {
-        widget = LayoutScrollbar::createCustomScrollbar(this, orientation, actualLayoutObject->node());
-    } else {
-        ScrollbarControlSize scrollbarSize = RegularScrollbar;
-        if (actualLayoutObject->style()->hasAppearance())
-            scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject->style()->appearance());
-        widget = Scrollbar::create(this, orientation, scrollbarSize);
-        if (orientation == HorizontalScrollbar)
-            didAddScrollbar(widget.get(), HorizontalScrollbar);
-        else
-            didAddScrollbar(widget.get(), VerticalScrollbar);
-    }
-    box().document().view()->addChild(widget.get());
-    return widget.release();
-}
-
-void DeprecatedPaintLayerScrollableArea::destroyScrollbar(ScrollbarOrientation orientation)
-{
-    RefPtrWillBeMember<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
-    if (!scrollbar)
-        return;
-
-    if (!scrollbar->isCustomScrollbar())
-        willRemoveScrollbar(scrollbar.get(), orientation);
-
-    toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
-    scrollbar->disconnectFromScrollableArea();
-    scrollbar = nullptr;
 }
 
 void DeprecatedPaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
@@ -1053,24 +1024,16 @@ void DeprecatedPaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrol
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
 
-    if (hasScrollbar) {
-        // This doesn't hit in any tests, but since the equivalent code in setHasVerticalScrollbar
-        // does, presumably this code does as well.
-        DisableCompositingQueryAsserts disabler;
-        m_hBar = createScrollbar(HorizontalScrollbar);
-    } else {
-        if (!layerForHorizontalScrollbar())
-            m_hBar->invalidate();
-        // Otherwise we will remove the layer and just need recompositing.
+    if (!hasScrollbar && !layerForHorizontalScrollbar())
+        horizontalScrollbar()->invalidate();
 
-        destroyScrollbar(HorizontalScrollbar);
-    }
+    m_scrollbarManager.setHasHorizontalScrollbar(hasScrollbar);
 
     // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
-    if (m_hBar)
-        m_hBar->styleChanged();
-    if (m_vBar)
-        m_vBar->styleChanged();
+    if (hasHorizontalScrollbar())
+        horizontalScrollbar()->styleChanged();
+    if (hasVerticalScrollbar())
+        verticalScrollbar()->styleChanged();
 
     // These are valid because we want to invalidate display item clients on the current backing.
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
@@ -1087,23 +1050,16 @@ void DeprecatedPaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollb
     if (hasScrollbar == hasVerticalScrollbar())
         return;
 
-    if (hasScrollbar) {
-        // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html
-        DisableCompositingQueryAsserts disabler;
-        m_vBar = createScrollbar(VerticalScrollbar);
-    } else {
-        if (!layerForVerticalScrollbar())
-            m_vBar->invalidate();
-        // Otherwise we will remove the layer and just need recompositing.
+    if (!hasScrollbar && !layerForVerticalScrollbar())
+        verticalScrollbar()->invalidate();
 
-        destroyScrollbar(VerticalScrollbar);
-    }
+    m_scrollbarManager.setHasVerticalScrollbar(hasScrollbar);
 
     // Destroying or creating one bar can cause our scrollbar corner to come and go. We need to update the opposite scrollbar's style.
-    if (m_hBar)
-        m_hBar->styleChanged();
-    if (m_vBar)
-        m_vBar->styleChanged();
+    if (hasHorizontalScrollbar())
+        horizontalScrollbar()->styleChanged();
+    if (hasVerticalScrollbar())
+        verticalScrollbar()->styleChanged();
 
     // These are valid because we want to invalidate display item clients on the current backing.
     DisablePaintInvalidationStateAsserts paintInvalidationAssertDisabler;
@@ -1117,16 +1073,16 @@ void DeprecatedPaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollb
 
 int DeprecatedPaintLayerScrollableArea::verticalScrollbarWidth(OverlayScrollbarSizeRelevancy relevancy) const
 {
-    if (!m_vBar || (m_vBar->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !m_vBar->shouldParticipateInHitTesting())))
+    if (!hasVerticalScrollbar() || (verticalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !verticalScrollbar()->shouldParticipateInHitTesting())))
         return 0;
-    return m_vBar->width();
+    return verticalScrollbar()->width();
 }
 
 int DeprecatedPaintLayerScrollableArea::horizontalScrollbarHeight(OverlayScrollbarSizeRelevancy relevancy) const
 {
-    if (!m_hBar || (m_hBar->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !m_hBar->shouldParticipateInHitTesting())))
+    if (!hasHorizontalScrollbar() || (horizontalScrollbar()->isOverlayScrollbar() && (relevancy == IgnoreOverlayScrollbarSize || !horizontalScrollbar()->shouldParticipateInHitTesting())))
         return 0;
-    return m_hBar->height();
+    return horizontalScrollbar()->height();
 }
 
 void DeprecatedPaintLayerScrollableArea::positionOverflowControls()
@@ -1189,25 +1145,25 @@ bool DeprecatedPaintLayerScrollableArea::hitTestOverflowControls(HitTestResult& 
     }
 
     int resizeControlSize = max(resizeControlRect.height(), 0);
-    if (m_vBar && m_vBar->shouldParticipateInHitTesting()) {
+    if (hasVerticalScrollbar() && verticalScrollbar()->shouldParticipateInHitTesting()) {
         LayoutRect vBarRect(verticalScrollbarStart(0, box().size().width()),
             box().borderTop(),
-            m_vBar->width(),
-            box().size().height() - (box().borderTop() + box().borderBottom()) - (m_hBar ? m_hBar->height() : resizeControlSize));
+            verticalScrollbar()->width(),
+            box().size().height() - (box().borderTop() + box().borderBottom()) - (hasHorizontalScrollbar() ? horizontalScrollbar()->height() : resizeControlSize));
         if (vBarRect.contains(localPoint)) {
-            result.setScrollbar(m_vBar.get());
+            result.setScrollbar(verticalScrollbar());
             return true;
         }
     }
 
     resizeControlSize = max(resizeControlRect.width(), 0);
-    if (m_hBar && m_hBar->shouldParticipateInHitTesting()) {
+    if (hasHorizontalScrollbar() && horizontalScrollbar()->shouldParticipateInHitTesting()) {
         LayoutRect hBarRect(horizontalScrollbarStart(0),
-            box().size().height() - box().borderBottom() - m_hBar->height(),
-            box().size().width() - (box().borderLeft() + box().borderRight()) - (m_vBar ? m_vBar->width() : resizeControlSize),
-            m_hBar->height());
+            box().size().height() - box().borderBottom() - horizontalScrollbar()->height(),
+            box().size().width() - (box().borderLeft() + box().borderRight()) - (hasVerticalScrollbar() ? verticalScrollbar()->width() : resizeControlSize),
+            horizontalScrollbar()->height());
         if (hBarRect.contains(localPoint)) {
-            result.setScrollbar(m_hBar.get());
+            result.setScrollbar(horizontalScrollbar());
             return true;
         }
     }
@@ -1506,6 +1462,109 @@ bool DeprecatedPaintLayerScrollableArea::visualViewportSuppliesScrollbars() cons
         return false;
 
     return frame->settings()->viewportMetaEnabled();
+}
+
+DeprecatedPaintLayerScrollableArea::ScrollbarManager::ScrollbarManager(DeprecatedPaintLayerScrollableArea& scrollableArea)
+    : m_scrollableArea(scrollableArea)
+    , m_canDetachScrollbars(0)
+    , m_hBarIsAttached(0)
+    , m_vBarIsAttached(0)
+{
+}
+
+void DeprecatedPaintLayerScrollableArea::ScrollbarManager::dispose()
+{
+    m_canDetachScrollbars = m_hBarIsAttached = m_vBarIsAttached = 0;
+    destroyScrollbar(HorizontalScrollbar);
+    destroyScrollbar(VerticalScrollbar);
+}
+
+void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setCanDetachScrollbars(bool detach)
+{
+    ASSERT(!m_hBarIsAttached || m_hBar);
+    ASSERT(!m_vBarIsAttached || m_vBar);
+    m_canDetachScrollbars = detach ? 1 : 0;
+    if (!detach) {
+        if (m_hBar && !m_hBarIsAttached)
+            destroyScrollbar(HorizontalScrollbar, true);
+        if (m_vBar && !m_vBarIsAttached)
+            destroyScrollbar(VerticalScrollbar, true);
+    }
+}
+
+void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasHorizontalScrollbar(bool hasScrollbar)
+{
+    if (hasScrollbar) {
+        // This doesn't hit in any tests, but since the equivalent code in setHasVerticalScrollbar
+        // does, presumably this code does as well.
+        DisableCompositingQueryAsserts disabler;
+        if (!m_hBar)
+            m_hBar = createScrollbar(HorizontalScrollbar);
+        m_hBarIsAttached = 1;
+    } else {
+        m_hBarIsAttached = 0;
+        if (!m_canDetachScrollbars)
+            destroyScrollbar(HorizontalScrollbar);
+    }
+}
+
+void DeprecatedPaintLayerScrollableArea::ScrollbarManager::setHasVerticalScrollbar(bool hasScrollbar)
+{
+    if (hasScrollbar) {
+        DisableCompositingQueryAsserts disabler;
+        if (!m_vBar)
+            m_vBar = createScrollbar(VerticalScrollbar);
+        m_vBarIsAttached = 1;
+    } else {
+        m_vBarIsAttached = 0;
+        if (!m_canDetachScrollbars)
+            destroyScrollbar(VerticalScrollbar);
+    }
+}
+
+PassRefPtrWillBeRawPtr<Scrollbar> DeprecatedPaintLayerScrollableArea::ScrollbarManager::createScrollbar(ScrollbarOrientation orientation)
+{
+    ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached : !m_vBarIsAttached);
+    RefPtrWillBeRawPtr<Scrollbar> widget = nullptr;
+    LayoutObject* actualLayoutObject = layoutObjectForScrollbar(m_scrollableArea.box());
+    bool hasCustomScrollbarStyle = actualLayoutObject->isBox() && actualLayoutObject->style()->hasPseudoStyle(SCROLLBAR);
+    if (hasCustomScrollbarStyle) {
+        widget = LayoutScrollbar::createCustomScrollbar(&m_scrollableArea, orientation, actualLayoutObject->node());
+    } else {
+        ScrollbarControlSize scrollbarSize = RegularScrollbar;
+        if (actualLayoutObject->style()->hasAppearance())
+            scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject->style()->appearance());
+        widget = Scrollbar::create(&m_scrollableArea, orientation, scrollbarSize);
+        if (orientation == HorizontalScrollbar)
+            m_scrollableArea.didAddScrollbar(widget.get(), HorizontalScrollbar);
+        else
+            m_scrollableArea.didAddScrollbar(widget.get(), VerticalScrollbar);
+    }
+    m_scrollableArea.box().document().view()->addChild(widget.get());
+    return widget.release();
+}
+
+void DeprecatedPaintLayerScrollableArea::ScrollbarManager::destroyScrollbar(ScrollbarOrientation orientation, bool invalidate)
+{
+    RefPtrWillBeMember<Scrollbar>& scrollbar = orientation == HorizontalScrollbar ? m_hBar : m_vBar;
+    ASSERT(orientation == HorizontalScrollbar ? !m_hBarIsAttached: !m_vBarIsAttached);
+    if (!scrollbar)
+        return;
+
+    if (invalidate)
+        scrollbar->invalidate();
+    if (!scrollbar->isCustomScrollbar())
+        m_scrollableArea.willRemoveScrollbar(scrollbar.get(), orientation);
+
+    toFrameView(scrollbar->parent())->removeChild(scrollbar.get());
+    scrollbar->disconnectFromScrollableArea();
+    scrollbar = nullptr;
+}
+
+DEFINE_TRACE(DeprecatedPaintLayerScrollableArea::ScrollbarManager)
+{
+    visitor->trace(m_hBar);
+    visitor->trace(m_vBar);
 }
 
 } // namespace blink
