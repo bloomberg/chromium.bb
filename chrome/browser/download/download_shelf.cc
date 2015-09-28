@@ -84,9 +84,8 @@ void DownloadShelf::PaintDownloadProgress(
   bg_paint.setColor(SkColorSetA(indicator_color, 0x33));
   bg_paint.setAntiAlias(true);
   const SkScalar kCenterPoint = kProgressIndicatorSize / 2.f;
-  const SkScalar kRadius = 12.5f;
   SkPath bg;
-  bg.addCircle(kCenterPoint, kCenterPoint, kRadius);
+  bg.addCircle(kCenterPoint, kCenterPoint, kCenterPoint);
   canvas->DrawPath(bg, bg_paint);
 
   // Calculate progress.
@@ -104,11 +103,9 @@ void DownloadShelf::PaintDownloadProgress(
 
   // Draw progress.
   SkPath progress;
-  progress.addArc(SkRect::MakeLTRB(kCenterPoint - kRadius,
-                                   kCenterPoint - kRadius,
-                                   kCenterPoint + kRadius,
-                                   kCenterPoint + kRadius),
-                  start_pos, sweep_angle);
+  progress.addArc(
+      SkRect::MakeLTRB(0, 0, kProgressIndicatorSize, kProgressIndicatorSize),
+      start_pos, sweep_angle);
   SkPaint progress_paint;
   progress_paint.setColor(indicator_color);
   progress_paint.setStyle(SkPaint::kStroke_Style);

@@ -68,6 +68,9 @@ static const int kVerticalPadding = 3;        // Pixels
 static const int kVerticalTextPadding = 2;    // Pixels
 static const int kTooltipMaxWidth = 800;      // Pixels
 
+// Padding around progress indicator, on all sides.
+static const int kProgressPadding = 7;
+
 // We add some padding before the left image so that the progress animation icon
 // hides the corners of the left image.
 static const int kLeftPadding = 0;  // Pixels.
@@ -206,10 +209,9 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
                                   normal_body_image_set_.top_left->height() +
                                   normal_body_image_set_.bottom_left->height());
 
-  if (DownloadShelf::kProgressIndicatorSize > box_height_)
-    box_y_ = (DownloadShelf::kProgressIndicatorSize - box_height_) / 2;
-  else
-    box_y_ = 0;
+  box_y_ = std::max(0, (2 * kProgressPadding +
+                        DownloadShelf::kProgressIndicatorSize - box_height_) /
+                           2);
 
   body_hover_animation_.reset(new gfx::SlideAnimation(this));
   drop_hover_animation_.reset(new gfx::SlideAnimation(this));
@@ -381,7 +383,8 @@ gfx::Size DownloadItemView::GetPreferredSize() const {
   height = 2 * kVerticalPadding + 2 * font_list_.GetHeight() +
       kVerticalTextPadding;
   // Then we increase the size if the progress icon doesn't fit.
-  height = std::max<int>(height, DownloadShelf::kProgressIndicatorSize);
+  height = std::max<int>(
+      height, DownloadShelf::kProgressIndicatorSize + 2 * kProgressPadding);
 
   if (IsShowingWarningDialog()) {
     const BodyImageSet* body_image_set =
@@ -404,7 +407,7 @@ gfx::Size DownloadItemView::GetPreferredSize() const {
       width += normal_drop_down_image_set_.top->width();
   } else {
     width = kLeftPadding + normal_body_image_set_.top_left->width();
-    width += DownloadShelf::kProgressIndicatorSize;
+    width += DownloadShelf::kProgressIndicatorSize + 2 * kProgressPadding;
     width += kTextWidth;
     width += normal_body_image_set_.top_right->width();
     width += normal_drop_down_image_set_.top->width();
@@ -700,7 +703,8 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   if (!IsShowingWarningDialog()) {
     if (!status_text_.empty()) {
       int mirrored_x = GetMirroredXWithWidthInView(
-          DownloadShelf::kProgressIndicatorSize, kTextWidth);
+          2 * kProgressPadding + DownloadShelf::kProgressIndicatorSize,
+          kTextWidth);
       // Add font_list_.height() to compensate for title, which is drawn later.
       int y = box_y_ + kVerticalPadding + font_list_.GetHeight() +
               kVerticalTextPadding;
@@ -826,7 +830,8 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
     }
 
     int mirrored_x = GetMirroredXWithWidthInView(
-        DownloadShelf::kProgressIndicatorSize, kTextWidth);
+        2 * kProgressPadding + DownloadShelf::kProgressIndicatorSize,
+        kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
         ThemeProperties::COLOR_BOOKMARK_TEXT);
     int y =
@@ -856,13 +861,17 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   // loaded, in which case LookupIcon will always be NULL. The loading will be
   // triggered only when we think the status might change.
   if (icon) {
-    if (!IsShowingWarningDialog()) {
-      DownloadItem::DownloadState state = download()->GetState();
-      canvas->Save();
-      if (base::i18n::IsRTL())
-        canvas->Translate(
-            gfx::Vector2d(width() - DownloadShelf::kProgressIndicatorSize, 0));
+    int progress_x =
+        base::i18n::IsRTL()
+            ? width() - kProgressPadding - DownloadShelf::kProgressIndicatorSize
+            : kProgressPadding;
+    int progress_y = kProgressPadding;
 
+    if (!IsShowingWarningDialog()) {
+      canvas->Save();
+      canvas->Translate(gfx::Vector2d(progress_x, progress_y));
+
+      DownloadItem::DownloadState state = download()->GetState();
       if (state == DownloadItem::IN_PROGRESS) {
         base::TimeDelta progress_time = previous_progress_elapsed_;
         if (!download()->IsPaused())
@@ -891,12 +900,12 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
 
     if (IsShowingWarningDialog()) {
       icon_x = kLeftPadding + body_image_set->top_left->width();
+      icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
       icon_y = (height() - icon->height()) / 2;
     } else {
-      icon_x = DownloadShelf::kFiletypeIconOffset;
-      icon_y = DownloadShelf::kFiletypeIconOffset;
+      icon_x = progress_x + DownloadShelf::kFiletypeIconOffset;
+      icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
     }
-    icon_x = GetMirroredXWithWidthInView(icon_x, icon->width());
     if (enabled()) {
       canvas->DrawImageInt(*icon, icon_x, icon_y);
     } else {

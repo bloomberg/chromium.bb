@@ -72,22 +72,27 @@ const int kTextWidth = 140;
 const int kDangerousTextWidth = 200;
 
 // The normal height of the item which may be exceeded if text is large.
-const int kDefaultHeight = 36;
+const int kDefaultHeight = 48;
+
+// The vertical distance between the item's visual upper bound (as delineated by
+// the separator on the right) and the edge of the shelf.
+const int kTopBottomPadding = 6;
 
 // The minimum vertical padding above and below contents of the download item.
 // This is only used when the text size is large.
-const int kMinimumVerticalPadding = 2;
+const int kMinimumVerticalPadding = 2 + kTopBottomPadding;
 
 // Vertical padding between filename and status text.
 const int kVerticalTextPadding = 1;
 
 const int kTooltipMaxWidth = 800;
 
-// Padding before the icon and at end of the item. TODO(estade): this needs to
-// be used when drawing the non-warning dialog state. Currently we just use the
-// built in padding for the progress indicator.
+// Padding before the icon and at end of the item.
 const int kStartPadding = 12;
 const int kEndPadding = 19;
+
+// Horizontal padding between progress indicator and filename/status text.
+const int kProgressTextPadding = 8;
 
 // The space between the Save and Discard buttons when prompting for a dangerous
 // download.
@@ -107,6 +112,31 @@ const int kInterruptedAnimationDurationMs = 2500;
 // How long we keep the item disabled after the user clicked it to open the
 // downloaded item.
 const int kDisabledOnOpenDuration = 3000;
+
+// The separator is drawn as a border. It's one dp wide.
+class SeparatorBorder : public views::Border {
+ public:
+  explicit SeparatorBorder(SkColor color) : color_(color) {}
+  ~SeparatorBorder() override {}
+
+  void Paint(const views::View& view, gfx::Canvas* canvas) override {
+    int end_x = base::i18n::IsRTL() ? 0 : view.width() - 1;
+    canvas->DrawLine(gfx::Point(end_x, kTopBottomPadding),
+                     gfx::Point(end_x, view.height() - kTopBottomPadding),
+                     color_);
+  }
+
+  gfx::Insets GetInsets() const override { return gfx::Insets(0, 0, 0, 1); }
+
+  gfx::Size GetMinimumSize() const override {
+    return gfx::Size(1, 2 * kTopBottomPadding + 1);
+  }
+
+ private:
+  SkColor color_;
+
+  DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
+};
 
 }  // namespace
 
@@ -323,8 +353,6 @@ gfx::Size DownloadItemViewMd::GetPreferredSize() const {
   height = std::max(kDefaultHeight,
                     2 * kMinimumVerticalPadding + font_list_.GetBaseline() +
                         kVerticalTextPadding + status_font_list_.GetHeight());
-  // Then we increase the size if the progress icon doesn't fit.
-  height = std::max<int>(height, DownloadShelf::kProgressIndicatorSize);
 
   if (IsShowingWarningDialog()) {
     width = kStartPadding + warning_icon_->width() + kLabelPadding +
@@ -340,8 +368,8 @@ gfx::Size DownloadItemViewMd::GetPreferredSize() const {
       width += button_size.width() + kButtonPadding;
     width += button_size.width() + kEndPadding;
   } else {
-    width = kStartPadding + DownloadShelf::kProgressIndicatorSize + kTextWidth +
-            kEndPadding;
+    width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
+            kProgressTextPadding + kTextWidth + kEndPadding;
   }
   return gfx::Size(width, height);
 }
@@ -554,7 +582,9 @@ void DownloadItemViewMd::DrawStatusText(gfx::Canvas* canvas) {
     return;
 
   int mirrored_x = GetMirroredXWithWidthInView(
-      DownloadShelf::kProgressIndicatorSize, kTextWidth);
+      kStartPadding + DownloadShelf::kProgressIndicatorSize +
+          kProgressTextPadding,
+      kTextWidth);
   int y =
       GetYForFilenameText() + font_list_.GetBaseline() + kVerticalTextPadding;
   SkColor file_name_color = SkColorSetA(
@@ -590,7 +620,9 @@ void DownloadItemViewMd::DrawFilename(gfx::Canvas* canvas) {
   }
 
   int mirrored_x = GetMirroredXWithWidthInView(
-      DownloadShelf::kProgressIndicatorSize, kTextWidth);
+      kStartPadding + DownloadShelf::kProgressIndicatorSize +
+          kProgressTextPadding,
+      kTextWidth);
   SkColor file_name_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
 
@@ -602,7 +634,9 @@ void DownloadItemViewMd::DrawFilename(gfx::Canvas* canvas) {
 
 void DownloadItemViewMd::DrawIcon(gfx::Canvas* canvas) {
   if (IsShowingWarningDialog()) {
-    int icon_x = kStartPadding;
+    int icon_x = base::i18n::IsRTL()
+                     ? width() - warning_icon_->width() - kStartPadding
+                     : kStartPadding;
     int icon_y = (height() - warning_icon_->height()) / 2;
     canvas->DrawImageInt(*warning_icon_, icon_x, icon_y);
     return;
@@ -611,10 +645,12 @@ void DownloadItemViewMd::DrawIcon(gfx::Canvas* canvas) {
   // Paint download progress.
   DownloadItem::DownloadState state = download()->GetState();
   canvas->Save();
-  if (base::i18n::IsRTL()) {
-    canvas->Translate(
-        gfx::Vector2d(width() - DownloadShelf::kProgressIndicatorSize, 0));
-  }
+  int progress_x =
+      base::i18n::IsRTL()
+          ? width() - kStartPadding - DownloadShelf::kProgressIndicatorSize
+          : kStartPadding;
+  int progress_y = (height() - DownloadShelf::kProgressIndicatorSize) / 2;
+  canvas->Translate(gfx::Vector2d(progress_x, progress_y));
 
   if (state == DownloadItem::IN_PROGRESS) {
     base::TimeDelta progress_time = previous_progress_elapsed_;
@@ -642,10 +678,8 @@ void DownloadItemViewMd::DrawIcon(gfx::Canvas* canvas) {
     return;
 
   // Draw the icon image.
-  int icon_x = DownloadShelf::kFiletypeIconOffset;
-  icon_x = GetMirroredXWithWidthInView(icon_x, icon->Width());
-  int icon_y = DownloadShelf::kFiletypeIconOffset;
-
+  int icon_x = progress_x + DownloadShelf::kFiletypeIconOffset;
+  int icon_y = progress_y + DownloadShelf::kFiletypeIconOffset;
   SkPaint paint;
   // Use an alpha to make the image look disabled.
   if (!enabled())
@@ -729,9 +763,8 @@ void DownloadItemViewMd::UpdateColorsFromTheme() {
     dangerous_download_label_->SetEnabledColor(
         GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   }
-  SetBorder(views::Border::CreateSolidSidedBorder(
-      0, 0, 0, 1,
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR)));
+  SetBorder(make_scoped_ptr(new SeparatorBorder(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_SEPARATOR))));
 }
 
 void DownloadItemViewMd::ShowContextMenuImpl(const gfx::Rect& rect,

@@ -53,8 +53,8 @@ class DownloadShelf {
     // Progress animation timer period, in milliseconds.
     kProgressRateMs = 30,
 
-    // Size of the space used for the progress indicator, including padding.
-    kProgressIndicatorSize = 39,
+    // Size of the space used for the progress indicator.
+    kProgressIndicatorSize = 25,
 
     // x/y offset for the file type icon.
     kFiletypeIconOffset = (kProgressIndicatorSize - 16) / 2

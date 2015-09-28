@@ -1615,6 +1615,9 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="Link label shown at the corner of the download shelf">
         Show all downloads...
       </message>
+      <message name="IDS_SHOW_ALL_DOWNLOADS_MD" desc="Button label shown at the corner of the download shelf">
+        Show all
+      </message>
       <!-- Download Error Messages-->
       <!-- *_STATUS_*: Short message in the download on the shelf.-->
       <!-- *_DESCRIPTION_*: Corresponding more descriptive message on the download page.-->

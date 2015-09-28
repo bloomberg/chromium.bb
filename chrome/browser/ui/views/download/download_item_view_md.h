@@ -55,8 +55,7 @@ class LabelButton;
 }
 
 // The DownloadItemView in MD style. This is copied from DownloadItemView,
-// which it should eventually replace. TODO(estade): crop out all the
-// unnecessary bits like the body image sets.
+// which it should eventually replace.
 class DownloadItemViewMd : public views::ButtonListener,
                            public views::View,
                            public views::ContextMenuController,

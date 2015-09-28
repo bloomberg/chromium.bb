@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
@@ -22,10 +23,6 @@ class BrowserView;
 namespace content {
 class DownloadItem;
 class PageNavigator;
-}
-
-namespace gfx {
-class SlideAnimation;
 }
 
 namespace views {
@@ -131,21 +128,21 @@ class DownloadShelfView : public views::AccessiblePaneView,
   Browser* browser_;
 
   // The animation for adding new items to the shelf.
-  scoped_ptr<gfx::SlideAnimation> new_item_animation_;
+  gfx::SlideAnimation new_item_animation_;
 
   // The show/hide animation for the shelf itself.
-  scoped_ptr<gfx::SlideAnimation> shelf_animation_;
+  gfx::SlideAnimation shelf_animation_;
 
   // The download views. These are also child Views, and deleted when
   // the DownloadShelfView is deleted.
   std::vector<views::View*> download_views_;
 
   // An image displayed on the right of the "Show all downloads..." link.
+  // TODO(estade): not shown in MD; remove.
   views::ImageView* arrow_image_;
 
-  // Link for showing all downloads. This is contained as a child, and deleted
-  // by View.
-  views::Link* show_all_view_;
+  // Link for showing all downloads. For MD this is a system style button.
+  views::View* show_all_view_;
 
   // Button for closing the downloads. This is contained as a child, and
   // deleted by View.
