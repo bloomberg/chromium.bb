@@ -382,11 +382,15 @@ class SessionRestoreImpl : public content::NotificationObserver {
     // windows has the same id as specified in active_window_id.
     Browser* browser_to_activate = nullptr;
 
-    // Determine if there is a visible window.
+    // Determine if there is a visible window, or if the active window exists.
+    // Even if all windows are ui::SHOW_STATE_MINIMIZED, if one of them is the
+    // active window it will be made visible by the call to
+    // browser_to_activate->window()->Activate() later on in this method.
     bool has_visible_browser = false;
     for (std::vector<sessions::SessionWindow*>::iterator i = windows->begin();
          i != windows->end(); ++i) {
-      if ((*i)->show_state != ui::SHOW_STATE_MINIMIZED)
+      if ((*i)->show_state != ui::SHOW_STATE_MINIMIZED ||
+          (*i)->window_id.id() == active_window_id)
         has_visible_browser = true;
     }
 
