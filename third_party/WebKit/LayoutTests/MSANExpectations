@@ -60,17 +60,6 @@ crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-filter-shadow.html [ C
 crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Crash ]
 crbug.com/522376 [ Linux ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Crash ]
 
-# These tests may require more time to execute
-crbug.com/536293 [ Linux ] virtual/gpu/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-png.html [ Timeout ]
-crbug.com/536293 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-jpeg.html [ Timeout ]
-crbug.com/536293 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-webp.html [ Timeout ]
-crbug.com/536293 [ Linux ] virtual/gpu/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-webp.html [ Timeout ]
-crbug.com/536293 [ Linux ] fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-png.html [ Timeout ]
-crbug.com/536293 [ Linux ] fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-jpeg.html [ Timeout ]
-crbug.com/536293 [ Linux ] virtual/display_list_2d_canvas/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-png.html [ Timeout ]
-crbug.com/536293 [ Linux ] virtual/gpu/fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-jpeg.html [ Timeout ]
-crbug.com/536293 [ Linux ] fast/canvas/canvas-toBlob-toDataURL-race-imageEncoder-webp.html [ Timeout ]
-
 # Flaky under MSAN (hang forever)
 crbug.com/456525 [ Linux ] inspector/sources/debugger [ Skip ]
 
