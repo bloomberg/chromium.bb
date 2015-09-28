@@ -39,6 +39,7 @@
         'content.gyp:content_resources',
         'content.gyp:content_utility',
         'content_shell_resources',
+        'content_test_mojo_bindings',
         'copy_test_netscape_plugin',
         'layouttest_support_content',
         '../base/base.gyp:base',
