@@ -50352,6 +50352,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.PeerConnection.IPPermissionStatus"
+    enum="IPPermissionStatus">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    Whether the permission to collect the local IP addresses in WebRTC has been
+    requested and/or granted. This is collected the first time when networks
+    updated event is reported or if never reported, during the destruction phase
+    of a call.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.PeerConnection.IPv4Interfaces">
   <owner>mallinath@chromium.org</owner>
   <summary>
@@ -50396,6 +50407,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="WebRTC.PeerConnection.TimeToConnect" units="milliseconds">
   <owner>mallinath@chromium.org</owner>
   <summary>Time to setup a peer to peer call with PeerConnection.</summary>
+</histogram>
+
+<histogram name="WebRTC.PeerConnection.TimeToNetworkUpdated"
+    units="milliseconds">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    Time to receive the first SignalNetworksChanged from the request to start
+    updating network in PeerConnection.
+  </summary>
 </histogram>
 
 <histogram name="WebRTC.ReceivedAudioTrackDuration" units="milliseconds">
@@ -62176,6 +62196,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="NO_DESTINATION">
     The brokerable attachment did not have a destination process.
   </int>
+</enum>
+
+<enum name="IPPermissionStatus" type="int">
+  <int value="0" label="Not requested"/>
+  <int value="1" label="Requested but denied"/>
+  <int value="2" label="Requested and granted"/>
+  <int value="3" label="Unknown"/>
 </enum>
 
 <enum name="IPv6ConnectivityStatus" type="int">

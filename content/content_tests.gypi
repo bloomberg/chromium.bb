@@ -769,6 +769,7 @@
       'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
       'renderer/media/webrtc_local_audio_track_unittest.cc',
       'renderer/media/webrtc_uma_histograms_unittest.cc',
+      'renderer/p2p/filtering_network_manager_unittest.cc',
       'renderer/p2p/ipc_network_manager_unittest.cc',
     ],
     'content_unittests_plugin_webrtc_sources': [

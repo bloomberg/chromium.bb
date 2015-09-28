@@ -8,6 +8,8 @@
 
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/metrics/field_trial.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/media/media_stream_messages.h"
@@ -32,12 +34,16 @@
 #include "content/renderer/media/webrtc_local_audio_track.h"
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
+#include "content/renderer/p2p/empty_network_manager.h"
+#include "content/renderer/p2p/filtering_network_manager.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/ipc_socket_factory.h"
 #include "content/renderer/p2p/port_allocator.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "jingle/glue/thread_wrapper.h"
+#include "media/base/media_permission.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
@@ -106,18 +112,24 @@ void HarmonizeConstraintsAndEffects(RTCMediaConstraints* constraints,
   }
 }
 
-class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
+class P2PPortAllocatorFactory
+    : public rtc::RefCountedObject<webrtc::PortAllocatorFactoryInterface> {
  public:
-  P2PPortAllocatorFactory(P2PSocketDispatcher* socket_dispatcher,
-                          rtc::NetworkManager* network_manager,
-                          rtc::PacketSocketFactory* socket_factory,
-                          const GURL& origin,
-                          const P2PPortAllocator::Config& config)
-      : socket_dispatcher_(socket_dispatcher),
+  P2PPortAllocatorFactory(
+      scoped_ptr<media::MediaPermission> media_permission,
+      const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
+      rtc::NetworkManager* network_manager,
+      rtc::PacketSocketFactory* socket_factory,
+      const P2PPortAllocator::Config& config,
+      const GURL& origin,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+      : media_permission_(media_permission.Pass()),
+        socket_dispatcher_(socket_dispatcher),
         network_manager_(network_manager),
         socket_factory_(socket_factory),
+        config_(config),
         origin_(origin),
-        config_(config) {}
+        task_runner_(task_runner) {}
 
   cricket::PortAllocator* CreatePortAllocator(
       const std::vector<StunConfiguration>& stun_servers,
@@ -139,28 +151,46 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       config.relays.push_back(relay_config);
     }
 
-    return new P2PPortAllocator(
-        socket_dispatcher_.get(), network_manager_,
-        socket_factory_, config, origin_);
+    scoped_ptr<rtc::NetworkManager> network_manager;
+    if (config.enable_multiple_routes) {
+      media::MediaPermission* media_permission = media_permission_.get();
+      FilteringNetworkManager* filtering_network_manager =
+          new FilteringNetworkManager(network_manager_, origin_,
+                                      media_permission_.Pass());
+      if (media_permission) {
+        // Start permission check earlier to reduce any impact to call set up
+        // time. It's safe to use Unretained here since both destructor and
+        // Initialize can only be called on the worker thread.
+        task_runner_->PostTask(
+            FROM_HERE, base::Bind(&FilteringNetworkManager::Initialize,
+                                  base::Unretained(filtering_network_manager)));
+      }
+      network_manager.reset(filtering_network_manager);
+    } else {
+      network_manager.reset(new EmptyNetworkManager());
+    }
+
+    return new P2PPortAllocator(socket_dispatcher_, network_manager.Pass(),
+                                socket_factory_, config, origin_, task_runner_);
   }
 
  protected:
   ~P2PPortAllocatorFactory() override {}
 
  private:
+  // Ownership of |media_permission_| will be passed to FilteringNetworkManager
+  // during CreatePortAllocator.
+  scoped_ptr<media::MediaPermission> media_permission_;
+
   scoped_refptr<P2PSocketDispatcher> socket_dispatcher_;
-  // |network_manager_| and |socket_factory_| are a weak references, owned by
-  // PeerConnectionDependencyFactory.
   rtc::NetworkManager* network_manager_;
   rtc::PacketSocketFactory* socket_factory_;
-  // The origin URL of the WebFrame that created the
-  // P2PPortAllocatorFactory.
+  P2PPortAllocator::Config config_;
   GURL origin_;
 
-  // Keep track of configuration common to all PortAllocators created by this
-  // factory; additional, per-allocator configuration is passed into
-  // CreatePortAllocator.
-  P2PPortAllocator::Config config_;
+  // This is the worker thread where |media_permission_| and |network_manager_|
+  // live on.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 PeerConnectionDependencyFactory::PeerConnectionDependencyFactory(
@@ -403,24 +433,50 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
           GURL(web_frame->document().firstPartyForCookies())));
 
   // Copy the flag from Preference associated with this WebFrame.
-  P2PPortAllocator::Config pref_config;
+  P2PPortAllocator::Config port_config;
   if (web_frame && web_frame->view()) {
     RenderViewImpl* renderer_view_impl =
         RenderViewImpl::FromWebView(web_frame->view());
     if (renderer_view_impl) {
-      pref_config.enable_multiple_routes =
+      // TODO(guoweis): |enable_multiple_routes| should be renamed to
+      // |request_multiple_routes|. Whether local IP addresses could be
+      // collected depends on if mic/camera permission is granted for this
+      // origin.
+      port_config.enable_multiple_routes =
           renderer_view_impl->renderer_preferences()
               .enable_webrtc_multiple_routes;
-      pref_config.enable_nonproxied_udp =
+      port_config.enable_nonproxied_udp =
           renderer_view_impl->renderer_preferences()
               .enable_webrtc_nonproxied_udp;
     }
   }
 
+  // |media_permission| will be called to check mic/camera permission. If at
+  // least one of them is granted, P2PPortAllocator is allowed to gather local
+  // host IP addresses as ICE candidates.
+  // If the experiment is not enabled, turn off the permission check by
+  // passing nullptr to FilteringNetworkManager constructor.
+  scoped_ptr<media::MediaPermission> media_permission;
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("WebRTC-LocalIPPermissionCheck");
+  if (StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE) &&
+      port_config.enable_multiple_routes) {
+    RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
+    if (render_frame) {
+      media_permission = render_frame->CreateMediaPermissionProxy(
+          chrome_worker_thread_.task_runner());
+      DCHECK(media_permission);
+    }
+  }
+
+  const GURL& requesting_origin =
+      GURL(web_frame->document().url().spec()).GetOrigin();
+
   scoped_refptr<P2PPortAllocatorFactory> pa_factory =
-      new rtc::RefCountedObject<P2PPortAllocatorFactory>(
-          p2p_socket_dispatcher_.get(), network_manager_, socket_factory_.get(),
-          GURL(web_frame->document().url().spec()).GetOrigin(), pref_config);
+      new P2PPortAllocatorFactory(
+          media_permission.Pass(), p2p_socket_dispatcher_, network_manager_,
+          socket_factory_.get(), port_config, requesting_origin,
+          chrome_worker_thread_.task_runner());
 
   return GetPcFactory()->CreatePeerConnection(config,
                                               constraints,

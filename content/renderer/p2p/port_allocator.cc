@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 
 namespace content {
 
@@ -23,16 +24,18 @@ P2PPortAllocator::Config::RelayServerConfig::~RelayServerConfig() {
 }
 
 P2PPortAllocator::P2PPortAllocator(
-    P2PSocketDispatcher* socket_dispatcher,
-    rtc::NetworkManager* network_manager,
+    const scoped_refptr<P2PSocketDispatcher>& socket_dispatcher,
+    scoped_ptr<rtc::NetworkManager> network_manager,
     rtc::PacketSocketFactory* socket_factory,
     const Config& config,
-    const GURL& origin)
-    : cricket::BasicPortAllocator(network_manager, socket_factory),
+    const GURL& origin,
+    const scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : cricket::BasicPortAllocator(network_manager.get(), socket_factory),
+      network_manager_(network_manager.Pass()),
       socket_dispatcher_(socket_dispatcher),
       config_(config),
-      origin_(origin)
-  {
+      origin_(origin),
+      network_manager_task_runner_(task_runner) {
   uint32 flags = 0;
   if (!config_.enable_multiple_routes)
     flags |= cricket::PORTALLOCATOR_DISABLE_ADAPTER_ENUMERATION;
@@ -47,11 +50,17 @@ P2PPortAllocator::P2PPortAllocator(
   bool enable_webrtc_stun_origin =
       cmd_line->HasSwitch(switches::kEnableWebRtcStunOrigin);
   if (enable_webrtc_stun_origin) {
-    set_origin(origin.spec());
+    set_origin(origin_.spec());
   }
 }
 
+// TODO(guoweis): P2PPortAllocator is also deleted in the wrong thread
+// here. It's created in signaling thread, and held by webrtc::PeerConnection,
+// only used on worker thread. The destructor is invoked on signaling thread
+// again. crbug.com/535761. DeleteSoon can be removed once the bug is fixed.
 P2PPortAllocator::~P2PPortAllocator() {
+  network_manager_task_runner_->DeleteSoon(FROM_HERE,
+                                           network_manager_.release());
 }
 
 cricket::PortAllocatorSession* P2PPortAllocator::CreateSessionInternal(
