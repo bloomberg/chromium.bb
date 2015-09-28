@@ -87,6 +87,7 @@
 #define IDC_BASIC_PRINT                 35007
 #define IDC_TRANSLATE_PAGE              35009
 #define IDC_MANAGE_PASSWORDS_FOR_PAGE   35010
+#define IDC_ROUTE_MEDIA                 35011
 
 // When adding a new encoding to this list, be sure to append it to the
 // EncodingMenuController::kValidEncodingIds array in

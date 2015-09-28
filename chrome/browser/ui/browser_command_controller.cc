@@ -778,6 +778,9 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       ash::accelerators::ToggleTouchHudProjection();
       break;
 #endif
+    case IDC_ROUTE_MEDIA:
+      RouteMedia(browser_);
+      break;
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -821,6 +824,7 @@ void BrowserCommandController::TabBlockedStateChanged(
   PrintingStateChanged();
   FullscreenStateChanged();
   UpdateCommandsForFind();
+  UpdateCommandsForMediaRouter();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1137,6 +1141,7 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   UpdateCommandsForContentRestrictionState();
   UpdateCommandsForBookmarkEditing();
   UpdateCommandsForFind();
+  UpdateCommandsForMediaRouter();
   // Update the zoom commands when an active tab is selected.
   UpdateCommandsForZoomState();
 }
@@ -1341,6 +1346,11 @@ void BrowserCommandController::UpdateCommandsForFind() {
   command_updater_.UpdateCommandEnabled(IDC_FIND, enabled);
   command_updater_.UpdateCommandEnabled(IDC_FIND_NEXT, enabled);
   command_updater_.UpdateCommandEnabled(IDC_FIND_PREVIOUS, enabled);
+}
+
+void BrowserCommandController::UpdateCommandsForMediaRouter() {
+  command_updater_.UpdateCommandEnabled(IDC_ROUTE_MEDIA,
+                                        CanRouteMedia(browser_));
 }
 
 void BrowserCommandController::AddInterstitialObservers(WebContents* contents) {

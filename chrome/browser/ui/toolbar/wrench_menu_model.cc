@@ -898,6 +898,8 @@ void WrenchMenuModel::Build() {
 
   CreateZoomMenu();
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
+  if (switches::MediaRouterEnabled() && !browser()->profile()->IsOffTheRecord())
+    AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDomDistiller))

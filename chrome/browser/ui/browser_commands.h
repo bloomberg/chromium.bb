@@ -117,6 +117,8 @@ bool CanPrint(Browser* browser);
 void BasicPrint(Browser* browser);
 bool CanBasicPrint(Browser* browser);
 #endif  // ENABLE_BASIC_PRINTING
+bool CanRouteMedia(Browser* browser);
+void RouteMedia(Browser* browser);
 void EmailPageLocation(Browser* browser);
 bool CanEmailPageLocation(const Browser* browser);
 void CutCopyPaste(Browser* browser, int command_id);

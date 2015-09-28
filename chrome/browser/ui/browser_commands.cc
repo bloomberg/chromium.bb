@@ -17,6 +17,7 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -910,6 +911,27 @@ bool CanBasicPrint(Browser* browser) {
       (PrintPreviewShowing(browser) || CanPrint(browser));
 }
 #endif  // ENABLE_BASIC_PRINTING
+
+bool CanRouteMedia(Browser* browser) {
+  if (!switches::MediaRouterEnabled() || browser->profile()->IsOffTheRecord())
+    return false;
+
+  // Do not allow user to open Media Router dialog when there is already an
+  // active modal dialog. This avoids overlapping dialogs.
+  return !IsShowingWebContentsModalDialog(browser);
+}
+
+void RouteMedia(Browser* browser) {
+  DCHECK(CanRouteMedia(browser));
+
+  media_router::MediaRouterDialogController* dialog_controller =
+      media_router::MediaRouterDialogController::GetOrCreateForWebContents(
+          browser->tab_strip_model()->GetActiveWebContents());
+  if (!dialog_controller)
+    return;
+
+  dialog_controller->ShowMediaRouterDialog();
+}
 
 void EmailPageLocation(Browser* browser) {
   content::RecordAction(UserMetricsAction("EmailPageLocation"));

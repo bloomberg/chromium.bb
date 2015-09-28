@@ -123,6 +123,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendPageItems();
   void AppendCopyItem();
   void AppendPrintItem();
+  void AppendMediaRouterItem();
   void AppendRotationItems();
   void AppendEditableItems();
   void AppendLanguageSettings();

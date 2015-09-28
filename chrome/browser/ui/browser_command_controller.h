@@ -155,10 +155,13 @@ class BrowserCommandController : public CommandUpdaterDelegate,
   // |force| is true if the button should change its icon immediately.
   void UpdateReloadStopState(bool is_loading, bool force);
 
+  void UpdateTabRestoreCommandState();
+
   // Updates commands for find.
   void UpdateCommandsForFind();
 
-  void UpdateTabRestoreCommandState();
+  // Updates commands for Media Router.
+  void UpdateCommandsForMediaRouter();
 
   // Add/remove observers for interstitial attachment/detachment from
   // |contents|.

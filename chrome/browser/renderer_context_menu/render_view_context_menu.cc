@@ -30,6 +30,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/devtools_util.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/content_restriction.h"
@@ -74,6 +76,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/user_prefs/user_prefs.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
@@ -239,9 +242,10 @@ const struct UmaEnumCommandIdPair {
     {65, -1, IDC_WRITING_DIRECTION_RTL},
     {66, -1, IDC_CONTENT_CONTEXT_LOAD_ORIGINAL_IMAGE},
     {67, -1, IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD},
+    {68, -1, IDC_ROUTE_MEDIA},
     // Add new items here and use |enum_id| from the next line.
     // Also, add new items to RenderViewContextMenuItem enum in histograms.xml.
-    {68, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
+    {69, -1, 0},  // Must be the last. Increment |enum_id| when new IDC
                   // was added.
 };
 
@@ -863,6 +867,7 @@ void RenderViewContextMenu::AppendAudioItems() {
                                   IDS_CONTENT_CONTEXT_SAVEAUDIOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYAUDIOLOCATION);
+  AppendMediaRouterItem();
 }
 
 void RenderViewContextMenu::AppendCanvasItems() {
@@ -880,6 +885,7 @@ void RenderViewContextMenu::AppendVideoItems() {
                                   IDS_CONTENT_CONTEXT_SAVEVIDEOAS);
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_COPYAVLOCATION,
                                   IDS_CONTENT_CONTEXT_COPYVIDEOLOCATION);
+  AppendMediaRouterItem();
 }
 
 void RenderViewContextMenu::AppendPluginItems() {
@@ -908,6 +914,7 @@ void RenderViewContextMenu::AppendPageItems() {
   menu_model_.AddItemWithStringId(IDC_SAVE_PAGE,
                                   IDS_CONTENT_CONTEXT_SAVEPAGEAS);
   menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
+  AppendMediaRouterItem();
 
   if (TranslateService::IsTranslatableURL(params_.page_url)) {
     std::string locale = g_browser_process->GetApplicationLocale();
@@ -933,6 +940,12 @@ void RenderViewContextMenu::AppendPrintItem() {
        params_.media_flags & WebContextMenuData::MediaCanPrint)) {
     menu_model_.AddItemWithStringId(IDC_PRINT, IDS_CONTENT_CONTEXT_PRINT);
   }
+}
+
+void RenderViewContextMenu::AppendMediaRouterItem() {
+  if (switches::MediaRouterEnabled() && !browser_context_->IsOffTheRecord())
+    menu_model_.AddItemWithStringId(IDC_ROUTE_MEDIA,
+                                    IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
 }
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -1387,6 +1400,26 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD:
       return true;
 
+    case IDC_ROUTE_MEDIA: {
+      DCHECK(switches::MediaRouterEnabled());
+
+      // Disable the command if there is an active modal dialog.
+      Browser* browser =
+          chrome::FindBrowserWithWebContents(source_web_contents_);
+      if (!browser || browser->profile()->IsOffTheRecord())
+        return false;
+
+      WebContents* web_contents =
+          browser->tab_strip_model()->GetActiveWebContents();
+      if (!web_contents)
+        return false;
+
+      const web_modal::WebContentsModalDialogManager* manager =
+          web_modal::WebContentsModalDialogManager::FromWebContents(
+              web_contents);
+      return !manager || !manager->IsDialogActive();
+    }
+
     default:
       NOTREACHED();
       return false;
@@ -1658,6 +1691,24 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled),
           !params_.selection_text.empty());
 #endif  // ENABLE_PRINTING
+      break;
+    }
+
+    case IDC_ROUTE_MEDIA: {
+      DCHECK(switches::MediaRouterEnabled());
+
+      Browser* browser =
+          chrome::FindBrowserWithWebContents(source_web_contents_);
+      DCHECK(browser && !browser->profile()->IsOffTheRecord());
+
+      media_router::MediaRouterDialogController* dialog_controller =
+          media_router::MediaRouterDialogController::GetOrCreateForWebContents(
+              source_web_contents_);
+
+      if (!dialog_controller)
+        return;
+
+      dialog_controller->ShowMediaRouterDialog();
       break;
     }
 
