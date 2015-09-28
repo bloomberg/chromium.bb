@@ -19,7 +19,7 @@ import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
 /**
  * Root ControlContainer for the Reader Mode panel.
  * Handles user interaction with the Reader Mode control.
- * See {@link BottomBarTextControl} for inspiration, based on ToolbarControlContainer.
+ * See {@link ContextualSearchBarControl} for inspiration, based on ToolbarControlContainer.
  */
 public class ReaderModeControl extends LinearLayout {
     private ViewResourceAdapter mResourceAdapter;

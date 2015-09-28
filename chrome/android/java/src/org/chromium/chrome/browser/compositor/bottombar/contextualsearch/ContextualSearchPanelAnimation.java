@@ -97,6 +97,18 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
     }
 
     // ============================================================================================
+    // Custom Animations
+    // ============================================================================================
+
+    /**
+     * Updates the UI state for the SearchBar text. The search context view will fade out
+     * while the search term fades in.
+     *
+     * @param percentage The visibility percentage of the search term view.
+     */
+    protected abstract void updateSearchBarTextOpacity(float percentage);
+
+    // ============================================================================================
     // Animation API
     // ============================================================================================
 
@@ -366,7 +378,7 @@ public abstract class ContextualSearchPanelAnimation extends ContextualSearchPan
         } else if (prop == Property.PROMO_VISIBILITY) {
             setPromoVisibilityForOptInAnimation(value);
         } else if (prop == Property.BOTTOM_BAR_TEXT_VISIBILITY) {
-            updateBottomBarTextVisibility(value);
+            updateSearchBarTextOpacity(value);
         }
     }
 

@@ -215,6 +215,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     protected void onClose(StateChangeReason reason) {
+        destroySearchBarControl();
         if (mOverlayPanelContent != null) {
             mOverlayPanelContent.destroyContentView();
         }
@@ -572,12 +573,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    public BottomBarTextControl getBottomBarTextControl() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        return super.getBottomBarTextControl();
-    }
-
-    @Override
     public boolean shouldAnimatePanelCloseOnPromoteToTab() {
         return mSearchPanelFeatures.shouldAnimatePanelCloseOnPromoteToTab();
     }
@@ -585,20 +580,20 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void displaySearchTerm(String searchTerm) {
         cancelSearchTermResolutionAnimation();
-        getBottomBarTextControl().setSearchTerm(searchTerm);
-        resetBottomBarSearchTermVisibility();
+        getSearchBarControl().setSearchTerm(searchTerm);
+        resetSearchBarTermOpacity();
     }
 
     @Override
     public void displaySearchContext(String selection, String start, String end) {
         cancelSearchTermResolutionAnimation();
-        getBottomBarTextControl().setSearchContext(selection, start, end);
-        resetBottomBarSearchContextVisibility();
+        getSearchBarControl().setSearchContext(selection, start, end);
+        resetSearchBarContextOpacity();
     }
 
     @Override
     public void onSearchTermResolutionResponse(String searchTerm) {
-        getBottomBarTextControl().setSearchTerm(searchTerm);
+        getSearchBarControl().setSearchTerm(searchTerm);
         animateSearchTermResolution();
     }
 
@@ -615,6 +610,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void loadUrlInPanel(String url) {
         getOverlayPanelContent().loadUrl(url);
+    }
+
+    @Override
+    public boolean didLoadAnyUrl() {
+        return mOverlayPanelContent != null && mOverlayPanelContent.didLoadAnyUrl();
     }
 
     @Override
@@ -635,10 +635,105 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         }
     }
 
-    @Override
-    public boolean didLoadAnyUrl() {
-        return mOverlayPanelContent != null && mOverlayPanelContent.didLoadAnyUrl();
+    // ============================================================================================
+    // ContextualSearchBarControl
+    // ============================================================================================
+
+    private ContextualSearchBarControl mContextualSearchBarControl;
+    private float mSearchBarContextOpacity = 1.f;
+    private float mSearchBarTermOpacity = 1.f;
+
+    /**
+     * @return The opacity of the SearchBar's search context.
+     */
+    public float getSearchBarContextOpacity() {
+        return mSearchBarContextOpacity;
     }
+
+    /**
+     * @return The opacity of the SearchBar's search term.
+     */
+    public float getSearchBarTermOpacity() {
+        return mSearchBarTermOpacity;
+    }
+
+    /**
+     * @return The Id of the Search Context View.
+     */
+    public int getSearchContextViewId() {
+        return getSearchBarControl().getSearchContextViewId();
+    }
+
+    /**
+     * @return The Id of the Search Term View.
+     */
+    public int getSearchTermViewId() {
+        return getSearchBarControl().getSearchTermViewId();
+    }
+
+    /**
+     * Creates the ContextualSearchBarControl, if needed. The Views are set to INVISIBLE, because
+     * they won't actually be displayed on the screen (their snapshots will be displayed instead).
+     */
+    protected ContextualSearchBarControl getSearchBarControl() {
+        assert mContainerView != null;
+        assert mResourceLoader != null;
+
+        if (mContextualSearchBarControl == null) {
+            mContextualSearchBarControl =
+                    new ContextualSearchBarControl(this, mContext, mContainerView, mResourceLoader);
+        }
+
+        assert mContextualSearchBarControl != null;
+        return mContextualSearchBarControl;
+    }
+
+    /**
+     * Destroys the ContextualSearchBarControl.
+     */
+    protected void destroySearchBarControl() {
+        if (mContextualSearchBarControl != null) {
+            mContextualSearchBarControl.destroy();
+            mContextualSearchBarControl = null;
+        }
+    }
+
+    @Override
+    protected void updateSearchBarTextOpacity(float percentage) {
+        // The search context will start fading out before the search term starts fading in.
+        // They will both be partially visible for overlapPercentage of the animation duration.
+        float overlapPercentage = .75f;
+        float fadingOutPercentage = Math.max(1 - (percentage / overlapPercentage), 0.f);
+        float fadingInPercentage =
+                Math.max(percentage - (1 - overlapPercentage), 0.f) / overlapPercentage;
+
+        mSearchBarContextOpacity = fadingOutPercentage;
+        mSearchBarTermOpacity = fadingInPercentage;
+    }
+
+    /**
+     * Resets the SearchBar text opacity when a new search context is set. The search
+     * context is made visible and the search term invisible.
+     */
+    private void resetSearchBarContextOpacity() {
+        mSearchBarContextOpacity = 1.f;
+        mSearchBarTermOpacity = 0.f;
+    }
+
+    /**
+     * Resets the SearchBar text opacity when a new search term is set. The search
+     * term is made visible and the search context invisible.
+     */
+    private void resetSearchBarTermOpacity() {
+        mSearchBarContextOpacity = 0.f;
+        mSearchBarTermOpacity = 1.f;
+    }
+
+    // ============================================================================================
+    // Panel Content
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): move content code to its own section.
 
     @Override
     public ContentViewCore getContentViewCore() {

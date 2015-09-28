@@ -130,14 +130,14 @@ public interface ContextualSearchPanelDelegate {
     void removeLastHistoryEntry(String historyUrl, long urlTimeMs);
 
     /**
-     * Shows the search term in the BottomBar. This should be called when the search term is set
-     * without resolving a search context.
+     * Shows the search term in the SearchBar. This should be called when the search term is set
+     * without search term resolution.
      * @param searchTerm The string that represents the search term.
      */
     void displaySearchTerm(String searchTerm);
 
     /**
-     * Shows the search context in the BottomBar.
+     * Shows the search context in the SearchBar.
      * @param selection The portion of the context that represents the user's selection.
      * @param start The portion of the context from its start to the selection.
      * @param end The portion of the context the selection to its end.
@@ -145,7 +145,7 @@ public interface ContextualSearchPanelDelegate {
     void displaySearchContext(String selection, String start, String end);
 
     /**
-     * Handles showing the resolved search term in the BottomBarTextControl.
+     * Handles showing the resolved search term in the SearchBar.
      * @param searchTerm The string that represents the search term.
      */
     void onSearchTermResolutionResponse(String searchTerm);
