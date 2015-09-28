@@ -11,6 +11,7 @@
 #include "grit/theme_resources.h"
 #import "ui/base/cocoa/nsgraphics_context_additions.h"
 #import "ui/base/cocoa/nsview_additions.h"
+#include "ui/base/cocoa/scoped_cg_context_smooth_fonts.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -161,6 +162,7 @@
   }
 
   // Draw the interior before the focus ring, to make sure nothing overlaps it.
+  ui::ScopedCGContextSmoothFonts fontSmoothing;
   [self drawInteriorWithFrame:cellFrame inView:controlView];
 
   // Draw the focus ring if needed.

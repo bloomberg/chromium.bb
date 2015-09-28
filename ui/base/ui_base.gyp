@@ -123,6 +123,8 @@
         'cocoa/nsview_additions.mm',
         'cocoa/remote_layer_api.h',
         'cocoa/remote_layer_api.mm',
+        'cocoa/scoped_cg_context_smooth_fonts.h',
+        'cocoa/scoped_cg_context_smooth_fonts.mm',
         'cocoa/three_part_image.h',
         'cocoa/three_part_image.mm',
         'cocoa/tool_tip_base_view.h',
