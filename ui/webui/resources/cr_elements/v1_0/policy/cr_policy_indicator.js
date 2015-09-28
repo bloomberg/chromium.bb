@@ -7,18 +7,20 @@
  * element controlling a settings preference.
  */
 
-(function() {
-
-/** @enum {string} */
-var IndicatorType = {
-  DEVICE_POLICY: 'devicePolicy',
-  EXTENSION: 'extension',
-  NONE: 'none',
-  OWNER: 'owner',
-  PRIMARY_USER: 'primary_user',
-  RECOMMENDED: 'recommended',
-  USER_POLICY: 'userPolicy',
+var CrPolicyIndicator = {
+  /** @enum {string} */
+  Type: {
+    DEVICE_POLICY: 'devicePolicy',
+    EXTENSION: 'extension',
+    NONE: 'none',
+    OWNER: 'owner',
+    PRIMARY_USER: 'primary_user',
+    RECOMMENDED: 'recommended',
+    USER_POLICY: 'userPolicy',
+  },
 };
+
+(function() {
 
 /** @element cr-policy-indicator */
 Polymer({
@@ -33,9 +35,9 @@ Polymer({
 
     /**
      * Which indicator type to show (or NONE).
-     * @type {IndicatorType}
+     * @type {CrPolicyIndicator.Type}
      */
-    indicatorType: {type: String, value: IndicatorType.NONE},
+    indicatorType: {type: String, value: CrPolicyIndicator.Type.NONE},
   },
 
   observers: ['prefPolicyChanged_(pref.policySource, pref.policyEnforcement)'],
@@ -47,51 +49,53 @@ Polymer({
    * @private
    */
   prefPolicyChanged_: function(source, enforcement) {
-    var type = IndicatorType.NONE;
+    var type = CrPolicyIndicator.Type.NONE;
     if (enforcement == chrome.settingsPrivate.PolicyEnforcement.ENFORCED) {
       if (source == chrome.settingsPrivate.PolicySource.PRIMARY_USER)
-        type = IndicatorType.PRIMARY_USER;
+        type = CrPolicyIndicator.Type.PRIMARY_USER;
       else if (source == chrome.settingsPrivate.PolicySource.OWNER)
-        type = IndicatorType.OWNER;
+        type = CrPolicyIndicator.Type.OWNER;
       else if (source == chrome.settingsPrivate.PolicySource.USER_POLICY)
-        type = IndicatorType.USER_POLICY;
+        type = CrPolicyIndicator.Type.USER_POLICY;
       else if (source == chrome.settingsPrivate.PolicySource.DEVICE_POLICY)
-        type = IndicatorType.DEVICE_POLICY;
+        type = CrPolicyIndicator.Type.DEVICE_POLICY;
       else if (source == chrome.settingsPrivate.PolicySource.EXTENSION)
-        type = IndicatorType.EXTENSION;
+        type = CrPolicyIndicator.Type.EXTENSION;
     } else if (enforcement ==
                chrome.settingsPrivate.PolicyEnforcement.RECOMMENDED) {
-      type = IndicatorType.RECOMMENDED;
+      type = CrPolicyIndicator.Type.RECOMMENDED;
     }
     this.indicatorType = type;
   },
 
   /**
-   * @param {IndicatorType} type
+   * @param {CrPolicyIndicator.Type} type
    * @return {boolean} True if the indicator should be shown.
    * @private
    */
-  isIndicatorVisible_: function(type) { return type != IndicatorType.NONE; },
+  isIndicatorVisible_: function(type) {
+    return type != CrPolicyIndicator.Type.NONE;
+  },
 
   /**
-   * @param {IndicatorType} type
+   * @param {CrPolicyIndicator.Type} type
    * @return {string} The iron-icons icon name.
    * @private
    */
   getIcon_: function(type) {
     switch (type) {
-      case IndicatorType.NONE:
+      case CrPolicyIndicator.Type.NONE:
         return '';
-      case IndicatorType.PRIMARY_USER:
+      case CrPolicyIndicator.Type.PRIMARY_USER:
         return 'social:group';
-      case IndicatorType.OWNER:
+      case CrPolicyIndicator.Type.OWNER:
         return 'social:person';
-      case IndicatorType.USER_POLICY:
-      case IndicatorType.DEVICE_POLICY:
+      case CrPolicyIndicator.Type.USER_POLICY:
+      case CrPolicyIndicator.Type.DEVICE_POLICY:
         return 'social:domain';
-      case IndicatorType.EXTENSION:
+      case CrPolicyIndicator.Type.EXTENSION:
         return 'extension';
-      case IndicatorType.RECOMMENDED:
+      case CrPolicyIndicator.Type.RECOMMENDED:
         return 'social:domain';
     }
     assertNotReached();
@@ -107,24 +111,25 @@ Polymer({
   },
 
   /**
-   * @param {IndicatorType} type The type of indicator.
-   * @param {!chrome.settingsPrivate.PrefObject} pref
+   * @param {CrPolicyIndicator.Type} type The type of indicator.
+   * @param {?chrome.settingsPrivate.PrefObject} pref
    * @return {string} The tooltip text for |type|.
    * @private
    */
   getTooltipText_: function(type, pref) {
     var name = pref.policySourceName || '';
+
     switch (type) {
-      case IndicatorType.PRIMARY_USER:
+      case CrPolicyIndicator.Type.PRIMARY_USER:
         return this.i18n_('controlledSettingShared', name);
-      case IndicatorType.OWNER:
+      case CrPolicyIndicator.Type.OWNER:
         return this.i18n_('controlledSettingOwner', name);
-      case IndicatorType.USER_POLICY:
-      case IndicatorType.DEVICE_POLICY:
+      case CrPolicyIndicator.Type.USER_POLICY:
+      case CrPolicyIndicator.Type.DEVICE_POLICY:
         return this.i18n_('controlledSettingPolicy');
-      case IndicatorType.EXTENSION:
+      case CrPolicyIndicator.Type.EXTENSION:
         return this.i18n_('controlledSettingExtension', name);
-      case IndicatorType.RECOMMENDED:
+      case CrPolicyIndicator.Type.RECOMMENDED:
         if (pref.value == pref.recommendedValue)
           return this.i18n_('controlledSettingRecommendedMatches');
         return this.i18n_('controlledSettingRecommendedDiffers');
