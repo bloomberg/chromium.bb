@@ -105,11 +105,11 @@ class TestNotificationCallbacks
   explicit TestNotificationCallbacks(CredentialManagerClientTest* test)
       : test_(test) {}
 
-  virtual ~TestNotificationCallbacks() {}
+  ~TestNotificationCallbacks() override {}
 
-  virtual void onSuccess() { test_->set_callback_succeeded(true); }
+  void onSuccess() override { test_->set_callback_succeeded(true); }
 
-  virtual void onError(blink::WebCredentialManagerError* reason) {
+  void onError(blink::WebCredentialManagerError* reason) override {
     test_->set_callback_errored(true);
   }
 
@@ -123,13 +123,13 @@ class TestRequestCallbacks
   explicit TestRequestCallbacks(CredentialManagerClientTest* test)
       : test_(test) {}
 
-  virtual ~TestRequestCallbacks() {}
+  ~TestRequestCallbacks() override {}
 
-  virtual void onSuccess(blink::WebCredential*) {
+  void onSuccess(blink::WebCredential*) override {
     test_->set_callback_succeeded(true);
   }
 
-  virtual void onError(blink::WebCredentialManagerError* reason) {
+  void onError(blink::WebCredentialManagerError* reason) override {
     test_->set_callback_errored(true);
   }
 

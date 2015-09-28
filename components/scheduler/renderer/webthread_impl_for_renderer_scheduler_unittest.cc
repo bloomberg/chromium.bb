@@ -149,7 +149,7 @@ class ExitRunLoopTask : public blink::WebTaskRunner::Task {
  public:
   ExitRunLoopTask(base::RunLoop* run_loop) : run_loop_(run_loop) {}
 
-  virtual void run() { run_loop_->Quit(); }
+  void run() override { run_loop_->Quit(); }
 
  private:
   base::RunLoop* run_loop_;

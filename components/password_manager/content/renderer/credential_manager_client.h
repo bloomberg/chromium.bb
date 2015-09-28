@@ -63,13 +63,13 @@ class CredentialManagerClient : public blink::WebCredentialManagerClient,
       blink::WebCredentialManagerError::ErrorType error_type);
 
   // blink::WebCredentialManager:
-  virtual void dispatchStore(
+  void dispatchStore(
       const blink::WebCredential& credential,
-      WebCredentialManagerClient::NotificationCallbacks* callbacks);
-  virtual void dispatchRequireUserMediation(NotificationCallbacks* callbacks);
-  virtual void dispatchGet(bool zero_click_only,
-                           const blink::WebVector<blink::WebURL>& federations,
-                           RequestCallbacks* callbacks);
+      WebCredentialManagerClient::NotificationCallbacks* callbacks) override;
+  void dispatchRequireUserMediation(NotificationCallbacks* callbacks) override;
+  void dispatchGet(bool zero_click_only,
+                   const blink::WebVector<blink::WebURL>& federations,
+                   RequestCallbacks* callbacks) override;
 
  private:
   typedef IDMap<blink::WebCredentialManagerClient::RequestCallbacks,

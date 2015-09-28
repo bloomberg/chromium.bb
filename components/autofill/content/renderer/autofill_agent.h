@@ -51,7 +51,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   AutofillAgent(content::RenderFrame* render_frame,
                 PasswordAutofillAgent* password_autofill_manager,
                 PasswordGenerationAgent* password_generation_agent);
-  virtual ~AutofillAgent();
+  ~AutofillAgent() override;
 
  private:
   // Functor used as a simplified comparison function for FormData. Only
@@ -126,22 +126,19 @@ class AutofillAgent : public content::RenderFrameObserver,
                                  bool was_focused) override;
 
   // blink::WebAutofillClient:
-  virtual void textFieldDidEndEditing(
-      const blink::WebInputElement& element);
-  virtual void textFieldDidChange(
-      const blink::WebFormControlElement& element);
-  virtual void textFieldDidReceiveKeyDown(
+  void textFieldDidEndEditing(const blink::WebInputElement& element) override;
+  void textFieldDidChange(const blink::WebFormControlElement& element) override;
+  void textFieldDidReceiveKeyDown(
       const blink::WebInputElement& element,
-      const blink::WebKeyboardEvent& event);
-  virtual void didRequestAutocomplete(
-      const blink::WebFormElement& form);
-  virtual void setIgnoreTextChanges(bool ignore);
-  virtual void didAssociateFormControls(
-      const blink::WebVector<blink::WebNode>& nodes);
-  virtual void openTextDataListChooser(const blink::WebInputElement& element);
-  virtual void dataListOptionsChanged(const blink::WebInputElement& element);
-  virtual void firstUserGestureObserved();
-  virtual void ajaxSucceeded();
+      const blink::WebKeyboardEvent& event) override;
+  void didRequestAutocomplete(const blink::WebFormElement& form) override;
+  void setIgnoreTextChanges(bool ignore) override;
+  void didAssociateFormControls(
+      const blink::WebVector<blink::WebNode>& nodes) override;
+  void openTextDataListChooser(const blink::WebInputElement& element) override;
+  void dataListOptionsChanged(const blink::WebInputElement& element) override;
+  void firstUserGestureObserved() override;
+  void ajaxSucceeded() override;
 
   void OnFieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms);

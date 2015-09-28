@@ -23,12 +23,12 @@ class WebMessagePortChannelImpl : public blink::WebMessagePortChannel {
   virtual ~WebMessagePortChannelImpl();
 
   // blink::WebMessagePortChannel implementation.
-  virtual void setClient(blink::WebMessagePortChannelClient* client);
-  virtual void destroy();
-  virtual void postMessage(const blink::WebString& message,
-                           blink::WebMessagePortChannelArray* channels);
-  virtual bool tryGetMessage(blink::WebString* message,
-                             blink::WebMessagePortChannelArray& channels);
+  void setClient(blink::WebMessagePortChannelClient* client) override;
+  void destroy() override;
+  void postMessage(const blink::WebString& message,
+                   blink::WebMessagePortChannelArray* channels) override;
+  bool tryGetMessage(blink::WebString* message,
+                     blink::WebMessagePortChannelArray& channels) override;
 
   void WaitForNextMessage();
   void OnMessageAvailable(MojoResult result);

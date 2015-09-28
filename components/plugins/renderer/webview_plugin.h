@@ -81,82 +81,80 @@ class WebViewPlugin : public blink::WebPlugin,
   void RestoreTitleText();
 
   // WebPlugin methods:
-  virtual blink::WebPluginContainer* container() const;
-  virtual bool initialize(blink::WebPluginContainer*);
-  virtual void destroy();
+  blink::WebPluginContainer* container() const override;
+  bool initialize(blink::WebPluginContainer*) override;
+  void destroy() override;
 
-  virtual v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate);
+  v8::Local<v8::Object> v8ScriptableObject(v8::Isolate* isolate) override;
 
-  virtual void layoutIfNeeded() override;
-  virtual void paint(blink::WebCanvas* canvas,
-                     const blink::WebRect& rect) override;
+  void layoutIfNeeded() override;
+  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
 
   // Coordinates are relative to the containing window.
-  virtual void updateGeometry(
-      const blink::WebRect& window_rect,
-      const blink::WebRect& clip_rect,
-      const blink::WebRect& unobscured_rect,
-      const blink::WebVector<blink::WebRect>& cut_outs_rects,
-      bool is_visible);
+  void updateGeometry(const blink::WebRect& window_rect,
+                      const blink::WebRect& clip_rect,
+                      const blink::WebRect& unobscured_rect,
+                      const blink::WebVector<blink::WebRect>& cut_outs_rects,
+                      bool is_visible) override;
 
-  virtual void updateFocus(bool foucsed, blink::WebFocusType focus_type);
-  virtual void updateVisibility(bool) {}
+  void updateFocus(bool foucsed, blink::WebFocusType focus_type) override;
+  void updateVisibility(bool) override {}
 
-  virtual bool acceptsInputEvents();
-  virtual bool handleInputEvent(const blink::WebInputEvent& event,
-                                blink::WebCursorInfo& cursor_info);
+  bool acceptsInputEvents() override;
+  bool handleInputEvent(const blink::WebInputEvent& event,
+                        blink::WebCursorInfo& cursor_info) override;
 
-  virtual void didReceiveResponse(const blink::WebURLResponse& response);
-  virtual void didReceiveData(const char* data, int data_length);
-  virtual void didFinishLoading();
-  virtual void didFailLoading(const blink::WebURLError& error);
+  void didReceiveResponse(const blink::WebURLResponse& response) override;
+  void didReceiveData(const char* data, int data_length) override;
+  void didFinishLoading() override;
+  void didFailLoading(const blink::WebURLError& error) override;
 
   // Called in response to WebPluginContainer::loadFrameRequest
-  virtual void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                            void* notifyData) {}
-  virtual void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                          void* notify_data,
-                                          const blink::WebURLError& error) {}
+  void didFinishLoadingFrameRequest(const blink::WebURL& url,
+                                    void* notifyData) override {}
+  void didFailLoadingFrameRequest(const blink::WebURL& url,
+                                  void* notify_data,
+                                  const blink::WebURLError& error) override {}
 
   // WebViewClient methods:
-  virtual bool acceptsLoadDrops();
+  bool acceptsLoadDrops() override;
 
-  virtual void setToolTipText(const blink::WebString&,
-                              blink::WebTextDirection);
+  void setToolTipText(const blink::WebString&,
+                      blink::WebTextDirection) override;
 
-  virtual void startDragging(blink::WebLocalFrame* frame,
-                             const blink::WebDragData& drag_data,
-                             blink::WebDragOperationsMask mask,
-                             const blink::WebImage& image,
-                             const blink::WebPoint& point);
+  void startDragging(blink::WebLocalFrame* frame,
+                     const blink::WebDragData& drag_data,
+                     blink::WebDragOperationsMask mask,
+                     const blink::WebImage& image,
+                     const blink::WebPoint& point) override;
 
   // TODO(ojan): Remove this override and have this class use a non-null
   // layerTreeView.
-  virtual bool allowsBrokenNullLayerTreeView() const;
+  bool allowsBrokenNullLayerTreeView() const override;
 
   // WebWidgetClient methods:
-  virtual void didInvalidateRect(const blink::WebRect&);
-  virtual void didUpdateLayoutSize(const blink::WebSize&);
-  virtual void didChangeCursor(const blink::WebCursorInfo& cursor);
-  virtual void scheduleAnimation();
+  void didInvalidateRect(const blink::WebRect&) override;
+  void didUpdateLayoutSize(const blink::WebSize&) override;
+  void didChangeCursor(const blink::WebCursorInfo& cursor) override;
+  void scheduleAnimation() override;
 
   // WebFrameClient methods:
-  virtual void didClearWindowObject(blink::WebLocalFrame* frame);
+  void didClearWindowObject(blink::WebLocalFrame* frame) override;
 
   // This method is defined in WebPlugin as well as in WebFrameClient, but with
   // different parameters. We only care about implementing the WebPlugin
   // version, so we implement this method and call the default in WebFrameClient
   // (which does nothing) to correctly overload it.
-  virtual void didReceiveResponse(blink::WebLocalFrame* frame,
-                                  unsigned identifier,
-                                  const blink::WebURLResponse& response);
+  void didReceiveResponse(blink::WebLocalFrame* frame,
+                          unsigned identifier,
+                          const blink::WebURLResponse& response) override;
 
  private:
   friend class base::DeleteHelper<WebViewPlugin>;
   WebViewPlugin(content::RenderView* render_view,
                 Delegate* delegate,
                 const content::WebPreferences& preferences);
-  virtual ~WebViewPlugin();
+  ~WebViewPlugin() override;
 
   // content::RenderViewObserver methods:
   void OnDestruct() override;

@@ -23,7 +23,7 @@ class NopTask : public blink::WebTaskRunner::Task {
  public:
   ~NopTask() override {}
 
-  void run() {}
+  void run() override {}
 };
 
 class MockTask : public blink::WebTaskRunner::Task {

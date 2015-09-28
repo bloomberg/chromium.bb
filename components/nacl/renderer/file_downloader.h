@@ -39,23 +39,23 @@ class FileDownloader : public blink::WebURLLoaderClient {
                  StatusCallback status_cb,
                  ProgressCallback progress_cb);
 
-  virtual ~FileDownloader();
+  ~FileDownloader() override;
 
   void Load(const blink::WebURLRequest& request);
 
  private:
   // WebURLLoaderClient implementation.
-  virtual void didReceiveResponse(blink::WebURLLoader* loader,
-                                  const blink::WebURLResponse& response);
-  virtual void didReceiveData(blink::WebURLLoader* loader,
-                              const char* data,
-                              int data_length,
-                              int encoded_data_length);
-  virtual void didFinishLoading(blink::WebURLLoader* loader,
-                                double finish_time,
-                                int64_t total_encoded_data_length);
-  virtual void didFail(blink::WebURLLoader* loader,
-                       const blink::WebURLError& error);
+  void didReceiveResponse(blink::WebURLLoader* loader,
+                          const blink::WebURLResponse& response) override;
+  void didReceiveData(blink::WebURLLoader* loader,
+                      const char* data,
+                      int data_length,
+                      int encoded_data_length) override;
+  void didFinishLoading(blink::WebURLLoader* loader,
+                        double finish_time,
+                        int64_t total_encoded_data_length) override;
+  void didFail(blink::WebURLLoader* loader,
+               const blink::WebURLError& error) override;
 
   scoped_ptr<blink::WebURLLoader> url_loader_;
   base::File file_;
