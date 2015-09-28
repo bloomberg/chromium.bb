@@ -18,11 +18,11 @@
           </template>
         </paper-menu>
       </paper-dropdown-menu>
-      <cr-settings-checkbox
+      <cr-settings-checkbox id="browsingCheckbox"
           pref="{{prefs.browser.clear_data.browsing_history}}"
           i18n-values="label:clearBrowsingHistory">
       </cr-settings-checkbox>
-      <cr-settings-checkbox
+      <cr-settings-checkbox id="downloadCheckbox"
           pref="{{prefs.browser.clear_data.download_history}}"
           i18n-values="label:clearDownloadHistory">
       </cr-settings-checkbox>
@@ -51,7 +51,9 @@
           i18n-values="label:clearDeauthorizeContentLicenses">
       </cr-settings-checkbox>
     </div>
-    <paper-button raised i18n-content="clearBrowsingData">
+    <paper-button id="clearDataButton"
+        on-tap="onPerformClearBrowsingDataTap_"
+        raised i18n-content="clearBrowsingData">
     </paper-button>
   </template>
   <script src="clear_browsing_data_page.js"></script>

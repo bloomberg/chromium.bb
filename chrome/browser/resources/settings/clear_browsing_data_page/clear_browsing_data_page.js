@@ -55,4 +55,45 @@ Polymer({
       ],
     },
   },
+
+  attached: function() {
+    var self = this;
+    cr.define('SettingsClearBrowserData', function() {
+      return {
+        doneClearing: function() {
+          return self.doneClearing_.apply(self, arguments);
+        },
+        setAllowDeletingHistory: function() {
+          return self.setAllowDeletingHistory_.apply(self, arguments);
+        },
+      };
+    });
+  },
+
+  /** @private */
+  doneClearing_: function() {
+    this.$.clearDataButton.disabled = false;
+  },
+
+  /**
+   * @private
+   * @param {boolean} allowed Whether the user is allowed to delete histories.
+   */
+  setAllowDeletingHistory_: function(allowed) {
+    // This is called from c++, protect against poor timing.
+    if (!this.$)
+      return;
+    this.$.browsingCheckbox.disabled = !allowed;
+    this.$.downloadCheckbox.disabled = !allowed;
+    if (!allowed) {
+      this.set('prefs.browser.clear_data.browsing_history.value', false);
+      this.set('prefs.browser.clear_data.download_history.value', false);
+    }
+  },
+
+  /** @private */
+  onPerformClearBrowsingDataTap_: function() {
+    this.$.clearDataButton.disabled = true;
+    chrome.send('performClearBrowserData');
+  },
 });
