@@ -407,7 +407,7 @@ def _OnStaleMd5(options):
           gen_dir,
           options.extra_res_packages,
           options.extra_r_text_files,
-          options.shared_resources,
+          options.shared_resources or options.app_as_shared_lib,
           options.include_all_resources)
 
     # This is the list of directories with resources to put in the final .zip
