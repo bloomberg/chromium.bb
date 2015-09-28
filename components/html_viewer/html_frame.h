@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/layers/surface_layer.h"
 #include "components/html_viewer/html_frame_tree_manager.h"
 #include "components/html_viewer/replicated_frame_state.h"
 #include "components/mus/public/cpp/view_observer.h"
@@ -288,7 +289,7 @@ class HTMLFrame : public blink::WebFrameClient,
   virtual void navigate(const blink::WebURLRequest& request,
                         bool should_replace_current_entry);
   virtual void reload(bool ignore_cache, bool is_client_redirect);
-  virtual void forwardInputEvent(const blink::WebInputEvent* event);
+  virtual void frameRectsChanged(const blink::WebRect& frame_rect);
 
   HTMLFrameTreeManager* frame_tree_manager_;
   HTMLFrame* parent_;
@@ -305,6 +306,7 @@ class HTMLFrame : public blink::WebFrameClient,
   scoped_ptr<TouchHandler> touch_handler_;
 
   scoped_ptr<cc_blink::WebLayerImpl> web_layer_;
+  scoped_refptr<cc::SurfaceLayer> surface_layer_;
 
   HTMLFrameDelegate* delegate_;
   scoped_ptr<mojo::Binding<web_view::mojom::FrameClient>> frame_client_binding_;

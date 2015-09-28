@@ -12,6 +12,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/thread_task_runner_handle.h"
+#include "cc/blink/web_layer_impl.h"
+#include "cc/surfaces/surface_id.h"
 #include "components/html_viewer/ax_provider_impl.h"
 #include "components/html_viewer/blink_basic_type_converters.h"
 #include "components/html_viewer/blink_input_events_type_converters.h"
@@ -28,7 +30,6 @@
 #include "components/html_viewer/media_factory.h"
 #include "components/html_viewer/stats_collection_controller.h"
 #include "components/html_viewer/touch_handler.h"
-#include "components/html_viewer/web_layer_impl.h"
 #include "components/html_viewer/web_layer_tree_view_impl.h"
 #include "components/html_viewer/web_storage_namespace_impl.h"
 #include "components/html_viewer/web_url_loader_impl.h"
@@ -100,6 +101,17 @@ HTMLFrame* GetPreviousSibling(HTMLFrame* frame) {
   auto iter = std::find(frame->parent()->children().begin(),
                         frame->parent()->children().end(), frame);
   return (iter == frame->parent()->children().begin()) ? nullptr : *(--iter);
+}
+
+// See surface_layer.h for a description of this callback.
+void SatisfyCallback(cc::SurfaceSequence sequence) {
+  // TODO(fsamuel): Implement this.
+}
+
+// See surface_layer.h for a description of this callback.
+void RequireCallback(cc::SurfaceId surface_id,
+                     cc::SurfaceSequence sequence) {
+  // TODO(fsamuel): Implement this.
 }
 
 }  // namespace
@@ -567,11 +579,17 @@ void HTMLFrame::SwapToRemote() {
   // swap() ends up calling us back and we then close the frame, which deletes
   // it.
   web_frame_->swap(remote_frame);
-  // TODO(sky): this isn't quite right, but WebLayerImpl is temporary.
   if (owned_view_) {
-    web_layer_.reset(
-        new WebLayerImpl(owned_view_->view(),
-                         global_state()->device_pixel_ratio()));
+    surface_layer_ =
+          cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
+                                   base::Bind(&SatisfyCallback),
+                                   base::Bind(&RequireCallback));
+    surface_layer_->SetSurfaceId(
+        cc::SurfaceId(owned_view_->view()->id()),
+        global_state()->device_pixel_ratio(),
+        owned_view_->view()->bounds().To<gfx::Rect>().size());
+
+    web_layer_.reset(new cc_blink::WebLayerImpl(surface_layer_));
   }
   remote_frame->setRemoteWebLayer(web_layer_.get());
   remote_frame->setReplicatedName(state_.name);
@@ -857,8 +875,25 @@ void HTMLFrame::reload(bool ignore_cache, bool is_client_redirect) {
   NOTIMPLEMENTED();
 }
 
-void HTMLFrame::forwardInputEvent(const blink::WebInputEvent* event) {
-  NOTIMPLEMENTED();
+void HTMLFrame::frameRectsChanged(const blink::WebRect& frame_rect) {
+  // Only the owner of view can update its size.
+  if (!owned_view_)
+    return;
+
+  const gfx::Rect rect_in_dip(frame_rect.x, frame_rect.y, frame_rect.width,
+                              frame_rect.height);
+  const gfx::Rect rect_in_pixels(gfx::ConvertRectToPixel(
+      global_state()->device_pixel_ratio(), rect_in_dip));
+  const mojo::RectPtr mojo_rect_in_pixels(mojo::Rect::From(rect_in_pixels));
+  owned_view_->view()->SetBounds(*mojo_rect_in_pixels);
+
+  if (!surface_layer_)
+    return;
+
+  surface_layer_->SetSurfaceId(
+      cc::SurfaceId(owned_view_->view()->id()),
+      global_state()->device_pixel_ratio(),
+      owned_view_->view()->bounds().To<gfx::Rect>().size());
 }
 
 }  // namespace mojo

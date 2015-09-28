@@ -117,8 +117,6 @@ source_set("lib") {
     "web_cookie_jar_impl.h",
     "web_graphics_context_3d_command_buffer_impl.cc",
     "web_graphics_context_3d_command_buffer_impl.h",
-    "web_layer_impl.cc",
-    "web_layer_impl.h",
     "web_layer_tree_view_impl.cc",
     "web_layer_tree_view_impl.h",
     "web_mime_registry_impl.cc",
