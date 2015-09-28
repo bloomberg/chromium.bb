@@ -122,12 +122,7 @@ int CacheCreator::Run() {
 void CacheCreator::DoCallback(int result) {
   DCHECK_NE(net::ERR_IO_PENDING, result);
   if (result == net::OK) {
-#ifndef USE_TRACING_CACHE_BACKEND
     *backend_ = created_cache_.Pass();
-#else
-    *backend_.reset(
-        new disk_cache::TracingCacheBackend(created_cache_.Pass()));
-#endif
   } else {
     LOG(ERROR) << "Unable to create cache";
     created_cache_.reset();
