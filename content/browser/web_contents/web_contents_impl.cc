@@ -4525,6 +4525,17 @@ RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
   return frame_tree_.root()->render_manager();
 }
 
+WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
+  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+    if (node_)
+      return node_->outer_web_contents();
+  } else {
+    if (GetBrowserPluginGuest())
+      return GetBrowserPluginGuest()->embedder_web_contents();
+  }
+  return nullptr;
+}
+
 BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
   return browser_plugin_guest_.get();
 }

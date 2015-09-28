@@ -98,17 +98,19 @@ void SpeechRecognitionDispatcherHost::OnStartRequest(
     LOG(WARNING) << "SRDH::OnStartRequest, RenderViewHost does not exist";
     return;
   }
+
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(render_view_host));
-  BrowserPluginGuest* guest = web_contents->GetBrowserPluginGuest();
-  if (guest) {
-    // If the speech API request was from a guest, save the context of the
-    // embedder since we will use it to decide permission.
+  WebContentsImpl* outer_web_contents = web_contents->GetOuterWebContents();
+  if (outer_web_contents) {
+    // If the speech API request was from an inner WebContents or a guest, save
+    // the context of the outer WebContents or the embedder since we will use it
+    // to decide permission.
     embedder_render_process_id =
-        guest->embedder_web_contents()->GetRenderProcessHost()->GetID();
+        outer_web_contents->GetRenderProcessHost()->GetID();
     DCHECK_NE(embedder_render_process_id, 0);
     embedder_render_view_id =
-        guest->embedder_web_contents()->GetRenderViewHost()->GetRoutingID();
+        outer_web_contents->GetRenderViewHost()->GetRoutingID();
     DCHECK_NE(embedder_render_view_id, MSG_ROUTING_NONE);
   }
 
