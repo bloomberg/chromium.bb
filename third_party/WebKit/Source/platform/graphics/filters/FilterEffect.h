@@ -149,6 +149,8 @@ public:
 protected:
     FilterEffect(Filter*);
 
+    PassRefPtr<SkImageFilter> createTransparentBlack() const;
+
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 
     SkImageFilter::CropRect getCropRect(const FloatSize& cropOffset) const;

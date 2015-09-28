@@ -44,25 +44,10 @@ public:
     static PassRefPtrWillBeRawPtr<FEConvolveMatrix> create(Filter*, const IntSize&,
         float, float, const IntPoint&, EdgeModeType, bool, const Vector<float>&);
 
-    IntSize kernelSize() const;
-    void setKernelSize(const IntSize&);
-
-    const Vector<float>& kernel() const;
-    void setKernel(const Vector<float>&);
-
-    float divisor() const;
     bool setDivisor(float);
-
-    float bias() const;
     bool setBias(float);
-
-    IntPoint targetOffset() const;
     bool setTargetOffset(const IntPoint&);
-
-    EdgeModeType edgeMode() const;
     bool setEdgeMode(EdgeModeType);
-
-    bool preserveAlpha() const;
     bool setPreserveAlpha(bool);
 
     PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
@@ -74,6 +59,8 @@ public:
 private:
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
         const IntPoint&, EdgeModeType, bool, const Vector<float>&);
+
+    bool parametersValid() const;
 
     IntSize m_kernelSize;
     float m_divisor;

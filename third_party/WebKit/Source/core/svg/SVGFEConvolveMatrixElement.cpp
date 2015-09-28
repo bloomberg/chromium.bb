@@ -66,8 +66,7 @@ void SVGAnimatedOrder::setBaseValueAsString(const String& value, SVGParsingError
     ASSERT(contextElement());
     if (parseError == NoError && (firstInteger()->baseValue()->value() < 1 || secondInteger()->baseValue()->value() < 1)) {
         contextElement()->document().accessSVGExtensions().reportWarning(
-            "feConvolveMatrix: problem parsing order=\"" + value
-            + "\". Filtered element will not be displayed.");
+            "feConvolveMatrix: problem parsing order=\"" + value + "\".");
     }
 }
 
@@ -166,36 +165,25 @@ PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilter
 
     int orderXValue = orderX()->currentValue()->value();
     int orderYValue = orderY()->currentValue()->value();
-    if (!hasAttribute(SVGNames::orderAttr)) {
+    if (!m_order->isSpecified()) {
         orderXValue = 3;
         orderYValue = 3;
     }
-    // Spec says order must be > 0. Bail if it is not.
-    if (orderXValue < 1 || orderYValue < 1)
-        return nullptr;
-    RefPtrWillBeRawPtr<SVGNumberList> kernelMatrix = this->m_kernelMatrix->currentValue();
-    size_t kernelMatrixSize = kernelMatrix->length();
-    // The spec says this is a requirement, and should bail out if fails
-    if (orderXValue * orderYValue != static_cast<int>(kernelMatrixSize))
-        return nullptr;
 
     int targetXValue = m_targetX->currentValue()->value();
-    int targetYValue = m_targetY->currentValue()->value();
-    if (hasAttribute(SVGNames::targetXAttr) && (targetXValue < 0 || targetXValue >= orderXValue))
-        return nullptr;
     // The spec says the default value is: targetX = floor ( orderX / 2 ))
-    if (!hasAttribute(SVGNames::targetXAttr))
+    if (!m_targetX->isSpecified())
         targetXValue = static_cast<int>(floorf(orderXValue / 2));
-    if (hasAttribute(SVGNames::targetYAttr) && (targetYValue < 0 || targetYValue >= orderYValue))
-        return nullptr;
+
+    int targetYValue = m_targetY->currentValue()->value();
     // The spec says the default value is: targetY = floor ( orderY / 2 ))
-    if (!hasAttribute(SVGNames::targetYAttr))
+    if (!m_targetY->isSpecified())
         targetYValue = static_cast<int>(floorf(orderYValue / 2));
 
     float divisorValue = m_divisor->currentValue()->value();
-    if (hasAttribute(SVGNames::divisorAttr) && !divisorValue)
-        return nullptr;
-    if (!hasAttribute(SVGNames::divisorAttr)) {
+    if (!m_divisor->isSpecified()) {
+        RefPtrWillBeRawPtr<SVGNumberList> kernelMatrix = m_kernelMatrix->currentValue();
+        size_t kernelMatrixSize = kernelMatrix->length();
         for (size_t i = 0; i < kernelMatrixSize; ++i)
             divisorValue += kernelMatrix->at(i)->value();
         if (!divisorValue)

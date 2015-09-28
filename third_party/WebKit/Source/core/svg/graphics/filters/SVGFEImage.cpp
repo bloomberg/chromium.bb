@@ -190,18 +190,17 @@ PassRefPtr<SkImageFilter> FEImage::createImageFilter(SkiaImageFilterBuilder* bui
     if (auto* layoutObject = referencedLayoutObject())
         return createImageFilterForLayoutObject(*layoutObject, builder);
 
-    FloatRect dstRect = filterPrimitiveSubregion();
-
     RefPtr<SkImage> image = m_image ? m_image->imageForCurrentFrame() : nullptr;
     if (!image) {
         // "A href reference that is an empty image (zero width or zero height), that fails
         // to download, is non-existent, or that cannot be displayed (e.g. because it is
         // not in a supported image format) fills the filter primitive subregion with
         // transparent black."
-        return adoptRef(SkPictureImageFilter::Create(nullptr, dstRect));
+        return createTransparentBlack();
     }
 
     FloatRect srcRect = FloatRect(FloatPoint(), m_image->size());
+    FloatRect dstRect = filterPrimitiveSubregion();
 
     m_preserveAspectRatio->transformRect(dstRect, srcRect);
 
