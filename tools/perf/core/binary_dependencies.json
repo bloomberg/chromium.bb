@@ -1,0 +1,15 @@
+{
+  "config_type": "BaseConfig",
+  "dependencies": {
+    "crash_service": {
+      "file_info": {
+        "win_AMD64": {
+          "local_paths": [
+            "../../../out/Debug/crash_service.exe",
+            "../../../out/Release/crash_service.exe"
+          ]
+        }
+      }
+    }
+  }
+}

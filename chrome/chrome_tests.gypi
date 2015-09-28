@@ -3243,6 +3243,11 @@
                     '../third_party/crashpad/crashpad/tools/tools.gyp:crashpad_database_util',
                   ],
                 }],
+                ['OS=="win"', {
+                  'dependencies': [
+                    'chrome.gyp:crash_service',
+                  ],
+                }],
               ],
             },
             {
