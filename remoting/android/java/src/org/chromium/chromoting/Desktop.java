@@ -129,6 +129,8 @@ public class Desktop extends AppCompatActivity implements View.OnSystemUiVisibil
         MenuItem item = menu.findItem(R.id.actionbar_cardboard);
         item.setVisible(enableCardboard);
 
+        ChromotingUtil.tintMenuIcons(this, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
 

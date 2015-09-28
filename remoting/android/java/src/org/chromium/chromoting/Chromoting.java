@@ -338,6 +338,8 @@ public class Chromoting extends AppCompatActivity implements JniInterface.Connec
             mRefreshButton.setEnabled(false);
         }
 
+        ChromotingUtil.tintMenuIcons(this, menu);
+
         return super.onCreateOptionsMenu(menu);
     }
 
