@@ -128,7 +128,7 @@ void ChromeVirtualKeyboardDelegate::SetHotrodKeyboard(bool enable) {
   // This reloads virtual keyboard even if it exists. This ensures virtual
   // keyboard gets the correct state of the hotrod keyboard through
   // chrome.virtualKeyboardPrivate.getKeyboardConfig.
-  if (enable && keyboard::IsKeyboardEnabled())
+  if (keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->CreateKeyboard();
 }
 
