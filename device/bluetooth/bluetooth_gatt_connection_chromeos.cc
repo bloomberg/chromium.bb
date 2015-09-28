@@ -94,6 +94,11 @@ void BluetoothGattConnectionChromeOS::DevicePropertyChanged(
   if (property_name == properties->connected.name() &&
       !properties->connected.value())
     connected_ = false;
+
+  // The remote device's bluetooth address may change if it is paired while
+  // connected.
+  if (property_name == properties->address.name())
+    device_address_ = properties->address.value();
 }
 
 }  // namespace chromeos
