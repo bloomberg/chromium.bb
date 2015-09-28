@@ -16,8 +16,6 @@
   'NAME': 'media_stream_video',
   'TITLE': 'MediaStream Video',
   'GROUP': 'API',
-  'MIN_CHROME_VERSION': '35.0.0.0'
+  'MIN_CHROME_VERSION': '35.0.0.0',
+  'PERMISSIONS': ['videoCapture']
 }
-
-
-

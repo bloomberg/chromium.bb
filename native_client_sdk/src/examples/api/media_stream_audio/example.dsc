@@ -16,5 +16,6 @@
   'NAME': 'media_stream_audio',
   'TITLE': 'MediaStream Audio',
   'GROUP': 'API',
-  'MIN_CHROME_VERSION': '35.0.0.0'
+  'MIN_CHROME_VERSION': '35.0.0.0',
+  'PERMISSIONS': ['audioCapture']
 }
