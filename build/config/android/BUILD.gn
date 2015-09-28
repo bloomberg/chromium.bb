@@ -8,32 +8,6 @@ import("//build/config/sysroot.gni")
 
 assert(is_android)
 
-config("sdk") {
-  if (sysroot != "") {
-    cflags = [ "--sysroot=" + sysroot ]
-    ldflags = [ "--sysroot=" + sysroot ]
-
-    # Need to get some linker flags out of the sysroot.
-    sysroot_ld_path = rebase_path("//build/config/linux/sysroot_ld_path.py")
-    ldflags += [ exec_script(sysroot_ld_path,
-                             [
-                               rebase_path("//build/linux/sysroot_ld_path.sh"),
-                               sysroot,
-                             ],
-                             "value") ]
-  }
-}
-
-config("executable_config") {
-  cflags = [ "-fPIE" ]
-  ldflags = [ "-pie" ]
-}
-
-config("hide_native_jni_exports") {
-  ldflags = [ "-Wl,--version-script=" +
-              rebase_path("//build/android/android_no_jni_exports.lst") ]
-}
-
 # This is included by reference in the //build/config/compiler config that
 # is applied to all targets. It is here to separate out the logic that is
 # Android-only.
@@ -141,4 +115,104 @@ config("compiler") {
       abi_target,
     ]
   }
+}
+
+# This is included by reference in the //build/config/compiler:runtime_library
+# config that is applied to all targets. It is here to separate out the logic
+# that is Android-only. Please see that target for advice on what should go in
+# :runtime_library vs. :compiler.
+config("runtime_library") {
+  # NOTE: The libc++ header include paths below are specified in cflags
+  # rather than include_dirs because they need to come after include_dirs.
+  # Think of them like system headers, but don't use '-isystem' because the
+  # arm-linux-androideabi-4.4.3 toolchain (circa Gingerbread) will exhibit
+  # strange errors. The include ordering here is important; change with
+  # caution.
+  cflags = [
+    "-isystem" +
+        rebase_path("$android_libcpp_root/libcxx/include", root_build_dir),
+    "-isystem" + rebase_path(
+            "$android_ndk_root/sources/cxx-stl/llvm-libc++abi/libcxxabi/include",
+            root_build_dir),
+    "-isystem" +
+        rebase_path("$android_ndk_root/sources/android/support/include",
+                    root_build_dir),
+  ]
+
+  defines = [ "__GNU_SOURCE=1" ]  # Necessary for clone().
+  ldflags = [ "-nostdlib" ]
+  lib_dirs = [ "$android_libcpp_root/libs/$android_app_abi" ]
+  libs = [
+    "c",
+    "dl",
+    "m",
+  ]
+
+  # The libc++ runtime library.
+  if (is_component_build) {
+    libs += [ "c++_shared" ]
+  } else {
+    libs += [ "c++_static" ]
+  }
+
+  if (is_clang) {
+    # Work around incompatibilities between bionic and clang headers.
+    defines += [
+      "__compiler_offsetof=__builtin_offsetof",
+      "nan=__builtin_nan",
+    ]
+  }
+
+  # TODO(jdduke) Re-enable on mips after resolving linking
+  # issues with libc++ (crbug.com/456380).
+  if (current_cpu != "mipsel" && current_cpu != "mips64el") {
+    ldflags += [ "-Wl,--warn-shared-textrel" ]
+  }
+
+  if (current_cpu == "mipsel") {
+    libs += [
+      # ld linker is used for mips Android, and ld does not accept library
+      # absolute path prefixed by "-l"; Since libgcc does not exist in mips
+      # sysroot the proper library will be linked.
+      # TODO(gordanac): Remove once gold linker is used for mips Android.
+      "gcc",
+    ]
+  } else {
+    libs += [
+      # Manually link the libgcc.a that the cross compiler uses. This is
+      # absolute because the linker will look inside the sysroot if it's not.
+      rebase_path(android_libgcc_file),
+    ]
+  }
+
+  # Clang with libc++ does not require an explicit atomic library reference.
+  if (!is_clang) {
+    libs += [ "atomic" ]
+  }
+}
+
+config("sdk") {
+  if (sysroot != "") {
+    cflags = [ "--sysroot=" + sysroot ]
+    ldflags = [ "--sysroot=" + sysroot ]
+
+    # Need to get some linker flags out of the sysroot.
+    sysroot_ld_path = rebase_path("//build/config/linux/sysroot_ld_path.py")
+    ldflags += [ exec_script(sysroot_ld_path,
+                             [
+                               rebase_path("//build/linux/sysroot_ld_path.sh"),
+                               sysroot,
+                             ],
+                             "value") ]
+  }
+}
+
+config("executable_config") {
+  cflags = [ "-fPIE" ]
+  ldflags = [ "-pie" ]
+}
+
+config("hide_native_jni_exports") {
+  ldflags = [ "-Wl,--version-script=" +
+              rebase_path("//build/android/android_no_jni_exports.lst") ]
 }

@@ -6,6 +6,112 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
 
+assert(is_win)
+
+# This is included by reference in the //build/config/compiler config that
+# is applied to all targets. It is here to separate out the logic that is
+# Windows-only.
+config("compiler") {
+  cflags = [
+    "/Gy",  # Enable function-level linking.
+    "/GS",  # Enable buffer security checking.
+    "/FS",  # Preserve previous PDB behavior.
+    "/bigobj",  # Some of our files are bigger than the regular limits.
+  ]
+
+  # Force C/C++ mode for the given GN detected file type. This is necessary
+  # for precompiled headers where the same source file is compiled in both
+  # modes.
+  cflags_c = [ "/TC" ]
+  cflags_cc = [ "/TP" ]
+
+  # Work around crbug.com/526851, bug in VS 2015 RTM compiler.
+  if (visual_studio_version == "2015") {
+    cflags += [ "/Zc:sizedDealloc-" ]
+  }
+
+  # Building with Clang on Windows is a work in progress and very
+  # experimental. See crbug.com/82385.
+  # Keep this in sync with the similar block in build/common.gypi
+  if (is_clang) {
+    cflags += [
+      # Many files use intrinsics without including this header.
+      # TODO(hans): Fix those files, or move this to sub-GYPs.
+      "/FIIntrin.h",
+    ]
+
+    if (visual_studio_version == "2013") {
+      cflags += [ "-fmsc-version=1800" ]
+    } else if (visual_studio_version == "2015") {
+      cflags += [ "-fmsc-version=1900" ]
+    }
+
+    if (current_cpu == "x86") {
+      cflags += [ "-m32" ]
+    } else {
+      cflags += [ "-m64" ]
+    }
+
+    if (exec_script("//build/win/use_ansi_codes.py", [], "trim string") ==
+        "True") {
+      cflags += [
+        # cmd.exe doesn't understand ANSI escape codes by default,
+        # so only enable them if something emulating them is around.
+        "-fansi-escape-codes",
+      ]
+    }
+  }
+
+  if (is_syzyasan) {
+    # SyzyAsan needs /PROFILE turned on to produce appropriate pdbs.
+    assert(!is_win_fastlink, "/PROFILE and /DEBUG:FASTLINK are incompatible")
+    ldflags = [ "/PROFILE" ]
+  }
+}
+
+# This is included by reference in the //build/config/compiler:runtime_library
+# config that is applied to all targets. It is here to separate out the logic
+# that is Windows-only. Please see that target for advice on what should go in
+# :runtime_library vs. :compiler.
+config("runtime_library") {
+  cflags = []
+
+  defines = [
+    "__STD_C",
+    "_CRT_RAND_S",
+    "_CRT_SECURE_NO_DEPRECATE",
+    "_HAS_EXCEPTIONS=0",
+    "_SCL_SECURE_NO_DEPRECATE",
+  ]
+
+  if (is_component_build) {
+    # Component mode: dynamic CRT. Since the library is shared, it requires
+    # exceptions or will give errors about things not matching, so keep
+    # exceptions on.
+    if (is_debug) {
+      cflags += [ "/MDd" ]
+    } else {
+      cflags += [ "/MD" ]
+    }
+  } else {
+    if (current_os != "win") {
+      # WindowsRT: use the dynamic CRT.
+      if (is_debug) {
+        cflags += [ "/MDd" ]
+      } else {
+        cflags += [ "/MD" ]
+      }
+    } else {
+      # Desktop Windows: static CRT.
+      if (is_debug) {
+        cflags += [ "/MTd" ]
+      } else {
+        cflags += [ "/MT" ]
+      }
+    }
+  }
+}
+
 # Compiler setup for the Windows SDK. Applied to all targets.
 config("sdk") {
   # The include path is the stuff returned by the script.

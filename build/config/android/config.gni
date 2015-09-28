@@ -195,11 +195,6 @@ if (is_android) {
   # Toolchain stuff ------------------------------------------------------------
 
   android_libcpp_root = "$android_ndk_root/sources/cxx-stl/llvm-libc++"
-  if (is_component_build) {
-    android_libcpp_library = "c++_shared"
-  } else {
-    android_libcpp_library = "c++_static"
-  }
 
   # ABI ------------------------------------------------------------------------
 
