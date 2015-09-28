@@ -424,6 +424,7 @@ action("aggregate_vector_icons") {
     "vector_icons/account_child_invert.icon",
     "vector_icons/apps.icon",
     "vector_icons/autofill.icon",
+    "vector_icons/autologin.icon",
     "vector_icons/bar_close.1x.icon",
     "vector_icons/bar_close.icon",
     "vector_icons/blocked_badge.icon",
@@ -433,6 +434,7 @@ action("aggregate_vector_icons") {
     "vector_icons/crashed_tab.icon",
     "vector_icons/error_circle.icon",
     "vector_icons/extension.icon",
+    "vector_icons/extension_crashed.icon",
     "vector_icons/file_download.icon",
     "vector_icons/file_download_incognito.1x.icon",
     "vector_icons/file_download_incognito.icon",
@@ -638,7 +640,9 @@ test("gfx_unittests") {
     "//ui/resources:ui_test_pak",
   ]
 
-  data_deps = [ "//ui/resources:ui_test_pak" ]
+  data_deps = [
+    "//ui/resources:ui_test_pak",
+  ]
 
   if (!is_mac && !is_ios) {
     sources += [

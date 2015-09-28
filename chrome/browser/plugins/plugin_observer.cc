@@ -34,6 +34,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #if defined(OS_WIN)
@@ -136,6 +137,7 @@ class ReloadPluginInfoBarDelegate : public ConfirmInfoBarDelegate {
 
   // ConfirmInfobarDelegate:
   int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -165,6 +167,14 @@ ReloadPluginInfoBarDelegate::~ReloadPluginInfoBarDelegate(){ }
 
 int ReloadPluginInfoBarDelegate::GetIconId() const {
   return IDR_INFOBAR_PLUGIN_CRASHED;
+}
+
+gfx::VectorIconId ReloadPluginInfoBarDelegate::GetVectorIconId() const {
+#if !defined(OS_MACOSX) && !defined(OS_IOS) && !defined(OS_ANDROID)
+  return gfx::VectorIconId::EXTENSION_CRASHED;
+#else
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#endif
 }
 
 base::string16 ReloadPluginInfoBarDelegate::GetMessageText() const {
@@ -407,6 +417,11 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
   SimpleAlertInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents()),
       IDR_INFOBAR_PLUGIN_CRASHED,
+#if !defined(OS_MACOSX)
+      gfx::VectorIconId::EXTENSION_CRASHED,
+#else
+      gfx::VectorIconId::VECTOR_ICON_NONE,
+#endif
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true);

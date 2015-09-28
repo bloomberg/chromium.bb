@@ -44,6 +44,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -207,7 +208,7 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     SimpleAlertInfoBarDelegate::Create(
         InfoBarService::FromWebContents(
             browser->tab_strip_model()->GetActiveWebContents()),
-        0, base::string16(), false);
+        0, gfx::VectorIconId::VECTOR_ICON_NONE, base::string16(), false);
   }
 
   NSView* GetViewWithID(ViewID view_id) const {

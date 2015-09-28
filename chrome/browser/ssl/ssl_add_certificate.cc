@@ -21,6 +21,7 @@
 #include "net/cert/cert_database.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/vector_icons_public.h"
 
 using content::BrowserThread;
 using content::RenderFrameHost;
@@ -44,6 +45,7 @@ class SSLAddCertificateInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   base::string16 GetMessageText() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -79,6 +81,14 @@ SSLAddCertificateInfoBarDelegate::GetInfoBarType() const {
 int SSLAddCertificateInfoBarDelegate::GetIconId() const {
   // TODO(davidben): Use a more appropriate icon.
   return IDR_INFOBAR_SAVE_PASSWORD;
+}
+
+gfx::VectorIconId SSLAddCertificateInfoBarDelegate::GetVectorIconId() const {
+#if !defined(OS_MACOSX)
+  return gfx::VectorIconId::AUTOLOGIN;
+#else
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#endif
 }
 
 base::string16 SSLAddCertificateInfoBarDelegate::GetMessageText() const {
@@ -120,12 +130,15 @@ void ShowErrorInfoBar(int message_id,
   // TODO(davidben): Use a more appropriate icon.
   // TODO(davidben): Display a more user-friendly error string.
   SimpleAlertInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents),
-      IDR_INFOBAR_SAVE_PASSWORD,
-      l10n_util::GetStringFUTF16(IDS_ADD_CERT_ERR_INVALID_CERT,
-                                 base::IntToString16(-cert_error),
-                                 base::ASCIIToUTF16(
-                                     net::ErrorToString(cert_error))),
+      InfoBarService::FromWebContents(web_contents), IDR_INFOBAR_SAVE_PASSWORD,
+#if !defined(OS_MACOSX)
+      gfx::VectorIconId::AUTOLOGIN,
+#else
+      gfx::VectorIconId::VECTOR_ICON_NONE,
+#endif
+      l10n_util::GetStringFUTF16(
+          IDS_ADD_CERT_ERR_INVALID_CERT, base::IntToString16(-cert_error),
+          base::ASCIIToUTF16(net::ErrorToString(cert_error))),
       true);
 }
 

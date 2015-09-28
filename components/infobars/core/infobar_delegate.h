@@ -86,7 +86,7 @@ class InfoBarDelegate {
   virtual int GetIconId() const;
 
   // Returns the vector icon identifier to be shown for this InfoBar. This will
-  // take precedent over GetIconId() (although typically only one of the two
+  // take precedence over GetIconId() (although typically only one of the two
   // should be defined for any given infobar).
   virtual gfx::VectorIconId GetVectorIconId() const;
 

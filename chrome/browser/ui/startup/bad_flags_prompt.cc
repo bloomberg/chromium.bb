@@ -26,6 +26,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace chrome {
 
@@ -105,9 +106,10 @@ void ShowBadFlagsPrompt(Browser* browser) {
       SimpleAlertInfoBarDelegate::Create(
           InfoBarService::FromWebContents(web_contents),
           infobars::InfoBarDelegate::kNoIconID,
-          l10n_util::GetStringFUTF16(IDS_BAD_FLAGS_WARNING_MESSAGE,
-                                     base::UTF8ToUTF16(
-                                         std::string("--") + *flag)),
+          gfx::VectorIconId::VECTOR_ICON_NONE,
+          l10n_util::GetStringFUTF16(
+              IDS_BAD_FLAGS_WARNING_MESSAGE,
+              base::UTF8ToUTF16(std::string("--") + *flag)),
           false);
       return;
     }
