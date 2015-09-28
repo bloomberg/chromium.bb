@@ -133,6 +133,35 @@ void PropertySet::OnGet(PropertyBase* property, GetCallback callback,
     callback.Run(response);
 }
 
+bool PropertySet::GetAndBlock(PropertyBase* property) {
+  MethodCall method_call(kPropertiesInterface, kPropertiesGet);
+  MessageWriter writer(&method_call);
+  writer.AppendString(interface());
+  writer.AppendString(property->name());
+
+  DCHECK(object_proxy_);
+  scoped_ptr<dbus::Response> response(
+      object_proxy_->CallMethodAndBlock(&method_call,
+                                        ObjectProxy::TIMEOUT_USE_DEFAULT));
+
+  if (!response.get()) {
+    LOG(WARNING) << property->name() << ": GetAndBlock: failed.";
+    return false;
+  }
+
+  MessageReader reader(response.get());
+  if (property->PopValueFromReader(&reader)) {
+    property->set_valid(true);
+    NotifyPropertyChanged(property->name());
+  } else {
+    if (property->is_valid()) {
+      property->set_valid(false);
+      NotifyPropertyChanged(property->name());
+    }
+  }
+  return true;
+}
+
 void PropertySet::GetAll() {
   MethodCall method_call(kPropertiesInterface, kPropertiesGetAll);
   MessageWriter writer(&method_call);
@@ -184,7 +213,7 @@ bool PropertySet::SetAndBlock(PropertyBase* property) {
   DCHECK(object_proxy_);
   scoped_ptr<dbus::Response> response(
       object_proxy_->CallMethodAndBlock(&method_call,
-      ObjectProxy::TIMEOUT_USE_DEFAULT));
+                                        ObjectProxy::TIMEOUT_USE_DEFAULT));
   if (response.get())
     return true;
   return false;

@@ -259,6 +259,10 @@ class CHROME_DBUS_EXPORT PropertySet {
   virtual void OnGet(PropertyBase* property, GetCallback callback,
                      Response* response);
 
+  // The synchronous version of Get().
+  // This should never be used on an interactive thread.
+  virtual bool GetAndBlock(PropertyBase* property);
+
   // Queries the remote object for values of all properties and updates
   // initial values. Sub-classes may override to use a different D-Bus
   // method, or if the remote object does not support retrieving all
@@ -276,10 +280,12 @@ class CHROME_DBUS_EXPORT PropertySet {
   // depending on the remote object. This method may be overridden by
   // sub-classes if interfaces use different method calls.
   virtual void Set(PropertyBase* property, SetCallback callback);
-  // The sychronous version of Set().
-  virtual bool SetAndBlock(PropertyBase* property);
   virtual void OnSet(PropertyBase* property, SetCallback callback,
                      Response* response);
+
+  // The synchronous version of Set().
+  // This should never be used on an interactive thread.
+  virtual bool SetAndBlock(PropertyBase* property);
 
   // Update properties by reading an array of dictionary entries, each
   // containing a string with the name and a variant with the value, from
@@ -382,6 +388,12 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
     property_set()->Get(this, callback);
   }
 
+  // The synchronous version of Get().
+  // This should never be used on an interactive thread.
+  virtual bool GetAndBlock() {
+    return property_set()->GetAndBlock(this);
+  }
+
   // Requests that the remote object change the property value to |value|,
   // |callback| will be called to indicate the success or failure of the
   // request, however the new value may not be available depending on the
@@ -391,7 +403,8 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
     property_set()->Set(this, callback);
   }
 
-  // The sychronous version of Set().
+  // The synchronous version of Set().
+  // This should never be used on an interactive thread.
   virtual bool SetAndBlock(const T& value) {
     set_value_ = value;
     return property_set()->SetAndBlock(this);
