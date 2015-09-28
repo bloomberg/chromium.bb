@@ -314,6 +314,13 @@ class ProcessManager : public KeyedService,
   // reset.
   uint64 last_background_close_sequence_id_;
 
+  // Tracks pending network requests by opaque ID. This is used to ensure proper
+  // keepalive counting in response to request status updates; e.g., if an
+  // extension URLRequest is constructed and then destroyed without ever
+  // starting, we can receive a completion notification without a corresponding
+  // start notification. In that case we want to avoid decrementing keepalive.
+  std::set<int> pending_network_requests_;
+
   // Must be last member, see doc on WeakPtrFactory.
   base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
 

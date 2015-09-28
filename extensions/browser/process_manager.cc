@@ -553,6 +553,8 @@ void ProcessManager::OnNetworkRequestStarted(
     uint64 request_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_frame_host));
+  auto result = pending_network_requests_.insert(request_id);
+  DCHECK(result.second) << "Duplicate network request IDs.";
   if (host && IsFrameInExtensionHost(host, render_frame_host)) {
     IncrementLazyKeepaliveCount(host->extension());
     host->OnNetworkRequestStarted(request_id);
@@ -566,7 +568,8 @@ void ProcessManager::OnNetworkRequestDone(
       GetExtensionID(render_frame_host));
   if (host && IsFrameInExtensionHost(host, render_frame_host)) {
     host->OnNetworkRequestDone(request_id);
-    DecrementLazyKeepaliveCount(host->extension());
+    if (pending_network_requests_.erase(request_id))
+      DecrementLazyKeepaliveCount(host->extension());
   }
 }
 

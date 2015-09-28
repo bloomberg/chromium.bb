@@ -157,4 +157,40 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, HttpHostMatchingExtensionId) {
   EXPECT_TRUE(pm->GetBackgroundHostForExtension(extension->id()));
 }
 
+// Verify correct keepalive count behavior on network request events.
+// Regression test for http://crbug.com/535716.
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest, KeepaliveOnNetworkRequest) {
+  // Load an extension with a lazy background page.
+  scoped_refptr<const Extension> extension =
+      LoadExtension(test_data_dir_.AppendASCII("api_test")
+                        .AppendASCII("lazy_background_page")
+                        .AppendASCII("broadcast_event"));
+  ASSERT_TRUE(extension.get());
+
+  ProcessManager* pm = ProcessManager::Get(profile());
+  ProcessManager::FrameSet frames =
+      pm->GetRenderFrameHostsForExtension(extension->id());
+  ASSERT_EQ(1u, frames.size());
+
+  // Keepalive count at this point is unpredictable as there may be an
+  // outstanding event dispatch. We use the current keepalive count as a
+  // reliable baseline for future expectations.
+  int baseline_keepalive = pm->GetLazyKeepaliveCount(extension.get());
+
+  // Simulate some network events. This test assumes no other network requests
+  // are pending, i.e., that there are no conflicts with the fake request IDs
+  // we're using. This should be a safe assumption because LoadExtension should
+  // wait for loads to complete, and we don't run the message loop otherwise.
+  content::RenderFrameHost* frame_host = *frames.begin();
+  pm->OnNetworkRequestStarted(frame_host, 1);
+  EXPECT_EQ(baseline_keepalive + 1, pm->GetLazyKeepaliveCount(extension.get()));
+  pm->OnNetworkRequestDone(frame_host, 1);
+  EXPECT_EQ(baseline_keepalive, pm->GetLazyKeepaliveCount(extension.get()));
+
+  // Simulate only a request completion for this ID and ensure it doesn't result
+  // in keepalive decrement.
+  pm->OnNetworkRequestDone(frame_host, 2);
+  EXPECT_EQ(baseline_keepalive, pm->GetLazyKeepaliveCount(extension.get()));
+}
+
 }  // namespace extensions
