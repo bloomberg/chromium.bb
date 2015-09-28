@@ -63,9 +63,10 @@ WTF_EXPORT int64_t charactersToInt64(const UChar*, size_t, bool* ok = 0); // ign
 WTF_EXPORT uint64_t charactersToUInt64(const LChar*, size_t, bool* ok = 0); // ignores trailing garbage
 WTF_EXPORT uint64_t charactersToUInt64(const UChar*, size_t, bool* ok = 0); // ignores trailing garbage
 
-// FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
-// Like the non-strict functions above, these return the value when there is trailing garbage.
-// It would be better if these were more consistent with the above functions instead.
+// FIXME: Like the strict functions above, these give false for "ok" when there
+// is trailing garbage.  Like the non-strict functions above, these return the
+// value when there is trailing garbage.  It would be better if these were more
+// consistent with the above functions instead.
 WTF_EXPORT double charactersToDouble(const LChar*, size_t, bool* ok = 0);
 WTF_EXPORT double charactersToDouble(const UChar*, size_t, bool* ok = 0);
 WTF_EXPORT float charactersToFloat(const LChar*, size_t, bool* ok = 0);
@@ -198,7 +199,8 @@ public:
     static String numberToStringECMAScript(double);
     static String numberToStringFixedWidth(double, unsigned decimalPlaces);
 
-    // Find a single character or string, also with match function & latin1 forms.
+    // Find a single character or string, also with match function & latin1
+    // forms.
     size_t find(UChar c, unsigned start = 0) const
         { return m_impl ? m_impl->find(c, start) : kNotFound; }
     size_t find(LChar c, unsigned start = 0) const
@@ -285,10 +287,30 @@ public:
     void insert(const LChar*, unsigned length, unsigned pos);
     void insert(const UChar*, unsigned length, unsigned pos);
 
-    String& replace(UChar a, UChar b) { if (m_impl) m_impl = m_impl->replace(a, b); return *this; }
-    String& replace(UChar a, const String& b) { if (m_impl) m_impl = m_impl->replace(a, b.impl()); return *this; }
-    String& replace(const String& a, const String& b) { if (m_impl) m_impl = m_impl->replace(a.impl(), b.impl()); return *this; }
-    String& replace(unsigned index, unsigned len, const String& b) { if (m_impl) m_impl = m_impl->replace(index, len, b.impl()); return *this; }
+    String& replace(UChar a, UChar b)
+    {
+        if (m_impl)
+            m_impl = m_impl->replace(a, b);
+        return *this;
+    }
+    String& replace(UChar a, const String& b)
+    {
+        if (m_impl)
+            m_impl = m_impl->replace(a, b.impl());
+        return *this;
+    }
+    String& replace(const String& a, const String& b)
+    {
+        if (m_impl)
+            m_impl = m_impl->replace(a.impl(), b.impl());
+        return *this;
+    }
+    String& replace(unsigned index, unsigned len, const String& b)
+    {
+        if (m_impl)
+            m_impl = m_impl->replace(index, len, b.impl());
+        return *this;
+    }
 
     template<unsigned charactersCount>
     ALWAYS_INLINE String& replaceWithLiteral(UChar a, const char (&characters)[charactersCount])
@@ -299,7 +321,11 @@ public:
         return *this;
     }
 
-    void fill(UChar c) { if (m_impl) m_impl = m_impl->fill(c); }
+    void fill(UChar c)
+    {
+        if (m_impl)
+            m_impl = m_impl->fill(c);
+    }
 
     void ensure16Bit();
 
@@ -322,8 +348,8 @@ public:
 
     String stripWhiteSpace() const;
     String stripWhiteSpace(IsWhiteSpaceFunctionPtr) const;
-    String simplifyWhiteSpace(StripBehavior stripBehavior = StripExtraWhiteSpace) const;
-    String simplifyWhiteSpace(IsWhiteSpaceFunctionPtr, StripBehavior stripBehavior = StripExtraWhiteSpace) const;
+    String simplifyWhiteSpace(StripBehavior = StripExtraWhiteSpace) const;
+    String simplifyWhiteSpace(IsWhiteSpaceFunctionPtr, StripBehavior = StripExtraWhiteSpace) const;
 
     String removeCharacters(CharacterMatchFunctionPtr) const;
     template<bool isSpecialCharacter(UChar)> bool isAllSpecialCharacters() const;
@@ -360,9 +386,10 @@ public:
     int64_t toInt64(bool* ok = 0) const;
     uint64_t toUInt64(bool* ok = 0) const;
 
-    // FIXME: Like the strict functions above, these give false for "ok" when there is trailing garbage.
-    // Like the non-strict functions above, these return the value when there is trailing garbage.
-    // It would be better if these were more consistent with the above functions instead.
+    // FIXME: Like the strict functions above, these give false for "ok" when
+    // there is trailing garbage.  Like the non-strict functions above, these
+    // return the value when there is trailing garbage.  It would be better if
+    // these were more consistent with the above functions instead.
     double toDouble(bool* ok = 0) const;
     float toFloat(bool* ok = 0) const;
 
@@ -377,9 +404,15 @@ public:
 #ifdef __OBJC__
     String(NSString*);
 
-    // This conversion maps NULL to "", which loses the meaning of NULL, but we
-    // need this mapping because AppKit crashes when passed nil NSStrings.
-    operator NSString*() const { if (!m_impl) return @""; return *m_impl; }
+    // This conversion maps null string to "", which loses the meaning of null
+    // string, but we need this mapping because AppKit crashes when passed nil
+    // NSStrings.
+    operator NSString*() const
+    {
+        if (!m_impl)
+            return @"";
+        return *m_impl;
+    }
 #endif
 
     static String make8BitFrom16BitSource(const UChar*, size_t);
@@ -399,7 +432,8 @@ public:
     static String fromUTF8(const char* s) { return fromUTF8(reinterpret_cast<const LChar*>(s)); }
     static String fromUTF8(const CString&);
 
-    // Tries to convert the passed in string to UTF-8, but will fall back to Latin-1 if the string is not valid UTF-8.
+    // Tries to convert the passed in string to UTF-8, but will fall back to
+    // Latin-1 if the string is not valid UTF-8.
     static String fromUTF8WithLatin1Fallback(const LChar*, size_t);
     static String fromUTF8WithLatin1Fallback(const char* s, size_t length) { return fromUTF8WithLatin1Fallback(reinterpret_cast<const LChar*>(s), length); }
 
@@ -407,7 +441,8 @@ public:
     bool containsOnlyLatin1() const;
     bool containsOnlyWhitespace() const { return !m_impl || m_impl->containsOnlyWhitespace(); }
 
-    // Hash table deleted values, which are only constructed and never copied or destroyed.
+    // Hash table deleted values, which are only constructed and never copied or
+    // destroyed.
     String(WTF::HashTableDeletedValueType) : m_impl(WTF::HashTableDeletedValue) { }
     bool isHashTableDeletedValue() const { return m_impl.isHashTableDeletedValue(); }
 

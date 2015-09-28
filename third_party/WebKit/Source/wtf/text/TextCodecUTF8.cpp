@@ -31,11 +31,9 @@
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/TextCodecASCIIFastPath.h"
 
-using namespace WTF;
-using namespace WTF::Unicode;
-using namespace std;
-
 namespace WTF {
+
+using namespace WTF::Unicode;
 
 const int nonCharacter = -1;
 
@@ -146,9 +144,9 @@ static inline UChar* appendCharacter(UChar* destination, int character)
 {
     ASSERT(character != nonCharacter);
     ASSERT(!U_IS_SURROGATE(character));
-    if (U_IS_BMP(character))
+    if (U_IS_BMP(character)) {
         *destination++ = static_cast<UChar>(character);
-    else {
+    } else {
         *destination++ = U16_LEAD(character);
         *destination++ = U16_TRAIL(character);
     }
@@ -316,9 +314,9 @@ String TextCodecUTF8::decode(const char* bytes, size_t length, FlushBehavior flu
             }
             int count = nonASCIISequenceLength(*source);
             int character;
-            if (!count)
+            if (count == 0) {
                 character = nonCharacter;
-            else {
+            } else {
                 if (count > end - source) {
                     ASSERT_WITH_SECURITY_IMPLICATION(end - source < static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
                     ASSERT(!m_partialSequenceSize);
@@ -393,9 +391,9 @@ upConvertTo16Bit:
             }
             int count = nonASCIISequenceLength(*source);
             int character;
-            if (!count)
+            if (count == 0) {
                 character = nonCharacter;
-            else {
+            } else {
                 if (count > end - source) {
                     ASSERT_WITH_SECURITY_IMPLICATION(end - source < static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
                     ASSERT(!m_partialSequenceSize);
@@ -431,7 +429,7 @@ CString TextCodecUTF8::encodeCommon(const CharType* characters, size_t length)
     // The maximum number of UTF-8 bytes needed per UTF-16 code unit is 3.
     // BMP characters take only one UTF-16 code unit and can take up to 3 bytes (3x).
     // Non-BMP characters take two UTF-16 code units and can take up to 4 bytes (2x).
-    if (length > numeric_limits<size_t>::max() / 3)
+    if (length > std::numeric_limits<size_t>::max() / 3)
         CRASH();
     Vector<uint8_t> bytes(length * 3);
 

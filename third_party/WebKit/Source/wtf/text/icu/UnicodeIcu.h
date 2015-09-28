@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef WTF_UNICODE_ICU_H
-#define WTF_UNICODE_ICU_H
+#ifndef WTF_UnicodeIcu_h
+#define WTF_UnicodeIcu_h
 
 #include <unicode/uchar.h>
 #include <unicode/ustring.h>
@@ -160,7 +160,7 @@ inline UChar32 toTitleCase(UChar32 c)
 
 inline bool isArabicChar(UChar32 c)
 {
-      return ublock_getCode(c) == UBLOCK_ARABIC;
+    return ublock_getCode(c) == UBLOCK_ARABIC;
 }
 
 inline bool isAlphanumeric(UChar32 c)
@@ -227,4 +227,4 @@ inline int umemcasecmp(const UChar* a, const UChar* b, int len)
 
 } // namespace WTF
 
-#endif // WTF_UNICODE_ICU_H
+#endif // WTF_UnicodeIcu_h

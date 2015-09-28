@@ -26,13 +26,11 @@
 #include "config.h"
 #include "wtf/text/TextCodecLatin1.h"
 
-#include "wtf/text/TextCodecASCIIFastPath.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
+#include "wtf/text/TextCodecASCIIFastPath.h"
 #include "wtf/text/WTFString.h"
-
-using namespace WTF;
 
 namespace WTF {
 
@@ -215,9 +213,10 @@ static CString encodeComplexWindowsLatin1(const CharType* characters, size_t len
         // Do an efficient check to detect characters other than 00-7F and A0-FF.
         if (b != c || (c & 0xE0) == 0x80) {
             // Look for a way to encode this with Windows Latin-1.
-            for (b = 0x80; b < 0xA0; ++b)
+            for (b = 0x80; b < 0xA0; ++b) {
                 if (table[b] == c)
                     goto gotByte;
+            }
             // No way to encode this character with Windows Latin-1.
             UnencodableReplacementArray replacement;
             int replacementLength = TextCodec::getUnencodableReplacement(c, handling, replacement);

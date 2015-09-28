@@ -36,12 +36,9 @@
 #include "wtf/text/Unicode.h"
 #include <stdarg.h>
 
-using namespace std;
-
 namespace WTF {
 
 using namespace Unicode;
-using namespace std;
 
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
@@ -88,14 +85,14 @@ void String::append(const String& string)
         return;
     }
 
-    // FIXME: This is extremely inefficient. So much so that we might want to take this
-    // out of String's API. We can make it better by optimizing the case where exactly
-    // one String is pointing at this StringImpl, but even then it's going to require a
-    // call into the allocator every single time.
+    // FIXME: This is extremely inefficient. So much so that we might want to
+    // take this out of String's API. We can make it better by optimizing the
+    // case where exactly one String is pointing at this StringImpl, but even
+    // then it's going to require a call into the allocator every single time.
 
     if (m_impl->is8Bit() && string.m_impl->is8Bit()) {
         LChar* data;
-        RELEASE_ASSERT(string.length() <= numeric_limits<unsigned>::max() - m_impl->length());
+        RELEASE_ASSERT(string.length() <= std::numeric_limits<unsigned>::max() - m_impl->length());
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + string.length(), data);
         memcpy(data, m_impl->characters8(), m_impl->length() * sizeof(LChar));
         memcpy(data + m_impl->length(), string.characters8(), string.length() * sizeof(LChar));
@@ -104,7 +101,7 @@ void String::append(const String& string)
     }
 
     UChar* data;
-    RELEASE_ASSERT(string.length() <= numeric_limits<unsigned>::max() - m_impl->length());
+    RELEASE_ASSERT(string.length() <= std::numeric_limits<unsigned>::max() - m_impl->length());
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + string.length(), data);
 
     if (m_impl->is8Bit())
@@ -123,17 +120,18 @@ void String::append(const String& string)
 template <typename CharacterType>
 inline void String::appendInternal(CharacterType c)
 {
-    // FIXME: This is extremely inefficient. So much so that we might want to take this
-    // out of String's API. We can make it better by optimizing the case where exactly
-    // one String is pointing at this StringImpl, but even then it's going to require a
-    // call into the allocator every single time.
+    // FIXME: This is extremely inefficient. So much so that we might want to
+    // take this out of String's API. We can make it better by optimizing the
+    // case where exactly one String is pointing at this StringImpl, but even
+    // then it's going to require a call into the allocator every single time.
     if (!m_impl) {
         m_impl = StringImpl::create(&c, 1);
         return;
     }
 
-    UChar* data; // FIXME: We should be able to create an 8 bit string via this code path.
-    RELEASE_ASSERT(m_impl->length() < numeric_limits<unsigned>::max());
+    // FIXME: We should be able to create an 8 bit string via this code path.
+    UChar* data;
+    RELEASE_ASSERT(m_impl->length() < std::numeric_limits<unsigned>::max());
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(m_impl->length() + 1, data);
     if (m_impl->is8Bit())
         StringImpl::copyChars(data, m_impl->characters8(), m_impl->length());
@@ -191,7 +189,7 @@ void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
     unsigned strLength = m_impl->length();
 
     if (m_impl->is8Bit()) {
-        RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
+        RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
         LChar* data;
         RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
         StringImpl::copyChars(data, m_impl->characters8(), strLength);
@@ -200,7 +198,7 @@ void String::append(const LChar* charactersToAppend, unsigned lengthToAppend)
         return;
     }
 
-    RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
+    RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
     UChar* data;
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(length() + lengthToAppend, data);
     StringImpl::copyChars(data, m_impl->characters16(), strLength);
@@ -223,7 +221,7 @@ void String::append(const UChar* charactersToAppend, unsigned lengthToAppend)
     unsigned strLength = m_impl->length();
 
     ASSERT(charactersToAppend);
-    RELEASE_ASSERT(lengthToAppend <= numeric_limits<unsigned>::max() - strLength);
+    RELEASE_ASSERT(lengthToAppend <= std::numeric_limits<unsigned>::max() - strLength);
     UChar* data;
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(strLength + lengthToAppend, data);
     if (m_impl->is8Bit())
@@ -242,7 +240,7 @@ PassRefPtr<StringImpl> insertInternal(PassRefPtr<StringImpl> impl, const CharTyp
 
     ASSERT(charactersToInsert);
     UChar* data; // FIXME: We should be able to create an 8 bit string here.
-    RELEASE_ASSERT(lengthToInsert <= numeric_limits<unsigned>::max() - impl->length());
+    RELEASE_ASSERT(lengthToInsert <= std::numeric_limits<unsigned>::max() - impl->length());
     RefPtr<StringImpl> newImpl = StringImpl::createUninitialized(impl->length() + lengthToInsert, data);
 
     if (impl->is8Bit())
@@ -773,7 +771,7 @@ CString String::utf8(UTF8ConversionMode mode) const
     //  * We could allocate a CStringBuffer with an appropriate size to
     //    have a good chance of being able to write the string into the
     //    buffer without reallocing (say, 1.5 x length).
-    if (length > numeric_limits<unsigned>::max() / 3)
+    if (length > std::numeric_limits<unsigned>::max() / 3)
         return CString();
     Vector<char, 1024> bufferVector(length * 3);
 
@@ -794,11 +792,13 @@ CString String::utf8(UTF8ConversionMode mode) const
                 // Use strict conversion to detect unpaired surrogates.
                 ConversionResult result = convertUTF16ToUTF8(&characters, charactersEnd, &buffer, bufferEnd, true);
                 ASSERT(result != targetExhausted);
-                // Conversion fails when there is an unpaired surrogate.
-                // Put replacement character (U+FFFD) instead of the unpaired surrogate.
+                // Conversion fails when there is an unpaired surrogate.  Put
+                // replacement character (U+FFFD) instead of the unpaired
+                // surrogate.
                 if (result != conversionOK) {
                     ASSERT((0xD800 <= *characters && *characters <= 0xDFFF));
-                    // There should be room left, since one UChar hasn't been converted.
+                    // There should be room left, since one UChar hasn't been
+                    // converted.
                     ASSERT((buffer + 3) <= bufferEnd);
                     putUTF8Triple(buffer, replacementCharacter);
                     ++characters;
@@ -825,7 +825,8 @@ CString String::utf8(UTF8ConversionMode mode) const
                 // to say, simply encode it to UTF-8.
                 ASSERT((characters + 1) == (this->characters16() + length));
                 ASSERT((*characters >= 0xD800) && (*characters <= 0xDBFF));
-                // There should be room left, since one UChar hasn't been converted.
+                // There should be room left, since one UChar hasn't been
+                // converted.
                 ASSERT((buffer + 3) <= (buffer + bufferVector.size()));
                 putUTF8Triple(buffer, *characters);
             }
@@ -863,7 +864,7 @@ String String::make16BitFrom8BitSource(const LChar* source, size_t length)
 
 String String::fromUTF8(const LChar* stringStart, size_t length)
 {
-    RELEASE_ASSERT(length <= numeric_limits<unsigned>::max());
+    RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
 
     if (!stringStart)
         return String();
@@ -927,8 +928,8 @@ static bool isCharacterAllowedInBase(UChar c, int base)
 template <typename IntegralType, typename CharType>
 static inline IntegralType toIntegralType(const CharType* data, size_t length, bool* ok, int base)
 {
-    static const IntegralType integralMax = numeric_limits<IntegralType>::max();
-    static const bool isSigned = numeric_limits<IntegralType>::is_signed;
+    static const IntegralType integralMax = std::numeric_limits<IntegralType>::max();
+    static const bool isSigned = std::numeric_limits<IntegralType>::is_signed;
     const IntegralType maxMultiplier = integralMax / base;
 
     IntegralType value = 0;
@@ -1140,27 +1141,31 @@ double charactersToDouble(const UChar* data, size_t length, bool* ok)
 
 float charactersToFloat(const LChar* data, size_t length, bool* ok)
 {
-    // FIXME: This will return ok even when the string fits into a double but not a float.
+    // FIXME: This will return ok even when the string fits into a double but
+    // not a float.
     size_t parsedLength;
     return static_cast<float>(toDoubleType<LChar, DisallowTrailingJunk>(data, length, ok, parsedLength));
 }
 
 float charactersToFloat(const UChar* data, size_t length, bool* ok)
 {
-    // FIXME: This will return ok even when the string fits into a double but not a float.
+    // FIXME: This will return ok even when the string fits into a double but
+    // not a float.
     size_t parsedLength;
     return static_cast<float>(toDoubleType<UChar, DisallowTrailingJunk>(data, length, ok, parsedLength));
 }
 
 float charactersToFloat(const LChar* data, size_t length, size_t& parsedLength)
 {
-    // FIXME: This will return ok even when the string fits into a double but not a float.
+    // FIXME: This will return ok even when the string fits into a double but
+    // not a float.
     return static_cast<float>(toDoubleType<LChar, AllowTrailingJunk>(data, length, 0, parsedLength));
 }
 
 float charactersToFloat(const UChar* data, size_t length, size_t& parsedLength)
 {
-    // FIXME: This will return ok even when the string fits into a double but not a float.
+    // FIXME: This will return ok even when the string fits into a double but
+    // not a float.
     return static_cast<float>(toDoubleType<UChar, AllowTrailingJunk>(data, length, 0, parsedLength));
 }
 
@@ -1181,8 +1186,8 @@ const String& emptyString16Bit()
 #ifndef NDEBUG
 // For use in the debugger
 String* string(const char*);
-Vector<char> asciiDebug(StringImpl* impl);
-Vector<char> asciiDebug(String& string);
+Vector<char> asciiDebug(StringImpl*);
+Vector<char> asciiDebug(String&);
 
 void String::show() const
 {

@@ -28,13 +28,13 @@
 #include "config.h"
 #include "wtf/text/TextEncoding.h"
 
-#include "wtf/text/TextEncodingRegistry.h"
-#include <unicode/unorm.h>
 #include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 #include "wtf/text/CString.h"
+#include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
+#include <unicode/unorm.h>
 
 namespace WTF {
 

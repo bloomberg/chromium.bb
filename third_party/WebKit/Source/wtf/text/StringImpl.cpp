@@ -521,8 +521,8 @@ PassRefPtr<StringImpl> StringImpl::lower()
 
         for (unsigned i = firstIndexToBeLowered; i < m_length; ++i) {
             LChar ch = characters8()[i];
-            data8[i] = UNLIKELY(ch & ~0x7F) ? static_cast<LChar>(Unicode::toLower(ch))
-                                            : toASCIILower(ch);
+            data8[i] = UNLIKELY(ch & ~0x7F)
+                ? static_cast<LChar>(Unicode::toLower(ch)) : toASCIILower(ch);
         }
 
         return newImpl.release();
@@ -625,8 +625,9 @@ PassRefPtr<StringImpl> StringImpl::upper()
             if (c == smallLetterSharpSCharacter) {
                 *dest++ = 'S';
                 *dest++ = 'S';
-            } else
+            } else {
                 *dest++ = static_cast<LChar>(Unicode::toUpper(c));
+            }
         }
 
         return newImpl.release();
@@ -1599,7 +1600,7 @@ PassRefPtr<StringImpl> StringImpl::replace(unsigned position, unsigned lengthToR
         if (str)
             memcpy(data + position, str->characters8(), lengthToInsert * sizeof(LChar));
         memcpy(data + position + lengthToInsert, characters8() + position + lengthToReplace,
-               (length() - position - lengthToReplace) * sizeof(LChar));
+            (length() - position - lengthToReplace) * sizeof(LChar));
         return newImpl.release();
     }
     UChar* data;

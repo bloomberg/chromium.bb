@@ -37,8 +37,6 @@
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
 
-using std::min;
-
 namespace WTF {
 
 const size_t ConversionBufferSize = 16384;
@@ -317,8 +315,8 @@ public:
         if (m_shouldStopOnEncodingErrors) {
             UErrorCode err = U_ZERO_ERROR;
             ucnv_setToUCallBack(m_converter, UCNV_TO_U_CALLBACK_SUBSTITUTE,
-                           UCNV_SUB_STOP_ON_ILLEGAL, &m_savedAction,
-                           &m_savedContext, &err);
+                UCNV_SUB_STOP_ON_ILLEGAL, &m_savedAction,
+                &m_savedContext, &err);
             ASSERT(err == U_ZERO_ERROR);
         }
     }
@@ -328,9 +326,7 @@ public:
             UErrorCode err = U_ZERO_ERROR;
             const void* oldContext;
             UConverterToUCallback oldAction;
-            ucnv_setToUCallBack(m_converter, m_savedAction,
-                   m_savedContext, &oldAction,
-                   &oldContext, &err);
+            ucnv_setToUCallBack(m_converter, m_savedAction, m_savedContext, &oldAction, &oldContext, &err);
             ASSERT(oldAction == UCNV_TO_U_CALLBACK_SUBSTITUTE);
             ASSERT(!strcmp(static_cast<const char*>(oldContext), UCNV_SUB_STOP_ON_ILLEGAL));
             ASSERT(err == U_ZERO_ERROR);
@@ -364,7 +360,7 @@ String TextCodecICU::decode(const char* bytes, size_t length, FlushBehavior flus
     UChar* bufferLimit = buffer + ConversionBufferSize;
     const char* source = reinterpret_cast<const char*>(bytes);
     const char* sourceLimit = source + length;
-    int32_t* offsets = NULL;
+    int32_t* offsets = nullptr;
     UErrorCode err = U_ZERO_ERROR;
 
     do {
@@ -427,8 +423,9 @@ static void urlEscapedEntityCallback(const void* context, UConverterFromUnicodeA
         UnencodableReplacementArray entity;
         int entityLen = TextCodec::getUnencodableReplacement(codePoint, URLEncodedEntitiesForUnencodables, entity);
         ucnv_cbFromUWriteBytes(fromUArgs, entity, entityLen, 0, err);
-    } else
+    } else {
         UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length, codePoint, reason, err);
+    }
 }
 
 #if defined(USING_SYSTEM_ICU)
@@ -510,28 +507,28 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input, UnencodableHan
     UErrorCode err = U_ZERO_ERROR;
 
     switch (handling) {
-        case QuestionMarksForUnencodables:
-            ucnv_setSubstChars(m_converterICU, "?", 1, &err);
+    case QuestionMarksForUnencodables:
+        ucnv_setSubstChars(m_converterICU, "?", 1, &err);
 #if !defined(USING_SYSTEM_ICU)
-            ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
 #else
-            ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackSubstitute : UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackSubstitute : UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0, 0, 0, &err);
 #endif
-            break;
-        case EntitiesForUnencodables:
+        break;
+    case EntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-            ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
 #else
-            ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackEscape : UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackEscape : UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
 #endif
-            break;
-        case URLEncodedEntitiesForUnencodables:
+        break;
+    case URLEncodedEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-            ucnv_setFromUCallBack(m_converterICU, urlEscapedEntityCallback, 0, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, urlEscapedEntityCallback, 0, 0, 0, &err);
 #else
-            ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkUrlEscapedEntityCallack : urlEscapedEntityCallback, 0, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkUrlEscapedEntityCallack : urlEscapedEntityCallback, 0, 0, 0, &err);
 #endif
-            break;
+        break;
     }
 
     ASSERT(U_SUCCESS(err));

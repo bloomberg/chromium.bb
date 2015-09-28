@@ -55,13 +55,13 @@ inline int inlineUTF8SequenceLength(char b0)
 // Once the bits are split out into bytes of UTF-8, this is a mask OR-ed
 // into the first byte, depending on how many bytes follow.  There are
 // as many entries in this table as there are UTF-8 sequence types.
-// (I.e., one byte sequence, two byte... etc.). Remember that sequencs
+// (I.e., one byte sequence, two byte... etc.). Remember that sequences
 // for *legal* UTF-8 will be 4 or fewer bytes total.
 static const unsigned char firstByteMark[7] = { 0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
 
 ConversionResult convertLatin1ToUTF8(
-                                     const LChar** sourceStart, const LChar* sourceEnd,
-                                     char** targetStart, char* targetEnd)
+    const LChar** sourceStart, const LChar* sourceEnd,
+    char** targetStart, char* targetEnd)
 {
     ConversionResult result = conversionOK;
     const LChar* source = *sourceStart;
@@ -164,10 +164,17 @@ ConversionResult convertUTF16ToUTF8(
             break;
         }
         switch (bytesToWrite) { // note: everything falls through.
-            case 4: *--target = (char)((ch | byteMark) & byteMask); ch >>= 6;
-            case 3: *--target = (char)((ch | byteMark) & byteMask); ch >>= 6;
-            case 2: *--target = (char)((ch | byteMark) & byteMask); ch >>= 6;
-            case 1: *--target =  (char)(ch | firstByteMark[bytesToWrite]);
+        case 4:
+            *--target = (char)((ch | byteMark) & byteMask);
+            ch >>= 6;
+        case 3:
+            *--target = (char)((ch | byteMark) & byteMask);
+            ch >>= 6;
+        case 2:
+            *--target = (char)((ch | byteMark) & byteMask);
+            ch >>= 6;
+        case 1:
+            *--target =  (char)(ch | firstByteMark[bytesToWrite]);
         }
         target += bytesToWrite;
     }
@@ -184,22 +191,45 @@ static bool isLegalUTF8(const unsigned char* source, int length)
     unsigned char a;
     const unsigned char* srcptr = source + length;
     switch (length) {
-        default: return false;
-        // Everything else falls through when "true"...
-        case 4: if ((a = (*--srcptr)) < 0x80 || a > 0xBF) return false;
-        case 3: if ((a = (*--srcptr)) < 0x80 || a > 0xBF) return false;
-        case 2: if ((a = (*--srcptr)) > 0xBF) return false;
+    default:
+        return false;
+    // Everything else falls through when "true"...
+    case 4:
+        if ((a = (*--srcptr)) < 0x80 || a > 0xBF)
+            return false;
+    case 3:
+        if ((a = (*--srcptr)) < 0x80 || a > 0xBF)
+            return false;
+    case 2:
+        if ((a = (*--srcptr)) > 0xBF)
+            return false;
 
+        // no fall-through in this inner switch
         switch (*source) {
-            // no fall-through in this inner switch
-            case 0xE0: if (a < 0xA0) return false; break;
-            case 0xED: if (a > 0x9F) return false; break;
-            case 0xF0: if (a < 0x90) return false; break;
-            case 0xF4: if (a > 0x8F) return false; break;
-            default:   if (a < 0x80) return false;
+        case 0xE0:
+            if (a < 0xA0)
+                return false;
+            break;
+        case 0xED:
+            if (a > 0x9F)
+                return false;
+            break;
+        case 0xF0:
+            if (a < 0x90)
+                return false;
+            break;
+        case 0xF4:
+            if (a > 0x8F)
+                return false;
+            break;
+        default:
+            if (a < 0x80)
+                return false;
         }
 
-        case 1: if (*source >= 0x80 && *source < 0xC2) return false;
+    case 1:
+        if (*source >= 0x80 && *source < 0xC2)
+            return false;
     }
     if (*source > 0xF4)
         return false;
@@ -217,12 +247,23 @@ static inline UChar32 readUTF8Sequence(const char*& sequence, unsigned length)
 
     // The cases all fall through.
     switch (length) {
-        case 6: character += static_cast<unsigned char>(*sequence++); character <<= 6;
-        case 5: character += static_cast<unsigned char>(*sequence++); character <<= 6;
-        case 4: character += static_cast<unsigned char>(*sequence++); character <<= 6;
-        case 3: character += static_cast<unsigned char>(*sequence++); character <<= 6;
-        case 2: character += static_cast<unsigned char>(*sequence++); character <<= 6;
-        case 1: character += static_cast<unsigned char>(*sequence++);
+    case 6:
+        character += static_cast<unsigned char>(*sequence++);
+        character <<= 6;
+    case 5:
+        character += static_cast<unsigned char>(*sequence++);
+        character <<= 6;
+    case 4:
+        character += static_cast<unsigned char>(*sequence++);
+        character <<= 6;
+    case 3:
+        character += static_cast<unsigned char>(*sequence++);
+        character <<= 6;
+    case 2:
+        character += static_cast<unsigned char>(*sequence++);
+        character <<= 6;
+    case 1:
+        character += static_cast<unsigned char>(*sequence++);
     }
 
     return character - offsetsFromUTF8[length - 1];
@@ -263,10 +304,9 @@ ConversionResult convertUTF8ToUTF16(
                     source -= utf8SequenceLength; // return to the illegal value itself
                     result = sourceIllegal;
                     break;
-                } else {
-                    *target++ = replacementCharacter;
-                    orAllData |= replacementCharacter;
                 }
+                *target++ = replacementCharacter;
+                orAllData |= replacementCharacter;
             } else {
                 *target++ = static_cast<UChar>(character); // normal case
                 orAllData |= character;
@@ -326,8 +366,9 @@ unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const char* data, c
                 if (!data[i])
                     return 0;
             }
-        } else if (dataEnd - data < utf8SequenceLength)
+        } else if (dataEnd - data < utf8SequenceLength) {
             return 0;
+        }
 
         if (!isLegalUTF8(reinterpret_cast<const unsigned char*>(data), utf8SequenceLength))
             return 0;
@@ -342,11 +383,11 @@ unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(const char* data, c
             stringHasher.addCharacter(static_cast<UChar>(character)); // normal case
             utf16Length++;
         } else if (U_IS_SUPPLEMENTARY(character)) {
-            stringHasher.addCharacters(static_cast<UChar>(U16_LEAD(character)),
-                                       static_cast<UChar>(U16_TRAIL(character)));
+            stringHasher.addCharacters(static_cast<UChar>(U16_LEAD(character)), static_cast<UChar>(U16_TRAIL(character)));
             utf16Length += 2;
-        } else
+        } else {
             return 0;
+        }
     }
 
     return stringHasher.hashWithTop8BitsMasked();
@@ -384,8 +425,9 @@ ALWAYS_INLINE bool equalWithUTF8Internal(const CharType* a, const CharType* aEnd
                 return false;
             if (*a++ != U16_TRAIL(character))
                 return false;
-        } else
+        } else {
             return false;
+        }
     }
 
     return a == aEnd;

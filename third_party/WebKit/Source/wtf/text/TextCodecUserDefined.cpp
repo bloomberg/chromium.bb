@@ -73,9 +73,9 @@ static CString encodeComplexUserDefined(const CharType* characters, size_t lengt
         UChar32 c;
         U16_NEXT(characters, i, length, c);
         signed char signedByte = static_cast<signed char>(c);
-        if ((signedByte & 0xF7FF) == c)
+        if ((signedByte & 0xF7FF) == c) {
             bytes[resultLength++] = signedByte;
-        else {
+        } else {
             // No way to encode this character with x-user-defined.
             UnencodableReplacementArray replacement;
             int replacementLength = TextCodec::getUnencodableReplacement(c, handling, replacement);

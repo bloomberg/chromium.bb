@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef WTF_UNICODE_H
-#define WTF_UNICODE_H
+#ifndef WTF_Unicode_h
+#define WTF_Unicode_h
 
 #include "wtf/Assertions.h"
 
@@ -32,4 +32,4 @@ typedef unsigned char LChar;
 
 static_assert(sizeof(UChar) == 2, "UChar should be two bytes");
 
-#endif // WTF_UNICODE_H
+#endif // WTF_Unicode_h

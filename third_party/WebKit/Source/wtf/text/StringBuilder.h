@@ -144,8 +144,9 @@ public:
                 m_bufferCharacters8[m_length++] = c;
             else
                 m_bufferCharacters16[m_length++] = c;
-        } else
+        } else {
             append(&c, 1);
+        }
     }
 
     void append(char c)

@@ -24,8 +24,8 @@
 #include "config.h"
 #include "Base64.h"
 
-#include <limits.h>
 #include "wtf/StringExtras.h"
+#include <limits.h>
 
 namespace WTF {
 
@@ -110,14 +110,15 @@ void base64Encode(const char* data, unsigned len, Vector<char>& out, Base64Encod
 
     if (sidx < len) {
         if (insertLFs && (count > 0) && !(count % 76))
-           out[didx++] = '\n';
+            out[didx++] = '\n';
 
         out[didx++] = base64EncMap[(data[sidx] >> 2) & 077];
         if (sidx < len - 1) {
             out[didx++] = base64EncMap[((data[sidx + 1] >> 4) & 017) | ((data[sidx] << 4) & 077)];
             out[didx++] = base64EncMap[(data[sidx + 1] << 2) & 077];
-        } else
+        } else {
             out[didx++] = base64EncMap[(data[sidx] << 4) & 077];
+        }
     }
 
     // Add padding

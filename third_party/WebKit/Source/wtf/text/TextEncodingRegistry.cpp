@@ -147,8 +147,8 @@ static void checkExistingName(const char* alias, const char* atomicName)
         return;
     // Keep the warning silent about one case where we know this will happen.
     if (strcmp(alias, "ISO-8859-8-I") == 0
-            && strcmp(oldAtomicName, "ISO-8859-8-I") == 0
-            && strcasecmp(atomicName, "iso-8859-8") == 0)
+        && strcmp(oldAtomicName, "ISO-8859-8-I") == 0
+        && strcasecmp(atomicName, "iso-8859-8") == 0)
         return;
     WTF_LOG_ERROR("alias %s maps to %s already, but someone is trying to make it map to %s", alias, oldAtomicName, atomicName);
 }
