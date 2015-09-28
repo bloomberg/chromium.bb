@@ -6,7 +6,6 @@
 
 {
   'variables': {
-    'chromevox1_background_script_loader_file': 'chromevox/background/loader.js',
     'chromevox1_content_script_loader_file': 'chromevox/injected/loader.js',
     'chromevox1_kbexplorer_loader_file': 'chromevox/background/kbexplorer_loader.js',
     'chromevox1_options_script_loader_file': 'chromevox/background/options_loader.js',

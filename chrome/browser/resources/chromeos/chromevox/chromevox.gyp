@@ -44,7 +44,6 @@
             }],
             ['chromevox_compress_js==1', {
               'dependencies': [
-                'chromevox1_background_script',
                 'chromevox1_content_script',
                 'chromevox1_kbexplorer_script',
                 'chromevox1_options_script',
@@ -65,7 +64,6 @@
             {
               'destination': '<(chromevox_dest_dir)/chromevox/background',
               'files': [
-                'chromevox/background/background.html',
                 'chromevox/background/kbexplorer.html',
                 'chromevox/background/options.html',
               ],
@@ -136,7 +134,6 @@
             'deps_js_output_file': '<(chromevox_dest_dir)/deps.js',
           },
           'sources': [
-            '<(chromevox1_background_script_loader_file)',
             '<(chromevox1_content_script_loader_file)',
             '<(chromevox1_kbexplorer_loader_file)',
             '<(chromevox1_options_script_loader_file)',
@@ -175,15 +172,6 @@
               'includes': [ 'compress_js.gypi', ],
             },
             {
-              'target_name': 'chromevox1_background_script',
-              'type': 'none',
-              'variables': {
-                'output_file': '<(chromevox_dest_dir)/chromeVoxChromeBackgroundScript.js',
-              },
-              'sources': [ '<(chromevox1_background_script_loader_file)' ],
-              'includes': [ 'compress_js.gypi', ],
-            },
-            {
               'target_name': 'chromevox1_options_script',
               'type': 'none',
               'variables': {
@@ -208,7 +196,6 @@
                 'output_file': '<(chromevox_dest_dir)/chromeVox2ChromeBackgroundScript.js',
               },
               'sources': [
-                '<(chromevox1_background_script_loader_file)',
                 '<(chromevox2_background_script_loader_file)',
               ],
               'includes': [ 'compress_js.gypi', ],
@@ -223,7 +210,6 @@
                 'dest_dir': '<(chromevox_dest_dir)',
               },
               'sources': [
-                '<(chromevox1_background_script_loader_file)',
                 '<(chromevox1_content_script_loader_file)',
                 '<(chromevox1_kbexplorer_loader_file)',
                 '<(chromevox1_options_script_loader_file)',

@@ -31,7 +31,6 @@ group("chromevox") {
   ]
   if (chromevox_compress_js) {
     deps += [
-      ":chromevox1_background_script",
       ":chromevox1_content_script",
       ":chromevox1_kbexplorer_script",
       ":chromevox1_options_script",
@@ -156,7 +155,6 @@ run_jsbundler("chromevox_copied_files") {
     sources += chromevox_modules
     sources += [
       "closure/closure_preinit.js",
-      chromevox_vars_gypi_values.chromevox1_background_script_loader_file,
       chromevox_vars_gypi_values.chromevox1_content_script_loader_file,
       chromevox_vars_gypi_values.chromevox1_kbexplorer_loader_file,
       chromevox_vars_gypi_values.chromevox1_options_script_loader_file,
@@ -258,13 +256,6 @@ if (chromevox_compress_js) {
     }
   }
 
-  compress_js("chromevox1_background_script") {
-    sources = [
-      chromevox_vars_gypi_values.chromevox1_background_script_loader_file,
-    ]
-    output_file = "$chromevox_out_dir/chromeVoxChromeBackgroundScript.js"
-  }
-
   compress_js("chromevox1_content_script") {
     sources = [
       chromevox_vars_gypi_values.chromevox1_content_script_loader_file,
@@ -288,7 +279,6 @@ if (chromevox_compress_js) {
 
   compress_js("chromevox2_background_script") {
     sources = [
-      chromevox_vars_gypi_values.chromevox1_background_script_loader_file,
       chromevox_vars_gypi_values.chromevox2_background_script_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVox2ChromeBackgroundScript.js"

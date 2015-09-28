@@ -58,7 +58,6 @@ _COMMON_EXTERNS = [
 _TOP_LEVEL_SCRIPTS = [
     [[CVoxPath('chromevox/background/kbexplorer_loader.js')],
      [_CHROME_EXTENSIONS_EXTERNS]],
-    [[CVoxPath('chromevox/background/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/background/options_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('chromevox/injected/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('cvox2/background/loader.js')], _COMMON_EXTERNS],

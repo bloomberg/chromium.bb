@@ -7,3 +7,4 @@
  */
 
 goog.require('Background');
+goog.require('cvox.ChromeVoxBackground');
