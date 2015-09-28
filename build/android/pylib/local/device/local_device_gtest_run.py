@@ -31,6 +31,9 @@ _EXTRA_TEST_LIST = (
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
 
+# The amount of time a test executable may run before it gets killed.
+_TEST_TIMEOUT_SECONDS = 30*60
+
 # TODO(jbudorick): Move this up to the test instance if the net test server is
 # handled outside of the APK for the remote_device environment.
 _SUITE_REQUIRES_TEST_SERVER_SPAWNER = [
@@ -231,7 +234,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
   #override
   def _RunTest(self, device, test):
     # Run the test.
-    timeout = 900 * self.GetTool(device).GetTimeoutScale()
+    timeout = _TEST_TIMEOUT_SECONDS * self.GetTool(device).GetTimeoutScale()
     output = self._delegate.Run(
         test, device, timeout=timeout, retries=0)
     for s in self._servers[str(device)]:
@@ -254,4 +257,3 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
         s.TearDown()
 
     self._env.parallel_devices.pMap(individual_device_tear_down)
-
