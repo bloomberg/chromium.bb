@@ -844,6 +844,24 @@ void DeprecatedPaintLayerScrollableArea::updateAfterStyleChange(const ComputedSt
     // To avoid doing a relayout in updateScrollbarsAfterLayout, we try to keep any automatic scrollbar that was already present.
     bool needsHorizontalScrollbar = (hasHorizontalScrollbar() && overflowDefinesAutomaticScrollbar(overflowX)) || overflowRequiresScrollbar(overflowX);
     bool needsVerticalScrollbar = (hasVerticalScrollbar() && overflowDefinesAutomaticScrollbar(overflowY)) || overflowRequiresScrollbar(overflowY);
+
+    // Look for the scrollbarModes and reset the needs Horizontal & vertical Scrollbar values based on scrollbarModes, as during force style change
+    // StyleResolver::styleForDocument returns documentStyle with  no overflow values, due to which we are destorying the scrollbars that was
+    // already present.
+    if (box().isLayoutView()) {
+        if (LocalFrame* frame = box().frame()) {
+            if (FrameView* frameView = frame->view()) {
+                ScrollbarMode hMode;
+                ScrollbarMode vMode;
+                frameView->calculateScrollbarModes(hMode, vMode);
+                if (hMode == ScrollbarAlwaysOn && !needsHorizontalScrollbar)
+                    needsHorizontalScrollbar = true;
+                if (vMode == ScrollbarAlwaysOn && !needsVerticalScrollbar)
+                    needsVerticalScrollbar = true;
+            }
+        }
+    }
+
     setHasHorizontalScrollbar(needsHorizontalScrollbar);
     setHasVerticalScrollbar(needsVerticalScrollbar);
 
