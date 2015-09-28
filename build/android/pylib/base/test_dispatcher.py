@@ -171,7 +171,8 @@ def _RunAllTests(runners, test_collection_factory, num_retries, timeout=None,
   Returns:
     A tuple of (TestRunResults object, exit code)
   """
-  logging.warning('Running tests with %s test runners.', len(runners))
+  logging.warning('Running tests with %s test %s.',
+                  len(runners), 'runners' if len(runners) != 1 else 'runner')
   results = []
   exit_code = 0
   run_results = base_test_result.TestRunResults()
@@ -226,7 +227,8 @@ def _CreateRunners(runner_factory, devices, timeout=None):
   Returns:
     A list of TestRunner objects.
   """
-  logging.warning('Creating %s test runners.', len(devices))
+  logging.warning('Creating %s test %s.', len(devices),
+                  'runners' if len(devices) != 1 else 'runner')
   runners = []
   counter = _ThreadSafeCounter()
   threads = reraiser_thread.ReraiserThreadGroup(

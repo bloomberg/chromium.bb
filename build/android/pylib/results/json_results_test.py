@@ -18,7 +18,7 @@ class JsonResultsTest(unittest.TestCase):
     all_results = base_test_result.TestRunResults()
     all_results.AddResult(result)
 
-    results_dict = json_results.GenerateResultsDict(all_results)
+    results_dict = json_results.GenerateResultsDict([all_results])
     self.assertEquals(
         ['test.package.TestName'],
         results_dict['all_tests'])
@@ -39,7 +39,7 @@ class JsonResultsTest(unittest.TestCase):
     all_results = base_test_result.TestRunResults()
     all_results.AddResult(result)
 
-    results_dict = json_results.GenerateResultsDict(all_results)
+    results_dict = json_results.GenerateResultsDict([all_results])
     self.assertEquals(
         ['test.package.TestName'],
         results_dict['all_tests'])
@@ -60,7 +60,7 @@ class JsonResultsTest(unittest.TestCase):
     all_results = base_test_result.TestRunResults()
     all_results.AddResult(result)
 
-    results_dict = json_results.GenerateResultsDict(all_results)
+    results_dict = json_results.GenerateResultsDict([all_results])
     self.assertEquals(
         ['test.package.TestName'],
         results_dict['all_tests'])
@@ -81,7 +81,7 @@ class JsonResultsTest(unittest.TestCase):
     all_results = base_test_result.TestRunResults()
     all_results.AddResult(result)
 
-    results_dict = json_results.GenerateResultsDict(all_results)
+    results_dict = json_results.GenerateResultsDict([all_results])
     self.assertEquals(
         ['test.package.TestName'],
         results_dict['all_tests'])
@@ -105,25 +105,26 @@ class JsonResultsTest(unittest.TestCase):
     all_results.AddResult(result1)
     all_results.AddResult(result2)
 
-    results_dict = json_results.GenerateResultsDict(all_results)
+    results_dict = json_results.GenerateResultsDict([all_results])
     self.assertEquals(
         ['test.package.TestName1', 'test.package.TestName2'],
         results_dict['all_tests'])
-    self.assertEquals(2, len(results_dict['per_iteration_data']))
+
+    self.assertTrue('per_iteration_data' in results_dict)
+    iterations = results_dict['per_iteration_data']
+    self.assertEquals(1, len(iterations))
 
     expected_tests = set([
         'test.package.TestName1',
         'test.package.TestName2',
     ])
 
-    for iteration_result in results_dict['per_iteration_data']:
+    for test_name, iteration_result in iterations[0].iteritems():
+      self.assertTrue(test_name in expected_tests)
+      expected_tests.remove(test_name)
       self.assertEquals(1, len(iteration_result))
-      name = iteration_result.keys()[0]
-      self.assertTrue(name in expected_tests)
-      expected_tests.remove(name)
-      self.assertEquals(1, len(iteration_result[name]))
 
-      test_iteration_result = iteration_result[name][0]
+      test_iteration_result = iteration_result[0]
       self.assertTrue('status' in test_iteration_result)
       self.assertEquals('SUCCESS', test_iteration_result['status'])
 

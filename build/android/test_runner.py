@@ -8,6 +8,7 @@
 
 import argparse
 import collections
+import itertools
 import logging
 import os
 import signal
@@ -218,6 +219,10 @@ def AddGTestOptions(parser):
   group.add_argument('--delete-stale-data', dest='delete_stale_data',
                      action='store_true',
                      help='Delete stale test data on the device.')
+  group.add_argument('--repeat', '--gtest_repeat', '--gtest-repeat',
+                     dest='repeat', type=int, default=0,
+                     help='Number of times to repeat the specified set of '
+                          'tests.')
 
   filter_group = group.add_mutually_exclusive_group()
   filter_group.add_argument('-f', '--gtest_filter', '--gtest-filter',
@@ -247,6 +252,9 @@ def AddJavaTestOptions(argument_group):
   argument_group.add_argument(
       '-f', '--test-filter', dest='test_filter',
       help=('Test filter (if not fully qualified, will run all matches).'))
+  argument_group.add_argument(
+      '--repeat', dest='repeat', type=int, default=0,
+      help='Number of times to repeat the specified set of tests.')
   argument_group.add_argument(
       '-A', '--annotation', dest='annotation_str',
       help=('Comma-separated list of annotations. Run only tests with any of '
@@ -656,7 +664,7 @@ def _RunLinkerTests(args, devices):
       test_package='ChromiumLinkerTest')
 
   if args.json_results_file:
-    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+    json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   return exit_code
 
@@ -675,41 +683,52 @@ def _RunInstrumentationTests(args, devices):
   exit_code = 0
 
   if args.run_java_tests:
-    runner_factory, tests = instrumentation_setup.Setup(
+    java_runner_factory, java_tests = instrumentation_setup.Setup(
         instrumentation_options, devices)
-
-    test_results, exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, devices, shard=True, test_timeout=None,
-        num_retries=args.num_retries)
-
-    results.AddTestRunResults(test_results)
+  else:
+    java_runner_factory = None
+    java_tests = None
 
   if args.run_python_tests:
-    runner_factory, tests = host_driven_setup.InstrumentationSetup(
+    py_runner_factory, py_tests = host_driven_setup.InstrumentationSetup(
         args.host_driven_root, args.official_build,
         instrumentation_options)
+  else:
+    py_runner_factory = None
+    py_tests = None
 
-    if tests:
+  results = []
+  repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
+                 else itertools.count())
+  for _ in repetitions:
+    iteration_results = base_test_result.TestRunResults()
+    if java_tests:
       test_results, test_exit_code = test_dispatcher.RunTests(
-          tests, runner_factory, devices, shard=True, test_timeout=None,
-          num_retries=args.num_retries)
-
-      results.AddTestRunResults(test_results)
+          java_tests, java_runner_factory, devices, shard=True,
+          test_timeout=None, num_retries=args.num_retries)
+      iteration_results.AddTestRunResults(test_results)
 
       # Only allow exit code escalation
       if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
         exit_code = test_exit_code
 
-  if args.device_flags:
-    args.device_flags = os.path.join(constants.DIR_SOURCE_ROOT,
-                                     args.device_flags)
+    if py_tests:
+      test_results, test_exit_code = test_dispatcher.RunTests(
+          py_tests, py_runner_factory, devices, shard=True, test_timeout=None,
+          num_retries=args.num_retries)
+      iteration_results.AddTestRunResults(test_results)
 
-  report_results.LogFull(
-      results=results,
-      test_type='Instrumentation',
-      test_package=os.path.basename(args.test_apk),
-      annotation=args.annotations,
-      flakiness_server=args.flakiness_dashboard_server)
+      # Only allow exit code escalation
+      if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
+        exit_code = test_exit_code
+
+    results.append(iteration_results)
+    report_results.LogFull(
+        results=iteration_results,
+        test_type='Instrumentation',
+        test_package=os.path.basename(args.test_apk),
+        annotation=args.annotations,
+        flakiness_server=args.flakiness_dashboard_server)
 
   if args.json_results_file:
     json_results.GenerateJsonResultsFile(results, args.json_results_file)
@@ -735,7 +754,7 @@ def _RunUIAutomatorTests(args, devices):
       flakiness_server=args.flakiness_dashboard_server)
 
   if args.json_results_file:
-    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+    json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   return exit_code
 
@@ -751,7 +770,7 @@ def _RunJUnitTests(args):
       test_package=args.test_suite)
 
   if args.json_results_file:
-    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+    json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   return exit_code
 
@@ -772,7 +791,7 @@ def _RunMonkeyTests(args, devices):
       test_package='Monkey')
 
   if args.json_results_file:
-    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+    json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   return exit_code
 
@@ -808,7 +827,7 @@ def _RunPerfTests(args, active_devices):
       test_package='Perf')
 
   if args.json_results_file:
-    json_results.GenerateJsonResultsFile(results, args.json_results_file)
+    json_results.GenerateJsonResultsFile([results], args.json_results_file)
 
   if perf_options.single_step:
     return perf_test_runner.PrintTestOutput('single_step')
@@ -935,23 +954,28 @@ def RunTestsInPlatformMode(args, parser):
     with test_instance_factory.CreateTestInstance(args, infra_error) as test:
       with test_run_factory.CreateTestRun(
           args, env, test, infra_error) as test_run:
-        results = test_run.RunTests()
+        results = []
+        repetitions = (xrange(args.repeat + 1) if args.repeat >= 0
+                       else itertools.count())
+        for _ in repetitions:
+          iteration_results = test_run.RunTests()
+          results.append(iteration_results)
 
-        if args.environment == 'remote_device' and args.trigger:
-          return 0 # Not returning results, only triggering.
-
-        report_results.LogFull(
-            results=results,
-            test_type=test.TestType(),
-            test_package=test_run.TestPackage(),
-            annotation=getattr(args, 'annotations', None),
-            flakiness_server=getattr(args, 'flakiness_dashboard_server', None))
+          if iteration_results is not None:
+            report_results.LogFull(
+                results=iteration_results,
+                test_type=test.TestType(),
+                test_package=test_run.TestPackage(),
+                annotation=getattr(args, 'annotations', None),
+                flakiness_server=getattr(args, 'flakiness_dashboard_server',
+                                         None))
 
         if args.json_results_file:
           json_results.GenerateJsonResultsFile(
               results, args.json_results_file)
 
-  return 0 if results.DidRunPass() else constants.ERROR_EXIT_CODE
+  return (0 if all(r.DidRunPass() for r in results)
+          else constants.ERROR_EXIT_CODE)
 
 
 CommandConfigTuple = collections.namedtuple(
