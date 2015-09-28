@@ -7,6 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_split.h"
 #include "base/time/time.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/x509_cert_types.h"
@@ -17,8 +19,14 @@
 #include "url/gurl.h"
 
 using base::Time;
+using content::WebContents;
 
-class SSLErrorClassificationTest : public testing::Test {};
+class SSLErrorClassificationTest : public ChromeRenderViewHostTestHarness {
+ public:
+  SSLErrorClassificationTest() {
+    SetThreadBundleOptions(content::TestBrowserThreadBundle::REAL_IO_THREAD);
+  }
+};
 
 TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   scoped_refptr<net::X509Certificate> google_cert(
@@ -33,11 +41,16 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
   std::vector<std::vector<std::string>> dns_name_tokens_google;
   dns_name_tokens_google.push_back(dns_names_google);
   int cert_error = net::ERR_CERT_COMMON_NAME_INVALID;
+  WebContents* contents = web_contents();
   {
     GURL origin("https://google.com");
     std::vector<std::string> host_name_tokens = base::SplitString(
         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    SSLErrorClassification ssl_error(time, origin, cert_error, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_TRUE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -52,7 +65,11 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
     GURL origin("https://foo.blah.google.com");
     std::vector<std::string> host_name_tokens = base::SplitString(
         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    SSLErrorClassification ssl_error(time, origin, cert_error, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -65,7 +82,11 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
     GURL origin("https://foo.www.google.com");
     std::vector<std::string> host_name_tokens = base::SplitString(
         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    SSLErrorClassification ssl_error(time, origin, cert_error, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_TRUE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                             dns_name_tokens_google));
@@ -78,7 +99,11 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
      GURL origin("https://www.google.com.foo");
      std::vector<std::string> host_name_tokens = base::SplitString(
          origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-     SSLErrorClassification ssl_error(time, origin, cert_error, *google_cert);
+     SSLErrorClassification ssl_error(contents,
+                                      time,
+                                      origin,
+                                      cert_error,
+                                      *google_cert);
      EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
      EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                               dns_name_tokens_google));
@@ -91,7 +116,11 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
     GURL origin("https://www.foogoogle.com.");
     std::vector<std::string> host_name_tokens = base::SplitString(
         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    SSLErrorClassification ssl_error(time, origin, cert_error, *google_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *google_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_google));
@@ -113,7 +142,11 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
     GURL origin("https://a.b.webkit.org");
     std::vector<std::string> host_name_tokens = base::SplitString(
         origin.host(), ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-    SSLErrorClassification ssl_error(time, origin, cert_error, *webkit_cert);
+    SSLErrorClassification ssl_error(contents,
+                                     time,
+                                     origin,
+                                     cert_error,
+                                     *webkit_cert);
     EXPECT_FALSE(ssl_error.IsWWWSubDomainMatch());
     EXPECT_FALSE(ssl_error.NameUnderAnyNames(host_name_tokens,
                                              dns_name_tokens_webkit));

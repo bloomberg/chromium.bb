@@ -99,7 +99,7 @@ class SecurityInterstitialPage : public content::InterstitialPageDelegate {
 
   security_interstitials::MetricsHelper* metrics_helper() const;
   void set_metrics_helper(
-      scoped_ptr<security_interstitials::MetricsHelper> metrics_helper);
+      security_interstitials::MetricsHelper* metrics_helper);
 
  private:
   scoped_ptr<security_interstitials::MetricsHelper> metrics_helper_;
