@@ -66,4 +66,41 @@ TEST(NineImagePainterTest, PaintScale) {
   }
 }
 
+TEST(NineImagePainterTest, PaintStaysInBounds) {
+  // In this test the bounds rect is 1x1 but each image is 2x2.
+  // The NineImagePainter should not paint outside the bounds.
+
+  SkBitmap src;
+  src.allocN32Pixels(6, 6);
+  src.eraseColor(SK_ColorRED);
+
+  gfx::ImageSkia image(gfx::ImageSkiaRep(src, 0.0f));
+  gfx::Insets insets(2, 2, 2, 2);
+  gfx::NineImagePainter painter(image, insets);
+
+  int image_scale = 1;
+  bool is_opaque = true;
+  gfx::Canvas canvas(gfx::Size(3, 3), image_scale, is_opaque);
+  canvas.DrawColor(SK_ColorBLACK);
+
+  gfx::Rect bounds(1, 1, 1, 1);
+  painter.Paint(&canvas, bounds);
+
+  SkBitmap result;
+  const SkISize size = canvas.sk_canvas()->getDeviceSize();
+  result.allocN32Pixels(size.width(), size.height());
+  canvas.sk_canvas()->readPixels(&result, 0, 0);
+
+  EXPECT_EQ(SK_ColorRED, result.getColor(1, 1));
+
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(0, 0));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(0, 1));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(0, 2));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(1, 0));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(1, 2));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 0));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 1));
+  EXPECT_EQ(SK_ColorBLACK, result.getColor(2, 2));
+}
+
 }  // namespace gfx

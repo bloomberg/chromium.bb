@@ -132,9 +132,6 @@ void NineImagePainter::Paint(Canvas* canvas,
   int i6w = ImageWidthInPixels(images_[6], scale_x);
   int i8w = ImageWidthInPixels(images_[8], scale_x);
 
-  int i4x = std::min(std::min(i0w, i3w), i6w);
-  int i4w = width_in_pixels - i4x - std::min(std::min(i2w, i5w), i8w);
-
   int i0h = ImageHeightInPixels(images_[0], scale_y);
   int i1h = ImageHeightInPixels(images_[1], scale_y);
   int i2h = ImageHeightInPixels(images_[2], scale_y);
@@ -142,13 +139,26 @@ void NineImagePainter::Paint(Canvas* canvas,
   int i7h = ImageHeightInPixels(images_[7], scale_y);
   int i8h = ImageHeightInPixels(images_[8], scale_y);
 
-  int i4y = std::min(std::min(i0h, i1h), i2h);
-  int i4h = height_in_pixels - i4y - std::min(std::min(i6h, i7h), i8h);
+  bool has_room_for_border =
+      i0w + i2w <= width_in_pixels && i3w + i5w <= width_in_pixels &&
+      i6w + i8w <= width_in_pixels && i0h + i6h <= height_in_pixels &&
+      i1h + i7h <= height_in_pixels && i2h + i8h <= height_in_pixels;
+
+  int i4x = has_room_for_border ? std::min(std::min(i0w, i3w), i6w) : 0;
+  int i4w = width_in_pixels -
+            (has_room_for_border ? i4x + std::min(std::min(i2w, i5w), i8w) : 0);
+
+  int i4y = has_room_for_border ? std::min(std::min(i0h, i1h), i2h) : 0;
+  int i4h = height_in_pixels -
+            (has_room_for_border ? i4y + std::min(std::min(i6h, i7h), i8h) : 0);
 
   SkPaint paint;
   paint.setAlpha(alpha);
 
   Fill(canvas, images_[4], i4x, i4y, i4w, i4h, paint);
+
+  if (!has_room_for_border)
+    return;
 
   Fill(canvas, images_[0], 0, 0, i0w, i0h, paint);
 
