@@ -68,9 +68,14 @@ static const struct VideoQualityTestConfig {
   { "360p", 640, 360,
     test::kReferenceFileName360p,
     WebRtcTestBase::kAudioVideoCallConstraints360p },
+    // TODO(phoglund): Temporarily disabled on Windows because 720p has become
+    // very, very slow on Windows (550s).
+    // See https://code.google.com/p/webrtc/issues/detail?id=4986.
+#if !defined(OS_WIN)
     { "720p", 1280, 720,
     test::kReferenceFileName720p,
     WebRtcTestBase::kAudioVideoCallConstraints720p },
+#endif
 };
 
 // Test the video quality of the WebRTC output.
@@ -332,8 +337,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
       polling_interval_msec));
 
   HangUp(left_tab);
-  CloseLastLocalStream(left_tab);
-  CloseLastLocalStream(right_tab);
 
   WriteCapturedFramesToWorkingDir(right_tab);
 
