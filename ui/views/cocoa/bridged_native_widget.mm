@@ -11,6 +11,7 @@
 #include "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/thread_task_runner_handle.h"
+#include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/constrained_window/constrained_window_animation.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
@@ -211,6 +212,18 @@ void SetupDragEventMonitor() {
       handler:^NSEvent*(NSEvent* ns_event) {
         return RepostEventIfHandledByWindow(ns_event);
       }];
+}
+
+// Returns a task runner for creating a ui::Compositor. This allows compositor
+// tasks to be funneled through ui::WindowResizeHelper's task runner to allow
+// resize operations to coordinate with frames provided by the GPU process.
+scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() {
+  // If the WindowResizeHelper's pumpable task runner is set, it means the GPU
+  // process is directing messages there, and the compositor can synchronize
+  // with it. Otherwise, just use the UI thread.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      ui::WindowResizeHelperMac::Get()->task_runner();
+  return task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
 }
 
 }  // namespace
@@ -619,8 +632,11 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState() {
 void BridgedNativeWidget::OnSizeChanged() {
   gfx::Size new_size = GetClientAreaSize();
   native_widget_mac_->GetWidget()->OnNativeWidgetSizeChanged(new_size);
-  if (layer())
+  if (layer()) {
     UpdateLayerProperties();
+    if ([window_ inLiveResize])
+      MaybeWaitForFrame(new_size);
+  }
 }
 
 void BridgedNativeWidget::OnVisibilityChanged() {
@@ -1012,7 +1028,7 @@ void BridgedNativeWidget::CreateCompositor() {
   compositor_widget_.reset(
       new ui::AcceleratedWidgetMac(needs_gl_finish_workaround));
   compositor_.reset(
-      new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
+      new ui::Compositor(context_factory, GetCompositorTaskRunner()));
   compositor_->SetAcceleratedWidgetAndStartCompositor(
       compositor_widget_->accelerated_widget());
   compositor_widget_->SetNSView(this);
@@ -1107,6 +1123,28 @@ void BridgedNativeWidget::UpdateLayerProperties() {
   // after the frame from the compositor arrives.
   if (![window_ isOpaque])
     invalidate_shadow_on_frame_swap_ = true;
+}
+
+void BridgedNativeWidget::MaybeWaitForFrame(const gfx::Size& size_in_dip) {
+  if (!layer()->IsDrawn() || compositor_widget_->HasFrameOfSize(size_in_dip))
+    return;
+
+  const int kPaintMsgTimeoutMS = 50;
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  const base::TimeTicks timeout_time =
+      start_time + base::TimeDelta::FromMilliseconds(kPaintMsgTimeoutMS);
+
+  ui::WindowResizeHelperMac* resize_helper = ui::WindowResizeHelperMac::Get();
+  for (base::TimeTicks now = start_time; now < timeout_time;
+       now = base::TimeTicks::Now()) {
+    if (!resize_helper->WaitForSingleTaskToRun(timeout_time - now))
+      return;  // Timeout.
+
+    // Since the UI thread is blocked, the size shouldn't change.
+    DCHECK(size_in_dip == GetClientAreaSize());
+    if (compositor_widget_->HasFrameOfSize(size_in_dip))
+      return;  // Frame arrived.
+  }
 }
 
 NSMutableDictionary* BridgedNativeWidget::GetWindowProperties() const {

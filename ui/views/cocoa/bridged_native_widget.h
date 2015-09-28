@@ -201,6 +201,11 @@ class VIEWS_EXPORT BridgedNativeWidget
   // scale factor.
   void UpdateLayerProperties();
 
+  // Immediately return if there is a composited frame matching |size_in_dip|.
+  // Otherwise, asks ui::WindowResizeHelperMac to run tasks until a matching
+  // frame is ready, or a timeout occurs.
+  void MaybeWaitForFrame(const gfx::Size& size_in_dip);
+
   // Sets mouseDownCanMoveWindow on |bridged_view_| and triggers the NSWindow to
   // update its draggable region.
   void SetDraggable(bool draggable);
