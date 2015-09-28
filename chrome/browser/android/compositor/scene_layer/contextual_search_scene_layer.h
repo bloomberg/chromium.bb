@@ -55,7 +55,6 @@ class ContextualSearchSceneLayer : public SceneLayer {
                                    jfloat search_bar_shadow_opacity,
                                    jfloat arrow_icon_opacity,
                                    jfloat arrow_icon_rotation,
-                                   jboolean close_icon_visible,
                                    jfloat close_icon_opacity,
                                    jboolean progress_bar_visible,
                                    jfloat progress_bar_y,

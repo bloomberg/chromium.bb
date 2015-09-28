@@ -63,6 +63,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     private static final long INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS = 40;
 
     /**
+     * The extra dp added around the close button touch target.
+     */
+    private static final int CLOSE_BUTTON_TOUCH_SLOP_DP = 5;
+
+    /**
      * The activity this panel is in.
      */
     private ChromeActivity mActivity;
@@ -296,15 +301,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
                         maximizePanel(StateChangeReason.SEARCH_BAR_TAP);
                     }
                 }
-            } else if (isExpanded()) {
-                peekPanel(StateChangeReason.SEARCH_BAR_TAP);
-            } else if (isMaximized()) {
-                if (mSearchPanelFeatures.isSearchTermRefiningAvailable()) {
-                    getManagementDelegate().promoteToTab();
-                }
-                if (mSearchPanelFeatures.isCloseButtonAvailable()
-                        && isCoordinateInsideCloseButton(x, y)) {
+            } else if (isExpanded() || isMaximized()) {
+                if (isCoordinateInsideCloseButton(x, y)) {
                     closePanel(StateChangeReason.CLOSE_BUTTON, true);
+                } else if (mSearchPanelFeatures.isSearchTermRefiningAvailable()) {
+                    getManagementDelegate().promoteToTab();
                 }
             }
         }
@@ -373,8 +374,10 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      * @return Whether the given |x| |y| coordinate is inside the close button.
      */
     private boolean isCoordinateInsideCloseButton(float x, float y) {
-        boolean isInY = y >= getCloseIconY() && y <= (getCloseIconY() + getCloseIconDimension());
-        boolean isInX = x >= getCloseIconX() && x <= (getCloseIconX() + getCloseIconDimension());
+        boolean isInY = y >= (getCloseIconY() - CLOSE_BUTTON_TOUCH_SLOP_DP)
+                && y <= (getCloseIconY() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
+        boolean isInX = x >= (getCloseIconX() - CLOSE_BUTTON_TOUCH_SLOP_DP)
+                && x <= (getCloseIconX() + getCloseIconDimension() + CLOSE_BUTTON_TOUCH_SLOP_DP);
         return isInY && isInX;
     }
 

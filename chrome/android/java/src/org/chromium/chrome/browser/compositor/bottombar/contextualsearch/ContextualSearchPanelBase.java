@@ -47,7 +47,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * The height of the expanded Search Panel relative to the height of the screen when
      * the panel is in the narrow width mode.
      */
-    private static final float NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE = .3f;
+    private static final float NARROW_EXPANDED_PANEL_HEIGHT_PERCENTAGE = .6f;
 
     /**
      * The height of the maximized Search Panel relative to the height of the screen when
@@ -94,7 +94,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The opacity of the arrow icon when the Panel is expanded.
      */
-    private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 1.f;
+    private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 0.f;
 
     /**
      * The opacity of the arrow icon when the Panel is maximized.
@@ -102,14 +102,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private static final float ARROW_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /**
-     * The rotation of the arrow icon when the Panel is peeking.
+     * The rotation of the arrow icon.
      */
-    private static final float ARROW_ICON_ROTATION_STATE_PEEKED = -90.f;
-
-    /**
-     * The rotation of the arrow icon when the Panel is expanded.
-     */
-    private static final float ARROW_ICON_ROTATION_STATE_EXPANDED = -270.f;
+    private static final float ARROW_ICON_ROTATION = -90.f;
 
     /**
      * The opacity of the close icon when the Panel is peeking.
@@ -119,7 +114,7 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     /**
      * The opacity of the close icon when the Panel is expanded.
      */
-    private static final float CLOSE_ICON_OPACITY_STATE_EXPANDED = 0.f;
+    private static final float CLOSE_ICON_OPACITY_STATE_EXPANDED = 1.f;
 
     /**
      * The opacity of the close icon when the Panel is maximized.
@@ -554,7 +549,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     private float mSearchBarShadowOpacity = 0.f;
 
     private float mArrowIconOpacity;
-    private float mArrowIconRotation;
 
     private float mCloseIconOpacity;
     private float mCloseIconWidth;
@@ -633,15 +627,9 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      * @return The rotation of the arrow icon, in degrees.
      */
     public float getArrowIconRotation() {
-        return mArrowIconRotation;
+        return ARROW_ICON_ROTATION;
     }
 
-    /**
-     * @return Whether the close icon is visible.
-     */
-    public boolean isCloseIconVisible() {
-        return mSearchPanelFeatures.isCloseButtonAvailable();
-    }
 
     /**
      * @return The opacity of the close icon.
@@ -1071,7 +1059,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
 
         // Arrow Icon.
         mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_PEEKED;
-        mArrowIconRotation = ARROW_ICON_ROTATION_STATE_PEEKED;
 
         // Close icon opacity.
         mCloseIconOpacity = CLOSE_ICON_OPACITY_STATE_PEEKED;
@@ -1118,15 +1105,23 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mIsSearchBarBorderVisible = true;
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
 
-        // Arrow Icon.
-        mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_EXPANDED;
-        mArrowIconRotation = Math.round(MathUtils.interpolate(
-                ARROW_ICON_ROTATION_STATE_PEEKED,
-                ARROW_ICON_ROTATION_STATE_EXPANDED,
-                percentage));
+        // Determine fading element opacities. The arrow icon needs to finish fading out before
+        // the close icon starts fading in. Any other elements fading in or fading out should use
+        // the same percentage.
+        float fadingOutPercentage = Math.min(percentage, .5f) / .5f;
+        float fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
 
-        // Close icon opacity.
-        mCloseIconOpacity = CLOSE_ICON_OPACITY_STATE_EXPANDED;
+        // Arrow Icon.
+        mArrowIconOpacity = MathUtils.interpolate(
+                ARROW_ICON_OPACITY_STATE_PEEKED,
+                ARROW_ICON_OPACITY_STATE_EXPANDED,
+                fadingOutPercentage);
+
+        // Close Icon.
+        mCloseIconOpacity = MathUtils.interpolate(
+                CLOSE_ICON_OPACITY_STATE_PEEKED,
+                CLOSE_ICON_OPACITY_STATE_EXPANDED,
+                fadingInPercentage);
 
         // Progress Bar.
         float peekedHeight = getPanelHeightFromState(PanelState.PEEKED);
@@ -1174,29 +1169,11 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         mIsSearchBarBorderVisible = true;
         mSearchBarBorderY = searchBarHeight - SEARCH_BAR_BORDER_HEIGHT_DP + 1;
 
-        // Determine fading element opacities. If both the arrow icon and close
-        // icon are visible, the arrow icon needs to finish fading out before
-        // the close icon starts fading in. Any other elements fading in or
-        // fading out should use the same percentage.
-        float fadingOutPercentage = percentage;
-        float fadingInPercentage = percentage;
-        if (mSearchPanelFeatures.isCloseButtonAvailable()) {
-            fadingOutPercentage = Math.min(percentage, .5f) / .5f;
-            fadingInPercentage = Math.max(percentage - .5f, 0.f) / .5f;
-        }
-
         // Arrow Icon.
-        mArrowIconOpacity = MathUtils.interpolate(
-                ARROW_ICON_OPACITY_STATE_EXPANDED,
-                ARROW_ICON_OPACITY_STATE_MAXIMIZED,
-                fadingOutPercentage);
-        mArrowIconRotation = ARROW_ICON_ROTATION_STATE_EXPANDED;
+        mArrowIconOpacity = ARROW_ICON_OPACITY_STATE_MAXIMIZED;
 
-        // Close icon opacity.
-        mCloseIconOpacity = MathUtils.interpolate(
-                CLOSE_ICON_OPACITY_STATE_EXPANDED,
-                CLOSE_ICON_OPACITY_STATE_MAXIMIZED,
-                fadingInPercentage);
+        // Close Icon.
+        mCloseIconOpacity = CLOSE_ICON_OPACITY_STATE_MAXIMIZED;
 
         // Progress Bar.
         mProgressBarOpacity = 1.f;

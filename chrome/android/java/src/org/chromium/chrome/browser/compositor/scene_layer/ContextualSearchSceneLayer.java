@@ -60,7 +60,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
         float arrowIconOpacity = mSearchPanel.getArrowIconOpacity();
         float arrowIconRotation = mSearchPanel.getArrowIconRotation();
 
-        boolean closeIconVisible = mSearchPanel.isCloseIconVisible();
         float closeIconOpacity = mSearchPanel.getCloseIconOpacity();
 
         boolean isProgressBarVisible = mSearchPanel.isProgressBarVisible();
@@ -99,7 +98,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
                 searchBarShadowOpacity,
                 arrowIconOpacity,
                 arrowIconRotation,
-                closeIconVisible,
                 closeIconOpacity,
                 isProgressBarVisible,
                 progressBarY * mDpToPx,
@@ -158,7 +156,6 @@ public class ContextualSearchSceneLayer extends SceneLayer {
             float searchBarShadowOpacity,
             float arrowIconOpacity,
             float arrowIconRotation,
-            boolean closeIconVisible,
             float closeIconOpacity,
             boolean isProgressBarVisible,
             float progressBarY,

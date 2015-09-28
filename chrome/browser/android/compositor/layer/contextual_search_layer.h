@@ -61,7 +61,6 @@ class ContextualSearchLayer : public Layer {
                      float search_bar_shadow_opacity,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
-                     bool close_icon_visible,
                      float close_icon_opacity,
                      bool progress_bar_visible,
                      float progress_bar_y,
