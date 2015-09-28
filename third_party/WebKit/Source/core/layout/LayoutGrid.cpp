@@ -1405,35 +1405,23 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren, PositionedLayout
         }
 
         // FIXME: Detect properly if start/end is auto for inexistent named grid lines.
-        bool columnStartIsAuto = child->style()->gridColumnStart().isAuto();
         LayoutUnit columnOffset = LayoutUnit();
         LayoutUnit columnBreadth = LayoutUnit();
-        offsetAndBreadthForPositionedChild(*child, ForColumns, columnStartIsAuto, child->style()->gridColumnEnd().isAuto(), columnOffset, columnBreadth);
-        bool rowStartIsAuto = child->style()->gridRowStart().isAuto();
+        offsetAndBreadthForPositionedChild(*child, ForColumns, columnOffset, columnBreadth);
         LayoutUnit rowOffset = LayoutUnit();
         LayoutUnit rowBreadth = LayoutUnit();
-        offsetAndBreadthForPositionedChild(*child, ForRows, rowStartIsAuto, child->style()->gridRowEnd().isAuto(), rowOffset, rowBreadth);
+        offsetAndBreadthForPositionedChild(*child, ForRows, rowOffset, rowBreadth);
 
         child->setOverrideContainingBlockContentLogicalWidth(columnBreadth);
         child->setOverrideContainingBlockContentLogicalHeight(rowBreadth);
         child->setExtraInlineOffset(columnOffset);
         child->setExtraBlockOffset(rowOffset);
-
-        if (child->parent() == this) {
-            // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
-            // If column/row start is not "auto" the padding has been already computed in offsetAndBreadthForPositionedChild().
-            DeprecatedPaintLayer* childLayer = child->layer();
-            if (!columnStartIsAuto)
-                childLayer->setStaticInlinePosition(borderStart() + columnOffset);
-            if (!rowStartIsAuto)
-                childLayer->setStaticBlockPosition(borderBefore() + rowOffset);
-        }
     }
 
     LayoutBlock::layoutPositionedObjects(relayoutChildren, info);
 }
 
-void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, GridTrackSizingDirection direction, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth)
+void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, GridTrackSizingDirection direction, LayoutUnit& offset, LayoutUnit& breadth)
 {
     ASSERT(child.isHorizontalWritingMode() == isHorizontalWritingMode());
 
@@ -1443,6 +1431,9 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         breadth = (direction == ForColumns) ? clientLogicalWidth() : clientLogicalHeight();
         return;
     }
+
+    bool startIsAuto = (direction == ForColumns) ? child.style()->gridColumnStart().isAuto() : child.style()->gridRowStart().isAuto();
+    bool endIsAuto = (direction == ForColumns) ? child.style()->gridColumnEnd().isAuto() : child.style()->gridRowEnd().isAuto();
 
     GridResolvedPosition firstPosition = GridResolvedPosition(0);
     GridResolvedPosition initialPosition = startIsAuto ? firstPosition : positions->resolvedInitialPosition;
@@ -1469,6 +1460,15 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
     }
 
     offset = start;
+
+    if (child.parent() == this && !startIsAuto) {
+        // If column/row start is "auto" the static position has been already set in prepareChildForPositionedLayout().
+        DeprecatedPaintLayer* childLayer = child.layer();
+        if (direction == ForColumns)
+            childLayer->setStaticInlinePosition(borderStart() + offset);
+        else
+            childLayer->setStaticBlockPosition(borderBefore() + offset);
+    }
 }
 
 GridCoordinate LayoutGrid::cachedGridCoordinate(const LayoutBox& gridItem) const

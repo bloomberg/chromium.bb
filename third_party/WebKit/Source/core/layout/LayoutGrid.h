@@ -126,7 +126,7 @@ private:
     void layoutGridItems();
     void prepareChildForPositionedLayout(LayoutBox&);
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
-    void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, bool startIsAuto, bool endIsAuto, LayoutUnit& offset, LayoutUnit& breadth);
+    void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, LayoutUnit& offset, LayoutUnit& breadth);
     void populateGridPositions(GridSizingData&, LayoutUnit availableSpaceForColumns, LayoutUnit availableSpaceForRows);
 
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
