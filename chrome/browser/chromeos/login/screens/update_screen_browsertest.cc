@@ -57,7 +57,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     // ethernet and wifi networks. Ethernet is an active network by
     // default.
     network_portal_detector_ = new NetworkPortalDetectorTestImpl();
-    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
+    network_portal_detector::InitializeForTesting(network_portal_detector_);
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
@@ -94,7 +94,7 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    NetworkPortalDetector::Shutdown();
+    network_portal_detector::Shutdown();
     WizardInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 

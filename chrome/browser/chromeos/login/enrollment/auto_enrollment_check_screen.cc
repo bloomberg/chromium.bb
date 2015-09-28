@@ -26,7 +26,7 @@ NetworkPortalDetector::CaptivePortalStatus GetCaptivePortalStatus() {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   return default_network
-             ? NetworkPortalDetector::Get()
+             ? network_portal_detector::GetInstance()
                    ->GetCaptivePortalState(default_network->guid())
                    .status
              : NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
@@ -57,7 +57,7 @@ AutoEnrollmentCheckScreen::AutoEnrollmentCheckScreen(
 }
 
 AutoEnrollmentCheckScreen::~AutoEnrollmentCheckScreen() {
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
   if (actor_)
     actor_->SetDelegate(NULL);
 }
@@ -65,7 +65,7 @@ AutoEnrollmentCheckScreen::~AutoEnrollmentCheckScreen() {
 void AutoEnrollmentCheckScreen::ClearState() {
   auto_enrollment_progress_subscription_.reset();
   connect_request_subscription_.reset();
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
 
   auto_enrollment_state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
   captive_portal_status_ = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
@@ -98,8 +98,7 @@ void AutoEnrollmentCheckScreen::Show() {
           base::Bind(
               &AutoEnrollmentCheckScreen::OnAutoEnrollmentCheckProgressed,
               base::Unretained(this)));
-  NetworkPortalDetector* portal_detector = NetworkPortalDetector::Get();
-  portal_detector->AddObserver(this);
+  network_portal_detector::GetInstance()->AddObserver(this);
 
   // Perform an initial UI update.
   NetworkPortalDetector::CaptivePortalStatus new_captive_portal_status =
@@ -115,7 +114,7 @@ void AutoEnrollmentCheckScreen::Show() {
 
   // Make sure gears are in motion in the background.
   auto_enrollment_controller_->Start();
-  portal_detector->StartDetectionIfIdle();
+  network_portal_detector::GetInstance()->StartDetectionIfIdle();
 }
 
 void AutoEnrollmentCheckScreen::Hide() {
@@ -244,7 +243,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 }
 
 void AutoEnrollmentCheckScreen::SignalCompletion() {
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
   auto_enrollment_progress_subscription_.reset();
   connect_request_subscription_.reset();
 

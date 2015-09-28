@@ -455,15 +455,16 @@ void NetworkingPrivateChromeOS::GetCaptivePortalStatus(
     const std::string& guid,
     const StringCallback& success_callback,
     const FailureCallback& failure_callback) {
-  if (!chromeos::NetworkPortalDetector::IsInitialized()) {
+  if (!chromeos::network_portal_detector::IsInitialized()) {
     failure_callback.Run(networking_private::kErrorNotReady);
     return;
   }
 
-  chromeos::NetworkPortalDetector::CaptivePortalState state =
-      chromeos::NetworkPortalDetector::Get()->GetCaptivePortalState(guid);
   success_callback.Run(
-      chromeos::NetworkPortalDetector::CaptivePortalStatusString(state.status));
+      chromeos::NetworkPortalDetector::CaptivePortalStatusString(
+          chromeos::network_portal_detector::GetInstance()
+              ->GetCaptivePortalState(guid)
+              .status));
 }
 
 void NetworkingPrivateChromeOS::UnlockCellularSim(

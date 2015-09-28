@@ -204,10 +204,9 @@ class MockExternalProviderVisitor
 class ServicesCustomizationDocumentTest : public testing::Test {
  protected:
   ServicesCustomizationDocumentTest()
-    : factory_(NULL,
-               base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-               base::Unretained(&url_callback_))) {
-  }
+      : factory_(nullptr,
+                 base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
+                            base::Unretained(&url_callback_))) {}
 
   // testing::Test:
   void SetUp() override {
@@ -221,7 +220,7 @@ class ServicesCustomizationDocumentTest : public testing::Test {
     std::string default_network_path =
         default_network ? default_network->path() : "";
 
-    NetworkPortalDetector::InitializeForTesting(&network_portal_detector_);
+    network_portal_detector::InitializeForTesting(&network_portal_detector_);
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
     online_state.response_code = 204;
@@ -238,10 +237,10 @@ class ServicesCustomizationDocumentTest : public testing::Test {
   }
 
   void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
+    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
     NetworkHandler::Shutdown();
     DBusThreadManager::Shutdown();
-    NetworkPortalDetector::InitializeForTesting(NULL);
+    network_portal_detector::InitializeForTesting(nullptr);
 
     ServicesCustomizationDocument::ShutdownForTesting();
   }

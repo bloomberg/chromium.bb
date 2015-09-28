@@ -486,7 +486,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         new net::FakeURLFetcherFactory(fallback_fetcher_factory_.get()));
 
     network_portal_detector_ = new NetworkPortalDetectorTestImpl();
-    NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
+    network_portal_detector::InitializeForTesting(network_portal_detector_);
 
     NetworkPortalDetector::CaptivePortalState online_state;
     online_state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;

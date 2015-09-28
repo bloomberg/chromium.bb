@@ -600,9 +600,10 @@ bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
 
 bool NetworkIconImpl::UpdatePortalState(const NetworkState* network) {
   bool behind_captive_portal = false;
-  if (network && NetworkPortalDetector::IsInitialized()) {
+  if (network && chromeos::network_portal_detector::IsInitialized()) {
     NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::Get()->GetCaptivePortalState(network->guid());
+        chromeos::network_portal_detector::GetInstance()->GetCaptivePortalState(
+            network->guid());
     behind_captive_portal =
         state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL;
   }

@@ -272,7 +272,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     detector_ = new NetworkPortalDetectorTestImpl();
-    NetworkPortalDetector::InitializeForTesting(detector_);
+    chromeos::network_portal_detector::InitializeForTesting(detector_);
 
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();

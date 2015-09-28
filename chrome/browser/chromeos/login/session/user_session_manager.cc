@@ -477,8 +477,8 @@ void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
 void UserSessionManager::PerformPostUserLoggedInActions() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
-    if (NetworkPortalDetector::IsInitialized()) {
-      NetworkPortalDetector::Get()->SetStrategy(
+    if (network_portal_detector::IsInitialized()) {
+      network_portal_detector::GetInstance()->SetStrategy(
           PortalDetectorStrategy::STRATEGY_ID_SESSION);
     }
   }

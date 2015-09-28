@@ -105,6 +105,7 @@
 #include "chromeos/network/network_change_notifier_chromeos.h"
 #include "chromeos/network/network_change_notifier_factory_chromeos.h"
 #include "chromeos/network/network_handler.h"
+#include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/system/statistics_provider.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/device_event_log/device_event_log.h"
@@ -153,6 +154,21 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
       !command_line.HasSwitch(switches::kForceLoginManagerInTests) &&
       app_manager->IsAutoLaunchEnabled() &&
       KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
+}
+
+// Creates an instance of the NetworkPortalDetector implementation or a stub.
+void InitializeNetworkPortalDetector() {
+  if (network_portal_detector::SetForTesting())
+    return;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kTestType)) {
+    network_portal_detector::SetNetworkPortalDetector(
+        new NetworkPortalDetectorStub());
+  } else {
+    network_portal_detector::SetNetworkPortalDetector(
+        new NetworkPortalDetectorImpl(
+            g_browser_process->system_request_context(), true));
+  }
 }
 
 }  // namespace
@@ -550,8 +566,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // NetworkStateHandler and initiates captive portal detection for
   // active networks. Should be called before call to CreateSessionManager,
   // because it depends on NetworkPortalDetector.
-  NetworkPortalDetectorImpl::Initialize(
-      g_browser_process->system_request_context());
+  InitializeNetworkPortalDetector();
   {
 #if defined(GOOGLE_CHROME_BUILD)
     bool is_official_build = true;
@@ -561,7 +576,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     // Enable portal detector if EULA was previously accepted or if
     // this is an unofficial build.
     if (!is_official_build || StartupUtils::IsEulaAccepted())
-      NetworkPortalDetector::Get()->Enable(true);
+      network_portal_detector::GetInstance()->Enable(true);
   }
 
   // Initialize input methods.
@@ -761,7 +776,7 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be
   // executed after execution of chrome::CloseAsh(), because some
   // parts of WebUI depends on NetworkPortalDetector.
-  NetworkPortalDetector::Shutdown();
+  network_portal_detector::Shutdown();
 
   g_browser_process->platform_part()->DestroyChromeUserManager();
 

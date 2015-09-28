@@ -120,7 +120,7 @@ SupervisedUserCreationScreen::~SupervisedUserCreationScreen() {
     sync_service_->RemoveObserver(this);
   if (actor_)
     actor_->SetDelegate(NULL);
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
 void SupervisedUserCreationScreen::PrepareToShow() {
@@ -141,7 +141,7 @@ void SupervisedUserCreationScreen::Show() {
   }
 
   if (!on_error_screen_)
-    NetworkPortalDetector::Get()->AddAndFireObserver(this);
+    network_portal_detector::GetInstance()->AddAndFireObserver(this);
   on_error_screen_ = false;
   histogram_helper_->OnScreenShow();
 }
@@ -190,7 +190,7 @@ void SupervisedUserCreationScreen::Hide() {
   if (actor_)
     actor_->Hide();
   if (!on_error_screen_)
-    NetworkPortalDetector::Get()->RemoveObserver(this);
+    network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
 std::string SupervisedUserCreationScreen::GetName() const {

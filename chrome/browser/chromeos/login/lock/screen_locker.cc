@@ -368,7 +368,7 @@ void ScreenLocker::HandleLockScreenRequest() {
     DBusThreadManager::Get()->GetSessionManagerClient()->StopSession();
   }
   // Close captive portal window and clear signin profile.
-  NetworkPortalDetector::Get()->OnLockScreenRequest();
+  network_portal_detector::GetInstance()->OnLockScreenRequest();
 }
 
 // static

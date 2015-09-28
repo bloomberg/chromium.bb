@@ -5,10 +5,14 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 
 #include "base/logging.h"
+#include "components/device_event_log/device_event_log.h"
 
 namespace chromeos {
 
 namespace {
+
+bool set_for_testing_ = false;
+NetworkPortalDetector* network_portal_detector_ = nullptr;
 
 const char kCaptivePortalStatusUnknown[] = "Unknown";
 const char kCaptivePortalStatusOffline[] = "Offline";
@@ -20,16 +24,30 @@ const char kCaptivePortalStatusUnrecognized[] = "Unrecognized";
 }  // namespace
 
 // static
-bool NetworkPortalDetector::set_for_testing_ = false;
-NetworkPortalDetector* NetworkPortalDetector::network_portal_detector_ =
-    nullptr;
+std::string NetworkPortalDetector::CaptivePortalStatusString(
+    CaptivePortalStatus status) {
+  switch (status) {
+    case CAPTIVE_PORTAL_STATUS_UNKNOWN:
+      return kCaptivePortalStatusUnknown;
+    case CAPTIVE_PORTAL_STATUS_OFFLINE:
+      return kCaptivePortalStatusOffline;
+    case CAPTIVE_PORTAL_STATUS_ONLINE:
+      return kCaptivePortalStatusOnline;
+    case CAPTIVE_PORTAL_STATUS_PORTAL:
+      return kCaptivePortalStatusPortal;
+    case CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
+      return kCaptivePortalStatusProxyAuthRequired;
+    case CAPTIVE_PORTAL_STATUS_COUNT:
+      NOTREACHED();
+  }
+  return kCaptivePortalStatusUnrecognized;
+}
 
-// static
-void NetworkPortalDetector::InitializeForTesting(
-    NetworkPortalDetector* network_portal_detector) {
+namespace network_portal_detector {
+
+void InitializeForTesting(NetworkPortalDetector* network_portal_detector) {
   if (network_portal_detector) {
-    CHECK(!set_for_testing_)
-        << "NetworkPortalDetector::InitializeForTesting is called twice";
+    CHECK(!set_for_testing_) << "InitializeForTesting is called twice";
     delete network_portal_detector_;
     network_portal_detector_ = network_portal_detector;
     set_for_testing_ = true;
@@ -39,44 +57,33 @@ void NetworkPortalDetector::InitializeForTesting(
   }
 }
 
-// static
-bool NetworkPortalDetector::IsInitialized() {
-  return NetworkPortalDetector::network_portal_detector_;
+bool IsInitialized() {
+  return network_portal_detector_;
 }
 
-// static
-void NetworkPortalDetector::Shutdown() {
+bool SetForTesting() {
+  return set_for_testing_;
+}
+
+void Shutdown() {
   CHECK(network_portal_detector_ || set_for_testing_)
-      << "NetworkPortalDetector::Shutdown() called without Initialize()";
+      << "Shutdown() called without Initialize()";
   delete network_portal_detector_;
   network_portal_detector_ = nullptr;
 }
 
-// static
-NetworkPortalDetector* NetworkPortalDetector::Get() {
-  CHECK(network_portal_detector_)
-      << "NetworkPortalDetector::Get() called before Initialize()";
+NetworkPortalDetector* GetInstance() {
+  CHECK(network_portal_detector_) << "GetInstance() called before Initialize()";
   return network_portal_detector_;
 }
 
-// static
-std::string NetworkPortalDetector::CaptivePortalStatusString(
-    CaptivePortalStatus status) {
-  switch (status) {
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN:
-      return kCaptivePortalStatusUnknown;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE:
-      return kCaptivePortalStatusOffline;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE:
-      return kCaptivePortalStatusOnline;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL:
-      return kCaptivePortalStatusPortal;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED:
-      return kCaptivePortalStatusProxyAuthRequired;
-    case NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_COUNT:
-      NOTREACHED();
-  }
-  return kCaptivePortalStatusUnrecognized;
+void SetNetworkPortalDetector(NetworkPortalDetector* network_portal_detector) {
+  CHECK(!network_portal_detector_)
+      << "NetworkPortalDetector was initialized twice.";
+  NET_LOG(EVENT) << "SetNetworkPortalDetector";
+  network_portal_detector_ = network_portal_detector;
 }
+
+}  // namespace network_portal_detector
 
 }  // namespace chromeos

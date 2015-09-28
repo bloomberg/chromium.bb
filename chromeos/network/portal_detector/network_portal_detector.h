@@ -14,16 +14,16 @@ namespace chromeos {
 
 class NetworkState;
 
-// This class handles all notifications about network changes from
-// NetworkStateHandler and delegates portal detection for the active
-// network to CaptivePortalService.
+// This is an interface for a chromeos portal detector that allows for
+// observation of captive portal state. It supports retries based on a portal
+// detector strategy.
 class CHROMEOS_EXPORT NetworkPortalDetector {
  public:
   enum CaptivePortalStatus {
-    CAPTIVE_PORTAL_STATUS_UNKNOWN  = 0,
-    CAPTIVE_PORTAL_STATUS_OFFLINE  = 1,
-    CAPTIVE_PORTAL_STATUS_ONLINE   = 2,
-    CAPTIVE_PORTAL_STATUS_PORTAL   = 3,
+    CAPTIVE_PORTAL_STATUS_UNKNOWN = 0,
+    CAPTIVE_PORTAL_STATUS_OFFLINE = 1,
+    CAPTIVE_PORTAL_STATUS_ONLINE = 2,
+    CAPTIVE_PORTAL_STATUS_PORTAL = 3,
     CAPTIVE_PORTAL_STATUS_PROXY_AUTH_REQUIRED = 4,
     CAPTIVE_PORTAL_STATUS_COUNT
   };
@@ -31,8 +31,7 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   struct CaptivePortalState {
     CaptivePortalState()
         : status(CAPTIVE_PORTAL_STATUS_UNKNOWN),
-          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {
-    }
+          response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {}
 
     bool operator==(const CaptivePortalState& o) const {
       return status == o.status && response_code == o.response_code;
@@ -59,6 +58,8 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
    protected:
     virtual ~Observer() {}
   };
+
+  virtual ~NetworkPortalDetector() {}
 
   // Adds |observer| to the observers list.
   virtual void AddObserver(Observer* observer) = 0;
@@ -107,43 +108,39 @@ class CHROMEOS_EXPORT NetworkPortalDetector {
   // Returns non-localized string representation of |status|.
   static std::string CaptivePortalStatusString(CaptivePortalStatus status);
 
-  // Initializes network portal detector for testing. The
-  // |network_portal_detector| will be owned by the internal pointer
-  // and deleted by Shutdown().
-  static void InitializeForTesting(
-      NetworkPortalDetector* network_portal_detector);
-
-  // Returns |true| if NetworkPortalDetector was Initialized and it is safe to
-  // call Get.
-  static bool IsInitialized();
-
-  // Deletes the instance of the NetworkPortalDetector.
-  static void Shutdown();
-
-  // Gets the instance of the NetworkPortalDetector. Return value should
-  // be used carefully in tests, because it can be changed "on the fly"
-  // by calls to InitializeForTesting().
-  static NetworkPortalDetector* Get();
-
  protected:
   NetworkPortalDetector() {}
-  virtual ~NetworkPortalDetector() {}
-
-  static bool set_for_testing() { return set_for_testing_; }
-  static NetworkPortalDetector* network_portal_detector() {
-    return network_portal_detector_;
-  }
-  static void set_network_portal_detector(
-      NetworkPortalDetector* network_portal_detector) {
-    network_portal_detector_ = network_portal_detector;
-  }
 
  private:
-  static bool set_for_testing_;
-  static NetworkPortalDetector* network_portal_detector_;
-
   DISALLOW_COPY_AND_ASSIGN(NetworkPortalDetector);
 };
+
+// Manages a global NetworkPortalDetector instance that can be accessed across
+// all ChromeOS components.
+namespace network_portal_detector {
+// Gets the instance of the NetworkPortalDetector. Return value should
+// be used carefully in tests, because it can be changed "on the fly"
+// by calls to InitializeForTesting().
+CHROMEOS_EXPORT NetworkPortalDetector* GetInstance();
+
+// Returns |true| if NetworkPortalDetector was Initialized and it is safe to
+// call GetInstance.
+CHROMEOS_EXPORT bool IsInitialized();
+
+// Deletes the instance of the NetworkPortalDetector.
+CHROMEOS_EXPORT void Shutdown();
+
+CHROMEOS_EXPORT void SetNetworkPortalDetector(
+    NetworkPortalDetector* network_portal_detector);
+
+// Initializes network portal detector for testing. The
+// |network_portal_detector| will be owned by the internal pointer
+// and deleted by Shutdown().
+CHROMEOS_EXPORT void InitializeForTesting(
+    NetworkPortalDetector* network_portal_detector);
+CHROMEOS_EXPORT bool SetForTesting();
+
+}  // namespace network_portal_detector
 
 }  // namespace chromeos
 

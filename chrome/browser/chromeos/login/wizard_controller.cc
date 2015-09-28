@@ -795,7 +795,7 @@ void WizardController::PerformPostEulaActions() {
       NetworkStateHandler::kDefaultCheckPortalList);
   host_->GetAutoEnrollmentController()->Start();
   host_->PrewarmAuthentication();
-  NetworkPortalDetector::Get()->Enable(true);
+  network_portal_detector::GetInstance()->Enable(true);
 }
 
 void WizardController::PerformOOBECompletedActions() {

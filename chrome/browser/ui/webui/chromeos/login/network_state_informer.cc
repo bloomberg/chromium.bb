@@ -48,9 +48,10 @@ NetworkStateInformer::State GetStateForDefaultNetwork() {
   if (!network)
     return NetworkStateInformer::OFFLINE;
 
-  if (NetworkPortalDetector::Get()->IsEnabled()) {
+  if (network_portal_detector::GetInstance()->IsEnabled()) {
     NetworkPortalDetector::CaptivePortalState state =
-        NetworkPortalDetector::Get()->GetCaptivePortalState(network->guid());
+        network_portal_detector::GetInstance()->GetCaptivePortalState(
+            network->guid());
     NetworkPortalDetector::CaptivePortalStatus status = state.status;
     if (status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN &&
         NetworkState::StateIsConnecting(network->connection_state())) {
@@ -96,7 +97,7 @@ NetworkStateInformer::~NetworkStateInformer() {
     NetworkHandler::Get()->network_state_handler()->RemoveObserver(
         this, FROM_HERE);
   }
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
 }
 
 void NetworkStateInformer::Init() {
@@ -104,7 +105,7 @@ void NetworkStateInformer::Init() {
   NetworkHandler::Get()->network_state_handler()->AddObserver(
       this, FROM_HERE);
 
-  NetworkPortalDetector::Get()->AddAndFireObserver(this);
+  network_portal_detector::GetInstance()->AddAndFireObserver(this);
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,

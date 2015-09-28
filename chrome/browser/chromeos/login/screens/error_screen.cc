@@ -99,7 +99,7 @@ void ErrorScreen::OnShow() {
       chrome::NOTIFICATION_LOGIN_NETWORK_ERROR_SHOWN,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-  NetworkPortalDetector::Get()->SetStrategy(
+  network_portal_detector::GetInstance()->SetStrategy(
       PortalDetectorStrategy::STRATEGY_ID_ERROR_SCREEN);
 }
 
@@ -109,7 +109,7 @@ void ErrorScreen::OnHide() {
     on_hide_callback_->Run();
     on_hide_callback_.reset();
   }
-  NetworkPortalDetector::Get()->SetStrategy(
+  network_portal_detector::GetInstance()->SetStrategy(
       PortalDetectorStrategy::STRATEGY_ID_LOGIN_SCREEN);
 }
 

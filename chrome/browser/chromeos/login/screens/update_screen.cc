@@ -133,7 +133,7 @@ UpdateScreen::~UpdateScreen() {
     view_->Unbind();
 
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
   GetInstanceSet().erase(this);
 }
 
@@ -276,7 +276,7 @@ void UpdateScreen::OnPortalDetectionCompleted(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),
-            base::Unretained(NetworkPortalDetector::Get())));
+            base::Unretained(network_portal_detector::GetInstance())));
     return;
   }
   is_first_detection_notification_ = false;
@@ -309,14 +309,14 @@ void UpdateScreen::StartNetworkCheck() {
   // If portal detector is enabled and portal detection before AU is
   // allowed, initiate network state check. Otherwise, directly
   // proceed to update.
-  if (!NetworkPortalDetector::Get()->IsEnabled()) {
+  if (!network_portal_detector::GetInstance()->IsEnabled()) {
     StartUpdateCheck();
     return;
   }
   state_ = STATE_FIRST_PORTAL_CHECK;
   is_first_detection_notification_ = true;
   is_first_portal_notification_ = true;
-  NetworkPortalDetector::Get()->AddAndFireObserver(this);
+  network_portal_detector::GetInstance()->AddAndFireObserver(this);
 }
 
 void UpdateScreen::PrepareToShow() {
@@ -371,7 +371,7 @@ void UpdateScreen::OnContextKeyUpdated(
 
 void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
   SetHostPairingControllerStatus(HostPairingController::UPDATE_STATUS_UPDATED);
 
 
@@ -514,7 +514,7 @@ void UpdateScreen::StartUpdateCheck() {
   error_message_timer_.Stop();
   GetErrorScreen()->HideCaptivePortal();
 
-  NetworkPortalDetector::Get()->RemoveObserver(this);
+  network_portal_detector::GetInstance()->RemoveObserver(this);
   connect_request_subscription_.reset();
   if (state_ == STATE_ERROR)
     HideErrorMessage();

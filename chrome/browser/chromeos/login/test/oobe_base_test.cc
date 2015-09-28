@@ -82,7 +82,7 @@ void OobeBaseTest::SetUp() {
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   host_resolver()->AddRule("*", "127.0.0.1");
   network_portal_detector_ = new NetworkPortalDetectorTestImpl();
-  NetworkPortalDetector::InitializeForTesting(network_portal_detector_);
+  network_portal_detector::InitializeForTesting(network_portal_detector_);
   network_portal_detector_->SetDefaultNetworkForTesting(
       FakeShillManagerClient::kFakeEthernetNetworkGuid);
 

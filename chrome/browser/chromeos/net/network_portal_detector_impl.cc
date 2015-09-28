@@ -19,7 +19,6 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
@@ -207,23 +206,6 @@ const char NetworkPortalDetectorImpl::kSessionShillOfflineHistogram[] =
     "CaptivePortal.Session.DiscrepancyWithShill_Offline";
 const char NetworkPortalDetectorImpl::kSessionPortalToOnlineHistogram[] =
     "CaptivePortal.Session.PortalToOnlineTransition";
-
-// static
-void NetworkPortalDetectorImpl::Initialize(
-    net::URLRequestContextGetter* url_context) {
-  if (set_for_testing())
-    return;
-  CHECK(!network_portal_detector())
-      << "NetworkPortalDetector was initialized twice.";
-  NET_LOG(EVENT) << "NetworkPortalDetectorImpl::Initialize";
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTestType)) {
-    set_network_portal_detector(new NetworkPortalDetectorStub());
-  } else {
-    set_network_portal_detector(
-        new NetworkPortalDetectorImpl(url_context, true));
-  }
-}
 
 NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
