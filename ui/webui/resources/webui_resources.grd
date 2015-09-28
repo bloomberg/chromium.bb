@@ -430,6 +430,9 @@ without changes to the corresponding grd file. -->
         <structure name="IDR_WEBUI_CSS_UI_ACCOUNT_TWEAKS"
                    file="css/chromeos/ui_account_tweaks.css"
                    type="chrome_html" />
+        <structure name="IDR_WEBUI_HTML_UI_ACCOUNT_TWEAKS"
+                   file="html/chromeos/ui_account_tweaks.html"
+                   type="chrome_html" />
         <structure name="IDR_WEBUI_JS_UI_ACCOUNT_TWEAKS"
                    file="js/chromeos/ui_account_tweaks.js"
                    type="chrome_html" />
