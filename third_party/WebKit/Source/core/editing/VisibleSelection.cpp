@@ -1205,121 +1205,121 @@ VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selection
     return VisibleSelectionTemplate<Strategy>(VisibleSelection::selectionFromContentsOfNode(node));
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 bool VisibleSelectionTemplate<EditingStrategy>::operator==(const VisibleSelectionTemplate<EditingStrategy>& other) const
 {
     return equalSelectionsInDOMTree(m_visibleSelection, other.m_visibleSelection);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 Position VisibleSelectionTemplate<EditingStrategy>::base() const
 {
     return m_visibleSelection.base();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 Position VisibleSelectionTemplate<EditingStrategy>::extent() const
 {
     return m_visibleSelection.extent();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 Position VisibleSelectionTemplate<EditingStrategy>::start() const
 {
     return m_visibleSelection.start();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 Position VisibleSelectionTemplate<EditingStrategy>::end() const
 {
     return m_visibleSelection.end();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 VisiblePosition VisibleSelectionTemplate<EditingStrategy>::visibleStart() const
 {
     return m_visibleSelection.visibleStart();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 VisiblePosition VisibleSelectionTemplate<EditingStrategy>::visibleEnd() const
 {
     return m_visibleSelection.visibleEnd();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 void VisibleSelectionTemplate<EditingStrategy>::setBase(const Position& newBase)
 {
     m_visibleSelection.setBase(newBase);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 void VisibleSelectionTemplate<EditingStrategy>::setExtent(const Position& newExtent)
 {
     m_visibleSelection.setExtent(newExtent);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 bool VisibleSelectionTemplate<EditingStrategy>::expandUsingGranularity(TextGranularity granularity)
 {
     return m_visibleSelection.expandUsingGranularity(granularity);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 bool VisibleSelectionTemplate<EditingInComposedTreeStrategy>::operator==(const VisibleSelectionTemplate<EditingInComposedTreeStrategy>& other) const
 {
     return equalSelectionsInComposedTree(m_visibleSelection, other.m_visibleSelection);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::base() const
 {
     return m_visibleSelection.baseInComposedTree();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::extent() const
 {
     return m_visibleSelection.extentInComposedTree();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::start() const
 {
     return m_visibleSelection.startInComposedTree();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 PositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::end() const
 {
     return m_visibleSelection.endInComposedTree();
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 VisiblePositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::visibleStart() const
 {
     return createVisiblePosition(m_visibleSelection.startInComposedTree(), isRange() ? TextAffinity::Downstream : affinity());
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 VisiblePositionInComposedTree VisibleSelectionTemplate<EditingInComposedTreeStrategy>::visibleEnd() const
 {
     return createVisiblePosition(m_visibleSelection.endInComposedTree(), isRange() ? TextAffinity::Upstream : affinity());
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 void VisibleSelectionTemplate<EditingInComposedTreeStrategy>::setBase(const PositionInComposedTree& newBase)
 {
     m_visibleSelection.setBase(newBase);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 void VisibleSelectionTemplate<EditingInComposedTreeStrategy>::setExtent(const PositionInComposedTree& newExtent)
 {
     m_visibleSelection.setExtent(newExtent);
 }
 
-template <>
+template <> CORE_TEMPLATE_EXPORT
 bool VisibleSelectionTemplate<EditingInComposedTreeStrategy>::expandUsingGranularity(TextGranularity granularity)
 {
     return m_visibleSelection.expandUsingGranularityInComposedTree(granularity);
