@@ -76,11 +76,30 @@ private:
     void updateSelectionForMouseDragAlgorithm(const HitTestResult&, Node*, const LayoutPoint&, const IntPoint&);
 
     enum class AppendTrailingWhitespace { ShouldAppend, DontAppend };
+
+    template <typename Strategy>
     void selectClosestWordFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
+    template <typename Strategy>
     void selectClosestMisspellingFromHitTestResult(const HitTestResult&, AppendTrailingWhitespace);
     void selectClosestWordFromMouseEvent(const MouseEventWithHitTestResults&);
+
+    template <typename Strategy>
     void selectClosestMisspellingFromMouseEvent(const MouseEventWithHitTestResults&);
+
+    template <typename Strategy>
     void selectClosestWordOrLinkFromMouseEvent(const MouseEventWithHitTestResults&);
+
+    template <typename Strategy>
+    bool handleGestureLongPressAlgorithm(const PlatformGestureEvent&, const HitTestResult&);
+
+    template <typename Strategy>
+    bool handleMousePressEventTripleClickAlgorithm(const MouseEventWithHitTestResults&);
+
+    template <typename Strategy>
+    bool handleMouseReleaseEventAlgorithm(const MouseEventWithHitTestResults&, const LayoutPoint&);
+
+    template <typename Strategy>
+    void passMousePressEventToSubframeAlgorithm(const MouseEventWithHitTestResults&);
 
     template <typename Strategy>
     bool updateSelectionForMouseDownDispatchingSelectStart(Node*, const VisibleSelectionTemplate<Strategy>&, TextGranularity);
@@ -95,4 +114,5 @@ private:
 };
 
 } // namespace blink
+
 #endif // SelectionController_h

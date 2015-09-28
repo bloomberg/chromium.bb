@@ -1203,6 +1203,18 @@ void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionAlgo
     m_visibleSelection.setWithoutValidation(base, extent);
 }
 
+template <typename Strategy>
+void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
+{
+    m_visibleSelection.appendTrailingWhitespace();
+}
+
+template <typename Strategy>
+VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selectionFromContentsOfNode(Node* node)
+{
+    return VisibleSelectionTemplate<Strategy>(VisibleSelection::selectionFromContentsOfNode(node));
+}
+
 template <>
 bool VisibleSelectionTemplate<EditingStrategy>::operator==(const VisibleSelectionTemplate<EditingStrategy>& other) const
 {

@@ -301,7 +301,9 @@ public:
     void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
     void setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent);
 
+    void appendTrailingWhitespace();
     bool expandUsingGranularity(TextGranularity);
+    static VisibleSelectionTemplate<Strategy> selectionFromContentsOfNode(Node*);
 
     DEFINE_INLINE_TRACE()
     {
