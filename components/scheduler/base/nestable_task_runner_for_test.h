@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_SCHEDULER_NESTABLE_TASK_RUNNER_FOR_TEST_H_
-#define CONTENT_RENDERER_SCHEDULER_NESTABLE_TASK_RUNNER_FOR_TEST_H_
+#ifndef CONTENT_RENDERER_SCHEDULER_BASE_NESTABLE_TASK_RUNNER_FOR_TEST_H_
+#define CONTENT_RENDERER_SCHEDULER_BASE_NESTABLE_TASK_RUNNER_FOR_TEST_H_
 
-#include "components/scheduler/child/nestable_single_thread_task_runner.h"
+#include "components/scheduler/base/nestable_single_thread_task_runner.h"
 
 namespace scheduler {
 
@@ -26,17 +26,15 @@ class NestableTaskRunnerForTest : public NestableSingleThreadTaskRunner {
 
  protected:
   ~NestableTaskRunnerForTest() override;
-
- private:
   NestableTaskRunnerForTest(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
+ private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  bool is_nested_;
 
   DISALLOW_COPY_AND_ASSIGN(NestableTaskRunnerForTest);
 };
 
 }  // namespace scheduler
 
-#endif  // CONTENT_RENDERER_SCHEDULER_NESTABLE_TASK_RUNNER_FOR_TEST_H_
+#endif  // CONTENT_RENDERER_SCHEDULER_BASE_NESTABLE_TASK_RUNNER_FOR_TEST_H_

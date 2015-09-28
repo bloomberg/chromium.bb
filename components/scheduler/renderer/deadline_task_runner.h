@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "components/scheduler/child/cancelable_closure_holder.h"
+#include "components/scheduler/base/cancelable_closure_holder.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {

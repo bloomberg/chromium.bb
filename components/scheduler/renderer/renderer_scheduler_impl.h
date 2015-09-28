@@ -7,8 +7,8 @@
 
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
+#include "components/scheduler/base/pollable_thread_safe_flag.h"
 #include "components/scheduler/child/idle_helper.h"
-#include "components/scheduler/child/pollable_thread_safe_flag.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/renderer/deadline_task_runner.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"

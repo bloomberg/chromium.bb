@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_H_
-#define COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_H_
+#ifndef COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_H_
+#define COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_H_
 
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -181,4 +181,4 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_CHILD_TASK_QUEUE_H_
+#endif  // COMPONENTS_SCHEDULER_BASE_TASK_QUEUE_H_

@@ -7,9 +7,9 @@
 #include "base/callback.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "components/scheduler/base/task_queue.h"
+#include "components/scheduler/base/test_time_source.h"
 #include "components/scheduler/child/scheduler_task_runner_delegate_for_test.h"
-#include "components/scheduler/child/task_queue.h"
-#include "components/scheduler/child/test_time_source.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

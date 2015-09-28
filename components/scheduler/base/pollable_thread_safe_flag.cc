@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/child/pollable_thread_safe_flag.h"
+#include "components/scheduler/base/pollable_thread_safe_flag.h"
 
 PollableThreadSafeFlag::PollableThreadSafeFlag(base::Lock* write_lock_)
-    : flag_(false), write_lock_(write_lock_) {
-}
+    : flag_(false), write_lock_(write_lock_) {}
 
-PollableThreadSafeFlag::~PollableThreadSafeFlag() {
-}
+PollableThreadSafeFlag::~PollableThreadSafeFlag() {}
 
 void PollableThreadSafeFlag::SetWhileLocked(bool value) {
   write_lock_->AssertAcquired();

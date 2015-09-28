@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 #define COMPONENTS_SCHEDULER_CHILD_WEBTHREAD_IMPL_FOR_WORKER_SCHEDULER_H_
 
-#include "components/scheduler/child/task_queue_manager.h"
+#include "components/scheduler/base/task_queue_manager.h"
 #include "components/scheduler/child/webthread_base.h"
 
 namespace base {

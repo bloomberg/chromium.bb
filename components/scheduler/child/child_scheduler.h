@@ -6,8 +6,8 @@
 #define COMPONENTS_SCHEDULER_CHILD_CHILD_SCHEDULER_H_
 
 #include "base/message_loop/message_loop.h"
+#include "components/scheduler/base/task_queue.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
-#include "components/scheduler/child/task_queue.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
