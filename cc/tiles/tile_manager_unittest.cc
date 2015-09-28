@@ -17,6 +17,7 @@
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_tile_manager.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -50,7 +51,8 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
         host_impl_(LowResTilingsSettings(),
                    &proxy_,
                    &shared_bitmap_manager_,
-                   &task_graph_runner_) {}
+                   &task_graph_runner_,
+                   &gpu_memory_buffer_manager_) {}
 
   void SetTreePriority(TreePriority tree_priority) {
     GlobalStateThatImpactsTilePriority state;
@@ -150,6 +152,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
 
   TestSharedBitmapManager shared_bitmap_manager_;
   TestTaskGraphRunner task_graph_runner_;
+  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TileMemoryLimitPolicy memory_limit_policy_;
   int max_tiles_;
   bool ready_to_activate_;
@@ -1290,10 +1293,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   EXPECT_TRUE(have_tiles[TilePriority::EVENTUALLY]);
 }
 
-// TODO(vmpstr): Move these to LTHI tests, since they can't create real
-// resources and so they don't work with non-solid raster sources.
-// crbug.com/534911
-TEST_F(TileManagerTilePriorityQueueTest, DISABLED_SetIsLikelyToRequireADraw) {
+TEST_F(TileManagerTilePriorityQueueTest, SetIsLikelyToRequireADraw) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);
@@ -1309,11 +1309,8 @@ TEST_F(TileManagerTilePriorityQueueTest, DISABLED_SetIsLikelyToRequireADraw) {
   EXPECT_TRUE(host_impl_.is_likely_to_require_a_draw());
 }
 
-// TODO(vmpstr): Move these to LTHI tests, since they can't create real
-// resources and so they don't work with non-solid raster sources.
-// crbug.com/534911
 TEST_F(TileManagerTilePriorityQueueTest,
-       DISABLED_SetIsLikelyToRequireADrawOnZeroMemoryBudget) {
+       SetIsLikelyToRequireADrawOnZeroMemoryBudget) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);
@@ -1333,11 +1330,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   EXPECT_FALSE(host_impl_.is_likely_to_require_a_draw());
 }
 
-// TODO(vmpstr): Move these to LTHI tests, since they can't create real
-// resources and so they don't work with non-solid raster sources.
-// crbug.com/534911
 TEST_F(TileManagerTilePriorityQueueTest,
-       DISABLED_SetIsLikelyToRequireADrawOnLimitedMemoryBudget) {
+       SetIsLikelyToRequireADrawOnLimitedMemoryBudget) {
   const gfx::Size layer_bounds(1000, 1000);
   host_impl_.SetViewportSize(layer_bounds);
   SetupDefaultTrees(layer_bounds);

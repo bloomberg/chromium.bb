@@ -10,6 +10,10 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace cc {
 
 class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
@@ -21,6 +25,11 @@ class FakeLayerTreeHostImpl : public LayerTreeHostImpl {
                         Proxy* proxy,
                         SharedBitmapManager* manager,
                         TaskGraphRunner* task_graph_runner);
+  FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
+                        Proxy* proxy,
+                        SharedBitmapManager* manager,
+                        TaskGraphRunner* task_graph_runner,
+                        gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~FakeLayerTreeHostImpl() override;
 
   void ForcePrepareToDraw() {

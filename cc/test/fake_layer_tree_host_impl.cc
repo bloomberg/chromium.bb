@@ -12,38 +12,39 @@ namespace cc {
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(Proxy* proxy,
                                              SharedBitmapManager* manager,
                                              TaskGraphRunner* task_graph_runner)
-    : LayerTreeHostImpl(LayerTreeSettings(),
-                        &client_,
-                        proxy,
-                        &stats_instrumentation_,
-                        manager,
-                        NULL,
-                        task_graph_runner,
-                        0) {
-  // Explicitly clear all debug settings.
-  SetDebugState(LayerTreeDebugState());
-  SetViewportSize(gfx::Size(100, 100));
-
-  // Start an impl frame so tests have a valid frame_time to work with.
-  base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
-  WillBeginImplFrame(
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, time_ticks));
-}
+    : FakeLayerTreeHostImpl(LayerTreeSettings(),
+                            proxy,
+                            manager,
+                            task_graph_runner,
+                            nullptr) {}
 
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(const LayerTreeSettings& settings,
                                              Proxy* proxy,
                                              SharedBitmapManager* manager,
                                              TaskGraphRunner* task_graph_runner)
+    : FakeLayerTreeHostImpl(settings,
+                            proxy,
+                            manager,
+                            task_graph_runner,
+                            nullptr) {}
+
+FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
+    const LayerTreeSettings& settings,
+    Proxy* proxy,
+    SharedBitmapManager* manager,
+    TaskGraphRunner* task_graph_runner,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : LayerTreeHostImpl(settings,
                         &client_,
                         proxy,
                         &stats_instrumentation_,
                         manager,
-                        NULL,
+                        gpu_memory_buffer_manager,
                         task_graph_runner,
                         0) {
   // Explicitly clear all debug settings.
   SetDebugState(LayerTreeDebugState());
+  SetViewportSize(gfx::Size(100, 100));
 
   // Start an impl frame so tests have a valid frame_time to work with.
   base::TimeTicks time_ticks = base::TimeTicks::FromInternalValue(1);
