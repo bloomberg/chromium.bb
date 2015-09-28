@@ -714,7 +714,7 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
     g_microdump_product_info = strdup(
         (product_name + std::string(":") + product_version).c_str());
     ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_product_info);
-    descriptor.SetMicrodumpProductInfo(g_microdump_product_info);
+    descriptor.microdump_extra_info()->product_info = g_microdump_product_info;
   }
 
   const char* android_build_fp =
@@ -722,7 +722,8 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
   if (android_build_fp) {
     g_microdump_build_fingerprint = strdup(android_build_fp);
     ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_build_fingerprint);
-    descriptor.SetMicrodumpBuildFingerprint(g_microdump_build_fingerprint);
+    descriptor.microdump_extra_info()->build_fingerprint =
+        g_microdump_build_fingerprint;
   }
 
   DCHECK(!g_microdump);
