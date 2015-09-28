@@ -82,8 +82,11 @@ GURL ConvertToGURL(const url::Origin& origin) {
 bool IsValidDeviceId(const std::string& device_id) {
   static const std::string::size_type kValidLength = 64;
 
-  if (device_id.empty())
+  if (device_id.empty() ||
+      device_id == media::AudioManagerBase::kDefaultDeviceId ||
+      device_id == media::AudioManagerBase::kCommunicationsDeviceId) {
     return true;
+  }
 
   if (device_id.length() != kValidLength)
     return false;

@@ -213,6 +213,21 @@ class CONTENT_EXPORT MediaStreamManager
   // generated stream (or when using --use-fake-ui-for-media-stream).
   void UseFakeUIForTests(scoped_ptr<FakeMediaStreamUIProxy> fake_ui);
 
+  // Generates a hash of a device's unique ID usable by one
+  // particular security origin.
+  static std::string GetHMACForMediaDeviceID(
+      const ResourceContext::SaltCallback& sc,
+      const GURL& security_origin,
+      const std::string& raw_unique_id);
+
+  // Convenience method to check if |device_guid| is an HMAC of
+  // |raw_device_id| for |security_origin|.
+  static bool DoesMediaDeviceIDMatchHMAC(
+      const ResourceContext::SaltCallback& sc,
+      const GURL& security_origin,
+      const std::string& device_guid,
+      const std::string& raw_unique_id);
+
  private:
   // Contains all data needed to keep track of requests.
   class DeviceRequest;

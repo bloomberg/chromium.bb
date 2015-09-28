@@ -16,6 +16,7 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
@@ -30,13 +31,13 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/media_device_id.h"
 #include "content/public/browser/media_observer.h"
 #include "content/public/browser/media_request_state.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/media_stream_request.h"
+#include "crypto/hmac.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
@@ -884,8 +885,8 @@ bool MediaStreamManager::TranslateSourceIdToDeviceId(
     return false;
 
   for (const StreamDeviceInfo& device_info : cache->devices) {
-    if (content::DoesMediaDeviceIDMatchHMAC(sc, security_origin, source_id,
-                                            device_info.device.id)) {
+    if (DoesMediaDeviceIDMatchHMAC(sc, security_origin, source_id,
+                                   device_info.device.id)) {
       *device_id = device_info.device.id;
       return true;
     }
@@ -926,7 +927,7 @@ void MediaStreamManager::StopRemovedDevice(const MediaStreamDevice& device) {
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     const DeviceRequest* request = labeled_request.second;
     for (const StreamDeviceInfo& device_info : request->devices) {
-      const std::string source_id = content::GetHMACForMediaDeviceID(
+      const std::string source_id = GetHMACForMediaDeviceID(
           request->salt_callback, request->security_origin, device.id);
       if (device_info.device.id == source_id &&
           device_info.device.type == device.type) {
@@ -1079,10 +1080,8 @@ void MediaStreamManager::TranslateDeviceIdToSourceId(
   if (request->audio_type() == MEDIA_DEVICE_AUDIO_CAPTURE ||
       request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT ||
       request->video_type() == MEDIA_DEVICE_VIDEO_CAPTURE) {
-    device->id = content::GetHMACForMediaDeviceID(
-        request->salt_callback,
-        request->security_origin,
-        device->id);
+    device->id = GetHMACForMediaDeviceID(request->salt_callback,
+                                         request->security_origin, device->id);
   }
 }
 
@@ -1420,10 +1419,9 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
   DCHECK(existing_device_info);
   DCHECK(existing_request_state);
 
-  std::string source_id = content::GetHMACForMediaDeviceID(
-      new_request.salt_callback,
-      new_request.security_origin,
-      new_device_info.id);
+  std::string source_id =
+      GetHMACForMediaDeviceID(new_request.salt_callback,
+                              new_request.security_origin, new_device_info.id);
 
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     const DeviceRequest* request = labeled_request.second;
@@ -2134,5 +2132,40 @@ void MediaStreamManager::SetKeyboardMicOnDeviceThread() {
   audio_manager_->SetHasKeyboardMic();
 }
 #endif
+
+// static
+std::string MediaStreamManager::GetHMACForMediaDeviceID(
+    const ResourceContext::SaltCallback& sc,
+    const GURL& security_origin,
+    const std::string& raw_unique_id) {
+  DCHECK(security_origin.is_valid());
+  DCHECK(!raw_unique_id.empty());
+  if (raw_unique_id == media::AudioManagerBase::kDefaultDeviceId ||
+      raw_unique_id == media::AudioManagerBase::kCommunicationsDeviceId) {
+    return raw_unique_id;
+  }
+
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  const size_t digest_length = hmac.DigestLength();
+  std::vector<uint8> digest(digest_length);
+  std::string salt = sc.Run();
+  bool result = hmac.Init(security_origin.spec()) &&
+                hmac.Sign(raw_unique_id + salt, &digest[0], digest.size());
+  DCHECK(result);
+  return base::ToLowerASCII(base::HexEncode(&digest[0], digest.size()));
+}
+
+// static
+bool MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+    const ResourceContext::SaltCallback& sc,
+    const GURL& security_origin,
+    const std::string& device_guid,
+    const std::string& raw_unique_id) {
+  DCHECK(security_origin.is_valid());
+  DCHECK(!raw_unique_id.empty());
+  std::string guid_from_raw_device_id =
+      GetHMACForMediaDeviceID(sc, security_origin, raw_unique_id);
+  return guid_from_raw_device_id == device_guid;
+}
 
 }  // namespace content

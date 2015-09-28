@@ -50,6 +50,17 @@ typedef media::AudioManagerAndroid AudioManagerPlatform;
 typedef media::FakeAudioManager AudioManagerPlatform;
 #endif
 
+namespace {
+
+std::string ReturnMockSalt() {
+  return std::string();
+}
+
+ResourceContext::SaltCallback GetMockSaltCallback() {
+  return base::Bind(&ReturnMockSalt);
+}
+
+}  // namespace
 
 // This class mocks the audio manager and overrides the
 // GetAudioInputDeviceNames() method to ensure that we can run our tests on
@@ -180,6 +191,41 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
   // quit the test.
   EXPECT_CALL(*this, Response(1));
   run_loop_.Run();
+}
+
+TEST_F(MediaStreamManagerTest, DeviceID) {
+  GURL security_origin("http://localhost");
+  const std::string unique_default_id(
+      media::AudioManagerBase::kDefaultDeviceId);
+  const std::string hashed_default_id =
+      MediaStreamManager::GetHMACForMediaDeviceID(
+          GetMockSaltCallback(), security_origin, unique_default_id);
+  EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+      GetMockSaltCallback(), security_origin, hashed_default_id,
+      unique_default_id));
+  EXPECT_EQ(unique_default_id, hashed_default_id);
+
+  const std::string unique_communications_id(
+      media::AudioManagerBase::kCommunicationsDeviceId);
+  const std::string hashed_communications_id =
+      MediaStreamManager::GetHMACForMediaDeviceID(
+          GetMockSaltCallback(), security_origin, unique_communications_id);
+  EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+      GetMockSaltCallback(), security_origin, hashed_communications_id,
+      unique_communications_id));
+  EXPECT_EQ(unique_communications_id, hashed_communications_id);
+
+  const std::string unique_other_id("other-unique-id");
+  const std::string hashed_other_id =
+      MediaStreamManager::GetHMACForMediaDeviceID(
+          GetMockSaltCallback(), security_origin, unique_other_id);
+  EXPECT_TRUE(MediaStreamManager::DoesMediaDeviceIDMatchHMAC(
+      GetMockSaltCallback(), security_origin, hashed_other_id,
+      unique_other_id));
+  EXPECT_NE(unique_other_id, hashed_other_id);
+  EXPECT_EQ(hashed_other_id.size(), 64U);
+  for (const char& c : hashed_other_id)
+    EXPECT_TRUE((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'));
 }
 
 }  // namespace content
