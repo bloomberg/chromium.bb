@@ -916,7 +916,7 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
     base::MessageLoop::current()->Quit();
 
   if (!completion_callback_.is_null())
-    completion_callback_.Run();
+    base::MessageLoop::current()->PostTask(FROM_HERE, completion_callback_);
 }
 
 void LoginDisplayHostImpl::ScheduleWorkspaceAnimation() {

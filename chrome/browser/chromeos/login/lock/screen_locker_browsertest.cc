@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -171,6 +172,14 @@ IN_PROC_BROWSER_TEST_F(ScreenLockerTest, TestBasic) {
       fake_session_manager_client_->notify_lock_screen_shown_call_count());
 
   EXPECT_TRUE(VerifyLockScreenDismissed());
+}
+
+// Makes sure Chrome doesn't crash if we lock the screen during an add-user
+// flow. Regression test for crbug.com/467111.
+IN_PROC_BROWSER_TEST_F(ScreenLockerTest, LockScreenWhileAddingUser) {
+  UserAddingScreen::Get()->Start();
+  content::RunAllPendingInMessageLoop();
+  ScreenLocker::HandleLockScreenRequest();
 }
 
 // Test how locking the screen affects an active fullscreen window.
