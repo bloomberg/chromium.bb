@@ -75,6 +75,8 @@
         "proximity_auth/proximity_monitor_observer.h",
         "proximity_auth/remote_device.cc",
         "proximity_auth/remote_device.h",
+        "proximity_auth/remote_device_loader.cc",
+        "proximity_auth/remote_device_loader.h",
         "proximity_auth/remote_device_life_cycle.h",
         "proximity_auth/remote_device_life_cycle_impl.h",
         "proximity_auth/remote_device_life_cycle_impl.cc",
@@ -116,6 +118,8 @@
         "proximity_auth/fake_connection.h",
         "proximity_auth/mock_proximity_auth_client.cc",
         "proximity_auth/mock_proximity_auth_client.h",
+        "proximity_auth/proximity_auth_test_util.cc",
+        "proximity_auth/proximity_auth_test_util.h",
       ],
     },
     {

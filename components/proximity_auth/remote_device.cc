@@ -8,14 +8,20 @@ namespace proximity_auth {
 
 RemoteDevice::RemoteDevice() {}
 
-RemoteDevice::RemoteDevice(const std::string& name,
+RemoteDevice::RemoteDevice(const std::string& user_id,
+                           const std::string& name,
                            const std::string& public_key,
+                           BluetoothType bluetooth_type,
                            const std::string& bluetooth_address,
-                           const std::string& persistent_symmetric_key)
-    : name(name),
+                           const std::string& persistent_symmetric_key,
+                           std::string sign_in_challenge)
+    : user_id(user_id),
+      name(name),
       public_key(public_key),
+      bluetooth_type(bluetooth_type),
       bluetooth_address(bluetooth_address),
-      persistent_symmetric_key(persistent_symmetric_key) {}
+      persistent_symmetric_key(persistent_symmetric_key),
+      sign_in_challenge(sign_in_challenge) {}
 
 RemoteDevice::~RemoteDevice() {}
 

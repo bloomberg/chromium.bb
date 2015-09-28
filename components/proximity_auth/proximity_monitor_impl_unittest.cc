@@ -29,6 +29,7 @@ using testing::SaveArg;
 namespace proximity_auth {
 namespace {
 
+const char kRemoteDeviceUserId[] = "example@gmail.com";
 const char kBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
 const char kRemoteDevicePublicKey[] = "Remote Public Key";
 const char kRemoteDeviceName[] = "LGE Nexus 5";
@@ -82,10 +83,13 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  kBluetoothAddress,
                                  false /* paired */,
                                  true /* connected */),
-        monitor_(RemoteDevice(kRemoteDeviceName,
+        monitor_(RemoteDevice(kRemoteDeviceUserId,
+                              kRemoteDeviceName,
                               kRemoteDevicePublicKey,
+                              RemoteDevice::BLUETOOTH_CLASSIC,
                               kBluetoothAddress,
-                              kPersistentSymmetricKey),
+                              kPersistentSymmetricKey,
+                              std::string()),
                  make_scoped_ptr(clock_),
                  &observer_),
         task_runner_(new base::TestSimpleTaskRunner()),
@@ -534,9 +538,10 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
        RecordProximityMetricsOnAuthSuccess_UnknownValues) {
   // Note: A device without a recorded name will have its Bluetooth address as
   // its name.
-  RemoteDevice unnamed_remote_device(kBluetoothAddress, kRemoteDevicePublicKey,
-                                     kBluetoothAddress,
-                                     kPersistentSymmetricKey);
+  RemoteDevice unnamed_remote_device(
+      kRemoteDeviceUserId, kBluetoothAddress, kRemoteDevicePublicKey,
+      RemoteDevice::BLUETOOTH_CLASSIC, kBluetoothAddress,
+      kPersistentSymmetricKey, std::string());
 
   scoped_ptr<base::TickClock> clock(new base::SimpleTestTickClock());
   ProximityMonitorImpl monitor(unnamed_remote_device, clock.Pass(), &observer_);

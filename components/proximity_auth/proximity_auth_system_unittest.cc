@@ -9,8 +9,10 @@
 namespace proximity_auth {
 
 TEST(ProximityAuthSystemTest, GetRemoteDevices) {
-  RemoteDevice device1("device1", "public_key1", "bt_addr1", "psk1");
-  RemoteDevice device2("device2", "public_key2", "bt_addr2", "psk2");
+  RemoteDevice device1("example@gmail.com", "device1", "public_key1",
+                       RemoteDevice::BLUETOOTH_CLASSIC, "bt_addr1", "psk1", "");
+  RemoteDevice device2("example@gmail.com", "device2", "public_key2",
+                       RemoteDevice::BLUETOOTH_LE, "bt_addr2", "psk2", "");
 
   std::vector<RemoteDevice> device_list;
   device_list.push_back(device1);

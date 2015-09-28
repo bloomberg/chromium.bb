@@ -12,6 +12,7 @@
 #include "components/proximity_auth/connection_finder.h"
 #include "components/proximity_auth/fake_connection.h"
 #include "components/proximity_auth/messenger.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,12 +27,6 @@ using testing::StrictMock;
 namespace proximity_auth {
 
 namespace {
-
-// Attributes of the remote device under test.
-const char kRemoteDeviceName[] = "remote device";
-const char kRemoteDevicePublicKey[] = "public key";
-const char kRemoteDeviceBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
-const char kRemoteDevicePSK[] = "remote device psk";
 
 class StubSecureContext : public SecureContext {
  public:
@@ -154,10 +149,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
       public RemoteDeviceLifeCycle::Observer {
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : life_cycle_(RemoteDevice(kRemoteDeviceName,
-                                 kRemoteDevicePublicKey,
-                                 kRemoteDeviceBluetoothAddress,
-                                 kRemoteDevicePSK)),
+      : life_cycle_(CreateClassicRemoteDeviceForTest()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 

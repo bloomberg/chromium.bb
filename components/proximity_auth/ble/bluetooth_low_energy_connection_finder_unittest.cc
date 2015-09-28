@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/fake_connection.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -36,20 +37,10 @@ using testing::SaveArg;
 namespace proximity_auth {
 namespace {
 
-const char kDeviceName[] = "Device name";
-const char kPublicKey[] = "Public key";
-const char kBluetoothAddress[] = "11:22:33:44:55:66";
-const char kPersistentSymmetricKey[] = "PSK";
-
 const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
 const char kOtherUUID[] = "AAAAAAAA-AAAA-AAAA-AAAA-D15EA5EBEEEF";
 
 const int kMaxNumberOfAttempts = 2;
-
-RemoteDevice CreateRemoteDevice() {
-  return RemoteDevice(kDeviceName, kPublicKey, kBluetoothAddress,
-                      kPersistentSymmetricKey);
-}
 
 class MockBluetoothLowEnergyDeviceWhitelist
     : public BluetoothLowEnergyDeviceWhitelist {
@@ -67,7 +58,7 @@ class MockBluetoothLowEnergyConnectionFinder
   MockBluetoothLowEnergyConnectionFinder(
       const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
       FinderStrategy finder_strategy)
-      : BluetoothLowEnergyConnectionFinder(CreateRemoteDevice(),
+      : BluetoothLowEnergyConnectionFinder(CreateLERemoteDeviceForTest(),
                                            kServiceUUID,
                                            finder_strategy,
                                            device_whitelist,
@@ -88,7 +79,7 @@ class MockBluetoothLowEnergyConnectionFinder
   // finder.
   FakeConnection* ExpectCreateConnection() {
     scoped_ptr<FakeConnection> connection(
-        new FakeConnection(CreateRemoteDevice()));
+        new FakeConnection(CreateLERemoteDeviceForTest()));
     FakeConnection* connection_alias = connection.get();
     EXPECT_CALL(*this, CreateConnectionProxy())
         .WillOnce(Return(connection.release()));
@@ -118,12 +109,13 @@ class ProximityAuthBluetoothLowEnergyConnectionFinderTest
             base::Bind(&ProximityAuthBluetoothLowEnergyConnectionFinderTest::
                            OnConnectionFound,
                        base::Unretained(this))),
-        device_(new NiceMock<device::MockBluetoothDevice>(adapter_.get(),
-                                                          0,
-                                                          kDeviceName,
-                                                          kBluetoothAddress,
-                                                          false,
-                                                          false)),
+        device_(new NiceMock<device::MockBluetoothDevice>(
+            adapter_.get(),
+            0,
+            kTestRemoteDeviceName,
+            kTestRemoteDeviceBluetoothAddress,
+            false,
+            false)),
         device_whitelist_(new MockBluetoothLowEnergyDeviceWhitelist()),
         last_discovery_session_alias_(nullptr) {
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
@@ -193,7 +185,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   // Destroying a BluetoothConnectionFinder for which Find() has not been called
   // should not crash.
   BluetoothLowEnergyConnectionFinder connection_finder(
-      CreateRemoteDevice(), kServiceUUID,
+      CreateLERemoteDeviceForTest(), kServiceUUID,
       BluetoothLowEnergyConnectionFinder::FIND_PAIRED_DEVICE,
       device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 }
@@ -201,7 +193,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StartsDiscoverySession) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      CreateRemoteDevice(), kServiceUUID,
+      CreateLERemoteDeviceForTest(), kServiceUUID,
       BluetoothLowEnergyConnectionFinder::FIND_PAIRED_DEVICE,
       device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 
@@ -213,7 +205,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
        Find_StopsDiscoverySessionBeforeDestroying) {
   BluetoothLowEnergyConnectionFinder connection_finder(
-      CreateRemoteDevice(), kServiceUUID,
+      CreateLERemoteDeviceForTest(), kServiceUUID,
       BluetoothLowEnergyConnectionFinder::FIND_PAIRED_DEVICE,
       device_whitelist_.get(), nullptr, kMaxNumberOfAttempts);
 
@@ -263,9 +255,9 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   FindAndExpectStartDiscovery(connection_finder);
   ExpectStopDiscoveryAndRemoveObserver();
 
-  PrepareDevice(kServiceUUID, kBluetoothAddress, false);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, false);
   ON_CALL(*device_, GetName())
-      .WillByDefault(Return(base::UTF8ToUTF16(kDeviceName)));
+      .WillByDefault(Return(base::UTF8ToUTF16(kTestRemoteDeviceName)));
 
   connection_finder.ExpectCreateConnection();
   connection_finder.DeviceAdded(adapter_.get(), device_.get());
@@ -279,7 +271,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   FindAndExpectStartDiscovery(connection_finder);
   ExpectStopDiscoveryAndRemoveObserver();
 
-  PrepareDevice(kOtherUUID, kBluetoothAddress, false);
+  PrepareDevice(kOtherUUID, kTestRemoteDeviceBluetoothAddress, false);
   ON_CALL(*device_, GetName())
       .WillByDefault(Return(base::UTF8ToUTF16("Other name")));
 
@@ -295,7 +287,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   FindAndExpectStartDiscovery(connection_finder);
   ExpectStopDiscoveryAndRemoveObserver();
 
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   connection_finder.ExpectCreateConnection();
   connection_finder.DeviceAdded(adapter_.get(), device_.get());
 }
@@ -320,7 +312,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   FindAndExpectStartDiscovery(connection_finder);
   ExpectStopDiscoveryAndRemoveObserver();
 
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   connection_finder.ExpectCreateConnection();
   connection_finder.DeviceChanged(adapter_.get(), device_.get());
 }
@@ -346,14 +338,16 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ExpectStopDiscoveryAndRemoveObserver();
 
   // Prepare to add |device_|.
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
 
   // Prepare to add |other_device|.
   NiceMock<device::MockBluetoothDevice> other_device(
-      adapter_.get(), 0, kDeviceName, kBluetoothAddress, false, false);
+      adapter_.get(), 0, kTestRemoteDeviceName,
+      kTestRemoteDeviceBluetoothAddress, false, false);
   std::vector<device::BluetoothUUID> uuids;
   uuids.push_back(device::BluetoothUUID(kServiceUUID));
-  ON_CALL(other_device, GetAddress()).WillByDefault(Return(kBluetoothAddress));
+  ON_CALL(other_device, GetAddress())
+      .WillByDefault(Return(kTestRemoteDeviceBluetoothAddress));
   ON_CALL(other_device, IsPaired()).WillByDefault(Return(true));
   ON_CALL(other_device, GetUUIDs()).WillByDefault((Return(uuids)));
 
@@ -375,7 +369,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
 
   // Finding and creating a connection to the right device.
   FakeConnection* connection = connection_finder.ExpectCreateConnection();
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   connection_finder.DeviceAdded(adapter_.get(), device_.get());
 
   // Creating a connection.
@@ -399,7 +393,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
       .WillOnce(SaveArg<0>(&stop_discovery_session_callback));
 
   // Preparing to create a GATT connection to the right device.
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   FakeConnection* connection = connection_finder.ExpectCreateConnection();
 
   // Trying to create a connection.
@@ -431,7 +425,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   discovery_callback.Run(discovery_session.Pass());
 
   // Preparing to create a GATT connection to the right device.
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   connection = connection_finder.ExpectCreateConnection();
 
   // Trying to create a connection.
@@ -484,7 +478,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   discovery_callback.Run(discovery_session.Pass());
 
   // Preparing to create a GATT connection to the right device.
-  PrepareDevice(kServiceUUID, kBluetoothAddress, true);
+  PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, true);
   FakeConnection* connection = connection_finder.ExpectCreateConnection();
 
   // Trying to create a connection.

@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -27,21 +28,13 @@ using testing::StrictMock;
 namespace proximity_auth {
 namespace {
 
-const char kDeviceName[] = "Device name";
-const char kPublicKey[] = "Public key";
-const char kBluetoothAddress[] = "11:22:33:44:55:66";
-const char kPersistentSymmetricKey[] = "PSK";
-
 const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
-
-RemoteDevice CreateRemoteDevice() {
-  return RemoteDevice(kDeviceName, kPublicKey, kBluetoothAddress,
-                      kPersistentSymmetricKey);
-}
 
 class MockConnection : public Connection {
  public:
-  MockConnection() : Connection(CreateRemoteDevice()), do_not_destroy_(false) {}
+  MockConnection()
+      : Connection(CreateClassicRemoteDeviceForTest()),
+        do_not_destroy_(false) {}
   ~MockConnection() override { EXPECT_FALSE(do_not_destroy_); }
 
   MOCK_METHOD0(Connect, void());
@@ -68,7 +61,7 @@ class MockConnection : public Connection {
 class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
  public:
   MockBluetoothConnectionFinder()
-      : BluetoothConnectionFinder(CreateRemoteDevice(),
+      : BluetoothConnectionFinder(CreateClassicRemoteDeviceForTest(),
                                   device::BluetoothUUID(kUuid),
                                   base::TimeDelta()) {}
   ~MockBluetoothConnectionFinder() override {}
@@ -111,7 +104,7 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
       const std::string& bluetooth_address,
       const base::Closure& callback,
       const bluetooth_util::ErrorCallback& error_callback) override {
-    EXPECT_EQ(kBluetoothAddress, bluetooth_address);
+    EXPECT_EQ(kTestRemoteDeviceBluetoothAddress, bluetooth_address);
     seek_callback_ = callback;
     seek_error_callback_ = error_callback;
   }
@@ -132,8 +125,8 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
         bluetooth_device_(new NiceMock<device::MockBluetoothDevice>(
             adapter_.get(),
             device::BluetoothDevice::DEVICE_PHONE,
-            kDeviceName,
-            kBluetoothAddress,
+            kTestRemoteDeviceName,
+            kTestRemoteDeviceBluetoothAddress,
             true,
             false)),
         connection_callback_(base::Bind(
@@ -148,7 +141,7 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
 
     // By default, the remote device is known to |adapter_| so
     // |SeekDeviceByAddress()| will not be called.
-    ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+    ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
         .WillByDefault(Return(bluetooth_device_.get()));
   }
 
@@ -195,7 +188,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // Destroying a BluetoothConnectionFinder for which Find() has not been called
   // should not crash.
   BluetoothConnectionFinder connection_finder(
-      CreateRemoteDevice(), device::BluetoothUUID(kUuid),
+      CreateClassicRemoteDeviceForTest(), device::BluetoothUUID(kUuid),
       base::TimeDelta::FromMilliseconds(1));
 }
 
@@ -322,14 +315,14 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DeviceNotKnown_SeekDeviceSucceeds) {
   // If the BluetoothDevice is not known by the adapter, |connection_finder|
   // will call SeekDeviceByAddress() first to make it known.
-  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(nullptr));
   connection_finder_.Find(connection_callback_);
   ASSERT_FALSE(connection_finder_.seek_callback().is_null());
   EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
 
   // After seeking is successful, the normal flow should resume.
-  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(bluetooth_device_.get()));
   MockConnection* connection = connection_finder_.ExpectCreateConnection();
   connection_finder_.seek_callback().Run();
@@ -340,7 +333,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DeviceNotKnown_SeekDeviceFailThenSucceeds) {
   // If the BluetoothDevice is not known by the adapter, |connection_finder|
   // will call SeekDeviceByAddress() first to make it known.
-  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(nullptr));
   connection_finder_.Find(connection_callback_);
   EXPECT_FALSE(connection_finder_.seek_callback().is_null());
@@ -360,7 +353,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
 
   // Successfully connect to the Bluetooth device.
-  ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(bluetooth_device_.get()));
   MockConnection* connection = connection_finder_.ExpectCreateConnection();
   connection_finder_.seek_callback().Run();

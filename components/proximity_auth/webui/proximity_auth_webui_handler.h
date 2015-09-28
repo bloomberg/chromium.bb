@@ -31,8 +31,8 @@ namespace proximity_auth {
 
 class ReachablePhoneFlow;
 class RemoteDeviceLifeCycle;
+class RemoteDeviceLoader;
 struct RemoteStatusUpdate;
-class SecureContext;
 
 // Handles messages from the chrome://proximity-auth page.
 class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
@@ -96,9 +96,8 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
   void OnReachablePhonesFound(
       const std::vector<cryptauth::ExternalDeviceInfo>& reachable_phones);
 
-  // Called when the key agreement of PSK of the remote device completes.
-  void OnPSKDerived(const cryptauth::ExternalDeviceInfo& unlock_key,
-                    const std::string& persistent_symmetric_key);
+  // Called when the RemoteDevice is loaded so we can create a connection.
+  void OnRemoteDevicesLoaded(const std::vector<RemoteDevice>& remote_devices);
 
   // Converts an ExternalDeviceInfo proto to a JSON dictionary used in
   // JavaScript.
@@ -146,7 +145,7 @@ class ProximityAuthWebUIHandler : public content::WebUIMessageHandler,
 
   // Member variables for connecting to and authenticating the remote device.
   // TODO(tengs): Support multiple simultaenous connections.
-  scoped_ptr<SecureMessageDelegate> secure_message_delegate_;
+  scoped_ptr<RemoteDeviceLoader> remote_device_loader_;
   RemoteDevice selected_remote_device_;
   scoped_ptr<RemoteDeviceLifeCycle> life_cycle_;
   scoped_ptr<RemoteStatusUpdate> last_remote_status_update_;

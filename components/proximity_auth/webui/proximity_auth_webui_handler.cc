@@ -22,6 +22,7 @@
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger.h"
 #include "components/proximity_auth/remote_device_life_cycle_impl.h"
+#include "components/proximity_auth/remote_device_loader.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/webui/reachable_phone_flow.h"
@@ -337,16 +338,14 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
         return;
       }
 
-      // Derive the PSK before connecting to the device.
-      PA_LOG(INFO) << "Deriving PSK before connecting to "
-                   << unlock_key.friendly_device_name();
-      secure_message_delegate_ =
-          proximity_auth_client_->CreateSecureMessageDelegate();
-      secure_message_delegate_->DeriveKey(
-          enrollment_manager->GetUserPrivateKey(), unlock_key.public_key(),
-          base::Bind(&ProximityAuthWebUIHandler::OnPSKDerived,
-                     weak_ptr_factory_.GetWeakPtr(), unlock_key));
-
+      remote_device_loader_.reset(new RemoteDeviceLoader(
+          std::vector<cryptauth::ExternalDeviceInfo>(1, unlock_key),
+          proximity_auth_client_->GetAccountId(),
+          enrollment_manager->GetUserPrivateKey(),
+          proximity_auth_client_->CreateSecureMessageDelegate()));
+      remote_device_loader_->Load(
+          base::Bind(&ProximityAuthWebUIHandler::OnRemoteDevicesLoaded,
+                     weak_ptr_factory_.GetWeakPtr()));
       return;
     }
   }
@@ -455,18 +454,14 @@ scoped_ptr<base::ListValue> ProximityAuthWebUIHandler::GetUnlockKeysList() {
   return unlock_keys;
 }
 
-void ProximityAuthWebUIHandler::OnPSKDerived(
-    const cryptauth::ExternalDeviceInfo& unlock_key,
-    const std::string& persistent_symmetric_key) {
-  if (persistent_symmetric_key.empty()) {
+void ProximityAuthWebUIHandler::OnRemoteDevicesLoaded(
+    const std::vector<RemoteDevice>& remote_devices) {
+  if (remote_devices[0].persistent_symmetric_key.empty()) {
     PA_LOG(ERROR) << "Failed to derive PSK.";
     return;
   }
 
-  selected_remote_device_ =
-      RemoteDevice(unlock_key.friendly_device_name(), unlock_key.public_key(),
-                   unlock_key.bluetooth_address(), persistent_symmetric_key);
-
+  selected_remote_device_ = remote_devices[0];
   life_cycle_.reset(new RemoteDeviceLifeCycleImpl(selected_remote_device_,
                                                   proximity_auth_client_));
   life_cycle_->AddObserver(this);

@@ -12,6 +12,7 @@
 #include "components/proximity_auth/cryptauth/base64url.h"
 #include "components/proximity_auth/cryptauth/fake_secure_message_delegate.h"
 #include "components/proximity_auth/device_to_device_responder_operations.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/secure_context.h"
 #include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -23,12 +24,6 @@ namespace {
 
 // The account id of the user.
 const char kAccountId[] = "example@gmail.com";
-
-// Attributes of the connected remote device.
-const char kRemoteDeviceName[] = "iPhone 6";
-const char kRemoteDevicePublicKey[] = "remote public key";
-const char kRemoteDeviceBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
-const char kRemoteDevicePersistentSymmetricKey[] = "PSK";
 
 // The initiator's session public key in base64url form. Note that this is
 // actually a serialized proto.
@@ -138,10 +133,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   ProximityAuthDeviceToDeviceAuthenticatorTest()
-      : remote_device_(kRemoteDeviceName,
-                       kRemoteDevicePublicKey,
-                       kRemoteDeviceBluetoothAddress,
-                       kRemoteDevicePersistentSymmetricKey),
+      : remote_device_(CreateClassicRemoteDeviceForTest()),
         connection_(remote_device_),
         secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,
@@ -197,7 +189,7 @@ class ProximityAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   std::string SimulateResponderAuth(const std::string& hello_message) {
     std::string remote_device_private_key =
         secure_message_delegate_->GetPrivateKeyForPublicKey(
-            kRemoteDevicePublicKey);
+            kTestRemoteDevicePublicKey);
 
     std::string responder_auth_message;
     DeviceToDeviceResponderOperations::CreateResponderAuthMessage(

@@ -47,6 +47,8 @@ source_set("proximity_auth") {
     "remote_device_life_cycle.h",
     "remote_device_life_cycle_impl.cc",
     "remote_device_life_cycle_impl.h",
+    "remote_device_loader.cc",
+    "remote_device_loader.h",
     "remote_status_update.cc",
     "remote_status_update.h",
     "screenlock_bridge.cc",
@@ -82,6 +84,8 @@ source_set("test_support") {
     "fake_connection.h",
     "mock_proximity_auth_client.cc",
     "mock_proximity_auth_client.h",
+    "proximity_auth_test_util.cc",
+    "proximity_auth_test_util.h",
   ]
 
   deps = [
@@ -105,6 +109,7 @@ source_set("unit_tests") {
     "proximity_auth_system_unittest.cc",
     "proximity_monitor_impl_unittest.cc",
     "remote_device_life_cycle_impl_unittest.cc",
+    "remote_device_loader_unittest.cc",
     "remote_status_update_unittest.cc",
     "throttled_bluetooth_connection_finder_unittest.cc",
     "unlock_manager_unittest.cc",

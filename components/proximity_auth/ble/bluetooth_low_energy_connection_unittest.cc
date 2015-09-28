@@ -13,6 +13,7 @@
 #include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
 #include "components/proximity_auth/bluetooth_throttler.h"
 #include "components/proximity_auth/connection_finder.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -36,11 +37,6 @@ using testing::SaveArg;
 
 namespace proximity_auth {
 namespace {
-
-const char kDeviceName[] = "Device name";
-const char kPublicKey[] = "Public key";
-const char kBluetoothAddress[] = "11:22:33:44:55:66";
-const char kPersistentSymmetricKey[] = "PSK";
 
 const char kServiceUUID[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEEF";
 const char kToPeripheralCharUUID[] = "977c6674-1239-4e72-993b-502369b8bb5a";
@@ -126,10 +122,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
  public:
   ProximityAuthBluetoothLowEnergyConnectionTest()
       : adapter_(new NiceMock<device::MockBluetoothAdapter>),
-        remote_device_(kDeviceName,
-                       kPublicKey,
-                       kBluetoothAddress,
-                       kPersistentSymmetricKey),
+        remote_device_(CreateLERemoteDeviceForTest()),
         service_uuid_(device::BluetoothUUID(kServiceUUID)),
         to_peripheral_char_uuid_(device::BluetoothUUID(kToPeripheralCharUUID)),
         from_peripheral_char_uuid_(
@@ -140,7 +133,8 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
   void SetUp() override {
     device_ = make_scoped_ptr(new NiceMock<device::MockBluetoothDevice>(
-        adapter_.get(), 0, kDeviceName, kBluetoothAddress, false, false));
+        adapter_.get(), 0, kTestRemoteDeviceName,
+        kTestRemoteDeviceBluetoothAddress, false, false));
 
     service_ = make_scoped_ptr(new NiceMock<device::MockBluetoothGattService>(
         device_.get(), kServiceID, service_uuid_, true, false));
@@ -161,7 +155,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
     std::vector<const device::BluetoothDevice*> devices;
     devices.push_back(device_.get());
     ON_CALL(*adapter_, GetDevices()).WillByDefault(Return(devices));
-    ON_CALL(*adapter_, GetDevice(kBluetoothAddress))
+    ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
         .WillByDefault(Return(device_.get()));
     ON_CALL(*device_, GetGattService(kServiceID))
         .WillByDefault(Return(service_.get()));
@@ -220,7 +214,7 @@ class ProximityAuthBluetoothLowEnergyConnectionTest : public testing::Test {
 
     create_gatt_connection_success_callback_.Run(
         make_scoped_ptr(new NiceMock<device::MockBluetoothGattConnection>(
-            adapter_, kBluetoothAddress)));
+            adapter_, kTestRemoteDeviceBluetoothAddress)));
 
     EXPECT_EQ(connection->sub_status(),
               BluetoothLowEnergyConnection::SubStatus::WAITING_CHARACTERISTICS);
@@ -675,7 +669,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionTest,
 
   create_gatt_connection_success_callback_.Run(
       make_scoped_ptr(new NiceMock<device::MockBluetoothGattConnection>(
-          adapter_, kBluetoothAddress)));
+          adapter_, kTestRemoteDeviceBluetoothAddress)));
 
   CharacteristicsFound(connection.get());
   NotifySessionStarted(connection.get());

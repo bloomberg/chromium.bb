@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -29,14 +30,8 @@ using testing::StrictMock;
 namespace proximity_auth {
 namespace {
 
-const char kDeviceName[] = "Device name";
 const char kOtherDeviceName[] = "Other device name";
-
-const char kBluetoothAddress[] = "11:22:33:44:55:66";
-const char kOtherBluetoothAddress[] = "AA:BB:CC:DD:EE:FF";
-
-const char kPublicKey[] = "Public key";
-const char kPersistentSymmetricKey[] = "PSK";
+const char kOtherBluetoothAddress[] = "FF:BB:CC:DD:EE:FF";
 
 const char kSerializedMessage[] = "Yarrr, this be a serialized message. Yarr!";
 const int kSerializedMessageLength = strlen(kSerializedMessage);
@@ -56,7 +51,7 @@ scoped_refptr<net::IOBuffer> CreateReceiveBuffer() {
 class MockBluetoothConnection : public BluetoothConnection {
  public:
   MockBluetoothConnection()
-      : BluetoothConnection(CreateRemoteDevice(),
+      : BluetoothConnection(CreateClassicRemoteDeviceForTest(),
                             device::BluetoothUUID(kUuid)) {}
 
   // Calls back into the parent Connection class.
@@ -76,11 +71,6 @@ class MockBluetoothConnection : public BluetoothConnection {
   using BluetoothConnection::Disconnect;
 
  private:
-  RemoteDevice CreateRemoteDevice() {
-    return RemoteDevice(kDeviceName, kPublicKey, kBluetoothAddress,
-                        kPersistentSymmetricKey);
-  }
-
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothConnection);
 };
 
@@ -101,7 +91,12 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
  public:
   ProximityAuthBluetoothConnectionTest()
       : adapter_(new device::MockBluetoothAdapter),
-        device_(adapter_.get(), 0, kDeviceName, kBluetoothAddress, true, true),
+        device_(adapter_.get(),
+                0,
+                kTestRemoteDeviceName,
+                kTestRemoteDeviceBluetoothAddress,
+                true,
+                true),
         socket_(new StrictMock<device::MockBluetoothSocket>),
         uuid_(kUuid) {
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);

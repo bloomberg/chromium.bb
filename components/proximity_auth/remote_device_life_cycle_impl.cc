@@ -89,7 +89,7 @@ RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
 
 scoped_ptr<Authenticator> RemoteDeviceLifeCycleImpl::CreateAuthenticator() {
   return make_scoped_ptr(new DeviceToDeviceAuthenticator(
-      connection_.get(), proximity_auth_client_->GetAccountId(),
+      connection_.get(), remote_device_.user_id,
       proximity_auth_client_->CreateSecureMessageDelegate()));
 }
 
