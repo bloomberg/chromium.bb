@@ -63,3 +63,6 @@ ServiceWorkerVersionBrowserTest.ReadResourceFailure_WaitingWorker
 
 # https://crbug.com/376668
 TouchActionBrowserTest.DefaultAuto
+
+# https://crbug.com/536881
+IndexedDBBrowserTest.DiskFullOnCommit
