@@ -49,7 +49,8 @@ class TestRunnerApplicationDelegate
   void OnConnectionLost(mus::ViewTreeConnection* connection) override;
 
   // mojom::WebViewClient:
-  void TopLevelNavigate(mojo::URLRequestPtr request) override;
+  void TopLevelNavigateRequest(mojo::URLRequestPtr request) override;
+  void TopLevelNavigationStarted(const mojo::String& url) override;
   void LoadingStateChanged(bool is_loading, double progress) override;
   void BackForwardChanged(mojom::ButtonState back_button,
                           mojom::ButtonState forward_button) override;

@@ -115,11 +115,13 @@ void TestRunnerApplicationDelegate::OnConnectionLost(
 ////////////////////////////////////////////////////////////////////////////////
 // mojom::WebViewClient implementation:
 
-void TestRunnerApplicationDelegate::TopLevelNavigate(
+void TestRunnerApplicationDelegate::TopLevelNavigateRequest(
     mojo::URLRequestPtr request) {
   web_view_->web_view()->LoadRequest(request.Pass());
 }
 
+void TestRunnerApplicationDelegate::TopLevelNavigationStarted(
+    const mojo::String& url) {}
 void TestRunnerApplicationDelegate::LoadingStateChanged(bool is_loading,
                                                         double progress) {}
 void TestRunnerApplicationDelegate::BackForwardChanged(

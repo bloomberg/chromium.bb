@@ -26,6 +26,16 @@ const char kTestTwoFile[] = "test_two.html";
 const char kTestTwoTitle[] = "Test Title Two";
 const char kTestThreeFile[] = "test_three.html";
 const char kTestThreeTitle[] = "Test Title Three";
+
+GURL GetTestFileURL(const std::string& file) {
+  base::FilePath data_file;
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
+  data_file = data_file.AppendASCII("components/test/data/web_view")
+                  .AppendASCII(file)
+                  .NormalizePathSeparators();
+  CHECK(base::PathExists(data_file));
+  return mojo::util::FilePathToFileURL(data_file);
+}
 }
 
 class WebViewTest : public mus::ViewManagerTestBase,
@@ -36,7 +46,8 @@ class WebViewTest : public mus::ViewManagerTestBase,
 
   mojom::WebView* web_view() { return web_view_.web_view(); }
 
-  const std::string& last_title() { return last_title_; }
+  const std::string& navigation_url() const { return navigation_url_; }
+  const std::string& last_title() const { return last_title_; }
   mojom::ButtonState last_back_button_state() {
     return last_back_button_state_;
   }
@@ -50,13 +61,8 @@ class WebViewTest : public mus::ViewManagerTestBase,
   }
 
   void NavigateTo(const std::string& file) {
-    base::FilePath data_file;
-    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &data_file));
-    data_file = data_file.AppendASCII("components/test/data/web_view")
-                .AppendASCII(file).NormalizePathSeparators();
-    ASSERT_TRUE(base::PathExists(data_file));
     mojo::URLRequestPtr request(mojo::URLRequest::New());
-    request->url = mojo::util::FilePathToFileURL(data_file).spec();
+    request->url = GetTestFileURL(file).spec();
     web_view()->LoadRequest(request.Pass());
     StartNestedRunLoopUntilLoadingDone();
   }
@@ -91,7 +97,10 @@ class WebViewTest : public mus::ViewManagerTestBase,
   }
 
   // Overridden from web_view::mojom::WebViewClient:
-  void TopLevelNavigate(mojo::URLRequestPtr request) override {}
+  void TopLevelNavigateRequest(mojo::URLRequestPtr request) override {}
+  void TopLevelNavigationStarted(const mojo::String& url) override {
+    navigation_url_ = url.get();
+  }
   void LoadingStateChanged(bool is_loading, double progress) override {
     if (is_loading == false)
       QuitNestedRunLoop();
@@ -113,6 +122,7 @@ class WebViewTest : public mus::ViewManagerTestBase,
 
   scoped_ptr<base::RunLoop> run_loop_;
 
+  std::string navigation_url_;
   std::string last_title_;
   mojom::ButtonState last_back_button_state_;
   mojom::ButtonState last_forward_button_state_;
@@ -132,6 +142,7 @@ TEST_F(WebViewTest, CanGoBackAndForward) {
 
   // We can't go back on first navigation since there's nothing previously on
   // the stack.
+  EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
             last_back_button_state());
@@ -148,6 +159,7 @@ TEST_F(WebViewTest, CanGoBackAndForward) {
   web_view()->GoBack();
   StartNestedRunLoopUntilLoadingDone();
 
+  EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
             last_back_button_state());
@@ -156,6 +168,7 @@ TEST_F(WebViewTest, CanGoBackAndForward) {
 
   web_view()->GoForward();
   StartNestedRunLoopUntilLoadingDone();
+  EXPECT_EQ(GetTestFileURL(kTestTwoFile).spec(), navigation_url());
   EXPECT_EQ(kTestTwoTitle, last_title());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED, last_back_button_state());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
@@ -171,6 +184,7 @@ TEST_F(WebViewTest, NavigationClearsForward) {
   web_view()->GoBack();
   StartNestedRunLoopUntilLoadingDone();
 
+  EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
             last_back_button_state());
@@ -180,6 +194,7 @@ TEST_F(WebViewTest, NavigationClearsForward) {
   // Now navigate to a third file. This should clear the forward stack.
   ASSERT_NO_FATAL_FAILURE(NavigateTo(kTestThreeFile));
 
+  EXPECT_EQ(GetTestFileURL(kTestThreeFile).spec(), navigation_url());
   EXPECT_EQ(kTestThreeTitle, last_title());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED, last_back_button_state());
   EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,

@@ -61,7 +61,8 @@ class BrowserWindow : public mus::ViewTreeDelegate,
   void OnAccelerator(uint32_t id, mojo::EventPtr event) override;
 
   // Overridden from web_view::mojom::WebViewClient:
-  void TopLevelNavigate(mojo::URLRequestPtr request) override;
+  void TopLevelNavigateRequest(mojo::URLRequestPtr request) override;
+  void TopLevelNavigationStarted(const mojo::String& url) override;
   void LoadingStateChanged(bool is_loading, double progress) override;
   void BackForwardChanged(web_view::mojom::ButtonState back_button,
                           web_view::mojom::ButtonState forward_button) override;

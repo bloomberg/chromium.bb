@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_WEB_VIEW_PENDING_WEB_VIEW_LOAD_H_
 #define COMPONENTS_WEB_VIEW_PENDING_WEB_VIEW_LOAD_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "url/gurl.h"
 
 namespace web_view {
 
@@ -30,11 +33,14 @@ class PendingWebViewLoad {
     return is_content_handler_id_valid_;
   }
 
+  const GURL& pending_url() const { return pending_url_; }
+
  private:
   void OnGotContentHandlerID();
 
   WebViewImpl* web_view_;
 
+  GURL pending_url_;
   bool is_content_handler_id_valid_;
 
   scoped_ptr<FrameConnection> frame_connection_;

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 #define COMPONENTS_WEB_VIEW_WEB_VIEW_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/mus/public/cpp/view_observer.h"
@@ -48,7 +50,7 @@ class WebViewImpl : public mojom::WebView,
   friend class PendingWebViewLoad;
 
   // See description above |pending_load_| for details.
-  void OnLoad();
+  void OnLoad(const GURL& pending_url);
 
   // Overridden from WebView:
   void LoadRequest(mojo::URLRequestPtr request) override;

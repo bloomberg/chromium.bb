@@ -59,7 +59,7 @@ WebViewImpl::~WebViewImpl() {
   }
 }
 
-void WebViewImpl::OnLoad() {
+void WebViewImpl::OnLoad(const GURL& pending_url) {
   // Frames are uniqued based on the id of the associated View. By creating a
   // new View each time through we ensure the renderers get a clean id, rather
   // than one they may know about and try to incorrectly use.
@@ -67,6 +67,8 @@ void WebViewImpl::OnLoad() {
     content_->Destroy();
     DCHECK(!content_);
   }
+
+  client_->TopLevelNavigationStarted(pending_url.spec());
 
   content_ = root_->connection()->CreateView();
   content_->SetBounds(*mojo::Rect::From(
@@ -131,7 +133,7 @@ void WebViewImpl::OnEmbed(mus::View* root) {
   root_ = root;
 
   if (pending_load_ && pending_load_->is_content_handler_id_valid())
-    OnLoad();
+    OnLoad(pending_load_->pending_url());
 }
 
 void WebViewImpl::OnConnectionLost(mus::ViewTreeConnection* connection) {
@@ -185,7 +187,7 @@ void WebViewImpl::TitleChanged(const mojo::String& title) {
 }
 
 void WebViewImpl::NavigateTopLevel(Frame* source, mojo::URLRequestPtr request) {
-  client_->TopLevelNavigate(request.Pass());
+  client_->TopLevelNavigateRequest(request.Pass());
 }
 
 void WebViewImpl::CanNavigateFrame(Frame* target,
@@ -207,7 +209,7 @@ void WebViewImpl::DidCommitProvisionalLoad(Frame* frame) {
 void WebViewImpl::HandlePageNavigateRequest(const GURL& url) {
   mojo::URLRequestPtr request(mojo::URLRequest::New());
   request->url = url.spec();
-  client_->TopLevelNavigate(request.Pass());
+  client_->TopLevelNavigateRequest(request.Pass());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

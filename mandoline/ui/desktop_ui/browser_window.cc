@@ -234,8 +234,16 @@ void BrowserWindow::OnAccelerator(uint32_t id, mojo::EventPtr event) {
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserWindow, web_view::mojom::WebViewClient implementation:
 
-void BrowserWindow::TopLevelNavigate(mojo::URLRequestPtr request) {
+void BrowserWindow::TopLevelNavigateRequest(mojo::URLRequestPtr request) {
   Embed(request.Pass());
+}
+
+void BrowserWindow::TopLevelNavigationStarted(const mojo::String& url) {
+  GURL gurl(url);
+  bool changed = current_url_ != gurl;
+  current_url_ = gurl;
+  if (changed)
+    toolbar_view_->SetOmniboxText(base::UTF8ToUTF16(current_url_.spec()));
 }
 
 void BrowserWindow::LoadingStateChanged(bool is_loading, double progress) {
@@ -268,13 +276,6 @@ void BrowserWindow::Embed(mojo::URLRequestPtr request) {
     EmbedOmnibox();
     return;
   }
-
-  GURL gurl(string_url);
-  bool changed = current_url_ != gurl;
-  current_url_ = gurl;
-  if (changed)
-    toolbar_view_->SetOmniboxText(base::UTF8ToUTF16(current_url_.spec()));
-
   web_view_.web_view()->LoadRequest(request.Pass());
 }
 

@@ -101,11 +101,13 @@ void PhoneBrowserApplicationDelegate::OnViewBoundsChanged(
 // PhoneBrowserApplicationDelegate,
 //     web_view::mojom::WebViewClient implementation:
 
-void PhoneBrowserApplicationDelegate::TopLevelNavigate(
+void PhoneBrowserApplicationDelegate::TopLevelNavigateRequest(
     mojo::URLRequestPtr request) {
   web_view_.web_view()->LoadRequest(request.Pass());
 }
 
+void PhoneBrowserApplicationDelegate::TopLevelNavigationStarted(
+    const mojo::String& url) {}
 void PhoneBrowserApplicationDelegate::LoadingStateChanged(bool is_loading,
                                                           double progress) {}
 

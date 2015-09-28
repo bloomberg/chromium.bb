@@ -14,7 +14,12 @@ enum ButtonState {
 
 interface WebViewClient {
   // Page-generated request for a top level frame navigation.
-  TopLevelNavigate(mojo.URLRequest request);
+  TopLevelNavigateRequest(mojo.URLRequest request);
+
+  // Notification that the navigation has started. This can be useful for
+  // navigations triggered from sources other than the page itself (e.g.
+  // back/forward history navigation).
+  TopLevelNavigationStarted(string url);
 
   // Loading and progress notifications.
   LoadingStateChanged(bool is_loading, double progress);
