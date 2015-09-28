@@ -286,17 +286,7 @@ void LoadablePluginPlaceholder::DidFinishLoadingCallback() {
     blink::WebSerializedScriptValue message_data =
         blink::WebSerializedScriptValue::serialize(converter->ToV8Value(
             &value, element.document().frame()->mainWorldScriptContext()));
-
-    blink::WebDOMEvent event = element.document().createEvent("MessageEvent");
-    blink::WebDOMMessageEvent msg_event = event.to<blink::WebDOMMessageEvent>();
-    msg_event.initMessageEvent("message",           // type
-                               false,               // canBubble
-                               false,               // cancelable
-                               message_data,        // data
-                               "",                  // origin [*]
-                               NULL,                // source [*]
-                               element.document(),  // target document
-                               "");                 // lastEventId
+    blink::WebDOMMessageEvent msg_event(message_data);
     element.dispatchEvent(msg_event);
   }
 }

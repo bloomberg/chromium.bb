@@ -111,12 +111,7 @@ void IPCEcho::RequestEcho(int id, int size) {
 void IPCEcho::DidRespondEcho(int id, int size) {
   last_echo_id_ = id;
   last_echo_size_ = size;
-  blink::WebString eventName = blink::WebString::fromUTF8("CustomEvent");
-  blink::WebString eventType = blink::WebString::fromUTF8("pong");
-  blink::WebDOMEvent event = document_.createEvent(eventName);
-  event.to<blink::WebDOMCustomEvent>().initCustomEvent(
-      eventType, false, false, blink::WebSerializedScriptValue());
-  document_.dispatchEvent(event);
+  document_.dispatchEvent(blink::WebDOMCustomEvent("pong"));
 }
 
 void IPCEcho::Install(blink::WebFrame* frame) {

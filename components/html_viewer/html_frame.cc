@@ -748,20 +748,6 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
   serialized_script_value = blink::WebSerializedScriptValue::fromString(
       serialized_event->data.To<blink::WebString>());
 
-  blink::WebMessagePortChannelArray channels;
-
-  // Create an event with the message.  The next-to-last parameter to
-  // initMessageEvent is the last event ID, which is not used with postMessage.
-  blink::WebDOMEvent event =
-      target_web_frame->document().createEvent("MessageEvent");
-  blink::WebDOMMessageEvent msg_event = event.to<blink::WebDOMMessageEvent>();
-  msg_event.initMessageEvent(
-      "message",
-      // |canBubble| and |cancellable| are always false
-      false, false, serialized_script_value,
-      serialized_event->source_origin.To<blink::WebString>(),
-      source->web_frame_, target_web_frame->document(), "", channels);
-
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.
   blink::WebSecurityOrigin target_origin;
@@ -769,6 +755,13 @@ void HTMLFrame::OnPostMessageEvent(uint32_t source_frame_id,
     target_origin = blink::WebSecurityOrigin::createFromString(
         serialized_event->target_origin.To<blink::WebString>());
   }
+
+  // TODO(esprehn): Shouldn't this also fill in channels like RenderFrameImpl?
+  blink::WebMessagePortChannelArray channels;
+  blink::WebDOMMessageEvent msg_event(serialized_script_value,
+      serialized_event->source_origin.To<blink::WebString>(),
+      source->web_frame_, target_web_frame->document(), channels);
+
   target_web_frame->dispatchMessageEventWithOriginCheck(target_origin,
                                                         msg_event);
 }

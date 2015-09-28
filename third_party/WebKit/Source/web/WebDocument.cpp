@@ -248,15 +248,6 @@ WebElement WebDocument::fullScreenElement() const
     return WebElement(fullScreenElement);
 }
 
-WebDOMEvent WebDocument::createEvent(const WebString& eventType)
-{
-    TrackExceptionState exceptionState;
-    WebDOMEvent event(unwrap<Document>()->createEvent(eventType, exceptionState));
-    if (exceptionState.hadException())
-        return WebDOMEvent();
-    return event;
-}
-
 WebReferrerPolicy WebDocument::referrerPolicy() const
 {
     return static_cast<WebReferrerPolicy>(constUnwrap<Document>()->referrerPolicy());

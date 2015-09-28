@@ -1748,17 +1748,6 @@ void RenderFrameImpl::OnPostMessageEvent(
     serialized_script_value = WebSerializedScriptValue::fromString(params.data);
   }
 
-  // Create an event with the message.  The next-to-last parameter to
-  // initMessageEvent is the last event ID, which is not used with postMessage.
-  WebDOMEvent event = frame_->document().createEvent("MessageEvent");
-  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
-  msg_event.initMessageEvent("message",
-                             // |canBubble| and |cancellable| are always false
-                             false, false,
-                             serialized_script_value,
-                             params.source_origin, source_frame,
-                             frame_->document(), "", channels);
-
   // We must pass in the target_origin to do the security check on this side,
   // since it may have changed since the original postMessage call was made.
   WebSecurityOrigin target_origin;
@@ -1766,6 +1755,12 @@ void RenderFrameImpl::OnPostMessageEvent(
     target_origin =
         WebSecurityOrigin::createFromString(WebString(params.target_origin));
   }
+
+  WebDOMMessageEvent msg_event(serialized_script_value,
+                               params.source_origin,
+                               source_frame,
+                               frame_->document(),
+                               channels);
   frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 

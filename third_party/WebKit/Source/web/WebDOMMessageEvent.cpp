@@ -44,23 +44,23 @@
 
 namespace blink {
 
-void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebDocument& targetDocument, const WebString& lastEventId, const WebMessagePortChannelArray& webChannels)
+WebDOMMessageEvent::WebDOMMessageEvent(const WebSerializedScriptValue& messageData, const WebString& origin, const WebFrame* sourceFrame, const WebDocument& targetDocument, const WebMessagePortChannelArray& channels)
+    : WebDOMMessageEvent(MessageEvent::create())
 {
-    ASSERT(m_private.get());
-    ASSERT(isMessageEvent());
     DOMWindow* window = nullptr;
     if (sourceFrame)
         window = toCoreFrame(sourceFrame)->domWindow();
     MessagePortArray* ports = nullptr;
     if (!targetDocument.isNull()) {
         RefPtrWillBeRawPtr<Document> coreDocument = PassRefPtrWillBeRawPtr<Document>(targetDocument);
-        ports = MessagePort::toMessagePortArray(coreDocument.get(), webChannels);
+        ports = MessagePort::toMessagePortArray(coreDocument.get(), channels);
     }
     // Use an empty array for |ports| when it is null because this function
     // is used to implement postMessage().
     if (!ports)
         ports = new MessagePortArray;
-    unwrap<MessageEvent>()->initMessageEvent(type, canBubble, cancelable, messageData, origin, lastEventId, window, ports);
+    // TODO(esprehn): Chromium always passes empty string for lastEventId, is that right?
+    unwrap<MessageEvent>()->initMessageEvent("message", false, false, messageData, origin, ""/*lastEventId*/, window, ports);
 }
 
 WebSerializedScriptValue WebDOMMessageEvent::data() const

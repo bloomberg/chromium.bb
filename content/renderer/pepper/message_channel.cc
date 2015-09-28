@@ -364,17 +364,6 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   if (!container)
     return;
 
-  WebDOMEvent event =
-      container->element().document().createEvent("MessageEvent");
-  WebDOMMessageEvent msg_event = event.to<WebDOMMessageEvent>();
-  msg_event.initMessageEvent("message",     // type
-                             false,         // canBubble
-                             false,         // cancelable
-                             message_data,  // data
-                             "",            // origin [*]
-                             NULL,          // source [*]
-                             container->element().document(), // target document
-                             "");           // lastEventId
   // [*] Note that the |origin| is only specified for cross-document and server-
   //     sent messages, while |source| is only specified for cross-document
   //     messages:
@@ -383,6 +372,7 @@ void MessageChannel::PostMessageToJavaScriptImpl(
   //     at least, postMessage on Workers does not provide the origin or source.
   //     TODO(dmichael):  Add origin if we change to a more iframe-like origin
   //                      policy (see crbug.com/81537)
+  WebDOMMessageEvent msg_event(message_data);
   container->element().dispatchEvent(msg_event);
 }
 

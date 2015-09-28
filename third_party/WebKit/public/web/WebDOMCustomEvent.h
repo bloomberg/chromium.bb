@@ -31,16 +31,16 @@
 #define WebDOMCustomEvent_h
 
 #include "WebDOMEvent.h"
-#include "WebSerializedScriptValue.h"
 
 namespace blink {
 
 class WebString;
 
+// TODO(esprehn): Remove this and IPCEcho which appears to just be dead code.
 class WebDOMCustomEvent : public WebDOMEvent {
 public:
+    BLINK_EXPORT WebDOMCustomEvent(const WebString& type);
     WebDOMCustomEvent() { }
-    BLINK_EXPORT void initCustomEvent(const WebString& type, bool canBubble, bool cancelable, const WebSerializedScriptValue& messageData);
 };
 
 } // namespace blink
