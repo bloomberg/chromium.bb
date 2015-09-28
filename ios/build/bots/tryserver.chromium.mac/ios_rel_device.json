@@ -5,14 +5,14 @@
   "comments": [
     "Builder for 32-bit devices."
   ],
-  "xcode version": "6.3",
+  "xcode version": "7.0",
   "GYP_DEFINES": {
     "chromium_ios_signing": "0",
     "target_subarch": "arm32"
   },
   "compiler": "xcodebuild",
   "configuration": "Release",
-  "sdk": "iphoneos8.3",
+  "sdk": "iphoneos9.0",
   "tests": [
   ]
 }
