@@ -293,11 +293,31 @@ bool UseWKWebView() {
 - (BOOL)openExternalURL:(const GURL&)url {
   return NO;
 }
+
 - (void)presentSSLError:(const net::SSLInfo&)info
            forSSLStatus:(const web::SSLStatus&)status
             recoverable:(BOOL)recoverable
                callback:(SSLErrorCallback)shouldContinue {
+  UIAlertController* alert = [UIAlertController
+      alertControllerWithTitle:@"Your connection is not private"
+                       message:nil
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  [alert addAction:[UIAlertAction actionWithTitle:@"Go Back"
+                                            style:UIAlertActionStyleCancel
+                                          handler:^(UIAlertAction*) {
+                                            shouldContinue(NO);
+                                          }]];
+
+  if (recoverable) {
+    [alert addAction:[UIAlertAction actionWithTitle:@"Continue"
+                                              style:UIAlertActionStyleDefault
+                                            handler:^(UIAlertAction*) {
+                                              shouldContinue(YES);
+                                            }]];
+  }
+  [self presentViewController:alert animated:YES completion:nil];
 }
+
 - (void)presentSpoofingError {
 }
 - (void)webLoadCancelled:(const GURL&)url {
