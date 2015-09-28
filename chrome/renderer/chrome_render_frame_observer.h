@@ -100,9 +100,6 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
                                 const std::string& platform);
   void OnAppBannerDebugMessageRequest(const std::string& message);
 
-  // Checks if a page contains <meta http-equiv="refresh" ...> tag.
-  bool HasRefreshMetaTag(blink::WebLocalFrame* frame);
-
   // PageInfoReceiver implementation.
   void PageCaptured(base::string16* content, CaptureType capture_type) override;
 

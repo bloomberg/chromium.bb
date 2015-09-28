@@ -373,8 +373,8 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
         search_provider::AUTODETECTED_PROVIDER));
   }
 
-  // Don't capture pages including refresh meta tag.
-  if (HasRefreshMetaTag(frame))
+  // Don't capture pages that have pending redirect or location change.
+  if (frame->isNavigationScheduled())
     return;
 
   page_info_.CapturePageInfoLater(
@@ -403,8 +403,9 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   if (frame->parent())
     return;
 
-  // Don't capture pages being not new, or including refresh meta tag.
-  if (!is_new_navigation || HasRefreshMetaTag(frame))
+  // Don't capture pages being not new, with pending redirect, or location
+  // change.
+  if (!is_new_navigation || frame->isNavigationScheduled())
     return;
 
   base::debug::SetCrashKeyValue(
@@ -414,33 +415,6 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
   page_info_.CapturePageInfoLater(
       PRELIMINARY_CAPTURE, render_frame(),
       base::TimeDelta::FromMilliseconds(kDelayForForcedCaptureMs));
-}
-
-bool ChromeRenderFrameObserver::HasRefreshMetaTag(WebLocalFrame* frame) {
-  if (!frame)
-    return false;
-  WebElement head = frame->document().head();
-  if (head.isNull() || !head.hasChildNodes())
-    return false;
-
-  const WebString tag_name(base::ASCIIToUTF16("meta"));
-  const WebString attribute_name(base::ASCIIToUTF16("http-equiv"));
-
-  WebNodeList children = head.childNodes();
-  for (size_t i = 0; i < children.length(); ++i) {
-    WebNode node = children.item(i);
-    if (!node.isElementNode())
-      continue;
-    WebElement element = node.to<WebElement>();
-    if (!element.hasHTMLTagName(tag_name))
-      continue;
-    WebString value = element.getAttribute(attribute_name);
-    if (value.isNull() ||
-        !base::LowerCaseEqualsASCII(base::StringPiece16(value), "refresh"))
-      continue;
-    return true;
-  }
-  return false;
 }
 
 void ChromeRenderFrameObserver::PageCaptured(base::string16* content,
