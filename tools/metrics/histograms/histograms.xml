@@ -47823,6 +47823,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UrlFetcher.StringResponseSize" units="KB">
+  <owner>mmenke@chromium.org</owner>
+  <summary>
+    Size (in kilobytes) of response bodies retrieved as strings from URLFetcher.
+  </summary>
+</histogram>
+
 <histogram name="UserImage.ChangeChoice" enum="ChromeOSUserImageId">
   <owner>nkostylev@chromium.org</owner>
   <summary>
