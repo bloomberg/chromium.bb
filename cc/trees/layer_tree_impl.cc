@@ -266,6 +266,8 @@ LayerImpl* LayerTreeImpl::CurrentlyScrollingLayer() const {
 }
 
 void LayerTreeImpl::SetCurrentlyScrollingLayer(LayerImpl* layer) {
+  DCHECK_IMPLIES(layer, layer != OuterViewportScrollLayer());
+
   int new_id = layer ? layer->id() : Layer::INVALID_ID;
   if (currently_scrolling_layer_id_ == new_id)
     return;

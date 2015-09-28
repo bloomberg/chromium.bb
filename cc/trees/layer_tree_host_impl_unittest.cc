@@ -3670,7 +3670,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
-  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(),
+  EXPECT_EQ(host_impl_->InnerViewportScrollLayer(),
             host_impl_->CurrentlyScrollingLayer());
   host_impl_->ScrollEnd();
 
@@ -3684,7 +3684,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
 
   EXPECT_EQ(0, host_impl_->top_controls_manager()->ContentTopOffset());
-  EXPECT_EQ(host_impl_->OuterViewportScrollLayer(),
+  EXPECT_EQ(host_impl_->InnerViewportScrollLayer(),
             host_impl_->CurrentlyScrollingLayer());
 
   host_impl_->ScrollEnd();
@@ -7755,15 +7755,15 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
     // currently scrolling layer.
     EXPECT_EQ(InputHandler::SCROLL_STARTED,
               host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
     EXPECT_EQ(InputHandler::SCROLL_STARTED, host_impl_->FlingScrollBegin());
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     gfx::Vector2d scroll_delta(inner_viewport.width() / 2.f,
                                inner_viewport.height() / 2.f);
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     inner_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), outer_scroll);
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd();
     EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingLayer());
@@ -7774,17 +7774,17 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
     // Fling past the inner viewport boundry, make sure outer viewport scrolls.
     EXPECT_EQ(InputHandler::SCROLL_STARTED,
               host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
     EXPECT_EQ(InputHandler::SCROLL_STARTED, host_impl_->FlingScrollBegin());
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     inner_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollBy(gfx::Point(), scroll_delta);
     outer_expected += gfx::Vector2dF(scroll_delta.x(), scroll_delta.y());
-    EXPECT_EQ(outer_scroll, host_impl_->CurrentlyScrollingLayer());
+    EXPECT_EQ(inner_scroll, host_impl_->CurrentlyScrollingLayer());
 
     host_impl_->ScrollEnd();
     EXPECT_EQ(nullptr, host_impl_->CurrentlyScrollingLayer());

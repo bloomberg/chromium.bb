@@ -498,8 +498,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingRoot() const {
   LayerImpl* scrolling_layer = CurrentlyScrollingLayer();
   if (!scrolling_layer)
     return false;
-  return scrolling_layer == InnerViewportScrollLayer() ||
-         scrolling_layer == OuterViewportScrollLayer();
+  return scrolling_layer == InnerViewportScrollLayer();
 }
 
 bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
@@ -2374,9 +2373,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   // notifications while preventing scroll updates from being unintentionally
   // forwarded to the main thread.
   if (!potentially_scrolling_layer_impl)
-    potentially_scrolling_layer_impl = OuterViewportScrollLayer()
-                                           ? OuterViewportScrollLayer()
-                                           : InnerViewportScrollLayer();
+    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
+
+  // The inner viewport layer represents the viewport.
+  if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
+    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
 
   return potentially_scrolling_layer_impl;
 }
@@ -2467,8 +2468,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   if (scroll_status == SCROLL_STARTED) {
     gfx::Vector2dF pending_delta = scroll_delta;
     for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
-         layer_impl = layer_impl->parent()) {
-      if (!layer_impl->scrollable())
+         layer_impl = NextLayerInScrollOrder(layer_impl)) {
+      // The inner viewport layer represents the viewport.
+      if (!layer_impl->scrollable() || layer_impl == OuterViewportScrollLayer())
         continue;
 
       gfx::ScrollOffset current_offset = layer_impl->CurrentScrollOffset();
@@ -2745,10 +2747,10 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
                                                ScrollDirection direction) {
   DCHECK(wheel_scrolling_);
 
-  for (LayerImpl* layer_impl = CurrentlyScrollingLayer();
-       layer_impl;
-       layer_impl = layer_impl->parent()) {
-    if (!layer_impl->scrollable())
+  for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
+       layer_impl = NextLayerInScrollOrder(layer_impl)) {
+    // The inner viewport layer represents the viewport.
+    if (!layer_impl->scrollable() || layer_impl == OuterViewportScrollLayer())
       continue;
 
     if (!layer_impl->HasScrollbar(VERTICAL))
@@ -2812,7 +2814,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
     return SCROLL_IGNORED;
 
   bool currently_scrolling_viewport =
-      CurrentlyScrollingLayer() == OuterViewportScrollLayer() ||
       CurrentlyScrollingLayer() == InnerViewportScrollLayer();
   if (!wheel_scrolling_ && !currently_scrolling_viewport) {
     // Allow the fling to lock to the first layer that moves after the initial
@@ -2910,13 +2911,8 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
-  if (active_tree_->OuterViewportScrollLayer()) {
-    active_tree_->SetCurrentlyScrollingLayer(
-        active_tree_->OuterViewportScrollLayer());
-  } else {
-    active_tree_->SetCurrentlyScrollingLayer(
-        active_tree_->InnerViewportScrollLayer());
-  }
+  active_tree_->SetCurrentlyScrollingLayer(
+      active_tree_->InnerViewportScrollLayer());
   top_controls_manager_->PinchBegin();
 }
 
