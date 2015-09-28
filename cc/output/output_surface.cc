@@ -190,11 +190,6 @@ void OutputSurface::SetExternalDrawConstraints(
 }
 
 OutputSurface::~OutputSurface() {
-  // Unregister any dump provider. Safe to call (no-op) if we have not yet
-  // registered.
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
-
   if (client_)
     DetachFromClientInternal();
 }
@@ -226,7 +221,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
   // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
+  if (client_ && base::ThreadTaskRunnerHandle::IsSet()) {
     // Now that we are on the context thread, register a dump provider with this
     // thread's task runner. This will overwrite any previous dump provider
     // registered.
@@ -351,6 +346,12 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
 void OutputSurface::DetachFromClientInternal() {
   DCHECK(client_thread_checker_.CalledOnValidThread());
   DCHECK(client_);
+
+  // Unregister any dump provider. Safe to call (no-op) if we have not yet
+  // registered.
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
+
   if (context_provider_.get()) {
     context_provider_->SetLostContextCallback(
         ContextProvider::LostContextCallback());
