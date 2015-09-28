@@ -489,7 +489,9 @@ template("package_apk") {
                            ])
     script = "//build/android/gyp/apkbuilder.py"
     depfile = "$target_gen_dir/$target_name.d"
-    data_deps = [ "//tools/android/md5sum" ]  # Used when deploying APKs
+    data_deps = [
+      "//tools/android/md5sum",
+    ]  # Used when deploying APKs
 
     inputs = [
       invoker.resource_packaged_apk_path,
@@ -1183,6 +1185,8 @@ template("java_library_impl") {
   _requires_android =
       defined(invoker.requires_android) && invoker.requires_android
   assert(_requires_android || true)  # Mark as used.
+  _run_findbugs = defined(invoker.run_findbugs) && invoker.run_findbugs
+  assert(_run_findbugs || true)  # Mark as used.
 
   if (_supports_android) {
     _dex_path = _base_path + ".dex.jar"
@@ -1322,10 +1326,7 @@ template("java_library_impl") {
         }
       }
 
-      if (defined(invoker.run_findbugs)) {
-        run_findbugs = invoker.run_findbugs
-      }
-      if (run_findbugs) {
+      if (_run_findbugs) {
         _final_datadeps += [ ":${_template_name}__findbugs" ]
         findbugs("${_template_name}__findbugs") {
           build_config = _build_config

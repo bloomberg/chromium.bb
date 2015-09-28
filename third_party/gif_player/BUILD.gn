@@ -10,5 +10,4 @@ android_library("gif_player_java") {
     "src/jp/tomorrowkey/android/gifplayer/BaseGifImage.java",
   ]
   run_findbugs = false
-  assert(!run_findbugs)
 }
