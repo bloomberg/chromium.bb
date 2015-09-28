@@ -592,8 +592,7 @@ bool ExceptionHandler::DoDump(pid_t crashing_process, const void* context,
         context,
         context_size,
         mapping_list_,
-        minidump_descriptor_.microdump_build_fingerprint(),
-        minidump_descriptor_.microdump_product_info());
+        *minidump_descriptor_.microdump_extra_info());
   }
   if (minidump_descriptor_.IsFD()) {
     return google_breakpad::WriteMinidump(minidump_descriptor_.fd(),
