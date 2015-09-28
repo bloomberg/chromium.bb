@@ -126,6 +126,7 @@ exec_script_whitelist = [
   "//build/config/linux/BUILD.gn",
   "//build/config/linux/pkg_config.gni",
   "//build/config/mac/mac_sdk.gni",
+  "//build/config/win/BUILD.gn",
   "//build/config/win/visual_studio_version.gni",
   "//build/gn_helpers.py",
   "//build/gypi_to_gn.py",
