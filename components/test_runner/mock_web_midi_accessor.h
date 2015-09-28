@@ -21,14 +21,14 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
  public:
   explicit MockWebMIDIAccessor(blink::WebMIDIAccessorClient* client,
                                TestInterfaces* interfaces);
-  virtual ~MockWebMIDIAccessor();
+  ~MockWebMIDIAccessor() override;
 
   // blink::WebMIDIAccessor implementation.
-  virtual void startSession() override;
-  virtual void sendMIDIData(unsigned port_index,
-                            const unsigned char* data,
-                            size_t length,
-                            double timestamp) override;
+  void startSession() override;
+  void sendMIDIData(unsigned port_index,
+                    const unsigned char* data,
+                    size_t length,
+                    double timestamp) override;
 
   // WebTask related methods
   WebTaskList* mutable_task_list() { return &task_list_; }

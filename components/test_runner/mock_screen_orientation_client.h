@@ -23,7 +23,7 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
     : public NON_EXPORTED_BASE(blink::WebScreenOrientationClient) {
  public:
   explicit MockScreenOrientationClient();
-  virtual ~MockScreenOrientationClient();
+  ~MockScreenOrientationClient() override;
 
   void ResetData();
   void UpdateDeviceOrientation(blink::WebLocalFrame* main_frame,
@@ -34,9 +34,9 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
 
  private:
   // From blink::WebScreenOrientationClient.
-  virtual void lockOrientation(blink::WebScreenOrientationLockType orientation,
-                               blink::WebLockOrientationCallback* callback);
-  virtual void unlockOrientation();
+  void lockOrientation(blink::WebScreenOrientationLockType orientation,
+                       blink::WebLockOrientationCallback* callback) override;
+  void unlockOrientation() override;
 
   void UpdateLockSync(blink::WebScreenOrientationLockType,
                       blink::WebLockOrientationCallback*);

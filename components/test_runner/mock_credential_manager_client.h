@@ -26,13 +26,12 @@ class MockCredentialManagerClient : public blink::WebCredentialManagerClient {
   void SetResponse(blink::WebCredential* credential);
 
   // blink::WebCredentialManager:
-  virtual void dispatchStore(const blink::WebCredential& credential,
-                             NotificationCallbacks* callbacks);
-  virtual void dispatchRequireUserMediation(NotificationCallbacks* callbacks);
-  virtual void dispatchGet(
-      bool zero_click_only,
-      const blink::WebVector<blink::WebURL>& federations,
-      RequestCallbacks* callbacks);
+  void dispatchStore(const blink::WebCredential& credential,
+                     NotificationCallbacks* callbacks) override;
+  void dispatchRequireUserMediation(NotificationCallbacks* callbacks) override;
+  void dispatchGet(bool zero_click_only,
+                   const blink::WebVector<blink::WebURL>& federations,
+                   RequestCallbacks* callbacks) override;
 
  private:
   scoped_ptr<blink::WebCredential> credential_;

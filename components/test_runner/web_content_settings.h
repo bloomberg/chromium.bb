@@ -15,22 +15,22 @@ class WebTestDelegate;
 class WebContentSettings : public blink::WebContentSettingsClient {
  public:
   WebContentSettings();
-  virtual ~WebContentSettings();
+  ~WebContentSettings() override;
 
   // blink::WebContentSettingsClient:
-  virtual bool allowImage(bool enabledPerSettings,
-                          const blink::WebURL& imageURL);
-  virtual bool allowMedia(const blink::WebURL& mediaURL);
-  virtual bool allowScriptFromSource(bool enabledPerSettings,
-                                     const blink::WebURL& scriptURL);
-  virtual bool allowStorage(bool local);
-  virtual bool allowPlugins(bool enabledPerSettings);
-  virtual bool allowDisplayingInsecureContent(bool enabledPerSettings,
-                                              const blink::WebSecurityOrigin&,
-                                              const blink::WebURL&);
-  virtual bool allowRunningInsecureContent(bool enabledPerSettings,
-                                           const blink::WebSecurityOrigin&,
-                                           const blink::WebURL&);
+  bool allowImage(bool enabledPerSettings,
+                  const blink::WebURL& imageURL) override;
+  bool allowMedia(const blink::WebURL& mediaURL) override;
+  bool allowScriptFromSource(bool enabledPerSettings,
+                             const blink::WebURL& scriptURL) override;
+  bool allowStorage(bool local) override;
+  bool allowPlugins(bool enabledPerSettings) override;
+  bool allowDisplayingInsecureContent(bool enabledPerSettings,
+                                      const blink::WebSecurityOrigin&,
+                                      const blink::WebURL&) override;
+  bool allowRunningInsecureContent(bool enabledPerSettings,
+                                   const blink::WebSecurityOrigin&,
+                                   const blink::WebURL&) override;
 
   // Hooks to set the different policies.
   void SetImagesAllowed(bool);

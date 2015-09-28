@@ -13,12 +13,12 @@ namespace test_runner {
 class MockWebAudioDevice : public blink::WebAudioDevice {
  public:
   explicit MockWebAudioDevice(double sample_rate);
-  virtual ~MockWebAudioDevice();
+  ~MockWebAudioDevice() override;
 
   // blink::WebAudioDevice:
-  virtual void start();
-  virtual void stop();
-  virtual double sampleRate();
+  void start() override;
+  void stop() override;
+  double sampleRate() override;
 
  private:
   double sample_rate_;

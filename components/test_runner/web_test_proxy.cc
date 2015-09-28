@@ -72,7 +72,7 @@ class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
   }
 
   // WebCompositeAndReadbackAsyncCallback implementation.
-  virtual void didCompositeAndReadback(const SkBitmap& bitmap);
+  void didCompositeAndReadback(const SkBitmap& bitmap) override;
 
  private:
   base::Callback<void(const SkBitmap&)> callback_;
@@ -92,7 +92,7 @@ class LayoutAndPaintCallback : public blink::WebLayoutAndPaintAsyncCallback {
   void set_wait_for_popup(bool wait) { wait_for_popup_ = wait; }
 
   // WebLayoutAndPaintAsyncCallback implementation.
-  virtual void didLayoutAndPaint();
+  void didLayoutAndPaint() override;
 
  private:
   base::Closure callback_;

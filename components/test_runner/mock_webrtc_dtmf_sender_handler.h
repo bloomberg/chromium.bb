@@ -21,12 +21,12 @@ class MockWebRTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandler {
                               WebTestDelegate* delegate);
 
   // WebRTCDTMFSenderHandler related methods
-  virtual void setClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
-  virtual blink::WebString currentToneBuffer() override;
-  virtual bool canInsertDTMF() override;
-  virtual bool insertDTMF(const blink::WebString& tones,
-                          long duration,
-                          long inter_tone_gap) override;
+  void setClient(blink::WebRTCDTMFSenderHandlerClient* client) override;
+  blink::WebString currentToneBuffer() override;
+  bool canInsertDTMF() override;
+  bool insertDTMF(const blink::WebString& tones,
+                  long duration,
+                  long inter_tone_gap) override;
 
   // WebTask related methods
   WebTaskList* mutable_task_list() { return &task_list_; }

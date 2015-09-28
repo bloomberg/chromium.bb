@@ -18,7 +18,7 @@ class TEST_RUNNER_EXPORT AppBannerClient
     : public NON_EXPORTED_BASE(blink::WebAppBannerClient) {
  public:
   AppBannerClient();
-  virtual ~AppBannerClient();
+  ~AppBannerClient() override;
 
   // blink::WebAppBannerClient:
   void registerBannerCallbacks(

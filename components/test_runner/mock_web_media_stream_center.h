@@ -22,23 +22,23 @@ class MockWebMediaStreamCenter : public blink::WebMediaStreamCenter {
  public:
   MockWebMediaStreamCenter(blink::WebMediaStreamCenterClient* client,
                            TestInterfaces* interfaces);
-  virtual ~MockWebMediaStreamCenter();
+  ~MockWebMediaStreamCenter() override;
 
-  virtual void didEnableMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track);
-  virtual void didDisableMediaStreamTrack(
-      const blink::WebMediaStreamTrack& track);
-  virtual bool didAddMediaStreamTrack(const blink::WebMediaStream& stream,
-                                      const blink::WebMediaStreamTrack& track);
-  virtual bool didRemoveMediaStreamTrack(
+  void didEnableMediaStreamTrack(
+      const blink::WebMediaStreamTrack& track) override;
+  void didDisableMediaStreamTrack(
+      const blink::WebMediaStreamTrack& track) override;
+  bool didAddMediaStreamTrack(const blink::WebMediaStream& stream,
+                              const blink::WebMediaStreamTrack& track) override;
+  bool didRemoveMediaStreamTrack(
       const blink::WebMediaStream& stream,
-      const blink::WebMediaStreamTrack& track);
-  virtual void didStopLocalMediaStream(const blink::WebMediaStream& stream);
-  virtual bool didStopMediaStreamTrack(const blink::WebMediaStreamTrack& track);
-  virtual void didCreateMediaStream(blink::WebMediaStream& stream);
-  virtual blink::WebAudioSourceProvider*
-      createWebAudioSourceFromMediaStreamTrack(
-          const blink::WebMediaStreamTrack& track);
+      const blink::WebMediaStreamTrack& track) override;
+  void didStopLocalMediaStream(const blink::WebMediaStream& stream) override;
+  bool didStopMediaStreamTrack(
+      const blink::WebMediaStreamTrack& track) override;
+  void didCreateMediaStream(blink::WebMediaStream& stream) override;
+  blink::WebAudioSourceProvider* createWebAudioSourceFromMediaStreamTrack(
+      const blink::WebMediaStreamTrack& track) override;
 
   // Task related methods
   WebTaskList* mutable_task_list() { return &task_list_; }

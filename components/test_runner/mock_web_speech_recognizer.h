@@ -26,18 +26,18 @@ class WebTestDelegate;
 class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
  public:
   MockWebSpeechRecognizer();
-  virtual ~MockWebSpeechRecognizer();
+  ~MockWebSpeechRecognizer() override;
 
   void SetDelegate(WebTestDelegate* delegate);
 
   // WebSpeechRecognizer implementation:
-  virtual void start(const blink::WebSpeechRecognitionHandle& handle,
-                     const blink::WebSpeechRecognitionParams& params,
-                     blink::WebSpeechRecognizerClient* client);
-  virtual void stop(const blink::WebSpeechRecognitionHandle& handle,
-                    blink::WebSpeechRecognizerClient* client);
-  virtual void abort(const blink::WebSpeechRecognitionHandle& handle,
-                     blink::WebSpeechRecognizerClient* client);
+  void start(const blink::WebSpeechRecognitionHandle& handle,
+             const blink::WebSpeechRecognitionParams& params,
+             blink::WebSpeechRecognizerClient* client) override;
+  void stop(const blink::WebSpeechRecognitionHandle& handle,
+            blink::WebSpeechRecognizerClient* client) override;
+  void abort(const blink::WebSpeechRecognitionHandle& handle,
+             blink::WebSpeechRecognizerClient* client) override;
 
   // Methods accessed by layout tests:
   void AddMockResult(const blink::WebString& transcript, float confidence);

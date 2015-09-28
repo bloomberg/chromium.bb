@@ -26,21 +26,21 @@ class SpellCheckClient : public blink::WebSpellCheckClient {
   MockSpellCheck* MockSpellCheckWord() { return &spell_check_; }
 
   // blink::WebSpellCheckClient implementation.
-  virtual void spellCheck(
+  void spellCheck(
       const blink::WebString& text,
       int& offset,
       int& length,
-      blink::WebVector<blink::WebString>* optional_suggestions);
-  virtual void checkTextOfParagraph(
+      blink::WebVector<blink::WebString>* optional_suggestions) override;
+  void checkTextOfParagraph(
       const blink::WebString& text,
       blink::WebTextCheckingTypeMask mask,
-      blink::WebVector<blink::WebTextCheckingResult>* web_results);
-  virtual void requestCheckingOfText(
+      blink::WebVector<blink::WebTextCheckingResult>* web_results) override;
+  void requestCheckingOfText(
       const blink::WebString& text,
       const blink::WebVector<uint32_t>& markers,
       const blink::WebVector<unsigned>& marker_offsets,
-      blink::WebTextCheckingCompletion* completion);
-  virtual blink::WebString autoCorrectWord(const blink::WebString& word);
+      blink::WebTextCheckingCompletion* completion) override;
+  blink::WebString autoCorrectWord(const blink::WebString& word) override;
 
  private:
   void FinishLastTextCheck();

@@ -51,10 +51,10 @@ class MockWebAudioDestinationConsumer
     : public blink::WebAudioDestinationConsumer {
  public:
   MockWebAudioDestinationConsumer() {}
-  virtual ~MockWebAudioDestinationConsumer() {}
-  virtual void setFormat(size_t number_of_channels, float sample_rate) {}
-  virtual void consumeAudio(const blink::WebVector<const float*>&,
-                            size_t number_of_frames) {}
+  ~MockWebAudioDestinationConsumer() override {}
+  void setFormat(size_t number_of_channels, float sample_rate) override {}
+  void consumeAudio(const blink::WebVector<const float*>&,
+                    size_t number_of_frames) override {}
 
   DISALLOW_COPY_AND_ASSIGN(MockWebAudioDestinationConsumer);
 };

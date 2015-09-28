@@ -58,39 +58,38 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   static bool IsSupportedMimeType(const blink::WebString& mime_type);
 
   // WebPlugin methods:
-  virtual bool initialize(blink::WebPluginContainer* container);
-  virtual void destroy();
-  virtual NPObject* scriptableObject();
-  virtual bool canProcessDrag() const;
-  virtual bool supportsKeyboardFocus() const;
-  virtual void layoutIfNeeded() override { }
-  virtual void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) {}
-  virtual void updateGeometry(
-      const blink::WebRect& window_rect,
-      const blink::WebRect& clip_rect,
-      const blink::WebRect& unobscured_rect,
-      const blink::WebVector<blink::WebRect>& cut_outs_rects,
-      bool is_visible);
-  virtual void updateFocus(bool focus, blink::WebFocusType focus_type) {}
-  virtual void updateVisibility(bool visibility) {}
-  virtual bool acceptsInputEvents();
-  virtual bool handleInputEvent(const blink::WebInputEvent& event,
-                                blink::WebCursorInfo& info);
-  virtual bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
-                                      const blink::WebDragData& data,
-                                      blink::WebDragOperationsMask mask,
-                                      const blink::WebPoint& position,
-                                      const blink::WebPoint& screen_position);
-  virtual void didReceiveResponse(const blink::WebURLResponse& response) {}
-  virtual void didReceiveData(const char* data, int data_length) {}
-  virtual void didFinishLoading() {}
-  virtual void didFailLoading(const blink::WebURLError& error) {}
-  virtual void didFinishLoadingFrameRequest(const blink::WebURL& url,
-                                            void* notify_data) {}
-  virtual void didFailLoadingFrameRequest(const blink::WebURL& url,
-                                          void* notify_data,
-                                          const blink::WebURLError& error) {}
-  virtual bool isPlaceholder();
+  bool initialize(blink::WebPluginContainer* container) override;
+  void destroy() override;
+  NPObject* scriptableObject() override;
+  bool canProcessDrag() const override;
+  bool supportsKeyboardFocus() const override;
+  void layoutIfNeeded() override {}
+  void paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
+  void updateGeometry(const blink::WebRect& window_rect,
+                      const blink::WebRect& clip_rect,
+                      const blink::WebRect& unobscured_rect,
+                      const blink::WebVector<blink::WebRect>& cut_outs_rects,
+                      bool is_visible) override;
+  void updateFocus(bool focus, blink::WebFocusType focus_type) override {}
+  void updateVisibility(bool visibility) override {}
+  bool acceptsInputEvents() override;
+  bool handleInputEvent(const blink::WebInputEvent& event,
+                        blink::WebCursorInfo& info) override;
+  bool handleDragStatusUpdate(blink::WebDragStatus drag_status,
+                              const blink::WebDragData& data,
+                              blink::WebDragOperationsMask mask,
+                              const blink::WebPoint& position,
+                              const blink::WebPoint& screen_position) override;
+  void didReceiveResponse(const blink::WebURLResponse& response) override {}
+  void didReceiveData(const char* data, int data_length) override {}
+  void didFinishLoading() override {}
+  void didFailLoading(const blink::WebURLError& error) override {}
+  void didFinishLoadingFrameRequest(const blink::WebURL& url,
+                                    void* notify_data) override {}
+  void didFailLoadingFrameRequest(const blink::WebURL& url,
+                                  void* notify_data,
+                                  const blink::WebURLError& error) override {}
+  bool isPlaceholder() override;
 
   // cc::TextureLayerClient methods:
   bool PrepareTextureMailbox(

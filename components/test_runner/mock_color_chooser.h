@@ -20,11 +20,11 @@ public:
     MockColorChooser(blink::WebColorChooserClient* client,
                      WebTestDelegate* delegate,
                      WebTestProxyBase* proxy);
-    virtual ~MockColorChooser();
+    ~MockColorChooser() override;
 
     // blink::WebColorChooser implementation.
-    virtual void setSelectedColor(const blink::WebColor color) override;
-    virtual void endChooser() override;
+    void setSelectedColor(const blink::WebColor color) override;
+    void endChooser() override;
 
     void InvokeDidEndChooser();
     WebTaskList* mutable_task_list() { return &task_list_; }
