@@ -5,17 +5,17 @@
 #include "components/metrics/net/version_utils.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "components/version_info/version_info.h"
-#include "components/version_info/version_info_values.h"
 
 namespace metrics {
 
 std::string GetVersionString() {
-  std::string version = PRODUCT_VERSION;
+  std::string version = version_info::GetVersionNumber();
 #if defined(ARCH_CPU_64_BITS)
   version += "-64";
 #endif  // defined(ARCH_CPU_64_BITS)
-  if (!IS_OFFICIAL_BUILD)
+  if (!version_info::IsOfficialBuild())
     version.append("-devel");
   return version;
 }
