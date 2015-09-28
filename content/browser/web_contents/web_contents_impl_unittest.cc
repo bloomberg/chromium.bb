@@ -346,11 +346,25 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   EXPECT_EQ(base::ASCIIToUTF16("Lots O' Whitespace"), contents()->GetTitle());
 }
 
+TEST_F(WebContentsImplTest, UpdateTitleBeforeFirstNavigation) {
+  ASSERT_TRUE(controller().IsInitialNavigation());
+  const base::string16 title = base::ASCIIToUTF16("Initial Entry Title");
+  contents()->UpdateTitle(contents()->GetMainFrame(), -1, title,
+                          base::i18n::LEFT_TO_RIGHT);
+  EXPECT_EQ(title, contents()->GetTitle());
+}
+
 TEST_F(WebContentsImplTest, DontUseTitleFromPendingEntry) {
   const GURL kGURL("chrome://blah");
   controller().LoadURL(
       kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_EQ(base::string16(), contents()->GetTitle());
+
+  // Also test setting title while the first navigation is still pending.
+  const base::string16 title = base::ASCIIToUTF16("Initial Entry Title");
+  contents()->UpdateTitle(contents()->GetMainFrame(), -1, title,
+                          base::i18n::LEFT_TO_RIGHT);
+  EXPECT_EQ(title, contents()->GetTitle());
 }
 
 TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {

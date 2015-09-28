@@ -946,21 +946,19 @@ const base::string16& WebContentsImpl::GetTitle() const {
   // title.
   entry = controller_.GetLastCommittedEntry();
 
-  // We make an exception for initial navigations.
-  if (controller_.IsInitialNavigation()) {
-    // We only want to use the title from the visible entry in one of two cases:
-    // 1. There's already a committed entry for an initial navigation, in which
-    //    case we are doing a history navigation in a new tab (e.g., Ctrl+Back).
-    // 2. The pending entry has been explicitly assigned a title to display.
-    //
-    // If there's no last committed entry and no assigned title, we should fall
-    // back to |page_title_when_no_navigation_entry_| rather than showing the
-    // URL.
-    if (entry ||
-        (controller_.GetVisibleEntry() &&
-         !controller_.GetVisibleEntry()->GetTitle().empty())) {
-      entry = controller_.GetVisibleEntry();
-    }
+  // We make an exception for initial navigations. We only want to use the title
+  // from the visible entry if:
+  // 1. The pending entry has been explicitly assigned a title to display.
+  // 2. The user is doing a history navigation in a new tab (e.g., Ctrl+Back),
+  //    which case there is a pending entry index other than -1.
+  //
+  // Otherwise, we want to stick with the last committed entry's title during
+  // new navigations, which have pending entries at index -1 with no title.
+  if (controller_.IsInitialNavigation() &&
+      ((controller_.GetVisibleEntry() &&
+        !controller_.GetVisibleEntry()->GetTitle().empty()) ||
+       controller_.GetPendingEntryIndex() != -1)) {
+    entry = controller_.GetVisibleEntry();
   }
 
   if (entry) {
