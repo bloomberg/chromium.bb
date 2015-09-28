@@ -68,6 +68,37 @@ TEST(VectorTest, Reverse)
     EXPECT_EQ(13, intVector[4]);
 }
 
+TEST(VectorTest, Remove)
+{
+    Vector<int> intVector;
+    intVector.append(0);
+    intVector.append(1);
+    intVector.append(2);
+    intVector.append(3);
+
+    EXPECT_EQ(4u, intVector.size());
+    EXPECT_EQ(0, intVector[0]);
+    EXPECT_EQ(1, intVector[1]);
+    EXPECT_EQ(2, intVector[2]);
+    EXPECT_EQ(3, intVector[3]);
+
+    intVector.remove(2, 0);
+    EXPECT_EQ(4u, intVector.size());
+    EXPECT_EQ(2, intVector[2]);
+
+    intVector.remove(2, 1);
+    EXPECT_EQ(3u, intVector.size());
+    EXPECT_EQ(3, intVector[2]);
+
+    intVector.remove(0, 0);
+    EXPECT_EQ(3u, intVector.size());
+    EXPECT_EQ(0, intVector[0]);
+
+    intVector.remove(0);
+    EXPECT_EQ(2u, intVector.size());
+    EXPECT_EQ(1, intVector[0]);
+}
+
 TEST(VectorTest, Iterator)
 {
     Vector<int> intVector;

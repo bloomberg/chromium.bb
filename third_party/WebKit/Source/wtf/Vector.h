@@ -1264,6 +1264,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
     inline void Vector<T, inlineCapacity, Allocator>::remove(size_t position, size_t length)
     {
         ASSERT_WITH_SECURITY_IMPLICATION(position <= size());
+        if (!length)
+            return;
         RELEASE_ASSERT(position + length <= size());
         T* beginSpot = begin() + position;
         T* endSpot = beginSpot + length;
