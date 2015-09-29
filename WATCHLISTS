@@ -1278,6 +1278,7 @@
     'clang_update': ['ukai+watch@chromium.org',
                      'dmikurube+clang@chromium.org',
                      'eugenis+clang@chromium.org',
+                     'yunlian@chromium.org',
                      'glider+clang@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
     'closure': ['dbeam+watch-closure@chromium.org',
