@@ -22,15 +22,6 @@ class ThemeHelperMac : public NotificationObserver {
   // as the blink enum value.
   static blink::ScrollerStyle GetPreferredScrollerStyle();
 
-  static void SendThemeChangeToAllRenderers(
-      float initial_button_delay,
-      float autoscroll_button_delay,
-      bool jump_on_track_click,
-      blink::ScrollerStyle preferred_scroller_style,
-      bool redraw,
-      bool scroll_animation_enabled,
-      blink::ScrollbarButtonsPlacement button_placement);
-
  private:
   friend struct base::DefaultSingletonTraits<ThemeHelperMac>;
 

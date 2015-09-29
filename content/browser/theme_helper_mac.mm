@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
+#include "base/strings/sys_string_conversions.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -16,7 +17,11 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 
+using content::RenderProcessHost;
+using content::ThemeHelperMac;
+
 namespace {
+
 bool GetScrollAnimationEnabled() {
   bool enabled = false;
   id value = nil;
@@ -44,6 +49,39 @@ blink::ScrollbarButtonsPlacement GetButtonPlacement() {
   else
     return blink::ScrollbarButtonsPlacementDoubleEnd;
 }
+
+void FillScrollbarThemeParams(ViewMsg_UpdateScrollbarTheme_Params* params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults synchronize];
+
+  params->initial_button_delay =
+      [defaults floatForKey:@"NSScrollerButtonDelay"];
+  params->autoscroll_button_delay =
+      [defaults floatForKey:@"NSScrollerButtonPeriod"];
+  params->jump_on_track_click =
+      [defaults boolForKey:@"AppleScrollerPagingBehavior"];
+  params->preferred_scroller_style =
+      ThemeHelperMac::GetPreferredScrollerStyle();
+  params->scroll_animation_enabled = GetScrollAnimationEnabled();
+  params->button_placement = GetButtonPlacement();
+}
+
+ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  [defaults synchronize];
+
+  return new ViewMsg_SystemColorsChanged(
+      [[defaults stringForKey:@"AppleAquaColorVariant"] intValue],
+      base::SysNSStringToUTF8(
+          [defaults stringForKey:@"AppleHighlightedTextColor"]),
+      base::SysNSStringToUTF8(
+          [defaults stringForKey:@"AppleHighlightColor"]));
+}
+
 } // namespace
 
 @interface ScrollbarPrefsObserver : NSObject
@@ -58,54 +96,60 @@ blink::ScrollbarButtonsPlacement GetButtonPlacement() {
 @implementation ScrollbarPrefsObserver
 
 + (void)registerAsObserver {
-  [[NSDistributedNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(appearancePrefsChanged:)
-             name:@"AppleAquaScrollBarVariantChanged"
-           object:nil
-suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
+  NSDistributedNotificationCenter* distributedCenter =
+      [NSDistributedNotificationCenter defaultCenter];
+  [distributedCenter addObserver:self
+                        selector:@selector(appearancePrefsChanged:)
+                            name:@"AppleAquaScrollBarVariantChanged"
+                          object:nil
+               suspensionBehavior:
+                   NSNotificationSuspensionBehaviorDeliverImmediately];
 
-  [[NSDistributedNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(behaviorPrefsChanged:)
-             name:@"AppleNoRedisplayAppearancePreferenceChanged"
-           object:nil
-suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+  [distributedCenter addObserver:self
+                        selector:@selector(behaviorPrefsChanged:)
+                            name:@"AppleNoRedisplayAppearancePreferenceChanged"
+                          object:nil
+              suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 
   if (base::mac::IsOSMountainLionOrLater()) {
-    [[NSDistributedNotificationCenter defaultCenter]
-               addObserver:self
-                  selector:@selector(behaviorPrefsChanged:)
-                      name:@"NSScrollAnimationEnabled"
-                    object:nil
-        suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+    [distributedCenter addObserver:self
+                          selector:@selector(behaviorPrefsChanged:)
+                              name:@"NSScrollAnimationEnabled"
+                            object:nil
+                suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
   } else {
     // Register for < 10.8
-    [[NSDistributedNotificationCenter defaultCenter]
-               addObserver:self
-                  selector:@selector(behaviorPrefsChanged:)
-                      name:@"AppleScrollAnimationEnabled"
-                    object:nil
-        suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
+    [distributedCenter addObserver:self
+                          selector:@selector(behaviorPrefsChanged:)
+                              name:@"AppleScrollAnimationEnabled"
+                            object:nil
+                suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
   }
 
-  [[NSDistributedNotificationCenter defaultCenter]
-             addObserver:self
-                selector:@selector(appearancePrefsChanged:)
-                    name:@"AppleScrollBarVariant"
-                  object:nil
-      suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
+  [distributedCenter addObserver:self
+                        selector:@selector(appearancePrefsChanged:)
+                            name:@"AppleScrollBarVariant"
+                          object:nil
+              suspensionBehavior:
+                  NSNotificationSuspensionBehaviorDeliverImmediately];
 
   // In single-process mode, renderers will catch these notifications
   // themselves and listening for them here may trigger the DCHECK in Observe().
-  if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)] &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess)) {
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(behaviorPrefsChanged:)
-               name:NSPreferredScrollerStyleDidChangeNotification
-             object:nil];
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+
+    if ([NSScroller respondsToSelector:@selector(preferredScrollerStyle)]) {
+      [center addObserver:self
+                 selector:@selector(behaviorPrefsChanged:)
+                     name:NSPreferredScrollerStyleDidChangeNotification
+                   object:nil];
+    }
+
+    [center addObserver:self
+               selector:@selector(systemColorsChanged:)
+                   name:NSSystemColorsDidChangeNotification
+                 object:nil];
   }
 }
 
@@ -117,17 +161,24 @@ suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
   [self notifyPrefsChangedWithRedraw:NO];
 }
 
-+ (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults synchronize];
++ (void)systemColorsChanged:(NSNotification*)notification {
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd();
+       it.Advance()) {
+    it.GetCurrentValue()->Send(CreateSystemColorsChangedMessage());
+  }
+}
 
-  content::ThemeHelperMac::SendThemeChangeToAllRenderers(
-      [defaults floatForKey:@"NSScrollerButtonDelay"],
-      [defaults floatForKey:@"NSScrollerButtonPeriod"],
-      [defaults boolForKey:@"AppleScrollerPagingBehavior"],
-      content::ThemeHelperMac::GetPreferredScrollerStyle(), redraw,
-      GetScrollAnimationEnabled(), GetButtonPlacement());
++ (void)notifyPrefsChangedWithRedraw:(BOOL)redraw {
+  ViewMsg_UpdateScrollbarTheme_Params params;
+  FillScrollbarThemeParams(&params);
+  params.redraw = redraw;
+
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd();
+       it.Advance()) {
+    it.GetCurrentValue()->Send(new ViewMsg_UpdateScrollbarTheme(params));
+  }
 }
 
 @end
@@ -147,31 +198,6 @@ blink::ScrollerStyle ThemeHelperMac::GetPreferredScrollerStyle() {
   return static_cast<blink::ScrollerStyle>([NSScroller preferredScrollerStyle]);
 }
 
-// static
-void ThemeHelperMac::SendThemeChangeToAllRenderers(
-    float initial_button_delay,
-    float autoscroll_button_delay,
-    bool jump_on_track_click,
-    blink::ScrollerStyle preferred_scroller_style,
-    bool redraw,
-    bool scroll_animation_enabled,
-    blink::ScrollbarButtonsPlacement button_placement) {
-  ViewMsg_UpdateScrollbarTheme_Params params;
-  params.initial_button_delay = initial_button_delay;
-  params.autoscroll_button_delay = autoscroll_button_delay;
-  params.jump_on_track_click = jump_on_track_click;
-  params.preferred_scroller_style = preferred_scroller_style;
-  params.redraw = redraw;
-  params.scroll_animation_enabled = scroll_animation_enabled;
-  params.button_placement = button_placement;
-
-  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
-       !it.IsAtEnd();
-       it.Advance()) {
-    it.GetCurrentValue()->Send(new ViewMsg_UpdateScrollbarTheme(params));
-  }
-}
-
 ThemeHelperMac::ThemeHelperMac() {
   [ScrollbarPrefsObserver registerAsObserver];
   registrar_.Add(this,
@@ -187,24 +213,15 @@ void ThemeHelperMac::Observe(int type,
                              const NotificationDetails& details) {
   DCHECK_EQ(NOTIFICATION_RENDERER_PROCESS_CREATED, type);
 
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  [defaults synchronize];
+  // When a new RenderProcess is created, send it the initial preference
+  // parameters.
+  ViewMsg_UpdateScrollbarTheme_Params params;
+  FillScrollbarThemeParams(&params);
+  params.redraw = false;
 
   RenderProcessHost* rph = Source<RenderProcessHost>(source).ptr();
-
-  ViewMsg_UpdateScrollbarTheme_Params params;
-  params.initial_button_delay = [defaults floatForKey:@"NSScrollerButtonDelay"];
-  params.autoscroll_button_delay =
-      [defaults floatForKey:@"NSScrollerButtonPeriod"];
-  params.jump_on_track_click =
-      [defaults boolForKey:@"AppleScrollerPagingBehavior"];
-  params.preferred_scroller_style = GetPreferredScrollerStyle();
-  params.redraw = false;
-  params.scroll_animation_enabled = GetScrollAnimationEnabled();
-  params.button_placement = GetButtonPlacement();
-
   rph->Send(new ViewMsg_UpdateScrollbarTheme(params));
+  rph->Send(CreateSystemColorsChangedMessage());
 }
 
 }  // namespace content

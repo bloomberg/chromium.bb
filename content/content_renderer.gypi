@@ -419,6 +419,8 @@
       'renderer/stats_collection_observer.h',
       'renderer/text_input_client_observer.cc',
       'renderer/text_input_client_observer.h',
+      'renderer/theme_helper_mac.mm',
+      'renderer/theme_helper_mac.h',
       'renderer/usb/type_converters.cc',
       'renderer/usb/type_converters.h',
       'renderer/usb/web_usb_client_impl.cc',

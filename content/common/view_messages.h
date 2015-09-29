@@ -873,6 +873,12 @@ IPC_MESSAGE_ROUTED0(ViewMsg_GetRenderedText)
 // Notification of a change in scrollbar appearance and/or behavior.
 IPC_MESSAGE_CONTROL1(ViewMsg_UpdateScrollbarTheme,
                      ViewMsg_UpdateScrollbarTheme_Params /* params */)
+
+// Notification that the OS X Aqua color preferences changed.
+IPC_MESSAGE_CONTROL3(ViewMsg_SystemColorsChanged,
+                     int /* AppleAquaColorVariant */,
+                     std::string /* AppleHighlightedTextColor */,
+                     std::string /* AppleHighlightColor */);
 #endif
 
 #if defined(OS_ANDROID)

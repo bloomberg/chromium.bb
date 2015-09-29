@@ -476,6 +476,9 @@ class CONTENT_EXPORT RenderThreadImpl
 #if defined(OS_MACOSX)
   void OnUpdateScrollbarTheme(
       const ViewMsg_UpdateScrollbarTheme_Params& params);
+  void OnSystemColorsChanged(int aqua_color_variant,
+                             const std::string& highlight_text_color,
+                             const std::string& highlight_color);
 #endif
   void OnCreateNewSharedWorker(
       const WorkerProcessMsg_CreateWorker_Params& params);

@@ -163,6 +163,7 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
+#include "content/renderer/theme_helper_mac.h"
 #include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
 
@@ -1622,6 +1623,7 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 #endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateScrollbarTheme, OnUpdateScrollbarTheme)
+    IPC_MESSAGE_HANDLER(ViewMsg_SystemColorsChanged, OnSystemColorsChanged)
 #endif
 #if defined(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(ViewMsg_PurgePluginListCache, OnPurgePluginListCache)
@@ -1816,6 +1818,14 @@ void RenderThreadImpl::OnUpdateScrollbarTheme(
       params.initial_button_delay, params.autoscroll_button_delay,
       params.preferred_scroller_style, params.redraw,
       params.scroll_animation_enabled, params.button_placement);
+}
+
+void RenderThreadImpl::OnSystemColorsChanged(
+    int aqua_color_variant,
+    const std::string& highlight_text_color,
+    const std::string& highlight_color) {
+  SystemColorsDidChange(aqua_color_variant, highlight_text_color,
+                        highlight_color);
 }
 #endif
 
