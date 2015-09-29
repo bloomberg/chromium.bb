@@ -3291,6 +3291,7 @@ irt_only_tests = [
     'tests/irt_compatibility/nacl.scons',
     'tests/irt_entry_alignment/nacl.scons',
     'tests/irt_ext/nacl.scons',
+    'tests/irt_stack_alignment/nacl.scons',
     'tests/sbrk/nacl.scons',
     'tests/translator_size_limits/nacl.scons',
     ]
