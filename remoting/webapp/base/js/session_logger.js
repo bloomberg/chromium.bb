@@ -360,6 +360,8 @@ function toConnectionError(error) {
       return ConnectionError.CLIENT_SUSPENDED;
     case remoting.Error.Tag.UNEXPECTED:
       return ConnectionError.UNEXPECTED;
+    case remoting.Error.Tag.NACL_DISABLED:
+      return ConnectionError.NACL_DISABLED;
     default:
       throw new Error('Unknown error Tag : ' + error.getTag());
   }

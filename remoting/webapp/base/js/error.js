@@ -123,7 +123,8 @@ remoting.Error.Tag = {
   REGISTRATION_FAILED: /*i18n-content*/ 'ERROR_HOST_REGISTRATION_FAILED',
   NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_NOT_AUTHORIZED',
   // TODO(garykac): Move app-specific errors into separate location.
-  APP_NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_APP_NOT_AUTHORIZED'
+  APP_NOT_AUTHORIZED: /*i18n-content*/ 'ERROR_APP_NOT_AUTHORIZED',
+  NACL_DISABLED: /*i18n-content*/ 'ERROR_NACL_DISABLED',
 };
 
 // A whole bunch of semi-redundant constants, mostly to reduce to size

@@ -34,9 +34,10 @@ remoting.ClientPlugin.prototype.extensions = function() {};
 remoting.ClientPlugin.prototype.element = function() {};
 
 /**
- * @param {function(boolean):void} onDone Completion callback.
+ * @return {Promise<void>}  A promise that will resolve when the plugin is
+ *     initialized or reject if it fails.
  */
-remoting.ClientPlugin.prototype.initialize = function(onDone) {};
+remoting.ClientPlugin.prototype.initialize = function() {};
 
 /**
  * @param {remoting.Host} host The host to connect to.

@@ -415,6 +415,30 @@ base.Promise.withTimeout = function(promise, delay, opt_defaultValue) {
 };
 
 /**
+ * Creates a promise that will be rejected if it is not fulfilled within a
+ * certain timeframe.
+ *
+ * This function creates a result promise |R|.  If |promise| is fulfilled
+ * (i.e. resolved or rejected) within |delay| milliseconds, then |R|
+ * is resolved or rejected, respectively.  Otherwise, |R| is rejected with
+ * |opt_defaultError|.
+ *
+ * @param {!Promise<T>} promise The promise to wrap.
+ * @param {number} delay The number of milliseconds to wait.
+ * @param {*=} opt_defaultError The default error used to reject the promise.
+ * @return {!Promise<T>} A new promise.
+ * @template T
+ */
+base.Promise.rejectAfterTimeout = function(promise, delay, opt_defaultError) {
+  return Promise.race([
+    promise,
+    base.Promise.sleep(delay).then(function() {
+      return Promise.reject(opt_defaultError);
+    })
+  ]);
+};
+
+/**
  * Converts a |method| with callbacks into a Promise.
  *
  * @param {Function} method
@@ -824,4 +848,16 @@ base.resizeWindowToContent = function(opt_centerWindow) {
     appWindow.outerBounds.left = Math.round((screenWidth - width) / 2);
     appWindow.outerBounds.top = Math.round((screenHeight - height) / 2);
   }
+};
+
+/**
+ * @return {boolean} Whether NaCL is enabled in chrome://plugins.
+ */
+base.isNaclEnabled = function() {
+  for (var i = 0; i < navigator.mimeTypes.length; i++) {
+    if (navigator.mimeTypes.item(i).type == 'application/x-pnacl') {
+      return true;
+    }
+  }
+  return false;
 };

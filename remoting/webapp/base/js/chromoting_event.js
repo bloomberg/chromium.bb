@@ -227,7 +227,8 @@ remoting.ChromotingEvent.ConnectionError = {
   HOST_OVERLOAD: 11,
   P2P_FAILURE: 12,
   UNEXPECTED: 13,
-  CLIENT_SUSPENDED: 14
+  CLIENT_SUSPENDED: 14,
+  NACL_DISABLED: 15,
 };
 
 /** @enum {number} */

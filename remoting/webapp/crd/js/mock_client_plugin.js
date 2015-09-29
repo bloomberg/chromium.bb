@@ -77,11 +77,13 @@ remoting.MockClientPlugin.prototype.element = function() {
   return this.element_;
 };
 
-remoting.MockClientPlugin.prototype.initialize = function(onDone) {
-  var that = this;
-  Promise.resolve().then(function() {
-    onDone(that.mock$initializationResult);
-  });
+remoting.MockClientPlugin.prototype.initialize = function() {
+  if (this.mock$initializationResult) {
+    return Promise.resolve();
+  } else {
+    return Promise.reject(
+        new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
+  }
 };
 
 

@@ -54,7 +54,8 @@ remoting.ClientSessionFactory.prototype.createSession =
   function OnError(/** !remoting.Error */ error) {
     logger.logSessionStateChange(
         remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
-        remoting.ChromotingEvent.ConnectionError.UNEXPECTED);
+        toConnectionError(error));
+
     base.dispose(signalStrategy);
     base.dispose(clientPlugin);
     throw error;
@@ -121,20 +122,24 @@ function connectSignaling(email, token) {
 function createPlugin(container, capabilities) {
   var plugin = remoting.ClientPlugin.factory.createPlugin(
       container, capabilities);
-  var deferred = new base.Deferred();
+  return plugin.initialize().then(function() {
+    return plugin;
+  });
+}
 
-  function onInitialized(/** boolean */ initialized) {
-    if (!initialized) {
-      console.error('ERROR: remoting plugin not loaded');
-      plugin.dispose();
-      deferred.reject(new remoting.Error(remoting.Error.Tag.MISSING_PLUGIN));
-      return;
+/**
+ * @param {remoting.Error} e
+ * @return {remoting.ChromotingEvent.ConnectionError}
+ */
+function toConnectionError(/** Error */ e) {
+  if (e instanceof remoting.Error) {
+    if (e.getTag() == remoting.Error.Tag.MISSING_PLUGIN) {
+      return remoting.ChromotingEvent.ConnectionError.MISSING_PLUGIN;
+    } else if (e.getTag() == remoting.Error.Tag.NACL_DISABLED) {
+      return remoting.ChromotingEvent.ConnectionError.NACL_DISABLED;
     }
-
-    deferred.resolve(plugin);
   }
-  plugin.initialize(onInitialized);
-  return deferred.promise();
+  return remoting.ChromotingEvent.ConnectionError.UNEXPECTED;
 }
 
 })();

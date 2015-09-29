@@ -453,6 +453,9 @@
       <message desc="Error displayed if the client plugin fails to load." name="IDS_ERROR_MISSING_PLUGIN">
         Some required components are missing. Please make sure you're running the latest version of Chrome and try again.
       </message>
+      <message desc="Error displayed if Native Client is not enabled." name="IDS_ERROR_NACL_DISABLED">
+        Some required components are missing. Please go to chrome://plugins and make sure Native Client is enabled.
+      </message>
       <message desc="Message shown if the user is not authorized to perform the requested action." name="IDS_ERROR_NOT_AUTHORIZED">
         You do not have permission to perform that action.
       </message>
