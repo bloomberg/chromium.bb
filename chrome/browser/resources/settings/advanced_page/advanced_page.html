@@ -1,5 +1,4 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-<link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
 <link rel="import" href="chrome://md-settings/location_page/location_page.html">
@@ -8,6 +7,7 @@
 <link rel="import" href="chrome://md-settings/sync_page/sync_page.html">
 
 <if expr="chromeos">
+<link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 </if>
 
@@ -52,11 +52,15 @@
       </cr-settings-downloads-page>
     </cr-settings-section>
 
+<if expr="chromeos">
+    <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
+         on desktop. -->
     <cr-settings-section i18n-values="page-title:a11yPageTitle"
         expand-container="[[expandContainer]]"
         current-route="[[currentRoute]]" section="a11y">
       <cr-settings-a11y-page prefs="{{prefs}}"></cr-settings-a11y-page>
     </cr-settings-section>
+</if>
 
     <cr-settings-section i18n-values="page-title:syncPageTitle"
         expand-container="[[expandContainer]]"

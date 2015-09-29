@@ -29,4 +29,10 @@ Polymer({
       notify: true,
     },
   },
+
+  /** @private */
+  onMoreFeaturesTap_: function() {
+    window.open(
+        'https://chrome.google.com/webstore/category/collection/accessibility');
+  },
 });

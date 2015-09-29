@@ -11,6 +11,7 @@
 #include "chrome/grit/google_chrome_strings.h"
 #include "chrome/grit/locale_settings.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
@@ -42,8 +43,10 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
       IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION);
   html_source->AddLocalizedString("controlledSettingExtension",
                                   IDS_SETTINGS_CONTROLLED_SETTING_EXTENSION);
+  html_source->AddLocalizedString("learnMore", IDS_LEARN_MORE);
 }
 
+#if defined(OS_CHROMEOS)
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY);
@@ -84,7 +87,12 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       "delayBeforeClickVeryLong", IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG);
   html_source->AddLocalizedString(
       "onScreenKeyboardLabel", IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL);
+  html_source->AddLocalizedString(
+      "a11yExplanation", IDS_SETTINGS_ACCESSIBILITY_EXPLANATION);
+  html_source->AddString(
+      "a11yLearnMoreUrl", chrome::kChromeAccessibilityHelpURL);
 }
+#endif
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
@@ -477,7 +485,9 @@ namespace settings {
 void AddLocalizedStrings(content::WebUIDataSource* html_source) {
   AddCommonStrings(html_source);
 
+#if defined(OS_CHROMEOS)
   AddA11yStrings(html_source);
+#endif
   AddAppearanceStrings(html_source);
   AddCertificateManagerStrings(html_source);
   AddClearBrowsingDataStrings(html_source);

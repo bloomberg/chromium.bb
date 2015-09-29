@@ -1,17 +1,15 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://md-settings/checkbox/checkbox.html">
 
 <dom-module id="cr-settings-a11y-page">
-  <link rel="import" type="css"
-      href="chrome://md-settings/settings_page/settings_page.css">
+  <link rel="import" type="css" href="chrome://md-settings/settings_page/settings_page.css">
   <link rel="import" type="css" href="a11y_page.css">
   <template>
-    <div class="more-a11y-link">
-      <a href="https://chrome.google.com/webstore/category/collection/accessibility"
-          target="_blank" i18n-content="moreFeaturesLink"></a>
-    </div>
+    <span i18n-content="a11yExplanation"></span>
+    <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
+        target="_blank"></a>
 
-<if expr="chromeos">
     <cr-settings-checkbox i18n-values="label:optionsInMenuLabel"
         pref="{{prefs.settings.a11y.enable_menu}}">
     </cr-settings-checkbox>
@@ -59,7 +57,11 @@
     <cr-settings-checkbox pref="{{prefs.settings.a11y.virtual_keyboard}}"
         i18n-values="label:onScreenKeyboardLabel">
     </cr-settings-checkbox>
-</if>
+
+    <div class="button-strip">
+      <paper-button i18n-content="moreFeaturesLink"
+          on-tap="onMoreFeaturesTap_"></paper-button>
+    </div>
   </template>
   <script src="a11y_page.js"></script>
 </dom-module>

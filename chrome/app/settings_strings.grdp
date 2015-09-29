@@ -6,64 +6,69 @@
     This setting is controlled by extension <ph name="NAME">$1<ex>Settings Extension</ex></ph> 
   </message>
 
-  <!-- Accessibility Page -->
-  <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
-    Accessibility
-  </message>
-  <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
-    Add additional accessibility features
-  </message>
-  <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibilitly options in the system menu.">
-    Show accessibility options in the system menu
-  </message>
-  <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL" desc="Label for checkbox which enables showing a larger mouse cursor than normal.">
-    Show large mouse cursor
-  </message>
-  <message name="IDS_SETTINGS_HIGH_CONTRAST_LABEL" desc="Label for checkbox which enables high-contrast UI.">
-    Use high contrast mode
-  </message>
-  <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys.">
-    Enable sticky keys
-  </message>
-  <message name="IDS_SETTINGS_STICKY_KEYS_SUBLABEL" desc="Sub-label describing what the term 'sticky keys' means.">
-    (to perform keyboard shortcuts by typing them sequentially)
-  </message>
-  <message name="IDS_SETTINGS_CHROMEVOX_LABEL" desc="Label for checkbox which enables ChromeVox">
-    Enable ChromeVox
-  </message>
-  <message name="IDS_SETTINGS_CHROMEVOX_SUBLABEL" desc="Sub-label describingn what ChromeVox is.">
-    (spoken feedback)
-  </message>
-  <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the screen magnifier">
-    Enable screen magnifier
-  </message>
-  <message name="IDS_SETTINGS_TAP_DRAGGING_LABEL" desc="Label for checkbox which enables tap dragging.">
-    Enable tap dragging
-  </message>
-  <message name="IDS_SETTINGS_CLICK_ON_STOP_LABEL" desc="Label for checkbox which enables automatically clicking when the mouse pointer stops.">
-    Automatically click when the mouse pointer stops
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LABEL" desc="Label for dropdown menu which contains various time delays for clicks.">
-    Delay before click:
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT" desc="Description of an extremely short delay before clicks.">
-    extremely short
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT" desc="Description of a very short delay before clicks.">
-    very short
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_SHORT" desc="Description of a short delay before clicks.">
-    short
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG" desc="Description of a long delay before clicks.">
-    long
-  </message>
-  <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG" desc="Description of a very long delay before clicks.">
-    very long
-  </message>
-  <message name="IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL" desc="Label for checkbox which enables an on-screen keyboard.">
-    Enable on-screen keyboard
-  </message>
+  <if expr="chromeos">
+    <!-- Accessibility Page -->
+    <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
+      Accessibility
+    </message>
+    <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
+      Add additional accessibility features
+    </message>
+    <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibilitly options in the system menu.">
+      Show accessibility options in the system menu
+    </message>
+    <message name="IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL" desc="Label for checkbox which enables showing a larger mouse cursor than normal.">
+      Show large mouse cursor
+    </message>
+    <message name="IDS_SETTINGS_HIGH_CONTRAST_LABEL" desc="Label for checkbox which enables high-contrast UI.">
+      Use high contrast mode
+    </message>
+    <message name="IDS_SETTINGS_STICKY_KEYS_LABEL" desc="Label for checkbox which enables sticky keys.">
+      Enable sticky keys
+    </message>
+    <message name="IDS_SETTINGS_STICKY_KEYS_SUBLABEL" desc="Sub-label describing what the term 'sticky keys' means.">
+      (to perform keyboard shortcuts by typing them sequentially)
+    </message>
+    <message name="IDS_SETTINGS_CHROMEVOX_LABEL" desc="Label for checkbox which enables ChromeVox">
+      Enable ChromeVox
+    </message>
+    <message name="IDS_SETTINGS_CHROMEVOX_SUBLABEL" desc="Sub-label describingn what ChromeVox is.">
+      (spoken feedback)
+    </message>
+    <message name="IDS_SETTINGS_SCREEN_MAGNIFIER_LABEL" desc="Label for checkbox which enables the screen magnifier">
+      Enable screen magnifier
+    </message>
+    <message name="IDS_SETTINGS_TAP_DRAGGING_LABEL" desc="Label for checkbox which enables tap dragging.">
+      Enable tap dragging
+    </message>
+    <message name="IDS_SETTINGS_CLICK_ON_STOP_LABEL" desc="Label for checkbox which enables automatically clicking when the mouse pointer stops.">
+      Automatically click when the mouse pointer stops
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LABEL" desc="Label for dropdown menu which contains various time delays for clicks.">
+      Delay before click:
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_EXTREMELY_SHORT" desc="Description of an extremely short delay before clicks.">
+      extremely short
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_SHORT" desc="Description of a very short delay before clicks.">
+      very short
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_SHORT" desc="Description of a short delay before clicks.">
+      short
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_LONG" desc="Description of a long delay before clicks.">
+      long
+    </message>
+    <message name="IDS_SETTINGS_DELAY_BEFORE_CLICK_VERY_LONG" desc="Description of a very long delay before clicks.">
+      very long
+    </message>
+    <message name="IDS_SETTINGS_ON_SCREEN_KEYBOARD_LABEL" desc="Label for checkbox which enables an on-screen keyboard.">
+      Enable on-screen keyboard
+    </message>
+    <message name="IDS_SETTINGS_ACCESSIBILITY_EXPLANATION" desc="Informational message at the top of the accessibility section of the settings page about enabling additional accessibility-related features.">
+      Enable accessibility features to make your device easier to use.
+    </message>
+  </if>
 
   <!-- Advanced Page -->
   <message name="IDS_SETTINGS_ADVANCED" desc="Name of the settings page which displays advanced preferences.">
@@ -226,16 +231,18 @@
     Date and time are set automatically.
   </message>
 
-  <!-- Internet Page -->
-  <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
-    Internet Connection
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
-    Network Details
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS" desc="Name of the settings page which displays the list of known networks.">
-    Known Networks
-  </message>
+  <if expr="chromeos">
+    <!-- Internet Page -->
+    <message name="IDS_SETTINGS_INTERNET" desc="Name of the settings page which displays internet preferences.">
+      Internet Connection
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
+      Network Details
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS" desc="Name of the settings page which displays the list of known networks.">
+      Known Networks
+    </message>
+  </if>
 
   <!-- On Startup Page -->
   <message name="IDS_SETTINGS_ON_STARTUP" desc="Name of the on startup page.">
