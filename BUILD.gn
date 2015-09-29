@@ -941,3 +941,47 @@ if (is_linux) {
     ]
   }
 }
+
+group("chromium_builder_perf") {
+  testonly = true
+
+  # TODO(GYP): Make this target work on the mac.
+  if (!is_ios && !is_android && !is_chromecast && !is_mac) {
+    deps = [
+      "//cc:cc_perftests",
+      "//chrome",
+      "//chrome/test:load_library_perf_tests",
+      "//chrome/test:sync_performance_tests",
+      "//gpu:gpu_perftests",
+      "//media:media_perftests",
+      "//media/midi:midi_unittests",
+      "//tools/telemetry:bitmaptools",
+    ]
+
+    if (!is_chromeos) {
+      deps += [ "//chrome/test:performance_browser_tests" ]
+    }
+    if (is_linux && !is_chromeos) {
+      deps += [ "//chrome:linux_symbols" ]
+
+      if (!is_chromeos) {
+        deps += [ "//tools/perf/clear_system_cache" ]
+      }
+    }
+
+    if (is_win) {
+      deps += [
+        "//content/shell:crash_service",
+        # "//gpu:angle_perftests", TODO(GYP): crbug.com/537008
+      ]
+
+      if (target_cpu == "x86") {
+        deps += [
+          # "//content/shell:crash_service_win64", TODO(GYP): crbug.com/537009
+        ]
+      }
+    } else {
+      deps += [ "//breakpad:minidump_stackwalk" ]
+    }
+  }
+}
