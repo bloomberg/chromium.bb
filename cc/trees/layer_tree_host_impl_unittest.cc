@@ -1055,19 +1055,19 @@ TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
 
   host_impl_->ScrollBy(scroll_position, scroll_delta);
   host_impl_->ScrollEnd();
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 0), scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
 
   overflow->set_user_scrollable_vertical(false);
 
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(scroll_position, InputHandler::WHEEL));
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 0), scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
 
   host_impl_->ScrollBy(scroll_position, scroll_delta);
   host_impl_->ScrollEnd();
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 10), scroll_layer->CurrentScrollOffset());
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 10), scroll_layer->CurrentScrollOffset());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(10, 20), overflow->CurrentScrollOffset());
 }
 
@@ -1507,16 +1507,15 @@ TEST_F(LayerTreeHostImplTest, ScrollWithSwapPromises) {
   EXPECT_EQ(latency_info.trace_id(), scroll_info->swap_promises[0]->TraceId());
 }
 
-// Test that scrolls targeting a layer with a non-null scroll_parent() bubble
-// up to the scroll_parent, rather than the stacking parent.
-TEST_F(LayerTreeHostImplTest, ScrollBubblesToScrollParent) {
+// Test that scrolls targeting a layer with a non-null scroll_parent() don't
+// bubble up.
+TEST_F(LayerTreeHostImplTest, ScrollDoesntBubble) {
   LayerImpl* viewport_scroll =
       SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
 
   // Set up two scrolling children of the root, one of which is a scroll parent
-  // to the other. Scrolls bubbling from the child should bubble to the parent,
-  // not the viewport.
+  // to the other. Scrolls shouldn't bubbling from the child.
   LayerImpl *parent;
   LayerImpl *child;
   LayerImpl *child_clip;
@@ -1548,14 +1547,14 @@ TEST_F(LayerTreeHostImplTest, ScrollBubblesToScrollParent) {
   {
     host_impl_->ScrollBegin(gfx::Point(21, 21), InputHandler::GESTURE);
     host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(5, 5));
-    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(100, 100));
     host_impl_->ScrollEnd();
 
     // The child should be fully scrolled by the first ScrollBy.
     EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 5), child->CurrentScrollOffset());
 
-    // The scroll_parent should receive the bubbled up second ScrollBy.
-    EXPECT_VECTOR_EQ(gfx::Vector2dF(2, 1), parent->CurrentScrollOffset());
+    // The scroll_parent shouldn't receive the second ScrollBy.
+    EXPECT_VECTOR_EQ(gfx::Vector2dF(0, 0), parent->CurrentScrollOffset());
 
     // The viewport shouldn't have been scrolled at all.
     EXPECT_VECTOR_EQ(
@@ -1570,14 +1569,16 @@ TEST_F(LayerTreeHostImplTest, ScrollBubblesToScrollParent) {
     host_impl_->ScrollBegin(gfx::Point(21, 21), InputHandler::GESTURE);
     host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(3, 4));
     host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
+    host_impl_->ScrollBy(gfx::Point(21, 21), gfx::Vector2d(2, 1));
     host_impl_->ScrollEnd();
 
-    // The first ScrollBy should scroll the parent to its extent.
+    // The ScrollBy's should scroll the parent to its extent.
     EXPECT_VECTOR_EQ(gfx::Vector2dF(5, 5), parent->CurrentScrollOffset());
 
-    // The viewport should now be next in bubbling order.
+    // The viewport shouldn't receive any scroll delta.
     EXPECT_VECTOR_EQ(
-        gfx::Vector2dF(2, 1),
+        gfx::Vector2dF(0, 0),
         host_impl_->InnerViewportScrollLayer()->CurrentScrollOffset());
     EXPECT_VECTOR_EQ(
         gfx::Vector2dF(0, 0),
@@ -3670,6 +3671,7 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsScrollOuterViewport) {
   EXPECT_EQ(InputHandler::SCROLL_STARTED,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::GESTURE));
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+
   EXPECT_EQ(host_impl_->InnerViewportScrollLayer(),
             host_impl_->CurrentlyScrollingLayer());
   host_impl_->ScrollEnd();
@@ -4068,8 +4070,7 @@ TEST_F(LayerTreeHostImplTest, ScrollChildAndChangePageScaleOnMainThread) {
 
 TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
   // Scroll a child layer beyond its maximum scroll range and make sure the
-  // parent layer is scrolled on the axis on which the child was unable to
-  // scroll.
+  // parent layer isn't scrolled.
   gfx::Size surface_size(10, 10);
   gfx::Size content_size(20, 20);
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_->active_tree(), 1);
@@ -4108,9 +4109,8 @@ TEST_F(LayerTreeHostImplTest, ScrollChildBeyondLimit) {
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), grand_child->id(),
                                    gfx::Vector2d(0, -5)));
 
-    // The child should have only scrolled on the other axis.
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child->id(),
-                                   gfx::Vector2d(-3, 0)));
+    // The child should not have scrolled.
+    ExpectNone(*scroll_info.get(), child->id());
   }
 }
 
@@ -4409,8 +4409,7 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     host_impl_->ScrollBy(gfx::Point(), gesture_scroll_delta);
     host_impl_->ScrollEnd();
 
-    // The child layer should have scrolled down in its local coordinates an
-    // amount proportional to the angle between it and the input scroll delta.
+    // The child layer shouldn't have scrolled.
     gfx::Vector2d expected_scroll_delta(
         0, -gesture_scroll_delta.x() *
                std::sin(MathUtil::Deg2Rad(child_layer_angle)));
@@ -4419,14 +4418,8 @@ TEST_F(LayerTreeHostImplTest, ScrollNonAxisAlignedRotatedLayer) {
     EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), child_layer_id,
                                    expected_scroll_delta));
 
-    // The root scroll layer should have scrolled more, since the input scroll
-    // delta was mostly orthogonal to the child layer's vertical scroll axis.
-    gfx::Vector2d expected_root_scroll_delta(
-        gesture_scroll_delta.x() *
-            std::pow(std::cos(MathUtil::Deg2Rad(child_layer_angle)), 2),
-        0);
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), scroll_layer->id(),
-                                   expected_root_scroll_delta));
+    // The root scroll layer shouldn't have scrolled.
+    ExpectNone(*scroll_info.get(), scroll_layer->id());
   }
 }
 
@@ -6706,7 +6699,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldNotBubble) {
   }
 }
 
-TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
+TEST_F(LayerTreeHostImplTest, TouchFlingShouldContinueScrollingCurrentLayer) {
   // Scroll a child layer beyond its maximum scroll range and make sure the
   // the scroll doesn't bubble up to the parent layer.
   gfx::Size surface_size(10, 10);
@@ -6748,40 +6741,35 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
         ScrollInfoContains(*scroll_info, grand_child->id(), scroll_delta));
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), grand_child);
 
-    // The child should have received the bubbled delta, but the locked
-    // scrolling layer should remain set as the grand child.
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+    // The locked scrolling layer should remain set as the grand child.
+    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
     scroll_info = host_impl_->ProcessScrollDeltas();
-    ASSERT_EQ(2u, scroll_info->scrolls.size());
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
     EXPECT_TRUE(
         ScrollInfoContains(*scroll_info, grand_child->id(), scroll_delta));
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info, child->id(), scroll_delta));
+    ExpectNone(*scroll_info, child->id());
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), grand_child);
 
-    // The first |ScrollBy| after the fling should re-lock the scrolling
-    // layer to the first layer that scrolled, which is the child.
     EXPECT_EQ(InputHandler::SCROLL_STARTED, host_impl_->FlingScrollBegin());
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
-    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child);
+    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), grand_child);
 
-    // The child should have scrolled up to its limit.
+    // The child should not have scrolled.
     scroll_info = host_impl_->ProcessScrollDeltas();
-    ASSERT_EQ(2u, scroll_info->scrolls.size());
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
     EXPECT_TRUE(
         ScrollInfoContains(*scroll_info, grand_child->id(), scroll_delta));
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info, child->id(),
-                                   scroll_delta + scroll_delta));
+    ExpectNone(*scroll_info, child->id());
 
     // As the locked layer is at it's limit, no further scrolling can occur.
     EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
-    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), grand_child);
     host_impl_->ScrollEnd();
   }
 }
 
-TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
-  // When flinging via wheel, the root should eventually scroll (we should
-  // bubble).
+TEST_F(LayerTreeHostImplTest, WheelFlingShouldntBubble) {
+  // When flinging via wheel, we shouldn't bubble.
   gfx::Size surface_size(10, 10);
   gfx::Size content_size(20, 20);
   scoped_ptr<LayerImpl> root_clip =
@@ -6815,10 +6803,9 @@ TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
 
-    // The root should have scrolled.
-    ASSERT_EQ(2u, scroll_info->scrolls.size());
-    EXPECT_TRUE(ScrollInfoContains(*scroll_info.get(), root_scroll_id,
-                                   gfx::Vector2d(0, 10)));
+    // The root shouldn't have scrolled.
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
+    ExpectNone(*scroll_info.get(), root_scroll_id);
   }
 }
 
@@ -7847,7 +7834,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
 }
 
 TEST_F(LayerTreeHostImplVirtualViewportTest,
-       TouchFlingCanLockToViewportLayerAfterBubbling) {
+       TouchFlingDoesntSwitchScrollingLayer) {
   gfx::Size content_size = gfx::Size(100, 160);
   gfx::Size outer_viewport = gfx::Size(50, 80);
   gfx::Size inner_viewport = gfx::Size(25, 40);
@@ -7880,25 +7867,23 @@ TEST_F(LayerTreeHostImplVirtualViewportTest,
         ScrollInfoContains(*scroll_info, child_scroll->id(), scroll_delta));
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
 
-    // The first |ScrollBy| after the fling should re-lock the scrolling
-    // layer to the first layer that scrolled, the inner viewport scroll layer.
+    // The fling have no effect on the currently scrolling layer.
     EXPECT_EQ(InputHandler::SCROLL_STARTED, host_impl_->FlingScrollBegin());
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
-    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
     EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
                                                         InputHandler::GESTURE));
 
-    // The inner viewport should have scrolled up to its limit.
+    // The inner viewport shouldn't have scrolled.
     scroll_info = host_impl_->ProcessScrollDeltas();
-    ASSERT_EQ(2u, scroll_info->scrolls.size());
+    ASSERT_EQ(1u, scroll_info->scrolls.size());
     EXPECT_TRUE(
         ScrollInfoContains(*scroll_info, child_scroll->id(), scroll_delta));
-    EXPECT_TRUE(
-        ScrollInfoContains(*scroll_info, inner_scroll->id(), scroll_delta));
+    ExpectNone(*scroll_info, inner_scroll->id());
 
     // As the locked layer is at its limit, no further scrolling can occur.
     EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
-    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), inner_scroll);
+    EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child_scroll);
     host_impl_->ScrollEnd();
     EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(
         gfx::Point(), InputHandler::GESTURE));

@@ -181,7 +181,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       tree_resources_for_gpu_rasterization_dirty_(false),
       input_handler_client_(NULL),
       did_lock_scrolling_layer_(false),
-      should_bubble_scrolls_(false),
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
       scroll_layer_id_when_mouse_over_scrollbar_(0),
@@ -2371,7 +2370,8 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 
   // Falling back to the root scroll layer ensures generation of root overscroll
   // notifications while preventing scroll updates from being unintentionally
-  // forwarded to the main thread.
+  // forwarded to the main thread. The inner viewport layer represents the
+  // viewport during scrolling.
   if (!potentially_scrolling_layer_impl)
     potentially_scrolling_layer_impl = InnerViewportScrollLayer();
 
@@ -2402,7 +2402,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   top_controls_manager_->ScrollBegin();
 
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
-  should_bubble_scrolls_ = (type != NON_BUBBLING_GESTURE);
   wheel_scrolling_ = (type == WHEEL);
   client_->RenewTreePriority();
   UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
@@ -2651,12 +2650,8 @@ void LayerTreeHostImpl::ApplyScroll(LayerImpl* layer,
 
   if (!scrolled)
     return;
-  // When scrolls are allowed to bubble, it's important that the original
-  // scrolling layer be preserved. This ensures that, after a scroll
-  // bubbles, the user can reverse scroll directions and immediately resume
-  // scrolling the original layer that scrolled.
-  if (!scroll_state->should_propagate())
-    scroll_state->set_current_native_scrolling_layer(layer);
+
+  scroll_state->set_current_native_scrolling_layer(layer);
 }
 
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
@@ -2670,7 +2665,7 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
       top_controls_manager_->ControlsTopOffset();
   ScrollState scroll_state(
       scroll_delta.x(), scroll_delta.y(), viewport_point.x(),
-      viewport_point.y(), should_bubble_scrolls_ /* should_propagate */,
+      viewport_point.y(), false /* should_propagate */,
       did_lock_scrolling_layer_ /* delta_consumed_for_scroll_sequence */,
       !wheel_scrolling_ /* is_direct_manipulation */);
   scroll_state.set_current_native_scrolling_layer(CurrentlyScrollingLayer());
@@ -2812,16 +2807,6 @@ void LayerTreeHostImpl::ScrollEnd() {
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   if (!CurrentlyScrollingLayer())
     return SCROLL_IGNORED;
-
-  bool currently_scrolling_viewport =
-      CurrentlyScrollingLayer() == InnerViewportScrollLayer();
-  if (!wheel_scrolling_ && !currently_scrolling_viewport) {
-    // Allow the fling to lock to the first layer that moves after the initial
-    // fling |ScrollBy()| event, unless we're already scrolling the viewport.
-    did_lock_scrolling_layer_ = false;
-    should_bubble_scrolls_ = false;
-  }
-
   return SCROLL_STARTED;
 }
 
