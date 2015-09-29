@@ -37,7 +37,7 @@ a {
 
 .icon {
   -webkit-user-select: none;
-  content: '';
+  display: inline-block;
 }
 
 .icon-generic {
