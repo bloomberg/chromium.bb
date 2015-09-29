@@ -268,14 +268,6 @@ DefaultDisplayManager::GenerateCompositorFrame() {
   return frame.Pass();
 }
 
-const cc::CompositorFrame*
-DefaultDisplayManager::GetLastCompositorFrame() const {
-  if (!top_level_display_client_)
-    return nullptr;
-
-  return top_level_display_client_->GetLastCompositorFrame();
-}
-
 void DefaultDisplayManager::OnBoundsChanged(const gfx::Rect& new_bounds) {
   UpdateMetrics(new_bounds.size(), metrics_.device_pixel_ratio);
 }

@@ -41,10 +41,8 @@ class TopLevelDisplayClient : public cc::DisplayClient,
 
   void SubmitCompositorFrame(scoped_ptr<cc::CompositorFrame> frame,
                              const base::Closure& callback);
-
-  const cc::CompositorFrame* GetLastCompositorFrame() const;
-
   const cc::SurfaceId& surface_id() const { return cc_id_; }
+
  private:
   // DisplayClient implementation.
   // TODO(rjkroege, fsamuel): This won't work correctly with multiple displays.

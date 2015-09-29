@@ -153,9 +153,6 @@ class ConnectionManager : public ServerViewDelegate,
   // ViewTreeHost implementation helper; see mojom for details.
   bool CloneAndAnimate(const ViewId& view_id);
 
-  // Dispatches |event| directly to the appropriate connection for |view|.
-  void DispatchInputEventToView(const ServerView* view, mojo::EventPtr event);
-
   // These functions trivially delegate to all ViewTreeImpls, which in
   // term notify their clients.
   void ProcessViewDestroyed(ServerView* view);

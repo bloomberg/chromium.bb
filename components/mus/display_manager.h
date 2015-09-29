@@ -115,7 +115,6 @@ class DefaultDisplayManager : public DisplayManager,
   void DidDraw();
   void UpdateMetrics(const gfx::Size& size, float device_pixel_ratio);
   scoped_ptr<cc::CompositorFrame> GenerateCompositorFrame();
-  const cc::CompositorFrame* GetLastCompositorFrame() const;
 
   // ui::PlatformWindowDelegate:
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;

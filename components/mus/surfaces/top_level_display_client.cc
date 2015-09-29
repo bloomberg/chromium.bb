@@ -68,14 +68,6 @@ void TopLevelDisplayClient::SubmitCompositorFrame(
   surfaces_state_->scheduler()->SetNeedsDraw();
 }
 
-const cc::CompositorFrame*
-TopLevelDisplayClient::GetLastCompositorFrame() const {
-  cc::Surface* surface = surfaces_state_->manager()->GetSurfaceForId(cc_id_);
-  if (!surface)
-    return nullptr;
-  return surface->GetEligibleFrame();
-}
-
 void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
                                                   base::TimeDelta interval) {}
 
