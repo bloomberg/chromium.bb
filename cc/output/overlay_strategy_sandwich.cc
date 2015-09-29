@@ -9,10 +9,28 @@
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "ui/gfx/geometry/dip_util.h"
-#include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
+
+namespace {
+
+void ClipDisplayAndUVRects(gfx::Rect* display_rect,
+                           gfx::RectF* uv_rect,
+                           const gfx::Rect& clip_rect) {
+  gfx::Rect display_cropped_rect =
+      gfx::IntersectRects(*display_rect, clip_rect);
+
+  gfx::RectF uv_cropped_rect = gfx::RectF(display_cropped_rect);
+  uv_cropped_rect -= gfx::Vector2dF(display_rect->x(), display_rect->y());
+  uv_cropped_rect.Scale(uv_rect->width() / display_rect->width(),
+                        uv_rect->height() / display_rect->height());
+  uv_cropped_rect += gfx::Vector2dF(uv_rect->x(), uv_rect->y());
+
+  *display_rect = display_cropped_rect;
+  *uv_rect = uv_cropped_rect;
+}
+
+}  // namespace
 
 OverlayStrategySandwich::~OverlayStrategySandwich() {}
 
@@ -34,10 +52,14 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
   if (!candidate_transform.GetInverse(&candidate_inverse_transform))
     return DID_NOT_CREATE_OVERLAY;
 
-  // Compute the candidate's rect in display space (pixels on the screen). The
-  // rect needs to be DIP-aligned, or we cannot use it.
-  const gfx::Rect candidate_pixel_rect =
-      gfx::ToNearestRect(candidate.display_rect);
+  // Compute the candidate's rect in display space (pixels on the screen).
+  gfx::Rect candidate_pixel_rect = candidate.quad_rect_in_target_space;
+  gfx::RectF candidate_uv_rect = candidate.uv_rect;
+  if (candidate.is_clipped &&
+      !candidate.clip_rect.Contains(candidate_pixel_rect)) {
+    ClipDisplayAndUVRects(&candidate_pixel_rect, &candidate_uv_rect,
+                          candidate.clip_rect);
+  }
 
   // Don't allow overlapping overlays for now.
   for (const OverlayCandidate& other_candidate : *candidate_list) {
@@ -54,8 +76,7 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
        overlap_iter != *candidate_iter_in_quad_list; ++overlap_iter) {
     if (OverlayStrategyCommon::IsInvisibleQuad(*overlap_iter))
       continue;
-    // Compute the quad's bounds in display space, and ensure that it is rounded
-    // up to be DIP-aligned.
+    // Compute the quad's bounds in display space.
     gfx::Rect pixel_covered_rect = MathUtil::MapEnclosingClippedRect(
         overlap_iter->shared_quad_state->quad_to_target_transform,
         overlap_iter->rect);
@@ -70,7 +91,11 @@ OverlayResult OverlayStrategySandwich::TryOverlay(
   DCHECK(candidate.resource_id);
   OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);
-  new_candidate_list.back().plane_z_order = 1;
+  OverlayCandidate& new_candidate = new_candidate_list.back();
+  new_candidate.plane_z_order = 1;
+  new_candidate.display_rect = gfx::RectF(candidate_pixel_rect);
+  new_candidate.quad_rect_in_target_space = candidate_pixel_rect;
+  new_candidate.uv_rect = candidate_uv_rect;
 
   // Add an overlay of the primary surface for any part of the candidate's
   // quad that was covered.

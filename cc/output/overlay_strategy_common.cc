@@ -101,10 +101,6 @@ bool OverlayStrategyCommon::GetTextureQuadInfo(const TextureDrawQuad& quad,
   quad_info->resource_size_in_pixels = quad.resource_size_in_pixels();
   quad_info->transform = overlay_transform;
   quad_info->uv_rect = BoundingRect(quad.uv_top_left, quad.uv_bottom_right);
-  quad_info->quad_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      quad.shared_quad_state->quad_to_target_transform, quad.rect);
-  quad_info->clip_rect = quad.shared_quad_state->clip_rect;
-  quad_info->is_clipped = quad.shared_quad_state->is_clipped;
   return true;
 }
 
@@ -125,10 +121,6 @@ bool OverlayStrategyCommon::GetVideoQuadInfo(const StreamVideoDrawQuad& quad,
   quad_info->resource_id = quad.resource_id();
   quad_info->resource_size_in_pixels = quad.resource_size_in_pixels();
   quad_info->transform = overlay_transform;
-  quad_info->quad_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      quad.shared_quad_state->quad_to_target_transform, quad.rect);
-  quad_info->clip_rect = quad.shared_quad_state->clip_rect;
-  quad_info->is_clipped = quad.shared_quad_state->is_clipped;
 
   gfx::Point3F uv0 = gfx::Point3F(0, 0, 0);
   gfx::Point3F uv1 = gfx::Point3F(1, 1, 0);
@@ -170,10 +162,6 @@ bool OverlayStrategyCommon::GetIOSurfaceQuadInfo(const IOSurfaceDrawQuad& quad,
   quad_info->resource_size_in_pixels = quad.io_surface_size;
   quad_info->transform = overlay_transform;
   quad_info->uv_rect = gfx::RectF(1.f, 1.f);
-  quad_info->quad_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
-      quad.shared_quad_state->quad_to_target_transform, quad.rect);
-  quad_info->clip_rect = quad.shared_quad_state->clip_rect;
-  quad_info->is_clipped = quad.shared_quad_state->is_clipped;
   return true;
 }
 
@@ -207,6 +195,10 @@ bool OverlayStrategyCommon::GetCandidateQuadInfo(const DrawQuad& draw_quad,
   quad_info->format = RGBA_8888;
   quad_info->display_rect = OverlayCandidate::GetOverlayRect(
       draw_quad.shared_quad_state->quad_to_target_transform, draw_quad.rect);
+  quad_info->quad_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
+      draw_quad.shared_quad_state->quad_to_target_transform, draw_quad.rect);
+  quad_info->clip_rect = draw_quad.shared_quad_state->clip_rect;
+  quad_info->is_clipped = draw_quad.shared_quad_state->is_clipped;
   return true;
 }
 

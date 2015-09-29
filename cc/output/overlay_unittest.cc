@@ -438,6 +438,39 @@ TEST_F(SandwichTest, SuccessfulSingleOverlay) {
   EXPECT_EQ(original_resource_id, candidate_list.back().resource_id);
 }
 
+TEST_F(SandwichTest, CroppedSingleOverlay) {
+  scoped_ptr<RenderPass> pass = CreateRenderPass();
+  pass->shared_quad_state_list.back()->is_clipped = true;
+  pass->shared_quad_state_list.back()->clip_rect = gfx::Rect(0, 32, 64, 64);
+
+  TextureDrawQuad* original_quad = CreateFullscreenCandidateQuad(
+      resource_provider_.get(), pass->shared_quad_state_list.back(),
+      pass.get());
+  original_quad->uv_top_left = gfx::PointF(0, 0);
+  original_quad->uv_bottom_right = gfx::PointF(1, 1);
+  unsigned candidate_id = original_quad->resource_id();
+
+  // Add something behind it.
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  overlay_processor_->ProcessForOverlays(&pass_list, &candidate_list);
+
+  // Ensure that the display and uv rects have cropping applied to them.
+  ASSERT_EQ(1U, pass_list.size());
+  ASSERT_EQ(2U, candidate_list.size());
+  EXPECT_EQ(candidate_id, candidate_list[1].resource_id);
+  EXPECT_EQ(gfx::RectF(0.f, 32.f, 64.f, 64.f), candidate_list[1].display_rect);
+  EXPECT_EQ(gfx::RectF(0.f, 0.25f, 0.5f, 0.5f), candidate_list[1].uv_rect);
+}
+
 TEST_F(SandwichTest, SuccessfulTwoOverlays) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
 
