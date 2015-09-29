@@ -6,18 +6,23 @@ import logging
 from telemetry.page import shared_page_state
 
 
-class AndroidScreenRestorationSharedState(shared_page_state.SharedPageState):
-  """ Ensures the screen is on before and after each user story is run. """
+class AndroidScreenAndChargeRestorationSharedState(
+    shared_page_state.SharedMobilePageState):
+  """
+  Ensures the screen is on and the power charging before and after each user
+  story is run.
+  """
 
   def WillRunStory(self, page):
-    super(AndroidScreenRestorationSharedState, self).WillRunStory(page)
-    self._EnsureScreenOn()
+    super(AndroidScreenAndChargeRestorationSharedState, self).WillRunStory(page)
+    self._EnsureScreenOnAndCharging()
 
   def DidRunStory(self, results):
     try:
-      super(AndroidScreenRestorationSharedState, self).DidRunStory(results)
+      super(AndroidScreenAndChargeRestorationSharedState, self).DidRunStory(
+          results)
     finally:
-      self._EnsureScreenOn()
+      self._EnsureScreenOnAndCharging()
 
   def CanRunOnBrowser(self, browser_info, _):
     if not browser_info.browser_type.startswith('android'):
@@ -25,5 +30,6 @@ class AndroidScreenRestorationSharedState(shared_page_state.SharedPageState):
       return False
     return True
 
-  def _EnsureScreenOn(self):
+  def _EnsureScreenOnAndCharging(self):
     self.platform.android_action_runner.EnsureScreenOn()
+    self.platform.android_action_runner.SetCharging(True)
