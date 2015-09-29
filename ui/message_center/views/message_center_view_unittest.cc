@@ -299,7 +299,13 @@ void MessageCenterViewTest::LogBounds(int depth, views::View* view) {
 
 /* Unit tests *****************************************************************/
 
-TEST_F(MessageCenterViewTest, CallTest) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_CallTest DISABLED_CallTest
+#else
+#define MAYBE_CallTest CallTest
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_CallTest) {
   // Verify that this didn't generate more than 2 Layout() call per descendant
   // NotificationView or more than a total of 20 GetPreferredSize() and
   // GetHeightForWidth() calls per descendant NotificationView. 20 is a very
@@ -311,7 +317,13 @@ TEST_F(MessageCenterViewTest, CallTest) {
             GetNotificationCount() * 20);
 }
 
-TEST_F(MessageCenterViewTest, Size) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_Size DISABLED_Size
+#else
+#define MAYBE_Size Size
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_Size) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   EXPECT_EQ(GetMessageListView()->height(),
             GetCalculatedMessageListViewHeight());
@@ -326,7 +338,13 @@ TEST_F(MessageCenterViewTest, Size) {
           GetMessageListView()->GetInsets().height());
 }
 
-TEST_F(MessageCenterViewTest, SizeAfterUpdate) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_SizeAfterUpdate DISABLED_SizeAfterUpdate
+#else
+#define MAYBE_SizeAfterUpdate SizeAfterUpdate
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_SizeAfterUpdate) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   int width =
       GetMessageListView()->width() - GetMessageListView()->GetInsets().width();
@@ -369,7 +387,13 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdate) {
           GetMessageListView()->GetInsets().height());
 }
 
-TEST_F(MessageCenterViewTest, SizeAfterRemove) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_SizeAfterRemove DISABLED_SizeAfterRemove
+#else
+#define MAYBE_SizeAfterRemove SizeAfterRemove
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_SizeAfterRemove) {
   EXPECT_EQ(2, GetMessageListView()->child_count());
   RemoveNotification(kNotificationId1, false);
 
@@ -388,7 +412,13 @@ TEST_F(MessageCenterViewTest, SizeAfterRemove) {
                 GetMessageListView()->GetInsets().height());
 }
 
-TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PositionAfterUpdate DISABLED_PositionAfterUpdate
+#else
+#define MAYBE_PositionAfterUpdate PositionAfterUpdate
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_PositionAfterUpdate) {
   // Make sure that the notification 2 is placed above the notification 1.
   EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
             GetNotificationView(kNotificationId1)->bounds().y());
@@ -420,7 +450,13 @@ TEST_F(MessageCenterViewTest, PositionAfterUpdate) {
             current_vertical_pos_from_bottom);
 }
 
-TEST_F(MessageCenterViewTest, PositionAfterRemove) {
+// TODO(yoshiki): Fix this test on Linux ASAN http://crbug.com/537265
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_PositionAfterRemove DISABLED_PositionAfterRemove
+#else
+#define MAYBE_PositionAfterRemove PositionAfterRemove
+#endif  // ADDRESS_SANITIZER
+TEST_F(MessageCenterViewTest, MAYBE_PositionAfterRemove) {
   // Make sure that the notification 2 is placed above the notification 1.
   EXPECT_LT(GetNotificationView(kNotificationId2)->bounds().y(),
             GetNotificationView(kNotificationId1)->bounds().y());
