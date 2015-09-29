@@ -87,7 +87,10 @@ if __name__ == '__main__':
   top_level_dir = os.path.dirname(os.path.realpath(__file__))
   config = benchmark_runner.ProjectConfig(
       top_level_dir=top_level_dir,
-      benchmark_dirs=[os.path.join(top_level_dir, 'gpu_tests')])
+      benchmark_dirs=[os.path.join(top_level_dir, 'gpu_tests')],
+      client_config=os.path.abspath(os.path.join(
+          top_level_dir, os.pardir, os.pardir, os.pardir, 'tools', 'perf',
+          'core', 'binary_dependencies.json')))
 
   did_launch_dbus = _LaunchDBus()
   try:
