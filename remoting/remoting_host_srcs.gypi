@@ -114,6 +114,8 @@
       'host/host_config.cc',
       'host/host_config.h',
       'host/host_config_constants.cc',
+      'host/host_details.cc',
+      'host/host_details.h',
       'host/host_event_logger.h',
       'host/host_event_logger_posix.cc',
       'host/host_event_logger_win.cc',

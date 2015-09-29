@@ -62,6 +62,7 @@ TEST(ServerLogEntryHostTest, AddHostFields) {
   keys.insert("os-version");
 #elif defined(OS_LINUX)
   key_value_pairs["os-name"] = "Linux";
+  keys.insert("os-version");
 #endif
 
   // The check below will compile but fail if VERSION isn't defined (STRINGIZE

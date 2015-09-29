@@ -69,7 +69,6 @@ class HeartbeatSenderTest
   void SetUp() override {
     key_pair_ = RsaKeyPair::FromString(kTestRsaKeyPair);
     ASSERT_TRUE(key_pair_.get());
-
     EXPECT_CALL(signal_strategy_, GetState())
         .WillOnce(Return(SignalStrategy::DISCONNECTED));
     EXPECT_CALL(signal_strategy_, AddListener(NotNull()))
@@ -327,6 +326,39 @@ TEST_F(HeartbeatSenderTest, ProcessHostOfflineResponses) {
   EXPECT_CALL(mock_ack_callback, Run(_)).Times(0);
   ProcessResponseWithInterval(true, kTestInterval);
   base::RunLoop().RunUntilIdle();
+
+  heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
+  base::RunLoop().RunUntilIdle();
+}
+
+// The first heartbeat should include host OS information.
+TEST_F(HeartbeatSenderTest, HostOSInfo) {
+  XmlElement* sent_iq = nullptr;
+  EXPECT_CALL(signal_strategy_, GetLocalJid())
+      .WillRepeatedly(Return(kTestJid));
+  EXPECT_CALL(signal_strategy_, GetNextId())
+      .WillOnce(Return(kStanzaId));
+  EXPECT_CALL(signal_strategy_, SendStanzaPtr(NotNull()))
+      .WillOnce(DoAll(SaveArg<0>(&sent_iq), Return(true)));
+  EXPECT_CALL(signal_strategy_, GetState())
+      .WillRepeatedly(Return(SignalStrategy::CONNECTED));
+
+  heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::CONNECTED);
+  base::RunLoop().RunUntilIdle();
+
+  scoped_ptr<XmlElement> stanza(sent_iq);
+  ASSERT_TRUE(stanza != nullptr);
+
+  XmlElement* heartbeat_stanza =
+      stanza->FirstNamed(QName(kChromotingXmlNamespace, "heartbeat"));
+
+  std::string os_name =
+      heartbeat_stanza->TextNamed(QName(kChromotingXmlNamespace, "os-name"));
+  EXPECT_TRUE(!os_name.empty());
+
+  std::string os_version =
+      heartbeat_stanza->TextNamed(QName(kChromotingXmlNamespace, "os-version"));
+  EXPECT_TRUE(!os_version.empty());
 
   heartbeat_sender_->OnSignalStrategyStateChange(SignalStrategy::DISCONNECTED);
   base::RunLoop().RunUntilIdle();

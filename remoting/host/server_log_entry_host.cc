@@ -5,10 +5,8 @@
 #include "remoting/host/server_log_entry_host.h"
 
 #include "base/strings/stringize_macros.h"
-#include "base/sys_info.h"
+#include "remoting/host/host_details.h"
 #include "remoting/signaling/server_log_entry.h"
-
-using base::SysInfo;
 
 namespace remoting {
 
@@ -23,10 +21,7 @@ const char kValueSessionStateConnected[] = "connected";
 const char kValueSessionStateClosed[] = "closed";
 
 const char kKeyOsName[] = "os-name";
-
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
 const char kKeyOsVersion[] = "os-version";
-#endif
 
 const char kKeyHostVersion[] = "host-version";
 
@@ -55,30 +50,10 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForHeartbeat() {
 }
 
 void AddHostFieldsToLogEntry(ServerLogEntry* entry) {
-#if defined(OS_WIN)
-  entry->Set(kKeyOsName, "Windows");
-#elif defined(OS_MACOSX)
-  entry->Set(kKeyOsName, "Mac");
-#elif defined(OS_CHROMEOS)
-  entry->Set(kKeyOsName, "ChromeOS");
-#elif defined(OS_LINUX)
-  entry->Set(kKeyOsName, "Linux");
-#endif
-
-  // SysInfo::OperatingSystemVersionNumbers is only defined for the following
-  // OSes: see base/sys_info_unittest.cc.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-  std::stringstream os_version;
-  int32 os_major_version = 0;
-  int32 os_minor_version = 0;
-  int32 os_bugfix_version = 0;
-  SysInfo::OperatingSystemVersionNumbers(&os_major_version, &os_minor_version,
-                                         &os_bugfix_version);
-  os_version << os_major_version << "." << os_minor_version << "."
-             << os_bugfix_version;
-  entry->Set(kKeyOsVersion, os_version.str());
-#endif
-
+  // TODO os name, os version, and version will be in the main message body,
+  // remove these fields at a later date to remove redundancy.
+  entry->Set(kKeyOsName, GetHostOperatingSystemName());
+  entry->Set(kKeyOsVersion, GetHostOperatingSystemVersion());
   entry->Set(kKeyHostVersion, STRINGIZE(VERSION));
   entry->AddCpuField();
 };

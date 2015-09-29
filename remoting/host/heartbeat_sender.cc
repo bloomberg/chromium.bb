@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/logging.h"
+#include "remoting/host/host_details.h"
 #include "remoting/host/server_log_entry_host.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/jid_util.h"
@@ -36,6 +37,8 @@ const char kHostVersionTag[] = "host-version";
 const char kHeartbeatSignatureTag[] = "signature";
 const char kSequenceIdAttr[] = "sequence-id";
 const char kHostOfflineReasonAttr[] = "host-offline-reason";
+const char kHostOperatingSystemNameTag[] = "os-name";
+const char kHostOperatingSystemVersionTag[] = "os-version";
 
 const char kErrorTag[] = "error";
 const char kNotFoundTag[] = "item-not-found";
@@ -319,6 +322,19 @@ scoped_ptr<XmlElement> HeartbeatSender::CreateHeartbeatMessage() {
       QName(kChromotingXmlNamespace, kHostVersionTag)));
   version_tag->AddText(STRINGIZE(VERSION));
   heartbeat->AddElement(version_tag.release());
+  // If we have not recorded a heartbeat success, continue sending host OS info.
+  if (!heartbeat_succeeded_) {
+    // Append host OS name.
+    scoped_ptr<XmlElement> os_name_tag(new XmlElement(
+        QName(kChromotingXmlNamespace, kHostOperatingSystemNameTag)));
+    os_name_tag->AddText(GetHostOperatingSystemName());
+    heartbeat->AddElement(os_name_tag.release());
+    // Append host OS version.
+    scoped_ptr<XmlElement> os_version_tag(new XmlElement(
+        QName(kChromotingXmlNamespace, kHostOperatingSystemVersionTag)));
+    os_version_tag->AddText(GetHostOperatingSystemVersion());
+    heartbeat->AddElement(os_version_tag.release());
+  }
   // Append log message (which isn't signed).
   scoped_ptr<XmlElement> log(ServerLogEntry::MakeStanza());
   scoped_ptr<ServerLogEntry> log_entry(MakeLogEntryForHeartbeat());
