@@ -158,22 +158,20 @@ body.platform-linux {
     display: none !important;
 }
 
-#element-tooltip,
-#element-tooltip-arrow {
+.tooltip-content,
+.material-tooltip-arrow {
     position: absolute;
     z-index: 10;
     -webkit-user-select: none;
 }
 
-#element-tooltip {
+.tooltip-content {
     background-color: #333740;
     font-size: 11px;
     line-height: 14px;
     padding: 5px 8px;
     border-radius: 3px;
     color: white;
-    display: flex;
-    align-content: stretch;
     box-sizing: border-box;
     max-width: calc(100% - 4px);
     border: 1px solid hsla(0, 0%, 100%, 0.3);
@@ -183,7 +181,12 @@ body.platform-linux {
     text-rendering: optimizeLegibility;
 }
 
-#element-tooltip-arrow {
+.element-info {
+    display: flex;
+    align-content: stretch;
+}
+
+.material-tooltip-arrow {
     border: solid;
     border-color: #333740 transparent;
     border-width: 0 8px 8px 8px;
@@ -191,17 +194,17 @@ body.platform-linux {
     margin-top: 1px;
 }
 
-#element-tooltip-arrow.tooltip-arrow-top {
+.material-tooltip-arrow.tooltip-arrow-top {
     border-width: 8px 8px 0 8px;
     margin-top: -1px;
 }
 
-#element-description {
+.element-description {
     flex: 1 1;
     word-wrap: break-word;
 }
 
-#dimensions {
+.dimensions {
     border-left: 1px solid hsl(0, 0%, 50%);
     padding-left: 7px;
     margin-left: 7px;
@@ -213,26 +216,33 @@ body.platform-linux {
     color: hsl(0, 0%, 85%);
 }
 
-#material-node-width {
+.material-node-width {
     margin-right: 2px;
 }
 
-#material-node-height {
+.material-node-height {
     margin-left: 2px;
 }
 
-#material-tag-name {
+.material-tag-name {
     color: hsl(304, 77%, 70%);
 }
 
-#material-node-id {
+.material-node-id {
     color: hsl(27, 100%, 70%);
 }
 
-#material-class-name {
+.material-class-name {
     color: hsl(202,92%,77%);
 }
 
+.layout-editor-media-tooltip {
+    color: hsl(0, 0%, 85%);
+}
+
+.layout-editor-selector-tooltip {
+    color: hsl(202,92%,77%);
+}
 
 </style>
 <script>
@@ -434,7 +444,8 @@ function reset(resetData)
     window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
-    document.getElementById("tooltip-container").classList.add("hidden");
+    document.getElementById("tooltip-container").removeChildren();
+
     document.body.classList.remove("dimmed");
 
     window._gridPainted = false;
@@ -448,10 +459,7 @@ function _drawElementTitle(context, elementInfo, bounds)
 {
     document.getElementById("tag-name").textContent = elementInfo.tagName;
     document.getElementById("node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
-    var className = elementInfo.className;
-    if (className && className.length > 50)
-       className = className.substring(0, 50) + "\u2026";
-    document.getElementById("class-name").textContent = className || "";
+    document.getElementById("class-name").textContent = (elementInfo.className || "").trimEnd(50);
     document.getElementById("node-width").textContent = elementInfo.nodeWidth;
     document.getElementById("node-height").textContent = elementInfo.nodeHeight;
     var elementTitle = document.getElementById("element-title");
@@ -517,27 +525,41 @@ function _drawElementTitle(context, elementInfo, bounds)
     elementTitle.style.left = (boxX + 3) + "px";
 }
 
+function _createElementDescription(elementInfo)
+{
+    var elementInfoElement = createElement("div", "element-info");
+    var descriptionElement = elementInfoElement.createChild("div", "element-description monospace");
+    var tagNameElement = descriptionElement.createChild("b").createChild("span", "material-tag-name");
+    tagNameElement.textContent = elementInfo.tagName;
+    var nodeIdElement = descriptionElement.createChild("span", "material-node-id");
+    nodeIdElement.textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
+    nodeIdElement.classList.toggle("hidden", !elementInfo.idValue);
+
+    var classNameElement = descriptionElement.createChild("span", "material-class-name");
+    classNameElement.textContent = (elementInfo.className || "").trim(50);
+    classNameElement.classList.toggle("hidden", !elementInfo.className);
+    var dimensionsElement = elementInfoElement.createChild("div", "dimensions");
+    dimensionsElement.createChild("span", "material-node-width").textContent = Math.round(elementInfo.nodeWidth * 100) / 100;
+    dimensionsElement.createTextChild("\u00d7");
+    dimensionsElement.createChild("span", "material-node-height").textContent = Math.round(elementInfo.nodeHeight * 100) / 100;
+    return elementInfoElement;
+}
+
 function _drawMaterialElementTitle(elementInfo, bounds)
 {
-    // Reset position before measuring to ensure line-wraps are consistent.
-    var elementTitle = document.getElementById("element-tooltip");
-    elementTitle.style.top = "0";
-    elementTitle.style.left = "0";
-    document.getElementById("tooltip-container").classList.remove("hidden");
+    var tooltipContainer = document.getElementById("tooltip-container");
+    tooltipContainer.removeChildren();
+    _createMaterialTooltip(tooltipContainer, bounds, _createElementDescription(elementInfo), true);
+}
 
-    document.getElementById("material-tag-name").textContent = elementInfo.tagName;
-    document.getElementById("material-node-id").textContent = elementInfo.idValue ? "#" + elementInfo.idValue : "";
-    document.getElementById("material-node-id").classList.toggle("hidden", !elementInfo.idValue);
-    var className = elementInfo.className;
-    if (className && className.length > 50)
-       className = className.substring(0, 50) + "\u2026";
-    document.getElementById("material-class-name").textContent = className || "";
-    document.getElementById("material-class-name").classList.toggle("hidden", !className);
-    document.getElementById("material-node-width").textContent = Math.round(elementInfo.nodeWidth* 100) / 100;
-    document.getElementById("material-node-height").textContent = Math.round(elementInfo.nodeHeight * 100) / 100;
+function _createMaterialTooltip(parentElement, bounds, contentElement, withArrow)
+{
+    var tooltipContainer = parentElement.createChild("div");
+    var tooltipContent = tooltipContainer.createChild("div", "tooltip-content");
+    tooltipContent.appendChild(contentElement);
 
-    var titleWidth = elementTitle.offsetWidth;
-    var titleHeight = elementTitle.offsetHeight;
+    var titleWidth = tooltipContent.offsetWidth;
+    var titleHeight = tooltipContent.offsetHeight;
     var arrowRadius = 8;
     var pageMargin = 2;
 
@@ -553,10 +575,12 @@ function _drawMaterialElementTitle(elementInfo, bounds)
         boxY = canvasHeight - arrowRadius - titleHeight;
     }
 
-    elementTitle.style.top = boxY + "px";
-    elementTitle.style.left = boxX + "px";
+    tooltipContent.style.top = boxY + "px";
+    tooltipContent.style.left = boxX + "px";
+    if (!withArrow)
+        return;
 
-    var tooltipArrow = document.getElementById("element-tooltip-arrow");
+    var tooltipArrow = tooltipContainer.createChild("div", "material-tooltip-arrow");
     // Center arrow if possible. Otherwise, try the bounds of the element.
     var arrowX = bounds.minX + (bounds.maxX - bounds.minX) / 2 - arrowRadius;
     var tooltipBorderRadius = 2;
@@ -681,11 +705,8 @@ function drawPath(context, commands, fillColor, outlineColor, bounds)
     return path;
 }
 
-function drawHighlight(highlight, context)
+function emptyBounds()
 {
-    context = context || window.context;
-    context.save();
-
     var bounds = {
         minX: Number.MAX_VALUE,
         minY: Number.MAX_VALUE,
@@ -696,6 +717,15 @@ function drawHighlight(highlight, context)
         topmostYForX: {},
         bottommostYForX: {}
     };
+    return bounds;
+}
+
+function drawHighlight(highlight, context)
+{
+    context = context || window.context;
+    context.save();
+
+    var bounds = emptyBounds();
 
     var areasDescription = new Map();
     for (var paths = highlight.paths.slice(); paths.length;) {
@@ -727,7 +757,7 @@ function drawHighlight(highlight, context)
     }
     context.restore();
 
-    return areasDescription;
+    return { areasDescription: areasDescription, bounds: bounds };
 }
 
 function setPlatform(platform)
@@ -744,9 +774,7 @@ function dispatch(message)
 
 function log(text)
 {
-    var logEntry = document.createElement("div");
-    logEntry.textContent = text;
-    document.getElementById("log").appendChild(logEntry);
+    document.getElementById("log").createChild("div").textContent = text;
 }
 
 function onResumeClick()
@@ -806,8 +834,8 @@ function LayoutEditor(mainCanvas)
 
     this._anchorsByType = new Map();
     this._hoverableAreas = new Map();
+    this._elementsBounds = emptyBounds();
     this._editorElement = document.getElementById("editor");
-    this._tooltipElement = document.getElementById("selector-tooltip");
     this._matchedNodesCanvas = createCanvas("layout-editor-matched-nodes-canvas");
     mainCanvas.parentElement.insertBefore(this._matchedNodesCanvas, mainCanvas);
 
@@ -821,13 +849,18 @@ LayoutEditor.prototype = {
     {
         this._anchorsByType.clear();
         this._hoverableAreas.clear();
+        this._elementsBounds = emptyBounds();
 
         resetCanvas(this._matchedNodesCanvas);
         this._resetLabelCanvas();
 
         this._editorElement.style.visibility = "hidden";
         this._editorElement.textContent = "";
-        this._tooltipElement.style.visibility = "hidden";
+
+        if (this._selectorTooltipElement) {
+            this._selectorTooltipElement.remove();
+            delete this._selectorTooltipElement;
+        }
 
         document.removeEventListener("mousedown", this._boundConsumeEvent);
         document.removeEventListener("mousemove", this._boundMouseMove);
@@ -839,7 +872,9 @@ LayoutEditor.prototype = {
 
     setState: function(info)
     {
-        this._hoverableAreas = drawHighlight(info.nodeHighlight, this._mainContext);
+        var highlightDescription = drawHighlight(info.nodeHighlight, this._mainContext);
+        this._hoverableAreas = highlightDescription.areasDescription;
+        this._elementsBounds = highlightDescription.bounds;
 
         this._editorElement.style.visibility = "visible";
         var anchors = info.anchors;
@@ -868,13 +903,19 @@ LayoutEditor.prototype = {
 
     setSelector: function(selectorInfo)
     {
-        this._tooltipElement.style.visibility = "visible";
-        this._tooltipElement.style.left = "100px";
-        this._tooltipElement.style.top = "100px";
-        var medias = selectorInfo.medias ? selectorInfo.medias.map(function (media) {return "@media " + media + ""}) : "";
-        this._tooltipElement.textContent = (medias ? medias.join(", ") + " { " : "") + selectorInfo.selector + ( medias ? " } " : "");
-        this._tooltipElement.style.backgroundColor = "#eee";
+        if (this._selectorTooltipElement)
+            this._selectorTooltipElement.remove();
 
+        var containerElement = createElement("div");
+
+        for (var i = (selectorInfo.medias || []).length - 1; i >= 0; --i)
+            containerElement.createChild("div", "layout-editor-media-tooltip").textContent = ("@media " + selectorInfo.medias[i]).trim(50);
+
+        var selectorElement = containerElement.createChild("div", "layout-editor-selector-tooltip");
+        selectorElement.textContent = selectorInfo.selector.trimEnd(50);
+
+        this._selectorTooltipElement = document.body.insertBefore(createElement("div"), this._editorElement);
+        _createMaterialTooltip(this._selectorTooltipElement, this._elementsBounds, containerElement);
         resetCanvas(this._matchedNodesCanvas);
 
         if (!selectorInfo.nodes)
@@ -896,8 +937,7 @@ LayoutEditor.prototype = {
         this._mainContext.fill();
         this._mainContext.restore();
 
-        var anchorElement = document.createElement("div");
-        anchorElement.className = "editor-anchor";
+        var anchorElement = createElement("div", "editor-anchor");
         anchorElement.style.left = anchorInfo.x - handleWidth + "px";
         anchorElement.style.top = anchorInfo.y - handleWidth + "px";
         if (anchorInfo.propertyValue.mutable)
@@ -1171,9 +1211,8 @@ function Point(x, y)
 
 function createCanvas(id)
 {
-    var canvas = document.createElement("canvas");
+    var canvas = createElement("canvas", "fill");
     canvas.id = id;
-    canvas.className = "fill";
     resetCanvas(canvas);
     return canvas;
 }
@@ -1181,6 +1220,41 @@ function createCanvas(id)
 function scalarProduct(v1, v2)
 {
     return v1.x * v2.x + v1.y * v2.y;
+}
+
+Element.prototype.createChild = function(tagName, className)
+{
+    var element = createElement(tagName, className);
+    this.appendChild(element);
+    return element;
+}
+
+Element.prototype.createTextChild = function(text)
+{
+    var element = document.createTextNode(text);
+    this.appendChild(element);
+    return element;
+}
+
+Element.prototype.removeChildren = function()
+{
+    if (this.firstChild)
+        this.textContent = "";
+}
+
+function createElement(tagName, className)
+{
+    var element = document.createElement(tagName);
+    if (className)
+        element.className = className;
+    return element;
+}
+
+String.prototype.trimEnd = function(maxLength)
+{
+    if (this.length <= maxLength)
+        return String(this);
+    return this.substr(0, maxLength - 1) + "\u2026";
 }
 
 window.addEventListener("DOMContentLoaded", onLoaded);
@@ -1199,14 +1273,7 @@ document.addEventListener("keydown", onDocumentKeyDown);
   <span id="tag-name"></span><span id="node-id"></span><span id="class-name"></span>
   <span id="node-width"></span><span class="px">px</span><span class="px"> &#xD7; </span><span id="node-height"></span><span class="px">px</span>
 </div>
-<div id="tooltip-container" class="hidden">
-    <div id="element-tooltip">
-      <div id="element-description" class="monospace"><b><span id="material-tag-name"></span></b><span id="material-node-id"></span><span id="material-class-name"></span></div>
-      <div id="dimensions"><span id="material-node-width"></span>&#xD7;<span id="material-node-height"></span></div>
-    </div>
-    <div id="element-tooltip-arrow"></div>
-</div>
+<div id="tooltip-container"></div>
 <div id="editor" class="fill"></div>
-<div id="selector-tooltip"></div>
 <div id="log"></div>
 </html>
