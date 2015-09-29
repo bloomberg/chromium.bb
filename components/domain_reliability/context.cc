@@ -154,6 +154,11 @@ void DomainReliabilityContext::OnBeacon(const GURL& url,
     reported = true;
     UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.ReportedBeaconError",
                                 -beacon.chrome_error);
+    if (!beacon.server_ip.empty()) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "DomainReliability.ReportedBeaconError_HasServerIP",
+          -beacon.chrome_error);
+    }
     // TODO(ttuttle): Histogram HTTP response code?
   }
 

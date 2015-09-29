@@ -7574,6 +7574,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomainReliability.ReportedBeaconError_HasServerIP"
+    enum="NetErrorCodes">
+  <owner>ttuttle@chromium.org</owner>
+  <summary>
+    The Chrome error code included in a beacon with a non-empty server_ip field
+    saved to be uploaded to the collector.
+  </summary>
+</histogram>
+
 <histogram name="DomainReliability.UploadCollectorIndex">
   <owner>ttuttle@chromium.org</owner>
   <summary>
