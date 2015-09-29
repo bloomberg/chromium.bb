@@ -15,7 +15,6 @@ class V8GCTimes(page_test.PageTest):
   _TIME_OUT_IN_SECONDS = 60
   _CATEGORIES = ['blink.console',
                  'renderer.scheduler',
-                 'toplevel',
                  'v8',
                  'webkit.console']
   _RENDERER_MAIN_THREAD = 'CrRendererMain'
