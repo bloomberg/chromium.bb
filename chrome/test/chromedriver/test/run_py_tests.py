@@ -486,6 +486,14 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     # Test clicking element in the sub frame.
     self.testClickElement()
 
+  def testClickElementAfterNavigation(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
+    link = self._driver.FindElement('id', 'l1')
+    link.Click()
+    alert_button = self._driver.FindElement('id', 'aa1')
+    alert_button.Click()
+    self.assertTrue(self._driver.IsAlertOpen())
+
   def testClearElement(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
     text = self._driver.ExecuteScript(
@@ -533,6 +541,15 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     self.assertEquals('about:blank', self._driver.GetCurrentUrl())
     self._driver.GoForward()
     self.assertEquals('about:blank', self._driver.GetCurrentUrl())
+
+  def testBackNavigationAfterClickElement(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/link_nav.html'))
+    link = self._driver.FindElement('id', 'l1')
+    link.Click()
+    self._driver.GoBack()
+    self.assertNotEqual('data:,', self._driver.GetCurrentUrl())
+    self.assertEquals(self.GetHttpUrlForFile('/chromedriver/link_nav.html'),
+                      self._driver.GetCurrentUrl())
 
   def testRefresh(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
