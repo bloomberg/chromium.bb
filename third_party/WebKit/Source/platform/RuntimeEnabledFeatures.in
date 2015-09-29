@@ -158,6 +158,7 @@ SlimmingPaintV2
 SlimmingPaintOffsetCaching implied_by=SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 SlimmingPaintSubsequenceCaching implied_by=SlimmingPaintV2
+SlimmingPaintSynchronizedPainting implied_by=SlimmingPaintV2
 SlimmingPaintUnderInvalidationChecking
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable

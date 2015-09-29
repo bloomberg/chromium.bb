@@ -195,14 +195,24 @@ bool DocumentLifecycle::canAdvanceTo(State nextState) const
             return true;
         if (nextState == InCompositingUpdate)
             return true;
-        if (nextState == InPaintForSlimmingPaintV2 && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        if (nextState == InPaint && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
             return true;
         break;
-    case InPaintForSlimmingPaintV2:
-        if (nextState == PaintForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    case InPaint:
+        if (nextState == PaintClean && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
             return true;
         break;
-    case PaintForSlimmingPaintV2Clean:
+    case PaintClean:
+        if (!RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
+            break;
+        if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+            if (nextState == InStyleRecalc)
+                return true;
+            if (nextState == InPreLayout)
+                return true;
+            if (nextState == InCompositingUpdate)
+                return true;
+        }
         if (nextState == InCompositingForSlimmingPaintV2 && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             return true;
         break;
@@ -245,7 +255,7 @@ bool DocumentLifecycle::canRewindTo(State nextState) const
         || m_state == LayoutClean
         || m_state == CompositingClean
         || m_state == PaintInvalidationClean
-        || (m_state == PaintForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        || (m_state == PaintClean && RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled())
         || (m_state == CompositingForSlimmingPaintV2Clean && RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 }
 

@@ -2437,9 +2437,10 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
 
             updateCompositedSelectionIfNeeded();
 
-            if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-                paintForSlimmingPaintV2(interestRect);
-                compositeForSlimmingPaintV2();
+            if (RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled()) {
+                synchronizedPaint(interestRect);
+                if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+                    compositeForSlimmingPaintV2();
             }
 
             if (RuntimeEnabledFeatures::frameTimingSupportEnabled())
@@ -2452,9 +2453,9 @@ void FrameView::updateLifecyclePhasesInternal(LifeCycleUpdateOption phases, cons
     }
 }
 
-void FrameView::paintForSlimmingPaintV2(const LayoutRect& interestRect)
+void FrameView::synchronizedPaint(const LayoutRect& interestRect)
 {
-    ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintSynchronizedPaintingEnabled());
     ASSERT(frame() == page()->mainFrame() || (!frame().tree().parent()->isLocalFrame()));
 
     LayoutView* view = layoutView();
@@ -2465,12 +2466,16 @@ void FrameView::paintForSlimmingPaintV2(const LayoutRect& interestRect)
     if (!rootGraphicsLayer)
         return;
 
-    lifecycle().advanceTo(DocumentLifecycle::InPaintForSlimmingPaintV2);
+    lifecycle().advanceTo(DocumentLifecycle::InPaint);
 
-    GraphicsContext context(rootGraphicsLayer->displayItemList());
-    rootGraphicsLayer->paint(context, roundedIntRect(interestRect));
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        GraphicsContext context(rootGraphicsLayer->displayItemList());
+        rootGraphicsLayer->paint(context, roundedIntRect(interestRect));
+    } else {
+        // TODO(chrishtr): Implement for V1.
+    }
 
-    lifecycle().advanceTo(DocumentLifecycle::PaintForSlimmingPaintV2Clean);
+    lifecycle().advanceTo(DocumentLifecycle::PaintClean);
 }
 
 void FrameView::compositeForSlimmingPaintV2()

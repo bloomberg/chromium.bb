@@ -228,7 +228,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
     toHTMLElement(content1.node())->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 100px; background-color: green");
-    updateLifecyclePhasesToPaintForSlimmingPaintV2Clean(LayoutRect::infiniteRect());
+    updateLifecyclePhasesToPaintClean(LayoutRect::infiniteRect());
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 10,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),
@@ -260,7 +260,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequence)
         TestDisplayItem(rootLayer, DisplayItem::EndSubsequence));
 
     // Repeated painting should just generate the root cached subsequence.
-    updateLifecyclePhasesToPaintForSlimmingPaintV2Clean();
+    updateLifecyclePhasesToPaintClean();
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 1,
         TestDisplayItem(rootLayer, DisplayItem::CachedSubsequence));
 
@@ -328,7 +328,7 @@ TEST_F(DeprecatedPaintLayerPainterTestForSlimmingPaintV2, CachedSubsequenceOnInt
     // Container2's intersection with the interest rect changes;
     // Content2 is out of the interest rect and outputs nothing;
     // Container3 becomes out of the interest rect and outputs nothing.
-    updateLifecyclePhasesToPaintForSlimmingPaintV2Clean(LayoutRect(0, 100, 300, 300));
+    updateLifecyclePhasesToPaintClean(LayoutRect(0, 100, 300, 300));
 
     EXPECT_DISPLAY_LIST(rootDisplayItemList().newDisplayItems(), 9,
         TestDisplayItem(rootLayer, DisplayItem::BeginSubsequence),

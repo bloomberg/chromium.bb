@@ -615,7 +615,7 @@ private:
     void invalidateTreeIfNeededRecursive();
     void scrollContentsIfNeededRecursive();
     void updateStyleAndLayoutIfNeededRecursive();
-    void paintForSlimmingPaintV2(const LayoutRect& interestRect);
+    void synchronizedPaint(const LayoutRect& interestRect);
     void compositeForSlimmingPaintV2();
 
     void reset();
