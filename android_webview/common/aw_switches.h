@@ -7,7 +7,7 @@
 
 namespace switches {
 
-extern const char kEnablePageVisibility[];
+extern const char kDisablePageVisibility[];
 extern const char kUseIpcCommandBuffer[];
 extern const char kWebViewSandboxedRenderer[];
 

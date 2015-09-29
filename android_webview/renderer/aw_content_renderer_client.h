@@ -44,7 +44,7 @@ class AwContentRendererClient : public content::ContentRendererClient {
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;
   scoped_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
-  const bool enable_page_visibility_;
+  const bool disable_page_visibility_;
 };
 
 }  // namespace android_webview

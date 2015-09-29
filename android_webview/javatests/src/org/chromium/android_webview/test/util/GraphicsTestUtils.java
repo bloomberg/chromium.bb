@@ -29,6 +29,16 @@ public class GraphicsTestUtils {
         return doDrawAwContents(awContents, width, height, null, null);
     }
 
+    public static Bitmap drawAwContentsOnUiThread(
+            final AwContents awContents, final int width, final int height) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
+            @Override
+            public Bitmap call() {
+                return drawAwContents(awContents, width, height);
+            }
+        });
+    }
+
     /**
      * Draws the supplied {@link AwContents} after applying a translate into the returned
      * {@link Bitmap}.

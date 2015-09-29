@@ -189,8 +189,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
       browser_view_renderer_(
           this,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnablePageVisibility)),
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisablePageVisibility)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));

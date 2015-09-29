@@ -50,8 +50,9 @@ using content::RenderThread;
 namespace android_webview {
 
 AwContentRendererClient::AwContentRendererClient()
-    : enable_page_visibility_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePageVisibility)) {}
+    : disable_page_visibility_(
+          base::CommandLine::ForCurrentProcess()
+              ->HasSwitch(switches::kDisablePageVisibility)) {}
 
 AwContentRendererClient::~AwContentRendererClient() {
 }
@@ -174,12 +175,12 @@ void AwContentRendererClient::AddKeySystems(
 bool AwContentRendererClient::ShouldOverridePageVisibilityState(
     const content::RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {
-  if (enable_page_visibility_)
-    return false;
+  if (disable_page_visibility_) {
+    *override_state = blink::WebPageVisibilityStateVisible;
+    return true;
+  }
 
-  // webview is always visible due to rendering requirements.
-  *override_state = blink::WebPageVisibilityStateVisible;
-  return true;
+  return false;
 }
 
 }  // namespace android_webview

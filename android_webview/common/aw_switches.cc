@@ -6,7 +6,7 @@
 
 namespace switches {
 
-const char kEnablePageVisibility[] = "enable-page-visibility";
+const char kDisablePageVisibility[] = "disable-page-visibility";
 const char kUseIpcCommandBuffer[] = "use-ipc-command-buffer";
 const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 
