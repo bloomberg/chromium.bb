@@ -332,6 +332,10 @@ def AddInstrumentationTestOptions(parser):
                      help=('The name of the apk containing the tests '
                            '(without the .apk extension; '
                            'e.g. "ContentShellTest").'))
+  group.add_argument('--additional-apk', action='append',
+                     dest='additional_apks',
+                     help='Additional apk that must be installed on '
+                          'the device when the tests are run')
   group.add_argument('--coverage-dir',
                      help=('Directory in which to place all generated '
                            'EMMA coverage files.'))

@@ -68,6 +68,8 @@ class LocalDeviceInstrumentationTestRun(
                   permissions=self._test_instance.apk_under_test_permissions)
       dev.Install(self._test_instance.test_apk,
                   permissions=self._test_instance.test_permissions)
+      for apk in self._test_instance.additional_apks:
+        dev.Install(apk)
 
       external_storage = dev.GetExternalStoragePath()
       host_device_tuples = [

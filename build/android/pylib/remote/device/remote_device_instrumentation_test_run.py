@@ -51,7 +51,8 @@ class RemoteDeviceInstrumentationTestRun(
           self._test_instance.driver_apk,
           self._test_instance.driver_name,
           environment_variables=env_vars,
-          extra_apks=[self._test_instance.test_apk])
+          extra_apks=([self._test_instance.test_apk] +
+                      self._test_instance.additional_apks))
 
   #override
   def _ParseTestResults(self):
