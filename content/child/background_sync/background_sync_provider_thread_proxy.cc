@@ -137,9 +137,7 @@ void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
 }
 
 void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
-    blink::WebSyncRegistration::Periodicity periodicity,
     int64_t handle_id,
-    const blink::WebString& tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncUnregistrationCallbacks* callbacks) {
   DCHECK(service_worker_registration);
@@ -148,10 +146,8 @@ void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
       FROM_HERE,
       base::Bind(
           &BackgroundSyncProvider::unregisterBackgroundSync,
-          base::Unretained(sync_provider_), periodicity, handle_id,
-          // We cast WebString to string16 before crossing threads
-          // for thread-safety.
-          static_cast<base::string16>(tag), service_worker_registration,
+          base::Unretained(sync_provider_), handle_id,
+          service_worker_registration,
           new CallbackThreadAdapter<blink::WebSyncUnregistrationCallbacks>(
               make_scoped_ptr(callbacks), WorkerThread::GetCurrentId())));
 }

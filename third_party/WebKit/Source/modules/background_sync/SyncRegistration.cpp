@@ -77,7 +77,7 @@ ScriptPromise SyncRegistration::unregister(ScriptState* scriptState)
     WebSyncProvider* webSyncProvider = Platform::current()->backgroundSyncProvider();
     ASSERT(webSyncProvider);
 
-    webSyncProvider->unregisterBackgroundSync(WebSyncRegistration::PeriodicityOneShot, m_id, m_tag, m_serviceWorkerRegistration->webRegistration(), new SyncUnregistrationCallbacks(resolver, m_serviceWorkerRegistration));
+    webSyncProvider->unregisterBackgroundSync(m_id, m_serviceWorkerRegistration->webRegistration(), new SyncUnregistrationCallbacks(resolver, m_serviceWorkerRegistration));
 
     return promise;
 }

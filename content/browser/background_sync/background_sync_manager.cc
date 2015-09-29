@@ -709,27 +709,27 @@ void BackgroundSyncManager::ReleaseRegistrationHandle(
 
 void BackgroundSyncManager::Unregister(
     int64 sw_registration_id,
-    SyncPeriodicity periodicity,
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (disabled_) {
-    BackgroundSyncMetrics::CountUnregister(
-        periodicity, BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
-    return;
-  }
 
   BackgroundSyncRegistration* registration =
       GetRegistrationForHandle(handle_id);
   DCHECK(registration);
 
+  if (disabled_) {
+    BackgroundSyncMetrics::CountUnregister(
+        registration->options()->periodicity,
+        BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR));
+    return;
+  }
+
   op_scheduler_.ScheduleOperation(base::Bind(
       &BackgroundSyncManager::UnregisterImpl, weak_ptr_factory_.GetWeakPtr(),
       sw_registration_id, RegistrationKey(*registration), registration->id(),
-      periodicity, MakeStatusCompletion(callback)));
+      registration->options()->periodicity, MakeStatusCompletion(callback)));
 }
 
 void BackgroundSyncManager::UnregisterImpl(

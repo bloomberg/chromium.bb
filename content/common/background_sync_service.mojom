@@ -36,8 +36,8 @@ interface BackgroundSyncService {
   GetRegistrations(BackgroundSyncPeriodicity periodicity,
                    int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
-  Unregister(BackgroundSyncPeriodicity periodicity, int64 handle_id,
-             int64 service_worker_registration_id) => (BackgroundSyncError err);
+  Unregister(int64 handle_id, int64 service_worker_registration_id) 
+      => (BackgroundSyncError err);
   GetPermissionStatus(BackgroundSyncPeriodicity periodicity,
                       int64 service_worker_registration_id)
       => (BackgroundSyncError err, PermissionStatus status);

@@ -33,7 +33,7 @@ public:
 
     // Takes ownership of the WebSyncUnregistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregisterBackgroundSync(blink::WebSyncRegistration::Periodicity, int64_t handleId, const WebString&, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
+    virtual void unregisterBackgroundSync(int64_t handleId, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.

@@ -33,11 +33,8 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       blink::WebServiceWorkerRegistration* service_worker_registration,
       bool requested_from_service_worker,
       blink::WebSyncRegistrationCallbacks* callbacks) override;
-  // TODO(jkarlin) remove |tag| parameter.
   void unregisterBackgroundSync(
-      blink::WebSyncRegistration::Periodicity periodicity,
       int64_t handle_id,
-      const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncUnregistrationCallbacks* callbacks) override;
   void getRegistration(

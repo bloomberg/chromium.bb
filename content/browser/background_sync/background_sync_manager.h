@@ -238,7 +238,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   // BACKGROUND_SYNC_STATUS_NOT_FOUND if no match is found. Calls |callback|
   // with BACKGROUND_SYNC_STATUS_OK on success.
   void Unregister(int64 sw_registration_id,
-                  SyncPeriodicity periodicity,
                   BackgroundSyncRegistrationHandle::HandleId handle_id,
                   const StatusCallback& callback);
   void UnregisterImpl(

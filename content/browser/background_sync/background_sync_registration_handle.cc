@@ -22,8 +22,8 @@ void BackgroundSyncRegistrationHandle::Unregister(
   DCHECK(IsValid());
   DCHECK(background_sync_manager_);
 
-  background_sync_manager_->Unregister(
-      sw_registration_id, options()->periodicity, handle_id_, callback);
+  background_sync_manager_->Unregister(sw_registration_id, handle_id_,
+                                       callback);
 }
 
 void BackgroundSyncRegistrationHandle::NotifyWhenDone(

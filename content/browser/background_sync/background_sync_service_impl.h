@@ -33,8 +33,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
                 int64_t sw_registration_id,
                 bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
-  void Unregister(BackgroundSyncPeriodicity periodicity,
-                  BackgroundSyncRegistrationHandle::HandleId handle_id,
+  void Unregister(BackgroundSyncRegistrationHandle::HandleId handle_id,
                   int64_t sw_registration_id,
                   const UnregisterCallback& callback) override;
   void GetRegistration(BackgroundSyncPeriodicity periodicity,

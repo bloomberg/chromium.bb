@@ -43,9 +43,7 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       bool requested_from_service_worker,
       blink::WebSyncRegistrationCallbacks* callbacks) override;
   void unregisterBackgroundSync(
-      blink::WebSyncRegistration::Periodicity periodicity,
       int64_t handle_id,
-      const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncUnregistrationCallbacks* callbacks) override;
   void getRegistration(

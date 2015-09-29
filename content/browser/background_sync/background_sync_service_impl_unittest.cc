@@ -210,7 +210,6 @@ class BackgroundSyncServiceImplTest : public testing::Test {
       int32 handle_id,
       const BackgroundSyncService::UnregisterCallback& callback) {
     service_impl_->Unregister(
-        BackgroundSyncPeriodicity::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT,
         handle_id, sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }

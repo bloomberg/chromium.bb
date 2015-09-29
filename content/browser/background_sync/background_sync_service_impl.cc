@@ -131,7 +131,6 @@ void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
 }
 
 void BackgroundSyncServiceImpl::Unregister(
-    BackgroundSyncPeriodicity periodicity,
     BackgroundSyncRegistrationHandle::HandleId handle_id,
     int64_t sw_registration_id,
     const UnregisterCallback& callback) {
