@@ -14,7 +14,7 @@ class DisplayListRasterSource;
 
 class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
  public:
-  explicit DisplayListRecordingSource(const gfx::Size& grid_cell_size);
+  DisplayListRecordingSource();
   ~DisplayListRecordingSource() override;
 
   // RecordingSource overrides.
@@ -55,7 +55,6 @@ class CC_EXPORT DisplayListRecordingSource : public RecordingSource {
   SkColor solid_color_;
   SkColor background_color_;
   int pixel_record_distance_;
-  gfx::Size grid_cell_size_;
 
   scoped_refptr<DisplayItemList> display_list_;
   size_t painter_reported_memory_usage_;

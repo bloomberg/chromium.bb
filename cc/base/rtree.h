@@ -38,7 +38,41 @@ class CC_EXPORT RTree {
   RTree();
   ~RTree();
 
-  void Build(const std::vector<gfx::RectF>& rects);
+  template <typename Container, typename Functor>
+  void Build(const Container& items, const Functor& bounds_getter) {
+    DCHECK_EQ(0u, num_data_elements_);
+
+    std::vector<Branch> branches;
+    branches.reserve(items.size());
+
+    for (size_t i = 0; i < items.size(); i++) {
+      const gfx::RectF& bounds = bounds_getter(items[i]);
+      if (bounds.IsEmpty())
+        continue;
+
+      branches.push_back(Branch());
+      Branch& branch = branches.back();
+      branch.bounds = bounds;
+      branch.index = i;
+    }
+
+    num_data_elements_ = branches.size();
+    if (num_data_elements_ == 1u) {
+      Node* node = AllocateNodeAtLevel(0);
+      node->num_children = 1;
+      node->children[0] = branches[0];
+      root_.subtree = node;
+      root_.bounds = branches[0].bounds;
+    } else if (num_data_elements_ > 1u) {
+      root_ = BuildRecursive(&branches, 0);
+    }
+  }
+
+  template <typename Container>
+  void Build(const Container& items) {
+    Build(items, [](const gfx::RectF& bounds) { return bounds; });
+  }
+
   void Search(const gfx::RectF& query, std::vector<size_t>* results) const;
 
  private:

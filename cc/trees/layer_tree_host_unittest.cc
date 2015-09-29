@@ -1213,14 +1213,12 @@ class LayerTreeHostTestDamageWithScale : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     root_layer_ = FakePictureLayer::CreateWithRecordingSource(
         layer_settings(), &client_, recording.Pass());
     root_layer_->SetBounds(gfx::Size(50, 50));
 
-    recording.reset(new FakeDisplayListRecordingSource(
-        LayerTreeSettings().default_tile_grid_size));
+    recording.reset(new FakeDisplayListRecordingSource);
     child_layer_ = FakePictureLayer::CreateWithRecordingSource(
         layer_settings(), &client_, recording.Pass());
     child_layer_->SetBounds(gfx::Size(25, 25));
@@ -4435,7 +4433,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(gfx::Size(10, 10)));
+        new FakeDisplayListRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4490,7 +4488,7 @@ class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(gfx::Size()));
+        new FakeDisplayListRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4547,7 +4545,7 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(gfx::Size(10, 10)));
+        new FakeDisplayListRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -4616,7 +4614,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     LayerTreeHostTest::SetupTree();
 
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(gfx::Size(100, 100)));
+        new FakeDisplayListRecordingSource);
     recording_source_ = recording_source.get();
 
     scoped_refptr<FakePictureLayer> layer =
@@ -5059,8 +5057,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
     root->AddChild(pinch);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
@@ -5263,8 +5260,7 @@ class RasterizeWithGpuRasterizationCreatesResources : public LayerTreeHostTest {
     root->SetBounds(gfx::Size(500, 500));
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
                                                     recording.Pass());
@@ -5305,8 +5301,7 @@ class GpuRasterizationRasterizesBorderTiles : public LayerTreeHostTest {
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     scoped_refptr<FakePictureLayer> root =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,
                                                     recording.Pass());
@@ -5358,8 +5353,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     root->AddChild(pinch);
 
     scoped_ptr<FakeDisplayListRecordingSource> recording(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     recording->SetPlaybackAllowedEvent(&playback_allowed_event_);
     scoped_refptr<FakePictureLayer> layer =
         FakePictureLayer::CreateWithRecordingSource(layer_settings(), &client_,

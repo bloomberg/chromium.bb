@@ -15,14 +15,11 @@ namespace cc {
 namespace {
 
 scoped_ptr<FakeDisplayListRecordingSource> CreateRecordingSource(
-    const gfx::Rect& viewport,
-    const gfx::Size& grid_cell_size) {
+    const gfx::Rect& viewport) {
   gfx::Rect layer_rect(viewport.right(), viewport.bottom());
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
       FakeDisplayListRecordingSource::CreateRecordingSource(viewport,
                                                             layer_rect.size());
-  recording_source->SetGridCellSize(grid_cell_size);
-
   return recording_source.Pass();
 }
 
@@ -34,13 +31,11 @@ scoped_refptr<RasterSource> CreateRasterSource(
 }
 
 TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
-  gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
       FakeDisplayListRecordingSource::CreateFilledRecordingSource(
           recorded_viewport.size());
-  recording_source->SetGridCellSize(grid_cell_size);
   skia::RefPtr<SkImage> discardable_image[2][2];
   gfx::Transform identity_transform;
   discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
@@ -92,7 +87,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   // Shifted tile sized iterators. These should find only one pixel ref.
   {
     std::vector<PositionImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
@@ -103,7 +98,7 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
   // The rotated bitmap would still be in the top right tile.
   {
     std::vector<PositionImage> images;
-    raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 0, 128, 128),
+    raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
     EXPECT_TRUE(images[0].image == discardable_image[1][1].get());
@@ -111,36 +106,22 @@ TEST(DisplayListRecordingSourceTest, DiscardableImagesWithTransform) {
               gfx::SkRectToRectF(images[0].image_rect).ToString());
   }
 
-  // Layer sized iterators. These should find all 6 pixel refs, including 1
-  // pixel ref bitmap[0][0], 1 pixel ref for bitmap[1][0], and 4 pixel refs for
-  // bitmap[1][1].
+  // Layer sized iterators. These should find all pixel refs.
   {
     std::vector<PositionImage> images;
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
-    EXPECT_EQ(6u, images.size());
+    EXPECT_EQ(3u, images.size());
     // Top left tile with bitmap[0][0] and bitmap[1][1].
     EXPECT_TRUE(images[0].image == discardable_image[0][0].get());
-    EXPECT_TRUE(images[1].image == discardable_image[1][1].get());
-    // Top right tile with bitmap[1][1].
+    EXPECT_TRUE(images[1].image == discardable_image[1][0].get());
     EXPECT_TRUE(images[2].image == discardable_image[1][1].get());
-    // Bottom left tile with bitmap[1][0] and bitmap[1][1].
-    EXPECT_TRUE(images[3].image == discardable_image[1][0].get());
-    EXPECT_TRUE(images[4].image == discardable_image[1][1].get());
-    // Bottom right tile with bitmap[1][1].
-    EXPECT_TRUE(images[5].image == discardable_image[1][1].get());
     EXPECT_EQ(rect.ToString(),
               gfx::SkRectToRectF(images[0].image_rect).ToString());
-    EXPECT_EQ(rotate_rect.ToString(),
+    EXPECT_EQ(translate_rect.ToString(),
               gfx::SkRectToRectF(images[1].image_rect).ToString());
     EXPECT_EQ(rotate_rect.ToString(),
               gfx::SkRectToRectF(images[2].image_rect).ToString());
-    EXPECT_EQ(translate_rect.ToString(),
-              gfx::SkRectToRectF(images[3].image_rect).ToString());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[4].image_rect).ToString());
-    EXPECT_EQ(rotate_rect.ToString(),
-              gfx::SkRectToRectF(images[5].image_rect).ToString());
   }
 }
 
@@ -242,8 +223,7 @@ TEST(DisplayListRecordingSourceTest, ExposesEnoughNewAreaScrollScenarios) {
 // right arguments.
 TEST(DisplayListRecordingSourceTest,
      ExposesEnoughNewAreaCalledWithCorrectArguments) {
-  gfx::Size grid_cell_size(128, 128);
-  DisplayListRecordingSource recording_source(grid_cell_size);
+  DisplayListRecordingSource recording_source;
   FakeContentLayerClient client;
   Region invalidation;
   gfx::Size layer_size(9000, 9000);
@@ -277,11 +257,10 @@ TEST(DisplayListRecordingSourceTest,
 }
 
 TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
-  gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport, grid_cell_size);
+      CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(false);
   recording_source->Rerecord();
 
@@ -298,11 +277,10 @@ TEST(DisplayListRecordingSourceTest, NoGatherImageEmptyImages) {
 }
 
 TEST(DisplayListRecordingSourceTest, EmptyImages) {
-  gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport, grid_cell_size);
+      CreateRecordingSource(recorded_viewport);
   recording_source->SetGenerateDiscardableImagesMetadata(true);
   recording_source->Rerecord();
 
@@ -333,11 +311,10 @@ TEST(DisplayListRecordingSourceTest, EmptyImages) {
 }
 
 TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
-  gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport, grid_cell_size);
+      CreateRecordingSource(recorded_viewport);
 
   SkPaint simple_paint;
   simple_paint.setColor(SkColorSetARGB(255, 12, 23, 34));
@@ -392,11 +369,10 @@ TEST(DisplayListRecordingSourceTest, NoDiscardableImages) {
 }
 
 TEST(DisplayListRecordingSourceTest, DiscardableImages) {
-  gfx::Size grid_cell_size(128, 128);
   gfx::Rect recorded_viewport(0, 0, 256, 256);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport, grid_cell_size);
+      CreateRecordingSource(recorded_viewport);
 
   skia::RefPtr<SkImage> discardable_image[2][2];
   discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
@@ -470,11 +446,10 @@ TEST(DisplayListRecordingSourceTest, DiscardableImages) {
 }
 
 TEST(DisplayListRecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
-  gfx::Size grid_cell_size(256, 256);
   gfx::Rect recorded_viewport(0, 0, 512, 512);
 
   scoped_ptr<FakeDisplayListRecordingSource> recording_source =
-      CreateRecordingSource(recorded_viewport, grid_cell_size);
+      CreateRecordingSource(recorded_viewport);
 
   SkBitmap non_discardable_bitmap;
   non_discardable_bitmap.allocN32Pixels(512, 512);

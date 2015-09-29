@@ -14,35 +14,6 @@ RTree::RTree() : num_data_elements_(0u) {}
 
 RTree::~RTree() {}
 
-void RTree::Build(const std::vector<gfx::RectF>& rects) {
-  DCHECK_EQ(0u, num_data_elements_);
-
-  std::vector<Branch> branches;
-  branches.reserve(rects.size());
-
-  for (size_t i = 0; i < rects.size(); i++) {
-    const gfx::RectF& bounds = rects[i];
-    if (bounds.IsEmpty())
-      continue;
-
-    branches.push_back(Branch());
-    Branch& branch = branches.back();
-    branch.bounds = bounds;
-    branch.index = i;
-  }
-
-  num_data_elements_ = branches.size();
-  if (num_data_elements_ == 1) {
-    Node* node = AllocateNodeAtLevel(0);
-    node->num_children = 1;
-    node->children[0] = branches[0];
-    root_.subtree = node;
-    root_.bounds = branches[0].bounds;
-  } else if (num_data_elements_ > 1) {
-    root_ = BuildRecursive(&branches, 0);
-  }
-}
-
 RTree::Node* RTree::AllocateNodeAtLevel(int level) {
   nodes_.push_back(Node());
   Node& node = nodes_.back();

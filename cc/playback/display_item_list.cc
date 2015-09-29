@@ -269,17 +269,27 @@ void DisplayItemList::EmitTraceSnapshot() const {
           DisplayItemsTracingEnabled()));
 }
 
-void DisplayItemList::GenerateDiscardableImagesMetadata(
-    const gfx::Size& grid_cell_size) {
+void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DCHECK(ProcessAppendedItemsCalled());
   // This should be only called once, and only after CreateAndCacheSkPicture.
   DCHECK(picture_);
-  DCHECK(!images_);
-  images_ = make_scoped_ptr(new DiscardableImageMap(grid_cell_size));
+  DCHECK(image_map_.empty());
   if (!picture_->willPlayBackBitmaps())
     return;
 
-  images_->GenerateDiscardableImagesMetadata(picture_.get(), layer_rect_);
+  // The cached picture is translated by -layer_rect_.origin during record,
+  // so we need to offset that back in order to get right positioning for
+  // images.
+  DiscardableImageMap::ScopedMetadataGenerator generator(
+      &image_map_, gfx::Size(layer_rect_.right(), layer_rect_.bottom()));
+  generator.canvas()->translate(layer_rect_.x(), layer_rect_.y());
+  generator.canvas()->drawPicture(picture_.get());
+}
+
+void DisplayItemList::GetDiscardableImagesInRect(
+    const gfx::Rect& rect,
+    std::vector<PositionImage>* images) {
+  image_map_.GetDiscardableImagesInRect(rect, images);
 }
 
 }  // namespace cc

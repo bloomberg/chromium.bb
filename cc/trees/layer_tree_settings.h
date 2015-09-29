@@ -64,7 +64,6 @@ class CC_EXPORT LayerTreeSettings {
   double background_animation_rate;
   gfx::Size default_tile_size;
   gfx::Size max_untiled_layer_size;
-  gfx::Size default_tile_grid_size;
   gfx::Size minimum_occlusion_tracking_size;
   size_t tiling_interest_area_padding;
   float skewport_target_time_in_seconds;

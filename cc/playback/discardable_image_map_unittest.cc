@@ -34,11 +34,8 @@ skia::RefPtr<SkImage> CreateDiscardableImage(const gfx::Size& size) {
       SkImage::NewFromGenerator(new TestImageGenerator(info)));
 }
 
-TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
+TEST(DiscardableImageMapTest, GetDiscardableImagesInRect) {
   gfx::Rect visible_rect(2048, 2048);
-
-  gfx::Size tile_grid_size(512, 512);
-
   FakeContentLayerClient content_layer_client;
 
   // Discardable pixel refs are found in the following grids:
@@ -64,7 +61,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  FakeDisplayListRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
@@ -72,101 +69,53 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIterator) {
       1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
-  // Default iterator does not have any pixel refs.
+  DiscardableImageMap image_map;
   {
-    DiscardableImageMap::Iterator iterator;
-    EXPECT_FALSE(iterator);
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
-      DiscardableImageMap::Iterator iterator(
-          gfx::Rect(x * 512, y * 512, 500, 500), display_list);
+      std::vector<PositionImage> images;
+      image_map.GetDiscardableImagesInRect(
+          gfx::Rect(x * 512, y * 512, 500, 500), &images);
       if ((x + y) & 1) {
-        EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(iterator->image == discardable_image[y][x].get())
+        EXPECT_EQ(1u, images.size()) << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
             << x << " " << y;
         EXPECT_EQ(gfx::RectF(x * 512 + 6, y * 512 + 6, 500, 500).ToString(),
-                  gfx::SkRectToRectF(iterator->image_rect).ToString());
-        EXPECT_FALSE(++iterator) << x << " " << y;
+                  gfx::SkRectToRectF(images[0].image_rect).ToString());
       } else {
-        EXPECT_FALSE(iterator) << x << " " << y;
+        EXPECT_EQ(0u, images.size()) << x << " " << y;
       }
     }
   }
 
   // Capture 4 pixel refs.
-  {
-    DiscardableImageMap::Iterator iterator(gfx::Rect(512, 512, 2048, 2048),
-                                           display_list);
-    EXPECT_TRUE(iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
-    EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_FALSE(++iterator);
-  }
-
-  {
-    // Copy test.
-    DiscardableImageMap::Iterator iterator(gfx::Rect(512, 512, 2048, 2048),
-                                           display_list);
-    EXPECT_TRUE(iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
-    EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-
-    // copy now points to the same spot as iterator,
-    // but both can be incremented independently.
-    DiscardableImageMap::Iterator copy = iterator;
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_FALSE(++iterator);
-
-    EXPECT_TRUE(copy);
-    EXPECT_TRUE(copy->image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_TRUE(++copy);
-    EXPECT_TRUE(copy->image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_TRUE(++copy);
-    EXPECT_TRUE(copy->image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_FALSE(++copy);
-  }
+  std::vector<PositionImage> images;
+  image_map.GetDiscardableImagesInRect(gfx::Rect(512, 512, 2048, 2048),
+                                       &images);
+  EXPECT_EQ(4u, images.size());
+  EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
+  EXPECT_EQ(gfx::RectF(2 * 512 + 6, 512 + 6, 500, 500).ToString(),
+            gfx::SkRectToRectF(images[0].image_rect).ToString());
+  EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
+  EXPECT_EQ(gfx::RectF(512 + 6, 2 * 512 + 6, 500, 500).ToString(),
+            gfx::SkRectToRectF(images[1].image_rect).ToString());
+  EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
+  EXPECT_EQ(gfx::RectF(3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
+            gfx::SkRectToRectF(images[2].image_rect).ToString());
+  EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
+  EXPECT_EQ(gfx::RectF(2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
+            gfx::SkRectToRectF(images[3].image_rect).ToString());
 }
 
-TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
+TEST(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   gfx::Rect visible_rect(1024, 0, 2048, 2048);
   // Make sure visible rect fits into the layer size.
   gfx::Size layer_size(visible_rect.right(), visible_rect.bottom());
-
-  gfx::Size tile_grid_size(512, 512);
-
   FakeContentLayerClient content_layer_client;
 
   // Discardable pixel refs are found in the following grids:
@@ -192,7 +141,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  FakeDisplayListRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.set_pixel_record_distance(0);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
@@ -201,120 +150,78 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorNonZeroLayer) {
       RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
-  // Default iterator does not have any pixel refs.
+  DiscardableImageMap image_map;
   {
-    DiscardableImageMap::Iterator iterator;
-    EXPECT_FALSE(iterator);
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           layer_size);
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
-      DiscardableImageMap::Iterator iterator(
-          gfx::Rect(1024 + x * 512, y * 512, 500, 500), display_list);
+      std::vector<PositionImage> images;
+      image_map.GetDiscardableImagesInRect(
+          gfx::Rect(1024 + x * 512, y * 512, 500, 500), &images);
       if ((x + y) & 1) {
-        EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(iterator->image == discardable_image[y][x].get());
+        EXPECT_EQ(1u, images.size()) << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
+            << x << " " << y;
         EXPECT_EQ(
             gfx::RectF(1024 + x * 512 + 6, y * 512 + 6, 500, 500).ToString(),
-            gfx::SkRectToRectF(iterator->image_rect).ToString());
-        EXPECT_FALSE(++iterator) << x << " " << y;
+            gfx::SkRectToRectF(images[0].image_rect).ToString());
       } else {
-        EXPECT_FALSE(iterator) << x << " " << y;
+        EXPECT_EQ(0u, images.size()) << x << " " << y;
       }
     }
   }
   // Capture 4 pixel refs.
   {
-    DiscardableImageMap::Iterator iterator(
-        gfx::Rect(1024 + 512, 512, 2048, 2048), display_list);
-    EXPECT_TRUE(iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
+    std::vector<PositionImage> images;
+    image_map.GetDiscardableImagesInRect(gfx::Rect(1024 + 512, 512, 2048, 2048),
+                                         &images);
+    EXPECT_EQ(4u, images.size());
+    EXPECT_TRUE(images[0].image == discardable_image[1][2].get());
     EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][1].get());
+              gfx::SkRectToRectF(images[0].image_rect).ToString());
+    EXPECT_TRUE(images[1].image == discardable_image[2][1].get());
     EXPECT_EQ(gfx::RectF(1024 + 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][3].get());
+              gfx::SkRectToRectF(images[1].image_rect).ToString());
+    EXPECT_TRUE(images[2].image == discardable_image[2][3].get());
     EXPECT_EQ(gfx::RectF(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[3][2].get());
+              gfx::SkRectToRectF(images[2].image_rect).ToString());
+    EXPECT_TRUE(images[3].image == discardable_image[3][2].get());
     EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_FALSE(++iterator);
-  }
-
-  // Copy test.
-  {
-    DiscardableImageMap::Iterator iterator(
-        gfx::Rect(1024 + 512, 512, 2048, 2048), display_list);
-    EXPECT_TRUE(iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[1][2].get());
-    EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(1024 + 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-
-    // copy now points to the same spot as iterator,
-    // but both can be incremented independently.
-    DiscardableImageMap::Iterator copy = iterator;
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_TRUE(++iterator);
-    EXPECT_TRUE(iterator->image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(iterator->image_rect).ToString());
-    EXPECT_FALSE(++iterator);
-
-    EXPECT_TRUE(copy);
-    EXPECT_TRUE(copy->image == discardable_image[2][1].get());
-    EXPECT_EQ(gfx::RectF(1024 + 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_TRUE(++copy);
-    EXPECT_TRUE(copy->image == discardable_image[2][3].get());
-    EXPECT_EQ(gfx::RectF(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_TRUE(++copy);
-    EXPECT_TRUE(copy->image == discardable_image[3][2].get());
-    EXPECT_EQ(gfx::RectF(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500).ToString(),
-              gfx::SkRectToRectF(copy->image_rect).ToString());
-    EXPECT_FALSE(++copy);
+              gfx::SkRectToRectF(images[3].image_rect).ToString());
   }
 
   // Non intersecting rects
   {
-    DiscardableImageMap::Iterator iterator(gfx::Rect(0, 0, 1000, 1000),
-                                           display_list);
-    EXPECT_FALSE(iterator);
+    std::vector<PositionImage> images;
+    image_map.GetDiscardableImagesInRect(gfx::Rect(0, 0, 1000, 1000), &images);
+    EXPECT_EQ(0u, images.size());
   }
   {
-    DiscardableImageMap::Iterator iterator(gfx::Rect(3500, 0, 1000, 1000),
-                                           display_list);
-    EXPECT_FALSE(iterator);
+    std::vector<PositionImage> images;
+    image_map.GetDiscardableImagesInRect(gfx::Rect(3500, 0, 1000, 1000),
+                                         &images);
+    EXPECT_EQ(0u, images.size());
   }
   {
-    DiscardableImageMap::Iterator iterator(gfx::Rect(0, 1100, 1000, 1000),
-                                           display_list);
-    EXPECT_FALSE(iterator);
+    std::vector<PositionImage> images;
+    image_map.GetDiscardableImagesInRect(gfx::Rect(0, 1100, 1000, 1000),
+                                         &images);
+    EXPECT_EQ(0u, images.size());
   }
   {
-    DiscardableImageMap::Iterator iterator(gfx::Rect(3500, 1100, 1000, 1000),
-                                           display_list);
-    EXPECT_FALSE(iterator);
+    std::vector<PositionImage> images;
+    image_map.GetDiscardableImagesInRect(gfx::Rect(3500, 1100, 1000, 1000),
+                                         &images);
+    EXPECT_EQ(0u, images.size());
   }
 }
 
-TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
+TEST(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
   gfx::Rect visible_rect(2048, 2048);
-
-  gfx::Size tile_grid_size(512, 512);
-
   FakeContentLayerClient content_layer_client;
 
   // Discardable pixel refs are found in the following grids:
@@ -340,7 +247,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
     }
   }
 
-  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  FakeDisplayListRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
@@ -348,32 +255,33 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorOnePixelQuery) {
       1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
-  // Default iterator does not have any pixel refs.
+  DiscardableImageMap image_map;
   {
-    DiscardableImageMap::Iterator iterator;
-    EXPECT_FALSE(iterator);
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
   }
 
   for (int y = 0; y < 4; ++y) {
     for (int x = 0; x < 4; ++x) {
-      DiscardableImageMap::Iterator iterator(
-          gfx::Rect(x * 512, y * 512 + 256, 1, 1), display_list);
+      std::vector<PositionImage> images;
+      image_map.GetDiscardableImagesInRect(
+          gfx::Rect(x * 512 + 256, y * 512 + 256, 1, 1), &images);
       if ((x + y) & 1) {
-        EXPECT_TRUE(iterator) << x << " " << y;
-        EXPECT_TRUE(iterator->image == discardable_image[y][x].get());
+        EXPECT_EQ(1u, images.size()) << x << " " << y;
+        EXPECT_TRUE(images[0].image == discardable_image[y][x].get())
+            << x << " " << y;
         EXPECT_EQ(gfx::RectF(x * 512 + 6, y * 512 + 6, 500, 500).ToString(),
-                  gfx::SkRectToRectF(iterator->image_rect).ToString());
-        EXPECT_FALSE(++iterator) << x << " " << y;
+                  gfx::SkRectToRectF(images[0].image_rect).ToString());
       } else {
-        EXPECT_FALSE(iterator) << x << " " << y;
+        EXPECT_EQ(0u, images.size()) << x << " " << y;
       }
     }
   }
 }
 
-TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
+TEST(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   gfx::Rect visible_rect(2048, 2048);
-  gfx::Size tile_grid_size(512, 512);
   FakeContentLayerClient content_layer_client;
 
   skia::RefPtr<SkImage> discardable_image;
@@ -382,7 +290,7 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
   content_layer_client.add_draw_image(discardable_image.get(), gfx::Point(0, 0),
                                       paint);
 
-  FakeDisplayListRecordingSource recording_source(tile_grid_size);
+  FakeDisplayListRecordingSource recording_source;
   Region invalidation(visible_rect);
   recording_source.SetGenerateDiscardableImagesMetadata(true);
   recording_source.UpdateAndExpandInvalidation(
@@ -390,12 +298,18 @@ TEST(DiscardableImageMapTest, DiscardableImageMapIteratorMassiveImage) {
       1, RecordingSource::RECORD_NORMALLY);
   DisplayItemList* display_list = recording_source.display_list();
 
-  DiscardableImageMap::Iterator iterator(gfx::Rect(0, 0, 1, 1), display_list);
-  EXPECT_TRUE(iterator);
-  EXPECT_TRUE(iterator->image == discardable_image.get());
+  DiscardableImageMap image_map;
+  {
+    DiscardableImageMap::ScopedMetadataGenerator generator(&image_map,
+                                                           visible_rect.size());
+    display_list->Raster(generator.canvas(), nullptr, visible_rect, 1.f);
+  }
+  std::vector<PositionImage> images;
+  image_map.GetDiscardableImagesInRect(gfx::Rect(0, 0, 1, 1), &images);
+  EXPECT_EQ(1u, images.size());
+  EXPECT_TRUE(images[0].image == discardable_image.get());
   EXPECT_EQ(gfx::RectF(0, 0, 1 << 25, 1 << 25).ToString(),
-            gfx::SkRectToRectF(iterator->image_rect).ToString());
-  EXPECT_FALSE(++iterator);
+            gfx::SkRectToRectF(images[0].image_rect).ToString());
 }
 
 }  // namespace

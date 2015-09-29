@@ -41,8 +41,7 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
 
 namespace cc {
 
-DisplayListRecordingSource::DisplayListRecordingSource(
-    const gfx::Size& grid_cell_size)
+DisplayListRecordingSource::DisplayListRecordingSource()
     : slow_down_raster_scale_factor_for_debug_(0),
       generate_discardable_images_metadata_(false),
       requires_clear_(false),
@@ -51,7 +50,6 @@ DisplayListRecordingSource::DisplayListRecordingSource(
       solid_color_(SK_ColorTRANSPARENT),
       background_color_(SK_ColorTRANSPARENT),
       pixel_record_distance_(kPixelDistanceToRecord),
-      grid_cell_size_(grid_cell_size),
       painter_reported_memory_usage_(0) {}
 
 DisplayListRecordingSource::~DisplayListRecordingSource() {
@@ -185,7 +183,7 @@ bool DisplayListRecordingSource::UpdateAndExpandInvalidation(
   DetermineIfSolidColor();
   display_list_->EmitTraceSnapshot();
   if (generate_discardable_images_metadata_)
-    display_list_->GenerateDiscardableImagesMetadata(grid_cell_size_);
+    display_list_->GenerateDiscardableImagesMetadata();
 
   return true;
 }

@@ -76,7 +76,9 @@ class CC_EXPORT DisplayItemList
 
   void EmitTraceSnapshot() const;
 
-  void GenerateDiscardableImagesMetadata(const gfx::Size& grid_cell_size);
+  void GenerateDiscardableImagesMetadata();
+  void GetDiscardableImagesInRect(const gfx::Rect& rect,
+                                  std::vector<PositionImage>* images);
 
  private:
   DisplayItemList(gfx::Rect layer_rect,
@@ -113,10 +115,9 @@ class CC_EXPORT DisplayItemList
   // Memory usage due to external data held by display items.
   size_t external_memory_usage_;
 
-  scoped_ptr<DiscardableImageMap> images_;
+  DiscardableImageMap image_map_;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
-  friend class DiscardableImageMap::Iterator;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ApproximateMemoryUsage);
   DISALLOW_COPY_AND_ASSIGN(DisplayItemList);
 };

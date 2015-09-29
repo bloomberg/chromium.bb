@@ -165,12 +165,7 @@ void DisplayListRasterSource::GetDiscardableImagesInRect(
     const gfx::Rect& layer_rect,
     std::vector<PositionImage>* images) const {
   DCHECK_EQ(0u, images->size());
-
-  DiscardableImageMap::Iterator iterator(layer_rect, display_list_.get());
-  while (iterator) {
-    images->push_back(*iterator);
-    ++iterator;
-  }
+  display_list_->GetDiscardableImagesInRect(layer_rect, images);
 }
 
 bool DisplayListRasterSource::CoversRect(const gfx::Rect& layer_rect) const {

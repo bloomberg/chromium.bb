@@ -11,7 +11,9 @@
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/rtree.h"
 #include "cc/playback/position_image.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
@@ -23,69 +25,41 @@ namespace cc {
 
 class DisplayItemList;
 
-// This class is used to gather images which would happen after record. It takes
-// in |cell_size| to decide how big each grid cell should be.
+// This class is used for generating discardable images data (see PositionImage
+// for the type of data it stores). It allows the client to query a particular
+// rect and get back a list of PositionImages in that rect.
 class CC_EXPORT DiscardableImageMap {
  public:
   using Images = std::vector<PositionImage>;
 
-  explicit DiscardableImageMap(const gfx::Size& cell_size);
-  ~DiscardableImageMap();
-
-  void GenerateDiscardableImagesMetadata(SkPicture* picture,
-                                         const gfx::Rect& layer_rect);
-
-  bool empty() const { return data_map_.empty(); }
-
-  // This iterator imprecisely returns the set of images that are needed to
-  // raster this layer rect from this picture.  Internally, images are
-  // clumped into tile grid buckets, so there may be false positives.
-  class CC_EXPORT Iterator {
+  class CC_EXPORT ScopedMetadataGenerator {
    public:
-    // Default iterator constructor that is used as place holder for invalid
-    // Iterator.
-    Iterator();
-    Iterator(const gfx::Rect& layer_rect, const DisplayItemList* picture);
-    ~Iterator();
+    ScopedMetadataGenerator(DiscardableImageMap* image_map,
+                            const gfx::Size& bounds);
+    ~ScopedMetadataGenerator();
 
-    const PositionImage* operator->() const {
-      DCHECK_LT(current_index_, current_images_->size());
-      return &(*current_images_)[current_index_];
-    }
-
-    const PositionImage& operator*() const {
-      DCHECK_LT(current_index_, current_images_->size());
-      return (*current_images_)[current_index_];
-    }
-
-    Iterator& operator++();
-    operator bool() const { return current_index_ < current_images_->size(); }
+    SkCanvas* canvas() { return metadata_canvas_.get(); }
 
    private:
-    void PointToFirstImage(const gfx::Rect& query_rect);
-
-    static base::LazyInstance<Images> empty_images_;
-    const DiscardableImageMap* target_image_map_;
-    const Images* current_images_;
-    unsigned current_index_;
-
-    gfx::Rect map_layer_rect_;
-
-    gfx::Point min_point_;
-    gfx::Point max_point_;
-    int current_x_;
-    int current_y_;
+    DiscardableImageMap* image_map_;
+    scoped_ptr<SkCanvas> metadata_canvas_;
   };
 
+  DiscardableImageMap();
+  ~DiscardableImageMap();
+
+  bool empty() const { return all_images_.empty(); }
+  void GetDiscardableImagesInRect(const gfx::Rect& rect,
+                                  std::vector<PositionImage>* images);
+
  private:
-  gfx::Point min_pixel_cell_;
-  gfx::Point max_pixel_cell_;
-  gfx::Size cell_size_;
+  friend class ScopedMetadataGenerator;
 
-  using ImageMapKey = std::pair<int, int>;
-  using ImageMap = base::hash_map<ImageMapKey, Images>;
+  scoped_ptr<SkCanvas> BeginGeneratingMetadata(const gfx::Size& bounds);
+  void EndGeneratingMetadata();
 
-  ImageMap data_map_;
+  Images all_images_;
+  RTree images_rtree_;
 };
 
 }  // namespace cc

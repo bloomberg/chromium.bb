@@ -88,15 +88,13 @@ void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   if (!host)
     return;
 
-  const LayerTreeSettings& settings = layer_tree_host()->settings();
-  if (!recording_source_) {
-    recording_source_.reset(
-        new DisplayListRecordingSource(settings.default_tile_grid_size));
-  }
+  if (!recording_source_)
+    recording_source_.reset(new DisplayListRecordingSource);
   recording_source_->SetSlowdownRasterScaleFactor(
       host->debug_state().slow_down_raster_scale_factor);
   // If we need to enable image decode tasks, then we have to generate the
   // discardable images metadata.
+  const LayerTreeSettings& settings = layer_tree_host()->settings();
   recording_source_->SetGenerateDiscardableImagesMetadata(
       settings.image_decode_tasks_enabled);
 }
@@ -178,10 +176,7 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
     return skia::RefPtr<SkPicture>();
 
   gfx::Size layer_size = bounds();
-  const LayerTreeSettings& settings = layer_tree_host()->settings();
-
-  scoped_ptr<RecordingSource> recording_source(
-      new DisplayListRecordingSource(settings.default_tile_grid_size));
+  scoped_ptr<RecordingSource> recording_source(new DisplayListRecordingSource);
   Region recording_invalidation;
   recording_source->UpdateAndExpandInvalidation(
       client_, &recording_invalidation, layer_size, gfx::Rect(layer_size),

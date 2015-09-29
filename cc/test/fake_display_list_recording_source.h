@@ -21,9 +21,8 @@ namespace cc {
 // display list.
 class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
  public:
-  explicit FakeDisplayListRecordingSource(const gfx::Size& grid_cell_size)
-      : DisplayListRecordingSource(grid_cell_size),
-        force_unsuitable_for_gpu_rasterization_(false),
+  FakeDisplayListRecordingSource()
+      : force_unsuitable_for_gpu_rasterization_(false),
         playback_allowed_event_(nullptr) {}
   ~FakeDisplayListRecordingSource() override {}
 
@@ -31,8 +30,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
       const gfx::Rect& recorded_viewport,
       const gfx::Size& layer_bounds) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     recording_source->SetRecordedViewport(recorded_viewport);
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
@@ -41,8 +39,7 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   static scoped_ptr<FakeDisplayListRecordingSource> CreateFilledRecordingSource(
       const gfx::Size& layer_bounds) {
     scoped_ptr<FakeDisplayListRecordingSource> recording_source(
-        new FakeDisplayListRecordingSource(
-            LayerTreeSettings().default_tile_grid_size));
+        new FakeDisplayListRecordingSource);
     recording_source->SetRecordedViewport(gfx::Rect(layer_bounds));
     recording_source->SetLayerBounds(layer_bounds);
     return recording_source;
@@ -58,10 +55,6 @@ class FakeDisplayListRecordingSource : public DisplayListRecordingSource {
   }
 
   void SetLayerBounds(const gfx::Size& layer_bounds) { size_ = layer_bounds; }
-
-  void SetGridCellSize(const gfx::Size& grid_cell_size) {
-    grid_cell_size_ = grid_cell_size;
-  }
 
   void SetClearCanvasWithDebugColor(bool clear) {
     clear_canvas_with_debug_color_ = clear;

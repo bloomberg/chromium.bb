@@ -48,7 +48,6 @@ LayerTreeSettings::LayerTreeSettings()
       background_animation_rate(1.0),
       default_tile_size(gfx::Size(256, 256)),
       max_untiled_layer_size(gfx::Size(512, 512)),
-      default_tile_grid_size(gfx::Size(256, 256)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
       // 3000 pixels should give sufficient area for prepainting.
       tiling_interest_area_padding(3000),

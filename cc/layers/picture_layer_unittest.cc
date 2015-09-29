@@ -80,7 +80,7 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
   scoped_ptr<FakeDisplayListRecordingSource> recording_source_owned(
-      new FakeDisplayListRecordingSource(gfx::Size(100, 100)));
+      new FakeDisplayListRecordingSource);
   FakeDisplayListRecordingSource* recording_source =
       recording_source_owned.get();
 
