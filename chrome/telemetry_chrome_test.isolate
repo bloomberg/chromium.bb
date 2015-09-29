@@ -7,6 +7,6 @@
   'includes': [
     'breakpad.isolate',
     'chrome.isolate',
-    'telemetry.isolate',
+    '../content/telemetry.isolate',
   ],
 }
