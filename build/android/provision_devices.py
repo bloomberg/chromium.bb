@@ -100,7 +100,6 @@ def ProvisionDevice(device, blacklist, options):
       device.adb.WaitForDevice()
 
   try:
-    CheckExternalStorage(device)
     if should_run_phase(_PHASES.WIPE):
       if options.chrome_specific_wipe:
         run_phase(WipeChromeData)
@@ -117,6 +116,8 @@ def ProvisionDevice(device, blacklist, options):
       package = "com.google.android.gms"
       version_name = device.GetApplicationVersion(package)
       logging.info("Version name for %s is %s", package, version_name)
+
+    CheckExternalStorage(device)
 
   except device_errors.CommandTimeoutError:
     logging.exception('Timed out waiting for device %s. Adding to blacklist.',
