@@ -847,6 +847,38 @@
           ],
         },
       ],
-    }]
+    }],
+    ['OS == "android" and test_isolation_mode != "noop"',
+      {
+        'targets': [
+          {
+            'target_name': 'gl_tests_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'gl_tests_apk',
+            ],
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+            'sources': [
+              'gl_tests_apk.isolate',
+            ],
+          },
+          {
+            'target_name': 'gpu_unittests_apk_run',
+            'type': 'none',
+            'dependencies': [
+              'gpu_unittests_apk',
+            ],
+            'includes': [
+              '../build/isolate.gypi',
+            ],
+            'sources': [
+              'gpu_unittests_apk.isolate',
+            ],
+          },
+        ],
+      },
+    ],
   ],
 }
