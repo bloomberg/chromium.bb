@@ -4,7 +4,6 @@
 
 #include "components/mus/mus_app.h"
 
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "components/mus/client_connection.h"
 #include "components/mus/connection_manager.h"
@@ -26,6 +25,7 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#include "base/command_line.h"
 #include "ui/platform_window/x11/x11_window.h"
 #endif
 
@@ -38,7 +38,7 @@ using mojo::ViewTreeHostFactory;
 namespace mus {
 
 MandolineUIServicesApp::MandolineUIServicesApp()
-    : app_impl_(nullptr), is_headless_(false) {}
+    : app_impl_(nullptr) {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   if (gpu_state_)
@@ -52,19 +52,17 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   tracing_.Initialize(app);
   surfaces_state_ = new SurfacesState;
 
-#if !defined(OS_ANDROID)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  is_headless_ = command_line->HasSwitch(kUseHeadlessConfig);
-  if (!is_headless_) {
 #if defined(USE_X11)
-    if (command_line->HasSwitch(kUseX11TestConfig)) {
-      XInitThreads();
-      ui::test::SetUseOverrideRedirectWindowByDefault(true);
-    }
-#endif
-    gfx::GLSurface::InitializeOneOff();
-    event_source_ = ui::PlatformEventSource::CreateDefault();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kUseX11TestConfig)) {
+    XInitThreads();
+    ui::test::SetUseOverrideRedirectWindowByDefault(true);
   }
+#endif
+
+#if !defined(OS_ANDROID)
+  gfx::GLSurface::InitializeOneOff();
+  event_source_ = ui::PlatformEventSource::CreateDefault();
 #endif
 
   if (!gpu_state_.get())
@@ -136,7 +134,7 @@ void MandolineUIServicesApp::CreateViewTreeHost(
   // TODO(fsamuel): We need to make sure that only the window manager can create
   // new roots.
   ViewTreeHostImpl* host_impl = new ViewTreeHostImpl(
-      host_client.Pass(), connection_manager_.get(), is_headless_, app_impl_,
+      host_client.Pass(), connection_manager_.get(), app_impl_,
       gpu_state_, surfaces_state_);
 
   // ViewTreeHostConnection manages its own lifetime.

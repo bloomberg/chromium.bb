@@ -19,7 +19,6 @@ namespace mus {
 ViewTreeHostImpl::ViewTreeHostImpl(
     mojo::ViewTreeHostClientPtr client,
     ConnectionManager* connection_manager,
-    bool is_headless,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
@@ -27,8 +26,7 @@ ViewTreeHostImpl::ViewTreeHostImpl(
       connection_manager_(connection_manager),
       client_(client.Pass()),
       event_dispatcher_(this),
-      display_manager_(DisplayManager::Create(is_headless,
-                                              app_impl,
+      display_manager_(DisplayManager::Create(app_impl,
                                               gpu_state,
                                               surfaces_state)),
       focus_controller_(new FocusController(this)) {

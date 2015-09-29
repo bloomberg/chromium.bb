@@ -235,7 +235,6 @@ class TestDisplayManagerFactory : public DisplayManagerFactory {
   TestDisplayManagerFactory() {}
   ~TestDisplayManagerFactory() {}
   DisplayManager* CreateDisplayManager(
-      bool is_headless,
       mojo::ApplicationImpl* app_impl,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<SurfacesState>& surfaces_state) override {
@@ -308,7 +307,7 @@ class ViewTreeTest : public testing::Test {
         new ConnectionManager(&delegate_, scoped_refptr<SurfacesState>()));
     ViewTreeHostImpl* host = new ViewTreeHostImpl(
         mojo::ViewTreeHostClientPtr(), connection_manager_.get(),
-        true /* is_headless */, nullptr, scoped_refptr<GpuState>(),
+        nullptr, scoped_refptr<GpuState>(),
         scoped_refptr<SurfacesState>());
     // TODO(fsamuel): This is way too magical. We need to find a better way to
     // manage lifetime.

@@ -21,7 +21,6 @@ class DisplayManager;
 class DisplayManagerFactory {
  public:
   virtual DisplayManager* CreateDisplayManager(
-      bool is_headless,
       mojo::ApplicationImpl* app_impl,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<SurfacesState>& surfaces_state) = 0;

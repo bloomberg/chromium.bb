@@ -31,7 +31,6 @@
 #include "ui/gfx/display.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
-#include "ui/platform_window/stub/stub_window.h"
 
 #if defined(OS_WIN)
 #include "ui/platform_window/win/win_window.h"
@@ -101,25 +100,22 @@ DisplayManagerFactory* DisplayManager::factory_ = nullptr;
 
 // static
 DisplayManager* DisplayManager::Create(
-    bool is_headless,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state) {
   if (factory_) {
-    return factory_->CreateDisplayManager(is_headless, app_impl, gpu_state,
+    return factory_->CreateDisplayManager(app_impl, gpu_state,
                                           surfaces_state);
   }
-  return new DefaultDisplayManager(is_headless, app_impl, gpu_state,
+  return new DefaultDisplayManager(app_impl, gpu_state,
                                    surfaces_state);
 }
 
 DefaultDisplayManager::DefaultDisplayManager(
-    bool is_headless,
     mojo::ApplicationImpl* app_impl,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
-    : is_headless_(is_headless),
-      app_impl_(app_impl),
+    : app_impl_(app_impl),
       gpu_state_(gpu_state),
       surfaces_state_(surfaces_state),
       delegate_(nullptr),
@@ -135,19 +131,15 @@ void DefaultDisplayManager::Init(DisplayManagerDelegate* delegate) {
   delegate_ = delegate;
 
   gfx::Rect bounds(metrics_.size_in_pixels.To<gfx::Size>());
-  if (is_headless_) {
-    platform_window_.reset(new ui::StubWindow(this));
-  } else {
 #if defined(OS_WIN)
-    platform_window_.reset(new ui::WinWindow(this, bounds));
+  platform_window_.reset(new ui::WinWindow(this, bounds));
 #elif defined(USE_X11)
-    platform_window_.reset(new ui::X11Window(this));
+  platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
-    platform_window_.reset(new ui::PlatformWindowAndroid(this));
+  platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #else
-    NOTREACHED() << "Unsupported platform";
+  NOTREACHED() << "Unsupported platform";
 #endif
-  }
   platform_window_->SetBounds(bounds);
   platform_window_->Show();
 }

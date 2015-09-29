@@ -42,7 +42,6 @@ class ViewTreeHostImpl : public DisplayManagerDelegate,
   // in the DisplayManagerFactory and pass them along on DisplayManager::Create.
   ViewTreeHostImpl(mojo::ViewTreeHostClientPtr client,
                    ConnectionManager* connection_manager,
-                   bool is_headless,
                    mojo::ApplicationImpl* app_impl,
                    const scoped_refptr<GpuState>& gpu_state,
                    const scoped_refptr<SurfacesState>& surfaces_state);

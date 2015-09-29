@@ -50,7 +50,6 @@ class DisplayManager {
   virtual ~DisplayManager() {}
 
   static DisplayManager* Create(
-      bool is_headless,
       mojo::ApplicationImpl* app_impl,
       const scoped_refptr<GpuState>& gpu_state,
       const scoped_refptr<SurfacesState>& surfaces_state);
@@ -86,8 +85,7 @@ class DisplayManager {
 class DefaultDisplayManager : public DisplayManager,
                               public ui::PlatformWindowDelegate {
  public:
-  DefaultDisplayManager(bool is_headless,
-                        mojo::ApplicationImpl* app_impl,
+  DefaultDisplayManager(mojo::ApplicationImpl* app_impl,
                         const scoped_refptr<GpuState>& gpu_state,
                         const scoped_refptr<SurfacesState>& surfaces_state);
   ~DefaultDisplayManager() override;
@@ -128,7 +126,6 @@ class DefaultDisplayManager : public DisplayManager,
                                     float device_pixel_ratio) override;
   void OnActivationChanged(bool active) override;
 
-  bool is_headless_;
   mojo::ApplicationImpl* app_impl_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_refptr<SurfacesState> surfaces_state_;

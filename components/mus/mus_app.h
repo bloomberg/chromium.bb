@@ -87,7 +87,6 @@ class MandolineUIServicesApp
   mojo::TracingImpl tracing_;
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<ui::PlatformEventSource> event_source_;
-  bool is_headless_;
 
   // Surfaces
   scoped_refptr<SurfacesState> surfaces_state_;
