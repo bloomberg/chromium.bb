@@ -397,10 +397,11 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   DVLOG(4) << "Notifying output picture id " << output_id
            << " for input "<< input_id << " is ready";
   // TODO(posciak): Use visible size from decoder here instead
-  // (crbug.com/402760).
+  // (crbug.com/402760). Passing (0, 0) results in the client using the
+  // visible size extracted from the container instead.
   if (client_)
     client_->PictureReady(media::Picture(output_id, input_id,
-                                         gfx::Rect(picture->size()),
+                                         gfx::Rect(0, 0),
                                          picture->AllowOverlay()));
 }
 
