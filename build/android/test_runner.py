@@ -333,7 +333,7 @@ def AddInstrumentationTestOptions(parser):
                            '(without the .apk extension; '
                            'e.g. "ContentShellTest").'))
   group.add_argument('--additional-apk', action='append',
-                     dest='additional_apks',
+                     dest='additional_apks', default=[],
                      help='Additional apk that must be installed on '
                           'the device when the tests are run')
   group.add_argument('--coverage-dir',
