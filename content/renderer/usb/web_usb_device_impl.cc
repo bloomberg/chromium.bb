@@ -24,7 +24,6 @@ const char kClaimInterfaceFailed[] = "Unable to claim interface.";
 const char kClearHaltFailed[] = "Unable to clear endpoint.";
 const char kDeviceNoAccess[] = "Access denied.";
 const char kDeviceNotConfigured[] = "Device not configured.";
-const char kDeviceNotOpened[] = "Device not opened.";
 const char kDeviceUnavailable[] = "Device unavailable.";
 const char kDeviceResetFailed[] = "Unable to reset the device.";
 const char kReleaseInterfaceFailed[] = "Unable to release interface.";
@@ -174,65 +173,44 @@ void WebUSBDeviceImpl::open(blink::WebUSBDeviceOpenCallbacks* callbacks) {
 
 void WebUSBDeviceImpl::close(blink::WebUSBDeviceCloseCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->Close(
-        base::Bind(&OnDeviceClosed, base::Passed(&scoped_callbacks)));
-  }
+  device_->Close(base::Bind(&OnDeviceClosed, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::getConfiguration(
     blink::WebUSBDeviceGetConfigurationCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->GetConfiguration(
-        base::Bind(&OnGetConfiguration, base::Passed(&scoped_callbacks)));
-  }
+  device_->GetConfiguration(
+      base::Bind(&OnGetConfiguration, base::Passed(&scoped_callbacks)));
 }
 
 void WebUSBDeviceImpl::setConfiguration(
     uint8_t configuration_value,
     blink::WebUSBDeviceSetConfigurationCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->SetConfiguration(
-        configuration_value,
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kSetConfigurationFailed));
-  }
+  device_->SetConfiguration(
+      configuration_value,
+      base::Bind(&HandlePassFailDeviceOperation,
+                 base::Passed(&scoped_callbacks), kSetConfigurationFailed));
 }
 
 void WebUSBDeviceImpl::claimInterface(
     uint8_t interface_number,
     blink::WebUSBDeviceClaimInterfaceCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->ClaimInterface(
-        interface_number,
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kClaimInterfaceFailed));
-  }
+  device_->ClaimInterface(
+      interface_number,
+      base::Bind(&HandlePassFailDeviceOperation,
+                 base::Passed(&scoped_callbacks), kClaimInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::releaseInterface(
     uint8_t interface_number,
     blink::WebUSBDeviceReleaseInterfaceCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->ReleaseInterface(
-        interface_number,
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kReleaseInterfaceFailed));
-  }
+  device_->ReleaseInterface(
+      interface_number,
+      base::Bind(&HandlePassFailDeviceOperation,
+                 base::Passed(&scoped_callbacks), kReleaseInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::setInterface(
@@ -240,28 +218,20 @@ void WebUSBDeviceImpl::setInterface(
     uint8_t alternate_setting,
     blink::WebUSBDeviceSetInterfaceAlternateSettingCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->SetInterfaceAlternateSetting(
-        interface_number, alternate_setting,
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kSetInterfaceFailed));
-  }
+  device_->SetInterfaceAlternateSetting(
+      interface_number, alternate_setting,
+      base::Bind(&HandlePassFailDeviceOperation,
+                 base::Passed(&scoped_callbacks), kSetInterfaceFailed));
 }
 
 void WebUSBDeviceImpl::clearHalt(
     uint8_t endpoint_number,
     blink::WebUSBDeviceClearHaltCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->ClearHalt(
-        endpoint_number,
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kClearHaltFailed));
-  }
+  device_->ClearHalt(
+      endpoint_number,
+      base::Bind(&HandlePassFailDeviceOperation,
+                 base::Passed(&scoped_callbacks), kClearHaltFailed));
 }
 
 void WebUSBDeviceImpl::controlTransfer(
@@ -271,30 +241,28 @@ void WebUSBDeviceImpl::controlTransfer(
     unsigned int timeout,
     blink::WebUSBDeviceControlTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device::usb::ControlTransferParamsPtr params =
-        device::usb::ControlTransferParams::From(parameters);
-    switch (parameters.direction) {
-      case WebUSBDevice::TransferDirection::In:
-        device_->ControlTransferIn(params.Pass(), data_size, timeout,
-            base::Bind(&OnTransferIn, base::Passed(&scoped_callbacks)));
-        break;
-      case WebUSBDevice::TransferDirection::Out: {
-        std::vector<uint8_t> bytes;
-        if (data)
-          bytes.assign(data, data + data_size);
-        mojo::Array<uint8_t> mojo_bytes;
-        mojo_bytes.Swap(&bytes);
-        device_->ControlTransferOut(params.Pass(), mojo_bytes.Pass(), timeout,
-            base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
-                       data_size));
-        break;
-      }
-      default:
-        NOTREACHED();
+  device::usb::ControlTransferParamsPtr params =
+      device::usb::ControlTransferParams::From(parameters);
+  switch (parameters.direction) {
+    case WebUSBDevice::TransferDirection::In:
+      device_->ControlTransferIn(
+          params.Pass(), data_size, timeout,
+          base::Bind(&OnTransferIn, base::Passed(&scoped_callbacks)));
+      break;
+    case WebUSBDevice::TransferDirection::Out: {
+      std::vector<uint8_t> bytes;
+      if (data)
+        bytes.assign(data, data + data_size);
+      mojo::Array<uint8_t> mojo_bytes;
+      mojo_bytes.Swap(&bytes);
+      device_->ControlTransferOut(
+          params.Pass(), mojo_bytes.Pass(), timeout,
+          base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
+                     data_size));
+      break;
     }
+    default:
+      NOTREACHED();
   }
 }
 
@@ -306,42 +274,34 @@ void WebUSBDeviceImpl::transfer(
     unsigned int timeout,
     blink::WebUSBDeviceBulkTransferCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    switch (direction) {
-      case WebUSBDevice::TransferDirection::In:
-        device_->GenericTransferIn(
-            endpoint_number, data_size, timeout,
-            base::Bind(&OnTransferIn, base::Passed(&scoped_callbacks)));
-        break;
-      case WebUSBDevice::TransferDirection::Out: {
-        std::vector<uint8_t> bytes;
-        if (data)
-          bytes.assign(data, data + data_size);
-        mojo::Array<uint8_t> mojo_bytes;
-        mojo_bytes.Swap(&bytes);
-        device_->GenericTransferOut(
-            endpoint_number, mojo_bytes.Pass(), timeout,
-            base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
-                       data_size));
-        break;
-      }
-      default:
-        NOTREACHED();
+  switch (direction) {
+    case WebUSBDevice::TransferDirection::In:
+      device_->GenericTransferIn(
+          endpoint_number, data_size, timeout,
+          base::Bind(&OnTransferIn, base::Passed(&scoped_callbacks)));
+      break;
+    case WebUSBDevice::TransferDirection::Out: {
+      std::vector<uint8_t> bytes;
+      if (data)
+        bytes.assign(data, data + data_size);
+      mojo::Array<uint8_t> mojo_bytes;
+      mojo_bytes.Swap(&bytes);
+      device_->GenericTransferOut(
+          endpoint_number, mojo_bytes.Pass(), timeout,
+          base::Bind(&OnTransferOut, base::Passed(&scoped_callbacks),
+                     data_size));
+      break;
     }
+    default:
+      NOTREACHED();
   }
 }
 
 void WebUSBDeviceImpl::reset(blink::WebUSBDeviceResetCallbacks* callbacks) {
   auto scoped_callbacks = MakeScopedUSBCallbacks(callbacks);
-  if (!device_) {
-    RejectWithDeviceError(kDeviceNotOpened, scoped_callbacks.PassCallbacks());
-  } else {
-    device_->Reset(
-        base::Bind(&HandlePassFailDeviceOperation,
-                   base::Passed(&scoped_callbacks), kDeviceResetFailed));
-  }
+  device_->Reset(base::Bind(&HandlePassFailDeviceOperation,
+                            base::Passed(&scoped_callbacks),
+                            kDeviceResetFailed));
 }
 
 }  // namespace content
