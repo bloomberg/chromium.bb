@@ -19,8 +19,6 @@ using ::testing::SaveArg;
 
 namespace content {
 
-// TODO(ajose): http://crbug.com/522145 Improve and expand these tests.
-// In particular, exercise VideoCaptureHostMsg_BufferReady.
 class MockVideoCaptureMessageFilter : public VideoCaptureMessageFilter {
  public:
   MockVideoCaptureMessageFilter() : VideoCaptureMessageFilter() {}
@@ -91,8 +89,8 @@ class VideoCaptureImplTest :
     void DeviceStartCapture(int device_id,
                             media::VideoCaptureSessionId session_id,
                             const media::VideoCaptureParams& params) {
-      // Do not call OnStateChanged(VIDEO_CAPTURE_STATE_STARTED) here, as this
-      // does not accurately reflect the behavior of the VideoCaptureHost.
+      OnStateChanged(VIDEO_CAPTURE_STATE_STARTED);
+      capture_params_ = params;
     }
 
     void DevicePauseCapture(int device_id) {}
@@ -126,8 +124,13 @@ class VideoCaptureImplTest :
 
     int received_buffer_count() const { return received_buffer_count_; }
 
+    const media::VideoCaptureParams& capture_params() const {
+      return capture_params_;
+    }
+
    private:
     int received_buffer_count_;
+    media::VideoCaptureParams capture_params_;
   };
 
   VideoCaptureImplTest() {
@@ -164,15 +167,17 @@ class VideoCaptureImplTest :
     video_capture_impl_->Init();
   }
 
-  void StartCapture(const media::VideoCaptureParams& params) {
+  void StartCapture(int client_id, const media::VideoCaptureParams& params) {
     video_capture_impl_->StartCapture(
-        params, base::Bind(&VideoCaptureImplTest::OnStateUpdate,
-                           base::Unretained(this)),
+        client_id, params, base::Bind(&VideoCaptureImplTest::OnStateUpdate,
+                                      base::Unretained(this)),
         base::Bind(&VideoCaptureImplTest::OnFrameReady,
                    base::Unretained(this)));
   }
 
-  void StopCapture() { video_capture_impl_->StopCapture(); }
+  void StopCapture(int client_id) {
+    video_capture_impl_->StopCapture(client_id);
+  }
 
   void NewBuffer(int buffer_id, const base::SharedMemory& shm) {
     video_capture_impl_->OnBufferCreated(
@@ -225,14 +230,50 @@ class VideoCaptureImplTest :
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplTest);
 };
 
-// Execute SetCapture() and StopCapture() for one client.
 TEST_F(VideoCaptureImplTest, Simple) {
+  // Execute SetCapture() and StopCapture() for one client.
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
 
   Init();
-  StartCapture(params_small_);
-  StopCapture();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  DeInit();
+}
+
+TEST_F(VideoCaptureImplTest, TwoClientsInSequence) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
+
+  Init();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  StartCapture(1, params_small_);
+  StopCapture(1);
+  DeInit();
+}
+
+TEST_F(VideoCaptureImplTest, LargeAndSmall) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
+
+  Init();
+  StartCapture(0, params_large_);
+  StopCapture(0);
+  StartCapture(1, params_small_);
+  StopCapture(1);
+  DeInit();
+}
+
+TEST_F(VideoCaptureImplTest, SmallAndLarge) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
+
+  Init();
+  StartCapture(0, params_small_);
+  StopCapture(0);
+  StartCapture(1, params_large_);
+  StopCapture(1);
   DeInit();
 }
 
@@ -267,6 +308,7 @@ TEST_F(VideoCaptureImplTest, GetDeviceFormatsInUse) {
   DeInit();
 }
 
+// NEW TEST
 TEST_P(VideoCaptureImplTest, BufferReceivedWithFormat) {
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);
@@ -286,10 +328,10 @@ TEST_P(VideoCaptureImplTest, BufferReceivedWithFormat) {
       size, 30, buffer_arg.pixel_format);
 
   Init();
-  StartCapture(params);
+  StartCapture(0, params);
   NewBuffer(0, shm);
   BufferReceived(0, size, buffer_arg.pixel_format, buffer_arg.mailbox_holders);
-  StopCapture();
+  StopCapture(0);
   BufferDestroyed(0);
   DeInit();
 }
@@ -298,6 +340,7 @@ INSTANTIATE_TEST_CASE_P(I420AndARGB,
                         VideoCaptureImplTest,
                         testing::ValuesIn(kBufferFormats));
 
+// NEW TEST
 TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(1);
   EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(1);
@@ -310,9 +353,9 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   ASSERT_TRUE(shm.CreateAndMapAnonymous(i420_frame_size));
 
   Init();
-  StartCapture(params_large_);
+  StartCapture(0, params_large_);
   NewBuffer(0, shm);
-  StopCapture();
+  StopCapture(0);
   BufferReceived(0, params_large_.requested_format.frame_size,
                  media::PIXEL_FORMAT_I420, std::vector<gpu::MailboxHolder>());
   BufferDestroyed(0);
@@ -321,17 +364,31 @@ TEST_F(VideoCaptureImplTest, BufferReceivedAfterStop) {
   EXPECT_EQ(this->video_capture_impl_->received_buffer_count(), 1);
 }
 
+TEST_F(VideoCaptureImplTest, AlreadyStarted) {
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED)).Times(2);
+  EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED)).Times(2);
+
+  Init();
+  StartCapture(0, params_small_);
+  StartCapture(1, params_large_);
+  StopCapture(0);
+  StopCapture(1);
+  DeInit();
+  DCHECK(video_capture_impl_->capture_params().requested_format.frame_size ==
+         params_small_.requested_format.frame_size);
+}
+
 TEST_F(VideoCaptureImplTest, EndedBeforeStop) {
    EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STARTED));
    EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_STOPPED));
 
    Init();
-   StartCapture(params_small_);
+   StartCapture(0, params_small_);
 
    // Receive state change message from browser.
    video_capture_impl_->ReceiveStateChangeMessage(VIDEO_CAPTURE_STATE_ENDED);
 
-   StopCapture();
+   StopCapture(0);
    DeInit();
 }
 
@@ -340,12 +397,12 @@ TEST_F(VideoCaptureImplTest, ErrorBeforeStop) {
    EXPECT_CALL(*this, OnStateUpdate(VIDEO_CAPTURE_STATE_ERROR));
 
    Init();
-   StartCapture(params_small_);
+   StartCapture(0, params_small_);
 
    // Receive state change message from browser.
    video_capture_impl_->ReceiveStateChangeMessage(VIDEO_CAPTURE_STATE_ERROR);
 
-   StopCapture();
+   StopCapture(0);
    DeInit();
 }
 

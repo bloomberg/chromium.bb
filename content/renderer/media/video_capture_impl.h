@@ -24,11 +24,15 @@ namespace gpu {
 struct MailboxHolder;
 }  // namespace gpu
 
+namespace media {
+class VideoFrame;
+}  // namespace media
+
 namespace content {
 
 // VideoCaptureImpl represents a capture device in renderer process. It provides
-// an interface for a single client to Start/Stop capture. It also communicates
-// to the client when buffer is ready, when state of capture device is changed.
+// interfaces for clients to Start/Stop capture. It also communicates to clients
+// when buffer is ready, state of capture device is changed.
 
 // VideoCaptureImpl is also a delegate of VideoCaptureMessageFilter which relays
 // operation of a capture device to the browser process and receives responses
@@ -58,14 +62,17 @@ class CONTENT_EXPORT VideoCaptureImpl
   void SuspendCapture(bool suspend);
 
   // Start capturing using the provided parameters.
+  // |client_id| must be unique to this object in the render process. It is
+  // used later to stop receiving video frames.
   // |state_update_cb| will be called when state changes.
   // |deliver_frame_cb| will be called when a frame is ready.
-  void StartCapture(const media::VideoCaptureParams& params,
+  void StartCapture(int client_id,
+                    const media::VideoCaptureParams& params,
                     const VideoCaptureStateUpdateCB& state_update_cb,
                     const VideoCaptureDeliverFrameCB& deliver_frame_cb);
 
-  // Stop capturing.
-  void StopCapture();
+  // Stop capturing. |client_id| is the identifier used to call StartCapture.
+  void StopCapture(int client_id);
 
   // Get capturing formats supported by this device.
   // |callback| will be invoked with the results.
@@ -85,6 +92,17 @@ class CONTENT_EXPORT VideoCaptureImpl
   // renderer.
   class ClientBuffer;
   class ClientBuffer2;
+
+  // Contains information for a video capture client. Including parameters
+  // for capturing and callbacks to the client.
+  struct ClientInfo {
+    ClientInfo();
+    ~ClientInfo();
+    media::VideoCaptureParams params;
+    VideoCaptureStateUpdateCB state_update_cb;
+    VideoCaptureDeliverFrameCB deliver_frame_cb;
+  };
+  typedef std::map<int, ClientInfo> ClientInfoMap;
 
   // VideoCaptureMessageFilter::Delegate interface.
   void OnBufferCreated(base::SharedMemoryHandle handle,
@@ -130,6 +148,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   virtual void Send(IPC::Message* message);
 
   // Helpers.
+  bool RemoveClient(int client_id, ClientInfoMap* clients);
+
   // Called (by an unknown thread) when all consumers are done with a VideoFrame
   // and its ref-count has gone to zero.  This helper function grabs the
   // RESOURCE_UTILIZATION value from the |metadata| and then runs the given
@@ -138,13 +158,6 @@ class CONTENT_EXPORT VideoCaptureImpl
     const media::VideoFrameMetadata* metadata,
     uint32* release_sync_point_storage,  // Takes ownership.
     const base::Callback<void(uint32, double)>& callback_to_io_thread);
-
-  // Use |state_update_cb_| and |deliver_frame_cb_| to determine whether
-  // the VideoCaptureImpl has been initialized.
-  bool IsInitialized() const;
-
-  // Reset to a "fresh" client state.
-  void ResetClient();
 
   const scoped_refptr<VideoCaptureMessageFilter> message_filter_;
   int device_id_;
@@ -163,16 +176,18 @@ class CONTENT_EXPORT VideoCaptureImpl
   typedef std::map<int32, scoped_refptr<ClientBuffer2>> ClientBuffer2Map;
   ClientBuffer2Map client_buffer2s_;
 
-  // Track information for the video capture client, consisting of parameters
-  // for capturing and callbacks to the client.
-  media::VideoCaptureParams client_params_;
-  VideoCaptureStateUpdateCB state_update_cb_;
-  VideoCaptureDeliverFrameCB deliver_frame_cb_;
+  ClientInfoMap clients_;
+  ClientInfoMap clients_pending_on_filter_;
+  ClientInfoMap clients_pending_on_restart_;
+
+  // Member params_ represents the video format requested by the
+  // client to this class via StartCapture().
+  media::VideoCaptureParams params_;
 
   // The device's first captured frame timestamp sent from browser process side.
   base::TimeTicks first_frame_timestamp_;
 
-  // State of this VideoCaptureImpl.
+  bool suspended_;
   VideoCaptureState state_;
 
   // IO message loop reference for checking correct class operation.

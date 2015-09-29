@@ -97,15 +97,20 @@ class CONTENT_EXPORT VideoCaptureImplManager {
       VideoCaptureMessageFilter* filter) const;
 
  private:
-  void StopCapture(media::VideoCaptureSessionId id);
+  void StopCapture(int client_id, media::VideoCaptureSessionId id);
   void UnrefDevice(media::VideoCaptureSessionId id);
 
+  // The int is used to count clients of the corresponding VideoCaptureImpl.
   // VideoCaptureImpl objects are owned by this object. But they are
   // destroyed on the IO thread. These are raw pointers because we destroy
   // them manually.
-  typedef std::map<media::VideoCaptureSessionId, VideoCaptureImpl*>
-      VideoCaptureDeviceMap;
+  typedef std::map<media::VideoCaptureSessionId,
+                   std::pair<int, VideoCaptureImpl*>> VideoCaptureDeviceMap;
   VideoCaptureDeviceMap devices_;
+
+  // This is an internal ID for identifying clients of VideoCaptureImpl.
+  // The ID is global for the render process.
+  int next_client_id_;
 
   const scoped_refptr<VideoCaptureMessageFilter> filter_;
 

@@ -36,7 +36,8 @@
 namespace content {
 
 VideoCaptureImplManager::VideoCaptureImplManager()
-    : filter_(new VideoCaptureMessageFilter()),
+    : next_client_id_(0),
+      filter_(new VideoCaptureMessageFilter()),
       render_main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {}
 
@@ -46,7 +47,7 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
     return;
   // Forcibly release all video capture resources.
   for (const auto& device : devices_) {
-    VideoCaptureImpl* const impl = device.second;
+    VideoCaptureImpl* const impl = device.second.second;
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureImpl::DeInit, base::Unretained(impl)));
@@ -58,19 +59,18 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 base::Closure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
-  DCHECK(it == devices_.end())
-      << "UseDevice: This VideoCaptureSessionId is already in use.";
-  if (it != devices_.end())
-    return base::Closure();
-
-  VideoCaptureImpl* impl = CreateVideoCaptureImplForTesting(id, filter_.get());
-  if (!impl)
-    impl = new VideoCaptureImpl(id, filter_.get());
-  devices_[id] = impl;
-  ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::Init, base::Unretained(impl)));
-
+  VideoCaptureImpl* impl = NULL;
+  const VideoCaptureDeviceMap::iterator it = devices_.find(id);
+  if (it == devices_.end()) {
+    impl = CreateVideoCaptureImplForTesting(id, filter_.get());
+    if (!impl)
+      impl = new VideoCaptureImpl(id, filter_.get());
+    devices_[id] = std::make_pair(1, impl);
+    ChildProcess::current()->io_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&VideoCaptureImpl::Init, base::Unretained(impl)));
+  } else {
+    ++it->second.first;
+  }
   return base::Bind(&VideoCaptureImplManager::UnrefDevice,
                     weak_factory_.GetWeakPtr(), id);
 }
@@ -83,14 +83,17 @@ base::Closure VideoCaptureImplManager::StartCapture(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second;
+  VideoCaptureImpl* const impl = it->second.second;
+
+  // This ID is used to identify a client of VideoCaptureImpl.
+  const int client_id = ++next_client_id_;
 
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&VideoCaptureImpl::StartCapture, base::Unretained(impl),
-                 params, state_update_cb, deliver_frame_cb));
+                 client_id, params, state_update_cb, deliver_frame_cb));
   return base::Bind(&VideoCaptureImplManager::StopCapture,
-                    weak_factory_.GetWeakPtr(), id);
+                    weak_factory_.GetWeakPtr(), client_id, id);
 }
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
@@ -99,7 +102,7 @@ void VideoCaptureImplManager::GetDeviceSupportedFormats(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second;
+  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceSupportedFormats,
                             base::Unretained(impl), callback));
@@ -111,7 +114,7 @@ void VideoCaptureImplManager::GetDeviceFormatsInUse(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second;
+  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceFormatsInUse,
                             base::Unretained(impl), callback));
@@ -124,14 +127,15 @@ VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
   return NULL;
 }
 
-void VideoCaptureImplManager::StopCapture(media::VideoCaptureSessionId id) {
+void VideoCaptureImplManager::StopCapture(int client_id,
+                                          media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second;
+  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&VideoCaptureImpl::StopCapture, base::Unretained(impl)));
+      FROM_HERE, base::Bind(&VideoCaptureImpl::StopCapture,
+                            base::Unretained(impl), client_id));
 }
 
 void VideoCaptureImplManager::UnrefDevice(
@@ -139,19 +143,24 @@ void VideoCaptureImplManager::UnrefDevice(
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   const VideoCaptureDeviceMap::iterator it = devices_.find(id);
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second;
+  VideoCaptureImpl* const impl = it->second.second;
 
   // Unref and destroy on the IO thread if there's no more client.
-  devices_.erase(id);
-  ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::DeInit, base::Unretained(impl)));
-  ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE, impl);
+  DCHECK(it->second.first);
+  --it->second.first;
+  if (!it->second.first) {
+    devices_.erase(id);
+    ChildProcess::current()->io_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureImpl::DeInit, base::Unretained(impl)));
+    ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE, impl);
+  }
 }
 
 void VideoCaptureImplManager::SuspendDevices(bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
   for (const auto& device : devices_) {
-    VideoCaptureImpl* const impl = device.second;
+    VideoCaptureImpl* const impl = device.second.second;
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
                               base::Unretained(impl), suspend));

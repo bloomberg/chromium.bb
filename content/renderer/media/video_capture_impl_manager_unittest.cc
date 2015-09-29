@@ -108,11 +108,10 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
     }
   }
 
-  base::Closure StartCapture(const media::VideoCaptureSessionId id,
-                             const media::VideoCaptureParams& params) {
+  base::Closure StartCapture(const media::VideoCaptureParams& params) {
     return manager_->StartCapture(
-        id, params, base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
-                               base::Unretained(this)),
+        0, params, base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
+                              base::Unretained(this)),
         base::Bind(&VideoCaptureImplManagerTest::OnFrameReady,
                    base::Unretained(this)));
   }
@@ -127,17 +126,19 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImplManagerTest);
 };
 
-TEST_F(VideoCaptureImplManagerTest, MultipleImpls) {
+// Multiple clients with the same session id. There is only one
+// media::VideoCapture object.
+TEST_F(VideoCaptureImplManagerTest, MultipleClients) {
   base::Closure release_cb1 = manager_->UseDevice(0);
-  base::Closure release_cb2 = manager_->UseDevice(1);
+  base::Closure release_cb2 = manager_->UseDevice(0);
   base::Closure stop_cb1, stop_cb2;
   {
     base::RunLoop run_loop;
     base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
     EXPECT_CALL(*this, OnStarted()).WillOnce(RunClosure(quit_closure));
     EXPECT_CALL(*this, OnStarted()).RetiresOnSaturation();
-    stop_cb1 = StartCapture(0, params_);
-    stop_cb2 = StartCapture(1, params_);
+    stop_cb1 = StartCapture(params_);
+    stop_cb2 = StartCapture(params_);
     FakeChannelSetup();
     run_loop.Run();
   }
@@ -155,17 +156,6 @@ TEST_F(VideoCaptureImplManagerTest, MultipleImpls) {
   release_cb1.Run();
   release_cb2.Run();
   cleanup_run_loop_.Run();
-}
-
-TEST_F(VideoCaptureImplManagerTest, RefusesMultipleClients) {
-  // TODO(ajose): EXPECT_DEATH is unsafe in a threaded context - what to use
-  // instead?
-  base::Closure release_cb1 = manager_->UseDevice(0);
-// Use DCHECK_IS_ON rather than EXPECT_DEBUG_DEATH or similar to avoid
-// issues on release builds that include DCHECKs.
-#if DCHECK_IS_ON()
-  EXPECT_DEATH(manager_->UseDevice(0), "");
-#endif
 }
 
 TEST_F(VideoCaptureImplManagerTest, NoLeak) {
