@@ -1,4 +1,9 @@
 {
+    "AutofillClassifier": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "group_name": "Enabled"
