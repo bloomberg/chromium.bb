@@ -91,6 +91,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           (function(e) {
             $('oauth-enroll-back-button').hidden = !e.detail;
             $('oauth-enroll-auth-view').focus();
+            $('login-header-bar').updateUI_();
           }).bind(this));
 
       this.authenticator_.insecureContentBlockedCallback =

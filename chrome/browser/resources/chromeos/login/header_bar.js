@@ -21,9 +21,6 @@ cr.define('login', function() {
     // Whether guest button should be shown when header bar is in normal mode.
     showGuest_: false,
 
-    // Whether new Gaia flow is active.
-    isNewGaiaFlow_: false,
-
     // Whether the reboot button should be shown the when header bar is in
     // normal mode.
     showReboot_: false,
@@ -238,11 +235,6 @@ cr.define('login', function() {
       this.updateUI_();
     },
 
-    set newGaiaFlow(value) {
-      this.isNewGaiaFlow_ = value;
-      this.updateUI_();
-    },
-
     set showCreateSupervisedButton(value) {
       this.showCreateSupervised_ = value;
       this.updateUI_();
@@ -313,8 +305,12 @@ cr.define('login', function() {
      */
     updateUI_: function() {
       var gaiaIsActive = (this.signinUIState_ == SIGNIN_UI_STATE.GAIA_SIGNIN);
+      var gaiaIsActiveWithBackButton =
+          gaiaIsActive && !$('back-button-item').hidden;
       var enrollmentIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ENROLLMENT);
+      var enrollmentIsActiveWithBackButton =
+          enrollmentIsActive && !$('oauth-enroll-back-button').hidden;
       var accountPickerIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ACCOUNT_PICKER);
       var supervisedUserCreationDialogIsActive =
@@ -332,45 +328,39 @@ cr.define('login', function() {
           (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
       var isLockScreen =
           (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
-      var isNewGaiaScreenWithBackButton =
-           gaiaIsActive &&
-           this.isNewGaiaFlow_ &&
-           !($('back-button-item').hidden);
-      var supervisedUserCreationDialogIsActiveAndNotIntro =
-          supervisedUserCreationDialogIsActive &&
-          $('supervised-user-creation').currentPage_ != 'intro';
       var errorScreenIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.ERROR);
 
       $('add-user-button').hidden =
-          (!this.isNewGaiaFlow_ && !accountPickerIsActive) ||
-          (this.isNewGaiaFlow_ && gaiaIsActive) ||
+          gaiaIsActive ||
           enrollmentIsActive ||
           isMultiProfilesUI ||
           isLockScreen ||
-          supervisedUserCreationDialogIsActiveAndNotIntro ||
+          supervisedUserCreationDialogIsActive ||
           errorScreenIsActive;
       $('more-settings-header-bar-item').hidden =
           !this.showCreateSupervised_ ||
-          isNewGaiaScreenWithBackButton ||
+          gaiaIsActive ||
           supervisedUserCreationDialogIsActive;
       $('cancel-add-user-button').hidden =
-          ((gaiaIsActive || isPasswordChangedUI || isSamlPasswordConfirm ||
-            errorScreenIsActive) &&
-           this.isNewGaiaFlow_) ||
-          accountPickerIsActive ||
           !this.allowCancel_ ||
+          gaiaIsActive ||
+          isPasswordChangedUI ||
+          isSamlPasswordConfirm ||
+          errorScreenIsActive ||
+          accountPickerIsActive ||
           wrongHWIDWarningIsActive ||
           isMultiProfilesUI ||
           supervisedUserCreationDialogIsActive;
       $('guest-user-header-bar-item').hidden =
-          (gaiaIsActive && !this.isNewGaiaFlow_) ||
-          supervisedUserCreationDialogIsActiveAndNotIntro ||
           !this.showGuest_ ||
+          supervisedUserCreationDialogIsActive ||
           wrongHWIDWarningIsActive ||
           isSamlPasswordConfirm ||
           isMultiProfilesUI ||
-          isNewGaiaScreenWithBackButton;
+          (this.allowCancel_ && gaiaIsActive) ||
+          enrollmentIsActiveWithBackButton ||
+          gaiaIsActiveWithBackButton;
       $('restart-header-bar-item').hidden = !this.showReboot_;
       $('shutdown-header-bar-item').hidden = !this.showShutdown_;
       $('sign-out-user-item').hidden = !isLockScreen;
