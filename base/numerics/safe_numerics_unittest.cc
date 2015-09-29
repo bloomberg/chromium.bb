@@ -740,3 +740,27 @@ TEST(SafeNumerics, IsValueInRangeForNumericType) {
   EXPECT_TRUE(IsValueInRangeForNumericType<int64_t>(
       std::numeric_limits<int64_t>::min()));
 }
+
+TEST(SafeNumerics, CompoundNumericOperations) {
+  CheckedNumeric<int> a = 1;
+  CheckedNumeric<int> b = 2;
+  CheckedNumeric<int> c = 3;
+  CheckedNumeric<int> d = 4;
+  a += b;
+  EXPECT_EQ(3, a.ValueOrDie());
+  a -= c;
+  EXPECT_EQ(0, a.ValueOrDie());
+  d /= b;
+  EXPECT_EQ(2, d.ValueOrDie());
+  d *= d;
+  EXPECT_EQ(4, d.ValueOrDie());
+
+  CheckedNumeric<int> too_large = std::numeric_limits<int>::max();
+  EXPECT_TRUE(too_large.IsValid());
+  too_large += d;
+  EXPECT_FALSE(too_large.IsValid());
+  too_large -= d;
+  EXPECT_FALSE(too_large.IsValid());
+  too_large /= d;
+  EXPECT_FALSE(too_large.IsValid());
+}
