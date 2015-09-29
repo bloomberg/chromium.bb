@@ -115,8 +115,8 @@ SecurityInterstitialPage::metrics_helper() const {
 }
 
 void SecurityInterstitialPage::set_metrics_helper(
-    security_interstitials::MetricsHelper* metrics_helper) {
-  metrics_helper_.reset(metrics_helper);
+    scoped_ptr<security_interstitials::MetricsHelper> metrics_helper) {
+  metrics_helper_ = metrics_helper.Pass();
 }
 
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {

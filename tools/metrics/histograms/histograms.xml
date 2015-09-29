@@ -71514,7 +71514,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
   <int value="10"
       label="AUTHORTIY_ERROR_CAPTIVE_PORTAL: Captive portal was detected">
-    This cause is recorded only for CERT_AUTHORITY_INVALID errors.
+    This cause is recorded only for CERT_AUTHORITY_INVALID errors. (Deprecated
+    in M47.)
   </int>
   <int value="11" label="SELF_SIGNED: The cert is self-signed">
     This cause is recorded only for CERT_AUTHORITY_INVALID errors.
