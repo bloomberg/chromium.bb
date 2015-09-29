@@ -138,12 +138,7 @@ class _SharedPywebsocketPageState(shared_page_state.SharedPageState):
   def __init__(self, test, finder_options, user_story_set):
     super(_SharedPywebsocketPageState, self).__init__(
         test, finder_options, user_story_set)
-    self._pywebsocket_server = pywebsocket_server.PywebsocketServer()
-    self.platform.StartLocalServer(self._pywebsocket_server)
-
-  def TearDownState(self):
-    super(_SharedPywebsocketPageState, self).TearDownState()
-    self._pywebsocket_server.Close()
+    self.platform.StartLocalServer(pywebsocket_server.PywebsocketServer())
 
 
 class BlinkPerfBindings(perf_benchmark.PerfBenchmark):

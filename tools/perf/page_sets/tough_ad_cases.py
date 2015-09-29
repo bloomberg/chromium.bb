@@ -53,7 +53,8 @@ class ScrollingPage(page_module.Page):
     # Rewrite file urls to point to the replay server instead.
     if self.is_file:
       url = self.file_path_url_with_scheme
-      url = action_runner.tab.browser.http_server.UrlOf(url[len('file://'):])
+      url = action_runner.tab.browser.platform.http_server.UrlOf(
+          url[len('file://'):])
     else:
       url = self._url
     action_runner.tab.Navigate(url)

@@ -77,7 +77,7 @@ class PageCycler(page_test.PageTest):
     if page.is_file:
       # For legacy page cyclers which use the filesystem, do an initial
       # navigate to avoid paying for a cross-renderer navigation.
-      initial_url = tab.browser.http_server.UrlOf('nonexistent.html')
+      initial_url = tab.browser.platform.http_server.UrlOf('nonexistent.html')
       if self._initial_renderer_url != initial_url:
         self._initial_renderer_url = initial_url
         tab.Navigate(self._initial_renderer_url)
