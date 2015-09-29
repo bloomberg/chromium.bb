@@ -113,7 +113,7 @@ void AudioManagerPulse::GetAudioDeviceNames(
   // Prepend the default device if the list is not empty.
   if (!device_names->empty()) {
     device_names->push_front(
-        AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
+        AudioDeviceName(AudioManager::GetDefaultDeviceName(),
                         AudioManagerBase::kDefaultDeviceId));
   }
 }

@@ -8,6 +8,7 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "media/base/fake_media_resources.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 
@@ -47,6 +48,7 @@ void TestSuiteNoAtExit::Initialize() {
   // Run this here instead of main() to ensure an AtExitManager is already
   // present.
   media::InitializeMediaLibrary();
+  media::SetUpFakeMediaResources();
 
   base::DiscardableMemoryAllocator::SetInstance(&discardable_memory_allocator_);
 }

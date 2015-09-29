@@ -35,6 +35,7 @@ using ::testing::NotNull;
 using ::testing::Return;
 
 namespace media {
+namespace {
 
 ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
   if (++*count >= limit) {
@@ -42,17 +43,17 @@ ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
   }
 }
 
-static const char kSpeechFile_16b_s_48k[] = "speech_16b_stereo_48kHz.raw";
-static const char kSpeechFile_16b_m_48k[] = "speech_16b_mono_48kHz.raw";
-static const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
-static const char kSpeechFile_16b_m_44k[] = "speech_16b_mono_44kHz.raw";
+const char kSpeechFile_16b_s_48k[] = "speech_16b_stereo_48kHz.raw";
+const char kSpeechFile_16b_m_48k[] = "speech_16b_mono_48kHz.raw";
+const char kSpeechFile_16b_s_44k[] = "speech_16b_stereo_44kHz.raw";
+const char kSpeechFile_16b_m_44k[] = "speech_16b_mono_44kHz.raw";
 
-static const float kCallbackTestTimeMs = 2000.0;
-static const int kBitsPerSample = 16;
-static const int kBytesPerSample = kBitsPerSample / 8;
+const float kCallbackTestTimeMs = 2000.0;
+const int kBitsPerSample = 16;
+const int kBytesPerSample = kBitsPerSample / 8;
 
 // Converts AudioParameters::Format enumerator to readable string.
-static std::string FormatToString(AudioParameters::Format format) {
+std::string FormatToString(AudioParameters::Format format) {
   switch (format) {
     case AudioParameters::AUDIO_PCM_LINEAR:
       return std::string("AUDIO_PCM_LINEAR");
@@ -67,7 +68,7 @@ static std::string FormatToString(AudioParameters::Format format) {
 
 // Converts ChannelLayout enumerator to readable string. Does not include
 // multi-channel cases since these layouts are not supported on Android.
-static std::string LayoutToString(ChannelLayout channel_layout) {
+std::string LayoutToString(ChannelLayout channel_layout) {
   switch (channel_layout) {
     case CHANNEL_LAYOUT_NONE:
       return std::string("CHANNEL_LAYOUT_NONE");
@@ -81,7 +82,7 @@ static std::string LayoutToString(ChannelLayout channel_layout) {
   }
 }
 
-static double ExpectedTimeBetweenCallbacks(AudioParameters params) {
+double ExpectedTimeBetweenCallbacks(AudioParameters params) {
   return (base::TimeDelta::FromMicroseconds(
               params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
               static_cast<double>(params.sample_rate()))).InMillisecondsF();
@@ -89,7 +90,7 @@ static double ExpectedTimeBetweenCallbacks(AudioParameters params) {
 
 // Helper method which verifies that the device list starts with a valid
 // default device name followed by non-default device names.
-static void CheckDeviceNames(const AudioDeviceNames& device_names) {
+void CheckDeviceNames(const AudioDeviceNames& device_names) {
   DVLOG(2) << "Got " << device_names.size() << " audio devices.";
   if (device_names.empty()) {
     // Log a warning so we can see the status on the build bots.  No need to
@@ -102,8 +103,7 @@ static void CheckDeviceNames(const AudioDeviceNames& device_names) {
   AudioDeviceNames::const_iterator it = device_names.begin();
 
   // The first device in the list should always be the default device.
-  EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceName),
-            it->device_name);
+  EXPECT_EQ(AudioManager::GetDefaultDeviceName(), it->device_name);
   EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
   ++it;
 
@@ -114,19 +114,19 @@ static void CheckDeviceNames(const AudioDeviceNames& device_names) {
     EXPECT_FALSE(it->unique_id.empty());
     DVLOG(2) << "Device ID(" << it->unique_id
              << "), label: " << it->device_name;
-    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
-              it->device_name);
-    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
-              it->unique_id);
+    EXPECT_NE(AudioManager::GetDefaultDeviceName(), it->device_name);
+    EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
     ++it;
   }
 }
 
 // We clear the data bus to ensure that the test does not cause noise.
-static int RealOnMoreData(AudioBus* dest, uint32 total_bytes_delay) {
+int RealOnMoreData(AudioBus* dest, uint32 total_bytes_delay) {
   dest->Zero();
   return dest->frames();
 }
+
+}  // namespace
 
 std::ostream& operator<<(std::ostream& os, const AudioParameters& params) {
   using namespace std;

@@ -286,12 +286,12 @@ void AudioManagerWin::GetAudioDeviceNamesImpl(
   if (!device_names->empty()) {
     AudioDeviceName name;
     if (enumeration_type() == kMMDeviceEnumeration) {
-      name.device_name = AudioManagerBase::kCommunicationsDeviceName;
+      name.device_name = AudioManager::GetCommunicationsDeviceName();
       name.unique_id = AudioManagerBase::kCommunicationsDeviceId;
       device_names->push_front(name);
     }
     // Always add default device parameters as first element.
-    name.device_name = AudioManagerBase::kDefaultDeviceName;
+    name.device_name = AudioManager::GetDefaultDeviceName();
     name.unique_id = AudioManagerBase::kDefaultDeviceId;
     device_names->push_front(name);
   }
