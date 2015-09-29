@@ -1235,17 +1235,20 @@ void WebViewGuest::AddNewContents(WebContents* source,
 WebContents* WebViewGuest::OpenURLFromTab(
     WebContents* source,
     const content::OpenURLParams& params) {
-  // There are two use cases to consider from a security perspective:
-  // 1.) Renderer-initiated navigation to chrome:// must always be blocked even
-  //     if the <webview> is in WebUI. This is handled by
-  //     WebViewGuest::LoadURLWithParams. WebViewGuest::NavigateGuest will also
-  //     call LoadURLWithParams. CreateNewGuestWebViewWindow creates a new
-  //     WebViewGuest which will call NavigateGuest in DidInitialize.
-  // 2.) The Language Settings context menu item should always work, both in
-  //     Chrome Apps and WebUI. This is a browser initiated request and so
-  //     we pass it along to the embedder's WebContentsDelegate to get the
-  //     browser to perform the action for the <webview>.
-  if (!params.is_renderer_initiated) {
+  // Most navigations should be handled by WebViewGuest::LoadURLWithParams,
+  // which takes care of blocking chrome:// URLs and other web-unsafe schemes.
+  // (NavigateGuest and CreateNewGuestWebViewWindow also go through
+  // LoadURLWithParams.)
+  //
+  // We make an exception here for context menu items, since the Language
+  // Settings item uses a browser-initiated navigation to a chrome:// URL.
+  // These can be passed to the embedder's WebContentsDelegate so that the
+  // browser performs the action for the <webview>. Navigations to a new
+  // tab, etc., are also handled by the WebContentsDelegate.
+  if (!params.is_renderer_initiated &&
+      (!content::ChildProcessSecurityPolicy::GetInstance()->IsWebSafeScheme(
+           params.url.scheme()) ||
+       params.disposition != CURRENT_TAB)) {
     if (!owner_web_contents()->GetDelegate())
       return nullptr;
     return owner_web_contents()->GetDelegate()->OpenURLFromTab(

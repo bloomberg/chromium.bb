@@ -1625,6 +1625,27 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Abort) {
             GetGuestWebContents()->GetLastCommittedURL());
 }
 
+// A navigation to a web-safe URL should succeed, even if it is not renderer-
+// initiated, such as a navigation from the PDF viewer.
+IN_PROC_BROWSER_TEST_F(WebViewTest, OpenURLFromTab_CurrentTab_Succeed) {
+  LoadAppWithGuest("web_view/simple");
+
+  // Verify that OpenURLFromTab with a window disposition of CURRENT_TAB will
+  // navigate the current <webview>.
+  ExtensionTestMessageListener load_listener("WebViewTest.LOADSTOP", false);
+
+  GURL test_url("http://www.google.com");
+  content::OpenURLParams params(test_url, content::Referrer(), CURRENT_TAB,
+                                ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                false /* is_renderer_initiated */);
+  GetGuestWebContents()->GetDelegate()->OpenURLFromTab(GetGuestWebContents(),
+                                                       params);
+
+  ASSERT_TRUE(load_listener.WaitUntilSatisfied());
+
+  EXPECT_EQ(test_url, GetGuestWebContents()->GetLastCommittedURL());
+}
+
 IN_PROC_BROWSER_TEST_F(WebViewNewWindowTest, OpenURLFromTab_NewWindow_Abort) {
   LoadAppWithGuest("web_view/simple");
 

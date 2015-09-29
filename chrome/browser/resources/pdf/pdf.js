@@ -41,12 +41,13 @@ function getFilenameFromURL(url) {
 
 /**
  * Called when navigation happens in the current tab.
+ * @param {boolean} isInTab Indicates if the PDF viewer is displayed in a tab.
  * @param {string} url The url to be opened in the current tab.
  */
-function onNavigateInCurrentTab(url) {
-  // Prefer the tabs API because it can navigate from one file:// URL to
-  // another.
-  if (chrome.tabs)
+function onNavigateInCurrentTab(isInTab, url) {
+  // When the PDFviewer is inside a browser tab, prefer the tabs API because
+  // it can navigate from one file:// URL to another.
+  if (chrome.tabs && isInTab)
     chrome.tabs.update({url: url});
   else
     window.location.href = url;
@@ -257,9 +258,12 @@ function PDFViewer(browserApi) {
   // Parse open pdf parameters.
   this.paramsParser_ =
       new OpenPDFParamsParser(this.getNamedDestination_.bind(this));
+  var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
   this.navigator_ = new Navigator(this.browserApi_.getStreamInfo().originalUrl,
                                   this.viewport_, this.paramsParser_,
-                                  onNavigateInCurrentTab, onNavigateInNewTab);
+                                  onNavigateInCurrentTab.bind(undefined,
+                                                              isInTab),
+                                  onNavigateInNewTab);
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 
