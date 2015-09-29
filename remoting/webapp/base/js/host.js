@@ -38,6 +38,10 @@ remoting.Host = function(hostId) {
   this.publicKey = '';
   /** @type {string} */
   this.hostVersion = '';
+  /** @type {remoting.ChromotingEvent.Os} */
+  this.hostOS = remoting.ChromotingEvent.Os.UNKNOWN;
+  /** @type {string} */
+  this.hostOSVersion = '';
   /** @type {Array<string>} */
   this.tokenUrlPatterns = [];
   /** @type {string} */

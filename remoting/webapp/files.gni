@@ -420,9 +420,6 @@ remoting_webapp_background_html_all_js_files += [
   "base/js/typecheck.js",
   "base/js/xhr.js",
   "base/js/xhr_event_writer.js",
-  "crd/js/host_installer.js",
-  "crd/js/host_session.js",
-  "crd/js/it2me_host_facade.js",
 ]
 
 #

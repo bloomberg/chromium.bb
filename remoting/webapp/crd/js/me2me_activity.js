@@ -87,6 +87,8 @@ remoting.Me2MeActivity.prototype.createLogger_ = function(entryPoint) {
   var logger = remoting.SessionLogger.createForClient();
   logger.setEntryPoint(entryPoint);
   logger.setHostVersion(this.host_.hostVersion);
+  logger.setHostOS(this.host_.hostOS);
+  logger.setHostOSVersion(this.host_.hostOSVersion);
   logger.setLogEntryMode(Mode.ME2ME);
   return logger;
 };

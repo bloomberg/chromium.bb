@@ -196,8 +196,9 @@ remoting.LogToServer.prototype.log_ = function(entry) {
           this.authTotalTime_) / 1000.0;
   entry.addSessionDuration(sessionDurationInSeconds);
   entry.addApplicationId();
-  // The host-version will be blank for logs before a session has been created.
-  // For example, the signal-strategy log-entries won't have host version info.
+  // The host-version/os/os-version will be blank for logs before a session has
+  // been created. For example, the signal-strategy log-entries won't have host
+  // version info.
   entry.addHostVersion(this.hostVersion_);
 
   // Send the stanza to the debug log.
@@ -288,3 +289,18 @@ remoting.LogToServer.prototype.setAuthTotalTime = function(totalTime) {
 remoting.LogToServer.prototype.setHostVersion = function(hostVersion) {
   this.hostVersion_ = hostVersion;
 };
+
+/**
+ * Stub.
+ * @param {remoting.ChromotingEvent.Os} hostOS Type of the host OS for
+          current session.
+ * @return {void} Nothing.
+ */
+remoting.LogToServer.prototype.setHostOS = function(hostOS) {};
+
+/**
+ * Stub.
+ * @param {string} hostOSVersion Version of the host OS for current session.
+ * @return {void} Nothing.
+ */
+remoting.LogToServer.prototype.setHostOSVersion = function(hostOSVersion) {};

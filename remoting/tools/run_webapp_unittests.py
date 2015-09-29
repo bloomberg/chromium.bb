@@ -27,12 +27,12 @@ def GetChromePath():
   return chrome_path
 
 
-def BuildTestPageUri(opt_module=None, opt_coverage=False):
+def BuildTestPageUri(build_path, opt_module=None, opt_coverage=False):
   """Builds the Uri for the test page with params."""
   script_path = os.path.dirname(__file__)
 
   test_page_path = os.path.join(script_path,
-      '../../out/Debug/remoting/unittests/unittests.html')
+      '../../' + build_path + '/remoting/unittests/unittests.html')
   test_page_path = 'file://' + os.path.abspath(test_page_path)
 
   test_page_params = {}
@@ -45,7 +45,7 @@ def BuildTestPageUri(opt_module=None, opt_coverage=False):
   return '"' + test_page_path + '"'
 
 
-def BuildCommandLine(chrome_path, opt_module, opt_coverage):
+def BuildCommandLine(chrome_path, build_path, opt_module, opt_coverage):
   """Builds the command line to execute."""
   command = []
   command.append('"' + chrome_path + '"')
@@ -53,7 +53,7 @@ def BuildCommandLine(chrome_path, opt_module, opt_coverage):
   # The flag |--allow-file-access-from-files| is required so that we can open
   # JavaScript files using XHR and instrument them for code coverage.
   command.append(' --allow-file-access-from-files')
-  test_page_path = BuildTestPageUri(opt_module, opt_coverage)
+  test_page_path = BuildTestPageUri(build_path, opt_module, opt_coverage)
   command.append(test_page_path)
   return ' '.join(command)
 
@@ -67,9 +67,16 @@ def ParseArgs():
     help='The path of the chrome binary to run the test.',
     default=chrome_path)
   parser.add_argument(
-    '--module', help='only run tests that belongs to MODULE')
+    '--module',
+    help='only run tests that belongs to MODULE')
   parser.add_argument(
-    '--coverage', help='run the test with code coverage', action='store_true')
+    '--coverage',
+    help='run the test with code coverage',
+    action='store_true')
+  parser.add_argument(
+    '--build-path',
+    help='The output build path for remoting. (out/Debug)',
+    default='out/Debug')
 
   return parser.parse_args(sys.argv[1:])
 
@@ -84,7 +91,11 @@ def main():
     print 'binary to run the test.'
     return 1
 
-  command_line = BuildCommandLine(args.chrome_path, args.module, args.coverage)
+  command_line = BuildCommandLine(
+      args.chrome_path,
+      args.build_path,
+      args.module,
+      args.coverage)
   os.system(command_line)
   return 0
 

@@ -43,6 +43,10 @@ remoting.ChromotingEvent = function(type) {
   this.browser_version;
   /** @private {string} */
   this.webapp_version;
+  /** @type {remoting.ChromotingEvent.Os} */
+  this.host_os;
+  /** @type {string} */
+  this.host_os_version;
   /** @type {string} */
   this.host_version;
   /** @private {string} */
@@ -167,6 +171,7 @@ remoting.ChromotingEvent.Role = {
 
 /** @enum {number} */
 remoting.ChromotingEvent.Os = {
+  UNKNOWN: 0,
   LINUX: 1,
   CHROMEOS: 2,
   MAC: 3,
@@ -175,6 +180,34 @@ remoting.ChromotingEvent.Os = {
   ANDROID: 6,
   IOS: 7
 };
+
+/**
+ * Convert the OS type String into the enum value.
+ *
+ * @param {string} type
+ * @return {remoting.ChromotingEvent.Os}
+ */
+remoting.ChromotingEvent.toOs = function(type) {
+  type = type.toLowerCase();
+  switch (type) {
+    case 'linux':
+      return remoting.ChromotingEvent.Os.LINUX;
+    case 'chromeos':
+      return remoting.ChromotingEvent.Os.CHROMEOS;
+    case 'mac':
+      return remoting.ChromotingEvent.Os.MAC
+    case 'windows':
+      return remoting.ChromotingEvent.Os.WINDOWS;
+    case 'other':
+      return remoting.ChromotingEvent.Os.OTHER;
+    case 'android':
+      return remoting.ChromotingEvent.Os.ANDROID;
+    case 'ios':
+      return remoting.ChromotingEvent.Os.IOS;
+    default:
+      return remoting.ChromotingEvent.Os.UNKNOWN;
+  }
+}
 
 /** @enum {number} */
 remoting.ChromotingEvent.SessionState = {
