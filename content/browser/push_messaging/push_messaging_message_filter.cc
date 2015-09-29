@@ -64,15 +64,15 @@ void RecordGetRegistrationStatus(PushGetRegistrationStatus status) {
                             PUSH_GETREGISTRATION_STATUS_LAST + 1);
 }
 
-// Curries the |success| and |curve25519dh| parameters over to |callback| and
+// Curries the |success| and |p256dh| parameters over to |callback| and
 // posts a task to invoke |callback| on the IO thread.
 void ForwardPublicEncryptionKeysToIOThreadProxy(
     const PushMessagingService::PublicKeyCallback& callback,
     bool success,
-    const std::vector<uint8_t>& curve25519dh) {
+    const std::vector<uint8_t>& p256dh) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback, success, curve25519dh));
+                          base::Bind(callback, success, p256dh));
 }
 
 // Concatenates the subscription id with the endpoint base to create a new
@@ -148,7 +148,7 @@ class PushMessagingMessageFilter::Core {
 
   void DidRegister(const RegisterData& data,
                    const std::string& push_registration_id,
-                   const std::vector<uint8_t>& curve25519dh,
+                   const std::vector<uint8_t>& p256dh,
                    PushRegistrationStatus status);
 
   // Private Unregister methods on UI thread -----------------------------------
@@ -366,7 +366,7 @@ void PushMessagingMessageFilter::DidGetEncryptionKeys(
     const RegisterData& data,
     const std::string& push_registration_id,
     bool success,
-    const std::vector<uint8_t>& curve25519dh) {
+    const std::vector<uint8_t>& p256dh) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_PUBLIC_KEY_UNAVAILABLE);
@@ -374,7 +374,7 @@ void PushMessagingMessageFilter::DidGetEncryptionKeys(
   }
 
   SendRegisterSuccess(data, PUSH_REGISTRATION_STATUS_SUCCESS_FROM_CACHE,
-                      push_registration_id, curve25519dh);
+                      push_registration_id, p256dh);
 }
 
 void PushMessagingMessageFilter::DidGetSenderIdFromStorage(
@@ -451,14 +451,14 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
 void PushMessagingMessageFilter::Core::DidRegister(
     const RegisterData& data,
     const std::string& push_registration_id,
-    const std::vector<uint8_t>& curve25519dh,
+    const std::vector<uint8_t>& p256dh,
     PushRegistrationStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (status == PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PushMessagingMessageFilter::PersistRegistrationOnIO,
-                   io_parent_, data, push_registration_id, curve25519dh));
+                   io_parent_, data, push_registration_id, p256dh));
   } else {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -470,7 +470,7 @@ void PushMessagingMessageFilter::Core::DidRegister(
 void PushMessagingMessageFilter::PersistRegistrationOnIO(
     const RegisterData& data,
     const std::string& push_registration_id,
-    const std::vector<uint8_t>& curve25519dh) {
+    const std::vector<uint8_t>& p256dh) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   service_worker_context_->StoreRegistrationUserData(
       data.service_worker_registration_id,
@@ -479,19 +479,19 @@ void PushMessagingMessageFilter::PersistRegistrationOnIO(
       push_registration_id,
       base::Bind(&PushMessagingMessageFilter::DidPersistRegistrationOnIO,
                  weak_factory_io_to_io_.GetWeakPtr(),
-                 data, push_registration_id, curve25519dh));
+                 data, push_registration_id, p256dh));
 }
 
 void PushMessagingMessageFilter::DidPersistRegistrationOnIO(
     const RegisterData& data,
     const std::string& push_registration_id,
-    const std::vector<uint8_t>& curve25519dh,
+    const std::vector<uint8_t>& p256dh,
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (service_worker_status == SERVICE_WORKER_OK) {
     SendRegisterSuccess(data,
                         PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE,
-                        push_registration_id, curve25519dh);
+                        push_registration_id, p256dh);
   } else {
     // TODO(johnme): Unregister, so PushMessagingServiceImpl can decrease count.
     SendRegisterError(data, PUSH_REGISTRATION_STATUS_STORAGE_ERROR);
@@ -516,7 +516,7 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
     const RegisterData& data,
     PushRegistrationStatus status,
     const std::string& push_registration_id,
-    const std::vector<uint8_t>& curve25519dh) {
+    const std::vector<uint8_t>& p256dh) {
   // Only called from IO thread, but would be safe to call from UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (push_endpoint_base_.is_empty()) {
@@ -531,12 +531,12 @@ void PushMessagingMessageFilter::SendRegisterSuccess(
         data.render_frame_id,
         data.request_id,
         CreatePushEndpoint(push_endpoint_base_, push_registration_id),
-        curve25519dh));
+        p256dh));
   } else {
     Send(new PushMessagingMsg_SubscribeFromWorkerSuccess(
         data.request_id,
         CreatePushEndpoint(push_endpoint_base_, push_registration_id),
-        curve25519dh));
+        p256dh));
   }
   RecordRegistrationStatus(status);
 }
@@ -847,7 +847,7 @@ void PushMessagingMessageFilter::DidGetRegistrationKeys(
     int request_id,
     const GURL& endpoint,
     bool success,
-    const std::vector<uint8_t>& curve25519dh) {
+    const std::vector<uint8_t>& p256dh) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!success) {
     PushGetRegistrationStatus status =
@@ -860,7 +860,7 @@ void PushMessagingMessageFilter::DidGetRegistrationKeys(
   }
 
   Send(new PushMessagingMsg_GetRegistrationSuccess(request_id, endpoint,
-                                                   curve25519dh));
+                                                   p256dh));
 
   RecordGetRegistrationStatus(PUSH_GETREGISTRATION_STATUS_SUCCESS);
 }

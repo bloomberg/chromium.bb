@@ -16,14 +16,14 @@ namespace content {
 
 namespace {
 
-// Curve25519 public key made available to layout tests. Must be 32 bytes.
-const uint8_t kTestCurve25519dh[] = {
+// P-256 public key made available to layout tests. Must be 32 bytes.
+const uint8_t kTestP256Key[] = {
   0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
   0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
   0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F
 };
 
-static_assert(sizeof(kTestCurve25519dh) == 32,
+static_assert(sizeof(kTestP256Key) == 32,
               "The fake public key must have the size of a real public key.");
 
 blink::WebPushPermissionStatus ToWebPushPermissionStatus(
@@ -73,10 +73,10 @@ void LayoutTestPushMessagingService::SubscribeFromWorker(
     const PushMessagingService::RegisterCallback& callback) {
   if (GetPermissionStatus(requesting_origin, requesting_origin, user_visible) ==
       blink::WebPushPermissionStatusGranted) {
-    std::vector<uint8_t> curve25519dh(
-        kTestCurve25519dh, kTestCurve25519dh + arraysize(kTestCurve25519dh));
+    std::vector<uint8_t> p256dh(
+        kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
 
-    callback.Run("layoutTestRegistrationId", curve25519dh,
+    callback.Run("layoutTestRegistrationId", p256dh,
                  PUSH_REGISTRATION_STATUS_SUCCESS_FROM_PUSH_SERVICE);
   } else {
     callback.Run("registration_id", std::vector<uint8_t>(),
@@ -88,10 +88,10 @@ void LayoutTestPushMessagingService::GetPublicEncryptionKey(
     const GURL& origin,
     int64_t service_worker_registration_id,
     const PublicKeyCallback& callback) {
-  std::vector<uint8_t> curve25519dh(
-        kTestCurve25519dh, kTestCurve25519dh + arraysize(kTestCurve25519dh));
+  std::vector<uint8_t> p256dh(
+        kTestP256Key, kTestP256Key + arraysize(kTestP256Key));
 
-  callback.Run(true /* success */, curve25519dh);
+  callback.Run(true /* success */, p256dh);
 }
 
 blink::WebPushPermissionStatus

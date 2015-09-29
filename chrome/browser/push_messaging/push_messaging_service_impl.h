@@ -137,7 +137,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
   void SubscribeEnd(
       const content::PushMessagingService::RegisterCallback& callback,
       const std::string& subscription_id,
-      const std::vector<uint8_t>& curve25519dh,
+      const std::vector<uint8_t>& p256dh,
       content::PushRegistrationStatus status);
 
   void SubscribeEndWithError(

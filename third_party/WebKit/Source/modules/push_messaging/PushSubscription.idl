@@ -5,7 +5,7 @@
 // https://w3c.github.io/push-api/#pushsubscription-interface
 
 enum PushEncryptionKeyName {
-    "curve25519dh"
+    "p256dh"
 };
 
 [
