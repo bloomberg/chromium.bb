@@ -887,7 +887,7 @@ void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
 #else
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
-  enable_metrics_.Init(prefs::kMetricsReportingEnabled,
+  enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));

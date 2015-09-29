@@ -462,20 +462,20 @@ static jboolean GetFullscreenAllowed(JNIEnv* env,
 static jboolean GetMetricsReportingEnabled(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(prefs::kMetricsReportingEnabled);
+  return local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
 }
 
 static void SetMetricsReportingEnabled(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj,
                                        jboolean enabled) {
   PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kMetricsReportingEnabled, enabled);
+  local_state->SetBoolean(metrics::prefs::kMetricsReportingEnabled, enabled);
 }
 
 static jboolean HasSetMetricsReporting(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   PrefService* local_state = g_browser_process->local_state();
-  return local_state->HasPrefPath(prefs::kMetricsReportingEnabled);
+  return local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled);
 }
 
 namespace {

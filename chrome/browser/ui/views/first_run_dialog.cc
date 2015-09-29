@@ -51,7 +51,7 @@ bool FirstRunDialog::Show(Profile* profile) {
   // If the metrics reporting is managed, we won't ask.
   const PrefService::Preference* metrics_reporting_pref =
       g_browser_process->local_state()->FindPreference(
-          prefs::kMetricsReportingEnabled);
+          metrics::prefs::kMetricsReportingEnabled);
 
   if (!metrics_reporting_pref ||
       !metrics_reporting_pref->IsManaged()) {

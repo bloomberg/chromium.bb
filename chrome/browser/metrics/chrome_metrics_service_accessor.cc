@@ -42,7 +42,7 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
       prefs::kCrashReportingEnabled);
 #else
   enabled = g_browser_process->local_state()->
-      GetBoolean(prefs::kMetricsReportingEnabled);
+      GetBoolean(metrics::prefs::kMetricsReportingEnabled);
 #endif  // #if defined(OS_CHROMEOS)
 #endif  // defined(GOOGLE_CHROME_BUILD)
   return enabled;

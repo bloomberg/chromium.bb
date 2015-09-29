@@ -38,7 +38,7 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
   // this is POSIX-specific).
   if (GoogleUpdateSettings::GetCollectStatsConsent()) {
     g_browser_process->local_state()->SetBoolean(
-        prefs::kMetricsReportingEnabled, true);
+        metrics::prefs::kMetricsReportingEnabled, true);
   }
 #endif
 }

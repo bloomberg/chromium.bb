@@ -31,7 +31,7 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
 #if defined(OS_ANDROID)
   const char* pref = prefs::kCrashReportingEnabled;
 #else
-  const char* pref = prefs::kMetricsReportingEnabled;
+  const char* pref = metrics::prefs::kMetricsReportingEnabled;
 #endif  // defined(OS_ANDROID)
   GetLocalState()->SetDefaultPrefValue(pref, new base::FundamentalValue(false));
 
