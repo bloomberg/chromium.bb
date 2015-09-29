@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADVERTISEMENT_H_
-#define DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADVERTISEMENT_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -24,6 +24,6 @@ class MockBluetoothAdvertisement : public device::BluetoothAdvertisement {
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothAdvertisement);
 };
 
-}  // namespace device
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_TEST_MOCK_BLUETOOTH_ADVERTISEMENT_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_

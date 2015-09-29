@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_socket_bluez.h"
+#include "device/bluetooth/bluetooth_socket_chromeos.h"
 
 #include <queue>
 #include <string>
@@ -24,10 +24,10 @@
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_bluez.h"
-#include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
 #include "device/bluetooth/bluetooth_socket_net.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
@@ -52,33 +52,36 @@ const char kSocketNotListening[] = "Socket is not listening.";
 
 }  // namespace
 
-namespace bluez {
+namespace chromeos {
 
 // static
-scoped_refptr<BluetoothSocketBlueZ> BluetoothSocketBlueZ::CreateBluetoothSocket(
+scoped_refptr<BluetoothSocketChromeOS>
+BluetoothSocketChromeOS::CreateBluetoothSocket(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<BluetoothSocketThread> socket_thread) {
   DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
 
   return make_scoped_refptr(
-      new BluetoothSocketBlueZ(ui_task_runner, socket_thread));
+      new BluetoothSocketChromeOS(ui_task_runner, socket_thread));
 }
 
-BluetoothSocketBlueZ::AcceptRequest::AcceptRequest() {}
+BluetoothSocketChromeOS::AcceptRequest::AcceptRequest() {}
 
-BluetoothSocketBlueZ::AcceptRequest::~AcceptRequest() {}
+BluetoothSocketChromeOS::AcceptRequest::~AcceptRequest() {}
 
-BluetoothSocketBlueZ::ConnectionRequest::ConnectionRequest()
-    : accepting(false), cancelled(false) {}
+BluetoothSocketChromeOS::ConnectionRequest::ConnectionRequest()
+    : accepting(false),
+      cancelled(false) {}
 
-BluetoothSocketBlueZ::ConnectionRequest::~ConnectionRequest() {}
+BluetoothSocketChromeOS::ConnectionRequest::~ConnectionRequest() {}
 
-BluetoothSocketBlueZ::BluetoothSocketBlueZ(
+BluetoothSocketChromeOS::BluetoothSocketChromeOS(
     scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
     scoped_refptr<BluetoothSocketThread> socket_thread)
-    : BluetoothSocketNet(ui_task_runner, socket_thread), profile_(nullptr) {}
+    : BluetoothSocketNet(ui_task_runner, socket_thread), profile_(nullptr) {
+}
 
-BluetoothSocketBlueZ::~BluetoothSocketBlueZ() {
+BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
   DCHECK(!profile_);
 
   if (adapter_.get()) {
@@ -87,8 +90,8 @@ BluetoothSocketBlueZ::~BluetoothSocketBlueZ() {
   }
 }
 
-void BluetoothSocketBlueZ::Connect(
-    const BluetoothDeviceBlueZ* device,
+void BluetoothSocketChromeOS::Connect(
+    const BluetoothDeviceChromeOS* device,
     const BluetoothUUID& uuid,
     SecurityLevel security_level,
     const base::Closure& success_callback,
@@ -113,7 +116,7 @@ void BluetoothSocketBlueZ::Connect(
   RegisterProfile(device->adapter(), success_callback, error_callback);
 }
 
-void BluetoothSocketBlueZ::Listen(
+void BluetoothSocketChromeOS::Listen(
     scoped_refptr<BluetoothAdapter> adapter,
     SocketType socket_type,
     const BluetoothUUID& uuid,
@@ -149,11 +152,11 @@ void BluetoothSocketBlueZ::Listen(
       NOTREACHED();
   }
 
-  RegisterProfile(static_cast<BluetoothAdapterBlueZ*>(adapter.get()),
+  RegisterProfile(static_cast<BluetoothAdapterChromeOS*>(adapter.get()),
                   success_callback, error_callback);
 }
 
-void BluetoothSocketBlueZ::Close() {
+void BluetoothSocketChromeOS::Close() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (profile_)
@@ -175,7 +178,7 @@ void BluetoothSocketBlueZ::Close() {
   }
 }
 
-void BluetoothSocketBlueZ::Disconnect(const base::Closure& callback) {
+void BluetoothSocketChromeOS::Disconnect(const base::Closure& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (profile_)
@@ -189,7 +192,7 @@ void BluetoothSocketBlueZ::Disconnect(const base::Closure& callback) {
   }
 }
 
-void BluetoothSocketBlueZ::Accept(
+void BluetoothSocketChromeOS::Accept(
     const AcceptCompletionCallback& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -214,8 +217,8 @@ void BluetoothSocketBlueZ::Accept(
   }
 }
 
-void BluetoothSocketBlueZ::RegisterProfile(
-    BluetoothAdapterBlueZ* adapter,
+void BluetoothSocketChromeOS::RegisterProfile(
+    BluetoothAdapterChromeOS* adapter,
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -235,17 +238,18 @@ void BluetoothSocketBlueZ::RegisterProfile(
   VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
           << ": Acquiring profile.";
 
-  adapter->UseProfile(uuid_, device_path_, *options_, this,
-                      base::Bind(&BluetoothSocketBlueZ::OnRegisterProfile, this,
-                                 success_callback, error_callback),
-                      base::Bind(&BluetoothSocketBlueZ::OnRegisterProfileError,
-                                 this, error_callback));
+  adapter->UseProfile(
+      uuid_, device_path_, *options_, this,
+      base::Bind(&BluetoothSocketChromeOS::OnRegisterProfile, this,
+                 success_callback, error_callback),
+      base::Bind(&BluetoothSocketChromeOS::OnRegisterProfileError, this,
+                 error_callback));
 }
 
-void BluetoothSocketBlueZ::OnRegisterProfile(
+void BluetoothSocketChromeOS::OnRegisterProfile(
     const base::Closure& success_callback,
     const ErrorCompletionCallback& error_callback,
-    BluetoothAdapterProfileBlueZ* profile) {
+    BluetoothAdapterProfileChromeOS* profile) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(!profile_);
 
@@ -262,13 +266,13 @@ void BluetoothSocketBlueZ::OnRegisterProfile(
 
   bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->ConnectProfile(
       device_path_, uuid_.canonical_value(),
-      base::Bind(&BluetoothSocketBlueZ::OnConnectProfile, this,
+      base::Bind(&BluetoothSocketChromeOS::OnConnectProfile, this,
                  success_callback),
-      base::Bind(&BluetoothSocketBlueZ::OnConnectProfileError, this,
+      base::Bind(&BluetoothSocketChromeOS::OnConnectProfileError, this,
                  error_callback));
 }
 
-void BluetoothSocketBlueZ::OnRegisterProfileError(
+void BluetoothSocketChromeOS::OnRegisterProfileError(
     const ErrorCompletionCallback& error_callback,
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -278,7 +282,7 @@ void BluetoothSocketBlueZ::OnRegisterProfileError(
   error_callback.Run(error_message);
 }
 
-void BluetoothSocketBlueZ::OnConnectProfile(
+void BluetoothSocketChromeOS::OnConnectProfile(
     const base::Closure& success_callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(profile_);
@@ -288,7 +292,7 @@ void BluetoothSocketBlueZ::OnConnectProfile(
   success_callback.Run();
 }
 
-void BluetoothSocketBlueZ::OnConnectProfileError(
+void BluetoothSocketChromeOS::OnConnectProfileError(
     const ErrorCompletionCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -302,8 +306,8 @@ void BluetoothSocketBlueZ::OnConnectProfileError(
   error_callback.Run(error_message);
 }
 
-void BluetoothSocketBlueZ::AdapterPresentChanged(BluetoothAdapter* adapter,
-                                                 bool present) {
+void BluetoothSocketChromeOS::AdapterPresentChanged(BluetoothAdapter* adapter,
+                                                    bool present) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (!present) {
@@ -317,14 +321,15 @@ void BluetoothSocketBlueZ::AdapterPresentChanged(BluetoothAdapter* adapter,
   VLOG(1) << uuid_.canonical_value() << " on " << device_path_.value()
           << ": Acquiring profile.";
 
-  static_cast<BluetoothAdapterBlueZ*>(adapter)->UseProfile(
+  static_cast<BluetoothAdapterChromeOS*>(adapter)->UseProfile(
       uuid_, device_path_, *options_, this,
-      base::Bind(&BluetoothSocketBlueZ::OnInternalRegisterProfile, this),
-      base::Bind(&BluetoothSocketBlueZ::OnInternalRegisterProfileError, this));
+      base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfile, this),
+      base::Bind(&BluetoothSocketChromeOS::OnInternalRegisterProfileError,
+                 this));
 }
 
-void BluetoothSocketBlueZ::OnInternalRegisterProfile(
-    BluetoothAdapterProfileBlueZ* profile) {
+void BluetoothSocketChromeOS::OnInternalRegisterProfile(
+    BluetoothAdapterProfileChromeOS* profile) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(!profile_);
 
@@ -333,21 +338,21 @@ void BluetoothSocketBlueZ::OnInternalRegisterProfile(
   VLOG(1) << uuid_.canonical_value() << ": Profile re-registered";
 }
 
-void BluetoothSocketBlueZ::OnInternalRegisterProfileError(
+void BluetoothSocketChromeOS::OnInternalRegisterProfileError(
     const std::string& error_message) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   LOG(WARNING) << "Failed to re-register profile: " << error_message;
 }
 
-void BluetoothSocketBlueZ::Released() {
+void BluetoothSocketChromeOS::Released() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(profile_);
 
   VLOG(1) << profile_->object_path().value() << ": Release";
 }
 
-void BluetoothSocketBlueZ::NewConnection(
+void BluetoothSocketChromeOS::NewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
@@ -362,8 +367,13 @@ void BluetoothSocketBlueZ::NewConnection(
 
     socket_thread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(&BluetoothSocketBlueZ::DoNewConnection, this, device_path_,
-                   base::Passed(&fd), options, callback));
+        base::Bind(
+            &BluetoothSocketChromeOS::DoNewConnection,
+            this,
+            device_path_,
+            base::Passed(&fd),
+            options,
+            callback));
   } else {
     linked_ptr<ConnectionRequest> request(new ConnectionRequest());
     request->device_path = device_path;
@@ -379,7 +389,7 @@ void BluetoothSocketBlueZ::NewConnection(
   }
 }
 
-void BluetoothSocketBlueZ::RequestDisconnection(
+void BluetoothSocketChromeOS::RequestDisconnection(
     const dbus::ObjectPath& device_path,
     const ConfirmationCallback& callback) {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
@@ -389,7 +399,7 @@ void BluetoothSocketBlueZ::RequestDisconnection(
   callback.Run(SUCCESS);
 }
 
-void BluetoothSocketBlueZ::Cancel() {
+void BluetoothSocketChromeOS::Cancel() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(profile_);
 
@@ -408,7 +418,7 @@ void BluetoothSocketBlueZ::Cancel() {
   }
 }
 
-void BluetoothSocketBlueZ::AcceptConnectionRequest() {
+void BluetoothSocketChromeOS::AcceptConnectionRequest() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(accept_request_.get());
   DCHECK(connection_request_queue_.size() >= 1);
@@ -420,14 +430,14 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
   linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
   request->accepting = true;
 
-  BluetoothDeviceBlueZ* device =
-      static_cast<BluetoothAdapterBlueZ*>(adapter_.get())
-          ->GetDeviceWithPath(request->device_path);
+  BluetoothDeviceChromeOS* device =
+      static_cast<BluetoothAdapterChromeOS*>(adapter_.get())->
+          GetDeviceWithPath(request->device_path);
   DCHECK(device);
 
-  scoped_refptr<BluetoothSocketBlueZ> client_socket =
-      BluetoothSocketBlueZ::CreateBluetoothSocket(ui_task_runner(),
-                                                  socket_thread());
+  scoped_refptr<BluetoothSocketChromeOS> client_socket =
+      BluetoothSocketChromeOS::CreateBluetoothSocket(
+          ui_task_runner(), socket_thread());
 
   client_socket->device_address_ = device->GetAddress();
   client_socket->device_path_ = request->device_path;
@@ -435,14 +445,19 @@ void BluetoothSocketBlueZ::AcceptConnectionRequest() {
 
   socket_thread()->task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&BluetoothSocketBlueZ::DoNewConnection, client_socket,
-                 request->device_path, base::Passed(&request->fd),
-                 request->options,
-                 base::Bind(&BluetoothSocketBlueZ::OnNewConnection, this,
-                            client_socket, request->callback)));
+      base::Bind(
+          &BluetoothSocketChromeOS::DoNewConnection,
+          client_socket,
+          request->device_path,
+          base::Passed(&request->fd),
+          request->options,
+          base::Bind(&BluetoothSocketChromeOS::OnNewConnection,
+                     this,
+                     client_socket,
+                     request->callback)));
 }
 
-void BluetoothSocketBlueZ::DoNewConnection(
+void BluetoothSocketChromeOS::DoNewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
@@ -455,15 +470,15 @@ void BluetoothSocketBlueZ::DoNewConnection(
   if (!fd->is_valid()) {
     LOG(WARNING) << uuid_.canonical_value() << " :" << fd->value()
                  << ": Invalid file descriptor received from Bluetooth Daemon.";
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
-    ;
+    ui_task_runner()->PostTask(FROM_HERE,
+                               base::Bind(callback, REJECTED));;
     return;
   }
 
   if (tcp_socket()) {
     LOG(WARNING) << uuid_.canonical_value() << ": Already connected";
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
-    ;
+    ui_task_runner()->PostTask(FROM_HERE,
+                               base::Bind(callback, REJECTED));;
     return;
   }
 
@@ -471,24 +486,24 @@ void BluetoothSocketBlueZ::DoNewConnection(
 
   // Note: We don't have a meaningful |IPEndPoint|, but that is ok since the
   // TCPSocket implementation does not actually require one.
-  int net_result =
-      tcp_socket()->AdoptConnectedSocket(fd->value(), net::IPEndPoint());
+  int net_result = tcp_socket()->AdoptConnectedSocket(fd->value(),
+                                                      net::IPEndPoint());
   if (net_result != net::OK) {
     LOG(WARNING) << uuid_.canonical_value() << ": Error adopting socket: "
                  << std::string(net::ErrorToString(net_result));
-    ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, REJECTED));
-    ;
+    ui_task_runner()->PostTask(FROM_HERE,
+                               base::Bind(callback, REJECTED));;
     return;
   }
 
   VLOG(2) << uuid_.canonical_value()
           << ": Taking descriptor, confirming success.";
   fd->TakeValue();
-  ui_task_runner()->PostTask(FROM_HERE, base::Bind(callback, SUCCESS));
-  ;
+  ui_task_runner()->PostTask(FROM_HERE,
+                             base::Bind(callback, SUCCESS));;
 }
 
-void BluetoothSocketBlueZ::OnNewConnection(
+void BluetoothSocketChromeOS::OnNewConnection(
     scoped_refptr<BluetoothSocket> socket,
     const ConfirmationCallback& callback,
     Status status) {
@@ -498,9 +513,9 @@ void BluetoothSocketBlueZ::OnNewConnection(
 
   linked_ptr<ConnectionRequest> request = connection_request_queue_.front();
   if (status == SUCCESS && !request->cancelled) {
-    BluetoothDeviceBlueZ* device =
-        static_cast<BluetoothAdapterBlueZ*>(adapter_.get())
-            ->GetDeviceWithPath(request->device_path);
+    BluetoothDeviceChromeOS* device =
+        static_cast<BluetoothAdapterChromeOS*>(adapter_.get())->
+            GetDeviceWithPath(request->device_path);
     DCHECK(device);
 
     accept_request_->success_callback.Run(device, socket);
@@ -514,7 +529,7 @@ void BluetoothSocketBlueZ::OnNewConnection(
   callback.Run(status);
 }
 
-void BluetoothSocketBlueZ::DoCloseListening() {
+void BluetoothSocketChromeOS::DoCloseListening() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
 
   if (accept_request_) {
@@ -530,15 +545,15 @@ void BluetoothSocketBlueZ::DoCloseListening() {
   }
 }
 
-void BluetoothSocketBlueZ::UnregisterProfile() {
+void BluetoothSocketChromeOS::UnregisterProfile() {
   DCHECK(ui_task_runner()->RunsTasksOnCurrentThread());
   DCHECK(profile_);
 
   VLOG(1) << profile_->object_path().value() << ": Release profile";
 
-  static_cast<BluetoothAdapterBlueZ*>(adapter_.get())
+  static_cast<BluetoothAdapterChromeOS*>(adapter_.get())
       ->ReleaseProfile(device_path_, profile_);
   profile_ = nullptr;
 }
 
-}  // namespace bluez
+}  // namespace chromeos

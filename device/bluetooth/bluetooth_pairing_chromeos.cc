@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_pairing_bluez.h"
+#include "device/bluetooth/bluetooth_pairing_chromeos.h"
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_device_bluez.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
 
 using device::BluetoothDevice;
 
@@ -32,19 +32,21 @@ const uint16 kPasskeyMaxKeysEntered = 7;
 
 }  // namespace
 
-namespace bluez {
+namespace chromeos {
 
-BluetoothPairingBlueZ::BluetoothPairingBlueZ(
-    BluetoothDeviceBlueZ* device,
+BluetoothPairingChromeOS::BluetoothPairingChromeOS(
+    BluetoothDeviceChromeOS* device,
     BluetoothDevice::PairingDelegate* pairing_delegate)
     : device_(device),
       pairing_delegate_(pairing_delegate),
       pairing_delegate_used_(false) {
-  VLOG(1) << "Created BluetoothPairingBlueZ for " << device_->GetAddress();
+  VLOG(1) << "Created BluetoothPairingChromeOS for "
+          << device_->GetAddress();
 }
 
-BluetoothPairingBlueZ::~BluetoothPairingBlueZ() {
-  VLOG(1) << "Destroying BluetoothPairingBlueZ for " << device_->GetAddress();
+BluetoothPairingChromeOS::~BluetoothPairingChromeOS() {
+  VLOG(1) << "Destroying BluetoothPairingChromeOS for "
+          << device_->GetAddress();
 
   if (!pairing_delegate_used_) {
     UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
@@ -70,7 +72,7 @@ BluetoothPairingBlueZ::~BluetoothPairingBlueZ() {
   pairing_delegate_ = NULL;
 }
 
-void BluetoothPairingBlueZ::RequestPinCode(
+void BluetoothPairingChromeOS::RequestPinCode(
     const bluez::BluetoothAgentServiceProvider::Delegate::PinCodeCallback&
         callback) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
@@ -83,11 +85,11 @@ void BluetoothPairingBlueZ::RequestPinCode(
   pairing_delegate_->RequestPinCode(device_);
 }
 
-bool BluetoothPairingBlueZ::ExpectingPinCode() const {
+bool BluetoothPairingChromeOS::ExpectingPinCode() const {
   return !pincode_callback_.is_null();
 }
 
-void BluetoothPairingBlueZ::SetPinCode(const std::string& pincode) {
+void BluetoothPairingChromeOS::SetPinCode(const std::string& pincode) {
   if (pincode_callback_.is_null())
     return;
 
@@ -102,7 +104,7 @@ void BluetoothPairingBlueZ::SetPinCode(const std::string& pincode) {
     device_->EndPairing();
 }
 
-void BluetoothPairingBlueZ::DisplayPinCode(const std::string& pincode) {
+void BluetoothPairingChromeOS::DisplayPinCode(const std::string& pincode) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
                             UMA_PAIRING_METHOD_DISPLAY_PINCODE,
                             UMA_PAIRING_METHOD_COUNT);
@@ -118,7 +120,7 @@ void BluetoothPairingBlueZ::DisplayPinCode(const std::string& pincode) {
     device_->EndPairing();
 }
 
-void BluetoothPairingBlueZ::RequestPasskey(
+void BluetoothPairingChromeOS::RequestPasskey(
     const bluez::BluetoothAgentServiceProvider::Delegate::PasskeyCallback&
         callback) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
@@ -131,11 +133,11 @@ void BluetoothPairingBlueZ::RequestPasskey(
   pairing_delegate_->RequestPasskey(device_);
 }
 
-bool BluetoothPairingBlueZ::ExpectingPasskey() const {
+bool BluetoothPairingChromeOS::ExpectingPasskey() const {
   return !passkey_callback_.is_null();
 }
 
-void BluetoothPairingBlueZ::SetPasskey(uint32 passkey) {
+void BluetoothPairingChromeOS::SetPasskey(uint32 passkey) {
   if (passkey_callback_.is_null())
     return;
 
@@ -150,7 +152,7 @@ void BluetoothPairingBlueZ::SetPasskey(uint32 passkey) {
     device_->EndPairing();
 }
 
-void BluetoothPairingBlueZ::DisplayPasskey(uint32 passkey) {
+void BluetoothPairingChromeOS::DisplayPasskey(uint32 passkey) {
   UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
                             UMA_PAIRING_METHOD_DISPLAY_PASSKEY,
                             UMA_PAIRING_METHOD_COUNT);
@@ -158,9 +160,10 @@ void BluetoothPairingBlueZ::DisplayPasskey(uint32 passkey) {
   ResetCallbacks();
   pairing_delegate_used_ = true;
   pairing_delegate_->DisplayPasskey(device_, passkey);
+
 }
 
-void BluetoothPairingBlueZ::KeysEntered(uint16 entered) {
+void BluetoothPairingChromeOS::KeysEntered(uint16 entered) {
   pairing_delegate_used_ = true;
   pairing_delegate_->KeysEntered(device_, entered);
 
@@ -171,7 +174,7 @@ void BluetoothPairingBlueZ::KeysEntered(uint16 entered) {
     device_->EndPairing();
 }
 
-void BluetoothPairingBlueZ::RequestConfirmation(
+void BluetoothPairingChromeOS::RequestConfirmation(
     uint32 passkey,
     const bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
         callback) {
@@ -185,10 +188,11 @@ void BluetoothPairingBlueZ::RequestConfirmation(
   pairing_delegate_->ConfirmPasskey(device_, passkey);
 }
 
-void BluetoothPairingBlueZ::RequestAuthorization(
+void BluetoothPairingChromeOS::RequestAuthorization(
     const bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback&
         callback) {
-  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod", UMA_PAIRING_METHOD_NONE,
+  UMA_HISTOGRAM_ENUMERATION("Bluetooth.PairingMethod",
+                            UMA_PAIRING_METHOD_NONE,
                             UMA_PAIRING_METHOD_COUNT);
 
   ResetCallbacks();
@@ -197,11 +201,11 @@ void BluetoothPairingBlueZ::RequestAuthorization(
   pairing_delegate_->AuthorizePairing(device_);
 }
 
-bool BluetoothPairingBlueZ::ExpectingConfirmation() const {
+bool BluetoothPairingChromeOS::ExpectingConfirmation() const {
   return !confirmation_callback_.is_null();
 }
 
-void BluetoothPairingBlueZ::ConfirmPairing() {
+void BluetoothPairingChromeOS::ConfirmPairing() {
   if (confirmation_callback_.is_null())
     return;
 
@@ -216,28 +220,28 @@ void BluetoothPairingBlueZ::ConfirmPairing() {
     device_->EndPairing();
 }
 
-bool BluetoothPairingBlueZ::RejectPairing() {
+bool BluetoothPairingChromeOS::RejectPairing() {
   return RunPairingCallbacks(
       bluez::BluetoothAgentServiceProvider::Delegate::REJECTED);
 }
 
-bool BluetoothPairingBlueZ::CancelPairing() {
+bool BluetoothPairingChromeOS::CancelPairing() {
   return RunPairingCallbacks(
       bluez::BluetoothAgentServiceProvider::Delegate::CANCELLED);
 }
 
-BluetoothDevice::PairingDelegate* BluetoothPairingBlueZ::GetPairingDelegate()
-    const {
+BluetoothDevice::PairingDelegate*
+BluetoothPairingChromeOS::GetPairingDelegate() const {
   return pairing_delegate_;
 }
 
-void BluetoothPairingBlueZ::ResetCallbacks() {
+void BluetoothPairingChromeOS::ResetCallbacks() {
   pincode_callback_.Reset();
   passkey_callback_.Reset();
   confirmation_callback_.Reset();
 }
 
-bool BluetoothPairingBlueZ::RunPairingCallbacks(
+bool BluetoothPairingChromeOS::RunPairingCallbacks(
     bluez::BluetoothAgentServiceProvider::Delegate::Status status) {
   pairing_delegate_used_ = true;
 
@@ -269,4 +273,4 @@ bool BluetoothPairingBlueZ::RunPairingCallbacks(
   return callback_run;
 }
 
-}  // namespace bluez
+}  // namespace chromeos

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_
 
 #include <map>
 #include <queue>
@@ -33,17 +33,17 @@ namespace device {
 class BluetoothSocketThread;
 }  // namespace device
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothBlueZTest;
-class BluetoothAdapterProfileBlueZ;
-class BluetoothDeviceBlueZ;
-class BluetoothPairingBlueZ;
-class BluetoothRemoteGattCharacteristicBlueZ;
-class BluetoothRemoteGattDescriptorBlueZ;
-class BluetoothRemoteGattServiceBlueZ;
+class BluetoothChromeOSTest;
+class BluetoothAdapterProfileChromeOS;
+class BluetoothDeviceChromeOS;
+class BluetoothPairingChromeOS;
+class BluetoothRemoteGattCharacteristicChromeOS;
+class BluetoothRemoteGattDescriptorChromeOS;
+class BluetoothRemoteGattServiceChromeOS;
 
-// The BluetoothAdapterBlueZ class implements BluetoothAdapter for the
+// The BluetoothAdapterChromeOS class implements BluetoothAdapter for the
 // Chrome OS platform.
 //
 // All methods are called from the dbus origin / UI thread and are generally
@@ -52,13 +52,13 @@ class BluetoothRemoteGattServiceBlueZ;
 // This class interacts with sockets using the BluetoothSocketThread to ensure
 // single-threaded calls, and posts tasks to the UI thread.
 //
-// Methods tolerate a shutdown scenario where BluetoothAdapterBlueZ::Shutdown
+// Methods tolerate a shutdown scenario where BluetoothAdapterChromeOS::Shutdown
 // causes IsPresent to return false just before the dbus system is shutdown but
-// while references to the BluetoothAdapterBlueZ object still exists.
+// while references to the BluetoothAdapterChromeOS object still exists.
 //
 // When adding methods to this class verify shutdown behavior in
-// BluetoothBlueZTest, Shutdown.
-class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
+// BluetoothChromeOSTest, Shutdown.
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterChromeOS
     : public device::BluetoothAdapter,
       public bluez::BluetoothAdapterClient::Observer,
       public bluez::BluetoothDeviceClient::Observer,
@@ -67,7 +67,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
  public:
   typedef base::Callback<void(const std::string& error_message)>
       ErrorCompletionCallback;
-  typedef base::Callback<void(BluetoothAdapterProfileBlueZ* profile)>
+  typedef base::Callback<void(BluetoothAdapterProfileChromeOS* profile)>
       ProfileRegisteredCallback;
 
   static base::WeakPtr<BluetoothAdapter> CreateAdapter();
@@ -112,35 +112,36 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Locates the device object by object path (the devices map and
   // BluetoothDevice methods are by address).
-  BluetoothDeviceBlueZ* GetDeviceWithPath(const dbus::ObjectPath& object_path);
+  BluetoothDeviceChromeOS* GetDeviceWithPath(
+      const dbus::ObjectPath& object_path);
 
   // Announces to observers a change in device state that is not reflected by
   // its D-Bus properties. |device| is owned by the caller and cannot be NULL.
-  void NotifyDeviceChanged(BluetoothDeviceBlueZ* device);
+  void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
 
   // Announce to observers a device address change.
-  void NotifyDeviceAddressChanged(BluetoothDeviceBlueZ* device,
+  void NotifyDeviceAddressChanged(BluetoothDeviceChromeOS* device,
                                   const std::string& old_address);
 
   // The following methods are used to send various GATT observer events to
   // observers.
-  void NotifyGattServiceAdded(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattServiceRemoved(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattServiceChanged(BluetoothRemoteGattServiceBlueZ* service);
-  void NotifyGattDiscoveryComplete(BluetoothRemoteGattServiceBlueZ* service);
+  void NotifyGattServiceAdded(BluetoothRemoteGattServiceChromeOS* service);
+  void NotifyGattServiceRemoved(BluetoothRemoteGattServiceChromeOS* service);
+  void NotifyGattServiceChanged(BluetoothRemoteGattServiceChromeOS* service);
+  void NotifyGattDiscoveryComplete(BluetoothRemoteGattServiceChromeOS* service);
   void NotifyGattCharacteristicAdded(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic);
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic);
   void NotifyGattCharacteristicRemoved(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic);
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic);
   void NotifyGattDescriptorAdded(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor);
+      BluetoothRemoteGattDescriptorChromeOS* descriptor);
   void NotifyGattDescriptorRemoved(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor);
+      BluetoothRemoteGattDescriptorChromeOS* descriptor);
   void NotifyGattCharacteristicValueChanged(
-      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
+      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
       const std::vector<uint8>& value);
   void NotifyGattDescriptorValueChanged(
-      BluetoothRemoteGattDescriptorBlueZ* descriptor,
+      BluetoothRemoteGattDescriptorChromeOS* descriptor,
       const std::vector<uint8>& value);
 
   // Returns the object path of the adapter.
@@ -151,7 +152,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // If |device_path| is the empty string, incoming connections will be
   // assigned to |delegate|.  When the profile is
   // successfully registered, |success_callback| will be called with a pointer
-  // to the profile which is managed by BluetoothAdapterBlueZ.  On failure,
+  // to the profile which is managed by BluetoothAdapterChromeOS.  On failure,
   // |error_callback| will be called.
   void UseProfile(const device::BluetoothUUID& uuid,
                   const dbus::ObjectPath& device_path,
@@ -162,7 +163,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Release use of a profile by a device.
   void ReleaseProfile(const dbus::ObjectPath& device_path,
-                      BluetoothAdapterProfileBlueZ* profile);
+                      BluetoothAdapterProfileChromeOS* profile);
 
  protected:
   // BluetoothAdapter:
@@ -170,12 +171,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
       device::BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
  private:
-  friend class BluetoothBlueZTest;
-  friend class BluetoothBlueZTest_Shutdown_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStartDiscovery_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStartDiscoveryError_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStopDiscovery_Test;
-  friend class BluetoothBlueZTest_Shutdown_OnStopDiscoveryError_Test;
+  friend class BluetoothChromeOSTest;
+  friend class BluetoothChromeOSTest_Shutdown_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStartDiscovery_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStartDiscoveryError_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStopDiscovery_Test;
+  friend class BluetoothChromeOSTest_Shutdown_OnStopDiscoveryError_Test;
 
   // typedef for callback parameters that are passed to AddDiscoverySession
   // and RemoveDiscoverySession. This is used to queue incoming requests while
@@ -189,8 +190,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   typedef std::pair<base::Closure, ErrorCompletionCallback>
       RegisterProfileCompletionPair;
 
-  BluetoothAdapterBlueZ();
-  ~BluetoothAdapterBlueZ() override;
+  BluetoothAdapterChromeOS();
+  ~BluetoothAdapterChromeOS() override;
 
   // bluez::BluetoothAdapterClient::Observer override.
   void AdapterAdded(const dbus::ObjectPath& object_path) override;
@@ -241,19 +242,19 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void OnRequestDefaultAgentError(const std::string& error_name,
                                   const std::string& error_message);
 
-  // Called by BluetoothAudioSinkBlueZ on completion of registering an audio
+  // Called by BluetoothAudioSinkChromeOS on completion of registering an audio
   // sink.
   void OnRegisterAudioSink(
       const device::BluetoothAdapter::AcquiredCallback& callback,
       const device::BluetoothAudioSink::ErrorCallback& error_callback,
       scoped_refptr<device::BluetoothAudioSink> audio_sink);
 
-  // Internal method to obtain a BluetoothPairingBlueZ object for the device
+  // Internal method to obtain a BluetoothPairingChromeOS object for the device
   // with path |object_path|. Returns the existing pairing object if the device
   // already has one (usually an outgoing connection in progress) or a new
   // pairing object with the default pairing delegate if not. If no default
   // pairing object exists, NULL will be returned.
-  BluetoothPairingBlueZ* GetPairing(const dbus::ObjectPath& object_path);
+  BluetoothPairingChromeOS* GetPairing(const dbus::ObjectPath& object_path);
 
   // Set the tracked adapter to the one in |object_path|, this object will
   // subsequently operate on that adapter until it is removed.
@@ -329,7 +330,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Called by dbus:: on completion of the D-Bus method to register a profile.
   void OnRegisterProfile(const device::BluetoothUUID& uuid,
-                         scoped_ptr<BluetoothAdapterProfileBlueZ> profile);
+                         scoped_ptr<BluetoothAdapterProfileChromeOS> profile);
 
   void SetProfileDelegate(
       const device::BluetoothUUID& uuid,
@@ -341,7 +342,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
                               const std::string& error_name,
                               const std::string& error_message);
 
-  // Called by BluetoothAdapterProfileBlueZ when no users of a profile
+  // Called by BluetoothAdapterProfileChromeOS when no users of a profile
   // remain.
   void RemoveProfile(const device::BluetoothUUID& uuid);
 
@@ -383,7 +384,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   scoped_refptr<device::BluetoothSocketThread> socket_thread_;
 
   // The profiles we have registered with the bluetooth daemon.
-  std::map<device::BluetoothUUID, BluetoothAdapterProfileBlueZ*> profiles_;
+  std::map<device::BluetoothUUID, BluetoothAdapterProfileChromeOS*> profiles_;
 
   // Queue of delegates waiting for a profile to register.
   std::map<device::BluetoothUUID, std::vector<RegisterProfileCompletionPair>*>
@@ -393,11 +394,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAdapterBlueZ> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAdapterChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdapterChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_CHROMEOS_H_

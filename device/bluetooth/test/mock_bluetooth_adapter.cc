@@ -27,7 +27,7 @@ MockBluetoothAdapter::MockBluetoothAdapter() {
 
 MockBluetoothAdapter::~MockBluetoothAdapter() {}
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 void MockBluetoothAdapter::Shutdown() {
 }
 #endif

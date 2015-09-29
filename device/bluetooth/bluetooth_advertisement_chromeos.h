@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_
 
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -15,19 +15,19 @@ namespace bluez {
 class BluetoothLEAdvertisementServiceProvider;
 }
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothAdapterBlueZ;
+class BluetoothAdapterChromeOS;
 
-// The BluetoothAdvertisementBlueZ class implements BluetoothAdvertisement
+// The BluetoothAdvertisementChromeOS class implements BluetoothAdvertisement
 // for the Chrome OS platform.
-class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementChromeOS
     : public device::BluetoothAdvertisement,
       public bluez::BluetoothLEAdvertisementServiceProvider::Delegate {
  public:
-  BluetoothAdvertisementBlueZ(
+  BluetoothAdvertisementChromeOS(
       scoped_ptr<device::BluetoothAdvertisement::Data> data,
-      scoped_refptr<BluetoothAdapterBlueZ> adapter);
+      scoped_refptr<BluetoothAdapterChromeOS> adapter);
 
   // BluetoothAdvertisement overrides:
   void Unregister(const SuccessCallback& success_callback,
@@ -48,15 +48,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisementBlueZ
   }
 
  private:
-  ~BluetoothAdvertisementBlueZ() override;
+  ~BluetoothAdvertisementChromeOS() override;
 
   // Adapter this advertisement is advertising on.
-  scoped_refptr<BluetoothAdapterBlueZ> adapter_;
+  scoped_refptr<BluetoothAdapterChromeOS> adapter_;
   scoped_ptr<bluez::BluetoothLEAdvertisementServiceProvider> provider_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAdvertisementChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_ADVERTISEMENT_CHROMEOS_H_

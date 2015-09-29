@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H
+#define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H
 
 #include <string>
 
@@ -21,19 +21,19 @@ namespace device {
 class BluetoothSocketThread;
 }  // namespace device
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothAdapterBlueZ;
-class BluetoothPairingBlueZ;
+class BluetoothAdapterChromeOS;
+class BluetoothPairingChromeOS;
 
-// The BluetoothDeviceBlueZ class implements BluetoothDevice for the
+// The BluetoothDeviceChromeOS class implements BluetoothDevice for the
 // Chrome OS platform.
 //
 // This class is not thread-safe, but is only called from the UI thread.
 //
 // A socket thread is used to create sockets but posts all callbacks on the UI
 // thread.
-class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
     : public device::BluetoothDevice,
       public bluez::BluetoothGattServiceClient::Observer {
  public:
@@ -55,7 +55,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
-  void GetConnectionInfo(const ConnectionInfoCallback& callback) override;
+  void GetConnectionInfo(
+      const ConnectionInfoCallback& callback) override;
   void Connect(device::BluetoothDevice::PairingDelegate* pairing_delegate,
                const base::Closure& callback,
                const ConnectErrorCallback& error_callback) override;
@@ -82,7 +83,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
   // method calls will be forwarded to this object until it is released.
-  BluetoothPairingBlueZ* BeginPairing(
+  BluetoothPairingChromeOS* BeginPairing(
       BluetoothDevice::PairingDelegate* pairing_delegate);
 
   // Releases the current pairing object, any pairing-related method calls will
@@ -90,13 +91,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void EndPairing();
 
   // Returns the current pairing object or NULL if no pairing is in progress.
-  BluetoothPairingBlueZ* GetPairing() const;
+  BluetoothPairingChromeOS* GetPairing() const;
 
   // Returns the object path of the device.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
   // Returns the adapter which owns this device instance.
-  BluetoothAdapterBlueZ* adapter() const;
+  BluetoothAdapterChromeOS* adapter() const;
 
  protected:
   // BluetoothDevice override
@@ -105,14 +106,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void DisconnectGatt() override;
 
  private:
-  friend class BluetoothAdapterBlueZ;
+  friend class BluetoothAdapterChromeOS;
 
-  BluetoothDeviceBlueZ(
-      BluetoothAdapterBlueZ* adapter,
+  BluetoothDeviceChromeOS(
+      BluetoothAdapterChromeOS* adapter,
       const dbus::ObjectPath& object_path,
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
-  ~BluetoothDeviceBlueZ() override;
+  ~BluetoothDeviceChromeOS() override;
 
   // bluez::BluetoothGattServiceClient::Observer overrides.
   void GattServiceAdded(const dbus::ObjectPath& object_path) override;
@@ -133,7 +134,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void ConnectInternal(bool after_pairing,
                        const base::Closure& callback,
                        const ConnectErrorCallback& error_callback);
-  void OnConnect(bool after_pairing, const base::Closure& callback);
+  void OnConnect(bool after_pairing,
+                 const base::Closure& callback);
   void OnCreateGattConnection(const GattConnectionCallback& callback);
   void OnConnectError(bool after_pairing,
                       const ConnectErrorCallback& error_callback,
@@ -191,15 +193,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   // During pairing this is set to an object that we don't own, but on which
   // we can make method calls to request, display or confirm PIN Codes and
   // Passkeys. Generally it is the object that owns this one.
-  scoped_ptr<BluetoothPairingBlueZ> pairing_;
+  scoped_ptr<BluetoothPairingChromeOS> pairing_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothDeviceBlueZ> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothDeviceChromeOS> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_CHROMEOS_H

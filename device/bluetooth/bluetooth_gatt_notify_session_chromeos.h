@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_
 
 #include <string>
 
@@ -17,17 +17,17 @@ class BluetoothAdapter;
 
 }  // namespace device
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothRemoteGattCharacteristicBlueZ;
+class BluetoothRemoteGattCharacteristicChromeOS;
 
-// BluetoothGattNotifySessionBlueZ implements
+// BluetoothGattNotifySessionChromeOS implements
 // BluetoothGattNotifySession for the Chrome OS platform.
-class BluetoothGattNotifySessionBlueZ
+class BluetoothGattNotifySessionChromeOS
     : public device::BluetoothGattNotifySession,
       public bluez::BluetoothGattCharacteristicClient::Observer {
  public:
-  ~BluetoothGattNotifySessionBlueZ() override;
+  ~BluetoothGattNotifySessionChromeOS() override;
 
   // BluetoothGattNotifySession overrides.
   std::string GetCharacteristicIdentifier() const override;
@@ -35,9 +35,9 @@ class BluetoothGattNotifySessionBlueZ
   void Stop(const base::Closure& callback) override;
 
  private:
-  friend class BluetoothRemoteGattCharacteristicBlueZ;
+  friend class BluetoothRemoteGattCharacteristicChromeOS;
 
-  explicit BluetoothGattNotifySessionBlueZ(
+  explicit BluetoothGattNotifySessionChromeOS(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const std::string& device_address,
       const std::string& service_identifier,
@@ -69,9 +69,9 @@ class BluetoothGattNotifySessionBlueZ
   // observer events.
   dbus::ObjectPath object_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattNotifySessionBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGattNotifySessionChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  //  DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_
+#endif  //  DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_

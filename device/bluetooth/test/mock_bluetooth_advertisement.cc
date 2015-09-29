@@ -18,4 +18,4 @@ void MockBluetoothAdvertisement::Unregister(
   success_callback.Run();
 }
 
-}  // namespace device
+}  // namespace chromeos

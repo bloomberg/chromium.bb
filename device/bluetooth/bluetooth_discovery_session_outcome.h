@@ -23,12 +23,12 @@ enum class UMABluetoothDiscoverySessionOutcome {
   ACTIVE_SESSION_NOT_IN_ADAPTER = 7,
   FAILED = 8,
 
-  // BlueZ-specific failures:
-  BLUEZ_DBUS_UNKNOWN_ADAPTER = 9,
-  BLUEZ_DBUS_NO_RESPONSE = 10,
-  BLUEZ_DBUS_IN_PROGRESS = 11,
-  BLUEZ_DBUS_NOT_READY = 12,
-  BLUEZ_DBUS_FAILED_MAYBE_UNSUPPORTED_TRANSPORT = 13,
+  // ChromeOS-specific failures:
+  CHROMEOS_DBUS_UNKNOWN_ADAPTER = 9,
+  CHROMEOS_DBUS_NO_RESPONSE = 10,
+  CHROMEOS_DBUS_IN_PROGRESS = 11,
+  CHROMEOS_DBUS_NOT_READY = 12,
+  CHROMEOS_DBUS_FAILED_MAYBE_UNSUPPORTED_TRANSPORT = 13,
   // NOTE: Add new outcomes immediately above this line. Make sure to update the
   // enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT

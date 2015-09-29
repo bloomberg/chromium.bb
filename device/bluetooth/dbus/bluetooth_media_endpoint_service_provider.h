@@ -21,7 +21,7 @@ namespace bluez {
 //
 // Instantiate with a chosen D-Bus object path and a delegate object, and pass
 // the D-Bus object path as |endpoint_path| argument to the
-// bluez::BluetoothMediaClient::RegisterEndoint() method.
+// chromeos::BluetoothMediaClient::RegisterEndoint() method.
 //
 // After initiating a connection between an audio source and an audio sink, the
 // Bluetooth daemon will make calls to this endpoint object and they will be

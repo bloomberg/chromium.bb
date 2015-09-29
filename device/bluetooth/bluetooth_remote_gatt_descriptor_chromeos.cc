@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_descriptor_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace bluez {
+namespace chromeos {
 
 namespace {
 
@@ -28,8 +28,8 @@ std::ostream& operator<<(std::ostream& out, const std::vector<uint8> bytes) {
 
 }  // namespace
 
-BluetoothRemoteGattDescriptorBlueZ::BluetoothRemoteGattDescriptorBlueZ(
-    BluetoothRemoteGattCharacteristicBlueZ* characteristic,
+BluetoothRemoteGattDescriptorChromeOS::BluetoothRemoteGattDescriptorChromeOS(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
     const dbus::ObjectPath& object_path)
     : object_path_(object_path),
       characteristic_(characteristic),
@@ -38,13 +38,15 @@ BluetoothRemoteGattDescriptorBlueZ::BluetoothRemoteGattDescriptorBlueZ(
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 }
 
-BluetoothRemoteGattDescriptorBlueZ::~BluetoothRemoteGattDescriptorBlueZ() {}
+BluetoothRemoteGattDescriptorChromeOS::
+    ~BluetoothRemoteGattDescriptorChromeOS() {
+}
 
-std::string BluetoothRemoteGattDescriptorBlueZ::GetIdentifier() const {
+std::string BluetoothRemoteGattDescriptorChromeOS::GetIdentifier() const {
   return object_path_.value();
 }
 
-device::BluetoothUUID BluetoothRemoteGattDescriptorBlueZ::GetUUID() const {
+device::BluetoothUUID BluetoothRemoteGattDescriptorChromeOS::GetUUID() const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
@@ -53,11 +55,12 @@ device::BluetoothUUID BluetoothRemoteGattDescriptorBlueZ::GetUUID() const {
   return device::BluetoothUUID(properties->uuid.value());
 }
 
-bool BluetoothRemoteGattDescriptorBlueZ::IsLocal() const {
+bool BluetoothRemoteGattDescriptorChromeOS::IsLocal() const {
   return false;
 }
 
-const std::vector<uint8>& BluetoothRemoteGattDescriptorBlueZ::GetValue() const {
+const std::vector<uint8>&
+BluetoothRemoteGattDescriptorChromeOS::GetValue() const {
   bluez::BluetoothGattDescriptorClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattDescriptorClient()
@@ -69,47 +72,47 @@ const std::vector<uint8>& BluetoothRemoteGattDescriptorBlueZ::GetValue() const {
 }
 
 device::BluetoothGattCharacteristic*
-BluetoothRemoteGattDescriptorBlueZ::GetCharacteristic() const {
+BluetoothRemoteGattDescriptorChromeOS::GetCharacteristic() const {
   return characteristic_;
 }
 
 device::BluetoothGattCharacteristic::Permissions
-BluetoothRemoteGattDescriptorBlueZ::GetPermissions() const {
+BluetoothRemoteGattDescriptorChromeOS::GetPermissions() const {
   // TODO(armansito): Once BlueZ defines the permissions, return the correct
   // values here.
   return device::BluetoothGattCharacteristic::PERMISSION_NONE;
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::ReadRemoteDescriptor(
+void BluetoothRemoteGattDescriptorChromeOS::ReadRemoteDescriptor(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor read request to "
-          << "descriptor: " << GetIdentifier()
-          << ", UUID: " << GetUUID().canonical_value();
+          << "descriptor: " << GetIdentifier() << ", UUID: "
+          << GetUUID().canonical_value();
 
   bluez::BluezDBusManager::Get()->GetBluetoothGattDescriptorClient()->ReadValue(
       object_path_, callback,
-      base::Bind(&BluetoothRemoteGattDescriptorBlueZ::OnError,
+      base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::WriteRemoteDescriptor(
+void BluetoothRemoteGattDescriptorChromeOS::WriteRemoteDescriptor(
     const std::vector<uint8>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic descriptor write request to "
-          << "characteristic: " << GetIdentifier()
-          << ", UUID: " << GetUUID().canonical_value()
-          << ", with value: " << new_value << ".";
+          << "characteristic: " << GetIdentifier() << ", UUID: "
+          << GetUUID().canonical_value() << ", with value: "
+          << new_value << ".";
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattDescriptorClient()
       ->WriteValue(object_path_, new_value, callback,
-                   base::Bind(&BluetoothRemoteGattDescriptorBlueZ::OnError,
+                   base::Bind(&BluetoothRemoteGattDescriptorChromeOS::OnError,
                               weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattDescriptorBlueZ::OnError(
+void BluetoothRemoteGattDescriptorChromeOS::OnError(
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -117,7 +120,7 @@ void BluetoothRemoteGattDescriptorBlueZ::OnError(
           << ", message: " << error_message;
 
   error_callback.Run(
-      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
+      BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(error_name));
 }
 
-}  // namespace bluez
+}  // namespace chromeos

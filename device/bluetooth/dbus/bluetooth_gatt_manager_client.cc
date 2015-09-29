@@ -73,7 +73,7 @@ class BluetoothGattManagerClientImpl : public BluetoothGattManagerClient {
   }
 
  protected:
-  // bluez::DBusClient override.
+  // chromeos::DBusClient override.
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_adapter_bluez.h"
-#include "device/bluetooth/bluetooth_device_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_device_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_service_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace bluez {
+namespace chromeos {
 
 namespace {
 
@@ -28,9 +28,9 @@ const char kErrorNotPermitted[] = "org.bluez.Error.NotPermitted";
 
 }  // namespace
 
-BluetoothRemoteGattServiceBlueZ::BluetoothRemoteGattServiceBlueZ(
-    BluetoothAdapterBlueZ* adapter,
-    BluetoothDeviceBlueZ* device,
+BluetoothRemoteGattServiceChromeOS::BluetoothRemoteGattServiceChromeOS(
+    BluetoothAdapterChromeOS* adapter,
+    BluetoothDeviceChromeOS* device,
     const dbus::ObjectPath& object_path)
     : object_path_(object_path),
       adapter_(adapter),
@@ -57,7 +57,7 @@ BluetoothRemoteGattServiceBlueZ::BluetoothRemoteGattServiceBlueZ(
     GattCharacteristicAdded(*iter);
 }
 
-BluetoothRemoteGattServiceBlueZ::~BluetoothRemoteGattServiceBlueZ() {
+BluetoothRemoteGattServiceChromeOS::~BluetoothRemoteGattServiceChromeOS() {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattServiceClient()
       ->RemoveObserver(this);
@@ -79,11 +79,11 @@ BluetoothRemoteGattServiceBlueZ::~BluetoothRemoteGattServiceBlueZ() {
   }
 }
 
-std::string BluetoothRemoteGattServiceBlueZ::GetIdentifier() const {
+std::string BluetoothRemoteGattServiceChromeOS::GetIdentifier() const {
   return object_path_.value();
 }
 
-device::BluetoothUUID BluetoothRemoteGattServiceBlueZ::GetUUID() const {
+device::BluetoothUUID BluetoothRemoteGattServiceChromeOS::GetUUID() const {
   bluez::BluetoothGattServiceClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattServiceClient()
@@ -92,11 +92,11 @@ device::BluetoothUUID BluetoothRemoteGattServiceBlueZ::GetUUID() const {
   return device::BluetoothUUID(properties->uuid.value());
 }
 
-bool BluetoothRemoteGattServiceBlueZ::IsLocal() const {
+bool BluetoothRemoteGattServiceChromeOS::IsLocal() const {
   return false;
 }
 
-bool BluetoothRemoteGattServiceBlueZ::IsPrimary() const {
+bool BluetoothRemoteGattServiceChromeOS::IsPrimary() const {
   bluez::BluetoothGattServiceClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattServiceClient()
@@ -105,12 +105,12 @@ bool BluetoothRemoteGattServiceBlueZ::IsPrimary() const {
   return properties->primary.value();
 }
 
-device::BluetoothDevice* BluetoothRemoteGattServiceBlueZ::GetDevice() const {
+device::BluetoothDevice* BluetoothRemoteGattServiceChromeOS::GetDevice() const {
   return device_;
 }
 
 std::vector<device::BluetoothGattCharacteristic*>
-BluetoothRemoteGattServiceBlueZ::GetCharacteristics() const {
+BluetoothRemoteGattServiceChromeOS::GetCharacteristics() const {
   std::vector<device::BluetoothGattCharacteristic*> characteristics;
   for (CharacteristicMap::const_iterator iter = characteristics_.begin();
        iter != characteristics_.end(); ++iter) {
@@ -120,13 +120,13 @@ BluetoothRemoteGattServiceBlueZ::GetCharacteristics() const {
 }
 
 std::vector<device::BluetoothGattService*>
-BluetoothRemoteGattServiceBlueZ::GetIncludedServices() const {
+BluetoothRemoteGattServiceChromeOS::GetIncludedServices() const {
   // TODO(armansito): Return the actual included services here.
   return std::vector<device::BluetoothGattService*>();
 }
 
 device::BluetoothGattCharacteristic*
-BluetoothRemoteGattServiceBlueZ::GetCharacteristic(
+BluetoothRemoteGattServiceChromeOS::GetCharacteristic(
     const std::string& identifier) const {
   CharacteristicMap::const_iterator iter =
       characteristics_.find(dbus::ObjectPath(identifier));
@@ -135,26 +135,26 @@ BluetoothRemoteGattServiceBlueZ::GetCharacteristic(
   return iter->second;
 }
 
-bool BluetoothRemoteGattServiceBlueZ::AddCharacteristic(
+bool BluetoothRemoteGattServiceChromeOS::AddCharacteristic(
     device::BluetoothGattCharacteristic* characteristic) {
   VLOG(1) << "Characteristics cannot be added to a remote GATT service.";
   return false;
 }
 
-bool BluetoothRemoteGattServiceBlueZ::AddIncludedService(
+bool BluetoothRemoteGattServiceChromeOS::AddIncludedService(
     device::BluetoothGattService* service) {
   VLOG(1) << "Included services cannot be added to a remote GATT service.";
   return false;
 }
 
-void BluetoothRemoteGattServiceBlueZ::Register(
+void BluetoothRemoteGattServiceChromeOS::Register(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "A remote GATT service cannot be registered.";
   error_callback.Run();
 }
 
-void BluetoothRemoteGattServiceBlueZ::Unregister(
+void BluetoothRemoteGattServiceChromeOS::Unregister(
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "A remote GATT service cannot be unregistered.";
@@ -163,7 +163,7 @@ void BluetoothRemoteGattServiceBlueZ::Unregister(
 
 // static
 device::BluetoothGattService::GattErrorCode
-BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(
+BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(
     std::string error_name) {
   device::BluetoothGattService::GattErrorCode code = GATT_ERROR_UNKNOWN;
   if (error_name == kErrorFailed) {
@@ -184,11 +184,12 @@ BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(
   return code;
 }
 
-BluetoothAdapterBlueZ* BluetoothRemoteGattServiceBlueZ::GetAdapter() const {
+BluetoothAdapterChromeOS*
+BluetoothRemoteGattServiceChromeOS::GetAdapter() const {
   return adapter_;
 }
 
-void BluetoothRemoteGattServiceBlueZ::NotifyServiceChanged() {
+void BluetoothRemoteGattServiceChromeOS::NotifyServiceChanged() {
   // Don't send service changed unless we know that all characteristics have
   // already been discovered. This is to prevent spammy events before sending
   // out the first Gatt
@@ -199,9 +200,9 @@ void BluetoothRemoteGattServiceBlueZ::NotifyServiceChanged() {
   adapter_->NotifyGattServiceChanged(this);
 }
 
-void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorAddedOrRemoved(
-    BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-    BluetoothRemoteGattDescriptorBlueZ* descriptor,
+void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorAddedOrRemoved(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    BluetoothRemoteGattDescriptorChromeOS* descriptor,
     bool added) {
   DCHECK(characteristic->GetService() == this);
   DCHECK(descriptor->GetCharacteristic() == characteristic);
@@ -215,9 +216,9 @@ void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorAddedOrRemoved(
   adapter_->NotifyGattDescriptorRemoved(descriptor);
 }
 
-void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorValueChanged(
-    BluetoothRemoteGattCharacteristicBlueZ* characteristic,
-    BluetoothRemoteGattDescriptorBlueZ* descriptor,
+void BluetoothRemoteGattServiceChromeOS::NotifyDescriptorValueChanged(
+    BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+    BluetoothRemoteGattDescriptorChromeOS* descriptor,
     const std::vector<uint8>& value) {
   DCHECK(characteristic->GetService() == this);
   DCHECK(descriptor->GetCharacteristic() == characteristic);
@@ -225,9 +226,9 @@ void BluetoothRemoteGattServiceBlueZ::NotifyDescriptorValueChanged(
   adapter_->NotifyGattDescriptorValueChanged(descriptor, value);
 }
 
-void BluetoothRemoteGattServiceBlueZ::GattServicePropertyChanged(
+void BluetoothRemoteGattServiceChromeOS::GattServicePropertyChanged(
     const dbus::ObjectPath& object_path,
-    const std::string& property_name) {
+    const std::string& property_name){
   if (object_path != object_path_)
     return;
 
@@ -254,7 +255,7 @@ void BluetoothRemoteGattServiceBlueZ::GattServicePropertyChanged(
   adapter_->NotifyGattDiscoveryComplete(this);
 }
 
-void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
+void BluetoothRemoteGattServiceChromeOS::GattCharacteristicAdded(
     const dbus::ObjectPath& object_path) {
   if (characteristics_.find(object_path) != characteristics_.end()) {
     VLOG(1) << "Remote GATT characteristic already exists: "
@@ -275,8 +276,8 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
   VLOG(1) << "Adding new remote GATT characteristic for GATT service: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattCharacteristicBlueZ* characteristic =
-      new BluetoothRemoteGattCharacteristicBlueZ(this, object_path);
+  BluetoothRemoteGattCharacteristicChromeOS* characteristic =
+      new BluetoothRemoteGattCharacteristicChromeOS(this, object_path);
   characteristics_[object_path] = characteristic;
   DCHECK(characteristic->GetIdentifier() == object_path.value());
   DCHECK(characteristic->GetUUID().IsValid());
@@ -285,7 +286,7 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicAdded(
   adapter_->NotifyGattCharacteristicAdded(characteristic);
 }
 
-void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
+void BluetoothRemoteGattServiceChromeOS::GattCharacteristicRemoved(
     const dbus::ObjectPath& object_path) {
   CharacteristicMap::iterator iter = characteristics_.find(object_path);
   if (iter == characteristics_.end()) {
@@ -296,7 +297,7 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
   VLOG(1) << "Removing remote GATT characteristic from service: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattCharacteristicBlueZ* characteristic = iter->second;
+  BluetoothRemoteGattCharacteristicChromeOS* characteristic = iter->second;
   DCHECK(characteristic->object_path() == object_path);
   characteristics_.erase(iter);
 
@@ -306,7 +307,7 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicRemoved(
   delete characteristic;
 }
 
-void BluetoothRemoteGattServiceBlueZ::GattCharacteristicPropertyChanged(
+void BluetoothRemoteGattServiceChromeOS::GattCharacteristicPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
   CharacteristicMap::iterator iter = characteristics_.find(object_path);
@@ -335,4 +336,4 @@ void BluetoothRemoteGattServiceBlueZ::GattCharacteristicPropertyChanged(
                                                    properties->value.value());
 }
 
-}  // namespace bluez
+}  // namespace chromeos

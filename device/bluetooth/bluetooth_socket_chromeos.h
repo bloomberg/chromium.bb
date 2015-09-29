@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_
 
 #include <queue>
 #include <string>
@@ -23,24 +23,27 @@ namespace dbus {
 class FileDescriptor;
 }  // namespace dbus
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothDeviceBlueZ;
-class BluetoothAdapterBlueZ;
-class BluetoothAdapterProfileBlueZ;
+class BluetoothDeviceChromeOS;
+class BluetoothAdapterChromeOS;
+class BluetoothAdapterProfileChromeOS;
 
-// The BluetoothSocketBlueZ class implements BluetoothSocket for the
+// The BluetoothSocketChromeOS class implements BluetoothSocket for the
 // Chrome OS platform.
 //
 // This class is not thread-safe, but is only called from the UI thread.
-class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
+class DEVICE_BLUETOOTH_EXPORT BluetoothSocketChromeOS
     : public device::BluetoothSocketNet,
       public device::BluetoothAdapter::Observer,
       public bluez::BluetoothProfileServiceProvider::Delegate {
  public:
-  enum SecurityLevel { SECURITY_LEVEL_LOW, SECURITY_LEVEL_MEDIUM };
+  enum SecurityLevel {
+    SECURITY_LEVEL_LOW,
+    SECURITY_LEVEL_MEDIUM
+  };
 
-  static scoped_refptr<BluetoothSocketBlueZ> CreateBluetoothSocket(
+  static scoped_refptr<BluetoothSocketChromeOS> CreateBluetoothSocket(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
 
@@ -49,7 +52,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   // discovery. On a successful connection the socket properties will be updated
   // and |success_callback| called. On failure |error_callback| will be called
   // with a message explaining the cause of the failure.
-  virtual void Connect(const BluetoothDeviceBlueZ* device,
+  virtual void Connect(const BluetoothDeviceChromeOS* device,
                        const device::BluetoothUUID& uuid,
                        SecurityLevel security_level,
                        const base::Closure& success_callback,
@@ -77,20 +80,20 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
               const ErrorCompletionCallback& error_callback) override;
 
  protected:
-  ~BluetoothSocketBlueZ() override;
+  ~BluetoothSocketChromeOS() override;
 
  private:
-  BluetoothSocketBlueZ(
+  BluetoothSocketChromeOS(
       scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
       scoped_refptr<device::BluetoothSocketThread> socket_thread);
 
   // Register the underlying profile client object with the Bluetooth Daemon.
-  void RegisterProfile(BluetoothAdapterBlueZ* adapter,
+  void RegisterProfile(BluetoothAdapterChromeOS* adapter,
                        const base::Closure& success_callback,
                        const ErrorCompletionCallback& error_callback);
   void OnRegisterProfile(const base::Closure& success_callback,
                          const ErrorCompletionCallback& error_callback,
-                         BluetoothAdapterProfileBlueZ* profile);
+                         BluetoothAdapterProfileChromeOS* profile);
   void OnRegisterProfileError(const ErrorCompletionCallback& error_callback,
                               const std::string& error_message);
 
@@ -106,7 +109,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
 
   // Called by dbus:: on completion of the RegisterProfile() method call
   // triggered as a result of the adapter becoming present again.
-  void OnInternalRegisterProfile(BluetoothAdapterProfileBlueZ* profile);
+  void OnInternalRegisterProfile(BluetoothAdapterProfileChromeOS* profile);
   void OnInternalRegisterProfileError(const std::string& error_message);
 
   // bluez::BluetoothProfileServiceProvider::Delegate:
@@ -166,7 +169,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
   scoped_ptr<bluez::BluetoothProfileManagerClient::Options> options_;
 
   // The profile registered with the adapter for this socket.
-  BluetoothAdapterProfileBlueZ* profile_;
+  BluetoothAdapterProfileChromeOS* profile_;
 
   // Pending request to an Accept() call.
   struct AcceptRequest {
@@ -190,11 +193,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothSocketBlueZ
     bool accepting;
     bool cancelled;
   };
-  std::queue<linked_ptr<ConnectionRequest>> connection_request_queue_;
+  std::queue<linked_ptr<ConnectionRequest> > connection_request_queue_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothSocketChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_SOCKET_CHROMEOS_H_

@@ -29,7 +29,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterFactory {
   // use.
   static void GetAdapter(const AdapterCallback& callback);
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   // Calls |BluetoothAdapter::Shutdown| on the adapter if
   // present.
   static void Shutdown();

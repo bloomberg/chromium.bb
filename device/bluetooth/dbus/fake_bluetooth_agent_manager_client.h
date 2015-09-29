@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
-#define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#define CHROMEOS_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -54,4 +54,4 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAgentManagerClient
 
 }  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_
+#endif  // CHROMEOS_DBUS_FAKE_BLUETOOTH_AGENT_MANAGER_CLIENT_H_

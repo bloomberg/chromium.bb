@@ -37,7 +37,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
 
   virtual bool IsInitialized() const { return true; }
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   void Shutdown() override;
 #endif
   MOCK_METHOD1(AddObserver, void(BluetoothAdapter::Observer*));

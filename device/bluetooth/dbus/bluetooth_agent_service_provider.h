@@ -21,10 +21,10 @@ namespace bluez {
 //
 // Instantiate with a chosen D-Bus object path and delegate object, and pass
 // the D-Bus object path as the |agent_path| argument to the
-// bluez::BluetoothAgentManagerClient::RegisterAgent() method.
+// chromeos::BluetoothAgentManagerClient::RegisterAgent() method.
 //
 // After initiating the pairing process with a device, using the
-// bluez::BluetoothDeviceClient::Pair() method, the Bluetooth daemon will
+// chromeos::BluetoothDeviceClient::Pair() method, the Bluetooth daemon will
 // make calls to this agent object and they will be passed on to your Delegate
 // object for handling. Responses should be returned using the callbacks
 // supplied to those methods.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_adapter_profile_bluez.h"
+#include "device/bluetooth/bluetooth_adapter_profile_chromeos.h"
 
 #include <string>
 
@@ -11,21 +11,21 @@
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_adapter_bluez.h"
+#include "device/bluetooth/bluetooth_adapter_chromeos.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/dbus/bluetooth_profile_service_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace bluez {
+namespace chromeos {
 
 // static
-void BluetoothAdapterProfileBlueZ::Register(
+void BluetoothAdapterProfileChromeOS::Register(
     const device::BluetoothUUID& uuid,
     const bluez::BluetoothProfileManagerClient::Options& options,
     const ProfileRegisteredCallback& success_callback,
     const bluez::BluetoothProfileManagerClient::ErrorCallback& error_callback) {
-  scoped_ptr<BluetoothAdapterProfileBlueZ> profile(
-      new BluetoothAdapterProfileBlueZ(uuid));
+  scoped_ptr<BluetoothAdapterProfileChromeOS> profile(
+      new BluetoothAdapterProfileChromeOS(uuid));
 
   VLOG(1) << "Registering profile: " << profile->object_path().value();
   const dbus::ObjectPath& object_path = profile->object_path();
@@ -36,7 +36,7 @@ void BluetoothAdapterProfileBlueZ::Register(
                         error_callback);
 }
 
-BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(
+BluetoothAdapterProfileChromeOS::BluetoothAdapterProfileChromeOS(
     const device::BluetoothUUID& uuid)
     : uuid_(uuid), weak_ptr_factory_(this) {
   std::string uuid_path;
@@ -50,9 +50,10 @@ BluetoothAdapterProfileBlueZ::BluetoothAdapterProfileBlueZ(
   DCHECK(profile_.get());
 }
 
-BluetoothAdapterProfileBlueZ::~BluetoothAdapterProfileBlueZ() {}
+BluetoothAdapterProfileChromeOS::~BluetoothAdapterProfileChromeOS() {
+}
 
-bool BluetoothAdapterProfileBlueZ::SetDelegate(
+bool BluetoothAdapterProfileChromeOS::SetDelegate(
     const dbus::ObjectPath& device_path,
     bluez::BluetoothProfileServiceProvider::Delegate* delegate) {
   DCHECK(delegate);
@@ -67,7 +68,7 @@ bool BluetoothAdapterProfileBlueZ::SetDelegate(
   return true;
 }
 
-void BluetoothAdapterProfileBlueZ::RemoveDelegate(
+void BluetoothAdapterProfileChromeOS::RemoveDelegate(
     const dbus::ObjectPath& device_path,
     const base::Closure& unregistered_callback) {
   VLOG(1) << object_path_.value() << " dev " << device_path.value()
@@ -88,11 +89,11 @@ void BluetoothAdapterProfileBlueZ::RemoveDelegate(
       ->GetBluetoothProfileManagerClient()
       ->UnregisterProfile(
           object_path_, unregistered_callback,
-          base::Bind(&BluetoothAdapterProfileBlueZ::OnUnregisterProfileError,
+          base::Bind(&BluetoothAdapterProfileChromeOS::OnUnregisterProfileError,
                      weak_ptr_factory_.GetWeakPtr(), unregistered_callback));
 }
 
-void BluetoothAdapterProfileBlueZ::OnUnregisterProfileError(
+void BluetoothAdapterProfileChromeOS::OnUnregisterProfileError(
     const base::Closure& unregistered_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -104,11 +105,11 @@ void BluetoothAdapterProfileBlueZ::OnUnregisterProfileError(
 }
 
 // bluez::BluetoothProfileServiceProvider::Delegate:
-void BluetoothAdapterProfileBlueZ::Released() {
+void BluetoothAdapterProfileChromeOS::Released() {
   VLOG(1) << object_path_.value() << ": Release";
 }
 
-void BluetoothAdapterProfileBlueZ::NewConnection(
+void BluetoothAdapterProfileChromeOS::NewConnection(
     const dbus::ObjectPath& device_path,
     scoped_ptr<dbus::FileDescriptor> fd,
     const bluez::BluetoothProfileServiceProvider::Delegate::Options& options,
@@ -129,7 +130,7 @@ void BluetoothAdapterProfileBlueZ::NewConnection(
                                                    options, callback);
 }
 
-void BluetoothAdapterProfileBlueZ::RequestDisconnection(
+void BluetoothAdapterProfileChromeOS::RequestDisconnection(
     const dbus::ObjectPath& device_path,
     const ConfirmationCallback& callback) {
   dbus::ObjectPath delegate_path = device_path;
@@ -147,7 +148,7 @@ void BluetoothAdapterProfileBlueZ::RequestDisconnection(
                                                           callback);
 }
 
-void BluetoothAdapterProfileBlueZ::Cancel() {
+void BluetoothAdapterProfileChromeOS::Cancel() {
   // Cancel() should only go to a delegate accepting connections.
   if (delegates_.find("") == delegates_.end()) {
     VLOG(1) << object_path_.value() << ": Cancel with no delegate!";
@@ -157,4 +158,4 @@ void BluetoothAdapterProfileBlueZ::Cancel() {
   delegates_[""]->Cancel();
 }
 
-}  // namespace bluez
+}  // namespace chromeos

@@ -56,7 +56,7 @@ class DEVICE_BLUETOOTH_EXPORT BluezDBusManager {
   // We explicitly initialize and shut down the global object, rather than
   // making it a Singleton, to ensure clean startup and shutdown.
   // This will initialize real or stub DBusClients depending on command-line
-  // arguments and whether this process runs in a real or test environment.
+  // arguments and whether this process runs in a ChromeOS environment.
   static void Initialize(dbus::Bus* bus, bool use_dbus_stub);
 
   // Returns a BluezDBusManagerSetter instance that allows tests to

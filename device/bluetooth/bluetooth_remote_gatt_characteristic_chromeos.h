@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_BLUEZ_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_BLUEZ_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_
 
 #include <map>
 #include <queue>
@@ -24,15 +24,15 @@ class BluetoothGattService;
 
 }  // namespace device
 
-namespace bluez {
+namespace chromeos {
 
-class BluetoothRemoteGattDescriptorBlueZ;
-class BluetoothRemoteGattServiceBlueZ;
+class BluetoothRemoteGattDescriptorChromeOS;
+class BluetoothRemoteGattServiceChromeOS;
 
-// The BluetoothRemoteGattCharacteristicBlueZ class implements
+// The BluetoothRemoteGattCharacteristicChromeOS class implements
 // BluetoothGattCharacteristic for remote GATT characteristics on the Chrome OS
 // platform.
-class BluetoothRemoteGattCharacteristicBlueZ
+class BluetoothRemoteGattCharacteristicChromeOS
     : public device::BluetoothGattCharacteristic,
       public bluez::BluetoothGattDescriptorClient::Observer {
  public:
@@ -68,15 +68,15 @@ class BluetoothRemoteGattCharacteristicBlueZ
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
  private:
-  friend class BluetoothRemoteGattServiceBlueZ;
+  friend class BluetoothRemoteGattServiceChromeOS;
 
   typedef std::pair<NotifySessionCallback, ErrorCallback>
       PendingStartNotifyCall;
 
-  BluetoothRemoteGattCharacteristicBlueZ(
-      BluetoothRemoteGattServiceBlueZ* service,
+  BluetoothRemoteGattCharacteristicChromeOS(
+      BluetoothRemoteGattServiceChromeOS* service,
       const dbus::ObjectPath& object_path);
-  ~BluetoothRemoteGattCharacteristicBlueZ() override;
+  ~BluetoothRemoteGattCharacteristicChromeOS() override;
 
   // bluez::BluetoothGattDescriptorClient::Observer overrides.
   void GattDescriptorAdded(const dbus::ObjectPath& object_path) override;
@@ -117,7 +117,7 @@ class BluetoothRemoteGattCharacteristicBlueZ
   dbus::ObjectPath object_path_;
 
   // The GATT service this GATT characteristic belongs to.
-  BluetoothRemoteGattServiceBlueZ* service_;
+  BluetoothRemoteGattServiceChromeOS* service_;
 
   // The total number of currently active value update sessions.
   size_t num_notify_sessions_;
@@ -133,18 +133,18 @@ class BluetoothRemoteGattCharacteristicBlueZ
   // this characteristic. Since the Chrome OS implementation uses object paths
   // as unique identifiers, we also use this mapping to return descriptors by
   // identifier.
-  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattDescriptorBlueZ*>
+  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattDescriptorChromeOS*>
       DescriptorMap;
   DescriptorMap descriptors_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicBlueZ>
+  base::WeakPtrFactory<BluetoothRemoteGattCharacteristicChromeOS>
       weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicBlueZ);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicChromeOS);
 };
 
-}  // namespace bluez
+}  // namespace chromeos
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_BLUEZ_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_CHROMEOS_H_

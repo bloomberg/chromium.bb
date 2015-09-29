@@ -17,7 +17,7 @@ class Thread;
 
 namespace device {
 
-// Thread abstraction used by |BluetoothSocketBlueZ| and |BluetoothSocketWin|
+// Thread abstraction used by |BluetoothSocketChromeOS| and |BluetoothSocketWin|
 // to perform IO operations on the underlying platform sockets. An instance of
 // this class can be shared by many active sockets.
 class DEVICE_BLUETOOTH_EXPORT BluetoothSocketThread
