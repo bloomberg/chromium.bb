@@ -9,8 +9,10 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_throttle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -54,19 +56,38 @@ struct NavigationRequestInfo;
 class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  public:
   static scoped_ptr<NavigationHandleImpl> Create(const GURL& url,
-                                                 const bool is_main_frame,
+                                                 bool is_main_frame,
                                                  NavigatorDelegate* delegate);
-
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
-  const GURL& GetURL() const override;
-  net::Error GetNetErrorCode() const override;
-  bool IsInMainFrame() const override;
+  const GURL& GetURL() override;
+  bool IsInMainFrame() override;
+  bool IsPost() override;
+  const Referrer& GetReferrer() override;
+  bool HasUserGesture() override;
+  ui::PageTransition GetPageTransition() override;
+  bool IsExternalProtocol() override;
+  net::Error GetNetErrorCode() override;
   RenderFrameHostImpl* GetRenderFrameHost() override;
   bool IsSamePage() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  void RegisterThrottleForTesting(
+      scoped_ptr<NavigationThrottle> navigation_throttle) override;
+  NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
+      bool is_post,
+      const Referrer& sanitized_referrer,
+      bool has_user_gesture,
+      ui::PageTransition transition,
+      bool is_external_protocol) override;
+  NavigationThrottle::ThrottleCheckResult CallWillRedirectRequestForTesting(
+      const GURL& new_url,
+      bool new_method_is_post,
+      const GURL& new_referrer_url,
+      bool new_is_external_protocol) override;
+
+  NavigatorDelegate* delegate() const { return delegate_; }
 
   void set_net_error_code(net::Error net_error_code) {
     net_error_code_ = net_error_code;
@@ -80,6 +101,21 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   void set_is_transferring(bool is_transferring) {
     is_transferring_ = is_transferring;
   }
+
+  // Called when the URLRequest will start in the network stack.
+  NavigationThrottle::ThrottleCheckResult WillStartRequest(
+      bool is_post,
+      const Referrer& sanitized_referrer,
+      bool has_user_gesture,
+      ui::PageTransition transition,
+      bool is_external_protocol);
+
+  // Called when the URLRequest will be redirected in the network stack.
+  NavigationThrottle::ThrottleCheckResult WillRedirectRequest(
+      const GURL& new_url,
+      bool new_method_is_post,
+      const GURL& new_referrer_url,
+      bool new_is_external_protocol);
 
   // Called when the navigation was redirected. This will update the |url_| and
   // inform the delegate.
@@ -98,7 +134,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
  private:
   // Used to track the state the navigation is currently in.
   enum State {
-    DID_START = 0,
+    INITIAL = 0,
+    WILL_SEND_REQUEST,
     READY_TO_COMMIT,
     DID_COMMIT,
     DID_COMMIT_ERROR_PAGE,
@@ -110,11 +147,18 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // See NavigationHandle for a description of those member variables.
   GURL url_;
-  net::Error net_error_code_;
-  State state_;
   const bool is_main_frame_;
+  bool is_post_;
+  Referrer sanitized_referrer_;
+  bool has_user_gesture_;
+  ui::PageTransition transition_;
+  bool is_external_protocol_;
+  net::Error net_error_code_;
   RenderFrameHostImpl* render_frame_host_;
   bool is_same_page_;
+
+  // The state the navigation is in.
+  State state_;
 
   // Whether the navigation is in the middle of a transfer. Set to false when
   // the DidStartProvisionalLoad is received from the new renderer.
@@ -123,6 +167,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The delegate that should be notified about events related to this
   // navigation.
   NavigatorDelegate* delegate_;
+
+  // A list of Throttles registered for this navigation.
+  ScopedVector<NavigationThrottle> throttles_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleImpl);
 };

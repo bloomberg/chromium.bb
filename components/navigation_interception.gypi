@@ -23,8 +23,8 @@
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
-        'navigation_interception/intercept_navigation_resource_throttle.cc',
-        'navigation_interception/intercept_navigation_resource_throttle.h',
+        'navigation_interception/intercept_navigation_throttle.cc',
+        'navigation_interception/intercept_navigation_throttle.h',
         'navigation_interception/navigation_params.cc',
         'navigation_interception/navigation_params.h',
       ],

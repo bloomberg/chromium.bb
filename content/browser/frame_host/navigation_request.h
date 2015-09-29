@@ -164,8 +164,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // Note: When the navigation is ready to commit, the url in |common_params|
   // will be set to the final navigation url, obtained after following all
   // redirects.
+  // Note: |common_params_| and |begin_params_| are not const as they can be
+  // modified during redirects.
   CommonNavigationParams common_params_;
-  const BeginNavigationParams begin_params_;
+  BeginNavigationParams begin_params_;
   const RequestNavigationParams request_params_;
   const bool browser_initiated_;
 

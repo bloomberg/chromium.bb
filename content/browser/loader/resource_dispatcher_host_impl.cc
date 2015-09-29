@@ -41,6 +41,7 @@
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/mime_type_resource_handler.h"
 #include "content/browser/loader/navigation_resource_handler.h"
+#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 #include "content/browser/loader/redirect_to_file_resource_handler.h"
@@ -1480,6 +1481,16 @@ scoped_ptr<ResourceHandler> ResourceDispatcherHostImpl::AddStandardHandlers(
                                             plugin_service, request));
 
   ScopedVector<ResourceThrottle> throttles;
+
+  // Add a NavigationResourceThrottle for navigations.
+  // PlzNavigate: the throttle is unnecessary as communication with the UI
+  // thread is handled by the NavigationURLloader.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBrowserSideNavigation) &&
+      IsResourceTypeFrame(resource_type)) {
+    throttles.push_back(new NavigationResourceThrottle(request));
+  }
+
   if (delegate_) {
     delegate_->RequestBeginning(request,
                                 resource_context,

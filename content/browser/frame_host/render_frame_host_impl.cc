@@ -1361,8 +1361,10 @@ void RenderFrameHostImpl::OnBeginNavigation(
     scoped_refptr<ResourceRequestBody> body) {
   CHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableBrowserSideNavigation));
+  CommonNavigationParams validated_params = common_params;
+  GetProcess()->FilterURL(false, &validated_params.url);
   frame_tree_node()->navigator()->OnBeginNavigation(
-      frame_tree_node(), common_params, begin_params, body);
+      frame_tree_node(), validated_params, begin_params, body);
 }
 
 void RenderFrameHostImpl::OnDispatchLoad() {
