@@ -227,31 +227,37 @@ bool MediaSource::isUpdating() const
 
 bool MediaSource::isTypeSupported(const String& type)
 {
-    WTF_LOG(Media, "MediaSource::isTypeSupported(%s)", type.ascii().data());
-
     // Section 2.2 isTypeSupported() method steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-isTypeSupported-boolean-DOMString-type
     // 1. If type is an empty string, then return false.
-    if (type.isNull() || type.isEmpty())
+    if (type.isEmpty()) {
+        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (empty input)", type.ascii().data());
         return false;
+    }
 
     ContentType contentType(type);
     String codecs = contentType.parameter("codecs");
 
     // 2. If type does not contain a valid MIME type string, then return false.
-    if (contentType.type().isEmpty())
+    if (contentType.type().isEmpty()) {
+        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (invalid mime type)", type.ascii().data());
         return false;
+    }
 
     // Note: MediaSource.isTypeSupported() returning true implies that HTMLMediaElement.canPlayType() will return "maybe" or "probably"
     // since it does not make sense for a MediaSource to support a type the HTMLMediaElement knows it cannot play.
-    if (HTMLMediaElement::supportsType(contentType, String()) == WebMimeRegistry::IsNotSupported)
+    if (HTMLMediaElement::supportsType(contentType, String()) == WebMimeRegistry::IsNotSupported) {
+        WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> false (not supported by HTMLMediaElement)", type.ascii().data());
         return false;
+    }
 
     // 3. If type contains a media type or media subtype that the MediaSource does not support, then return false.
     // 4. If type contains at a codec that the MediaSource does not support, then return false.
     // 5. If the MediaSource does not support the specified combination of media type, media subtype, and codecs then return false.
     // 6. Return true.
-    return MIMETypeRegistry::isSupportedMediaSourceMIMEType(contentType.type(), codecs);
+    bool result = MIMETypeRegistry::isSupportedMediaSourceMIMEType(contentType.type(), codecs);
+    WTF_LOG(Media, "MediaSource::isTypeSupported(%s) -> %s", type.ascii().data(), result ? "true" : "false");
+    return result;
 }
 
 const AtomicString& MediaSource::interfaceName() const
