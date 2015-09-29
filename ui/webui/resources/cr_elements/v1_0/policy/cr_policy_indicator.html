@@ -10,7 +10,7 @@
       <iron-icon id="indicator"
           hidden$="[[!isIndicatorVisible_(indicatorType)]]"
           icon="[[getIcon_(indicatorType)]]"
-          title="[[getTooltipText_(indicatorType, pref)]]">
+          title$="[[getTooltipText_(indicatorType, pref, controllingUser)]]">
       </iron-icon>
     </div>
   </template>

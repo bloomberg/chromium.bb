@@ -28,10 +28,19 @@ Polymer({
 
   properties: {
     /**
-     * The preference object to show an indicator for.
-     * @type {chrome.settingsPrivate.PrefObject|undefined}
+     * Optional preference object associated with the indicator. Initialized to
+     * null so that computed functions will get called if this is never set.
+     * @type {?chrome.settingsPrivate.PrefObject}
      */
-    pref: {type: Object},
+    pref: {type: Object, value: null},
+
+    /**
+     * Optional email of the user controlling the setting when the setting does
+     * not correspond to a pref (Chrome OS only). Only used when pref is null.
+     * Initialized to '' so that computed functions will get called if this is
+     * never set.
+     */
+    controllingUser: {type: String, value: ''},
 
     /**
      * Which indicator type to show (or NONE).
@@ -113,11 +122,13 @@ Polymer({
   /**
    * @param {CrPolicyIndicator.Type} type The type of indicator.
    * @param {?chrome.settingsPrivate.PrefObject} pref
+   * @param {string} controllingUser The user controlling the setting, if |pref|
+   *     is null.
    * @return {string} The tooltip text for |type|.
    * @private
    */
-  getTooltipText_: function(type, pref) {
-    var name = pref.policySourceName || '';
+  getTooltipText_: function(type, pref, controllingUser) {
+    var name = pref ? pref.policySourceName : controllingUser;
 
     switch (type) {
       case CrPolicyIndicator.Type.PRIMARY_USER:
@@ -130,7 +141,7 @@ Polymer({
       case CrPolicyIndicator.Type.EXTENSION:
         return this.i18n_('controlledSettingExtension', name);
       case CrPolicyIndicator.Type.RECOMMENDED:
-        if (pref.value == pref.recommendedValue)
+        if (pref && pref.value == pref.recommendedValue)
           return this.i18n_('controlledSettingRecommendedMatches');
         return this.i18n_('controlledSettingRecommendedDiffers');
     }
