@@ -17,6 +17,7 @@ PerfOptions = collections.namedtuple('PerfOptions', [
     'single_step',
     'collect_chartjson_data',
     'output_chartjson_data',
+    'get_output_dir_archive',
     'max_battery_temp',
     'min_battery_level',
 ])

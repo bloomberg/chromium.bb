@@ -593,6 +593,10 @@ def AddPerfTestOptions(parser):
       default='',
       help='Write out chartjson into the given file.')
   group.add_argument(
+      '--get-output-dir-archive', metavar='FILENAME',
+      help='Write the chached output directory archived by a step into the'
+      ' given ZIP file.')
+  group.add_argument(
       '--flaky-steps',
       help=('A JSON file containing steps that are flaky '
             'and will have its exit code ignored.'))
@@ -638,7 +642,8 @@ def ProcessPerfTestOptions(args):
       args.steps, args.flaky_steps, args.output_json_list,
       args.print_step, args.no_timeout, args.test_filter,
       args.dry_run, args.single_step, args.collect_chartjson_data,
-      args.output_chartjson_data, args.max_battery_temp, args.min_battery_level)
+      args.output_chartjson_data, args.get_output_dir_archive,
+      args.max_battery_temp, args.min_battery_level)
 
 
 def AddPythonTestOptions(parser):
@@ -808,7 +813,8 @@ def _RunPerfTests(args, active_devices):
   # Just print the results from a single previously executed step.
   if perf_options.print_step:
     return perf_test_runner.PrintTestOutput(
-        perf_options.print_step, perf_options.output_chartjson_data)
+        perf_options.print_step, perf_options.output_chartjson_data,
+        perf_options.get_output_dir_archive)
 
   runner_factory, tests, devices = perf_setup.Setup(
       perf_options, active_devices)
