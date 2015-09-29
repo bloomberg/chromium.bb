@@ -39,6 +39,8 @@
 #    that are generated at build time. This should be set automatically by a
 #    target's dependencies. The .java files in these directories are not
 #    included in the 'inputs' list (unlike additional_src_dirs).
+#  library_jars_paths - The path to library jars to be included in the classpath.
+#    These will not be included into the final apk.
 #  input_jars_paths - The path to jars to be included in the classpath. This
 #    should be filled automatically by depending on the appropriate targets.
 #  is_test_apk - Set to 1 if building a test apk.  This prevents resources from
@@ -79,6 +81,7 @@
     'additional_locale_input_paths': [],
     'create_density_splits%': 0,
     'language_splits': [],
+    'library_jars_paths': [],
     'input_jars_paths': [],
     'library_dexed_jars_paths': [],
     'main_dex_list_path': '<(intermediate_dir)/main_dex_list.txt',
@@ -914,7 +917,7 @@
       'action': [
         'python', '<(DEPTH)/build/android/gyp/javac.py',
         '--bootclasspath=<(android_sdk_jar)',
-        '--classpath=>(input_jars_paths) <(android_sdk_jar)',
+        '--classpath=>(input_jars_paths) <(android_sdk_jar) >(library_jars_paths)',
         '--src-gendirs=>(gen_src_dirs)',
         '--javac-includes=<(javac_includes)',
         '--chromium-code=<(chromium_code)',
