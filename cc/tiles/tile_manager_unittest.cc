@@ -6,6 +6,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "cc/playback/display_list_raster_source.h"
 #include "cc/playback/display_list_recording_source.h"
+#include "cc/raster/raster_buffer.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_display_list_raster_source.h"
@@ -1425,8 +1426,10 @@ class TileManagerTest : public testing::Test {
   TileManagerTest()
       : output_surface_(FakeOutputSurface::CreateSoftware(
             make_scoped_ptr(new SoftwareOutputDevice))),
-        host_impl_(&proxy_, &shared_bitmap_manager_, &task_graph_runner_) {
-    host_impl_.InitializeRenderer(output_surface_.get());
+        host_impl_(new MockLayerTreeHostImpl(&proxy_,
+                                             &shared_bitmap_manager_,
+                                             &task_graph_runner_)) {
+    host_impl_->InitializeRenderer(output_surface_.get());
   }
 
  protected:
@@ -1445,7 +1448,7 @@ class TileManagerTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   FakeImplProxy proxy_;
   scoped_ptr<OutputSurface> output_surface_;
-  MockLayerTreeHostImpl host_impl_;
+  scoped_ptr<MockLayerTreeHostImpl> host_impl_;
 };
 
 // Test to ensure that we call NotifyAllTileTasksCompleted when PrepareTiles is
@@ -1454,11 +1457,11 @@ TEST_F(TileManagerTest, AllWorkFinishedTest) {
   // Check with no tile work enqueued.
   {
     base::RunLoop run_loop;
-    EXPECT_FALSE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
-    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+    EXPECT_FALSE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
-    host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
-    EXPECT_TRUE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
+    EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
     run_loop.Run();
   }
 
@@ -1466,12 +1469,12 @@ TEST_F(TileManagerTest, AllWorkFinishedTest) {
   // callback.
   {
     base::RunLoop run_loop;
-    EXPECT_FALSE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
-    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+    EXPECT_FALSE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
+    EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
-    host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
-    host_impl_.tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
-    EXPECT_TRUE(host_impl_.tile_manager()->HasScheduledTileTasksForTesting());
+    host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
+    host_impl_->tile_manager()->SetMoreTilesNeedToBeRasterizedForTesting();
+    EXPECT_TRUE(host_impl_->tile_manager()->HasScheduledTileTasksForTesting());
     run_loop.Run();
   }
 }
@@ -1509,7 +1512,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     tiling_client.SetTileSize(size);
 
     scoped_ptr<PictureLayerImpl> layer =
-        PictureLayerImpl::Create(host_impl_.active_tree(), 1, false, nullptr);
+        PictureLayerImpl::Create(host_impl_->active_tree(), 1, false, nullptr);
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
 
     auto* tiling = tiling_set->AddTiling(1.0f, raster);
@@ -1523,14 +1526,14 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
 
     // SMOOTHNESS_TAKES_PRIORITY ensures that we will actually raster
     // LOW_RESOLUTION tiles, otherwise they are skipped.
-    host_impl_.SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
+    host_impl_->SetTreePriority(SMOOTHNESS_TAKES_PRIORITY);
 
     // Call PrepareTiles and wait for it to complete.
-    auto* tile_manager = host_impl_.tile_manager();
+    auto* tile_manager = host_impl_->tile_manager();
     base::RunLoop run_loop;
-    EXPECT_CALL(host_impl_, NotifyAllTileTasksCompleted())
+    EXPECT_CALL(*host_impl_, NotifyAllTileTasksCompleted())
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
-    tile_manager->PrepareTiles(host_impl_.global_tile_state());
+    tile_manager->PrepareTiles(host_impl_->global_tile_state());
     run_loop.Run();
     tile_manager->Flush();
 
@@ -1540,7 +1543,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
     EXPECT_TRUE(tile->draw_info().IsReadyToDraw());
 
     ResourceProvider::ScopedReadLockSoftware lock(
-        host_impl_.resource_provider(), tile->draw_info().resource_id());
+        host_impl_->resource_provider(), tile->draw_info().resource_id());
     const SkBitmap* bitmap = lock.sk_bitmap();
     for (int x = 0; x < size.width(); ++x) {
       for (int y = 0; y < size.height(); ++y) {
@@ -1559,6 +1562,95 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
       }
     }
   }
+}
+
+// Fake TileTaskRunner that just cancels all scheduled tasks immediately.
+class CancellingTileTaskRunner : public TileTaskRunner, public TileTaskClient {
+ public:
+  CancellingTileTaskRunner() {}
+
+  // TileTaskRunner methods.
+  void SetClient(TileTaskRunnerClient* client) override {}
+  void Shutdown() override {}
+  void CheckForCompletedTasks() override {}
+  ResourceFormat GetResourceFormat(bool must_support_alpha) const override {
+    return ResourceFormat::RGBA_8888;
+  }
+  bool GetResourceRequiresSwizzle(bool must_support_alpha) const override {
+    return false;
+  }
+
+  void ScheduleTasks(TileTaskQueue* queue) override {
+    // Just call CompleteOnOriginThread on each item in the queue. As none of
+    // these items have run yet, they will be treated as cancelled tasks.
+    for (const auto& task : queue->items) {
+      task.task->CompleteOnOriginThread(this);
+    }
+  }
+
+  // TileTaskClient methods.
+  scoped_ptr<RasterBuffer> AcquireBufferForRaster(
+      const Resource* resource,
+      uint64_t resource_content_id,
+      uint64_t previous_content_id) override {
+    NOTREACHED();
+    return nullptr;
+  }
+  void ReleaseBufferForRaster(scoped_ptr<RasterBuffer> buffer) override {}
+
+  ~CancellingTileTaskRunner() override {}
+};
+
+// Ensures that if a raster task is cancelled, it gets returned to the resource
+// pool with an invalid content ID, not with its invalidated content ID.
+TEST_F(TileManagerTest, CancelledTasksHaveNoContentId) {
+  // Create a CancellingTaskRunner and set it on the tile manager so that all
+  // scheduled work is immediately cancelled.
+  CancellingTileTaskRunner cancelling_runner;
+  host_impl_->tile_manager()->SetTileTaskRunnerForTesting(&cancelling_runner);
+
+  // Pick arbitrary IDs - they don't really matter as long as they're constant.
+  int layer_id = 7;
+  int invalidated_id = 43;
+
+  scoped_refptr<FakeDisplayListRasterSource> pending_raster_source =
+      FakeDisplayListRasterSource::CreateFilled(gfx::Size(128, 128));
+  host_impl_->CreatePendingTree();
+  LayerTreeImpl* pending_tree = host_impl_->pending_tree();
+
+  // Steal from the recycled tree.
+  scoped_ptr<FakePictureLayerImpl> pending_layer =
+      FakePictureLayerImpl::CreateWithRasterSource(pending_tree, layer_id,
+                                                   pending_raster_source);
+  pending_layer->SetDrawsContent(true);
+  pending_layer->SetHasRenderSurface(true);
+
+  // The bounds() just mirror the raster source size.
+  pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
+  pending_tree->SetRootLayer(pending_layer.Pass());
+
+  // Add tilings/tiles for the layer.
+  host_impl_->pending_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+
+  // Build the raster queue and invalidate the top tile.
+  scoped_ptr<RasterTilePriorityQueue> queue(host_impl_->BuildRasterQueue(
+      SAME_PRIORITY_FOR_BOTH_TREES, RasterTilePriorityQueue::Type::ALL));
+  EXPECT_FALSE(queue->IsEmpty());
+  queue->Top().tile()->SetInvalidated(gfx::Rect(), invalidated_id);
+
+  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskRunner, these
+  // tasks will immediately be canceled.
+  host_impl_->tile_manager()->PrepareTiles(host_impl_->global_tile_state());
+
+  // Make sure that the tile we invalidated above was not returned to the pool
+  // with its invalidated resource ID.
+  host_impl_->resource_pool()->CheckBusyResources();
+  EXPECT_FALSE(host_impl_->resource_pool()->TryAcquireResourceWithContentId(
+      invalidated_id));
+
+  // Free our host_impl_ before the cancelling_runner we passed it, as it will
+  // use that class in clean up.
+  host_impl_ = nullptr;
 }
 
 }  // namespace

@@ -711,7 +711,11 @@ void TileManager::OnRasterTaskCompleted(
 
   if (was_canceled) {
     ++flush_stats_.canceled_count;
-    resource_pool_->ReleaseResource(resource, tile->invalidated_id());
+    // TODO(ericrk): If more partial raster work is done in the future, it may
+    // be worth returning the resource to the pool with its previous ID (not
+    // currently tracked). crrev.com/1370333002/#ps40001 has a possible method
+    // of achieving this.
+    resource_pool_->ReleaseResource(resource, 0 /* content_id */);
     return;
   }
 
@@ -729,9 +733,11 @@ void TileManager::UpdateTileDrawInfo(
   if (analysis.is_solid_color) {
     draw_info.set_solid_color(analysis.solid_color);
     if (resource) {
-      // Pass the old tile id here because the tile is solid color so we did not
-      // raster anything into the tile resource.
-      resource_pool_->ReleaseResource(resource, tile->invalidated_id());
+      // TODO(ericrk): If more partial raster work is done in the future, it may
+      // be worth returning the resource to the pool with its previous ID (not
+      // currently tracked). crrev.com/1370333002/#ps40001 has a possible method
+      // of achieving this.
+      resource_pool_->ReleaseResource(resource, 0 /* content_id */);
     }
   } else {
     DCHECK(resource);
