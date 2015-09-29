@@ -76,6 +76,11 @@ StringProvider* ChromeBrowserProvider::GetStringProvider() {
   return nullptr;
 }
 
+TabRestoreServiceDelegateProvider*
+ChromeBrowserProvider::GetTabRestoreServiceDelegateProvider() {
+  return nullptr;
+}
+
 GeolocationUpdaterProvider*
 ChromeBrowserProvider::GetGeolocationUpdaterProvider() {
   return nullptr;

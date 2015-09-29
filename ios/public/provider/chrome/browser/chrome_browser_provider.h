@@ -58,6 +58,7 @@ class ChromeBrowserStateManager;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class StringProvider;
+class TabRestoreServiceDelegateProvider;
 class UpdatableResourceProvider;
 
 // Setter and getter for the provider. The provider should be set early, before
@@ -100,6 +101,9 @@ class ChromeBrowserProvider {
   virtual ChromeIdentityService* GetChromeIdentityService();
   // Returns an instance of a string provider.
   virtual StringProvider* GetStringProvider();
+  // Returns an instance of a TabRestoreServiceDelegateProvider.
+  virtual TabRestoreServiceDelegateProvider*
+      GetTabRestoreServiceDelegateProvider();
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
