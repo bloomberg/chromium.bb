@@ -8,6 +8,7 @@
 import binascii
 import collections
 import os
+import shutil
 import signal
 import sys
 import tempfile
@@ -741,6 +742,35 @@ class GitFreezeThaw(git_test_utils.GitRepoReadWriteTestBase):
       self.assertEquals(self.repo.git('status', '--porcelain').stdout, STATUS_1)
 
     self.repo.run(inner)
+
+
+class GitMakeWorkdir(git_test_utils.GitRepoReadOnlyTestBase, GitCommonTestBase):
+  def setUp(self):
+    self._tempdir = tempfile.mkdtemp()
+
+  def tearDown(self):
+    shutil.rmtree(self._tempdir)
+
+  REPO_SCHEMA = """
+  A
+  """
+
+  def testMakeWorkdir(self):
+    if not hasattr(os, 'symlink'):
+      return
+
+    workdir = os.path.join(self._tempdir, 'workdir')
+    self.gc.make_workdir(os.path.join(self.repo.repo_path, '.git'),
+                         os.path.join(workdir, '.git'))
+    EXPECTED_LINKS = [
+        'config', 'info', 'hooks', 'logs/refs', 'objects', 'refs',
+    ]
+    for path in EXPECTED_LINKS:
+      self.assertTrue(os.path.islink(os.path.join(workdir, '.git', path)))
+      self.assertEqual(os.path.realpath(os.path.join(workdir, '.git', path)),
+                       os.path.join(self.repo.repo_path, '.git', path))
+    self.assertFalse(os.path.islink(os.path.join(workdir, '.git', 'HEAD')))
+
 
 
 if __name__ == '__main__':

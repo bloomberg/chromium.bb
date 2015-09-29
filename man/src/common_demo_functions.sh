@@ -50,6 +50,11 @@ comment() {
   echo "###COMMENT### $@"
 }
 
+# run a command and print its output without printing the command itself
+output() {
+  "$@"
+}
+
 # run a silent command
 silent() {
   if [[ $DEBUG ]]

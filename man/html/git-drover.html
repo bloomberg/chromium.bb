@@ -755,7 +755,9 @@ git-drover(1) Manual Page
 <h2 id="_synopsis">SYNOPSIS</h2>
 <div class="sectionbody">
 <div class="verseblock">
-<pre class="content"><em>git drover</em></pre>
+<pre class="content"><em>git drover</em> --branch &lt;branch&gt; --cherry-pick &lt;commit&gt;
+           [--parent_checkout &lt;path-to-existing-checkout&gt;]
+           [--verbose] [--dry-run]</pre>
 <div class="attribution">
 </div></div>
 </div>
@@ -763,8 +765,65 @@ git-drover(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p><code>git drover</code> is NOT IMPLEMENTED yet. See the EXAMPLE section for the equivalent
-sequence of commands to run.</p></div>
+<div class="paragraph"><p><code>git drover</code> applies a commit to a release branch. It creates a new workdir from
+an existing checkout to avoid downloading a new checkout without affecting the
+existing checkout. Creating a workdir requires symlinks so this does not work on
+Windows. See the EXAMPLE section for the equivalent sequence of commands to run.</p></div>
+<div class="paragraph"><p><code>git drover</code> does not support reverts. See the EXAMPLE section for the
+equivalent sequence of commands to run.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_options">OPTIONS</h2>
+<div class="sectionbody">
+<div class="dlist"><dl>
+<dt class="hdlist1">
+--branch &lt;branch&gt;
+</dt>
+<dd>
+<p>
+  The branch to cherry-pick the commit to.
+</p>
+</dd>
+<dt class="hdlist1">
+--cherry-pick &lt;commit&gt;
+</dt>
+<dd>
+<p>
+  The commit to cherry-pick.
+</p>
+</dd>
+<dt class="hdlist1">
+--parent_checkout
+</dt>
+<dd>
+<p>
+  The path to the chromium checkout to use as the source for a creating
+  git-new-workdir workdir to use for cherry-picking. If unspecified, the current
+  directory is used.
+</p>
+</dd>
+<dt class="hdlist1">
+-v
+</dt>
+<dt class="hdlist1">
+--verbose
+</dt>
+<dd>
+<p>
+  Enable verbose logging.
+</p>
+</dd>
+<dt class="hdlist1">
+--dry-run
+</dt>
+<dd>
+<p>
+  Skip landing the cherry-pick. Just ensure that the commit can be cherry-picked
+  into the branch.
+</p>
+</dd>
+</dl></div>
 </div>
 </div>
 <div class="sect1">
@@ -777,12 +836,9 @@ sequence of commands to run.</p></div>
 at least once to fetch the branches.</p></div>
 <div class="sect3">
 <h4 id="_merge_example">Merge Example</h4>
-<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
-<span style="font-weight: bold; color: #ffffff">$ git fetch</span>
-
-# Here's a commit (from some.committer) that we want to 'drover'.
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Here's a commit (from some.committer) that we want to 'drover'.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b
+<span style="color: #e7e71c">commit 8b79b7b2f7e6e728f9a3c7b385c72efc7c47244a</span>
 Author:     some.committer &lt;some.committer@chromium.org&gt;
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some.committer &lt;some.committer@chromium.org&gt;
@@ -790,37 +846,22 @@ CommitDate: Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
 
-# Checkout the branch we want to 'drover' to.
-<span style="font-weight: bold; color: #ffffff">$ git checkout -b drover_9999 branch-heads/9999</span>
-Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
-
 # Now do the 'drover'.
-# IMPORTANT!!! Do Not leave off the '-x' flag
-<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b</span>
-[drover_9999 19d3d0b] This change needs to go to branch 9999
- Author: some.committer &lt;some.committer@chromium.org&gt;
- Date: Thu Apr 10 08:54:46 2014 +0000
- 1 file changed, 1 insertion(+)
- create mode 100644 modified_file
-
-# That took the code authored by some.committer and committed it to
-# the branch by the person who drovered it (i.e. you).
-<span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
-commit 19d3d0b9d8f802df8e2fd563cbc919679d310ecd
-Author:     some.committer &lt;some.committer@chromium.org&gt;
-AuthorDate: Thu Apr 10 08:54:46 2014 +0000
-Commit:     you &lt;you@chromium.org&gt;
-CommitDate: Thu Apr 10 09:11:36 2014 +0000
+<span style="font-weight: bold; color: #ffffff">$ git drover --branch 9999 --cherry-pick 8b79b7b2f7e6e728f9a3c7b385c72efc7c47244a</span>
+Going to cherry-pick
+"""
+<span style="color: #e7e71c">commit 8b79b7b2f7e6e728f9a3c7b385c72efc7c47244a</span>
+Author: some.committer &lt;some.committer@chromium.org&gt;
+Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
+"""
+to 9999. Continue (y/n)? y
 
-    (cherry picked from commit 4a00a0c3c1bb01f11b42cb70f3ad587026cec02b)
+# A cl is uploaded to rietveld, where it can be reviewed before landing.
 
-# Looks good. Ship it!
-<span style="font-weight: bold; color: #ffffff">$ git cl upload</span>
-# Wait for LGTM or TBR it.
-<span style="font-weight: bold; color: #ffffff">$ git cl land</span>
-# Or skip the LGTM/TBR and just 'git cl land --bypass-hooks'
+About to land on 9999. Continue (y/n)? y
+# The cherry-pick cl is landed on the branch 9999.
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 <div class="sect3">
@@ -834,28 +875,76 @@ Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
 
 # Here's the commit we want to revert.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
-commit 590b333cbc04d13da67b2a1c5282835d4f27e398
+<span style="color: #e7e71c">commit 33b0e9164d4564eb8a4b4e5b951bba6edeeecacb</span>
 Author: some.committer &lt;some.committer@chromium.org&gt;
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken.
 
 # Now do the revert.
-<span style="font-weight: bold; color: #ffffff">$ git revert 590b333cbc04d13da67b2a1c5282835d4f27e398</span>
+<span style="font-weight: bold; color: #ffffff">$ git revert 33b0e9164d4564eb8a4b4e5b951bba6edeeecacb</span>
 
 # That reverted the change and committed the revert.
 <span style="font-weight: bold; color: #ffffff">$ git log -n 1</span>
-commit 6f541155a9adf98f4e7f94dd561d022fb022d43f
+<span style="color: #e7e71c">commit 8a2d2bb98b9cfc9260a9bc86da1eec2a43f43f8b</span>
 Author: you &lt;you@chromium.org&gt;
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken."
 
-    This reverts commit 590b333cbc04d13da67b2a1c5282835d4f27e398.
+    This reverts commit 33b0e9164d4564eb8a4b4e5b951bba6edeeecacb.
 
 # As with old drover, reverts are generally OK to commit without LGTM.
 <span style="font-weight: bold; color: #ffffff">$ git cl upload -r some.committer@chromium.org --send-mail</span>
 <span style="font-weight: bold; color: #ffffff">$ git cl land --bypass-hooks</span>
+</code></pre></div></div><p><div class="paragraph"></p></div>
+</div>
+<div class="sect3">
+<h4 id="_manual_merge_example">Manual Merge Example</h4>
+<div class="paragraph"><p></p></div><div class="listingblock"><div class="content"><pre><code># Make sure we have the most up-to-date branch sources.
+<span style="font-weight: bold; color: #ffffff">$ git fetch</span>
+
+# Here's a commit (from some.committer) that we want to 'drover'.
+<span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
+<span style="color: #e7e71c">commit 537f446fa3d5e41acab017bb0b082fbd0c9eb043</span>
+Author:     some.committer &lt;some.committer@chromium.org&gt;
+AuthorDate: Thu Apr 10 08:54:46 2014 +0000
+Commit:     some.committer &lt;some.committer@chromium.org&gt;
+CommitDate: Thu Apr 10 08:54:46 2014 +0000
+
+    This change needs to go to branch 9999
+
+# Checkout the branch we want to 'drover' to.
+<span style="font-weight: bold; color: #ffffff">$ git checkout -b drover_9999 branch-heads/9999</span>
+Branch drover_9999 set up to track remote ref refs/branch-heads/9999.
+
+# Now do the 'drover'.
+# IMPORTANT!!! Do Not leave off the '-x' flag
+<span style="font-weight: bold; color: #ffffff">$ git cherry-pick -x 537f446fa3d5e41acab017bb0b082fbd0c9eb043</span>
+[drover_9999 b468abc] This change needs to go to branch 9999
+ Author: some.committer &lt;some.committer@chromium.org&gt;
+ Date: Thu Apr 10 08:54:46 2014 +0000
+ 1 file changed, 1 insertion(+)
+ create mode 100644 modified_file
+
+# That took the code authored by some.committer and committed it to
+# the branch by the person who drovered it (i.e. you).
+<span style="font-weight: bold; color: #ffffff">$ git log -n 1 --pretty=fuller</span>
+<span style="color: #e7e71c">commit b468abc42ddd4fd9aecc48c3eda172265306d2b4</span>
+Author:     some.committer &lt;some.committer@chromium.org&gt;
+AuthorDate: Thu Apr 10 08:54:46 2014 +0000
+Commit:     you &lt;you@chromium.org&gt;
+CommitDate: Thu Apr 10 09:11:36 2014 +0000
+
+    This change needs to go to branch 9999
+
+    (cherry picked from commit 537f446fa3d5e41acab017bb0b082fbd0c9eb043)
+
+# Looks good. Ship it!
+<span style="font-weight: bold; color: #ffffff">$ git cl upload</span>
+# Wait for LGTM or TBR it.
+<span style="font-weight: bold; color: #ffffff">$ git cl land</span>
+# Or skip the LGTM/TBR and just 'git cl land --bypass-hooks'
 </code></pre></div></div><p><div class="paragraph"></p></div>
 </div>
 </div>
@@ -879,7 +968,7 @@ from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2014-09-09 13:42:13 PDT
+Last updated 2015-09-23 11:11:58 AEST
 </div>
 </div>
 </body>

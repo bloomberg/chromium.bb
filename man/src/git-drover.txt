@@ -9,13 +9,41 @@ include::_git-drover_desc.helper.txt[]
 SYNOPSIS
 --------
 [verse]
-'git drover'
+'git drover' --branch <branch> --cherry-pick <commit>
+           [--parent_checkout <path-to-existing-checkout>]
+           [--verbose] [--dry-run]
 
 DESCRIPTION
 -----------
 
-`git drover` is NOT IMPLEMENTED yet. See the EXAMPLE section for the equivalent
-sequence of commands to run.
+`git drover` applies a commit to a release branch. It creates a new workdir from
+an existing checkout to avoid downloading a new checkout without affecting the
+existing checkout. Creating a workdir requires symlinks so this does not work on
+Windows. See the EXAMPLE section for the equivalent sequence of commands to run.
+
+`git drover` does not support reverts. See the EXAMPLE section for the
+equivalent sequence of commands to run.
+
+OPTIONS
+-------
+--branch <branch>::
+  The branch to cherry-pick the commit to.
+
+--cherry-pick <commit>::
+  The commit to cherry-pick.
+
+--parent_checkout::
+  The path to the chromium checkout to use as the source for a creating
+  git-new-workdir workdir to use for cherry-picking. If unspecified, the current
+  directory is used.
+
+-v::
+--verbose::
+  Enable verbose logging.
+
+--dry-run::
+  Skip landing the cherry-pick. Just ensure that the commit can be cherry-picked
+  into the branch.
 
 EXAMPLE
 -------
@@ -38,6 +66,10 @@ demo:1[]
 Revert Example
 ^^^^^^^^^^^^^^
 demo:2[]
+
+Manual Merge Example
+^^^^^^^^^^^^^^^^^^^^
+demo:3[]
 
 SEE ALSO
 --------

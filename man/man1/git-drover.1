@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: git-drover
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 09/09/2014
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 09/23/2015
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools 6e7202b
+.\"    Source: depot_tools 4549a59
 .\"  Language: English
 .\"
-.TH "GIT\-DROVER" "1" "09/09/2014" "depot_tools 6e7202b" "Chromium depot_tools Manual"
+.TH "GIT\-DROVER" "1" "09/23/2015" "depot_tools 4549a59" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,12 +32,42 @@ git-drover \- Apply a commit from the trunk to a release branch, or from one rel
 .SH "SYNOPSIS"
 .sp
 .nf
-\fIgit drover\fR
+\fIgit drover\fR \-\-branch <branch> \-\-cherry\-pick <commit>
+           [\-\-parent_checkout <path\-to\-existing\-checkout>]
+           [\-\-verbose] [\-\-dry\-run]
 .fi
 .sp
 .SH "DESCRIPTION"
 .sp
-git drover is NOT IMPLEMENTED yet\&. See the EXAMPLE section for the equivalent sequence of commands to run\&.
+git drover applies a commit to a release branch\&. It creates a new workdir from an existing checkout to avoid downloading a new checkout without affecting the existing checkout\&. Creating a workdir requires symlinks so this does not work on Windows\&. See the EXAMPLE section for the equivalent sequence of commands to run\&.
+.sp
+git drover does not support reverts\&. See the EXAMPLE section for the equivalent sequence of commands to run\&.
+.SH "OPTIONS"
+.PP
+\-\-branch <branch>
+.RS 4
+The branch to cherry\-pick the commit to\&.
+.RE
+.PP
+\-\-cherry\-pick <commit>
+.RS 4
+The commit to cherry\-pick\&.
+.RE
+.PP
+\-\-parent_checkout
+.RS 4
+The path to the chromium checkout to use as the source for a creating git\-new\-workdir workdir to use for cherry\-picking\&. If unspecified, the current directory is used\&.
+.RE
+.PP
+\-v, \-\-verbose
+.RS 4
+Enable verbose logging\&.
+.RE
+.PP
+\-\-dry\-run
+.RS 4
+Skip landing the cherry\-pick\&. Just ensure that the commit can be cherry\-picked into the branch\&.
+.RE
 .SH "EXAMPLE"
 .SS "PREREQUISITES"
 .sp
@@ -57,12 +87,9 @@ Before working with branches, you must \fIgclient sync \-\-with_branch_heads\fR 
 .RS 4
 .\}
 .nf
-# Make sure we have the most up\-to\-date branch sources\&.
-\fB$ git fetch\fR
-
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 0421d3583f73220c8f88b1a96898fcd81222fe73
+commit b5a049e34297f22a4ea63567b32e3290bb3f244c
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -70,37 +97,22 @@ CommitDate: Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
 
-# Checkout the branch we want to \*(Aqdrover\*(Aq to\&.
-\fB$ git checkout \-b drover_9999 branch\-heads/9999\fR
-Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
-
 # Now do the \*(Aqdrover\*(Aq\&.
-# IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
-\fB$ git cherry\-pick \-x 0421d3583f73220c8f88b1a96898fcd81222fe73\fR
-[drover_9999 5c0a17d] This change needs to go to branch 9999
- Author: some\&.committer <some\&.committer@chromium\&.org>
- Date: Thu Apr 10 08:54:46 2014 +0000
- 1 file changed, 1 insertion(+)
- create mode 100644 modified_file
-
-# That took the code authored by some\&.committer and committed it to
-# the branch by the person who drovered it (i\&.e\&. you)\&.
-\fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 5c0a17dd382cd098182ac9f486ccd6b86c28d96e
-Author:     some\&.committer <some\&.committer@chromium\&.org>
-AuthorDate: Thu Apr 10 08:54:46 2014 +0000
-Commit:     you <you@chromium\&.org>
-CommitDate: Thu Apr 10 09:11:36 2014 +0000
+\fB$ git drover \-\-branch 9999 \-\-cherry\-pick b5a049e34297f22a4ea63567b32e3290bb3f244c\fR
+Going to cherry\-pick
+"""
+commit b5a049e34297f22a4ea63567b32e3290bb3f244c
+Author: some\&.committer <some\&.committer@chromium\&.org>
+Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change needs to go to branch 9999
+"""
+to 9999\&. Continue (y/n)? y
 
-    (cherry picked from commit 0421d3583f73220c8f88b1a96898fcd81222fe73)
+# A cl is uploaded to rietveld, where it can be reviewed before landing\&.
 
-# Looks good\&. Ship it!
-\fB$ git cl upload\fR
-# Wait for LGTM or TBR it\&.
-\fB$ git cl land\fR
-# Or skip the LGTM/TBR and just \*(Aqgit cl land \-\-bypass\-hooks\*(Aq
+About to land on 9999\&. Continue (y/n)? y
+# The cherry\-pick cl is landed on the branch 9999\&.
 .fi
 .if n \{\
 .RE
@@ -131,28 +143,93 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Here\*(Aqs the commit we want to revert\&.
 \fB$ git log \-n 1\fR
-commit 28bb44fa7f9d5e19b73a670ae923d3a96dec250a
+commit 215689406a8ca5813412becc6258509be903db59
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken\&.
 
 # Now do the revert\&.
-\fB$ git revert 28bb44fa7f9d5e19b73a670ae923d3a96dec250a\fR
+\fB$ git revert 215689406a8ca5813412becc6258509be903db59\fR
 
 # That reverted the change and committed the revert\&.
 \fB$ git log \-n 1\fR
-commit 4618467de1407aa159624015c8c8461ec35fbaf1
+commit 1efaf0e8b1c6c6afadfb37e15023b52b960ac2fd
 Author: you <you@chromium\&.org>
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken\&."
 
-    This reverts commit 28bb44fa7f9d5e19b73a670ae923d3a96dec250a\&.
+    This reverts commit 215689406a8ca5813412becc6258509be903db59\&.
 
 # As with old drover, reverts are generally OK to commit without LGTM\&.
 \fB$ git cl upload \-r some\&.committer@chromium\&.org \-\-send\-mail\fR
 \fB$ git cl land \-\-bypass\-hooks\fR
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+.RE
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBManual Merge Example\fR
+.RS 4
+.sp
+
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+# Make sure we have the most up\-to\-date branch sources\&.
+\fB$ git fetch\fR
+
+# Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
+\fB$ git log \-n 1 \-\-pretty=fuller\fR
+commit 640f962733bfd2b9c44539a0d65952643750957e
+Author:     some\&.committer <some\&.committer@chromium\&.org>
+AuthorDate: Thu Apr 10 08:54:46 2014 +0000
+Commit:     some\&.committer <some\&.committer@chromium\&.org>
+CommitDate: Thu Apr 10 08:54:46 2014 +0000
+
+    This change needs to go to branch 9999
+
+# Checkout the branch we want to \*(Aqdrover\*(Aq to\&.
+\fB$ git checkout \-b drover_9999 branch\-heads/9999\fR
+Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
+
+# Now do the \*(Aqdrover\*(Aq\&.
+# IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
+\fB$ git cherry\-pick \-x 640f962733bfd2b9c44539a0d65952643750957e\fR
+[drover_9999 5f1ae97] This change needs to go to branch 9999
+ Author: some\&.committer <some\&.committer@chromium\&.org>
+ Date: Thu Apr 10 08:54:46 2014 +0000
+ 1 file changed, 1 insertion(+)
+ create mode 100644 modified_file
+
+# That took the code authored by some\&.committer and committed it to
+# the branch by the person who drovered it (i\&.e\&. you)\&.
+\fB$ git log \-n 1 \-\-pretty=fuller\fR
+commit 5f1ae978a8d05c16d8ed812163b7aa927f028bf9
+Author:     some\&.committer <some\&.committer@chromium\&.org>
+AuthorDate: Thu Apr 10 08:54:46 2014 +0000
+Commit:     you <you@chromium\&.org>
+CommitDate: Thu Apr 10 09:11:36 2014 +0000
+
+    This change needs to go to branch 9999
+
+    (cherry picked from commit 640f962733bfd2b9c44539a0d65952643750957e)
+
+# Looks good\&. Ship it!
+\fB$ git cl upload\fR
+# Wait for LGTM or TBR it\&.
+\fB$ git cl land\fR
+# Or skip the LGTM/TBR and just \*(Aqgit cl land \-\-bypass\-hooks\*(Aq
 .fi
 .if n \{\
 .RE

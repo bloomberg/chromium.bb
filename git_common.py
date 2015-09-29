@@ -22,6 +22,7 @@ import functools
 import logging
 import os
 import re
+import shutil
 import signal
 import sys
 import tempfile
@@ -817,3 +818,38 @@ def get_branches_info(include_tracking_status):
       missing_upstreams[info.upstream] = None
 
   return dict(info_map.items() + missing_upstreams.items())
+
+
+def make_workdir_common(repository, new_workdir, files_to_symlink,
+                        files_to_copy):
+  os.makedirs(new_workdir)
+  for entry in files_to_symlink:
+    clone_file(repository, new_workdir, entry, os.symlink)
+  for entry in files_to_copy:
+    clone_file(repository, new_workdir, entry, shutil.copy)
+
+
+def make_workdir(repository, new_workdir):
+  GIT_DIRECTORY_WHITELIST = [
+    'config',
+    'info',
+    'hooks',
+    'logs/refs',
+    'objects',
+    'packed-refs',
+    'refs',
+    'remotes',
+    'rr-cache',
+    'svn'
+  ]
+  make_workdir_common(repository, new_workdir, GIT_DIRECTORY_WHITELIST,
+                      ['HEAD'])
+
+
+def clone_file(repository, new_workdir, link, operation):
+  if not os.path.exists(os.path.join(repository, link)):
+    return
+  link_dir = os.path.dirname(os.path.join(new_workdir, link))
+  if not os.path.exists(link_dir):
+    os.makedirs(link_dir)
+  operation(os.path.join(repository, link), os.path.join(new_workdir, link))
