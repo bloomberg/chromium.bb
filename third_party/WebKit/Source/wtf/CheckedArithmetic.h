@@ -66,8 +66,7 @@
 
 namespace WTF {
 
-enum class CheckedState
-{
+enum class CheckedState {
     DidOverflow,
     DidNotOverflow
 };

@@ -27,18 +27,17 @@
 #ifndef IntegralTypedArrayBase_h
 #define IntegralTypedArrayBase_h
 
+#include "wtf/MathExtras.h"
 #include "wtf/TypedArrayBase.h"
 #include <limits>
-#include "wtf/MathExtras.h"
-
-// Base class for all WebGL<T>Array types holding integral
-// (non-floating-point) values.
 
 namespace WTF {
 
+// Base class for all WebGL<T>Array types holding integral
+// (non-floating-point) values.
 template <typename T>
 class IntegralTypedArrayBase : public TypedArrayBase<T> {
-  public:
+public:
     void set(unsigned index, double value)
     {
         if (index >= TypedArrayBase<T>::m_length)
@@ -50,7 +49,7 @@ class IntegralTypedArrayBase : public TypedArrayBase<T> {
         TypedArrayBase<T>::data()[index] = static_cast<T>(static_cast<int64_t>(value));
     }
 
-  protected:
+protected:
     IntegralTypedArrayBase(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned length)
         : TypedArrayBase<T>(buffer, byteOffset, length)
     {

@@ -147,9 +147,7 @@ using WTF::FrameToNameScope;
 #define CRASH() (__debugbreak(), IMMEDIATE_CRASH())
 #else
 #define CRASH() \
-    (WTFReportBacktrace(), \
-     (*(int*)0xfbadbeef = 0), \
-     IMMEDIATE_CRASH())
+    (WTFReportBacktrace(), (*(int*)0xfbadbeef = 0), IMMEDIATE_CRASH())
 #endif
 #endif
 
@@ -171,7 +169,7 @@ using WTF::FrameToNameScope;
 
 #define BACKTRACE() do { \
     WTFReportBacktrace(); \
-} while(false)
+} while (false)
 
 #endif
 
@@ -190,13 +188,12 @@ using WTF::FrameToNameScope;
 #define ASSERT(assertion) \
     (!(assertion) ? \
         (WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #assertion), \
-         CRASH()) : \
+            CRASH()) : \
         (void)0)
 
 #define ASSERT_AT(assertion, file, line, function) \
     (!(assertion) ? \
-        (WTFReportAssertionFailure(file, line, function, #assertion), \
-         CRASH()) :                                                   \
+        (WTFReportAssertionFailure(file, line, function, #assertion), CRASH()) : \
         (void)0)
 
 #define ASSERT_NOT_REACHED() do { \
@@ -232,7 +229,7 @@ using WTF::FrameToNameScope;
 #define ASSERT_WITH_SECURITY_IMPLICATION(assertion) \
     (!(assertion) ? \
         (WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #assertion), \
-         CRASH()) : \
+            CRASH()) : \
         (void)0)
 
 #define RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(assertion) ASSERT_WITH_SECURITY_IMPLICATION(assertion)

@@ -24,34 +24,35 @@
 #include <stddef.h>
 
 namespace WTF {
-    template<typename T> class Function;
-    template<typename T> class OwnPtr;
-    template<typename T> class PassOwnPtr;
-    template<typename T> class PassRefPtr;
-    template<typename T> class RefPtr;
-    template<typename T, size_t inlineCapacity, typename Allocator> class Vector;
-    template<typename T> class WeakPtr;
 
-    class ArrayBuffer;
-    class ArrayBufferView;
-    class ArrayPiece;
-    class AtomicString;
-    class CString;
-    class Float32Array;
-    class Float64Array;
-    class Int8Array;
-    class Int16Array;
-    class Int32Array;
-    template<size_t size>
-    class SizeSpecificPartitionAllocator;
-    class String;
-    template <typename T> class StringBuffer;
-    class StringBuilder;
-    class StringImpl;
-    class Uint8Array;
-    class Uint8ClampedArray;
-    class Uint16Array;
-    class Uint32Array;
+template <typename T> class Function;
+template <typename T> class OwnPtr;
+template <typename T> class PassOwnPtr;
+template <typename T> class PassRefPtr;
+template <typename T> class RefPtr;
+template <size_t size> class SizeSpecificPartitionAllocator;
+template <typename T> class StringBuffer;
+template <typename T, size_t inlineCapacity, typename Allocator> class Vector;
+template <typename T> class WeakPtr;
+
+class ArrayBuffer;
+class ArrayBufferView;
+class ArrayPiece;
+class AtomicString;
+class CString;
+class Float32Array;
+class Float64Array;
+class Int8Array;
+class Int16Array;
+class Int32Array;
+class String;
+class StringBuilder;
+class StringImpl;
+class Uint8Array;
+class Uint8ClampedArray;
+class Uint16Array;
+class Uint32Array;
+
 }
 
 using WTF::Function;

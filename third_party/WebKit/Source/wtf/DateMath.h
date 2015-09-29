@@ -43,10 +43,10 @@
 #ifndef DateMath_h
 #define DateMath_h
 
+#include "wtf/WTFExport.h"
+#include "wtf/text/WTFString.h"
 #include <stdint.h>
 #include <string.h>
-#include "wtf/text/WTFString.h"
-#include "wtf/WTFExport.h"
 
 namespace WTF {
 

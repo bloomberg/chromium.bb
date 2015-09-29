@@ -26,9 +26,8 @@
 #ifndef WTF_CryptographicallyRandomNumber_h
 #define WTF_CryptographicallyRandomNumber_h
 
-#include <stdint.h>
-
 #include "wtf/WTFExport.h"
+#include <stdint.h>
 
 namespace WTF {
 

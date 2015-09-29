@@ -47,9 +47,7 @@ public:
     }
 
 private:
-    inline Int16Array(PassRefPtr<ArrayBuffer>,
-                    unsigned byteOffset,
-                    unsigned length);
+    inline Int16Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
     friend class TypedArrayBase<short>;
 };

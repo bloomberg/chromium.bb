@@ -26,8 +26,8 @@
 #ifndef BitArray_h
 #define BitArray_h
 
-#include <string.h>
 #include "wtf/Assertions.h"
+#include <string.h>
 
 namespace WTF {
 

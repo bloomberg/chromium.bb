@@ -27,8 +27,8 @@
 #ifndef Float32Array_h
 #define Float32Array_h
 
-#include "wtf/TypedArrayBase.h"
 #include "wtf/MathExtras.h"
+#include "wtf/TypedArrayBase.h"
 
 namespace WTF {
 
@@ -55,9 +55,7 @@ public:
     }
 
 private:
-    inline Float32Array(PassRefPtr<ArrayBuffer>,
-                    unsigned byteOffset,
-                    unsigned length);
+    inline Float32Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
     friend class TypedArrayBase<float>;
 };

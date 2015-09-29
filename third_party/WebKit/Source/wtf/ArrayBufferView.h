@@ -37,7 +37,7 @@
 namespace WTF {
 
 class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
-  public:
+public:
     enum ViewType {
         TypeInt8,
         TypeUint8,
@@ -76,7 +76,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
     virtual ~ArrayBufferView();
 
-  protected:
+protected:
     ArrayBufferView(PassRefPtr<ArrayBuffer>, unsigned byteOffset);
 
     inline bool setImpl(ArrayBufferView*, unsigned byteOffset);
@@ -84,9 +84,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
     // Helper to verify that a given sub-range of an ArrayBuffer is
     // within range.
     template <typename T>
-    static bool verifySubRange(PassRefPtr<ArrayBuffer> buffer,
-                               unsigned byteOffset,
-                               unsigned numElements)
+    static bool verifySubRange(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset, unsigned numElements)
     {
         if (!buffer)
             return false;
@@ -108,7 +106,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
     unsigned m_byteOffset : 31;
     bool m_isNeuterable : 1;
 
-  private:
+private:
     friend class ArrayBuffer;
     RefPtr<ArrayBuffer> m_buffer;
     ArrayBufferView* m_prevView;

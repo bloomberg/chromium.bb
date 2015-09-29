@@ -70,30 +70,27 @@
  */
 
 #include "config.h"
-#include "DateMath.h"
+#include "wtf/DateMath.h"
 
-#include "Assertions.h"
-#include "ASCIICType.h"
-#include "CurrentTime.h"
-#include "MathExtras.h"
-#include "StdLibExtras.h"
-#include "StringExtras.h"
-
+#include "wtf/ASCIICType.h"
+#include "wtf/Assertions.h"
+#include "wtf/CurrentTime.h"
+#include "wtf/MathExtras.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <limits.h>
 #include <limits>
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "wtf/text/StringBuilder.h"
 
 #if OS(WIN)
 #include <windows.h>
 #else
 #include <sys/time.h>
 #endif
-
-using namespace WTF;
 
 namespace WTF {
 
@@ -302,7 +299,7 @@ static inline int minimumYearForDST()
     // greater than the max year minus 27 (2010), we want to use the max year
     // minus 27 instead, to ensure there is a range of 28 years that all years
     // can map to.
-    return std::min(msToYear(jsCurrentTime()), maximumYearForDST() - 27) ;
+    return std::min(msToYear(jsCurrentTime()), maximumYearForDST() - 27);
 }
 
 /*
@@ -528,8 +525,9 @@ static double parseDateFromNullTerminatedCharacters(const char* dateString, bool
                 month = findMonth(wordStart);
             skipSpacesAndComments(dateString);
             wordStart = dateString;
-        } else
-           dateString++;
+        } else {
+            dateString++;
+        }
     }
 
     // Missing delimiter between month and day (like "January29")?
@@ -587,7 +585,7 @@ static double parseDateFromNullTerminatedCharacters(const char* dateString, bool
             dateString++;
         if (!*dateString)
             return std::numeric_limits<double>::quiet_NaN();
-     } else {
+    } else {
         if (*dateString == '-')
             dateString++;
 
@@ -627,9 +625,9 @@ static double parseDateFromNullTerminatedCharacters(const char* dateString, bool
     long hour = 0;
     long minute = 0;
     long second = 0;
-    if (!*newPosStr)
+    if (!*newPosStr) {
         dateString = newPosStr;
-    else {
+    } else {
         // ' 23:12:40 GMT'
         if (!(isASCIISpace(*newPosStr) || *newPosStr == ',')) {
             if (*newPosStr != ':')

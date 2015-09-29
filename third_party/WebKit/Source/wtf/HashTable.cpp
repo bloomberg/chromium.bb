@@ -18,8 +18,9 @@
 */
 
 #include "config.h"
-#include "HashTable.h"
-#include "DataLog.h"
+#include "wtf/HashTable.h"
+
+#include "wtf/DataLog.h"
 
 namespace WTF {
 

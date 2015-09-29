@@ -30,15 +30,14 @@
 
 namespace WTF {
 
-ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
-                       unsigned byteOffset)
-        : m_byteOffset(byteOffset)
-        , m_isNeuterable(true)
-        , m_buffer(buffer)
-        , m_prevView(0)
-        , m_nextView(0)
+ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer, unsigned byteOffset)
+    : m_byteOffset(byteOffset)
+    , m_isNeuterable(true)
+    , m_buffer(buffer)
+    , m_prevView(nullptr)
+    , m_nextView(nullptr)
 {
-    m_baseAddress = m_buffer ? (static_cast<char*>(m_buffer->data()) + m_byteOffset) : 0;
+    m_baseAddress = m_buffer ? (static_cast<char*>(m_buffer->data()) + m_byteOffset) : nullptr;
     if (m_buffer)
         m_buffer->addView(this);
 }

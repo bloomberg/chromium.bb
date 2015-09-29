@@ -73,7 +73,7 @@ public: \
     \
     void operator delete[](void* p) \
     { \
-         ::WTF::fastFree(p); \
+        ::WTF::fastFree(p); \
     } \
     void* operator new(size_t, NotNullTag, void* location) \
     { \

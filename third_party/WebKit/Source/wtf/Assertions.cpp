@@ -32,14 +32,13 @@
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
 #include "config.h"
-#include "Assertions.h"
+#include "wtf/Assertions.h"
 
-#include "Compiler.h"
-#include "OwnPtr.h"
-#include "PassOwnPtr.h"
-
-#include <stdio.h>
+#include "wtf/Compiler.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -76,13 +75,13 @@ static void vprintf_stderr_common(const char* format, va_list args)
 {
 #if USE(CF) && !OS(WIN)
     if (strstr(format, "%@")) {
-        CFStringRef cfFormat = CFStringCreateWithCString(NULL, format, kCFStringEncodingUTF8);
+        CFStringRef cfFormat = CFStringCreateWithCString(nullptr, format, kCFStringEncodingUTF8);
 
 #if COMPILER(CLANG)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
 #endif
-        CFStringRef str = CFStringCreateWithFormatAndArguments(NULL, NULL, cfFormat, args);
+        CFStringRef str = CFStringCreateWithFormatAndArguments(nullptr, nullptr, cfFormat, args);
 #if COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
@@ -119,8 +118,7 @@ static void vprintf_stderr_common(const char* format, va_list args)
 
         do {
             char* buffer = (char*)malloc(size);
-
-            if (buffer == NULL)
+            if (!buffer)
                 break;
 
             if (_vsnprintf(buffer, size, format, args) != -1) {
@@ -186,7 +184,7 @@ static void printf_stderr_common(const char* format, ...)
 static void printCallSite(const char* file, int line, const char* function)
 {
 #if OS(WIN) && defined(_DEBUG)
-    _CrtDbgReport(_CRT_WARN, file, line, NULL, "%s\n", function);
+    _CrtDbgReport(_CRT_WARN, file, line, nullptr, "%s\n", function);
 #else
     // By using this format, which matches the format used by MSVC for compiler errors, developers
     // using Visual Studio can double-click the file/line number in the Output Window to have the

@@ -27,136 +27,138 @@
 
 namespace WTF {
 
-    // An unordered hash set that keeps track of how many times you added an
-    // item to the set. The iterators have fields ->key and ->value that return
-    // the set members and their counts, respectively.
-    template<
-        typename Value,
-        typename HashFunctions = typename DefaultHash<Value>::Hash,
-        typename Traits = HashTraits<Value>,
-        typename Allocator = DefaultAllocator > class HashCountedSet {
-        WTF_USE_ALLOCATOR(HashCountedSet, Allocator);
-    private:
-        typedef HashMap<Value, unsigned, HashFunctions, Traits, HashTraits<unsigned>, Allocator> ImplType;
-    public:
-        typedef Value ValueType;
-        typedef typename ImplType::iterator iterator;
-        typedef typename ImplType::const_iterator const_iterator;
-        typedef typename ImplType::AddResult AddResult;
+// An unordered hash set that keeps track of how many times you added an item to
+// the set. The iterators have fields ->key and ->value that return the set
+// members and their counts, respectively.
+template <
+    typename Value,
+    typename HashFunctions = typename DefaultHash<Value>::Hash,
+    typename Traits = HashTraits<Value>,
+    typename Allocator = DefaultAllocator>
+class HashCountedSet {
+    WTF_USE_ALLOCATOR(HashCountedSet, Allocator);
+private:
+    typedef HashMap<Value, unsigned, HashFunctions, Traits, HashTraits<unsigned>, Allocator> ImplType;
+public:
+    typedef Value ValueType;
+    typedef typename ImplType::iterator iterator;
+    typedef typename ImplType::const_iterator const_iterator;
+    typedef typename ImplType::AddResult AddResult;
 
-        HashCountedSet() {}
+    HashCountedSet() {}
 
-        void swap(HashCountedSet& other) { m_impl.swap(other.m_impl); }
+    void swap(HashCountedSet& other) { m_impl.swap(other.m_impl); }
 
-        unsigned size() const { return m_impl.size(); }
-        unsigned capacity() const { return m_impl.capacity(); }
-        bool isEmpty() const { return m_impl.isEmpty(); }
+    unsigned size() const { return m_impl.size(); }
+    unsigned capacity() const { return m_impl.capacity(); }
+    bool isEmpty() const { return m_impl.isEmpty(); }
 
-        // Iterators iterate over pairs of values (called key) and counts (called value).
-        iterator begin() { return m_impl.begin(); }
-        iterator end() { return m_impl.end(); }
-        const_iterator begin() const { return m_impl.begin(); }
-        const_iterator end() const { return m_impl.end(); }
+    // Iterators iterate over pairs of values (called key) and counts (called
+    // value).
+    iterator begin() { return m_impl.begin(); }
+    iterator end() { return m_impl.end(); }
+    const_iterator begin() const { return m_impl.begin(); }
+    const_iterator end() const { return m_impl.end(); }
 
-        iterator find(const ValueType& value) { return m_impl.find(value); }
-        const_iterator find(const ValueType& value) const { return m_impl.find(value); }
-        bool contains(const ValueType& value ) const { return m_impl.contains(value); }
-        unsigned count(const ValueType& value ) const { return m_impl.get(value); }
+    iterator find(const ValueType& value) { return m_impl.find(value); }
+    const_iterator find(const ValueType& value) const { return m_impl.find(value); }
+    bool contains(const ValueType& value ) const { return m_impl.contains(value); }
+    unsigned count(const ValueType& value ) const { return m_impl.get(value); }
 
-        // Increases the count if an equal value is already present
-        // the return value is a pair of an iterator to the new value's
-        // location, and a bool that is true if an new entry was added.
-        AddResult add(const ValueType&);
+    // Increases the count if an equal value is already present the return value
+    // is a pair of an iterator to the new value's location, and a bool that is
+    // true if an new entry was added.
+    AddResult add(const ValueType&);
 
-        // Reduces the count of the value, and removes it if count
-        // goes down to zero, returns true if the value is removed.
-        bool remove(const ValueType& value) { return remove(find(value)); }
-        bool remove(iterator);
+    // Reduces the count of the value, and removes it if count goes down to
+    // zero, returns true if the value is removed.
+    bool remove(const ValueType& value) { return remove(find(value)); }
+    bool remove(iterator);
 
-        // Removes the value, regardless of its count.
-        void removeAll(const ValueType& value) { removeAll(find(value)); }
-        void removeAll(iterator);
+    // Removes the value, regardless of its count.
+    void removeAll(const ValueType& value) { removeAll(find(value)); }
+    void removeAll(iterator);
 
-        // Clears the whole set.
-        void clear() { m_impl.clear(); }
+    // Clears the whole set.
+    void clear() { m_impl.clear(); }
 
-        template<typename VisitorDispatcher>
-        void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
+    template <typename VisitorDispatcher>
+    void trace(VisitorDispatcher visitor) { m_impl.trace(visitor); }
 
-    private:
-        ImplType m_impl;
-    };
+private:
+    ImplType m_impl;
+};
 
-    template<typename T, typename U, typename V, typename W>
-    inline typename HashCountedSet<T, U, V, W>::AddResult HashCountedSet<T, U, V, W>::add(const ValueType& value)
-    {
-        AddResult result = m_impl.add(value, 0);
-        ++result.storedValue->value;
-        return result;
+template <typename T, typename U, typename V, typename W>
+inline typename HashCountedSet<T, U, V, W>::AddResult HashCountedSet<T, U, V, W>::add(const ValueType& value)
+{
+    AddResult result = m_impl.add(value, 0);
+    ++result.storedValue->value;
+    return result;
+}
+
+template <typename T, typename U, typename V, typename W>
+inline bool HashCountedSet<T, U, V, W>::remove(iterator it)
+{
+    if (it == end())
+        return false;
+
+    unsigned oldVal = it->value;
+    ASSERT(oldVal);
+    unsigned newVal = oldVal - 1;
+    if (newVal) {
+        it->value = newVal;
+        return false;
     }
 
-    template<typename T, typename U, typename V, typename W>
-    inline bool HashCountedSet<T, U, V, W>::remove(iterator it)
-    {
-        if (it == end())
-            return false;
+    m_impl.remove(it);
+    return true;
+}
 
-        unsigned oldVal = it->value;
-        ASSERT(oldVal);
-        unsigned newVal = oldVal - 1;
-        if (newVal) {
-            it->value = newVal;
-            return false;
-        }
+template <typename T, typename U, typename V, typename W>
+inline void HashCountedSet<T, U, V, W>::removeAll(iterator it)
+{
+    if (it == end())
+        return;
 
-        m_impl.remove(it);
-        return true;
-    }
+    m_impl.remove(it);
+}
 
-    template<typename T, typename U, typename V, typename W>
-    inline void HashCountedSet<T, U, V, W>::removeAll(iterator it)
-    {
-        if (it == end())
-            return;
+template <typename T, typename U, typename V, typename W, typename VectorType>
+inline void copyToVector(const HashCountedSet<T, U, V, W>& collection, VectorType& vector)
+{
+    typedef typename HashCountedSet<T, U, V, W>::const_iterator iterator;
 
-        m_impl.remove(it);
-    }
+    vector.resize(collection.size());
 
-    template<typename T, typename U, typename V, typename W, typename VectorType>
-    inline void copyToVector(const HashCountedSet<T, U, V, W>& collection, VectorType& vector)
-    {
-        typedef typename HashCountedSet<T, U, V, W>::const_iterator iterator;
+    iterator it = collection.begin();
+    iterator end = collection.end();
+    for (unsigned i = 0; it != end; ++it, ++i)
+        vector[i] = *it;
+}
 
-        vector.resize(collection.size());
+template <typename Value, typename HashFunctions, typename Traits, typename Allocator, size_t inlineCapacity, typename VectorAllocator>
+inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection, Vector<Value, inlineCapacity, VectorAllocator>& vector)
+{
+    typedef typename HashCountedSet<Value, HashFunctions, Traits, Allocator>::const_iterator iterator;
 
-        iterator it = collection.begin();
-        iterator end = collection.end();
-        for (unsigned i = 0; it != end; ++it, ++i)
-            vector[i] = *it;
-    }
+    vector.resize(collection.size());
 
-    template<typename Value, typename HashFunctions, typename Traits, typename Allocator, size_t inlineCapacity, typename VectorAllocator>
-    inline void copyToVector(const HashCountedSet<Value, HashFunctions, Traits, Allocator>& collection, Vector<Value, inlineCapacity, VectorAllocator>& vector)
-    {
-        typedef typename HashCountedSet<Value, HashFunctions, Traits, Allocator>::const_iterator iterator;
-
-        vector.resize(collection.size());
-
-        iterator it = collection.begin();
-        iterator end = collection.end();
-        for (unsigned i = 0; it != end; ++it, ++i)
-            vector[i] = (*it).key;
-    }
+    iterator it = collection.begin();
+    iterator end = collection.end();
+    for (unsigned i = 0; it != end; ++it, ++i)
+        vector[i] = (*it).key;
+}
 
 #if !ENABLE(OILPAN)
-    template<typename T, typename U, typename V>
-    struct NeedsTracing<HashCountedSet<T, U, V>> {
-        static const bool value = false;
-    };
+template <typename T, typename U, typename V>
+struct NeedsTracing<HashCountedSet<T, U, V>> {
+    static const bool value = false;
+};
 #endif
 
 } // namespace WTF
 
 using WTF::HashCountedSet;
 
-#endif /* WTF_HashCountedSet_h */
+#endif // WTF_HashCountedSet_h

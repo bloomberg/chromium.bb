@@ -48,9 +48,7 @@ public:
     }
 
 private:
-    inline Int8Array(PassRefPtr<ArrayBuffer>,
-                   unsigned byteOffset,
-                   unsigned length);
+    inline Int8Array(PassRefPtr<ArrayBuffer>, unsigned byteOffset, unsigned length);
     // Make constructor visible to superclass.
     friend class TypedArrayBase<signed char>;
 };
