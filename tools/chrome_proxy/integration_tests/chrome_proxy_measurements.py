@@ -192,8 +192,14 @@ class ChromeProxyHTTPFallbackViaHeader(ChromeProxyValidation):
     super(ChromeProxyHTTPFallbackViaHeader,
           self).CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs('--ignore-certificate-errors')
+    # Set the primary Data Reduction Proxy to be the test server. The test
+    # doesn't know if Chrome is configuring the DRP using the Data Saver API or
+    # not, so the appropriate flags are set for both cases.
     options.AppendExtraBrowserArgs(
         '--spdy-proxy-auth-origin=http://%s' % _TEST_SERVER)
+    options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-http-proxies='
+        'http://%s;http://compress.googlezip.net' % _TEST_SERVER)
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPFallback(tab, results)
@@ -307,9 +313,14 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
     super(ChromeProxyHTTPToDirectFallback,
           self).CustomizeBrowserOptions(options)
     # Set the primary proxy to something that will fail to be resolved so that
-    # this test will run using the HTTP fallback proxy.
+    # this test will run using the HTTP fallback proxy. The test doesn't know if
+    # Chrome is configuring the DRP using the Data Saver API or not, so the
+    # appropriate flags are set for both cases.
     options.AppendExtraBrowserArgs(
         '--spdy-proxy-auth-origin=http://nonexistent.googlezip.net')
+    options.AppendExtraBrowserArgs(
+        '--data-reduction-proxy-http-proxies='
+        'http://nonexistent.googlezip.net;http://compress.googlezip.net')
 
   def WillNavigateToPage(self, page, tab):
     super(ChromeProxyHTTPToDirectFallback, self).WillNavigateToPage(page, tab)
