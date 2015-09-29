@@ -77,6 +77,8 @@ class ViscaWebcam : public Webcam {
                           bool success,
                           const std::vector<char>& response);
 
+  void PostOpenFailureTask(const OpenCompleteCallback& open_callback);
+
   // Webcam Overrides:
   void GetPan(const GetPTZCompleteCallback& callback) override;
   void GetTilt(const GetPTZCompleteCallback& callback) override;

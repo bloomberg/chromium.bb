@@ -13,83 +13,114 @@ using content::BrowserThread;
 namespace {
 
 // Message terminator:
-const char VISCA_TERMINATOR = 0xFF;
+const char kViscaTerminator = 0xFF;
 
 // Response types:
-const char VISCA_RESPONSE_NETWORK_CHANGE = 0x38;
-const char VISCA_RESPONSE_ACK = 0x40;
-const char VISCA_RESPONSE_ERROR = 0x60;
+const char kViscaResponseNetworkChange = 0x38;
+const char kViscaResponseAck = 0x40;
+const char kViscaResponseError = 0x60;
 
-// The default pan speed is MAX_PAN_SPEED /2 and the default tilt speed is
-// MAX_TILT_SPEED / 2.
-const int MAX_PAN_SPEED = 0x18;
-const int MAX_TILT_SPEED = 0x14;
+// The default pan speed is kMaxPanSpeed /2 and the default tilt speed is
+// kMaxTiltSpeed / 2.
+const int kMaxPanSpeed = 0x18;
+const int kMaxTiltSpeed = 0x14;
+const int kDefaultPanSpeed = 0x18 / 2;
+const int kDefaultTiltSpeed = 0x14 / 2;
 
 // Pan-Tilt-Zoom movement comands from http://www.manualslib.com/manual/...
 // 557364/Cisco-Precisionhd-1080p12x.html?page=31#manual
 
 // Reset the address of each device in the VISCA chain (broadcast). This is used
 // when resetting the VISCA network.
-const std::vector<char> kSetAddressCommand = {0x88, 0x30, 0x01, 0xFF};
+const char kSetAddressCommand[] = {0x88, 0x30, 0x01, 0xFF};
 
 // Clear all of the devices, halting any pending commands in the VISCA chain
 // (broadcast). This is used when resetting the VISCA network.
-const std::vector<char> kClearAllCommand = {0x88, 0x01, 0x00, 0x01, 0xFF};
-
-// Clear the command buffer in the target device and cancel the command
-// currently being executed. Command: {0x8X, 0x01, 0x00, 0x01, 0xFF}, X = 1 to
-// 7: target device address.
-const std::vector<char> kClearCommand = {0x81, 0x01, 0x00, 0x01, 0xFF};
+const char kClearAllCommand[] = {0x88, 0x01, 0x00, 0x01, 0xFF};
 
 // Command: {0x8X, 0x09, 0x06, 0x12, 0xFF}, X = 1 to 7: target device address.
 // Response: {0xY0, 0x50, 0x0p, 0x0q, 0x0r, 0x0s, 0x0t, 0x0u, 0x0v, 0x0w, 0xFF},
 // Y = socket number; pqrs: pan position; tuvw: tilt position.
-const std::vector<char> kGetPanTiltCommand = {0x81, 0x09, 0x06, 0x12, 0xFF};
+const char kGetPanTiltCommand[] = {0x81, 0x09, 0x06, 0x12, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x02, 0x0p, 0x0t, 0x0q, 0x0r, 0x0s, 0x0u, 0x0v,
 // 0x0w, 0x0y, 0x0z, 0xFF}, X = 1 to 7: target device address; p = pan speed;
 // t = tilt speed; qrsu = pan position; vwyz = tilt position.
-const std::vector<char> kSetPanTiltCommand = {0x81, 0x01, 0x06, 0x02, 0x00,
-                                              0x00, 0x00, 0x00, 0x00, 0x00,
-                                              0x00, 0x00, 0x00, 0x00, 0xFF};
+const char kSetPanTiltCommand[] = {0x81, 0x01, 0x06, 0x02, 0x00,
+                                   0x00, 0x00, 0x00, 0x00, 0x00,
+                                   0x00, 0x00, 0x00, 0x00, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x05, 0xFF}, X = 1 to 7: target device address.
-const std::vector<char> kResetPanTiltCommand = {0x81, 0x01, 0x06, 0x05, 0xFF};
+const char kResetPanTiltCommand[] = {0x81, 0x01, 0x06, 0x05, 0xFF};
 
 // Command: {0x8X, 0x09, 0x04, 0x47, 0xFF}, X = 1 to 7: target device address.
 // Response: {0xY0, 0x50, 0x0p, 0x0q, 0x0r, 0x0s, 0xFF}, Y = socket number;
 // pqrs: zoom position.
-const std::vector<char> kGetZoomCommand = {0x81, 0x09, 0x04, 0x47, 0xFF};
+const char kGetZoomCommand[] = {0x81, 0x09, 0x04, 0x47, 0xFF};
 
 // Command: {0x8X, 0x01, 0x04, 0x47, 0x0p, 0x0q, 0x0r, 0x0s, 0xFF}, X = 1 to 7:
 // target device address; pqrs: zoom position;
-const std::vector<char> kSetZoomCommand =
-    {0x81, 0x01, 0x04, 0x47, 0x00, 0x00, 0x00, 0x00, 0xFF};
+const char kSetZoomCommand[] = {0x81, 0x01, 0x04, 0x47, 0x00,
+                                0x00, 0x00, 0x00, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x03, 0x01, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTUpCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
-                                        0x00, 0x03, 0x01, 0xFF};
+const char kPTUpCommand[] = {0x81, 0x01, 0x06, 0x01, 0x00,
+                             0x00, 0x03, 0x01, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x03, 0x02, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTDownCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
-                                          0x00, 0x03, 0x02, 0xFF};
+const char kPTDownCommand[] = {0x81, 0x01, 0x06, 0x01, 0x00,
+                               0x00, 0x03, 0x02, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x0, 0x03, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTLeftCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
-                                          0x00, 0x01, 0x03, 0xFF};
+const char kPTLeftCommand[] = {0x81, 0x01, 0x06, 0x01, 0x00,
+                               0x00, 0x01, 0x03, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x0p, 0x0t, 0x02, 0x03, 0xFF}, X = 1 to 7:
 // target device address; p: pan speed; t: tilt speed.
-const std::vector<char> kPTRightCommand = {0x81, 0x01, 0x06, 0x01, 0x00,
-                                           0x00, 0x02, 0x03, 0xFF};
+const char kPTRightCommand[] = {0x81, 0x01, 0x06, 0x01, 0x00,
+                                0x00, 0x02, 0x03, 0xFF};
 
 // Command: {0x8X, 0x01, 0x06, 0x01, 0x03, 0x03, 0x03, 0x03, 0xFF}, X = 1 to 7:
 // target device address.
-const std::vector<char> kPTStopCommand =
-    {0x81, 0x01, 0x06, 0x01, 0x03, 0x03, 0x03, 0x03, 0xFF};
+const char kPTStopCommand[] = {0x81, 0x01, 0x06, 0x01, 0x03,
+                               0x03, 0x03, 0x03, 0xFF};
+
+#define CHAR_VECTOR_FROM_ARRAY(array) \
+  std::vector<char>(array, array + arraysize(array))
+
+int ShiftResponseLowerBits(char c, size_t shift) {
+  return static_cast<int>(c & 0x0F) << shift;
+}
+
+int BuildResponseInt(const std::vector<char>& response, size_t start_index) {
+  return ShiftResponseLowerBits(response[start_index], 12) +
+         ShiftResponseLowerBits(response[start_index + 1], 8) +
+         ShiftResponseLowerBits(response[start_index + 2], 4) +
+         ShiftResponseLowerBits(response[start_index + 3], 0);
+}
+
+void ResponseToCommand(std::vector<char>* command,
+                       size_t start_index,
+                       uint16_t response) {
+  DCHECK(command);
+  std::vector<char>& command_ref = *command;
+  command_ref[start_index] |= ((response >> 12) & 0x0F);
+  command_ref[start_index + 1] |= ((response >> 8) & 0x0F);
+  command_ref[start_index + 2] |= ((response >> 4 & 0x0F));
+  command_ref[start_index + 3] |= (response & 0x0F);
+}
+
+int CalculateSpeed(int desired_speed, int max_speed, int default_speed) {
+  int speed = std::min(desired_speed, max_speed);
+  return speed > 0 ? speed : default_speed;
+}
+
+int GetPositiveValue(int value) {
+  return value < 0x8000 ? value : value - 0xFFFF;
+}
 
 }  // namespace
 
@@ -139,13 +170,13 @@ void ViscaWebcam::OpenOnIOThread(const OpenCompleteCallback& open_callback) {
 void ViscaWebcam::OnConnected(const OpenCompleteCallback& open_callback,
                               bool success) {
   if (!success) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(open_callback, false));
-  } else {
-    Send(kSetAddressCommand,
-         base::Bind(&ViscaWebcam::OnAddressSetCompleted,
-                    weak_ptr_factory_.GetWeakPtr(), open_callback));
+    PostOpenFailureTask(open_callback);
+    return;
   }
+
+  Send(CHAR_VECTOR_FROM_ARRAY(kSetAddressCommand),
+       base::Bind(&ViscaWebcam::OnAddressSetCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), open_callback));
 }
 
 void ViscaWebcam::OnAddressSetCompleted(
@@ -154,13 +185,13 @@ void ViscaWebcam::OnAddressSetCompleted(
     const std::vector<char>& response) {
   commands_.pop_front();
   if (!success) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(open_callback, false));
-  } else {
-    Send(kClearAllCommand,
-         base::Bind(&ViscaWebcam::OnClearAllCompleted,
-                    weak_ptr_factory_.GetWeakPtr(), open_callback));
+    PostOpenFailureTask(open_callback);
+    return;
   }
+
+  Send(CHAR_VECTOR_FROM_ARRAY(kClearAllCommand),
+       base::Bind(&ViscaWebcam::OnClearAllCompleted,
+                  weak_ptr_factory_.GetWeakPtr(), open_callback));
 }
 
 void ViscaWebcam::OnClearAllCompleted(const OpenCompleteCallback& open_callback,
@@ -168,12 +199,12 @@ void ViscaWebcam::OnClearAllCompleted(const OpenCompleteCallback& open_callback,
                                       const std::vector<char>& response) {
   commands_.pop_front();
   if (!success) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(open_callback, false));
-  } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(open_callback, true));
+    PostOpenFailureTask(open_callback);
+    return;
   }
+
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(open_callback, true));
 }
 
 void ViscaWebcam::Send(const std::vector<char>& command,
@@ -193,8 +224,7 @@ void ViscaWebcam::OnSendCompleted(const CommandCompleteCallback& callback,
   if (error == api::serial::SEND_ERROR_NONE) {
     ReceiveLoop(callback);
   } else {
-    const std::vector<char> response;
-    callback.Run(false, response);
+    callback.Run(false, std::vector<char>());
   }
 }
 
@@ -211,7 +241,7 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
 
   if (error == api::serial::RECEIVE_ERROR_NONE) {
     // Loop until encounter the terminator.
-    if (int(data_buffer_.back()) != VISCA_TERMINATOR) {
+    if (static_cast<int>(data_buffer_.back()) != kViscaTerminator) {
       base::MessageLoop::current()->PostTask(
           FROM_HERE, base::Bind(&ViscaWebcam::ReceiveLoop,
                                 weak_ptr_factory_.GetWeakPtr(), callback));
@@ -220,10 +250,11 @@ void ViscaWebcam::OnReceiveCompleted(const CommandCompleteCallback& callback,
       std::vector<char> response;
       response.swap(data_buffer_);
 
-      if ((int(response[1]) & 0xF0) == VISCA_RESPONSE_ERROR) {
+      if ((static_cast<int>(response[1]) & 0xF0) == kViscaResponseError) {
         callback.Run(false, response);
-      } else if ((int(response[1]) & 0xF0) != VISCA_RESPONSE_ACK &&
-                 (int(response[1]) & 0xFF) != VISCA_RESPONSE_NETWORK_CHANGE) {
+      } else if ((static_cast<int>(response[1]) & 0xF0) != kViscaResponseAck &&
+                 (static_cast<int>(response[1]) & 0xFF) !=
+                     kViscaResponseNetworkChange) {
         callback.Run(true, response);
       } else {
         base::MessageLoop::current()->PostTask(
@@ -270,23 +301,17 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
     switch (type) {
       case INQUIRY_PAN:
         // See kGetPanTiltCommand for the format of response.
-        pan_ = ((int(response[2]) & 0x0F) << 12) +
-               ((int(response[3]) & 0x0F) << 8) +
-               ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
-        value = pan_ < 0x8000 ? pan_ : pan_ - 0xFFFF;
+        pan_ = BuildResponseInt(response, 2);
+        value = GetPositiveValue(pan_);
         break;
       case INQUIRY_TILT:
         // See kGetPanTiltCommand for the format of response.
-        tilt_ = ((int(response[6]) & 0x0F) << 12) +
-                ((int(response[7]) & 0x0F) << 8) +
-                ((int(response[8]) & 0x0F) << 4) + (int(response[9]) & 0x0F);
-        value = tilt_ < 0x8000 ? tilt_ : tilt_ - 0xFFFF;
+        tilt_ = BuildResponseInt(response, 6);
+        value = GetPositiveValue(tilt_);
         break;
       case INQUIRY_ZOOM:
         // See kGetZoomCommand for the format of response.
-        value = ((int(response[2]) & 0x0F) << 12) +
-                ((int(response[3]) & 0x0F) << 8) +
-                ((int(response[4]) & 0x0F) << 4) + (int(response[5]) & 0x0F);
+        value = BuildResponseInt(response, 2);
         break;
     }
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -305,20 +330,26 @@ void ViscaWebcam::OnInquiryCompleted(InquiryType type,
   }
 }
 
+void ViscaWebcam::PostOpenFailureTask(
+    const OpenCompleteCallback& open_callback) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(open_callback, false /* success? */));
+}
+
 void ViscaWebcam::GetPan(const GetPTZCompleteCallback& callback) {
-  Send(kGetPanTiltCommand,
+  Send(CHAR_VECTOR_FROM_ARRAY(kGetPanTiltCommand),
        base::Bind(&ViscaWebcam::OnInquiryCompleted,
                   weak_ptr_factory_.GetWeakPtr(), INQUIRY_PAN, callback));
 }
 
 void ViscaWebcam::GetTilt(const GetPTZCompleteCallback& callback) {
-  Send(kGetPanTiltCommand,
+  Send(CHAR_VECTOR_FROM_ARRAY(kGetPanTiltCommand),
        base::Bind(&ViscaWebcam::OnInquiryCompleted,
                   weak_ptr_factory_.GetWeakPtr(), INQUIRY_TILT, callback));
 }
 
 void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
-  Send(kGetZoomCommand,
+  Send(CHAR_VECTOR_FROM_ARRAY(kGetZoomCommand),
        base::Bind(&ViscaWebcam::OnInquiryCompleted,
                   weak_ptr_factory_.GetWeakPtr(), INQUIRY_ZOOM, callback));
 }
@@ -326,23 +357,15 @@ void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
 void ViscaWebcam::SetPan(int value,
                          int pan_speed,
                          const SetPTZCompleteCallback& callback) {
-  pan_speed = std::min(pan_speed, MAX_PAN_SPEED);
-  pan_speed = pan_speed > 0 ? pan_speed : MAX_PAN_SPEED / 2;
+  int actual_pan_speed =
+      CalculateSpeed(pan_speed, kMaxPanSpeed, kDefaultPanSpeed);
   pan_ = value;
-  uint16_t pan = (uint16_t)pan_;
-  uint16_t tilt = (uint16_t)tilt_;
 
-  std::vector<char> command = kSetPanTiltCommand;
-  command[4] |= pan_speed;
-  command[5] |= (MAX_TILT_SPEED / 2);
-  command[6] |= ((pan & 0xF000) >> 12);
-  command[7] |= ((pan & 0x0F00) >> 8);
-  command[8] |= ((pan & 0x00F0) >> 4);
-  command[9] |= (pan & 0x000F);
-  command[10] |= ((tilt & 0xF000) >> 12);
-  command[11] |= ((tilt & 0x0F00) >> 8);
-  command[12] |= ((tilt & 0x00F0) >> 4);
-  command[13] |= (tilt & 0x000F);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetPanTiltCommand);
+  command[4] |= actual_pan_speed;
+  command[5] |= kDefaultTiltSpeed;
+  ResponseToCommand(&command, 6, static_cast<uint16_t>(pan_));
+  ResponseToCommand(&command, 10, static_cast<uint16_t>(tilt_));
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -350,34 +373,23 @@ void ViscaWebcam::SetPan(int value,
 void ViscaWebcam::SetTilt(int value,
                           int tilt_speed,
                           const SetPTZCompleteCallback& callback) {
-  tilt_speed = std::min(tilt_speed, MAX_TILT_SPEED);
-  tilt_speed = tilt_speed > 0 ? tilt_speed : MAX_TILT_SPEED / 2;
+  int actual_tilt_speed =
+      CalculateSpeed(tilt_speed, kMaxTiltSpeed, kDefaultTiltSpeed);
   tilt_ = value;
-  uint16_t pan = (uint16_t)pan_;
-  uint16_t tilt = (uint16_t)tilt_;
 
-  std::vector<char> command = kSetPanTiltCommand;
-  command[4] |= (MAX_PAN_SPEED / 2);
-  command[5] |= tilt_speed;
-  command[6] |= ((pan & 0xF000) >> 12);
-  command[7] |= ((pan & 0x0F00) >> 8);
-  command[8] |= ((pan & 0x00F0) >> 4);
-  command[9] |= (pan & 0x000F);
-  command[10] |= ((tilt & 0xF000) >> 12);
-  command[11] |= ((tilt & 0x0F00) >> 8);
-  command[12] |= ((tilt & 0x00F0) >> 4);
-  command[13] |= (tilt & 0x000F);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetPanTiltCommand);
+  command[4] |= kDefaultPanSpeed;
+  command[5] |= actual_tilt_speed;
+  ResponseToCommand(&command, 6, static_cast<uint16_t>(pan_));
+  ResponseToCommand(&command, 10, static_cast<uint16_t>(tilt_));
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
-  value = value > 0 ? value : 0;
-  std::vector<char> command = kSetZoomCommand;
-  command[4] |= ((value & 0xF000) >> 12);
-  command[5] |= ((value & 0x0F00) >> 8);
-  command[6] |= ((value & 0x00F0) >> 4);
-  command[7] |= (value & 0x000F);
+  int actual_value = std::min(value, 0);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetZoomCommand);
+  ResponseToCommand(&command, 4, actual_value);
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
                            weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -385,21 +397,21 @@ void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
 void ViscaWebcam::SetPanDirection(PanDirection direction,
                                   int pan_speed,
                                   const SetPTZCompleteCallback& callback) {
-  pan_speed = std::min(pan_speed, MAX_PAN_SPEED);
-  pan_speed = pan_speed > 0 ? pan_speed : MAX_PAN_SPEED / 2;
-  std::vector<char> command = kPTStopCommand;
+  int actual_pan_speed =
+      CalculateSpeed(pan_speed, kMaxPanSpeed, kDefaultPanSpeed);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kPTStopCommand);
   switch (direction) {
     case PAN_STOP:
       break;
     case PAN_RIGHT:
-      command = kPTRightCommand;
-      command[4] |= pan_speed;
-      command[5] |= (MAX_TILT_SPEED / 2);
+      command = CHAR_VECTOR_FROM_ARRAY(kPTRightCommand);
+      command[4] |= actual_pan_speed;
+      command[5] |= kDefaultTiltSpeed;
       break;
     case PAN_LEFT:
-      command = kPTLeftCommand;
-      command[4] |= pan_speed;
-      command[5] |= (MAX_TILT_SPEED / 2);
+      command = CHAR_VECTOR_FROM_ARRAY(kPTLeftCommand);
+      command[4] |= actual_pan_speed;
+      command[5] |= kDefaultTiltSpeed;
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
@@ -409,21 +421,21 @@ void ViscaWebcam::SetPanDirection(PanDirection direction,
 void ViscaWebcam::SetTiltDirection(TiltDirection direction,
                                    int tilt_speed,
                                    const SetPTZCompleteCallback& callback) {
-  tilt_speed = std::min(tilt_speed, MAX_TILT_SPEED);
-  tilt_speed = tilt_speed > 0 ? tilt_speed : MAX_TILT_SPEED / 2;
-  std::vector<char> command = kPTStopCommand;
+  int actual_tilt_speed =
+      CalculateSpeed(tilt_speed, kMaxTiltSpeed, kDefaultTiltSpeed);
+  std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kPTStopCommand);
   switch (direction) {
     case TILT_STOP:
       break;
     case TILT_UP:
-      command = kPTUpCommand;
-      command[4] |= (MAX_PAN_SPEED / 2);
-      command[5] |= tilt_speed;
+      command = CHAR_VECTOR_FROM_ARRAY(kPTUpCommand);
+      command[4] |= kDefaultPanSpeed;
+      command[5] |= actual_tilt_speed;
       break;
     case TILT_DOWN:
-      command = kPTDownCommand;
-      command[4] |= (MAX_PAN_SPEED / 2);
-      command[5] |= tilt_speed;
+      command = CHAR_VECTOR_FROM_ARRAY(kPTDownCommand);
+      command[4] |= kDefaultPanSpeed;
+      command[5] |= actual_tilt_speed;
       break;
   }
   Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
@@ -436,14 +448,14 @@ void ViscaWebcam::Reset(bool pan,
                         const SetPTZCompleteCallback& callback) {
   // pan and tilt are always reset together in Visca Webcams.
   if (pan || tilt) {
-    Send(kResetPanTiltCommand,
+    Send(CHAR_VECTOR_FROM_ARRAY(kResetPanTiltCommand),
          base::Bind(&ViscaWebcam::OnCommandCompleted,
                     weak_ptr_factory_.GetWeakPtr(), callback));
   }
   if (zoom) {
     // Set the default zoom value to 100 to be consistent with V4l2 webcam.
-    const int default_zoom = 100;
-    SetZoom(default_zoom, callback);
+    const int kDefaultZoom = 100;
+    SetZoom(kDefaultZoom, callback);
   }
 }
 
