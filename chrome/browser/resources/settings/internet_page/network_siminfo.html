@@ -20,22 +20,22 @@
       <div class="layout vertical"
           hidden$="[[!state.Cellular.SIMPresent]]">
         <div id="lockedDiv" class="layout horizontal center"
-            hidden$="[[!isSimLocked_(networkState)]]">
+            hidden$="[[!isSimLocked_(networkProperties)]]">
           <!-- SIM locked -->
           <iron-icon icon="lock"></iron-icon>
           <span>SIM card is locked.</span>
           <paper-button on-tap="unlockPin_">Unlock</paper-button>
         </div>
         <div class="layout vertical"
-            hidden$="[[isSimLocked_(networkState)]]">
+            hidden$="[[isSimLocked_(networkProperties)]]">
           <!-- SIM unlocked -->
           <paper-checkbox
-              checked="[[networkState.Cellular.SIMLockStatus.LockEnabled]]"
+              checked="[[networkProperties.Cellular.SIMLockStatus.LockEnabled]]"
               on-change="onSimLockEnabledChange_">
             Enable SIM card locking (require PIN to use mobile data)
           </paper-checkbox>
           <div class="layout horizontal center"
-               hidden$="[[!networkState.Cellular.SIMLockStatus.LockEnabled]]">
+               hidden$="[[!networkProperties.Cellular.SIMLockStatus.LockEnabled]]">
             <!-- SIM lock enabled -->
             <paper-button on-tap="onChangePin_">Change PIN</paper-button>
           </div>
@@ -60,7 +60,7 @@
           <span class="error" hidden$="[[!showError_(error)]]"
               >[[getErrorMsg_(error)]]
           </span>
-          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+          <span>[[getRetriesLeftMsg_(networkProperties)]]</span>
         </div>
       </div>
     </paper-dialog>
@@ -88,7 +88,7 @@
           <span class="error" hidden$="[[!showError_(error)]]"
               >[[getErrorMsg_(error)]]
           </span>
-          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+          <span>[[getRetriesLeftMsg_(networkProperties)]]</span>
         </div>
       </div>
     </paper-dialog>
@@ -108,7 +108,7 @@
           <span class="error" hidden$="[[!showError_(error)]]"
               >[[getErrorMsg_(error)]]
           </span>
-          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+          <span>[[getRetriesLeftMsg_(networkProperties)]]</span>
         </div>
       </div>
     </paper-dialog>
@@ -148,7 +148,7 @@
           <span class="error" hidden$="[[!showError_(error)]]"
               >[[getErrorMsg_(error)]]
           </span>
-          <span>[[getRetriesLeftMsg_(networkState)]]</span>
+          <span>[[getRetriesLeftMsg_(networkProperties)]]</span>
         </div>
       </div>
     </paper-dialog>

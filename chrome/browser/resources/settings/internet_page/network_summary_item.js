@@ -53,7 +53,7 @@ Polymer({
 
     /**
      * Network state for the active network.
-     * @type {CrOnc.NetworkStateProperties|undefined}
+     * @type {!CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
@@ -158,7 +158,7 @@ Polymer({
   },
 
   /**
-   * @param {CrOnc.NetworkStateProperties} state
+   * @param {!CrOnc.NetworkStateProperties} state
    * @param {boolean} expanded The expanded state.
    * @return {boolean} True if the 'Known networks' button should be shown.
    * @private

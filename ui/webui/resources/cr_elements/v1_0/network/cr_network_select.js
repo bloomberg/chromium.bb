@@ -98,7 +98,7 @@ Polymer({
 
   /** @override */
   detached: function() {
-    chrome.networkingPrivate.onNetworksChanged.removeListener(
+    chrome.networkingPrivate.onNetworkListChanged.removeListener(
         this.networkListChangedListener_);
     chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
         this.deviceStateListChangedListener_);

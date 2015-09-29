@@ -109,13 +109,13 @@ chrome.networkingPrivate.APNProperties;
 
 /**
  * @typedef {{
- *   AutoConnect: (boolean|undefined),
- *   APN: (!chrome.networkingPrivate.APNProperties|undefined),
- *   Carrier: (string|undefined)
+ *   Name: string,
+ *   Code: string,
+ *   Country: (string|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularConfigProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularProviderProperties
  */
-chrome.networkingPrivate.CellularConfigProperties;
+chrome.networkingPrivate.CellularProviderProperties;
 
 /**
  * @typedef {{
@@ -129,15 +129,25 @@ chrome.networkingPrivate.CellularSimState;
 
 /**
  * @typedef {{
- *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
- *   NetworkTechnology: (string|undefined),
- *   RoamingState: (string|undefined),
- *   SIMPresent: (boolean|undefined),
- *   SignalStrength: (number|undefined)
+ *   CommonName: (string|undefined),
+ *   Locality: (string|undefined),
+ *   Organization: (string|undefined),
+ *   OrganizationalUnit: (string|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularStateProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-IssuerSubjectPattern
  */
-chrome.networkingPrivate.CellularStateProperties;
+chrome.networkingPrivate.IssuerSubjectPattern;
+
+/**
+ * @typedef {{
+ *   EnrollmentURI: (!Array<string>|undefined),
+ *   Issuer: (!chrome.networkingPrivate.IssuerSubjectPattern|undefined),
+ *   IssuerCARef: (!Array<string>|undefined),
+ *   Subject: (!chrome.networkingPrivate.IssuerSubjectPattern|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-CertificatePattern
+ */
+chrome.networkingPrivate.CertificatePattern;
 
 /**
  * @typedef {{
@@ -153,11 +163,34 @@ chrome.networkingPrivate.DeviceStateProperties;
 
 /**
  * @typedef {{
- *   Authentication: string
+ *   AnonymousIdentity: (string|undefined),
+ *   ClientCertPattern: (!chrome.networkingPrivate.CertificatePattern|undefined),
+ *   ClientCertRef: (string|undefined),
+ *   ClientCertType: (string|undefined),
+ *   Identity: (string|undefined),
+ *   Inner: (string|undefined),
+ *   Outer: string,
+ *   Password: (string|undefined),
+ *   SaveCredentials: (boolean|undefined),
+ *   ServerCARefs: (!Array<string>|undefined),
+ *   UseProactiveKeyCaching: (boolean|undefined),
+ *   UseSystemCAs: (boolean|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-EthernetStateProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-EAPProperties
  */
-chrome.networkingPrivate.EthernetStateProperties;
+chrome.networkingPrivate.EAPProperties;
+
+/**
+ * @typedef {{
+ *   Status: string,
+ *   NetworkId: string,
+ *   Technology: string,
+ *   ShortName: (string|undefined),
+ *   LongName: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-FoundNetworkProperties
+ */
+chrome.networkingPrivate.FoundNetworkProperties;
 
 /**
  * @typedef {{
@@ -174,11 +207,52 @@ chrome.networkingPrivate.IPConfigProperties;
 
 /**
  * @typedef {{
- *   AuthenticationType: string
+ *   Password: (string|undefined),
+ *   SaveCredentials: (boolean|undefined),
+ *   Username: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-XAUTHProperties
+ */
+chrome.networkingPrivate.XAUTHProperties;
+
+/**
+ * @typedef {{
+ *   AuthenticationType: string,
+ *   ClientCertPattern: (!chrome.networkingPrivate.CertificatePattern|undefined),
+ *   ClientCertRef: (string|undefined),
+ *   ClientCertType: (string|undefined),
+ *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined),
+ *   Group: (string|undefined),
+ *   IKEVersion: number,
+ *   PSK: (string|undefined),
+ *   SaveCredentials: (boolean|undefined),
+ *   ServerCARefs: (!Array<string>|undefined),
+ *   XAUTH: (!chrome.networkingPrivate.XAUTHProperties|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-IPSecProperties
  */
 chrome.networkingPrivate.IPSecProperties;
+
+/**
+ * @typedef {{
+ *   LcpEchoDisabled: (boolean|undefined),
+ *   Password: (string|undefined),
+ *   SaveCredentials: (boolean|undefined),
+ *   Username: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-L2TPProperties
+ */
+chrome.networkingPrivate.L2TPProperties;
+
+/**
+ * @typedef {{
+ *   Method: string,
+ *   PostData: (string|undefined),
+ *   Url: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-PaymentPortal
+ */
+chrome.networkingPrivate.PaymentPortal;
 
 /**
  * @typedef {{
@@ -213,14 +287,63 @@ chrome.networkingPrivate.ProxySettings;
 
 /**
  * @typedef {{
+ *   Name: (string|undefined),
+ *   Type: (string|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-VerifyX509
+ */
+chrome.networkingPrivate.VerifyX509;
+
+/**
+ * @typedef {{
+ *   Auth: (string|undefined),
+ *   AuthRetry: (string|undefined),
+ *   AuthNoCache: (boolean|undefined),
+ *   Cipher: (string|undefined),
+ *   ClientCertRef: (string|undefined),
+ *   ClientCertPattern: (!chrome.networkingPrivate.CertificatePattern|undefined),
+ *   ClientCertType: (string|undefined),
+ *   CompLZO: (string|undefined),
+ *   CompNoAdapt: (boolean|undefined),
+ *   IgnoreDefaultRoute: (boolean|undefined),
+ *   KeyDirection: (string|undefined),
+ *   NsCertType: (string|undefined),
  *   OTP: (string|undefined),
  *   Password: (string|undefined),
+ *   Port: (number|undefined),
+ *   Proto: (string|undefined),
+ *   PushPeerInfo: (string|undefined),
+ *   RemoteCertEKU: (string|undefined),
+ *   RemoteCertKU: (!Array<string>|undefined),
+ *   RemoteCertTLS: (string|undefined),
+ *   RenegSec: (number|undefined),
+ *   SaveCredentials: (boolean|undefined),
+ *   ServerCARefs: (!Array<string>|undefined),
+ *   ServerCertRef: (string|undefined),
+ *   ServerPollTimeout: (number|undefined),
+ *   Shaper: (number|undefined),
+ *   StaticChallenge: (string|undefined),
+ *   TLSAuthContents: (string|undefined),
+ *   TLSRemote: (string|undefined),
  *   UserAuthenticationType: (string|undefined),
- *   Username: (string|undefined)
+ *   Username: (string|undefined),
+ *   Verb: (string|undefined),
+ *   VerifyHash: (string|undefined),
+ *   VerifyX509: (!chrome.networkingPrivate.VerifyX509|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-OpenVPNProperties
  */
 chrome.networkingPrivate.OpenVPNProperties;
+
+/**
+ * @typedef {{
+ *   LockType: string,
+ *   LockEnabled: boolean,
+ *   RetriesLeft: (number|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-SIMLockStatus
+ */
+chrome.networkingPrivate.SIMLockStatus;
 
 /**
  * @typedef {{
@@ -234,14 +357,82 @@ chrome.networkingPrivate.ThirdPartyVPNProperties;
 /**
  * @typedef {{
  *   AutoConnect: (boolean|undefined),
+ *   APN: (!chrome.networkingPrivate.APNProperties|undefined),
+ *   APNList: (!Array<!chrome.networkingPrivate.APNProperties>|undefined),
+ *   ActivationType: (string|undefined),
+ *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
+ *   AllowRoaming: (boolean|undefined),
+ *   Carrier: (string|undefined),
+ *   ESN: (string|undefined),
+ *   Family: (string|undefined),
+ *   FirmwareRevision: (string|undefined),
+ *   FoundNetworks: (!Array<!chrome.networkingPrivate.FoundNetworkProperties>|undefined),
+ *   HardwareRevision: (string|undefined),
+ *   HomeProvider: (!chrome.networkingPrivate.CellularProviderProperties|undefined),
+ *   ICCID: (string|undefined),
+ *   IMEI: (string|undefined),
+ *   LastGoodAPN: (!chrome.networkingPrivate.APNProperties|undefined),
+ *   Manufacturer: (string|undefined),
+ *   MDN: (string|undefined),
+ *   MEID: (string|undefined),
+ *   MIN: (string|undefined),
+ *   ModelID: (string|undefined),
+ *   NetworkTechnology: (string|undefined),
+ *   PaymentPortal: (!chrome.networkingPrivate.PaymentPortal|undefined),
+ *   PRLVersion: (number|undefined),
+ *   RoamingState: (string|undefined),
+ *   ServingOperator: (!chrome.networkingPrivate.CellularProviderProperties|undefined),
+ *   SIMLockStatus: (!chrome.networkingPrivate.SIMLockStatus|undefined),
+ *   SIMPresent: (boolean|undefined),
+ *   SupportNetworkScan: (boolean|undefined),
+ *   SupportedCarriers: (!Array<string>|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularProperties
+ */
+chrome.networkingPrivate.CellularProperties;
+
+/**
+ * @typedef {{
+ *   ActivationState: (!chrome.networkingPrivate.ActivationStateType|undefined),
+ *   NetworkTechnology: (string|undefined),
+ *   RoamingState: (string|undefined),
+ *   SIMPresent: (boolean|undefined),
+ *   SignalStrength: (number|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-CellularStateProperties
+ */
+chrome.networkingPrivate.CellularStateProperties;
+
+/**
+ * @typedef {{
+ *   Authentication: (string|undefined),
+ *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-EthernetProperties
+ */
+chrome.networkingPrivate.EthernetProperties;
+
+/**
+ * @typedef {{
+ *   Authentication: string
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-EthernetStateProperties
+ */
+chrome.networkingPrivate.EthernetStateProperties;
+
+/**
+ * @typedef {{
+ *   AutoConnect: (boolean|undefined),
  *   Host: (string|undefined),
+ *   IPsec: (!chrome.networkingPrivate.IPSecProperties|undefined),
+ *   L2TP: (!chrome.networkingPrivate.L2TPProperties|undefined),
  *   OpenVPN: (!chrome.networkingPrivate.OpenVPNProperties|undefined),
  *   ThirdPartyVPN: (!chrome.networkingPrivate.ThirdPartyVPNProperties|undefined),
  *   Type: (string|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-VPNConfigProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-VPNProperties
  */
-chrome.networkingPrivate.VPNConfigProperties;
+chrome.networkingPrivate.VPNProperties;
 
 /**
  * @typedef {{
@@ -255,16 +446,23 @@ chrome.networkingPrivate.VPNStateProperties;
 
 /**
  * @typedef {{
+ *   AllowGatewayARPPolling: (boolean|undefined),
  *   AutoConnect: (boolean|undefined),
+ *   BSSID: (string|undefined),
+ *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined),
+ *   Frequency: (number|undefined),
+ *   FrequencyList: (!Array<number>|undefined),
  *   HexSSID: (string|undefined),
  *   HiddenSSID: (boolean|undefined),
  *   Passphrase: (string|undefined),
+ *   RoamThreshold: (number|undefined),
  *   SSID: (string|undefined),
- *   Security: (string|undefined)
+ *   Security: (string|undefined),
+ *   SignalStrength: (number|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiFiConfigProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiFiProperties
  */
-chrome.networkingPrivate.WiFiConfigProperties;
+chrome.networkingPrivate.WiFiProperties;
 
 /**
  * @typedef {{
@@ -277,11 +475,13 @@ chrome.networkingPrivate.WiFiStateProperties;
 
 /**
  * @typedef {{
- *   AutoConnect: (boolean|undefined)
+ *   AutoConnect: (boolean|undefined),
+ *   EAP: (!chrome.networkingPrivate.EAPProperties|undefined),
+ *   SignalStrength: (number|undefined)
  * }}
- * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiMaxConfigProperties
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-WiMAXProperties
  */
-chrome.networkingPrivate.WiMaxConfigProperties;
+chrome.networkingPrivate.WiMAXProperties;
 
 /**
  * @typedef {{
@@ -293,7 +493,8 @@ chrome.networkingPrivate.WiMAXStateProperties;
 
 /**
  * @typedef {{
- *   Cellular: (!chrome.networkingPrivate.CellularConfigProperties|undefined),
+ *   Cellular: (!chrome.networkingPrivate.CellularProperties|undefined),
+ *   Ethernet: (!chrome.networkingPrivate.EthernetProperties|undefined),
  *   GUID: (string|undefined),
  *   IPAddressConfigType: (!chrome.networkingPrivate.IPConfigType|undefined),
  *   Name: (string|undefined),
@@ -302,9 +503,9 @@ chrome.networkingPrivate.WiMAXStateProperties;
  *   ProxySettings: (!chrome.networkingPrivate.ProxySettings|undefined),
  *   StaticIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
  *   Type: (!chrome.networkingPrivate.NetworkType|undefined),
- *   VPN: (!chrome.networkingPrivate.VPNConfigProperties|undefined),
- *   WiFi: (!chrome.networkingPrivate.WiFiConfigProperties|undefined),
- *   WiMAX: (!chrome.networkingPrivate.WiMaxConfigProperties|undefined)
+ *   VPN: (!chrome.networkingPrivate.VPNProperties|undefined),
+ *   WiFi: (!chrome.networkingPrivate.WiFiProperties|undefined),
+ *   WiMAX: (!chrome.networkingPrivate.WiMAXProperties|undefined)
  * }}
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-NetworkConfigProperties
  */
@@ -329,6 +530,34 @@ chrome.networkingPrivate.NetworkConfigProperties;
  * @see https://developer.chrome.com/extensions/networkingPrivate#type-NetworkStateProperties
  */
 chrome.networkingPrivate.NetworkStateProperties;
+
+/**
+ * @typedef {{
+ *   Cellular: (!chrome.networkingPrivate.CellularProperties|undefined),
+ *   Connectable: (boolean|undefined),
+ *   ConnectionState: (!chrome.networkingPrivate.ConnectionStateType|undefined),
+ *   ErrorState: (string|undefined),
+ *   Ethernet: (!chrome.networkingPrivate.EthernetProperties|undefined),
+ *   GUID: string,
+ *   IPAddressConfigType: (!chrome.networkingPrivate.IPConfigType|undefined),
+ *   IPConfigs: (!Array<!chrome.networkingPrivate.IPConfigProperties>|undefined),
+ *   MacAddress: (string|undefined),
+ *   Name: (string|undefined),
+ *   NameServersConfigType: (!chrome.networkingPrivate.IPConfigType|undefined),
+ *   Priority: (number|undefined),
+ *   ProxySettings: (!chrome.networkingPrivate.ProxySettings|undefined),
+ *   RestrictedConnectivity: (boolean|undefined),
+ *   StaticIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
+ *   SavedIPConfig: (!chrome.networkingPrivate.IPConfigProperties|undefined),
+ *   Source: (string|undefined),
+ *   Type: !chrome.networkingPrivate.NetworkType,
+ *   VPN: (!chrome.networkingPrivate.VPNProperties|undefined),
+ *   WiFi: (!chrome.networkingPrivate.WiFiProperties|undefined),
+ *   WiMAX: (!chrome.networkingPrivate.WiMAXProperties|undefined)
+ * }}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#type-NetworkProperties
+ */
+chrome.networkingPrivate.NetworkProperties;
 
 /**
  * @typedef {{
@@ -360,8 +589,8 @@ chrome.networkingPrivate.NetworkFilter;
  * Gets all the properties of the network with id networkGuid. Includes all
  * properties of the network (read-only and read/write values).
  * @param {string} networkGuid The GUID of the network to get properties for.
- * @param {function(Object):void} callback Called with the network properties
- *     when received.
+ * @param {function(!chrome.networkingPrivate.NetworkProperties):void} callback
+ *     Called with the network properties when received.
  * @see https://developer.chrome.com/extensions/networkingPrivate#method-getProperties
  */
 chrome.networkingPrivate.getProperties = function(networkGuid, callback) {};
@@ -660,3 +889,5 @@ chrome.networkingPrivate.onDeviceStateListChanged;
  * @see https://developer.chrome.com/extensions/networkingPrivate#event-onPortalDetectionCompleted
  */
 chrome.networkingPrivate.onPortalDetectionCompleted;
+
+

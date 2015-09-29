@@ -72,14 +72,10 @@ namespace networkingPrivate {
     DOMString? Username;
   };
 
-  dictionary CellularConfigProperties {
-    boolean? AutoConnect;
-    APNProperties? APN;
-
-    // Specifies which carrier to use for Cellular configurations that support
-    // multiple carriers. May be set with $(ref:setProperties), but will be
-    // ignored by $(ref:createConfiguration).
-    DOMString? Carrier;
+  dictionary CellularProviderProperties {
+    DOMString Name;
+    DOMString Code;
+    DOMString? Country;
   };
 
   dictionary CellularSimState {
@@ -93,12 +89,18 @@ namespace networkingPrivate {
     DOMString? newPin;
   };
 
-  dictionary CellularStateProperties {
-    ActivationStateType? ActivationState;
-    DOMString? NetworkTechnology;
-    DOMString? RoamingState;
-    boolean? SIMPresent;
-    long? SignalStrength;
+  dictionary IssuerSubjectPattern {
+    DOMString? CommonName;
+    DOMString? Locality;
+    DOMString? Organization;
+    DOMString? OrganizationalUnit;    
+  };
+
+  dictionary CertificatePattern {
+    DOMString[]? EnrollmentURI;
+    IssuerSubjectPattern? Issuer;
+    DOMString[]? IssuerCARef;
+    IssuerSubjectPattern? Subject;
   };
 
   dictionary DeviceStateProperties {
@@ -120,8 +122,27 @@ namespace networkingPrivate {
     NetworkType Type;
   };
 
-  dictionary EthernetStateProperties {
-    DOMString Authentication;
+  dictionary EAPProperties {
+    DOMString? AnonymousIdentity;
+    CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertRef;
+    DOMString? ClientCertType;
+    DOMString? Identity;
+    DOMString? Inner;
+    DOMString Outer;
+    DOMString? Password;
+    boolean? SaveCredentials;
+    DOMString[]? ServerCARefs;
+    boolean? UseProactiveKeyCaching;
+    boolean? UseSystemCAs;
+  };
+
+  dictionary FoundNetworkProperties {
+    DOMString Status;
+    DOMString NetworkId;
+    DOMString Technology;
+    DOMString? ShortName;
+    DOMString? LongName;
   };
 
   dictionary IPConfigProperties {
@@ -133,8 +154,37 @@ namespace networkingPrivate {
     DOMString? WebProxyAutoDiscoveryUrl;
   };
 
+  dictionary XAUTHProperties {
+    DOMString? Password;
+    boolean? SaveCredentials;
+    DOMString? Username;
+  };
+
   dictionary IPSecProperties {
     DOMString AuthenticationType;
+    CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertRef;
+    DOMString? ClientCertType;
+    EAPProperties? EAP;
+    DOMString? Group;
+    long? IKEVersion;
+    DOMString? PSK;
+    boolean? SaveCredentials;
+    DOMString[]? ServerCARefs;
+    XAUTHProperties? XAUTH;
+  };
+
+  dictionary L2TPProperties {
+    boolean? LcpEchoDisabled;
+    DOMString? Password;
+    boolean? SaveCredentials;
+    DOMString? Username;
+  };
+
+  dictionary PaymentPortal {
+    DOMString Method;
+    DOMString? PostData;
+    DOMString? Url;
   };
 
   dictionary ProxyLocation {
@@ -156,11 +206,52 @@ namespace networkingPrivate {
     DOMString? PAC;
   };
 
+  dictionary VerifyX509 {
+    DOMString? Name;
+    DOMString? Type;
+  };
+
   dictionary OpenVPNProperties {
+    DOMString? Auth;
+    DOMString? AuthRetry;
+    boolean? AuthNoCache;
+    DOMString? Cipher;
+    DOMString? ClientCertRef;
+    CertificatePattern? ClientCertPattern;
+    DOMString? ClientCertType;
+    DOMString? CompLZO;
+    boolean? CompNoAdapt;
+    boolean? IgnoreDefaultRoute;
+    DOMString? KeyDirection;
+    DOMString? NsCertType;
     DOMString? OTP;
     DOMString? Password;
+    long? Port;
+    DOMString? Proto;
+    DOMString? PushPeerInfo;
+    DOMString? RemoteCertEKU;
+    DOMString[]? RemoteCertKU;
+    DOMString? RemoteCertTLS;
+    long? RenegSec;
+    boolean? SaveCredentials;
+    DOMString[]? ServerCARefs;
+    DOMString? ServerCertRef;
+    long? ServerPollTimeout;
+    long? Shaper;
+    DOMString? StaticChallenge;
+    DOMString? TLSAuthContents;
+    DOMString? TLSRemote;
     DOMString? UserAuthenticationType;
     DOMString? Username;
+    DOMString? Verb;
+    DOMString? VerifyHash;
+    VerifyX509? VerifyX509;
+  };
+
+  dictionary SIMLockStatus {
+    DOMString LockType;  // sim-pin, sim-puk, or ''
+    boolean LockEnabled;
+    long? RetriesLeft;
   };
 
   dictionary ThirdPartyVPNProperties {
@@ -168,9 +259,61 @@ namespace networkingPrivate {
     DOMString? ProviderName;
   };
 
-  dictionary VPNConfigProperties {
+  dictionary CellularProperties {
+    boolean? AutoConnect;
+    APNProperties? APN;
+    APNProperties[]? APNList;
+    DOMString? ActivationType;
+    ActivationStateType? ActivationState;
+    boolean? AllowRoaming;
+    DOMString? Carrier;
+    DOMString? ESN;
+    DOMString? Family;
+    DOMString? FirmwareRevision;
+    FoundNetworkProperties[]? FoundNetworks;
+    DOMString? HardwareRevision;
+    CellularProviderProperties? HomeProvider;
+    DOMString? ICCID;
+    DOMString? IMEI;
+    APNProperties? LastGoodAPN;
+    DOMString? Manufacturer;
+    DOMString? MDN;
+    DOMString? MEID;
+    DOMString? MIN;
+    DOMString? ModelID;
+    DOMString? NetworkTechnology;
+    PaymentPortal? PaymentPortal;
+    long? PRLVersion;
+    DOMString? RoamingState;
+    CellularProviderProperties? ServingOperator;
+    SIMLockStatus? SIMLockStatus;
+    boolean? SIMPresent;
+    boolean? SupportNetworkScan;
+    DOMString[]? SupportedCarriers;
+  };
+
+  dictionary CellularStateProperties {
+    ActivationStateType? ActivationState;
+    DOMString? NetworkTechnology;
+    DOMString? RoamingState;
+    boolean? SIMPresent;
+    long? SignalStrength;
+  };
+
+  dictionary EthernetProperties {
+    DOMString? Authentication;
+    EAPProperties? EAP;
+  };
+
+  dictionary EthernetStateProperties {
+    DOMString Authentication;
+  };
+
+  dictionary VPNProperties {
     boolean? AutoConnect;
     DOMString? Host;
+    IPSecProperties? IPsec;
+    L2TPProperties? L2TP;
     OpenVPNProperties? OpenVPN;
     ThirdPartyVPNProperties? ThirdPartyVPN;
     DOMString? Type;
@@ -182,13 +325,20 @@ namespace networkingPrivate {
     ThirdPartyVPNProperties? ThirdPartyVPN;
   };
 
-  dictionary WiFiConfigProperties {
+  dictionary WiFiProperties {
+    boolean? AllowGatewayARPPolling;
     boolean? AutoConnect;
+    DOMString? BSSID;
+    EAPProperties? EAP;
+    long? Frequency;
+    long[]? FrequencyList;
     DOMString? HexSSID;
     boolean? HiddenSSID;
     DOMString? Passphrase;
+    long? RoamThreshold;
     DOMString? SSID;
     DOMString? Security;
+    long? SignalStrength;
   };
 
   dictionary WiFiStateProperties {
@@ -196,8 +346,10 @@ namespace networkingPrivate {
     long? SignalStrength;
   };
 
-  dictionary WiMaxConfigProperties {
+  dictionary WiMAXProperties {
     boolean? AutoConnect;
+    EAPProperties? EAP;
+    long? SignalStrength;
   };
 
   dictionary WiMAXStateProperties {
@@ -205,7 +357,8 @@ namespace networkingPrivate {
   };
 
   dictionary NetworkConfigProperties {
-    CellularConfigProperties? Cellular;
+    CellularProperties? Cellular;
+    EthernetProperties? Ethernet;
     DOMString? GUID;
     IPConfigType? IPAddressConfigType;
     DOMString? Name;
@@ -214,9 +367,9 @@ namespace networkingPrivate {
     ProxySettings? ProxySettings;
     IPConfigProperties? StaticIPConfig;
     NetworkType? Type;
-    VPNConfigProperties? VPN;
-    WiFiConfigProperties? WiFi;
-    WiMaxConfigProperties? WiMAX;
+    VPNProperties? VPN;
+    WiFiProperties? WiFi;
+    WiMAXProperties? WiMAX;
   };
 
   dictionary NetworkStateProperties {
@@ -233,6 +386,30 @@ namespace networkingPrivate {
     VPNStateProperties? VPN;
     WiFiStateProperties? WiFi;
     WiMAXStateProperties? WiMAX;
+  };
+
+  dictionary NetworkProperties {
+    CellularProperties? Cellular;
+    boolean? Connectable;
+    ConnectionStateType? ConnectionState;
+    DOMString? ErrorState;
+    EthernetProperties? Ethernet;
+    DOMString GUID;
+    IPConfigType? IPAddressConfigType;
+    IPConfigProperties[]? IPConfigs;
+    DOMString? MacAddress;
+    DOMString? Name;
+    IPConfigType? NameServersConfigType;
+    long? Priority;
+    ProxySettings? ProxySettings;
+    boolean? RestrictedConnectivity;
+    IPConfigProperties? StaticIPConfig;
+    IPConfigProperties? SavedIPConfig;
+    DOMString? Source;
+    NetworkType Type;
+    VPNProperties? VPN;
+    WiFiProperties? WiFi;
+    WiMAXProperties? WiMAX;
   };
 
   dictionary VerificationProperties {
@@ -291,7 +468,7 @@ namespace networkingPrivate {
   callback BooleanCallback = void(boolean result);
   callback StringCallback = void(DOMString result);
   // TODO(stevenjb): Use NetworkProperties for |result| once defined.
-  callback GetPropertiesCallback = void(object result);
+  callback GetPropertiesCallback = void(NetworkProperties result);
   // TODO(stevenjb): Use ManagedNetworkProperties for |result| once defined.
   callback GetManagedPropertiesCallback = void(object result);
   callback GetStatePropertiesCallback = void(NetworkStateProperties result);

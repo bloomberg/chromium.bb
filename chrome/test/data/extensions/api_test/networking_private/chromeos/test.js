@@ -483,6 +483,7 @@ var availableTests = [
             Carrier: 'Cellular1_Carrier',
             Family: 'GSM',
             HomeProvider: {
+              Code: '000000',
               Country: 'us',
               Name: 'Cellular1_Provider'
             },

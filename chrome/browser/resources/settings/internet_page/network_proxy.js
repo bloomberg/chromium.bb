@@ -11,13 +11,13 @@ Polymer({
 
   properties: {
     /**
-     * The current state containing the IP Config properties to display and
-     * modify.
-     * @type {CrOnc.NetworkStateProperties|undefined}
+     * The network properties dictionary containing the proxy properties to
+     * display and modify.
+     * @type {!CrOnc.NetworkProperties|undefined}
      */
-    networkState: {
+    networkProperties: {
       type: Object,
-      observer: 'networkStateChanged_'
+      observer: 'networkPropertiesChanged_'
     },
 
     /**
@@ -38,7 +38,7 @@ Polymer({
     },
 
     /**
-     * The Web Proxy Auto Discovery URL extracted from networkState.
+     * The Web Proxy Auto Discovery URL extracted from networkProperties.
      */
     WPAD: {
       type: String,
@@ -102,15 +102,14 @@ Polymer({
   savedExcludeDomains_: undefined,
 
   /**
-   * Polymer networkState changed method.
+   * Polymer networkProperties changed method.
    */
-  networkStateChanged_: function() {
-    if (!this.networkState)
+  networkPropertiesChanged_: function() {
+    if (!this.networkProperties)
       return;
 
     var defaultProxy = this.createDefaultProxySettings_();
-    var proxy = /** @type {CrOnc.ProxySettings} */(
-        this.get('networkState.ProxySettings') || {});
+    var proxy = this.networkProperties.ProxySettings || {};
 
     // Ensure that all proxy settings object properties are specified.
     proxy.ExcludeDomains = proxy.ExcludeDomains || this.savedExcludeDomains_ ||
@@ -131,7 +130,8 @@ Polymer({
     this.$.selectType.value = proxy.Type;
 
     // Set the Web Proxy Auto Discovery URL.
-    var ipv4 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV4);
+    var ipv4 =
+        CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     this.WPAD = (ipv4 && ipv4.WebProxyAutoDiscoveryUrl) || '';
   },
 

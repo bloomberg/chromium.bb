@@ -223,6 +223,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                                     base::StringValue("Cellular1_Carrier"));
     base::DictionaryValue home_provider;
     home_provider.SetString("name", "Cellular1_Provider");
+    home_provider.SetString("code", "000000");
     home_provider.SetString("country", "us");
     device_test_->SetDeviceProperty(
         kCellularDevicePath, shill::kHomeProviderProperty, home_provider);

@@ -53,12 +53,13 @@ Polymer({
 
   properties: {
     /**
-     * If set, the ONC state properties will be used to display the icon.
-     * @type {?CrOnc.NetworkStateProperties}
+     * If set, the ONC properties will be used to display the icon. This may
+     * either be the complete set of NetworkProperties or the subset of
+     * NetworkStateProperties.
+     * @type {!CrOnc.NetworkProperties|!CrOnc.NetworkStateProperties|undefined}
      */
     networkState: {
       type: Object,
-      value: null,
       observer: 'networkStateChanged_'
     },
 
@@ -120,7 +121,7 @@ Polymer({
     this.networkType = null;
     this.iconType_ = getIconTypeFromNetworkType(this.networkState.Type);
     var strength = /** @type {number} */ (
-        CrOnc.getTypeProperty(this.networkState, 'SignalStrength') || 0);
+        CrOnc.getActiveTypeValue(this.networkState, 'SignalStrength') || 0);
     var params = /** @type {NetworkIconParamType} */ {
       showBadges: true,
       showDisconnected: !this.isListItem,
@@ -138,7 +139,7 @@ Polymer({
     if (!this.networkType)
       return;
 
-    this.networkState = null;
+    this.networkState = undefined;
     this.iconType_ = getIconTypeFromNetworkType(this.networkType);
     var params = /** @type {NetworkIconParamType} */ {
       showBadges: false,
@@ -242,7 +243,7 @@ Polymer({
         (params.showBadges && networkState) ? networkState.Type : '';
     if (type == CrOnc.Type.WI_FI) {
       this.roaming_ = false;
-      var security = CrOnc.getTypeProperty(networkState, 'Security');
+      var security = CrOnc.getActiveTypeValue(networkState, 'Security');
       this.secure_ = !!security && security != 'None';
       this.technology_ = '';
     } else if (type == CrOnc.Type.WI_MAX) {
@@ -250,11 +251,11 @@ Polymer({
       this.secure_ = false;
       this.technology_ = '4g';
     } else if (type == CrOnc.Type.CELLULAR) {
-      this.roaming_ = CrOnc.getTypeProperty(networkState, 'RoamingState') ==
+      this.roaming_ = CrOnc.getActiveTypeValue(networkState, 'RoamingState') ==
                       CrOnc.RoamingState.ROAMING;
       this.secure_ = false;
       var oncTechnology =
-          CrOnc.getTypeProperty(networkState, 'NetworkTechnology');
+          CrOnc.getActiveTypeValue(networkState, 'NetworkTechnology');
       switch (oncTechnology) {
         case CrOnc.NetworkTechnology.CDMA1XRTT:
           this.technology_ = '1x';

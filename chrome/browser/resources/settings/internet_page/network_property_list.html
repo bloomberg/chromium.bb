@@ -10,7 +10,7 @@
       <div class="layout vertical">
         <template is="dom-repeat" items="[[fields]]">
           <div class="layout horizontal"
-              hidden$="[[!showProperty_(networkState, editFieldTypes, item)]]">
+              hidden$="[[!showProperty_(propertyDict, editFieldTypes, item)]]">
             <span>[[getPropertyLabel_(item)]]</span>
             <span class="flex fill"></span>
           </div>
@@ -19,14 +19,14 @@
       <div class="layout vertical">
         <template is="dom-repeat" items="[[fields]]">
           <div class="layout horizontal"
-              hidden$="[[!showNoEdit_(networkState, editFieldTypes, item)]]">
-            <span>[[getPropertyValue_(networkState, item)]]</span>
+              hidden$="[[!showNoEdit_(propertyDict, editFieldTypes, item)]]">
+            <span>[[getPropertyValue_(propertyDict, item)]]</span>
           </div>
           <div class="layout horizontal" hidden$=
-               "[[!showEdit_(networkState, editFieldTypes, item, 'String')]]">
+               "[[!showEdit_(propertyDict, editFieldTypes, item, 'String')]]">
             <paper-input-container no-label-float>
               <input id="[[item]]" is="iron-input"
-                  value="[[getPropertyValue_(networkState, item)]]"
+                  value="[[getPropertyValue_(propertyDict, item)]]"
                   on-blur="onValueChange_">
             </paper-input-container>
           </div>

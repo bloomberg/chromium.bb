@@ -13,13 +13,13 @@ Polymer({
 
   properties: {
     /**
-     * The current state containing the IP Config properties to display and
-     * modify.
-     * @type {CrOnc.NetworkStateProperties|undefined}
+     * The network properties dictionary containing the nameserver properties to
+     * display and modify.
+     * @type {!CrOnc.NetworkProperties|undefined}
      */
-    networkState: {
+    networkProperties: {
       type: Object,
-      observer: 'networkStateChanged_'
+      observer: 'networkPropertiesChanged_'
     },
 
     /**
@@ -66,10 +66,10 @@ Polymer({
   savedNameservers_: [],
 
   /**
-   * Polymer networkState changed method.
+   * Polymer networkProperties changed method.
    */
-  networkStateChanged_: function(newValue, oldValue) {
-    if (!this.networkState)
+  networkPropertiesChanged_: function(newValue, oldValue) {
+    if (!this.networkProperties)
       return;
 
     if (!oldValue || newValue.GUID != oldValue.GUID)
@@ -77,13 +77,14 @@ Polymer({
 
     // Update the 'nameservers' property.
     var nameservers = [];
-    var ipv4 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV4);
+    var ipv4 =
+        CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     if (ipv4 && ipv4.NameServers)
       nameservers = ipv4.NameServers;
 
     // Update the 'nameserversType' property.
     var configType =
-        CrOnc.getActiveValue(this.networkState, 'NameServersConfigType');
+        CrOnc.getActiveValue(this.networkProperties.NameServersConfigType);
     var type;
     if (configType == CrOnc.IPConfigType.STATIC) {
       if (nameservers.join(',') == this.GoogleNameservers.join(','))

@@ -19,9 +19,9 @@
         </select>
       </div>
       <div id="otherDiv" class="layout vertical"
-          hidden$="[[!isOtherSelected_(networkState, selectedApn)]]">
+          hidden$="[[!isOtherSelected_(networkProperties, selectedApn)]]">
         <network-property-list
-            fields="[[otherApnFields_]]" network-state="[[otherApn]]"
+            fields="[[otherApnFields_]]" property-dict="[[otherApn]]"
             edit-field-types="[[otherApnEditTypes_]]"
             on-property-change="onOtherApnChange_">
         </network-property-list>

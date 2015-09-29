@@ -11,7 +11,7 @@
           Configure IP Address Automatically
       </paper-checkbox>
       <network-property-list
-          fields="[[ipConfigFields_]]" network-state="[[ipConfig]]"
+          fields="[[ipConfigFields_]]" property-dict="[[ipConfig]]"
           edit-field-types="[[getIPEditFields_(ipConfig, editable, automatic)]]"
           on-property-change="onIPChange_">
       </network-property-list>

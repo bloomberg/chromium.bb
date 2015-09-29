@@ -23,11 +23,11 @@ var DeviceStateObject;
 
 /**
  * @typedef {{
- *   Ethernet: (?CrOnc.NetworkStateProperties|undefined),
- *   WiFi: (?CrOnc.NetworkStateProperties|undefined),
- *   Cellular: (?CrOnc.NetworkStateProperties|undefined),
- *   WiMAX: (?CrOnc.NetworkStateProperties|undefined),
- *   VPN: (?CrOnc.NetworkStateProperties|undefined)
+ *   Ethernet: (!CrOnc.NetworkStateProperties|undefined),
+ *   WiFi: (!CrOnc.NetworkStateProperties|undefined),
+ *   Cellular: (!CrOnc.NetworkStateProperties|undefined),
+ *   WiMAX: (!CrOnc.NetworkStateProperties|undefined),
+ *   VPN: (!CrOnc.NetworkStateProperties|undefined)
  * }}
  */
 var NetworkStateObject;
@@ -322,10 +322,10 @@ Polymer({
     }, this);
 
     // Set any types with a deviceState and no network to a default state,
-    // and any types not found to null.
+    // and any types not found to undefined.
     NETWORK_TYPES.forEach(function(type) {
       if (!foundTypes[type]) {
-        var defaultState = /** @type {?CrOnc.NetworkStateProperties} */(null);
+        var defaultState = undefined;
         if (this.deviceStates[type])
           defaultState = {GUID: '', Type: type};
         this.updateNetworkState_(type, defaultState);
@@ -345,9 +345,9 @@ Polymer({
    * Sets 'networkStates[type]' which will update the cr-network-list-item
    * associated with 'type'.
    * @param {string} type The network type.
-   * @param {?CrOnc.NetworkStateProperties} state The state properties for the
-   *     network to associate with |type|. May be null if there are no networks
-   *     matching |type|.
+   * @param {!CrOnc.NetworkStateProperties|undefined} state The state properties
+   *     for the network to associate with |type|. May be undefined if there are
+   *     no networks matching |type|.
    * @private
    */
   updateNetworkState_: function(type, state) {

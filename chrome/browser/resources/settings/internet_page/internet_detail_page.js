@@ -29,17 +29,12 @@ Polymer({
     },
 
     /**
-     * The current state for the network matching |guid|. TODO(stevenjb): Use
-     * chrome.networkingProperties.NetworkPoperties once it is defined. This
-     * will be a super-set of NetworkStateProperties. Currently properties that
-     * are not defined in NetworkStateProperties are accessed through
-     * CrOnc.getActive* which uses [] to access the property, which avoids any
-     * type checking (see CrOnc.getProperty for more info).
-     * @type {CrOnc.NetworkStateProperties|undefined}
+     * The current properties for the network matching |guid|.
+     * @type {!CrOnc.NetworkProperties|undefined}
      */
-    networkState: {
+    networkProperties: {
       type: Object,
-      observer: 'networkStateChanged_'
+      observer: 'networkPropertiesChanged_'
     },
 
     /**
@@ -115,25 +110,27 @@ Polymer({
   },
 
   /**
-   * Polymer networkState changed method.
+   * Polymer networkProperties changed method.
    */
-  networkStateChanged_: function() {
-    if (!this.networkState)
+  networkPropertiesChanged_: function() {
+    if (!this.networkProperties)
       return;
 
     // Update autoConnect if it has changed. Default value is false.
     var autoConnect = /** @type {boolean} */(
-        CrOnc.getActiveTypeValue(this.networkState, 'AutoConnect')) || false;
+        CrOnc.getActiveTypeValue(this.networkProperties, 'AutoConnect')) ||
+            false;
     if (autoConnect != this.autoConnect)
       this.autoConnect = autoConnect;
 
     // Update preferNetwork if it has changed. Default value is false.
-    var preferNetwork = this.networkState.Priority > 0;
+    var preferNetwork = this.networkProperties.Priority > 0;
     if (preferNetwork != this.preferNetwork)
       this.preferNetwork = preferNetwork;
 
     // Set the IPAddress property to the IPV4 Address.
-    var ipv4 = CrOnc.getIPConfigForType(this.networkState, CrOnc.IPType.IPV4);
+    var ipv4 =
+        CrOnc.getIPConfigForType(this.networkProperties, CrOnc.IPType.IPV4);
     this.IPAddress = (ipv4 && ipv4.IPAddress) || '';
   },
 
@@ -141,7 +138,7 @@ Polymer({
    * Polymer autoConnect changed method.
    */
   autoConnectChanged_: function() {
-    if (!this.networkState || !this.guid)
+    if (!this.networkProperties || !this.guid)
       return;
     var onc = this.getEmptyNetworkProperties_();
     CrOnc.setTypeProperty(onc, 'AutoConnect', this.autoConnect);
@@ -152,7 +149,7 @@ Polymer({
    * Polymer preferNetwork changed method.
    */
   preferNetworkChanged_: function() {
-    if (!this.networkState || !this.guid)
+    if (!this.networkProperties || !this.guid)
       return;
     var onc = this.getEmptyNetworkProperties_();
     onc.Priority = this.preferNetwork ? 1 : 0;
@@ -182,14 +179,14 @@ Polymer({
 
   /**
    * networkingPrivate.getProperties callback.
-   * @param {Object} properties The network properties.
+   * @param {CrOnc.NetworkProperties} properties The network properties.
    * @private
    */
   getPropertiesCallback_: function(properties) {
-    this.networkState = /** @type {CrOnc.NetworkStateProperties}*/(properties);
+    this.networkProperties = properties;
     if (!properties) {
-      // If state becomes null (i.e. the network is no longer visible), close
-      // the page.
+      // If |properties| becomes null (i.e. the network is no longer visible),
+      // close the page.
       this.fire('close');
     }
   },
@@ -218,91 +215,93 @@ Polymer({
    * @private
    */
   getEmptyNetworkProperties_: function() {
-    return {Type: this.networkState.Type};
+    return {Type: this.networkProperties.Type};
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {string} The text to display for the network name.
    * @private
    */
-  getStateName_: function(state) {
-    return (state && state.Name) || '';
+  getStateName_: function(properties) {
+    return (properties && properties.Name) || '';
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function(state) {
+  getStateText_: function(properties) {
     // TODO(stevenjb): Localize.
-    return (state && state.ConnectionState) || '';
+    return (properties && properties.ConnectionState) || '';
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
-   * @return {boolean} True if the state is connected.
+   * @param {!CrOnc.NetworkProperties} properties
+   * @return {boolean} True if the network is connected.
    * @private
    */
-  isConnectedState_: function(state) {
-    return !!state && state.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+  isConnectedState_: function(properties) {
+    return !!properties && properties.ConnectionState ==
+        CrOnc.ConnectionState.CONNECTED;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} Whether or not to show the 'Connect' button.
    * @private
    */
-  showConnect_: function(state) {
-    return !!state && state.Type != CrOnc.Type.ETHERNET &&
-           state.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
+  showConnect_: function(properties) {
+    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+           properties.ConnectionState == CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} Whether or not to show the 'Activate' button.
    * @private
    */
-  showActivate_: function(state) {
-    if (!state || state.Type != CrOnc.Type.CELLULAR)
+  showActivate_: function(properties) {
+    if (!properties || properties.Type != CrOnc.Type.CELLULAR)
       return false;
-    var activation = state.Cellular.ActivationState;
+    var activation = properties.Cellular.ActivationState;
     return activation == CrOnc.ActivationState.NOT_ACTIVATED ||
            activation == CrOnc.ActivationState.PARTIALLY_ACTIVATED;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} Whether or not to show the 'View Account' button.
    * @private
    */
-  showViewAccount_: function(state) {
+  showViewAccount_: function(properties) {
     // Show either the 'Activate' or the 'View Account' button.
-    if (this.showActivate_(state))
+    if (this.showActivate_(properties))
       return false;
 
-    if (!state || state.Type != CrOnc.Type.CELLULAR || !state.Cellular)
+    if (!properties || properties.Type != CrOnc.Type.CELLULAR ||
+        !properties.Cellular) {
       return false;
+    }
 
     // Only show if online payment URL is provided or the carrier is Verizon.
-    var carrier = CrOnc.getActiveValue(state, 'Cellular.Carrier');
+    var carrier = CrOnc.getActiveValue(properties.Cellular.Carrier);
     if (carrier != CARRIER_VERIZON) {
-      var paymentPortal = /** @type {CrOnc.PaymentPortal|undefined} */(
-          this.get('state.Cellular.PaymentPortal'));
+      var paymentPortal = properties.Cellular.PaymentPortal;
       if (!paymentPortal || !paymentPortal.Url)
         return false;
     }
 
     // Only show for connected networks or LTE networks with a valid MDN.
-    if (!this.isConnectedState_(state)) {
+    if (!this.isConnectedState_(properties)) {
       var technology = /** @type {CrOnc.NetworkTechnology|undefined} */(
-          CrOnc.getActiveValue(state, 'Cellular.NetworkTechnology'));
+          CrOnc.getActiveValue(properties.Cellular.NetworkTechnology));
       if (technology != CrOnc.NetworkTechnology.LTE &&
           technology != CrOnc.NetworkTechnology.LTE_ADVANCED) {
         return false;
       }
-      if (!CrOnc.getActiveValue(state, 'Cellular.MDN'))
+      if (!CrOnc.getActiveValue(properties.Cellular.MDN))
         return false;
     }
 
@@ -313,23 +312,23 @@ Polymer({
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(state) {
-    if (!state || !this.showConnect_(state))
+  enableConnect_: function(properties) {
+    if (!properties || !this.showConnect_(properties))
       return false;
-    if (state.Type == CrOnc.Type.CELLULAR && CrOnc.isSimLocked(state))
+    if (properties.Type == CrOnc.Type.CELLULAR && CrOnc.isSimLocked(properties))
       return false;
     // TODO(stevenjb): For VPN, check connected state of any network.
     return true;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} Whether or not to show the 'Disconnect' button.
    * @private
    */
-  showDisconnect_: function(state) {
-    return !!state && state.Type != CrOnc.Type.ETHERNET &&
-           state.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
+  showDisconnect_: function(properties) {
+    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+           properties.ConnectionState != CrOnc.ConnectionState.NOT_CONNECTED;
   },
 
   /**
@@ -371,7 +370,7 @@ Polymer({
    * @private
    */
   onNetworkPropertyChange_: function(event) {
-    if (!this.networkState)
+    if (!this.networkProperties)
       return;
     var field = event.detail.field;
     var value = event.detail.value;
@@ -396,7 +395,7 @@ Polymer({
    * @private
    */
   onIPConfigChange_: function(event) {
-    if (!this.networkState)
+    if (!this.networkProperties)
       return;
     var field = event.detail.field;
     var value = event.detail.value;
@@ -405,7 +404,7 @@ Polymer({
     var onc = this.getEmptyNetworkProperties_();
     var ipConfigType =
         /** @type {chrome.networkingPrivate.IPConfigType|undefined} */(
-            CrOnc.getActiveValue(this.networkState, 'IPAddressConfigType'));
+            CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType));
     if (field == 'IPAddressConfigType') {
       var newIpConfigType =
           /** @type {chrome.networkingPrivate.IPConfigType} */(value);
@@ -415,7 +414,8 @@ Polymer({
     } else if (field == 'NameServersConfigType') {
       var nsConfigType =
           /** @type {chrome.networkingPrivate.IPConfigType|undefined} */(
-              CrOnc.getActiveValue(this.networkState, 'NameServersConfigType'));
+              CrOnc.getActiveValue(
+                  this.networkProperties.NameServersConfigType));
       var newNsConfigType =
           /** @type {chrome.networkingPrivate.IPConfigType} */(value);
       if (newNsConfigType == nsConfigType)
@@ -423,8 +423,7 @@ Polymer({
       onc.NameServersConfigType = newNsConfigType;
     } else if (field == 'StaticIPConfig') {
       if (ipConfigType == CrOnc.IPConfigType.STATIC) {
-        var staticIpConfig = /** @type {CrOnc.IPConfigProperties|undefined} */(
-            this.get('networkState.StaticIPConfig'));
+        var staticIpConfig = this.networkProperties.StaticIPConfig;
         if (staticIpConfig &&
             this.allPropertiesMatch_(staticIpConfig,
                                      /** @type {!Object} */(value))) {
@@ -458,9 +457,9 @@ Polymer({
       return;
     }
     // setValidStaticIPConfig will fill in any other properties from
-    // networkState. This is necessary since we update IP Address and
+    // networkProperties. This is necessary since we update IP Address and
     // NameServers independently.
-    CrOnc.setValidStaticIPConfig(onc, this.networkState);
+    CrOnc.setValidStaticIPConfig(onc, this.networkProperties);
     this.setNetworkProperties_(onc);
   },
 
@@ -471,7 +470,7 @@ Polymer({
    * @private
    */
   onProxyChange_: function(event) {
-    if (!this.networkState)
+    if (!this.networkProperties)
       return;
     var field = event.detail.field;
     var value = event.detail.value;
@@ -483,34 +482,34 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if the shared message should be shown.
    * @private
    */
-  showShared_: function(state) {
-    return !!state &&
-           (state.Source == 'Device' || state.Source == 'DevicePolicy');
+  showShared_: function(properties) {
+    return !!properties && (properties.Source == 'Device' ||
+                            properties.Source == 'DevicePolicy');
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if the AutoConnect checkbox should be shown.
    * @private
    */
-  showAutoConnect_: function(state) {
-    return !!state && state.Type != CrOnc.Type.ETHERNET &&
-           state.Source != CrOnc.Source.NONE;
+  showAutoConnect_: function(properties) {
+    return !!properties && properties.Type != CrOnc.Type.ETHERNET &&
+           properties.Source != CrOnc.Source.NONE;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if the prefer network checkbox should be shown.
    * @private
    */
-  showPreferNetwork_: function(state) {
+  showPreferNetwork_: function(properties) {
     // TODO(stevenjb): Resolve whether or not we want to allow "preferred" for
-    // state.Type == CrOnc.Type.ETHERNET.
-    return !!state && state.Source != CrOnc.Source.NONE;
+    // properties.Type == CrOnc.Type.ETHERNET.
+    return !!properties && properties.Source != CrOnc.Source.NONE;
   },
 
   /**
@@ -523,76 +522,76 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {!Array<string>} The fields to display in the info section.
    * @private
    */
-  getInfoFields_: function(state) {
+  getInfoFields_: function(properties) {
     /** @type {!Array<string>} */ var fields = [];
-    if (!state)
+    if (!properties)
       return fields;
 
-    if (state.Type == CrOnc.Type.CELLULAR) {
+    if (properties.Type == CrOnc.Type.CELLULAR) {
       fields.push('Cellular.ActivationState',
                   'Cellular.RoamingState',
                   'RestrictedConnectivity',
                   'Cellular.ServingOperator.Name');
     }
-    if (state.Type == CrOnc.Type.VPN) {
+    if (properties.Type == CrOnc.Type.VPN) {
       fields.push('VPN.Host', 'VPN.Type');
-      if (state.VPN.Type == 'OpenVPN')
+      if (properties.VPN.Type == 'OpenVPN')
         fields.push('VPN.OpenVPN.Username');
-      else if (state.VPN.Type == 'L2TP-IPsec')
+      else if (properties.VPN.Type == 'L2TP-IPsec')
         fields.push('VPN.L2TP.Username');
-      else if (state.VPN.Type == 'ThirdPartyVPN')
+      else if (properties.VPN.Type == 'ThirdPartyVPN')
         fields.push('VPN.ThirdPartyVPN.ProviderName');
     }
-    if (state.Type == CrOnc.Type.WI_FI)
+    if (properties.Type == CrOnc.Type.WI_FI)
       fields.push('RestrictedConnectivity');
-    if (state.Type == CrOnc.Type.WI_MAX) {
+    if (properties.Type == CrOnc.Type.WI_MAX) {
       fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
     }
     return fields;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {!Array<string>} The fields to display in the Advanced section.
    * @private
    */
-  getAdvancedFields_: function(state) {
+  getAdvancedFields_: function(properties) {
     /** @type {!Array<string>} */ var fields = [];
-    if (!state)
+    if (!properties)
       return fields;
     fields.push('MacAddress');
-    if (state.Type == CrOnc.Type.CELLULAR) {
+    if (properties.Type == CrOnc.Type.CELLULAR) {
       fields.push('Cellular.Carrier',
                   'Cellular.Family',
                   'Cellular.NetworkTechnology',
                   'Cellular.ServingOperator.Code');
     }
-    if (state.Type == CrOnc.Type.WI_FI) {
+    if (properties.Type == CrOnc.Type.WI_FI) {
       fields.push('WiFi.SSID',
                   'WiFi.BSSID',
                   'WiFi.Security',
                   'WiFi.SignalStrength',
                   'WiFi.Frequency');
     }
-    if (state.Type == CrOnc.Type.WI_MAX)
+    if (properties.Type == CrOnc.Type.WI_MAX)
       fields.push('WiFi.SignalStrength');
     return fields;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {!Array<string>} The fields to display in the device section.
    * @private
    */
-  getDeviceFields_: function(state) {
+  getDeviceFields_: function(properties) {
     /** @type {!Array<string>} */ var fields = [];
-    if (!state)
+    if (!properties)
       return fields;
-    if (state.Type == CrOnc.Type.CELLULAR) {
+    if (properties.Type == CrOnc.Type.CELLULAR) {
       fields.push('Cellular.HomeProvider.Name',
                   'Cellular.HomeProvider.Country',
                   'Cellular.HomeProvider.Code',
@@ -613,53 +612,53 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if there are any advanced fields to display.
    * @private
    */
-  hasAdvancedOrDeviceFields_: function(state) {
-    return this.getAdvancedFields_(state).length > 0 ||
-           this.hasDeviceFields_(state);
+  hasAdvancedOrDeviceFields_: function(properties) {
+    return this.getAdvancedFields_(properties).length > 0 ||
+           this.hasDeviceFields_(properties);
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if there are any device fields to display.
    * @private
    */
-  hasDeviceFields_: function(state) {
-    var fields = this.getDeviceFields_(state);
+  hasDeviceFields_: function(properties) {
+    var fields = this.getDeviceFields_(properties);
     return fields.length > 0;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if the network section should be shown.
    * @private
    */
-  hasNetworkSection_: function(state) {
-    return !!state && state.Type != CrOnc.Type.VPN;
+  hasNetworkSection_: function(properties) {
+    return !!properties && properties.Type != CrOnc.Type.VPN;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @param {string} type The network type.
    * @return {boolean} True if the network type matches 'type'.
    * @private
    */
-  isType_: function(state, type) {
-    return !!state && state.Type == type;
+  isType_: function(properties, type) {
+    return !!properties && properties.Type == type;
   },
 
   /**
-   * @param {?CrOnc.NetworkStateProperties} state The network state properties.
+   * @param {!CrOnc.NetworkProperties} properties
    * @return {boolean} True if the Cellular SIM section should be shown.
    * @private
    */
-  showCellularSim_: function(state) {
-    if (!state || state.Type != 'Cellular')
+  showCellularSim_: function(properties) {
+    if (!properties || properties.Type != 'Cellular' || !properties.Cellular)
       return false;
-    return CrOnc.getActiveValue(state, 'Cellular.Family') == 'GSM';
+    return CrOnc.getActiveValue(properties.Cellular.Family) == 'GSM';
   },
 
   /**

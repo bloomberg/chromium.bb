@@ -14,12 +14,12 @@ Polymer({
 
   properties: {
     /**
-     * The current state for the network matching |guid|.
-     * @type {CrOnc.NetworkStateProperties|undefined}
+     * The current set of properties for the network matching |guid|.
+     * @type {!CrOnc.NetworkProperties|undefined}
      */
-    networkState: {
+    networkProperties: {
       type: Object,
-      observer: 'networkStateChanged_'
+      observer: 'networkPropertiesChanged_'
     },
 
     /**
@@ -81,14 +81,14 @@ Polymer({
   /** @const */ DefaultAccessPointName: 'none',
 
   /**
-   * Polymer networkState changed method.
+   * Polymer networkProperties changed method.
    */
-  networkStateChanged_: function() {
-    if (!this.networkState || !this.networkState.Cellular)
+  networkPropertiesChanged_: function() {
+    if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
 
-    var activeApn = null;
-    var cellular = this.networkState.Cellular;
+    var activeApn;
+    var cellular = this.networkProperties.Cellular;
     if (cellular.APN && cellular.APN.AccessPointName)
       activeApn = cellular.APN;
     else if (cellular.LastGoodAPN && cellular.LastGoodAPN.AccessPointName)
@@ -99,14 +99,15 @@ Polymer({
   /**
    * Sets the list of selectable APNs for the UI. Appends an 'Other' entry
    * (see comments for |otherApn| above).
-   * @param {?CrOnc.APNProperties} activeApn The currently active APN value.
+   * @param {CrOnc.APNProperties|undefined} activeApn The currently active APN
+   *     properties.
    * @private
    */
   setApnSelectList_: function(activeApn) {
-    // Copy the list of APNs from this.networkState.
+    // Copy the list of APNs from this.networkProperties.
     var result = this.getApnList_().slice();
 
-    // Test whether |activeApn| is in the current APN list in this.networkState.
+    // Test whether |activeApn| is in the current APN list in networkProperties.
     var activeApnInList = activeApn && result.some(
         function(a) { return a.AccessPointName == activeApn.AccessPointName; });
 
@@ -137,7 +138,7 @@ Polymer({
   },
 
   /**
-   * @param {?CrOnc.APNProperties=} apnProperties
+   * @param {!CrOnc.APNProperties|undefined=} apnProperties
    * @return {!CrOnc.APNProperties} A new APN object with properties from
    *     |apnProperties| if provided.
    * @private
@@ -151,13 +152,13 @@ Polymer({
 
   /**
    * @return {!Array<!CrOnc.APNProperties>} The list of APN properties in
-   *     |networkState| or an empty list if the property is not set.
+   *     |networkProperties| or an empty list if the property is not set.
    * @private
    */
   getApnList_: function() {
-    var apnList = /** @type {Array<!CrOnc.APNProperties>|undefined} */(
-        this.get('networkState.Cellular.APNList'));
-    return apnList || [];
+    if (!this.networkProperties || !this.networkProperties.Cellular)
+      return [];
+    return this.networkProperties.Cellular.APNList || [];
   },
 
   /**
@@ -181,7 +182,7 @@ Polymer({
     var selectedApn = event.target.value;
     // When selecting 'Other', don't set a change event unless a valid
     // non-default value has been set for Other.
-    if (this.isOtherSelected_(this.networkState, selectedApn) &&
+    if (this.isOtherSelected_(this.networkProperties, selectedApn) &&
         (!this.otherApn || !this.otherApn.AccessPointName ||
          this.otherApn.AccessPointName == this.DefaultAccessPointName)) {
       return;
@@ -228,13 +229,13 @@ Polymer({
   },
 
   /**
-   * @param {CrOnc.NetworkStateProperties|undefined} networkState
+   * @param {!CrOnc.NetworkProperties|undefined} networkProperties
    * @param {string} selectedApn
    * @return {boolean} True if the 'other' APN is currently selected.
    * @private
    */
-  isOtherSelected_: function(networkState, selectedApn) {
-    if (!networkState || !networkState.Cellular)
+  isOtherSelected_: function(networkProperties, selectedApn) {
+    if (!networkProperties || !networkProperties.Cellular)
       return false;
     var apnList = this.getApnList_();
     var apn = this.findApnInList(apnList, selectedApn);

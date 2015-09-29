@@ -30,7 +30,7 @@ Polymer({
 
     /**
      * The proxy object.
-     * @type {?CrOnc.ProxyLocation}
+     * @type {!CrOnc.ProxyLocation}
      */
     value: {
       type: Object,
