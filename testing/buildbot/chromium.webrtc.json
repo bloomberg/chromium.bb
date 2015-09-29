@@ -1,0 +1,218 @@
+{
+  "Linux Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Mac Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win10 Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win7 Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "Win8 Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  },
+  "WinXP Tester": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--gtest_filter=WebRtc*:Webrtc*:TabCapture*:*MediaStream*",
+          "--run-manual",
+          "--ui-test-action-max-timeout=350000",
+          "--test-launcher-jobs=1",
+          "--test-launcher-bot-mode",
+          "--test-launcher-print-test-stdio=always"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--gtest_filter=WebRtc*",
+          "--run-manual",
+          "--test-launcher-print-test-stdio=always",
+          "--test-launcher-bot-mode"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      }
+    ]
+  }
+}
