@@ -8,29 +8,12 @@ import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.Context
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Holds the state of the Contextual Search Panel.
+ * This class is responsible for all the logging related to Contextual Search.
  */
-abstract class ContextualSearchPanelStateHandler {
+public class ContextualSearchPanelMetrics {
 
-    // Valid previous states for the Panel.
-    private static final Map<PanelState, PanelState> PREVIOUS_STATES;
-    static {
-        Map<PanelState, PanelState> states = new HashMap<PanelState, PanelState>();
-        // Pairs are of the form <Current, Previous>.
-        states.put(PanelState.PEEKED, PanelState.CLOSED);
-        states.put(PanelState.EXPANDED, PanelState.PEEKED);
-        states.put(PanelState.MAXIMIZED, PanelState.EXPANDED);
-        PREVIOUS_STATES = Collections.unmodifiableMap(states);
-    }
-
-    // The current state of the Contextual Search Panel.
-    private PanelState mPanelState = PanelState.UNDEFINED;
+    // Flags for logging.
     private boolean mDidSearchInvolvePromo;
     private boolean mWasSearchContentViewSeen;
     private boolean mIsPromoActive;
@@ -45,37 +28,19 @@ abstract class ContextualSearchPanelStateHandler {
     private long mSearchStartTimeNs;
     private long mSearchViewStartTimeNs;
 
-    // --------------------------------------------------------------------------------------------
-    // Contextual Search Panel states
-    // --------------------------------------------------------------------------------------------
-
     /**
-     * @return The panel's state.
+     * Log information when the panel's state has changed.
+     * @param fromState The state the panel is transitioning from.
+     * @param toState The state that the panel is transitioning to.
+     * @param reason The reason for the state change.
      */
-    PanelState getPanelState() {
-        return mPanelState;
-    }
-
-    /**
-     * @return The {@code PanelState} that is before the |state| in the order of states.
-     */
-    PanelState getPreviousPanelState(PanelState state) {
-        PanelState prevState = PREVIOUS_STATES.get(state);
-        return prevState != null ? prevState : PanelState.UNDEFINED;
-    }
-
-    /**
-     * Sets the panel's state.
-     * @param toState The panel state to transition to.
-     * @param reason The reason for a change in the panel's state.
-     */
-    protected void setPanelState(PanelState toState, StateChangeReason reason) {
+    public void onPanelStateChanged(PanelState fromState, PanelState toState,
+            StateChangeReason reason) {
         // Note: the logging within this function includes the promo, unless specifically
         // excluded.
-        PanelState fromState = mPanelState;
         boolean isStartingSearch = isStartingNewContextualSearch(toState, reason);
-        boolean isEndingSearch = isEndingContextualSearch(toState, isStartingSearch);
-        boolean isChained = isStartingSearch && isOngoingContextualSearch();
+        boolean isEndingSearch = isEndingContextualSearch(fromState, toState, isStartingSearch);
+        boolean isChained = isStartingSearch && isOngoingContextualSearch(fromState);
         boolean isSameState = fromState == toState;
         boolean isFirstExitFromPeeking = fromState == PanelState.PEEKED && !mHasExitedPeeking
                 && (!isSameState || isStartingSearch);
@@ -140,8 +105,6 @@ abstract class ContextualSearchPanelStateHandler {
             mHasExitedMaximized = true;
         }
 
-        mPanelState = toState;
-
         if (toState == PanelState.EXPANDED) {
             mHasExpanded = true;
         } else if (toState == PanelState.MAXIMIZED) {
@@ -170,44 +133,30 @@ abstract class ContextualSearchPanelStateHandler {
     }
 
     /**
-     * Determine if a specific {@code PanelState} is a valid state in the current environment.
-     * @param state The state being evaluated.
-     * @return whether the state is valid.
-     */
-    boolean isValidState(PanelState state) {
-        ArrayList<PanelState> validStates =
-                new ArrayList<PanelState>(PREVIOUS_STATES.values());
-        // MAXIMIZED is not the previous state of anything, but it's a valid state.
-        validStates.add(PanelState.MAXIMIZED);
-
-        return validStates.contains(state);
-    }
-
-    /**
      * Sets that the contextual search involved the promo.
      */
-    void setDidSearchInvolvePromo() {
+    public void setDidSearchInvolvePromo() {
         mDidSearchInvolvePromo = true;
     }
 
     /**
      * Sets that the Search Content View was seen.
      */
-    void setWasSearchContentViewSeen() {
+    public void setWasSearchContentViewSeen() {
         mWasSearchContentViewSeen = true;
     }
 
     /**
      * Sets whether the promo is active.
      */
-    void setIsPromoActive(boolean shown) {
+    public void setIsPromoActive(boolean shown) {
         mIsPromoActive = shown;
     }
 
     /**
      * Gets whether the promo is active.
      */
-    boolean getIsPromoActive() {
+    private boolean getIsPromoActive() {
         return mIsPromoActive;
     }
 
@@ -215,7 +164,7 @@ abstract class ContextualSearchPanelStateHandler {
      * Records timing information when the search results have fully loaded.
      * @param wasPrefetch Whether the request was prefetch-enabled.
      */
-    void onSearchResultsLoaded(boolean wasPrefetch) {
+    public void onSearchResultsLoaded(boolean wasPrefetch) {
         if (mHasExpanded || mHasMaximized) {
             // Already opened, log how long it took.
             assert mSearchViewStartTimeNs != 0;
@@ -240,10 +189,6 @@ abstract class ContextualSearchPanelStateHandler {
         }
     }
 
-    // --------------------------------------------------------------------------------------------
-    // Helpers
-    // --------------------------------------------------------------------------------------------
-
     /**
      * Determine whether a new contextual search is starting.
      * @param toState The contextual search state that will be transitioned to.
@@ -258,19 +203,23 @@ abstract class ContextualSearchPanelStateHandler {
 
     /**
      * Determine whether a contextual search is ending.
+     * @param fromState The contextual search state that will be transitioned from.
      * @param toState The contextual search state that will be transitioned to.
      * @param isStartingSearch Whether a new contextual search is starting.
      * @return Whether a contextual search is ending.
      */
-    private boolean isEndingContextualSearch(PanelState toState, boolean isStartingSearch) {
-        return isOngoingContextualSearch() && (toState == PanelState.CLOSED || isStartingSearch);
+    private boolean isEndingContextualSearch(PanelState fromState, PanelState toState,
+            boolean isStartingSearch) {
+        return isOngoingContextualSearch(fromState)
+                && (toState == PanelState.CLOSED || isStartingSearch);
     }
 
     /**
+     * @param fromState The state the panel is transitioning from.
      * @return Whether there is an ongoing contextual search.
      */
-    private boolean isOngoingContextualSearch() {
-        return mPanelState != PanelState.UNDEFINED && mPanelState != PanelState.CLOSED;
+    private boolean isOngoingContextualSearch(PanelState fromState) {
+        return fromState != PanelState.UNDEFINED && fromState != PanelState.CLOSED;
     }
 
     /**
@@ -282,3 +231,4 @@ abstract class ContextualSearchPanelStateHandler {
         ContextualSearchUma.logSearchPanelLoadDuration(wasPrefetch, durationMs);
     }
 }
+

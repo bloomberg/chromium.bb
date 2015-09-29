@@ -35,6 +35,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     /**
      * The reason for a change in the Contextual Search Panel's state.
+     * TODO(mdjones): Separate generic reasons from Contextual Search reasons.
      */
     public static enum StateChangeReason {
         UNKNOWN,
@@ -57,9 +58,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         CLOSE_BUTTON;
     }
 
-    // The animation duration of a URL being promoted to a tab when triggered by an
-    // intercept navigation. This is faster than the standard tab promotion animation
-    // so that it completes before the navigation.
+    /**
+     * The animation duration of a URL being promoted to a tab when triggered by an
+     * intercept navigation. This is faster than the standard tab promotion animation
+     * so that it completes before the navigation.
+     */
     private static final long INTERCEPT_NAVIGATION_PROMOTION_ANIMATION_DURATION_MS = 40;
 
     /**
@@ -107,6 +110,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     private OverlayPanelContent mOverlayPanelContent;
 
+    /**
+     * Used for logging state changes.
+     */
+    private ContextualSearchPanelMetrics mPanelMetrics;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -117,6 +125,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public ContextualSearchPanel(Context context, LayoutUpdateHost updateHost) {
         super(context, updateHost);
+        mPanelMetrics = new ContextualSearchPanelMetrics();
     }
 
     /**
@@ -179,6 +188,37 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     // ============================================================================================
+    // Logging of panel state information.
+    // ============================================================================================
+
+    @Override
+    public void setPanelState(PanelState toState, StateChangeReason reason) {
+        // Store the previous state of the panel for when super changes it. 'super' should be the
+        // first thing with significant logic that runs in this method which is why
+        // onPanelStateChanged is not called here.
+        PanelState fromState = getPanelState();
+        super.setPanelState(toState, reason);
+        mPanelMetrics.onPanelStateChanged(fromState, toState, reason);
+    }
+
+    // ============================================================================================
+    // Promo Host
+    // ============================================================================================
+
+    @Override
+    public void onPromoPreferenceClick() {
+        super.onPromoPreferenceClick();
+        setIsPromoActive(false);
+    }
+
+    @Override
+    public void onPromoButtonClick(boolean accepted) {
+        super.onPromoButtonClick(accepted);
+        getManagementDelegate().logPromoOutcome();
+        setIsPromoActive(false);
+    }
+
+    // ============================================================================================
     // Layout Integration
     // ============================================================================================
 
@@ -204,13 +244,6 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     protected boolean isPromoAvailable() {
         return getManagementDelegate() != null && getManagementDelegate().isPromoAvailable();
-    }
-
-    @Override
-    public void onPromoButtonClick(boolean accepted) {
-        super.onPromoButtonClick(accepted);
-        getManagementDelegate().logPromoOutcome();
-        setIsPromoActive(false);
     }
 
     @Override
@@ -455,6 +488,31 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     // Panel Delegate
     // ============================================================================================
 
+    /**
+     * Sets that the Search Content View was seen.
+     */
+    @Override
+    public void setWasSearchContentViewSeen() {
+        mPanelMetrics.setWasSearchContentViewSeen();
+    }
+
+    /**
+     * Sets whether the promo is active.
+     */
+    @Override
+    public void setIsPromoActive(boolean shown) {
+        mPanelMetrics.setIsPromoActive(shown);
+    }
+
+    /**
+     * Records timing information when the search results have fully loaded.
+     * @param wasPrefetch Whether the request was prefetch-enabled.
+     */
+    @Override
+    public void onSearchResultsLoaded(boolean wasPrefetch) {
+        mPanelMetrics.onSearchResultsLoaded(wasPrefetch);
+    }
+
     @Override
     public boolean isFullscreenSizePanel() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
@@ -544,32 +602,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     @Override
-    public void setDidSearchInvolvePromo() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        super.setDidSearchInvolvePromo();
-    }
-
-    @Override
-    public void setWasSearchContentViewSeen() {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        super.setWasSearchContentViewSeen();
-    }
-
-    @Override
-    public void setIsPromoActive(boolean shown) {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        super.setIsPromoActive(shown);
-    }
-
-    @Override
     public boolean didTouchSearchContentView() {
         return mHasSearchContentViewBeenTouched;
-    }
-
-    @Override
-    public void onSearchResultsLoaded(boolean wasPrefetch) {
-        // NOTE(pedrosimonetti): exposing superclass method to the interface.
-        super.onSearchResultsLoaded(wasPrefetch);
     }
 
     @Override
@@ -633,6 +667,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         } else {
             mOverlayPanelContent.updateTopControlsState(true, false, false);
         }
+    }
+
+    @Override
+    public void setDidSearchInvolvePromo() {
+        mPanelMetrics.setDidSearchInvolvePromo();
     }
 
     // ============================================================================================

@@ -23,11 +23,14 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Base abstract class for the Contextual Search Panel.
  */
-abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandler
-        implements ContextualSearchPromoHost {
+abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     /**
      * The side padding of Search Bar icons in dps.
      */
@@ -201,6 +204,23 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
      */
     protected ContextualSearchPanelFeatures mSearchPanelFeatures;
 
+    /**
+     * The current state of the Contextual Search Panel.
+     */
+    private PanelState mPanelState = PanelState.UNDEFINED;
+
+    /**
+     * Valid previous states for the Panel.
+     */
+    protected static final Map<PanelState, PanelState> PREVIOUS_STATES;
+    static {
+        Map<PanelState, PanelState> states = new HashMap<PanelState, PanelState>();
+        // Pairs are of the form <Current, Previous>.
+        states.put(PanelState.PEEKED, PanelState.CLOSED);
+        states.put(PanelState.EXPANDED, PanelState.PEEKED);
+        states.put(PanelState.MAXIMIZED, PanelState.EXPANDED);
+        PREVIOUS_STATES = Collections.unmodifiableMap(states);
+    }
 
     // ============================================================================================
     // Constructor
@@ -782,6 +802,53 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
     }
 
     // ============================================================================================
+    // State Handler
+    // ============================================================================================
+
+    /**
+     * @return The panel's state.
+     */
+    public PanelState getPanelState() {
+        return mPanelState;
+    }
+
+    /**
+     * @return The {@code PanelState} that is before the |state| in the order of states.
+     */
+    public PanelState getPreviousPanelState(PanelState state) {
+        PanelState prevState = PREVIOUS_STATES.get(state);
+        return prevState != null ? prevState : PanelState.UNDEFINED;
+    }
+
+    /**
+     * Sets the panel's state.
+     * @param state The panel state to transition to.
+     * @param reason The reason for a change in the panel's state.
+     */
+    public void setPanelState(PanelState state, StateChangeReason reason) {
+        mPanelState = state;
+
+        if (state == PanelState.CLOSED) {
+            mIsShowing = false;
+            destroyPromoView();
+            onClose(reason);
+        } else if (state == PanelState.EXPANDED && isFullscreenSizePanel()
+                || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
+            showPromoViewAtYPosition(getPromoYPx());
+        }
+    }
+
+    /**
+     * Determine if a specific {@code PanelState} is a valid state in the current environment.
+     * @param state The state being evaluated.
+     * @return whether the state is valid.
+     */
+    public boolean isValidState(PanelState state) {
+        // MAXIMIZED is not the previous state of anything, but it's a valid state.
+        return PREVIOUS_STATES.values().contains(state) || state == PanelState.MAXIMIZED;
+    }
+
+    // ============================================================================================
     // Helpers
     // ============================================================================================
 
@@ -891,20 +958,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
                 getPanelHeightFromState(PanelState.MAXIMIZED),
                 getPanelHeightFromState(PanelState.PEEKED));
         setPanelHeight(clampedHeight);
-    }
-
-    @Override
-    protected void setPanelState(PanelState state, StateChangeReason reason) {
-        super.setPanelState(state, reason);
-
-        if (state == PanelState.CLOSED) {
-            mIsShowing = false;
-            destroyPromoView();
-            onClose(reason);
-        } else if (state == PanelState.EXPANDED && isFullscreenSizePanel()
-                || (state == PanelState.MAXIMIZED && !isFullscreenSizePanel())) {
-            showPromoViewAtYPosition(getPromoYPx());
-        }
     }
 
     /**
@@ -1324,7 +1377,6 @@ abstract class ContextualSearchPanelBase extends ContextualSearchPanelStateHandl
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                setIsPromoActive(false);
                 PreferencesLauncher.launchSettingsPage(mContext,
                         ContextualSearchPreferenceFragment.class.getName());
             }
