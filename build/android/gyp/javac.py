@@ -322,6 +322,9 @@ def main(argv):
       # javac pulling a default encoding from the user's environment.
       '-encoding', 'UTF-8',
       '-classpath', ':'.join(compile_classpath),
+      # Prevent compiler from compiling .java files not listed as inputs.
+      # See: http://blog.ltgt.net/most-build-tools-misuse-javac/
+      '-sourcepath', ''
   ))
 
   if options.bootclasspath:
