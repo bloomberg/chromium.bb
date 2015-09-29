@@ -1512,10 +1512,6 @@
             'sources': [
               'audio/android/audio_android_unittest.cc',
             ],
-          }, {
-            'sources': [
-              'audio/audio_input_volume_unittest.cc',
-            ],
           }],
           ['OS=="mac"', {
             'sources': [

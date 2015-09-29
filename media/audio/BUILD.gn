@@ -303,8 +303,6 @@ source_set("unittests") {
   if (is_android) {
     sources += [ "android/audio_android_unittest.cc" ]
     deps += [ "//ui/gl" ]
-  } else {
-    sources += [ "audio_input_volume_unittest.cc" ]
   }
 
   if (is_mac) {
