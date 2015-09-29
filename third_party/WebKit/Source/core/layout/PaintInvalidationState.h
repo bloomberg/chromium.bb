@@ -39,6 +39,9 @@ public:
     bool forcedSubtreeInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationWithinContainer; }
     void setForceSubtreeInvalidationWithinContainer() { m_forcedSubtreeInvalidationWithinContainer = true; }
 
+    bool forcedSubtreeInvalidationRectUpdateWithinContainer() const { return m_forcedSubtreeInvalidationRectUpdateWithinContainer; }
+    void setForceSubtreeInvalidationRectUpdateWithinContainer() { m_forcedSubtreeInvalidationRectUpdateWithinContainer = true; }
+
     const LayoutBoxModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
 
     bool canMapToContainer(const LayoutBoxModelObject* container) const
@@ -61,6 +64,7 @@ private:
     bool m_clipped;
     mutable bool m_cachedOffsetsEnabled;
     bool m_forcedSubtreeInvalidationWithinContainer;
+    bool m_forcedSubtreeInvalidationRectUpdateWithinContainer;
 
     LayoutRect m_clipRect;
 
