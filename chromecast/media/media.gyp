@@ -6,8 +6,6 @@
   'variables': {
     'chromium_code': 1,
     'chromecast_branding%': 'public',
-    'libcast_media_gyp%': '',
-    'use_default_libcast_media%': 1,
   },
   'target_defaults': {
     'include_dirs': [
@@ -41,10 +39,10 @@
       'target_name': 'media_base',
       'type': '<(component)',
       'dependencies': [
+        'libcast_media_1.0',
         '../../base/base.gyp:base',
         '../../crypto/crypto.gyp:crypto',
         '../../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-        '<(libcast_media_gyp):libcast_media_1.0',
       ],
       'sources': [
         'base/decrypt_context_impl.cc',
@@ -140,7 +138,6 @@
       'target_name': 'default_cma_backend',
       'type': '<(component)',
       'dependencies': [
-        '../chromecast.gyp:cast_base',
         '../../base/base.gyp:base',
       ],
       'include_dirs': [
@@ -316,25 +313,21 @@
         'cma/test/run_all_unittests.cc',
       ],
     },
+    { # Target for OEM partners to override media shared library, i.e.
+      # libcast_media_1.0.so. This target is only used to build executables
+      # with correct linkage information.
+      'target_name': 'libcast_media_1.0',
+      'type': 'shared_library',
+      'dependencies': [
+        '../../chromecast/chromecast.gyp:cast_public_api',
+        'default_cma_backend'
+      ],
+      'include_dirs': [
+        '../..',
+      ],
+      'sources': [
+        'base/cast_media_default.cc',
+      ],
+    }
   ], # end of targets
-  'conditions': [
-    ['use_default_libcast_media==1', {
-      'targets': [
-        {
-          'target_name': 'libcast_media_1.0',
-          'type': 'shared_library',
-          'dependencies': [
-            '../../chromecast/chromecast.gyp:cast_public_api',
-            'default_cma_backend'
-          ],
-          'include_dirs': [
-            '../..',
-          ],
-          'sources': [
-            'base/cast_media_default.cc',
-          ],
-        }
-      ]
-    }],
-  ],
 }

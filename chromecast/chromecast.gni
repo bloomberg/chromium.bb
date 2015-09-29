@@ -22,15 +22,6 @@ declare_args() {
   # be named "libcast_graphics_1.0".
   libcast_graphics_path = ""
 
-  # Use the stub media library in //chromecast/media. If this is true, the
-  # value of |libcast_media_path| is ignored.
-  use_default_cast_media =
-      chromecast_branding == "public" || is_chromecast_desktop_build
-
-  # The path to the cast_media shared library. Any target pointed to must be
-  # named "libcast_media_1.0".
-  libcast_media_path = ""
-
   # Use Playready CDMs.
   use_playready = false
 }

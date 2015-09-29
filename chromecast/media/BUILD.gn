@@ -61,17 +61,9 @@ test("cast_media_unittests") {
   ]
 }
 
-group("libcast_media") {
-  if (use_default_cast_media) {
-    public_deps = [
-      "//chromecast/media/base:libcast_media_default",
-    ]
-  } else {
-    public_deps = [
-      "$libcast_media_path:libcast_media_1.0",
-    ]
-  }
-}
+public_deps = [
+  "//chromecast/media/base:libcast_media_default",
+]
 
 # TODO(slan): delete this target once Chromecast M44/earlier is obsolete.
 # See: b/21639416
