@@ -17,6 +17,11 @@ extern const char kMetricsLowEntropySource[];
 extern const char kMetricsMachineId[];
 extern const char kMetricsOngoingLogs[];
 extern const char kMetricsResetIds[];
+
+// For finding out whether metrics and crash reporting is enabled use
+// ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() instead of
+// reading this pref directly.
+extern const char kMetricsReportingEnabled[];
 extern const char kMetricsReportingEnabledTimestamp[];
 extern const char kMetricsSessionID[];
 extern const char kStabilityBreakpadRegistrationSuccess[];

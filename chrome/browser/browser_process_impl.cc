@@ -822,9 +822,8 @@ void BrowserProcessImpl::RegisterPrefs(PrefRegistrySimple* registry) {
                                std::string());
 #endif  // defined(OS_CHROMEOS)
 #if !defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(
-      prefs::kMetricsReportingEnabled,
-      GoogleUpdateSettings::GetCollectStatsConsent());
+  registry->RegisterBooleanPref(metrics::prefs::kMetricsReportingEnabled,
+                                GoogleUpdateSettings::GetCollectStatsConsent());
 #endif  // !defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)
@@ -1006,7 +1005,7 @@ void BrowserProcessImpl::CreateLocalState() {
   // whenever the preference or its controlling policy changes.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   pref_change_registrar_.Add(
-      prefs::kMetricsReportingEnabled,
+      metrics::prefs::kMetricsReportingEnabled,
       base::Bind(&BrowserProcessImpl::ApplyMetricsReportingPolicy,
                  base::Unretained(this)));
 #endif
