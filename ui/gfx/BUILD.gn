@@ -429,6 +429,7 @@ action("aggregate_vector_icons") {
     "vector_icons/bar_close.icon",
     "vector_icons/blocked_badge.icon",
     "vector_icons/check_circle.icon",
+    "vector_icons/chrome_product.icon",
     "vector_icons/code.icon",
     "vector_icons/cookie.icon",
     "vector_icons/crashed_tab.icon",

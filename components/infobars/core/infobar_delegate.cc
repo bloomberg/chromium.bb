@@ -47,8 +47,9 @@ gfx::Image InfoBarDelegate::GetIcon() const {
     gfx::VectorIconId vector_id = GetVectorIconId();
     if (vector_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
       return gfx::Image(gfx::CreateVectorIcon(
-          vector_id, 16,
-          GetInfoBarType() == WARNING_TYPE ? gfx::kAmber : gfx::kGoogleBlue));
+          vector_id, 18,
+          GetInfoBarType() == WARNING_TYPE ? SkColorSetRGB(0xFF, 0x67, 0)
+                                           : gfx::kGoogleBlue));
     }
   }
 #endif

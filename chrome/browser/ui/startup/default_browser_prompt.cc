@@ -32,7 +32,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-
+#include "ui/gfx/vector_icons_public.h"
 
 namespace {
 
@@ -115,7 +115,9 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
   void AllowExpiry() { should_expire_ = true; }
 
   // ConfirmInfoBarDelegate:
+  Type GetInfoBarType() const override;
   int GetIconId() const override;
+  gfx::VectorIconId GetVectorIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
@@ -165,8 +167,21 @@ DefaultBrowserInfoBarDelegate::~DefaultBrowserInfoBarDelegate() {
     UMA_HISTOGRAM_BOOLEAN("DefaultBrowserWarning.Ignored", true);
 }
 
+infobars::InfoBarDelegate::Type DefaultBrowserInfoBarDelegate::GetInfoBarType()
+    const {
+  return PAGE_ACTION_TYPE;
+}
+
 int DefaultBrowserInfoBarDelegate::GetIconId() const {
   return IDR_PRODUCT_LOGO_32;
+}
+
+gfx::VectorIconId DefaultBrowserInfoBarDelegate::GetVectorIconId() const {
+#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_IOS)
+  return gfx::VectorIconId::VECTOR_ICON_NONE;
+#else
+  return gfx::VectorIconId::CHROME_PRODUCT;
+#endif
 }
 
 bool DefaultBrowserInfoBarDelegate::ShouldExpire(
