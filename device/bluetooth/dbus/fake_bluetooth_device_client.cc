@@ -207,6 +207,16 @@ const char FakeBluetoothDeviceClient::kPairedUnconnectableDeviceName[] =
 const uint32 FakeBluetoothDeviceClient::kPairedUnconnectableDeviceClass =
     0x000104;
 
+const char FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath[] =
+    "/fake/hci0/devE";
+const char
+    FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceAddress[] =
+        "11:22:33:44:55:66";
+const char FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceName[] =
+    "Connected Pairable Device";
+const uint32 FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDeviceClass =
+    0x7a020c;
+
 FakeBluetoothDeviceClient::Properties::Properties(
     const PropertyChangedCallback& callback)
     : BluetoothDeviceClient::Properties(
@@ -679,7 +689,16 @@ void FakeBluetoothDeviceClient::CreateDevice(
     std::vector<std::string> uuids;
     uuids.push_back(FakeBluetoothGattServiceClient::kHeartRateServiceUUID);
     properties->uuids.ReplaceValue(uuids);
-
+  } else if (device_path ==
+             dbus::ObjectPath(kConnectedTrustedNotPairedDevicePath)) {
+    properties->address.ReplaceValue(kConnectedTrustedNotPairedDeviceAddress);
+    properties->bluetooth_class.ReplaceValue(
+        kConnectedTrustedNotPairedDeviceClass);
+    properties->trusted.ReplaceValue(true);
+    properties->connected.ReplaceValue(true);
+    properties->paired.ReplaceValue(false);
+    properties->name.ReplaceValue("Connected Pairable Device");
+    properties->alias.ReplaceValue(kConnectedTrustedNotPairedDeviceName);
   } else {
     NOTREACHED();
   }
@@ -939,6 +958,27 @@ FakeBluetoothDeviceClient::GetBluetoothDevicesAsDictionaries() const {
   paired_unconnectable->SetBoolean("paired", true);
   paired_unconnectable->SetBoolean("incoming", false);
   predefined_devices->Append(paired_unconnectable.Pass());
+
+  scoped_ptr<base::DictionaryValue> connected_trusted_not_paired(
+      new base::DictionaryValue);
+  connected_trusted_not_paired->SetString("path",
+                                          kConnectedTrustedNotPairedDevicePath);
+  connected_trusted_not_paired->SetString(
+      "address", kConnectedTrustedNotPairedDeviceAddress);
+  connected_trusted_not_paired->SetString("name",
+                                          kConnectedTrustedNotPairedDeviceName);
+  connected_trusted_not_paired->SetString("pairingMethod", "");
+  connected_trusted_not_paired->SetString("pairingAuthToken", "");
+  connected_trusted_not_paired->SetString("pairingAction", "");
+  connected_trusted_not_paired->SetString("alias",
+                                          kConnectedTrustedNotPairedDeviceName);
+  connected_trusted_not_paired->SetInteger(
+      "classValue", kConnectedTrustedNotPairedDeviceClass);
+  connected_trusted_not_paired->SetBoolean("isTrusted", true);
+  connected_trusted_not_paired->SetBoolean("discoverable", true);
+  connected_trusted_not_paired->SetBoolean("paired", false);
+  connected_trusted_not_paired->SetBoolean("incoming", false);
+  predefined_devices->Append(connected_trusted_not_paired.Pass());
 
   return predefined_devices.Pass();
 }
@@ -1272,7 +1312,9 @@ void FakeBluetoothDeviceClient::SimulatePairing(
                                   base::Unretained(this), object_path, callback,
                                   error_callback));
 
-    } else if (object_path == dbus::ObjectPath(kConfirmPasskeyPath)) {
+    } else if (object_path == dbus::ObjectPath(kConfirmPasskeyPath) ||
+               object_path ==
+                   dbus::ObjectPath(kConnectedTrustedNotPairedDevicePath)) {
       // Request confirmation of a Passkey.
       agent_service_provider->RequestConfirmation(
           object_path, kTestPassKey,

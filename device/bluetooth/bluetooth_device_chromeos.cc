@@ -116,6 +116,25 @@ void RecordPairingResult(BluetoothDevice::ConnectErrorCode error_code) {
                             UMA_PAIRING_RESULT_COUNT);
 }
 
+BluetoothDevice::ConnectErrorCode DBusErrorToConnectError(
+    const std::string& error_name) {
+  BluetoothDevice::ConnectErrorCode error_code = BluetoothDevice::ERROR_UNKNOWN;
+  if (error_name == bluetooth_device::kErrorConnectionAttemptFailed) {
+    error_code = BluetoothDevice::ERROR_FAILED;
+  } else if (error_name == bluetooth_device::kErrorFailed) {
+    error_code = BluetoothDevice::ERROR_FAILED;
+  } else if (error_name == bluetooth_device::kErrorAuthenticationFailed) {
+    error_code = BluetoothDevice::ERROR_AUTH_FAILED;
+  } else if (error_name == bluetooth_device::kErrorAuthenticationCanceled) {
+    error_code = BluetoothDevice::ERROR_AUTH_CANCELED;
+  } else if (error_name == bluetooth_device::kErrorAuthenticationRejected) {
+    error_code = BluetoothDevice::ERROR_AUTH_REJECTED;
+  } else if (error_name == bluetooth_device::kErrorAuthenticationTimeout) {
+    error_code = BluetoothDevice::ERROR_AUTH_TIMEOUT;
+  }
+  return error_code;
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -353,11 +372,25 @@ void BluetoothDeviceChromeOS::Connect(
 
     bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Pair(
         object_path_,
-        base::Bind(&BluetoothDeviceChromeOS::OnPair,
+        base::Bind(&BluetoothDeviceChromeOS::OnPairDuringConnect,
                    weak_ptr_factory_.GetWeakPtr(), callback, error_callback),
-        base::Bind(&BluetoothDeviceChromeOS::OnPairError,
+        base::Bind(&BluetoothDeviceChromeOS::OnPairDuringConnectError,
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
+}
+
+void BluetoothDeviceChromeOS::Pair(
+    BluetoothDevice::PairingDelegate* pairing_delegate,
+    const base::Closure& callback,
+    const ConnectErrorCallback& error_callback) {
+  DCHECK(pairing_delegate);
+  BeginPairing(pairing_delegate);
+
+  bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient()->Pair(
+      object_path_, base::Bind(&BluetoothDeviceChromeOS::OnPair,
+                               weak_ptr_factory_.GetWeakPtr(), callback),
+      base::Bind(&BluetoothDeviceChromeOS::OnPairError,
+                 weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
 void BluetoothDeviceChromeOS::SetPinCode(const std::string& pincode) {
@@ -639,7 +672,7 @@ void BluetoothDeviceChromeOS::OnConnectError(
   error_callback.Run(error_code);
 }
 
-void BluetoothDeviceChromeOS::OnPair(
+void BluetoothDeviceChromeOS::OnPairDuringConnect(
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
   VLOG(1) << object_path_.value() << ": Paired";
@@ -649,7 +682,7 @@ void BluetoothDeviceChromeOS::OnPair(
   ConnectInternal(true, callback, error_callback);
 }
 
-void BluetoothDeviceChromeOS::OnPairError(
+void BluetoothDeviceChromeOS::OnPairDuringConnectError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -665,21 +698,27 @@ void BluetoothDeviceChromeOS::OnPairError(
   EndPairing();
 
   // Determine the error code from error_name.
-  ConnectErrorCode error_code = ERROR_UNKNOWN;
-  if (error_name == bluetooth_device::kErrorConnectionAttemptFailed) {
-    error_code = ERROR_FAILED;
-  } else if (error_name == bluetooth_device::kErrorFailed) {
-    error_code = ERROR_FAILED;
-  } else if (error_name == bluetooth_device::kErrorAuthenticationFailed) {
-    error_code = ERROR_AUTH_FAILED;
-  } else if (error_name == bluetooth_device::kErrorAuthenticationCanceled) {
-    error_code = ERROR_AUTH_CANCELED;
-  } else if (error_name == bluetooth_device::kErrorAuthenticationRejected) {
-    error_code = ERROR_AUTH_REJECTED;
-  } else if (error_name == bluetooth_device::kErrorAuthenticationTimeout) {
-    error_code = ERROR_AUTH_TIMEOUT;
-  }
+  ConnectErrorCode error_code = DBusErrorToConnectError(error_name);
 
+  RecordPairingResult(error_code);
+  error_callback.Run(error_code);
+}
+
+void BluetoothDeviceChromeOS::OnPair(const base::Closure& callback) {
+  VLOG(1) << object_path_.value() << ": Paired";
+  EndPairing();
+  callback.Run();
+}
+
+void BluetoothDeviceChromeOS::OnPairError(
+    const ConnectErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  LOG(WARNING) << object_path_.value()
+               << ": Failed to pair device: " << error_name << ": "
+               << error_message;
+  EndPairing();
+  ConnectErrorCode error_code = DBusErrorToConnectError(error_name);
   RecordPairingResult(error_code);
   error_callback.Run(error_code);
 }

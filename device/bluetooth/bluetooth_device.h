@@ -330,6 +330,15 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
                        const base::Closure& callback,
                        const ConnectErrorCallback& error_callback) = 0;
 
+  // Pairs the device. This method triggers pairing unconditially, i.e. it
+  // ignores the |IsPaired()| value.
+  //
+  // In most cases |Connect()| should be preferred. This method is only
+  // implemented on ChromeOS and Linux.
+  virtual void Pair(PairingDelegate* pairing_delegate,
+                    const base::Closure& callback,
+                    const ConnectErrorCallback& error_callback);
+
   // Sends the PIN code |pincode| to the remote device during pairing.
   //
   // PIN Codes are generally required for Bluetooth 2.0 and earlier devices

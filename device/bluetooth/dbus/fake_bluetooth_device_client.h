@@ -229,6 +229,11 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   static const char kPairedUnconnectableDeviceAddress[];
   static const uint32 kPairedUnconnectableDeviceClass;
 
+  static const char kConnectedTrustedNotPairedDevicePath[];
+  static const char kConnectedTrustedNotPairedDeviceAddress[];
+  static const char kConnectedTrustedNotPairedDeviceName[];
+  static const uint32 kConnectedTrustedNotPairedDeviceClass;
+
  private:
   // Property callback passed when we create Properties* structures.
   void OnPropertyChanged(const dbus::ObjectPath& object_path,

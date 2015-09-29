@@ -79,6 +79,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
   void CreateGattConnection(
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
+  void Pair(device::BluetoothDevice::PairingDelegate* pairing_delegate,
+            const base::Closure& callback,
+            const ConnectErrorCallback& error_callback) override;
 
   // Creates a pairing object with the given delegate |pairing_delegate| and
   // establishes it as the pairing context for this device. All pairing-related
@@ -142,9 +145,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceChromeOS
                       const std::string& error_name,
                       const std::string& error_message);
 
-  // Called by dbus:: on completion of the D-Bus method call to pair the device.
-  void OnPair(const base::Closure& callback,
-              const ConnectErrorCallback& error_callback);
+  // Called by dbus:: on completion of the D-Bus method call to pair the device,
+  // made inside |Connect()|.
+  void OnPairDuringConnect(const base::Closure& callback,
+                           const ConnectErrorCallback& error_callback);
+  void OnPairDuringConnectError(const ConnectErrorCallback& error_callback,
+                                const std::string& error_name,
+                                const std::string& error_message);
+
+  // Called by dbus: on completion of the D-Bus method call to pair the device,
+  // made inside |Pair()|.
+  void OnPair(const base::Closure& callback);
   void OnPairError(const ConnectErrorCallback& error_callback,
                    const std::string& error_name,
                    const std::string& error_message);

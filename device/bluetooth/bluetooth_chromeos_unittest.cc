@@ -2584,6 +2584,87 @@ TEST_F(BluetoothChromeOSTest, DisconnectUnconnectedDevice) {
   EXPECT_FALSE(device->IsConnected());
 }
 
+TEST_F(BluetoothChromeOSTest, PairTrustedDevice) {
+  fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
+  GetAdapter();
+
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::
+                           kConnectedTrustedNotPairedDevicePath));
+  BluetoothDevice* device =
+      adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::
+                              kConnectedTrustedNotPairedDeviceAddress);
+  ASSERT_TRUE(device != nullptr);
+
+  // On the DBus level the device is trusted but not paired. But the current
+  // implementation of |BluetoothDevice::IsPaired()| returns true in this case.
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(
+          dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::
+                               kConnectedTrustedNotPairedDevicePath));
+  EXPECT_FALSE(properties->paired.value());
+  EXPECT_TRUE(properties->trusted.value());
+  ASSERT_TRUE(device->IsPaired());
+
+  // The |kConnectedTrustedNotPairedDevicePath| requests a passkey confirmation.
+  // Obs.: This is the flow when CrOS triggers pairing with a iOS device.
+  TestBluetoothAdapterObserver observer(adapter_);
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+  device->Pair(&pairing_delegate, GetCallback(),
+               base::Bind(&BluetoothChromeOSTest::ConnectErrorCallback,
+                          base::Unretained(this)));
+  EXPECT_EQ(1, pairing_delegate.call_count_);
+  EXPECT_EQ(1, pairing_delegate.confirm_passkey_count_);
+  EXPECT_EQ(123456U, pairing_delegate.last_passkey_);
+
+  // Confirm the passkey.
+  device->ConfirmPairing();
+  message_loop_.Run();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+
+  // Make sure the paired property has been set to true.
+  properties = fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+      bluez::FakeBluetoothDeviceClient::kConnectedTrustedNotPairedDevicePath));
+  EXPECT_TRUE(properties->paired.value());
+}
+
+TEST_F(BluetoothChromeOSTest, PairAlreadyPairedDevice) {
+  GetAdapter();
+
+  fake_bluetooth_device_client_->CreateDevice(
+      dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath),
+      dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+  BluetoothDevice* device = adapter_->GetDevice(
+      bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
+  ASSERT_TRUE(device != nullptr);
+
+  // On the DBus level a device can be trusted but not paired.
+  bluez::FakeBluetoothDeviceClient::Properties* properties =
+      fake_bluetooth_device_client_->GetProperties(dbus::ObjectPath(
+          bluez::FakeBluetoothDeviceClient::kPairedDevicePath));
+  EXPECT_TRUE(properties->paired.value());
+  EXPECT_TRUE(properties->trusted.value());
+  ASSERT_TRUE(device->IsPaired());
+
+  TestBluetoothAdapterObserver observer(adapter_);
+  TestPairingDelegate pairing_delegate;
+  adapter_->AddPairingDelegate(
+      &pairing_delegate, BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH);
+  device->Pair(&pairing_delegate, GetCallback(),
+               base::Bind(&BluetoothChromeOSTest::ConnectErrorCallback,
+                          base::Unretained(this)));
+
+  // For already paired devices a call to |Pair| should succeed without calling
+  // the pairing delegate.
+  EXPECT_EQ(0, pairing_delegate.call_count_);
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+}
+
 TEST_F(BluetoothChromeOSTest, PairLegacyAutopair) {
   fake_bluetooth_device_client_->SetSimulationIntervalMs(10);
 

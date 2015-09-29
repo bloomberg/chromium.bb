@@ -342,4 +342,10 @@ void BluetoothDevice::SetServiceData(BluetoothUUID serviceUUID,
                       base::BinaryValue::CreateWithCopiedBuffer(buffer, size));
 }
 
+void BluetoothDevice::Pair(PairingDelegate* pairing_delegate,
+                           const base::Closure& callback,
+                           const ConnectErrorCallback& error_callback) {
+  NOTREACHED();
+}
+
 }  // namespace device

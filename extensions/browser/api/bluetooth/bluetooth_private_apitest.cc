@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(BluetoothPrivateApiTest, Pair) {
                   _, device::BluetoothAdapter::PAIRING_DELEGATE_PRIORITY_HIGH));
   EXPECT_CALL(*mock_device_, ExpectingConfirmation())
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_device_.get(), Connect(_, _, _))
+  EXPECT_CALL(*mock_device_.get(), Pair(_, _, _))
       .WillOnce(DoAll(
           WithoutArgs(Invoke(
               this,

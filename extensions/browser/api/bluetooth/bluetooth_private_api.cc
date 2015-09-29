@@ -452,7 +452,7 @@ bool BluetoothPrivatePairFunction::DoWork(
     return true;
   }
 
-  device->Connect(
+  device->Pair(
       router->GetPairingDelegate(extension_id()),
       base::Bind(&BluetoothPrivatePairFunction::OnSuccessCallback, this),
       base::Bind(&BluetoothPrivatePairFunction::OnErrorCallback, this));
