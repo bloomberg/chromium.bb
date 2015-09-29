@@ -130,20 +130,30 @@ chrome.test.runTests([
           }));
     });
   },
-  // DISABLED: crbug.com/535618
-  // Flaky on Mac 10.8, Mac 64 ASAN, and other Mac bots.
-  /*
   function dataUsageReporting() {
     dataReductionProxy.dataUsageReportingEnabled.set({ 'value': true });
 
-    setTimeout(function() {
-      dataReductionProxy.getDataUsage(chrome.test.callbackPass(
+    // Data usage reporting takes some time to initialize before a call to
+    // |getDataUsage| is successful. If |getDataUsage| gives us an empty array,
+    // we retry after some delay. Test will report failure if the expected
+    // data usage is not returned after 20 retries.
+    var verifyDataUsage = function(numRetries) {
+      chrome.test.assertTrue(numRetries != 0);
+
+      setTimeout(chrome.test.callbackPass(function() {
+        dataReductionProxy.getDataUsage(chrome.test.callbackPass(
           function(data_usage) {
             chrome.test.assertTrue('data_usage_buckets' in data_usage);
-            chrome.test.assertEq(17280,
-                                 data_usage['data_usage_buckets'].length);
-      }));
-    }, 1000);
+            if (data_usage['data_usage_buckets'].length == 0) {
+              verifyDataUsage(numRetries - 1);
+            } else {
+              chrome.test.assertEq(17280,
+                                   data_usage['data_usage_buckets'].length);
+            }
+        }));
+      }), 1000);
+    };
+
+    verifyDataUsage(20);
   }
-  */
 ]);

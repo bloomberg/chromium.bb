@@ -633,12 +633,10 @@ void DataReductionProxyCompressionStats::GetContentLengths(
 void DataReductionProxyCompressionStats::GetHistoricalDataUsage(
     const HistoricalDataUsageCallback& get_data_usage_callback) {
   if (current_data_usage_load_status_ != LOADED) {
-    // This method succeeds only if current data usage has already been loaded.
-    // This use case should never occur in practice since data usage reporting
-    // will always be enabled when the Data Saver extension is installed. Also,
-    // current data usage should have sufficient time to load before user tries
-    // to view data usage.
-    NOTREACHED();
+    // If current data usage has not yet loaded, we return an empty array. The
+    // extension can retry after a slight delay.
+    // This use case is unlikely to occur in practice since current data usage
+    // should have sufficient time to load before user tries to view data usage.
     get_data_usage_callback.Run(
         make_scoped_ptr(new std::vector<DataUsageBucket>()));
     return;
