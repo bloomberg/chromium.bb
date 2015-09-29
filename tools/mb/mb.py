@@ -147,9 +147,7 @@ class MetaBuildWrapper(object):
       cmd = self.GNCmd('gen', '_path_', vals['gn_args'])
       env = None
     elif vals['type'] == 'gyp':
-      if vals['gyp_crosscompile']:
-        self.Print('GYP_CROSSCOMPILE=1')
-      cmd, env = self.GYPCmd('_path_', vals['gyp_defines'])
+      cmd, env = self.GYPCmd('_path_', vals)
     else:
       raise MBErr('Unknown meta-build type "%s"' % vals['type'])
 
@@ -462,9 +460,7 @@ class MetaBuildWrapper(object):
     path = self.args.path[0]
 
     output_dir = self.ParseGYPConfigPath(path)
-    cmd, env = self.GYPCmd(output_dir, vals['gyp_defines'])
-    if vals['gyp_crosscompile']:
-      env['GYP_CROSSCOMPILE'] = '1'
+    cmd, env = self.GYPCmd(output_dir, vals)
     ret, _, _ = self.Run(cmd, env=env)
     return ret
 
@@ -477,7 +473,7 @@ class MetaBuildWrapper(object):
       self.PrintJSON(inp)
       self.Print()
 
-    cmd, env = self.GYPCmd(output_dir, vals['gyp_defines'])
+    cmd, env = self.GYPCmd(output_dir, vals)
     cmd.extend(['-f', 'analyzer',
                 '-G', 'config_path=%s' % self.args.input_path[0],
                 '-G', 'analyzer_output_path=%s' % self.args.output_path[0]])
@@ -587,7 +583,8 @@ class MetaBuildWrapper(object):
     output_dir, _, _ = rpath.rpartition(self.sep)
     return output_dir
 
-  def GYPCmd(self, output_dir, gyp_defines):
+  def GYPCmd(self, output_dir, vals):
+    gyp_defines = vals['gyp_defines']
     goma_dir = self.args.goma_dir
 
     # GYP uses shlex.split() to split the gyp defines into separate arguments,
@@ -603,8 +600,17 @@ class MetaBuildWrapper(object):
         '-G',
         'output_dir=' + output_dir,
     ]
+
+    # Ensure that we have an environment that only contains
+    # the exact values of the GYP variables we need.
     env = os.environ.copy()
+    if 'GYP_CHROMIUM_NO_ACTION' in env:
+      del env['GYP_CHROMIUM_NO_ACTION']
+    if 'GYP_CROSSCOMPILE' in env:
+      del env['GYP_CROSSCOMPILE']
     env['GYP_DEFINES'] = gyp_defines
+    if vals['gyp_crosscompile']:
+      env['GYP_CROSSCOMPILE'] = '1'
     return cmd, env
 
   def RunGNAnalyze(self, vals):
