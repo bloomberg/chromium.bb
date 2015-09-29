@@ -28,17 +28,6 @@ void WebTaskRunnerImpl::postTask(const blink::WebTraceLocation& web_location,
 void WebTaskRunnerImpl::postDelayedTask(
     const blink::WebTraceLocation& web_location,
     blink::WebTaskRunner::Task* task,
-    long long delayMs) {
-  tracked_objects::Location location(web_location.functionName(),
-                                     web_location.fileName(), -1, nullptr);
-  task_runner_->PostDelayedTask(
-      location, base::Bind(&blink::WebTaskRunner::Task::run, base::Owned(task)),
-      base::TimeDelta::FromMilliseconds(delayMs));
-}
-
-void WebTaskRunnerImpl::postDelayedTask(
-    const blink::WebTraceLocation& web_location,
-    blink::WebTaskRunner::Task* task,
     double delayMs) {
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);

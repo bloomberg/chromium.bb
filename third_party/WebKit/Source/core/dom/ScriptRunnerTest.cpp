@@ -77,7 +77,7 @@ public:
         m_tasks->append(adoptPtr(task));
     }
 
-    void postDelayedTask(const WebTraceLocation&, Task* task, long long delayMs) override
+    void postDelayedTask(const WebTraceLocation&, Task* task, double delayMs) override
     {
         ASSERT_NOT_REACHED();
     }

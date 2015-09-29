@@ -266,7 +266,7 @@ private:
             m_task = task;
         }
 
-        void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) override { ASSERT_NOT_REACHED(); };
+        void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) override { ASSERT_NOT_REACHED(); };
 
         Task* m_task;
     };

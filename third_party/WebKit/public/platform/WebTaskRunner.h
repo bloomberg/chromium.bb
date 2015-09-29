@@ -32,11 +32,6 @@ public:
 
     // Schedule a task to be run after |delayMs| on the the associated WebThread.
     // Takes ownership of |Task|. Can be called from any thread.
-    // TODO(alexclarke): Remove this when possible.
-    virtual void postDelayedTask(const WebTraceLocation&, Task*, long long delayMs) {}
-
-    // Schedule a task to be run after |delayMs| on the the associated WebThread.
-    // Takes ownership of |Task|. Can be called from any thread.
     virtual void postDelayedTask(const WebTraceLocation&, Task*, double delayMs) {}
 
 #ifdef INSIDE_BLINK

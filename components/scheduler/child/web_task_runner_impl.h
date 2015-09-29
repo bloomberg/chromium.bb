@@ -31,10 +31,6 @@ class SCHEDULER_EXPORT WebTaskRunnerImpl : public blink::WebTaskRunner {
   // blink::WebTaskRunner implementation:
   void postTask(const blink::WebTraceLocation& web_location,
                 blink::WebTaskRunner::Task* task) override;
-  // TODO(alexclarke): Remove this when possible.
-  void postDelayedTask(const blink::WebTraceLocation& web_location,
-                       blink::WebTaskRunner::Task* task,
-                       long long delayMs) override;
   void postDelayedTask(const blink::WebTraceLocation& web_location,
                        blink::WebTaskRunner::Task* task,
                        double delayMs) override;

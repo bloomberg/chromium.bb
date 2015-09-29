@@ -41,14 +41,14 @@ private:
 
 class DelayedTask {
 public:
-    DelayedTask(WebTaskRunner::Task* task, long long delayMs)
+    DelayedTask(WebTaskRunner::Task* task, double delaySeconds)
         : m_task(adoptRef(new RefCountedTaskContainer(task)))
-        , m_runTimeSecs(monotonicallyIncreasingTime() + 0.001 * static_cast<double>(delayMs))
-        , m_delayMs(delayMs) { }
+        , m_runTimeSeconds(monotonicallyIncreasingTime() + delaySeconds)
+        , m_delaySeconds(delaySeconds) { }
 
     bool operator<(const DelayedTask& other) const
     {
-        return m_runTimeSecs > other.m_runTimeSecs;
+        return m_runTimeSeconds > other.m_runTimeSeconds;
     }
 
     void run() const
@@ -56,20 +56,20 @@ public:
         m_task->run();
     }
 
-    double runTimeSecs() const
+    double runTimeSeconds() const
     {
-        return m_runTimeSecs;
+        return m_runTimeSeconds;
     }
 
-    long long delayMs() const
+    double delaySeconds() const
     {
-        return m_delayMs;
+        return m_delaySeconds;
     }
 
 private:
     RefPtr<RefCountedTaskContainer> m_task;
-    double m_runTimeSecs;
-    long long m_delayMs;
+    double m_runTimeSeconds;
+    double m_delaySeconds;
 };
 
 class MockWebTaskRunner : public WebTaskRunner {
@@ -82,9 +82,9 @@ public:
         m_timerTasks->push(DelayedTask(task, 0));
     }
 
-    void postDelayedTask(const WebTraceLocation&, Task* task, long long delayMs) override
+    void postDelayedTask(const WebTraceLocation&, Task* task, double delayMs) override
     {
-        m_timerTasks->push(DelayedTask(task, delayMs));
+        m_timerTasks->push(DelayedTask(task, delayMs * 0.001));
     }
 
     std::priority_queue<DelayedTask>* m_timerTasks; // NOT OWNED
@@ -136,7 +136,7 @@ public:
     void runUntilIdle()
     {
         while (!m_timerTasks.empty()) {
-            gCurrentTimeSecs = m_timerTasks.top().runTimeSecs();
+            gCurrentTimeSecs = m_timerTasks.top().runTimeSeconds();
             m_timerTasks.top().run();
             m_timerTasks.pop();
         }
@@ -145,11 +145,19 @@ public:
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
         while (!m_timerTasks.empty()) {
-            if (m_timerTasks.top().runTimeSecs() > deadline) {
+            if (m_timerTasks.top().runTimeSeconds() > deadline) {
                 gCurrentTimeSecs = deadline;
                 break;
             }
-            gCurrentTimeSecs = m_timerTasks.top().runTimeSecs();
+            gCurrentTimeSecs = m_timerTasks.top().runTimeSeconds();
+            m_timerTasks.top().run();
+            m_timerTasks.pop();
+        }
+    }
+
+    void runPendingTasks()
+    {
+        while (!m_timerTasks.empty() && m_timerTasks.top().runTimeSeconds() <= gCurrentTimeSecs) {
             m_timerTasks.top().run();
             m_timerTasks.pop();
         }
@@ -160,10 +168,10 @@ public:
         return m_timerTasks.size() == 1;
     }
 
-    long nextTimerTaskDelayMillis() const
+    double nextTimerTaskDelaySecs() const
     {
         ASSERT(hasOneTimerTask());
-        return m_timerTasks.top().delayMs();
+        return m_timerTasks.top().delaySeconds();
     }
 
 private:
@@ -240,6 +248,11 @@ public:
         mockScheduler()->runUntilIdle();
     }
 
+    void runPendingTasks()
+    {
+        mockScheduler()->runPendingTasks();
+    }
+
     void runUntilIdleOrDeadlinePassed(double deadline)
     {
         mockScheduler()->runUntilIdleOrDeadlinePassed(deadline);
@@ -250,9 +263,9 @@ public:
         return mockScheduler()->hasOneTimerTask();
     }
 
-    long nextTimerTaskDelayMillis() const
+    double nextTimerTaskDelaySecs() const
     {
-        return mockScheduler()->nextTimerTaskDelayMillis();
+        return mockScheduler()->nextTimerTaskDelaySecs();
     }
 
 private:
@@ -288,6 +301,11 @@ public:
         m_runTimes.push_back(monotonicallyIncreasingTime());
     }
 
+    void recordNextFireTimeTask(Timer<TimerTest>* timer)
+    {
+        m_nextFireTimes.push_back(monotonicallyIncreasingTime() + timer->nextFireInterval());
+    }
+
     void advanceTimeBy(double timeSecs)
     {
         gCurrentTimeSecs += timeSecs;
@@ -296,6 +314,11 @@ public:
     void runUntilIdle()
     {
         m_platform->runUntilIdle();
+    }
+
+    void runPendingTasks()
+    {
+        m_platform->runPendingTasks();
     }
 
     void runUntilIdleOrDeadlinePassed(double deadline)
@@ -308,14 +331,16 @@ public:
         return m_platform->hasOneTimerTask();
     }
 
-    long nextTimerTaskDelayMillis() const
+    double nextTimerTaskDelaySecs() const
     {
-        return m_platform->nextTimerTaskDelayMillis();
+        return m_platform->nextTimerTaskDelaySecs();
     }
 
 protected:
     double m_startTime;
+    // TODO(alexclarke): Migrate to WTF::Vector and add gmock matcher support.
     std::vector<double> m_runTimes;
+    std::vector<double> m_nextFireTimes;
 
 private:
     OwnPtr<TimerTestPlatform> m_platform;
@@ -328,7 +353,7 @@ TEST_F(TimerTest, StartOneShot_Zero)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -340,7 +365,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancel)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     timer.stop();
 
@@ -354,7 +379,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     timer.stop();
 
@@ -364,7 +389,7 @@ TEST_F(TimerTest, StartOneShot_ZeroAndCancelThenRepost)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -376,7 +401,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime));
@@ -384,7 +409,7 @@ TEST_F(TimerTest, StartOneShot_Zero_RepostingAfterRunning)
     timer.startOneShot(0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(0ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(0.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime, m_startTime));
@@ -396,7 +421,7 @@ TEST_F(TimerTest, StartOneShot_NonZero)
     timer.startOneShot(10.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -408,7 +433,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancel)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     timer.stop();
 
@@ -422,7 +447,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     timer.stop();
 
@@ -433,7 +458,7 @@ TEST_F(TimerTest, StartOneShot_NonZeroAndCancelThenRepost)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(secondPostTime + 10.0));
@@ -445,7 +470,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -453,7 +478,7 @@ TEST_F(TimerTest, StartOneShot_NonZero_RepostingAfterRunning)
     timer.startOneShot(20, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(20000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(20.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0, m_startTime + 30.0));
@@ -466,7 +491,7 @@ TEST_F(TimerTest, PostingTimerTwiceWithSameRunTimeDoesNothing)
     timer.startOneShot(10, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(10000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(10.0, nextTimerTaskDelaySecs());
 
     runUntilIdle();
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 10.0));
@@ -498,7 +523,7 @@ TEST_F(TimerTest, StartRepeatingTask)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 5.5);
     EXPECT_THAT(m_runTimes, ElementsAre(
@@ -511,7 +536,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenCancel)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 2.5);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
@@ -528,7 +553,7 @@ TEST_F(TimerTest, StartRepeatingTask_ThenPostOneShot)
     timer.startRepeating(1.0, FROM_HERE);
 
     ASSERT(hasOneTimerTask());
-    EXPECT_EQ(1000ll, nextTimerTaskDelayMillis());
+    EXPECT_FLOAT_EQ(1.0, nextTimerTaskDelaySecs());
 
     runUntilIdleOrDeadlinePassed(m_startTime + 2.5);
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 1.0, m_startTime + 2.0));
@@ -752,6 +777,47 @@ TEST_F(TimerTest, DidChangeAlignmentInterval)
     EXPECT_FLOAT_EQ(m_startTime, timer.lastFireTime());
 }
 
+TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
+{
+    Timer<TimerTest> timer(this, &TimerTest::recordNextFireTimeTask);
+    timer.startRepeating(2.0, FROM_HERE);
+
+    ASSERT(hasOneTimerTask());
+    recordNextFireTimeTask(&timer); // Next scheduled task to run at m_startTime + 2.0
+
+    // Simulate timer firing early. Next scheduled task to run at m_startTime + 4.0
+    advanceTimeBy(1.9);
+    runUntilIdleOrDeadlinePassed(gCurrentTimeSecs + 0.2);
+
+    advanceTimeBy(2.0);
+    runPendingTasks(); // Next scheduled task to run at m_startTime + 6.0
+
+    advanceTimeBy(2.1);
+    runPendingTasks(); // Next scheduled task to run at m_startTime + 8.0
+
+    advanceTimeBy(2.9);
+    runPendingTasks(); // Next scheduled task to run at m_startTime + 10.0
+
+    advanceTimeBy(3.1);
+    runPendingTasks(); // Next scheduled task to run at m_startTime + 14.0 (skips a beat)
+
+    advanceTimeBy(4.0);
+    runPendingTasks(); // Next scheduled task to run at m_startTime + 18.0 (skips a beat)
+
+    advanceTimeBy(10.0); // Next scheduled task to run at m_startTime + 28.0 (skips 5 beats)
+    runPendingTasks();
+
+    runUntilIdleOrDeadlinePassed(m_startTime + 5.5);
+    EXPECT_THAT(m_nextFireTimes, ElementsAre(
+        m_startTime + 2.0,
+        m_startTime + 4.0,
+        m_startTime + 6.0,
+        m_startTime + 8.0,
+        m_startTime + 10.0,
+        m_startTime + 14.0,
+        m_startTime + 18.0,
+        m_startTime + 28.0));
+}
 
 } // namespace
 } // namespace blink
