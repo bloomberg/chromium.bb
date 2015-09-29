@@ -105,6 +105,7 @@ class MockHttpStream : public HttpStream {
   int64_t GetTotalSentBytes() const override { return 0; }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
   // Mocked API
   int ReadResponseBody(IOBuffer* buf,

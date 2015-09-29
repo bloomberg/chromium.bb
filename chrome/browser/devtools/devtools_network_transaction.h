@@ -101,6 +101,7 @@ class DevToolsNetworkTransaction : public net::HttpTransaction {
   net::UploadProgress GetUploadProgress() const override;
   void SetQuicServerInfo(net::QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(net::LoadTimingInfo* load_timing_info) const override;
+  bool GetRemoteEndpoint(net::IPEndPoint* endpoint) const override;
   void SetPriority(net::RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;

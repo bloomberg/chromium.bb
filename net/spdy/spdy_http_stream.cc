@@ -541,6 +541,13 @@ void SpdyHttpStream::GetSSLCertRequestInfo(
   NOTREACHED();
 }
 
+bool SpdyHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  if (!spdy_session_)
+    return false;
+
+  return spdy_session_->GetPeerAddress(endpoint) == OK;
+}
+
 void SpdyHttpStream::Drain(HttpNetworkSession* session) {
   NOTREACHED();
   Close(false);

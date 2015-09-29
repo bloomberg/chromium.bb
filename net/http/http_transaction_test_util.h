@@ -213,6 +213,8 @@ class MockNetworkTransaction
 
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
 
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
+
   void SetPriority(RequestPriority priority) override;
 
   void SetWebSocketHandshakeStreamCreateHelper(

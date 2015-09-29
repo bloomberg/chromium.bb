@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_states.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
@@ -150,6 +151,7 @@ class HttpCache::Transaction : public HttpTransaction {
   UploadProgress GetUploadProgress(void) const override;
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
   void SetPriority(RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
@@ -479,6 +481,7 @@ class HttpCache::Transaction : public HttpTransaction {
   scoped_ptr<LoadTimingInfo> old_network_trans_load_timing_;
 
   ConnectionAttempts old_connection_attempts_;
+  IPEndPoint old_remote_endpoint_;
 
   // The helper object to use to create WebSocketHandshakeStreamBase
   // objects. Only relevant when establishing a WebSocket connection.

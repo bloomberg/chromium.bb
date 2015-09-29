@@ -269,6 +269,7 @@ class HttpNetworkTransactionTest
     int64_t total_sent_bytes;
     LoadTimingInfo load_timing_info;
     ConnectionAttempts connection_attempts;
+    IPEndPoint remote_endpoint_after_start;
   };
 
   void SetUp() override {
@@ -364,6 +365,11 @@ class HttpNetworkTransactionTest
 
     EXPECT_EQ("127.0.0.1", response->socket_address.host());
     EXPECT_EQ(80, response->socket_address.port());
+
+    bool got_endpoint =
+        trans->GetRemoteEndpoint(&out.remote_endpoint_after_start);
+    EXPECT_EQ(got_endpoint,
+              out.remote_endpoint_after_start.address().size() > 0);
 
     rv = ReadTransaction(trans.get(), &out.response_data);
     EXPECT_EQ(OK, rv);
@@ -692,6 +698,8 @@ TEST_P(HttpNetworkTransactionTest, SimpleGET) {
   int64_t reads_size = CountReadBytes(data_reads, arraysize(data_reads));
   EXPECT_EQ(reads_size, out.total_received_bytes);
   EXPECT_EQ(0u, out.connection_attempts.size());
+
+  EXPECT_FALSE(out.remote_endpoint_after_start.address().empty());
 }
 
 // Response with no status line.
@@ -1602,6 +1610,10 @@ TEST_P(HttpNetworkTransactionTest, NonKeepAliveConnectionReset) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  IPEndPoint endpoint;
+  EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
+  EXPECT_LT(0u, endpoint.address().size());
 }
 
 // What do various browsers do when the server closes a non-keepalive
@@ -2001,6 +2013,122 @@ TEST_P(HttpNetworkTransactionTest, BasicAuth) {
   ASSERT_TRUE(response != NULL);
   EXPECT_TRUE(response->auth_challenge.get() == NULL);
   EXPECT_EQ(100, response->headers->GetContentLength());
+}
+
+// Test the request-challenge-retry sequence for basic auth.
+// (basic auth is the easiest to mock, because it has no randomness).
+TEST_P(HttpNetworkTransactionTest, BasicAuthWithAddressChange) {
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.load_flags = 0;
+
+  TestNetLog log;
+  MockHostResolver* resolver = new MockHostResolver();
+  session_deps_.net_log = &log;
+  session_deps_.host_resolver.reset(resolver);
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  scoped_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  resolver->rules()->ClearRules();
+  resolver->rules()->AddRule("www.example.org", "127.0.0.1");
+
+  MockWrite data_writes1[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.0 401 Unauthorized\r\n"),
+      // Give a couple authenticate options (only the middle one is actually
+      // supported).
+      MockRead("WWW-Authenticate: Basic invalid\r\n"),  // Malformed.
+      MockRead("WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
+      MockRead("WWW-Authenticate: UNSUPPORTED realm=\"FOO\"\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      // Large content-length -- won't matter, as connection will be reset.
+      MockRead("Content-Length: 10000\r\n\r\n"),
+      MockRead(SYNCHRONOUS, ERR_FAILED),
+  };
+
+  // After calling trans->RestartWithAuth(), this is the request we should
+  // be issuing -- the final header line contains the credentials.
+  MockWrite data_writes2[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.example.org\r\n"
+                "Connection: keep-alive\r\n"
+                "Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
+  };
+
+  // Lastly, the server responds with the actual content.
+  MockRead data_reads2[] = {
+      MockRead("HTTP/1.0 200 OK\r\n"),
+      MockRead("Content-Type: text/html; charset=iso-8859-1\r\n"),
+      MockRead("Content-Length: 100\r\n\r\n"), MockRead(SYNCHRONOUS, OK),
+  };
+
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                 data_writes2, arraysize(data_writes2));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  TestCompletionCallback callback1;
+
+  EXPECT_EQ(OK, callback1.GetResult(trans->Start(&request, callback1.callback(),
+                                                 BoundNetLog())));
+
+  LoadTimingInfo load_timing_info1;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info1));
+  TestLoadTimingNotReused(load_timing_info1, CONNECT_TIMING_HAS_DNS_TIMES);
+
+  int64_t writes_size1 = CountWriteBytes(data_writes1, arraysize(data_writes1));
+  EXPECT_EQ(writes_size1, trans->GetTotalSentBytes());
+  int64_t reads_size1 = CountReadBytes(data_reads1, arraysize(data_reads1));
+  EXPECT_EQ(reads_size1, trans->GetTotalReceivedBytes());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
+
+  IPEndPoint endpoint;
+  EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
+  ASSERT_FALSE(endpoint.address().empty());
+  EXPECT_EQ("127.0.0.1:80", endpoint.ToString());
+
+  resolver->rules()->ClearRules();
+  resolver->rules()->AddRule("www.example.org", "127.0.0.2");
+
+  TestCompletionCallback callback2;
+
+  EXPECT_EQ(OK, callback2.GetResult(trans->RestartWithAuth(
+                    AuthCredentials(kFoo, kBar), callback2.callback())));
+
+  LoadTimingInfo load_timing_info2;
+  EXPECT_TRUE(trans->GetLoadTimingInfo(&load_timing_info2));
+  TestLoadTimingNotReused(load_timing_info2, CONNECT_TIMING_HAS_DNS_TIMES);
+  // The load timing after restart should have a new socket ID, and times after
+  // those of the first load timing.
+  EXPECT_LE(load_timing_info1.receive_headers_end,
+            load_timing_info2.connect_timing.connect_start);
+  EXPECT_NE(load_timing_info1.socket_log_id, load_timing_info2.socket_log_id);
+
+  int64_t writes_size2 = CountWriteBytes(data_writes2, arraysize(data_writes2));
+  EXPECT_EQ(writes_size1 + writes_size2, trans->GetTotalSentBytes());
+  int64_t reads_size2 = CountReadBytes(data_reads2, arraysize(data_reads2));
+  EXPECT_EQ(reads_size1 + reads_size2, trans->GetTotalReceivedBytes());
+
+  response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  EXPECT_FALSE(response->auth_challenge.get());
+  EXPECT_EQ(100, response->headers->GetContentLength());
+
+  EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
+  ASSERT_FALSE(endpoint.address().empty());
+  EXPECT_EQ("127.0.0.2:80", endpoint.ToString());
 }
 
 TEST_P(HttpNetworkTransactionTest, DoNotSendAuth) {
@@ -8326,6 +8454,10 @@ TEST_P(HttpNetworkTransactionTest, RequestWriteError) {
 
   rv = callback.WaitForResult();
   EXPECT_EQ(ERR_CONNECTION_RESET, rv);
+
+  IPEndPoint endpoint;
+  EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
+  EXPECT_LT(0u, endpoint.address().size());
 }
 
 // Check that a connection closed after the start of the headers finishes ok.
@@ -8365,6 +8497,10 @@ TEST_P(HttpNetworkTransactionTest, ConnectionClosedAfterStartOfHeaders) {
   rv = ReadTransaction(trans.get(), &response_data);
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("", response_data);
+
+  IPEndPoint endpoint;
+  EXPECT_TRUE(trans->GetRemoteEndpoint(&endpoint));
+  EXPECT_LT(0u, endpoint.address().size());
 }
 
 // Make sure that a dropped connection while draining the body for auth
@@ -13067,7 +13203,7 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  MockConnect mock_connect(SYNCHRONOUS, ERR_CONNECTION_REFUSED);
+  MockConnect mock_connect(SYNCHRONOUS, ERR_NAME_NOT_RESOLVED);
   StaticSocketDataProvider data;
   data.set_connect_data(mock_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -13078,7 +13214,7 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
@@ -13087,7 +13223,11 @@ TEST_P(HttpNetworkTransactionTest, HttpSyncConnectError) {
   ConnectionAttempts attempts;
   trans->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, attempts[0].result);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, attempts[0].result);
+
+  IPEndPoint endpoint;
+  EXPECT_FALSE(trans->GetRemoteEndpoint(&endpoint));
+  EXPECT_TRUE(endpoint.address().empty());
 }
 
 TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
@@ -13100,7 +13240,7 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
 
-  MockConnect mock_connect(ASYNC, ERR_CONNECTION_REFUSED);
+  MockConnect mock_connect(ASYNC, ERR_NAME_NOT_RESOLVED);
   StaticSocketDataProvider data;
   data.set_connect_data(mock_connect);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
@@ -13111,7 +13251,7 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, rv);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, rv);
 
   // We don't care whether this succeeds or fails, but it shouldn't crash.
   HttpRequestHeaders request_headers;
@@ -13120,7 +13260,11 @@ TEST_P(HttpNetworkTransactionTest, HttpAsyncConnectError) {
   ConnectionAttempts attempts;
   trans->GetConnectionAttempts(&attempts);
   ASSERT_EQ(1u, attempts.size());
-  EXPECT_EQ(ERR_CONNECTION_REFUSED, attempts[0].result);
+  EXPECT_EQ(ERR_NAME_NOT_RESOLVED, attempts[0].result);
+
+  IPEndPoint endpoint;
+  EXPECT_FALSE(trans->GetRemoteEndpoint(&endpoint));
+  EXPECT_TRUE(endpoint.address().empty());
 }
 
 TEST_P(HttpNetworkTransactionTest, HttpSyncWriteError) {
@@ -13383,6 +13527,8 @@ class FakeStream : public HttpStream,
     ADD_FAILURE();
   }
 
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
+
   void Drain(HttpNetworkSession* session) override { ADD_FAILURE(); }
 
   void SetPriority(RequestPriority priority) override { priority_ = priority; }
@@ -13598,6 +13744,8 @@ class FakeWebSocketBasicHandshakeStream : public WebSocketHandshakeStreamBase {
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {
     NOTREACHED();
   }
+
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
 
   void Drain(HttpNetworkSession* session) override { NOTREACHED(); }
 

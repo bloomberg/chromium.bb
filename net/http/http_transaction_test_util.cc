@@ -378,6 +378,16 @@ bool MockNetworkTransaction::GetLoadTimingInfo(
   return true;
 }
 
+bool MockNetworkTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  IPAddressNumber number;
+  number.push_back(127);
+  number.push_back(0);
+  number.push_back(0);
+  number.push_back(1);
+  *endpoint = IPEndPoint(number, 80);
+  return true;
+}
+
 void MockNetworkTransaction::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }

@@ -599,6 +599,18 @@ bool HttpCache::Transaction::GetLoadTimingInfo(
   return true;
 }
 
+bool HttpCache::Transaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  if (network_trans_)
+    return network_trans_->GetRemoteEndpoint(endpoint);
+
+  if (!old_remote_endpoint_.address().empty()) {
+    *endpoint = old_remote_endpoint_;
+    return true;
+  }
+
+  return false;
+}
+
 void HttpCache::Transaction::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (network_trans_)
@@ -1403,6 +1415,7 @@ int HttpCache::Transaction::DoSendRequest() {
 
   // Old load timing information, if any, is now obsolete.
   old_network_trans_load_timing_.reset();
+  old_remote_endpoint_ = IPEndPoint();
 
   if (websocket_handshake_stream_base_create_helper_)
     network_trans_->SetWebSocketHandshakeStreamCreateHelper(
@@ -2814,6 +2827,8 @@ void HttpCache::Transaction::ResetNetworkTransaction() {
   network_trans_->GetConnectionAttempts(&attempts);
   for (const auto& attempt : attempts)
     old_connection_attempts_.push_back(attempt);
+  old_remote_endpoint_ = IPEndPoint();
+  network_trans_->GetRemoteEndpoint(&old_remote_endpoint_);
   network_trans_.reset();
 }
 

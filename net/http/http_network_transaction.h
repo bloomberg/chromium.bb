@@ -72,6 +72,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   UploadProgress GetUploadProgress() const override;
   void SetQuicServerInfo(QuicServerInfo* quic_server_info) override;
   bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
   void SetPriority(RequestPriority priority) override;
   void SetWebSocketHandshakeStreamCreateHelper(
       WebSocketHandshakeStreamBase::CreateHelper* create_helper) override;
@@ -351,6 +352,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   BeforeProxyHeadersSentCallback before_proxy_headers_sent_callback_;
 
   ConnectionAttempts connection_attempts_;
+  IPEndPoint remote_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpNetworkTransaction);
 };

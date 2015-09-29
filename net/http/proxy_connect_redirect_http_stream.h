@@ -56,6 +56,7 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
 
   void GetSSLInfo(SSLInfo* ssl_info) override;
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override;
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   void Drain(HttpNetworkSession* session) override;
 
   // This function may be called.

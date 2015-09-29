@@ -1092,6 +1092,13 @@ void URLRequestHttpJob::GetLoadTimingInfo(
     load_timing_info->receive_headers_end = receive_headers_end_;
 }
 
+bool URLRequestHttpJob::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  if (!transaction_)
+    return false;
+
+  return transaction_->GetRemoteEndpoint(endpoint);
+}
+
 bool URLRequestHttpJob::GetResponseCookies(std::vector<std::string>* cookies) {
   DCHECK(transaction_.get());
 

@@ -743,6 +743,8 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
 
   void GetSSLCertRequestInfo(SSLCertRequestInfo* cert_request_info) override {}
 
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) override { return false; }
+
   void Drain(HttpNetworkSession* session) override {}
 
   void SetPriority(RequestPriority priority) override {}

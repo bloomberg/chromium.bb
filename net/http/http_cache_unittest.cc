@@ -19,6 +19,7 @@
 #include "net/base/cache_type.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
+#include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -139,7 +140,8 @@ void RunTransactionTestBase(HttpCache* cache,
                             const BoundNetLog& net_log,
                             LoadTimingInfo* load_timing_info,
                             int64_t* sent_bytes,
-                            int64_t* received_bytes) {
+                            int64_t* received_bytes,
+                            IPEndPoint* remote_endpoint) {
   TestCompletionCallback callback;
 
   // write to the cache
@@ -171,6 +173,9 @@ void RunTransactionTestBase(HttpCache* cache,
     trans->GetLoadTimingInfo(load_timing_info);
   }
 
+  if (remote_endpoint)
+    ASSERT_TRUE(trans->GetRemoteEndpoint(remote_endpoint));
+
   ReadAndVerifyTransaction(trans.get(), trans_info);
 
   if (sent_bytes)
@@ -184,7 +189,7 @@ void RunTransactionTestWithRequest(HttpCache* cache,
                                    const MockHttpRequest& request,
                                    HttpResponseInfo* response_info) {
   RunTransactionTestBase(cache, trans_info, request, response_info,
-                         BoundNetLog(), nullptr, nullptr, nullptr);
+                         BoundNetLog(), nullptr, nullptr, nullptr, nullptr);
 }
 
 void RunTransactionTestAndGetTiming(HttpCache* cache,
@@ -192,7 +197,19 @@ void RunTransactionTestAndGetTiming(HttpCache* cache,
                                     const BoundNetLog& log,
                                     LoadTimingInfo* load_timing_info) {
   RunTransactionTestBase(cache, trans_info, MockHttpRequest(trans_info),
-                         nullptr, log, load_timing_info, nullptr, nullptr);
+                         nullptr, log, load_timing_info, nullptr, nullptr,
+                         nullptr);
+}
+
+void RunTransactionTestAndGetTimingAndConnectedSocketAddress(
+    HttpCache* cache,
+    const MockTransaction& trans_info,
+    const BoundNetLog& log,
+    LoadTimingInfo* load_timing_info,
+    IPEndPoint* remote_endpoint) {
+  RunTransactionTestBase(cache, trans_info, MockHttpRequest(trans_info),
+                         nullptr, log, load_timing_info, nullptr, nullptr,
+                         remote_endpoint);
 }
 
 void RunTransactionTest(HttpCache* cache, const MockTransaction& trans_info) {
@@ -219,7 +236,8 @@ void RunTransactionTestWithResponseInfoAndGetTiming(
     const BoundNetLog& log,
     LoadTimingInfo* load_timing_info) {
   RunTransactionTestBase(cache, trans_info, MockHttpRequest(trans_info),
-                         response, log, load_timing_info, nullptr, nullptr);
+                         response, log, load_timing_info, nullptr, nullptr,
+                         nullptr);
 }
 
 void RunTransactionTestWithResponse(HttpCache* cache,
@@ -238,7 +256,8 @@ void RunTransactionTestWithResponseAndGetTiming(
     LoadTimingInfo* load_timing_info) {
   HttpResponseInfo response;
   RunTransactionTestBase(cache, trans_info, MockHttpRequest(trans_info),
-                         &response, log, load_timing_info, nullptr, nullptr);
+                         &response, log, load_timing_info, nullptr, nullptr,
+                         nullptr);
   response.headers->GetNormalizedHeaders(response_headers);
 }
 
@@ -1991,13 +2010,17 @@ TEST(HttpCache, ETagGET_ConditionalRequest_304) {
   transaction.handler = ETagGet_ConditionalRequest_Handler;
   BoundTestNetLog log;
   LoadTimingInfo load_timing_info;
-  RunTransactionTestAndGetTiming(cache.http_cache(), transaction, log.bound(),
-                                 &load_timing_info);
+  IPEndPoint remote_endpoint;
+  RunTransactionTestAndGetTimingAndConnectedSocketAddress(
+      cache.http_cache(), transaction, log.bound(), &load_timing_info,
+      &remote_endpoint);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
   TestLoadTimingNetworkRequest(load_timing_info);
+
+  EXPECT_FALSE(remote_endpoint.address().empty());
 }
 
 class RevalidationServer {
@@ -7166,7 +7189,7 @@ void RunTransactionAndGetNetworkBytes(MockHttpCache& cache,
                                       int64_t* received_bytes) {
   RunTransactionTestBase(cache.http_cache(), trans_info,
                          MockHttpRequest(trans_info), nullptr, BoundNetLog(),
-                         nullptr, sent_bytes, received_bytes);
+                         nullptr, sent_bytes, received_bytes, nullptr);
 }
 
 }  // namespace

@@ -455,6 +455,18 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // non-cached HTTP responses.
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
 
+  // Gets the remote endpoint of the most recent socket that the network stack
+  // used to make this request.
+  //
+  // Note that GetSocketAddress returns the |socket_address| field from
+  // HttpResponseInfo, which is only populated once the response headers are
+  // received, and can return cached values for cache revalidation requests.
+  // GetRemoteEndpoint will only return addresses from the current request.
+  //
+  // Returns true and fills in |endpoint| if the endpoint is available; returns
+  // false and leaves |endpoint| unchanged if it is unavailable.
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) const;
+
   // Returns the cookie values included in the response, if the request is one
   // that can have cookies.  Returns true if the request is a cookie-bearing
   // type, false otherwise.  This method may only be called once the

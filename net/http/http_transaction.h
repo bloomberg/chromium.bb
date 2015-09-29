@@ -160,6 +160,12 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   // provide.
   virtual bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const = 0;
 
+  // Gets the remote endpoint of the socket that the transaction's underlying
+  // stream is using or did use, if any. Returns true and fills in |endpoint|
+  // if it is available; returns false and leaves |endpoint| unchanged if it is
+  // unavailable.
+  virtual bool GetRemoteEndpoint(IPEndPoint* endpoint) const = 0;
+
   // Called when the priority of the parent job changes.
   virtual void SetPriority(RequestPriority priority) = 0;
 

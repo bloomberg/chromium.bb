@@ -400,6 +400,13 @@ void URLRequest::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   *load_timing_info = load_timing_info_;
 }
 
+bool URLRequest::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  if (!job_)
+    return false;
+
+  return job_->GetRemoteEndpoint(endpoint);
+}
+
 bool URLRequest::GetResponseCookies(ResponseCookies* cookies) {
   DCHECK(job_.get());
   return job_->GetResponseCookies(cookies);

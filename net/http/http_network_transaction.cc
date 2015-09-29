@@ -451,6 +451,14 @@ bool HttpNetworkTransaction::GetLoadTimingInfo(
   return true;
 }
 
+bool HttpNetworkTransaction::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  if (!remote_endpoint_.address().size())
+    return false;
+
+  *endpoint = remote_endpoint_;
+  return true;
+}
+
 void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (stream_request_)
@@ -813,6 +821,9 @@ int HttpNetworkTransaction::DoCreateStreamComplete(int result) {
 int HttpNetworkTransaction::DoInitStream() {
   DCHECK(stream_.get());
   next_state_ = STATE_INIT_STREAM_COMPLETE;
+
+  stream_->GetRemoteEndpoint(&remote_endpoint_);
+
   return stream_->InitializeStream(request_, priority_, net_log_, io_callback_);
 }
 
@@ -1443,6 +1454,7 @@ void HttpNetworkTransaction::ResetStateForAuthRestart() {
   request_headers_.Clear();
   response_ = HttpResponseInfo();
   establishing_tunnel_ = false;
+  remote_endpoint_ = IPEndPoint();
 }
 
 void HttpNetworkTransaction::RecordSSLFallbackMetrics(int result) {

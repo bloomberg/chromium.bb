@@ -97,6 +97,11 @@ void ProxyConnectRedirectHttpStream::GetSSLCertRequestInfo(
   NOTREACHED();
 }
 
+bool ProxyConnectRedirectHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  NOTREACHED();
+  return false;
+}
+
 void ProxyConnectRedirectHttpStream::Drain(HttpNetworkSession* session) {
   NOTREACHED();
 }

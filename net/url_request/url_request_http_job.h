@@ -118,6 +118,7 @@ class NET_EXPORT_PRIVATE URLRequestHttpJob : public URLRequestJob {
   bool GetCharset(std::string* charset) override;
   void GetResponseInfo(HttpResponseInfo* info) override;
   void GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override;
+  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override;
   bool GetResponseCookies(std::vector<std::string>* cookies) override;
   int GetResponseCode() const override;
   Filter* SetupFilter() const override;

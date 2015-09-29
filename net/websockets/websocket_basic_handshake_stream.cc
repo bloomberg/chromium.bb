@@ -431,6 +431,13 @@ void WebSocketBasicHandshakeStream::GetSSLCertRequestInfo(
   parser()->GetSSLCertRequestInfo(cert_request_info);
 }
 
+bool WebSocketBasicHandshakeStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  if (!state_.connection() || !state_.connection()->socket())
+    return false;
+
+  return state_.connection()->socket()->GetPeerAddress(endpoint) == OK;
+}
+
 void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
   HttpResponseBodyDrainer* drainer = new HttpResponseBodyDrainer(this);
   drainer->Start(session);

@@ -282,6 +282,14 @@ void QuicHttpStream::GetSSLCertRequestInfo(
   NOTIMPLEMENTED();
 }
 
+bool QuicHttpStream::GetRemoteEndpoint(IPEndPoint* endpoint) {
+  if (!session_)
+    return false;
+
+  *endpoint = session_->peer_address();
+  return true;
+}
+
 void QuicHttpStream::Drain(HttpNetworkSession* session) {
   NOTREACHED();
   Close(false);

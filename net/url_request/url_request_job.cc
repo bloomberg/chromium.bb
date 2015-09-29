@@ -178,6 +178,10 @@ void URLRequestJob::GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const {
   // Only certain request types return more than just request start times.
 }
 
+bool URLRequestJob::GetRemoteEndpoint(IPEndPoint* endpoint) const {
+  return false;
+}
+
 bool URLRequestJob::GetResponseCookies(std::vector<std::string>* cookies) {
   return false;
 }

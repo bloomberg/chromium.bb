@@ -246,6 +246,11 @@ bool DevToolsNetworkTransaction::GetLoadTimingInfo(
   return network_transaction_->GetLoadTimingInfo(load_timing_info);
 }
 
+bool DevToolsNetworkTransaction::GetRemoteEndpoint(
+    net::IPEndPoint* endpoint) const {
+  return network_transaction_->GetRemoteEndpoint(endpoint);
+}
+
 void DevToolsNetworkTransaction::SetPriority(net::RequestPriority priority) {
   network_transaction_->SetPriority(priority);
 }
