@@ -44,6 +44,8 @@ class BluetoothConnection : public Connection,
   void SendMessageImpl(scoped_ptr<WireMessage> message) override;
 
   // BluetoothAdapter::Observer:
+  void DeviceChanged(device::BluetoothAdapter* adapter,
+                     device::BluetoothDevice* device) override;
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 

@@ -67,6 +67,7 @@ class MockBluetoothConnection : public BluetoothConnection {
 
   using BluetoothConnection::status;
   using BluetoothConnection::Connect;
+  using BluetoothConnection::DeviceChanged;
   using BluetoothConnection::DeviceRemoved;
   using BluetoothConnection::Disconnect;
 
@@ -108,6 +109,7 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
   // Transition the connection into an in-progress state.
   void BeginConnecting(MockBluetoothConnection* connection) {
     EXPECT_EQ(Connection::DISCONNECTED, connection->status());
+    ON_CALL(device_, IsConnected()).WillByDefault(Return(false));
 
     ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
     EXPECT_CALL(*connection, SetStatusProxy(Connection::IN_PROGRESS));
@@ -140,6 +142,7 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
     callback.Run(socket_);
 
     EXPECT_EQ(Connection::CONNECTED, connection->status());
+    ON_CALL(device_, IsConnected()).WillByDefault(Return(true));
   }
 
   device::BluetoothSocket::ReceiveCompletionCallback* receive_callback() {
@@ -448,6 +451,35 @@ TEST_F(ProximityAuthBluetoothConnectionTest, SendMessage_Failure) {
   EXPECT_CALL(*socket_, Disconnect(_));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   error_callback.Run("The most helpful of error messages");
+}
+
+TEST_F(ProximityAuthBluetoothConnectionTest, DeviceChanged_Disconnected) {
+  // Create a connected connection.
+  StrictMock<MockBluetoothConnection> connection;
+  Connect(&connection);
+  EXPECT_TRUE(connection.IsConnected());
+
+  // If the remote device disconnects, |connection| should also disconnect.
+  ON_CALL(device_, IsConnected()).WillByDefault(Return(false));
+  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(*socket_, Disconnect(_));
+  EXPECT_CALL(*adapter_, RemoveObserver(&connection));
+  connection.DeviceChanged(adapter_.get(), &device_);
+  EXPECT_FALSE(connection.IsConnected());
+}
+
+TEST_F(ProximityAuthBluetoothConnectionTest, DeviceChanged_NotDisconnected) {
+  // Nothing should happen if DeviceChanged is called, but the remote device is
+  // not disconnected.
+  StrictMock<MockBluetoothConnection> connection;
+  Connect(&connection);
+  EXPECT_TRUE(connection.IsConnected());
+  connection.DeviceChanged(adapter_.get(), &device_);
+  EXPECT_TRUE(connection.IsConnected());
+
+  // The connection disconnects and unregisters as an observer upon destruction.
+  EXPECT_CALL(*socket_, Disconnect(_));
+  EXPECT_CALL(*adapter_, RemoveObserver(&connection));
 }
 
 }  // namespace proximity_auth

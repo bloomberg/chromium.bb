@@ -88,6 +88,16 @@ void BluetoothConnection::SendMessageImpl(scoped_ptr<WireMessage> message) {
                 base::Bind(&BluetoothConnection::OnSendError, weak_this));
 }
 
+void BluetoothConnection::DeviceChanged(device::BluetoothAdapter* adapter,
+                                        device::BluetoothDevice* device) {
+  DCHECK_EQ(adapter, adapter_.get());
+  if (device->GetAddress() == remote_device().bluetooth_address &&
+      status() != DISCONNECTED && !device->IsConnected()) {
+    PA_LOG(INFO) << "Device disconnected...";
+    Disconnect();
+  }
+}
+
 void BluetoothConnection::DeviceRemoved(device::BluetoothAdapter* adapter,
                                         device::BluetoothDevice* device) {
   DCHECK_EQ(adapter, adapter_.get());
@@ -96,7 +106,8 @@ void BluetoothConnection::DeviceRemoved(device::BluetoothAdapter* adapter,
 
   DCHECK_NE(status(), DISCONNECTED);
   PA_LOG(INFO) << "Device disconnected...";
-  Disconnect();
+  if (status() != DISCONNECTED)
+    Disconnect();
 }
 
 void BluetoothConnection::StartReceive() {
