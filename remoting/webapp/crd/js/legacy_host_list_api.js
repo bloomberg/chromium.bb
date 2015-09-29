@@ -144,7 +144,7 @@ remoting.LegacyHostListApi.prototype.parseHostListResponse_ =
           host.publicKey = base.getStringAttr(item, 'publicKey', '');
           host.hostVersion = base.getStringAttr(item, 'hostVersion', '');
           host.hostOS = remoting.ChromotingEvent.toOs(
-              base.getStringAttr(item, 'hostOS'));
+              base.getStringAttr(item, 'hostOS', ''));
           host.hostOSVersion = base.getStringAttr(item, 'hostOSVersion', '');
           host.tokenUrlPatterns =
               base.getArrayAttr(item, 'tokenUrlPatterns', []);
