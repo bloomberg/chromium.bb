@@ -185,7 +185,7 @@ void MediaRouterAndroid::ClearIssue(const Issue::Id& issue_id) {
 
 void MediaRouterAndroid::OnPresentationSessionDetached(
     const MediaRoute::Id& route_id) {
-  NOTIMPLEMENTED();
+  CloseRoute(route_id);
 }
 
 void MediaRouterAndroid::RegisterMediaSinksObserver(

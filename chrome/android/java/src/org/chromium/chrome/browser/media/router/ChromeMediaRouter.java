@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.media.router;
 
 import android.content.Context;
+import android.support.v7.media.MediaRouter;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -17,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nullable;
 
 /**
  * Implements the JNI interface called from the C++ Media Router implementation on Android.
@@ -36,6 +39,23 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new HashMap<String, Map<MediaRouteProvider, List<MediaSink>>>();
     private final Map<String, List<MediaSink>> mSinksPerSource =
             new HashMap<String, List<MediaSink>>();
+
+
+    /**
+     * Obtains the {@link MediaRouter} instance given the application context.
+     * @param applicationContext The context to get the Android media router service for.
+     * @return Null if the media router API is not supported, the service instance otherwise.
+     */
+    @Nullable
+    public static MediaRouter getAndroidMediaRouter(Context applicationContext) {
+        try {
+            // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
+            // so getting the MediaRouter instance will throw an exception.
+            return MediaRouter.getInstance(applicationContext);
+        } catch (NoSuchMethodError e) {
+            return null;
+        }
+    }
 
     /**
      * @param presentationId the presentation id associated with the route

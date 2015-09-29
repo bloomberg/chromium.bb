@@ -54,23 +54,41 @@ void MediaRouterDialogControllerAndroid::OnSinkSelected(
                       route_response_callbacks);
 }
 
-void MediaRouterDialogControllerAndroid::OnDialogDismissed(
+void MediaRouterDialogControllerAndroid::OnRouteClosed(
+    JNIEnv* env,
+    jobject obj,
+    jstring jmedia_route_id) {
+  std::string media_route_id = ConvertJavaStringToUTF8(env, jmedia_route_id);
+
+  MediaRouter* router = MediaRouterFactory::GetApiForBrowserContext(
+      initiator()->GetBrowserContext());
+
+  router->CloseRoute(media_route_id);
+
+  CancelPresentationRequest();
+}
+
+void MediaRouterDialogControllerAndroid::OnDialogCancelled(
     JNIEnv* env, jobject obj) {
+  CancelPresentationRequest();
+}
+
+void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
   scoped_ptr<CreatePresentationSessionRequest> request(
       TakePresentationRequest());
 
-  // If OnDialogDismissed is called after OnSinkSelected, do nothing.
-  if (!request)
-    return;
+  DCHECK(request);
 
   request->InvokeErrorCallback(content::PresentationError(
       content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
-      "The device picker dialog has been dismissed"));
+      "Dialog closed."));
 }
 
 MediaRouterDialogControllerAndroid::MediaRouterDialogControllerAndroid(
     WebContents* web_contents)
-    : MediaRouterDialogController(web_contents) {
+    : MediaRouterDialogController(web_contents),
+      MediaRoutesObserver(MediaRouterFactory::GetApiForBrowserContext(
+          initiator()->GetBrowserContext())) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_dialog_controller_.Reset(Java_ChromeMediaRouterDialogController_create(
       env,
@@ -89,11 +107,29 @@ MediaRouterDialogControllerAndroid::~MediaRouterDialogControllerAndroid() {
 void MediaRouterDialogControllerAndroid::CreateMediaRouterDialog() {
   JNIEnv* env = base::android::AttachCurrentThread();
 
+  const MediaSource::Id& media_source_id =
+      presentation_request()->media_source().id();
   ScopedJavaLocalRef<jstring> jsource_urn =
-      base::android::ConvertUTF8ToJavaString(
-          env, presentation_request()->media_source().id());
+      base::android::ConvertUTF8ToJavaString(env, media_source_id);
 
-  Java_ChromeMediaRouterDialogController_createDialog(
+  // If it's a single route with the same source, show the controller dialog
+  // instead of the device picker.
+  // TODO(avayvod): maybe this logic should be in
+  // PresentationServiceDelegateImpl: if the route exists for the same frame
+  // and tab, show the route controller dialog, if not, show the device picker.
+  if (single_existing_route_.get() &&
+      single_existing_route_->media_source().id() == media_source_id) {
+    ScopedJavaLocalRef<jstring> jmedia_route_id =
+        base::android::ConvertUTF8ToJavaString(
+            env, single_existing_route_->media_route_id());
+
+    Java_ChromeMediaRouterDialogController_openRouteControllerDialog(
+        env, java_dialog_controller_.obj(), jsource_urn.obj(),
+        jmedia_route_id.obj());
+    return;
+  }
+
+  Java_ChromeMediaRouterDialogController_openRouteChooserDialog(
       env, java_dialog_controller_.obj(), jsource_urn.obj());
 }
 
@@ -108,6 +144,21 @@ bool MediaRouterDialogControllerAndroid::IsShowingMediaRouterDialog() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_ChromeMediaRouterDialogController_isShowingDialog(
       env, java_dialog_controller_.obj());
+}
+
+void MediaRouterDialogControllerAndroid::OnRoutesUpdated(
+    const std::vector<MediaRoute>& routes) {
+  if (routes.size() != 1) {
+    single_existing_route_.reset();
+    return;
+  }
+
+  if (single_existing_route_.get() &&
+      single_existing_route_->media_route_id() == routes[0].media_route_id()) {
+    return;
+  }
+
+  single_existing_route_.reset(new MediaRoute(routes[0]));
 }
 
 }  // namespace media_router

@@ -81,6 +81,7 @@ public class SessionWrapper implements RouteController {
     private String mApplicationStatus;
     private ApplicationMetadata mApplicationMetadata;
     private int mSequenceNumber;
+    private boolean mStoppingApplication;
 
     /**
      * Initializes a new {@link SessionWrapper} instance.
@@ -115,14 +116,18 @@ public class SessionWrapper implements RouteController {
 
     @Override
     public void close() {
+        if (mStoppingApplication) return;
+
         // close() have been called before from another code path.
         if (mApiClient == null) return;
 
         if (mApiClient.isConnected() || mApiClient.isConnecting()) {
+            mStoppingApplication = true;
             Cast.CastApi.stopApplication(mApiClient, mSessionId)
                     .setResultCallback(new ResultCallback<Status>() {
                         @Override
                         public void onResult(Status status) {
+                            onMessage("remove_session", "\"" + mSessionId + "\"");
                             // TODO(avayvod): handle a failure to stop the application.
                             // https://crbug.com/535577
 
@@ -134,6 +139,7 @@ public class SessionWrapper implements RouteController {
                             mApiClient = null;
 
                             mRouteDelegate.onRouteClosed(SessionWrapper.this);
+                            mStoppingApplication = false;
                         }
                     });
         }
@@ -273,7 +279,8 @@ public class SessionWrapper implements RouteController {
         JSONObject jsonCastMessage = jsonMessage.getJSONObject("message");
         String messageType = jsonCastMessage.getString("type");
         if ("STOP".equals(messageType)) {
-            return stopApplication();
+            close();
+            return true;
         } else if (Arrays.asList(MEDIA_MESSAGE_TYPES).contains(messageType)) {
             return sendCastMessage(jsonMessage.getString("message"), MEDIA_NAMESPACE);
         }
@@ -347,19 +354,6 @@ public class SessionWrapper implements RouteController {
                 "{ \"type\": \"%s\"," + "\"message\": %s," + "\"sequenceNumber\":%d,"
                         + "\"timeoutMillis\":0," + "\"clientId\": \"%s\"}",
                 type, message, sequenceNumber, clientId);
-    }
-
-    private boolean stopApplication() {
-        if (!mApiClient.isConnected() && !mApiClient.isConnecting()) return false;
-
-        try {
-            Cast.CastApi.stopApplication(mApiClient, mSessionId);
-        } catch (Exception e) {
-            Log.e(TAG, "Stopping the application failed.", e);
-            return false;
-        }
-        onMessage("remove_session", "\"" + mSessionId + "\"");
-        return true;
     }
 
     public void updateSessionStatus() {

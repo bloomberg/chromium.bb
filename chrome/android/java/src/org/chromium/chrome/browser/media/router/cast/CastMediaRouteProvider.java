@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.router.cast;
 import android.content.Context;
 import android.support.v7.media.MediaRouter;
 
+import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
@@ -24,8 +25,6 @@ import javax.annotation.Nullable;
  */
 public class CastMediaRouteProvider
         implements MediaRouteProvider, DiscoveryDelegate, RouteDelegate {
-    private static final String TAG = "cr.MediaRouter";
-
     private final Context mApplicationContext;
     private final MediaRouter mAndroidMediaRouter;
     private final MediaRouteManager mManager;
@@ -88,7 +87,8 @@ public class CastMediaRouteProvider
     public static CastMediaRouteProvider create(
             Context applicationContext, MediaRouteManager manager) {
         assert applicationContext != null;
-        MediaRouter androidMediaRouter = getAndroidMediaRouter(applicationContext);
+        MediaRouter androidMediaRouter =
+                ChromeMediaRouter.getAndroidMediaRouter(applicationContext);
         if (androidMediaRouter == null) return null;
 
         return new CastMediaRouteProvider(applicationContext, androidMediaRouter, manager);
@@ -191,17 +191,6 @@ public class CastMediaRouteProvider
         mApplicationContext = applicationContext;
         mAndroidMediaRouter = androidMediaRouter;
         mManager = manager;
-    }
-
-    @Nullable
-    private static MediaRouter getAndroidMediaRouter(Context applicationContext) {
-        try {
-            // Pre-MR1 versions of JB do not have the complete MediaRouter APIs,
-            // so getting the MediaRouter instance will throw an exception.
-            return MediaRouter.getInstance(applicationContext);
-        } catch (NoSuchMethodError e) {
-            return null;
-        }
     }
 
 }
