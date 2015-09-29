@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/hash.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "cc/blink/context_provider_web_context.h"
@@ -23,15 +25,20 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/blink/webgraphicscontext3d_impl.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
 #include "media/base/video_util.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaStream.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -146,7 +153,21 @@ void WebMediaPlayerMS::load(LoadType load_type,
   // LoadTypeMediaStream) once Blink-side changes land.
   DCHECK_NE(load_type, LoadTypeMediaSource);
 
-  GURL gurl(url);
+  blink::WebMediaStream web_stream(
+      blink::WebMediaStreamRegistry::lookupMediaStreamDescriptor(url));
+  blink::WebVector<blink::WebMediaStreamTrack> tracks;
+  web_stream.videoTracks(tracks);
+
+  bool remote = tracks.size() && tracks[0].source().remote();
+
+  bool algorithm_enabled = remote &&
+                           base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               switches::kEnableRTCSmoothnessAlgorithm);
+
+  compositor_->SetAlgorithmEnabled(algorithm_enabled);
+
+  uint32 hash_value = base::Hash(url.string().utf8());
+  compositor_->SetSerial(((hash_value & 0x7FFFFFFF) << 1) | (remote ? 1 : 0));
 
   SetNetworkState(WebMediaPlayer::NetworkStateLoading);
   SetReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -183,7 +204,6 @@ void WebMediaPlayerMS::load(LoadType load_type,
 void WebMediaPlayerMS::play() {
   DVLOG(1) << "WebMediaPlayerMS::play";
   DCHECK(thread_checker_.CalledOnValidThread());
-
   if (paused_) {
     if (video_frame_provider_.get())
       video_frame_provider_->Play();
@@ -446,6 +466,7 @@ void WebMediaPlayerMS::OnFrameAvailable(
   base::TimeTicks render_time;
   if (!frame->metadata()->GetTimeTicks(
           media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+    DCHECK(!compositor_->GetAlgorithmEnabled() || !received_first_frame_);
     render_time = base::TimeTicks();
   }
   TRACE_EVENT1("webrtc", "WebMediaPlayerMS::OnFrameAvailable",
@@ -463,6 +484,14 @@ void WebMediaPlayerMS::OnFrameAvailable(
       video_weblayer_->layer()->SetContentsOpaque(true);
       video_weblayer_->SetContentsOpaqueIsFixed(true);
       GetClient()->setWebLayer(video_weblayer_.get());
+    }
+
+    // REFERENCE_TIME isn't prepared for this stream. VideoRendererAlgorithm
+    // cannot work in this case, force it off.
+    if (render_time.is_null() && compositor_->GetAlgorithmEnabled()) {
+      LOG(DFATAL) << "REFERENCE_TIME is not prepared, so VideoRendererAlgorithm"
+                     " has been turned off.";
+      compositor_->SetAlgorithmEnabled(false);
     }
   }
 
@@ -511,11 +540,13 @@ WebMediaPlayerMS::Compositor::Compositor(
     const scoped_refptr<base::SingleThreadTaskRunner>& compositor_task_runner)
     : compositor_task_runner_(compositor_task_runner),
       video_frame_provider_client_(NULL),
+      frame_pool_(nullptr),
       current_frame_used_(false),
       last_deadline_max_(base::TimeTicks()),
+      last_render_length_(base::TimeDelta::FromSecondsD(1.0 / 60.0)),
       total_frame_count_(0),
       dropped_frame_count_(0),
-      paused_(false) {}
+      paused_(true) {}
 
 WebMediaPlayerMS::Compositor::~Compositor() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
@@ -523,26 +554,76 @@ WebMediaPlayerMS::Compositor::~Compositor() {
     video_frame_provider_client_->StopUsingProvider();
 }
 
+bool WebMediaPlayerMS::Compositor::GetWallClockTimes(
+    const std::vector<base::TimeDelta>& timestamps,
+    std::vector<base::TimeTicks>* wall_clock_times) {
+  auto iter = timestamps_to_clock_times_.begin();
+  auto end = timestamps_to_clock_times_.end();
+  for (const base::TimeDelta& timestamp : timestamps) {
+    while (iter != end && iter->first < timestamp)
+      ++iter;
+    DCHECK(iter != end && iter->first == timestamp);
+    wall_clock_times->push_back(iter->second);
+  }
+
+  return true;
+}
+
+void WebMediaPlayerMS::Compositor::Render(base::TimeTicks deadline_min,
+                                          base::TimeTicks deadline_max) {
+  last_deadline_max_ = deadline_max;
+  last_render_length_ = deadline_max - deadline_min;
+
+  size_t frames_dropped = 0;
+  scoped_refptr<media::VideoFrame> frame =
+      frame_pool_->Render(deadline_min, deadline_max, &frames_dropped);
+  dropped_frame_count_ += frames_dropped;
+
+  if (frame == current_frame_)
+    return;
+
+  SetCurrentFrame(frame);
+
+  while (!timestamps_to_clock_times_.empty() &&
+         timestamps_to_clock_times_.front().first < frame->timestamp())
+    timestamps_to_clock_times_.pop_front();
+}
+
 void WebMediaPlayerMS::Compositor::EnqueueFrame(
-    scoped_refptr<media::VideoFrame> const& frame) {
+    const scoped_refptr<media::VideoFrame>& frame) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(current_frame_lock_);
   ++total_frame_count_;
 
-  if (base::TimeTicks::Now() > last_deadline_max_) {
-    // TODO(qiangchen): This shows vsyncs stops rendering frames. A probable
-    // cause is that the tab is not in the front. But we still have to let
-    // old frames go. Call VRA::RemoveExpiredFrames.
-
+  if (!frame_pool_) {
+    SetCurrentFrame(frame);
+    return;
   }
 
-  if (!current_frame_used_) {
-    ++dropped_frame_count_;
-  }
+  // This is a signal frame saying that the stream is stopped.
+  if (current_frame_ && frame->timestamp().is_zero())
+    return;
 
-  // TODO(qiangchen): Instead of using one variable to hold one frame, use
-  // VideoRendererAlgorithm.
-  current_frame_ = frame;
-  current_frame_used_ = false;
+  base::TimeTicks render_time;
+  const base::TimeTicks now = base::TimeTicks::Now();
+  CHECK(frame->metadata()->GetTimeTicks(
+      media::VideoFrameMetadata::REFERENCE_TIME, &render_time));
+  DCHECK(timestamps_to_clock_times_.empty() ||
+         frame->timestamp() > timestamps_to_clock_times_.rbegin()->first);
+  timestamps_to_clock_times_.push_back(
+      std::make_pair(frame->timestamp(), render_time));
+
+  frame_pool_->EnqueueFrame(frame);
+
+  if (now > last_deadline_max_) {
+    // This shows vsyncs stops rendering frames. A probable cause is that the
+    // tab is not in the front. But we still have to let old frames go.
+    base::TimeTicks deadline_max = last_deadline_max_ + last_render_length_;
+    if (deadline_max < now)
+      deadline_max = now;
+
+    Render(deadline_max - last_render_length_, deadline_max);
+  }
 }
 
 bool WebMediaPlayerMS::Compositor::UpdateCurrentFrame(
@@ -553,22 +634,22 @@ bool WebMediaPlayerMS::Compositor::UpdateCurrentFrame(
   TRACE_EVENT_BEGIN2("webrtc", "WebMediaPlayerMS::UpdateCurrentFrame",
                      "Actual Render Begin", deadline_min.ToInternalValue(),
                      "Actual Render End", deadline_max.ToInternalValue());
-  last_deadline_max_ = deadline_max;
-
-  // TODO(dalecurtis): This should make use of the deadline interval to ensure
-  // the painted frame is correct for the given interval.
-
   if (paused_)
     return false;
 
+  if (frame_pool_)
+    Render(deadline_min, deadline_max);
 
   base::TimeTicks render_time;
   if (!current_frame_->metadata()->GetTimeTicks(
           media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+    DCHECK(!frame_pool_);
     render_time = base::TimeTicks();
   }
-  TRACE_EVENT_END1("webrtc", "WebMediaPlayerMS::UpdateCurrentFrame",
-                   "Ideal Render Instant", render_time.ToInternalValue());
+
+  TRACE_EVENT_END2("webrtc", "WebMediaPlayerMS::UpdateCurrentFrame",
+                   "Ideal Render Instant", render_time.ToInternalValue(),
+                   "Serial", serial_);
   return !current_frame_used_;
 }
 
@@ -591,6 +672,14 @@ void WebMediaPlayerMS::Compositor::PutCurrentFrame() {
   current_frame_used_ = true;
 }
 
+void WebMediaPlayerMS::Compositor::SetCurrentFrame(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  if (!current_frame_used_)
+    ++dropped_frame_count_;
+  current_frame_used_ = false;
+  current_frame_ = frame;
+}
+
 void WebMediaPlayerMS::Compositor::SetVideoFrameProviderClient(
     cc::VideoFrameProvider::Client* client) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
@@ -598,13 +687,23 @@ void WebMediaPlayerMS::Compositor::SetVideoFrameProviderClient(
     video_frame_provider_client_->StopUsingProvider();
 
   video_frame_provider_client_ = client;
-  if (video_frame_provider_client_)
+  if (video_frame_provider_client_ && !paused_)
     video_frame_provider_client_->StartRendering();
 }
 
 void WebMediaPlayerMS::Compositor::StartRendering() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   paused_ = false;
+
+  // It is possible that the video gets paused and then resumed. We need to
+  // reset VideoRendererAlgorithm, otherwise, VideoRendererAlgorithm will think
+  // there is a very long frame in the queue and then make totally wrong
+  // frame selection.
+  if (frame_pool_) {
+    base::AutoLock auto_lock(current_frame_lock_);
+    frame_pool_->Reset();
+  }
+
   if (video_frame_provider_client_)
     video_frame_provider_client_->StartRendering();
 }
@@ -618,6 +717,7 @@ void WebMediaPlayerMS::Compositor::StopRendering() {
 
 void WebMediaPlayerMS::Compositor::ReplaceCurrentFrameWithACopy(
     media::SkCanvasVideoRenderer* renderer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(current_frame_lock_);
   if (!current_frame_.get())
     return;
@@ -648,5 +748,25 @@ unsigned WebMediaPlayerMS::Compositor::GetTotalFrameCount() {
 
 unsigned WebMediaPlayerMS::Compositor::GetDroppedFrameCount() {
   return dropped_frame_count_;
+}
+
+void WebMediaPlayerMS::Compositor::SetAlgorithmEnabled(bool enabled) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (enabled)
+    frame_pool_.reset(new media::VideoRendererAlgorithm(
+        base::Bind(&WebMediaPlayerMS::Compositor::GetWallClockTimes,
+                   base::Unretained(this))));
+  else
+    frame_pool_.reset();
+}
+
+bool WebMediaPlayerMS::Compositor::GetAlgorithmEnabled() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return !!frame_pool_;
+}
+
+void WebMediaPlayerMS::Compositor::SetSerial(uint32 serial) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  serial_ = serial;
 }
 }  // namespace content

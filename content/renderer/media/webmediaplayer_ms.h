@@ -13,6 +13,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "media/blink/skcanvas_video_renderer.h"
 #include "media/blink/webmediaplayer_util.h"
+#include "media/filters/video_renderer_algorithm.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/gurl.h"
@@ -155,8 +156,32 @@ class WebMediaPlayerMS
     void StopRendering();
     void ReplaceCurrentFrameWithACopy(media::SkCanvasVideoRenderer* renderer);
 
+    // If |enabled| is true, we are going to use VideoRendererAlgorithm for
+    // frame selection. Otherwise, we just submit the most recent frame if asked
+    // by the compositor.
+    void SetAlgorithmEnabled(bool enabled);
+    bool GetAlgorithmEnabled();
+
+    // The serial is used in the trace flags to identify different instances of
+    // WebMediaPlayerMS.
+    void SetSerial(uint32 serial);
+
    private:
+    bool GetWallClockTimes(const std::vector<base::TimeDelta>& timestamps,
+                           std::vector<base::TimeTicks>* wall_clock_times);
+
+    void SetCurrentFrame(const scoped_refptr<media::VideoFrame>& frame);
+
+    // For algorithm enabled case only: given the render interval, update
+    // current_frame_ and dropped_frame_count_.
+    void Render(base::TimeTicks deadline_min, base::TimeTicks deadline_max);
+
+    // Used for DCHECKs to ensure method calls executed in the correct thread.
+    base::ThreadChecker thread_checker_;
+
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
+
+    uint32 serial_;
 
     // A pointer back to the compositor to inform it about state changes. This
     // is not NULL while the compositor is actively using this webmediaplayer.
@@ -169,16 +194,28 @@ class WebMediaPlayerMS
     // around all modifications and all reads on the any thread.
     scoped_refptr<media::VideoFrame> current_frame_;
 
+    // |frame_pool_| serves as a frame pool, and provides a frame selection
+    // method which returns the best frame for the render interval.
+    scoped_ptr<media::VideoRendererAlgorithm> frame_pool_;
+
     // |current_frame_used_| is updated on compositor thread only.
     // It's used to track whether |current_frame_| was painted for detecting
     // when to increase |dropped_frame_count_|.
     bool current_frame_used_;
 
+    // Historical data about last rendering. These are for detecting whether
+    // rendering is paused (one reason is that the tab is not in the front), in
+    // which case we need to do background rendering.
     base::TimeTicks last_deadline_max_;
+    base::TimeDelta last_render_length_;
+
     unsigned total_frame_count_;
     unsigned dropped_frame_count_;
 
     bool paused_;
+
+    std::deque<std::pair<base::TimeDelta, base::TimeTicks>>
+        timestamps_to_clock_times_;
 
     // |current_frame_lock_| protects |current_frame_used_| and
     // |current_frame_|.
