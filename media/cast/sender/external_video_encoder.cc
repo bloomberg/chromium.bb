@@ -18,6 +18,7 @@
 #include "media/cast/cast_defines.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/net/cast_transport_config.h"
+#include "media/cast/sender/vp8_quantizer_parser.h"
 
 namespace {
 
@@ -92,8 +93,9 @@ class ExternalVideoEncoder::VEAClientImpl
         encoder_active_(false),
         next_frame_id_(0u),
         key_frame_encountered_(false),
-        requested_bit_rate_(-1) {
-  }
+        codec_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
+        vp8_key_frame_parsable_(false),
+        requested_bit_rate_(-1) {}
 
   base::SingleThreadTaskRunner* task_runner() const {
     return task_runner_.get();
@@ -110,6 +112,7 @@ class ExternalVideoEncoder::VEAClientImpl
         media::PIXEL_FORMAT_I420, frame_size, codec_profile, start_bit_rate,
         this);
     next_frame_id_ = first_frame_id;
+    codec_profile_ = codec_profile;
 
     UMA_HISTOGRAM_BOOLEAN("Cast.Sender.VideoEncodeAcceleratorInitializeSuccess",
                           encoder_active_);
@@ -249,18 +252,48 @@ class ExternalVideoEncoder::VEAClientImpl
         encoded_frame->deadline_utilization =
             processing_time.InSecondsF() / frame_duration.InSecondsF();
 
-        // See vp8_encoder.cc for an explanation of this math.  Here, we are
-        // computing a substitute value for |quantizer| using the
-        // QuantizerEstimator.
         const double actual_bit_rate =
             encoded_frame->data.size() * 8.0 / frame_duration.InSecondsF();
         DCHECK_GT(request.target_bit_rate, 0);
         const double bitrate_utilization =
             actual_bit_rate / request.target_bit_rate;
-        const double quantizer =
-            (encoded_frame->dependency == EncodedFrame::KEY) ?
-            quantizer_estimator_.EstimateForKeyFrame(*request.video_frame) :
-            quantizer_estimator_.EstimateForDeltaFrame(*request.video_frame);
+        double quantizer = QuantizerEstimator::NO_RESULT;
+        if (codec_profile_ == media::VP8PROFILE_ANY) {
+          // If the quantizer can be parsed from the key frame, try to parse
+          // the following delta frames as well.
+          // Otherwise, switch back to entropy estimation for the key frame
+          // and all the following delta frames.
+          if (key_frame || vp8_key_frame_parsable_) {
+            quantizer = ParseVp8HeaderQuantizer(
+                reinterpret_cast<const uint8*>(encoded_frame->data.data()),
+                encoded_frame->data.size());
+            if (quantizer < 0) {
+              LOG(ERROR) << "Unable to parse VP8 quantizer from encoded "
+                         << (key_frame ? "key" : "delta")
+                         << " frame, id=" << encoded_frame->frame_id;
+              if (key_frame) {
+                vp8_key_frame_parsable_ = false;
+                quantizer = quantizer_estimator_.EstimateForKeyFrame(
+                    *request.video_frame);
+              } else {
+                quantizer = QuantizerEstimator::NO_RESULT;
+              }
+            } else {
+              if (key_frame) {
+                vp8_key_frame_parsable_ = true;
+              }
+            }
+          } else {
+            quantizer = quantizer_estimator_.EstimateForDeltaFrame(
+                *request.video_frame);
+          }
+        } else {
+          quantizer = (encoded_frame->dependency == EncodedFrame::KEY)
+                          ? quantizer_estimator_.EstimateForKeyFrame(
+                                *request.video_frame)
+                          : quantizer_estimator_.EstimateForDeltaFrame(
+                                *request.video_frame);
+        }
         if (quantizer != QuantizerEstimator::NO_RESULT) {
           encoded_frame->lossy_utilization = bitrate_utilization *
               (quantizer / QuantizerEstimator::MAX_VP8_QUANTIZER);
@@ -345,6 +378,8 @@ class ExternalVideoEncoder::VEAClientImpl
   uint32 next_frame_id_;
   bool key_frame_encountered_;
   std::string stream_header_;
+  VideoCodecProfile codec_profile_;
+  bool vp8_key_frame_parsable_;
 
   // Shared memory buffers for output with the VideoAccelerator.
   ScopedVector<base::SharedMemory> output_buffers_;

@@ -121,6 +121,7 @@
         'sender/fake_video_encode_accelerator_factory.h',
         'sender/video_encoder_unittest.cc',
         'sender/video_sender_unittest.cc',
+        'sender/vp8_quantizer_parser_unittest.cc',
         'test/end2end_unittest.cc',
         'test/fake_receiver_time_offset_estimator.cc',
         'test/fake_receiver_time_offset_estimator.h',
