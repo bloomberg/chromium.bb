@@ -32,6 +32,7 @@ group("all_components") {
     "//components/search_engines",
     "//components/undo",
     "//components/strings",
+    "//components/leveldb_proto",
   ]
 
   if (!is_ios) {
@@ -80,7 +81,6 @@ group("all_components") {
       "//components/json_schema",
       "//components/keyed_service/content",
       "//components/language_usage_metrics",
-      "//components/leveldb_proto",
       "//components/login",
       "//components/memory_pressure",
       "//components/metrics",
@@ -307,6 +307,7 @@ test("components_unittests") {
     "//ui/resources:ui_test_pak",
     "//components/search_engines:unit_tests",
     "//components/undo:unit_tests",
+    "//components/leveldb_proto:unit_tests",
   ]
 
   if (!is_ios) {
@@ -357,7 +358,6 @@ test("components_unittests") {
       "//components/keyed_service/content:unit_tests",
       "//components/keyed_service/core:unit_tests",
       "//components/language_usage_metrics:unit_tests",
-      "//components/leveldb_proto:unit_tests",
       "//components/login:unit_tests",
       "//components/memory_pressure:unit_tests",
       "//components/metrics:unit_tests",
