@@ -80,10 +80,6 @@ int PermissionBubbleRequestImpl::GetIconId() const {
       icon_id = IDR_INFOBAR_PROTECTED_MEDIA_IDENTIFIER;
       break;
 #endif
-    // TODO(dgrogan): Get a real icon. https://crbug.com/516069
-    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
-      icon_id = IDR_INFOBAR_WARNING;
-      break;
     default:
       NOTREACHED();
       return IDR_INFOBAR_WARNING;
