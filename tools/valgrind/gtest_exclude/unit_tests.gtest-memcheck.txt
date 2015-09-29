@@ -32,3 +32,6 @@ ChromeBrowserMainExtraPartsMetricsTest.VerifyTouchEventsEnabledIsNotRecordedAfte
 # Test fail: https://crbug.com/349778
 # Valgrind bot purple: https://crbug.com/522692
 TranslateManagerRenderViewHostTest.FetchLanguagesFromTranslateServer*
+
+# Test fail: https://crbug.com/537064
+ExtensionMessageBubbleTest.*
