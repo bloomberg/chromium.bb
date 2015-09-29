@@ -544,6 +544,26 @@ TEST_F(ManagePasswordsUIControllerTest, AutoSigninClickThrough) {
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, mock.state());
 }
 
+TEST_F(ManagePasswordsUIControllerTest, AutofillDuringAutoSignin) {
+  ScopedVector<autofill::PasswordForm> local_credentials;
+  local_credentials.push_back(new autofill::PasswordForm(test_local_form()));
+  controller()->OnAutoSignin(local_credentials.Pass());
+  ManagePasswordsIconMock mock;
+  controller()->UpdateIconAndBubbleState(&mock);
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->state());
+
+  scoped_ptr<autofill::PasswordForm> test_form(
+      new autofill::PasswordForm(test_local_form()));
+  autofill::PasswordFormMap map;
+  base::string16 kTestUsername = test_form->username_value;
+  map.insert(kTestUsername, test_form.Pass());
+  controller()->OnPasswordAutofilled(map);
+
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, mock.state());
+  EXPECT_EQ(password_manager::ui::AUTO_SIGNIN_STATE, controller()->state());
+}
+
 TEST_F(ManagePasswordsUIControllerTest, InactiveOnPSLMatched) {
   base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
   autofill::PasswordFormMap map;
