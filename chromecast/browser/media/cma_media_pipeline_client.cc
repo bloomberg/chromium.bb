@@ -8,7 +8,7 @@
 namespace chromecast {
 namespace media {
 
-CmaMediaPipelineClient::CmaMediaPipelineClient() : client_(nullptr) {}
+CmaMediaPipelineClient::CmaMediaPipelineClient() {}
 
 CmaMediaPipelineClient::~CmaMediaPipelineClient() {}
 
@@ -19,13 +19,11 @@ CmaMediaPipelineClient::CreateMediaPipelineBackend(
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendCreated() {
-  if (client_)
-    client_->OnResourceAcquired(this);
+  NotifyResourceAcquired();
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed() {
-  if (client_)
-    client_->OnResourceReleased(this, CastResource::kResourceNone);
+  NotifyResourceReleased(CastResource::kResourceNone);
 }
 
 void CmaMediaPipelineClient::ReleaseResource(CastResource::Resource resource) {
@@ -34,15 +32,8 @@ void CmaMediaPipelineClient::ReleaseResource(CastResource::Resource resource) {
                                           CastResource::kResourceScreenPrimary);
 
   // TODO(yucliu): media pipeline need to stop audio video seperately
-  if (!(resource & audio_video_resource)) {
-    if (client_)
-      client_->OnResourceReleased(this, audio_video_resource);
-  }
-}
-
-void CmaMediaPipelineClient::SetCastResourceClient(
-    CastResource::Client* client) {
-  client_ = client;
+  if (!(resource & audio_video_resource))
+    NotifyResourceReleased(audio_video_resource);
 }
 
 }  // namespace media

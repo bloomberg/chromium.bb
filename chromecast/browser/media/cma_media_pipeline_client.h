@@ -27,12 +27,9 @@ class CmaMediaPipelineClient : public base::RefCounted<CmaMediaPipelineClient>,
 
   // cast::CastResource implementations
   void ReleaseResource(CastResource::Resource resource) override;
-  void SetCastResourceClient(CastResource::Client* client) override;
 
  protected:
   ~CmaMediaPipelineClient() override;
-
-  CastResource::Client* client_;
 
  private:
   friend class base::RefCounted<CmaMediaPipelineClient>;

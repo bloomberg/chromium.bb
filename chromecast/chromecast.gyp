@@ -82,6 +82,7 @@
         'base/cast_paths.cc',
         'base/cast_paths.h',
         'base/cast_resource.h',
+        'base/cast_resource.cc',
         'base/chromecast_config_android.cc',
         'base/chromecast_config_android.h',
         'base/chromecast_switches.cc',

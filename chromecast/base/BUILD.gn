@@ -14,6 +14,7 @@ source_set("base") {
     "android/system_time_change_notifier_android.h",
     "cast_paths.cc",
     "cast_paths.h",
+    "cast_resource.cc",
     "cast_resource.h",
     "chromecast_switches.cc",
     "chromecast_switches.h",

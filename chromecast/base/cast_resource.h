@@ -52,17 +52,21 @@ class CastResource {
     virtual ~Client() {}
   };
 
-  CastResource() {}
-
-  virtual void SetCastResourceClient(Client* client) = 0;
+  void SetCastResourceClient(Client* client);
   // Called to release resources. Implementation should call
   // Client::OnResourceReleased when resource is released on its side.
   virtual void ReleaseResource(Resource resource) = 0;
 
  protected:
+  CastResource() : client_(nullptr) {}
   virtual ~CastResource() {}
 
+  void NotifyResourceAcquired();
+  void NotifyResourceReleased(Resource remain);
+
  private:
+  Client* client_;
+
   DISALLOW_COPY_AND_ASSIGN(CastResource);
 };
 
