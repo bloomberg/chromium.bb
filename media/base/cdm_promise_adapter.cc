@@ -13,10 +13,12 @@ CdmPromiseAdapter::CdmPromiseAdapter() : next_promise_id_(1) {
 
 CdmPromiseAdapter::~CdmPromiseAdapter() {
   DCHECK(promises_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
   Clear();
 }
 
 uint32_t CdmPromiseAdapter::SavePromise(scoped_ptr<CdmPromise> promise) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   uint32_t promise_id = next_promise_id_++;
   promises_.add(promise_id, promise.Pass());
   return promise_id;
@@ -57,12 +59,14 @@ void CdmPromiseAdapter::RejectPromise(uint32_t promise_id,
 
 void CdmPromiseAdapter::Clear() {
   // Reject all outstanding promises.
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& promise : promises_)
     promise.second->reject(MediaKeys::UNKNOWN_ERROR, 0, "Operation aborted.");
   promises_.clear();
 }
 
 scoped_ptr<CdmPromise> CdmPromiseAdapter::TakePromise(uint32_t promise_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   PromiseMap::iterator it = promises_.find(promise_id);
   if (it == promises_.end())
     return nullptr;

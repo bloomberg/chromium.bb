@@ -226,6 +226,7 @@ WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!session_id_.empty())
     adapter_->UnregisterSession(session_id_);
 }
@@ -246,6 +247,7 @@ void WebContentDecryptionModuleSessionImpl::initializeNewSession(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(init_data);
   DCHECK(session_id_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // From https://w3c.github.io/encrypted-media/#generateRequest.
   // 5. If the Key System implementation represented by this object's cdm
@@ -310,6 +312,7 @@ void WebContentDecryptionModuleSessionImpl::load(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id.isEmpty());
   DCHECK(session_id_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   std::string sanitized_session_id;
   if (!SanitizeSessionId(session_id, &sanitized_session_id)) {
@@ -337,6 +340,7 @@ void WebContentDecryptionModuleSessionImpl::update(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(response);
   DCHECK(!session_id_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   std::vector<uint8> sanitized_response;
   if (!SanitizeResponse(adapter_->GetKeySystem(), response, response_length,
@@ -356,6 +360,7 @@ void WebContentDecryptionModuleSessionImpl::update(
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
   adapter_->CloseSession(
       session_id_,
       scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
@@ -365,6 +370,7 @@ void WebContentDecryptionModuleSessionImpl::close(
 void WebContentDecryptionModuleSessionImpl::remove(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(!session_id_.empty());
+  DCHECK(thread_checker_.CalledOnValidThread());
   adapter_->RemoveSession(
       session_id_,
       scoped_ptr<SimpleCdmPromise>(new CdmResultPromise<>(
@@ -375,6 +381,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     MediaKeys::MessageType message_type,
     const std::vector<uint8>& message) {
   DCHECK(client_) << "Client not set before message event";
+  DCHECK(thread_checker_.CalledOnValidThread());
   client_->message(convertMessageType(message_type), vector_as_array(&message),
                    message.size());
 }
@@ -382,6 +389,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
 void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
     bool has_additional_usable_key,
     CdmKeysInfo keys_info) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   blink::WebVector<blink::WebEncryptedMediaKeyInformation> keys(
       keys_info.size());
   for (size_t i = 0; i < keys_info.size(); ++i) {
@@ -398,10 +406,12 @@ void WebContentDecryptionModuleSessionImpl::OnSessionKeysChange(
 
 void WebContentDecryptionModuleSessionImpl::OnSessionExpirationUpdate(
     const base::Time& new_expiry_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   client_->expirationChanged(new_expiry_time.ToJsTime());
 }
 
 void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (is_closed_)
     return;
 
@@ -412,6 +422,7 @@ void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
 blink::WebContentDecryptionModuleResult::SessionStatus
 WebContentDecryptionModuleSessionImpl::OnSessionInitialized(
     const std::string& session_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // CDM will return NULL if the session to be loaded can't be found.
   if (session_id.empty())
     return blink::WebContentDecryptionModuleResult::SessionNotFound;

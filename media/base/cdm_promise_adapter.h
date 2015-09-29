@@ -9,6 +9,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/media_export.h"
 
@@ -51,6 +52,7 @@ class MEDIA_EXPORT CdmPromiseAdapter {
   uint32_t next_promise_id_;
   PromiseMap promises_;
 
+  base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(CdmPromiseAdapter);
 };
 

@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleSession.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -74,6 +75,7 @@ class WebContentDecryptionModuleSessionImpl
   // closed() event.
   bool is_closed_;
 
+  base::ThreadChecker thread_checker_;
   // Since promises will live until they are fired, use a weak reference when
   // creating a promise in case this class disappears before the promise
   // actually fires.
