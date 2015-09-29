@@ -967,7 +967,7 @@ TEST_F(VisibleUnitsTest, startOfWord)
     Node* space = shadowRoot->getElementById("space")->firstChild();
 
     EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*one, 0)).deepEquivalent());
-    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(space, 1), startOfWord(createVisiblePositionInComposedTree(*one, 0)).deepEquivalent());
 
     EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*one, 1)).deepEquivalent());
     EXPECT_EQ(PositionInComposedTree(space, 1), startOfWord(createVisiblePositionInComposedTree(*one, 1)).deepEquivalent());
@@ -979,7 +979,7 @@ TEST_F(VisibleUnitsTest, startOfWord)
     EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*two, 1)).deepEquivalent());
 
     EXPECT_EQ(Position(one, 0), startOfWord(createVisiblePositionInDOMTree(*three, 1)).deepEquivalent());
-    EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
+    EXPECT_EQ(PositionInComposedTree(space, 1), startOfWord(createVisiblePositionInComposedTree(*three, 1)).deepEquivalent());
 
     EXPECT_EQ(Position(four, 0), startOfWord(createVisiblePositionInDOMTree(*four, 1)).deepEquivalent());
     EXPECT_EQ(PositionInComposedTree(four, 0), startOfWord(createVisiblePositionInComposedTree(*four, 1)).deepEquivalent());

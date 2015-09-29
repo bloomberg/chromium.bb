@@ -3802,6 +3802,7 @@
             'editing/InputMethodControllerTest.cpp',
             'editing/iterators/CharacterIteratorTest.cpp',
             'editing/iterators/SearchBufferTest.cpp',
+            'editing/iterators/SimplifiedBackwardsTextIteratorTest.cpp',
             'editing/iterators/TextIteratorTest.cpp',
             'editing/markers/DocumentMarkerControllerTest.cpp',
             'editing/PositionTest.cpp',

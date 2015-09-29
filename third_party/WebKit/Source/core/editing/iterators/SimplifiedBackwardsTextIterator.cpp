@@ -96,17 +96,19 @@ template <typename Strategy>
 void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::init(Node* startNode, Node* endNode, int startOffset, int endOffset)
 {
     if (!startNode->offsetInCharacters() && startOffset >= 0) {
-        // NodeTraversal::childAt() will return 0 if the offset is out of range. We rely on this behavior
-        // instead of calling countChildren() to avoid traversing the children twice.
-        if (Node* childAtOffset = NodeTraversal::childAt(*startNode, startOffset)) {
+        // |Strategy::childAt()| will return 0 if the offset is out of range. We
+        // rely on this behavior instead of calling |countChildren()| to avoid
+        // traversing the children twice.
+        if (Node* childAtOffset = Strategy::childAt(*startNode, startOffset)) {
             startNode = childAtOffset;
             startOffset = 0;
         }
     }
     if (!endNode->offsetInCharacters() && endOffset > 0) {
-        // NodeTraversal::childAt() will return 0 if the offset is out of range. We rely on this behavior
-        // instead of calling countChildren() to avoid traversing the children twice.
-        if (Node* childAtOffset = NodeTraversal::childAt(*endNode, endOffset - 1)) {
+        // |Strategy::childAt()| will return 0 if the offset is out of range. We
+        // rely on this behavior instead of calling |countChildren()| to avoid
+        // traversing the children twice.
+        if (Node* childAtOffset = Strategy::childAt(*endNode, endOffset - 1)) {
             endNode = childAtOffset;
             endOffset = lastOffsetInNode(endNode);
         }
@@ -167,16 +169,16 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
                 return;
         }
 
-        if (!m_handledChildren && m_node->hasChildren()) {
-            m_node = m_node->lastChild();
+        if (!m_handledChildren && Strategy::hasChildren(*m_node)) {
+            m_node = Strategy::lastChild(*m_node);
             m_fullyClippedStack.pushFullyClippedState(m_node);
         } else {
             // Exit empty containers as we pass over them or containers
             // where [container, 0] is where we started iterating.
             if (!m_handledNode
                 && canHaveChildrenForEditing(m_node)
-                && m_node->parentNode()
-                && (!m_node->lastChild() || (m_node == m_endNode && !m_endOffset))) {
+                && Strategy::parent(*m_node)
+                && (!Strategy::lastChild(*m_node) || (m_node == m_endNode && !m_endOffset))) {
                 exitNode();
                 if (m_positionNode) {
                     m_handledNode = true;
@@ -186,8 +188,8 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
             }
 
             // Exit all other containers.
-            while (!m_node->previousSibling()) {
-                if (!advanceRespectingRange(m_node->parentOrShadowHostNode()))
+            while (!Strategy::previousSibling(*m_node)) {
+                if (!advanceRespectingRange(parentCrossingShadowBoundaries<Strategy>(*m_node)))
                     break;
                 m_fullyClippedStack.pop();
                 exitNode();
@@ -199,7 +201,7 @@ void SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::advance()
             }
 
             m_fullyClippedStack.pop();
-            if (advanceRespectingRange(m_node->previousSibling()))
+            if (advanceRespectingRange(Strategy::previousSibling(*m_node)))
                 m_fullyClippedStack.pushFullyClippedState(m_node);
             else
                 m_node = nullptr;
@@ -292,12 +294,12 @@ LayoutText* SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleFirstLette
 template <typename Strategy>
 bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleReplacedElement()
 {
-    unsigned index = m_node->nodeIndex();
+    unsigned index = Strategy::index(*m_node);
     // We want replaced elements to behave like punctuation for boundary
     // finding, and to simply take up space for the selection preservation
     // code in moveParagraphs, so we use a comma. Unconditionally emit
     // here because this iterator is only used for boundary finding.
-    emitCharacter(',', m_node->parentNode(), index, index + 1);
+    emitCharacter(',', Strategy::parent(*m_node), index, index + 1);
     return true;
 }
 
@@ -307,10 +309,10 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::handleNonTextNode()
     // We can use a linefeed in place of a tab because this simple iterator is only used to
     // find boundaries, not actual content. A linefeed breaks words, sentences, and paragraphs.
     if (TextIterator::shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || TextIterator::shouldEmitNewlineAfterNode(*m_node) || TextIterator::shouldEmitTabBeforeNode(m_node)) {
-        unsigned index = m_node->nodeIndex();
+        unsigned index = Strategy::index(*m_node);
         // The start of this emitted range is wrong. Ensuring correctness would require
         // VisiblePositions and so would be slow. previousBoundary expects this.
-        emitCharacter('\n', m_node->parentNode(), index + 1, index + 1);
+        emitCharacter('\n', Strategy::parent(*m_node), index + 1, index + 1);
     }
     return true;
 }

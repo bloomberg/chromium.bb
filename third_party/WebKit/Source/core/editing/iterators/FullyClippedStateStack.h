@@ -12,7 +12,7 @@
 namespace blink {
 
 template<typename Strategy>
-class FullyClippedStateStackAlgorithm final : public BitStack {
+class CORE_TEMPLATE_CLASS_EXPORT FullyClippedStateStackAlgorithm final : public BitStack {
     STACK_ALLOCATED();
 public:
     FullyClippedStateStackAlgorithm();
@@ -22,8 +22,8 @@ public:
     void setUpFullyClippedStack(Node*);
 };
 
-extern template class FullyClippedStateStackAlgorithm<EditingStrategy>;
-extern template class FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingStrategy>;
+extern template class CORE_EXTERN_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
 
 using FullyClippedStateStack = FullyClippedStateStackAlgorithm<EditingStrategy>;
 

@@ -88,7 +88,7 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(Node* nod
     ASSERT(size() == 1 + depthCrossingShadowBoundaries<Strategy>(*node));
 }
 
-template class FullyClippedStateStackAlgorithm<EditingStrategy>;
-template class FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
+template class CORE_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingStrategy>;
+template class CORE_TEMPLATE_EXPORT FullyClippedStateStackAlgorithm<EditingInComposedTreeStrategy>;
 
 } // namespace blink
