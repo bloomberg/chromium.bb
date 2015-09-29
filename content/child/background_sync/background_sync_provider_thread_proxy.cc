@@ -138,7 +138,7 @@ void BackgroundSyncProviderThreadProxy::registerBackgroundSync(
 
 void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
     blink::WebSyncRegistration::Periodicity periodicity,
-    int64_t id,
+    int64_t handle_id,
     const blink::WebString& tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
     blink::WebSyncUnregistrationCallbacks* callbacks) {
@@ -148,7 +148,7 @@ void BackgroundSyncProviderThreadProxy::unregisterBackgroundSync(
       FROM_HERE,
       base::Bind(
           &BackgroundSyncProvider::unregisterBackgroundSync,
-          base::Unretained(sync_provider_), periodicity, id,
+          base::Unretained(sync_provider_), periodicity, handle_id,
           // We cast WebString to string16 before crossing threads
           // for thread-safety.
           static_cast<base::string16>(tag), service_worker_registration,
@@ -228,7 +228,7 @@ void BackgroundSyncProviderThreadProxy::notifyWhenDone(
 }
 
 void BackgroundSyncProviderThreadProxy::DuplicateRegistrationHandle(
-    int64 handle_id,
+    int64_t handle_id,
     const DuplicateRegistrationHandleCallback& callback) {
   main_thread_task_runner_->PostTask(
       FROM_HERE,

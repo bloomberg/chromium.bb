@@ -159,7 +159,7 @@ void BackgroundSyncProvider::notifyWhenDone(
 }
 
 void BackgroundSyncProvider::DuplicateRegistrationHandle(
-    int handle_id,
+    int64_t handle_id,
     const BackgroundSyncService::DuplicateRegistrationHandleCallback&
         callback) {
   GetBackgroundSyncServicePtr()->DuplicateRegistrationHandle(handle_id,

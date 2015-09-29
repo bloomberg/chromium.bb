@@ -24,7 +24,7 @@ enum BackgroundSyncPeriodicity {
 };
 
 struct SyncRegistration {
-  int32 handle_id = -1;
+  int64 handle_id = -1;
   BackgroundSyncPeriodicity periodicity = ONE_SHOT;
   string tag = "";
   uint64 min_period_ms = 0;

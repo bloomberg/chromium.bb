@@ -78,7 +78,9 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   mojo::Binding<BackgroundSyncService> binding_;
 
   // The registrations that the client might reference.
-  IDMap<BackgroundSyncRegistrationHandle, IDMapOwnPointer> active_handles_;
+  IDMap<BackgroundSyncRegistrationHandle,
+        IDMapOwnPointer,
+        BackgroundSyncRegistrationHandle::HandleId> active_handles_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

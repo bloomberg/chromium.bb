@@ -36,19 +36,19 @@ interface BackgroundSyncService {
   GetRegistrations(BackgroundSyncPeriodicity periodicity,
                    int64 service_worker_registration_id)
       => (BackgroundSyncError err, array<SyncRegistration> registrations);
-  Unregister(BackgroundSyncPeriodicity periodicity, int32 handle_id,
+  Unregister(BackgroundSyncPeriodicity periodicity, int64 handle_id,
              int64 service_worker_registration_id) => (BackgroundSyncError err);
   GetPermissionStatus(BackgroundSyncPeriodicity periodicity,
                       int64 service_worker_registration_id)
       => (BackgroundSyncError err, PermissionStatus status);
-  DuplicateRegistrationHandle(int32 handle_id) 
+  DuplicateRegistrationHandle(int64 handle_id) 
       => (BackgroundSyncError err, SyncRegistration? registration);  
-  ReleaseRegistration(int32 handle_id);
-  NotifyWhenDone(int32 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
+  ReleaseRegistration(int64 handle_id);
+  NotifyWhenDone(int64 handle_id) => (BackgroundSyncError err, BackgroundSyncState final_status);
 };
 
 interface BackgroundSyncServiceClient {
-  Sync(int32 handle_id)
+  Sync(int64 handle_id)
       => (ServiceWorkerEventStatus status);
 };
 

@@ -24,7 +24,7 @@ class BackgroundSyncManager;
 // destroyed) after the BackgroundSyncManager has been deleted.
 class CONTENT_EXPORT BackgroundSyncRegistrationHandle {
  public:
-  using HandleId = int;
+  using HandleId = int64_t;
   using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
   using StatusAndStateCallback =
       base::Callback<void(BackgroundSyncStatus, BackgroundSyncState)>;

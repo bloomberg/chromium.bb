@@ -95,7 +95,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       BackgroundSyncRegistrationHandle::HandleId handle_id);
 
   // ServiceWorkerContextObserver overrides.
-  void OnRegistrationDeleted(int64 registration_id,
+  void OnRegistrationDeleted(int64 sw_registration_id,
                              const GURL& pattern) override;
   void OnStorageWiped() override;
 
@@ -317,7 +317,7 @@ class CONTENT_EXPORT BackgroundSyncManager
                                        int number_of_batched_sync_events);
 
   // OnRegistrationDeleted callbacks
-  void OnRegistrationDeletedImpl(int64 registration_id,
+  void OnRegistrationDeletedImpl(int64 sw_registration_id,
                                  const base::Closure& callback);
 
   // OnStorageWiped callbacks
@@ -356,8 +356,9 @@ class CONTENT_EXPORT BackgroundSyncManager
   scoped_ptr<BackgroundSyncPowerObserver> power_observer_;
 
   // The registrations that clients have handles to.
-  IDMap<scoped_refptr<RefCountedRegistration>, IDMapOwnPointer>
-      registration_handle_ids_;
+  IDMap<scoped_refptr<RefCountedRegistration>,
+        IDMapOwnPointer,
+        BackgroundSyncRegistrationHandle::HandleId> registration_handle_ids_;
 
   base::WeakPtrFactory<BackgroundSyncManager> weak_ptr_factory_;
 

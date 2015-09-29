@@ -33,7 +33,7 @@ public:
 
     // Takes ownership of the WebSyncUnregistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void unregisterBackgroundSync(blink::WebSyncRegistration::Periodicity, int64_t, const WebString&, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
+    virtual void unregisterBackgroundSync(blink::WebSyncRegistration::Periodicity, int64_t handleId, const WebString&, WebServiceWorkerRegistration*, WebSyncUnregistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
@@ -48,9 +48,9 @@ public:
     virtual void getPermissionStatus(blink::WebSyncRegistration::Periodicity, WebServiceWorkerRegistration*, WebSyncGetPermissionStatusCallbacks*) = 0;
 
     // Takes ownership of the WebSyncNotifyWhenDoneCallbacks.
-    virtual void notifyWhenDone(int64_t syncId, WebSyncNotifyWhenDoneCallbacks*) = 0;
+    virtual void notifyWhenDone(int64_t handleId, WebSyncNotifyWhenDoneCallbacks*) = 0;
 
-    virtual void releaseRegistration(int64_t syncId) = 0;
+    virtual void releaseRegistration(int64_t handleId) = 0;
 };
 
 } // namespace blink

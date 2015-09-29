@@ -30,7 +30,7 @@ BackgroundSyncClientImpl::BackgroundSyncClientImpl(
       binding_(this, request.Pass()),
       callback_seq_num_(0) {}
 
-void BackgroundSyncClientImpl::Sync(int handle_id,
+void BackgroundSyncClientImpl::Sync(int64_t handle_id,
                                     const SyncCallback& callback) {
   DCHECK(!blink::Platform::current()->mainThread()->isCurrentThread());
   // Get a registration for the given handle_id from the provider. This way

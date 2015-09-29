@@ -44,7 +44,7 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
       blink::WebSyncRegistrationCallbacks* callbacks) override;
   void unregisterBackgroundSync(
       blink::WebSyncRegistration::Periodicity periodicity,
-      int64_t id,
+      int64_t handle_id,
       const blink::WebString& tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
       blink::WebSyncUnregistrationCallbacks* callbacks) override;
@@ -69,7 +69,7 @@ class BackgroundSyncProviderThreadProxy : public blink::WebSyncProvider,
   // Given |handle_id|, ask the provider for a new handle with the same
   // underlying registration.
   void DuplicateRegistrationHandle(
-      int64 handle_id,
+      int64_t handle_id,
       const DuplicateRegistrationHandleCallback& callback);
 
   // WorkerThread::Observer implementation.

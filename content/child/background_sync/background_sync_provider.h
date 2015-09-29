@@ -28,8 +28,6 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
   ~BackgroundSyncProvider() override;
 
   // blink::WebSyncProvider implementation
-  // TODO(jkarlin) convert int64_t handle_id to int handle_id in all
-  // WebSyncProvider functions.
   void registerBackgroundSync(
       const blink::WebSyncRegistration* options,
       blink::WebServiceWorkerRegistration* service_worker_registration,
@@ -62,7 +60,7 @@ class BackgroundSyncProvider : public blink::WebSyncProvider {
       blink::WebSyncNotifyWhenDoneCallbacks* callbacks) override;
 
   void DuplicateRegistrationHandle(
-      int handle_id,
+      int64_t handle_id,
       const BackgroundSyncService::DuplicateRegistrationHandleCallback&
           callback);
 

@@ -31,7 +31,7 @@ class CONTENT_EXPORT BackgroundSyncClientImpl
       mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
 
   // BackgroundSyncServiceClient methods:
-  void Sync(int handle_id, const SyncCallback& callback) override;
+  void Sync(int64_t handle_id, const SyncCallback& callback) override;
   void SyncDidGetRegistration(int64_t callback_id,
                               BackgroundSyncError error,
                               SyncRegistrationPtr registration);

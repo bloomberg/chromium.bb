@@ -189,16 +189,17 @@ BackgroundSyncManager::DuplicateRegistrationHandle(
   return CreateRegistrationHandle(ref_registration->get());
 }
 
-void BackgroundSyncManager::OnRegistrationDeleted(int64 registration_id,
+void BackgroundSyncManager::OnRegistrationDeleted(int64 sw_registration_id,
                                                   const GURL& pattern) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Operations already in the queue will either fail when they write to storage
   // or return stale results based on registrations loaded in memory. This is
   // inconsequential since the service worker is gone.
-  op_scheduler_.ScheduleOperation(base::Bind(
-      &BackgroundSyncManager::OnRegistrationDeletedImpl,
-      weak_ptr_factory_.GetWeakPtr(), registration_id, MakeEmptyCompletion()));
+  op_scheduler_.ScheduleOperation(
+      base::Bind(&BackgroundSyncManager::OnRegistrationDeletedImpl,
+                 weak_ptr_factory_.GetWeakPtr(), sw_registration_id,
+                 MakeEmptyCompletion()));
 }
 
 void BackgroundSyncManager::OnStorageWiped() {
@@ -1215,13 +1216,13 @@ void BackgroundSyncManager::OnAllSyncEventsCompleted(
 }
 
 void BackgroundSyncManager::OnRegistrationDeletedImpl(
-    int64 registration_id,
+    int64 sw_registration_id,
     const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // The backend (ServiceWorkerStorage) will delete the data, so just delete the
   // memory representation here.
-  active_registrations_.erase(registration_id);
+  active_registrations_.erase(sw_registration_id);
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                 base::Bind(callback));
 }
