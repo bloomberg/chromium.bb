@@ -1,0 +1,3 @@
+
+PASS
+crbug.com/522673: Return the correct width for images with broken data: uri's.

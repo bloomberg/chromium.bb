@@ -41,8 +41,6 @@ public:
     void notifyFinished(Resource*) override;
 
 private:
-    Timer<HTMLImageLoader> m_loadFallbackContentTimer;
-    void timerFired(Timer<HTMLImageLoader>*);
     explicit HTMLImageLoader(Element*);
     void noImageResourceToLoad() override;
     void ensureFallbackContent();

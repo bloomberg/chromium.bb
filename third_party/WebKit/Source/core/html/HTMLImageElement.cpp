@@ -691,7 +691,10 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     }
     imageLoader().updateFromElement(behavior, m_referrerPolicy);
 
-    if (imageLoader().image() || (imageLoader().hasPendingActivity() && !imageSourceURL().isEmpty()))
+    // Images such as data: uri's can return immediately and may already have errored out.
+    bool imageHasLoaded = imageLoader().image() && !imageLoader().image()->errorOccurred();
+    bool imageStillLoading = !imageHasLoaded && imageLoader().hasPendingActivity() && !imageLoader().hasPendingError() && !imageSourceURL().isEmpty();
+    if (imageHasLoaded || imageStillLoading)
         ensurePrimaryContent();
     else
         ensureFallbackContent();

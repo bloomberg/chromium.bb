@@ -106,6 +106,11 @@ public:
         return m_hasPendingLoadEvent || m_hasPendingErrorEvent || m_pendingTask;
     }
 
+    bool hasPendingError() const
+    {
+        return m_hasPendingErrorEvent;
+    }
+
     void dispatchPendingEvent(ImageEventSender*);
 
     static void dispatchPendingLoadEvents();

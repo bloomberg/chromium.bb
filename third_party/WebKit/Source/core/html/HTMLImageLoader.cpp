@@ -38,7 +38,6 @@ using namespace HTMLNames;
 
 HTMLImageLoader::HTMLImageLoader(Element* element)
     : ImageLoader(element)
-    , m_loadFallbackContentTimer(this, &HTMLImageLoader::timerFired)
 {
 }
 
@@ -102,14 +101,7 @@ void HTMLImageLoader::notifyFinished(Resource*)
 
 void HTMLImageLoader::ensureFallbackContent()
 {
-    if (image()->url().protocolIsData())
-        m_loadFallbackContentTimer.startOneShot(0, FROM_HERE);
-    else
-        loadFallbackContentForElement(element());
-}
-
-void HTMLImageLoader::timerFired(Timer<HTMLImageLoader>*)
-{
     loadFallbackContentForElement(element());
 }
+
 }
