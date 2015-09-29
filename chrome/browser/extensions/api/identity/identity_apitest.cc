@@ -12,6 +12,13 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/mock_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
+#include "extensions/common/extension_builder.h"
+#endif
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -339,6 +346,12 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
       IdentityGetAuthTokenFunction::StartLoginAccessTokenRequest();
     }
   }
+
+#if defined(OS_CHROMEOS)
+  void StartDeviceLoginAccessTokenRequest() override {
+    StartLoginAccessTokenRequest();
+  }
+#endif
 
   void ShowLoginPopup() override {
     EXPECT_FALSE(login_ui_shown_);
@@ -1613,6 +1626,84 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ScopesEmailFooBar) {
   EXPECT_TRUE(ContainsKey(token_key->scopes, "foo"));
   EXPECT_TRUE(ContainsKey(token_key->scopes, "bar"));
 }
+
+
+#if defined(OS_CHROMEOS)
+class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
+ public:
+  GetAuthTokenFunctionPublicSessionTest()
+      : user_manager_(new chromeos::MockUserManager) {}
+
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+     GetAuthTokenFunctionTest::SetUpInProcessBrowserTestFixture();
+
+     // Set up the user manager to fake a public session.
+     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
+         .WillRepeatedly(Return(false));
+     EXPECT_CALL(*user_manager_, IsLoggedInAsPublicAccount())
+         .WillRepeatedly(Return(true));
+
+    // Set up fake install attributes to make the device appeared as
+    // enterprise-managed.
+    scoped_ptr<policy::StubEnterpriseInstallAttributes> attributes(
+        new policy::StubEnterpriseInstallAttributes());
+    attributes->SetDomain("example.com");
+    attributes->SetRegistrationUser("user@example.com");
+    policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+        attributes.release());
+  }
+
+  scoped_refptr<Extension> CreateTestExtension(const std::string& id) {
+    return ExtensionBuilder()
+        .SetManifest(
+             DictionaryBuilder()
+                 .Set("name", "Test")
+                 .Set("version", "1.0")
+                 .Set(
+                     "oauth2",
+                     DictionaryBuilder()
+                         .Set("client_id", "clientId")
+                         .Set(
+                             "scopes",
+                             ListBuilder().Append("scope1"))))
+        .SetLocation(Manifest::UNPACKED)
+        .SetID(id)
+        .Build();
+  }
+
+  // Owned by |user_manager_enabler|.
+  chromeos::MockUserManager* user_manager_;
+};
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonWhitelisted) {
+  // GetAuthToken() should return UserNotSignedIn in public sessions for
+  // non-whitelisted extensions.
+  chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager_);
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateTestExtension("test-id"));
+  std::string error = utils::RunFunctionAndReturnError(
+      func.get(), "[]", browser());
+  EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
+  EXPECT_FALSE(func->login_ui_shown());
+  EXPECT_FALSE(func->scope_ui_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
+  // GetAuthToken() should return a token for whitelisted extensions.
+  chromeos::ScopedUserManagerEnabler user_manager_enabler(user_manager_);
+  scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
+  func->set_extension(CreateTestExtension("ljacajndfccfgnfohlgkdphmbnpkjflk"));
+  func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  scoped_ptr<base::Value> value(
+      utils::RunFunctionAndReturnSingleResult(func.get(), "[{}]", browser()));
+  std::string access_token;
+  EXPECT_TRUE(value->GetAsString(&access_token));
+  EXPECT_EQ(std::string(kAccessToken), access_token);
+}
+
+#endif
+
 
 class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
  protected:

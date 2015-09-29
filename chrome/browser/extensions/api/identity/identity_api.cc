@@ -72,6 +72,16 @@ namespace {
 static const char kChromiumDomainRedirectUrlPattern[] =
     "https://%s.chromiumapp.org/";
 
+#if defined(OS_CHROMEOS)
+// The list of apps that are allowed to use the Identity API to retrieve the
+// token from the device robot account in a public session.
+const char* const kPublicSessionAllowedOrigins[] = {
+    // Chrome Remote Desktop - Chromium branding.
+    "chrome-extension://ljacajndfccfgnfohlgkdphmbnpkjflk/",
+    // Chrome Remote Desktop - Official branding.
+    "chrome-extension://gbchcmhmhahfdphkhkmpfmihenigjmpp/"};
+#endif
+
 std::string GetPrimaryAccountId(content::BrowserContext* context) {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(Profile::FromBrowserContext(context));
@@ -371,8 +381,16 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
 #if defined(OS_CHROMEOS)
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
-      connector->IsEnterpriseManaged()) {
+  bool is_kiosk = user_manager::UserManager::Get()->IsLoggedInAsKioskApp();
+  bool is_public_session =
+      user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
+
+  if (connector->IsEnterpriseManaged() && (is_kiosk || is_public_session)) {
+    if (is_public_session && !IsOriginWhitelistedInPublicSession()) {
+      CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+      return true;
+    }
+
     StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE);
     return true;
   }
@@ -494,8 +512,15 @@ void IdentityGetAuthTokenFunction::StartMintToken(
     switch (cache_status) {
       case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
 #if defined(OS_CHROMEOS)
-        // Always force minting token for ChromeOS kiosk app.
-        if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp()) {
+        // Always force minting token for ChromeOS kiosk app and public session.
+        if (user_manager::UserManager::Get()->IsLoggedInAsPublicAccount() &&
+            !IsOriginWhitelistedInPublicSession()) {
+          CompleteFunctionWithError(identity_constants::kUserNotSignedIn);
+          return;
+        }
+
+        if (user_manager::UserManager::Get()->IsLoggedInAsKioskApp() ||
+            user_manager::UserManager::Get()->IsLoggedInAsPublicAccount()) {
           gaia_mint_token_mode_ = OAuth2MintTokenFlow::MODE_MINT_TOKEN_FORCE;
           policy::BrowserPolicyConnectorChromeOS* connector =
               g_browser_process->platform_part()
@@ -752,6 +777,19 @@ void IdentityGetAuthTokenFunction::StartDeviceLoginAccessTokenRequest() {
       service->StartRequest(service->GetRobotAccountId(),
                             scopes,
                             this);
+}
+
+bool IdentityGetAuthTokenFunction::IsOriginWhitelistedInPublicSession() {
+  DCHECK(extension());
+  GURL extension_url = extension()->url();
+  for (size_t i = 0; i < arraysize(kPublicSessionAllowedOrigins); i++) {
+    URLPattern allowed_origin(URLPattern::SCHEME_ALL,
+                              kPublicSessionAllowedOrigins[i]);
+    if (allowed_origin.MatchesSecurityOrigin(extension_url)) {
+      return true;
+    }
+  }
+  return false;
 }
 #endif
 

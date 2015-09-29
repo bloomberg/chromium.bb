@@ -26,6 +26,7 @@ const char* const kPublicSessionWhitelist[] = {
     "haiffjcadagjlijoggckpgfnoeiflnem",  // Citrix Receiver
     "mfaihdlpglflfgpfjcifdjdjcckigekc",  // ARC Runtime
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
+    "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
@@ -100,6 +101,7 @@ const char* const kPublicSessionWhitelist[] = {
     "ongnjlefhnoajpbodoldndkbkdgfomlp",  // Show Managed Storage
     "ilnpadgckeacioehlommkaafedibdeob",  // Enterprise DeviceAttributes
     "oflckobdemeldmjddmlbaiaookhhcngo",  // Citrix Receiver QA version
+    "ljacajndfccfgnfohlgkdphmbnpkjflk",  // Chrome Remote Desktop (Dev Build)
 };
 
 }  // namespace
