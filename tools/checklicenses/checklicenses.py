@@ -309,6 +309,12 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'GPL (v3 or later)',
         'UNKNOWN',  # http://crbug.com/98123
     ],
+    # This file's license is actually "BSD-like" but "LGPL (v2.1 or later)" has
+    # been appended because there is a test string inside that contains the
+    # LGPL header. See http://crbug.com/537408
+    'third_party/ffmpeg/chromium/scripts/credits_updater_unittest.py': [
+        'BSD-like LGPL (v2.1 or later)',
+    ],
     'third_party/fontconfig': [
         # https://bugs.freedesktop.org/show_bug.cgi?id=73401
         'UNKNOWN',
