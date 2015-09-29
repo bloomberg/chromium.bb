@@ -148,6 +148,7 @@ void LocalFrame::createView(const IntSize& viewportSize, const Color& background
     ScrollbarMode horizontalScrollbarMode, bool horizontalLock,
     ScrollbarMode verticalScrollbarMode, bool verticalLock)
 {
+    verifyOwnerPointerAndCrashIfNecessary();
     ASSERT(this);
     ASSERT(page());
 

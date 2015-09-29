@@ -106,6 +106,7 @@ static void moveWidgetToParentSoon(Widget* child, FrameView* parent)
 
 HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tagName, Document& document)
     : HTMLElement(tagName, document)
+    , m_magicValue(0xdecaf)
     , m_contentFrame(nullptr)
     , m_widget(nullptr)
     , m_sandboxFlags(SandboxNone)
@@ -167,9 +168,13 @@ void HTMLFrameOwnerElement::disconnectContentFrame()
 
 HTMLFrameOwnerElement::~HTMLFrameOwnerElement()
 {
+    m_magicValue = 0xdeadcaf;
+
+#if !ENABLE(OILPAN)
     // An owner must by now have been informed of detachment
     // when the frame was closed.
-    ASSERT(!m_contentFrame);
+    RELEASE_ASSERT(!m_contentFrame);
+#endif
 }
 
 Document* HTMLFrameOwnerElement::contentDocument() const

@@ -85,6 +85,11 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    // TODO(bokan): Temporary, used for debugging crbug.com/519752. This will
+    // help us tell that a LocalFrame's m_owner pointer is actually pointing to
+    // an HTMLFrameOwnerElement.
+    volatile unsigned m_magicValue;
+
 protected:
     HTMLFrameOwnerElement(const QualifiedName& tagName, Document&);
     void setSandboxFlags(SandboxFlags);
