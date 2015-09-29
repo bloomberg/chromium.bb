@@ -1934,6 +1934,14 @@ bool TextureManager::ValidateTexImage(
         error_state, function_name, args.target, "target");
     return false;
   }
+  // TODO(ccameron): Add a separate texture from |texture_target| for
+  // [Compressed]Tex[Sub]Image2D and related functions.
+  // http://crbug.com/536854
+  if (args.target == GL_TEXTURE_RECTANGLE_ARB) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, args.target, "target");
+    return false;
+  }
   if (!ValidateTextureParameters(
       error_state, function_name, args.format, args.type,
       args.internal_format, args.level)) {

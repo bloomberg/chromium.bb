@@ -1807,22 +1807,6 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2D) {
       GL_TEXTURE_RECTANGLE_ARB, client_texture_id_, kServiceTextureId);
   ASSERT_TRUE(GetTexture(client_texture_id_) != NULL);
 
-  EXPECT_CALL(*gl_, GetError())
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_,
-              TexImage2D(target,
-                         level,
-                         internal_format,
-                         width,
-                         height,
-                         0,
-                         format,
-                         type,
-                         _))
-      .Times(1)
-      .RetiresOnSaturation();
   TexImage2D cmd;
   cmd.Init(target,
            level,
@@ -1835,7 +1819,7 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2D) {
            kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DInvalid) {
@@ -1868,9 +1852,7 @@ TEST_P(GLES2DecoderManualInitTest, ARBTextureRectangleTexImage2DInvalid) {
            kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
-  // TexImage2D may only be used with level 0 on GL_TEXTURE_RECTANGLE_ARB
-  // targets.
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_P(GLES2DecoderManualInitTest, TexSubImage2DClearsAfterTexImage2DNULL) {
