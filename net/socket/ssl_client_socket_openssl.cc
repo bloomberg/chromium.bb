@@ -290,11 +290,6 @@ class SSLClientSocketOpenSSL::SSLContext {
     return socket->PrivateKeyTypeCallback();
   }
 
-  static int PrivateKeySupportsDigestCallback(SSL* ssl, const EVP_MD* md) {
-    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
-    return socket->PrivateKeySupportsDigestCallback(md);
-  }
-
   static size_t PrivateKeyMaxSignatureLenCallback(SSL* ssl) {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
     return socket->PrivateKeyMaxSignatureLenCallback();
@@ -338,7 +333,6 @@ class SSLClientSocketOpenSSL::SSLContext {
 const SSL_PRIVATE_KEY_METHOD
     SSLClientSocketOpenSSL::SSLContext::kPrivateKeyMethod = {
         &SSLClientSocketOpenSSL::SSLContext::PrivateKeyTypeCallback,
-        &SSLClientSocketOpenSSL::SSLContext::PrivateKeySupportsDigestCallback,
         &SSLClientSocketOpenSSL::SSLContext::PrivateKeyMaxSignatureLenCallback,
         &SSLClientSocketOpenSSL::SSLContext::PrivateKeySignCallback,
         &SSLClientSocketOpenSSL::SSLContext::PrivateKeySignCompleteCallback,
@@ -1829,7 +1823,35 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
     }
 
     SSL_set_private_key_method(ssl_, &SSLContext::kPrivateKeyMethod);
-#endif
+
+    std::vector<SSLPrivateKey::Hash> digest_prefs =
+        private_key_->GetDigestPreferences();
+
+    size_t digests_len = digest_prefs.size();
+    std::vector<int> digests;
+    for (size_t i = 0; i < digests_len; i++) {
+      switch (digest_prefs[i]) {
+        case SSLPrivateKey::Hash::SHA1:
+          digests.push_back(NID_sha1);
+          break;
+        case SSLPrivateKey::Hash::SHA256:
+          digests.push_back(NID_sha256);
+          break;
+        case SSLPrivateKey::Hash::SHA384:
+          digests.push_back(NID_sha384);
+          break;
+        case SSLPrivateKey::Hash::SHA512:
+          digests.push_back(NID_sha512);
+          break;
+        case SSLPrivateKey::Hash::MD5_SHA1:
+          // MD5-SHA1 is not used in TLS 1.2.
+          break;
+      }
+    }
+
+    SSL_set_private_key_digest_prefs(ssl_, vector_as_array(&digests),
+                                     digests.size());
+#endif  // !OS_NACL
 
     int cert_count = 1 + sk_X509_num(chain.get());
     net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
@@ -2064,11 +2086,6 @@ int SSLClientSocketOpenSSL::PrivateKeyTypeCallback() {
   }
   NOTREACHED();
   return EVP_PKEY_NONE;
-}
-
-int SSLClientSocketOpenSSL::PrivateKeySupportsDigestCallback(const EVP_MD* md) {
-  SSLPrivateKey::Hash hash;
-  return EVP_MDToPrivateKeyHash(md, &hash) && private_key_->SupportsHash(hash);
 }
 
 size_t SSLClientSocketOpenSSL::PrivateKeyMaxSignatureLenCallback() {

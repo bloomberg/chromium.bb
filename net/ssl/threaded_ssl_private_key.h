@@ -35,7 +35,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
     // These methods behave as those of the same name on SSLPrivateKey. They
     // must be callable on any thread.
     virtual Type GetType() = 0;
-    virtual bool SupportsHash(Hash hash) = 0;
+    virtual std::vector<SSLPrivateKey::Hash> GetDigestPreferences() = 0;
     virtual size_t GetMaxSignatureLengthInBytes() = 0;
 
     // Signs |input| as a digest of type |hash|. On sucess it returns OK and
@@ -56,7 +56,7 @@ class ThreadedSSLPrivateKey : public SSLPrivateKey {
 
   // SSLPrivateKey implementation.
   Type GetType() override;
-  bool SupportsHash(Hash hash) override;
+  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override;
   size_t GetMaxSignatureLengthInBytes() override;
   void SignDigest(Hash hash,
                   const base::StringPiece& input,

@@ -108,7 +108,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
 
   // net::SSLPrivateKey:
   Type GetType() override;
-  bool SupportsHash(Hash hash) override;
+  std::vector<net::SSLPrivateKey::Hash> GetDigestPreferences() override;
   size_t GetMaxSignatureLengthInBytes() override;
   void SignDigest(Hash hash,
                   const base::StringPiece& input,
@@ -228,9 +228,10 @@ CertificateProviderService::SSLPrivateKey::GetType() {
   return cert_info_.type;
 }
 
-bool CertificateProviderService::SSLPrivateKey::SupportsHash(Hash hash) {
+std::vector<net::SSLPrivateKey::Hash>
+CertificateProviderService::SSLPrivateKey::GetDigestPreferences() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return ContainsValue(cert_info_.supported_hashes, hash);
+  return cert_info_.supported_hashes;
 }
 
 size_t

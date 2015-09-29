@@ -20,7 +20,7 @@ namespace certificateProvider {
 
     // Must be set to all hashes supported for this certificate. This extension
     // will only be asked for signatures of digests calculated with one of these
-    // hash algorithms.
+    // hash algorithms. This should be in order of decreasing hash preference.
     Hash[] supportedHashes;
   };
 

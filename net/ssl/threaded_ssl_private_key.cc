@@ -62,8 +62,8 @@ SSLPrivateKey::Type ThreadedSSLPrivateKey::GetType() {
   return core_->delegate()->GetType();
 }
 
-bool ThreadedSSLPrivateKey::SupportsHash(SSLPrivateKey::Hash hash) {
-  return core_->delegate()->SupportsHash(hash);
+std::vector<SSLPrivateKey::Hash> ThreadedSSLPrivateKey::GetDigestPreferences() {
+  return core_->delegate()->GetDigestPreferences();
 }
 
 size_t ThreadedSSLPrivateKey::GetMaxSignatureLengthInBytes() {

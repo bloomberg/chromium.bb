@@ -102,7 +102,13 @@ class SSLPlatformKeyMac : public ThreadedSSLPrivateKey::Delegate {
     }
   }
 
-  bool SupportsHash(SSLPrivateKey::Hash hash) override { return true; }
+  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
+    static const SSLPrivateKey::Hash kHashes[] = {
+        SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
+        SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1};
+    return std::vector<SSLPrivateKey::Hash>(kHashes,
+                                            kHashes + arraysize(kHashes));
+  }
 
   size_t GetMaxSignatureLengthInBytes() override {
     if (cssm_key_->KeyHeader.AlgorithmId == CSSM_ALGID_RSA) {

@@ -81,11 +81,14 @@ class SSLPlatformKeyCAPI : public ThreadedSSLPrivateKey::Delegate {
 
   SSLPrivateKey::Type GetType() override { return SSLPrivateKey::Type::RSA; }
 
-  bool SupportsHash(SSLPrivateKey::Hash hash) override {
+  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
     // If the key is in CAPI, assume conservatively that the CAPI service
     // provider may only be able to sign pre-TLS-1.2 and SHA-1 hashes.
-    return hash == SSLPrivateKey::Hash::MD5_SHA1 ||
-           hash == SSLPrivateKey::Hash::SHA1;
+    static const SSLPrivateKey::Hash kHashes[] = {
+        SSLPrivateKey::Hash::SHA1, SSLPrivateKey::Hash::SHA512,
+        SSLPrivateKey::Hash::SHA384, SSLPrivateKey::Hash::SHA256};
+    return std::vector<SSLPrivateKey::Hash>(kHashes,
+                                            kHashes + arraysize(kHashes));
   }
 
   size_t GetMaxSignatureLengthInBytes() override { return max_length_; }
@@ -175,20 +178,23 @@ class SSLPlatformKeyCNG : public ThreadedSSLPrivateKey::Delegate {
 
   SSLPrivateKey::Type GetType() override { return type_; }
 
-  bool SupportsHash(SSLPrivateKey::Hash hash) override {
-    // If the key is a 1024-bit RSA, assume conservatively that it may only be
-    // able to sign SHA-1 hashes. This is the case for older Estonian ID cards
-    // that have 1024-bit RSA keys. (For an RSA key, the maximum signature
-    // length is the size of the modulus in bytes.)
-    //
-    // CNG does provide NCryptIsAlgSupported and NCryptEnumAlgorithms functions,
-    // however they seem to both return NTE_NOT_SUPPORTED when querying the
-    // NCRYPT_PROV_HANDLE at the key's NCRYPT_PROVIDER_HANDLE_PROPERTY.
+  std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
+    // If this is an under 1024-bit RSA key, conservatively prefer to sign
+    // SHA-1 hashes. Older Estonian ID cards can only sign SHA-1 hashes.
+    // However, if the server doesn't advertise SHA-1, the remaining hashes
+    // might still be supported.
     if (type_ == SSLPrivateKey::Type::RSA && max_length_ <= 1024 / 8) {
-      return hash == SSLPrivateKey::Hash::MD5_SHA1 ||
-             hash == SSLPrivateKey::Hash::SHA1;
+      static const SSLPrivateKey::Hash kHashesSpecial[] = {
+          SSLPrivateKey::Hash::SHA1, SSLPrivateKey::Hash::SHA512,
+          SSLPrivateKey::Hash::SHA384, SSLPrivateKey::Hash::SHA256};
+      return std::vector<SSLPrivateKey::Hash>(
+          kHashesSpecial, kHashesSpecial + arraysize(kHashesSpecial));
     }
-    return true;
+    static const SSLPrivateKey::Hash kHashes[] = {
+        SSLPrivateKey::Hash::SHA512, SSLPrivateKey::Hash::SHA384,
+        SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1};
+    return std::vector<SSLPrivateKey::Hash>(kHashes,
+                                            kHashes + arraysize(kHashes));
   }
 
   size_t GetMaxSignatureLengthInBytes() override { return max_length_; }

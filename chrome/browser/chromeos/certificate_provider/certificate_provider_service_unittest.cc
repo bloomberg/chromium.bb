@@ -60,16 +60,8 @@ certificate_provider::CertificateInfo CreateCertInfo(
 
 bool IsKeyEqualToCertInfo(const certificate_provider::CertificateInfo& info,
                           net::SSLPrivateKey* key) {
-  const net::SSLPrivateKey::Hash hashes[] = {
-      net::SSLPrivateKey::Hash::MD5_SHA1, net::SSLPrivateKey::Hash::SHA1,
-      net::SSLPrivateKey::Hash::SHA256, net::SSLPrivateKey::Hash::SHA384,
-      net::SSLPrivateKey::Hash::SHA512};
-
-  for (const net::SSLPrivateKey::Hash hash : hashes) {
-    if (ContainsValue(info.supported_hashes, hash) != key->SupportsHash(hash)) {
-      return false;
-    }
-  }
+  if (info.supported_hashes != key->GetDigestPreferences())
+    return false;
 
   return key->GetType() == info.type &&
          key->GetMaxSignatureLengthInBytes() ==

@@ -46,8 +46,8 @@ class SSLPrivateKey {
   // BoringSSL.
   virtual Type GetType() = 0;
 
-  // Returns true if the key supports signing hashes of type |hash|.
-  virtual bool SupportsHash(Hash hash) = 0;
+  // Returns the digests that are supported by the key in decreasing preference.
+  virtual std::vector<SSLPrivateKey::Hash> GetDigestPreferences() = 0;
 
   // Returns the maximum size of a signature, in bytes. For an RSA key, this
   // must be the size of the modulus.
