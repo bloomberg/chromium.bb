@@ -100,6 +100,20 @@ class MessageCenterImplTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImplTest);
 };
 
+class MessageCenterImplTestWithoutChangeQueue : public MessageCenterImplTest {
+ public:
+  MessageCenterImplTestWithoutChangeQueue() {}
+  ~MessageCenterImplTestWithoutChangeQueue() override {}
+
+  void SetUp() override {
+    MessageCenterImplTest::SetUp();
+    message_center()->DisableChangeQueueForTest();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterImplTestWithoutChangeQueue);
+};
+
 namespace {
 
 class ToggledNotificationBlocker : public NotificationBlocker {
@@ -1091,6 +1105,60 @@ TEST_F(MessageCenterImplTest, NotifierEnabledChanged) {
   notifier_settings_observer()->NotifierEnabledChanged(
       NotifierId(NotifierId::APPLICATION, "app1"), false);
   ASSERT_EQ(0u, message_center()->NotificationCount());
+}
+
+TEST_F(MessageCenterImplTestWithoutChangeQueue,
+       UpdateWhileMessageCenterVisible) {
+  std::string id("id1");
+  std::string id2("id2");
+  NotifierId notifier_id1(NotifierId::APPLICATION, "app1");
+
+  // First, add and update a notification to ensure updates happen
+  // normally.
+  scoped_ptr<Notification> notification(CreateSimpleNotification(id));
+  message_center()->AddNotification(notification.Pass());
+  notification.reset(CreateSimpleNotification(id2));
+  message_center()->UpdateNotification(id, notification.Pass());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id2));
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
+
+  // Then open the message center.
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+
+  // Then update a notification; the update should have propagated.
+  notification.reset(CreateSimpleNotification(id));
+  message_center()->UpdateNotification(id2, notification.Pass());
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id2));
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+}
+
+TEST_F(MessageCenterImplTestWithoutChangeQueue, AddWhileMessageCenterVisible) {
+  std::string id("id1");
+
+  // Then open the message center.
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+
+  // Add a notification and confirm the adding should have propagated.
+  scoped_ptr<Notification> notification(CreateSimpleNotification(id));
+  message_center()->AddNotification(notification.Pass());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+}
+
+TEST_F(MessageCenterImplTestWithoutChangeQueue,
+       RemoveWhileMessageCenterVisible) {
+  std::string id("id1");
+
+  // First, add a notification to ensure updates happen normally.
+  scoped_ptr<Notification> notification(CreateSimpleNotification(id));
+  message_center()->AddNotification(notification.Pass());
+  EXPECT_TRUE(message_center()->FindVisibleNotificationById(id));
+
+  // Then open the message center.
+  message_center()->SetVisibility(VISIBILITY_MESSAGE_CENTER);
+
+  // Then update a notification; the update should have propagated.
+  message_center()->RemoveNotification(id, false);
+  EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));
 }
 
 }  // namespace internal

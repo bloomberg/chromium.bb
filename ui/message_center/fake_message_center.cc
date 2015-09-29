@@ -140,4 +140,6 @@ void FakeMessageCenter::PausePopupTimers() {}
 
 void FakeMessageCenter::DisableTimersForTest() {}
 
+void FakeMessageCenter::DisableChangeQueueForTest() {}
+
 }  // namespace message_center

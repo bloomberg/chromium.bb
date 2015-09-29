@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <deque>
 
+#include "base/command_line.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/message_center/message_center_style.h"
+#include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_blocker.h"
@@ -351,7 +353,11 @@ MessageCenterImpl::MessageCenterImpl()
       popup_timers_controller_(new PopupTimersController(this)),
       settings_provider_(NULL) {
   notification_list_.reset(new NotificationList());
-  notification_queue_.reset(new internal::ChangeQueue());
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableMessageCenterChangesWhileOpen)) {
+    notification_queue_.reset(new internal::ChangeQueue());
+  }
 }
 
 MessageCenterImpl::~MessageCenterImpl() {
@@ -430,8 +436,10 @@ void MessageCenterImpl::SetVisibility(Visibility visibility) {
         MessageCenterObserver, observer_list_, OnNotificationUpdated(id));
   }
 
-  if (visibility == VISIBILITY_TRANSIENT)
+  if (notification_queue_ &&
+      visibility == VISIBILITY_TRANSIENT) {
     notification_queue_->ApplyChanges(this);
+  }
 
   FOR_EACH_OBSERVER(MessageCenterObserver,
                     observer_list_,
@@ -481,7 +489,8 @@ NotificationList::PopupNotifications
 }
 
 void MessageCenterImpl::ForceNotificationFlush(const std::string& id) {
-  notification_queue_->ApplyChangesForId(this, id);
+  if (notification_queue_)
+    notification_queue_->ApplyChangesForId(this, id);
 }
 
 //------------------------------------------------------------------------------
@@ -492,7 +501,8 @@ void MessageCenterImpl::AddNotification(scoped_ptr<Notification> notification) {
   for (size_t i = 0; i < blockers_.size(); ++i)
     blockers_[i]->CheckState();
 
-  if (notification_list_->is_message_center_visible()) {
+  if (notification_queue_ &&
+      notification_list_->is_message_center_visible()) {
     notification_queue_->AddNotification(notification.Pass());
     return;
   }
@@ -527,7 +537,8 @@ void MessageCenterImpl::UpdateNotification(
   for (size_t i = 0; i < blockers_.size(); ++i)
     blockers_[i]->CheckState();
 
-  if (notification_list_->is_message_center_visible()) {
+  if (notification_queue_ &&
+      notification_list_->is_message_center_visible()) {
     // We will allow notifications that are progress types (and stay progress
     // types) to be updated even if the message center is open.  There are 3
     // requirements here:
@@ -574,7 +585,8 @@ void MessageCenterImpl::UpdateNotificationImmediately(
 
 void MessageCenterImpl::RemoveNotification(const std::string& id,
                                            bool by_user) {
-  if (!by_user && notification_list_->is_message_center_visible()) {
+  if (notification_queue_ && !by_user &&
+      notification_list_->is_message_center_visible()) {
     notification_queue_->EraseNotification(id, by_user);
     return;
   }
@@ -655,8 +667,10 @@ void MessageCenterImpl::RemoveNotifications(
 void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
                                             const gfx::Image& image) {
   bool updated = false;
-  Notification* queue_notification = notification_queue_->GetLatestNotification(
-      notification_id);
+  Notification* queue_notification =
+      notification_queue_
+          ? notification_queue_->GetLatestNotification(notification_id)
+          : NULL;
 
   if (queue_notification) {
     queue_notification->set_icon(image);
@@ -674,8 +688,10 @@ void MessageCenterImpl::SetNotificationIcon(const std::string& notification_id,
 void MessageCenterImpl::SetNotificationImage(const std::string& notification_id,
                                              const gfx::Image& image) {
   bool updated = false;
-  Notification* queue_notification = notification_queue_->GetLatestNotification(
-      notification_id);
+  Notification* queue_notification =
+      notification_queue_
+          ? notification_queue_->GetLatestNotification(notification_id)
+          : NULL;
 
   if (queue_notification) {
     queue_notification->set_image(image);
@@ -694,8 +710,10 @@ void MessageCenterImpl::SetNotificationButtonIcon(
     const std::string& notification_id, int button_index,
     const gfx::Image& image) {
   bool updated = false;
-  Notification* queue_notification = notification_queue_->GetLatestNotification(
-      notification_id);
+  Notification* queue_notification =
+      notification_queue_
+          ? notification_queue_->GetLatestNotification(notification_id)
+          : NULL;
 
   if (queue_notification) {
     queue_notification->SetButtonIcon(button_index, image);
@@ -846,6 +864,10 @@ void MessageCenterImpl::PausePopupTimers() {
 
 void MessageCenterImpl::DisableTimersForTest() {
   popup_timers_controller_.reset();
+}
+
+void MessageCenterImpl::DisableChangeQueueForTest() {
+  notification_queue_.reset();
 }
 
 }  // namespace message_center

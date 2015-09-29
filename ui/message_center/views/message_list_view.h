@@ -11,6 +11,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/message_center/message_center_export.h"
 #include "ui/message_center/notification.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
@@ -46,6 +47,9 @@ class MessageListView : public views::View,
   void ResetRepositionSession();
   void ClearAllNotifications(const gfx::Rect& visible_scroll_rect);
 
+  MESSAGE_CENTER_EXPORT void SetRepositionTargetForTest(
+      const gfx::Rect& target_rect);
+
  protected:
   // Overridden from views::View.
   void Layout() override;
@@ -59,6 +63,8 @@ class MessageListView : public views::View,
   void OnBoundsAnimatorDone(views::BoundsAnimator* animator) override;
 
  private:
+  friend class MessageCenterViewTest;
+
   bool IsValidChild(const views::View* child) const;
   void DoUpdateIfPossible();
 
@@ -71,7 +77,10 @@ class MessageListView : public views::View,
 
   // Schedules animation for a child to the specified position. Returns false
   // if |child| will disappear after the animation.
-  bool AnimateChild(views::View* child, int top, int height);
+  bool AnimateChild(views::View* child,
+                    int top,
+                    int height,
+                    bool animate_even_on_move);
 
   // Animate clearing one notification.
   void AnimateClearingOneNotification();
@@ -91,8 +100,12 @@ class MessageListView : public views::View,
   std::set<views::View*> deleted_when_done_;
   std::list<views::View*> clearing_all_views_;
   views::BoundsAnimator animator_;
-  base::WeakPtrFactory<MessageListView> weak_ptr_factory_;
 
+  // If true, the message loop will be quitted after the animation finishes.
+  // This is just for tests and has no setter.
+  bool quit_message_loop_after_animation_for_test_;
+
+  base::WeakPtrFactory<MessageListView> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(MessageListView);
 };
 

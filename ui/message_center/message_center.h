@@ -177,9 +177,11 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
  protected:
   friend class ::DownloadNotification;
   friend class MessageCenterImplTest;
+  friend class MessageCenterImplTestWithoutChangeQueue;
   friend class TrayViewControllerTest;
   friend class test::MessagePopupCollectionTest;
   virtual void DisableTimersForTest() = 0;
+  virtual void DisableChangeQueueForTest() = 0;
 
   MessageCenter();
   virtual ~MessageCenter();

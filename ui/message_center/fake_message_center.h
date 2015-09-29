@@ -67,6 +67,7 @@ class FakeMessageCenter : public MessageCenter {
 
  protected:
   void DisableTimersForTest() override;
+  void DisableChangeQueueForTest() override;
 
  private:
   const NotificationList::Notifications empty_notifications_;

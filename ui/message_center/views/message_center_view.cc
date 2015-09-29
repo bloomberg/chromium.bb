@@ -455,6 +455,15 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   if (view_iter == notification_views_.end())
     return;
   NotificationView* view = view_iter->second;
+  // Set the item on the mouse cursor as the reposition target so that it
+  // should stick to the current position over the update.
+  for (const auto& hover_id_view : notification_views_) {
+    NotificationView* hover_view = hover_id_view.second;
+    if (hover_view->is_hover()) {
+      message_list_view_->SetRepositionTarget(hover_view->bounds());
+      break;
+    }
+  }
   // TODO(dimich): add MessageCenter::GetVisibleNotificationById(id)
   const NotificationList::Notifications& notifications =
       message_center_->GetVisibleNotifications();
