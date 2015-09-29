@@ -1266,13 +1266,19 @@ bool VisibleSelectionTemplate<EditingStrategy>::expandUsingGranularity(TextGranu
 }
 
 template <> CORE_TEMPLATE_EXPORT
-VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate()
+VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSelection)
+    : m_visibleSelection(visibleSelection)
 {
 }
 
 template <> CORE_TEMPLATE_EXPORT
-VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate(const VisibleSelection& visibleSelection)
-    : m_visibleSelection(visibleSelection)
+VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<EditingInComposedTreeStrategy>& visiblePosition)
+    : VisibleSelectionTemplate(VisibleSelection(visiblePosition.deepEquivalent(), visiblePosition.deepEquivalent(), visiblePosition.affinity()))
+{
+}
+
+template <> CORE_TEMPLATE_EXPORT
+VisibleSelectionTemplate<EditingInComposedTreeStrategy>::VisibleSelectionTemplate()
 {
 }
 
