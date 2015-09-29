@@ -184,7 +184,7 @@ TEST_F(BuilderTest, BasicDeps) {
   EXPECT_TRUE(c_record->waiting_on_resolution().empty());
 }
 
-// Tests that the should generate bit is set and propogated properly.
+// Tests that the "should generate" flag is set and propagated properly.
 TEST_F(BuilderTest, ShouldGenerate) {
   DefineToolchain();
 

@@ -277,7 +277,7 @@ void Target::PullDependentTarget(const Target* dep, bool is_public) {
     //
     // However, if the dependency is private:
     //   EXE -> INTERMEDIATE_SHLIB --[private]--> FINAL_SHLIB
-    // the dependency will not be propogated because INTERMEDIATE_SHLIB is
+    // the dependency will not be propagated because INTERMEDIATE_SHLIB is
     // not granting permission to call functiosn from FINAL_SHLIB. If EXE
     // wants to use functions (and link to) FINAL_SHLIB, it will need to do
     // so explicitly.
