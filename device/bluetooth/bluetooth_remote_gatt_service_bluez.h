@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_
 
 #include <map>
 #include <string>
@@ -25,16 +25,16 @@ class BluetoothGattCharacteristic;
 
 }  // namespace device
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothAdapterChromeOS;
-class BluetoothDeviceChromeOS;
-class BluetoothRemoteGattCharacteristicChromeOS;
-class BluetoothRemoteGattDescriptorChromeOS;
+class BluetoothAdapterBlueZ;
+class BluetoothDeviceBlueZ;
+class BluetoothRemoteGattCharacteristicBlueZ;
+class BluetoothRemoteGattDescriptorBlueZ;
 
-// The BluetoothRemoteGattServiceChromeOS class implements BluetootGattService
+// The BluetoothRemoteGattServiceBlueZ class implements BluetootGattService
 // for remote GATT services on the Chrome OS platform.
-class BluetoothRemoteGattServiceChromeOS
+class BluetoothRemoteGattServiceBlueZ
     : public device::BluetoothGattService,
       public bluez::BluetoothGattServiceClient::Observer,
       public bluez::BluetoothGattCharacteristicClient::Observer {
@@ -67,42 +67,42 @@ class BluetoothRemoteGattServiceChromeOS
       const std::string error_name);
 
   // Returns the adapter associated with this service.
-  BluetoothAdapterChromeOS* GetAdapter() const;
+  BluetoothAdapterBlueZ* GetAdapter() const;
 
   // Notifies its observers that the GATT service has changed. This is mainly
-  // used by BluetoothRemoteGattCharacteristicChromeOS instances to notify
+  // used by BluetoothRemoteGattCharacteristicBlueZ instances to notify
   // service observers when characteristic descriptors get added and removed.
   void NotifyServiceChanged();
 
   // Notifies its observers that a descriptor |descriptor| belonging to
   // characteristic |characteristic| has been added or removed. This is used
-  // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
+  // by BluetoothRemoteGattCharacteristicBlueZ instances to notify service
   // observers when characteristic descriptors get added and removed. If |added|
   // is true, an "Added" event will be sent. Otherwise, a "Removed" event will
   // be sent.
   void NotifyDescriptorAddedOrRemoved(
-      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
-      BluetoothRemoteGattDescriptorChromeOS* descriptor,
+      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
+      BluetoothRemoteGattDescriptorBlueZ* descriptor,
       bool added);
 
   // Notifies its observers that the value of a descriptor has changed. Called
-  // by BluetoothRemoteGattCharacteristicChromeOS instances to notify service
+  // by BluetoothRemoteGattCharacteristicBlueZ instances to notify service
   // observers.
   void NotifyDescriptorValueChanged(
-      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
-      BluetoothRemoteGattDescriptorChromeOS* descriptor,
+      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
+      BluetoothRemoteGattDescriptorBlueZ* descriptor,
       const std::vector<uint8>& value);
 
  private:
-  friend class BluetoothDeviceChromeOS;
+  friend class BluetoothDeviceBlueZ;
 
-  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicChromeOS*>
+  typedef std::map<dbus::ObjectPath, BluetoothRemoteGattCharacteristicBlueZ*>
       CharacteristicMap;
 
-  BluetoothRemoteGattServiceChromeOS(BluetoothAdapterChromeOS* adapter,
-                                     BluetoothDeviceChromeOS* device,
-                                     const dbus::ObjectPath& object_path);
-  ~BluetoothRemoteGattServiceChromeOS() override;
+  BluetoothRemoteGattServiceBlueZ(BluetoothAdapterBlueZ* adapter,
+                                  BluetoothDeviceBlueZ* device,
+                                  const dbus::ObjectPath& object_path);
+  ~BluetoothRemoteGattServiceBlueZ() override;
 
   // bluez::BluetoothGattServiceClient::Observer override.
   void GattServicePropertyChanged(const dbus::ObjectPath& object_path,
@@ -120,11 +120,11 @@ class BluetoothRemoteGattServiceChromeOS
 
   // The adapter associated with this service. It's ok to store a raw pointer
   // here since |adapter_| indirectly owns this instance.
-  BluetoothAdapterChromeOS* adapter_;
+  BluetoothAdapterBlueZ* adapter_;
 
   // The device this GATT service belongs to. It's ok to store a raw pointer
   // here since |device_| owns this instance.
-  BluetoothDeviceChromeOS* device_;
+  BluetoothDeviceBlueZ* device_;
 
   // Mapping from GATT characteristic object paths to characteristic objects.
   // owned by this service. Since the Chrome OS implementation uses object
@@ -138,11 +138,11 @@ class BluetoothRemoteGattServiceChromeOS
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothRemoteGattServiceChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattServiceBlueZ> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_BLUEZ_H_

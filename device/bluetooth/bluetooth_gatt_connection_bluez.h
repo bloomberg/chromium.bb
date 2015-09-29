@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_BLUEZ_H_
 
 #include <string>
 
@@ -19,19 +19,19 @@ class BluetoothAdapter;
 
 }  // namespace device
 
-namespace chromeos {
+namespace bluez {
 
-// BluetoothGattConnectionChromeOS implements BluetoothGattConnection for the
+// BluetoothGattConnectionBlueZ implements BluetoothGattConnection for the
 // Chrome OS platform.
-class BluetoothGattConnectionChromeOS
+class BluetoothGattConnectionBlueZ
     : public device::BluetoothGattConnection,
       public bluez::BluetoothDeviceClient::Observer {
  public:
-  explicit BluetoothGattConnectionChromeOS(
+  explicit BluetoothGattConnectionBlueZ(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const std::string& device_address,
       const dbus::ObjectPath& object_path);
-  ~BluetoothGattConnectionChromeOS() override;
+  ~BluetoothGattConnectionBlueZ() override;
 
   // BluetoothGattConnection overrides.
   bool IsConnected() override;
@@ -50,9 +50,9 @@ class BluetoothGattConnectionChromeOS
   // events.
   dbus::ObjectPath object_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattConnectionChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGattConnectionBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_GATT_CONNECTION_BLUEZ_H_

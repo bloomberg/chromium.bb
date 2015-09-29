@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_
 
 #include <string>
 #include <vector>
@@ -19,14 +19,14 @@ class BluetoothGattCharacteristic;
 
 }  // namespace device
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothRemoteGattCharacteristicChromeOS;
+class BluetoothRemoteGattCharacteristicBlueZ;
 
-// The BluetoothRemoteGattDescriptorChromeOS class implements
+// The BluetoothRemoteGattDescriptorBlueZ class implements
 // BluetoothGattDescriptor for remote GATT characteristic descriptors on the
 // Chrome OS platform.
-class BluetoothRemoteGattDescriptorChromeOS
+class BluetoothRemoteGattDescriptorBlueZ
     : public device::BluetoothGattDescriptor {
  public:
   // device::BluetoothGattDescriptor overrides.
@@ -47,12 +47,12 @@ class BluetoothRemoteGattDescriptorChromeOS
   const dbus::ObjectPath& object_path() const { return object_path_; }
 
  private:
-  friend class BluetoothRemoteGattCharacteristicChromeOS;
+  friend class BluetoothRemoteGattCharacteristicBlueZ;
 
-  BluetoothRemoteGattDescriptorChromeOS(
-      BluetoothRemoteGattCharacteristicChromeOS* characteristic,
+  BluetoothRemoteGattDescriptorBlueZ(
+      BluetoothRemoteGattCharacteristicBlueZ* characteristic,
       const dbus::ObjectPath& object_path);
-  ~BluetoothRemoteGattDescriptorChromeOS() override;
+  ~BluetoothRemoteGattDescriptorBlueZ() override;
 
   // Called by dbus:: on unsuccessful completion of a request to read or write
   // the descriptor value.
@@ -64,15 +64,15 @@ class BluetoothRemoteGattDescriptorChromeOS
   dbus::ObjectPath object_path_;
 
   // The GATT characteristic this descriptor belongs to.
-  BluetoothRemoteGattCharacteristicChromeOS* characteristic_;
+  BluetoothRemoteGattCharacteristicBlueZ* characteristic_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothRemoteGattDescriptorChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothRemoteGattDescriptorBlueZ> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattDescriptorBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_DESCRIPTOR_BLUEZ_H_

@@ -36,20 +36,14 @@
         'battery/battery_status_manager_win_unittest.cc',
         'battery/battery_status_service_unittest.cc',
         'bluetooth/bluetooth_adapter_mac_unittest.mm',
-        'bluetooth/bluetooth_adapter_profile_chromeos_unittest.cc',
         'bluetooth/bluetooth_adapter_unittest.cc',
         'bluetooth/bluetooth_adapter_win_unittest.cc',
-        'bluetooth/bluetooth_advertisement_chromeos_unittest.cc',
         'bluetooth/bluetooth_advertisement_unittest.cc',
-        'bluetooth/bluetooth_audio_sink_chromeos_unittest.cc',
-        'bluetooth/bluetooth_chromeos_unittest.cc',
         'bluetooth/bluetooth_device_unittest.cc',
         'bluetooth/bluetooth_device_win_unittest.cc',
         'bluetooth/bluetooth_discovery_filter_unittest.cc',
-        'bluetooth/bluetooth_gatt_chromeos_unittest.cc',
         'bluetooth/bluetooth_low_energy_win_unittest.cc',
         'bluetooth/bluetooth_service_record_win_unittest.cc',
-        'bluetooth/bluetooth_socket_chromeos_unittest.cc',
         'bluetooth/bluetooth_task_manager_win_unittest.cc',
         'bluetooth/bluetooth_uuid_unittest.cc',
         'bluetooth/test/bluetooth_test.cc',
@@ -90,13 +84,25 @@
       'conditions': [
         ['chromeos==1', {
           'dependencies': [
-            '../build/linux/system.gyp:dbus',
             '../chromeos/chromeos.gyp:chromeos_test_support',
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
-            '../dbus/dbus.gyp:dbus',
           ],
           'sources!': [
             'battery/battery_status_manager_linux_unittest.cc',
+          ],
+        }],
+        ['chromeos==1 or OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:dbus',
+            '../dbus/dbus.gyp:dbus',
+          ],
+          'sources': [
+            'bluetooth/bluetooth_adapter_profile_bluez_unittest.cc',
+            'bluetooth/bluetooth_advertisement_bluez_unittest.cc',
+            'bluetooth/bluetooth_audio_sink_bluez_unittest.cc',
+            'bluetooth/bluetooth_bluez_unittest.cc',
+            'bluetooth/bluetooth_gatt_bluez_unittest.cc',
+            'bluetooth/bluetooth_socket_bluez_unittest.cc',
           ],
         }],
         ['OS=="android"', {

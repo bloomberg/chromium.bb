@@ -6,12 +6,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_device_chromeos.h"
+#include "device/bluetooth/bluetooth_device_bluez.h"
 #include "device/bluetooth/bluetooth_socket.h"
-#include "device/bluetooth/bluetooth_socket_chromeos.h"
+#include "device/bluetooth/bluetooth_socket_bluez.h"
 #include "device/bluetooth/bluetooth_socket_thread.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -39,11 +39,11 @@ void DoNothingDBusErrorCallback(const std::string& error_name,
 
 }  // namespace
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothSocketChromeOSTest : public testing::Test {
+class BluetoothSocketBlueZTest : public testing::Test {
  public:
-  BluetoothSocketChromeOSTest()
+  BluetoothSocketBlueZTest()
       : success_callback_count_(0),
         error_callback_count_(0),
         last_bytes_sent_(0),
@@ -76,18 +76,15 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     BluetoothSocketThread::Get();
 
     // Grab a pointer to the adapter.
-    device::BluetoothAdapterFactory::GetAdapter(
-        base::Bind(&BluetoothSocketChromeOSTest::AdapterCallback,
-                   base::Unretained(this)));
+    device::BluetoothAdapterFactory::GetAdapter(base::Bind(
+        &BluetoothSocketBlueZTest::AdapterCallback, base::Unretained(this)));
     ASSERT_TRUE(adapter_.get() != nullptr);
     ASSERT_TRUE(adapter_->IsInitialized());
     ASSERT_TRUE(adapter_->IsPresent());
 
     // Turn on the adapter.
-    adapter_->SetPowered(
-        true,
-        base::Bind(&base::DoNothing),
-        base::Bind(&base::DoNothing));
+    adapter_->SetPowered(true, base::Bind(&base::DoNothing),
+                         base::Bind(&base::DoNothing));
     ASSERT_TRUE(adapter_->IsPowered());
   }
 
@@ -163,9 +160,7 @@ class BluetoothSocketChromeOSTest : public testing::Test {
     message_loop_.Quit();
   }
 
-  void ImmediateSuccessCallback() {
-    ++success_callback_count_;
-  }
+  void ImmediateSuccessCallback() { ++success_callback_count_; }
 
  protected:
   base::MessageLoop message_loop_;
@@ -184,16 +179,16 @@ class BluetoothSocketChromeOSTest : public testing::Test {
   const BluetoothDevice* last_device_;
 };
 
-TEST_F(BluetoothSocketChromeOSTest, Connect) {
+TEST_F(BluetoothSocketBlueZTest, Connect) {
   BluetoothDevice* device = adapter_->GetDevice(
       bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
 
   device->ConnectToService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
-      base::Bind(&BluetoothSocketChromeOSTest::ConnectToServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ConnectToServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
   message_loop_.Run();
 
@@ -212,9 +207,9 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
       new net::StringIOBuffer("test"));
 
   socket->Send(write_buffer.get(), write_buffer->size(),
-               base::Bind(&BluetoothSocketChromeOSTest::SendSuccessCallback,
+               base::Bind(&BluetoothSocketBlueZTest::SendSuccessCallback,
                           base::Unretained(this)),
-               base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+               base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                           base::Unretained(this)));
   message_loop_.Run();
 
@@ -227,12 +222,11 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
 
   // Receive data from the socket, and fetch the buffer from the callback; since
   // the fake is an echo server, we expect to receive what we wrote.
-  socket->Receive(
-      4096,
-      base::Bind(&BluetoothSocketChromeOSTest::ReceiveSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ReceiveErrorCallback,
-                 base::Unretained(this)));
+  socket->Receive(4096,
+                  base::Bind(&BluetoothSocketBlueZTest::ReceiveSuccessCallback,
+                             base::Unretained(this)),
+                  base::Bind(&BluetoothSocketBlueZTest::ReceiveErrorCallback,
+                             base::Unretained(this)));
   message_loop_.Run();
 
   EXPECT_EQ(1U, success_callback_count_);
@@ -253,12 +247,11 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
 
   // Receive data again; the socket will have been closed, this should cause a
   // disconnected error to be returned via the error callback.
-  socket->Receive(
-      4096,
-      base::Bind(&BluetoothSocketChromeOSTest::ReceiveSuccessCallback,
-                 base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ReceiveErrorCallback,
-                 base::Unretained(this)));
+  socket->Receive(4096,
+                  base::Bind(&BluetoothSocketBlueZTest::ReceiveSuccessCallback,
+                             base::Unretained(this)),
+                  base::Bind(&BluetoothSocketBlueZTest::ReceiveErrorCallback,
+                             base::Unretained(this)));
   message_loop_.Run();
 
   EXPECT_EQ(0U, success_callback_count_);
@@ -274,9 +267,9 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
   write_buffer = new net::StringIOBuffer("second test");
 
   socket->Send(write_buffer.get(), write_buffer->size(),
-               base::Bind(&BluetoothSocketChromeOSTest::SendSuccessCallback,
+               base::Bind(&BluetoothSocketBlueZTest::SendSuccessCallback,
                           base::Unretained(this)),
-               base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+               base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                           base::Unretained(this)));
   message_loop_.Run();
 
@@ -288,20 +281,20 @@ TEST_F(BluetoothSocketChromeOSTest, Connect) {
   error_callback_count_ = 0;
 
   // Close our end of the socket.
-  socket->Disconnect(base::Bind(&BluetoothSocketChromeOSTest::SuccessCallback,
+  socket->Disconnect(base::Bind(&BluetoothSocketBlueZTest::SuccessCallback,
                                 base::Unretained(this)));
 
   message_loop_.Run();
   EXPECT_EQ(1U, success_callback_count_);
 }
 
-TEST_F(BluetoothSocketChromeOSTest, Listen) {
+TEST_F(BluetoothSocketBlueZTest, Listen) {
   adapter_->CreateRfcommService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
       BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();
@@ -329,16 +322,16 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
       bluez::FakeBluetoothDeviceClient::kPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
   fake_bluetooth_device_client->ConnectProfile(
-      static_cast<BluetoothDeviceChromeOS*>(device)->object_path(),
+      static_cast<BluetoothDeviceBlueZ*>(device)->object_path(),
       bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(&base::DoNothing), base::Bind(&DoNothingDBusErrorCallback));
 
   message_loop_.RunUntilIdle();
 
   server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::AcceptSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();
@@ -354,9 +347,8 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   error_callback_count_ = 0;
 
   // Close our end of the client socket.
-  client_socket->Disconnect(
-      base::Bind(&BluetoothSocketChromeOSTest::SuccessCallback,
-                 base::Unretained(this)));
+  client_socket->Disconnect(base::Bind(
+      &BluetoothSocketBlueZTest::SuccessCallback, base::Unretained(this)));
 
   message_loop_.Run();
 
@@ -368,15 +360,15 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   // Run a second connection test, this time calling Accept() before the
   // incoming connection comes in.
   server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::AcceptSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
 
   fake_bluetooth_device_client->ConnectProfile(
-      static_cast<BluetoothDeviceChromeOS*>(device)->object_path(),
+      static_cast<BluetoothDeviceBlueZ*>(device)->object_path(),
       bluez::FakeBluetoothProfileManagerClient::kRfcommUuid,
       base::Bind(&base::DoNothing), base::Bind(&DoNothingDBusErrorCallback));
 
@@ -393,9 +385,8 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   error_callback_count_ = 0;
 
   // Close our end of the client socket.
-  client_socket->Disconnect(
-      base::Bind(&BluetoothSocketChromeOSTest::SuccessCallback,
-                 base::Unretained(this)));
+  client_socket->Disconnect(base::Bind(
+      &BluetoothSocketBlueZTest::SuccessCallback, base::Unretained(this)));
 
   message_loop_.Run();
 
@@ -406,7 +397,7 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
 
   // Now close the server socket.
   server_socket->Disconnect(
-      base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
@@ -414,7 +405,7 @@ TEST_F(BluetoothSocketChromeOSTest, Listen) {
   EXPECT_EQ(1U, success_callback_count_);
 }
 
-TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
+TEST_F(BluetoothSocketBlueZTest, ListenBeforeAdapterStart) {
   // Start off with an invisible adapter, register the profile, then make
   // the adapter visible.
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client =
@@ -425,9 +416,9 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   adapter_->CreateRfcommService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
       BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
   message_loop_.Run();
 
@@ -464,7 +455,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
 
   // Cleanup the socket.
   socket->Disconnect(
-      base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
@@ -472,7 +463,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenBeforeAdapterStart) {
   EXPECT_EQ(1U, success_callback_count_);
 }
 
-TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
+TEST_F(BluetoothSocketBlueZTest, ListenAcrossAdapterRestart) {
   // The fake adapter starts off visible by default.
   bluez::FakeBluetoothAdapterClient* fake_bluetooth_adapter_client =
       static_cast<bluez::FakeBluetoothAdapterClient*>(
@@ -481,9 +472,9 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   adapter_->CreateRfcommService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
       BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
   message_loop_.Run();
 
@@ -526,7 +517,7 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
 
   // Cleanup the socket.
   socket->Disconnect(
-      base::Bind(&BluetoothSocketChromeOSTest::ImmediateSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ImmediateSuccessCallback,
                  base::Unretained(this)));
 
   message_loop_.RunUntilIdle();
@@ -534,16 +525,16 @@ TEST_F(BluetoothSocketChromeOSTest, ListenAcrossAdapterRestart) {
   EXPECT_EQ(1U, success_callback_count_);
 }
 
-TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
+TEST_F(BluetoothSocketBlueZTest, PairedConnectFails) {
   BluetoothDevice* device = adapter_->GetDevice(
       bluez::FakeBluetoothDeviceClient::kPairedUnconnectableDeviceAddress);
   ASSERT_TRUE(device != nullptr);
 
   device->ConnectToService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
-      base::Bind(&BluetoothSocketChromeOSTest::ConnectToServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ConnectToServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
   message_loop_.Run();
 
@@ -553,9 +544,9 @@ TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
 
   device->ConnectToService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
-      base::Bind(&BluetoothSocketChromeOSTest::ConnectToServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ConnectToServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
   message_loop_.Run();
 
@@ -564,13 +555,13 @@ TEST_F(BluetoothSocketChromeOSTest, PairedConnectFails) {
   EXPECT_TRUE(last_socket_.get() == nullptr);
 }
 
-TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
+TEST_F(BluetoothSocketBlueZTest, SocketListenTwice) {
   adapter_->CreateRfcommService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
       BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();
@@ -584,9 +575,9 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
   server_socket.swap(last_socket_);
 
   server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::AcceptSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   server_socket->Close();
@@ -601,9 +592,9 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
   adapter_->CreateRfcommService(
       BluetoothUUID(bluez::FakeBluetoothProfileManagerClient::kRfcommUuid),
       BluetoothAdapter::ServiceOptions(),
-      base::Bind(&BluetoothSocketChromeOSTest::CreateServiceSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::CreateServiceSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   message_loop_.Run();
@@ -616,9 +607,9 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
   server_socket.swap(last_socket_);
 
   server_socket->Accept(
-      base::Bind(&BluetoothSocketChromeOSTest::AcceptSuccessCallback,
+      base::Bind(&BluetoothSocketBlueZTest::AcceptSuccessCallback,
                  base::Unretained(this)),
-      base::Bind(&BluetoothSocketChromeOSTest::ErrorCallback,
+      base::Bind(&BluetoothSocketBlueZTest::ErrorCallback,
                  base::Unretained(this)));
 
   server_socket->Close();
@@ -631,4 +622,4 @@ TEST_F(BluetoothSocketChromeOSTest, SocketListenTwice) {
   EXPECT_EQ(2U, error_callback_count_);
 }
 
-}  // namespace chromeos
+}  // namespace bluez

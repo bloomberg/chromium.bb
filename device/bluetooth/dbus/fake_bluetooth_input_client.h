@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
-#define CHROMEOS_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
+#ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
+#define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
 
 #include "base/callback.h"
 #include "base/observer_list.h"
@@ -62,4 +62,4 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothInputClient
 
 }  // namespace bluez
 
-#endif  // CHROMEOS_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_
+#endif  // DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_INPUT_CLIENT_H_

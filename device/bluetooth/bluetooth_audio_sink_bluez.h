@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_BLUEZ_H_
 
 #include <stdint.h>
 #include <string>
@@ -23,11 +23,11 @@
 #include "device/bluetooth/dbus/bluetooth_media_endpoint_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_media_transport_client.h"
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothAudioSinkChromeOSTest;
+class BluetoothAudioSinkBlueZTest;
 
-class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
+class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkBlueZ
     : public device::BluetoothAudioSink,
       public device::BluetoothAdapter::Observer,
       public bluez::BluetoothMediaClient::Observer,
@@ -35,7 +35,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
       public bluez::BluetoothMediaEndpointServiceProvider::Delegate,
       public base::MessageLoopForIO::Watcher {
  public:
-  explicit BluetoothAudioSinkChromeOS(
+  explicit BluetoothAudioSinkBlueZ(
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   // device::BluetoothAudioSink overrides.
@@ -53,7 +53,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   // Registers a BluetoothAudioSink. User applications can use |options| to
   // configure the audio sink. |callback| will be executed if the audio sink is
   // successfully registered, otherwise |error_callback| will be called. Called
-  // by BluetoothAdapterChromeOS.
+  // by BluetoothAdapterBlueZ.
   void Register(
       const device::BluetoothAudioSink::Options& options,
       const base::Closure& callback,
@@ -64,7 +64,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   bluez::BluetoothMediaEndpointServiceProvider* GetEndpointServiceProvider();
 
  private:
-  ~BluetoothAudioSinkChromeOS() override;
+  ~BluetoothAudioSinkBlueZ() override;
 
   // device::BluetoothAdapter::Observer overrides.
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,
@@ -157,7 +157,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   void ResetTransport();
   void ResetEndpoint();
 
-  // The connection state between the BluetoothAudioSinkChromeOS and the remote
+  // The connection state between the BluetoothAudioSinkBlueZ and the remote
   // device.
   device::BluetoothAudioSink::State state_;
 
@@ -196,7 +196,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   dbus::ObjectPath endpoint_path_;
 
   // BT adapter which the audio sink binds to. |adapter_| should outlive
-  // a BluetoothAudioSinkChromeOS object.
+  // a BluetoothAudioSinkBlueZ object.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Options used to initiate Media Endpoint and select configuration for the
@@ -207,16 +207,16 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAudioSinkChromeOS
   scoped_ptr<bluez::BluetoothMediaEndpointServiceProvider> media_endpoint_;
 
   // List of observers interested in event notifications from us. Objects in
-  // |observers_| are expected to outlive a BluetoothAudioSinkChromeOS object.
+  // |observers_| are expected to outlive a BluetoothAudioSinkBlueZ object.
   base::ObserverList<BluetoothAudioSink::Observer> observers_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<BluetoothAudioSinkChromeOS> weak_ptr_factory_;
+  base::WeakPtrFactory<BluetoothAudioSinkBlueZ> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothAudioSinkChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothAudioSinkBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_AUDIO_SINK_BLUEZ_H_

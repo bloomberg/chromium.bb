@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
 
 #include <limits>
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/bluetooth_device.h"
-#include "device/bluetooth/bluetooth_gatt_notify_session_chromeos.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic_chromeos.h"
-#include "device/bluetooth/bluetooth_remote_gatt_descriptor_chromeos.h"
-#include "device/bluetooth/bluetooth_remote_gatt_service_chromeos.h"
+#include "device/bluetooth/bluetooth_gatt_notify_session_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_characteristic_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_descriptor_bluez.h"
+#include "device/bluetooth/bluetooth_remote_gatt_service_bluez.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-namespace chromeos {
+namespace bluez {
 
 namespace {
 
@@ -33,10 +33,9 @@ std::ostream& operator<<(std::ostream& out, const std::vector<uint8> bytes) {
 
 }  // namespace
 
-BluetoothRemoteGattCharacteristicChromeOS::
-    BluetoothRemoteGattCharacteristicChromeOS(
-        BluetoothRemoteGattServiceChromeOS* service,
-        const dbus::ObjectPath& object_path)
+BluetoothRemoteGattCharacteristicBlueZ::BluetoothRemoteGattCharacteristicBlueZ(
+    BluetoothRemoteGattServiceBlueZ* service,
+    const dbus::ObjectPath& object_path)
     : object_path_(object_path),
       service_(service),
       num_notify_sessions_(0),
@@ -58,8 +57,8 @@ BluetoothRemoteGattCharacteristicChromeOS::
     GattDescriptorAdded(*iter);
 }
 
-BluetoothRemoteGattCharacteristicChromeOS::
-    ~BluetoothRemoteGattCharacteristicChromeOS() {
+BluetoothRemoteGattCharacteristicBlueZ::
+    ~BluetoothRemoteGattCharacteristicBlueZ() {
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattDescriptorClient()
       ->RemoveObserver(this);
@@ -78,12 +77,11 @@ BluetoothRemoteGattCharacteristicChromeOS::
   }
 }
 
-std::string BluetoothRemoteGattCharacteristicChromeOS::GetIdentifier() const {
+std::string BluetoothRemoteGattCharacteristicBlueZ::GetIdentifier() const {
   return object_path_.value();
 }
 
-device::BluetoothUUID
-BluetoothRemoteGattCharacteristicChromeOS::GetUUID() const {
+device::BluetoothUUID BluetoothRemoteGattCharacteristicBlueZ::GetUUID() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
@@ -92,12 +90,12 @@ BluetoothRemoteGattCharacteristicChromeOS::GetUUID() const {
   return device::BluetoothUUID(properties->uuid.value());
 }
 
-bool BluetoothRemoteGattCharacteristicChromeOS::IsLocal() const {
+bool BluetoothRemoteGattCharacteristicBlueZ::IsLocal() const {
   return false;
 }
 
-const std::vector<uint8>&
-BluetoothRemoteGattCharacteristicChromeOS::GetValue() const {
+const std::vector<uint8>& BluetoothRemoteGattCharacteristicBlueZ::GetValue()
+    const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
@@ -109,12 +107,12 @@ BluetoothRemoteGattCharacteristicChromeOS::GetValue() const {
 }
 
 device::BluetoothGattService*
-BluetoothRemoteGattCharacteristicChromeOS::GetService() const {
+BluetoothRemoteGattCharacteristicBlueZ::GetService() const {
   return service_;
 }
 
 device::BluetoothGattCharacteristic::Properties
-BluetoothRemoteGattCharacteristicChromeOS::GetProperties() const {
+BluetoothRemoteGattCharacteristicBlueZ::GetProperties() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
@@ -124,8 +122,7 @@ BluetoothRemoteGattCharacteristicChromeOS::GetProperties() const {
   Properties props = PROPERTY_NONE;
   const std::vector<std::string>& flags = properties->flags.value();
   for (std::vector<std::string>::const_iterator iter = flags.begin();
-       iter != flags.end();
-       ++iter) {
+       iter != flags.end(); ++iter) {
     if (*iter == bluetooth_gatt_characteristic::kFlagBroadcast)
       props |= PROPERTY_BROADCAST;
     if (*iter == bluetooth_gatt_characteristic::kFlagRead)
@@ -152,13 +149,13 @@ BluetoothRemoteGattCharacteristicChromeOS::GetProperties() const {
 }
 
 device::BluetoothGattCharacteristic::Permissions
-BluetoothRemoteGattCharacteristicChromeOS::GetPermissions() const {
+BluetoothRemoteGattCharacteristicBlueZ::GetPermissions() const {
   // TODO(armansito): Once BlueZ defines the permissions, return the correct
   // values here.
   return PERMISSION_NONE;
 }
 
-bool BluetoothRemoteGattCharacteristicChromeOS::IsNotifying() const {
+bool BluetoothRemoteGattCharacteristicBlueZ::IsNotifying() const {
   bluez::BluetoothGattCharacteristicClient::Properties* properties =
       bluez::BluezDBusManager::Get()
           ->GetBluetoothGattCharacteristicClient()
@@ -169,7 +166,7 @@ bool BluetoothRemoteGattCharacteristicChromeOS::IsNotifying() const {
 }
 
 std::vector<device::BluetoothGattDescriptor*>
-BluetoothRemoteGattCharacteristicChromeOS::GetDescriptors() const {
+BluetoothRemoteGattCharacteristicBlueZ::GetDescriptors() const {
   std::vector<device::BluetoothGattDescriptor*> descriptors;
   for (DescriptorMap::const_iterator iter = descriptors_.begin();
        iter != descriptors_.end(); ++iter)
@@ -178,7 +175,7 @@ BluetoothRemoteGattCharacteristicChromeOS::GetDescriptors() const {
 }
 
 device::BluetoothGattDescriptor*
-BluetoothRemoteGattCharacteristicChromeOS::GetDescriptor(
+BluetoothRemoteGattCharacteristicBlueZ::GetDescriptor(
     const std::string& identifier) const {
   DescriptorMap::const_iterator iter =
       descriptors_.find(dbus::ObjectPath(identifier));
@@ -187,19 +184,19 @@ BluetoothRemoteGattCharacteristicChromeOS::GetDescriptor(
   return iter->second;
 }
 
-bool BluetoothRemoteGattCharacteristicChromeOS::AddDescriptor(
+bool BluetoothRemoteGattCharacteristicBlueZ::AddDescriptor(
     device::BluetoothGattDescriptor* descriptor) {
   VLOG(1) << "Descriptors cannot be added to a remote GATT characteristic.";
   return false;
 }
 
-bool BluetoothRemoteGattCharacteristicChromeOS::UpdateValue(
+bool BluetoothRemoteGattCharacteristicBlueZ::UpdateValue(
     const std::vector<uint8>& value) {
   VLOG(1) << "Cannot update the value of a remote GATT characteristic.";
   return false;
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::ReadRemoteCharacteristic(
+void BluetoothRemoteGattCharacteristicBlueZ::ReadRemoteCharacteristic(
     const ValueCallback& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << "Sending GATT characteristic read request to characteristic: "
@@ -208,13 +205,12 @@ void BluetoothRemoteGattCharacteristicChromeOS::ReadRemoteCharacteristic(
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
-      ->ReadValue(
-          object_path_, callback,
-          base::Bind(&BluetoothRemoteGattCharacteristicChromeOS::OnError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+      ->ReadValue(object_path_, callback,
+                  base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
+                             weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::WriteRemoteCharacteristic(
+void BluetoothRemoteGattCharacteristicBlueZ::WriteRemoteCharacteristic(
     const std::vector<uint8>& new_value,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
@@ -224,13 +220,12 @@ void BluetoothRemoteGattCharacteristicChromeOS::WriteRemoteCharacteristic(
 
   bluez::BluezDBusManager::Get()
       ->GetBluetoothGattCharacteristicClient()
-      ->WriteValue(
-          object_path_, new_value, callback,
-          base::Bind(&BluetoothRemoteGattCharacteristicChromeOS::OnError,
-                     weak_ptr_factory_.GetWeakPtr(), error_callback));
+      ->WriteValue(object_path_, new_value, callback,
+                   base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnError,
+                              weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::StartNotifySession(
+void BluetoothRemoteGattCharacteristicBlueZ::StartNotifySession(
     const NotifySessionCallback& callback,
     const ErrorCallback& error_callback) {
   VLOG(1) << __func__;
@@ -253,12 +248,9 @@ void BluetoothRemoteGattCharacteristicChromeOS::StartNotifySession(
       DCHECK(service_->GetAdapter());
       DCHECK(service_->GetDevice());
       scoped_ptr<device::BluetoothGattNotifySession> session(
-          new BluetoothGattNotifySessionChromeOS(
-              service_->GetAdapter(),
-              service_->GetDevice()->GetAddress(),
-              service_->GetIdentifier(),
-              GetIdentifier(),
-              object_path_));
+          new BluetoothGattNotifySessionBlueZ(
+              service_->GetAdapter(), service_->GetDevice()->GetAddress(),
+              service_->GetIdentifier(), GetIdentifier(), object_path_));
       callback.Run(session.Pass());
       return;
     }
@@ -278,14 +270,14 @@ void BluetoothRemoteGattCharacteristicChromeOS::StartNotifySession(
       ->StartNotify(
           object_path_,
           base::Bind(
-              &BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifySuccess,
+              &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),
           base::Bind(
-              &BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifyError,
+              &BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError,
               weak_ptr_factory_.GetWeakPtr(), error_callback));
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::RemoveNotifySession(
+void BluetoothRemoteGattCharacteristicBlueZ::RemoveNotifySession(
     const base::Closure& callback) {
   VLOG(1) << __func__;
 
@@ -316,14 +308,13 @@ void BluetoothRemoteGattCharacteristicChromeOS::RemoveNotifySession(
       ->StopNotify(
           object_path_,
           base::Bind(
-              &BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifySuccess,
+              &BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess,
               weak_ptr_factory_.GetWeakPtr(), callback),
-          base::Bind(
-              &BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifyError,
-              weak_ptr_factory_.GetWeakPtr(), callback));
+          base::Bind(&BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
+void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorAdded(
     const dbus::ObjectPath& object_path) {
   if (descriptors_.find(object_path) != descriptors_.end()) {
     VLOG(1) << "Remote GATT characteristic descriptor already exists: "
@@ -344,8 +335,8 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
   VLOG(1) << "Adding new remote GATT descriptor for GATT characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattDescriptorChromeOS* descriptor =
-      new BluetoothRemoteGattDescriptorChromeOS(this, object_path);
+  BluetoothRemoteGattDescriptorBlueZ* descriptor =
+      new BluetoothRemoteGattDescriptorBlueZ(this, object_path);
   descriptors_[object_path] = descriptor;
   DCHECK(descriptor->GetIdentifier() == object_path.value());
   DCHECK(descriptor->GetUUID().IsValid());
@@ -354,7 +345,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorAdded(
   service_->NotifyDescriptorAddedOrRemoved(this, descriptor, true /* added */);
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
+void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorRemoved(
     const dbus::ObjectPath& object_path) {
   DescriptorMap::iterator iter = descriptors_.find(object_path);
   if (iter == descriptors_.end()) {
@@ -365,7 +356,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
   VLOG(1) << "Removing remote GATT descriptor from characteristic: "
           << GetIdentifier() << ", UUID: " << GetUUID().canonical_value();
 
-  BluetoothRemoteGattDescriptorChromeOS* descriptor = iter->second;
+  BluetoothRemoteGattDescriptorBlueZ* descriptor = iter->second;
   DCHECK(descriptor->object_path() == object_path);
   descriptors_.erase(iter);
 
@@ -375,7 +366,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorRemoved(
   delete descriptor;
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorPropertyChanged(
+void BluetoothRemoteGattCharacteristicBlueZ::GattDescriptorPropertyChanged(
     const dbus::ObjectPath& object_path,
     const std::string& property_name) {
   DescriptorMap::iterator iter = descriptors_.find(object_path);
@@ -399,17 +390,17 @@ void BluetoothRemoteGattCharacteristicChromeOS::GattDescriptorPropertyChanged(
                                          properties->value.value());
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::OnError(
+void BluetoothRemoteGattCharacteristicBlueZ::OnError(
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  VLOG(1) << "Operation failed: " << error_name << ", message: "
-          << error_message;
+  VLOG(1) << "Operation failed: " << error_name
+          << ", message: " << error_message;
   error_callback.Run(
-      BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(error_name));
+      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifySuccess(
+void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifySuccess(
     const NotifySessionCallback& callback) {
   VLOG(1) << "Started notifications from characteristic: "
           << object_path_.value();
@@ -423,18 +414,15 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifySuccess(
   DCHECK(service_);
   DCHECK(service_->GetDevice());
   scoped_ptr<device::BluetoothGattNotifySession> session(
-      new BluetoothGattNotifySessionChromeOS(
-          service_->GetAdapter(),
-          service_->GetDevice()->GetAddress(),
-          service_->GetIdentifier(),
-          GetIdentifier(),
-          object_path_));
+      new BluetoothGattNotifySessionBlueZ(
+          service_->GetAdapter(), service_->GetDevice()->GetAddress(),
+          service_->GetIdentifier(), GetIdentifier(), object_path_));
   callback.Run(session.Pass());
 
   ProcessStartNotifyQueue();
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifyError(
+void BluetoothRemoteGattCharacteristicBlueZ::OnStartNotifyError(
     const ErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -447,12 +435,12 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnStartNotifyError(
   notify_call_pending_ = false;
 
   error_callback.Run(
-      BluetoothRemoteGattServiceChromeOS::DBusErrorToServiceError(error_name));
+      BluetoothRemoteGattServiceBlueZ::DBusErrorToServiceError(error_name));
 
   ProcessStartNotifyQueue();
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifySuccess(
+void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifySuccess(
     const base::Closure& callback) {
   DCHECK(notify_call_pending_);
   DCHECK(num_notify_sessions_ == 1);
@@ -464,7 +452,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifySuccess(
   ProcessStartNotifyQueue();
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifyError(
+void BluetoothRemoteGattCharacteristicBlueZ::OnStopNotifyError(
     const base::Closure& callback,
     const std::string& error_name,
     const std::string& error_message) {
@@ -476,7 +464,7 @@ void BluetoothRemoteGattCharacteristicChromeOS::OnStopNotifyError(
   OnStopNotifySuccess(callback);
 }
 
-void BluetoothRemoteGattCharacteristicChromeOS::ProcessStartNotifyQueue() {
+void BluetoothRemoteGattCharacteristicBlueZ::ProcessStartNotifyQueue() {
   while (!pending_start_notify_calls_.empty()) {
     PendingStartNotifyCall callbacks = pending_start_notify_calls_.front();
     pending_start_notify_calls_.pop();
@@ -484,4 +472,4 @@ void BluetoothRemoteGattCharacteristicChromeOS::ProcessStartNotifyQueue() {
   }
 }
 
-}  // namespace chromeos
+}  // namespace bluez

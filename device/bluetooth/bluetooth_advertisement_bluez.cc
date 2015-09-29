@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/bluetooth/bluetooth_advertisement_chromeos.h"
+#include "device/bluetooth/bluetooth_advertisement_bluez.h"
 
 #include <string>
 
@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "dbus/bus.h"
 #include "dbus/object_path.h"
-#include "device/bluetooth/bluetooth_adapter_chromeos.h"
+#include "device/bluetooth/bluetooth_adapter_bluez.h"
 #include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -23,7 +23,7 @@ namespace {
 
 void UnregisterFailure(device::BluetoothAdvertisement::ErrorCode error) {
   LOG(ERROR)
-      << "BluetoothAdvertisementChromeOS::Unregister failed with error code = "
+      << "BluetoothAdvertisementBlueZ::Unregister failed with error code = "
       << error;
 }
 
@@ -68,11 +68,11 @@ void UnregisterErrorCallbackConnector(
 
 }  // namespace
 
-namespace chromeos {
+namespace bluez {
 
-BluetoothAdvertisementChromeOS::BluetoothAdvertisementChromeOS(
+BluetoothAdvertisementBlueZ::BluetoothAdvertisementBlueZ(
     scoped_ptr<device::BluetoothAdvertisement::Data> data,
-    scoped_refptr<BluetoothAdapterChromeOS> adapter)
+    scoped_refptr<BluetoothAdapterBlueZ> adapter)
     : adapter_(adapter) {
   // Generate a new object path - make sure that we strip any -'s from the
   // generated GUID string since object paths can only contain alphanumeric
@@ -93,7 +93,7 @@ BluetoothAdvertisementChromeOS::BluetoothAdvertisementChromeOS(
       data->solicit_uuids().Pass(), data->service_data().Pass());
 }
 
-void BluetoothAdvertisementChromeOS::Register(
+void BluetoothAdvertisementBlueZ::Register(
     const base::Closure& success_callback,
     const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
         error_callback) {
@@ -105,11 +105,11 @@ void BluetoothAdvertisementChromeOS::Register(
           base::Bind(&RegisterErrorCallbackConnector, error_callback));
 }
 
-BluetoothAdvertisementChromeOS::~BluetoothAdvertisementChromeOS() {
+BluetoothAdvertisementBlueZ::~BluetoothAdvertisementBlueZ() {
   Unregister(base::Bind(&base::DoNothing), base::Bind(&UnregisterFailure));
 }
 
-void BluetoothAdvertisementChromeOS::Unregister(
+void BluetoothAdvertisementBlueZ::Unregister(
     const SuccessCallback& success_callback,
     const ErrorCallback& error_callback) {
   // If we don't have a provider, that means we have already been unregistered,
@@ -129,11 +129,11 @@ void BluetoothAdvertisementChromeOS::Unregister(
   provider_.reset();
 }
 
-void BluetoothAdvertisementChromeOS::Released() {
+void BluetoothAdvertisementBlueZ::Released() {
   LOG(WARNING) << "Advertisement released.";
   provider_.reset();
   FOR_EACH_OBSERVER(BluetoothAdvertisement::Observer, observers_,
                     AdvertisementReleased(this));
 }
 
-}  // namespace chromeos
+}  // namespace bluez

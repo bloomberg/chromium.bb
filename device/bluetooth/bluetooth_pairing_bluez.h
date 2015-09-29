@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_BLUEZ_H_
 
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/dbus/bluetooth_agent_service_provider.h"
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothDeviceChromeOS;
+class BluetoothDeviceBlueZ;
 
-// The BluetoothPairingChromeOS class encapsulates the logic for an individual
-// device pairing, acting as a bridge between BluetoothAdapterChromeOS which
+// The BluetoothPairingBlueZ class encapsulates the logic for an individual
+// device pairing, acting as a bridge between BluetoothAdapterBlueZ which
 // communicates with the underlying Controller and Host Subsystem, and
-// BluetoothDeviceChromeOS which presents the pairing logic to the application.
-class BluetoothPairingChromeOS {
+// BluetoothDeviceBlueZ which presents the pairing logic to the application.
+class BluetoothPairingBlueZ {
  public:
-  BluetoothPairingChromeOS(
-      BluetoothDeviceChromeOS* device,
+  BluetoothPairingBlueZ(
+      BluetoothDeviceBlueZ* device,
       device::BluetoothDevice::PairingDelegate* pairing_delegate);
-  ~BluetoothPairingChromeOS();
+  ~BluetoothPairingBlueZ();
 
   // Indicates whether the device is currently pairing and expecting a
   // Passkey to be returned.
@@ -117,8 +117,8 @@ class BluetoothPairingChromeOS {
   bool RunPairingCallbacks(
       bluez::BluetoothAgentServiceProvider::Delegate::Status status);
 
-  // The underlying BluetoothDeviceChromeOS that owns this pairing context.
-  BluetoothDeviceChromeOS* device_;
+  // The underlying BluetoothDeviceBlueZ that owns this pairing context.
+  BluetoothDeviceBlueZ* device_;
 
   // UI Pairing Delegate to make method calls on, this must live as long as
   // the object capturing the PairingContext.
@@ -130,7 +130,7 @@ class BluetoothPairingChromeOS {
   bool pairing_delegate_used_;
 
   // During pairing these callbacks are set to those provided by method calls
-  // made on the BluetoothAdapterChromeOS instance by its respective
+  // made on the BluetoothAdapterBlueZ instance by its respective
   // bluez::BluetoothAgentServiceProvider instance, and are called by our own
   // method calls such as SetPinCode() and SetPasskey().
   bluez::BluetoothAgentServiceProvider::Delegate::PinCodeCallback
@@ -140,9 +140,9 @@ class BluetoothPairingChromeOS {
   bluez::BluetoothAgentServiceProvider::Delegate::ConfirmationCallback
       confirmation_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothPairingChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothPairingBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  // DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_CHROMEOS_H_
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_PAIRING_BLUEZ_H_

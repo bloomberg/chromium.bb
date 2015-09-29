@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_
-#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_
+#ifndef DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_
+#define DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_
 
 #include <string>
 
@@ -17,17 +17,17 @@ class BluetoothAdapter;
 
 }  // namespace device
 
-namespace chromeos {
+namespace bluez {
 
-class BluetoothRemoteGattCharacteristicChromeOS;
+class BluetoothRemoteGattCharacteristicBlueZ;
 
-// BluetoothGattNotifySessionChromeOS implements
+// BluetoothGattNotifySessionBlueZ implements
 // BluetoothGattNotifySession for the Chrome OS platform.
-class BluetoothGattNotifySessionChromeOS
+class BluetoothGattNotifySessionBlueZ
     : public device::BluetoothGattNotifySession,
       public bluez::BluetoothGattCharacteristicClient::Observer {
  public:
-  ~BluetoothGattNotifySessionChromeOS() override;
+  ~BluetoothGattNotifySessionBlueZ() override;
 
   // BluetoothGattNotifySession overrides.
   std::string GetCharacteristicIdentifier() const override;
@@ -35,9 +35,9 @@ class BluetoothGattNotifySessionChromeOS
   void Stop(const base::Closure& callback) override;
 
  private:
-  friend class BluetoothRemoteGattCharacteristicChromeOS;
+  friend class BluetoothRemoteGattCharacteristicBlueZ;
 
-  explicit BluetoothGattNotifySessionChromeOS(
+  explicit BluetoothGattNotifySessionBlueZ(
       scoped_refptr<device::BluetoothAdapter> adapter,
       const std::string& device_address,
       const std::string& service_identifier,
@@ -69,9 +69,9 @@ class BluetoothGattNotifySessionChromeOS
   // observer events.
   dbus::ObjectPath object_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(BluetoothGattNotifySessionChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(BluetoothGattNotifySessionBlueZ);
 };
 
-}  // namespace chromeos
+}  // namespace bluez
 
-#endif  //  DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_CHROMEOS_H_
+#endif  //  DEVICE_BLUETOOTH_BLUETOOTH_GATT_NOTIFY_SESSION_BLUEZ_H_

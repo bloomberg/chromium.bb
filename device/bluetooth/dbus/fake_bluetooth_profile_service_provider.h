@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
-#define CHROMEOS_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -57,4 +57,4 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothProfileServiceProvider
 
 }  // namespace bluez
 
-#endif  // CHROMEOS_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_
+#endif  // DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_PROFILE_SERVICE_PROVIDER_H_

@@ -959,7 +959,7 @@ void FakeBluetoothDeviceClient::RemoveDevice(
 
   // Remove the Input interface if it exists. This should be called before the
   // BluetoothDeviceClient::Observer::DeviceRemoved because it deletes the
-  // BluetoothDeviceChromeOS object, including the device_path referenced here.
+  // BluetoothDeviceBlueZ object, including the device_path referenced here.
   FakeBluetoothInputClient* fake_bluetooth_input_client =
       static_cast<FakeBluetoothInputClient*>(
           bluez::BluezDBusManager::Get()->GetBluetoothInputClient());
