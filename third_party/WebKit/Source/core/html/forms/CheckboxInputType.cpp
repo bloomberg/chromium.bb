@@ -88,11 +88,6 @@ PassOwnPtrWillBeRawPtr<ClickHandlingState> CheckboxInputType::willDispatchClick(
 
 void CheckboxInputType::didDispatchClick(Event* event, const ClickHandlingState& state)
 {
-    // Prevent change event handlers from indirectly freeing the
-    // CheckboxInputType via a modification of the "type" attribute on the
-    // HTMLInputElement.
-    RefPtrWillBeRawPtr<CheckboxInputType> protect(this);
-
     if (event->defaultPrevented() || event->defaultHandled()) {
         element().setIndeterminate(state.indeterminate);
         element().setChecked(state.checked);
