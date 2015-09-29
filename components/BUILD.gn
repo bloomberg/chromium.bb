@@ -30,6 +30,7 @@ group("all_components") {
     "//components/google/core/browser",
     "//components/search",
     "//components/search_engines",
+    "//components/undo",
   ]
 
   if (!is_ios) {
@@ -129,7 +130,6 @@ group("all_components") {
       "//components/translate/core/browser",
       "//components/translate/core/common",
       "//components/ui/zoom",
-      "//components/undo",
       "//components/update_client",
       "//components/upload_list",
       "//components/url_formatter",
@@ -299,12 +299,14 @@ test("components_unittests") {
     "//base/test:test_support",
     "//components/bookmarks/browser:unit_tests",
     "//components/content_settings/core/common",
-    "//net",
+    "//components/google/core/browser:unit_tests",
     "//components/search:unit_tests",
+    "//components/undo:unit_tests",
+    "//net",
     "//ui/base",
     "//ui/resources:ui_test_pak",
-    "//components/google/core/browser:unit_tests",
     "//components/search_engines:unit_tests",
+    "//components/undo:unit_tests",
   ]
 
   if (!is_ios) {
@@ -384,7 +386,6 @@ test("components_unittests") {
       "//components/translate/core/browser:unit_tests",
       "//components/translate/core/common:unit_tests",
       "//components/translate/core/language_detection:unit_tests",
-      "//components/undo:unit_tests",
       "//components/url_formatter:unit_tests",
       "//components/url_matcher:unit_tests",
       "//components/update_client:unit_tests",
