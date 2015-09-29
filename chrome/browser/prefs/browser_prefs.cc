@@ -68,6 +68,7 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/plugins_ui.h"
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
+#include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -145,7 +146,6 @@
 #else
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
-#include "chrome/browser/upgrade_detector.h"
 #endif
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
@@ -264,6 +264,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   RegisterScreenshotPrefs(registry);
   SigninManagerFactory::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
+  UpgradeDetector::RegisterPrefs(registry);
   web_resource::PromoResourceService::RegisterPrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
@@ -299,7 +300,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   // The native GCM is used on Android instead.
   gcm::GCMChannelStatusSyncer::RegisterPrefs(registry);
-  UpgradeDetector::RegisterPrefs(registry);
 #if !defined(OS_CHROMEOS)
   RegisterDefaultBrowserPromptPrefs(registry);
 #endif  // !defined(OS_CHROMEOS)
