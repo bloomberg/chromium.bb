@@ -403,6 +403,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerInstance::Status old_status) override;
   void OnDetached(EmbeddedWorkerInstance::Status old_status) override;
+  void OnScriptLoaded() override;
+  void OnScriptLoadFailed() override;
   void OnReportException(const base::string16& error_message,
                          int line_number,
                          int column_number,

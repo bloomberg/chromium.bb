@@ -53,8 +53,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     STOPPING,
   };
 
-  // This enum is used in UMA histograms, so don't change the order or remove
-  // entries.
+  // This enum is used in UMA histograms. Append-only.
   enum StartingPhase {
     NOT_STARTING,
     ALLOCATING_PROCESS,
@@ -63,7 +62,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     SCRIPT_DOWNLOADING,
     SCRIPT_LOADED,
     SCRIPT_EVALUATED,
-    THREAD_STARTED,  // Happens after SENT_START_WORKER and before SCRIPT_LOADED
+    THREAD_STARTED,  // Happens after SCRIPT_LOADED and before SCRIPT_EVALUATED
+    // Script read happens after SENT_START_WORKER and before SCRIPT_LOADED
+    // (installed scripts only)
+    SCRIPT_READ_STARTED,
+    SCRIPT_READ_FINISHED,
+    // Add new values here.
     STARTING_PHASE_MAX_VALUE,
   };
 
@@ -78,6 +82,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
     virtual void OnStopped(Status old_status) {}
     // The browser-side IPC endpoint for communication with the worker died.
     virtual void OnDetached(Status old_status) {}
+    virtual void OnScriptLoaded() {}
+    virtual void OnScriptLoadFailed() {}
     virtual void OnReportException(const base::string16& error_message,
                                    int line_number,
                                    int column_number,
@@ -140,6 +146,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Called when the script load request accessed the network.
   void OnNetworkAccessedForScriptLoad();
+
+  // Called when reading the main script from the service worker script cache
+  // begins and ends.
+  void OnScriptReadStarted();
+  void OnScriptReadFinished();
 
   static std::string StatusToString(Status status);
   static std::string StartingPhaseToString(StartingPhase phase);

@@ -1215,6 +1215,16 @@ void ServiceWorkerVersion::OnDetached(
   OnStoppedInternal(old_status);
 }
 
+void ServiceWorkerVersion::OnScriptLoaded() {
+  if (IsInstalled(status()))
+    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
+}
+
+void ServiceWorkerVersion::OnScriptLoadFailed() {
+  if (IsInstalled(status()))
+    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", false);
+}
+
 void ServiceWorkerVersion::OnReportException(
     const base::string16& error_message,
     int line_number,

@@ -25,16 +25,17 @@ namespace content {
 ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
+    ResourceType resource_type,
     base::WeakPtr<ServiceWorkerContextCore> context,
     const scoped_refptr<ServiceWorkerVersion>& version,
     int64 response_id)
     : net::URLRequestJob(request, network_delegate),
+      resource_type_(resource_type),
       context_(context),
       version_(version),
       response_id_(response_id),
       has_been_killed_(false),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
 }
@@ -52,6 +53,8 @@ void ServiceWorkerReadFromCacheJob::Start() {
 
   // Create a response reader and start reading the headers,
   // we'll continue when thats done.
+  if (is_main_script())
+    version_->embedded_worker()->OnScriptReadStarted();
   reader_ = context_->storage()->CreateResponseReader(response_id_);
   http_info_io_buffer_ = new HttpResponseInfoIOBuffer;
   reader_->ReadInfo(
@@ -204,6 +207,8 @@ void ServiceWorkerReadFromCacheJob::Done(const net::URLRequestStatus& status) {
       registration->DeleteVersion(version_);
     }
   }
+  if (is_main_script())
+    version_->embedded_worker()->OnScriptReadFinished();
   NotifyDone(status);
 }
 

@@ -350,7 +350,16 @@ void EmbeddedWorkerInstance::OnReadyForInspection() {
     devtools_proxy_->NotifyWorkerReadyForInspection();
 }
 
+void EmbeddedWorkerInstance::OnScriptReadStarted() {
+  starting_phase_ = SCRIPT_READ_STARTED;
+}
+
+void EmbeddedWorkerInstance::OnScriptReadFinished() {
+  starting_phase_ = SCRIPT_READ_FINISHED;
+}
+
 void EmbeddedWorkerInstance::OnScriptLoaded() {
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoaded());
   starting_phase_ = SCRIPT_LOADED;
 }
 
@@ -386,6 +395,7 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnScriptLoadFailed());
 }
 
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
@@ -540,6 +550,10 @@ std::string EmbeddedWorkerInstance::StartingPhaseToString(StartingPhase phase) {
       return "Script evaluated";
     case THREAD_STARTED:
       return "Thread started";
+    case SCRIPT_READ_STARTED:
+      return "Script read started";
+    case SCRIPT_READ_FINISHED:
+      return "Script read finished";
     case STARTING_PHASE_MAX_VALUE:
       NOTREACHED();
   }
