@@ -2373,7 +2373,7 @@ TEST(SSLClientSocket, SerializeNextProtos) {
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoSPDY31);
   static std::vector<uint8_t> serialized =
-      SSLClientSocket::SerializeNextProtos(next_protos, true);
+      SSLClientSocket::SerializeNextProtos(next_protos);
   ASSERT_EQ(18u, serialized.size());
   EXPECT_EQ(8, serialized[0]);  // length("http/1.1")
   EXPECT_EQ('h', serialized[1]);

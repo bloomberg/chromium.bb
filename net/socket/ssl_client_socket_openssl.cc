@@ -952,10 +952,12 @@ int SSLClientSocketOpenSSL::Init() {
       enabled_ciphers_vector.push_back(id);
     }
 
-    std::vector<uint8_t> wire_protos =
-        SerializeNextProtos(ssl_config_.next_protos,
-                            HasCipherAdequateForHTTP2(enabled_ciphers_vector) &&
-                                IsTLSVersionAdequateForHTTP2(ssl_config_));
+    NextProtoVector next_protos = ssl_config_.next_protos;
+    if (!HasCipherAdequateForHTTP2(enabled_ciphers_vector) ||
+        !IsTLSVersionAdequateForHTTP2(ssl_config_)) {
+      DisableHTTP2(&next_protos);
+    }
+    std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
     SSL_set_alpn_protos(ssl_, wire_protos.empty() ? NULL : &wire_protos[0],
                         wire_protos.size());
   }

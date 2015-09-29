@@ -189,13 +189,9 @@ bool SSLClientSocket::IsTLSVersionAdequateForHTTP2(
 
 // static
 std::vector<uint8_t> SSLClientSocket::SerializeNextProtos(
-    const NextProtoVector& next_protos,
-    bool can_advertise_http2) {
+    const NextProtoVector& next_protos) {
   std::vector<uint8_t> wire_protos;
   for (const NextProto next_proto : next_protos) {
-    if (!can_advertise_http2 && next_proto == kProtoHTTP2) {
-      continue;
-    }
     const std::string proto = NextProtoToString(next_proto);
     if (proto.size() > 255) {
       LOG(WARNING) << "Ignoring overlong NPN/ALPN protocol: " << proto;

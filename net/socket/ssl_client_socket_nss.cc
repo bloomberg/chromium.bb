@@ -858,10 +858,12 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
         PK11_TokenExists(CKM_NSS_CHACHA20_POLY1305);
     const bool adequate_key_agreement = PK11_TokenExists(CKM_DH_PKCS_DERIVE) ||
                                         PK11_TokenExists(CKM_ECDH1_DERIVE);
-    std::vector<uint8_t> wire_protos =
-        SerializeNextProtos(ssl_config_.next_protos,
-                            adequate_encryption && adequate_key_agreement &&
-                                IsTLSVersionAdequateForHTTP2(ssl_config_));
+    NextProtoVector next_protos = ssl_config_.next_protos;
+    if (!adequate_encryption || !adequate_key_agreement ||
+        !IsTLSVersionAdequateForHTTP2(ssl_config_)) {
+      DisableHTTP2(&next_protos);
+    }
+    std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
     rv = SSL_SetNextProtoNego(
         nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
         wire_protos.size());

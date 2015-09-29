@@ -178,12 +178,10 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // inadequate TLS version.
   static bool IsTLSVersionAdequateForHTTP2(const SSLConfig& ssl_config);
 
-  // Serializes |next_protos| in the wire format for ALPN: protocols are listed
-  // in order, each prefixed by a one-byte length.  Any HTTP/2 protocols in
-  // |next_protos| are ignored if |can_advertise_http2| is false.
+  // Serialize |next_protos| in the wire format for ALPN and NPN: protocols are
+  // listed in order, each prefixed by a one-byte length.
   static std::vector<uint8_t> SerializeNextProtos(
-      const NextProtoVector& next_protos,
-      bool can_advertise_http2);
+      const NextProtoVector& next_protos);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SSLClientSocket, SerializeNextProtos);
