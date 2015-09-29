@@ -1528,8 +1528,6 @@ void CheckRemoveLoginsBetween(PasswordStoreMacTest* test, bool check_created) {
   scoped_ptr<PasswordForm> form_other =
       CreatePasswordFormFromDataForTesting(www_form_data_other);
   base::Time now = base::Time::Now();
-  // TODO(vasilii): remove the next line once crbug/374132 is fixed.
-  now = base::Time::FromTimeT(now.ToTimeT());
   base::Time next_day = now + base::TimeDelta::FromDays(1);
   if (check_created) {
     form_facebook_old->date_created = now;
