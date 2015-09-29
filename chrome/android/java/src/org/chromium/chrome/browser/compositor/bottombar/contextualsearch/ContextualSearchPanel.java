@@ -13,6 +13,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 
@@ -115,6 +116,11 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     private ContextualSearchPanelMetrics mPanelMetrics;
 
+    /**
+     * The object for handling global Contextual Search management duties
+     */
+    private ContextualSearchManagementDelegate mManagementDelegate;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -133,7 +139,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
      */
     public OverlayPanelContent createNewOverlayPanelContent() {
         OverlayPanelContent overlayPanelContent = new OverlayPanelContent(
-                getManagementDelegate().getOverlayContentDelegate(), new PanelProgressObserver(),
+                mManagementDelegate.getOverlayContentDelegate(), new PanelProgressObserver(),
                 mActivity);
 
         // Adds a ContentViewClient to override the default fullscreen size.
@@ -188,6 +194,30 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     }
 
     // ============================================================================================
+    // Contextual Search Manager Integration
+    // ============================================================================================
+
+    /**
+     * Sets the {@code ContextualSearchManagementDelegate} associated with this panel.
+     * @param delegate The {@code ContextualSearchManagementDelegate}.
+     */
+    public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
+        if (mManagementDelegate != delegate) {
+            mManagementDelegate = delegate;
+            if (delegate != null) {
+                initializeUiState();
+            }
+        }
+    }
+
+    /**
+     * @return The {@code ContextualSearchManagementDelegate} associated with this Layout.
+     */
+    public ContextualSearchManagementDelegate getManagementDelegate() {
+        return mManagementDelegate;
+    }
+
+    // ============================================================================================
     // Logging of panel state information.
     // ============================================================================================
 
@@ -214,7 +244,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
     @Override
     public void onPromoButtonClick(boolean accepted) {
         super.onPromoButtonClick(accepted);
-        getManagementDelegate().logPromoOutcome();
+        mManagementDelegate.logPromoOutcome();
         setIsPromoActive(false);
     }
 
@@ -236,14 +266,14 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
     @Override
     public void setPreferenceState(boolean enabled) {
-        if (getManagementDelegate() != null) {
-            getManagementDelegate().setPreferenceState(enabled);
+        if (mManagementDelegate != null) {
+            mManagementDelegate.setPreferenceState(enabled);
         }
     }
 
     @Override
     protected boolean isPromoAvailable() {
-        return getManagementDelegate() != null && getManagementDelegate().isPromoAvailable();
+        return mManagementDelegate != null && mManagementDelegate.isPromoAvailable();
     }
 
     @Override
@@ -252,7 +282,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
         if (mOverlayPanelContent != null) {
             mOverlayPanelContent.destroyContentView();
         }
-        getManagementDelegate().onCloseContextualSearch(reason);
+        mManagementDelegate.onCloseContextualSearch(reason);
     }
 
     // ============================================================================================
@@ -326,8 +356,8 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             closePanel(StateChangeReason.BASE_PAGE_TAP, true);
         } else if (isCoordinateInsideSearchBar(x, y)) {
             if (isPeeking()) {
-                if (getManagementDelegate().isRunningInCompatibilityMode()) {
-                    getManagementDelegate().openResolvedSearchUrlInNewTab();
+                if (mManagementDelegate.isRunningInCompatibilityMode()) {
+                    mManagementDelegate.openResolvedSearchUrlInNewTab();
                 } else {
                     if (isFullscreenSizePanel()) {
                         expandPanel(StateChangeReason.SEARCH_BAR_TAP);
@@ -446,7 +476,7 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
 
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
-            getManagementDelegate().promoteToTab();
+            mManagementDelegate.promoteToTab();
         }
     }
 
@@ -482,6 +512,20 @@ public class ContextualSearchPanel extends ContextualSearchPanelAnimation
             mOverlayPanelContent = createNewOverlayPanelContent();
         }
         return mOverlayPanelContent;
+    }
+
+    // ============================================================================================
+    // ContextualSearchPanelBase methods.
+    // ============================================================================================
+
+    @Override
+    public boolean isCustomTab() {
+        return mManagementDelegate.isCustomTab();
+    }
+
+    @Override
+    public int getControlContainerHeightResource() {
+        return mManagementDelegate.getControlContainerHeightResource();
     }
 
     // ============================================================================================

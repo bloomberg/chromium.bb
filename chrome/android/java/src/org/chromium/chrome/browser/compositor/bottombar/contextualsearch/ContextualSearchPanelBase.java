@@ -16,7 +16,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel.StateChangeReason;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -195,11 +194,6 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     protected final Context mContext;
 
     /**
-     * The object for handling global Contextual Search management duties
-     */
-    private ContextualSearchManagementDelegate mManagementDelegate;
-
-    /**
      * The {@link ContextualSearchPanelFeatures} for this panel.
      */
     protected ContextualSearchPanelFeatures mSearchPanelFeatures;
@@ -278,28 +272,22 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     protected abstract void onClose(StateChangeReason reason);
 
     // ============================================================================================
-    // Contextual Search Manager Integration
+    // General methods from Contextual Search Manager
     // ============================================================================================
 
     /**
-     * Sets the {@code ContextualSearchManagementDelegate} associated with this panel.
-     * @param delegate The {@code ContextualSearchManagementDelegate}.
+     * TODO(mdjones): This method should be removed from this class.
+     * @return True if the tab hosting the panel is a custom tab.
      */
-    public void setManagementDelegate(ContextualSearchManagementDelegate delegate) {
-        if (mManagementDelegate != delegate) {
-            mManagementDelegate = delegate;
-            if (delegate != null) {
-                initializeUiState();
-            }
-        }
-    }
+    public abstract boolean isCustomTab();
 
     /**
-     * @return The {@code ContextualSearchManagementDelegate} associated with this Layout.
+     * TODO(mdjones): This method should be removed from this class.
+     * @return The resource id that contains how large the top controls are.
      */
-    public ContextualSearchManagementDelegate getManagementDelegate() {
-        return mManagementDelegate;
-    }
+    public abstract int getControlContainerHeightResource();
+
+
 
     // ============================================================================================
     // Layout Integration
@@ -856,14 +844,14 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
      * Initializes the UI state.
      */
     protected void initializeUiState() {
-        mSearchPanelFeatures = new ContextualSearchPanelFeatures(mManagementDelegate.isCustomTab());
+        mSearchPanelFeatures = new ContextualSearchPanelFeatures(isCustomTab());
         mIsShowing = false;
 
         // Static values.
         mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
 
         mToolbarHeight = mContext.getResources().getDimension(
-                mManagementDelegate.getControlContainerHeightResource()) * mPxToDp;
+                getControlContainerHeightResource()) * mPxToDp;
 
         mSearchBarPaddingTop = PANEL_SHADOW_HEIGHT_DP;
 
