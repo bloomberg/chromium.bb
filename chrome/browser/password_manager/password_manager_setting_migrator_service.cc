@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -120,9 +121,13 @@ void PasswordManagerSettingMigratorService::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_PROFILE_ADDED, type);
   SaveCurrentPrefState(profile_->GetPrefs(), &initial_new_pref_value_,
                        &initial_legacy_pref_value_);
+  const int kMaxInitialValues = 4;
+  UMA_HISTOGRAM_ENUMERATION(
+      "PasswordManager.SettingsReconciliation.InitialValues",
+      (static_cast<int>(initial_new_pref_value_) << 1 |
+       static_cast<int>(initial_legacy_pref_value_)),
+      kMaxInitialValues);
   if (!password_manager::IsSettingsMigrationActive()) {
-    // TODO(melandory) Add histogram which will log initial values for the both
-    // settings.
     return;
   }
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile_))
@@ -230,4 +235,6 @@ void PasswordManagerSettingMigratorService::MigrateAfterModelAssociation(
       UpdatePreferencesValues(prefs, false);
     }
   }
+  // TODO(melandory) Add histogram which will log combination of initial and
+  // final values for the both preferences.
 }

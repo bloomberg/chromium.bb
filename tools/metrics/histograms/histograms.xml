@@ -30281,6 +30281,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.SettingsReconciliation.InitialValues"
+    enum="PasswordManagerPreferencesInitialValues">
+  <owner>engedy@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Tracks the pair of initial values for both for the legacy preference for
+    controlling the Chrome Password Manager and new preference for controlling
+    Smart Lock on Android. Sample is recorded on every profile initialization
+    before reconciliation logic is taken place, e.g. when user logs in to
+    browser, on a startup of a browser.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.StoreReadyWhenWiping" enum="Boolean">
   <owner>vabr@chromium.org</owner>
   <summary>
@@ -66980,6 +66993,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="Password is non blank"/>
   <int value="4"
       label="Password status not checked as user is on a Windows Domain"/>
+</enum>
+
+<enum name="PasswordManagerPreferencesInitialValues" type="int">
+  <summary>
+    The pair of initial values for the legacy preference for controlling the
+    Chrome Password Manager and new preference for controlling Smart Lock on
+    Android.
+  </summary>
+  <int value="0" label="New pref is 'off', legacy pref is 'off'"/>
+  <int value="1" label="New pref is 'off', legacy pref is 'on'"/>
+  <int value="2" label="New pref is 'on', legacy pref is 'off'"/>
+  <int value="3" label="New pref is 'on', legacy pref is 'on'"/>
 </enum>
 
 <enum name="PasswordManagerPslDomainMatchTriggering" type="int">

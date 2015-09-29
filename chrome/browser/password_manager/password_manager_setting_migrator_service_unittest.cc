@@ -5,8 +5,10 @@
 #include "base/json/json_writer.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/test/histogram_tester.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/password_manager/password_manager_setting_migrator_service.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service_mock.h"
@@ -31,10 +33,23 @@ const char kFieldTrialName[] = "PasswordManagerSettingsMigration";
 const char kEnabledGroupName[] = "Enable";
 const char kDisabledGroupName[] = "Disable";
 
+const char kInitialValuesHistogramName[] =
+    "PasswordManager.SettingsReconciliation.InitialValues";
+
 enum BooleanPrefState {
   OFF,
   ON,
   EMPTY,  // datatype bucket is empty
+};
+
+// Enum used for histogram tracking of the initial values for the legacy and new
+// preferences.
+enum PasswordManagerPreferencesInitialValues {
+  N0L0,
+  N0L1,
+  N1L0,
+  N1L1,
+  NUM_INITIAL_VALUES,
 };
 
 syncer::SyncData CreatePrefSyncData(const std::string& name, bool value) {
@@ -145,30 +160,6 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
     base::FieldTrialList::CreateFieldTrial(kFieldTrialName, name);
   }
 
-  void TestOnLocalChange(const std::string& name, bool value) {
-    PrefService* prefs = profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kCredentialsEnableService, !value);
-    prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, !value);
-    NotifyProfileAdded();
-    prefs->SetBoolean(name, value);
-    ExpectValuesForBothPrefValues(value, value);
-  }
-
-  void TestOnLocalChangeWhenMigrationIsDisabled(const std::string& name,
-                                                bool value) {
-    ResetProfile();
-    EnforcePasswordManagerSettingMigrationExperiment(kDisabledGroupName);
-    PrefService* prefs = profile()->GetPrefs();
-    prefs->SetBoolean(prefs::kCredentialsEnableService, !value);
-    prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled, !value);
-    NotifyProfileAdded();
-    prefs->SetBoolean(name, value);
-    if (name == prefs::kPasswordManagerSavingEnabled)
-      ExpectValuesForBothPrefValues(!value, value);
-    else
-      ExpectValuesForBothPrefValues(value, !value);
-  }
-
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<TestingProfile> profile_;
@@ -177,36 +168,41 @@ class PasswordManagerSettingMigratorServiceTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerSettingMigratorServiceTest);
 };
 
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       ReconcileOnLocalChangeOfPasswordManagerSavingEnabledOn) {
-  TestOnLocalChange(prefs::kPasswordManagerSavingEnabled, true);
-}
+TEST_F(PasswordManagerSettingMigratorServiceTest, TestMigrationOnLocalChanges) {
+  const struct {
+    const char* group;
+    const char* pref_name;
+    bool pref_value;
+    bool expected_new_pref_value;
+    bool expected_old_pref_value;
+  } kTestingTable[] = {
+      {kEnabledGroupName, prefs::kPasswordManagerSavingEnabled, true, true,
+       true},
+      {kEnabledGroupName, prefs::kPasswordManagerSavingEnabled, false, false,
+       false},
+      {kEnabledGroupName, prefs::kCredentialsEnableService, true, true, true},
+      {kEnabledGroupName, prefs::kCredentialsEnableService, false, false,
+       false},
+      {kDisabledGroupName, prefs::kPasswordManagerSavingEnabled, false, true,
+       false},
+      {kDisabledGroupName, prefs::kCredentialsEnableService, false, false,
+       true}};
 
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       ReconcileOnLocalChangeOfPasswordManagerSavingEnabledOff) {
-  TestOnLocalChange(prefs::kPasswordManagerSavingEnabled, false);
-}
-
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       ReconcileOnLocalChangeOfCredentialsEnableServiceOn) {
-  TestOnLocalChange(prefs::kCredentialsEnableService, true);
-}
-
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       ReconcileOnLocalChangeOfCredentialsEnableServiceOff) {
-  TestOnLocalChange(prefs::kCredentialsEnableService, false);
-}
-
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       DoNotReconcileOnLocalChangeOfNewPrefWhenMigrationIsDisabled) {
-  TestOnLocalChangeWhenMigrationIsDisabled(prefs::kCredentialsEnableService,
-                                           false);
-}
-
-TEST_F(PasswordManagerSettingMigratorServiceTest,
-       DoNotReconcileOnLocalChangeOfLegacyPrefWhenMigrationIsDisabled) {
-  TestOnLocalChangeWhenMigrationIsDisabled(prefs::kPasswordManagerSavingEnabled,
-                                           false);
+  for (const auto& test_case : kTestingTable) {
+    ResetProfile();
+    EnforcePasswordManagerSettingMigrationExperiment(test_case.group);
+    PrefService* prefs = profile()->GetPrefs();
+    prefs->SetBoolean(prefs::kCredentialsEnableService, !test_case.pref_value);
+    prefs->SetBoolean(prefs::kPasswordManagerSavingEnabled,
+                      !test_case.pref_value);
+    NotifyProfileAdded();
+    base::HistogramTester tester;
+    prefs->SetBoolean(test_case.pref_name, test_case.pref_value);
+    ExpectValuesForBothPrefValues(test_case.expected_new_pref_value,
+                                  test_case.expected_old_pref_value);
+    EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
+                testing::IsEmpty());
+  }
 }
 
 TEST_F(PasswordManagerSettingMigratorServiceTest,
@@ -217,31 +213,32 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     BooleanPrefState new_pref_sync_value;
     BooleanPrefState old_pref_sync_value;
     bool result_value;
+    PasswordManagerPreferencesInitialValues histogram_initial_value;
   } kTestingTable[] = {
-      {EMPTY, EMPTY, EMPTY, EMPTY, true},
-      {EMPTY, EMPTY, EMPTY, OFF, false},
-      {EMPTY, EMPTY, EMPTY, ON, true},
-      {EMPTY, EMPTY, OFF, EMPTY, false},
-      {EMPTY, EMPTY, ON, EMPTY, true},
-      {OFF, OFF, EMPTY, EMPTY, false},
-      {OFF, OFF, OFF, OFF, false},
-      {OFF, OFF, OFF, ON, true},
-      {OFF, OFF, ON, OFF, true},
-      {OFF, ON, OFF, ON, false},
-      {OFF, ON, ON, OFF, false},
-      {OFF, ON, ON, ON, true},
-      {ON, OFF, EMPTY, EMPTY, false},
-      {ON, OFF, OFF, ON, false},
-      {ON, OFF, ON, OFF, false},
-      {ON, OFF, ON, ON, true},
-      {ON, ON, EMPTY, OFF, false},
-      {ON, ON, EMPTY, ON, true},
-      {ON, ON, OFF, EMPTY, false},
-      {ON, ON, OFF, OFF, false},
-      {ON, ON, OFF, ON, false},
-      {ON, ON, ON, EMPTY, true},
-      {ON, ON, ON, OFF, false},
-      {ON, ON, ON, ON, true},
+      {EMPTY, EMPTY, EMPTY, EMPTY, true, N1L1},
+      {EMPTY, EMPTY, EMPTY, OFF, false, N1L1},
+      {EMPTY, EMPTY, EMPTY, ON, true, N1L1},
+      {EMPTY, EMPTY, OFF, EMPTY, false, N1L1},
+      {EMPTY, EMPTY, ON, EMPTY, true, N1L1},
+      {OFF, OFF, EMPTY, EMPTY, false, N0L0},
+      {OFF, OFF, OFF, OFF, false, N0L0},
+      {OFF, OFF, OFF, ON, true, N0L0},
+      {OFF, OFF, ON, OFF, true, N0L0},
+      {OFF, ON, OFF, ON, false, N0L1},
+      {OFF, ON, ON, OFF, false, N0L1},
+      {OFF, ON, ON, ON, true, N0L1},
+      {ON, OFF, EMPTY, EMPTY, false, N1L0},
+      {ON, OFF, OFF, ON, false, N1L0},
+      {ON, OFF, ON, OFF, false, N1L0},
+      {ON, OFF, ON, ON, true, N1L0},
+      {ON, ON, EMPTY, OFF, false, N1L1},
+      {ON, ON, EMPTY, ON, true, N1L1},
+      {ON, ON, OFF, EMPTY, false, N1L1},
+      {ON, ON, OFF, OFF, false, N1L1},
+      {ON, ON, OFF, ON, false, N1L1},
+      {ON, ON, ON, EMPTY, true, N1L1},
+      {ON, ON, ON, OFF, false, N1L1},
+      {ON, ON, ON, ON, true, N1L1},
   };
 
   for (const auto& test_case : kTestingTable) {
@@ -257,6 +254,7 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                         test_case.old_pref_local_value);
     SetupLocalPrefState(prefs::kCredentialsEnableService,
                         test_case.new_pref_local_value);
+    base::HistogramTester tester;
     NotifyProfileAdded();
     syncable_prefs::PrefServiceSyncable* prefs =
         PrefServiceSyncableFromProfile(profile());
@@ -266,6 +264,9 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                      test_case.old_pref_sync_value);
     ExpectValuesForBothPrefValues(test_case.result_value,
                                   test_case.result_value);
+    EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
+                testing::ElementsAre(
+                    base::Bucket(test_case.histogram_initial_value, 1)));
   }
 }
 
@@ -278,29 +279,30 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
     BooleanPrefState old_pref_sync_value;
     bool result_new_pref_value;
     bool result_old_pref_value;
+    PasswordManagerPreferencesInitialValues histogram_initial_value;
   } kTestingTable[] = {
-      {OFF, OFF, OFF, ON, false, true},
-      {OFF, OFF, ON, OFF, true, false},
-      {OFF, OFF, ON, ON, true, true},
-      {OFF, ON, EMPTY, OFF, false, false},
-      {OFF, ON, EMPTY, ON, false, true},
-      {OFF, ON, OFF, EMPTY, false, true},
-      {OFF, ON, OFF, OFF, false, false},
-      {OFF, ON, OFF, ON, false, true},
-      {OFF, ON, ON, EMPTY, true, true},
-      {OFF, ON, ON, OFF, true, false},
-      {OFF, ON, ON, ON, true, true},
-      {ON, OFF, OFF, ON, false, true},
-      {ON, OFF, ON, OFF, true, false},
-      {ON, OFF, ON, ON, true, true},
-      {ON, ON, EMPTY, OFF, true, false},
-      {ON, ON, EMPTY, ON, true, true},
-      {ON, ON, OFF, EMPTY, false, true},
-      {ON, ON, OFF, OFF, false, false},
-      {ON, ON, OFF, ON, false, true},
-      {ON, ON, ON, EMPTY, true, true},
-      {ON, ON, ON, OFF, true, false},
-      {ON, ON, ON, ON, true, true},
+      {OFF, OFF, OFF, ON, false, true, N0L0},
+      {OFF, OFF, ON, OFF, true, false, N0L0},
+      {OFF, OFF, ON, ON, true, true, N0L0},
+      {OFF, ON, EMPTY, OFF, false, false, N0L1},
+      {OFF, ON, EMPTY, ON, false, true, N0L1},
+      {OFF, ON, OFF, EMPTY, false, true, N0L1},
+      {OFF, ON, OFF, OFF, false, false, N0L1},
+      {OFF, ON, OFF, ON, false, true, N0L1},
+      {OFF, ON, ON, EMPTY, true, true, N0L1},
+      {OFF, ON, ON, OFF, true, false, N0L1},
+      {OFF, ON, ON, ON, true, true, N0L1},
+      {ON, OFF, OFF, ON, false, true, N1L0},
+      {ON, OFF, ON, OFF, true, false, N1L0},
+      {ON, OFF, ON, ON, true, true, N1L0},
+      {ON, ON, EMPTY, OFF, true, false, N1L1},
+      {ON, ON, EMPTY, ON, true, true, N1L1},
+      {ON, ON, OFF, EMPTY, false, true, N1L1},
+      {ON, ON, OFF, OFF, false, false, N1L1},
+      {ON, ON, OFF, ON, false, true, N1L1},
+      {ON, ON, ON, EMPTY, true, true, N1L1},
+      {ON, ON, ON, OFF, true, false, N1L1},
+      {ON, ON, ON, ON, true, true, N1L1},
   };
 
   for (const auto& test_case : kTestingTable) {
@@ -316,6 +318,7 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                         test_case.old_pref_local_value);
     SetupLocalPrefState(prefs::kCredentialsEnableService,
                         test_case.new_pref_local_value);
+    base::HistogramTester tester;
     NotifyProfileAdded();
     syncable_prefs::PrefServiceSyncable* prefs =
         PrefServiceSyncableFromProfile(profile());
@@ -325,6 +328,9 @@ TEST_F(PasswordManagerSettingMigratorServiceTest,
                      test_case.old_pref_sync_value);
     ExpectValuesForBothPrefValues(test_case.result_new_pref_value,
                                   test_case.result_old_pref_value);
+    EXPECT_THAT(tester.GetAllSamples(kInitialValuesHistogramName),
+                testing::ElementsAre(
+                    base::Bucket(test_case.histogram_initial_value, 1)));
   }
 }
 
