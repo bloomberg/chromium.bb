@@ -61,6 +61,109 @@ static void testComposedTreePositionsToEqualToDOMTreePositions(const VisibleSele
     EXPECT_EQ(selection.extent(), toPositionInDOMTree(selectionInComposedTree.extent()));
 }
 
+TEST_F(VisibleSelectionTest, expandUsingGranularity)
+{
+    const char* bodyContent = "<span id=host><a id=one>1</a><a id=two>22</a></span>";
+    const char* shadowContent = "<p><b id=three>333</b><content select=#two></content><b id=four>4444</b><span id=space>  </span><content select=#one></content><b id=five>55555</b></p>";
+    setBodyContent(bodyContent);
+    RefPtrWillBeRawPtr<ShadowRoot> shadowRoot = setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Node* one = document().getElementById("one")->firstChild();
+    Node* two = document().getElementById("two")->firstChild();
+    Node* three = shadowRoot->getElementById("three")->firstChild();
+    Node* four = shadowRoot->getElementById("four")->firstChild();
+    Node* five = shadowRoot->getElementById("five")->firstChild();
+    Node* space = shadowRoot->getElementById("space")->firstChild();
+
+    VisibleSelection selection;
+    VisibleSelectionInComposedTree selectionInComposedTree;
+
+    // From a position at distributed node
+    selection = VisibleSelection(createVisiblePosition(Position(one, 1)));
+    selection.expandUsingGranularity(WordGranularity);
+    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(one, 1)));
+    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+
+    EXPECT_EQ(Position(one, 1), selection.base());
+    EXPECT_EQ(Position(one, 1), selection.extent());
+    EXPECT_EQ(Position(one, 0), selection.start());
+    EXPECT_EQ(Position(two, 2), selection.end());
+
+    EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.base());
+    EXPECT_EQ(PositionInComposedTree(one, 1), selectionInComposedTree.extent());
+    // TODO(yosin) Once we have full version of VisibleSelectionInComposedTree
+    // we should change them (one, 0) - (five, 5).
+    EXPECT_EQ(PositionInComposedTree(four, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(space, 1), selectionInComposedTree.end());
+
+    // From a position at distributed node
+    selection = VisibleSelection(createVisiblePosition(Position(two, 1)));
+    selection.expandUsingGranularity(WordGranularity);
+    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(two, 1)));
+    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+
+    EXPECT_EQ(Position(two, 1), selection.base());
+    EXPECT_EQ(Position(two, 1), selection.extent());
+    EXPECT_EQ(Position(one, 0), selection.start());
+    EXPECT_EQ(Position(two, 2), selection.end());
+
+    EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.base());
+    EXPECT_EQ(PositionInComposedTree(two, 1), selectionInComposedTree.extent());
+    // TODO(yosin) Once we have full version of VisibleSelectionInComposedTree
+    // we should change them (three, 0) - (four, 4).
+    EXPECT_EQ(PositionInComposedTree(four, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(space, 1), selectionInComposedTree.end());
+
+    // From a position at node in shadow tree
+    selection = VisibleSelection(createVisiblePosition(Position(three, 1)));
+    selection.expandUsingGranularity(WordGranularity);
+    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(three, 1)));
+    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+
+    EXPECT_EQ(Position(three, 1), selection.base());
+    EXPECT_EQ(Position(three, 1), selection.extent());
+    EXPECT_EQ(Position(three, 0), selection.start());
+    EXPECT_EQ(Position(four, 4), selection.end());
+
+    EXPECT_EQ(PositionInComposedTree(three, 1), selectionInComposedTree.base());
+    EXPECT_EQ(PositionInComposedTree(three, 1), selectionInComposedTree.extent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
+
+    // From a position at node in shadow tree
+    selection = VisibleSelection(createVisiblePosition(Position(four, 1)));
+    selection.expandUsingGranularity(WordGranularity);
+    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(four, 1)));
+    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+
+    EXPECT_EQ(Position(four, 1), selection.base());
+    EXPECT_EQ(Position(four, 1), selection.extent());
+    EXPECT_EQ(Position(three, 0), selection.start());
+    EXPECT_EQ(Position(four, 4), selection.end());
+
+    EXPECT_EQ(PositionInComposedTree(four, 1), selectionInComposedTree.base());
+    EXPECT_EQ(PositionInComposedTree(four, 1), selectionInComposedTree.extent());
+    EXPECT_EQ(PositionInComposedTree(three, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(four, 4), selectionInComposedTree.end());
+
+    // From a position at node in shadow tree
+    selection = VisibleSelection(createVisiblePosition(Position(five, 1)));
+    selection.expandUsingGranularity(WordGranularity);
+    selectionInComposedTree = VisibleSelectionInComposedTree(createVisiblePosition(PositionInComposedTree(five, 1)));
+    selectionInComposedTree.expandUsingGranularity(WordGranularity);
+
+    EXPECT_EQ(Position(five, 1), selection.base());
+    EXPECT_EQ(Position(five, 1), selection.extent());
+    EXPECT_EQ(Position(five, 0), selection.start());
+    EXPECT_EQ(Position(five, 5), selection.end());
+
+    EXPECT_EQ(PositionInComposedTree(five, 1), selectionInComposedTree.base());
+    EXPECT_EQ(PositionInComposedTree(five, 1), selectionInComposedTree.extent());
+    EXPECT_EQ(PositionInComposedTree(one, 0), selectionInComposedTree.start());
+    EXPECT_EQ(PositionInComposedTree(five, 5), selectionInComposedTree.end());
+}
+
 TEST_F(VisibleSelectionTest, Initialisation)
 {
     setBodyContent(LOREM_IPSUM);
