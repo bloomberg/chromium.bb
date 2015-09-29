@@ -5946,8 +5946,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
   <summary>
-    Samples of user interactions with the promo and settings menu. All samples
-    are mutually exclusive. These samples include:
+    Samples of user interactions with the Data Reduction Proxy promo, First Run
+    Experience, and settings menu. All samples are mutually exclusive. These
+    samples include:
 
     The user interactions with the promo. On Android, there are three actions
     that dismiss the promo (enable, dismiss, and learn more) and on iOS there is
@@ -5960,6 +5961,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     reducing data usage setting menu and leaving the menu will be sampled
     regardless of how many times he or she toggles the ON/OFF switch. Other
     samples that report ON/OFF settings menu changes are not also reported here.
+
+    The user interactions with the First Run Experience. On Android when the
+    user sees the FRE card, the Data Reduction Proxy defaults to ON. The user
+    can disable the proxy via a switch on the card. The state of the proxy is
+    sampled when the First Run Experience is completed and only reported if the
+    Data Reduction Proxy card was shown.
   </summary>
 </histogram>
 
@@ -54317,6 +54324,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Arrived at settings menu by another path: entered on, exited off"/>
   <int value="8"
       label="Arrived at settings menu by another path: entered on, exited on"/>
+  <int value="9" label="Enabled directly from the First Run Experience"/>
+  <int value="10" label="Diabled directly from the First Run Experience"/>
 </enum>
 
 <enum name="DataUseServices" type="int">

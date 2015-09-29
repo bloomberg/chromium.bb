@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.FieldTrialList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
@@ -21,6 +22,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionPromoScreen;
+import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.profiles.Profile;
 
 import java.lang.ref.WeakReference;
@@ -99,6 +103,11 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
 
         // An optional welcome page.
         if (mShowWelcomePage) mPages.add(pageOf(ToSAndUMAFirstRunFragment.class));
+
+        // An optional Data Saver page.
+        if (FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled")) {
+            mPages.add(pageOf(DataReductionProxyFirstRunFragment.class));
+        }
 
         // An optional sign-in page.
         if (mFreProperties.getBoolean(SHOW_SIGNIN_PAGE)) {
@@ -286,6 +295,17 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
         if (mFreProperties.getBoolean(FirstRunActivity.FIRE_ORIGINAL_INTENT)) {
             Intent originalIntent = mFreProperties.getParcelable(FirstRunActivity.ORIGINAL_INTENT);
             startActivity(originalIntent);
+        }
+
+        if (DataReductionPromoScreen
+                .getDisplayedDataReductionPromo(getApplicationContext())) {
+            if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+                DataReductionProxyUma
+                        .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_ENABLED);
+            } else {
+                DataReductionProxyUma
+                        .dataReductionProxyUIAction(DataReductionProxyUma.ACTION_FRE_DISABLED);
+            }
         }
 
         Intent resultData = new Intent();

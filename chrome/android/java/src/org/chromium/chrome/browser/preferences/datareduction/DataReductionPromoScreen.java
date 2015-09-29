@@ -143,12 +143,24 @@ public class DataReductionPromoScreen extends Dialog implements View.OnClickList
         super.dismiss();
     }
 
-    private static boolean getDisplayedDataReductionPromo(Context context) {
+    /**
+     * Returns whether the Data Reduction Proxy promo has been displayed before.
+     *
+     * @param context An Android context.
+     * @return Whether the Data Reduction Proxy promo has been displayed.
+     */
+    public static boolean getDisplayedDataReductionPromo(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                 SHARED_PREF_DISPLAYED_PROMO, false);
     }
 
-    private static void setDisplayedDataReductionPromo(Context context, boolean displayed) {
+    /**
+     * Sets whether the Data Reduction Proxy promo has been displayed.
+     *
+     * @param context An Android context.
+     * @param displayed Whether the Data Reduction Proxy was displayed.
+     */
+    public static void setDisplayedDataReductionPromo(Context context, boolean displayed) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
                 .putBoolean(SHARED_PREF_DISPLAYED_PROMO, displayed)
                 .apply();

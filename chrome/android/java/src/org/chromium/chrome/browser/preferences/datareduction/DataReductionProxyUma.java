@@ -21,7 +21,9 @@ public class DataReductionProxyUma {
     public static final int ACTION_OFF_TO_ON = 6;
     public static final int ACTION_ON_TO_OFF = 7;
     public static final int ACTION_ON_TO_ON = 8;
-    public static final int ACTION_INDEX_BOUNDARY = 9;
+    public static final int ACTION_FRE_ENABLED = 9;
+    public static final int ACTION_FRE_DISABLED = 10;
+    public static final int ACTION_INDEX_BOUNDARY = 11;
 
     // Represent the possible Lo-Fi user actions. This must remain in sync with
     // DataReductionProxy.UIAction.LoFi in tools/metrics/histograms/histograms.xml.
@@ -36,7 +38,7 @@ public class DataReductionProxyUma {
 
     /**
      * Record the DataReductionProxy.UIAction histogram.
-     * @param action User action at the promo or settings screen
+     * @param action User action at the promo, first run experience, or settings screen
      */
     public static void dataReductionProxyUIAction(int action) {
         assert action >= 0 && action < ACTION_INDEX_BOUNDARY;
