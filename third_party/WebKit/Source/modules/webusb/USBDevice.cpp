@@ -164,6 +164,7 @@ ScriptPromise USBDevice::open(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     m_device->open(new CallbackPromiseAdapter<void, USBError>(resolver));
+    setContext(scriptState->executionContext());
     return promise;
 }
 
@@ -172,6 +173,7 @@ ScriptPromise USBDevice::close(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     m_device->close(new CallbackPromiseAdapter<void, USBError>(resolver));
+    setContext(nullptr);
     return promise;
 }
 
@@ -287,6 +289,16 @@ ScriptPromise USBDevice::reset(ScriptState* scriptState)
     ScriptPromise promise = resolver->promise();
     m_device->reset(new CallbackPromiseAdapter<void, USBError>(resolver));
     return promise;
+}
+
+void USBDevice::contextDestroyed()
+{
+    m_device->close(new WebUSBDeviceCloseCallbacks());
+}
+
+DEFINE_TRACE(USBDevice)
+{
+    ContextLifecycleObserver::trace(visitor);
 }
 
 } // namespace blink

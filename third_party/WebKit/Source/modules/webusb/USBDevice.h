@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBDevice.h"
 #include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
@@ -21,6 +22,7 @@ class USBControlTransferParameters;
 
 class USBDevice
     : public GarbageCollectedFinalized<USBDevice>
+    , public ContextLifecycleObserver
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -37,7 +39,8 @@ public:
     }
 
     explicit USBDevice(PassOwnPtr<WebUSBDevice> device)
-        : m_device(device)
+        : ContextLifecycleObserver(nullptr)
+        , m_device(device)
     {
     }
 
@@ -77,7 +80,9 @@ public:
     ScriptPromise transferOut(ScriptState*, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data);
     ScriptPromise reset(ScriptState*);
 
-    DEFINE_INLINE_TRACE() { }
+    void contextDestroyed() override;
+
+    DECLARE_TRACE();
 
 private:
     OwnPtr<WebUSBDevice> m_device;
