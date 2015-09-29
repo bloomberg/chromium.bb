@@ -30,6 +30,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/x509_certificate.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/url_request/url_request_filter.h"
 
@@ -246,7 +247,38 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContent) {
       browser()->tab_strip_model()->GetActiveWebContents(),
       SecurityStateModel::SECURITY_ERROR,
       SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::RAN_MIXED_CONTENT,
+      false /* expect cert status error */);
+
+  // Navigate to an HTTPS page that runs and displays mixed content.
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_runs_and_displays_insecure_content.html",
+      test_server()->host_port_pair(), &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      SecurityStateModel::SECURITY_ERROR,
+      SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::RAN_AND_DISPLAYED_MIXED_CONTENT,
+      false /* expect cert status error */);
+
+  // Navigate to an HTTPS page that runs mixed content in an iframe.
+  net::HostPortPair host_port_pair =
+      net::HostPortPair::FromURL(https_server_.GetURL("/"));
+  host_port_pair.set_host("different-host.test");
+  host_resolver()->AddRule("different-host.test",
+                           https_server_.GetURL("/").host());
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_runs_insecure_content_in_iframe.html", host_port_pair,
+      &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      SecurityStateModel::SECURITY_ERROR,
+      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::RAN_MIXED_CONTENT,
       false /* expect cert status error */);
 }
 
@@ -302,6 +334,19 @@ IN_PROC_BROWSER_TEST_F(SecurityStateModelTest, MixedContentWithBrokenSHA1) {
   // Navigate to an HTTPS page that runs mixed content.
   ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
       "files/ssl/page_runs_insecure_content.html",
+      test_server()->host_port_pair(), &replacement_path));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL(replacement_path));
+  CheckSecurityInfoForSecure(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      SecurityStateModel::SECURITY_ERROR,
+      SecurityStateModel::DEPRECATED_SHA1_BROKEN,
+      SecurityStateModel::RAN_MIXED_CONTENT,
+      false /* expect cert status error */);
+
+  // Navigate to an HTTPS page that runs and displays mixed content.
+  ASSERT_TRUE(GetFilePathWithHostAndPortReplacement(
+      "files/ssl/page_runs_and_displays_insecure_content.html",
       test_server()->host_port_pair(), &replacement_path));
   ui_test_utils::NavigateToURL(browser(),
                                https_server_.GetURL(replacement_path));

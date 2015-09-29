@@ -1353,9 +1353,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
       "files/ssl/page_runs_insecure_content.html"));
 
   CheckAuthenticationBrokenState(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      CertError::NONE,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+      browser()->tab_strip_model()->GetActiveWebContents(), CertError::NONE,
+      AuthState::RAN_INSECURE_CONTENT);
 }
 
 // Visits a page with unsafe content and make sure that:
@@ -1521,10 +1520,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestRunsInsecureContentTwoTabs) {
   EXPECT_EQ(tab1->GetRenderProcessHost(), tab2->GetRenderProcessHost());
 
   // The new tab has insecure content.
-  CheckAuthenticationBrokenState(
-      tab2,
-      CertError::NONE,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab2, CertError::NONE,
+                                 AuthState::RAN_INSECURE_CONTENT);
 
   // Which means the origin for the first tab has also been contaminated with
   // insecure content.
@@ -1589,10 +1586,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestRunsCachedInsecureContent) {
   // content (even though the image comes from the WebCore memory cache).
   const GURL url_https = https_server_.GetURL(replacement_path);
   ui_test_utils::NavigateToURL(browser(), url_https);
-  CheckAuthenticationBrokenState(
-      tab,
-      CertError::NONE,
-      AuthState::DISPLAYED_INSECURE_CONTENT | AuthState::RAN_INSECURE_CONTENT);
+  CheckAuthenticationBrokenState(tab, CertError::NONE,
+                                 AuthState::RAN_INSECURE_CONTENT);
 }
 
 // This test ensures the CN invalid status does not 'stick' to a certificate
