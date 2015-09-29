@@ -1399,11 +1399,17 @@ void LayoutTable::invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& chil
             for (LayoutTableCell* cell = row->firstCell(); cell; cell = cell->nextCell()) {
                 LayoutTableCol* column = colElement(cell->col());
                 LayoutTableCol* columnGroup = column ? column->enclosingColumnGroup() : 0;
+                // Table cells paint container's background on the container's backing instead of its own (if any),
+                // so we must invalidate it by the containers.
+                bool invalidated = false;
                 if ((columnGroup && columnGroup->shouldDoFullPaintInvalidation())
                     || (column && column->shouldDoFullPaintInvalidation())
-                    || section->shouldDoFullPaintInvalidation()
-                    || row->shouldDoFullPaintInvalidation())
-                    cell->invalidateDisplayItemClient(*cell);
+                    || section->shouldDoFullPaintInvalidation()) {
+                    section->invalidateDisplayItemClient(*cell);
+                    invalidated = true;
+                }
+                if ((!invalidated || row->isPaintInvalidationContainer()) && row->shouldDoFullPaintInvalidation())
+                    row->invalidateDisplayItemClient(*cell);
             }
         }
     }
