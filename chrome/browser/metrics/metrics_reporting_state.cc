@@ -60,7 +60,7 @@ void SetMetricsReporting(bool to_update_pref,
   }
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   g_browser_process->local_state()->SetBoolean(
-      metrics::prefs::kMetricsReportingEnabled, updated_pref);
+      prefs::kMetricsReportingEnabled, updated_pref);
 #endif
   // When a user opts in to the metrics reporting service, the previously
   // collected data should be cleared to ensure that nothing is reported before
@@ -103,6 +103,6 @@ void InitiateMetricsReportingChange(
 bool IsMetricsReportingUserChangable() {
   const PrefService* pref_service = g_browser_process->local_state();
   const PrefService::Preference* pref =
-      pref_service->FindPreference(metrics::prefs::kMetricsReportingEnabled);
+      pref_service->FindPreference(prefs::kMetricsReportingEnabled);
   return pref && !pref->IsManaged();
 }

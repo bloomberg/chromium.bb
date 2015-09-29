@@ -51,7 +51,7 @@ bool ExtractUninstallMetrics(const base::DictionaryValue& root,
   // Make sure that the user wants us reporting metrics. If not, don't
   // add our uninstall metrics.
   bool metrics_reporting_enabled = false;
-  if (!root.GetBoolean(metrics::prefs::kMetricsReportingEnabled,
+  if (!root.GetBoolean(prefs::kMetricsReportingEnabled,
                        &metrics_reporting_enabled) ||
       !metrics_reporting_enabled) {
     return false;

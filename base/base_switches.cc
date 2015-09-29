@@ -23,16 +23,6 @@ const char kEnableLowEndDeviceMode[]        = "enable-low-end-device-mode";
 // Force disabling of low-end device mode when set.
 const char kDisableLowEndDeviceMode[]       = "disable-low-end-device-mode";
 
-// This option can be used to force field trials when testing changes locally.
-// The argument is a list of name and value pairs, separated by slashes. If a
-// trial name is prefixed with an asterisk, that trial will start activated.
-// For example, the following argument defines two trials, with the second one
-// activated: "GoogleNow/Enable/*MaterialDesignNTP/Default/" This option can
-// also be used by the browser process to send the list of trials to a
-// non-browser process, using the same format. See
-// FieldTrialList::CreateTrialsFromString() in field_trial.h for details.
-const char kForceFieldTrials[]              = "force-fieldtrials";
-
 // Suppresses all error dialogs when present.
 const char kNoErrorDialogs[]                = "noerrdialogs";
 

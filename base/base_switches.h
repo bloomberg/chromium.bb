@@ -13,7 +13,6 @@ namespace switches {
 
 extern const char kDisableBreakpad[];
 extern const char kEnableCrashReporter[];
-extern const char kForceFieldTrials[];
 extern const char kFullMemoryCrashReport[];
 extern const char kEnableLowEndDeviceMode[];
 extern const char kDisableLowEndDeviceMode[];

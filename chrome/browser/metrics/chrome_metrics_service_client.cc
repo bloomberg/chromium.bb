@@ -113,7 +113,7 @@ bool IsCellularLogicEnabled() {
 bool ShouldClearSavedMetrics() {
 #if defined(OS_ANDROID)
   PrefService* local_state = g_browser_process->local_state();
-  return !local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled) &&
+  return !local_state->HasPrefPath(prefs::kMetricsReportingEnabled) &&
          variations::GetVariationParamValue("UMA_EnableCellularLogUpload",
                                             "Enabled") == "true";
 #else

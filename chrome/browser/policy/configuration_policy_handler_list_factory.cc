@@ -119,7 +119,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kPrintPreviewDisabled,
     base::Value::TYPE_BOOLEAN },
   { key::kMetricsReportingEnabled,
-    metrics::prefs::kMetricsReportingEnabled,
+    prefs::kMetricsReportingEnabled,
     base::Value::TYPE_BOOLEAN },
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,

@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,6 +31,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/default_search_manager.h"
+#include "content/public/common/content_switches.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 

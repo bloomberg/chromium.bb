@@ -1254,6 +1254,11 @@ const char kSSLVersionFallbackMin[] = "ssl.version_fallback_min";
 const char kCipherSuiteBlacklist[] = "ssl.cipher_suites.blacklist";
 const char kDisableSSLRecordSplitting[] = "ssl.ssl_record_splitting.disabled";
 
+// Boolean that specifies whether or not crash reporting and metrics reporting
+// are sent over the network for analysis.
+const char kMetricsReportingEnabled[] =
+    "user_experience_metrics.reporting_enabled";
+
 // Boolean that specifies whether or not crash reports are sent
 // over the network for analysis.
 #if defined(OS_ANDROID)

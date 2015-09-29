@@ -179,10 +179,8 @@ void SessionCrashedBubbleView::ShowForReal(
 
 #if defined(GOOGLE_CHROME_BUILD)
   if (!uma_opted_in_already) {
-    offer_uma_optin =
-        g_browser_process->local_state()
-            ->FindPreference(metrics::prefs::kMetricsReportingEnabled)
-            ->IsUserModifiable();
+    offer_uma_optin = g_browser_process->local_state()->FindPreference(
+        prefs::kMetricsReportingEnabled)->IsUserModifiable();
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

@@ -43,11 +43,6 @@ const char kMetricsOngoingLogs[] =
 // client id and low entropy source should be reset.
 const char kMetricsResetIds[] = "user_experience_metrics.reset_metrics_ids";
 
-// Boolean that specifies whether or not crash reporting and metrics reporting
-// are sent over the network for analysis.
-const char kMetricsReportingEnabled[] =
-    "user_experience_metrics.reporting_enabled";
-
 // Date/time when the user opted in to UMA and generated the client id for the
 // very first time (local machine time, stored as a 64-bit time_t value).
 const char kMetricsReportingEnabledTimestamp[] =
