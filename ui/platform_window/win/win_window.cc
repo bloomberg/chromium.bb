@@ -4,7 +4,6 @@
 
 #include "ui/platform_window/win/win_window.h"
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string16.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -119,10 +118,6 @@ PlatformImeController* WinWindow::GetPlatformImeController() {
 }
 
 LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnMouseRange"));
-
   MSG msg = { hwnd(), message, w_param, l_param,
               static_cast<DWORD>(GetMessageTime()),
               { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
@@ -138,19 +133,11 @@ LRESULT WinWindow::OnMouseRange(UINT message, WPARAM w_param, LPARAM l_param) {
 LRESULT WinWindow::OnCaptureChanged(UINT message,
                                     WPARAM w_param,
                                     LPARAM l_param) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnCaptureChanged"));
-
   delegate_->OnLostCapture();
   return 0;
 }
 
 LRESULT WinWindow::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnKeyEvent"));
-
   MSG msg = { hwnd(), message, w_param, l_param };
   KeyEvent event(msg);
   delegate_->DispatchEvent(&event);
@@ -159,45 +146,25 @@ LRESULT WinWindow::OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param) {
 }
 
 LRESULT WinWindow::OnNCActivate(UINT message, WPARAM w_param, LPARAM l_param) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnNCActivate"));
-
   delegate_->OnActivationChanged(!!w_param);
   return DefWindowProc(hwnd(), message, w_param, l_param);
 }
 
 void WinWindow::OnClose() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnClose"));
-
   delegate_->OnCloseRequest();
 }
 
 LRESULT WinWindow::OnCreate(CREATESTRUCT* create_struct) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnCreate"));
-
   // TODO(sky): provide real scale factor.
   delegate_->OnAcceleratedWidgetAvailable(hwnd(), 1.f);
   return 0;
 }
 
 void WinWindow::OnDestroy() {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnDestroy"));
-
   delegate_->OnClosed();
 }
 
 void WinWindow::OnPaint(HDC) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnPaint"));
-
   gfx::Rect damage_rect;
   RECT update_rect = {0};
   if (GetUpdateRect(hwnd(), &update_rect, FALSE))
@@ -207,10 +174,6 @@ void WinWindow::OnPaint(HDC) {
 }
 
 void WinWindow::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 WinWindow::OnWindowPosChanged"));
-
   if (!(window_pos->flags & SWP_NOSIZE) ||
       !(window_pos->flags & SWP_NOMOVE)) {
     RECT cr;

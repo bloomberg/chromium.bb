@@ -6,7 +6,6 @@
 
 #include "base/auto_reset.h"
 #include "base/basictypes.h"
-#include "base/profiler/scoped_tracker.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/events/event.h"
@@ -218,10 +217,6 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
                                WPARAM wparam,
                                LPARAM lparam,
                                BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 InputMethodWin::OnChar"));
-
   *handled = TRUE;
 
   if (suppress_next_char_) {
@@ -260,11 +255,6 @@ LRESULT InputMethodWin::OnImeSetContext(HWND window_handle,
                                         WPARAM wparam,
                                         LPARAM lparam,
                                         BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 InputMethodWin::OnImeSetContext"));
-
   if (!!wparam) {
     imm32_manager_.CreateImeWindow(window_handle);
     if (system_toplevel_window_focused()) {
@@ -288,11 +278,6 @@ LRESULT InputMethodWin::OnImeStartComposition(HWND window_handle,
                                               WPARAM wparam,
                                               LPARAM lparam,
                                               BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 InputMethodWin::OnImeStartComposition"));
-
   // We have to prevent WTL from calling ::DefWindowProc() because the function
   // calls ::ImmSetCompositionWindow() and ::ImmSetCandidateWindow() to
   // over-write the position of IME windows.
@@ -310,11 +295,6 @@ LRESULT InputMethodWin::OnImeComposition(HWND window_handle,
                                          WPARAM wparam,
                                          LPARAM lparam,
                                          BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 InputMethodWin::OnImeComposition"));
-
   // We have to prevent WTL from calling ::DefWindowProc() because we do not
   // want for the IMM (Input Method Manager) to send WM_IME_CHAR messages.
   *handled = TRUE;
@@ -348,11 +328,6 @@ LRESULT InputMethodWin::OnImeEndComposition(HWND window_handle,
                                             WPARAM wparam,
                                             LPARAM lparam,
                                             BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "440919 InputMethodWin::OnImeEndComposition"));
-
   // Let WTL call ::DefWindowProc() and release its resources.
   *handled = FALSE;
 
@@ -370,10 +345,6 @@ LRESULT InputMethodWin::OnImeNotify(UINT message,
                                     WPARAM wparam,
                                     LPARAM lparam,
                                     BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 InputMethodWin::OnImeNotify"));
-
   *handled = FALSE;
 
   // Update |is_candidate_popup_open_|, whether a candidate window is open.
@@ -393,10 +364,6 @@ LRESULT InputMethodWin::OnImeRequest(UINT message,
                                      WPARAM wparam,
                                      LPARAM lparam,
                                      BOOL* handled) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 InputMethodWin::OnImeRequest"));
-
   *handled = FALSE;
 
   // Should not receive WM_IME_REQUEST message, if IME is disabled.

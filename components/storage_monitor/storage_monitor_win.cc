@@ -9,7 +9,6 @@
 #include <fileapi.h>
 #include <shlobj.h>
 
-#include "base/profiler/scoped_tracker.h"
 #include "base/win/wrapped_window_proc.h"
 #include "components/storage_monitor/portable_device_watcher_win.h"
 #include "components/storage_monitor/removable_device_constants.h"

@@ -5,7 +5,6 @@
 #include "components/browser_watcher/endsession_watcher_window_win.h"
 
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/win/wrapped_window_proc.h"
 
 namespace browser_watcher {

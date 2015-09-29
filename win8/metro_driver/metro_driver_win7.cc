@@ -7,7 +7,6 @@
 #include <shobjidl.h>
 
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/win/msg_util.h"
 

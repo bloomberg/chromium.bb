@@ -5,7 +5,6 @@
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_win.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/tracked_objects.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/drop_target_event.h"
@@ -52,13 +51,9 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
                             ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
 
-  // Use task stopwatch to exclude the drag-drop time current task, if any.
-  tracked_objects::TaskStopwatch stopwatch;
-  stopwatch.Start();
   HRESULT result = DoDragDrop(
       ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_.Get(),
       ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
-  stopwatch.Stop();
   drag_source_copy->set_data(nullptr);
 
   if (alive)

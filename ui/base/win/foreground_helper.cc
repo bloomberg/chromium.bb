@@ -5,7 +5,6 @@
 #include "ui/base/win/foreground_helper.h"
 
 #include "base/logging.h"
-#include "base/profiler/scoped_tracker.h"
 #include "ui/gfx/win/window_impl.h"
 
 namespace ui {
@@ -75,10 +74,6 @@ HRESULT ForegroundHelper::ForegroundHotKey(HWND window) {
 
 // Handle the registered Hotkey being pressed.
 void ForegroundHelper::OnHotKey(int id, UINT vcode, UINT modifiers) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/440919 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION("440919 ForegroundHelper::OnHotKey"));
-
   SetForegroundWindow(window_);
 }
 
