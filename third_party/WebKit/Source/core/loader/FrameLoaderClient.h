@@ -98,6 +98,7 @@ public:
     virtual void dispatchDidChangeThemeColor() = 0;
 
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) = 0;
+    virtual bool hasPendingNavigation() = 0;
 
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
     virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;

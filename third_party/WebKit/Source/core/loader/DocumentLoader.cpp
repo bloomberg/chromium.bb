@@ -56,6 +56,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/LinkLoader.h"
+#include "core/loader/ProgressTracker.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -339,6 +340,11 @@ bool DocumentLoader::shouldContinueForNavigationPolicy(const ResourceRequest& re
         return true;
     if (policy == NavigationPolicyIgnore)
         return false;
+    if (policy == NavigationPolicyHandledByClient) {
+        // Mark the frame as loading since the embedder is handling the navigation.
+        frameLoader()->progress().progressStarted();
+        return false;
+    }
     if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::processingUserGesture())
         return false;
     frameLoader()->client()->loadURLExternally(request, policy);

@@ -101,6 +101,7 @@ public:
 
     void dispatchDidChangeThemeColor() override;
     NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy) override;
+    bool hasPendingNavigation() override;
     void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
     void dispatchWillSubmitForm(HTMLFormElement*) override;
     void didStartLoading(LoadStartType) override;

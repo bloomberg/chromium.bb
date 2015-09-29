@@ -551,9 +551,14 @@ static bool shouldSendCompleteNotifications(LocalFrame* frame)
     if (frame->loader().provisionalDocumentLoader())
         return false;
 
+    // A navigation is still scheduled in the embedder, so don't complete yet.
+    if (frame->loader().client()->hasPendingNavigation())
+        return false;
+
     // We might have declined to run the load event due to an imminent content-initiated navigation.
     if (!frame->document()->loadEventFinished())
         return false;
+
     return true;
 }
 

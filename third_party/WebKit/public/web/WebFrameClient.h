@@ -193,7 +193,6 @@ public:
     virtual void loadURLExternally(
         WebLocalFrame*, const WebURLRequest&, WebNavigationPolicy, const WebString& downloadName) { }
 
-
     // Navigational queries ------------------------------------------------
 
     // The client may choose to alter the navigation policy.  Otherwise,
@@ -236,6 +235,8 @@ public:
     // This returns such a history item if appropriate.
     virtual WebHistoryItem historyItemForNewChildFrame(WebFrame*) { return WebHistoryItem(); }
 
+    // Whether the client is handling a navigation request.
+    virtual bool hasPendingNavigation(WebLocalFrame*) { return false; }
 
     // Navigational notifications ------------------------------------------
 

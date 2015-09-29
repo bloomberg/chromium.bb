@@ -101,6 +101,11 @@ NavigationPolicy EmptyFrameLoaderClient::decidePolicyForNavigation(const Resourc
     return NavigationPolicyIgnore;
 }
 
+bool EmptyFrameLoaderClient::hasPendingNavigation()
+{
+    return false;
+}
+
 void EmptyFrameLoaderClient::dispatchWillSendSubmitEvent(HTMLFormElement*)
 {
 }
