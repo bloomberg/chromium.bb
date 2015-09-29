@@ -1103,7 +1103,10 @@ scoped_ptr<base::ListValue> ContentSettingsHandler::GetPolicyAllowedUrls(
     patterns.push_back(pattern);
   }
 
-  std::sort(patterns.begin(), patterns.end());
+  // The patterns are shown in the UI in a reverse order defined by
+  // |ContentSettingsPattern::operator<|.
+  std::sort(
+      patterns.begin(), patterns.end(), std::greater<ContentSettingsPattern>());
 
   scoped_ptr<base::ListValue> exceptions(new base::ListValue());
   for (const ContentSettingsPattern& pattern : patterns) {
@@ -1151,8 +1154,12 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
   for (auto& one_provider_exceptions : all_provider_exceptions)
     one_provider_exceptions = new base::ListValue();
 
-  for (AllPatternsSettings::iterator i = all_patterns_settings.begin();
-       i != all_patterns_settings.end();
+  // |all_patterns_settings| is sorted from the lowest precedence pattern to
+  // the highest (see operator< in ContentSettingsPattern), so traverse it in
+  // reverse to show the patterns with the highest precedence (the more specific
+  // ones) on the top.
+  for (AllPatternsSettings::reverse_iterator i = all_patterns_settings.rbegin();
+       i != all_patterns_settings.rend();
        ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
@@ -1207,13 +1214,21 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
   }
 
   for (const auto& one_provider_exceptions : all_provider_exceptions) {
-    // Append the patterns in reverse order, so the ones with the highest
-    // precedence (the more specific ones) are on the top.
+    // Append |one_provider_exceptions| at the end of |exceptions|. ListValue
+    // does not support concatenation, so we must append one item at a time.
+    // Furthermore, ListValue::Remove is O(size) if we remove an item from the
+    // beginning, so we need to remove them in the reverse order.
+    ScopedVector<base::Value> reverse_helper;
     while (!one_provider_exceptions->empty()) {
       scoped_ptr<base::Value> exception;
       one_provider_exceptions->Remove(
           one_provider_exceptions->GetSize() - 1, &exception);
-      exceptions->Append(exception.release());
+      reverse_helper.push_back(exception.Pass());
+    }
+    while (!reverse_helper.empty()) {
+      ScopedVector<base::Value>::iterator back = reverse_helper.end() - 1;
+      exceptions->Append(make_scoped_ptr(*back));
+      reverse_helper.weak_erase(back);
     }
   }
 }
