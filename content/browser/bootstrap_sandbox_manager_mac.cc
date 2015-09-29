@@ -4,6 +4,7 @@
 
 #include "content/browser/bootstrap_sandbox_manager_mac.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "content/browser/browser_io_surface_manager_mac.h"
@@ -12,13 +13,15 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "sandbox/mac/bootstrap_sandbox.h"
 
 namespace content {
 
 // static
 bool BootstrapSandboxManager::ShouldEnable() {
-  return false;
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableBootstrapSandbox);
 }
 
 // static

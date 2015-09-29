@@ -922,6 +922,9 @@ const char kEnableSpeechDispatcher[] = "enable-speech-dispatcher";
 #endif
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
+// Disables the bootstrap sandbox entirely.
+const char kDisableBootstrapSandbox[] = "disable-bootstrap-sandbox";
+
 // Disables support for Core Animation plugins. This is triggered when
 // accelerated compositing is disabled. See http://crbug.com/122430.
 const char kDisableCoreAnimationPlugins[] =
