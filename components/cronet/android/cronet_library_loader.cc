@@ -26,10 +26,11 @@
 #include "net/android/net_jni_registrar.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
-#include "url/android/url_jni_registrar.h"
 #include "url/url_util.h"
 
-#if !defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
+#if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
+#include "url/android/url_jni_registrar.h"
+#else
 #include "base/i18n/icu_util.h"
 #endif
 
@@ -42,13 +43,14 @@ const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
     {"ChromiumUrlRequestContext", ChromiumUrlRequestContextRegisterJni},
     {"CronetHistogramManager", CronetHistogramManagerRegisterJni},
     {"CronetLibraryLoader", RegisterNativesImpl},
-    {"CronetUploadDataStreamAdapter",
-     CronetUploadDataStreamAdapterRegisterJni},
+    {"CronetUploadDataStreamAdapter", CronetUploadDataStreamAdapterRegisterJni},
     {"CronetUrlRequestAdapter", CronetUrlRequestAdapterRegisterJni},
     {"CronetUrlRequestContextAdapter",
      CronetUrlRequestContextAdapterRegisterJni},
     {"NetAndroid", net::android::RegisterJni},
+#if defined(USE_ICU_ALTERNATIVES_ON_ANDROID)
     {"UrlAndroid", url::android::RegisterJni},
+#endif
 };
 
 // MessageLoop on the main thread, which is where objects that receive Java
