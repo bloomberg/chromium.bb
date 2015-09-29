@@ -263,6 +263,12 @@ class IPC_EXPORT Message : public base::Pickle {
     int32_t routing;  // ID of the view that this message is destined for
     uint32_t type;    // specifies the user-defined message type
     uint32_t flags;   // specifies control flags for the message
+#if defined(OS_MACOSX)
+    // The number of brokered attachments included with this message. The
+    // ids of the brokered attachment ids are sent immediately after the pickled
+    // message, before the next pickled message is sent.
+    uint32_t num_brokered_attachments;
+#endif
 #if defined(OS_POSIX)
     uint16_t num_fds; // the number of descriptors included with this message
     uint16_t pad;     // explicitly initialize this to appease valgrind

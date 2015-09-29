@@ -49,6 +49,9 @@ Message::~Message() {
 Message::Message() : base::Pickle(sizeof(Header)) {
   header()->routing = header()->type = 0;
   header()->flags = GetRefNumUpper24();
+#if defined(OS_MACOSX)
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
@@ -62,6 +65,9 @@ Message::Message(int32_t routing_id, uint32_t type, PriorityValue priority)
   header()->type = type;
   DCHECK((priority & 0xffffff00) == 0);
   header()->flags = priority | GetRefNumUpper24();
+#if defined(OS_MACOSX)
+  header()->num_brokered_attachments = 0;
+#endif
 #if defined(OS_POSIX)
   header()->num_fds = 0;
   header()->pad = 0;
