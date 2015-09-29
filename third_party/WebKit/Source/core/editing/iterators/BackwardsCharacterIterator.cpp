@@ -30,7 +30,7 @@
 namespace blink {
 
 template <typename Strategy>
-BackwardsCharacterIteratorAlgorithm<Strategy>::BackwardsCharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
+BackwardsCharacterIteratorAlgorithm<Strategy>::BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -41,12 +41,12 @@ BackwardsCharacterIteratorAlgorithm<Strategy>::BackwardsCharacterIteratorAlgorit
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const
+PositionTemplate<Strategy> BackwardsCharacterIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.startContainer();
-            return PositionAlgorithm<Strategy>::editingPositionOf(n, m_textIterator.endOffset() - m_runOffset);
+            return PositionTemplate<Strategy>::editingPositionOf(n, m_textIterator.endOffset() - m_runOffset);
         }
         ASSERT(!m_runOffset);
     }

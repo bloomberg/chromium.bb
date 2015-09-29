@@ -36,7 +36,7 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(Node* anchorNode,
 {
 }
 template <typename Strategy>
-PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(const PositionAlgorithm<Strategy>& pos)
+PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm(const PositionTemplate<Strategy>& pos)
     : PositionIteratorAlgorithm(pos.anchorNode(), pos.computeEditingOffset())
 {
 }
@@ -50,34 +50,34 @@ PositionIteratorAlgorithm<Strategy>::PositionIteratorAlgorithm()
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const
+PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::deprecatedComputePosition() const
 {
     if (m_nodeAfterPositionInAnchor) {
         ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
         // FIXME: This check is inadaquete because any ancestor could be ignored by editing
         if (Strategy::editingIgnoresContent(Strategy::parent(*m_nodeAfterPositionInAnchor)))
-            return PositionAlgorithm<Strategy>::beforeNode(m_anchorNode);
-        return PositionAlgorithm<Strategy>::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
+            return PositionTemplate<Strategy>::beforeNode(m_anchorNode);
+        return PositionTemplate<Strategy>::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
     }
     if (Strategy::hasChildren(*m_anchorNode))
-        return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
-    return PositionAlgorithm<Strategy>::editingPositionOf(m_anchorNode, m_offsetInAnchor);
+        return PositionTemplate<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
+    return PositionTemplate<Strategy>::editingPositionOf(m_anchorNode, m_offsetInAnchor);
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition() const
+PositionTemplate<Strategy> PositionIteratorAlgorithm<Strategy>::computePosition() const
 {
     if (m_nodeAfterPositionInAnchor) {
         ASSERT(Strategy::parent(*m_nodeAfterPositionInAnchor) == m_anchorNode);
-        return PositionAlgorithm<Strategy>::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
+        return PositionTemplate<Strategy>::inParentBeforeNode(*m_nodeAfterPositionInAnchor);
     }
     if (Strategy::hasChildren(*m_anchorNode))
-        return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
+        return PositionTemplate<Strategy>::lastPositionInOrAfterNode(m_anchorNode);
     if (m_anchorNode->isTextNode())
-        return PositionAlgorithm<Strategy>(m_anchorNode, m_offsetInAnchor);
+        return PositionTemplate<Strategy>(m_anchorNode, m_offsetInAnchor);
     if (m_offsetInAnchor)
-        return PositionAlgorithm<Strategy>(m_anchorNode, PositionAnchorType::AfterAnchor);
-    return PositionAlgorithm<Strategy>(m_anchorNode, PositionAnchorType::BeforeAnchor);
+        return PositionTemplate<Strategy>(m_anchorNode, PositionAnchorType::AfterAnchor);
+    return PositionTemplate<Strategy>(m_anchorNode, PositionAnchorType::BeforeAnchor);
 }
 
 template <typename Strategy>

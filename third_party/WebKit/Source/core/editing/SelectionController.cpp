@@ -90,14 +90,14 @@ VisibleSelectionTemplate<Strategy> expandSelectionToRespectUserSelectAll(Node* t
         return selection;
 
     VisibleSelectionTemplate<Strategy> newSelection(selection);
-    newSelection.setBase(mostBackwardCaretPosition(PositionAlgorithm<Strategy>::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
-    newSelection.setExtent(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAll), CanCrossEditingBoundary));
+    newSelection.setBase(mostBackwardCaretPosition(PositionTemplate<Strategy>::beforeNode(rootUserSelectAll), CanCrossEditingBoundary));
+    newSelection.setExtent(mostForwardCaretPosition(PositionTemplate<Strategy>::afterNode(rootUserSelectAll), CanCrossEditingBoundary));
 
     return newSelection;
 }
 
 template <typename Strategy>
-static int textDistance(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end)
+static int textDistance(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end)
 {
     return TextIteratorAlgorithm<Strategy>::rangeLength(start, end, true);
 }
@@ -141,8 +141,8 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
     const PositionWithAffinity eventPos = innerNode->layoutObject()->positionForPoint(event.localPoint());
     VisiblePositionTemplate<Strategy> visiblePos = createVisiblePosition(fromPositionInDOMTree<Strategy>(eventPos));
     if (visiblePos.isNull())
-        visiblePos = createVisiblePosition(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(innerNode));
-    PositionAlgorithm<Strategy> pos = visiblePos.deepEquivalent();
+        visiblePos = createVisiblePosition(PositionTemplate<Strategy>::firstPositionInOrBeforeNode(innerNode));
+    PositionTemplate<Strategy> pos = visiblePos.deepEquivalent();
 
     VisibleSelectionTemplate<Strategy> newSelection = selection().visibleSelection<Strategy>();
     TextGranularity granularity = CharacterGranularity;
@@ -160,8 +160,8 @@ bool SelectionController::handleMousePressEventSingleClickAlgorithm(const MouseE
             if (pos.isNotNull()) {
                 // See <rdar://problem/3668157> REGRESSION (Mail): shift-click
                 // deselects when selection was created right-to-left
-                const PositionAlgorithm<Strategy> start = newSelection.start();
-                const PositionAlgorithm<Strategy> end = newSelection.end();
+                const PositionTemplate<Strategy> start = newSelection.start();
+                const PositionTemplate<Strategy> end = newSelection.end();
                 int distanceToStart = textDistance(start, pos);
                 int distanceToEnd = textDistance(pos, end);
                 if (distanceToStart <= distanceToEnd)
@@ -234,22 +234,22 @@ void SelectionController::updateSelectionForMouseDragAlgorithm(const HitTestResu
         // TODO(yosin) Should we use |Strategy::rootUserSelectAllForNode()|?
         Node* rootUserSelectAllForMousePressNode = EditingStrategy::rootUserSelectAllForNode(mousePressNode);
         if (rootUserSelectAllForMousePressNode && rootUserSelectAllForMousePressNode == EditingStrategy::rootUserSelectAllForNode(target)) {
-            newSelection.setBase(mostBackwardCaretPosition(PositionAlgorithm<Strategy>::beforeNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
-            newSelection.setExtent(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
+            newSelection.setBase(mostBackwardCaretPosition(PositionTemplate<Strategy>::beforeNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
+            newSelection.setExtent(mostForwardCaretPosition(PositionTemplate<Strategy>::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
         } else {
             // Reset base for user select all when base is inside user-select-all area and extent < base.
             if (rootUserSelectAllForMousePressNode) {
-                PositionAlgorithm<Strategy> eventPosition = fromPositionInDOMTree<Strategy>(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
-                PositionAlgorithm<Strategy> dragStartPosition = fromPositionInDOMTree<Strategy>(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
+                PositionTemplate<Strategy> eventPosition = fromPositionInDOMTree<Strategy>(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position());
+                PositionTemplate<Strategy> dragStartPosition = fromPositionInDOMTree<Strategy>(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position());
                 if (eventPosition.compareTo(dragStartPosition) < 0)
-                    newSelection.setBase(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
+                    newSelection.setBase(mostForwardCaretPosition(PositionTemplate<Strategy>::afterNode(rootUserSelectAllForMousePressNode), CanCrossEditingBoundary));
             }
 
             Node* rootUserSelectAllForTarget = EditingStrategy::rootUserSelectAllForNode(target);
             if (rootUserSelectAllForTarget && mousePressNode->layoutObject() && fromPositionInDOMTree<Strategy>(target->layoutObject()->positionForPoint(hitTestResult.localPoint()).position()).compareTo(fromPositionInDOMTree<Strategy>(mousePressNode->layoutObject()->positionForPoint(dragStartPos).position())) < 0)
-                newSelection.setExtent(mostBackwardCaretPosition(PositionAlgorithm<Strategy>::beforeNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
+                newSelection.setExtent(mostBackwardCaretPosition(PositionTemplate<Strategy>::beforeNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
             else if (rootUserSelectAllForTarget && mousePressNode->layoutObject())
-                newSelection.setExtent(mostForwardCaretPosition(PositionAlgorithm<Strategy>::afterNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
+                newSelection.setExtent(mostForwardCaretPosition(PositionTemplate<Strategy>::afterNode(rootUserSelectAllForTarget), CanCrossEditingBoundary));
             else
                 newSelection.setExtent(targetPosition);
         }
@@ -331,12 +331,12 @@ void SelectionController::selectClosestMisspellingFromHitTestResult(const HitTes
 
     VisiblePositionTemplate<Strategy> pos = createVisiblePosition(fromPositionInDOMTree<Strategy>(innerNode->layoutObject()->positionForPoint(result.localPoint())));
     if (pos.isNotNull()) {
-        const PositionAlgorithm<Strategy> markerPosition = pos.deepEquivalent().parentAnchoredEquivalent();
+        const PositionTemplate<Strategy> markerPosition = pos.deepEquivalent().parentAnchoredEquivalent();
         DocumentMarkerVector markers = innerNode->document().markers().markersInRange(EphemeralRange(toPositionInDOMTree(markerPosition)), DocumentMarker::MisspellingMarkers());
         if (markers.size() == 1) {
             Node* containerNode = markerPosition.computeContainerNode();
-            const PositionAlgorithm<Strategy> start(containerNode, markers[0]->startOffset());
-            const PositionAlgorithm<Strategy> end(containerNode, markers[0]->endOffset());
+            const PositionTemplate<Strategy> start(containerNode, markers[0]->startOffset());
+            const PositionTemplate<Strategy> end(containerNode, markers[0]->endOffset());
             newSelection = VisibleSelectionTemplate<Strategy>(start, end);
         }
     }

@@ -59,7 +59,7 @@ static int maxOffsetIncludingCollapsedSpaces(Node* node)
 }
 
 template <typename Strategy>
-SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
+SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::SimplifiedBackwardsTextIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_node(nullptr)
     , m_offset(0)
     , m_handledNode(false)
@@ -367,19 +367,19 @@ int SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endOffset() const
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::startPosition() const
+PositionTemplate<Strategy> SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::startPosition() const
 {
     if (m_positionNode)
-        return PositionAlgorithm<Strategy>::editingPositionOf(m_positionNode, m_positionStartOffset);
-    return PositionAlgorithm<Strategy>::editingPositionOf(m_startNode, m_startOffset);
+        return PositionTemplate<Strategy>::editingPositionOf(m_positionNode, m_positionStartOffset);
+    return PositionTemplate<Strategy>::editingPositionOf(m_startNode, m_startOffset);
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endPosition() const
+PositionTemplate<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (m_positionNode)
-        return PositionAlgorithm<Strategy>::editingPositionOf(m_positionNode, m_positionEndOffset);
-    return PositionAlgorithm<Strategy>::editingPositionOf(m_startNode, m_startOffset);
+        return PositionTemplate<Strategy>::editingPositionOf(m_positionNode, m_positionEndOffset);
+    return PositionTemplate<Strategy>::editingPositionOf(m_startNode, m_startOffset);
 }
 
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;

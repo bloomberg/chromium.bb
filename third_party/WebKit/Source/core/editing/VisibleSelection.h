@@ -268,7 +268,7 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate final {
     STACK_ALLOCATED();
 public:
-    VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = TextAffinity::Downstream);
     VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent);
     explicit VisibleSelectionTemplate(const VisibleSelection&);
     explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&);
@@ -277,10 +277,10 @@ public:
     operator const VisibleSelection&() const { return m_visibleSelection; }
 
     TextAffinity affinity() const { return m_visibleSelection.affinity(); }
-    PositionAlgorithm<Strategy> base() const;
-    PositionAlgorithm<Strategy> extent() const;
-    PositionAlgorithm<Strategy> start() const;
-    PositionAlgorithm<Strategy> end() const;
+    PositionTemplate<Strategy> base() const;
+    PositionTemplate<Strategy> extent() const;
+    PositionTemplate<Strategy> start() const;
+    PositionTemplate<Strategy> end() const;
     SelectionType selectionType() const { return m_visibleSelection.selectionType(); }
     VisiblePositionTemplate<Strategy> visibleStart() const;
     VisiblePositionTemplate<Strategy> visibleEnd() const;
@@ -294,12 +294,12 @@ public:
 
     EphemeralRangeTemplate<Strategy> toNormalizedEphemeralRange() const;
 
-    void setBase(const PositionAlgorithm<Strategy>&);
+    void setBase(const PositionTemplate<Strategy>&);
     void setBase(const VisiblePositionTemplate<Strategy>&);
-    void setExtent(const PositionAlgorithm<Strategy>&);
+    void setExtent(const PositionTemplate<Strategy>&);
     void setExtent(const VisiblePositionTemplate<Strategy>&);
     void setIsDirectional(bool isDirectional) { m_visibleSelection.setIsDirectional(isDirectional); }
-    void setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent);
+    void setWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent);
 
     void appendTrailingWhitespace();
     bool expandUsingGranularity(TextGranularity);

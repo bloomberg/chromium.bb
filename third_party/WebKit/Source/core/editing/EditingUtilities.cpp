@@ -325,20 +325,20 @@ Element* unsplittableElementForPosition(const Position& p)
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> nextCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+PositionTemplate<Strategy> nextCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
     PositionIteratorAlgorithm<Strategy> p(position);
 
     p.increment();
     while (!p.atEnd()) {
-        PositionAlgorithm<Strategy> candidate = p.computePosition();
+        PositionTemplate<Strategy> candidate = p.computePosition();
         if (isVisuallyEquivalentCandidate(candidate))
             return candidate;
 
         p.increment();
     }
 
-    return PositionAlgorithm<Strategy>();
+    return PositionTemplate<Strategy>();
 }
 
 Position nextCandidate(const Position& position)
@@ -355,24 +355,24 @@ PositionInComposedTree nextCandidate(const PositionInComposedTree& position)
 // for returning position which |downstream()| not equal to initial position's
 // |downstream()|.
 template <typename Strategy>
-static PositionAlgorithm<Strategy> nextVisuallyDistinctCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+static PositionTemplate<Strategy> nextVisuallyDistinctCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
     if (position.isNull())
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
     PositionIteratorAlgorithm<Strategy> p(position);
-    const PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(position);
+    const PositionTemplate<Strategy> downstreamStart = mostForwardCaretPosition(position);
 
     p.increment();
     while (!p.atEnd()) {
-        PositionAlgorithm<Strategy> candidate = p.computePosition();
+        PositionTemplate<Strategy> candidate = p.computePosition();
         if (isVisuallyEquivalentCandidate(candidate) && mostForwardCaretPosition(candidate) != downstreamStart)
             return candidate;
 
         p.increment();
     }
 
-    return PositionAlgorithm<Strategy>();
+    return PositionTemplate<Strategy>();
 }
 
 Position nextVisuallyDistinctCandidate(const Position& position)
@@ -386,20 +386,20 @@ PositionInComposedTree nextVisuallyDistinctCandidate(const PositionInComposedTre
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> previousCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+PositionTemplate<Strategy> previousCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
     PositionIteratorAlgorithm<Strategy> p(position);
 
     p.decrement();
     while (!p.atStart()) {
-        PositionAlgorithm<Strategy> candidate = p.computePosition();
+        PositionTemplate<Strategy> candidate = p.computePosition();
         if (isVisuallyEquivalentCandidate(candidate))
             return candidate;
 
         p.decrement();
     }
 
-    return PositionAlgorithm<Strategy>();
+    return PositionTemplate<Strategy>();
 }
 
 Position previousCandidate(const Position& position)
@@ -416,24 +416,24 @@ PositionInComposedTree previousCandidate(const PositionInComposedTree& position)
 // for returning position which |downstream()| not equal to initial position's
 // |downstream()|.
 template <typename Strategy>
-PositionAlgorithm<Strategy> previousVisuallyDistinctCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+PositionTemplate<Strategy> previousVisuallyDistinctCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
     if (position.isNull())
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
     PositionIteratorAlgorithm<Strategy> p(position);
-    PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(position);
+    PositionTemplate<Strategy> downstreamStart = mostForwardCaretPosition(position);
 
     p.decrement();
     while (!p.atStart()) {
-        PositionAlgorithm<Strategy> candidate = p.computePosition();
+        PositionTemplate<Strategy> candidate = p.computePosition();
         if (isVisuallyEquivalentCandidate(candidate) && mostForwardCaretPosition(candidate) != downstreamStart)
             return candidate;
 
         p.decrement();
     }
 
-    return PositionAlgorithm<Strategy>();
+    return PositionTemplate<Strategy>();
 }
 
 Position previousVisuallyDistinctCandidate(const Position& position)
@@ -457,27 +457,27 @@ VisiblePositionInComposedTree firstEditableVisiblePositionAfterPositionInRoot(co
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(const PositionAlgorithm<Strategy>& position, Node* highestRoot)
+PositionTemplate<Strategy> firstEditablePositionAfterPositionInRootAlgorithm(const PositionTemplate<Strategy>& position, Node* highestRoot)
 {
     // position falls before highestRoot.
-    if (position.compareTo(PositionAlgorithm<Strategy>::firstPositionInNode(highestRoot)) == -1 && highestRoot->hasEditableStyle())
-        return PositionAlgorithm<Strategy>::firstPositionInNode(highestRoot);
+    if (position.compareTo(PositionTemplate<Strategy>::firstPositionInNode(highestRoot)) == -1 && highestRoot->hasEditableStyle())
+        return PositionTemplate<Strategy>::firstPositionInNode(highestRoot);
 
-    PositionAlgorithm<Strategy> editablePosition = position;
+    PositionTemplate<Strategy> editablePosition = position;
 
     if (position.anchorNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.anchorNode());
         if (!shadowAncestor)
-            return PositionAlgorithm<Strategy>();
+            return PositionTemplate<Strategy>();
 
-        editablePosition = PositionAlgorithm<Strategy>::afterNode(shadowAncestor);
+        editablePosition = PositionTemplate<Strategy>::afterNode(shadowAncestor);
     }
 
     while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionAlgorithm<Strategy>::inParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
+        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionTemplate<Strategy>::inParentAfterNode(*editablePosition.anchorNode()) : nextVisuallyDistinctCandidate(editablePosition);
 
     if (editablePosition.anchorNode() && editablePosition.anchorNode() != highestRoot && !editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
     return editablePosition;
 }
@@ -503,27 +503,27 @@ VisiblePositionInComposedTree lastEditableVisiblePositionBeforePositionInRoot(co
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> lastEditablePositionBeforePositionInRootAlgorithm(const PositionAlgorithm<Strategy>& position, Node* highestRoot)
+PositionTemplate<Strategy> lastEditablePositionBeforePositionInRootAlgorithm(const PositionTemplate<Strategy>& position, Node* highestRoot)
 {
     // When position falls after highestRoot, the result is easy to compute.
-    if (position.compareTo(PositionAlgorithm<Strategy>::lastPositionInNode(highestRoot)) == 1)
-        return PositionAlgorithm<Strategy>::lastPositionInNode(highestRoot);
+    if (position.compareTo(PositionTemplate<Strategy>::lastPositionInNode(highestRoot)) == 1)
+        return PositionTemplate<Strategy>::lastPositionInNode(highestRoot);
 
-    PositionAlgorithm<Strategy> editablePosition = position;
+    PositionTemplate<Strategy> editablePosition = position;
 
     if (position.anchorNode()->treeScope() != highestRoot->treeScope()) {
         Node* shadowAncestor = highestRoot->treeScope().ancestorInThisScope(editablePosition.anchorNode());
         if (!shadowAncestor)
-            return PositionAlgorithm<Strategy>();
+            return PositionTemplate<Strategy>();
 
-        editablePosition = PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(shadowAncestor);
+        editablePosition = PositionTemplate<Strategy>::firstPositionInOrBeforeNode(shadowAncestor);
     }
 
     while (editablePosition.anchorNode() && !isEditablePosition(editablePosition) && editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionAlgorithm<Strategy>::inParentBeforeNode(*editablePosition.anchorNode()) : previousVisuallyDistinctCandidate(editablePosition);
+        editablePosition = isAtomicNode(editablePosition.anchorNode()) ? PositionTemplate<Strategy>::inParentBeforeNode(*editablePosition.anchorNode()) : previousVisuallyDistinctCandidate(editablePosition);
 
     if (editablePosition.anchorNode() && editablePosition.anchorNode() != highestRoot && !editablePosition.anchorNode()->isDescendantOf(highestRoot))
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
     return editablePosition;
 }
 
@@ -553,7 +553,7 @@ int uncheckedNextOffset(const Node* n, int current)
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> previousPositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, PositionMoveType moveType)
+PositionTemplate<Strategy> previousPositionOfAlgorithm(const PositionTemplate<Strategy>& position, PositionMoveType moveType)
 {
     Node* const node = position.anchorNode();
     if (!node)
@@ -563,9 +563,9 @@ PositionAlgorithm<Strategy> previousPositionOfAlgorithm(const PositionAlgorithm<
 
     if (offset > 0) {
         if (editingIgnoresContent(node))
-            return PositionAlgorithm<Strategy>::beforeNode(node);
+            return PositionTemplate<Strategy>::beforeNode(node);
         if (Node* child = Strategy::childAt(*node, offset - 1))
-            return PositionAlgorithm<Strategy>::lastPositionInOrAfterNode(child);
+            return PositionTemplate<Strategy>::lastPositionInOrAfterNode(child);
 
         // There are two reasons child might be 0:
         //   1) The node is node like a text node that is not an element, and
@@ -575,20 +575,20 @@ PositionAlgorithm<Strategy> previousPositionOfAlgorithm(const PositionAlgorithm<
         //      no child. Going from 1 to 0 is correct.
         switch (moveType) {
         case PositionMoveType::CodePoint:
-            return PositionAlgorithm<Strategy>(node, offset - 1);
+            return PositionTemplate<Strategy>(node, offset - 1);
         case PositionMoveType::Character:
-            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffset(node, offset));
+            return PositionTemplate<Strategy>(node, uncheckedPreviousOffset(node, offset));
         case PositionMoveType::BackwardDeletion:
-            return PositionAlgorithm<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
+            return PositionTemplate<Strategy>(node, uncheckedPreviousOffsetForBackwardDeletion(node, offset));
         }
     }
 
     if (ContainerNode* parent = Strategy::parent(*node)) {
         if (editingIgnoresContent(parent))
-            return PositionAlgorithm<Strategy>::beforeNode(parent);
+            return PositionTemplate<Strategy>::beforeNode(parent);
         // TODO(yosin) We should use |Strategy::index(Node&)| instead of
         // |Node::nodeIndex()|.
-        return PositionAlgorithm<Strategy>(parent, node->nodeIndex());
+        return PositionTemplate<Strategy>(parent, node->nodeIndex());
     }
     return position;
 }
@@ -604,7 +604,7 @@ PositionInComposedTree previousPositionOf(const PositionInComposedTree& position
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> nextPositionOfAlgorithm(const PositionAlgorithm<Strategy>& position, PositionMoveType moveType)
+PositionTemplate<Strategy> nextPositionOfAlgorithm(const PositionTemplate<Strategy>& position, PositionMoveType moveType)
 {
     ASSERT(moveType != PositionMoveType::BackwardDeletion);
 
@@ -615,7 +615,7 @@ PositionAlgorithm<Strategy> nextPositionOfAlgorithm(const PositionAlgorithm<Stra
     const int offset = position.computeEditingOffset();
 
     if (Node* child = Strategy::childAt(*node, offset))
-        return PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(child);
+        return PositionTemplate<Strategy>::firstPositionInOrBeforeNode(child);
 
     // TODO(yosin) We should use |Strategy::lastOffsetForEditing()| instead of
     // DOM tree version.
@@ -626,11 +626,11 @@ PositionAlgorithm<Strategy> nextPositionOfAlgorithm(const PositionAlgorithm<Stra
         //      is correct.
         //   2) The new offset is a bogus offset like (<br>, 1), and there is no
         //      child. Going from 0 to 1 is correct.
-        return PositionAlgorithm<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::Character) ? uncheckedNextOffset(node, offset) : offset + 1);
+        return PositionTemplate<Strategy>::editingPositionOf(node, (moveType == PositionMoveType::Character) ? uncheckedNextOffset(node, offset) : offset + 1);
     }
 
     if (ContainerNode* parent = Strategy::parent(*node))
-        return PositionAlgorithm<Strategy>::editingPositionOf(parent, Strategy::index(*node) + 1);
+        return PositionTemplate<Strategy>::editingPositionOf(parent, Strategy::index(*node) + 1);
     return position;
 }
 
@@ -666,7 +666,7 @@ Element* enclosingBlock(Node* node, EditingBoundaryCrossingRule rule)
 }
 
 template <typename Strategy>
-Element* enclosingBlockAlgorithm(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+Element* enclosingBlockAlgorithm(const PositionTemplate<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     Node* enclosingNode = enclosingNodeOfType(position, isEnclosingBlock, rule);
     return enclosingNode && enclosingNode->isElementNode() ? toElement(enclosingNode) : nullptr;
@@ -711,9 +711,9 @@ bool nodeIsUserSelectNone(Node* node)
 }
 
 template <typename Strategy>
-TextDirection directionOfEnclosingBlockAlgorithm(const PositionAlgorithm<Strategy>& position)
+TextDirection directionOfEnclosingBlockAlgorithm(const PositionTemplate<Strategy>& position)
 {
-    Element* enclosingBlockElement = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(position.computeContainerNode()), CannotCrossEditingBoundary);
+    Element* enclosingBlockElement = enclosingBlock(PositionTemplate<Strategy>::firstPositionInOrBeforeNode(position.computeContainerNode()), CannotCrossEditingBoundary);
     if (!enclosingBlockElement)
         return LTR;
     LayoutObject* layoutObject = enclosingBlockElement->layoutObject();
@@ -870,7 +870,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, HTMLElement*
 template <typename Strategy>
 static Element* isFirstPositionAfterTableAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionAlgorithm<Strategy> upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
+    const PositionTemplate<Strategy> upstream(mostBackwardCaretPosition(visiblePosition.deepEquivalent()));
     if (isRenderedTableElement(upstream.anchorNode()) && upstream.atLastEditingPositionForNode())
         return toElement(upstream.anchorNode());
 
@@ -1002,7 +1002,7 @@ Element* enclosingElementWithTag(const Position& p, const QualifiedName& tagName
 }
 
 template <typename Strategy>
-static Node* enclosingNodeOfTypeAlgorithm(const PositionAlgorithm<Strategy>& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
+static Node* enclosingNodeOfTypeAlgorithm(const PositionTemplate<Strategy>& p, bool (*nodeIsOfType)(const Node*), EditingBoundaryCrossingRule rule)
 {
     // TODO(yosin) support CanSkipCrossEditingBoundary
     ASSERT(rule == CanCrossEditingBoundary || rule == CannotCrossEditingBoundary);
@@ -1560,8 +1560,8 @@ static EphemeralRangeTemplate<Strategy> normalizeRangeAlgorithm(const EphemeralR
 
     // TODO(yosin) We should not call |parentAnchoredEquivalent()|, it is
     // redundant.
-    const PositionAlgorithm<Strategy> normalizedStart = mostForwardCaretPosition(range.startPosition()).parentAnchoredEquivalent();
-    const PositionAlgorithm<Strategy> normalizedEnd = mostBackwardCaretPosition(range.endPosition()).parentAnchoredEquivalent();
+    const PositionTemplate<Strategy> normalizedStart = mostForwardCaretPosition(range.startPosition()).parentAnchoredEquivalent();
+    const PositionTemplate<Strategy> normalizedEnd = mostBackwardCaretPosition(range.endPosition()).parentAnchoredEquivalent();
     // The order of the positions of |start| and |end| can be swapped after
     // upstream/downstream. e.g. editing/pasteboard/copy-display-none.html
     if (normalizedStart.compareTo(normalizedEnd) > 0)

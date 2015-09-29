@@ -296,7 +296,7 @@ bool VisibleSelection::expandUsingGranularityInComposedTree(TextGranularity gran
 }
 
 template <typename Strategy>
-static EphemeralRangeTemplate<Strategy> makeSearchRange(const PositionAlgorithm<Strategy>& pos)
+static EphemeralRangeTemplate<Strategy> makeSearchRange(const PositionTemplate<Strategy>& pos)
 {
     Node* node = pos.anchorNode();
     if (!node)
@@ -308,7 +308,7 @@ static EphemeralRangeTemplate<Strategy> makeSearchRange(const PositionAlgorithm<
     if (!boundary)
         return EphemeralRangeTemplate<Strategy>();
 
-    return EphemeralRangeTemplate<Strategy>(pos, PositionAlgorithm<Strategy>::lastPositionInNode(boundary));
+    return EphemeralRangeTemplate<Strategy>(pos, PositionTemplate<Strategy>::lastPositionInNode(boundary));
 }
 
 void VisibleSelection::appendTrailingWhitespace()
@@ -1141,7 +1141,7 @@ bool VisibleSelection::InComposedTree::equalSelections(const VisibleSelection& s
 // ----
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent, TextAffinity affinity)
+VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity affinity)
     : VisibleSelectionTemplate(VisibleSelection(base, extent, affinity))
 {
 }
@@ -1188,7 +1188,7 @@ void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionAlgorithm<Strategy>& base, const PositionAlgorithm<Strategy>& extent)
+void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent)
 {
     m_visibleSelection.setWithoutValidation(base, extent);
 }

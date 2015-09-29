@@ -42,15 +42,15 @@ template<typename Strategy>
 class StyledMarkupSerializer final {
     STACK_ALLOCATED();
 public:
-    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
+    StyledMarkupSerializer(EAbsoluteURLs, EAnnotateForInterchange, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines);
 
     String createMarkup();
 
 private:
     bool shouldAnnotate() const { return m_shouldAnnotate == AnnotateForInterchange; }
 
-    const PositionAlgorithm<Strategy> m_start;
-    const PositionAlgorithm<Strategy> m_end;
+    const PositionTemplate<Strategy> m_start;
+    const PositionTemplate<Strategy> m_end;
     const EAbsoluteURLs m_shouldResolveURLs;
     const EAnnotateForInterchange m_shouldAnnotate;
     const RefPtrWillBeMember<Node> m_highestNodeToBeSerialized;

@@ -63,7 +63,7 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(const PositionWithAff
 template<typename Strategy>
 VisiblePositionTemplate<Strategy> VisiblePositionTemplate<Strategy>::create(const PositionWithAffinityTemplate<Strategy>& positionWithAffinity)
 {
-    const PositionAlgorithm<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
+    const PositionTemplate<Strategy> deepPosition = canonicalPositionOf(positionWithAffinity.position());
     if (deepPosition.isNull())
         return VisiblePositionTemplate<Strategy>();
     const PositionWithAffinityTemplate<Strategy> downstreamPosition(deepPosition);

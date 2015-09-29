@@ -278,8 +278,8 @@ void TextFinder::scopeStringMatchesAlgorithm(int identifier, const WebString& se
     }
 
     WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
-    PositionAlgorithm<Strategy> searchStart = PositionAlgorithm<Strategy>::firstPositionInNode(ownerFrame().frame()->document());
-    PositionAlgorithm<Strategy> searchEnd = PositionAlgorithm<Strategy>::lastPositionInNode(ownerFrame().frame()->document());
+    PositionTemplate<Strategy> searchStart = PositionTemplate<Strategy>::firstPositionInNode(ownerFrame().frame()->document());
+    PositionTemplate<Strategy> searchEnd = PositionTemplate<Strategy>::lastPositionInNode(ownerFrame().frame()->document());
     ASSERT(searchStart.document() == searchEnd.document());
 
     if (m_resumeScopingFromRange) {

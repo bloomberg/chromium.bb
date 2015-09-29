@@ -45,8 +45,8 @@ protected:
     void setSelection(VisibleSelectionTemplate<Strategy>& selection, int base, int extend)
     {
         Node* node = document().body()->firstChild();
-        selection.setBase(PositionAlgorithm<Strategy>(node, base));
-        selection.setExtent(PositionAlgorithm<Strategy>(node, extend));
+        selection.setBase(PositionTemplate<Strategy>(node, base));
+        selection.setExtent(PositionTemplate<Strategy>(node, extend));
     }
 };
 

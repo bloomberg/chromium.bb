@@ -737,9 +737,9 @@ bool FrameSelection::containsAlgorithm(const LayoutPoint& point)
     if (visibleStart.isNull() || visibleEnd.isNull())
         return false;
 
-    const PositionAlgorithm<Strategy> start = visibleStart.deepEquivalent();
-    const PositionAlgorithm<Strategy> end = visibleEnd.deepEquivalent();
-    const PositionAlgorithm<Strategy> pos = visiblePos.deepEquivalent();
+    const PositionTemplate<Strategy> start = visibleStart.deepEquivalent();
+    const PositionTemplate<Strategy> end = visibleEnd.deepEquivalent();
+    const PositionTemplate<Strategy> pos = visiblePos.deepEquivalent();
     return start.compareTo(pos) <= 0 && pos.compareTo(end) <= 0;
 }
 

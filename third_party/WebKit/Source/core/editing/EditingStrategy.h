@@ -13,7 +13,7 @@
 namespace blink {
 
 template <typename Strategy>
-class PositionAlgorithm;
+class PositionTemplate;
 
 template <typename Strategy>
 class PositionIteratorAlgorithm;

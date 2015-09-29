@@ -41,7 +41,7 @@ template <typename Strategy>
 class CORE_EXPORT CharacterIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    CharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    CharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     explicit CharacterIteratorAlgorithm(const EphemeralRangeTemplate<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int numCharacters);
@@ -62,8 +62,8 @@ public:
     Node* currentContainer() const;
     int startOffset() const;
     int endOffset() const;
-    PositionAlgorithm<Strategy> startPosition() const;
-    PositionAlgorithm<Strategy> endPosition() const;
+    PositionTemplate<Strategy> startPosition() const;
+    PositionTemplate<Strategy> endPosition() const;
 
     EphemeralRangeTemplate<Strategy> calculateCharacterSubrange(int offset, int length);
 

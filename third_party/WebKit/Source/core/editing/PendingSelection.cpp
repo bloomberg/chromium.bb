@@ -45,13 +45,13 @@ const VisibleSelection& PendingSelection::visibleSelection() const
 template <typename Strategy>
 static bool isSelectionInDocument(const VisibleSelectionTemplate<Strategy>& visibleSelection, const Document& document)
 {
-    const PositionAlgorithm<Strategy> start = visibleSelection.start();
+    const PositionTemplate<Strategy> start = visibleSelection.start();
     if (start.isNotNull() && (!start.inDocument() || start.document() != document))
         return false;
-    const PositionAlgorithm<Strategy> end = visibleSelection.end();
+    const PositionTemplate<Strategy> end = visibleSelection.end();
     if (end.isNotNull() && (!end.inDocument() || end.document() != document))
         return false;
-    const PositionAlgorithm<Strategy> extent = visibleSelection.extent();
+    const PositionTemplate<Strategy> extent = visibleSelection.extent();
     if (extent.isNotNull() && (!extent.inDocument() || extent.document() != document))
         return false;
     return true;
@@ -60,8 +60,8 @@ static bool isSelectionInDocument(const VisibleSelectionTemplate<Strategy>& visi
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy> PendingSelection::calcVisibleSelectionAlgorithm(const VisibleSelectionTemplate<Strategy>& originalSelection) const
 {
-    const PositionAlgorithm<Strategy> start = originalSelection.start();
-    const PositionAlgorithm<Strategy> end = originalSelection.end();
+    const PositionTemplate<Strategy> start = originalSelection.start();
+    const PositionTemplate<Strategy> end = originalSelection.end();
     SelectionType selectionType = originalSelection.selectionType();
     const TextAffinity affinity = originalSelection.affinity();
 
@@ -70,7 +70,7 @@ VisibleSelectionTemplate<Strategy> PendingSelection::calcVisibleSelectionAlgorit
     if (enclosingTextFormControl(start.computeContainerNode())) {
         // TODO(yosin) We should use |PositionMoveType::Character| to avoid
         // ending paint at middle of character.
-        PositionAlgorithm<Strategy> endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodePoint) : end;
+        PositionTemplate<Strategy> endPosition = paintBlockCursor ? nextPositionOf(originalSelection.extent(), PositionMoveType::CodePoint) : end;
         selection.setWithoutValidation(start, endPosition);
         return selection;
     }
@@ -116,11 +116,11 @@ void PendingSelection::commitAlgorithm(LayoutView& layoutView)
     // If we pass [foo, 3] as the start of the selection, the selection painting
     // code will think that content on the line containing 'foo' is selected
     // and will fill the gap before 'bar'.
-    PositionAlgorithm<Strategy> startPos = selection.start();
-    PositionAlgorithm<Strategy> candidate = mostForwardCaretPosition(startPos);
+    PositionTemplate<Strategy> startPos = selection.start();
+    PositionTemplate<Strategy> candidate = mostForwardCaretPosition(startPos);
     if (isVisuallyEquivalentCandidate(candidate))
         startPos = candidate;
-    PositionAlgorithm<Strategy> endPos = selection.end();
+    PositionTemplate<Strategy> endPos = selection.end();
     candidate = mostBackwardCaretPosition(endPos);
     if (isVisuallyEquivalentCandidate(candidate))
         endPos = candidate;

@@ -163,7 +163,7 @@ PositionInComposedTree canonicalPositionOf(const PositionInComposedTree& positio
 }
 
 template <typename Strategy>
-static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(const PositionWithAffinityTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(const PositionWithAffinityTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -195,13 +195,13 @@ static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(con
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrBefore(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrBefore(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
     return createVisiblePosition(honorEditingBoundaryAtOrBefore(pos.toPositionWithAffinity(), anchor));
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -631,7 +631,7 @@ static ContainerNode* nonShadowBoundaryParentNode(Node* node)
 }
 
 template <typename Strategy>
-static Node* parentEditingBoundary(const PositionAlgorithm<Strategy>& position)
+static Node* parentEditingBoundary(const PositionTemplate<Strategy>& position)
 {
     Node* const anchorNode = position.anchorNode();
     if (!anchorNode)
@@ -655,19 +655,19 @@ typedef unsigned (*BoundarySearchFunction)(const UChar*, unsigned length, unsign
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    const PositionAlgorithm<Strategy> pos = c.deepEquivalent();
+    const PositionTemplate<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
         return VisiblePositionTemplate<Strategy>();
 
-    const PositionAlgorithm<Strategy> start = PositionAlgorithm<Strategy>::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
-    const PositionAlgorithm<Strategy> end = pos.parentAnchoredEquivalent();
+    const PositionTemplate<Strategy> start = PositionTemplate<Strategy>::editingPositionOf(boundary, 0).parentAnchoredEquivalent();
+    const PositionTemplate<Strategy> end = pos.parentAnchoredEquivalent();
 
     Vector<UChar, 1024> string;
     unsigned suffixLength = 0;
 
     if (requiresContextForWordBoundary(characterBefore(c))) {
-        TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionAlgorithm<Strategy>::afterNode(boundary));
+        TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionTemplate<Strategy>::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             forwardsIterator.text().appendTextTo(characters);
@@ -715,7 +715,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
     Node* node = it.startContainer();
     if (node->isTextNode() && static_cast<int>(next) <= node->maxCharacterOffset()) {
         // The next variable contains a usable index into a text node
-        return createVisiblePosition(PositionAlgorithm<Strategy>(node, next));
+        return createVisiblePosition(PositionTemplate<Strategy>(node, next));
     }
 
     // Use the character iterator to translate the next value into a DOM
@@ -729,19 +729,19 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    PositionAlgorithm<Strategy> pos = c.deepEquivalent();
+    PositionTemplate<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
         return VisiblePositionTemplate<Strategy>();
 
     Document& d = boundary->document();
-    const PositionAlgorithm<Strategy> start(pos.parentAnchoredEquivalent());
+    const PositionTemplate<Strategy> start(pos.parentAnchoredEquivalent());
 
     Vector<UChar, 1024> string;
     unsigned prefixLength = 0;
 
     if (requiresContextForWordBoundary(characterAfter(c))) {
-        SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionAlgorithm<Strategy>::firstPositionInNode(&d), start);
+        SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionTemplate<Strategy>::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
             backwardsIterator.prependTextTo(characters);
@@ -755,8 +755,8 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         }
     }
 
-    const PositionAlgorithm<Strategy> searchStart = PositionAlgorithm<Strategy>::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
-    const PositionAlgorithm<Strategy> searchEnd = PositionAlgorithm<Strategy>::lastPositionInNode(boundary);
+    const PositionTemplate<Strategy> searchStart = PositionTemplate<Strategy>::editingPositionOf(start.anchorNode(), start.offsetInContainerNode());
+    const PositionTemplate<Strategy> searchEnd = PositionTemplate<Strategy>::lastPositionInNode(boundary);
     TextIteratorAlgorithm<Strategy> it(searchStart, searchEnd, TextIteratorEmitsCharactersBetweenAllVisiblePositions);
     const unsigned invalidOffset = static_cast<unsigned>(-1);
     unsigned next = invalidOffset;
@@ -941,7 +941,7 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        PositionAlgorithm<Strategy> p = c.position();
+        PositionTemplate<Strategy> p = c.position();
         if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.computeEditingOffset())
             return c;
 
@@ -970,7 +970,7 @@ static PositionWithAffinityTemplate<Strategy> startPositionForLine(const Positio
         }
     }
 
-    return PositionWithAffinityTemplate<Strategy>(startNode->isTextNode() ? PositionAlgorithm<Strategy>(toText(startNode), toInlineTextBox(startBox)->start()) : PositionAlgorithm<Strategy>::beforeNode(startNode));
+    return PositionWithAffinityTemplate<Strategy>(startNode->isTextNode() ? PositionTemplate<Strategy>(toText(startNode), toInlineTextBox(startBox)->start()) : PositionTemplate<Strategy>::beforeNode(startNode));
 }
 
 template <typename Strategy>
@@ -1012,7 +1012,7 @@ static PositionWithAffinityTemplate<Strategy> logicalStartOfLineAlgorithm(const 
 
     if (ContainerNode* editableRoot = highestEditableRoot(c.position())) {
         if (!editableRoot->contains(visPos.position().computeContainerNode()))
-            return PositionWithAffinityTemplate<Strategy>(PositionAlgorithm<Strategy>::firstPositionInNode(editableRoot));
+            return PositionWithAffinityTemplate<Strategy>(PositionTemplate<Strategy>::firstPositionInNode(editableRoot));
     }
 
     return honorEditingBoundaryAtOrBefore(visPos, c.position());
@@ -1038,7 +1038,7 @@ static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositio
     if (!rootBox) {
         // There are VisiblePositions at offset 0 in blocks without
         // RootInlineBoxes, like empty editable blocks and bordered blocks.
-        const PositionAlgorithm<Strategy> p = c.deepEquivalent();
+        const PositionTemplate<Strategy> p = c.deepEquivalent();
         if (p.anchorNode()->layoutObject() && p.anchorNode()->layoutObject()->isLayoutBlock() && !p.computeEditingOffset())
             return c;
         return VisiblePositionTemplate<Strategy>();
@@ -1067,17 +1067,17 @@ static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositio
         }
     }
 
-    PositionAlgorithm<Strategy> pos;
+    PositionTemplate<Strategy> pos;
     if (isHTMLBRElement(*endNode)) {
-        pos = PositionAlgorithm<Strategy>::beforeNode(endNode);
+        pos = PositionTemplate<Strategy>::beforeNode(endNode);
     } else if (endBox->isInlineTextBox() && endNode->isTextNode()) {
         InlineTextBox* endTextBox = toInlineTextBox(endBox);
         int endOffset = endTextBox->start();
         if (!endTextBox->isLineBreak())
             endOffset += endTextBox->len();
-        pos = PositionAlgorithm<Strategy>(toText(endNode), endOffset);
+        pos = PositionTemplate<Strategy>(toText(endNode), endOffset);
     } else {
-        pos = PositionAlgorithm<Strategy>::afterNode(endNode);
+        pos = PositionTemplate<Strategy>::afterNode(endNode);
     }
 
     return createVisiblePosition(pos, VP_UPSTREAM_IF_POSSIBLE);
@@ -1146,7 +1146,7 @@ VisiblePositionTemplate<Strategy> logicalEndOfLineAlgorithm(const VisiblePositio
 
     if (ContainerNode* editableRoot = highestEditableRoot(currentPosition.deepEquivalent())) {
         if (!editableRoot->contains(visPos.deepEquivalent().computeContainerNode()))
-            return createVisiblePosition(PositionAlgorithm<Strategy>::lastPositionInNode(editableRoot));
+            return createVisiblePosition(PositionTemplate<Strategy>::lastPositionInNode(editableRoot));
     }
 
     return honorEditingBoundaryAtOrAfter(visPos, currentPosition.deepEquivalent());
@@ -1171,7 +1171,7 @@ bool inSameLineAlgorithm(const PositionWithAffinityTemplate<Strategy>& position1
     PositionWithAffinityTemplate<Strategy> startOfLine2 = startOfLine(position2);
     if (startOfLine1 == startOfLine2)
         return true;
-    PositionAlgorithm<Strategy> canonicalized1 = canonicalPositionOf(startOfLine1.position());
+    PositionTemplate<Strategy> canonicalized1 = canonicalPositionOf(startOfLine1.position());
     if (canonicalized1 == startOfLine2.position())
         return true;
     return canonicalized1 == canonicalPositionOf(startOfLine2.position());
@@ -1448,16 +1448,16 @@ VisiblePosition nextSentencePosition(const VisiblePosition& c)
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& c, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
-    const PositionAlgorithm<Strategy> p = c.deepEquivalent();
+    const PositionTemplate<Strategy> p = c.deepEquivalent();
     Node* startNode = p.anchorNode();
 
     if (!startNode)
         return VisiblePositionTemplate<Strategy>();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return createVisiblePosition(PositionAlgorithm<Strategy>::beforeNode(startNode));
+        return createVisiblePosition(PositionTemplate<Strategy>::beforeNode(startNode));
 
-    Element* startBlock = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
+    Element* startBlock = enclosingBlock(PositionTemplate<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
 
     Node* node = startNode;
     ContainerNode* highestRoot = highestEditableRoot(p);
@@ -1500,7 +1500,7 @@ VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositio
                     i = max(0, o);
                 while (--i >= 0) {
                     if ((*text)[i] == '\n')
-                        return createVisiblePosition(PositionAlgorithm<Strategy>(toText(n), i + 1));
+                        return createVisiblePosition(PositionTemplate<Strategy>(toText(n), i + 1));
                 }
             }
             node = n;
@@ -1516,9 +1516,9 @@ VisiblePositionTemplate<Strategy> startOfParagraphAlgorithm(const VisiblePositio
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return createVisiblePosition(PositionAlgorithm<Strategy>(node, offset));
+        return createVisiblePosition(PositionTemplate<Strategy>(node, offset));
 
-    return createVisiblePosition(PositionAlgorithm<Strategy>(node, type));
+    return createVisiblePosition(PositionTemplate<Strategy>(node, type));
 }
 
 VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
@@ -1537,13 +1537,13 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
     if (c.isNull())
         return VisiblePositionTemplate<Strategy>();
 
-    const PositionAlgorithm<Strategy> p = c.deepEquivalent();
+    const PositionTemplate<Strategy> p = c.deepEquivalent();
     Node* startNode = p.anchorNode();
 
     if (isRenderedAsNonInlineTableImageOrHR(startNode))
-        return createVisiblePosition(PositionAlgorithm<Strategy>::afterNode(startNode));
+        return createVisiblePosition(PositionTemplate<Strategy>::afterNode(startNode));
 
-    Element* startBlock = enclosingBlock(PositionAlgorithm<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
+    Element* startBlock = enclosingBlock(PositionTemplate<Strategy>::firstPositionInOrBeforeNode(startNode), CannotCrossEditingBoundary);
     Element* stayInsideBlock = startBlock;
 
     Node* node = startNode;
@@ -1587,7 +1587,7 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
                 int o = n == startNode ? offset : 0;
                 for (int i = o; i < length; ++i) {
                     if ((*text)[i] == '\n')
-                        return createVisiblePosition(PositionAlgorithm<Strategy>(toText(n), i));
+                        return createVisiblePosition(PositionTemplate<Strategy>(toText(n), i));
                 }
             }
             node = n;
@@ -1603,9 +1603,9 @@ static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePo
     }
 
     if (type == PositionAnchorType::OffsetInAnchor)
-        return createVisiblePosition(PositionAlgorithm<Strategy>(node, offset));
+        return createVisiblePosition(PositionTemplate<Strategy>(node, offset));
 
-    return createVisiblePosition(PositionAlgorithm<Strategy>(node, type));
+    return createVisiblePosition(PositionTemplate<Strategy>(node, type));
 }
 
 VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
@@ -1731,7 +1731,7 @@ static VisiblePositionTemplate<Strategy> startOfDocumentAlgorithm(const VisibleP
     if (!node || !node->document().documentElement())
         return VisiblePositionTemplate<Strategy>();
 
-    return createVisiblePosition(PositionAlgorithm<Strategy>::firstPositionInNode(node->document().documentElement()));
+    return createVisiblePosition(PositionTemplate<Strategy>::firstPositionInNode(node->document().documentElement()));
 }
 
 VisiblePosition startOfDocument(const VisiblePosition& c)
@@ -1752,7 +1752,7 @@ static VisiblePositionTemplate<Strategy> endOfDocumentAlgorithm(const VisiblePos
         return VisiblePositionTemplate<Strategy>();
 
     Element* doc = node->document().documentElement();
-    return createVisiblePosition(PositionAlgorithm<Strategy>::lastPositionInNode(doc));
+    return createVisiblePosition(PositionTemplate<Strategy>::lastPositionInNode(doc));
 }
 
 VisiblePosition endOfDocument(const VisiblePosition& c)
@@ -1864,9 +1864,9 @@ static InlineTextBox* searchAheadForBetterMatch(LayoutObject* layoutObject)
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> downstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
+PositionTemplate<Strategy> downstreamIgnoringEditingBoundaries(PositionTemplate<Strategy> position)
 {
-    PositionAlgorithm<Strategy> lastPosition;
+    PositionTemplate<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = mostForwardCaretPosition(position, CanCrossEditingBoundary);
@@ -1875,9 +1875,9 @@ PositionAlgorithm<Strategy> downstreamIgnoringEditingBoundaries(PositionAlgorith
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<Strategy> position)
+PositionTemplate<Strategy> upstreamIgnoringEditingBoundaries(PositionTemplate<Strategy> position)
 {
-    PositionAlgorithm<Strategy> lastPosition;
+    PositionTemplate<Strategy> lastPosition;
     while (position != lastPosition) {
         lastPosition = position;
         position = mostBackwardCaretPosition(position, CanCrossEditingBoundary);
@@ -1886,7 +1886,7 @@ PositionAlgorithm<Strategy> upstreamIgnoringEditingBoundaries(PositionAlgorithm<
 }
 
 template <typename Strategy>
-static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity, TextDirection primaryDirection)
+static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate<Strategy>& position, TextAffinity affinity, TextDirection primaryDirection)
 {
     InlineBox* inlineBox = nullptr;
     int caretOffset = position.computeEditingOffset();
@@ -1901,7 +1901,7 @@ static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorit
             // but surrounded by non-editable positions. It acts to negate the
             // logic at the beginning of
             // |LayoutObject::createPositionWithAffinity()|.
-            PositionAlgorithm<Strategy> equivalent = downstreamIgnoringEditingBoundaries(position);
+            PositionTemplate<Strategy> equivalent = downstreamIgnoringEditingBoundaries(position);
             if (equivalent == position) {
                 equivalent = upstreamIgnoringEditingBoundaries(position);
                 if (equivalent == position || downstreamIgnoringEditingBoundaries(equivalent) == position)
@@ -2053,19 +2053,19 @@ static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorit
 }
 
 template <typename Strategy>
-static InlineBoxPosition computeInlineBoxPositionAlgorithm(const PositionAlgorithm<Strategy>& position, TextAffinity affinity)
+static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate<Strategy>& position, TextAffinity affinity)
 {
-    return computeInlineBoxPositionAlgorithm<Strategy>(position, affinity, primaryDirectionOf(*position.anchorNode()));
+    return computeInlineBoxPositionTemplate<Strategy>(position, affinity, primaryDirectionOf(*position.anchorNode()));
 }
 
 InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity)
 {
-    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity);
+    return computeInlineBoxPositionTemplate<EditingStrategy>(position, affinity);
 }
 
 InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity)
 {
-    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity);
+    return computeInlineBoxPositionTemplate<EditingInComposedTreeStrategy>(position, affinity);
 }
 
 InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
@@ -2080,16 +2080,16 @@ InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInComposedTree& 
 
 InlineBoxPosition computeInlineBoxPosition(const Position& position, TextAffinity affinity, TextDirection primaryDirection)
 {
-    return computeInlineBoxPositionAlgorithm<EditingStrategy>(position, affinity, primaryDirection);
+    return computeInlineBoxPositionTemplate<EditingStrategy>(position, affinity, primaryDirection);
 }
 
 InlineBoxPosition computeInlineBoxPosition(const PositionInComposedTree& position, TextAffinity affinity, TextDirection primaryDirection)
 {
-    return computeInlineBoxPositionAlgorithm<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
+    return computeInlineBoxPositionTemplate<EditingInComposedTreeStrategy>(position, affinity, primaryDirection);
 }
 
 template <typename Strategy>
-LayoutRect localCaretRectOfPositionAlgorithm(const PositionWithAffinityTemplate<Strategy>& position, LayoutObject*& layoutObject)
+LayoutRect localCaretRectOfPositionTemplate(const PositionWithAffinityTemplate<Strategy>& position, LayoutObject*& layoutObject)
 {
     if (position.position().isNull()) {
         layoutObject = nullptr;
@@ -2111,12 +2111,12 @@ LayoutRect localCaretRectOfPositionAlgorithm(const PositionWithAffinityTemplate<
 
 LayoutRect localCaretRectOfPosition(const PositionWithAffinity& position, LayoutObject*& layoutObject)
 {
-    return localCaretRectOfPositionAlgorithm<EditingStrategy>(position, layoutObject);
+    return localCaretRectOfPositionTemplate<EditingStrategy>(position, layoutObject);
 }
 
 LayoutRect localCaretRectOfPosition(const PositionInComposedTreeWithAffinity& position, LayoutObject*& layoutObject)
 {
-    return localCaretRectOfPositionAlgorithm<EditingInComposedTreeStrategy>(position, layoutObject);
+    return localCaretRectOfPositionTemplate<EditingInComposedTreeStrategy>(position, layoutObject);
 }
 
 static int boundingBoxLogicalHeight(LayoutObject *o, const IntRect &rect)
@@ -2150,7 +2150,7 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
 }
 
 template <typename Strategy>
-static bool inRenderedText(const PositionAlgorithm<Strategy>& position)
+static bool inRenderedText(const PositionTemplate<Strategy>& position)
 {
     Node* const anchorNode = position.anchorNode();
     if (!anchorNode || !anchorNode->isTextNode())
@@ -2369,18 +2369,18 @@ static bool isStreamer(const PositionIteratorAlgorithm<Strategy>& pos)
 }
 
 template <typename Strategy>
-static PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTemplate<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     TRACE_EVENT0("blink", "Position::upstream");
 
     Node* startNode = position.anchorNode();
     if (!startNode)
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
     // iterate backward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionAlgorithm<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
+    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionTemplate<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -2427,7 +2427,7 @@ static PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgor
         // Return position after tables and nodes which have content that can be ignored.
         if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
             if (currentPos.atEndOfNode())
-                return PositionAlgorithm<Strategy>::afterNode(currentNode);
+                return PositionTemplate<Strategy>::afterNode(currentNode);
             continue;
         }
 
@@ -2439,7 +2439,7 @@ static PositionAlgorithm<Strategy> mostBackwardCaretPosition(const PositionAlgor
                 // layout tree which can have a different length due to case transformation.
                 // Until we resolve that, disable this so we can run the layout tests!
                 // ASSERT(currentOffset >= layoutObject->caretMaxOffset());
-                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMaxOffset());
+                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMaxOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
@@ -2496,18 +2496,18 @@ PositionInComposedTree mostBackwardCaretPosition(const PositionInComposedTree& p
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Strategy>& position, EditingBoundaryCrossingRule rule)
+PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strategy>& position, EditingBoundaryCrossingRule rule)
 {
     TRACE_EVENT0("blink", "Position::downstream");
 
     Node* startNode = position.anchorNode();
     if (!startNode)
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
     // iterate forward from there, looking for a qualified position
     Node* boundary = enclosingVisualBoundary<Strategy>(startNode);
     // FIXME: PositionIterator should respect Before and After positions.
-    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionAlgorithm<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
+    PositionIteratorAlgorithm<Strategy> lastVisible(position.isAfterAnchor() ? PositionTemplate<Strategy>::editingPositionOf(position.anchorNode(), Strategy::caretMaxOffset(*position.anchorNode())) : position);
     PositionIteratorAlgorithm<Strategy> currentPos = lastVisible;
     bool startEditable = startNode->hasEditableStyle();
     Node* lastNode = startNode;
@@ -2559,7 +2559,7 @@ PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Str
         // Return position before tables and nodes which have content that can be ignored.
         if (Strategy::editingIgnoresContent(currentNode) || isRenderedHTMLTableElement(currentNode)) {
             if (currentPos.offsetInLeafNode() <= layoutObject->caretMinOffset())
-                return PositionAlgorithm<Strategy>::editingPositionOf(currentNode, layoutObject->caretMinOffset());
+                return PositionTemplate<Strategy>::editingPositionOf(currentNode, layoutObject->caretMinOffset());
             continue;
         }
 
@@ -2567,7 +2567,7 @@ PositionAlgorithm<Strategy> mostForwardCaretPosition(const PositionAlgorithm<Str
         if (layoutObject->isText() && toLayoutText(layoutObject)->firstTextBox()) {
             if (currentNode != startNode) {
                 ASSERT(currentPos.atStartOfNode());
-                return PositionAlgorithm<Strategy>(currentNode, layoutObject->caretMinOffset());
+                return PositionTemplate<Strategy>(currentNode, layoutObject->caretMinOffset());
             }
 
             unsigned textOffset = currentPos.offsetInLeafNode();
@@ -2634,13 +2634,13 @@ PositionInComposedTree mostForwardCaretPosition(const PositionInComposedTree& po
 // 3. It is an editable position and both the next and previous visually
 //    equivalent positions are both non editable.
 template <typename Strategy>
-static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
+static bool atEditingBoundary(const PositionTemplate<Strategy> positions)
 {
-    PositionAlgorithm<Strategy> nextPosition = mostForwardCaretPosition(positions, CanCrossEditingBoundary);
+    PositionTemplate<Strategy> nextPosition = mostForwardCaretPosition(positions, CanCrossEditingBoundary);
     if (positions.atFirstEditingPositionForNode() && nextPosition.isNotNull() && !nextPosition.anchorNode()->hasEditableStyle())
         return true;
 
-    PositionAlgorithm<Strategy> prevPosition = mostBackwardCaretPosition(positions, CanCrossEditingBoundary);
+    PositionTemplate<Strategy> prevPosition = mostBackwardCaretPosition(positions, CanCrossEditingBoundary);
     if (positions.atLastEditingPositionForNode() && prevPosition.isNotNull() && !prevPosition.anchorNode()->hasEditableStyle())
         return true;
 
@@ -2649,7 +2649,7 @@ static bool atEditingBoundary(const PositionAlgorithm<Strategy> positions)
 }
 
 template <typename Strategy>
-static bool isVisuallyEquivalentCandidateAlgorithm(const PositionAlgorithm<Strategy>& position)
+static bool isVisuallyEquivalentCandidateAlgorithm(const PositionTemplate<Strategy>& position)
 {
     Node* const anchorNode = position.anchorNode();
     if (!anchorNode)
@@ -2734,7 +2734,7 @@ IntRect absoluteCaretBoundsOf(const VisiblePositionInComposedTree& visiblePositi
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -2749,7 +2749,7 @@ static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const Visibl
 
     // If this is not editable but |pos| has an editable root, skip to the end
     if (!highestRoot && highestRootOfPos)
-        return createVisiblePosition(PositionAlgorithm<Strategy>(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
+        return createVisiblePosition(PositionTemplate<Strategy>(highestRootOfPos, PositionAnchorType::AfterAnchor).parentAnchoredEquivalent());
 
     // That must mean that |pos| is not editable. Return the next position after
     // |pos| that is in the same editable region as this position
@@ -2762,7 +2762,7 @@ static UChar32 characterAfterAlgorithm(const VisiblePositionTemplate<Strategy>& 
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
-    const PositionAlgorithm<Strategy> pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
+    const PositionTemplate<Strategy> pos = mostForwardCaretPosition(visiblePosition.deepEquivalent());
     if (!pos.isOffsetInAnchor())
         return 0;
     Node* containerNode = pos.computeContainerNode();
@@ -2804,15 +2804,15 @@ UChar32 characterBefore(const VisiblePositionInComposedTree& visiblePosition)
 }
 
 template <typename Strategy>
-static PositionAlgorithm<Strategy> leftVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
+static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionAlgorithm<Strategy> deepPosition = visiblePosition.deepEquivalent();
-    PositionAlgorithm<Strategy> p = deepPosition;
+    const PositionTemplate<Strategy> deepPosition = visiblePosition.deepEquivalent();
+    PositionTemplate<Strategy> p = deepPosition;
 
     if (p.isNull())
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
-    const PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(p);
+    const PositionTemplate<Strategy> downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
     const TextAffinity affinity = visiblePosition.affinity();
 
@@ -2850,13 +2850,13 @@ static PositionAlgorithm<Strategy> leftVisuallyDistinctCandidate(const VisiblePo
                 // Overshot to the left.
                 InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
                 if (!prevBox) {
-                    PositionAlgorithm<Strategy> positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent()) : nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
+                    PositionTemplate<Strategy> positionOnLeft = primaryDirection == LTR ? previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent()) : nextVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
                     if (positionOnLeft.isNull())
-                        return PositionAlgorithm<Strategy>();
+                        return PositionTemplate<Strategy>();
 
                     InlineBox* boxOnLeft = computeInlineBoxPosition(positionOnLeft, affinity, primaryDirection).inlineBox;
                     if (boxOnLeft && boxOnLeft->root() == box->root())
-                        return PositionAlgorithm<Strategy>();
+                        return PositionTemplate<Strategy>();
                     return positionOnLeft;
                 }
 
@@ -2946,7 +2946,7 @@ static PositionAlgorithm<Strategy> leftVisuallyDistinctCandidate(const VisiblePo
             break;
         }
 
-        p = PositionAlgorithm<Strategy>::editingPositionOf(layoutObject->node(), offset);
+        p = PositionTemplate<Strategy>::editingPositionOf(layoutObject->node(), offset);
 
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
@@ -2958,7 +2958,7 @@ static PositionAlgorithm<Strategy> leftVisuallyDistinctCandidate(const VisiblePo
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> leftPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionAlgorithm<Strategy> pos = leftVisuallyDistinctCandidate(visiblePosition);
+    const PositionTemplate<Strategy> pos = leftVisuallyDistinctCandidate(visiblePosition);
     // TODO(yosin) Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePositionTemplate<Strategy>();
@@ -2980,14 +2980,14 @@ VisiblePositionInComposedTree leftPositionOf(const VisiblePositionInComposedTree
 }
 
 template <typename Strategy>
-static PositionAlgorithm<Strategy> rightVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
+static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionAlgorithm<Strategy> deepPosition = visiblePosition.deepEquivalent();
-    PositionAlgorithm<Strategy> p = deepPosition;
+    const PositionTemplate<Strategy> deepPosition = visiblePosition.deepEquivalent();
+    PositionTemplate<Strategy> p = deepPosition;
     if (p.isNull())
-        return PositionAlgorithm<Strategy>();
+        return PositionTemplate<Strategy>();
 
-    const PositionAlgorithm<Strategy> downstreamStart = mostForwardCaretPosition(p);
+    const PositionTemplate<Strategy> downstreamStart = mostForwardCaretPosition(p);
     TextDirection primaryDirection = primaryDirectionOf(*p.anchorNode());
     const TextAffinity affinity = visiblePosition.affinity();
 
@@ -3025,13 +3025,13 @@ static PositionAlgorithm<Strategy> rightVisuallyDistinctCandidate(const VisibleP
                 // Overshot to the right.
                 InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
                 if (!nextBox) {
-                    PositionAlgorithm<Strategy> positionOnRight = primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
+                    PositionTemplate<Strategy> positionOnRight = primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
                     if (positionOnRight.isNull())
-                        return PositionAlgorithm<Strategy>();
+                        return PositionTemplate<Strategy>();
 
                     InlineBox* boxOnRight = computeInlineBoxPosition(positionOnRight, affinity, primaryDirection).inlineBox;
                     if (boxOnRight && boxOnRight->root() == box->root())
-                        return PositionAlgorithm<Strategy>();
+                        return PositionTemplate<Strategy>();
                     return positionOnRight;
                 }
 
@@ -3124,7 +3124,7 @@ static PositionAlgorithm<Strategy> rightVisuallyDistinctCandidate(const VisibleP
             break;
         }
 
-        p = PositionAlgorithm<Strategy>::editingPositionOf(layoutObject->node(), offset);
+        p = PositionTemplate<Strategy>::editingPositionOf(layoutObject->node(), offset);
 
         if ((isVisuallyEquivalentCandidate(p) && mostForwardCaretPosition(p) != downstreamStart) || p.atStartOfTree() || p.atEndOfTree())
             return p;
@@ -3136,7 +3136,7 @@ static PositionAlgorithm<Strategy> rightVisuallyDistinctCandidate(const VisibleP
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> rightPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionAlgorithm<Strategy> pos = rightVisuallyDistinctCandidate(visiblePosition);
+    const PositionTemplate<Strategy> pos = rightVisuallyDistinctCandidate(visiblePosition);
     // FIXME: Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
         return VisiblePositionTemplate<Strategy>();
@@ -3185,7 +3185,7 @@ VisiblePositionInComposedTree nextPositionOf(const VisiblePositionInComposedTree
 }
 
 template <typename Strategy>
-static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionAlgorithm<Strategy>& anchor)
+static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
     if (pos.isNull())
         return pos;
@@ -3200,7 +3200,7 @@ static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const Visi
 
     // If this is not editable but |pos| has an editable root, skip to the start
     if (!highestRoot && highestRootOfPos)
-        return createVisiblePosition(previousVisuallyDistinctCandidate(PositionAlgorithm<Strategy>(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
+        return createVisiblePosition(previousVisuallyDistinctCandidate(PositionTemplate<Strategy>(highestRootOfPos, PositionAnchorType::BeforeAnchor).parentAnchoredEquivalent()));
 
     // That must mean that |pos| is not editable. Return the last position
     // before |pos| that is in the same editable region as this position
@@ -3210,7 +3210,7 @@ static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const Visi
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> previousPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition, EditingBoundaryCrossingRule rule)
 {
-    const PositionAlgorithm<Strategy> pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
+    const PositionTemplate<Strategy> pos = previousVisuallyDistinctCandidate(visiblePosition.deepEquivalent());
 
     // return null visible position if there is no previous visible position
     if (pos.atStartOfTree())

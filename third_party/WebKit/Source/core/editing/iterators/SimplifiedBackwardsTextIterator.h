@@ -43,7 +43,7 @@ template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT SimplifiedBackwardsTextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    SimplifiedBackwardsTextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    SimplifiedBackwardsTextIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     bool atEnd() const { return !m_positionNode || m_shouldStop; }
     void advance();
@@ -65,8 +65,8 @@ public:
 
     Node* startContainer() const;
     int endOffset() const;
-    PositionAlgorithm<Strategy> startPosition() const;
-    PositionAlgorithm<Strategy> endPosition() const;
+    PositionTemplate<Strategy> startPosition() const;
+    PositionTemplate<Strategy> endPosition() const;
 
 private:
     void init(Node* startNode, Node* endNode, int startOffset, int endOffset);

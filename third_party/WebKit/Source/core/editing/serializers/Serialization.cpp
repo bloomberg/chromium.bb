@@ -181,7 +181,7 @@ static bool isPresentationalHTMLElement(const Node* node)
 }
 
 template<typename Strategy>
-static HTMLElement* highestAncestorToWrapMarkup(const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
+static HTMLElement* highestAncestorToWrapMarkup(const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition, EAnnotateForInterchange shouldAnnotate, Node* constrainingAncestor)
 {
     Node* firstNode = startPosition.nodeAsRangeFirstNode();
     // For compatibility reason, we use container node of start and end
@@ -234,13 +234,13 @@ static HTMLElement* highestAncestorToWrapMarkup(const PositionAlgorithm<Strategy
 template <typename Strategy>
 class CreateMarkupAlgorithm {
 public:
-    static String createMarkup(const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
+    static String createMarkup(const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition, EAnnotateForInterchange shouldAnnotate = DoNotAnnotateForInterchange, ConvertBlocksToInlines = ConvertBlocksToInlines::NotConvert, EAbsoluteURLs shouldResolveURLs = DoNotResolveURLs, Node* constrainingAncestor = nullptr);
 };
 
 // FIXME: Shouldn't we omit style info when annotate == DoNotAnnotateForInterchange?
 // FIXME: At least, annotation and style info should probably not be included in range.markupString()
 template <typename Strategy>
-String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition,
+String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition,
     EAnnotateForInterchange shouldAnnotate, ConvertBlocksToInlines convertBlocksToInlines, EAbsoluteURLs shouldResolveURLs, Node* constrainingAncestor)
 {
     ASSERT(startPosition.isNotNull());

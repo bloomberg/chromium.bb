@@ -49,7 +49,7 @@ namespace blink {
 namespace {
 
 template<typename Strategy>
-TextOffset toTextOffset(const PositionAlgorithm<Strategy>& position)
+TextOffset toTextOffset(const PositionTemplate<Strategy>& position)
 {
     if (position.isNull())
         return TextOffset();
@@ -123,7 +123,7 @@ bool StyledMarkupTraverser<Strategy>::convertBlocksToInlines() const
 }
 
 template<typename Strategy>
-StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
+StyledMarkupSerializer<Strategy>::StyledMarkupSerializer(EAbsoluteURLs shouldResolveURLs, EAnnotateForInterchange shouldAnnotate, const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, Node* highestNodeToBeSerialized, ConvertBlocksToInlines convertBlocksToInlines)
     : m_start(start)
     , m_end(end)
     , m_shouldResolveURLs(shouldResolveURLs)
@@ -151,7 +151,7 @@ static bool needInterchangeNewlineAt(const VisiblePositionTemplate<Strategy>& v)
 }
 
 template<typename Strategy>
-static bool areSameRanges(Node* node, const PositionAlgorithm<Strategy>& startPosition, const PositionAlgorithm<Strategy>& endPosition)
+static bool areSameRanges(Node* node, const PositionTemplate<Strategy>& startPosition, const PositionTemplate<Strategy>& endPosition)
 {
     ASSERT(node);
     const EphemeralRange range = VisibleSelection::selectionFromContentsOfNode(node).toNormalizedEphemeralRange();
@@ -184,7 +184,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup()
 
         firstNode = nextPositionOf(visibleStart).deepEquivalent().anchorNode();
 
-        if (pastEnd && PositionAlgorithm<Strategy>::beforeNode(firstNode).compareTo(PositionAlgorithm<Strategy>::beforeNode(pastEnd)) >= 0) {
+        if (pastEnd && PositionTemplate<Strategy>::beforeNode(firstNode).compareTo(PositionTemplate<Strategy>::beforeNode(pastEnd)) >= 0) {
             // This condition hits in editing/pasteboard/copy-display-none.html.
             return markupAccumulator.takeResults();
         }

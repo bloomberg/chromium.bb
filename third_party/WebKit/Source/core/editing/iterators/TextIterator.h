@@ -55,7 +55,7 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
     // [start, end] indicates the document range that the iteration should take place within (both ends inclusive).
-    TextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    TextIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
     ~TextIteratorAlgorithm();
 
     bool atEnd() const { return !m_textState.positionNode() || m_shouldStop; }
@@ -69,8 +69,8 @@ public:
     Node* currentContainer() const;
     int startOffsetInCurrentContainer() const;
     int endOffsetInCurrentContainer() const;
-    PositionAlgorithm<Strategy> startPositionInCurrentContainer() const;
-    PositionAlgorithm<Strategy> endPositionInCurrentContainer() const;
+    PositionTemplate<Strategy> startPositionInCurrentContainer() const;
+    PositionTemplate<Strategy> endPositionInCurrentContainer() const;
 
     const TextIteratorTextState& text() const { return m_textState; }
     int length() const { return m_textState.length(); }
@@ -82,7 +82,7 @@ public:
     // replaced elements. When |forSelectionPreservation| is set to true, it
     // also emits spaces for other non-text nodes using the
     // |TextIteratorEmitsCharactersBetweenAllVisiblePosition| mode.
-    static int rangeLength(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, bool forSelectionPreservation = false);
+    static int rangeLength(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, bool forSelectionPreservation = false);
 
     static bool shouldEmitTabBeforeNode(Node*);
     static bool shouldEmitNewlineBeforeNode(Node&);

@@ -30,7 +30,7 @@
 namespace blink {
 
 template <typename Strategy>
-CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
+CharacterIteratorAlgorithm<Strategy>::CharacterIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_runOffset(0)
     , m_atBreak(true)
@@ -58,12 +58,12 @@ EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::range() c
     EphemeralRangeTemplate<Strategy> range(m_textIterator.range());
     if (m_textIterator.atEnd() || m_textIterator.length() <= 1)
         return range;
-    PositionAlgorithm<Strategy> startPosition = range.startPosition().parentAnchoredEquivalent();
-    PositionAlgorithm<Strategy> endPosition = range.endPosition().parentAnchoredEquivalent();
+    PositionTemplate<Strategy> startPosition = range.startPosition().parentAnchoredEquivalent();
+    PositionTemplate<Strategy> endPosition = range.endPosition().parentAnchoredEquivalent();
     Node* node = startPosition.computeContainerNode();
     ASSERT_UNUSED(endPosition, node == endPosition.computeContainerNode());
     int offset = startPosition.offsetInContainerNode() + m_runOffset;
-    return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(node, offset), PositionAlgorithm<Strategy>(node, offset + 1));
+    return EphemeralRangeTemplate<Strategy>(PositionTemplate<Strategy>(node, offset), PositionTemplate<Strategy>(node, offset + 1));
 }
 
 template <typename Strategy>
@@ -101,13 +101,13 @@ int CharacterIteratorAlgorithm<Strategy>::endOffset() const
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition() const
+PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return PositionAlgorithm<Strategy>::editingPositionOf(n, offset);
+            return PositionTemplate<Strategy>::editingPositionOf(n, offset);
         }
         ASSERT(!m_runOffset);
     }
@@ -115,13 +115,13 @@ PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::startPosition(
 }
 
 template <typename Strategy>
-PositionAlgorithm<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition() const
+PositionTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::endPosition() const
 {
     if (!m_textIterator.atEnd()) {
         if (m_textIterator.length() > 1) {
             Node* n = m_textIterator.currentContainer();
             int offset = m_textIterator.startOffsetInCurrentContainer() + m_runOffset;
-            return PositionAlgorithm<Strategy>::editingPositionOf(n, offset + 1);
+            return PositionTemplate<Strategy>::editingPositionOf(n, offset + 1);
         }
         ASSERT(!m_runOffset);
     }
@@ -178,7 +178,7 @@ template <typename Strategy>
 EphemeralRangeTemplate<Strategy> CharacterIteratorAlgorithm<Strategy>::calculateCharacterSubrange(int offset, int length)
 {
     advance(offset);
-    const PositionAlgorithm<Strategy> startPos = startPosition();
+    const PositionTemplate<Strategy> startPos = startPosition();
 
     if (length > 1)
         advance(length - 1);

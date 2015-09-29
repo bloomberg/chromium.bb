@@ -88,8 +88,8 @@ public:
     bool isNotNull() const { return m_positionWithAffinity.isNotNull(); }
     bool isOrphan() const { return deepEquivalent().isOrphan(); }
 
-    PositionAlgorithm<Strategy> deepEquivalent() const { return m_positionWithAffinity.position(); }
-    PositionAlgorithm<Strategy> toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
+    PositionTemplate<Strategy> deepEquivalent() const { return m_positionWithAffinity.position(); }
+    PositionTemplate<Strategy> toParentAnchoredPosition() const { return deepEquivalent().parentAnchoredEquivalent(); }
     PositionWithAffinityTemplate<Strategy> toPositionWithAffinity() const { return m_positionWithAffinity; }
     TextAffinity affinity() const { return m_positionWithAffinity.affinity(); }
 

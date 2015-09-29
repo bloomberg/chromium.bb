@@ -30,19 +30,19 @@ protected:
     std::string serialize(EAnnotateForInterchange = DoNotAnnotateForInterchange);
 
     template <typename Strategy>
-    std::string serializePart(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
+    std::string serializePart(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, EAnnotateForInterchange = DoNotAnnotateForInterchange);
 };
 
 template <typename Strategy>
 std::string StyledMarkupSerializerTest::serialize(EAnnotateForInterchange shouldAnnotate)
 {
-    PositionAlgorithm<Strategy> start = PositionAlgorithm<Strategy>(document().body(), PositionAnchorType::BeforeChildren);
-    PositionAlgorithm<Strategy> end = PositionAlgorithm<Strategy>(document().body(), PositionAnchorType::AfterChildren);
+    PositionTemplate<Strategy> start = PositionTemplate<Strategy>(document().body(), PositionAnchorType::BeforeChildren);
+    PositionTemplate<Strategy> end = PositionTemplate<Strategy>(document().body(), PositionAnchorType::AfterChildren);
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }
 
 template <typename Strategy>
-std::string StyledMarkupSerializerTest::serializePart(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, EAnnotateForInterchange shouldAnnotate)
+std::string StyledMarkupSerializerTest::serializePart(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, EAnnotateForInterchange shouldAnnotate)
 {
     return createMarkup(start, end, shouldAnnotate).utf8().data();
 }

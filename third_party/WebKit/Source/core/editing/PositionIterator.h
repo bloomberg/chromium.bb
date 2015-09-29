@@ -41,13 +41,13 @@ template <typename Strategy>
 class PositionIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    explicit PositionIteratorAlgorithm(const PositionAlgorithm<Strategy>&);
+    explicit PositionIteratorAlgorithm(const PositionTemplate<Strategy>&);
     PositionIteratorAlgorithm();
 
     // Since |deprecatedComputePosition()| is slow, new code should use
     // |computePosition()| instead.
-    PositionAlgorithm<Strategy> deprecatedComputePosition() const;
-    PositionAlgorithm<Strategy> computePosition() const;
+    PositionTemplate<Strategy> deprecatedComputePosition() const;
+    PositionTemplate<Strategy> computePosition() const;
 
     void increment();
     void decrement();

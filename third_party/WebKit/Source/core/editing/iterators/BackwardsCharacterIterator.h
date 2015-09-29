@@ -35,13 +35,13 @@ template <typename Strategy>
 class BackwardsCharacterIteratorAlgorithm {
     STACK_ALLOCATED();
 public:
-    BackwardsCharacterIteratorAlgorithm(const PositionAlgorithm<Strategy>&, const PositionAlgorithm<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
+    BackwardsCharacterIteratorAlgorithm(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&, TextIteratorBehaviorFlags = TextIteratorDefaultBehavior);
 
     void advance(int);
 
     bool atEnd() const { return m_textIterator.atEnd(); }
 
-    PositionAlgorithm<Strategy> endPosition() const;
+    PositionTemplate<Strategy> endPosition() const;
 
 private:
     int m_offset;

@@ -123,7 +123,7 @@ int shadowDepthOf<EditingInComposedTreeStrategy>(const Node& startContainer, con
 } // namespace
 
 template<typename Strategy>
-TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, TextIteratorBehaviorFlags behavior)
+TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, TextIteratorBehaviorFlags behavior)
     : m_offset(0)
     , m_startContainer(nullptr)
     , m_startOffset(0)
@@ -995,12 +995,12 @@ EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::range() const
     // use the current run information, if we have it
     if (m_textState.positionNode()) {
         m_textState.flushPositionOffsets();
-        return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(m_textState.positionNode(), m_textState.positionStartOffset()), PositionAlgorithm<Strategy>(m_textState.positionNode(), m_textState.positionEndOffset()));
+        return EphemeralRangeTemplate<Strategy>(PositionTemplate<Strategy>(m_textState.positionNode(), m_textState.positionStartOffset()), PositionTemplate<Strategy>(m_textState.positionNode(), m_textState.positionEndOffset()));
     }
 
     // otherwise, return the end of the overall range we were given
     if (m_endContainer)
-        return EphemeralRangeTemplate<Strategy>(PositionAlgorithm<Strategy>(m_endContainer, m_endOffset));
+        return EphemeralRangeTemplate<Strategy>(PositionTemplate<Strategy>(m_endContainer, m_endOffset));
 
     return EphemeralRangeTemplate<Strategy>();
 }
@@ -1060,19 +1060,19 @@ Node* TextIteratorAlgorithm<Strategy>::currentContainer() const
 }
 
 template<typename Strategy>
-PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
+PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::startPositionInCurrentContainer() const
 {
-    return PositionAlgorithm<Strategy>::editingPositionOf(currentContainer(), startOffsetInCurrentContainer());
+    return PositionTemplate<Strategy>::editingPositionOf(currentContainer(), startOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
-PositionAlgorithm<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
+PositionTemplate<Strategy> TextIteratorAlgorithm<Strategy>::endPositionInCurrentContainer() const
 {
-    return PositionAlgorithm<Strategy>::editingPositionOf(currentContainer(), endOffsetInCurrentContainer());
+    return PositionTemplate<Strategy>::editingPositionOf(currentContainer(), endOffsetInCurrentContainer());
 }
 
 template<typename Strategy>
-int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionAlgorithm<Strategy>& start, const PositionAlgorithm<Strategy>& end, bool forSelectionPreservation)
+int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionTemplate<Strategy>& start, const PositionTemplate<Strategy>& end, bool forSelectionPreservation)
 {
     int length = 0;
     TextIteratorBehaviorFlags behaviorFlags = TextIteratorEmitsObjectReplacementCharacter;
