@@ -19,10 +19,13 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/download_controller_android.h"
 #else
-#include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/host_desktop.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/download/notification/download_notification_manager.h"
 #endif
 
 namespace {
@@ -104,22 +107,23 @@ DownloadUIController::DownloadUIController(content::DownloadManager* manager,
                                            scoped_ptr<Delegate> delegate)
     : download_notifier_(manager, this),
       delegate_(delegate.Pass()) {
-  if (!delegate_) {
 #if defined(OS_ANDROID)
+  if (!delegate_)
     delegate_.reset(new AndroidUIControllerDelegate());
 #else
-    // The delegate should not be invoked after the profile has gone away. This
-    // should be the case since DownloadUIController is owned by
-    // DownloadService, which in turn is a profile keyed service.
-    if (DownloadNotificationManager::IsEnabled()) {
-      delegate_.reset(new DownloadNotificationManager(
-          Profile::FromBrowserContext(manager->GetBrowserContext())));
-    } else {
-      delegate_.reset(new DownloadShelfUIControllerDelegate(
-          Profile::FromBrowserContext(manager->GetBrowserContext())));
-    }
-#endif
+#if defined(OS_CHROMEOS)
+  if (!delegate_ && DownloadNotificationManager::IsEnabled()) {
+    // The Profile is guaranteed to be valid since DownloadUIController is owned
+    // by DownloadService, which in turn is a profile keyed service.
+    delegate_.reset(new DownloadNotificationManager(
+        Profile::FromBrowserContext(manager->GetBrowserContext())));
   }
+#endif  // defined(OS_CHROMEOS)
+  if (!delegate_) {
+    delegate_.reset(new DownloadShelfUIControllerDelegate(
+        Profile::FromBrowserContext(manager->GetBrowserContext())));
+  }
+#endif  // defined(OS_ANDROID)
 }
 
 DownloadUIController::~DownloadUIController() {

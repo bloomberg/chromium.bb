@@ -907,6 +907,12 @@
     # ChromeOS-sources not ending in _chromeos (which would be included in
     # other sections and filtered out for non-ChromeOS platforms.
     'chrome_browser_chromeos_sources': [
+      'browser/download/notification/download_item_notification.cc',
+      'browser/download/notification/download_item_notification.h',
+      'browser/download/notification/download_notification.cc',
+      'browser/download/notification/download_notification.h',
+      'browser/download/notification/download_notification_manager.cc',
+      'browser/download/notification/download_notification_manager.h',
       'browser/media/protected_media_identifier_infobar_delegate.cc',
       'browser/media/protected_media_identifier_infobar_delegate.h',
       'browser/media/protected_media_identifier_permission_context.cc',
@@ -1046,12 +1052,6 @@
       'browser/download/download_shelf.h',
       'browser/download/download_shelf_context_menu.cc',
       'browser/download/download_shelf_context_menu.h',
-      'browser/download/notification/download_item_notification.cc',
-      'browser/download/notification/download_item_notification.h',
-      'browser/download/notification/download_notification.cc',
-      'browser/download/notification/download_notification.h',
-      'browser/download/notification/download_notification_manager.cc',
-      'browser/download/notification/download_notification_manager.h',
       'browser/feedback/feedback_profile_observer.cc',
       'browser/feedback/feedback_profile_observer.h',
       'browser/feedback/show_feedback_page.cc',

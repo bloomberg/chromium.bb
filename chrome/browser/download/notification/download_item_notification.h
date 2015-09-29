@@ -18,10 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
-
-#if !defined(OS_MACOSX)
 #include "ui/native_theme/native_theme.h"
-#endif
 
 namespace test {
 class DownloadItemNotificationTest;
@@ -67,10 +64,7 @@ class DownloadItemNotification : public DownloadNotification,
 
   // Set icon of the notification.
   void SetNotificationIcon(int resource_id);
-
-#if !defined(OS_MACOSX)
   void SetNotificationVectorIcon(gfx::VectorIconId id, SkColor color);
-#endif
 
   // Set preview image of the notification. Must be called on IO thread.
   void OnImageLoaded(const std::string& image_data);
@@ -112,9 +106,7 @@ class DownloadItemNotification : public DownloadNotification,
   bool visible_ = false;
 
   int image_resource_id_ = 0;
-#if !defined(OS_MACOSX)
   std::pair<gfx::VectorIconId, SkColor> vector_icon_params_;
-#endif
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;

@@ -1791,42 +1791,28 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
                desc="When starting a download, let the user know we're starting the download.">
         Starting...
       </message>
-      <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE"
-               desc=".">
-               Downloading <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
-      </message>
-      <message name="IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE"
-               desc=".">
-               <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> downloaded
-      </message>
-      <message name="IDS_DOWNLOAD_STATUS_DOWNLOAD_FAILED_TITLE"
-               desc=".">
-               <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> download unsuccessful
-      </message>
-      <message name="IDS_DOWNLOAD_STATUS_GROUP_IN_PROGRESS_TITLE"
-               desc="Title of download group notification which shows the combined progress of multiple downloads.">
-        {NUM_DOWNLOADS, plural,
-         =1 {Downloading a file}
-         other {Downloading # files}}
-      </message>
-      <message name="IDS_DOWNLOAD_STATUS_GROUP_DONE_TITLE"
-               desc="Title of download group notification which shows the combined progress of multiple downloads. [ICU Syntax]">
-        {NUM_DOWNLOADS, plural,
-         =1 {Downloaded a file}
-         other {Downloaded # files}}
-      </message>
-      <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS"
-               desc="Size and units downloaded and total, the origin domain, and the current status od download.">
-        <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>54/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>, <ph name="SUB_STATUS_TEXT">$3<ex>24 secs remaining</ex></ph>
-      </message>
-      <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED"
-               desc="Size and units downloaded, and the origin domain.">
-        <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>154/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
-      </message>
-      <message name="IDS_DOWNLOAD_STATUS_COMBINED_IN_PROGRESS"
-               desc="Status text of download notification which shows the combined progres of multiple downloads">
-               <ph name="PERCENT">$1<ex>30</ex></ph>% complete, <ph name="TIME_LEFT">$2<ex>20 secs left</ex></ph>,
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS_TITLE"
+                 desc=".">
+                 Downloading <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph>
+        </message>
+        <message name="IDS_DOWNLOAD_STATUS_DOWNLOADED_TITLE"
+                 desc=".">
+                 <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> downloaded
+        </message>
+        <message name="IDS_DOWNLOAD_STATUS_DOWNLOAD_FAILED_TITLE"
+                 desc=".">
+                 <ph name="FILE_NAME">$1<ex>somedocument.pdf</ex></ph> download unsuccessful
+        </message>
+        <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS"
+                 desc="Size and units downloaded and total, the origin domain, and the current status od download.">
+          <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>54/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>, <ph name="SUB_STATUS_TEXT">$3<ex>24 secs remaining</ex></ph>
+        </message>
+        <message name="IDS_DOWNLOAD_NOTIFICATION_STATUS_COMPLETED"
+                 desc="Size and units downloaded, and the origin domain.">
+          <ph name="DOWNLOAD_RECEIVED_AND_TOTAL">$1<ex>154/154 MB</ex></ph> from <ph name="DOWNLOAD_DOMAIN">$2<ex>example.com</ex></ph>
+        </message>
+      </if>
       <message name="IDS_DOWNLOAD_STATUS_IN_PROGRESS"
                desc="Size and units downloaded, time remaining.">
         <ph name="DOWNLOAD_RECEIVED">$1<ex>54/154 MB</ex></ph>, <ph name="TIME_LEFT">$2<ex>5s</ex></ph>
@@ -1894,10 +1880,12 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
          desc="Message shown to the user to validate the download when the download content is classified as uncommon by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is not commonly downloaded and could be dangerous.
       </message>
-      <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
-               desc="In the download notification, a title of message shown for blocked download">
-        Malicious download blocked
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_PROMPT_BLOCKED_MALICIOUS_DOWNLOAD_TITLE"
+                 desc="In the download notification, a title of message shown for blocked download">
+          Malicious download blocked
+        </message>
+      </if>
       <message name="IDS_CONFIRM_KEEP_DANGEROUS_DOWNLOAD_TITLE"
                desc="Title for the confirmation dialog asking whether the user really meant to keep a dangerous download">
         Confirm Download
@@ -2016,10 +2004,12 @@ Even if you have downloaded files from this website before, the website might ha
                desc="In the download notification, 'Show all downloads' button text.">
         Show all downloads
       </message>
-      <message name="IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING"
-               desc="In the download notification, a label of the button to show information about download scanning">
-        Learn more
-      </message>
+      <if expr="chromeos">
+        <message name="IDS_DOWNLOAD_LINK_LEARN_MORE_SCANNING"
+                 desc="In the download notification, a label of the button to show information about download scanning">
+          Learn more
+        </message>
+      </if>
       <message name="IDS_DOWNLOAD_TAB_CANCELLED"
                desc="Text that appears next to the downloaded files that have been canceled">
         Canceled

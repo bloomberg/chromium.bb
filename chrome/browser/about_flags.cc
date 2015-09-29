@@ -420,7 +420,6 @@ const Experiment::Choice kTopChromeMaterialDesignChoices[] = {
 #endif
 
 #if defined(OS_CHROMEOS)
-
 const Experiment::Choice kAshMaterialDesignInkDropAnimationSpeed[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
     {IDS_FLAGS_MATERIAL_DESIGN_INK_DROP_ANIMATION_FAST,
@@ -480,7 +479,6 @@ const Experiment::Choice kGestureEditingChoices[] = {
     keyboard::switches::kGestureEditing,
     keyboard::switches::kGestureEditingEnabled},
 };
-#endif
 
 const Experiment::Choice kDownloadNotificationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -491,6 +489,7 @@ const Experiment::Choice kDownloadNotificationChoices[] = {
     switches::kEnableDownloadNotification,
     "disabled" }
 };
+#endif
 
 const Experiment::Choice kSupervisedUserSafeSitesChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -874,11 +873,13 @@ const Experiment kExperiments[] = {
      IDS_FLAGS_ENABLE_DOWNLOAD_RESUMPTION_DESCRIPTION,
      kOsDesktop,
      SINGLE_VALUE_TYPE(switches::kEnableDownloadResumption)},
+#if defined(OS_CHROMEOS)
     {"enable-download-notification",
      IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_NAME,
      IDS_FLAGS_ENABLE_DOWNLOAD_NOTIFICATION_DESCRIPTION,
-     kOsDesktop,
+     kOsCrOS,
      MULTI_VALUE_TYPE(kDownloadNotificationChoices)},
+#endif
 #if defined(ENABLE_PLUGINS)
     {"allow-nacl-socket-api",
      IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,

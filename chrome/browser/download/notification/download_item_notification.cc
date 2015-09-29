@@ -32,15 +32,12 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/image/image.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/message_center_style.h"
-
-#if !defined(OS_MACOSX)
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
-#endif
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_style.h"
 
 using base::UserMetricsAction;
 
@@ -513,12 +510,8 @@ void DownloadItemNotification::UpdateNotificationIcon() {
                                   gfx::kChromeIconGrey);
 #endif
       } else {
-#if defined(OS_MACOSX)
-        SetNotificationIcon(IDR_DOWNLOAD_NOTIFICATION_DOWNLOADING);
-#else
         SetNotificationVectorIcon(gfx::VectorIconId::FILE_DOWNLOAD,
                                   gfx::kGoogleBlue);
-#endif
       }
       break;
 
@@ -561,7 +554,6 @@ void DownloadItemNotification::SetNotificationIcon(int resource_id) {
   notification_->set_icon(bundle.GetImageNamed(image_resource_id_));
 }
 
-#if !defined(OS_MACOSX)
 void DownloadItemNotification::SetNotificationVectorIcon(gfx::VectorIconId id,
                                                          SkColor color) {
   if (vector_icon_params_ == std::make_pair(id, color))
@@ -570,7 +562,6 @@ void DownloadItemNotification::SetNotificationVectorIcon(gfx::VectorIconId id,
   image_resource_id_ = 0;
   notification_->set_icon(gfx::Image(gfx::CreateVectorIcon(id, 40, color)));
 }
-#endif
 
 void DownloadItemNotification::OnImageLoaded(const std::string& image_data) {
   if (image_data.empty())

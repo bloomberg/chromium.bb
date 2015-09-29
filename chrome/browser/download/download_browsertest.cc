@@ -37,7 +37,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/download_test_file_activity_observer.h"
-#include "chrome/browser/download/notification/download_notification_manager.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -3392,8 +3391,10 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
 
 class DownloadTestWithShelf : public DownloadTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
+#if defined(OS_CHROMEOS)
     command_line->AppendSwitchASCII(switches::kEnableDownloadNotification,
                                     "disabled");
+#endif
     DownloadTest::SetUpCommandLine(command_line);
   }
 };
