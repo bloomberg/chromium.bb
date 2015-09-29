@@ -167,17 +167,6 @@ V8DebuggerAgentImpl::~V8DebuggerAgentImpl()
 {
 }
 
-DEFINE_TRACE(V8DebuggerAgentImpl)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_v8AsyncCallTracker);
-    visitor->trace(m_promiseTracker);
-    visitor->trace(m_asyncOperations);
-    visitor->trace(m_currentAsyncCallChain);
-#endif
-}
-
 bool V8DebuggerAgentImpl::checkEnabled(ErrorString* errorString)
 {
     if (enabled())
@@ -890,7 +879,7 @@ bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteC
         *errorString = "Async call stack not found";
         return false;
     }
-    RefPtrWillBeRawPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
+    RefPtr<AsyncCallStack> asyncStack = m_currentAsyncCallChain->callStacks()[asyncOrdinal - 1];
     *callStack = asyncStack->callFrames(m_isolate);
     *isAsync = true;
     return true;
@@ -1144,12 +1133,12 @@ int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String& description)
 {
     v8::HandleScope scope(m_isolate);
     v8::Local<v8::Object> callFrames = debugger().currentCallFramesForAsyncStack();
-    RefPtrWillBeRawPtr<AsyncCallChain> chain = nullptr;
+    RefPtr<AsyncCallChain> chain;
     if (callFrames.IsEmpty()) {
         if (m_currentAsyncCallChain)
             chain = AsyncCallChain::create(nullptr, m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
     } else {
-        chain = AsyncCallChain::create(adoptRefWillBeNoop(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
+        chain = AsyncCallChain::create(adoptRef(new AsyncCallStack(description, callFrames)), m_currentAsyncCallChain.get(), m_maxAsyncCallStackDepth);
     }
     do {
         ++m_lastAsyncOperationId;
@@ -1269,7 +1258,7 @@ void V8DebuggerAgentImpl::flushAsyncOperationEvents(ErrorString*)
         return;
 
     for (int operationId : m_asyncOperationNotifications) {
-        RefPtrWillBeRawPtr<AsyncCallChain> chain = m_asyncOperations.get(operationId);
+        RefPtr<AsyncCallChain> chain = m_asyncOperations.get(operationId);
         ASSERT(chain);
         const AsyncCallStackVector& callStacks = chain->callStacks();
         ASSERT(!callStacks.isEmpty());

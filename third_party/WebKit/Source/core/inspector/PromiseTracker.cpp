@@ -23,11 +23,7 @@ class PromiseTracker::PromiseWeakCallbackData final {
     WTF_MAKE_NONCOPYABLE(PromiseWeakCallbackData);
 public:
     PromiseWeakCallbackData(PromiseTracker* tracker, int id)
-#if ENABLE(OILPAN)
-        : m_tracker(tracker)
-#else
         : m_tracker(tracker->m_weakPtrFactory.createWeakPtr())
-#endif
         , m_id(id)
     {
     }
@@ -40,7 +36,7 @@ public:
         m_tracker->m_listener->didUpdatePromise(InspectorFrontend::Debugger::EventType::Gc, promiseDetails.release());
     }
 
-    WeakPtrWillBeWeakPersistent<PromiseTracker> m_tracker;
+    WeakPtr<PromiseTracker> m_tracker;
     int m_id;
 };
 
@@ -77,9 +73,7 @@ PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
     , m_captureStacks(false)
     , m_listener(listener)
     , m_isolate(isolate)
-#if !ENABLE(OILPAN)
     , m_weakPtrFactory(this)
-#endif
     , m_idToPromise(isolate)
 {
     clear();
@@ -87,13 +81,6 @@ PromiseTracker::PromiseTracker(Listener* listener, v8::Isolate* isolate)
 
 PromiseTracker::~PromiseTracker()
 {
-}
-
-DEFINE_TRACE(PromiseTracker)
-{
-#if ENABLE(OILPAN)
-    visitor->trace(m_listener);
-#endif
 }
 
 void PromiseTracker::setEnabled(bool enabled, bool captureStacks)

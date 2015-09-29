@@ -426,7 +426,6 @@ DEFINE_TRACE(AsyncCallTracker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_executionContextDataMap);
-    visitor->trace(m_debuggerAgent);
     visitor->trace(m_instrumentingAgents);
 #endif
 }

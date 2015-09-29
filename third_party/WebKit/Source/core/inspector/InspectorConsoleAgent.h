@@ -66,7 +66,7 @@ protected:
     virtual void disableStackCapturingIfNeeded() = 0;
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
-    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
+    V8DebuggerAgent* m_debuggerAgent;
     bool m_enabled;
 };
 

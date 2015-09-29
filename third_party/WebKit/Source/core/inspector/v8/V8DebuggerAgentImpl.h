@@ -40,14 +40,12 @@ class V8Debugger;
 typedef String ErrorString;
 
 class CORE_EXPORT V8DebuggerAgentImpl
-    : public NoBaseWillBeGarbageCollectedFinalized<V8DebuggerAgentImpl>
-    , public V8DebuggerAgent
+    : public V8DebuggerAgent
     , public V8DebuggerListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
     WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8DebuggerAgentImpl);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8DebuggerAgentImpl);
+    WTF_MAKE_FAST_ALLOCATED(V8DebuggerAgentImpl);
 public:
     V8DebuggerAgentImpl(InjectedScriptManager*, V8Debugger*, V8DebuggerAgent::Client*, int contextGroupId);
     ~V8DebuggerAgentImpl() override;
@@ -194,7 +192,7 @@ private:
         StepOut
     };
 
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
     V8Debugger* m_debugger;
     V8DebuggerAgent::Client* m_client;
     int m_contextGroupId;
@@ -224,17 +222,17 @@ private:
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     unsigned m_cachedSkipStackGeneration;
     // This field must be destroyed before the listeners set above.
-    OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
-    OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
+    OwnPtrWillBePersistent<V8AsyncCallTracker> m_v8AsyncCallTracker;
+    OwnPtr<PromiseTracker> m_promiseTracker;
 
-    using AsyncOperationIdToAsyncCallChain = WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain>>;
+    using AsyncOperationIdToAsyncCallChain = HashMap<int, RefPtr<AsyncCallChain>>;
     AsyncOperationIdToAsyncCallChain m_asyncOperations;
     int m_lastAsyncOperationId;
     ListHashSet<int> m_asyncOperationNotifications;
     HashSet<int> m_asyncOperationBreakpoints;
     HashSet<int> m_pausingAsyncOperations;
     unsigned m_maxAsyncCallStackDepth;
-    RefPtrWillBeMember<AsyncCallChain> m_currentAsyncCallChain;
+    RefPtr<AsyncCallChain> m_currentAsyncCallChain;
     unsigned m_nestedAsyncCallCount;
     int m_currentAsyncOperationId;
     bool m_pendingTraceAsyncOperationCompleted;

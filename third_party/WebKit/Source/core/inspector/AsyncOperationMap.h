@@ -75,12 +75,11 @@ public:
 
     DEFINE_INLINE_TRACE()
     {
-        visitor->trace(m_debuggerAgent);
         visitor->trace(m_asyncOperations);
     }
 
 private:
-    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
+    V8DebuggerAgent* m_debuggerAgent;
     MapType m_asyncOperations;
 };
 

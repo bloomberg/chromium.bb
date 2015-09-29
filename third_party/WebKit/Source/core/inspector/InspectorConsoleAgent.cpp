@@ -63,7 +63,6 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 DEFINE_TRACE(InspectorConsoleAgent)
 {
     visitor->trace(m_injectedScriptManager);
-    visitor->trace(m_debuggerAgent);
     InspectorBaseAgent::trace(visitor);
 }
 

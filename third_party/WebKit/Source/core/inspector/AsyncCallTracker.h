@@ -55,7 +55,6 @@ class XMLHttpRequest;
 
 class CORE_EXPORT AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallTracker);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(AsyncCallTracker);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(AsyncCallTracker);
 public:
     AsyncCallTracker(V8DebuggerAgent*, InstrumentingAgents*);
@@ -113,7 +112,7 @@ private:
 
     using ExecutionContextDataMap = WillBeHeapHashMap<RawPtrWillBeMember<ExecutionContext>, OwnPtrWillBeMember<ExecutionContextData>>;
     ExecutionContextDataMap m_executionContextDataMap;
-    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
+    V8DebuggerAgent* m_debuggerAgent;
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
 };
 

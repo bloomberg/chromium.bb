@@ -53,7 +53,6 @@ InspectorDebuggerAgent::~InspectorDebuggerAgent()
 
 DEFINE_TRACE(InspectorDebuggerAgent)
 {
-    visitor->trace(m_v8DebuggerAgent);
     visitor->trace(m_asyncCallTracker);
     InspectorBaseAgent<InspectorDebuggerAgent, InspectorFrontend::Debugger>::trace(visitor);
 }

@@ -9,11 +9,6 @@
 
 namespace blink {
 
-DEFINE_TRACE(AsyncCallChain)
-{
-    visitor->trace(m_callStacks);
-}
-
 AsyncCallStack::AsyncCallStack(const String& description, v8::Local<v8::Object> callFrames)
     : m_description(description)
     , m_callFrames(callFrames->GetIsolate(), callFrames)
@@ -24,12 +19,12 @@ AsyncCallStack::~AsyncCallStack()
 {
 }
 
-PassRefPtrWillBeRawPtr<AsyncCallChain> AsyncCallChain::create(PassRefPtrWillBeRawPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
+PassRefPtr<AsyncCallChain> AsyncCallChain::create(PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
-    return adoptRefWillBeNoop(new AsyncCallChain(stack, prevChain, asyncCallChainMaxLength));
+    return adoptRef(new AsyncCallChain(stack, prevChain, asyncCallChainMaxLength));
 }
 
-AsyncCallChain::AsyncCallChain(PassRefPtrWillBeRawPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
+AsyncCallChain::AsyncCallChain(PassRefPtr<AsyncCallStack> stack, AsyncCallChain* prevChain, unsigned asyncCallChainMaxLength)
 {
     if (stack)
         m_callStacks.append(stack);

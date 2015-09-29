@@ -109,7 +109,7 @@ private:
     InjectedScriptHost();
 
     RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
-    RawPtrWillBeMember<V8DebuggerAgent> m_debuggerAgent;
+    V8DebuggerAgent* m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
     V8Debugger* m_debugger;
     WillBeHeapVector<OwnPtrWillBeMember<InspectableObject>> m_inspectedObjects;

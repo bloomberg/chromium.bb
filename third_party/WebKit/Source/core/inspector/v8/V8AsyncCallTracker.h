@@ -18,7 +18,6 @@ class ScriptState;
 
 class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8AsyncCallTracker);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8AsyncCallTracker);
 public:
     static PassOwnPtrWillBeRawPtr<V8AsyncCallTracker> create(V8DebuggerAgentImpl* debuggerAgent)
@@ -45,7 +44,7 @@ private:
 
     class V8ContextAsyncOperations;
     WillBeHeapHashMap<RefPtr<ScriptState>, OwnPtrWillBeMember<V8ContextAsyncOperations>> m_contextAsyncOperationMap;
-    RawPtrWillBeMember<V8DebuggerAgentImpl> m_debuggerAgent;
+    V8DebuggerAgentImpl* m_debuggerAgent;
 };
 
 } // namespace blink

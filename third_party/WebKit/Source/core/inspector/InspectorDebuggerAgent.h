@@ -107,7 +107,7 @@ public:
 protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
 
-    OwnPtrWillBeMember<V8DebuggerAgent> m_v8DebuggerAgent;
+    OwnPtr<V8DebuggerAgent> m_v8DebuggerAgent;
     OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 };
 

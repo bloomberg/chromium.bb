@@ -74,7 +74,6 @@ DEFINE_TRACE(V8AsyncCallTracker)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_contextAsyncOperationMap);
-    visitor->trace(m_debuggerAgent);
 #endif
 }
 

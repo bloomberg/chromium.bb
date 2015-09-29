@@ -9,11 +9,12 @@
 #include "core/CoreExport.h"
 #include "core/InspectorFrontend.h"
 #include "core/InspectorTypeBuilder.h"
-#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 #include <v8.h>
 
 namespace blink {
@@ -21,19 +22,19 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class PromiseTracker final : public NoBaseWillBeGarbageCollectedFinalized<PromiseTracker> {
+class PromiseTracker final {
     WTF_MAKE_NONCOPYABLE(PromiseTracker);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(PromiseTracker);
+    WTF_MAKE_FAST_ALLOCATED(PromiseTracker);
 public:
-    class CORE_EXPORT Listener : public WillBeGarbageCollectedMixin {
+    class CORE_EXPORT Listener {
     public:
         virtual ~Listener() { }
         virtual void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) = 0;
     };
 
-    static PassOwnPtrWillBeRawPtr<PromiseTracker> create(Listener* listener, v8::Isolate* isolate)
+    static PassOwnPtr<PromiseTracker> create(Listener* listener, v8::Isolate* isolate)
     {
-        return adoptPtrWillBeNoop(new PromiseTracker(listener, isolate));
+        return adoptPtr(new PromiseTracker(listener, isolate));
     }
 
     ~PromiseTracker();
@@ -44,8 +45,6 @@ public:
     void didReceiveV8PromiseEvent(ScriptState*, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
     ScriptValue promiseById(int promiseId);
 
-    DECLARE_TRACE();
-
 private:
     PromiseTracker(Listener*, v8::Isolate*);
 
@@ -55,14 +54,12 @@ private:
     int m_circularSequentialId;
     bool m_isEnabled;
     bool m_captureStacks;
-    RawPtrWillBeMember<Listener> m_listener;
+    Listener* m_listener;
 
     v8::Isolate* m_isolate;
     v8::Persistent<v8::NativeWeakMap> m_promiseToId;
 
-#if !ENABLE(OILPAN)
     WeakPtrFactory<PromiseTracker> m_weakPtrFactory;
-#endif
 
     class PromiseWeakCallbackData;
     class IdToPromiseMapTraits : public V8GlobalValueMapTraits<int, v8::Object, v8::kWeakWithParameter> {
