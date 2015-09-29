@@ -4,8 +4,10 @@
 
 package org.chromium.media.midi;
 
+import android.annotation.TargetApi;
 import android.media.midi.MidiDevice;
 import android.media.midi.MidiDeviceInfo;
+import android.os.Build;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -14,6 +16,7 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * A class implementing media::midi::MidiDeviceAndroid functionality.
  */
+@TargetApi(Build.VERSION_CODES.M)
 class MidiDeviceAndroid {
     /**
      * The underlying device.

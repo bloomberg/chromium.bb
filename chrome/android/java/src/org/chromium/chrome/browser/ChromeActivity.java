@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.assist.AssistContent;
@@ -716,10 +717,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (mSnackbarManager != null) mSnackbarManager.dismissSnackbar(false);
     }
 
-    // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
-    // crbug/512264
-    // @Override
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public void onProvideAssistContent(AssistContent outContent) {
         if (getAssistStatusHandler() == null || !getAssistStatusHandler().isAssistSupported()) {
             // No information is provided in incognito mode.

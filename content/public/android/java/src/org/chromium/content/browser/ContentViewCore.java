@@ -2985,8 +2985,7 @@ public class ContentViewCore implements
         return null;
     }
 
-    // @TargetApi(Build.VERSION_CODES.M) TODO(sgurun) add method document once API is public
-    // crbug/512264
+    @TargetApi(Build.VERSION_CODES.M)
     public void onProvideVirtualStructure(final ViewStructure structure) {
         // Do not collect accessibility tree in incognito mode
         if (getWebContents().isIncognito()) {
@@ -3015,6 +3014,7 @@ public class ContentViewCore implements
     // When creating the View structure, the left and top are relative to the parent node.
     // The X scroll is not used, rather compensated through X-position, while the Y scroll
     // is provided.
+    @TargetApi(Build.VERSION_CODES.M)
     private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
             int parentX, int parentY) {
         viewNode.setClassName(node.className);

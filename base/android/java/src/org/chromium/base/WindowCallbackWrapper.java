@@ -5,6 +5,8 @@
 package org.chromium.base;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.view.ActionMode;
 import android.view.ActionMode.Callback;
 import android.view.KeyEvent;
@@ -134,11 +136,13 @@ class WindowCallbackWrapper implements Window.Callback {
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public boolean onSearchRequested(SearchEvent searchEvent) {
         return mCallback.onSearchRequested(searchEvent);
     }
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public ActionMode onWindowStartingActionMode(Callback callback, int type) {
         return mCallback.onWindowStartingActionMode(callback, type);
     }
