@@ -9,6 +9,9 @@ Call stack:
     1) innerTestFunction (async-callstack.html:11)
     [setTimeout]
     0) testFunction (async-callstack.html:13)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) animFrame2 (async-callstack.html:47)
@@ -19,6 +22,9 @@ Call stack:
     1) innerTestFunction (async-callstack.html:11)
     [setTimeout]
     0) testFunction (async-callstack.html:13)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) interval1 (async-callstack.html:37)
@@ -28,12 +34,18 @@ Call stack:
     1) innerTestFunction (async-callstack.html:11)
     [setTimeout]
     0) testFunction (async-callstack.html:13)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) timeout1 (async-callstack.html:18)
     1) innerTestFunction (async-callstack.html:11)
     [setTimeout]
     0) testFunction (async-callstack.html:13)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) timeout2 (async-callstack.html:42)
@@ -44,6 +56,9 @@ Call stack:
     1) innerTestFunction (async-callstack.html:11)
     [setTimeout]
     0) testFunction (async-callstack.html:13)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) timeout3 (async-callstack.html:61)

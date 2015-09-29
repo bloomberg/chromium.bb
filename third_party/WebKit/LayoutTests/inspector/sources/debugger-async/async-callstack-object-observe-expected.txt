@@ -11,5 +11,8 @@ Call stack:
     0) timeout1 (async-callstack-object-observe.html:16)
     [setTimeout]
     0) testFunction (async-callstack-object-observe.html:10)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

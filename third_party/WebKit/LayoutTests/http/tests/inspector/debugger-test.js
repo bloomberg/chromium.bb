@@ -1,3 +1,8 @@
+function scheduleTestFunction()
+{
+    setTimeout(testFunction, 0);
+}
+
 var initialize_DebuggerTest = function() {
 
 InspectorTest.preloadPanel("sources");
@@ -71,7 +76,7 @@ InspectorTest.runDebuggerTestSuite = function(testSuite)
 
 InspectorTest.runTestFunction = function()
 {
-    InspectorTest.evaluateInPage("setTimeout(testFunction, 0)");
+    InspectorTest.evaluateInPage("scheduleTestFunction()");
     InspectorTest.addResult("Set timer for test function.");
 };
 
@@ -271,6 +276,12 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
             results.push(s);
             if (options.printReturnValue && frame.returnValue())
                 results.push("       <return>: " + frame.returnValue().description);
+            if (frame.functionName === "scheduleTestFunction") {
+                var remainingFrames = callFrames.length - 1 - i;
+                if (remainingFrames)
+                    results.push("    <... skipped remaining frames ...>");
+                break;
+            }
         }
         return printed;
     }
@@ -284,8 +295,6 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
         var printed = printCallFrames(WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, asyncStackTrace.callFrames));
         if (!printed)
             results.pop();
-        if (asyncStackTrace.callFrames.peekLast().functionName === "testFunction")
-            break;
         asyncStackTrace = asyncStackTrace.asyncStackTrace;
     }
     return results.join("\n");

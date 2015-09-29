@@ -8,6 +8,9 @@ Call stack:
     0) timeout (async-callstack-filesystem.html:31)
     [setTimeout]
     0) testFunction (async-callstack-filesystem.html:25)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onFileCreated (async-callstack-filesystem.html:51)
@@ -84,5 +87,8 @@ Call stack:
     0) timeout (async-callstack-filesystem.html:31)
     [setTimeout]
     0) testFunction (async-callstack-filesystem.html:25)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

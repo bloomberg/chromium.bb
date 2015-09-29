@@ -9,6 +9,9 @@ Call stack:
     0) openDB (async-callstack-web-sql.html:27)
     [setTimeout]
     0) testFunction (async-callstack-web-sql.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onDropTable (async-callstack-web-sql.html:47)
@@ -18,6 +21,9 @@ Call stack:
     0) openDB (async-callstack-web-sql.html:27)
     [setTimeout]
     0) testFunction (async-callstack-web-sql.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccess (async-callstack-web-sql.html:14)
@@ -27,6 +33,9 @@ Call stack:
     0) openDB (async-callstack-web-sql.html:27)
     [setTimeout]
     0) testFunction (async-callstack-web-sql.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccess (async-callstack-web-sql.html:14)
@@ -36,6 +45,9 @@ Call stack:
     0) openDB (async-callstack-web-sql.html:27)
     [setTimeout]
     0) testFunction (async-callstack-web-sql.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccess (async-callstack-web-sql.html:14)
@@ -43,5 +55,8 @@ Call stack:
     0) openDB (async-callstack-web-sql.html:27)
     [setTimeout]
     0) testFunction (async-callstack-web-sql.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

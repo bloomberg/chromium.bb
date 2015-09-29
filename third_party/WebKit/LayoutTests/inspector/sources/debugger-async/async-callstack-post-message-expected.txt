@@ -24,6 +24,9 @@ Call stack:
     1) timeout (async-callstack-post-message.html:16)
     [setTimeout]
     0) testFunction (async-callstack-post-message.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onMessageReceivedInParent (async-callstack-post-message.html:21)
@@ -50,6 +53,9 @@ Call stack:
     1) timeout (async-callstack-post-message.html:16)
     [setTimeout]
     0) testFunction (async-callstack-post-message.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onMessageReceivedInParent (async-callstack-post-message.html:21)
@@ -58,5 +64,8 @@ Call stack:
     1) timeout (async-callstack-post-message.html:15)
     [setTimeout]
     0) testFunction (async-callstack-post-message.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

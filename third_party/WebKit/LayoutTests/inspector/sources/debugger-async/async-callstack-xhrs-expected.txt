@@ -10,6 +10,9 @@ Call stack:
     3) timeout (async-callstack-xhrs.html:16)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) downloadEnd1 (async-callstack-xhrs.html:36)
@@ -19,6 +22,9 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) downloadEnd2 (async-callstack-xhrs.html:41)
@@ -27,6 +33,9 @@ Call stack:
     3) timeout (async-callstack-xhrs.html:16)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) downloadEnd2 (async-callstack-xhrs.html:41)
@@ -36,6 +45,9 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) downloadProgress (async-callstack-xhrs.html:50)
@@ -45,6 +57,9 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) uploadEnd (async-callstack-xhrs.html:46)
@@ -54,6 +69,9 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) uploadProgress (async-callstack-xhrs.html:55)
@@ -63,6 +81,9 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) xhr.onreadystatechange (async-callstack-xhrs.html:30)
@@ -71,6 +92,9 @@ Call stack:
     3) timeout (async-callstack-xhrs.html:16)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) xhr.onreadystatechange (async-callstack-xhrs.html:30)
@@ -80,5 +104,8 @@ Call stack:
     2) timeout (async-callstack-xhrs.html:17)
     [setTimeout]
     0) testFunction (async-callstack-xhrs.html:11)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

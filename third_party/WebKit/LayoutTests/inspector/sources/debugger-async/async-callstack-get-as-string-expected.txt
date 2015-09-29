@@ -10,11 +10,17 @@ Call stack:
     1) timeout (async-callstack-get-as-string.html:24)
     [setTimeout]
     0) testFunction (async-callstack-get-as-string.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onPaste (async-callstack-get-as-string.html:29)
     1) timeout (async-callstack-get-as-string.html:24)
     [setTimeout]
     0) testFunction (async-callstack-get-as-string.html:9)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

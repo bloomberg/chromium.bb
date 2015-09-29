@@ -13,6 +13,9 @@ Call stack:
     3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) catchCallback (async-callstack-promises.html:118)
@@ -56,6 +59,9 @@ Call stack:
     3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) chained2 (async-callstack-promises.html:83)
@@ -112,6 +118,9 @@ Call stack:
     1) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) errorCallback (async-callstack-promises.html:60)
@@ -120,6 +129,9 @@ Call stack:
     1) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) promiseCallback (async-callstack-promises.html:67)
@@ -127,6 +139,9 @@ Call stack:
     2) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-promises.html:55)
@@ -135,6 +150,9 @@ Call stack:
     1) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-promises.html:55)
@@ -143,6 +161,9 @@ Call stack:
     1) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-promises.html:55)
@@ -170,5 +191,8 @@ Call stack:
     3) testFunctionTimeout (async-callstack-promises.html:50)
     [setTimeout]
     0) testFunction (async-callstack-promises.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

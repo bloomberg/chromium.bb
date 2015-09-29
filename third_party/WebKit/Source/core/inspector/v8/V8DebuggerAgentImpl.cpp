@@ -875,7 +875,7 @@ bool V8DebuggerAgentImpl::callStackForId(ErrorString* errorString, const RemoteC
         *isAsync = false;
         return true;
     }
-    if (!m_currentAsyncCallChain || asyncOrdinal < 1 || asyncOrdinal >= m_currentAsyncCallChain->callStacks().size()) {
+    if (!m_currentAsyncCallChain || asyncOrdinal < 1 || asyncOrdinal > m_currentAsyncCallChain->callStacks().size()) {
         *errorString = "Async call stack not found";
         return false;
     }

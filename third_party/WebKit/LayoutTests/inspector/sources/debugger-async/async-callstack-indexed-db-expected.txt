@@ -51,6 +51,9 @@ Call stack:
     0) openDB (async-callstack-indexed-db.html:23)
     [setTimeout]
     0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onSuccessStorePut (async-callstack-indexed-db.html:59)
@@ -61,6 +64,9 @@ Call stack:
     0) openDB (async-callstack-indexed-db.html:23)
     [setTimeout]
     0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) onUpgradeNeeded (async-callstack-indexed-db.html:31)
@@ -68,5 +74,8 @@ Call stack:
     0) openDB (async-callstack-indexed-db.html:23)
     [setTimeout]
     0) testFunction (async-callstack-indexed-db.html:12)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

@@ -2,11 +2,16 @@ Tests evaluation in an async call frame.
 
 Set timer for test function.
 Call stack:
-    0) timeout (async-callstack-eval.html:25)
+    0) timeout (async-callstack-eval.html:26)
     [setTimeout]
-    0) inner (async-callstack-eval.html:15)
-    1) testFunction (async-callstack-eval.html:17)
+    0) inner (async-callstack-eval.html:16)
+    1) testFunction (async-callstack-eval.html:18)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 Select call frame: inner
 a = "PASS"
 b = "PASS"
+Select call frame: scheduleTestFunction
+g = "PASS"
 
