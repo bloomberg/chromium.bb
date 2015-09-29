@@ -18,12 +18,6 @@ FtpNetworkLayer::FtpNetworkLayer(HostResolver* host_resolver)
 FtpNetworkLayer::~FtpNetworkLayer() {
 }
 
-// static
-FtpTransactionFactory* FtpNetworkLayer::CreateFactory(
-    HostResolver* host_resolver) {
-  return new FtpNetworkLayer(host_resolver);
-}
-
 FtpTransaction* FtpNetworkLayer::CreateTransaction() {
   if (suspended_)
     return NULL;

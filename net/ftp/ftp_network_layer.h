@@ -21,8 +21,6 @@ class NET_EXPORT FtpNetworkLayer : public FtpTransactionFactory {
   explicit FtpNetworkLayer(HostResolver* host_resolver);
   ~FtpNetworkLayer() override;
 
-  static FtpTransactionFactory* CreateFactory(HostResolver* host_resolver);
-
   // FtpTransactionFactory methods:
   FtpTransaction* CreateTransaction() override;
   void Suspend(bool suspend) override;
