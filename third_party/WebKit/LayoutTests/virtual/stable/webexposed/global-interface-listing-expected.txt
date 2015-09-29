@@ -2665,6 +2665,10 @@ interface IDBVersionChangeEvent
     getter newVersion
     getter oldVersion
     method constructor
+interface IdleDeadline
+    getter didTimeout
+    method constructor
+    method timeRemaining
 interface Image
     method constructor
 interface ImageBitmap
@@ -6067,6 +6071,7 @@ interface webkitURL
     method blur
     method btoa
     method cancelAnimationFrame
+    method cancelIdleCallback
     method captureEvents
     method clearInterval
     method clearTimeout
@@ -6090,6 +6095,7 @@ interface webkitURL
     method prompt
     method releaseEvents
     method requestAnimationFrame
+    method requestIdleCallback
     method resizeBy
     method resizeTo
     method scroll

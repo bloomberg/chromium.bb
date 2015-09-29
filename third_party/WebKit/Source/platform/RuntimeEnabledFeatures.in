@@ -136,7 +136,7 @@ PushMessaging status=stable
 PushMessagingData status=test
 QuotaPromise status=experimental
 ReducedReferrerGranularity
-RequestIdleCallback status=experimental
+RequestIdleCallback status=stable
 RequestAutocomplete status=test
 RestrictIFramePermissions
 SandboxBlocksModals status=stable
