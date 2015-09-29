@@ -1295,7 +1295,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableBrowserSideNavigation,
     switches::kEnableCompositorAnimationTimelines,
     switches::kEnableCredentialManagerAPI,
-    switches::kEnableDelayAgnosticAec,
     switches::kEnableDisplayList2dCanvas,
     switches::kEnableDistanceFieldText,
     switches::kEnableExperimentalCanvasFeatures,

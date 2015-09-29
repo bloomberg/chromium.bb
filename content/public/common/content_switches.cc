@@ -322,9 +322,6 @@ const char kEnableBlinkFeatures[]           = "enable-blink-features";
 // PlzNavigate: Use the experimental browser-side navigation path.
 const char kEnableBrowserSideNavigation[]   = "enable-browser-side-navigation";
 
-// Enables Delay Agnostic AEC in WebRTC.
-const char kEnableDelayAgnosticAec[]        = "enable-delay-agnostic-aec";
-
 // Enables display list based 2d canvas implementation. Options:
 //  1. Enable: allow browser to use display list for 2d canvas (browser makes
 //     decision).

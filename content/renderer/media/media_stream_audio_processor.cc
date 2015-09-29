@@ -75,8 +75,6 @@ bool IsDelayAgnosticAecEnabled() {
   const std::string group_name =
       base::FieldTrialList::FindFullName("UseDelayAgnosticAEC");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDelayAgnosticAec))
-    return true;
   if (command_line->HasSwitch(switches::kDisableDelayAgnosticAec))
     return false;
 
