@@ -47,21 +47,21 @@ public:
     virtual ~WebIDBCallbacks() { }
 
     // Pointers transfer ownership.
-    virtual void onError(const WebIDBDatabaseError&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebVector<WebString>&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebIDBKey&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebIDBValue&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebVector<WebIDBValue>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onError(const WebIDBDatabaseError&) = 0;
+    virtual void onSuccess(const WebVector<WebString>&) = 0;
+    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) = 0;
+    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) = 0;
+    virtual void onSuccess(const WebIDBKey&) = 0;
+    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&) = 0;
+    virtual void onSuccess(const WebIDBValue&) = 0;
+    virtual void onSuccess(const WebVector<WebIDBValue>&) = 0;
     // TODO(cmumford): Eliminate redundant onSuccess overloads http://crbug.com/487711
-    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(long long) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onBlocked(long long oldVersion) { BLINK_ASSERT_NOT_REACHED(); }
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&, const WebVector<WebBlobInfo>&, const WebIDBKey&, const WebIDBKeyPath&) = 0;
+    virtual void onSuccess(long long) = 0;
+    virtual void onSuccess() = 0;
+    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&, const WebVector<WebBlobInfo>&) = 0;
+    virtual void onBlocked(long long oldVersion) = 0;
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) = 0;
 };
 
 } // namespace blink

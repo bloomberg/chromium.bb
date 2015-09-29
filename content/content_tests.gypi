@@ -601,6 +601,8 @@
       'child/blob_storage/blob_consolidation_unittest.cc',
       'child/fileapi/webfilewriter_base_unittest.cc',
       'child/indexed_db/indexed_db_dispatcher_unittest.cc',
+      'child/indexed_db/mock_webidbcallbacks.cc',
+      'child/indexed_db/mock_webidbcallbacks.h',
       'child/indexed_db/webidbcursor_impl_unittest.cc',
       'child/multipart_response_delegate_unittest.cc',
       'child/notifications/notification_data_conversions_unittest.cc',
