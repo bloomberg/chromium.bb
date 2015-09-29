@@ -14,6 +14,9 @@ import zipfile
 # When set and a difference is detected, a diff of what changed is printed.
 _PRINT_MD5_DIFFS = int(os.environ.get('PRINT_MD5_DIFFS', 0))
 
+# An escape hatch that causes all targets to be rebuilt.
+_FORCE_REBUILD = int(os.environ.get('FORCE_REBUILD', 0))
+
 
 def CallAndRecordIfStale(
     function, record_path=None, input_paths=None, input_strings=None,
@@ -60,6 +63,7 @@ def CallAndRecordIfStale(
       new_metadata.AddFile(path, _Md5ForPath(path))
 
   old_metadata = None
+  force = force or _FORCE_REBUILD
   missing_outputs = [x for x in output_paths if force or not os.path.exists(x)]
   # When outputs are missing, don't bother gathering change information.
   if not missing_outputs and os.path.exists(record_path):
@@ -78,11 +82,6 @@ def CallAndRecordIfStale(
     print 'Target is stale: %s' % record_path
     print changes.DescribeDifference()
     print '=' * 80
-
-  # Delete the old metdata beforehand since failures leave it in an
-  # inderterminate state.
-  if old_metadata:
-    os.unlink(record_path)
 
   args = (changes,) if pass_changes else ()
   function(*args)
