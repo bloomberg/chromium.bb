@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -440,7 +440,8 @@ void WebUILoginView::RequestMediaAccessPermission(
     WebContents* web_contents,
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback) {
-  if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
+  MediaStreamDevicesController controller(web_contents, request, callback);
+  if (controller.IsAskingForVideo() || controller.IsAskingForAudio())
     NOTREACHED() << "Media stream not allowed for WebUI";
 }
 

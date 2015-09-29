@@ -15,7 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/media/media_stream_infobar_delegate.h"
+#include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
@@ -156,7 +156,8 @@ class StartPageService::StartPageWebContentsDelegate
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
       const content::MediaResponseCallback& callback) override {
-    if (MediaStreamInfoBarDelegate::Create(web_contents, request, callback))
+    MediaStreamDevicesController controller(web_contents, request, callback);
+    if (controller.IsAskingForVideo() || controller.IsAskingForAudio())
       NOTREACHED() << "Media stream not allowed for WebUI";
   }
 

@@ -65,9 +65,12 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
+  // InfoBarDelegate:
+  void InfoBarDismissed() override;
+
   base::android::ScopedJavaGlobalRef<jobject> java_delegate_;
   std::vector<ContentSettingsType> content_settings_types_;
-  const PermissionUpdatedCallback callback_;
+  PermissionUpdatedCallback callback_;
   ui::WindowAndroid* window_android_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionUpdateInfoBarDelegate);

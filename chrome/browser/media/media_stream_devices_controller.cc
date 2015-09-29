@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/media_stream_devices_controller.h"
 
+#include "base/auto_reset.h"
+#include "base/callback_helpers.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,7 +33,10 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)
+#include <vector>
+
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
+#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "ui/android/window_android.h"
 #endif  // OS_ANDROID
@@ -72,7 +77,8 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     const content::MediaResponseCallback& callback)
     : web_contents_(web_contents),
       request_(request),
-      callback_(callback) {
+      callback_(callback),
+      persist_permission_changes_(true) {
   if (request_.request_type == content::MEDIA_OPEN_DEVICE) {
     UMA_HISTOGRAM_BOOLEAN("Pepper.SecureOrigin.MediaStreamRequest",
                           content::IsOriginSecure(request_.security_origin));
@@ -91,6 +97,26 @@ MediaStreamDevicesController::MediaStreamDevicesController(
       old_video_setting_ == CONTENT_SETTING_ASK) {
     return;
   }
+
+#if defined(OS_ANDROID)
+  std::vector<ContentSettingsType> content_settings_types;
+  if (IsAllowedForAudio())
+    content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+
+  if (IsAllowedForVideo()) {
+    content_settings_types.push_back(
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+  }
+
+  // If the site had been previously granted the access to audio or video but
+  // Chrome is now missing the necessary permission, we need to show an infobar
+  // to resolve the difference.
+  if (!content_settings_types.empty() &&
+      PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
+          web_contents, content_settings_types)) {
+    return;
+  }
+#endif
 
   // Otherwise we can run the callback immediately.
   RunCallback(old_audio_setting_, old_video_setting_, denial_reason);
@@ -113,6 +139,14 @@ void MediaStreamDevicesController::RegisterProfilePrefs(
   prefs->RegisterListPref(prefs::kAudioCaptureAllowedUrls);
 }
 
+bool MediaStreamDevicesController::IsAllowedForAudio() const {
+  return old_audio_setting_ == CONTENT_SETTING_ALLOW;
+}
+
+bool MediaStreamDevicesController::IsAllowedForVideo() const {
+  return old_video_setting_ == CONTENT_SETTING_ALLOW;
+}
+
 bool MediaStreamDevicesController::IsAskingForAudio() const {
   return old_audio_setting_ == CONTENT_SETTING_ASK;
 }
@@ -123,6 +157,16 @@ bool MediaStreamDevicesController::IsAskingForVideo() const {
 
 const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
   return request_.security_origin.spec();
+}
+
+void MediaStreamDevicesController::ForcePermissionDeniedTemporarily() {
+  base::AutoReset<bool> persist_permissions(
+      &persist_permission_changes_, false);
+  UMA_HISTOGRAM_ENUMERATION("Media.DevicePermissionActions",
+                            kDeny, kPermissionActionsMax);
+  RunCallback(CONTENT_SETTING_BLOCK,
+              CONTENT_SETTING_BLOCK,
+              content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
 int MediaStreamDevicesController::GetIconId() const {
@@ -309,8 +353,12 @@ void MediaStreamDevicesController::RunCallback(
     ContentSetting audio_setting,
     ContentSetting video_setting,
     content::MediaStreamRequestResult denial_reason) {
-  StorePermission(audio_setting, video_setting);
-  UpdateTabSpecificContentSettings(audio_setting, video_setting);
+  CHECK(!callback_.is_null());
+
+  if (persist_permission_changes_) {
+    StorePermission(audio_setting, video_setting);
+    UpdateTabSpecificContentSettings(audio_setting, video_setting);
+  }
 
   content::MediaStreamDevices devices =
       GetDevices(audio_setting, video_setting);
@@ -334,9 +382,7 @@ void MediaStreamDevicesController::RunCallback(
              ->GetMediaStreamCaptureIndicator()
              ->RegisterMediaStream(web_contents_, devices);
   }
-  content::MediaResponseCallback cb = callback_;
-  callback_.Reset();
-  cb.Run(devices, request_result, ui.Pass());
+  base::ResetAndReturn(&callback_).Run(devices, request_result, ui.Pass());
 }
 
 void MediaStreamDevicesController::StorePermission(

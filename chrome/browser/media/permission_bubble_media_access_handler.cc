@@ -17,6 +17,27 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_ANDROID)
+#include <vector>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
+
+namespace {
+// Callback for the permission update infobar when the site and Chrome
+// permissions are mismatched on Android.
+void OnPermissionConflictResolved(
+    scoped_ptr<MediaStreamDevicesController> controller, bool allowed) {
+  if (allowed)
+    controller->PermissionGranted();
+  else
+    controller->ForcePermissionDeniedTemporarily();
+}
+}  // namespace
+
+#endif  // OS_ANDROID
+
 using content::BrowserThread;
 
 struct PermissionBubbleMediaAccessHandler::PendingAccessRequest {
@@ -102,28 +123,47 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
+  scoped_ptr<MediaStreamDevicesController> controller(
+      new MediaStreamDevicesController(
+          web_contents, it->second.front().request,
+          base::Bind(
+              &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+              base::Unretained(this), web_contents)));
+  if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo()) {
+#if defined(OS_ANDROID)
+    // If either audio or video was previously allowed and Chrome no longer has
+    // the necessary permissions, show a infobar to attempt to address this
+    // mismatch.
+    std::vector<ContentSettingsType> content_settings_types;
+    if (controller->IsAllowedForAudio())
+      content_settings_types.push_back(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+
+    if (controller->IsAllowedForVideo()) {
+      content_settings_types.push_back(
+          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+    }
+    if (!content_settings_types.empty() &&
+        PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfobar(
+            web_contents, content_settings_types)) {
+      PermissionUpdateInfoBarDelegate::Create(
+          web_contents, content_settings_types,
+          base::Bind(
+              &OnPermissionConflictResolved, base::Passed(&controller)));
+    }
+#endif
+    return;
+  }
+
   if (PermissionBubbleManager::Enabled()) {
-    scoped_ptr<MediaStreamDevicesController> controller(
-        new MediaStreamDevicesController(
-            web_contents, it->second.front().request,
-            base::Bind(
-                &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                base::Unretained(this), web_contents)));
-    if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo())
-      return;
     PermissionBubbleManager* bubble_manager =
         PermissionBubbleManager::FromWebContents(web_contents);
     if (bubble_manager)
       bubble_manager->AddRequest(controller.release());
-    return;
+  } else {
+    // TODO(gbillock): delete this block and the MediaStreamInfoBarDelegate
+    // when we've transitioned to bubbles. (https://crbug/337458)
+    MediaStreamInfoBarDelegate::Create(web_contents, controller.Pass());
   }
-
-  // TODO(gbillock): delete this block and the MediaStreamInfoBarDelegate
-  // when we've transitioned to bubbles. (crbug/337458)
-  MediaStreamInfoBarDelegate::Create(
-      web_contents, it->second.front().request,
-      base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
-                 base::Unretained(this), web_contents));
 }
 
 void PermissionBubbleMediaAccessHandler::UpdateMediaRequestState(

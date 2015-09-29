@@ -37,12 +37,7 @@ MediaStreamInfoBarDelegate::~MediaStreamInfoBarDelegate() {
 // static
 bool MediaStreamInfoBarDelegate::Create(
     content::WebContents* web_contents,
-    const content::MediaStreamRequest& request,
-    const content::MediaResponseCallback& callback) {
-  scoped_ptr<MediaStreamDevicesController> controller(
-      new MediaStreamDevicesController(web_contents, request, callback));
-  if (!controller->IsAskingForAudio() && !controller->IsAskingForVideo())
-    return false;
+    scoped_ptr<MediaStreamDevicesController> controller) {
 
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);

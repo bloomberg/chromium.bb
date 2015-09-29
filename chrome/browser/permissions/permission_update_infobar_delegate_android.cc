@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/android/jni_array.h"
+#include "base/callback_helpers.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/android/preferences/pref_service_bridge.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -76,7 +77,7 @@ bool PermissionUpdateInfoBarDelegate::RegisterPermissionUpdateInfoBarDelegate(
 
 void PermissionUpdateInfoBarDelegate::OnPermissionResult(
     JNIEnv* env, jobject obj, jboolean all_permissions_granted) {
-  callback_.Run(all_permissions_granted);
+  base::ResetAndReturn(&callback_).Run(all_permissions_granted);
   infobar()->RemoveSelf();
 }
 
@@ -106,6 +107,9 @@ PermissionUpdateInfoBarDelegate::PermissionUpdateInfoBarDelegate(
 PermissionUpdateInfoBarDelegate::~PermissionUpdateInfoBarDelegate() {
   Java_PermissionUpdateInfoBarDelegate_onNativeDestroyed(
       base::android::AttachCurrentThread(), java_delegate_.obj());
+
+  if (!callback_.is_null())
+    callback_.Run(false);
 }
 
 int PermissionUpdateInfoBarDelegate::GetIconId() const {
@@ -167,6 +171,10 @@ bool PermissionUpdateInfoBarDelegate::Accept() {
 }
 
 bool PermissionUpdateInfoBarDelegate::Cancel() {
-  callback_.Run(false);
+  base::ResetAndReturn(&callback_).Run(false);
   return true;
+}
+
+void PermissionUpdateInfoBarDelegate::InfoBarDismissed() {
+  base::ResetAndReturn(&callback_).Run(false);
 }

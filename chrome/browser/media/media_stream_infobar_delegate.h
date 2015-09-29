@@ -21,14 +21,12 @@ class MediaStreamInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   ~MediaStreamInfoBarDelegate() override;
 
-  // Handles a permission request (in |request|) for |web_contents|.  If this
-  // involves prompting the user, creates a media stream infobar and delegate,
+  // Prompts the user by creating a media stream infobar and delegate,
   // then checks for an existing infobar for |web_contents| and replaces it if
   // found, or just adds the new infobar otherwise.  Returns whether an infobar
   // was created.
   static bool Create(content::WebContents* web_contents,
-                     const content::MediaStreamRequest& request,
-                     const content::MediaResponseCallback& callback);
+                     scoped_ptr<MediaStreamDevicesController> controller);
 
   bool IsRequestingVideoAccess() const;
   bool IsRequestingMicrophoneAccess() const;
