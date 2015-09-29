@@ -41,7 +41,33 @@ def is_pristine(root, merge_base='origin/master'):
               check_output(cmd + ['--cached'], cwd=root).strip())
 
 
-def roll(root, deps_dir, key, reviewers, bug):
+def get_log_url(upstream_url, head, master):
+  """Returns an URL to read logs via a Web UI if applicable."""
+  if re.match(r'https://[^/]*\.googlesource\.com/', upstream_url):
+    # gitiles
+    return '%s/+log/%s..%s' % (upstream_url, head[:12], master[:12])
+  if upstream_url.startswith('https://github.com/'):
+    upstream_url = upstream_url.rstrip('/')
+    if upstream_url.endswith('.git'):
+      upstream_url = upstream_url[:-len('.git')]
+    return '%s/compare/%s...%s' % (upstream_url, head[:12], master[:12])
+  return None
+
+
+def should_show_log(upstream_url):
+  """Returns True if a short log should be included in the tree."""
+  # Skip logs for very active projects.
+  if upstream_url.endswith((
+      '/angle/angle.git',
+      '/catapult-project/catapult.git',
+      '/v8/v8.git')):
+    return False
+  if 'webrtc' in upstream_url:
+    return False
+  return True
+
+
+def roll(root, deps_dir, roll_to, key, reviewers, bug, no_log, log_limit):
   deps = os.path.join(root, 'DEPS')
   try:
     with open(deps, 'rb') as f:
@@ -77,44 +103,58 @@ def roll(root, deps_dir, key, reviewers, bug):
 
   print('Found old revision %s' % head)
 
-  check_call(['git', 'fetch', 'origin'], cwd=full_dir)
-  master = check_output(
-      ['git', 'rev-parse', 'origin/master'], cwd=full_dir).strip()
-  print('Found new revision %s' % master)
+  check_call(['git', 'fetch', 'origin', '--quiet'], cwd=full_dir)
+  roll_to = check_output(['git', 'rev-parse', roll_to], cwd=full_dir).strip()
+  print('Found new revision %s' % roll_to)
 
-  if master == head:
+  if roll_to == head:
     raise Error('No revision to roll!')
 
-  commit_range = '%s..%s' % (head[:9], master[:9])
+  commit_range = '%s..%s' % (head[:9], roll_to[:9])
 
+  upstream_url = check_output(
+      ['git', 'config', 'remote.origin.url'], cwd=full_dir).strip()
+  log_url = get_log_url(upstream_url, head, roll_to)
   logs = check_output(
       ['git', 'log', commit_range, '--date=short', '--format=%ad %ae %s'],
-      cwd=full_dir).strip()
+      cwd=full_dir)
   logs = re.sub(r'(?m)^(\d\d\d\d-\d\d-\d\d [^@]+)@[^ ]+( .*)$', r'\1\2', logs)
-  cmd = 'git log %s --date=short --format=\'%%ad %%ae %%s\'' % commit_range
+  nb_commits = logs.count('\n')
+
+  header = 'Roll %s/ %s (%d commit%s).\n\n' % (
+      deps_dir,
+      commit_range,
+      nb_commits,
+      's' if nb_commits > 1 else '')
+
+  log_section = ''
+  if log_url:
+    log_section = log_url + '\n\n'
+  log_section += '$ git log %s --date=short --format=\'%%ad %%ae %%s\'\n' % (
+      commit_range)
+  if not no_log and should_show_log(upstream_url):
+    if logs.count('\n') > log_limit:
+      # Keep the first N log entries.
+      logs = ''.join(logs.splitlines(True)[:log_limit]) + '(...)\n'
+    log_section += logs
+  log_section += '\n'
+
   reviewer = 'R=%s\n' % ','.join(reviewers) if reviewers else ''
   bug = 'BUG=%s\n' % bug if bug else ''
-  msg = (
-      'Roll %s/ to %s.\n'
-      '\n'
-      '$ %s\n'
-      '%s\n\n'
-      '%s'
-      '%s') % (
-          deps_dir,
-          master,
-          cmd,
-          logs,
-          reviewer,
-          bug)
+  msg = header + log_section + reviewer + bug
 
   print('Commit message:')
   print('\n'.join('    ' + i for i in msg.splitlines()))
-  deps_content = deps_content.replace(head, master)
+  deps_content = deps_content.replace(head, roll_to)
   with open(deps, 'wb') as f:
     f.write(deps_content)
   check_call(['git', 'add', 'DEPS'], cwd=root)
-  check_call(['git', 'commit', '-m', msg], cwd=root)
+  check_call(['git', 'commit', '--quiet', '-m', msg], cwd=root)
+
+  # Pull the dependency to the right revision. This is surprising to users
+  # otherwise.
+  check_call(['git', 'checkout', '--quiet', roll_to], cwd=full_dir)
+
   print('')
   if not reviewers:
     print('You forgot to pass -r, make sure to insert a R=foo@example.com line')
@@ -126,13 +166,23 @@ def roll(root, deps_dir, key, reviewers, bug):
 
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
-  parser.add_argument('-r', '--reviewer',
+  parser.add_argument(
+      '-r', '--reviewer',
       help='To specify multiple reviewers, use comma separated list, e.g. '
            '-r joe,jane,john. Defaults to @chromium.org')
-  parser.add_argument('-b', '--bug')
-  parser.add_argument('dep_path', help='path to dependency')
+  parser.add_argument('-b', '--bug', help='Associate a bug number to the roll')
+  parser.add_argument(
+      '--no-log', action='store_true',
+      help='Do not include the short log in the commit message')
+  parser.add_argument(
+      '--log-limit', type=int, default=100,
+      help='Trim log after N commits (default: %(default)s)')
+  parser.add_argument(
+      '--roll-to', default='origin/master',
+      help='Specify the new commit to roll to (default: %(default)s)')
+  parser.add_argument('dep_path', help='Path to dependency')
   parser.add_argument('key', nargs='?',
-      help='regexp for dependency in DEPS file')
+      help='Regexp for dependency in DEPS file')
   args = parser.parse_args()
 
   reviewers = None
@@ -146,9 +196,12 @@ def main():
     roll(
         os.getcwd(),
         args.dep_path,
+        args.roll_to,
         args.key,
-        reviewers=reviewers,
-        bug=args.bug)
+        reviewers,
+        args.bug,
+        args.no_log,
+        args.log_limit)
 
   except Error as e:
     sys.stderr.write('error: %s\n' % e)
