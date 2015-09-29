@@ -9,7 +9,9 @@
 
 import optparse
 import os
+import re
 import sys
+import zipfile
 
 from util import build_utils
 
@@ -42,7 +44,13 @@ def main(argv):
       ]
       build_utils.CheckOutput(aidl_cmd)
 
-    build_utils.ZipDir(options.srcjar, temp_dir)
+    with zipfile.ZipFile(options.srcjar, 'w') as srcjar:
+      for path in build_utils.FindInDirectory(temp_dir, '*.java'):
+        with open(path) as fileobj:
+          data = fileobj.read()
+        pkg_name = re.search(r'^\s*package\s+(.*?)\s*;', data, re.M).group(1)
+        arcname = '%s/%s' % (pkg_name.replace('.', '/'), os.path.basename(path))
+        srcjar.writestr(arcname, data)
 
   if options.depfile:
     build_utils.WriteDepfile(
