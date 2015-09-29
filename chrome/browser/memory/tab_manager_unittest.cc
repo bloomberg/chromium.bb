@@ -25,6 +25,7 @@ enum TestIndicies {
   kPinned,
   kApp,
   kPlayingAudio,
+  kFormEntry,
   kRecent,
   kOld,
   kReallyOld,
@@ -62,6 +63,14 @@ TEST_F(TabManagerTest, Comparator) {
     stats.last_active = now;
     stats.is_playing_audio = true;
     stats.child_process_host_id = kPlayingAudio;
+    test_list.push_back(stats);
+  }
+
+  {
+    TabStats stats;
+    stats.last_active = now;
+    stats.has_form_entry = true;
+    stats.child_process_host_id = kFormEntry;
     test_list.push_back(stats);
   }
 
@@ -116,6 +125,7 @@ TEST_F(TabManagerTest, Comparator) {
 
   int index = 0;
   EXPECT_EQ(kSelected, test_list[index++].child_process_host_id);
+  EXPECT_EQ(kFormEntry, test_list[index++].child_process_host_id);
   EXPECT_EQ(kPlayingAudio, test_list[index++].child_process_host_id);
   EXPECT_EQ(kPinned, test_list[index++].child_process_host_id);
   EXPECT_EQ(kOldButPinned, test_list[index++].child_process_host_id);

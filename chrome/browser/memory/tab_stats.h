@@ -22,6 +22,7 @@ struct TabStats {
   bool is_pinned;
   bool is_selected;  // Selected in the currently active browser window.
   bool is_discarded;
+  bool has_form_entry;  // User has entered text in a form.
   int discard_count;
   base::TimeTicks last_active;
   base::ProcessHandle renderer_handle;

@@ -40,6 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_importance_signals.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/memory/tab_manager_delegate_chromeos.h"
@@ -358,6 +359,8 @@ void TabManager::AddTabStats(BrowserList* browser_list,
         stats.is_pinned = model->IsTabPinned(i);
         stats.is_selected = browser_active && model->IsTabSelected(i);
         stats.is_discarded = TabDiscardState::IsDiscarded(contents);
+        stats.has_form_entry =
+            contents->GetPageImportanceSignals().had_form_interaction;
         stats.discard_count = TabDiscardState::DiscardCount(contents);
         stats.last_active = contents->GetLastActiveTime();
         stats.renderer_handle = contents->GetRenderProcessHost()->GetHandle();
@@ -415,13 +418,18 @@ bool TabManager::CanDiscardTab(int64 target_web_contents_id) const {
     return false;
 
   WebContents* web_contents = model->GetWebContentsAt(idx);
-  // We do not discard tabs that are playing audio as it's too distruptive to
-  // the user experience.
+
+  // Do not discard tabs in which the user has entered text in a form, lest we
+  // lose that state.
+  if (web_contents->GetPageImportanceSignals().had_form_interaction)
+    return false;
+
+  // Do not discard tabs that are playing audio as it's too distruptive to the
+  // user experience.
   if (web_contents->WasRecentlyAudible())
     return false;
 
-  // We also make sure not to discard a previously discarded tab if that's the
-  // desired behavior.
+  // Do not discard a previously discarded tab if that's the desired behavior.
   if (discard_once_ && TabDiscardState::DiscardCount(web_contents) > 0)
     return false;
 
@@ -448,6 +456,10 @@ bool TabManager::CompareTabStats(TabStats first, TabStats second) {
   // Being currently selected is most important to protect.
   if (first.is_selected != second.is_selected)
     return first.is_selected;
+
+  // Protect tabs with pending form entries.
+  if (first.has_form_entry != second.has_form_entry)
+    return first.has_form_entry;
 
   // Protect streaming audio and video conferencing tabs as these are similar to
   // active tabs.
