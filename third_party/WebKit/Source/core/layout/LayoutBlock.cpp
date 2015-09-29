@@ -680,13 +680,9 @@ void LayoutBlock::collapseAnonymousBlockChild(LayoutBlock* parent, LayoutBlock* 
         return;
     parent->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::ChildAnonymousBlockChanged);
     parent->setChildrenInline(child->childrenInline());
-    LayoutObject* nextSibling = child->nextSibling();
 
+    child->moveAllChildrenTo(parent, child->nextSibling(), child->hasLayer());
     parent->children()->removeChildNode(parent, child, child->hasLayer());
-    child->moveAllChildrenTo(parent, nextSibling, child->hasLayer());
-    // Explicitly delete the child's line box tree, or the special anonymous
-    // block handling in willBeDestroyed will cause problems.
-    child->deleteLineBoxTree();
     child->destroy();
 }
 
