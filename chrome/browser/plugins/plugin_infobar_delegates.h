@@ -21,32 +21,9 @@ namespace content {
 class WebContents;
 }
 
-// Base class for blocked plugin infobars.
-class PluginInfoBarDelegate : public ConfirmInfoBarDelegate {
- protected:
-  explicit PluginInfoBarDelegate(const std::string& identifier);
-  ~PluginInfoBarDelegate() override;
-
-  // ConfirmInfoBarDelegate:
-  bool LinkClicked(WindowOpenDisposition disposition) override;
-
-  virtual std::string GetLearnMoreURL() const = 0;
-
-  void LoadBlockedPlugins();
-
- private:
-  // ConfirmInfoBarDelegate:
-  int GetIconId() const override;
-  base::string16 GetLinkText() const override;
-
-  std::string identifier_;
-
-  DISALLOW_COPY_AND_ASSIGN(PluginInfoBarDelegate);
-};
-
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Infobar that's shown when a plugin is out of date.
-class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
+class OutdatedPluginInfoBarDelegate : public ConfirmInfoBarDelegate,
                                       public WeakPluginInstallerObserver {
  public:
   // Creates an outdated plugin infobar and delegate and adds the infobar to
@@ -68,14 +45,15 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
                                 const base::string16& message);
   ~OutdatedPluginInfoBarDelegate() override;
 
-  // PluginInfoBarDelegate:
+  // ConfirmInfoBarDelegate:
   void InfoBarDismissed() override;
+  int GetIconId() const override;
   base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
+  base::string16 GetLinkText() const override;
   bool LinkClicked(WindowOpenDisposition disposition) override;
-  std::string GetLearnMoreURL() const override;
 
   // PluginInstallerObserver:
   void DownloadStarted() override;
@@ -89,6 +67,8 @@ class OutdatedPluginInfoBarDelegate : public PluginInfoBarDelegate,
   // Replaces this infobar with one showing |message|. The new infobar will
   // not have any buttons (and not call the callback).
   void ReplaceWithInfoBar(const base::string16& message);
+
+  std::string identifier_;
 
   scoped_ptr<PluginMetadata> plugin_metadata_;
 
