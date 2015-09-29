@@ -51,7 +51,9 @@ class ChromeMetricsHelper : public security_interstitials::MetricsHelper {
 #if defined(ENABLE_EXTENSIONS)
   scoped_ptr<extensions::ExperienceSamplingEvent> sampling_event_;
 #endif
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   scoped_ptr<CaptivePortalMetricsRecorder> captive_portal_recorder_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeMetricsHelper);
 };
