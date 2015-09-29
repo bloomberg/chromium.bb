@@ -37,5 +37,19 @@
       },
       'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
     },
+    {
+      'target_name': 'manage_languages_page',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:assert',
+          '../prefs/compiled_resources.gyp:prefs',
+          'languages.js',
+        ],
+        'externs': [
+          '../../../../../third_party/closure_compiler/externs/language_settings_private.js',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
   ],
 }

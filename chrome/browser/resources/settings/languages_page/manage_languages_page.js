@@ -22,7 +22,7 @@ Polymer({
     },
 
     /**
-     * @type {LanguagesModel|undefined}
+     * @type {!LanguagesModel|undefined}
      */
     languages: {
       type: Object,
@@ -30,7 +30,8 @@ Polymer({
     },
 
     /**
-     * @private {Array<{code: string, displayName: string, enabled: boolean}>|
+     * @private {!Array<!{code: string, displayName: string,
+     *                    nativeDisplayName: string, enabled: boolean}>|
      *           undefined}
      */
     availableLanguages_: Array,
@@ -42,7 +43,7 @@ Polymer({
 
   /**
    * Handler for removing a language.
-   * @param {!{model: !{item: !Language}}} e
+   * @param {!{model: !{item: !LanguageInfo}}} e
    * @private
    */
   onRemoveLanguageTap_: function(e) {
@@ -59,38 +60,45 @@ Polymer({
   },
 
   /**
-   * True if a language is not the prospective UI language or the last remaining
-   * language.
+   * True if a language is not the current or prospective UI language.
    * @param {string} languageCode
-   * @param {!Array<!LanguageInfo>} enableLanguage
-   * @private
+   * @param {!Array<!LanguageInfo>} prospectiveUILanguage
    * @return {boolean}
+   * @private
    */
-  canRemoveLanguage_: function(languageCode, enabledLanguages) {
-    var appLocale = this.prefs.intl.app_locale.value || navigator.language;
-    if (languageCode == appLocale)
+  canRemoveLanguage_: function(languageCode, prospectiveUILanguage) {
+    if (languageCode == navigator.language ||
+        languageCode == prospectiveUILanguage) {
       return false;
-    if (enabledLanguages.length == 1)
-      return false;
+    }
+    assert(this.languages.enabledLanguages.length > 1);
     return true;
   },
 
   /**
-   * Updates the available languages to be bound to the iron-list.
-   * TODO(michaelpg): Update properties of individual items instead of
-   *     rebuilding entire list.
+   * Updates the available languages that are bound to the iron-list.
    * @private
    */
   enabledLanguagesChanged_: function() {
-    var availableLanguages = [];
-    for (var i = 0; i < this.languages.supportedLanguages.length; i++) {
-      var language = this.languages.supportedLanguages[i];
-      availableLanguages.push({
-        code: language.code,
-        displayName: language.displayName,
-        enabled: this.$.languages.isEnabled(language.code)
-      });
+    if (!this.availableLanguages_) {
+      var availableLanguages = [];
+      for (var i = 0; i < this.languages.supportedLanguages.length; i++) {
+        var language = this.languages.supportedLanguages[i];
+        availableLanguages.push({
+          code: language.code,
+          displayName: language.displayName,
+          nativeDisplayName: language.nativeDisplayName,
+          enabled: this.$.languages.isEnabled(language.code)
+        });
+      }
+      // Set the Polymer property after building the full array.
+      this.availableLanguages_ = availableLanguages;
+    } else {
+      // Update the available languages in place.
+      for (var i = 0; i < this.availableLanguages_.length; i++) {
+        this.set('availableLanguages_.' + i + '.enabled',
+                 this.$.languages.isEnabled(this.availableLanguages_[i].code));
+      }
     }
-    this.availableLanguages_ = availableLanguages;
   },
 });
