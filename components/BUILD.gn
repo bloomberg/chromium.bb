@@ -577,7 +577,9 @@ test("components_browsertests") {
 
 test("components_perftests") {
   sources = [
-    "scheduler/child/task_queue_manager_perftest.cc",
+    "scheduler/base/nestable_task_runner_for_test.cc",
+    "scheduler/base/nestable_task_runner_for_test.h",
+    "scheduler/base/task_queue_manager_perftest.cc",
     "visitedlink/test/visitedlink_perftest.cc",
   ]
 

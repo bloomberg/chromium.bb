@@ -6,10 +6,10 @@
 #define COMPONENTS_SCHEDULER_CHILD_IDLE_HELPER_H_
 
 #include "base/message_loop/message_loop.h"
-#include "components/scheduler/child/cancelable_closure_holder.h"
+#include "components/scheduler/base/cancelable_closure_holder.h"
+#include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/child/scheduler_helper.h"
 #include "components/scheduler/child/single_thread_idle_task_runner.h"
-#include "components/scheduler/child/task_queue_selector.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace scheduler {

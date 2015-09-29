@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_CHILD_LAZY_NOW_H_
-#define COMPONENTS_SCHEDULER_CHILD_LAZY_NOW_H_
+#ifndef COMPONENTS_SCHEDULER_BASE_LAZY_NOW_H_
+#define COMPONENTS_SCHEDULER_BASE_LAZY_NOW_H_
 
 #include "base/time/time.h"
 
@@ -34,4 +34,4 @@ class LazyNow {
 }  // namespace internal
 }  // namespace scheduler
 
-#endif  // COMPONENTS_SCHEDULER_CHILD_LAZY_NOW_H_
+#endif  // COMPONENTS_SCHEDULER_BASE_LAZY_NOW_H_

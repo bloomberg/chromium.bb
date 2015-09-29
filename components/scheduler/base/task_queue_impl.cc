@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/scheduler/child/task_queue_impl.h"
+#include "components/scheduler/base/task_queue_impl.h"
 
-#include "components/scheduler/child/task_queue_manager.h"
+#include "components/scheduler/base/task_queue_manager.h"
 
 namespace scheduler {
 namespace internal {

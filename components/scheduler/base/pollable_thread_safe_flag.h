@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SCHEDULER_CHILD_POLLABLE_THREAD_SAFE_FLAG_H_
-#define COMPONENTS_SCHEDULER_CHILD_POLLABLE_THREAD_SAFE_FLAG_H_
+#ifndef COMPONENTS_SCHEDULER_BASE_POLLABLE_THREAD_SAFE_FLAG_H_
+#define COMPONENTS_SCHEDULER_BASE_POLLABLE_THREAD_SAFE_FLAG_H_
 
 #include "base/atomicops.h"
 #include "base/synchronization/lock.h"
@@ -32,4 +32,4 @@ class PollableThreadSafeFlag {
   DISALLOW_COPY_AND_ASSIGN(PollableThreadSafeFlag);
 };
 
-#endif  // COMPONENTS_SCHEDULER_CHILD_POLLABLE_THREAD_SAFE_FLAG_H_
+#endif  // COMPONENTS_SCHEDULER_BASE_POLLABLE_THREAD_SAFE_FLAG_H_
