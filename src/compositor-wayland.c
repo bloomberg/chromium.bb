@@ -1158,7 +1158,7 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 		mode = container_of(poutput->mode_list.next,
 				    struct weston_mode, link);
 	} else {
-		weston_log("No valid modes found.  Skipping output");
+		weston_log("No valid modes found.  Skipping output\n");
 		return NULL;
 	}
 
