@@ -653,6 +653,8 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
 }
 
 ShelfWidget::~ShelfWidget() {
+  Shell::GetInstance()->focus_cycler()->RemoveWidget(this);
+  SetFocusCycler(nullptr);
   RemoveObserver(this);
 }
 
@@ -804,8 +806,10 @@ FocusCycler* ShelfWidget::GetFocusCycler() {
 }
 
 void ShelfWidget::ShutdownStatusAreaWidget() {
-  if (status_area_widget_)
+  if (status_area_widget_) {
+    Shell::GetInstance()->focus_cycler()->RemoveWidget(status_area_widget_);
     status_area_widget_->Shutdown();
+  }
   status_area_widget_ = NULL;
 }
 

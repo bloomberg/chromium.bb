@@ -399,5 +399,32 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
   EXPECT_EQ(focus_manager->GetFocusedView(), view1);
 }
 
+// Test that when the shelf widget & status area widget are removed, they should
+// also be removed from focus cycler.
+TEST_F(FocusCyclerTest, RemoveWidgetOnDisplayRemoved) {
+  // Two displays are added, so two shelf widgets and two status area widgets
+  // are added to focus cycler.
+  UpdateDisplay("800x800, 500x500");
+  // Remove one display. Its shelf widget and status area widget should also be
+  // removed from focus cycler.
+  UpdateDisplay("800x800");
+
+  // Create a single test window.
+  scoped_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  wm::ActivateWindow(window.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window.get()));
+
+  // Cycle focus to the status area.
+  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_FALSE(wm::IsActiveWindow(window.get()));
+
+  // Cycle focus to the shelf.
+  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+
+  // Cycle focus should go back to the browser.
+  Shell::GetInstance()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  EXPECT_TRUE(wm::IsActiveWindow(window.get()));
+}
+
 }  // namespace test
 }  // namespace ash

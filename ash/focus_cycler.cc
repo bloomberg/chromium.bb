@@ -35,6 +35,12 @@ void FocusCycler::AddWidget(views::Widget* widget) {
   widgets_.push_back(widget);
 }
 
+void FocusCycler::RemoveWidget(views::Widget* widget) {
+  auto iter = std::find(widgets_.begin(), widgets_.end(), widget);
+  if (iter != widgets_.end())
+    widgets_.erase(iter);
+}
+
 void FocusCycler::RotateFocus(Direction direction) {
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window) {

@@ -37,6 +37,9 @@ class ASH_EXPORT FocusCycler {
   // AccessiblePaneView as the content view.
   void AddWidget(views::Widget* widget);
 
+  // Remove a widget from the focus cycle.
+  void RemoveWidget(views::Widget* widget);
+
   // Move focus to the next widget.
   void RotateFocus(Direction direction);
 
