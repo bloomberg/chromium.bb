@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/web_input_event_builders_mac.h"
 
 #import <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -206,4 +207,40 @@ TEST(WebInputEventBuilderMacTest, MissingUndocumentedModifierFlags) {
     web_event = WebKeyboardEventBuilder::Build(mac_event);
     EXPECT_EQ(WebInputEvent::KeyUp, web_event.type);
   }
+}
+
+// Test system key events recognition.
+TEST(WebInputEventBuilderMacTest, SystemKeyEvents) {
+  // Cmd + B should not be treated as system event.
+  NSEvent* macEvent =
+      BuildFakeKeyEvent(kVK_ANSI_B, 'B', NSCommandKeyMask, NSKeyDown);
+  WebKeyboardEvent webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_FALSE(webEvent.isSystemKey);
+
+  // Cmd + I should not be treated as system event.
+  macEvent = BuildFakeKeyEvent(kVK_ANSI_I, 'I', NSCommandKeyMask, NSKeyDown);
+  webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_FALSE(webEvent.isSystemKey);
+
+  // Cmd + <some other modifier> + <B|I> should be treated as system event.
+  macEvent = BuildFakeKeyEvent(kVK_ANSI_B, 'B',
+                               NSCommandKeyMask | NSShiftKeyMask, NSKeyDown);
+  webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_TRUE(webEvent.isSystemKey);
+  macEvent = BuildFakeKeyEvent(kVK_ANSI_I, 'I',
+                               NSCommandKeyMask | NSControlKeyMask, NSKeyDown);
+  webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_TRUE(webEvent.isSystemKey);
+
+  // Cmd + <any letter other then B and I> should be treated as system event.
+  macEvent = BuildFakeKeyEvent(kVK_ANSI_S, 'S', NSCommandKeyMask, NSKeyDown);
+  webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_TRUE(webEvent.isSystemKey);
+
+  // Cmd + <some other modifier> + <any letter other then B and I> should be
+  // treated as system event.
+  macEvent = BuildFakeKeyEvent(kVK_ANSI_S, 'S',
+                               NSCommandKeyMask | NSShiftKeyMask, NSKeyDown);
+  webEvent = WebKeyboardEventBuilder::Build(macEvent);
+  EXPECT_TRUE(webEvent.isSystemKey);
 }

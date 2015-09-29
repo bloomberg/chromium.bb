@@ -526,11 +526,18 @@ bool IsSystemKeyEvent(const blink::WebKeyboardEvent& event) {
   // shouldn't be used by Blink to scroll the current page, because we want
   // to get that key back for it to do history navigation. Hence, the
   // corresponding situation on OS X is to set this for cmd key presses.
+
   // cmd-b and and cmd-i are system wide key bindings that OS X doesn't
   // handle for us, so the editor handles them.
-  return event.modifiers & blink::WebInputEvent::MetaKey &&
-         event.windowsKeyCode != ui::VKEY_B &&
-         event.windowsKeyCode != ui::VKEY_I;
+  int modifiers = event.modifiers & blink::WebInputEvent::InputModifiers;
+  if (modifiers == blink::WebInputEvent::MetaKey &&
+      event.windowsKeyCode == ui::VKEY_B)
+    return false;
+  if (modifiers == blink::WebInputEvent::MetaKey &&
+      event.windowsKeyCode == ui::VKEY_I)
+    return false;
+
+  return event.modifiers & blink::WebInputEvent::MetaKey;
 }
 
 blink::WebMouseWheelEvent::Phase PhaseForNSEventPhase(
