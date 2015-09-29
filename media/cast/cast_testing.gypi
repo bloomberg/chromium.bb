@@ -68,7 +68,6 @@
         # the tools compile correctly.
         'cast_tools',
         '<(DEPTH)/base/base.gyp:test_support_base',
-        '<(DEPTH)/media/media.gyp:media_test_support',
         '<(DEPTH)/net/net.gyp:net',
         '<(DEPTH)/testing/gmock.gyp:gmock',
         '<(DEPTH)/testing/gtest.gyp:gtest',

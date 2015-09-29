@@ -28,14 +28,17 @@ class AudioOutputDispatcher;
 // AudioManagerBase provides AudioManager functions common for all platforms.
 class MEDIA_EXPORT AudioManagerBase : public AudioManager {
  public:
-  // TODO(ajm): Move these strings to AudioManager.
-  // Unique Id of the generic "default" device. Associated with the localized
-  // name returned from GetDefaultDeviceName().
-  static const char kDefaultDeviceId[];
+  // TODO(sergeyu): The constants below belong to AudioManager interface, not
+  // to the base implementation.
 
-  // Unique Id of the generic default communications device. Associated with
-  // the localized name returned from GetCommunicationsDeviceName().
+  // Name of the generic "default" device.
+  static const char kDefaultDeviceName[];
+  // Unique Id of the generic "default" device.
+  static const char kDefaultDeviceId[];
+  // Unique Id of the generic default communications device (where supported).
   static const char kCommunicationsDeviceId[];
+  // Name of the generic default communications device (where supported).
+  static const char kCommunicationsDeviceName[];
 
   // Input device ID used to capture the default system playback stream. When
   // this device ID is passed to MakeAudioInputStream() the returned

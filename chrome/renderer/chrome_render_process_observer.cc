@@ -52,11 +52,6 @@
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #endif
 
-#if !defined(OS_IOS)
-#include "chrome/common/media/media_resource_provider.h"
-#include "media/base/media_resources.h"
-#endif
-
 using blink::WebCache;
 using blink::WebRuntimeFeatures;
 using blink::WebSecurityPolicy;
@@ -256,10 +251,6 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
-#if !defined(OS_IOS)
-  media::SetLocalizedStringProvider(
-      chrome_common_media::LocalizedStringProvider);
-#endif
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(USE_OPENSSL)
   // On platforms where we use system NSS shared libraries,

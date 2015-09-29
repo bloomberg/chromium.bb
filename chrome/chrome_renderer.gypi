@@ -281,7 +281,6 @@
           'dependencies': [
             'common_net',
             '../components/components.gyp:dom_distiller_content_renderer',
-            '../media/media.gyp:media',
           ],
         }],
         ['disable_nacl!=1', {

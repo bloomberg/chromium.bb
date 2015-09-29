@@ -72,10 +72,7 @@ static_library("renderer") {
   ]
 
   if (!is_ios) {
-    deps += [
-      "//chrome/common/net",
-      "//media",
-    ]
+    deps += [ "//chrome/common/net" ]
   }
 
   if (enable_nacl) {

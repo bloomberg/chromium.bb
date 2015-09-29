@@ -16,7 +16,6 @@
 #include "media/audio/cras/cras_input.h"
 #include "media/audio/cras/cras_unified.h"
 #include "media/base/channel_layout.h"
-#include "media/base/media_resources.h"
 
 // cras_util.h headers pull in min/max macros...
 // TODO(dgreid): Fix headers such that these aren't imported.
@@ -39,27 +38,32 @@ const int kMaximumOutputBufferSize = 8192;
 // Default input buffer size.
 const int kDefaultInputBufferSize = 1024;
 
-const char kBeamformingOnUniqueId[] = "beamforming-on";
-const char kBeamformingOffUniqueId[] = "beamforming-off";
-
 void AddDefaultDevice(AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
-
   // Cras will route audio from a proper physical device automatically.
-  device_names->push_back(AudioDeviceName(AudioManager::GetDefaultDeviceName(),
-                                          AudioManagerBase::kDefaultDeviceId));
+  device_names->push_back(
+      AudioDeviceName(AudioManagerBase::kDefaultDeviceName,
+                      AudioManagerBase::kDefaultDeviceId));
 }
 
-// Adds the beamforming on and off devices to |device_names|.
-void AddBeamformingDevices(AudioDeviceNames* device_names) {
-  DCHECK(device_names->empty());
+// Returns the AudioDeviceName of the virtual device with beamforming on.
+AudioDeviceName BeamformingOnDeviceName() {
+  // TODO(ajm): Replace these strings with properly localized ones.
+  // (crbug.com/497001)
+  static const char kBeamformingOnNameSuffix[] = " (pick up just one person)";
+  static const char kBeamformingOnIdSuffix[] = "-beamforming";
 
-  device_names->push_back(AudioDeviceName(
-      GetLocalizedStringUTF8(BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOnUniqueId));
-  device_names->push_back(AudioDeviceName(
-      GetLocalizedStringUTF8(BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME),
-      kBeamformingOffUniqueId));
+  return AudioDeviceName(
+      std::string(AudioManagerBase::kDefaultDeviceName) +
+          kBeamformingOnNameSuffix,
+      std::string(AudioManagerBase::kDefaultDeviceId) + kBeamformingOnIdSuffix);
+}
+
+// Returns the AudioDeviceName of the virtual device with beamforming off.
+AudioDeviceName BeamformingOffDeviceName() {
+  static const char kBeamformingOffNameSuffix[] = " (pick up everything)";
+  return AudioDeviceName(std::string(AudioManagerBase::kDefaultDeviceName) +
+                             kBeamformingOffNameSuffix,
+                         AudioManagerBase::kDefaultDeviceId);
 }
 
 // Returns a mic positions string if the machine has a beamforming capable
@@ -95,7 +99,10 @@ bool AudioManagerCras::HasAudioInputDevices() {
 }
 
 AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
-    : AudioManagerBase(audio_log_factory), has_keyboard_mic_(false) {
+    : AudioManagerBase(audio_log_factory),
+      has_keyboard_mic_(false),
+      beamforming_on_device_name_(BeamformingOnDeviceName()),
+      beamforming_off_device_name_(BeamformingOffDeviceName()) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 
@@ -115,14 +122,18 @@ void AudioManagerCras::GetAudioInputDeviceNames(
   // At least two mic positions indicates we have a beamforming capable mic
   // array. Add the virtual beamforming device to the list. When this device is
   // queried through GetInputStreamParameters, provide the cached mic positions.
-  if (mic_positions_.size() > 1)
-    AddBeamformingDevices(device_names);
-  else
+  if (mic_positions_.size() > 1) {
+    device_names->push_back(beamforming_on_device_name_);
+    device_names->push_back(beamforming_off_device_name_);
+  } else {
     AddDefaultDevice(device_names);
+  }
 }
 
 void AudioManagerCras::GetAudioOutputDeviceNames(
     AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+
   AddDefaultDevice(device_names);
 }
 
@@ -141,7 +152,7 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
                          buffer_size);
   if (has_keyboard_mic_)
     params.set_effects(AudioParameters::KEYBOARD_MIC);
-  if (device_id == kBeamformingOnUniqueId)
+  if (device_id == beamforming_on_device_name_.unique_id)
     params.set_mic_positions(mic_positions_);
   return params;
 }
