@@ -1,11 +1,9 @@
-Tests that stylesheet LiveLocations are updated when an SCSS file is added from the filesystem.
+Tests that stylesheet LiveLocations are updated when an SCSS file is loaded from the filesystem.
 
-Adding file system.
-Adding stylesheet header.
-Adding network resource.
-LiveLocation updated:
+Creating filesystem with the SCSS file...
+Loading raw css with mapping...
+Stylesheet was added, dumping location:
 http://127.0.0.1:8000/inspector/elements/styles/resources/update-locations-on-filesystem-scss-load.css:0:1
-Adding filesystem SCSS.
-LiveLocation updated:
-http://127.0.0.1:8000/inspector/elements/styles/resources/update-locations-on-filesystem-scss-load.scss:0:2
+Source map was bound to the file loaded from filesystem:
+http://127.0.0.1:8000/inspector/elements/styles/resources/source/update-locations-on-filesystem-scss-load.scss:0:2
 

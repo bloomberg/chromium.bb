@@ -4,53 +4,58 @@
 <script src="../../isolated-filesystem-test.js"></script>
 <script src="../../workspace-test.js"></script>
 <script>
+function loadCSS()
+{
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.type = "text/css";
+    link.href = "resources/update-locations-on-filesystem-scss-load.css";
+    document.head.appendChild(link);
+}
+
 function test()
 {
-    var target = InspectorTest.createWorkspaceWithTarget();
-    var manager = InspectorTest.createIsolatedFileSystemManager(InspectorTest.testWorkspace);
+    WebInspector.settings.createLocalSetting("fileSystemMapping", {}).set({
+        fileSystemPath: [
+            {
+                fileSystemPath: "/var/www",
+                urlPrefix: WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/source/"),
+                pathPrefix: "/"
+            }
+        ]
+    });
 
-    var fileSystem;
+    InspectorTest.addResult("Creating filesystem with the SCSS file...");
+    var fs = new InspectorTest.TestFileSystem("/var/www");
+    fs.root.addFile("update-locations-on-filesystem-scss-load.scss", ["a {", "  foo: bar;", "/* COMMENT */", "  font-size: 12px;", "}"].join("\n"));
+    fs.reportCreated();
+
+    fileSystemCreated();
+
+    function fileSystemCreated()
+    {
+        InspectorTest.addResult("Loading raw css with mapping...");
+        InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);
+        InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", afterBind);
+        InspectorTest.evaluateInPage("loadCSS()");
+    }
+
     var liveLocation;
-    var mockStyleSheetId = 1;
-    var fileSystemPath = "/var/www";
-    var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId(fileSystemPath);
 
-    function addMockHeader(sourceURL, sourceMapURL)
+    function styleSheetAdded(event)
     {
-        WebInspector.CSSStyleModel.fromTarget(target)._styleSheetAdded({
-            styleSheetId: mockStyleSheetId,
-            frameId: 1000,
-            sourceURL: sourceURL,
-            sourceMapURL: sourceMapURL,
-            origin: "regular",
-            title: "",
-            disabled: false,
-            isInline: false,
-            startLine: 0,
-            startColumn: 0
-        });
+        InspectorTest.addResult("Stylesheet was added, dumping location:");
+        var header = event.data;
+        var cssLocation = new WebInspector.CSSLocation(header.cssModel(), header.id, header.sourceURL, 0, 1);
+        liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {});
+        dumpLiveLocation();
     }
 
-    function uiSourceCodeAdded(uiSourceCode) { }
-
-    function dumpFileSystemUISourceCodesMappings()
+    function afterBind()
     {
-        var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
-        InspectorTest.addResult("UISourceCode uri to url mappings:");
-        for (var i = 0; i < uiSourceCodes.length; ++i) {
-            var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
-            InspectorTest.addResult("    " + uiSourceCodes[i].uri() + " -> " + networkURL);
-        }
-    }
-
-    function fileSystemAdded(event)
-    {
-        fileSystem = event.data;
-    }
-
-    function updateDelegate()
-    {
-        InspectorTest.addResult("LiveLocation updated:");
+        InspectorTest.addResult("Source map was bound to the file loaded from filesystem:");
+        dumpLiveLocation();
+        InspectorTest.completeTest();
     }
 
     function dumpLiveLocation()
@@ -60,60 +65,13 @@ function test()
             InspectorTest.addResult("Null uiLocation");
             return;
         }
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
+        var networkURL = WebInspector.networkMapping.networkURL(uiLocation.uiSourceCode);
         InspectorTest.addResult(networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
-    }
-
-    var resourcesURL = WebInspector.ParsedURL.completeURL(InspectorTest.resourceTreeModel.inspectedPageURL(), "resources/");
-    var namePrefix = "update-locations-on-filesystem-scss-load."
-    var cssURL = resourcesURL + namePrefix + "css";
-    var scssURL = resourcesURL + namePrefix + "scss";
-    var cssLocation = new WebInspector.CSSLocation(WebInspector.CSSStyleModel.fromTarget(target), mockStyleSheetId, cssURL, 0, 1);
-    var scssContent =
-        ["a {",
-        "  foo: bar;",
-        "/* COMMENT */",
-        "  font-size: 12px;",
-        "}"].join("\n");
-    var cssContent =
-        ["a {",
-        "  foo: bar;",
-        "  /* COMMENT */",
-        "  font-size: 12px; }"].join("\n");
-
-    var files = {};
-    files["/" + namePrefix + "css"] = cssContent;
-    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded, 4);
-    InspectorTest.addResult("Adding file system.");
-    manager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, fileSystemAdded, this);
-    manager.addMockFileSystem(fileSystemPath);
-    InspectorTest.testFileSystemMapping.addFileMapping(fileSystemPath, resourcesURL, "/");
-    manager.addFiles(fileSystemPath, files);
-
-    InspectorTest.addSniffer(WebInspector.SASSSourceMapping.prototype, "_bindUISourceCode", afterBind);
-
-    InspectorTest.addResult("Adding stylesheet header.");
-    addMockHeader(cssURL, cssURL + ".map");
-    InspectorTest.addResult("Adding network resource.");
-    InspectorTest.addMockUISourceCodeToWorkspace(cssURL, WebInspector.resourceTypes.Stylesheet, cssContent);
-    liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, updateDelegate);
-    dumpLiveLocation();
-
-    InspectorTest.addResult("Adding filesystem SCSS.");
-    var scssPath = namePrefix + "scss";
-    fileSystem.setFileContent(scssPath, scssContent, function() {});
-    InspectorTest.addMockUISourceCodeToWorkspace(scssURL, WebInspector.resourceTypes.Stylesheet, scssContent);
-    manager.fileSystemWorkspaceBinding._boundFileSystems.get(fileSystemPath)._addFile(scssPath);
-
-    function afterBind()
-    {
-        dumpLiveLocation();
-        InspectorTest.completeTest();
     }
 };
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests that stylesheet LiveLocations are updated when an SCSS file is added from the filesystem.</p>
+<p>Tests that stylesheet LiveLocations are updated when an SCSS file is loaded from the filesystem.</p>
 </body>
 </html>
