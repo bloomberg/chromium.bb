@@ -274,7 +274,7 @@
       'browser/ui/autofill/test_popup_controller_common.cc',
       'browser/ui/autofill/test_popup_controller_common.h',
       'browser/ui/bookmarks/bookmark_editor_unittest.cc',
-      'browser/ui/bookmarks/bookmark_ui_utils_unittest.cc',
+      'browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc',
       'browser/ui/bookmarks/recently_used_folders_combo_model_unittest.cc',
       'browser/ui/chrome_select_file_policy_unittest.cc',
       # It is safe to list */cocoa/* files in the "common" file list
@@ -1822,6 +1822,8 @@
         'test/base/scoped_bundle_swizzler_mac.mm',
         'test/base/scoped_testing_local_state.cc',
         'test/base/scoped_testing_local_state.h',
+        'test/base/search_test_utils.cc',
+        'test/base/search_test_utils.h',
         'test/base/test_browser_window.cc',
         'test/base/test_browser_window.h',
         'test/base/test_launcher_utils.cc',
@@ -1894,6 +1896,8 @@
         }],
         ['OS=="android"', {
           'sources!': [
+            'browser/password_manager/password_manager_test_base.cc',
+            'browser/password_manager/password_manager_test_base.h',
             'browser/sessions/session_service_test_helper.cc',
             'browser/sessions/session_service_test_helper.h',
             'browser/ui/exclusive_access/fullscreen_controller_state_test.cc',
@@ -1909,6 +1913,8 @@
             'test/base/in_process_browser_test.h',
             'test/base/test_browser_window.cc',
             'test/base/test_browser_window.h',
+            'test/base/ui_test_utils.cc',
+            'test/base/ui_test_utils.h',
           ],
         }],
         ['chromeos==1', {
@@ -2638,6 +2644,7 @@
         ['OS=="android" or OS=="ios"', {
           'sources!': [
             'browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc',
+            'browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc',
             'browser/ui/sync/sync_promo_ui_unittest.cc',
           ],
         }, { # 'OS!="android" and OS!="ios"'

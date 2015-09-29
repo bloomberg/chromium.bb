@@ -400,7 +400,7 @@ void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
   if (favicon.empty())
     return;
 
-  JNIEnv *env = base::android::AttachCurrentThread();
+  JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(),
                               gfx::ConvertToJavaBitmap(&favicon).obj());
 }
@@ -568,7 +568,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
   if (prerender_manager) {
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
-    chrome::NavigateParams params(NULL, web_contents());
+    chrome::NavigateParams params(web_contents());
     InstantSearchPrerenderer* prerenderer =
         InstantSearchPrerenderer::GetForProfile(GetProfile());
     if (prerenderer) {
@@ -683,7 +683,6 @@ void TabAndroid::SetPendingPrint() {
 
 ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env,
                                                    jobject obj) {
-
   ScopedJavaLocalRef<jobject> bitmap;
   favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());

@@ -51,6 +51,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -455,7 +456,7 @@ bool SyncTest::SetupClients() {
         BookmarkModelFactory::GetForProfile(verifier()));
     ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
         verifier(), ServiceAccessType::EXPLICIT_ACCESS));
-    ui_test_utils::WaitForTemplateURLServiceToLoad(
+    search_test_utils::WaitForTemplateURLServiceToLoad(
         TemplateURLServiceFactory::GetForProfile(verifier()));
   }
   // Error cases are all handled by LOG(FATAL) messages. So there is not really
@@ -519,7 +520,7 @@ void SyncTest::InitializeInstance(int index) {
       BookmarkModelFactory::GetForProfile(GetProfile(index)));
   ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
       GetProfile(index), ServiceAccessType::EXPLICIT_ACCESS));
-  ui_test_utils::WaitForTemplateURLServiceToLoad(
+  search_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(GetProfile(index)));
 }
 

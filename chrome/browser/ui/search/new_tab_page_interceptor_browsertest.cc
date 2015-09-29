@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -48,7 +49,7 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
   void ChangeDefaultSearchProvider(const char* new_tab_path) {
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
     UIThreadSearchTermsData::SetGoogleBaseURL("https://mock.http/");
     std::string base_url("{google:baseURL}");
     TemplateURLData data;

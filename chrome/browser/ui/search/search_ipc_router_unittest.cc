@@ -24,7 +24,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_controller.h"
@@ -105,7 +105,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
         &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
-    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));

@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/toolbar/wrench_menu_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -128,7 +129,7 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
   // When |browser| closes a BrowsingDataRemover will be created and executed.
   // It needs a loaded TemplateUrlService or else it hangs on to a
   // CallbackList::Subscription forever.
-  ui_test_utils::WaitForTemplateURLServiceToLoad(
+  search_test_utils::WaitForTemplateURLServiceToLoad(
       TemplateURLServiceFactory::GetForProfile(guest));
 
   return browser;

@@ -11,8 +11,8 @@
 #include "chrome/browser/autocomplete/shortcuts_backend_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_profile.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/shortcuts_database.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
@@ -126,7 +126,7 @@ void ShortcutsBackendTest::SetUp() {
       &profile_, &TemplateURLServiceFactory::BuildInstanceFor);
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(&profile_);
-  ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+  search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 }
 
 void ShortcutsBackendTest::TearDown() {

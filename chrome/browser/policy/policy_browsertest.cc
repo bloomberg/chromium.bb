@@ -85,6 +85,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -1016,7 +1017,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  search_test_utils::WaitForTemplateURLServiceToLoad(service);
   TemplateURL* default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
@@ -1217,7 +1218,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  search_test_utils::WaitForTemplateURLServiceToLoad(service);
   TemplateURL* default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
   EXPECT_NE(kKeyword, default_search->keyword());
@@ -4004,6 +4005,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(display_manager->unified_desktop_enabled());
 }
-#endif // defined(OS_CHROMEOS)
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace policy

@@ -399,108 +399,10 @@ bool SwapInPrerender(const GURL& url, chrome::NavigateParams* params) {
       prerender_manager->MaybeUsePrerenderedPage(url, params);
 }
 
-chrome::HostDesktopType GetHostDesktop(Browser* browser) {
-  if (browser)
-    return browser->host_desktop_type();
-  return chrome::GetActiveDesktop();
-}
-
 }  // namespace
 
+
 namespace chrome {
-
-NavigateParams::NavigateParams(Browser* a_browser,
-                               const GURL& a_url,
-                               ui::PageTransition a_transition)
-    : url(a_url),
-      frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(NULL),
-      source_contents(NULL),
-      disposition(CURRENT_TAB),
-      trusted_source(false),
-      transition(a_transition),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(NO_ACTION),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      initiating_profile(NULL),
-      host_desktop_type(GetHostDesktop(a_browser)),
-      should_replace_current_entry(false),
-      created_with_opener(false) {
-}
-
-NavigateParams::NavigateParams(Browser* a_browser,
-                               WebContents* a_target_contents)
-    : frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(a_target_contents),
-      source_contents(NULL),
-      disposition(CURRENT_TAB),
-      trusted_source(false),
-      transition(ui::PAGE_TRANSITION_LINK),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(NO_ACTION),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      browser(a_browser),
-      initiating_profile(NULL),
-      host_desktop_type(GetHostDesktop(a_browser)),
-      should_replace_current_entry(false),
-      created_with_opener(false) {
-}
-
-NavigateParams::NavigateParams(Profile* a_profile,
-                               const GURL& a_url,
-                               ui::PageTransition a_transition)
-    : url(a_url),
-      frame_tree_node_id(-1),
-      uses_post(false),
-      target_contents(NULL),
-      source_contents(NULL),
-      disposition(NEW_FOREGROUND_TAB),
-      trusted_source(false),
-      transition(a_transition),
-      is_renderer_initiated(false),
-      tabstrip_index(-1),
-      tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(SHOW_WINDOW),
-      user_gesture(true),
-      path_behavior(RESPECT),
-      ref_behavior(IGNORE_REF),
-      browser(NULL),
-      initiating_profile(a_profile),
-      host_desktop_type(chrome::GetActiveDesktop()),
-      should_replace_current_entry(false),
-      created_with_opener(false) {
-}
-
-NavigateParams::~NavigateParams() {}
-
-void FillNavigateParamsFromOpenURLParams(chrome::NavigateParams* nav_params,
-                                         const content::OpenURLParams& params) {
-  nav_params->referrer = params.referrer;
-  nav_params->source_site_instance = params.source_site_instance;
-  nav_params->frame_tree_node_id = params.frame_tree_node_id;
-  nav_params->redirect_chain = params.redirect_chain;
-  nav_params->extra_headers = params.extra_headers;
-  nav_params->disposition = params.disposition;
-  nav_params->trusted_source = false;
-  nav_params->is_renderer_initiated = params.is_renderer_initiated;
-  nav_params->transferred_global_request_id =
-      params.transferred_global_request_id;
-  nav_params->should_replace_current_entry =
-      params.should_replace_current_entry;
-  nav_params->uses_post = params.uses_post;
-  nav_params->browser_initiated_post_data = params.browser_initiated_post_data;
-}
 
 void Navigate(NavigateParams* params) {
   Browser* source_browser = params->browser;

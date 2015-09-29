@@ -24,6 +24,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/app_modal/javascript_app_modal_dialog.h"
@@ -422,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
-  ui_test_utils::WaitForTemplateURLServiceToLoad(service);
+  search_test_utils::WaitForTemplateURLServiceToLoad(service);
   LocationBar* location_bar = browser()->window()->GetLocationBar();
   ui_test_utils::SendToOmniboxAndSubmit(location_bar, search_string);
   OmniboxEditModel* model = location_bar->GetOmniboxView()->model();

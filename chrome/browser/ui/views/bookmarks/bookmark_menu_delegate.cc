@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/bookmarks/bookmark_drag_drop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -399,7 +400,7 @@ void BookmarkMenuDelegate::WillRemoveBookmarks(
   // to support different parents, but this would need to prune any nodes whose
   // parent has been removed. As all nodes currently have the same parent, there
   // is the DCHECK.
-  DCHECK(changed_parent_menus.size() <= 1);
+  DCHECK_LE(changed_parent_menus.size(), 1U);
 
   // Remove any descendants of the removed nodes in |node_to_menu_map_|.
   for (NodeToMenuMap::iterator i(node_to_menu_map_.begin());

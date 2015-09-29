@@ -18,7 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/search_test_utils.h"
 #include "components/google/core/browser/google_switches.h"
 #include "components/search/search.h"
 #include "components/search_engines/search_engines_switches.h"
@@ -50,7 +50,7 @@ class SearchTest : public BrowserWithTestWindowTest {
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(profile());
-    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
     SetSearchProvider(true, false);
   }
 

@@ -1106,6 +1106,8 @@ source_set("test_support") {
 
   if (is_android) {
     sources -= [
+      "password_manager/password_manager_test_base.cc",
+      "password_manager/password_manager_test_base.h",
       "sessions/session_service_test_helper.cc",
       "sessions/session_service_test_helper.h",
       "ui/webui/signin/login_ui_test_utils.cc",

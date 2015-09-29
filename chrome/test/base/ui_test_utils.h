@@ -29,7 +29,6 @@
 class Browser;
 class LocationBar;
 class Profile;
-class TemplateURLService;
 
 namespace app_modal {
 class AppModalDialog;
@@ -143,9 +142,6 @@ int FindInPage(content::WebContents* tab,
                int* ordinal,
                gfx::Rect* selection_rect);
 
-// Blocks until |service| finishes loading.
-void WaitForTemplateURLServiceToLoad(TemplateURLService* service);
-
 // Blocks until the |history_service|'s history finishes loading.
 void WaitForHistoryToLoad(history::HistoryService* history_service);
 
@@ -157,7 +153,7 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar,
                             const std::string& input);
 
 // Gets the first browser that is not in the specified set.
-Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers);
+Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers);
 
 // Gets the size and value of the cookie string for |url| in the given tab.
 // Can be called from any thread.

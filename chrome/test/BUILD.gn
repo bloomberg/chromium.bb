@@ -56,6 +56,8 @@ source_set("test_support") {
     "base/scoped_bundle_swizzler_mac.mm",
     "base/scoped_testing_local_state.cc",
     "base/scoped_testing_local_state.h",
+    "base/search_test_utils.cc",
+    "base/search_test_utils.h",
     "base/test_browser_window.cc",
     "base/test_browser_window.h",
     "base/test_launcher_utils.cc",
@@ -171,6 +173,8 @@ source_set("test_support") {
       "base/in_process_browser_test.h",
       "base/test_browser_window.cc",
       "base/test_browser_window.h",
+      "base/ui_test_utils.cc",
+      "base/ui_test_utils.h",
     ]
   }
 
@@ -1872,6 +1876,7 @@ if (!is_android) {
     if (is_android || is_ios) {
       sources -= [
         "../browser/devtools/device/webrtc/devtools_bridge_instances_request_unittest.cc",
+        "../browser/ui/bookmarks/bookmark_ui_utils_desktop_unittest.cc",
         "../browser/ui/sync/sync_promo_ui_unittest.cc",
       ]
     } else {

@@ -47,7 +47,6 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/omnibox_view.h"
-#include "components/search_engines/template_url_service.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/geolocation_provider.h"
@@ -76,7 +75,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #endif
 
-using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
@@ -148,7 +146,6 @@ void NavigateToURL(chrome::NavigateParams* params) {
   chrome::Navigate(params);
   content::WaitForLoadStop(params->target_contents);
 }
-
 
 void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   chrome::NavigateParams params(browser, url,
@@ -326,20 +323,6 @@ int FindInPage(WebContents* tab,
   return observer.number_of_matches();
 }
 
-void WaitForTemplateURLServiceToLoad(TemplateURLService* service) {
-  if (service->loaded())
-    return;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner =
-      new content::MessageLoopRunner;
-  scoped_ptr<TemplateURLService::Subscription> subscription =
-      service->RegisterOnLoadedCallback(
-          message_loop_runner->QuitClosure());
-  service->Load();
-  message_loop_runner->Run();
-
-  ASSERT_TRUE(service->loaded());
-}
-
 void DownloadURL(Browser* browser, const GURL& download_url) {
   base::ScopedTempDir downloads_directory;
   ASSERT_TRUE(downloads_directory.CreateUniqueTempDir());
@@ -371,12 +354,12 @@ void SendToOmniboxAndSubmit(LocationBar* location_bar,
   }
 }
 
-Browser* GetBrowserNotInSet(std::set<Browser*> excluded_browsers) {
+Browser* GetBrowserNotInSet(const std::set<Browser*>& excluded_browsers) {
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     if (excluded_browsers.find(*it) == excluded_browsers.end())
       return *it;
   }
-  return NULL;
+  return nullptr;
 }
 
 namespace {

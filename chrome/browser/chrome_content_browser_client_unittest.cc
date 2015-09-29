@@ -10,10 +10,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
-#include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
@@ -26,6 +22,13 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/search_test_utils.h"
+#endif
 
 using ChromeContentBrowserClientTest = testing::Test;
 
@@ -85,7 +88,7 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
   EXPECT_EQ(previous_count + 2, browser()->tab_strip_model()->count());
 }
 
-#endif // !defined(OS_ANDROID) && !defined(OS_IOS)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(ENABLE_WEBRTC)
 
@@ -112,6 +115,7 @@ class DisableWebRtcEncryptionFlagTest : public testing::Test {
   base::CommandLine from_command_line_;
   base::CommandLine to_command_line_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DisableWebRtcEncryptionFlagTest);
 };
 
@@ -335,7 +339,7 @@ class InstantNTPURLRewriteTest : public BrowserWithTestWindowTest {
         profile(), &TemplateURLServiceFactory::BuildInstanceFor);
     TemplateURLService* template_url_service =
         TemplateURLServiceFactory::GetForProfile(browser()->profile());
-    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+    search_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
 
     TemplateURLData data;
     data.SetShortName(base::ASCIIToUTF16("foo.com"));
