@@ -110,4 +110,9 @@ const char kOmniboxGeolocationAuthorizationState[] =
 const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
     "ios.omnibox.geolocation_last_authorization_alert_version";
 
+// Integer which contains the timestamp at which the "Rate This App" dialog was
+// last shown.
+const char kRateThisAppDialogLastShownTime[] =
+    "ios.ratethisapp.dialog_last_shown_time";
+
 }  // namespace prefs

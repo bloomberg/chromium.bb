@@ -55,6 +55,7 @@
 #define IDC_CLOSE_SETTINGS                             40944
 #define IDC_SHOW_SAVE_PASSWORDS_SETTINGS               40945
 #define IDC_READER_MODE                                40947
+#define IDC_RATE_THIS_APP                              40948
 // Do not use IDs above 40999 while the iOS build still depends on //chrome, to
 // avoid conflicts.
 // TODO(droger): Remove this comment once iOS no longer depends on //chrome.

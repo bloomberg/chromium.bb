@@ -103,6 +103,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
       ios::prefs::kDefaultCharset,
       l10n_util::GetStringUTF8(IDS_IOS_DEFAULT_ENCODING),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterInt64Pref(prefs::kRateThisAppDialogLastShownTime, 0,
+                              user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
   // TODO(sdefresne): those preferences are not used on iOS but are required to
   // be able to run unit_tests until componentization of chrome/browser/prefs
