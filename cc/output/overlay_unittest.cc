@@ -60,9 +60,9 @@ void MailboxReleased(unsigned sync_point,
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(scoped_ptr<OverlayProcessor::Strategy>(
+    strategies->push_back(make_scoped_ptr(
         new OverlayStrategyCommon(this, new OverlayStrategySingleOnTop)));
-    strategies->push_back(scoped_ptr<OverlayProcessor::Strategy>(
+    strategies->push_back(make_scoped_ptr(
         new OverlayStrategyCommon(this, new OverlayStrategyUnderlay)));
   }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
@@ -88,33 +88,31 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
   }
 };
 
+class SingleOnTopOverlayValidator : public SingleOverlayValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    strategies->push_back(make_scoped_ptr(
+        new OverlayStrategyCommon(this, new OverlayStrategySingleOnTop)));
+  }
+};
+
+class UnderlayOverlayValidator : public SingleOverlayValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    strategies->push_back(make_scoped_ptr(
+        new OverlayStrategyCommon(this, new OverlayStrategyUnderlay)));
+  }
+};
+
 class SandwichOverlayValidator : public OverlayCandidateValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
-    strategies->push_back(scoped_ptr<OverlayProcessor::Strategy>(
+    strategies->push_back(make_scoped_ptr(
         new OverlayStrategyCommon(this, new OverlayStrategySandwich)));
   }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
     for (OverlayCandidate& candidate : *surfaces)
       candidate.overlay_handled = true;
-  }
-};
-
-template <typename OverlayStrategyType>
-class SingleOverlayProcessor : public OverlayProcessor {
- public:
-  explicit SingleOverlayProcessor(OutputSurface* surface)
-      : OverlayProcessor(surface) {
-    EXPECT_EQ(surface, surface_);
-  }
-
-  // Virtual to allow testing different strategies.
-  void Initialize() override {
-    OverlayCandidateValidator* validator =
-        surface_->GetOverlayCandidateValidator();
-    ASSERT_TRUE(validator != NULL);
-    strategies_.push_back(scoped_ptr<Strategy>(
-        new OverlayStrategyCommon(validator, new OverlayStrategyType)));
   }
 };
 
@@ -147,11 +145,8 @@ class OverlayOutputSurface : public OutputSurface {
   // OutputSurface implementation
   void SwapBuffers(CompositorFrame* frame) override;
 
-  void InitWithSingleOverlayValidator() {
-    overlay_candidate_validator_.reset(new SingleOverlayValidator);
-  }
-  void InitWithSandwichOverlayValidator() {
-    overlay_candidate_validator_.reset(new SandwichOverlayValidator);
+  void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
+    overlay_candidate_validator_.reset(validator);
   }
 
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
@@ -319,72 +314,15 @@ static void CompareRenderPassLists(const RenderPassList& expected_list,
   }
 }
 
-TEST(OverlayTest, NoOverlaysByDefault) {
-  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-  OverlayOutputSurface output_surface(provider);
-  EXPECT_EQ(NULL, output_surface.GetOverlayCandidateValidator());
-
-  output_surface.InitWithSingleOverlayValidator();
-  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
-}
-
-TEST(OverlayTest, OverlaysProcessorHasStrategy) {
-  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-  OverlayOutputSurface output_surface(provider);
-  FakeOutputSurfaceClient client;
-  EXPECT_TRUE(output_surface.BindToClient(&client));
-  output_surface.InitWithSingleOverlayValidator();
-  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
-
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
-      new TestSharedBitmapManager());
-  scoped_ptr<ResourceProvider> resource_provider = FakeResourceProvider::Create(
-      &output_surface, shared_bitmap_manager.get());
-
-  scoped_ptr<DefaultOverlayProcessor> overlay_processor(
-      new DefaultOverlayProcessor(&output_surface));
-  overlay_processor->Initialize();
-  EXPECT_GE(2U, overlay_processor->GetStrategyCount());
-}
-
-template <typename OverlayStrategyType>
+template <typename OverlayCandidateValidatorType>
 class OverlayTest : public testing::Test {
  protected:
   void SetUp() override {
     provider_ = TestContextProvider::Create();
     output_surface_.reset(new OverlayOutputSurface(provider_));
     EXPECT_TRUE(output_surface_->BindToClient(&client_));
-    output_surface_->InitWithSingleOverlayValidator();
-    EXPECT_TRUE(output_surface_->GetOverlayCandidateValidator() != NULL);
-
-    shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ = FakeResourceProvider::Create(
-        output_surface_.get(), shared_bitmap_manager_.get());
-
-    overlay_processor_.reset(
-        new SingleOverlayProcessor<OverlayStrategyType>(output_surface_.get()));
-    overlay_processor_->Initialize();
-  }
-
-  scoped_refptr<TestContextProvider> provider_;
-  scoped_ptr<OverlayOutputSurface> output_surface_;
-  FakeOutputSurfaceClient client_;
-  scoped_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  scoped_ptr<ResourceProvider> resource_provider_;
-  scoped_ptr<SingleOverlayProcessor<OverlayStrategyType>> overlay_processor_;
-};
-
-typedef OverlayTest<OverlayStrategySingleOnTop> SingleOverlayOnTopTest;
-typedef OverlayTest<OverlayStrategyUnderlay> UnderlayTest;
-
-class SandwichTest : public testing::Test {
- protected:
-  void SetUp() override {
-    provider_ = TestContextProvider::Create();
-    output_surface_.reset(new OverlayOutputSurface(provider_));
-    EXPECT_TRUE(output_surface_->BindToClient(&client_));
-    output_surface_->InitWithSandwichOverlayValidator();
-    EXPECT_TRUE(output_surface_->GetOverlayCandidateValidator() != NULL);
+    output_surface_->SetOverlayCandidateValidator(
+        new OverlayCandidateValidatorType);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create(
@@ -401,6 +339,37 @@ class SandwichTest : public testing::Test {
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<OverlayProcessor> overlay_processor_;
 };
+
+typedef OverlayTest<SingleOnTopOverlayValidator> SingleOverlayOnTopTest;
+typedef OverlayTest<UnderlayOverlayValidator> UnderlayTest;
+typedef OverlayTest<SandwichOverlayValidator> SandwichTest;
+
+TEST(OverlayTest, NoOverlaysByDefault) {
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+  OverlayOutputSurface output_surface(provider);
+  EXPECT_EQ(NULL, output_surface.GetOverlayCandidateValidator());
+
+  output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
+  EXPECT_TRUE(output_surface.GetOverlayCandidateValidator() != NULL);
+}
+
+TEST(OverlayTest, OverlaysProcessorHasStrategy) {
+  scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
+  OverlayOutputSurface output_surface(provider);
+  FakeOutputSurfaceClient client;
+  EXPECT_TRUE(output_surface.BindToClient(&client));
+  output_surface.SetOverlayCandidateValidator(new SingleOverlayValidator);
+
+  scoped_ptr<SharedBitmapManager> shared_bitmap_manager(
+      new TestSharedBitmapManager());
+  scoped_ptr<ResourceProvider> resource_provider = FakeResourceProvider::Create(
+      &output_surface, shared_bitmap_manager.get());
+
+  scoped_ptr<DefaultOverlayProcessor> overlay_processor(
+      new DefaultOverlayProcessor(&output_surface));
+  overlay_processor->Initialize();
+  EXPECT_GE(2U, overlay_processor->GetStrategyCount());
+}
 
 TEST_F(SandwichTest, SuccessfulSingleOverlay) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
@@ -1274,7 +1243,7 @@ class GLRendererWithOverlaysTest : public testing::Test {
 
   void Init(bool use_validator) {
     if (use_validator)
-      output_surface_->InitWithSingleOverlayValidator();
+      output_surface_->SetOverlayCandidateValidator(new SingleOverlayValidator);
 
     renderer_ =
         make_scoped_ptr(new OverlayInfoRendererGL(&renderer_client_,
