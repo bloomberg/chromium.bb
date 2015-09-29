@@ -211,4 +211,8 @@ ContentRendererClient::CreateAppBannerClient(RenderFrame* render_frame) {
   return nullptr;
 }
 
+bool ContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
+  return true;
+}
+
 }  // namespace content

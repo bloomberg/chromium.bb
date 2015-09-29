@@ -160,6 +160,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       const GURL& url) override;
+  bool ShouldEnforceWebRTCRoutingPreferences() override;
 #if defined(ENABLE_EXTENSIONS)
   // Takes ownership.
   void SetExtensionDispatcherForTest(

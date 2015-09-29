@@ -13,8 +13,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/media/media_stream_messages.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_processor.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -451,15 +453,20 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
     }
   }
 
+  bool enforce_preferences =
+      GetContentClient()->renderer()->ShouldEnforceWebRTCRoutingPreferences();
+
   // |media_permission| will be called to check mic/camera permission. If at
   // least one of them is granted, P2PPortAllocator is allowed to gather local
-  // host IP addresses as ICE candidates.
-  // If the experiment is not enabled, turn off the permission check by
-  // passing nullptr to FilteringNetworkManager constructor.
+  // host IP addresses as ICE candidates. |media_permission| could be nullptr,
+  // which means the permission will be granted automatically. This could be the
+  // case when either the experiment is not enabled or the preference is not
+  // enforced.
   scoped_ptr<media::MediaPermission> media_permission;
   const std::string group_name =
       base::FieldTrialList::FindFullName("WebRTC-LocalIPPermissionCheck");
-  if (StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE) &&
+  if (enforce_preferences &&
+      StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE) &&
       port_config.enable_multiple_routes) {
     RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(web_frame);
     if (render_frame) {
@@ -467,6 +474,11 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
           chrome_worker_thread_.task_runner());
       DCHECK(media_permission);
     }
+  }
+
+  if (!enforce_preferences) {
+    port_config.enable_multiple_routes = true;
+    port_config.enable_nonproxied_udp = true;
   }
 
   const GURL& requesting_origin =

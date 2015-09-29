@@ -1670,3 +1670,15 @@ void ChromeContentRendererClient::WillDestroyServiceWorkerContextOnWorkerThread(
                                                                         url);
 #endif
 }
+
+// If we're in an extension, there is no need disabling multiple routes as
+// chrome.system.network.getNetworkInterfaces provides the same
+// information. Also, the enforcement of sending and binding UDP is already done
+// by chrome extension permission model.
+bool ChromeContentRendererClient::ShouldEnforceWebRTCRoutingPreferences() {
+#if defined(ENABLE_EXTENSIONS)
+  return !IsStandaloneExtensionProcess();
+#else
+  return true;
+#endif
+}

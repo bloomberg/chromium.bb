@@ -86,7 +86,7 @@ void FilteringNetworkManager::GetNetworks(NetworkList* networks) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   networks->clear();
 
-  if (GetIPPermissionStatus() == PERMISSION_GRANTED)
+  if (enumeration_permission() == ENUMERATION_ALLOWED)
     network_manager_->GetNetworks(networks);
 }
 
@@ -106,7 +106,7 @@ void FilteringNetworkManager::OnPermissionStatus(bool granted) {
 void FilteringNetworkManager::OnNetworksChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
   received_networks_changed_since_last_firing_ = true;
-  if (GetIPPermissionStatus() == PERMISSION_GRANTED)
+  if (enumeration_permission() == ENUMERATION_ALLOWED)
     FireEventIfStarted();
 }
 
@@ -122,8 +122,10 @@ void FilteringNetworkManager::ReportMetrics(bool report_start_latency) {
 }
 
 IPPermissionStatus FilteringNetworkManager::GetIPPermissionStatus() const {
-  if (enumeration_permission() == ENUMERATION_ALLOWED)
-    return PERMISSION_GRANTED;
+  if (enumeration_permission() == ENUMERATION_ALLOWED) {
+    return media_permission_ ? PERMISSION_GRANTED_WITH_CHECKING
+                             : PERMISSION_GRANTED_WITHOUT_CHECKING;
+  }
 
   if (!pending_permission_checks_ &&
       enumeration_permission() == ENUMERATION_BLOCKED) {
@@ -141,7 +143,7 @@ bool FilteringNetworkManager::should_fire_event() const {
   bool permission_blocked_but_never_fired =
       (GetIPPermissionStatus() == PERMISSION_DENIED) && !sent_first_update_;
   bool permission_allowed_pending_networks_update =
-      (GetIPPermissionStatus() == PERMISSION_GRANTED) &&
+      enumeration_permission() == ENUMERATION_ALLOWED &&
       received_networks_changed_since_last_firing_;
 
   return permission_blocked_but_never_fired ||

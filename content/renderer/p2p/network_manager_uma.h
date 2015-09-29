@@ -13,10 +13,13 @@ namespace content {
 
 // Need to be kept the same order as in histograms.xml
 enum IPPermissionStatus {
-  PERMISSION_NOT_REQUESTED,  // Multiple routes is not requested.
-  PERMISSION_DENIED,         // Requested but denied.
-  PERMISSION_GRANTED,        // Requested and granted.
   PERMISSION_UNKNOWN,  // Requested but have never fired SignalNetworksChanged.
+  PERMISSION_NOT_REQUESTED,             // Multiple routes is not requested.
+  PERMISSION_DENIED,                    // Requested but denied.
+  PERMISSION_GRANTED_WITH_CHECKING,     // Requested and granted after checking
+                                        // mic/camera permission.
+  PERMISSION_GRANTED_WITHOUT_CHECKING,  // Requested and granted without
+                                        // checking mic/camera permission.
   PERMISSION_MAX,
 };
 

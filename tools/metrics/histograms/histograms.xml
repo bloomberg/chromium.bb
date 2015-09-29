@@ -62228,10 +62228,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </enum>
 
 <enum name="IPPermissionStatus" type="int">
-  <int value="0" label="Not requested"/>
-  <int value="1" label="Requested but denied"/>
-  <int value="2" label="Requested and granted"/>
-  <int value="3" label="Unknown"/>
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Not requested"/>
+  <int value="2" label="Requested but denied"/>
+  <int value="3"
+      label="Requested and granted after checking mic/camera permission"/>
+  <int value="4" label="Requested and granted automatically"/>
 </enum>
 
 <enum name="IPv6ConnectivityStatus" type="int">
