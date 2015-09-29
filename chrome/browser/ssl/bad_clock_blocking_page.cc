@@ -183,17 +183,16 @@ BadClockBlockingPage::BadClockBlockingPage(
       time_triggered_(time_triggered) {
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = kMetricsName;
-  scoped_ptr<ChromeMetricsHelper> chrome_metrics_helper(new ChromeMetricsHelper(
-      web_contents, request_url, reporting_info, kMetricsName));
-  chrome_metrics_helper->StartRecordingCaptivePortalMetrics(false);
-  set_metrics_helper(chrome_metrics_helper.Pass());
+  set_metrics_helper(new ChromeMetricsHelper(web_contents, request_url,
+                                             reporting_info, kMetricsName));
   metrics_helper()->RecordUserInteraction(
       security_interstitials::MetricsHelper::TOTAL_VISITS);
 
   // TODO(felt): Separate the clock statistics from the main ssl statistics.
-  SSLErrorClassification classifier(time_triggered_, request_url, cert_error_,
-                                    *ssl_info_.cert.get());
-  classifier.RecordUMAStatistics(false);
+  scoped_ptr<SSLErrorClassification> classifier(
+      new SSLErrorClassification(web_contents, time_triggered_, request_url,
+                                 cert_error_, *ssl_info_.cert.get()));
+  classifier->RecordUMAStatistics(false);
 }
 
 bool BadClockBlockingPage::ShouldCreateNewNavigation() const {
@@ -206,7 +205,6 @@ InterstitialPageDelegate::TypeID BadClockBlockingPage::GetTypeForTesting()
 }
 
 BadClockBlockingPage::~BadClockBlockingPage() {
-  metrics_helper()->RecordShutdownMetrics();
   if (!callback_.is_null()) {
     // Deny when the page is closed.
     NotifyDenyCertificate();

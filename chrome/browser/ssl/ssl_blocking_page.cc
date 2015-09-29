@@ -143,10 +143,8 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
   reporting_info.metric_prefix = GetUmaHistogramPrefix();
   reporting_info.rappor_prefix = kSSLRapporPrefix;
   reporting_info.rappor_report_type = rappor::UMA_RAPPOR_TYPE;
-  scoped_ptr<ChromeMetricsHelper> chrome_metrics_helper(new ChromeMetricsHelper(
+  set_metrics_helper(new ChromeMetricsHelper(
       web_contents, request_url, reporting_info, GetSamplingEventName()));
-  chrome_metrics_helper->StartRecordingCaptivePortalMetrics(overridable_);
-  set_metrics_helper(chrome_metrics_helper.Pass());
   metrics_helper()->RecordUserDecision(
       security_interstitials::MetricsHelper::SHOW);
   metrics_helper()->RecordUserInteraction(
@@ -157,9 +155,13 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
       certificate_reporting::ErrorReport::INTERSTITIAL_SSL, overridable_,
       metrics_helper()));
 
-  SSLErrorClassification error_classification(
-      time_triggered_, request_url, cert_error_, *ssl_info_.cert.get());
-  error_classification.RecordUMAStatistics(overridable_);
+  ssl_error_classification_.reset(new SSLErrorClassification(
+      web_contents,
+      time_triggered_,
+      request_url,
+      cert_error_,
+      *ssl_info_.cert.get()));
+  ssl_error_classification_->RecordUMAStatistics(overridable_);
 
   // Creating an interstitial without showing (e.g. from chrome://interstitials)
   // it leaks memory, so don't create it here.
@@ -174,7 +176,11 @@ InterstitialPageDelegate::TypeID SSLBlockingPage::GetTypeForTesting() const {
 }
 
 SSLBlockingPage::~SSLBlockingPage() {
-  metrics_helper()->RecordShutdownMetrics();
+#if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  // Captive portal detection results can arrive anytime during the interstitial
+  // is being displayed, so record it when the interstitial is going away.
+  ssl_error_classification_->RecordCaptivePortalUMAStatistics(overridable_);
+#endif
   if (!callback_.is_null()) {
     // The page is closed without the user having chosen what to do, default to
     // deny.

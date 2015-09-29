@@ -30,6 +30,7 @@ class PolicyTest_SSLErrorOverridingDisallowed_Test;
 }
 
 class CertReportHelper;
+class SSLErrorClassification;
 
 // This class is responsible for showing/hiding the interstitial page that is
 // shown when a certificate error happens.
@@ -120,6 +121,7 @@ class SSLBlockingPage : public SecurityInterstitialPage {
   // Did the user previously allow a bad certificate but the decision has now
   // expired?
   const bool expired_but_previously_allowed_;
+  scoped_ptr<SSLErrorClassification> ssl_error_classification_;
 
   // The time at which the interstitial was triggered. The interstitial
   // calculates all times relative to this.
