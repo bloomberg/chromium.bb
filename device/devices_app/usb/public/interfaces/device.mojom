@@ -115,6 +115,9 @@ enum TransferStatus {
   // The transfer failed due to a non-specific error.
   ERROR,
 
+  // The transfer was not allowed.
+  PERMISSION_DENIED,
+
   // The transfer timed out.
   TIMEOUT,
 

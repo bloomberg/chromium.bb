@@ -14,11 +14,11 @@
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_impl.h"
 #include "device/devices_app/usb/device_manager_impl.h"
+#include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "device/usb/mock_usb_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 
 using ::testing::Invoke;
 using ::testing::_;
@@ -27,26 +27,6 @@ namespace device {
 namespace usb {
 
 namespace {
-
-class TestPermissionProvider : public PermissionProvider {
- public:
-  TestPermissionProvider(mojo::InterfaceRequest<PermissionProvider> request)
-      : binding_(this, request.Pass()) {}
-  ~TestPermissionProvider() override {}
-
-  void HasDevicePermission(
-      mojo::Array<DeviceInfoPtr> requested_devices,
-      const HasDevicePermissionCallback& callback) override {
-    // Permission to access all devices granted.
-    mojo::Array<mojo::String> allowed_guids(requested_devices.size());
-    for (size_t i = 0; i < requested_devices.size(); ++i)
-      allowed_guids[i] = requested_devices[i]->guid;
-    callback.Run(allowed_guids.Pass());
-  }
-
- private:
-  mojo::StrongBinding<PermissionProvider> binding_;
-};
 
 class TestDeviceClient : public DeviceClient {
  public:
@@ -76,7 +56,7 @@ class USBDeviceManagerImplTest : public testing::Test {
 
   DeviceManagerPtr ConnectToDeviceManager() {
     PermissionProviderPtr permission_provider;
-    new TestPermissionProvider(mojo::GetProxy(&permission_provider));
+    permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DeviceManagerPtr device_manager;
     new DeviceManagerImpl(mojo::GetProxy(&device_manager),
                           permission_provider.Pass(),
@@ -85,6 +65,7 @@ class USBDeviceManagerImplTest : public testing::Test {
   }
 
  private:
+  FakePermissionProvider permission_provider_;
   scoped_ptr<TestDeviceClient> device_client_;
   scoped_ptr<base::MessageLoop> message_loop_;
 };

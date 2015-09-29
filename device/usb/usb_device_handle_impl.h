@@ -82,6 +82,8 @@ class UsbDeviceHandleImpl : public UsbDeviceHandle {
                        size_t length,
                        unsigned int timeout,
                        const TransferCallback& callback) override;
+  bool FindInterfaceByEndpoint(uint8_t endpoint_address,
+                               uint8_t* interface_number) override;
 
  protected:
   friend class UsbDeviceImpl;

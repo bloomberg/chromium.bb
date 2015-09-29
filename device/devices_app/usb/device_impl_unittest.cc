@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "device/devices_app/usb/device_impl.h"
+#include "device/devices_app/usb/fake_permission_provider.h"
 #include "device/usb/mock_usb_device.h"
 #include "device/usb/mock_usb_device_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -150,13 +151,19 @@ class USBDeviceImplTest : public testing::Test {
         new MockUsbDevice(vendor_id, product_id, manufacturer, product, serial);
     mock_handle_ = new MockUsbDeviceHandle(mock_device_.get());
 
+    PermissionProviderPtr permission_provider;
+    permission_provider_.Bind(mojo::GetProxy(&permission_provider));
     DevicePtr proxy;
-    new DeviceImpl(mock_device_, mojo::GetProxy(&proxy));
+    new DeviceImpl(mock_device_, permission_provider.Pass(),
+                   mojo::GetProxy(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.
     ON_CALL(mock_device(), Open(_))
         .WillByDefault(Invoke(this, &USBDeviceImplTest::OpenMockHandle));
+    ON_CALL(mock_device(), GetActiveConfiguration())
+        .WillByDefault(
+            Invoke(this, &USBDeviceImplTest::GetActiveConfiguration));
     ON_CALL(mock_handle(), Close())
         .WillByDefault(Invoke(this, &USBDeviceImplTest::CloseMockHandle));
     ON_CALL(mock_handle(), SetConfiguration(_, _))
@@ -208,6 +215,16 @@ class USBDeviceImplTest : public testing::Test {
   void CloseMockHandle() {
     EXPECT_TRUE(is_device_open_);
     is_device_open_ = false;
+  }
+
+  const UsbConfigDescriptor* GetActiveConfiguration() {
+    if (current_config_ == 0) {
+      return nullptr;
+    } else {
+      const auto it = mock_configs_.find(current_config_);
+      EXPECT_TRUE(it != mock_configs_.end());
+      return &it->second;
+    }
   }
 
   void SetConfiguration(uint8_t value,
@@ -341,6 +358,8 @@ class USBDeviceImplTest : public testing::Test {
   std::queue<std::vector<uint8_t>> mock_outbound_data_;
 
   std::set<uint8_t> claimed_interfaces_;
+
+  FakePermissionProvider permission_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(USBDeviceImplTest);
 };
@@ -503,8 +522,18 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
   }
 
   // Now add a mock interface #1.
-  AddMockConfig(ConfigBuilder(0).AddInterface(1, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(1, 0, 1, 2, 3));
 
+  EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
+
+  {
+    base::RunLoop loop;
+    device->SetConfiguration(
+        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+    loop.Run();
+  }
+
+  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(), ClaimInterface(2, _));
 
   {
@@ -515,6 +544,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
     loop.Run();
   }
 
+  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(), ClaimInterface(1, _));
 
   {
@@ -559,7 +589,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
     loop.Run();
   }
 
-  AddMockConfig(ConfigBuilder(0)
+  AddMockConfig(ConfigBuilder(1)
                     .AddInterface(1, 0, 1, 2, 3)
                     .AddInterface(1, 42, 1, 2, 3)
                     .AddInterface(2, 0, 1, 2, 3));
@@ -597,6 +627,18 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     loop.Run();
   }
 
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
+
+  EXPECT_CALL(mock_device(), GetActiveConfiguration());
+  EXPECT_CALL(mock_handle(), SetConfiguration(1, _));
+
+  {
+    base::RunLoop loop;
+    device->SetConfiguration(
+        1, base::Bind(&ExpectResultAndThen, true, loop.QuitClosure()));
+    loop.Run();
+  }
+
   std::vector<uint8_t> fake_data;
   fake_data.push_back(41);
   fake_data.push_back(42);
@@ -623,9 +665,9 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
     loop.Run();
   }
 
-  AddMockConfig(ConfigBuilder(0).AddInterface(7, 0, 1, 2, 3));
   AddMockOutboundData(fake_data);
 
+  EXPECT_CALL(mock_device(), GetActiveConfiguration());
   EXPECT_CALL(mock_handle(),
               ControlTransfer(USB_DIRECTION_OUTBOUND, UsbDeviceHandle::STANDARD,
                               UsbDeviceHandle::INTERFACE, 5, 6, 7, _, _, 0, _));
@@ -668,7 +710,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
   std::vector<uint8_t> fake_inbound_data(message2.size());
   std::copy(message2.begin(), message2.end(), fake_inbound_data.begin());
 
-  AddMockConfig(ConfigBuilder(0).AddInterface(7, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
   AddMockOutboundData(fake_outbound_data);
   AddMockInboundData(fake_inbound_data);
 
@@ -721,7 +763,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
   std::copy(inbound_packet_data.begin(), inbound_packet_data.end(),
             fake_inbound_packets.begin());
 
-  AddMockConfig(ConfigBuilder(0).AddInterface(7, 0, 1, 2, 3));
+  AddMockConfig(ConfigBuilder(1).AddInterface(7, 0, 1, 2, 3));
   AddMockOutboundData(fake_outbound_packets);
   AddMockInboundData(fake_inbound_packets);
 

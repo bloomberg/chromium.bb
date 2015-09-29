@@ -11,4 +11,19 @@ interface PermissionProvider {
   // that should be accessible to clients of the DeviceManager instance.
   HasDevicePermission(array<DeviceInfo> requested_devices)
       => (array<string> allowed_guids);
+
+  // Returns whether or not the client has permission to access
+  // |requested_configuration| on |device|.
+  HasConfigurationPermission(uint8 requested_configuration,
+                             DeviceInfo device) => (bool allowed);
+
+  // Returns whether or not the client has permission to access
+  // |requested_interface| on |device| when it is in configuration
+  // |configuration_value|.
+  HasInterfacePermission(uint8 requested_interface,
+                         uint8 configuration_value,
+                         DeviceInfo device) => (bool allowed);
+
+  // Requests a new binding to this service.
+  Bind(PermissionProvider& request);
 };

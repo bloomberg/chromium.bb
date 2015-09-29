@@ -204,7 +204,9 @@ void DeviceManagerImpl::OnGetDevicePermissionCheckComplete(
     return;
 
   DCHECK(allowed_guids.size() == 1);
-  new DeviceImpl(device, device_request.Pass());
+  PermissionProviderPtr permission_provider;
+  permission_provider_->Bind(mojo::GetProxy(&permission_provider));
+  new DeviceImpl(device, permission_provider.Pass(), device_request.Pass());
 }
 
 void DeviceManagerImpl::OnGetDevices(EnumerationOptionsPtr options,

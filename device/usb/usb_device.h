@@ -44,6 +44,9 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
     return webusb_allowed_origins_.get();
   }
   const GURL& webusb_landing_page() const { return webusb_landing_page_; }
+  const std::vector<UsbConfigDescriptor>& configurations() const {
+    return configurations_;
+  }
 
   // On ChromeOS the permission_broker service is used to change the ownership
   // of USB device nodes so that Chrome can open them. On other platforms these
@@ -60,11 +63,6 @@ class UsbDevice : public base::RefCountedThreadSafe<UsbDevice> {
   // Gets the UsbConfigDescriptor for the active device configuration or nullptr
   // if the device is unconfigured.
   virtual const UsbConfigDescriptor* GetActiveConfiguration() = 0;
-
-  // Gets all of the device's UsbConfigDescriptors.
-  const std::vector<UsbConfigDescriptor>& configurations() const {
-    return configurations_;
-  }
 
  protected:
   UsbDevice(uint16_t vendor_id,

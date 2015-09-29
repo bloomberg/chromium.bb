@@ -31,38 +31,26 @@ base::Callback<void(Args...)> WrapMojoCallback(
   return base::Bind(&CallMojoCallback<Args...>, callback);
 }
 
+void OnPermissionCheckComplete(
+    const base::Callback<void(bool)>& callback,
+    const base::Callback<void(const base::Callback<void(bool)>&)>& action,
+    bool allowed) {
+  if (allowed)
+    action.Run(callback);
+  else
+    callback.Run(false);
+}
+
 scoped_refptr<net::IOBuffer> CreateTransferBuffer(size_t size) {
   scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(
       std::max(static_cast<size_t>(1u), static_cast<size_t>(size)));
   return buffer;
 }
 
-}  // namespace
-
-DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
-                       mojo::InterfaceRequest<Device> request)
-    : binding_(this, request.Pass()), device_(device), weak_factory_(this) {}
-
-DeviceImpl::~DeviceImpl() {
-  CloseHandle();
-}
-
-void DeviceImpl::CloseHandle() {
-  if (device_handle_)
-    device_handle_->Close();
-  device_handle_ = nullptr;
-}
-
-void DeviceImpl::OnOpen(const OpenCallback& callback,
-                        scoped_refptr<UsbDeviceHandle> handle) {
-  device_handle_ = handle;
-  callback.Run(handle ? OPEN_DEVICE_ERROR_OK : OPEN_DEVICE_ERROR_ACCESS_DENIED);
-}
-
-void DeviceImpl::OnTransferIn(const MojoTransferInCallback& callback,
-                              UsbTransferStatus status,
-                              scoped_refptr<net::IOBuffer> buffer,
-                              size_t buffer_size) {
+void OnTransferIn(const DeviceImpl::MojoTransferInCallback& callback,
+                  UsbTransferStatus status,
+                  scoped_refptr<net::IOBuffer> buffer,
+                  size_t buffer_size) {
   mojo::Array<uint8_t> data;
   if (buffer) {
     // TODO(rockot/reillyg): We should change UsbDeviceHandle to use a
@@ -75,15 +63,58 @@ void DeviceImpl::OnTransferIn(const MojoTransferInCallback& callback,
   callback.Run(mojo::ConvertTo<TransferStatus>(status), data.Pass());
 }
 
-void DeviceImpl::OnTransferOut(const MojoTransferOutCallback& callback,
-                               UsbTransferStatus status,
-                               scoped_refptr<net::IOBuffer> buffer,
-                               size_t buffer_size) {
+void OnControlTransferInPermissionCheckComplete(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    ControlTransferParamsPtr params,
+    int length,
+    int timeout,
+    const Device::ControlTransferInCallback& callback,
+    bool allowed) {
+  if (allowed) {
+    scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
+    device_handle->ControlTransfer(
+        USB_DIRECTION_INBOUND,
+        mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
+        mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
+        params->request, params->value, params->index, buffer, length, timeout,
+        base::Bind(&OnTransferIn, callback));
+  } else {
+    mojo::Array<uint8_t> data;
+    callback.Run(TRANSFER_STATUS_PERMISSION_DENIED, data.Pass());
+  }
+}
+
+void OnTransferOut(const DeviceImpl::MojoTransferOutCallback& callback,
+                   UsbTransferStatus status,
+                   scoped_refptr<net::IOBuffer> buffer,
+                   size_t buffer_size) {
   callback.Run(mojo::ConvertTo<TransferStatus>(status));
 }
 
-void DeviceImpl::OnIsochronousTransferIn(
-    const IsochronousTransferInCallback& callback,
+void OnControlTransferOutPermissionCheckComplete(
+    scoped_refptr<UsbDeviceHandle> device_handle,
+    ControlTransferParamsPtr params,
+    mojo::Array<uint8_t> data,
+    int timeout,
+    const Device::ControlTransferOutCallback& callback,
+    bool allowed) {
+  if (allowed) {
+    scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
+    const std::vector<uint8_t>& storage = data.storage();
+    std::copy(storage.begin(), storage.end(), buffer->data());
+    device_handle->ControlTransfer(
+        USB_DIRECTION_OUTBOUND,
+        mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
+        mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
+        params->request, params->value, params->index, buffer, data.size(),
+        timeout, base::Bind(&OnTransferOut, callback));
+  } else {
+    callback.Run(TRANSFER_STATUS_PERMISSION_DENIED);
+  }
+}
+
+void OnIsochronousTransferIn(
+    const Device::IsochronousTransferInCallback& callback,
     uint32_t packet_size,
     UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
@@ -102,12 +133,79 @@ void DeviceImpl::OnIsochronousTransferIn(
   callback.Run(mojo::ConvertTo<TransferStatus>(status), packets.Pass());
 }
 
-void DeviceImpl::OnIsochronousTransferOut(
-    const MojoTransferOutCallback& callback,
+void OnIsochronousTransferOut(
+    const Device::IsochronousTransferOutCallback& callback,
     UsbTransferStatus status,
     scoped_refptr<net::IOBuffer> buffer,
     size_t buffer_size) {
   callback.Run(mojo::ConvertTo<TransferStatus>(status));
+}
+
+}  // namespace
+
+DeviceImpl::DeviceImpl(scoped_refptr<UsbDevice> device,
+                       PermissionProviderPtr permission_provider,
+                       mojo::InterfaceRequest<Device> request)
+    : binding_(this, request.Pass()),
+      device_(device),
+      permission_provider_(permission_provider.Pass()),
+      weak_factory_(this) {
+  // This object owns itself and will be destroyed if either the message pipe
+  // it is bound to is closed or the PermissionProvider it depends on is
+  // unavailable.
+  binding_.set_connection_error_handler([this]() { delete this; });
+  permission_provider_.set_connection_error_handler([this]() { delete this; });
+}
+
+DeviceImpl::~DeviceImpl() {
+  CloseHandle();
+}
+
+void DeviceImpl::CloseHandle() {
+  if (device_handle_)
+    device_handle_->Close();
+  device_handle_ = nullptr;
+}
+
+void DeviceImpl::HasControlTransferPermission(
+    ControlTransferRecipient recipient,
+    uint16_t index,
+    const base::Callback<void(bool)>& callback) {
+  DCHECK(device_handle_);
+  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+
+  if (recipient == CONTROL_TRANSFER_RECIPIENT_INTERFACE ||
+      recipient == CONTROL_TRANSFER_RECIPIENT_ENDPOINT) {
+    if (!config) {
+      callback.Run(false);
+      return;
+    }
+
+    uint8_t interface_number = index & 0xff;
+    if (recipient == CONTROL_TRANSFER_RECIPIENT_ENDPOINT) {
+      if (!device_handle_->FindInterfaceByEndpoint(index & 0xff,
+                                                   &interface_number)) {
+        callback.Run(false);
+        return;
+      }
+    }
+
+    permission_provider_->HasInterfacePermission(
+        interface_number, config->configuration_value,
+        DeviceInfo::From(*device_), callback);
+  } else if (config) {
+    permission_provider_->HasConfigurationPermission(
+        config->configuration_value, DeviceInfo::From(*device_), callback);
+  } else {
+    // Client must already have device permission to have gotten this far.
+    callback.Run(true);
+  }
+}
+
+void DeviceImpl::OnOpen(const OpenCallback& callback,
+                        scoped_refptr<UsbDeviceHandle> handle) {
+  device_handle_ = handle;
+  callback.Run(handle ? OPEN_DEVICE_ERROR_OK : OPEN_DEVICE_ERROR_ACCESS_DENIED);
 }
 
 void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
@@ -136,7 +234,12 @@ void DeviceImpl::SetConfiguration(uint8_t value,
     return;
   }
 
-  device_handle_->SetConfiguration(value, WrapMojoCallback(callback));
+  auto set_configuration =
+      base::Bind(&UsbDeviceHandle::SetConfiguration, device_handle_, value);
+  permission_provider_->HasConfigurationPermission(
+      value, DeviceInfo::From(*device_),
+      base::Bind(&OnPermissionCheckComplete, WrapMojoCallback(callback),
+                 set_configuration));
 }
 
 void DeviceImpl::ClaimInterface(uint8_t interface_number,
@@ -146,7 +249,18 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  device_handle_->ClaimInterface(interface_number, WrapMojoCallback(callback));
+  const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
+  if (!config) {
+    callback.Run(false);
+    return;
+  }
+
+  auto claim_interface = base::Bind(&UsbDeviceHandle::ClaimInterface,
+                                    device_handle_, interface_number);
+  permission_provider_->HasInterfacePermission(
+      interface_number, config->configuration_value, DeviceInfo::From(*device_),
+      base::Bind(&OnPermissionCheckComplete, WrapMojoCallback(callback),
+                 claim_interface));
 }
 
 void DeviceImpl::ReleaseInterface(uint8_t interface_number,
@@ -200,14 +314,12 @@ void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->ControlTransfer(
-      USB_DIRECTION_INBOUND,
-      mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
-      mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
-      params->request, params->value, params->index, buffer, length, timeout,
-      base::Bind(&DeviceImpl::OnTransferIn, weak_factory_.GetWeakPtr(),
-                 callback));
+  ControlTransferRecipient recipient = params->recipient;
+  uint16_t index = params->index;
+  HasControlTransferPermission(
+      recipient, index,
+      base::Bind(&OnControlTransferInPermissionCheckComplete, device_handle_,
+                 base::Passed(&params), length, timeout, callback));
 }
 
 void DeviceImpl::ControlTransferOut(
@@ -220,16 +332,12 @@ void DeviceImpl::ControlTransferOut(
     return;
   }
 
-  scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
-  const std::vector<uint8_t>& storage = data.storage();
-  std::copy(storage.begin(), storage.end(), buffer->data());
-  device_handle_->ControlTransfer(
-      USB_DIRECTION_OUTBOUND,
-      mojo::ConvertTo<UsbDeviceHandle::TransferRequestType>(params->type),
-      mojo::ConvertTo<UsbDeviceHandle::TransferRecipient>(params->recipient),
-      params->request, params->value, params->index, buffer, data.size(),
-      timeout, base::Bind(&DeviceImpl::OnTransferOut,
-                          weak_factory_.GetWeakPtr(), callback));
+  ControlTransferRecipient recipient = params->recipient;
+  uint16_t index = params->index;
+  HasControlTransferPermission(
+      recipient, index, base::Bind(&OnControlTransferOutPermissionCheckComplete,
+                                   device_handle_, base::Passed(&params),
+                                   base::Passed(&data), timeout, callback));
 }
 
 void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
@@ -243,10 +351,9 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
 
   uint8_t endpoint_address = endpoint_number | 0x80;
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(length);
-  device_handle_->GenericTransfer(
-      USB_DIRECTION_INBOUND, endpoint_address, buffer, length, timeout,
-      base::Bind(&DeviceImpl::OnTransferIn, weak_factory_.GetWeakPtr(),
-                 callback));
+  device_handle_->GenericTransfer(USB_DIRECTION_INBOUND, endpoint_address,
+                                  buffer, length, timeout,
+                                  base::Bind(&OnTransferIn, callback));
 }
 
 void DeviceImpl::GenericTransferOut(
@@ -263,10 +370,9 @@ void DeviceImpl::GenericTransferOut(
   scoped_refptr<net::IOBuffer> buffer = CreateTransferBuffer(data.size());
   const std::vector<uint8_t>& storage = data.storage();
   std::copy(storage.begin(), storage.end(), buffer->data());
-  device_handle_->GenericTransfer(
-      USB_DIRECTION_OUTBOUND, endpoint_address, buffer, data.size(), timeout,
-      base::Bind(&DeviceImpl::OnTransferOut, weak_factory_.GetWeakPtr(),
-                 callback));
+  device_handle_->GenericTransfer(USB_DIRECTION_OUTBOUND, endpoint_address,
+                                  buffer, data.size(), timeout,
+                                  base::Bind(&OnTransferOut, callback));
 }
 
 void DeviceImpl::IsochronousTransferIn(
@@ -286,8 +392,7 @@ void DeviceImpl::IsochronousTransferIn(
   device_handle_->IsochronousTransfer(
       USB_DIRECTION_INBOUND, endpoint_address, buffer, transfer_size,
       num_packets, packet_length, timeout,
-      base::Bind(&DeviceImpl::OnIsochronousTransferIn,
-                 weak_factory_.GetWeakPtr(), callback, packet_length));
+      base::Bind(&OnIsochronousTransferIn, callback, packet_length));
 }
 
 void DeviceImpl::IsochronousTransferOut(
@@ -318,8 +423,7 @@ void DeviceImpl::IsochronousTransferOut(
   device_handle_->IsochronousTransfer(
       USB_DIRECTION_OUTBOUND, endpoint_address, buffer, transfer_size,
       static_cast<uint32_t>(packets.size()), packet_size, timeout,
-      base::Bind(&DeviceImpl::OnIsochronousTransferOut,
-                 weak_factory_.GetWeakPtr(), callback));
+      base::Bind(&OnIsochronousTransferOut, callback));
 }
 
 }  // namespace usb

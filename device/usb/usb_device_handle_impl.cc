@@ -671,6 +671,17 @@ void UsbDeviceHandleImpl::GenericTransfer(UsbEndpointDirection direction,
   }
 }
 
+bool UsbDeviceHandleImpl::FindInterfaceByEndpoint(uint8_t endpoint_address,
+                                                  uint8_t* interface_number) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  const auto endpoint_it = endpoint_map_.find(endpoint_address);
+  if (endpoint_it != endpoint_map_.end()) {
+    *interface_number = endpoint_it->second.interface_number;
+    return true;
+  }
+  return false;
+}
+
 UsbDeviceHandleImpl::UsbDeviceHandleImpl(
     scoped_refptr<UsbContext> context,
     scoped_refptr<UsbDeviceImpl> device,
@@ -815,9 +826,10 @@ void UsbDeviceHandleImpl::RefreshEndpointMap() {
 
 scoped_refptr<UsbDeviceHandleImpl::InterfaceClaimer>
 UsbDeviceHandleImpl::GetClaimedInterfaceForEndpoint(uint8_t endpoint) {
-  if (ContainsKey(endpoint_map_, endpoint))
-    return claimed_interfaces_[endpoint_map_[endpoint].interface_number];
-  return NULL;
+  const auto endpoint_it = endpoint_map_.find(endpoint);
+  if (endpoint_it != endpoint_map_.end())
+    return claimed_interfaces_[endpoint_it->second.interface_number];
+  return nullptr;
 }
 
 void UsbDeviceHandleImpl::ControlTransferInternal(

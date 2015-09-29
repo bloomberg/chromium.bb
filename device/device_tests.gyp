@@ -62,6 +62,8 @@
         'bluetooth/test/test_bluetooth_adapter_observer.h',
         'devices_app/usb/device_impl_unittest.cc',
         'devices_app/usb/device_manager_impl_unittest.cc',
+        'devices_app/usb/fake_permission_provider.cc',
+        'devices_app/usb/fake_permission_provider.h',
         'hid/hid_connection_unittest.cc',
         'hid/hid_device_filter_unittest.cc',
         'hid/hid_report_descriptor_unittest.cc',

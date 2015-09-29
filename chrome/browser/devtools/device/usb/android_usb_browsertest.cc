@@ -223,6 +223,12 @@ class MockUsbDeviceHandle : public UsbDeviceHandle {
     }
   }
 
+  bool FindInterfaceByEndpoint(uint8_t endpoint_address,
+                               uint8_t* interface_number) {
+    NOTIMPLEMENTED();
+    return false;
+  }
+
   template <class D>
   void append(D data) {
     std::copy(reinterpret_cast<char*>(&data),
