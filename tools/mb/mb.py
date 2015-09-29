@@ -557,7 +557,8 @@ class MetaBuildWrapper(object):
       ]
       cmdline = [
           '../../testing/test_env.py',
-      ] + ['../../' + self.ToSrcRelPath(gn_isolate_map[target]['script'])]
+          '../../' + self.ToSrcRelPath(gn_isolate_map[target]['script'])
+      ] + gn_isolate_map[target].get('args', [])
     elif test_type in ('raw'):
       extra_files = []
       cmdline = [
