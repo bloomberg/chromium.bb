@@ -54,6 +54,10 @@ class OZONE_EXPORT CrtcController
                         bool test_only,
                         scoped_refptr<PageFlipRequest> page_flip_request);
 
+  // Returns list of plane id's which can support |plane| configuration.
+  std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
+      const OverlayPlane& plane) const;
+
   // Called if the page flip for this CRTC fails after being scheduled.
   void PageFlipFailed();
 

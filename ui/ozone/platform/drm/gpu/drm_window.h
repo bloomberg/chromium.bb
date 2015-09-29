@@ -85,8 +85,9 @@ class OZONE_EXPORT DrmWindow {
 
   void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
                         const SwapCompletionCallback& callback);
-  bool TestPageFlip(const std::vector<OverlayCheck_Params>& planes,
-                    ScanoutBufferGenerator* buffer_generator);
+  std::vector<OverlayCheck_Params> TestPageFlip(
+      const std::vector<OverlayCheck_Params>& planes,
+      ScanoutBufferGenerator* buffer_generator);
 
   // Returns the last buffer associated with this window.
   const OverlayPlane* GetLastModesetBuffer();

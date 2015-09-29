@@ -113,6 +113,11 @@ bool CrtcController::SchedulePageFlip(
   return true;
 }
 
+std::vector<uint32_t> CrtcController::GetCompatibleHardwarePlaneIds(
+    const OverlayPlane& plane) const {
+  return drm_->plane_manager()->GetCompatibleHardwarePlaneIds(plane, crtc_);
+}
+
 void CrtcController::PageFlipFailed() {
   pending_planes_.clear();
   SignalPageFlipRequest();

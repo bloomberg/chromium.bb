@@ -144,11 +144,10 @@ scoped_ptr<HardwareDisplayPlane> HardwareDisplayPlaneManager::CreatePlane(
 HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
     size_t* index,
     uint32_t crtc_index,
-    uint32_t format) {
+    const OverlayPlane& overlay) const {
   for (size_t i = *index; i < planes_.size(); ++i) {
     auto plane = planes_[i];
-    if (!plane->in_use() && plane->CanUseForCrtc(crtc_index) &&
-        plane->IsSupportedFormat(format)) {
+    if (!plane->in_use() && IsCompatible(plane, overlay, crtc_index)) {
       *index = i + 1;
       return plane;
     }
@@ -156,11 +155,27 @@ HardwareDisplayPlane* HardwareDisplayPlaneManager::FindNextUnusedPlane(
   return nullptr;
 }
 
-int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) {
+int HardwareDisplayPlaneManager::LookupCrtcIndex(uint32_t crtc_id) const {
   for (size_t i = 0; i < crtcs_.size(); ++i)
     if (crtcs_[i] == crtc_id)
       return i;
   return -1;
+}
+
+bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
+                                               const OverlayPlane& overlay,
+                                               uint32_t crtc_index) const {
+  if (!plane->CanUseForCrtc(crtc_index))
+    return false;
+
+  if (!plane->IsSupportedFormat(overlay.buffer->GetFramebufferPixelFormat()))
+    return false;
+
+  // TODO(kalyank): We should check for z-order and any needed transformation
+  // support. Driver doesn't expose any property to check for z-order, can we
+  // rely on the sorting we do based on plane ids ?
+
+  return true;
 }
 
 void HardwareDisplayPlaneManager::BeginFrame(
@@ -183,8 +198,8 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
 
   size_t plane_idx = 0;
   for (const auto& plane : overlay_list) {
-    HardwareDisplayPlane* hw_plane = FindNextUnusedPlane(
-        &plane_idx, crtc_index, plane.buffer->GetFramebufferPixelFormat());
+    HardwareDisplayPlane* hw_plane =
+        FindNextUnusedPlane(&plane_idx, crtc_index, plane);
     if (!hw_plane) {
       LOG(ERROR) << "Failed to find a free plane for crtc " << crtc_id;
       return false;
@@ -216,6 +231,25 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     }
   }
   return true;
+}
+
+std::vector<uint32_t>
+HardwareDisplayPlaneManager::GetCompatibleHardwarePlaneIds(
+    const OverlayPlane& plane,
+    uint32_t crtc_id) const {
+  int crtc_index = LookupCrtcIndex(crtc_id);
+  if (crtc_index < 0) {
+    LOG(ERROR) << "Cannot find crtc " << crtc_id;
+    return std::vector<uint32_t>();
+  }
+
+  std::vector<uint32_t> plane_ids;
+  for (auto* hardware_plane : planes_) {
+    if (IsCompatible(hardware_plane, plane, crtc_index))
+      plane_ids.push_back(hardware_plane->plane_id());
+  }
+
+  return plane_ids;
 }
 
 }  // namespace ui

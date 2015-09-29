@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/memory/scoped_vector.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
@@ -54,28 +55,47 @@ class DrmOverlayCandidatesHost : public OverlayCandidatesOzone,
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
-  void SendRequest(const OverlaySurfaceCandidateList& candidates,
-                   const OverlayCheck_Params& check);
+  struct HardwareDisplayPlaneProxy {
+    HardwareDisplayPlaneProxy(uint32_t id);
+    ~HardwareDisplayPlaneProxy();
+
+    bool in_use = false;
+    uint32_t plane_id;
+  };
+
+  void SendRequest(const std::vector<OverlayCheck_Params>& list);
   void OnOverlayResult(bool* handled,
                        gfx::AcceleratedWidget widget,
-                       bool result);
-  void ProcessResult(const OverlayCheck_Params& check, bool result);
-
-  void CheckSingleOverlay(OverlaySurfaceCandidateList* candidates);
+                       const std::vector<OverlayCheck_Params>& params);
+  bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate) const;
+  uint32_t CalculateCandidateWeight(
+      const OverlaySurfaceCandidate& candidate) const;
+  void ValidateCandidates(OverlaySurfaceCandidateList* candidates);
+  void ResetCache();
 
   gfx::AcceleratedWidget widget_;
   DrmGpuPlatformSupportHost* platform_support_;  // Not owned.
-
-  std::deque<OverlayCheck_Params> pending_checks_;
 
   template <class KeyType, class ValueType>
   struct OverlayMap {
     typedef std::map<KeyType, ValueType, OverlayCompare> Type;
   };
+  // List of all OverlayCheck_Params which have been validated in GPU side. If
+  // this value is true, it means the particular param is compatible and
+  // corresponding candidate can be promoted to use Hardware Overlays.
   base::MRUCacheBase<OverlayCheck_Params,
                      bool,
                      base::MRUCacheNullDeletor<bool>,
                      OverlayMap> cache_;
+  // List of all OverlayCheck_Params currently in use by various candidates. If
+  // the value is true, it means the correspnding candidate has been promoted to
+  // use overlay.
+  typedef std::map<OverlayCheck_Params, bool, OverlayCompare> CompatibleParams;
+  CompatibleParams in_use_compatible_params_;
+  // Used to get best possible approximation of plane usage in GPU side. We use
+  // this to make sure we don't handle more candidates than what we can support
+  // in GPU side.
+  ScopedVector<HardwareDisplayPlaneProxy> hardware_plane_proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayCandidatesHost);
 };

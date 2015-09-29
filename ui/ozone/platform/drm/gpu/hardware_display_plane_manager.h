@@ -94,6 +94,9 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   const ScopedVector<HardwareDisplayPlane>& planes() { return planes_; }
 
+  std::vector<uint32_t> GetCompatibleHardwarePlaneIds(const OverlayPlane& plane,
+                                                      uint32_t crtc_id) const;
+
  protected:
   virtual bool SetPlaneData(HardwareDisplayPlaneList* plane_list,
                             HardwareDisplayPlane* hw_plane,
@@ -109,10 +112,16 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
   // be used with |crtc_index|.
   HardwareDisplayPlane* FindNextUnusedPlane(size_t* index,
                                             uint32_t crtc_index,
-                                            uint32_t format);
+                                            const OverlayPlane& overlay) const;
 
   // Convert |crtc_id| into an index, returning -1 if the ID couldn't be found.
-  int LookupCrtcIndex(uint32_t crtc_id);
+  int LookupCrtcIndex(uint32_t crtc_id) const;
+
+  // Returns true if |plane| can support |overlay| and compatible with
+  // |crtc_index|.
+  bool IsCompatible(HardwareDisplayPlane* plane,
+                    const OverlayPlane& overlay,
+                    uint32_t crtc_index) const;
 
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.

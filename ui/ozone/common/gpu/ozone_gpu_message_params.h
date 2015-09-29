@@ -59,6 +59,12 @@ struct OZONE_EXPORT OverlayCheck_Params {
   gfx::Rect display_rect;
   gfx::RectF crop_rect;
   int plane_z_order = 0;
+  // Higher the value, the more important it is to ensure that this
+  // overlay candidate finds a compatible free hardware plane to use.
+  uint32_t weight;
+  // Will be set in GPU process. These are unique plane ids of primary display
+  // supporting this configuration.
+  std::vector<uint32_t> plane_ids;
 };
 
 }  // namespace ui

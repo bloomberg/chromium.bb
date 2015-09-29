@@ -4,6 +4,8 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 
+#include <drm_fourcc.h>
+
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -30,6 +32,20 @@ namespace {
 #endif
 
 void EmptyFlipCallback(gfx::SwapResult) {
+}
+
+// TODO(kalyank): We now have this switch statement in GBMBuffer and here.
+// It would be nice to have it in one place.
+uint32_t GetFourCCFormatFromBufferFormat(gfx::BufferFormat format) {
+  switch (format) {
+    case gfx::BufferFormat::BGRA_8888:
+      return DRM_FORMAT_ARGB8888;
+    case gfx::BufferFormat::BGRX_8888:
+      return DRM_FORMAT_XRGB8888;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 void UpdateCursorImage(DrmBuffer* cursor, const SkBitmap& image) {
@@ -143,35 +159,81 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
   }
 }
 
-bool DrmWindow::TestPageFlip(const std::vector<OverlayCheck_Params>& overlays,
-                             ScanoutBufferGenerator* buffer_generator) {
-  if (!controller_)
-    return true;
+std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
+    const std::vector<OverlayCheck_Params>& overlays,
+    ScanoutBufferGenerator* buffer_generator) {
+  std::vector<OverlayCheck_Params> params;
+  if (!controller_) {
+    // Nothing much we can do here.
+    return params;
+  }
+
+  OverlayPlaneList compatible_test_list;
+  scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
   for (const auto& overlay : overlays) {
+    OverlayCheck_Params overlay_params(overlay);
     // It is possible that the cc rect we get actually falls off the edge of
     // the screen. Usually this is prevented via things like status bars
     // blocking overlaying or cc clipping it, but in case it wasn't properly
     // clipped (since GL will render this situation fine) just ignore it here.
     // This should be an extremely rare occurrance.
-    if (overlay.plane_z_order != 0 && !bounds().Contains(overlay.display_rect))
-      return false;
-  }
+    if (overlay.plane_z_order != 0 &&
+        !bounds().Contains(overlay.display_rect)) {
+      continue;
+    }
 
-  scoped_refptr<DrmDevice> drm = controller_->GetAllocationDrmDevice();
-  OverlayPlaneList planes;
-  for (const auto& overlay : overlays) {
     gfx::Size size =
         (overlay.plane_z_order == 0) ? bounds().size() : overlay.buffer_size;
-    scoped_refptr<ScanoutBuffer> buffer =
-        buffer_generator->Create(drm, overlay.format, size);
+    scoped_refptr<ScanoutBuffer> buffer;
+    // Check if we can re-use existing buffers.
+    for (const auto& plane : last_submitted_planes_) {
+      uint32_t format = GetFourCCFormatFromBufferFormat(overlay.format);
+      // We always use a storage type of XRGB, even if the pixel format
+      // is ARGB.
+      if (format == DRM_FORMAT_ARGB8888)
+        format = DRM_FORMAT_XRGB8888;
+
+      if (plane.buffer->GetFramebufferPixelFormat() == format &&
+          plane.z_order == overlay.plane_z_order &&
+          plane.display_bounds == overlay.display_rect &&
+          plane.buffer->GetSize() == size) {
+        buffer = plane.buffer;
+        break;
+      }
+    }
+
     if (!buffer)
-      return false;
-    planes.push_back(OverlayPlane(buffer, overlay.plane_z_order,
-                                  overlay.transform, overlay.display_rect,
-                                  overlay.crop_rect));
+      buffer = buffer_generator->Create(drm, overlay.format, size);
+
+    if (!buffer)
+      continue;
+
+    OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
+                       overlay.display_rect, overlay.crop_rect);
+
+    // Buffer for Primary plane should always be present for compatibility test.
+    if (!compatible_test_list.size() && overlay.plane_z_order != 0) {
+      compatible_test_list.push_back(
+          *OverlayPlane::GetPrimaryPlane(last_submitted_planes_));
+    }
+
+    compatible_test_list.push_back(plane);
+
+    bool page_flip_succeeded = controller_->SchedulePageFlip(
+        compatible_test_list, true /* test_only */,
+        base::Bind(&EmptyFlipCallback));
+
+    if (page_flip_succeeded) {
+      overlay_params.plane_ids =
+          controller_->GetCompatibleHardwarePlaneIds(plane);
+      params.push_back(overlay_params);
+    }
+
+    if (compatible_test_list.size() > 1)
+      compatible_test_list.pop_back();
   }
-  return controller_->SchedulePageFlip(planes, true /* test_only */,
-                                       base::Bind(&EmptyFlipCallback));
+
+  return params;
 }
 
 const OverlayPlane* DrmWindow::GetLastModesetBuffer() {

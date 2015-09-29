@@ -127,6 +127,9 @@ class OZONE_EXPORT HardwareDisplayController {
                         bool test_only,
                         const PageFlipCallback& callback);
 
+  std::vector<uint32_t> GetCompatibleHardwarePlaneIds(
+      const OverlayPlane& plane) const;
+
   // Set the hardware cursor to show the contents of |surface|.
   bool SetCursor(const scoped_refptr<ScanoutBuffer>& buffer);
 

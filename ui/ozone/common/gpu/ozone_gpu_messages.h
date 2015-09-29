@@ -69,6 +69,8 @@ IPC_STRUCT_TRAITS_BEGIN(ui::OverlayCheck_Params)
   IPC_STRUCT_TRAITS_MEMBER(display_rect)
   IPC_STRUCT_TRAITS_MEMBER(crop_rect)
   IPC_STRUCT_TRAITS_MEMBER(plane_z_order)
+  IPC_STRUCT_TRAITS_MEMBER(weight)
+  IPC_STRUCT_TRAITS_MEMBER(plane_ids)
 IPC_STRUCT_TRAITS_END()
 
 // clang-format on
@@ -173,7 +175,8 @@ IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlTaken, bool /* success */)
 IPC_MESSAGE_CONTROL1(OzoneHostMsg_DisplayControlRelinquished,
                      bool /* success */)
 
-// Response for OzoneGpuMsg_CheckOverlayCapabilities
+// Response to OzoneGpuMsg_CheckOverlayCapabilities. Returns list of supported
+// params.
 IPC_MESSAGE_CONTROL2(OzoneHostMsg_OverlayCapabilitiesReceived,
                      gfx::AcceleratedWidget /* widget */,
-                     bool /* result */)
+                     std::vector<ui::OverlayCheck_Params> /* overlays */)
