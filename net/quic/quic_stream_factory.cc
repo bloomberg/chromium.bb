@@ -38,6 +38,7 @@
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_http_stream.h"
+#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
 #include "net/socket/client_socket_factory.h"
@@ -631,6 +632,9 @@ QuicStreamFactory::QuicStreamFactory(
           threshold_public_resets_post_handshake),
       socket_receive_buffer_size_(socket_receive_buffer_size),
       delay_tcp_race_(delay_tcp_race),
+      yield_after_packets_(kQuicYieldAfterPacketsRead),
+      yield_after_duration_(QuicTime::Delta::FromMilliseconds(
+          kQuicYieldAfterDurationMilliseconds)),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       quic_supported_servers_at_startup_initialzied_(false),
@@ -1288,10 +1292,10 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
 
   *session = new QuicChromiumClientSession(
       connection, socket.Pass(), this, quic_crypto_client_stream_factory_,
-      transport_security_state_, server_info.Pass(), server_id,
-      cert_verify_flags, config, &crypto_config_,
-      network_connection_.GetDescription(), dns_resolution_end_time,
-      base::ThreadTaskRunnerHandle::Get().get(),
+      clock_.get(), transport_security_state_, server_info.Pass(), server_id,
+      yield_after_packets_, yield_after_duration_, cert_verify_flags, config,
+      &crypto_config_, network_connection_.GetDescription(),
+      dns_resolution_end_time, base::ThreadTaskRunnerHandle::Get().get(),
       socket_performance_watcher.Pass(), net_log.net_log());
 
   all_sessions_[*session] = server_id;  // owning pointer

@@ -27,6 +27,7 @@
 #include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_utils.h"
+#include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -218,10 +219,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     connection_->SetSendAlgorithm(send_algorithm_);
     session_.reset(new QuicChromiumClientSession(
         connection_, scoped_ptr<DatagramClientSocket>(socket),
-        /*stream_factory=*/nullptr, &crypto_client_stream_factory_,
+        /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
                      /*is_secure=*/false, PRIVACY_MODE_DISABLED),
+        kQuicYieldAfterPacketsRead,
+        QuicTime::Delta::FromMilliseconds(kQuicYieldAfterDurationMilliseconds),
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
         "CONNECTION_UNKNOWN", base::TimeTicks::Now(),
         base::ThreadTaskRunnerHandle::Get().get(),

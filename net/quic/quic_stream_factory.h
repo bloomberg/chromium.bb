@@ -443,6 +443,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if we do want to delay TCP connection when it is racing with QUIC.
   bool delay_tcp_race_;
 
+  // If more than |yield_after_packets_| packets have been read or more than
+  // |yield_after_duration_| time has passed, then
+  // QuicPacketReader::StartReading() yields by doing a PostTask().
+  int yield_after_packets_;
+  QuicTime::Delta yield_after_duration_;
+
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so
   // that we consistently (within this profile) suggest the same ephemeral

@@ -25,6 +25,7 @@
 #include "net/quic/quic_packet_reader.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_time.h"
 
 namespace net {
 
@@ -111,9 +112,12 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       scoped_ptr<DatagramClientSocket> socket,
       QuicStreamFactory* stream_factory,
       QuicCryptoClientStreamFactory* crypto_client_stream_factory,
+      QuicClock* clock,
       TransportSecurityState* transport_security_state,
       scoped_ptr<QuicServerInfo> server_info,
       const QuicServerId& server_id,
+      int yield_after_packets,
+      QuicTime::Delta yield_after_duration,
       int cert_verify_flags,
       const QuicConfig& config,
       QuicCryptoClientConfig* crypto_config,
