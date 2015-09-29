@@ -9,7 +9,6 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/background_sync_launcher_android.h"
-#include "content/browser/android/background_sync_network_observer_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
@@ -51,9 +50,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
      content::AndroidLocationApiAdapter::RegisterGeolocationService},
     {"BackgroundSyncLauncherAndroid",
      content::BackgroundSyncLauncherAndroid::RegisterLauncher},
-    {"BackgroundSyncNetworkObserverAndroid",
-     content::BackgroundSyncNetworkObserverAndroid::Observer::
-         RegisterNetworkObserver},
     {"BrowserAccessibilityManager",
      content::RegisterBrowserAccessibilityManager},
     {"BrowserStartupController", content::RegisterBrowserStartupController},

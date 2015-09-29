@@ -99,10 +99,6 @@ class CONTENT_EXPORT BackgroundSyncManager
                              const GURL& pattern) override;
   void OnStorageWiped() override;
 
-  BackgroundSyncNetworkObserver* GetNetworkObserverForTesting() {
-    return network_observer_.get();
-  }
-
  protected:
   // A registration might be referenced by the client longer than
   // the BackgroundSyncManager needs to keep track of it (e.g., the event has

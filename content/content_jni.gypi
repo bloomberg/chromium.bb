@@ -12,7 +12,6 @@
     'public/android/java/src/org/chromium/content/app/ContentMain.java',
     'public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java',
     'public/android/java/src/org/chromium/content/browser/BackgroundSyncLauncher.java',
-    'public/android/java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java',
     'public/android/java/src/org/chromium/content/browser/BrowserStartupController.java',
     'public/android/java/src/org/chromium/content/browser/ChildProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/ContentReadbackHandler.java',

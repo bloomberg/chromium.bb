@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/mock_entropy_provider.h"
 #include "base/thread_task_runner_handle.h"
-#include "content/browser/background_sync/background_sync_network_observer.h"
 #include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/browser_thread_impl.h"
@@ -234,9 +233,6 @@ class BackgroundSyncManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    // Don't let the tests be confused by the real-world device connectivity
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(true);
-
     helper_.reset(
         new EmbeddedWorkerTestHelper(base::FilePath(), kRenderProcessId));
 
@@ -253,12 +249,6 @@ class BackgroundSyncManagerTest : public testing::Test {
     // workers.
     base::RunLoop().RunUntilIdle();
     RegisterServiceWorkers();
-  }
-
-  void TearDown() override {
-    // Restore the network observer functionality for subsequent tests
-    BackgroundSyncNetworkObserver::SetIgnoreNetworkChangeNotifierForTests(
-        false);
   }
 
   void RegisterServiceWorkers() {
@@ -314,12 +304,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   void SetNetwork(net::NetworkChangeNotifier::ConnectionType connection_type) {
     net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         connection_type);
-    if (test_background_sync_manager_) {
-      BackgroundSyncNetworkObserver* network_observer =
-          test_background_sync_manager_->GetNetworkObserverForTesting();
-      network_observer->NotifyManagerIfNetworkChanged(connection_type);
-      base::RunLoop().RunUntilIdle();
-    }
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetOnBatteryPower(bool on_battery_power) {
