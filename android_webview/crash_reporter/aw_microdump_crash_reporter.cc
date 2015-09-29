@@ -115,5 +115,10 @@ void EnableMicrodumpCrashReporter() {
   g_enabled = true;
 }
 
+void AddGpuFingerprintToMicrodumpCrashHandler(
+    const std::string& gpu_fingerprint) {
+  breakpad::AddGpuFingerprintToMicrodumpCrashHandler(gpu_fingerprint);
+}
+
 }  // namespace crash_reporter
 }  // namespace android_webview

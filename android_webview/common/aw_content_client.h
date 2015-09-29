@@ -9,6 +9,10 @@
 
 #include "base/compiler_specific.h"
 
+namespace gpu {
+struct GPUInfo;
+}
+
 namespace android_webview {
 
 std::string GetProduct();
@@ -26,6 +30,12 @@ class AwContentClient : public content::ContentClient {
       int resource_id,
       ui::ScaleFactor scale_factor) const override;
   bool CanSendWhileSwappedOut(const IPC::Message* message) override;
+
+  void SetGpuInfo(const gpu::GPUInfo& gpu_info) override;
+  const std::string& gpu_fingerprint() const { return gpu_fingerprint_; }
+
+ private:
+  std::string gpu_fingerprint_;
 };
 
 }  // namespace android_webview

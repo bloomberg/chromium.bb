@@ -187,6 +187,12 @@ int AwMainDelegate::RunProcess(
     int exit_code = browser_runner_->Initialize(main_function_params);
     DCHECK_LT(exit_code, 0);
 
+    // At this point the content client has received the GPU info required
+    // to create a GPU fingerpring, and we can pass it to the microdump
+    // crash handler on the same thread as the crash handler was initialized.
+    crash_reporter::AddGpuFingerprintToMicrodumpCrashHandler(
+        content_client_.gpu_fingerprint());
+
     g_allow_wait_in_ui_thread.Get().reset(
         new ScopedAllowWaitForLegacyWebViewApi);
 

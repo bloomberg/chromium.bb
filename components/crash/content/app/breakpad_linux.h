@@ -20,6 +20,9 @@ extern void InitCrashReporter(const std::string& process_type);
 #if defined(OS_ANDROID)
 extern void InitNonBrowserCrashReporterForAndroid(
     const std::string& process_type);
+
+extern void AddGpuFingerprintToMicrodumpCrashHandler(
+    const std::string& gpu_fingerprint);
 #endif
 
 // Checks if crash reporting is enabled. Note that this is not the same as

@@ -27,12 +27,14 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
+#include "base/lazy_instance.h"
 #include "base/linux_util.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/global_descriptors.h"
 #include "base/process/memory.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_checker.h"
 #include "breakpad/src/client/linux/crash_generation/crash_generation_client.h"
 #include "breakpad/src/client/linux/handler/exception_handler.h"
 #include "breakpad/src/client/linux/minidump_writer/directory_reader.h"
@@ -95,8 +97,43 @@ const char* g_asan_report_str = nullptr;
 #if defined(OS_ANDROID)
 char* g_process_type = nullptr;
 ExceptionHandler* g_microdump = nullptr;
-const char* g_microdump_build_fingerprint = nullptr;
-const char* g_microdump_product_info = nullptr;
+
+class MicrodumpInfo {
+ public:
+  MicrodumpInfo()
+      : microdump_build_fingerprint_(nullptr),
+        microdump_product_info_(nullptr),
+        microdump_gpu_fingerprint_(nullptr) {}
+
+  // The order in which SetGpuFingerprint and Initialize are called
+  // may be dependent on the timing of the availability of GPU
+  // information. For this reason, they can be called in either order,
+  // resulting in the same effect.
+  //
+  // The following restrictions apply, however:
+  // * Both methods must be called from the same thread.
+  // * Both methods must be called at most once.
+  //
+  // Microdumps will only be generated if Initialize is called. If
+  // SetGpuFingerprint has not been called called at the point at
+  // which a microdump is generated, then the GPU fingerprint will be
+  // UNKNOWN.
+  void SetGpuFingerprint(const std::string& gpu_fingerprint);
+  void Initialize(const std::string& process_type,
+                  const char* product_name,
+                  const char* product_version,
+                  const char* android_build_fp);
+
+ private:
+  base::ThreadChecker thread_checker_;
+  const char* microdump_build_fingerprint_;
+  const char* microdump_product_info_;
+  const char* microdump_gpu_fingerprint_;
+};
+
+base::LazyInstance<MicrodumpInfo> g_microdump_info =
+    LAZY_INSTANCE_INITIALIZER;
+
 #endif
 
 CrashKeyStorage* g_crash_keys = nullptr;
@@ -708,34 +745,11 @@ void InitMicrodumpCrashHandlerIfNecessary(const std::string& process_type) {
   GetCrashReporterClient()->GetProductNameAndVersion(&product_name,
                                                      &product_version);
 
-  MinidumpDescriptor descriptor(MinidumpDescriptor::kMicrodumpOnConsole);
-
-  if (product_name && product_version) {
-    g_microdump_product_info = strdup(
-        (product_name + std::string(":") + product_version).c_str());
-    ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_product_info);
-    descriptor.microdump_extra_info()->product_info = g_microdump_product_info;
-  }
-
   const char* android_build_fp =
       base::android::BuildInfo::GetInstance()->android_build_fp();
-  if (android_build_fp) {
-    g_microdump_build_fingerprint = strdup(android_build_fp);
-    ANNOTATE_LEAKING_OBJECT_PTR(g_microdump_build_fingerprint);
-    descriptor.microdump_extra_info()->build_fingerprint =
-        g_microdump_build_fingerprint;
-  }
 
-  DCHECK(!g_microdump);
-  bool is_browser_process = process_type.empty() || process_type == "webview";
-  g_microdump = new ExceptionHandler(
-        descriptor,
-        nullptr,
-        MicrodumpCrashDone,
-        reinterpret_cast<void*>(is_browser_process),
-        true,  // Install handlers.
-        -1);   // Server file descriptor. -1 for in-process.
-    return;
+  g_microdump_info.Get().Initialize(process_type, product_name, product_version,
+                                    android_build_fp);
 }
 
 bool CrashDoneInProcessNoUpload(
@@ -797,6 +811,57 @@ void EnableNonBrowserCrashDumping(const std::string& process_type,
   new google_breakpad::ExceptionHandler(MinidumpDescriptor(minidump_fd),
       nullptr, CrashDoneInProcessNoUpload, nullptr, true, -1);
 }
+
+void MicrodumpInfo::SetGpuFingerprint(const std::string& gpu_fingerprint) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!microdump_gpu_fingerprint_);
+  microdump_gpu_fingerprint_ = strdup(gpu_fingerprint.c_str());
+  ANNOTATE_LEAKING_OBJECT_PTR(microdump_gpu_fingerprint_);
+
+  if (g_microdump) {
+    MinidumpDescriptor minidump_descriptor(g_microdump->minidump_descriptor());
+    minidump_descriptor.microdump_extra_info()->gpu_fingerprint =
+        microdump_gpu_fingerprint_;
+    g_microdump->set_minidump_descriptor(minidump_descriptor);
+  }
+}
+
+void MicrodumpInfo::Initialize(const std::string& process_type,
+                               const char* product_name,
+                               const char* product_version,
+                               const char* android_build_fp) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!g_microdump);
+  bool is_browser_process = process_type.empty() || process_type == "webview";
+
+  MinidumpDescriptor descriptor(MinidumpDescriptor::kMicrodumpOnConsole);
+
+  if (product_name && product_version) {
+    microdump_product_info_ =
+        strdup((product_name + std::string(":") + product_version).c_str());
+    ANNOTATE_LEAKING_OBJECT_PTR(microdump_product_info_);
+    descriptor.microdump_extra_info()->product_info = microdump_product_info_;
+  }
+
+  if (android_build_fp) {
+    microdump_build_fingerprint_ = strdup(android_build_fp);
+    ANNOTATE_LEAKING_OBJECT_PTR(microdump_build_fingerprint_);
+    descriptor.microdump_extra_info()->build_fingerprint =
+        microdump_build_fingerprint_;
+  }
+
+  if (microdump_gpu_fingerprint_) {
+    descriptor.microdump_extra_info()->gpu_fingerprint =
+        microdump_gpu_fingerprint_;
+  }
+
+  g_microdump =
+      new ExceptionHandler(descriptor, nullptr, MicrodumpCrashDone,
+                           reinterpret_cast<void*>(is_browser_process),
+                           true,  // Install handlers.
+                           -1);   // Server file descriptor. -1 for in-process.
+}
+
 #else
 // Non-Browser = Extension, Gpu, Plugins, Ppapi and Renderer
 class NonBrowserCrashHandler : public google_breakpad::CrashGenerationClient {
@@ -1751,6 +1816,11 @@ void InitNonBrowserCrashReporterForAndroid(const std::string& process_type) {
       EnableNonBrowserCrashDumping(process_type, minidump_fd);
     }
   }
+}
+
+void AddGpuFingerprintToMicrodumpCrashHandler(
+    const std::string& gpu_fingerprint) {
+  g_microdump_info.Get().SetGpuFingerprint(gpu_fingerprint);
 }
 #endif  // OS_ANDROID
 
