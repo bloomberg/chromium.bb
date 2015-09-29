@@ -31,6 +31,7 @@ group("all_components") {
     "//components/search",
     "//components/search_engines",
     "//components/undo",
+    "//components/strings",
   ]
 
   if (!is_ios) {
@@ -120,7 +121,6 @@ group("all_components") {
       "//components/sessions",
       "//components/signin/core/browser",
       "//components/startup_metric_utils",
-      "//components/strings",
       "//components/sync_driver",
       "//components/tracing",
       "//components/tracing:startup_tracing",
