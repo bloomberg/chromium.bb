@@ -37,6 +37,7 @@
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"
 #include "core/inspector/AsyncOperationMap.h"
+#include "core/inspector/V8DebuggerAgent.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "core/xmlhttprequest/XMLHttpRequestUpload.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -139,10 +140,14 @@ AsyncCallTracker::AsyncCallTracker(V8DebuggerAgent* debuggerAgent, Instrumenting
     : m_debuggerAgent(debuggerAgent)
     , m_instrumentingAgents(instrumentingAgents)
 {
+    m_debuggerAgent->addAsyncCallTrackingListener(this);
 }
 
 AsyncCallTracker::~AsyncCallTracker()
 {
+#if !ENABLE(OILPAN)
+    m_debuggerAgent->removeAsyncCallTrackingListener(this);
+#endif
 }
 
 void AsyncCallTracker::asyncCallTrackingStateChanged(bool tracking)
@@ -429,6 +434,7 @@ DEFINE_TRACE(AsyncCallTracker)
     visitor->trace(m_debuggerAgent);
     visitor->trace(m_instrumentingAgents);
 #endif
+    V8DebuggerAgent::AsyncCallTrackingListener::trace(visitor);
 }
 
 } // namespace blink

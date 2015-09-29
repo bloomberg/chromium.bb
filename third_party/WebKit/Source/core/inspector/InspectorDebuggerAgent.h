@@ -32,7 +32,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
+#include "core/inspector/V8DebuggerAgent.h"
 
 namespace blink {
 
@@ -86,8 +86,6 @@ public:
     // V8DebuggerAgent::Client implementation.
     void debuggerAgentEnabled() override;
     void debuggerAgentDisabled() override;
-    void asyncCallTrackingStateChanged(bool tracking) override;
-    void resetAsyncOperations() override;
 
     // Called by InspectorInstrumentation.
     bool isPaused();
@@ -108,7 +106,6 @@ protected:
     InspectorDebuggerAgent(InjectedScriptManager*, V8Debugger*, int contextGroupId);
 
     OwnPtrWillBeMember<V8DebuggerAgent> m_v8DebuggerAgent;
-    OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
 };
 
 } // namespace blink

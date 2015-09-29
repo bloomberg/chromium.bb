@@ -155,6 +155,7 @@ private:
     RefPtrWillBeMember<InspectorBackendDispatcher> m_inspectorBackendDispatcher;
     OwnPtr<InspectorFrontend> m_inspectorFrontend;
     InspectorAgentRegistry m_agents;
+    OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
     bool m_deferredAgentsInitialized;
 
     typedef Vector<RefPtr<JSONObject>> NotificationQueue;

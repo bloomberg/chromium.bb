@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef V8DebuggerAgentImpl_h
-#define V8DebuggerAgentImpl_h
+#ifndef V8DebuggerAgent_h
+#define V8DebuggerAgent_h
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -12,7 +12,6 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
-#include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerListener.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
@@ -39,27 +38,44 @@ class V8Debugger;
 
 typedef String ErrorString;
 
-class CORE_EXPORT V8DebuggerAgentImpl
-    : public NoBaseWillBeGarbageCollectedFinalized<V8DebuggerAgentImpl>
-    , public V8DebuggerAgent
+class CORE_EXPORT V8DebuggerAgent
+    : public NoBaseWillBeGarbageCollectedFinalized<V8DebuggerAgent>
     , public V8DebuggerListener
     , public InspectorBackendDispatcher::DebuggerCommandHandler
     , public PromiseTracker::Listener {
-    WTF_MAKE_NONCOPYABLE(V8DebuggerAgentImpl);
-    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8DebuggerAgentImpl);
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8DebuggerAgentImpl);
+    WTF_MAKE_NONCOPYABLE(V8DebuggerAgent);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED(V8DebuggerAgent);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(V8DebuggerAgent);
 public:
-    V8DebuggerAgentImpl(InjectedScriptManager*, V8Debugger*, V8DebuggerAgent::Client*, int contextGroupId);
-    ~V8DebuggerAgentImpl() override;
+    enum BreakpointSource {
+        UserBreakpointSource,
+        DebugCommandBreakpointSource,
+        MonitorCommandBreakpointSource
+    };
+
+    static const char backtraceObjectGroup[];
+
+    class CORE_EXPORT Client {
+    public:
+        virtual ~Client() { }
+        virtual void debuggerAgentEnabled() = 0;
+        virtual void debuggerAgentDisabled() = 0;
+        virtual void muteConsole() = 0;
+        virtual void unmuteConsole() = 0;
+        virtual InjectedScript defaultInjectedScript() = 0;
+    };
+
+    V8DebuggerAgent(InjectedScriptManager*, V8Debugger*, Client*, int contextGroupId);
+    ~V8DebuggerAgent() override;
     DECLARE_TRACE();
 
-    void setInspectorState(InspectorState* state) override { m_state = state; }
-    void setFrontend(InspectorFrontend::Debugger* frontend) override { m_frontend = frontend; }
-    void clearFrontend() override;
-    void restore() override;
+    void setInspectorState(InspectorState* state) { m_state = state; }
+    void setFrontend(InspectorFrontend::Debugger* frontend) { m_frontend = frontend; }
+    void clearFrontend();
+    void restore();
     void disable(ErrorString*) final;
 
-    bool isPaused() override;
+    bool isPaused();
 
     // Part of the protocol.
     void enable(ErrorString*) override;
@@ -110,33 +126,44 @@ public:
     void setAsyncOperationBreakpoint(ErrorString*, int operationId) final;
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId) final;
 
-    void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
-    void cancelPauseOnNextStatement() override;
-    bool canBreakProgram() override;
-    void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data) override;
-    void willExecuteScript(int scriptId) override;
-    void didExecuteScript() override;
+    void schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
+    void cancelPauseOnNextStatement();
+    bool canBreakProgram();
+    void breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data);
+    void willExecuteScript(int scriptId);
+    void didExecuteScript();
 
-    bool enabled() override;
-    V8Debugger& debugger() override { return *m_debugger; }
+    bool enabled();
+    V8Debugger& debugger() { return *m_debugger; }
 
-    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String()) override;
-    void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) override;
+    void setBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource, const String& condition = String());
+    void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource);
 
     // Async call stacks implementation
-    PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole() override;
-    int traceAsyncOperationStarting(const String& description) override;
-    void traceAsyncCallbackStarting(int operationId) override;
-    void traceAsyncCallbackCompleted() override;
-    void traceAsyncOperationCompleted(int operationId) override;
-    bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
+    PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole();
+    static const int unknownAsyncOperationId;
+    int traceAsyncOperationStarting(const String& description);
+    void traceAsyncCallbackStarting(int operationId);
+    void traceAsyncCallbackCompleted();
+    void traceAsyncOperationCompleted(int operationId);
+    bool trackingAsyncCalls() const { return m_maxAsyncCallStackDepth; }
+
+    class CORE_EXPORT AsyncCallTrackingListener : public WillBeGarbageCollectedMixin {
+    public:
+        virtual ~AsyncCallTrackingListener() { }
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
+        virtual void asyncCallTrackingStateChanged(bool tracking) = 0;
+        virtual void resetAsyncOperations() = 0;
+    };
+    void addAsyncCallTrackingListener(AsyncCallTrackingListener*);
+    void removeAsyncCallTrackingListener(AsyncCallTrackingListener*);
 
     // PromiseTracker::Listener
     void didUpdatePromise(InspectorFrontend::Debugger::EventType::Enum, PassRefPtr<TypeBuilder::Debugger::PromiseDetails>) final;
 
-    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
-    InjectedScriptManager* injectedScriptManager()  override { return m_injectedScriptManager; }
-    void reset() override;
+    InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId);
+    InjectedScriptManager* injectedScriptManager() { return m_injectedScriptManager; }
+    void reset();
 
 private:
     bool checkEnabled(ErrorString*);
@@ -196,7 +223,7 @@ private:
 
     RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
     V8Debugger* m_debugger;
-    V8DebuggerAgent::Client* m_client;
+    Client* m_client;
     int m_contextGroupId;
     InspectorState* m_state;
     InspectorFrontend::Debugger* m_frontend;
@@ -223,6 +250,7 @@ private:
     bool m_skipContentScripts;
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     unsigned m_cachedSkipStackGeneration;
+    WillBeHeapHashSet<RawPtrWillBeWeakMember<AsyncCallTrackingListener>> m_asyncCallTrackingListeners;
     // This field must be destroyed before the listeners set above.
     OwnPtrWillBeMember<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtrWillBeMember<PromiseTracker> m_promiseTracker;
@@ -245,4 +273,4 @@ private:
 } // namespace blink
 
 
-#endif // V8DebuggerAgentImpl_h
+#endif // V8DebuggerAgent_h

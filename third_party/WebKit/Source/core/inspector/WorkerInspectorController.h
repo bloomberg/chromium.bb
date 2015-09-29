@@ -42,6 +42,7 @@
 
 namespace blink {
 
+class AsyncCallTracker;
 class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorFrontend;
@@ -90,6 +91,7 @@ private:
     OwnPtr<InspectorFrontend> m_frontend;
     RefPtrWillBeMember<InspectorBackendDispatcher> m_backendDispatcher;
     RawPtrWillBeMember<WorkerDebuggerAgent> m_workerDebuggerAgent;
+    OwnPtrWillBeMember<AsyncCallTracker> m_asyncCallTracker;
     RawPtrWillBeMember<WorkerRuntimeAgent> m_workerRuntimeAgent;
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<InspectorTaskRunner::IgnoreInterruptsScope> m_beforeInitlizedScope;
