@@ -28,8 +28,6 @@ class WebStateFacadeDelegate {
   WebStateFacadeDelegate() {}
   virtual ~WebStateFacadeDelegate() {}
 
-  // Sets the WebStateImpl that backs the WebContents facade.
-  virtual void SetWebState(WebStateImpl* web_state) = 0;
   // Returns the facade object being driven by this delegate.
   virtual content::WebContents* GetWebContentsFacade() = 0;
 
