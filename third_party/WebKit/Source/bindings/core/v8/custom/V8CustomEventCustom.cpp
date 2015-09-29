@@ -35,6 +35,7 @@
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "bindings/core/v8/V8CustomEventInit.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8HiddenValue.h"
@@ -49,6 +50,48 @@ static v8::Local<v8::Value> cacheState(v8::Isolate* isolate, v8::Local<v8::Objec
     return detail;
 }
 
+void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ConstructionContext, "CustomEvent", info.Holder(), info.GetIsolate());
+    if (UNLIKELY(info.Length() < 1)) {
+        setMinimumArityTypeError(exceptionState, 1, info.Length());
+        exceptionState.throwIfNeeded();
+        return;
+    }
+
+    V8StringResource<> type = info[0];
+    if (!type.prepare())
+        return;
+
+    CustomEventInit eventInitDict;
+    if (!isUndefinedOrNull(info[1])) {
+        if (!info[1]->IsObject()) {
+            exceptionState.throwTypeError("parameter 2 ('eventInitDict') is not an object.");
+            exceptionState.throwIfNeeded();
+            return;
+        }
+        V8CustomEventInit::toImpl(info.GetIsolate(), info[1], eventInitDict, exceptionState);
+        if (exceptionState.throwIfNeeded())
+            return;
+    }
+
+    RefPtrWillBeRawPtr<CustomEvent> impl = CustomEvent::create(type, eventInitDict);
+    v8::Local<v8::Object> wrapper = info.Holder();
+    wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8CustomEvent::wrapperTypeInfo, wrapper);
+
+    // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
+    // |detail| as a hidden value to avoid cycle references.
+    if (eventInitDict.hasDetail()) {
+        v8::Local<v8::Value> v8Detail = eventInitDict.detail().v8Value();
+        cacheState(info.GetIsolate(), wrapper, v8Detail);
+        // When a custom event is created in an isolated world, serialize
+        // |detail| and store it in |impl| so that we can clone |detail|
+        // when the getter of |detail| is called in the main world later.
+        if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
+            impl->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), v8Detail));
+    }
+    v8SetReturnValue(info, wrapper);
+}
 
 void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -63,10 +106,16 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
 
     // Be careful not to return a V8 value which is created in different world.
     v8::Local<v8::Value> detail;
-    if (SerializedScriptValue* serializedValue = event->serializedDetail())
+    if (SerializedScriptValue* serializedValue = event->serializedDetail()) {
         detail = serializedValue->deserialize();
-    else
-        detail = event->detail().v8ValueFor(ScriptState::current(info.GetIsolate()));
+    } else if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
+        v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(info.GetIsolate(), event, V8HiddenValue::detail(info.GetIsolate()));
+        if (!mainWorldDetail.IsEmpty()) {
+            event->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldDetail));
+            detail = event->serializedDetail()->deserialize();
+        }
+    }
+
     // |detail| should be null when it is an empty handle because its default value is null.
     if (detail.IsEmpty())
         detail = v8::Null(info.GetIsolate());
