@@ -95,8 +95,7 @@ weston_SOURCES =					\
 	shared/timespec-util.h				\
 	shared/zalloc.h					\
 	shared/platform.h				\
-	src/weston-egl-ext.h				\
-	src/systemd-notify.h
+	src/weston-egl-ext.h
 
 if SYSTEMD_NOTIFY_SUPPORT
 module_LTLIBRARIES += systemd-notify.la
@@ -108,7 +107,6 @@ systemd_notify_la_CFLAGS =			\
 	$(AM_CFLAGS)
 systemd_notify_la_SOURCES =			\
 	src/systemd-notify.c			\
-	src/systemd-notify.h			\
 	shared/helpers.h			\
 	shared/zalloc.h				\
 	src/compositor.h
