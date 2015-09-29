@@ -122,10 +122,6 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // sessions.
   static void ClearSessionCache();
 
-  // Get the maximum SSL version supported by the underlying library and
-  // cryptographic implementation.
-  static uint16 GetMaxSupportedSSLVersion();
-
   // Returns the ChannelIDService used by this socket, or NULL if
   // channel ids are not supported.
   virtual ChannelIDService* GetChannelIDService() const = 0;

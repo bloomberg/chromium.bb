@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
 #include "base/strings/string_util.h"
-#include "crypto/aes_128_gcm_helpers_nss.h"
 #include "crypto/scoped_nss_types.h"
 
 namespace gcm {
@@ -32,15 +31,10 @@ bool GCMMessageCryptographer::EncryptDecryptRecordInternal(
   const CK_ATTRIBUTE_TYPE cka_mode = mode == ENCRYPT ? CKA_ENCRYPT
                                                      : CKA_DECRYPT;
 
-  // TODO(peter): For AES-GCM we should be using CKM_AES_GCM as the mechanism,
-  // but because of an NSS bug we need to use CKM_AES_ECB as a work-around until
-  // we require NSS 3.15+. https://bugzilla.mozilla.org/show_bug.cgi?id=853285
-  // This does not affect the call to PK11{Decrypt,Encrypt}Helper below.
-  const CK_MECHANISM_TYPE key_mechanism = CKM_AES_ECB;
-
   crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
-  crypto::ScopedPK11SymKey aead_key(PK11_ImportSymKey(slot.get(), key_mechanism,
-      PK11_OriginUnwrap, cka_mode, &key_item, nullptr));
+  crypto::ScopedPK11SymKey aead_key(
+      PK11_ImportSymKey(slot.get(), CKM_AES_GCM, PK11_OriginUnwrap, cka_mode,
+                        &key_item, nullptr));
 
   CK_GCM_PARAMS gcm_params;
   gcm_params.pIv = const_cast<unsigned char*>(
@@ -71,17 +65,15 @@ bool GCMMessageCryptographer::EncryptDecryptRecordInternal(
       base::WriteInto(output, maximum_output_length.ValueOrDie()));
 
   if (mode == ENCRYPT) {
-    if (crypto::PK11EncryptHelper(aead_key.get(), CKM_AES_GCM, &param,
-                                  raw_output, &output_length, output->size(),
-                                  raw_input, input.size())
-            != SECSuccess) {
+    if (PK11_Encrypt(aead_key.get(), CKM_AES_GCM, &param, raw_output,
+                     &output_length, output->size(), raw_input,
+                     input.size()) != SECSuccess) {
       return false;
     }
   } else {
-    if (crypto::PK11DecryptHelper(aead_key.get(), CKM_AES_GCM, &param,
-                                  raw_output, &output_length, output->size(),
-                                  raw_input, input.size())
-            != SECSuccess) {
+    if (PK11_Decrypt(aead_key.get(), CKM_AES_GCM, &param, raw_output,
+                     &output_length, output->size(), raw_input,
+                     input.size()) != SECSuccess) {
       return false;
     }
   }

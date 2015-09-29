@@ -137,14 +137,6 @@ namespace net {
     } while (0)
 #endif
 
-#if !defined(CKM_AES_GCM)
-#define CKM_AES_GCM 0x00001087
-#endif
-
-#if !defined(CKM_NSS_CHACHA20_POLY1305)
-#define CKM_NSS_CHACHA20_POLY1305 (CKM_NSS + 26)
-#endif
-
 namespace {
 
 // SSL plaintext fragments are shorter than 16KB. Although the record layer
@@ -852,17 +844,10 @@ bool SSLClientSocketNSS::Core::Init(PRFileDesc* socket,
   SECStatus rv = SECSuccess;
 
   if (!ssl_config_.next_protos.empty()) {
-    // TODO(bnc): Check ssl_config_.disabled_cipher_suites.
-    const bool adequate_encryption =
-        PK11_TokenExists(CKM_AES_GCM) ||
-        PK11_TokenExists(CKM_NSS_CHACHA20_POLY1305);
-    const bool adequate_key_agreement = PK11_TokenExists(CKM_DH_PKCS_DERIVE) ||
-                                        PK11_TokenExists(CKM_ECDH1_DERIVE);
     NextProtoVector next_protos = ssl_config_.next_protos;
-    if (!adequate_encryption || !adequate_key_agreement ||
-        !IsTLSVersionAdequateForHTTP2(ssl_config_)) {
+    // TODO(bnc): Check ssl_config_.disabled_cipher_suites.
+    if (!IsTLSVersionAdequateForHTTP2(ssl_config_))
       DisableHTTP2(&next_protos);
-    }
     std::vector<uint8_t> wire_protos = SerializeNextProtos(next_protos);
     rv = SSL_SetNextProtoNego(
         nss_fd_, wire_protos.empty() ? NULL : &wire_protos[0],
@@ -2412,20 +2397,6 @@ void SSLClientSocket::ClearSessionCache() {
     return;
 
   SSL_ClearSessionCache();
-}
-
-#if !defined(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)
-#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
-#endif
-
-// static
-uint16 SSLClientSocket::GetMaxSupportedSSLVersion() {
-  crypto::EnsureNSSInit();
-  if (PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)) {
-    return SSL_PROTOCOL_VERSION_TLS1_2;
-  } else {
-    return SSL_PROTOCOL_VERSION_TLS1_1;
-  }
 }
 
 bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {

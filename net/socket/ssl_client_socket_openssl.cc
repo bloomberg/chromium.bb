@@ -426,11 +426,6 @@ void SSLClientSocket::ClearSessionCache() {
   context->session_cache()->Flush();
 }
 
-// static
-uint16 SSLClientSocket::GetMaxSupportedSSLVersion() {
-  return SSL_PROTOCOL_VERSION_TLS1_2;
-}
-
 SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
     scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,

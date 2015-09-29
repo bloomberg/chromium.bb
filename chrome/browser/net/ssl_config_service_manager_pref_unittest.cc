@@ -19,7 +19,7 @@
 #include "components/syncable_prefs/pref_service_mock_factory.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/socket/ssl_client_socket.h"
+#include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -148,12 +148,10 @@ TEST_F(SSLConfigServiceManagerPrefTest, NoCommandLinePrefs) {
 
   SSLConfig ssl_config;
   config_service->GetSSLConfig(&ssl_config);
-  // In the absence of command-line options, TLS versions from 1.0 up to 1.1 or
-  // 1.2 (depending on the underlying library and cryptographic implementation)
-  // are enabled.
-  EXPECT_EQ(net::SSL_PROTOCOL_VERSION_TLS1, ssl_config.version_min);
-  EXPECT_EQ(net::SSLClientSocket::GetMaxSupportedSSLVersion(),
-            ssl_config.version_max);
+  // In the absence of command-line options, the default TLS version range is
+  // enabled.
+  EXPECT_EQ(net::kDefaultSSLVersionMin, ssl_config.version_min);
+  EXPECT_EQ(net::kDefaultSSLVersionMax, ssl_config.version_max);
 
   // The settings should not be added to the local_state.
   EXPECT_FALSE(local_state->HasPrefPath(prefs::kSSLVersionMin));

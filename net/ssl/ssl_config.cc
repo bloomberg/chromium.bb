@@ -5,13 +5,14 @@
 #include "net/ssl/ssl_config.h"
 
 #include "net/cert/cert_verifier.h"
-#include "net/socket/ssl_client_socket.h"
 
 namespace net {
 
-const uint16 kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
+const uint16_t kDefaultSSLVersionMin = SSL_PROTOCOL_VERSION_TLS1;
 
-const uint16 kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1_1;
+const uint16_t kDefaultSSLVersionMax = SSL_PROTOCOL_VERSION_TLS1_2;
+
+const uint16_t kDefaultSSLVersionFallbackMin = SSL_PROTOCOL_VERSION_TLS1_1;
 
 SSLConfig::CertAndStatus::CertAndStatus() : cert_status(0) {}
 
@@ -21,7 +22,7 @@ SSLConfig::SSLConfig()
     : rev_checking_enabled(false),
       rev_checking_required_local_anchors(false),
       version_min(kDefaultSSLVersionMin),
-      version_max(SSLClientSocket::GetMaxSupportedSSLVersion()),
+      version_max(kDefaultSSLVersionMax),
       version_fallback_min(kDefaultSSLVersionFallbackMin),
       enable_deprecated_cipher_suites(false),
       channel_id_enabled(true),

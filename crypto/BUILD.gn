@@ -10,8 +10,6 @@ component("crypto") {
   sources = [
     "aead_openssl.cc",
     "aead_openssl.h",
-    "aes_128_gcm_helpers_nss.cc",
-    "aes_128_gcm_helpers_nss.h",
     "apple_keychain.h",
     "apple_keychain_ios.mm",
     "apple_keychain_mac.mm",
@@ -138,8 +136,6 @@ component("crypto") {
   if (use_openssl) {
     # Remove NSS files when using OpenSSL
     sources -= [
-      "aes_128_gcm_helpers_nss.cc",
-      "aes_128_gcm_helpers_nss.h",
       "ec_private_key_nss.cc",
       "ec_signature_creator_nss.cc",
       "encryptor_nss.cc",
@@ -240,7 +236,6 @@ group("crypto_unittests_run") {
 test("crypto_unittests") {
   sources = [
     "aead_openssl_unittest.cc",
-    "aes_128_gcm_helpers_nss_unittest.cc",
     "curve25519_unittest.cc",
     "ec_private_key_unittest.cc",
     "ec_signature_creator_unittest.cc",
@@ -271,9 +266,7 @@ test("crypto_unittests") {
     ]
   }
 
-  if (use_openssl) {
-    sources -= [ "aes_128_gcm_helpers_nss_unittest.cc" ]
-  } else {
+  if (!use_openssl) {
     sources -= [ "openssl_bio_string_unittest.cc" ]
   }
 

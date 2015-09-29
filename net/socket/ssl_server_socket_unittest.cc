@@ -52,17 +52,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if !defined(USE_OPENSSL)
-#include <pk11pub.h>
-
-#if !defined(CKM_AES_GCM)
-#define CKM_AES_GCM 0x00001087
-#endif
-#if !defined(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256)
-#define CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256 (CKM_NSS + 24)
-#endif
-#endif
-
 namespace net {
 
 namespace {
@@ -412,14 +401,7 @@ TEST_F(SSLServerSocketTest, Handshake) {
   bool is_aead;
   SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, cipher_suite);
   EXPECT_STREQ("ECDHE_RSA", key_exchange);
-#if defined(USE_OPENSSL)
-  bool supports_aead = true;
-#else
-  bool supports_aead =
-      PK11_TokenExists(CKM_AES_GCM) &&
-      PK11_TokenExists(CKM_NSS_TLS_MASTER_KEY_DERIVE_DH_SHA256);
-#endif
-  EXPECT_TRUE(!supports_aead || is_aead);
+  EXPECT_TRUE(is_aead);
 }
 
 TEST_F(SSLServerSocketTest, DataTransfer) {

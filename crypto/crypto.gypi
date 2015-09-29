@@ -29,8 +29,6 @@
       '<@(hmac_win64_related_sources)',
       'aead_openssl.cc',
       'aead_openssl.h',
-      'aes_128_gcm_helpers_nss.cc',
-      'aes_128_gcm_helpers_nss.h',
       'apple_keychain.h',
       'apple_keychain_ios.mm',
       'apple_keychain_mac.mm',

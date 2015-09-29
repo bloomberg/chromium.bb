@@ -20,7 +20,6 @@
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_config_service.h"
 
@@ -261,7 +260,7 @@ void SSLConfigServiceManagerPref::GetSSLConfigFromPrefs(
   std::string version_max_str = ssl_version_max_.GetValue();
   std::string version_fallback_min_str = ssl_version_fallback_min_.GetValue();
   config->version_min = net::kDefaultSSLVersionMin;
-  config->version_max = net::SSLClientSocket::GetMaxSupportedSSLVersion();
+  config->version_max = net::kDefaultSSLVersionMax;
   config->version_fallback_min = net::kDefaultSSLVersionFallbackMin;
   uint16 version_min = SSLProtocolVersionFromString(version_min_str);
   uint16 version_max = SSLProtocolVersionFromString(version_max_str);

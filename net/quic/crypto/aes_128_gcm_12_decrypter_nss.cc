@@ -7,8 +7,6 @@
 #include <pk11pub.h>
 #include <secerr.h>
 
-#include "crypto/aes_128_gcm_helpers_nss.h"
-
 using base::StringPiece;
 
 namespace net {
@@ -18,23 +16,10 @@ namespace {
 const size_t kKeySize = 16;
 const size_t kNoncePrefixSize = 4;
 
-SECStatus My_Decrypt(PK11SymKey* key,
-                     CK_MECHANISM_TYPE mechanism,
-                     SECItem* param,
-                     unsigned char* out,
-                     unsigned int* out_len,
-                     unsigned int max_len,
-                     const unsigned char* data,
-                     unsigned int data_len) {
-  return crypto::PK11DecryptHelper(key, mechanism, param, out, out_len, max_len,
-                                   data, data_len);
-}
-
 }  // namespace
 
 Aes128Gcm12Decrypter::Aes128Gcm12Decrypter()
-    : AeadBaseDecrypter(CKM_AES_GCM, My_Decrypt, kKeySize, kAuthTagSize,
-                        kNoncePrefixSize) {
+    : AeadBaseDecrypter(CKM_AES_GCM, kKeySize, kAuthTagSize, kNoncePrefixSize) {
   static_assert(kKeySize <= kMaxKeySize, "key size too big");
   static_assert(kNoncePrefixSize <= kMaxNoncePrefixSize,
                 "nonce prefix size too big");

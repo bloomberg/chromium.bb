@@ -5,7 +5,8 @@
 #ifndef NET_SSL_SSL_CONFIG_H_
 #define NET_SSL_SSL_CONFIG_H_
 
-#include "base/basictypes.h"
+#include <stdint.h>
+
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/cert/x509_certificate.h"
@@ -27,13 +28,13 @@ enum {
 };
 
 // Default minimum protocol version.
-NET_EXPORT extern const uint16 kDefaultSSLVersionMin;
+NET_EXPORT extern const uint16_t kDefaultSSLVersionMin;
 
-// For maximum supported protocol version, use
-// SSLClientSocket::GetMaxSupportedSSLVersion().
+// Default maximum protocol version.
+NET_EXPORT extern const uint16_t kDefaultSSLVersionMax;
 
 // Default minimum protocol version that it's acceptable to fallback to.
-NET_EXPORT extern const uint16 kDefaultSSLVersionFallbackMin;
+NET_EXPORT extern const uint16_t kDefaultSSLVersionFallbackMin;
 
 // A collection of SSL-related configuration settings.
 struct NET_EXPORT SSLConfig {
