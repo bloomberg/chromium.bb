@@ -537,7 +537,9 @@ bool VisitDatabase::GetVisibleVisitCountToHost(const GURL& url,
   return true;
 }
 
-bool VisitDatabase::GetHistoryCount(int* count) {
+bool VisitDatabase::GetHistoryCount(const base::Time& begin_time,
+                                    const base::Time& end_time,
+                                    int* count) {
   sql::Statement statement(GetDB().GetCachedStatement(SQL_FROM_HERE,
       "SELECT COUNT(*) FROM ("
       "SELECT DISTINCT url, "
@@ -545,11 +547,12 @@ bool VisitDatabase::GetHistoryCount(int* count) {
       // Windows Epoch to the number of seconds from Unix Epoch. Leap seconds
       // are not handled in both timestamp units, so a linear conversion is
       // valid here.
-      "DATE((visit_time - ?) / ?, 'unixepoch', 'localtime') "
+      "DATE((visit_time - ?) / ?, 'unixepoch', 'localtime')"
       "FROM visits "
       "WHERE (transition & ?) != 0 "  // CHAIN_END
-      "AND (transition & ?) NOT IN (?, ?, ?)"  // NO SUBFRAME or
-                                               // KEYWORD_GENERATED
+      "AND (transition & ?) NOT IN (?, ?, ?) "  // NO SUBFRAME or
+                                                // KEYWORD_GENERATED
+      "AND visit_time >= ? AND visit_time < ?"
       ")"));
 
   statement.BindInt64(0, base::Time::kTimeTToMicrosecondsOffset);
@@ -559,6 +562,8 @@ bool VisitDatabase::GetHistoryCount(int* count) {
   statement.BindInt(4, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
   statement.BindInt(5, ui::PAGE_TRANSITION_MANUAL_SUBFRAME);
   statement.BindInt(6, ui::PAGE_TRANSITION_KEYWORD_GENERATED);
+  statement.BindInt64(7, begin_time.ToInternalValue());
+  statement.BindInt64(8, end_time.ToInternalValue());
 
   if (!statement.Step())
     return false;

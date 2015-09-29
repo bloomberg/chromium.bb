@@ -1045,10 +1045,12 @@ TypedUrlSyncableService* HistoryBackend::GetTypedUrlSyncableService() const {
 
 // Statistics ------------------------------------------------------------------
 
-HistoryCountResult HistoryBackend::GetHistoryCount() {
+HistoryCountResult HistoryBackend::GetHistoryCount(const Time& begin_time,
+                                                   const Time& end_time) {
   HistoryCountResult result;
   result.count = 0;
-  result.success = db_ && db_->GetHistoryCount(&result.count);
+  result.success =
+      db_ && db_->GetHistoryCount(begin_time, end_time, &result.count);
   return result;
 }
 

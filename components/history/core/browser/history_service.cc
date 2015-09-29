@@ -670,6 +670,8 @@ base::CancelableTaskTracker::TaskId HistoryService::QueryURL(
 // Statistics ------------------------------------------------------------------
 
 base::CancelableTaskTracker::TaskId HistoryService::GetHistoryCount(
+    const Time& begin_time,
+    const Time& end_time,
     const GetHistoryCountCallback& callback,
     base::CancelableTaskTracker* tracker) {
   DCHECK(thread_) << "History service being called after cleanup";
@@ -677,7 +679,10 @@ base::CancelableTaskTracker::TaskId HistoryService::GetHistoryCount(
 
   return tracker->PostTaskAndReplyWithResult(
       thread_->task_runner().get(), FROM_HERE,
-      base::Bind(&HistoryBackend::GetHistoryCount, history_backend_.get()),
+      base::Bind(&HistoryBackend::GetHistoryCount,
+                 history_backend_.get(),
+                 begin_time,
+                 end_time),
       callback);
 }
 

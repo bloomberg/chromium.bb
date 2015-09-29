@@ -416,4 +416,176 @@ TEST_F(VisitDatabaseTest, GetVisibleVisitsForURL) {
   EXPECT_TRUE(IsVisitInfoEqual(results[2], test_visit_rows[0]));
 }
 
+TEST_F(VisitDatabaseTest, GetHistoryCount) {
+  Time today = Time::Now().LocalMidnight();
+  // Find the beginning of yesterday and the day before yesterday. We cannot use
+  // TimeDelta::FromDays(1), as this simply removes 24 hours and thus does not
+  // work correctly with DST shifts. Instead, we'll jump 36 hours (i.e.
+  // somewhere in the middle of the previous day), and use |LocalMidnight()| to
+  // round down to the beginning of the day in the local time, taking timezones
+  // and DST into account. This is necessary to achieve the same equivalence
+  // class on days as the DATE(..., 'localtime') function in SQL.
+  Time yesterday = (today - TimeDelta::FromHours(36)).LocalMidnight();
+  Time two_days_ago = (yesterday - TimeDelta::FromHours(36)).LocalMidnight();
+  Time now = two_days_ago;
+
+  ui::PageTransition standard_transition = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_TYPED |
+      ui::PAGE_TRANSITION_CHAIN_START |
+      ui::PAGE_TRANSITION_CHAIN_END);
+
+  // Add 5 visits (3 distinct URLs) for the day before yesterday.
+  // Whether the URL was browsed on this machine or synced has no effect.
+  VisitRow first_day_1(1, now, 0, standard_transition, 0);
+  first_day_1.visit_id = 1;
+  AddVisit(&first_day_1, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow first_day_2(2, now, 0, standard_transition, 0);
+  first_day_2.visit_id = 2;
+  AddVisit(&first_day_2, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow first_day_3(1, now, 0, standard_transition, 0);
+  first_day_3.visit_id = 3;
+  AddVisit(&first_day_3, SOURCE_SYNCED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow first_day_4(3, now, 0, standard_transition, 0);
+  first_day_4.visit_id = 4;
+  AddVisit(&first_day_4, SOURCE_SYNCED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow first_day_5(2, now, 0, standard_transition, 0);
+  first_day_5.visit_id = 5;
+  AddVisit(&first_day_5, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  // Add 4 more visits for yesterday. One of them is invalid, as it's not
+  // a user-visible navigation. Of the remaining 3, only 2 are unique.
+  now = yesterday;
+
+  VisitRow second_day_1(1, now, 0, standard_transition, 0);
+  second_day_1.visit_id = 6;
+  AddVisit(&second_day_1, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow second_day_2(1, now, 0, standard_transition, 0);
+  second_day_2.visit_id = 7;
+  AddVisit(&second_day_2, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow second_day_3(2, now, 0, ui::PAGE_TRANSITION_AUTO_SUBFRAME, 0);
+  second_day_3.visit_id = 8;
+  AddVisit(&second_day_3, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  VisitRow second_day_4(3, now, 0, standard_transition, 0);
+  second_day_4.visit_id = 9;
+  AddVisit(&second_day_4, SOURCE_BROWSED);
+  now += TimeDelta::FromHours(1);
+
+  int result;
+
+  // There were 3 distinct URLs two days ago.
+  EXPECT_TRUE(GetHistoryCount(two_days_ago, yesterday, &result));
+  EXPECT_EQ(3, result);
+
+  // For both previous days, there should be 5 per-day unique URLs.
+  EXPECT_TRUE(GetHistoryCount(two_days_ago, today, &result));
+  EXPECT_EQ(5, result);
+
+  // Since we only have entries for the two previous days, the infinite time
+  // range should yield the same result.
+  EXPECT_TRUE(GetHistoryCount(Time(), Time::Max(), &result));
+  EXPECT_EQ(5, result);
+
+  // Narrowing the range to exclude |first_day_1| will still return 5,
+  // because |first_day_1| is not unique.
+  EXPECT_TRUE(GetHistoryCount(
+      two_days_ago + TimeDelta::FromHours(2), today, &result));
+  EXPECT_EQ(5, result);
+
+  // Narrowing the range to exclude |second_day_4| will return 4,
+  // because |second_day_4| is unique.
+  EXPECT_TRUE(GetHistoryCount(
+      two_days_ago, yesterday + TimeDelta::FromHours(3), &result));
+  EXPECT_EQ(4, result);
+
+  // Narrowing the range to exclude both |first_day_1| and |second_day_4| will
+  // still return 4.
+  EXPECT_TRUE(GetHistoryCount(two_days_ago + TimeDelta::FromHours(2),
+                              yesterday + TimeDelta::FromHours(3),
+                              &result));
+  EXPECT_EQ(4, result);
+
+  // A range that contains no visits will return 0.
+  EXPECT_TRUE(GetHistoryCount(two_days_ago + TimeDelta::FromMicroseconds(1),
+                              two_days_ago + TimeDelta::FromHours(1),
+                              &result));
+  EXPECT_EQ(0, result);
+
+  // If this timezone uses DST, test the behavior on days when the time
+  // is shifted forward and backward.
+  Time shift_forward;
+  Time shift_backward;
+  Time current_day = (two_days_ago - TimeDelta::FromSeconds(1)).LocalMidnight();
+  for (int i = 0; i < 366; i++) {
+    current_day = (current_day - TimeDelta::FromSeconds(1)).LocalMidnight();
+    Time after_24_hours = current_day + TimeDelta::FromHours(24);
+
+    if (current_day == after_24_hours.LocalMidnight()) {
+      // More than 24 hours. Shift backward.
+      shift_backward = current_day;
+    } else if (after_24_hours > after_24_hours.LocalMidnight()) {
+      // Less than 24 hours. Shift forward.
+      shift_forward = current_day;
+    }
+
+    if (!shift_backward.is_null() && !shift_forward.is_null())
+      break;
+  }
+
+  // Test the backward shift. Add two visits for the same page on midnight and
+  // 24 hours later. The count should be 1, not 2, because the day is longer
+  // than 24 hours, and the two visits will be regarded as duplicate.
+  if (!shift_backward.is_null()) {
+    VisitRow backward_1(1, shift_backward, 0, standard_transition, 0);
+    backward_1.visit_id = 10;
+    AddVisit(&backward_1, SOURCE_BROWSED);
+
+    VisitRow backward_2(1, shift_backward + TimeDelta::FromHours(24),
+                        0, standard_transition, 0);
+    backward_2.visit_id = 11;
+    AddVisit(&backward_2, SOURCE_BROWSED);
+
+    EXPECT_TRUE(GetHistoryCount(shift_backward,
+                                shift_backward + TimeDelta::FromHours(25),
+                                &result));
+    EXPECT_EQ(1, result);
+  }
+
+  // Test the forward shift. Add two visits for the same page at midnight and
+  // almost 24 hours later. The count should be 2, not 1. The visits would be
+  // regarded as duplicate in a normal 24 hour day, but in this case the second
+  // visit is already in the next day.
+  if (!shift_forward.is_null()) {
+    VisitRow forward_1(1, shift_forward, 0, standard_transition, 0);
+    forward_1.visit_id = 12;
+    AddVisit(&forward_1, SOURCE_BROWSED);
+
+    Time almost_24_hours_later = shift_forward +
+                                 TimeDelta::FromHours(24) -
+                                 TimeDelta::FromMicroseconds(1);
+    VisitRow forward_2(1, almost_24_hours_later, 0, standard_transition, 0);
+    forward_2.visit_id = 13;
+    AddVisit(&forward_2, SOURCE_BROWSED);
+
+    EXPECT_TRUE(GetHistoryCount(shift_forward,
+                                shift_forward + TimeDelta::FromHours(24),
+                                &result));
+    EXPECT_EQ(2, result);
+  }
+}
+
 }  // namespace history
