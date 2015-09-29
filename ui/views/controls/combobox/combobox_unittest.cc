@@ -17,60 +17,17 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
-#include "ui/views/controls/menu/menu_runner.h"
-#include "ui/views/controls/menu/menu_runner_handler.h"
-#include "ui/views/test/menu_runner_test_api.h"
+#include "ui/views/test/combobox_test_api.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
 
 namespace views {
-namespace test {
-
-class ComboboxTestApi {
- public:
-  explicit ComboboxTestApi(Combobox* combobox) : combobox_(combobox) {}
-
-  void PerformActionAt(int index) { menu_model()->ActivatedAt(index); }
-  void InstallTestMenuRunner(int* menu_show_count);
-
-  gfx::Size content_size() { return combobox_->content_size_; }
-  ui::MenuModel* menu_model() { return combobox_->menu_model_adapter_.get(); }
-
- private:
-  Combobox* combobox_;
-
-  DISALLOW_COPY_AND_ASSIGN(ComboboxTestApi);
-};
-
-}  // namespace test
 
 using test::ComboboxTestApi;
 
 namespace {
-
-// An dummy implementation of MenuRunnerHandler to check if the dropdown menu is
-// shown or not.
-class TestMenuRunnerHandler : public MenuRunnerHandler {
- public:
-  explicit TestMenuRunnerHandler(int* show_counter)
-      : show_counter_(show_counter) {}
-  MenuRunner::RunResult RunMenuAt(Widget* parent,
-                                  MenuButton* button,
-                                  const gfx::Rect& bounds,
-                                  MenuAnchorPosition anchor,
-                                  ui::MenuSourceType source_type,
-                                  int32 types) override {
-    *show_counter_ += 1;
-    return MenuRunner::NORMAL_EXIT;
-  }
-
- private:
-  int* show_counter_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestMenuRunnerHandler);
-};
 
 // A wrapper of Combobox to intercept the result of OnKeyPressed() and
 // OnKeyReleased() methods.
@@ -225,14 +182,6 @@ class TestComboboxListener : public views::ComboboxListener {
 };
 
 }  // namespace
-
-void ComboboxTestApi::InstallTestMenuRunner(int* menu_show_count) {
-  combobox_->menu_runner_.reset(
-      new MenuRunner(menu_model(), MenuRunner::COMBOBOX));
-  test::MenuRunnerTestAPI test_api(combobox_->menu_runner_.get());
-  test_api.SetMenuRunnerHandler(
-      make_scoped_ptr(new TestMenuRunnerHandler(menu_show_count)));
-}
 
 class ComboboxTest : public ViewsTestBase {
  public:

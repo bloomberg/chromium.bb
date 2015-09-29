@@ -42,6 +42,15 @@ class TranslateBubbleView : public ManagedFullScreenBubbleDelegateView,
                             public views::LinkListener,
                             public content::WebContentsObserver {
  public:
+  // Commands shown in the action-style combobox. The value corresponds to the
+  // position in the combobox menu. Gaps will become separators.
+  enum class DenialComboboxIndex {
+    DONT_TRANSLATE = 0,
+    NEVER_TRANSLATE_LANGUAGE = 1,
+    NEVER_TRANSLATE_SITE = 3,
+    MENU_SIZE = 4,
+  };
+
   ~TranslateBubbleView() override;
 
   // Shows the Translate bubble.

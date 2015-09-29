@@ -478,6 +478,8 @@
       'controls/textfield/textfield_test_api.h',
       'test/capture_tracking_view.cc',
       'test/capture_tracking_view.h',
+      'test/combobox_test_api.cc',
+      'test/combobox_tesa_api.h',
       'test/desktop_test_views_delegate.h',
       'test/desktop_test_views_delegate_mac.mm',
       'test/event_generator_delegate_mac.h',
