@@ -36,6 +36,7 @@ include_rules = [
   "+content/public/renderer",
   "+extensions/common",
   "+extensions/renderer",
+  "+media/base",
   "+gin",
   "+grit",  # For generated headers. TODO(thestig): Remove.
   "+ppapi/c",

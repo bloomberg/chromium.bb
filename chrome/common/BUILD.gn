@@ -107,6 +107,7 @@ static_library("common") {
       "//components/password_manager/core/common",
       "//components/signin/core/common",
       "//components/translate/content/common",
+      "//media",
       "//ipc",
       "//third_party/re2",
       "//third_party/widevine/cdm:version_h",

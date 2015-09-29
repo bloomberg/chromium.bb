@@ -205,6 +205,8 @@
 
 #if !defined(OS_IOS)
 #include "chrome/browser/ui/app_modal/chrome_javascript_native_dialog_factory.h"
+#include "chrome/common/media/media_resource_provider.h"
+#include "media/base/media_resources.h"
 #endif  // !defined(OS_IOS)
 
 #if !defined(DISABLE_NACL)
@@ -1523,6 +1525,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
+#if !defined(OS_IOS)
+  media::SetLocalizedStringProvider(
+      chrome_common_media::LocalizedStringProvider);
+#endif
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global IntranetRedirectDetector instance, which will promptly go to

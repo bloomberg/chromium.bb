@@ -81,8 +81,7 @@ class AudioManagerTest : public ::testing::Test {
       AudioDeviceNames::const_iterator it = device_names.begin();
 
       // The first device in the list should always be the default device.
-      EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceName),
-                it->device_name);
+      EXPECT_EQ(AudioManager::GetDefaultDeviceName(), it->device_name);
       EXPECT_EQ(std::string(AudioManagerBase::kDefaultDeviceId), it->unique_id);
       ++it;
 
@@ -93,8 +92,7 @@ class AudioManagerTest : public ::testing::Test {
         EXPECT_FALSE(it->unique_id.empty());
         DVLOG(2) << "Device ID(" << it->unique_id
                  << "), label: " << it->device_name;
-        EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceName),
-                  it->device_name);
+        EXPECT_NE(AudioManager::GetDefaultDeviceName(), it->device_name);
         EXPECT_NE(std::string(AudioManagerBase::kDefaultDeviceId),
                   it->unique_id);
         ++it;

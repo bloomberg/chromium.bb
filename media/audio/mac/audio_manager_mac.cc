@@ -152,7 +152,7 @@ static void GetAudioDeviceInfo(bool is_input,
     // on the top of the list for all platforms. There is no duplicate
     // counting here since the default device has been abstracted out before.
     media::AudioDeviceName name;
-    name.device_name = AudioManagerBase::kDefaultDeviceName;
+    name.device_name = AudioManager::GetDefaultDeviceName();
     name.unique_id = AudioManagerBase::kDefaultDeviceId;
     device_names->push_front(name);
   }

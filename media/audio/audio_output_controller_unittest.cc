@@ -217,7 +217,7 @@ class AudioOutputControllerTest : public testing::Test {
           .WillOnce(SignalEvent(&play_event_));
     }
 
-    controller_->SwitchOutputDevice(AudioManagerBase::kDefaultDeviceName,
+    controller_->SwitchOutputDevice(AudioManager::GetDefaultDeviceName(),
                                     base::Bind(&base::DoNothing));
   }
 

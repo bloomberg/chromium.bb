@@ -15265,6 +15265,24 @@ After you create a new supervised user, you can manage their settings at any tim
       </message>
     </if>
 
+      <!-- Audio device strings. -->
+      <message name="IDS_DEFAULT_AUDIO_DEVICE_NAME" desc="System default audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
+          Default
+      </message>
+      <if expr="is_win">
+        <message name="IDS_COMMUNICATIONS_AUDIO_DEVICE_NAME" desc="System default communications audio device (microphone or loudspeaker). This is typically presented to users in a drop-down list of device choices.">
+          Communications
+        </message>
+      </if>
+      <if expr="chromeos">
+        <message name="IDS_BEAMFORMING_ON_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a narrow angle coverage. Only the user in front of the device (i.e. you) will be listened to. This is typically presented to users in a drop-down list of device choices.">
+          Default (pick up just you)
+        </message>
+        <message name="IDS_BEAMFORMING_OFF_DEFAULT_AUDIO_INPUT_DEVICE_NAME" desc="Default audio input device (microphone) with a wide angle coverage. All the sounds in the vicinity will be listend to. This is typically presented to users in a drop-down list of device choices.">
+          Default (pick up everything)
+        </message>
+      </if>
+
     </messages>
   </release>
 </grit>
