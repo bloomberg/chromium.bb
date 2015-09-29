@@ -28,5 +28,6 @@ static_library("renderer_context_menu") {
     "//base",
     "//content/public/browser",
     "//components/search_engines",
+    "//third_party/WebKit/public:blink_headers",
   ]
 }
